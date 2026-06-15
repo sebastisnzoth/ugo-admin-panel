@@ -6,6 +6,7 @@ import {
   useConfigSistema, useNotificaciones, useServiciosCRUD, useExport,
   useVault, usePendingWithdrawals,
 } from '../hooks/useAdminData';
+import { supabase } from '../lib/supabase';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
 import { ConversationalOrb } from './ConversationalOrb';
 
