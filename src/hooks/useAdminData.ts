@@ -1,402 +1,347 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import type {
-  AdminDashboard, Servicio, Disputa, Documento,
-  Usuario, MetricasDia,
-} from '../lib/database.types';
+import type { AdminDashboard, Servicio, Disputa, Documento, Usuario, MetricasDia } from '../lib/database.types';
 
-// ─── Canal realtime único (reduce WebSocket connections) ─────
-let globalChannel: ReturnType<typeof supabase.channel> | null = null;
+// ─── Canal realtime único ────────────────────────────────────
+let globalChannel: any = null;
 const listeners: Record<string, Set<() => void>> = {};
 
 function subscribe(table: string, cb: () => void) {
   if (!listeners[table]) listeners[table] = new Set();
   listeners[table].add(cb);
-
   if (!globalChannel) {
-    globalChannel = supabase.channel('ugo-admin-global')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' },
-        () => listeners['servicios']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputas' },
-        () => listeners['disputas']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'escrow' },
-        () => listeners['escrow']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'documentos' },
-        () => listeners['documentos']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' },
-        () => listeners['usuarios']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_log' },
-        () => listeners['audit_log']?.forEach(f => f()))
+    globalChannel = (supabase as any).channel('ugo-admin-global')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' }, () => listeners['servicios']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputas' }, () => listeners['disputas']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'escrow' }, () => listeners['escrow']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'documentos' }, () => listeners['documentos']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, () => listeners['usuarios']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_log' }, () => listeners['audit_log']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categorias' }, () => listeners['categorias']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'tarifas' }, () => listeners['tarifas']?.forEach(f => f()))
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notificaciones' }, () => listeners['notificaciones']?.forEach(f => f()))
       .subscribe();
   }
-
-  return () => {
-    listeners[table]?.delete(cb);
-  };
+  return () => { listeners[table]?.delete(cb); };
 }
 
-// ─── Dashboard metrics (30s polling + realtime) ──────────────
+// ─── Dashboard ───────────────────────────────────────────────
 export function useDashboardMetrics() {
   const [metrics, setMetrics] = useState<AdminDashboard | null>(null);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('vista_admin_dashboard')
-      .select('*')
-      .single();
-    if (data) setMetrics(data as AdminDashboard);
-    setLoading(false);
+    const { data } = await (supabase as any).from('vista_admin_dashboard').select('*').single();
+    if (data) setMetrics(data); setLoading(false);
   }, []);
-
   useEffect(() => {
     fetch();
-    const timer = setInterval(fetch, 30_000);
-    const unsub1 = subscribe('servicios', fetch);
-    const unsub2 = subscribe('escrow', fetch);
-    const unsub3 = subscribe('disputas', fetch);
-    const unsub4 = subscribe('documentos', fetch);
-    const unsub5 = subscribe('usuarios', fetch);
-    return () => {
-      clearInterval(timer);
-      unsub1(); unsub2(); unsub3(); unsub4(); unsub5();
-    };
+    const t = setInterval(fetch, 30_000);
+    const u = ['servicios','escrow','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));
+    return () => { clearInterval(t); u.forEach(f => f()); };
   }, [fetch]);
-
   return { metrics, loading, refetch: fetch };
 }
 
-// ─── KPIs de conversión (30 días, polling 5min) ─────────────
+// ─── KPIs conversión ─────────────────────────────────────────
 export function useConversionKPIs() {
-  const [kpis, setKpis] = useState<Record<string, number> | null>(null);
-
+  const [kpis, setKpis] = useState<any>(null);
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('vista_kpis_conversion')
-      .select('*')
-      .single();
-    if (data) setKpis(data as Record<string, number>);
+    const { data } = await (supabase as any).from('vista_kpis_conversion').select('*').single();
+    if (data) setKpis(data);
   }, []);
-
-  useEffect(() => {
-    fetch();
-    const timer = setInterval(fetch, 300_000); // 5 min
-    const unsub = subscribe('servicios', fetch);
-    return () => { clearInterval(timer); unsub(); };
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const t = setInterval(fetch, 300_000); const u = subscribe('servicios', fetch); return () => { clearInterval(t); u(); }; }, [fetch]);
   return kpis;
 }
 
-// ─── Alertas del sistema (polling 60s) ──────────────────────
+// ─── Alertas ─────────────────────────────────────────────────
 export function useSystemAlerts() {
   const [alerts, setAlerts] = useState<any[]>([]);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('vista_alertas_sistema')
-      .select('*');
+    const { data } = await (supabase as any).from('vista_alertas_sistema').select('*');
     if (data) setAlerts(data);
   }, []);
-
   useEffect(() => {
     fetch();
-    const timer = setInterval(fetch, 60_000);
-    const unsub1 = subscribe('usuarios', fetch);
-    const unsub2 = subscribe('disputas', fetch);
-    const unsub3 = subscribe('escrow', fetch);
-    return () => { clearInterval(timer); unsub1(); unsub2(); unsub3(); };
+    const t = setInterval(fetch, 60_000);
+    const u = ['usuarios','disputas','escrow'].map(tb => subscribe(tb, fetch));
+    return () => { clearInterval(t); u.forEach(f => f()); };
   }, [fetch]);
-
-  const criticalCount = alerts.filter(a => a.severidad === 'critical').length;
-  const warningCount  = alerts.filter(a => a.severidad === 'warning').length;
-
-  return { alerts, criticalCount, warningCount, refetch: fetch };
+  return { alerts, criticalCount: alerts.filter(a => a.severidad === 'critical').length, warningCount: alerts.filter(a => a.severidad === 'warning').length, refetch: fetch };
 }
 
-// ─── Proveedores para mapa (lat/lng + disponibilidad) ────────
+// ─── Proveedores para mapa ────────────────────────────────────
 export function useMapProviders() {
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('vista_proveedores_online')
-      .select('id,nombre,apellido,karma,lat,lng,zona,disponible,servicio_estado,categoria_nombre,categoria_emoji,servicios_completados');
-    if (data) setProviders(data);
-    setLoading(false);
+    const { data } = await (supabase as any).from('vista_proveedores_online').select('id,nombre,apellido,karma,lat,lng,zona,disponible,servicio_estado,categoria_nombre,categoria_emoji,servicios_completados');
+    if (data) setProviders(data); setLoading(false);
   }, []);
-
-  useEffect(() => {
-    fetch();
-    const unsub1 = subscribe('usuarios', fetch);
-    const unsub2 = subscribe('servicios', fetch);
-    return () => { unsub1(); unsub2(); };
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const u = ['usuarios','servicios'].map(tb => subscribe(tb, fetch)); return () => u.forEach(f => f()); }, [fetch]);
   return { providers, loading, refetch: fetch };
 }
 
-// ─── Servicios activos ───────────────────────────────────────
+// ─── Servicios activos ────────────────────────────────────────
 export function useActiveServices() {
-  const [services, setServices] = useState<Servicio[]>([]);
+  const [services, setServices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('servicios')
-      .select(`
-        id, estado, zona, tarifa, created_at, descripcion,
-        categorias:categoria_id(nombre, emoji),
-        clientes:cliente_id(nombre),
-        proveedores:proveedor_id(nombre, karma)
-      `)
-      .not('estado', 'in', '(completado,cancelado)')
-      .order('created_at', { ascending: false })
-      .limit(50);
-    if (data) setServices(data as any);
-    setLoading(false);
+    const { data } = await (supabase as any).from('servicios')
+      .select('id,estado,zona,tarifa,created_at,descripcion,categorias:categoria_id(nombre,emoji),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre,karma)')
+      .order('created_at', { ascending: false }).limit(100);
+    if (data) setServices(data); setLoading(false);
   }, []);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('servicios', fetch);
-    return unsub;
-  }, [fetch]);
-
-  return { services, loading };
+  useEffect(() => { fetch(); const u = subscribe('servicios', fetch); return u; }, [fetch]);
+  return { services, loading, refetch: fetch };
 }
 
-// ─── Disputas abiertas ───────────────────────────────────────
+// ─── Disputas ────────────────────────────────────────────────
 export function useOpenDisputes() {
   const [disputes, setDisputes] = useState<Disputa[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('disputas')
-      .select(`
-        id, numero, estado, monto_disputado, motivo, created_at, evidencias,
-        clientes:cliente_id(nombre),
-        proveedores:proveedor_id(nombre)
-      `)
-      .in('estado', ['abierta', 'en_revision'])
-      .order('created_at', { ascending: true });
-    if (data) setDisputes(data as any);
-    setLoading(false);
+    const { data } = await (supabase as any).from('disputas')
+      .select('id,numero,estado,monto_disputado,motivo,created_at,clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
+      .in('estado', ['abierta','en_revision']).order('created_at', { ascending: true });
+    if (data) setDisputes(data as any); setLoading(false);
   }, []);
-
-  const resolverDisputa = useCallback(async (
-    id: string, resolucion: string, favorDe: 'cliente' | 'proveedor'
-  ) => {
-    await (supabase as any).rpc('admin_resolver_disputa', {
-      p_disputa_id: id,
-      p_resolucion: resolucion,
-      p_favor_de: favorDe,
-    });
+  const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {
+    await (supabase as any).rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });
     await fetch();
   }, [fetch]);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('disputas', fetch);
-    return unsub;
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const u = subscribe('disputas', fetch); return u; }, [fetch]);
   return { disputes, loading, resolverDisputa };
 }
 
-// ─── Documentos pendientes ───────────────────────────────────
+// ─── Documentos ──────────────────────────────────────────────
 export function usePendingDocuments() {
-  const [docs, setDocs] = useState<Documento[]>([]);
+  const [docs, setDocs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('documentos')
-      .select(`
-        id, tipo, estado, created_at, url_storage, descripcion, notas,
-        usuarios:usuario_id(nombre, apellido, email)
-      `)
-      .in('estado', ['pendiente', 'procesando'])
-      .order('created_at', { ascending: true });
-    if (data) setDocs(data as any);
-    setLoading(false);
+    const { data } = await (supabase as any).from('documentos')
+      .select('id,tipo,estado,created_at,url_storage,descripcion,notas,usuarios:usuario_id(nombre,apellido,email)')
+      .in('estado', ['pendiente','procesando']).order('created_at', { ascending: true });
+    if (data) setDocs(data); setLoading(false);
   }, []);
-
-  const updateEstado = useCallback(async (
-    id: string,
-    estado: 'aprobado' | 'rechazado' | 'reenvio_solicitado',
-    notas?: string
-  ) => {
+  const updateEstado = useCallback(async (id: string, estado: string, notas?: string) => {
     const sb = supabase as any;
-    await sb
-      .from('documentos')
-      .update({ estado, notas, revisado_at: new Date().toISOString() })
-      .eq('id', id);
+    await sb.from('documentos').update({ estado, notas, revisado_at: new Date().toISOString() }).eq('id', id);
     await fetch();
   }, [fetch]);
-
   const getSignedUrl = useCallback(async (path: string) => {
     if (!path) return null;
-    const { data } = await supabase.storage
-      .from('documentos')
-      .createSignedUrl(path, 300);
+    const { data } = await (supabase as any).storage.from('documentos').createSignedUrl(path, 300);
     return data?.signedUrl ?? null;
   }, []);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('documentos', fetch);
-    return unsub;
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const u = subscribe('documentos', fetch); return u; }, [fetch]);
   return { docs, loading, updateEstado, getSignedUrl };
 }
 
-// ─── Feed de actividad (últimas 20 entradas) ─────────────────
+// ─── Feed de actividad ────────────────────────────────────────
 export function useActivityFeed() {
   const [feed, setFeed] = useState<any[]>([]);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('audit_log')
-      .select('id, evento, actor_tipo, detalles, created_at')
-      .order('created_at', { ascending: false })
-      .limit(20);
+    const { data } = await (supabase as any).from('audit_log').select('id,evento,actor_tipo,detalles,created_at').order('created_at', { ascending: false }).limit(20);
     if (data) setFeed(data);
   }, []);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('audit_log', fetch);
-    return unsub;
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const u = subscribe('audit_log', fetch); return u; }, [fetch]);
   return feed;
 }
 
-// ─── Métricas semanales (para gráfico) ──────────────────────
+// ─── Métricas semanales ───────────────────────────────────────
 export function useWeekMetrics() {
   const [data, setData] = useState<MetricasDia[]>([]);
-
   useEffect(() => {
-    supabase
-      .from('metricas_dia')
-      .select('fecha,ingresos_brutos,comision_ugo,servicios_completados,servicios_totales')
-      .gte('fecha', new Date(Date.now() - 7 * 86400_000).toISOString().split('T')[0])
+    (supabase as any).from('metricas_dia').select('fecha,ingresos_brutos,comision_ugo,servicios_completados,servicios_totales')
+      .gte('fecha', new Date(Date.now() - 7*86400_000).toISOString().split('T')[0])
       .order('fecha', { ascending: true })
-      .then(({ data: d }) => { if (d) setData(d as any); });
+      .then(({ data: d }: any) => { if (d) setData(d); });
   }, []);
-
   return data;
 }
 
-// ─── Usuarios (con filtro por tipo) ─────────────────────────
+// ─── Usuarios ─────────────────────────────────────────────────
 export function useUsuarios() {
-  const [users, setUsers]   = useState<Usuario[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('usuarios')
-      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,servicios_completados,fecha_registro,updated_at')
-      .order('fecha_registro', { ascending: false })
-      .limit(100);
-    if (data) setUsers(data as any);
-    setLoading(false);
+    const { data } = await (supabase as any).from('usuarios')
+      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,pais,telefono,servicios_completados,fecha_registro,updated_at')
+      .order('fecha_registro', { ascending: false }).limit(200);
+    if (data) setUsers(data); setLoading(false);
   }, []);
-
   const suspenderProveedor = useCallback(async (id: string, motivo: string) => {
-    await (supabase as any).rpc('admin_suspender_proveedor', { p_proveedor_id: id, p_motivo: motivo } as any);
-    await fetch();
+    await (supabase as any).rpc('admin_suspender_proveedor', { p_proveedor_id: id, p_motivo: motivo }); await fetch();
   }, [fetch]);
-
   const reactivarProveedor = useCallback(async (id: string) => {
-    await (supabase as any).rpc('admin_reactivar_proveedor', { p_proveedor_id: id } as any);
-    await fetch();
+    await (supabase as any).rpc('admin_reactivar_proveedor', { p_proveedor_id: id }); await fetch();
   }, [fetch]);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('usuarios', fetch);
-    return unsub;
+  const crearUsuario = useCallback(async (data: any) => {
+    const res = await (supabase as any).rpc('admin_crear_usuario', {
+      p_email: data.email, p_nombre: data.nombre, p_apellido: data.apellido,
+      p_tipo: data.tipo, p_telefono: data.telefono, p_zona: data.zona, p_pais: data.pais,
+    });
+    await fetch(); return res.data;
   }, [fetch]);
-
-  return { users, loading, suspenderProveedor, reactivarProveedor };
+  const updateUsuario = useCallback(async (id: string, data: any) => {
+    await (supabase as any).rpc('admin_update_usuario', {
+      p_id: id, p_nombre: data.nombre, p_apellido: data.apellido,
+      p_telefono: data.telefono, p_zona: data.zona, p_activo: data.activo,
+    }); await fetch();
+  }, [fetch]);
+  useEffect(() => { fetch(); const u = subscribe('usuarios', fetch); return u; }, [fetch]);
+  return { users, loading, suspenderProveedor, reactivarProveedor, crearUsuario, updateUsuario, refetch: fetch };
 }
 
-// ─── Auth users (RPC, solo cuando se solicita) ──────────────
+// ─── Auth Users ───────────────────────────────────────────────
 export function useAuthUsers(enabled: boolean) {
-  const [users, setUsers]     = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const fetched = useRef(false);
-
   useEffect(() => {
     if (!enabled || fetched.current) return;
-    fetched.current = true;
-    setLoading(true);
-    (supabase as any).rpc('admin_get_auth_users' as any)
-      .then(({ data }) => {
-        if (data) setUsers(data);
-        setLoading(false);
-      });
+    fetched.current = true; setLoading(true);
+    (supabase as any).rpc('admin_get_auth_users').then(({ data }: any) => { if (data) setUsers(data); setLoading(false); });
   }, [enabled]);
-
   return { users, loading };
 }
 
-// ─── Bóveda / Escrow ─────────────────────────────────────────
+// ─── Categorías CRUD ─────────────────────────────────────────
+export function useCategorias() {
+  const [categorias, setCategorias] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = useCallback(async () => {
+    const { data } = await (supabase as any).from('categorias').select('*').order('nombre');
+    if (data) setCategorias(data); setLoading(false);
+  }, []);
+  const crear = useCallback(async (nombre: string, emoji: string) => {
+    const res = await (supabase as any).rpc('admin_crear_categoria', { p_nombre: nombre, p_emoji: emoji });
+    await fetch(); return res.data;
+  }, [fetch]);
+  const actualizar = useCallback(async (id: string, nombre: string, emoji: string, activa: boolean) => {
+    await (supabase as any).rpc('admin_update_categoria', { p_id: id, p_nombre: nombre, p_emoji: emoji, p_activa: activa });
+    await fetch();
+  }, [fetch]);
+  const toggleActiva = useCallback(async (id: string, activa: boolean) => {
+    const cat = categorias.find(c => c.id === id);
+    if (cat) await actualizar(id, cat.nombre, cat.emoji, activa);
+  }, [categorias, actualizar]);
+  useEffect(() => { fetch(); const u = subscribe('categorias', fetch); return u; }, [fetch]);
+  return { categorias, loading, crear, actualizar, toggleActiva, refetch: fetch };
+}
+
+// ─── Tarifas CRUD ────────────────────────────────────────────
+export function useTarifas() {
+  const [tarifas, setTarifas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const fetch = useCallback(async () => {
+    const { data } = await (supabase as any).from('tarifas').select('*,categorias:categoria_id(nombre,emoji)').order('zona');
+    if (data) setTarifas(data); setLoading(false);
+  }, []);
+  const upsert = useCallback(async (categoriaId: string, zona: string, precios: any) => {
+    await (supabase as any).rpc('admin_upsert_tarifa', {
+      p_categoria_id: categoriaId, p_zona: zona,
+      p_precio_base: precios.base, p_precio_hora: precios.hora,
+      p_precio_min: precios.min, p_precio_max: precios.max,
+    }); await fetch();
+  }, [fetch]);
+  useEffect(() => { fetch(); const u = subscribe('tarifas', fetch); return u; }, [fetch]);
+  return { tarifas, loading, upsert, refetch: fetch };
+}
+
+// ─── Config sistema ───────────────────────────────────────────
+export function useConfigSistema() {
+  const [config, setConfig] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const fetch = useCallback(async () => {
+    const { data } = await (supabase as any).from('config_sistema').select('*');
+    if (data) {
+      const m: Record<string, string> = {};
+      data.forEach((r: any) => { m[r.clave] = r.valor; });
+      setConfig(m);
+    }
+    setLoading(false);
+  }, []);
+  const update = useCallback(async (clave: string, valor: string) => {
+    await (supabase as any).rpc('admin_update_config', { p_clave: clave, p_valor: valor });
+    setConfig(prev => ({ ...prev, [clave]: valor }));
+  }, []);
+  useEffect(() => { fetch(); }, [fetch]);
+  return { config, loading, update, refetch: fetch };
+}
+
+// ─── Notificaciones masivas ───────────────────────────────────
+export function useNotificaciones() {
+  const [hist, setHist] = useState<any[]>([]);
+  const fetch = useCallback(async () => {
+    const { data } = await (supabase as any).from('notificaciones')
+      .select('id,titulo,cuerpo,tipo,created_at').eq('tipo','admin_broadcast')
+      .order('created_at', { ascending: false }).limit(20);
+    if (data) setHist(data);
+  }, []);
+  const enviar = useCallback(async (titulo: string, cuerpo: string, target: string, zona?: string) => {
+    const res = await (supabase as any).rpc('admin_notificacion_masiva', {
+      p_titulo: titulo, p_cuerpo: cuerpo, p_target: target, p_zona: zona ?? null,
+    });
+    await fetch(); return res.data;
+  }, [fetch]);
+  useEffect(() => { fetch(); const u = subscribe('notificaciones', fetch); return u; }, [fetch]);
+  return { hist, enviar, refetch: fetch };
+}
+
+// ─── Servicios CRUD ───────────────────────────────────────────
+export function useServiciosCRUD() {
+  const crear = useCallback(async (data: any) => {
+    const res = await (supabase as any).rpc('admin_crear_servicio', {
+      p_cliente_id: data.cliente_id, p_proveedor_id: data.proveedor_id || null,
+      p_categoria_id: data.categoria_id || null, p_descripcion: data.descripcion,
+      p_zona: data.zona, p_tarifa: data.tarifa || null,
+    });
+    return res.data;
+  }, []);
+  const cancelar = useCallback(async (id: string, motivo: string) => {
+    await (supabase as any).rpc('admin_cancelar_servicio', { p_servicio_id: id, p_motivo: motivo });
+  }, []);
+  return { crear, cancelar };
+}
+
+// ─── Export ───────────────────────────────────────────────────
+export function useExport() {
+  const exportServicios = useCallback(async (dias = 30) => {
+    const { data } = await (supabase as any).rpc('admin_export_servicios', { p_dias: dias });
+    return data as any[];
+  }, []);
+  const exportUsuarios = useCallback(async () => {
+    const { data } = await (supabase as any).rpc('admin_export_usuarios');
+    return data as any[];
+  }, []);
+  return { exportServicios, exportUsuarios };
+}
+
+// ─── Bóveda ──────────────────────────────────────────────────
 export function useVault() {
   const [escrows, setEscrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
   const fetch = useCallback(async () => {
-    const { data } = await supabase
-      .from('escrow')
-      .select(`
-        id, monto_total, comision_ugo, monto_proveedor, estado, created_at,
-        servicios:servicio_id(estado, zona),
-        clientes:cliente_id(nombre),
-        proveedores:proveedor_id(nombre)
-      `)
-      .eq('estado', 'retenido')
-      .order('created_at', { ascending: true });
-    if (data) setEscrows(data as any);
-    setLoading(false);
+    const { data } = await (supabase as any).from('escrow')
+      .select('id,monto_total,comision_ugo,monto_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
+      .eq('estado','retenido').order('created_at', { ascending: true });
+    if (data) setEscrows(data); setLoading(false);
   }, []);
-
   const liberarEscrow = useCallback(async (id: string) => {
-    await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id } as any);
-    await fetch();
+    await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id }); await fetch();
   }, [fetch]);
-
-  useEffect(() => {
-    fetch();
-    const unsub = subscribe('escrow', fetch);
-    return unsub;
-  }, [fetch]);
-
+  useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
   return { escrows, loading, liberarEscrow };
 }
 
-// ─── Retiros pendientes ──────────────────────────────────────
 export function usePendingWithdrawals() {
   const [items, setItems] = useState<any[]>([]);
-
   useEffect(() => {
-    supabase
-      .from('escrow')
-      .select(`
-        id, monto_proveedor, created_at, liberado_at,
-        proveedores:proveedor_id(nombre, stripe_account_id)
-      `)
-      .eq('estado', 'liberado')
-      .is('liberado_at', null)
-      .order('created_at', { ascending: true })
-      .limit(20)
-      .then(({ data }) => { if (data) setItems(data as any); });
+    (supabase as any).from('escrow')
+      .select('id,monto_proveedor,created_at,proveedores:proveedor_id(nombre,stripe_account_id)')
+      .eq('estado','liberado').is('liberado_at', null).order('created_at', { ascending: true }).limit(20)
+      .then(({ data }: any) => { if (data) setItems(data); });
   }, []);
-
   return items;
 }
