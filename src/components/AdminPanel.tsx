@@ -276,6 +276,9 @@ export function AdminPanel() {
   const [notifResult, setNotifResult] = useState<any>(null);
   const [editingConfig, setEditingConfig] = useState<Record<string, string>>({});
   const [editingTarifa, setEditingTarifa] = useState<any>(null);
+  const [contactModal, setContactModal] = useState<any>(null);
+  const [contactMsg, setContactMsg] = useState({ titulo:'', cuerpo:'' });
+  const [contactSent, setContactSent] = useState(false);
 
   // Hugo
   const [chat, setChat] = useState<{role:'hugo'|'admin'; text:string; action?:string; ts:Date}[]>([
@@ -479,6 +482,7 @@ export function AdminPanel() {
               <div className="tc" style={{flex:0.8}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?'activo':'inactivo'}</span></div>
               <div className="tc" style={{flex:1.5,display:'flex',gap:3}}>
                 <button className="btn btn-s btn-sm" onClick={()=>{setUserForm({email:u.email,nombre:u.nombre,apellido:u.apellido||'',tipo:u.tipo,telefono:u.telefono||'',zona:u.zona||'',pais:u.pais||'BR'});setModal({type:'user-edit',data:u});}}>Editar</button>
+                {u.tipo==='proveedor'&&<button className="btn btn-p btn-sm" onClick={()=>{setContactModal(u);setContactMsg({titulo:'',cuerpo:''});setContactSent(false);}}>📨</button>}
                 {u.tipo==='proveedor'&&u.activo&&<button className="btn btn-d btn-sm" onClick={()=>suspenderProveedor(u.id,'Suspensión manual')}>Susp.</button>}
                 {u.tipo==='proveedor'&&!u.activo&&<button className="btn btn-g btn-sm" onClick={()=>reactivarProveedor(u.id)}>Reactiv.</button>}
               </div>
@@ -968,6 +972,53 @@ export function AdminPanel() {
         </div>
       )}
       <ConversationalOrb metrics={metrics}/>
+
+      {/* MODAL: Contactar proveedor */}
+      {contactModal && (
+        <div className="modal-bd" onClick={e=>{if(e.target===e.currentTarget){setContactModal(null);}}}>
+          <div className="modal-box">
+            <div className="modal-title">
+              <span>📨 Mensaje para {contactModal.nombre} {contactModal.apellido||''}</span>
+              <button className="mclose" onClick={()=>setContactModal(null)}>✕</button>
+            </div>
+            {!contactSent ? (
+              <>
+                <div style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',background:'var(--bg2)',borderRadius:8,marginBottom:12,fontSize:11}}>
+                  <span style={{width:8,height:8,borderRadius:'50%',background:contactModal.online?'var(--green)':'var(--muted)',display:'inline-block'}}/>
+                  <span>{contactModal.online?'🟢 Online — recibirá el mensaje en la app ahora mismo':'⚪ Offline — recibirá el mensaje cuando se conecte'}</span>
+                </div>
+                <div style={{marginBottom:9}}><div style={{fontSize:9,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>Título</div>
+                  <input className="finput" value={contactMsg.titulo} onChange={e=>setContactMsg(p=>({...p,titulo:e.target.value}))} placeholder="Ej: Actualización de tu cuenta"/>
+                </div>
+                <div style={{marginBottom:9}}><div style={{fontSize:9,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:4}}>Mensaje</div>
+                  <textarea className="ftextarea" value={contactMsg.cuerpo} onChange={e=>setContactMsg(p=>({...p,cuerpo:e.target.value}))} placeholder="Escribí el mensaje para el proveedor..."/>
+                </div>
+                <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:10}}>
+                  {['Revisá tu karma — bajó a menos de 4.0','Tu documentación fue aprobada ✓','Tu cuenta fue reactivada','Hay alta demanda en tu zona ahora'].map(t=>(
+                    <button key={t} className="btn btn-s" style={{fontSize:9,padding:'3px 8px'}} onClick={()=>setContactMsg(p=>({...p,titulo:t.length<30?t:'Mensaje U.GO',cuerpo:t.length>=30?t:p.cuerpo}))}>{t.slice(0,24)}...</button>
+                  ))}
+                </div>
+                <div className="modal-acts">
+                  <button className="btn btn-p" disabled={!contactMsg.titulo.trim()||!contactMsg.cuerpo.trim()} onClick={async()=>{
+                    const sb = (await import('../lib/supabase')).supabase as any;
+                    await sb.rpc('admin_send_notification',{p_usuario_id:contactModal.id,p_titulo:contactMsg.titulo,p_cuerpo:contactMsg.cuerpo});
+                    setContactSent(true);
+                  }}>📨 Enviar mensaje</button>
+                  <button className="btn btn-s" onClick={()=>setContactModal(null)}>Cancelar</button>
+                  <button className="btn btn-s" style={{marginLeft:'auto'}} onClick={()=>sendHugo(`Redactá un mensaje profesional para el proveedor ${contactModal.nombre} sobre: ${contactMsg.titulo}`)}>✨ Ayuda de Hugo</button>
+                </div>
+              </>
+            ) : (
+              <div style={{textAlign:'center',padding:'24px 0'}}>
+                <div style={{fontSize:40,marginBottom:12}}>✅</div>
+                <div style={{fontWeight:700,fontSize:15,marginBottom:6}}>Mensaje enviado</div>
+                <div style={{fontSize:12,color:'var(--muted)',marginBottom:16}}>{contactModal.nombre} {contactModal.online?'lo recibió en su app ahora mismo.':'lo recibirá cuando se conecte.'}</div>
+                <button className="btn btn-p" onClick={()=>setContactModal(null)}>Cerrar</button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </>
   );
 }

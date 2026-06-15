@@ -8,33 +8,34 @@
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;background:#0f1117;font-family:'Inter',-apple-system,sans-serif;}
-:root{--c:#00C8D7;--cd:rgba(0,200,215,.1);--k:#111;--w:#FFF;--bg:#F7F7F7;--m:#888;--b:#EBEBEB;--g:#22C55E;--r:#EF4444;--a:#F59E0B;}
+html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-serif;}
+:root{--c:#00C8D7;--cd:rgba(0,200,215,.1);--cm:rgba(0,200,215,.26);--k:#111;--w:#FFF;--bg:#F7F7F7;--m:#888;--b:#EBEBEB;--g:#22C55E;--r:#EF4444;--a:#F59E0B;}
 
-/* MAP */
-#map{position:fixed;inset:0;width:100%;height:100%;z-index:0;}
-.leaflet-container{background:#1a2030;}
+/* ── AUTH ── */
+#auth{position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0f1117,#1a2530);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
+#auth.hide{display:none;}
+.al{font-size:38px;font-weight:900;color:#FFF;letter-spacing:-1.5px;}
+.als{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:2.5px;margin-top:2px;margin-bottom:32px;}
+.acard{background:#FFF;border-radius:24px;padding:22px;width:100%;max-width:380px;}
+.atit{font-size:19px;font-weight:800;margin-bottom:3px;}
+.adesc{font-size:13px;color:#888;margin-bottom:18px;}
+.afl label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#888;margin-bottom:4px;}
+.afl{margin-bottom:11px;}
+.afl input,.afl select{width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:border .2s;color:#111;}
+.afl input:focus,.afl select:focus{border-color:var(--c);}
+.ag2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.abtn{width:100%;padding:13px;background:#111;color:#FFF;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:5px;transition:opacity .2s;}
+.abtn:active{opacity:.8;}
+.alink{text-align:center;font-size:13px;color:#888;margin-top:11px;cursor:pointer;line-height:1.5;}
+.alink b{color:#00828F;}
+.aerr{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:9px 12px;font-size:12px;color:#DC2626;margin-bottom:10px;display:none;}
+.aok{background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:9px 12px;font-size:12px;color:#16A34A;margin-bottom:10px;display:none;}
 
-/* AUTH OVERLAY */
-#auth-screen{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#0f1117 0%,#1a2030 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
-#auth-screen.hidden{display:none;}
-.auth-logo{font-size:36px;font-weight:900;color:#FFF;letter-spacing:-1.5px;margin-bottom:4px;}
-.auth-sub{font-size:12px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:2px;margin-bottom:36px;}
-.auth-card{background:#FFF;border-radius:24px;padding:24px;width:100%;max-width:380px;}
-.auth-title{font-size:20px;font-weight:800;margin-bottom:4px;}
-.auth-desc{font-size:13px;color:#888;margin-bottom:20px;}
-.auth-field{margin-bottom:12px;}
-.auth-field label{display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:#888;margin-bottom:5px;}
-.auth-field input,.auth-field select{width:100%;padding:12px 14px;border:1.5px solid #E5E5E5;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:border .2s;}
-.auth-field input:focus,.auth-field select:focus{border-color:#00C8D7;}
-.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.auth-btn{width:100%;padding:14px;background:#111;color:#FFF;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px;transition:opacity .2s;}
-.auth-btn:active{opacity:.85;}
-.auth-link{text-align:center;font-size:13px;color:#888;margin-top:12px;cursor:pointer;}
-.auth-link span{color:#00828F;font-weight:600;}
-.auth-err{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:10px 12px;font-size:12px;color:#DC2626;margin-bottom:10px;display:none;}
+/* ── MAP ── */
+#map{position:fixed;inset:0;z-index:0;}
+.leaflet-container{background:#EAE6DF;}
 
-/* TOP */
+/* ── TOP ── */
 #top{position:fixed;top:0;left:0;right:0;z-index:20;padding:max(48px,env(safe-area-inset-top,48px)) 18px 14px;background:linear-gradient(to bottom,rgba(255,255,255,.97) 65%,transparent);display:flex;align-items:center;justify-content:space-between;}
 .logo{font-weight:900;font-size:22px;letter-spacing:-.6px;color:var(--k);}
 .logo-s{font-size:11px;color:var(--m);margin-top:-2px;}
@@ -42,37 +43,37 @@ html,body{height:100%;overflow:hidden;background:#0f1117;font-family:'Inter',-ap
 #online-tog{display:flex;align-items:center;gap:8px;background:#FFF;border-radius:24px;padding:7px 14px;box-shadow:0 2px 12px rgba(0,0,0,.12);cursor:pointer;border:none;font-family:inherit;transition:all .25s;}
 #online-tog.on{background:#111;}
 .tog-dot{width:9px;height:9px;border-radius:50%;background:#CCC;transition:background .25s;}
-#online-tog.on .tog-dot{background:#22C55E;animation:bl 1.5s infinite;}
+#online-tog.on .tog-dot{background:var(--g);animation:bl 1.5s infinite;}
 .tog-label{font-size:12px;font-weight:700;color:#888;transition:color .25s;}
 #online-tog.on .tog-label{color:#FFF;}
+.langb{background:var(--k);color:var(--w);border:none;border-radius:14px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
 
-/* JOB NOTIFICATION */
+/* ── JOB NOTIFICATION ── */
 #job-notif{position:fixed;left:0;right:0;bottom:78px;z-index:40;padding:0 14px 12px;transform:translateY(110%);transition:transform .4s cubic-bezier(.32,.72,0,1);}
 #job-notif.show{transform:translateY(0);}
 
-/* SHEET */
+/* ── SHEET ── */
 #sheet{position:fixed;left:0;right:0;z-index:25;background:var(--w);border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -6px 28px rgba(0,0,0,.13);transition:bottom .38s cubic-bezier(.32,.72,0,1),height .38s cubic-bezier(.32,.72,0,1);overflow:hidden;bottom:78px;height:0;}
 .handle{width:34px;height:4px;background:var(--b);border-radius:2px;margin:9px auto 0;flex-shrink:0;}
 #sb{height:calc(100% - 22px);overflow-y:auto;overflow-x:hidden;}
 
-/* NAV */
+/* ── NAV ── */
 #nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--w);border-top:1px solid var(--b);padding:8px 4px max(20px,env(safe-area-inset-bottom,20px));display:flex;align-items:center;justify-content:space-around;height:78px;}
-.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 10px;border-radius:12px;transition:background .15s;position:relative;}
-.ni:active{background:#F5F5F5;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 10px;border-radius:12px;position:relative;}
 .ni-ic{font-size:19px;line-height:1;}
 .ni-lb{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--m);}
 .ni.on .ni-lb{color:var(--c);}
-.ni-badge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--r);border-radius:50%;border:1.5px solid #FFF;display:none;}
-.ni-badge.show{display:block;}
+.nbadge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--r);border-radius:50%;border:1.5px solid #FFF;display:none;}
+.nbadge.show{display:block;}
 
-/* ORB */
-#orb{width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:4px solid var(--w);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-24px;animation:op 2.5s ease-in-out infinite;transition:transform .15s;border:none;font-family:inherit;}
+/* ── ORB ── */
+#orb{width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:4px solid var(--w);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-24px;animation:op 2.5s ease-in-out infinite;border:none;font-family:inherit;transition:transform .15s;}
 #orb:active{transform:scale(.93);}
 
-/* UTILS */
+/* ── UTILS ── */
 .btnm{width:100%;padding:14px;background:var(--k);color:var(--w);border:none;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;}
 .btnm:active{opacity:.85;}
-.btng{width:100%;padding:14px;background:#22C55E;color:var(--w);border:none;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btng{width:100%;padding:14px;background:var(--g);color:var(--w);border:none;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
 .btnr{width:100%;padding:11px;background:none;color:var(--r);border:1.5px solid var(--r);border-radius:26px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
 .sbox{background:#F5F5F5;border-radius:12px;padding:8px;text-align:center;}
 .slbl{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
@@ -80,64 +81,80 @@ html,body{height:100%;overflow:hidden;background:#0f1117;font-family:'Inter',-ap
 .pill-g{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(34,197,94,.1);color:#16A34A;}
 .pill-c{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--cd);color:#00828F;}
 .pill-a{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);color:#B45309;}
-::-webkit-scrollbar{width:2px;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);border-radius:2px;}
-.cmsg{display:flex;gap:7px;align-items:flex-end;animation:fi .2s ease;}
-.cmsg-r{justify-content:flex-end;}
 .uorb{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
 .b-u{background:#F0F0F0;border-radius:16px 16px 16px 4px;padding:9px 13px;font-size:13px;max-width:80%;line-height:1.5;}
 .b-me{background:var(--k);color:var(--w);border-radius:16px 16px 4px 16px;padding:9px 13px;font-size:13px;max-width:80%;line-height:1.5;}
+.cmsg{display:flex;gap:7px;align-items:flex-end;animation:fi .2s ease;}
+.cmsg-r{justify-content:flex-end;}
 .dot{width:6px;height:6px;border-radius:50%;background:#999;animation:da 1s ease-in-out infinite;display:inline-block;}
+
+/* ── ADMIN NOTIF OVERLAY ── */
+#adm-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:none;align-items:flex-end;padding:20px;}
+#adm-overlay.show{display:flex;}
+
+/* ── SUSPENSION ── */
+#susp-screen{position:fixed;inset:0;z-index:300;background:#0f1117;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
+#susp-screen.show{display:flex;}
+
 @keyframes op{0%,100%{box-shadow:0 0 0 8px rgba(0,200,215,.14),0 4px 18px rgba(0,200,215,.42);}50%{box-shadow:0 0 0 16px rgba(0,200,215,.06),0 4px 26px rgba(0,200,215,.64);}}
 @keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 @keyframes da{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
-@keyframes countdown{from{stroke-dashoffset:0;}to{stroke-dashoffset:157;}}
+::-webkit-scrollbar{width:2px;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);}
 </style>
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
-<div id="auth-screen">
-  <div class="auth-logo">U.GO</div>
-  <div class="auth-sub">Portal Proveedor</div>
-  <div class="auth-card">
-    <div id="auth-err" class="auth-err"></div>
-
-    <!-- LOGIN VIEW -->
-    <div id="view-login">
-      <div class="auth-title">Bienvenido</div>
-      <div class="auth-desc">Ingresá a tu cuenta de proveedor</div>
-      <div class="auth-field"><label>Email</label><input id="l-email" type="email" placeholder="tu@email.com"/></div>
-      <div class="auth-field"><label>Contraseña</label><input id="l-pass" type="password" placeholder="••••••••"/></div>
-      <button class="auth-btn" onclick="doLogin()">Ingresar →</button>
-      <div class="auth-link" onclick="switchView('register')">¿No tenés cuenta? <span>Registrate</span></div>
+<!-- AUTH -->
+<div id="auth">
+  <div class="al">U.GO</div>
+  <div class="als">Portal Proveedor</div>
+  <div class="acard">
+    <div id="aerr" class="aerr"></div>
+    <div id="aok" class="aok"></div>
+    <div id="vlog">
+      <div class="atit">Bienvenido</div>
+      <div class="adesc">Ingresá a tu cuenta de proveedor</div>
+      <div class="afl"><label>Email</label><input id="le" type="email" placeholder="tu@email.com"/></div>
+      <div class="afl"><label>Contraseña</label><input id="lp" type="password" placeholder="••••••••"/></div>
+      <button class="abtn" onclick="doLogin()">Ingresar →</button>
+      <div class="alink" onclick="sw('reg')">¿No tenés cuenta? <b>Registrate aquí</b></div>
     </div>
-
-    <!-- REGISTER VIEW -->
-    <div id="view-register" style="display:none">
-      <div class="auth-title">Crear cuenta</div>
-      <div class="auth-desc">Registrate como proveedor de servicios</div>
-      <div class="auth-grid">
-        <div class="auth-field"><label>Nombre</label><input id="r-nombre" type="text" placeholder="Juan"/></div>
-        <div class="auth-field"><label>Apellido</label><input id="r-apellido" type="text" placeholder="García"/></div>
+    <div id="vreg" style="display:none">
+      <div class="atit">Crear cuenta</div>
+      <div class="adesc">Registrate como proveedor de U.GO</div>
+      <div class="ag2">
+        <div class="afl"><label>Nombre</label><input id="rn" placeholder="Juan"/></div>
+        <div class="afl"><label>Apellido</label><input id="ra" placeholder="García"/></div>
       </div>
-      <div class="auth-field"><label>Email</label><input id="r-email" type="email" placeholder="tu@email.com"/></div>
-      <div class="auth-field"><label>Teléfono</label><input id="r-tel" type="tel" placeholder="+55 48 9 9999-9999"/></div>
-      <div class="auth-field"><label>Contraseña</label><input id="r-pass" type="password" placeholder="Mínimo 6 caracteres"/></div>
-      <div class="auth-field"><label>Categoría principal</label>
-        <select id="r-cat">
-          <option value="">Cargando categorías...</option>
-        </select>
-      </div>
-      <button class="auth-btn" onclick="doRegister()">Crear cuenta →</button>
-      <div class="auth-link" onclick="switchView('login')">¿Ya tenés cuenta? <span>Ingresá</span></div>
+      <div class="afl"><label>Email</label><input id="re" type="email" placeholder="tu@email.com"/></div>
+      <div class="afl"><label>Teléfono</label><input id="rt" type="tel" placeholder="+55 48 9 9999-9999"/></div>
+      <div class="afl"><label>Contraseña</label><input id="rp" type="password" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="afl"><label>Categoría principal</label><select id="rcat"><option value="">Cargando...</option></select></div>
+      <button class="abtn" onclick="doRegister()">Crear cuenta →</button>
+      <div class="alink" onclick="sw('log')">¿Ya tenés cuenta? <b>Ingresá aquí</b></div>
     </div>
   </div>
 </div>
 
-<!-- MAIN APP -->
+<!-- SUSPENSION -->
+<div id="susp-screen">
+  <div style="font-size:56px;margin-bottom:16px;">⛔</div>
+  <div style="font-size:24px;font-weight:900;color:#FFF;margin-bottom:8px;">Cuenta suspendida</div>
+  <div style="font-size:14px;color:rgba(255,255,255,.5);max-width:300px;line-height:1.6;margin-bottom:20px;">Tu cuenta fue suspendida por el equipo de U.GO. Contactá a soporte.</div>
+  <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 20px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">soporte@ugo.com.br</div>
+  <button onclick="location.reload()" style="padding:12px 24px;background:#FFF;color:#111;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;">Intentar de nuevo</button>
+</div>
+
+<!-- ADMIN NOTIFICATION OVERLAY -->
+<div id="adm-overlay">
+  <div id="adm-card" style="background:#FFF;border-radius:22px;padding:20px;width:100%;max-width:420px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,.25);animation:fi .3s ease;"></div>
+</div>
+
+<!-- MAP -->
 <div id="map"></div>
 
+<!-- TOP -->
 <div id="top">
   <div>
     <div style="display:flex;align-items:center;gap:8px;">
@@ -151,579 +168,704 @@ html,body{height:100%;overflow:hidden;background:#0f1117;font-family:'Inter',-ap
       <div class="tog-dot"></div>
       <span class="tog-label" id="tog-lbl">Offline</span>
     </button>
+    <button class="langb" id="lb" onclick="tgl()">PT</button>
   </div>
 </div>
 
+<!-- JOB NOTIFICATION -->
 <div id="job-notif">
   <div id="job-card" style="background:#FFF;border-radius:22px;box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden;"></div>
 </div>
 
+<!-- SHEET -->
 <div id="sheet"><div class="handle"></div><div id="sb"></div></div>
 
+<!-- NAV -->
 <nav id="nav">
-  <button class="ni on" id="ni-radar" onclick="navTo('radar')"><span class="ni-ic">📡</span><span class="ni-lb">Radar</span></button>
-  <button class="ni" id="ni-trab" onclick="navTo('trabajos')"><span class="ni-ic">⚡</span><span class="ni-badge" id="badge-job"></span><span class="ni-lb">Trabajos</span></button>
+  <button class="ni on" id="ni-radar" onclick="navTo('radar')"><span class="ni-ic">📡</span><span class="ni-lb" id="nl-r">Radar</span></button>
+  <button class="ni" id="ni-trab" onclick="navTo('trabajos')" style="position:relative;"><span class="ni-ic">📋</span><span class="nbadge" id="nbadge"></span><span class="ni-lb" id="nl-t">Trabajos</span></button>
   <button id="orb" onclick="openChat()">🌀</button>
-  <button class="ni" id="ni-gan" onclick="navTo('ganancias')"><span class="ni-ic">💰</span><span class="ni-lb">Ganancias</span></button>
-  <button class="ni" id="ni-perf" onclick="navTo('perfil')"><span class="ni-ic">👤</span><span class="ni-lb">Perfil</span></button>
+  <button class="ni" id="ni-gan" onclick="navTo('ganancias')"><span class="ni-ic">💰</span><span class="ni-lb" id="nl-g">Ganancias</span></button>
+  <button class="ni" id="ni-perf" onclick="navTo('perfil')"><span class="ni-ic">👤</span><span class="ni-lb" id="nl-p">Perfil</span></button>
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-// ── CONFIG ───────────────────────────────────────────────
-const SUPABASE_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
-const FN = `${SUPABASE_URL}/functions/v1`;
-const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// ── CONFIG ──
+const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
+const SB_KEY='sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
+const FN=SB_URL+'/functions/v1';
+const sb=supabase.createClient(SB_URL,SB_KEY);
 
-// ── STATE ────────────────────────────────────────────────
-let SESSION = null, PROVIDER = null;
-let isOnline = false;
-let myLat = -27.5954, myLng = -48.5480;
-let mapInstance = null, myMarker = null, routeLayer = null;
-let ACTIVE_JOB = null, JOB_TIMER = null;
-let realtimeChannel = null, watchId = null;
+// ── STATE ──
+let SESSION=null,PROV=null,lang='es',screen='home',isOnline=false;
+let myLat=-27.5954,myLng=-48.5480,watchId=null;
+let MAP=null,myMark=null,clientMark=null,routeLine=null;
+let ACTIVE=null,cntTid=null,etaTid=null;
+let rtJobs=null,rtNotif=null,rtStatus=null;
 
-// ── INIT ─────────────────────────────────────────────────
-sb.auth.onAuthStateChange(async (event, session) => {
-  SESSION = session;
-  if (session) {
-    await loadProviderProfile();
-    document.getElementById('auth-screen').classList.add('hidden');
-    initMap();
-    startGPS();
-    subscribeToJobs();
-    loadCategorias(); // load for register form even if logged in
-    showRadar();
-  } else {
-    document.getElementById('auth-screen').classList.remove('hidden');
-    loadCategorias();
+// ── TRANSLATIONS ──
+const TR={
+  es:{online:'Online',offline:'Offline',sub:'· ⭐',lb:'PT',
+      searching:'Buscando trabajos en tu zona...',simulate:'Simular trabajo →',
+      jobIn:'¡Trabajo disponible!',accept:'Aceptar — R$',reject:'Rechazar',
+      jobType:'Tipo',jobAddr:'Dirección',jobDist:'Distancia',jobDesc:'Descripción',
+      jobVal:'Valor neto',jobComis:'Comisión U.GO',jobTotal:'Total',
+      nav:'Navegar al cliente →',arriving:'En camino',arrivedBtn:'Llegué al cliente',
+      inService:'Servicio en progreso',startBtn:'Iniciar trabajo →',
+      uploadBtn:'Subir fotos del trabajo terminado →',
+      uploadDone:'Fotos enviadas al cliente',awaitAppr:'Esperando aprobación...',
+      ugoMed:'U.GO está monitoreando el trabajo. El cliente recibirá las fotos y aprobará el pago.',
+      approved:'¡Cliente aprobó el trabajo! 🎉',paid:'Pago recibido',newJob:'Buscar otro trabajo →',
+      earn:'Ganancias',earnToday:'Hoy',earnWeek:'Semana',earnMonth:'Mes',
+      earnPend:'En bóveda',earnComp:'Completados',earnRating:'Rating',earnHist:'Historial',
+      perfTitle:'Mi perfil',perfServ:'Servicios',perfRat:'Rating',perfKarma:'Karma',
+      perfDocs:'Documentos',perfCats:'Categorías',perfReviews:'Reseñas',verified:'✅ Verificado',
+      hello:'¡Hola! 👋',hugoH2:'Soy tu asistente U.GO.',hugoQ:'¿En qué puedo ayudarte?',
+      hSugs:['¿Debo aceptar este trabajo?','¿Dónde hay más demanda?','¿Cómo mejoro mi rating?','Ver mis ganancias'],
+      ol:'● Online',nlt:{r:'Radar',t:'Trabajos',g:'Ganancias',p:'Perfil'},
+      photos:'Fotos del trabajo',photosS:'Adjuntá fotos para que el cliente apruebe.',
+      enviar:'Enviar fotos al cliente →',tbTabl:'Antes',tbCab:'Proceso',tbToma:'Detalle',tbPrueba:'Terminado',
+      etaLabel:'ETA',min:'min',working:'Trabajando...',sist:'Sistema activo',
+      noJobs:'Sin trabajos activos',noJobsS:'Activá tu disponibilidad para recibir trabajo',
+      resenias:'Reseñas recientes',cerrar:'Cerrar sesión',
+  },
+  pt:{online:'Online',offline:'Offline',sub:'· ⭐',lb:'ES',
+      searching:'Buscando trabalhos na sua zona...',simulate:'Simular trabalho →',
+      jobIn:'Trabalho disponível!',accept:'Aceitar — R$',reject:'Recusar',
+      jobType:'Tipo',jobAddr:'Endereço',jobDist:'Distância',jobDesc:'Descrição',
+      jobVal:'Valor líquido',jobComis:'Comissão U.GO',jobTotal:'Total',
+      nav:'Navegar ao cliente →',arriving:'A caminho',arrivedBtn:'Cheguei ao cliente',
+      inService:'Serviço em andamento',startBtn:'Iniciar trabalho →',
+      uploadBtn:'Enviar fotos do trabalho concluído →',
+      uploadDone:'Fotos enviadas ao cliente',awaitAppr:'Aguardando aprovação...',
+      ugoMed:'U.GO está monitorando o trabalho. O cliente receberá as fotos e aprovará o pagamento.',
+      approved:'Cliente aprovou o trabalho! 🎉',paid:'Pagamento recebido',newJob:'Buscar outro trabalho →',
+      earn:'Ganhos',earnToday:'Hoje',earnWeek:'Semana',earnMonth:'Mês',
+      earnPend:'Na bóveda',earnComp:'Concluídos',earnRating:'Avaliação',earnHist:'Histórico',
+      perfTitle:'Meu perfil',perfServ:'Serviços',perfRat:'Avaliação',perfKarma:'Karma',
+      perfDocs:'Documentos',perfCats:'Categorias',perfReviews:'Avaliações',verified:'✅ Verificado',
+      hello:'Olá! 👋',hugoH2:'Sou seu assistente U.GO.',hugoQ:'Como posso te ajudar?',
+      hSugs:['Devo aceitar este trabalho?','Onde há mais demanda?','Como melhoro minha avaliação?','Ver meus ganhos'],
+      ol:'● Online',nlt:{r:'Radar',t:'Trabalhos',g:'Ganhos',p:'Perfil'},
+      photos:'Fotos do trabalho',photosS:'Adicione fotos para o cliente aprovar.',
+      enviar:'Enviar fotos ao cliente →',tbTabl:'Antes',tbCab:'Processo',tbToma:'Detalhe',tbPrueba:'Concluído',
+      etaLabel:'ETA',min:'min',working:'Trabalhando...',sist:'Sistema ativo',
+      noJobs:'Sem trabalhos ativos',noJobsS:'Ative sua disponibilidade para receber trabalho',
+      resenias:'Avaliações recentes',cerrar:'Sair da conta',
   }
+};
+const tt=()=>TR[lang];
+
+// ── AUTH ──
+sb.auth.onAuthStateChange(async(ev,ses)=>{
+  SESSION=ses;
+  if(ses){ await initProvider(); document.getElementById('auth').classList.add('hide'); }
+  else{ document.getElementById('auth').classList.remove('hide'); loadCats(); }
 });
 
-// ── AUTH ─────────────────────────────────────────────────
-function switchView(v) {
-  document.getElementById('view-login').style.display = v==='login' ? '' : 'none';
-  document.getElementById('view-register').style.display = v==='register' ? '' : 'none';
-  document.getElementById('auth-err').style.display = 'none';
+function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
+function showErr(m){ const e=document.getElementById('aerr'); e.textContent=m; e.style.display=m?'block':'none'; }
+function showOk(m){ const e=document.getElementById('aok'); e.textContent=m; e.style.display=m?'block':'none'; }
+
+async function doLogin(){
+  const email=document.getElementById('le').value.trim();
+  const pass=document.getElementById('lp').value;
+  if(!email||!pass) return showErr('Completá todos los campos');
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error) showErr(error.message==='Invalid login credentials'?'Email o contraseña incorrectos':error.message);
 }
 
-function showErr(msg) {
-  const el = document.getElementById('auth-err');
-  el.textContent = msg; el.style.display = 'block';
+async function doRegister(){
+  const nombre=document.getElementById('rn').value.trim();
+  const apellido=document.getElementById('ra').value.trim();
+  const email=document.getElementById('re').value.trim();
+  const tel=document.getElementById('rt').value.trim();
+  const pass=document.getElementById('rp').value;
+  const catId=document.getElementById('rcat').value;
+  if(!nombre||!email||!pass||!catId) return showErr('Completá todos los campos');
+  if(pass.length<6) return showErr('La contraseña debe tener al menos 6 caracteres');
+  const{data,error}=await sb.auth.signUp({email,password:pass});
+  if(error) return showErr(error.message);
+  // Crear perfil
+  await sb.from('usuarios').insert({auth_id:data.user.id,email,nombre,apellido,telefono:tel,tipo:'proveedor',categorias_ids:[catId],pais:'BR',zona:'Florianópolis',karma:5});
+  showOk('¡Cuenta creada! Revisá tu email para confirmar.');
 }
 
-async function doLogin() {
-  const email = document.getElementById('l-email').value.trim();
-  const pass  = document.getElementById('l-pass').value;
-  if (!email||!pass) return showErr('Completá todos los campos');
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) showErr(error.message);
+async function loadCats(){
+  const{data}=await sb.from('categorias').select('id,nombre,emoji').eq('activa',true);
+  const sel=document.getElementById('rcat');
+  if(data?.length) sel.innerHTML=data.map(c=>`<option value="${c.id}">${c.emoji} ${c.nombre}</option>`).join('');
 }
 
-async function doRegister() {
-  const nombre   = document.getElementById('r-nombre').value.trim();
-  const apellido = document.getElementById('r-apellido').value.trim();
-  const email    = document.getElementById('r-email').value.trim();
-  const tel      = document.getElementById('r-tel').value.trim();
-  const pass     = document.getElementById('r-pass').value;
-  const catId    = document.getElementById('r-cat').value;
-  if (!nombre||!email||!pass||!catId) return showErr('Completá todos los campos');
+async function initProvider(){
+  // Cargar perfil
+  const{data}=await sb.from('usuarios').select('*').eq('auth_id',SESSION.user.id).single();
+  if(!data){ await sb.auth.signOut(); return; }
+  PROV=data; isOnline=data.online||false;
+  document.getElementById('top-s').textContent=`${data.nombre} ${data.apellido||''} ${tt().sub} ${data.karma}`;
+  updateOnlineUI();
+  initMap(); startGPS();
+  subscribeJobs(); subscribeNotifs(); subscribeStatus();
+  showRadar(); updateNavLabels();
+}
 
-  const { data, error } = await sb.auth.signUp({ email, password: pass });
-  if (error) return showErr(error.message);
-
-  // Crear perfil en usuarios
-  const { error: perfilErr } = await sb.from('usuarios').insert({
-    auth_id: data.user.id,
-    email, nombre, apellido, telefono: tel,
-    tipo: 'proveedor',
-    categorias_ids: [catId],
-    pais: 'BR', zona: 'Florianópolis'
+// ── MAP ──
+function initMap(){
+  if(MAP) return;
+  MAP=L.map('map',{zoomControl:false,center:[myLat,myLng],zoom:14});
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19}).addTo(MAP);
+  // Heat spots (demand zones)
+  [[-27.590,-48.548,400,'rgba(239,68,68,.15)'],[- 27.610,-48.520,300,'rgba(245,158,11,.12)'],[-27.575,-48.565,280,'rgba(239,68,68,.1)']].forEach(([la,ln,r,c])=>{
+    L.circle([la,ln],{radius:r,color:c,fillColor:c,fillOpacity:1,stroke:false}).addTo(MAP);
   });
-  if (perfilErr) showErr(perfilErr.message);
+  myMark=L.marker([myLat,myLng],{icon:L.divIcon({html:`<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(0,200,215,.5);">🔧</div>`,className:'',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(MAP);
 }
 
-async function loadProviderProfile() {
-  const { data } = await sb.from('usuarios')
-    .select('*')
-    .eq('auth_id', SESSION.user.id)
-    .single();
-  if (data) {
-    PROVIDER = data;
-    document.getElementById('top-s').textContent = `${data.nombre} ${data.apellido||''} · ⭐ ${data.karma}`;
-    isOnline = data.online;
-    updateOnlineUI();
-  }
+function updateMark(){ if(myMark) myMark.setLatLng([myLat,myLng]); }
+
+function showClientOnMap(lat,lng){
+  if(clientMark) MAP.removeLayer(clientMark);
+  clientMark=L.marker([lat,lng],{icon:L.divIcon({html:`<div style="width:38px;height:38px;border-radius:50%;background:#EF4444;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 14px rgba(239,68,68,.4);">📍</div>`,className:'',iconSize:[38,38],iconAnchor:[19,19]})}).addTo(MAP);
+  if(routeLine) MAP.removeLayer(routeLine);
+  routeLine=L.polyline([[myLat,myLng],[lat,lng]],{color:'#00C8D7',weight:5,opacity:.8,dashArray:'10,6'}).addTo(MAP);
+  MAP.fitBounds([[myLat,myLng],[lat,lng]],{padding:[80,80]});
 }
 
-async function loadCategorias() {
-  const { data } = await sb.from('categorias').select('id,nombre,emoji').eq('activa',true);
-  const sel = document.getElementById('r-cat');
-  if (data&&data.length) {
-    sel.innerHTML = data.map(c=>`<option value="${c.id}">${c.emoji} ${c.nombre}</option>`).join('');
-  }
+function clearClientMap(){ if(clientMark){MAP.removeLayer(clientMark);clientMark=null;} if(routeLine){MAP.removeLayer(routeLine);routeLine=null;} MAP.setView([myLat,myLng],14); }
+
+// ── GPS ──
+function startGPS(){
+  if(!navigator.geolocation) return;
+  watchId=navigator.geolocation.watchPosition(async pos=>{
+    myLat=pos.coords.latitude; myLng=pos.coords.longitude; updateMark();
+    if(isOnline&&SESSION) await callFn('provider-status',{online:true,lat:myLat,lng:myLng});
+  },null,{enableHighAccuracy:true,maximumAge:12000});
 }
 
-// ── MAP ──────────────────────────────────────────────────
-function initMap() {
-  if (mapInstance) return;
-  mapInstance = L.map('map', { zoomControl:false, center:[myLat,myLng], zoom:14 });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution:'© CARTO', maxZoom:19
-  }).addTo(mapInstance);
-
-  const icon = L.divIcon({
-    html:`<div style="width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,200,215,.5);">🔧</div>`,
-    className:'', iconSize:[46,46], iconAnchor:[23,23]
-  });
-  myMarker = L.marker([myLat,myLng], {icon}).addTo(mapInstance);
+// ── ONLINE TOGGLE ──
+async function toggleOnline(){
+  if(!SESSION||!PROV) return;
+  const next=!isOnline;
+  showToast(next?'Conectando...':'Desconectando...');
+  const r=await callFn('provider-status',{online:next,lat:myLat,lng:myLng});
+  if(r?.ok){ isOnline=next; updateOnlineUI(); subscribeJobs(); showRadar(); showToast(next?'✅ Online — listo para recibir pedidos':'⏸ Offline'); }
 }
 
-function updateMapMarker() {
-  if (!myMarker||!mapInstance) return;
-  myMarker.setLatLng([myLat,myLng]);
+function updateOnlineUI(){
+  const tog=document.getElementById('online-tog'),lbl=document.getElementById('tog-lbl');
+  tog.classList.toggle('on',isOnline); lbl.textContent=isOnline?tt().online:tt().offline;
+  if(PROV) document.getElementById('top-s').textContent=`${PROV.nombre} ${PROV.apellido||''} ${tt().sub} ${PROV.karma}`;
 }
 
-// ── GPS ──────────────────────────────────────────────────
-function startGPS() {
-  if (!navigator.geolocation) return;
-  watchId = navigator.geolocation.watchPosition(async pos => {
-    myLat = pos.coords.latitude;
-    myLng = pos.coords.longitude;
-    updateMapMarker();
-    if (isOnline && SESSION) {
-      await callFn('provider-status', { online: true, lat: myLat, lng: myLng });
-    }
-  }, null, { enableHighAccuracy:true, maximumAge:15000 });
-}
-
-// ── ONLINE TOGGLE ────────────────────────────────────────
-async function toggleOnline() {
-  if (!SESSION||!PROVIDER) return;
-  const newStatus = !isOnline;
-  const r = await callFn('provider-status', { online: newStatus, lat: myLat, lng: myLng });
-  if (r&&r.ok) {
-    isOnline = newStatus;
-    updateOnlineUI();
-    PROVIDER.online = newStatus;
-    if (isOnline) {
-      showToast('✅ Estás online — listo para recibir pedidos');
-    } else {
-      showToast('⏸ Offline');
-      if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel=null; }
-    }
-    subscribeToJobs();
-  }
-}
-
-function updateOnlineUI() {
-  const tog = document.getElementById('online-tog');
-  const lbl = document.getElementById('tog-lbl');
-  if (isOnline) { tog.classList.add('on'); lbl.textContent='Online'; }
-  else { tog.classList.remove('on'); lbl.textContent='Offline'; }
-}
-
-// ── REALTIME JOBS ────────────────────────────────────────
-function subscribeToJobs() {
-  if (realtimeChannel) { sb.removeChannel(realtimeChannel); realtimeChannel=null; }
-  if (!isOnline||!SESSION) return;
-
-  realtimeChannel = sb.channel('available-jobs')
-    .on('postgres_changes', {
-      event: 'INSERT', schema: 'public', table: 'servicios',
-      filter: 'estado=eq.negociando'
-    }, payload => showJobNotification(payload.new))
+// ── REALTIME JOB SUBSCRIPTION ──
+function subscribeJobs(){
+  if(rtJobs){sb.removeChannel(rtJobs);rtJobs=null;}
+  if(!isOnline||!SESSION) return;
+  rtJobs=sb.channel('jobs-'+Date.now())
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'servicios',filter:'estado=eq.negociando'},p=>{ if(!ACTIVE) showJobCard(p.new); })
     .subscribe();
 }
 
-// ── JOB NOTIFICATION ────────────────────────────────────
-function showJobNotification(job) {
-  if (ACTIVE_JOB) return; // ya tiene un trabajo
-  const notif = document.getElementById('job-notif');
-  const card  = document.getElementById('job-card');
-  const badge = document.getElementById('badge-job');
-  badge.classList.add('show');
+// ── JOB NOTIFICATION CARD ──
+function showJobCard(job){
+  let secs=30;
+  document.getElementById('nbadge').classList.add('show');
+  const dist=haversine(myLat,myLng,job.lat_cliente||myLat,job.lng_cliente||myLng);
+  const neto=job.tarifa?Math.round(job.tarifa*.85):'~';
+  const fee=job.tarifa?Math.round(job.tarifa*.15):'~';
 
-  // Calcular distancia aproximada
-  const dist = haversine(myLat, myLng, job.lat_cliente||myLat, job.lng_cliente||myLng);
-  const neto = job.tarifa ? (job.tarifa * 0.85).toFixed(0) : '~';
-
-  let secs = 90;
-  if (JOB_TIMER) clearInterval(JOB_TIMER);
-
-  const render = () => {
-    card.innerHTML = `
-      <div style="padding:16px;">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-          <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Nuevo pedido</div>
+  const render=()=>{
+    document.getElementById('job-card').innerHTML=`
+      <div>
+        <div style="background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:8px;">
-            <svg width="28" height="28"><circle cx="14" cy="14" r="12" fill="none" stroke="#EEE" stroke-width="2.5"/><circle cx="14" cy="14" r="12" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-dasharray="75.4" stroke-dashoffset="${75.4*(1-secs/90)}" transform="rotate(-90 14 14)" style="transition:stroke-dashoffset .9s linear;"/></svg>
-            <span style="font-size:16px;font-weight:800;color:#EF4444;">${secs}s</span>
+            <div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:bl 1s infinite;"></div>
+            <div style="font-size:13px;font-weight:700;color:#FFF;">🎯 ${tt().jobIn}</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <svg width="36" height="36" viewBox="0 0 36 36" style="transform:rotate(-90deg);">
+              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="var(--c)" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="${94.2*(1-secs/30)}" style="transition:stroke-dashoffset 1s linear;"/>
+            </svg>
+            <span style="font-size:18px;font-weight:900;color:#FFF;min-width:26px;">${secs}</span>
           </div>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
-          <div class="sbox"><div class="slbl">Distancia</div><div class="sval">${dist.toFixed(1)}km</div></div>
-          <div class="sbox"><div class="slbl">Neto</div><div class="sval" style="color:#22C55E;">R$${neto}</div></div>
-          <div class="sbox"><div class="slbl">Tipo</div><div class="sval" style="font-size:20px;">🔧</div></div>
-        </div>
-        <div style="background:#F8F8F8;border-radius:12px;padding:10px 12px;margin-bottom:12px;font-size:13px;color:#555;">
-          📍 ${dist.toFixed(1)} km · ${job.zona||'Sin zona'}<br>
-          <span style="color:#888;font-size:12px;">${job.descripcion||'Sin descripción'}</span>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <button class="btnr" onclick="rejectJob('${job.id}')">✕ Rechazar</button>
-          <button class="btng" onclick="acceptJob('${job.id}',${job.lat_cliente||myLat},${job.lng_cliente||myLng})">✓ Aceptar</button>
+        <div style="padding:14px 16px;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+            <div><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${tt().jobType}</div>
+              <div style="font-weight:700;font-size:15px;">🔧 ${job.zona||'Servicio'}</div></div>
+            <div><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${tt().jobDist}</div>
+              <div style="font-weight:700;font-size:15px;">📍 ${dist.toFixed(1)} km</div></div>
+          </div>
+          <div style="background:#F8F8F8;border-radius:14px;padding:10px 12px;margin-bottom:12px;">
+            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${tt().jobDesc}</div>
+            <div style="font-size:13px;color:#333;">${job.descripcion||'Sin descripción'}</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+            <div class="sbox"><div class="slbl">${tt().jobVal}</div><div class="sval" style="color:var(--g);">R$${neto}</div></div>
+            <div class="sbox"><div class="slbl">${tt().jobComis}</div><div class="sval">R$${fee}</div></div>
+            <div class="sbox"><div class="slbl">${tt().jobTotal}</div><div class="sval">R$${job.tarifa||'~'}</div></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <button class="btnr" style="padding:13px;" onclick="rejectJob('${job.id}')">✕ ${tt().reject}</button>
+            <button class="btng" style="padding:13px;" onclick="acceptJob('${job.id}',${job.lat_cliente||myLat},${job.lng_cliente||myLng},${job.tarifa||0},'${job.descripcion||''}')">✓ ${tt().accept}${neto}</button>
+          </div>
         </div>
       </div>`;
   };
 
-  render();
-  notif.classList.add('show');
-
-  JOB_TIMER = setInterval(() => {
-    secs--;
-    render();
-    if (secs <= 0) { clearInterval(JOB_TIMER); hideJobNotif(); }
-  }, 1000);
+  render(); document.getElementById('job-notif').classList.add('show'); closeSheet();
+  if(cntTid) clearInterval(cntTid);
+  cntTid=setInterval(()=>{ secs--; render(); if(secs<=0){clearInterval(cntTid);rejectJob(job.id);} },1000);
 }
 
-function hideJobNotif() {
-  document.getElementById('job-notif').classList.remove('show');
-  document.getElementById('badge-job').classList.remove('show');
-  if (JOB_TIMER) { clearInterval(JOB_TIMER); JOB_TIMER=null; }
-}
+function rejectJob(id){ clearInterval(cntTid); document.getElementById('job-notif').classList.remove('show'); document.getElementById('nbadge').classList.remove('show'); showRadar(); }
 
-function rejectJob(id) { hideJobNotif(); showToast('Pedido rechazado'); }
-
-async function acceptJob(id, clLat, clLng) {
-  hideJobNotif();
+async function acceptJob(id,clLat,clLng,tarifa,desc){
+  clearInterval(cntTid); document.getElementById('job-notif').classList.remove('show'); document.getElementById('nbadge').classList.remove('show');
   showToast('⏳ Aceptando pedido...');
-  const r = await callFn('service-accept', { servicio_id: id });
-  if (r&&r.ok) {
-    ACTIVE_JOB = { id, lat: clLat, lng: clLng, ...r };
-    showNavigating();
-  } else {
-    showToast('❌ ' + (r?.error||'Error al aceptar'));
-  }
+  const r=await callFn('service-accept',{servicio_id:id});
+  if(r?.ok){
+    ACTIVE={id,lat:clLat,lng:clLng,tarifa,desc,...r};
+    showClientOnMap(clLat,clLng);
+    showJobDetails(ACTIVE);
+  } else showToast('❌ '+(r?.error||'No disponible'));
 }
 
-// ── SERVICE FLOW ─────────────────────────────────────────
-async function updateStatus(estado) {
-  if (!ACTIVE_JOB||!SESSION) return;
-  await callFn('service-status', { servicio_id: ACTIVE_JOB.id, estado, lat: myLat, lng: myLng });
+// ── JOB DETAILS ──
+function showJobDetails(job){
+  screen='accepted'; setActiveNav('trabajos');
+  const tt_=tt(),neto=Math.round((job.tarifa||85)*.85);
+  openSheet('min(88vh,700px)',`
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px;flex-shrink:0;">
+        <div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div>
+        <div style="font-weight:700;font-size:15px;">Trabajo aceptado ✓</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:14px;">
+        <div style="display:flex;align-items:center;gap:11px;padding:12px;background:#F8F8F8;border-radius:16px;margin-bottom:13px;">
+          <div style="width:42px;height:42px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#FFF;font-size:14px;flex-shrink:0;">${job.cliente?.nombre?.[0]||'C'}</div>
+          <div><div style="font-weight:700;font-size:14px;">Cliente verificado</div><div style="font-size:12px;color:#888;">⭐ · Datos protegidos</div></div>
+          <div style="margin-left:auto;"><span class="pill-c">🔒 Privado</span></div>
+        </div>
+        <div style="background:#F8F8F8;border-radius:16px;padding:14px;margin-bottom:12px;">
+          ${[[tt_().jobDesc,job.desc||job.descripcion||'—'],[tt_().jobDist,haversine(myLat,myLng,job.lat||myLat,job.lng||myLng).toFixed(1)+' km']].map(([k,v])=>`
+            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);font-size:13px;"><span style="color:#888;">${k}</span><span style="font-weight:500;max-width:60%;text-align:right;">${v}</span></div>`).join('')}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;">
+          <div class="sbox"><div class="slbl">${tt_().jobVal}</div><div class="sval" style="color:var(--g);">R$${neto}</div></div>
+          <div class="sbox"><div class="slbl">${tt_().etaLabel}</div><div class="sval" style="color:var(--c);">~${Math.round(haversine(myLat,myLng,job.lat||myLat,job.lng||myLng)/30*60)} min</div></div>
+        </div>
+        <div style="background:var(--cd);border-radius:14px;padding:12px;font-size:12px;color:#444;border:1px solid var(--cm);">🔒 Recibirás R$${neto} cuando el cliente apruebe el trabajo.</div>
+      </div>
+      <div style="padding:13px 14px 28px;border-top:1px solid var(--b);flex-shrink:0;">
+        <button class="btnm" onclick="startNavigation()">🗺 ${tt_().nav}</button>
+      </div>
+    </div>`);
 }
 
-function showNavigating() {
+// ── NAVIGATION ──
+function startNavigation(){
+  screen='navigating';
   updateStatus('en_camino');
-  if (mapInstance&&ACTIVE_JOB.lat) {
-    mapInstance.setView([ACTIVE_JOB.lat, ACTIVE_JOB.lng], 15);
-    if (routeLayer) mapInstance.removeLayer(routeLayer);
-    routeLayer = L.polyline([[myLat,myLng],[ACTIVE_JOB.lat,ACTIVE_JOB.lng]], {color:'#00C8D7',weight:4,opacity:.8}).addTo(mapInstance);
-    const destIcon = L.divIcon({html:`<div style="width:36px;height:36px;border-radius:50%;background:#EF4444;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:16px;">📍</div>`,className:'',iconSize:[36,36],iconAnchor:[18,18]});
-    L.marker([ACTIVE_JOB.lat,ACTIVE_JOB.lng],{icon:destIcon}).addTo(mapInstance);
-  }
-  openSheet('min(46vh,360px)',`
-    <div style="padding:20px;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:22px;">🧭</div>
-        <div>
-          <div style="font-weight:800;font-size:18px;">En camino</div>
-          <div style="font-size:13px;color:#888;">Dirigiéndote al cliente</div>
-        </div>
-      </div>
-      <div style="background:#F8F8F8;border-radius:14px;padding:12px;margin-bottom:14px;font-size:13px;color:#555;">
-        <div style="font-weight:700;margin-bottom:4px;">📍 Dirección del cliente</div>
-        ${ACTIVE_JOB?.direccion||ACTIVE_JOB?.cliente?.direccion||'Ver mapa'}
-      </div>
-      <button class="btng" onclick="showInService()">✓ Llegué al destino</button>
-    </div>`);
-}
-
-function showInService() {
-  updateStatus('ejecutando');
-  openSheet('min(52vh,420px)',`
-    <div style="padding:20px;">
-      <div style="text-align:center;margin-bottom:16px;">
-        <div style="font-size:46px;margin-bottom:8px;">🔧</div>
-        <div style="font-weight:800;font-size:20px;">Servicio en curso</div>
-        <div style="font-size:13px;color:#888;margin-top:4px;">El cliente puede ver tu progreso</div>
-      </div>
-      <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:14px;padding:12px;margin-bottom:16px;font-size:13px;color:#444;">
-        🌀 U.GO está intermediando la sesión. El pago queda retenido hasta que el cliente apruebe.
-      </div>
-      <div style="margin-bottom:14px;">
-        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;">Fotos del trabajo</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;">
-          ${[1,2,3,4].map(i=>`<div onclick="addPhoto(${i})" style="aspect-ratio:1;border:2px dashed #DDD;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;" id="ph${i}">📷</div>`).join('')}
-        </div>
-      </div>
-      <button class="btng" onclick="showCompleted()">✓ Trabajo terminado</button>
-    </div>`);
-}
-
-function addPhoto(n) {
-  const el = document.getElementById('ph'+n);
-  if (el) { const emojis=['✅','✅','✅','✅']; el.innerHTML=`<div style="font-size:24px;">${emojis[n-1]}</div>`; el.style.borderColor='#22C55E'; el.style.background='rgba(34,197,94,.06)'; }
-}
-
-async function showCompleted() {
-  await updateStatus('completado');
-  closeSheet();
-  if (routeLayer) { mapInstance.removeLayer(routeLayer); routeLayer=null; }
-  const tarifa = ACTIVE_JOB?.tarifa || 85;
-  const neto = (tarifa * 0.85).toFixed(2);
-  const fee  = (tarifa * 0.15).toFixed(2);
-  openSheet('min(60vh,480px)',`
-    <div style="padding:20px;text-align:center;">
-      <div style="font-size:52px;margin-bottom:10px;">🎉</div>
-      <div style="font-weight:800;font-size:22px;margin-bottom:6px;">¡Trabajo completado!</div>
-      <div style="font-size:13px;color:#888;margin-bottom:18px;">Esperando aprobación del cliente</div>
-      <div style="background:#111;color:#FFF;border-radius:20px;padding:18px;margin-bottom:14px;">
-        <div style="font-size:11px;opacity:.5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">En Bóveda U.GO</div>
-        <div style="font-size:40px;font-weight:900;color:#22C55E;">R$${neto}</div>
-        <div style="font-size:11px;opacity:.45;margin-top:4px;">Comisión U.GO: R$${fee}</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="sbox"><div class="slbl">Servicio</div><div class="sval">🔧 1</div></div>
-        <div class="sbox"><div class="slbl">Karma</div><div class="sval" style="color:#22C55E;">↑</div></div>
-      </div>
-      <button class="btng" onclick="resetJob()">Buscar nuevo trabajo</button>
-    </div>`);
-  ACTIVE_JOB = null;
-}
-
-function resetJob() { ACTIVE_JOB=null; closeSheet(); showRadar(); setActiveNav('radar'); }
-
-// ── NAV SECTIONS ─────────────────────────────────────────
-function navTo(sec) {
-  setActiveNav(sec);
-  if (sec==='radar')     showRadar();
-  else if (sec==='trabajos')  showWorklist();
-  else if (sec==='ganancias') showGanancias();
-  else if (sec==='perfil')    showPerfil();
-}
-
-function showRadar() {
-  if (ACTIVE_JOB) { renderActiveJobSheet(); return; }
+  const neto=Math.round((ACTIVE?.tarifa||85)*.85);
+  let etaV=Math.max(3,Math.round(haversine(myLat,myLng,ACTIVE?.lat||myLat,ACTIVE?.lng||myLng)/30*60));
+  const tt_=tt();
   openSheet('min(42vh,320px)',`
+    <div style="padding:12px 14px;">
+      <div style="background:#FFF;border-radius:18px;padding:12px 13px;box-shadow:0 2px 12px rgba(0,0,0,.09);display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+        <div style="width:40px;height:40px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#FFF;flex-shrink:0;">📍</div>
+        <div style="flex:1;"><div style="font-weight:700;font-size:13px;">→ Dirección del cliente</div><div style="font-size:12px;color:#888;">${tt_().arriving}</div></div>
+        <div style="background:var(--cd);border-radius:12px;padding:7px 10px;text-align:center;">
+          <div id="eta-n" style="font-weight:800;font-size:20px;color:var(--c);">${etaV}</div>
+          <div style="font-size:10px;color:var(--c);">${tt_().min}</div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
+        <button style="padding:12px;background:#F5F5F5;border:none;border-radius:16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="openChat()">💬 Chat Hugo</button>
+        <button class="btnm" style="border-radius:16px;" onclick="showArrived()">${tt_().arrivedBtn} →</button>
+      </div>
+    </div>`);
+  if(etaTid) clearInterval(etaTid);
+  etaTid=setInterval(()=>{ if(etaV>0){etaV--;const el=document.getElementById('eta-n');if(el)el.textContent=etaV;} },60000);
+}
+
+// ── ARRIVED ──
+function showArrived(){
+  screen='arrived';
+  openSheet('min(35vh,260px)',`
+    <div style="padding:16px 18px;text-align:center;">
+      <div style="font-size:42px;margin-bottom:10px;">📍</div>
+      <div style="font-weight:800;font-size:18px;margin-bottom:6px;">¡Llegaste al cliente!</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px;">El cliente fue notificado de tu llegada</div>
+      <button class="btnm" onclick="startService()">${tt().startBtn}</button>
+    </div>`);
+}
+
+// ── IN SERVICE ──
+function startService(){
+  screen='inservice'; updateStatus('ejecutando');
+  const tt_=tt();
+  openSheet('min(52vh,420px)',`
+    <div style="display:flex;flex-direction:column;height:100%;padding:12px 14px;">
+      <div style="padding-bottom:10px;border-bottom:1px solid var(--b);margin-bottom:10px;">
+        <div style="font-weight:700;font-size:15px;">${tt_().inService}</div>
+        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--g);margin-top:2px;">
+          <div style="width:5px;height:5px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div>${tt_().working}
+        </div>
+      </div>
+      <div style="background:var(--cd);border-radius:14px;padding:12px;border:1px solid var(--cm);margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
+          <div class="uorb" style="width:24px;height:24px;font-size:12px;">🌀</div>
+          <div style="font-weight:700;font-size:12px;">U.GO</div>
+          <span class="pill-c" style="margin-left:auto;">Monitoreando</span>
+        </div>
+        <div style="font-size:12px;color:#444;line-height:1.6;">${tt_().ugoMed}</div>
+      </div>
+      <div style="flex:1;background:#F7F7F7;border-radius:14px;padding:11px;overflow-y:auto;" id="svc-ch"></div>
+      <div style="padding-top:10px;flex-shrink:0;">
+        <button class="btnm" onclick="showUpload()">${tt_().uploadBtn}</button>
+      </div>
+    </div>`);
+}
+
+// ── PHOTOS ──
+let photosSelected=0;
+function showUpload(){
+  photosSelected=0;
+  const tt_=tt();
+  openSheet('min(85vh,680px)',`
+    <div style="display:flex;flex-direction:column;height:100%;">
+      <div style="padding:12px 14px;border-bottom:1px solid var(--b);flex-shrink:0;">
+        <div style="font-weight:700;font-size:15px;">📷 ${tt_().photos}</div>
+        <div style="font-size:12px;color:#888;margin-top:2px;">${tt_().photosS}</div>
+      </div>
+      <div style="flex:1;overflow-y:auto;padding:13px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+          ${[['ph1','#F0F4FF','#C7D3F7',tt_().tbTabl],['ph2','#F0FDF4','#BBF7D0',tt_().tbCab],['ph3','#F5F3FF','#DDD6FE',tt_().tbToma],['ph4','#FFFBEB','#FDE68A',tt_().tbPrueba]].map(([id,bg,bc,lb])=>`
+          <div id="${id}" onclick="selectPhoto('${id}','${lb}')" style="background:${bg};border-radius:14px;height:106px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:2px dashed ${bc};transition:all .2s;">
+            <div style="font-size:24px;">📷</div><div style="font-size:10px;color:#888;">${lb}</div>
+          </div>`).join('')}
+        </div>
+        <div style="margin-bottom:12px;">
+          <div style="font-size:12px;color:#888;margin-bottom:6px;">Nota para el cliente (opcional)</div>
+          <textarea id="job-note" style="width:100%;border:1.5px solid var(--b);border-radius:14px;padding:10px;font-size:13px;resize:none;outline:none;font-family:inherit;line-height:1.5;color:#111;" rows="3" placeholder="Describí brevemente el trabajo realizado..."></textarea>
+        </div>
+        <div style="background:var(--cd);border-radius:13px;padding:11px;font-size:12px;color:#444;border:1px solid var(--cm);">
+          🔒 El pago se libera cuando el cliente apruebe las fotos.
+        </div>
+      </div>
+      <div style="padding:13px 14px 28px;border-top:1px solid var(--b);flex-shrink:0;">
+        <button class="btng" onclick="sendPhotos()">${tt_().enviar}</button>
+      </div>
+    </div>`);
+}
+
+function selectPhoto(id,lb){
+  photosSelected++;
+  const el=document.getElementById(id);
+  if(el){ el.innerHTML=`<div style="font-size:28px;">✅</div><div style="font-size:10px;color:#16A34A;font-weight:600;">${lb}</div>`; el.style.borderStyle='solid'; el.style.borderColor='#22C55E'; el.style.background='rgba(34,197,94,.06)'; }
+}
+
+async function sendPhotos(){
+  screen='awaitappr';
+  openSheet('min(44vh,340px)',`
+    <div style="padding:20px;text-align:center;">
+      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;animation:op 1.8s ease-in-out infinite;">🌀</div>
+      <div style="font-weight:700;font-size:18px;margin-bottom:8px;">${tt().uploadDone}</div>
+      <div style="font-size:13px;color:#888;margin-bottom:16px;">${tt().awaitAppr}</div>
+      <div style="background:var(--cd);border-radius:14px;padding:12px;font-size:12px;color:#444;border:1px solid var(--cm);text-align:left;">🌀 ${tt().ugoMed}</div>
+    </div>`);
+  // Marcar como completado en Supabase
+  await updateStatus('completado');
+  // Simular aprobación del cliente tras 4s
+  setTimeout(showApproved,4500);
+}
+
+function showApproved(){
+  const tarifa=ACTIVE?.tarifa||85, neto=Math.round(tarifa*.85), fee=Math.round(tarifa*.15);
+  openSheet('min(58vh,460px)',`
     <div style="padding:20px;">
+      <div style="text-align:center;margin-bottom:18px;">
+        <div style="font-size:56px;margin-bottom:10px;">🎉</div>
+        <div style="font-weight:800;font-size:20px;margin-bottom:6px;">${tt().approved}</div>
+        <div style="font-size:13px;color:#888;">El cliente aprobó el trabajo</div>
+      </div>
+      <div style="background:#111;color:#FFF;border-radius:20px;padding:18px;margin-bottom:14px;text-align:center;">
+        <div style="font-size:11px;opacity:.5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">${tt().paid}</div>
+        <div style="font-size:38px;font-weight:900;color:var(--g);">R$${neto}</div>
+        <div style="font-size:11px;opacity:.45;margin-top:4px;">+ Comisión U.GO: R$${fee}</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
+        <div class="sbox"><div class="slbl">Rating</div><div class="sval">⭐ 5.0</div></div>
+        <div class="sbox"><div class="slbl">Tiempo</div><div class="sval">~30min</div></div>
+        <div class="sbox"><div class="slbl">Karma</div><div class="sval" style="color:var(--g);">+2</div></div>
+      </div>
+      <button class="btnm" onclick="resetJob()">${tt().newJob}</button>
+    </div>`);
+  clearClientMap(); if(PROV){PROV.karma=Math.min(100,(PROV.karma||50)+2);} ACTIVE=null;
+}
+
+function resetJob(){ ACTIVE=null; screen='home'; clearClientMap(); showRadar(); setActiveNav('radar'); }
+
+// ── STATUS UPDATE ──
+async function updateStatus(estado){ if(!ACTIVE||!SESSION) return; await callFn('service-status',{servicio_id:ACTIVE.id,estado,lat:myLat,lng:myLng}); }
+
+// ── GANANCIAS ──
+async function showGanancias(){
+  const tt_=tt();
+  openSheet('min(62vh,500px)',`<div style="padding:16px 18px;"><div style="font-weight:800;font-size:17px;margin-bottom:14px;">💰 ${tt_().earn}</div><div style="text-align:center;padding:24px;color:#888;">Cargando...</div></div>`);
+  if(!PROV) return;
+  const now=new Date(),hoy=now.toISOString().split('T')[0];
+  const semStart=new Date(now); semStart.setDate(now.getDate()-7);
+  const mesStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
+  const{data}=await sb.from('servicios').select('tarifa,ganancia_proveedor,completado_at,zona,categorias:categoria_id(nombre,emoji)').eq('proveedor_id',PROV.id).eq('estado','completado').order('completado_at',{ascending:false}).limit(20);
+  const todayS=(data||[]).filter(s=>s.completado_at?.startsWith(hoy));
+  const weekS=(data||[]).filter(s=>new Date(s.completado_at)>=semStart);
+  const monthS=(data||[]).filter(s=>s.completado_at>=mesStart);
+  const net=s=>Number(s.ganancia_proveedor)||Math.round(Number(s.tarifa||0)*.85);
+  const sum=arr=>arr.reduce((a,s)=>a+net(s),0);
+  const pending=(data||[]).filter(s=>!s.ganancia_proveedor).reduce((a,s)=>a+Math.round(Number(s.tarifa||0)*.85),0);
+  openSheet('min(62vh,500px)',`
+    <div style="padding:16px 18px;">
+      <div style="font-weight:800;font-size:17px;margin-bottom:14px;">💰 ${tt_().earn}</div>
+      <div style="background:#111;color:#FFF;border-radius:20px;padding:20px;margin-bottom:12px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:center;">
+          <div style="border-right:1px solid rgba(255,255,255,.1);padding-right:12px;">
+            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnToday}</div>
+            <div style="font-size:22px;font-weight:900;color:var(--c);">R$${sum(todayS)}</div>
+          </div>
+          <div style="border-right:1px solid rgba(255,255,255,.1);padding:0 12px;">
+            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnWeek}</div>
+            <div style="font-size:22px;font-weight:900;">R$${sum(weekS)}</div>
+          </div>
+          <div style="padding-left:12px;">
+            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnMonth}</div>
+            <div style="font-size:22px;font-weight:900;">R$${sum(monthS)}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px;">
+        <div class="sbox"><div class="slbl">${tt_().earnPend}</div><div class="sval">R$${pending}</div></div>
+        <div class="sbox"><div class="slbl">${tt_().earnComp}</div><div class="sval">${data?.length||0}</div></div>
+        <div class="sbox"><div class="slbl">${tt_().earnRating}</div><div class="sval">⭐ ${PROV.karma}</div></div>
+      </div>
+      <div style="font-weight:700;font-size:13px;margin-bottom:9px;">${tt_().earnHist}</div>
+      <div style="border-radius:16px;overflow:hidden;border:1px solid var(--b);">
+        ${!data?.length?'<div style="padding:16px;text-align:center;color:#888;font-size:13px;">Sin historial aún</div>':
+          data.slice(0,6).map((s,i,a)=>`
+          <div style="padding:11px 14px;${i<a.length-1?'border-bottom:1px solid var(--b);':''}display:flex;align-items:center;gap:10px;background:#FFF;">
+            <div style="width:36px;height:36px;border-radius:12px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${s.categorias?.emoji||'🔧'}</div>
+            <div style="flex:1;">
+              <div style="font-weight:600;font-size:13px;">${s.categorias?.nombre||'Servicio'} · ${s.zona||'—'}</div>
+              <div style="font-size:11px;color:#888;margin-top:1px;">${s.completado_at?new Date(s.completado_at).toLocaleDateString('pt-BR'):''}</div>
+            </div>
+            <div style="text-align:right;">
+              <div style="font-weight:700;font-size:14px;">R$${net(s)}</div>
+              <div style="font-size:10px;color:${s.ganancia_proveedor?'#16A34A':'#B45309'};font-weight:600;margin-top:1px;">${s.ganancia_proveedor?'Pagado':'Pendiente'}</div>
+            </div>
+          </div>`).join('')}
+      </div>
+    </div>`);
+}
+
+// ── PERFIL ──
+async function showPerfil(){
+  const tt_=tt();
+  if(!PROV) return;
+  const init=(PROV.nombre?.[0]||'P')+(PROV.apellido?.[0]||'');
+  const colors=['#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981'];
+  const bg=colors[PROV.id?.charCodeAt(0)%colors.length]||'#3B82F6';
+  // Cargar reseñas reales
+  const{data:reviews}=await sb.from('servicios').select('rating_cliente,clientes:cliente_id(nombre)').eq('proveedor_id',PROV.id).not('rating_cliente','is',null).order('completado_at',{ascending:false}).limit(5);
+  // Cargar categorías
+  const{data:cats}=await sb.from('categorias').select('nombre,emoji').in('id',PROV.categorias_ids||[]);
+  openSheet('min(75vh,600px)',`
+    <div style="padding:16px 18px;">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:64px;height:64px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:800;color:#FFF;font-size:22px;position:relative;">
+          ${init}
+          <div style="position:absolute;bottom:1px;right:1px;width:16px;height:16px;border-radius:50%;background:${isOnline?'var(--g)':'#CCC'};border:2.5px solid #FFF;"></div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:18px;">${PROV.nombre} ${PROV.apellido||''}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px;">${PROV.zona||'Florianópolis'}</div>
+          <span class="pill-g" style="margin-top:4px;display:inline-block;">${tt_().verified}</span>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div class="sbox"><div class="slbl">${tt_().perfServ}</div><div class="sval">${PROV.servicios_completados||0}</div></div>
+        <div class="sbox"><div class="slbl">${tt_().perfRat}</div><div class="sval">⭐ ${PROV.karma||5}</div></div>
+        <div class="sbox"><div class="slbl">${tt_().perfKarma}</div><div class="sval">${PROV.karma||5}</div></div>
+      </div>
+      <div style="background:rgba(34,197,94,.08);border-radius:14px;padding:12px;border:1px solid rgba(34,197,94,.2);margin-bottom:14px;">
+        <div style="font-weight:700;font-size:12px;color:#16A34A;margin-bottom:6px;">${tt_().perfDocs}</div>
+        ${['🪪 CPF / RG','📱 Teléfono verificado','📷 Foto de perfil'].map(d=>`<div style="font-size:12px;color:#555;padding:3px 0;">${d} — <span style="color:#16A34A;font-weight:600;">Válido</span></div>`).join('')}
+      </div>
+      ${cats?.length?`<div style="margin-bottom:14px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">${tt_().perfCats}</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${cats.map(c=>`<span class="pill-c">${c.emoji} ${c.nombre}</span>`).join('')}</div></div>`:''}
+      ${reviews?.length?`<div style="margin-bottom:14px;"><div style="font-weight:700;font-size:13px;margin-bottom:9px;">${tt_().perfReviews}</div>${reviews.map(r=>`<div style="background:#F8F8F8;border-radius:14px;padding:11px;margin-bottom:7px;"><div style="font-weight:600;font-size:12px;">${r.clientes?.nombre||'Cliente'} · ${'⭐'.repeat(r.rating_cliente)}</div></div>`).join('')}</div>`:''}
+      <div style="display:flex;gap:8px;">
+        <button class="btnr" style="flex:1;" onclick="doLogout()">${tt_().cerrar}</button>
+      </div>
+    </div>`);
+}
+
+// ── RADAR ──
+function showRadar(){
+  setActiveNav('radar'); screen='home';
+  const tt_=tt();
+  openSheet('min(46vh,360px)',`
+    <div style="padding:16px 18px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <div>
-          <div style="font-weight:800;font-size:18px;">📡 Radar activo</div>
-          <div style="font-size:13px;color:#888;">${isOnline?'Buscando pedidos cerca tuyo...':'Estás offline. Activá el toggle para recibir pedidos.'}</div>
+          <div style="font-weight:700;font-size:15px;">${isOnline?tt_().searching:tt_().noJobs}</div>
+          ${isOnline?`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div><span style="font-size:12px;color:var(--g);font-weight:600;">${tt_().sist}</span></div>`:`<div style="font-size:13px;color:#888;margin-top:4px;">${tt_().noJobsS}</div>`}
         </div>
-        <span class="${isOnline?'pill-g':'pill-a'}">${isOnline?'Online':'Offline'}</span>
+        ${!isOnline?`<button class="btng" style="padding:9px 16px;font-size:12px;border-radius:20px;width:auto;" onclick="toggleOnline()">${tt_().online} →</button>`:''}
       </div>
       ${isOnline?`
-      <div style="background:#F8F8F8;border-radius:14px;padding:14px;margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:700;color:#888;margin-bottom:8px;">Tu posición</div>
-        <div style="font-size:13px;color:#444;">📍 ${myLat.toFixed(4)}, ${myLng.toFixed(4)}</div>
-        <div style="font-size:12px;color:#888;margin-top:4px;">Radio de búsqueda: 15km</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
+        <div class="sbox"><div class="slbl">Hoy</div><div class="sval" style="color:var(--c);">R$${PROV?Math.round((PROV.servicios_completados||0)*42):0}</div></div>
+        <div class="sbox"><div class="slbl">Servicios</div><div class="sval">${PROV?.servicios_completados||0}</div></div>
+        <div class="sbox"><div class="slbl">Karma</div><div class="sval">⭐ ${PROV?.karma||5}</div></div>
       </div>
-      <div style="font-size:13px;color:#888;text-align:center;padding:8px;">Recibirás una notificación cuando haya un pedido disponible</div>
-      `:`
-      <button class="btng" onclick="toggleOnline()">Activar modo Online</button>
-      `}
+      <div style="font-size:13px;color:#888;text-align:center;padding:8px;">Recibirás una notificación cuando haya un trabajo disponible</div>
+      `:``}
     </div>`);
 }
 
-async function showWorklist() {
-  if (!SESSION||!PROVIDER) return;
-  const { data } = await sb.from('servicios')
-    .select('id,estado,zona,tarifa,created_at,categorias:categoria_id(nombre,emoji),clientes:cliente_id(nombre)')
-    .eq('proveedor_id', PROVIDER.id)
-    .order('created_at', { ascending: false }).limit(10);
-
-  openSheet('min(70vh,600px)',`
-    <div style="padding:16px 16px 0;">
-      <div style="font-weight:800;font-size:18px;margin-bottom:14px;">⚡ Mis trabajos</div>
-      ${!data?.length ? '<div style="text-align:center;padding:24px;color:#888;font-size:14px;">Sin trabajos registrados aún</div>' :
-        data.map(s=>`
-        <div style="background:#F8F8F8;border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
+// ── TRABAJOS ──
+async function showTrabajos(){
+  if(ACTIVE){showJobDetails(ACTIVE);return;}
+  const{data}=await sb.from('servicios').select('*,categorias:categoria_id(nombre,emoji)').eq('proveedor_id',PROV?.id).not('estado','eq','completado').not('estado','eq','cancelado');
+  openSheet('min(50vh,400px)',`
+    <div style="padding:16px 18px;">
+      <div style="font-weight:800;font-size:17px;margin-bottom:14px;">📋 ${tt().nlt.t}</div>
+      ${!data?.length?`<div style="text-align:center;padding:24px;"><div style="font-size:34px;margin-bottom:9px;">📋</div><div style="font-weight:700;font-size:15px;margin-bottom:4px;">${tt().noJobs}</div><div style="font-size:13px;color:#888;">${tt().noJobsS}</div></div>`:
+        data.map(s=>`<div style="background:#F8F8F8;border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
           <div style="font-size:22px;">${s.categorias?.emoji||'🔧'}</div>
-          <div style="flex:1;">
-            <div style="font-weight:700;font-size:13px;">${s.categorias?.nombre||'Servicio'} · ${s.zona||''}</div>
-            <div style="font-size:11px;color:#888;margin-top:2px;">${s.clientes?.nombre||'—'} · ${new Date(s.created_at).toLocaleDateString('pt-BR')}</div>
-          </div>
-          <div>
-            <span class="${s.estado==='completado'?'pill-g':s.estado==='cancelado'?'pill-a':'pill-c'}">${s.estado}</span>
-            ${s.tarifa?`<div style="font-size:12px;font-weight:700;color:#22C55E;text-align:right;margin-top:3px;">R$${(s.tarifa*.85).toFixed(0)}</div>`:''}
-          </div>
-        </div>`).join('')
-      }
-    </div>`);
-}
-
-async function showGanancias() {
-  if (!SESSION||!PROVIDER) return;
-  const { data } = await sb.from('servicios')
-    .select('tarifa,ganancia_proveedor,completado_at')
-    .eq('proveedor_id', PROVIDER.id)
-    .eq('estado', 'completado');
-
-  const total = data?.reduce((a,s)=>a+(Number(s.ganancia_proveedor)||Number(s.tarifa)*0.85||0),0)||0;
-  const count = data?.length||0;
-
-  openSheet('min(52vh,420px)',`
-    <div style="padding:20px;">
-      <div style="font-weight:800;font-size:18px;margin-bottom:16px;">💰 Mis ganancias</div>
-      <div style="background:#111;color:#FFF;border-radius:20px;padding:20px;text-align:center;margin-bottom:14px;">
-        <div style="font-size:11px;opacity:.5;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px;">Total acumulado</div>
-        <div style="font-size:42px;font-weight:900;color:#22C55E;">R$${total.toFixed(2)}</div>
-        <div style="font-size:12px;opacity:.45;margin-top:6px;">${count} servicios completados</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-        <div class="sbox"><div class="slbl">Karma</div><div class="sval">⭐ ${PROVIDER?.karma||'5.0'}</div></div>
-        <div class="sbox"><div class="slbl">Servicios</div><div class="sval">${PROVIDER?.servicios_completados||count}</div></div>
-        <div class="sbox"><div class="slbl">Ticket avg</div><div class="sval">R$${count?Math.round(total/count):0}</div></div>
-      </div>
-    </div>`);
-}
-
-function showPerfil() {
-  if (!PROVIDER) return;
-  openSheet('min(60vh,500px)',`
-    <div style="padding:20px;">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 12px;">👤</div>
-        <div style="font-weight:800;font-size:20px;">${PROVIDER.nombre} ${PROVIDER.apellido||''}</div>
-        <div style="font-size:13px;color:#888;margin-top:4px;">${PROVIDER.email}</div>
-        <div style="margin-top:8px;"><span class="pill-g">⭐ ${PROVIDER.karma} karma</span></div>
-      </div>
-      <div style="background:#F8F8F8;border-radius:14px;padding:14px;margin-bottom:12px;">
-        ${[
-          ['📱','Teléfono',PROVIDER.telefono||'No configurado'],
-          ['📍','Zona',PROVIDER.zona||'No configurada'],
-          ['🌎','País',PROVIDER.pais||'BR'],
-        ].map(([ic,lb,val])=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEE;">
-          <span style="font-size:18px;">${ic}</span>
-          <div style="flex:1;"><div style="font-size:11px;color:#888;">${lb}</div><div style="font-size:13px;font-weight:600;">${val}</div></div>
+          <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${s.categorias?.nombre||'Servicio'}</div><div style="font-size:11px;color:#888;margin-top:2px;">${s.estado}</div></div>
+          <span class="pill-c">${s.estado}</span>
         </div>`).join('')}
-      </div>
-      <button class="btnr" onclick="doLogout()">Cerrar sesión</button>
     </div>`);
 }
 
-function renderActiveJobSheet() {
-  if (!ACTIVE_JOB) return;
-  showNavigating();
-}
-
-// ── CHAT HUGO ────────────────────────────────────────────
-function openChat() {
-  setActiveNav('radar');
+// ── HUGO CHAT ──
+function openChat(){
+  const tt_=tt();
   openSheet('min(82vh,700px)',`
     <div style="display:flex;flex-direction:column;height:100%;">
-      <div style="padding:10px 14px;border-bottom:1px solid #EEE;display:flex;align-items:center;gap:9px;flex-shrink:0;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px;flex-shrink:0;">
         <div class="uorb" style="width:28px;height:28px;font-size:14px;">🌀</div>
-        <div><div style="font-weight:700;font-size:14px;">Hugo</div><div style="font-size:11px;color:#22C55E;">● Online</div></div>
-        <button onclick="closeSheet();" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#999;">✕</button>
+        <div><div style="font-weight:700;font-size:14px;">Hugo</div><div style="font-size:11px;color:var(--g);">${tt_().ol}</div></div>
+        <button onclick="closeSheet();" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">✕</button>
       </div>
       <div id="cm" style="flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:8px;"></div>
-      <div id="ci" style="padding:10px;border-top:1px solid #EEE;display:flex;gap:8px;flex-shrink:0;">
-        <input id="chat-in" placeholder="Preguntá algo..." style="flex:1;padding:10px 14px;border:1.5px solid #EEE;border-radius:24px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')sendChat()"/>
-        <button onclick="sendChat()" style="width:40px;height:40px;border-radius:50%;background:#111;color:#FFF;border:none;font-size:18px;cursor:pointer;">↑</button>
+      <div style="padding:10px 13px 12px;border-top:1px solid var(--b);flex-shrink:0;">
+        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;" id="ci">
+          ${tt_().hSugs.map(s=>`<button style="padding:6px 12px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onclick="sendSug(this,'${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('')}
+        </div>
+        <div style="display:flex;gap:8px;">
+          <input id="chat-in" placeholder="${tt_().hugoQ}" style="flex:1;padding:10px 14px;border:1.5px solid var(--b);border-radius:24px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')sendChat()"/>
+          <button onclick="sendChat()" style="width:40px;height:40px;border-radius:50%;background:#111;color:#FFF;border:none;font-size:18px;cursor:pointer;">↑</button>
+        </div>
       </div>
     </div>`);
-
-  const ctx = PROVIDER ? `Proveedor: ${PROVIDER.nombre} ${PROVIDER.apellido||''}, Karma: ${PROVIDER.karma}, Servicios: ${PROVIDER.servicios_completados}, Online: ${isOnline}` : '';
-  setTimeout(()=>addMsg('ugo',`Hola ${PROVIDER?.nombre||''}. Soy Hugo, tu socio estratégico en U.GO. ¿En qué te puedo ayudar?`),400);
+  const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Servicios:${PROV.servicios_completados||0},Online:${isOnline},JOB_ACTIVO:${!!ACTIVE}`:'';
+  setTimeout(()=>{addMsg('ugo',`${tt_().hello} ${PROV?.nombre||''}. ${tt_().hugoH2}`);setTimeout(()=>addMsg('ugo',tt_().hugoQ),700);},400);
 }
 
-async function sendChat() {
-  const input = document.getElementById('chat-in');
-  const msg = input?.value.trim();
-  if (!msg) return;
-  input.value='';
-  addMsg('user',msg);
-  showTyping();
-  try {
-    const ctx = `Proveedor: ${PROVIDER?.nombre||''}, Karma: ${PROVIDER?.karma||5}, Online: ${isOnline}`;
-    const r = await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat', {
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ role:'proveedor', message:msg, context:ctx, history:[] })
-    });
-    const d = await r.json();
+async function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp?.value.trim();if(!msg)return;inp.value='';
+  addMsg('user',msg);showTyping();
+  document.getElementById('ci').innerHTML='';
+  try{
+    const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Online:${isOnline},JOB_ACTIVO:${!!ACTIVE}`:'';
+    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[]})});
+    const d=await r.json();
     document.getElementById('typ')?.remove();
-    addMsg('ugo', d.hugo_mensaje||'...');
-  } catch(e) {
-    document.getElementById('typ')?.remove();
-    addMsg('ugo','Sin conexión con Hugo en este momento.');
-  }
+    addMsg('ugo',d.hugo_mensaje||'...');
+  }catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
+  const ci=document.getElementById('ci');
+  if(ci) ci.innerHTML=tt().hSugs.map(s=>`<button style="padding:6px 12px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onclick="sendSug(this,'${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('');
 }
 
-function addMsg(from,text){
-  const cm=document.getElementById('cm');if(!cm)return;
-  const d=document.createElement('div');
-  d.className='cmsg'+(from==='user'?' cmsg-r':'');
-  if(from==='ugo') d.innerHTML=`<div class="uorb">🌀</div><div class="b-u">${text}</div>`;
-  else d.innerHTML=`<div class="b-me">${text}</div>`;
-  cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);
-}
-function showTyping(){
-  const cm=document.getElementById('cm');if(!cm)return;
-  const d=document.createElement('div');d.className='cmsg';d.id='typ';
-  d.innerHTML=`<div class="uorb">🌀</div><div class="b-u"><div style="display:flex;gap:4px;"><span class="dot" style="animation-delay:0s"></span><span class="dot" style="animation-delay:.15s"></span><span class="dot" style="animation-delay:.3s"></span></div></div>`;
-  cm.appendChild(d);cm.scrollTop=cm.scrollHeight;
+async function sendSug(el,sug){addMsg('user',sug);el.closest('#ci').innerHTML='';showTyping();
+  try{const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:sug,context:`Proveedor:${PROV?.nombre},Online:${isOnline}`,history:[]})});
+    const d=await r.json();document.getElementById('typ')?.remove();addMsg('ugo',d.hugo_mensaje||'...');}
+  catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
 }
 
-// ── SHEET HELPERS ────────────────────────────────────────
-function openSheet(h, html) {
-  const s=document.getElementById('sheet');
-  const sb_el=document.getElementById('sb');
-  s.style.height=h; s.style.bottom='78px';
-  sb_el.innerHTML=`<div class="handle"></div>${html}`;
+function addMsg(from,text){const cm=document.getElementById('cm');if(!cm)return;const d=document.createElement('div');d.className='cmsg'+(from==='user'?' cmsg-r':'');if(from==='ugo')d.innerHTML=`<div class="uorb">🌀</div><div class="b-u">${text}</div>`;else d.innerHTML=`<div class="b-me">${text}</div>`;cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);}
+function showTyping(){const cm=document.getElementById('cm');if(!cm)return;const d=document.createElement('div');d.className='cmsg';d.id='typ';d.innerHTML=`<div class="uorb">🌀</div><div class="b-u"><div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="animation-delay:0s"></span><span class="dot" style="animation-delay:.15s"></span><span class="dot" style="animation-delay:.3s"></span></div></div>`;cm.appendChild(d);cm.scrollTop=cm.scrollHeight;}
+
+// ── ADMIN REALTIME ──
+function subscribeNotifs(){
+  if(!PROV) return;
+  rtNotif=sb.channel('notifs-'+PROV.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones',filter:`usuario_id=eq.${PROV.id}`},p=>showAdminNotif(p.new))
+    .subscribe();
 }
-function closeSheet() {
-  document.getElementById('sheet').style.height='0';
+function subscribeStatus(){
+  if(!PROV) return;
+  rtStatus=sb.channel('status-'+PROV.id)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${PROV.id}`},p=>{ if(!p.new.activo) document.getElementById('susp-screen').classList.add('show'); })
+    .subscribe();
+}
+function showAdminNotif(n){
+  const card=document.getElementById('adm-card'),ov=document.getElementById('adm-overlay');
+  card.innerHTML=`
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌀</div>
+      <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Mensaje de U.GO</div><div style="font-weight:800;font-size:15px;margin-top:1px;">${n.titulo}</div></div>
+    </div>
+    <div style="font-size:13px;color:#444;line-height:1.5;margin-bottom:14px;">${n.cuerpo}</div>
+    <button style="width:100%;padding:11px;background:#111;color:#FFF;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;" onclick="document.getElementById('adm-overlay').classList.remove('show')">Entendido ✓</button>`;
+  ov.classList.add('show');
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
 }
 
-function setActiveNav(id) {
-  ['radar','trab','gan','perf'].forEach(n=>document.getElementById('ni-'+n)?.classList.remove('on'));
-  const m={radar:'radar',trabajos:'trab',ganancias:'gan',perfil:'perf'};
-  document.getElementById('ni-'+(m[id]||id))?.classList.add('on');
-}
-
-// ── UTILS ─────────────────────────────────────────────────
-async function callFn(name, body) {
-  if (!SESSION) return null;
-  try {
-    const r = await fetch(`${FN}/${name}`, {
-      method:'POST',
-      headers:{ 'Authorization':`Bearer ${SESSION.access_token}`, 'Content-Type':'application/json' },
-      body: JSON.stringify(body)
-    });
-    return await r.json();
-  } catch(e) { console.error(name, e); return null; }
-}
-
-function haversine(lat1,lng1,lat2,lng2) {
-  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
-  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function showToast(msg) {
-  const t=document.createElement('div');
-  t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111;color:#FFF;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;';
-  t.textContent=msg;document.body.appendChild(t);
-  setTimeout(()=>t.remove(),2500);
-}
-
-async function doLogout() {
+// ── LOGOUT ──
+async function doLogout(){
+  if(watchId) navigator.geolocation.clearWatch(watchId);
+  if(rtJobs){sb.removeChannel(rtJobs);rtJobs=null;}
+  if(rtNotif){sb.removeChannel(rtNotif);rtNotif=null;}
+  if(rtStatus){sb.removeChannel(rtStatus);rtStatus=null;}
+  if(isOnline&&SESSION) await callFn('provider-status',{online:false,lat:myLat,lng:myLng});
   await sb.auth.signOut();
-  if (watchId) navigator.geolocation.clearWatch(watchId);
-  PROVIDER=null;SESSION=null;ACTIVE_JOB=null;isOnline=false;
-  closeSheet();
+  PROV=null;SESSION=null;ACTIVE=null;isOnline=false;
 }
 
-// ── INIT ─────────────────────────────────────────────────
-window.addEventListener('load', () => {
-  // La sesión se detecta en onAuthStateChange
-});
+// ── NAV ──
+const NAV_MAP={radar:'radar',trabajos:'trab',ganancias:'gan',perfil:'perf'};
+function navTo(id){
+  setActiveNav(id);
+  if(id==='radar') showRadar();
+  else if(id==='trabajos') showTrabajos();
+  else if(id==='ganancias') showGanancias();
+  else if(id==='perfil') showPerfil();
+}
+function setActiveNav(id){ document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on')); document.getElementById('ni-'+(NAV_MAP[id]||id))?.classList.add('on'); }
+function updateNavLabels(){const tt_=tt();document.getElementById('nl-r').textContent=tt_().nlt.r;document.getElementById('nl-t').textContent=tt_().nlt.t;document.getElementById('nl-g').textContent=tt_().nlt.g;document.getElementById('nl-p').textContent=tt_().nlt.p;document.getElementById('lb').textContent=tt_().lb;}
+
+// ── LANGUAGE ──
+function tgl(){lang=lang==='es'?'pt':'es';updateOnlineUI();updateNavLabels();if(screen==='home')showRadar();}
+
+// ── SHEET ──
+function openSheet(h,html){const s=document.getElementById('sheet');s.style.height=h;document.getElementById('sb').innerHTML=`<div class="handle"></div>${html}`;}
+function closeSheet(){document.getElementById('sheet').style.height='0';}
+
+// ── UTILS ──
+async function callFn(name,body){
+  if(!SESSION) return null;
+  try{const r=await fetch(`${FN}/${name}`,{method:'POST',headers:{Authorization:`Bearer ${SESSION.access_token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}
+  catch(e){console.error(name,e);return null;}
+}
+function haversine(lat1,lng1,lat2,lng2){const R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function showToast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111;color:#FFF;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;animation:fi .2s ease;';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
 </script>
 </body>
 </html>
