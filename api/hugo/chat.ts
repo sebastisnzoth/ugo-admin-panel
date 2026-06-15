@@ -1,5 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Supabase anon key es pública por diseño — safe hardcodear
+const sb = createClient(
+  'https://byajcqrgetloavrgyqak.supabase.co',
+  'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ'
+);
+
 const MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 
 export default async function handler(req: any, res: any) {
@@ -11,11 +17,7 @@ export default async function handler(req: any, res: any) {
   try {
     const { message, role = 'admin', history = [], context = '' } = req.body;
 
-    const sb = createClient(
-      process.env.VITE_SUPABASE_URL!,
-      process.env.VITE_SUPABASE_ANON_KEY!
-    );
-
+    // Leer key y prompt desde DB
     const { data: rows } = await sb
       .from('config_sistema')
       .select('clave, valor')
@@ -25,10 +27,12 @@ export default async function handler(req: any, res: any) {
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
 
     const geminiKey = cfg['api_gemini_key']?.trim();
-    if (!geminiKey) throw new Error('Sin Gemini API Key. Ve a ⚙ Config → API Keys y pegá tu key de aistudio.google.com/apikey');
+    if (!geminiKey) {
+      return res.status(500).json({ hugo_mensaje: 'Sin Gemini API Key. Ve a ⚙ Config → API Keys en el panel.' });
+    }
 
-    const systemPrompt = (cfg[`hugo_prompt_${role}`] ||
-      'Eres Hugo, núcleo de inteligencia de U.GO. Respondé en español, conciso. Máximo 4 frases.') +
+    const systemPrompt =
+      (cfg[`hugo_prompt_${role}`] || 'Eres Hugo, núcleo de inteligencia de U.GO. Respondé en español, conciso. Máximo 4 frases.') +
       (context ? `\n\nESTADO DEL SISTEMA:\n${context}` : '');
 
     const geminiHistory = history.slice(-6).map((m: any) => ({
@@ -48,9 +52,15 @@ export default async function handler(req: any, res: any) {
         { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-goog-api-key': geminiKey }, body }
       );
       const data = await r.json();
-      if (data.error) { console.error(`${model}:`, data.error.message); continue; }
 
-      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text ?? 'Sin respuesta.';
+      if (data.error) {
+        console.error(`[${model}] ${data.error.message}`);
+        continue;
+      }
+
+      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      if (!texto) continue;
+
       const match = texto.match(/\[ACCION:\s*([^\]]+)\]/i);
       return res.json({
         hugo_mensaje: texto.replace(/\[ACCION:[^\]]+\]/gi, '').trim(),
@@ -59,9 +69,10 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    throw new Error('Gemini no respondió. Verificá que el API Key sea válido en ⚙ Config → API Keys');
+    return res.status(500).json({ hugo_mensaje: 'Gemini no respondió. Verificá el API Key en ⚙ Config.' });
 
   } catch (err: any) {
-    return res.status(500).json({ hugo_mensaje: `Error: ${err.message}`, accion: null });
+    console.error('[hugo/chat]', err.message);
+    return res.status(500).json({ hugo_mensaje: `Error: ${err.message}` });
   }
 }
