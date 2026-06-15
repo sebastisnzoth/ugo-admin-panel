@@ -286,11 +286,20 @@ async function doRegister(){
   const catId=document.getElementById('rcat').value;
   if(!nombre||!email||!pass||!catId) return showErr('Completá todos los campos');
   if(pass.length<6) return showErr('La contraseña debe tener al menos 6 caracteres');
-  const{data,error}=await sb.auth.signUp({email,password:pass});
-  if(error) return showErr(error.message);
-  // Crear perfil
-  await sb.from('usuarios').insert({auth_id:data.user.id,email,nombre,apellido,telefono:tel,tipo:'proveedor',categorias_ids:[catId],pais:'BR',zona:'Florianópolis',karma:5});
-  showOk('¡Cuenta creada! Revisá tu email para confirmar.');
+
+  // Usar Edge Function que confirma email automáticamente (sin verificación)
+  const r=await fetch(`${SB_URL}/functions/v1/register-provider`,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SB_KEY},
+    body:JSON.stringify({nombre,apellido,email,password:pass,telefono:tel,categoria_id:catId})
+  });
+  const d=await r.json();
+  if(!d.ok) return showErr(d.error);
+
+  // Login automático después del registro
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error) return showErr('Cuenta creada. Ingresá con tu email y contraseña.');
+  showOk('¡Bienvenido! Ingresando...');
 }
 
 async function loadCats(){
