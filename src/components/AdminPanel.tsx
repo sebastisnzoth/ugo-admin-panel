@@ -625,86 +625,9 @@ export function AdminPanel() {
     <div className="pad">
       <div className="st">Configuración del sistema</div>
 
-      {/* ── API KEYS ─────────────────────────────── */}
-      <div style={{background:'var(--card)',border:'2px solid var(--cyan)',borderRadius:'12px',padding:'16px',marginBottom:'14px'}}>
-        <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:12}}>
-          <span style={{fontSize:18}}>🔑</span>
-          <span style={{fontFamily:'var(--head)',fontSize:13,fontWeight:700}}>API Keys</span>
-          <span style={{fontSize:10,color:'var(--muted)',marginLeft:'auto'}}>se guardan en la base de datos de forma segura</span>
-        </div>
-
-        {/* Gemini Key */}
-        <div style={{marginBottom:10}}>
-          <div style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.8px',color:'var(--muted)',marginBottom:5,display:'flex',alignItems:'center',gap:6}}>
-            <span style={{width:8,height:8,borderRadius:'50%',background:config['api_gemini_key']?'var(--green)':'var(--red)',display:'inline-block'}}/>
-            Gemini API Key <span style={{color:'var(--muted)',fontWeight:400}}>(Google AI Studio · aistudio.google.com/apikey)</span>
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <input
-              key={'gemini-'+config['api_gemini_key']}
-              className="finput"
-              type="password"
-              defaultValue={config['api_gemini_key']||''}
-              placeholder="AIzaSy... (pegar tu Gemini API Key acá)"
-              style={{flex:1,fontFamily:'monospace',fontSize:11}}
-              onBlur={async e=>{
-                if(e.target.value.trim()) await updateConfig('api_gemini_key', e.target.value.trim());
-              }}
-            />
-            <button className="btn btn-p" onClick={async()=>{
-              const el = document.querySelector('[placeholder*="Gemini"]') as HTMLInputElement;
-              if(el?.value.trim()) {
-                const sb = (await import('../lib/supabase')).supabase as any;
-                const { error } = await sb.rpc('set_api_key', { p_clave:'api_gemini_key', p_valor:el.value.trim() });
-                if(!error) { el.style.borderColor='#05944F'; await new Promise(r=>setTimeout(r,1000)); window.location.reload(); }
-                else alert('Error: '+error.message);
-              }
-            }}>Guardar</button>
-          </div>
-          {!config['api_gemini_key'] && (
-            <div style={{marginTop:5,fontSize:10,color:'var(--amber)'}}>
-              ⚠ Sin key → Hugo no puede responder. Conseguí una gratis en{' '}
-              <a href="https://aistudio.google.com/apikey" target="_blank" style={{color:'var(--cyan)'}}>aistudio.google.com/apikey</a>
-            </div>
-          )}
-          {config['api_gemini_key'] && (
-            <div style={{marginTop:5,fontSize:10,color:'var(--green)'}}>✓ API Key configurada — Hugo está operativo</div>
-          )}
-        </div>
-
-        {/* Anthropic Key */}
-        <div>
-          <div style={{fontSize:9,textTransform:'uppercase',letterSpacing:'.8px',color:'var(--muted)',marginBottom:5,display:'flex',alignItems:'center',gap:6}}>
-            <span style={{width:8,height:8,borderRadius:'50%',background:config['api_anthropic_key']?'var(--green)':'rgba(0,0,0,.15)',display:'inline-block'}}/>
-            Anthropic API Key <span style={{color:'var(--muted)',fontWeight:400}}>(Claude · console.anthropic.com)</span>
-          </div>
-          <div style={{display:'flex',gap:8}}>
-            <input
-              key={'anthropic-'+config['api_anthropic_key']}
-              className="finput"
-              type="password"
-              defaultValue={config['api_anthropic_key']||''}
-              placeholder="sk-ant-... (opcional, alternativa a Gemini)"
-              style={{flex:1,fontFamily:'monospace',fontSize:11}}
-              onBlur={async e=>{
-                if(e.target.value.trim()) await updateConfig('api_anthropic_key', e.target.value.trim());
-              }}
-            />
-            <button className="btn btn-s" onClick={async()=>{
-              const el = document.querySelector('[placeholder*="sk-ant"]') as HTMLInputElement;
-              if(el?.value.trim()) {
-                const sb = (await import('../lib/supabase')).supabase as any;
-                await sb.rpc('set_api_key', { p_clave:'api_anthropic_key', p_valor:el.value.trim() });
-              }
-            }}>Guardar</button>
-          </div>
-        </div>
-      </div>
-
       {/* ── PARÁMETROS DEL SISTEMA ────────────────── */}
-      <div style={{fontSize:10,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:8}}>Parámetros operativos</div>
       <div className="tw">
-        {Object.entries(config).filter(([k])=>!k.startsWith('api_')).map(([k,v])=>(
+        {Object.entries(config).filter(([k])=>!k.startsWith('api_') && !k.startsWith('hugo_prompt') && !k.startsWith('integration_') && !k.startsWith('template_') && !k.startsWith('referido_') && !k.startsWith('fraude_')).map(([k,v])=>(
           <div key={k} className="config-row">
             <div className="config-key">{k.replace(/_/g,' ')}</div>
             <div className="config-val">
