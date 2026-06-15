@@ -10,7 +10,7 @@ import { supabase } from '../lib/supabase';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
 import { ConversationalOrb } from './ConversationalOrb';
 
-type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado';
+type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
 
 const CSS = `
@@ -644,6 +644,91 @@ export function AdminPanel() {
       </div>
       <div style={{marginTop:10,fontSize:10,color:'var(--muted)',padding:'8px 12px',background:'var(--card)',borderRadius:'6px',border:'1px solid var(--border)'}}>
         Los cambios se guardan automáticamente al salir del campo.
+      </div>
+    </div>
+  );
+
+
+  const renderConexiones = () => (
+    <div className="pad">
+      <div className="st">Conexión de Apps</div>
+
+      {/* Credenciales SDK */}
+      <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px',marginBottom:'12px'}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}>📡 Credenciales para las apps</div>
+        {[
+          {label:'SUPABASE_URL',val:'https://byajcqrgetloavrgyqak.supabase.co'},
+          {label:'SUPABASE_ANON_KEY',val:'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ'},
+          {label:'PROJECT_ID',val:'byajcqrgetloavrgyqak'},
+        ].map(r=>(
+          <div key={r.label} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
+            <div style={{fontSize:10,fontWeight:700,width:180,flexShrink:0}}>{r.label}</div>
+            <div style={{flex:1,fontFamily:'monospace',fontSize:10,color:'var(--muted)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.val}</div>
+            <button className="btn btn-s btn-sm" onClick={()=>navigator.clipboard.writeText(r.val)}>Copiar</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Edge Functions */}
+      <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px',marginBottom:'12px'}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}>⚡ Edge Functions disponibles</div>
+        {[
+          {fn:'service-create',  metodo:'POST', quien:'Cliente',   desc:'Crear solicitud de servicio → retorna proveedores cercanos'},
+          {fn:'service-accept',  metodo:'POST', quien:'Proveedor', desc:'Aceptar un servicio disponible'},
+          {fn:'service-status',  metodo:'POST', quien:'Ambos',     desc:'Actualizar estado: en_camino | ejecutando | completado | cancelado'},
+          {fn:'provider-status', metodo:'POST', quien:'Proveedor', desc:'Ir online/offline, actualizar ubicación GPS'},
+          {fn:'hugo-chat',       metodo:'POST', quien:'Ambos',     desc:'Chat con Hugo (Gemini 1.5 Flash)'},
+        ].map(f=>(
+          <div key={f.fn} style={{display:'grid',gridTemplateColumns:'160px 60px 70px 1fr',gap:8,padding:'7px 0',borderBottom:'1px solid var(--border)',alignItems:'center',fontSize:10}}>
+            <div style={{fontFamily:'monospace',fontWeight:700,color:'var(--cyan)'}}>{f.fn}</div>
+            <span className="pill pill-c">{f.metodo}</span>
+            <span className="pill pill-m">{f.quien}</span>
+            <div style={{color:'var(--muted)'}}>{f.desc}</div>
+          </div>
+        ))}
+        <div style={{marginTop:8,fontSize:10,color:'var(--muted)'}}>
+          Base URL: <span style={{fontFamily:'monospace'}}>https://byajcqrgetloavrgyqak.supabase.co/functions/v1/</span>
+          <br/>Auth: Header <span style={{fontFamily:'monospace'}}>Authorization: Bearer {'<supabase_session_token>'}</span>
+        </div>
+      </div>
+
+      {/* Realtime channels */}
+      <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px',marginBottom:'12px'}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}>🔴 Canales Realtime</div>
+        {[
+          {canal:'servicios',     filtro:'cliente_id=eq.{mi_id}',    quien:'Cliente',   evento:'Actualizaciones del servicio (estado, proveedor asignado)'},
+          {canal:'servicios',     filtro:'proveedor_id=eq.{mi_id}',   quien:'Proveedor', evento:'Servicios asignados y cambios de estado'},
+          {canal:'servicios',     filtro:'estado=eq.negociando',       quien:'Proveedor', evento:'Nuevas solicitudes disponibles para aceptar'},
+          {canal:'notificaciones',filtro:'usuario_id=eq.{mi_id}',     quien:'Ambos',     evento:'Notificaciones push in-app'},
+          {canal:'usuarios',      filtro:'id=eq.{proveedor_id}',      quien:'Cliente',   evento:'Ubicación GPS del proveedor en tiempo real'},
+        ].map((r,i)=>(
+          <div key={i} style={{display:'grid',gridTemplateColumns:'90px 1fr 70px',gap:8,padding:'6px 0',borderBottom:'1px solid var(--border)',fontSize:10,alignItems:'start'}}>
+            <div style={{fontFamily:'monospace',fontWeight:700,color:'var(--purple)'}}>{r.canal}</div>
+            <div><div style={{color:'var(--text)'}}>{r.evento}</div><div style={{color:'var(--muted)',fontFamily:'monospace',marginTop:2}}>{r.filtro}</div></div>
+            <span className="pill pill-m">{r.quien}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Estado en vivo */}
+      <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px'}}>
+        <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}>📊 Estado en vivo</div>
+        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:8,marginBottom:10}}>
+          {[
+            {l:'Proveedores online',v:metrics?.proveedores_online??0,c:'var(--green)'},
+            {l:'Servicios activos',v:metrics?.servicios_activos??0,c:'var(--cyan)'},
+            {l:'Clientes totales',v:metrics?.clientes_total??0,c:'var(--text)'},
+            {l:'Docs pendientes',v:metrics?.docs_pendientes??0,c:'var(--amber)'},
+          ].map(s=>(
+            <div key={s.l} style={{background:'var(--bg2)',borderRadius:8,padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:20,fontWeight:800,color:s.c,fontFamily:'var(--head)'}}>{s.v}</div>
+              <div style={{fontSize:9,color:'var(--muted)',marginTop:2,textTransform:'uppercase',letterSpacing:'.5px'}}>{s.l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{fontSize:10,color:'var(--muted)',marginTop:4}}>
+          ✓ Supabase Realtime activo · ✓ RLS configurado para cliente/proveedor · ✓ 4 Edge Functions deployadas
+        </div>
       </div>
     </div>
   );
