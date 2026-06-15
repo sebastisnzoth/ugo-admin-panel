@@ -6,7 +6,7 @@ const sb = createClient(
   'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ'
 );
 
-const MODELS = ['gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
+const MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
