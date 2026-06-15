@@ -6,8 +6,9 @@ import {
   useConfigSistema, useNotificaciones, useServiciosCRUD, useExport,
   useVault, usePendingWithdrawals,
 } from '../hooks/useAdminData';
+import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
 
-type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config';
+type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
 
 const CSS = `
@@ -843,3 +844,4 @@ export function AdminPanel() {
 }
 
 export default AdminPanel;
+
