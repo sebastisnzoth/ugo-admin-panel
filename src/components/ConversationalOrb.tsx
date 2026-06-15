@@ -1,5 +1,4 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 
 type OrbState = 'idle' | 'listening' | 'thinking' | 'speaking';
 type Msg = { role: 'hugo' | 'user'; text: string };
@@ -144,15 +143,15 @@ export function ConversationalOrb({ metrics }: { metrics?: any }) {
       : '';
 
     try {
-      const { data, error } = await (supabase as any).functions.invoke('hugo-chat', {
-        body: {
-          role: 'admin',
-          message: text,
-          context: ctx,
+      const res = await fetch('/api/hugo/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'admin', message: text, context: ctx,
           history: msgs.slice(-6).map((m: any) => ({ role: m.role==='user'?'user':'assistant', content: m.text })),
-        },
+        }),
       });
-      if (error) throw error;
+      const data = await res.json();
       const reply = (data?.hugo_mensaje || 'Error al procesar.').trim();
       setMsgs(p => [...p, { role:'hugo', text: reply }]);
       speak(reply);
