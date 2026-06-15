@@ -653,7 +653,12 @@ export function AdminPanel() {
             />
             <button className="btn btn-p" onClick={async()=>{
               const el = document.querySelector('[placeholder*="Gemini"]') as HTMLInputElement;
-              if(el?.value.trim()) await updateConfig('api_gemini_key', el.value.trim());
+              if(el?.value.trim()) {
+                const sb = (await import('../lib/supabase')).supabase as any;
+                const { error } = await sb.rpc('set_api_key', { p_clave:'api_gemini_key', p_valor:el.value.trim() });
+                if(!error) { el.style.borderColor='#05944F'; await new Promise(r=>setTimeout(r,1000)); window.location.reload(); }
+                else alert('Error: '+error.message);
+              }
             }}>Guardar</button>
           </div>
           {!config['api_gemini_key'] && (
@@ -687,7 +692,10 @@ export function AdminPanel() {
             />
             <button className="btn btn-s" onClick={async()=>{
               const el = document.querySelector('[placeholder*="sk-ant"]') as HTMLInputElement;
-              if(el?.value.trim()) await updateConfig('api_anthropic_key', el.value.trim());
+              if(el?.value.trim()) {
+                const sb = (await import('../lib/supabase')).supabase as any;
+                await sb.rpc('set_api_key', { p_clave:'api_anthropic_key', p_valor:el.value.trim() });
+              }
             }}>Guardar</button>
           </div>
         </div>
