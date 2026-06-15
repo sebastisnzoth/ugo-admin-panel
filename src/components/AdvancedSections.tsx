@@ -15,19 +15,19 @@ const PERMISOS_OPTS = ['dashboard','servicios','disputas','usuarios','documentos
 const S = {
   wrap: {padding:'12px',overflowY:'auto' as const,height:'100%'},
   title: {fontFamily:'Inter,sans-serif',fontSize:'16px',fontWeight:800,color:'#fff',marginBottom:'14px',display:'flex',alignItems:'center',gap:'8px',letterSpacing:'-.3px'},
-  card: {background:'#1F1F1F',border:'1px solid rgba(255,255,255,.08)',borderRadius:'12px',padding:'14px',marginBottom:'10px'},
+  card: {background:'#FFFFFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',padding:'14px',marginBottom:'10px'},
   row: {display:'flex',alignItems:'center',gap:'8px',padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.06)'},
-  label: {fontSize:'9px',color:'rgba(244,244,244,.45)',textTransform:'uppercase' as const,letterSpacing:'.8px',marginBottom:'4px'},
-  val: {fontSize:'11px',color:'#F4F4F4'},
-  input: {background:'#111',border:'1px solid rgba(255,255,255,.12)',borderRadius:'6px',padding:'6px 9px',color:'#F4F4F4',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%'},
-  select: {background:'#111',border:'1px solid rgba(255,255,255,.12)',borderRadius:'6px',padding:'6px 9px',color:'#F4F4F4',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%',cursor:'pointer'},
-  btn: (variant='p') => ({padding:'5px 14px',borderRadius:'50px',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'10px',fontWeight:700,background:variant==='p'?'#06C167':variant==='d'?'rgba(225,25,0,.15)':'rgba(255,255,255,.08)',color:variant==='p'?'#000':variant==='d'?'#E11900':'#F4F4F4',border:variant==='d'?'1px solid rgba(225,25,0,.3)':variant==='s'?'1px solid rgba(255,255,255,.12)':'none'} as React.CSSProperties),
-  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'50px',fontSize:'8px',fontWeight:700,textTransform:'uppercase' as const,background:c==='g'?'rgba(6,193,103,.12)':c==='r'?'rgba(225,25,0,.12)':'rgba(255,193,67,.12)',color:c==='g'?'#06C167':c==='r'?'#E11900':'#FFC043',border:`1px solid ${c==='g'?'rgba(6,193,103,.3)':c==='r'?'rgba(225,25,0,.3)':'rgba(255,193,67,.3)'}`}),
-  tabRow: {display:'flex',borderBottom:'1px solid rgba(255,255,255,.08)',marginBottom:'12px'},
+  label: {fontSize:'9px',color:'rgba(0,0,0,.5)',textTransform:'uppercase' as const,letterSpacing:'.8px',marginBottom:'4px'},
+  val: {fontSize:'11px',color:'#000000'},
+  input: {background:'#F6F6F6',border:'1px solid rgba(0,0,0,.12)',borderRadius:'6px',padding:'6px 9px',color:'#000000',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%'},
+  select: {background:'#F6F6F6',border:'1px solid rgba(0,0,0,.12)',borderRadius:'6px',padding:'6px 9px',color:'#000000',fontFamily:'Inter,sans-serif',fontSize:'11px',outline:'none',width:'100%',cursor:'pointer'},
+  btn: (variant='p') => ({padding:'5px 14px',borderRadius:'50px',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'10px',fontWeight:700,background:variant==='p'?'#06C167':variant==='d'?'rgba(225,25,0,.15)':'rgba(255,255,255,.08)',color:variant==='p'?'#FFFFFF':variant==='d'?'#E11900':'#000000',border:variant==='d'?'1px solid rgba(225,25,0,.3)':variant==='s'?'1px solid rgba(255,255,255,.12)':'none'} as React.CSSProperties),
+  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'50px',fontSize:'8px',fontWeight:700,textTransform:'uppercase' as const,background:c==='g'?'rgba(5,148,79,.1)':c==='r'?'rgba(225,25,0,.12)':'rgba(255,193,67,.12)',color:c==='g'?'#05944F':c==='r'?'#E11900':'#FFC043',border:`1px solid ${c==='g'?'rgba(5,148,79,.3)':c==='r'?'rgba(225,25,0,.3)':'rgba(255,193,67,.3)'}`}),
+  tabRow: {display:'flex',borderBottom:'1px solid rgba(0,0,0,.1)',marginBottom:'12px'},
   tab: (active: boolean) => ({padding:'7px 14px',cursor:'pointer',border:'none',background:'transparent',color:active?'#06C167':'rgba(244,244,244,.45)',fontFamily:'Inter,sans-serif',fontSize:'10px',borderBottom:`2px solid ${active?'#06C167':'transparent'}`,transition:'all .15s'}),
   grid2: {display:'grid',gridTemplateColumns:'1fr 1fr',gap:'9px',marginBottom:'10px'},
   modalBd: {position:'fixed' as const,inset:0,background:'rgba(0,0,0,.85)',zIndex:9000,display:'flex',alignItems:'center',justifyContent:'center'},
-  modalBox: {background:'#1F1F1F',border:'1px solid rgba(255,255,255,.2)',borderRadius:'16px',padding:'20px',width:'min(580px,93vw)',maxHeight:'90vh',overflowY:'auto' as const},
+  modalBox: {background:'#FFFFFF',border:'1px solid rgba(0,0,0,.15)',borderRadius:'16px',padding:'20px',width:'min(580px,93vw)',maxHeight:'90vh',overflowY:'auto' as const},
 };
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: React.ReactNode }) {
@@ -35,8 +35,8 @@ function Modal({ title, onClose, children }: { title: string; onClose: () => voi
     <div style={S.modalBd} onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={S.modalBox}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'14px'}}>
-          <span style={{fontFamily:'Inter',fontSize:'14px',fontWeight:700,color:'#06C167'}}>{title}</span>
-          <button onClick={onClose} style={{background:'none',border:'none',color:'rgba(244,244,244,.45)',fontSize:'18px',cursor:'pointer'}}>✕</button>
+          <span style={{fontFamily:'Inter',fontSize:'14px',fontWeight:700,color:'#05944F'}}>{title}</span>
+          <button onClick={onClose} style={{background:'none',border:'none',color:'rgba(0,0,0,.5)',fontSize:'18px',cursor:'pointer'}}>✕</button>
         </div>
         {children}
       </div>
@@ -62,8 +62,8 @@ export function SecZonas() {
               <div style={{fontWeight:700,fontSize:'13px'}}>{z.nombre}</div>
               <span style={S.pill(z.activa?'g':'r')}>{z.activa?'activa':'inactiva'}</span>
             </div>
-            <div style={{fontSize:'10px',color:'rgba(244,244,244,.45)',marginBottom:'6px'}}>📍 {z.ciudad} · {z.radio_km}km radio</div>
-            <div style={{fontSize:'10px',color:'rgba(244,244,244,.45)',marginBottom:'8px'}}>⏰ {z.hora_inicio}–{z.hora_fin} · min {z.min_proveedores} proveedor(es)</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'6px'}}>📍 {z.ciudad} · {z.radio_km}km radio</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginBottom:'8px'}}>⏰ {z.hora_inicio}–{z.hora_fin} · min {z.min_proveedores} proveedor(es)</div>
             <div style={{display:'flex',gap:'5px'}}>
               <button style={S.btn('s')} onClick={() => { setForm({...z, lat:String(z.lat), lng:String(z.lng), radio_km:String(z.radio_km), min_proveedores:String(z.min_proveedores)}); setModal(z.id); }}>Editar</button>
               <button style={S.btn(z.activa?'d':'p')} onClick={() => toggle(z.id, !z.activa)}>{z.activa?'Desactivar':'Activar'}</button>
@@ -108,17 +108,17 @@ export function SecPromos() {
   return (
     <div style={S.wrap}>
       <div style={S.title}>Códigos promocionales <button style={S.btn()} onClick={() => { setForm(empty); setModal('new'); }}>+ Nuevo código</button></div>
-      <div style={{background:'#1F1F1F',border:'1px solid rgba(255,255,255,.08)',borderRadius:'12px',overflow:'hidden'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.4)',borderBottom:'1px solid rgba(255,255,255,.08)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(244,244,244,.45)'}}>
+      <div style={{background:'#FFFFFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.04)',borderBottom:'1px solid rgba(0,0,0,.1)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.5)'}}>
           <span>Código</span><span>Tipo</span><span>Valor</span><span>Usos</span><span>Expira</span><span>Estado</span><span>Acciones</span>
         </div>
         {promos.map(p => (
-          <div key={p.id} style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'9px 12px',borderBottom:'1px solid rgba(255,255,255,.06)',alignItems:'center',fontSize:'11px'}}>
-            <span style={{fontWeight:700,color:'#06C167',fontFamily:'monospace'}}>{p.codigo}</span>
+          <div key={p.id} style={{display:'grid',gridTemplateColumns:'1.2fr 0.8fr 0.8fr 0.8fr 0.8fr 0.8fr 1fr',padding:'9px 12px',borderBottom:'1px solid rgba(0,0,0,.08)',alignItems:'center',fontSize:'11px'}}>
+            <span style={{fontWeight:700,color:'#05944F',fontFamily:'monospace'}}>{p.codigo}</span>
             <span style={{color:'rgba(244,244,244,.65)'}}>{p.tipo}</span>
             <span>{p.tipo==='porcentaje'?`${p.valor}%`:`R$${p.valor}`}</span>
             <span>{p.usos_actuales}/{p.usos_max||'∞'}</span>
-            <span style={{fontSize:'10px',color:'rgba(244,244,244,.45)'}}>{p.expira_at?new Date(p.expira_at).toLocaleDateString('pt-BR'):'—'}</span>
+            <span style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{p.expira_at?new Date(p.expira_at).toLocaleDateString('pt-BR'):'—'}</span>
             <span style={S.pill(p.activo?'g':'r')}>{p.activo?'activo':'inactivo'}</span>
             <div style={{display:'flex',gap:'4px'}}>
               <button style={S.btn('s')} onClick={() => { setForm({...p,valor:String(p.valor),usos_max:p.usos_max||'',expira_at:p.expira_at?p.expira_at.split('T')[0]:'',categoria_id:p.categoria_id||''}); setModal(p.id); }}>Editar</button>
@@ -126,7 +126,7 @@ export function SecPromos() {
             </div>
           </div>
         ))}
-        {!promos.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(244,244,244,.3)',fontSize:'10px'}}>Sin códigos promocionales</div>}
+        {!promos.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin códigos promocionales</div>}
       </div>
       {modal && (
         <Modal title={modal==='new'?'Nuevo código promo':'Editar código'} onClose={() => setModal(null)}>
@@ -172,13 +172,13 @@ export function SecRatings() {
           <button key={t} style={S.tab(filter===t)} onClick={()=>setFilter(t)}>{t.charAt(0).toUpperCase()+t.slice(1)}</button>
         ))}
       </div>
-      <div style={{background:'#1F1F1F',border:'1px solid rgba(255,255,255,.08)',borderRadius:'12px',overflow:'hidden'}}>
-        <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.4)',borderBottom:'1px solid rgba(255,255,255,.08)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(244,244,244,.45)'}}>
+      <div style={{background:'#FFFFFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',overflow:'hidden'}}>
+        <div style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',background:'rgba(0,0,0,.04)',borderBottom:'1px solid rgba(0,0,0,.1)',fontSize:'8px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.5)'}}>
           <span>Servicio</span><span>Cliente</span><span>Proveedor</span><span>Rating prov</span><span>Rating cli</span><span>Acciones</span>
         </div>
         {filtered.slice(0,30).map((r,i) => (
-          <div key={r.id||i} style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',borderBottom:'1px solid rgba(255,255,255,.06)',alignItems:'center',fontSize:'10px'}}>
-            <span style={{color:'rgba(244,244,244,.6)'}}>{r.categoria} · {r.id?.slice(0,8)}</span>
+          <div key={r.id||i} style={{display:'grid',gridTemplateColumns:'1.5fr 1fr 1fr 0.8fr 0.8fr 1fr',padding:'8px 12px',borderBottom:'1px solid rgba(0,0,0,.08)',alignItems:'center',fontSize:'10px'}}>
+            <span style={{color:'rgba(0,0,0,.6)'}}>{r.categoria} · {r.id?.slice(0,8)}</span>
             <span>{r.cliente}</span>
             <span>{r.proveedor}</span>
             <span style={{color:r.rating_proveedor<=2?'#E11900':r.rating_proveedor>=5?'#06C167':'#F4F4F4'}}>{stars(r.rating_proveedor)}</span>
@@ -189,7 +189,7 @@ export function SecRatings() {
             </div>
           </div>
         ))}
-        {!filtered.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(244,244,244,.3)',fontSize:'10px'}}>Sin ratings</div>}
+        {!filtered.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin ratings</div>}
       </div>
     </div>
   );
@@ -208,14 +208,14 @@ function TabSurge() {
   return (
     <>
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:'10px'}}>
-        <span style={{fontSize:'11px',color:'rgba(244,244,244,.6)'}}>Multiplicadores de precio dinámico por hora/zona</span>
+        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>Multiplicadores de precio dinámico por hora/zona</span>
         <button style={S.btn()} onClick={()=>{ setForm(empty); setModal('new'); }}>+ Nueva regla</button>
       </div>
       {rules.map(r => (
         <div key={r.id} style={{...S.card,display:'flex',alignItems:'center',gap:'10px',marginBottom:'7px'}}>
           <div style={{flex:1}}>
             <div style={{fontWeight:700,marginBottom:'3px'}}>{r.nombre}</div>
-            <div style={{fontSize:'10px',color:'rgba(244,244,244,.5)'}}>{r.hora_inicio||'00:00'}–{r.hora_fin||'24:00'} · {r.dias?.join(', ')} · zona: {r.zona}</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{r.hora_inicio||'00:00'}–{r.hora_fin||'24:00'} · {r.dias?.join(', ')} · zona: {r.zona}</div>
           </div>
           <div style={{fontSize:'20px',fontWeight:800,color:'#FFC043'}}>×{r.multiplicador}</div>
           <div style={{display:'flex',gap:'5px'}}>
@@ -259,7 +259,7 @@ function TabHorarios() {
   const [editing, setEditing] = useState<Record<string,any>>({});
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Horario de operación por día de la semana</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Horario de operación por día de la semana</div>
       {DIAS.map(dia => {
         const h = horarios.find(x => x.dia === dia);
         const ed = editing[dia] || {};
@@ -267,7 +267,7 @@ function TabHorarios() {
           <div key={dia} style={{...S.row,gap:'12px'}}>
             <div style={{width:'40px',fontWeight:700,fontSize:'11px',textTransform:'uppercase'}}>{dia}</div>
             <input type="time" style={{...S.input,width:'100px'}} defaultValue={h?.apertura||'07:00'} onChange={e=>setEditing(p=>({...p,[dia]:{...p[dia],apertura:e.target.value}}))}/>
-            <span style={{color:'rgba(244,244,244,.4)'}}>→</span>
+            <span style={{color:'rgba(0,0,0,.45)'}}>→</span>
             <input type="time" style={{...S.input,width:'100px'}} defaultValue={h?.cierre||'22:00'} onChange={e=>setEditing(p=>({...p,[dia]:{...p[dia],cierre:e.target.value}}))}/>
             <label style={{display:'flex',alignItems:'center',gap:'5px',fontSize:'10px',cursor:'pointer'}}>
               <input type="checkbox" defaultChecked={h?.activo!==false} onChange={e=>setEditing(p=>({...p,[dia]:{...p[dia],activo:e.target.checked}}))}/>
@@ -294,7 +294,7 @@ function TabOnboarding() {
 
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Documentos requeridos por categoría de servicio</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Documentos requeridos por categoría de servicio</div>
       <div style={{marginBottom:'10px'}}>
         <div style={S.label}>Categoría</div>
         <select style={{...S.select,maxWidth:'300px'}} value={sel} onChange={e=>setSel(e.target.value)}>
@@ -316,14 +316,14 @@ function TabOnboarding() {
           </div>
           {catDocs.map(d => (
             <div key={d.id} style={{...S.row}}>
-              <span style={{width:'20px',color:'rgba(244,244,244,.4)',fontSize:'10px'}}>{d.orden}</span>
+              <span style={{width:'20px',color:'rgba(0,0,0,.45)',fontSize:'10px'}}>{d.orden}</span>
               <span style={{flex:1,fontWeight:600}}>{d.tipo_doc}</span>
-              <span style={{flex:2,fontSize:'10px',color:'rgba(244,244,244,.5)'}}>{d.descripcion}</span>
+              <span style={{flex:2,fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{d.descripcion}</span>
               <span style={S.pill(d.obligatorio?'r':'g')}>{d.obligatorio?'obligatorio':'opcional'}</span>
               <button style={S.btn('d')} onClick={()=>remove(d.id)}>✕</button>
             </div>
           ))}
-          {!catDocs.length && <div style={{padding:'16px',textAlign:'center',color:'rgba(244,244,244,.3)',fontSize:'10px'}}>Sin documentos configurados para esta categoría</div>}
+          {!catDocs.length && <div style={{padding:'16px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin documentos configurados para esta categoría</div>}
         </>
       )}
     </>
@@ -337,14 +337,14 @@ function TabRoles() {
   return (
     <>
       <div style={{display:'flex',justifyContent:'space-between',marginBottom:'10px'}}>
-        <span style={{fontSize:'11px',color:'rgba(244,244,244,.6)'}}>Sub-admins con permisos limitados</span>
+        <span style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>Sub-admins con permisos limitados</span>
         <button style={S.btn()} onClick={()=>{ setForm({email:'',nombre:'',permisos:[]}); setModal(true); }}>+ Agregar admin</button>
       </div>
       {roles.map(r => (
         <div key={r.id} style={{...S.card,display:'flex',alignItems:'center',gap:'10px',marginBottom:'7px'}}>
           <div style={{flex:1}}>
             <div style={{fontWeight:700}}>{r.nombre}</div>
-            <div style={{fontSize:'10px',color:'rgba(244,244,244,.5)',marginTop:'2px'}}>{r.email}</div>
+            <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)',marginTop:'2px'}}>{r.email}</div>
             <div style={{display:'flex',gap:'4px',marginTop:'5px',flexWrap:'wrap'}}>
               {r.permisos?.map((p: string) => <span key={p} style={S.pill('g')}>{p}</span>)}
             </div>
@@ -352,7 +352,7 @@ function TabRoles() {
           <button style={S.btn(r.activo?'d':'p')} onClick={()=>toggle(r.id,!r.activo)}>{r.activo?'Revocar':'Activar'}</button>
         </div>
       ))}
-      {!roles.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(244,244,244,.3)',fontSize:'10px'}}>Sin sub-admins configurados</div>}
+      {!roles.length && <div style={{padding:'24px',textAlign:'center',color:'rgba(0,0,0,.3)',fontSize:'10px'}}>Sin sub-admins configurados</div>}
       {modal && (
         <Modal title="Nuevo sub-admin" onClose={()=>setModal(false)}>
           <div style={{marginBottom:'9px'}}><div style={S.label}>Email</div><input style={S.input} value={form.email} onChange={e=>setForm(p=>({...p,email:e.target.value}))} placeholder="email@ejemplo.com"/></div>
@@ -360,7 +360,7 @@ function TabRoles() {
           <div style={S.label}>Permisos</div>
           <div style={{display:'flex',gap:'6px',flexWrap:'wrap',marginTop:'5px',marginBottom:'12px'}}>
             {PERMISOS_OPTS.map(p=>(
-              <label key={p} style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'10px',cursor:'pointer',padding:'4px 8px',background:'rgba(255,255,255,.05)',borderRadius:'20px'}}>
+              <label key={p} style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'10px',cursor:'pointer',padding:'4px 8px',background:'rgba(0,0,0,.04)',borderRadius:'20px'}}>
                 <input type="checkbox" checked={form.permisos.includes(p)} onChange={e=>setForm(prev=>({...prev,permisos:e.target.checked?[...prev.permisos,p]:prev.permisos.filter(x=>x!==p)}))}/>
                 {p}
               </label>
@@ -383,12 +383,12 @@ function TabHugo() {
   useEffect(() => { getAll().then(setFull); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Editar los system prompts de Hugo por rol. Los cambios aplican en el próximo mensaje.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Editar los system prompts de Hugo por rol. Los cambios aplican en el próximo mensaje.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.card,marginBottom:'10px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-            <span style={{fontWeight:700,color:'#06C167',textTransform:'uppercase',fontSize:'10px'}}>{item.clave.replace('hugo_prompt_','')}</span>
-            <span style={{fontSize:'9px',color:'rgba(244,244,244,.35)'}}>{item.descripcion}</span>
+            <span style={{fontWeight:700,color:'#05944F',textTransform:'uppercase',fontSize:'10px'}}>{item.clave.replace('hugo_prompt_','')}</span>
+            <span style={{fontSize:'9px',color:'rgba(0,0,0,.35)'}}>{item.descripcion}</span>
           </div>
           <textarea
             style={{...S.input,minHeight:'90px',resize:'vertical',fontFamily:'monospace',fontSize:'10px',lineHeight:'1.5'}}
@@ -411,12 +411,12 @@ function TabIntegraciones() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Credenciales de servicios externos. Los valores se guardan cifrados.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Credenciales de servicios externos. Los valores se guardan cifrados.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:1}}>
             <div style={{fontWeight:600,fontSize:'11px'}}>{item.descripcion}</div>
-            <div style={{fontSize:'9px',color:'rgba(244,244,244,.4)',marginTop:'2px'}}>{item.clave}</div>
+            <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{item.clave}</div>
           </div>
           <input
             style={{...S.input,width:'260px',fontFamily:'monospace'}}
@@ -439,12 +439,12 @@ function TabFraude() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Reglas automáticas de detección de fraude. Hugo monitorea estas condiciones en tiempo real.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Reglas automáticas de detección de fraude. Hugo monitorea estas condiciones en tiempo real.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:2}}>
             <div style={{fontWeight:600,fontSize:'11px'}}>{item.descripcion}</div>
-            <div style={{fontSize:'9px',color:'rgba(244,244,244,.4)',marginTop:'2px'}}>{item.clave}</div>
+            <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{item.clave}</div>
           </div>
           <input style={{...S.input,width:'80px',textAlign:'center'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
           <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar</button>
@@ -461,12 +461,12 @@ function TabTemplates() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Templates de mensajes. Variables disponibles: {'{{nombre}}'}, {'{{categoria}}'}, {'{{proveedor}}'}, {'{{eta}}'}, {'{{numero}}'}.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Templates de mensajes. Variables disponibles: {'{{nombre}}'}, {'{{categoria}}'}, {'{{proveedor}}'}, {'{{eta}}'}, {'{{numero}}'}.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.card,marginBottom:'10px'}}>
           <div style={{display:'flex',justifyContent:'space-between',marginBottom:'6px'}}>
             <span style={{fontWeight:700,fontSize:'10px'}}>{item.descripcion}</span>
-            <span style={{fontSize:'9px',color:'rgba(244,244,244,.35)'}}>{item.clave}</span>
+            <span style={{fontSize:'9px',color:'rgba(0,0,0,.35)'}}>{item.clave}</span>
           </div>
           <textarea style={{...S.input,minHeight:'60px',resize:'vertical',fontFamily:'monospace',fontSize:'10px'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
           <div style={{marginTop:'6px'}}><button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar template</button></div>
@@ -483,12 +483,12 @@ function TabReferidos() {
   useEffect(() => { getAll().then(d=>{ setFull(d); const m:Record<string,string>={}; d.forEach((r:any)=>m[r.clave]=r.valor); setVals(m); }); }, [getAll]);
   return (
     <>
-      <div style={{fontSize:'11px',color:'rgba(244,244,244,.6)',marginBottom:'10px'}}>Configuración del programa de referidos. Los bonos se acreditan automáticamente via escrow.</div>
+      <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)',marginBottom:'10px'}}>Configuración del programa de referidos. Los bonos se acreditan automáticamente via escrow.</div>
       {full.map(item => (
         <div key={item.clave} style={{...S.row}}>
           <div style={{flex:2}}>
             <div style={{fontWeight:600,fontSize:'11px'}}>{item.descripcion}</div>
-            <div style={{fontSize:'9px',color:'rgba(244,244,244,.4)',marginTop:'2px'}}>{item.clave}</div>
+            <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{item.clave}</div>
           </div>
           {item.clave === 'referido_activo' ? (
             <label style={{display:'flex',alignItems:'center',gap:'7px',fontSize:'11px',cursor:'pointer'}}>
@@ -498,7 +498,7 @@ function TabReferidos() {
           ) : (
             <>
               <div style={{display:'flex',alignItems:'center',gap:'4px'}}>
-                <span style={{color:'rgba(244,244,244,.4)',fontSize:'11px'}}>R$</span>
+                <span style={{color:'rgba(0,0,0,.45)',fontSize:'11px'}}>R$</span>
                 <input style={{...S.input,width:'80px',textAlign:'center'}} value={vals[item.clave]||''} onChange={e=>setVals(p=>({...p,[item.clave]:e.target.value}))}/>
               </div>
               <button style={S.btn()} onClick={()=>update(item.clave,vals[item.clave]||'')}>Guardar</button>
