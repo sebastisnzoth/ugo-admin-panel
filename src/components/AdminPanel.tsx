@@ -662,7 +662,7 @@ export function AdminPanel() {
         <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'1px',color:'var(--muted)',marginBottom:'10px'}}>📡 Credenciales para las apps</div>
         {[
           {label:'SUPABASE_URL',val:'https://byajcqrgetloavrgyqak.supabase.co'},
-          {label:'SUPABASE_ANON_KEY',val:'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ'},
+          {label:'SUPABASE_ANON_KEY',val:'eyJ...(legacy key)'},
           {label:'PROJECT_ID',val:'byajcqrgetloavrgyqak'},
         ].map(r=>(
           <div key={r.label} style={{display:'flex',alignItems:'center',gap:8,padding:'6px 0',borderBottom:'1px solid var(--border)'}}>
