@@ -2,26 +2,40 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
 import type { AdminDashboard, Servicio, Disputa, Documento, Usuario, MetricasDia } from '../lib/database.types';
 
-// ─── Canal realtime único ────────────────────────────────────
+// ─── Canal realtime autenticado ──────────────────────────────
 let globalChannel: any = null;
 const listeners: Record<string, Set<() => void>> = {};
+const eventListeners: Array<(event: {table: string, type: string, row: any}) => void> = [];
+
+function initChannel() {
+  if (globalChannel) return;
+  const TABLES = ['servicios','disputas','escrow','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];
+  const ch = (supabase as any).channel('ugo-admin-rt-' + Date.now());
+  TABLES.forEach(table => {
+    ch.on('postgres_changes', { event: '*', schema: 'public', table }, (payload: any) => {
+      listeners[table]?.forEach(f => f());
+      eventListeners.forEach(f => f({ table, type: payload.eventType, row: payload.new || payload.old }));
+    });
+  });
+  globalChannel = ch.subscribe((status: string) => {
+    console.log('[RT] status:', status);
+  });
+}
+
+export function resetRealtimeChannel() {
+  if (globalChannel) { (supabase as any).removeChannel(globalChannel); globalChannel = null; }
+  initChannel();
+}
+
+export function onRealtimeEvent(cb: (e: {table: string, type: string, row: any}) => void) {
+  eventListeners.push(cb);
+  return () => { const i = eventListeners.indexOf(cb); if (i >= 0) eventListeners.splice(i, 1); };
+}
 
 function subscribe(table: string, cb: () => void) {
   if (!listeners[table]) listeners[table] = new Set();
   listeners[table].add(cb);
-  if (!globalChannel) {
-    globalChannel = (supabase as any).channel('ugo-admin-global')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'servicios' }, () => listeners['servicios']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'disputas' }, () => listeners['disputas']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'escrow' }, () => listeners['escrow']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'documentos' }, () => listeners['documentos']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, () => listeners['usuarios']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_log' }, () => listeners['audit_log']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categorias' }, () => listeners['categorias']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'tarifas' }, () => listeners['tarifas']?.forEach(f => f()))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'notificaciones' }, () => listeners['notificaciones']?.forEach(f => f()))
-      .subscribe();
-  }
+  initChannel();
   return () => { listeners[table]?.delete(cb); };
 }
 

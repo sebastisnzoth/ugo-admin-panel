@@ -7,6 +7,7 @@ import {
   useVault, usePendingWithdrawals,
 } from '../hooks/useAdminData';
 import { supabase } from '../lib/supabase';
+import { resetRealtimeChannel, onRealtimeEvent } from '../hooks/useAdminData';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
 import { ConversationalOrb } from './ConversationalOrb';
 
@@ -196,6 +197,7 @@ const CSS = `
 .leaflet-popup-content-wrapper{background:#FFF!important;border:1px solid rgba(0,0,0,.15)!important;border-radius:12px!important;box-shadow:0 4px 20px rgba(0,0,0,.15)!important;}
 .leaflet-popup-tip{background:#FFF!important;}
 .leaflet-popup-content{margin:10px 13px!important;color:#111!important;font-family:'Inter',sans-serif!important;font-size:11px!important;}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:1100px){.ua{grid-template-columns:60px 1fr;}.ua-hugo{display:none;}.kpi-grid{grid-template-columns:repeat(2,1fr);}}
 @media(max-width:720px){.ua{grid-template-columns:1fr;grid-template-rows:52px 1fr 60px;}.ua-nav{grid-row:3;grid-column:1;flex-direction:row;justify-content:space-around;border-right:none;border-top:1px solid var(--border);padding:4px 2px;overflow-x:auto;gap:0;background:#FFF;}.ua-tb{grid-row:1;grid-column:1;}.ua-main{grid-row:2;grid-column:1;}.nav-item{width:auto;min-width:48px;padding:5px 6px;border-radius:10px;}.nav-label{display:block;font-size:7px;}.nav-div{display:none;}.metric-grid{grid-template-columns:repeat(2,1fr);}.kpi-grid{grid-template-columns:repeat(2,1fr);}.chart-row{grid-template-columns:1fr;}.pad{padding:12px;}.tw{overflow-x:auto;}.th,.tr{min-width:520px;}.fgrid{grid-template-columns:1fr;}.fg.full{grid-column:1;}.modal-box{padding:18px;border-radius:16px;}.map-sb{width:170px;}.st{font-size:16px;}.cat-grid{grid-template-columns:repeat(2,1fr);}.report-grid{grid-template-columns:1fr;}}
 @media(max-width:400px){.metric-grid{grid-template-columns:1fr;}.kpi-grid{grid-template-columns:1fr;}}
@@ -229,6 +231,7 @@ export function AdminPanel() {
   useEffect(() => {
     (supabase as any).auth.getSession().then(({ data }: any) => {
       setSession(data.session); setAuthLoading(false);
+      if (data.session) resetRealtimeChannel();
     });
     const { data: { subscription } } = (supabase as any).auth.onAuthStateChange((_: any, s: any) => {
       if (s && s.user?.email?.toLowerCase() !== 'sebastianzoth@gmail.com') {
@@ -241,6 +244,26 @@ export function AdminPanel() {
   }, []);
 
   const ADMIN_EMAIL = 'sebastianzoth@gmail.com';
+
+  const addToast = useCallback((msg: string, color = '#05944F') => {
+    const id = Date.now();
+    setRtToasts(p => [...p.slice(-3), { id, msg, color }]);
+    setTimeout(() => setRtToasts(p => p.filter(t => t.id !== id)), 4000);
+  }, []);
+
+  // Realtime live events → toasts
+  useEffect(() => {
+    if (!session) return;
+    resetRealtimeChannel();
+    const unsub = onRealtimeEvent(({ table, type, row }) => {
+      if (table === 'servicios' && type === 'INSERT') addToast(`⚡ Nuevo servicio creado — ${row.zona || 'Sin zona'}`, '#276EF1');
+      if (table === 'servicios' && type === 'UPDATE' && row.estado === 'completado') addToast(`✅ Servicio completado — R$${row.tarifa || '—'}`, '#05944F');
+      if (table === 'disputas' && type === 'INSERT') addToast(`⚠ Nueva disputa abierta`, '#996000');
+      if (table === 'usuarios' && type === 'UPDATE' && row.online === true) addToast(`🟢 Proveedor online: ${row.nombre || '—'}`, '#05944F');
+      if (table === 'documentos' && type === 'INSERT') addToast(`📄 Nuevo documento pendiente`, '#7356BF');
+    });
+    return () => { unsub(); };
+  }, [session, addToast]);
 
   const doLogin = async () => {
     setLoginErr('');
@@ -282,6 +305,7 @@ export function AdminPanel() {
   const [editingConfig, setEditingConfig] = useState<Record<string, string>>({});
   const [editingTarifa, setEditingTarifa] = useState<any>(null);
   const [contactModal, setContactModal] = useState<any>(null);
+  const [rtToasts, setRtToasts] = useState<{id:number;msg:string;color:string}[]>([]);
   const [contactMsg, setContactMsg] = useState({ titulo:'', cuerpo:'' });
   const [contactSent, setContactSent] = useState(false);
 
@@ -1003,6 +1027,14 @@ export function AdminPanel() {
           </div>
         </div>
       )}
+      {/* RT TOASTS */}
+      <div style={{position:'fixed',bottom:20,right:20,zIndex:9999,display:'flex',flexDirection:'column',gap:8,pointerEvents:'none'}}>
+        {rtToasts.map(t=>(
+          <div key={t.id} style={{background:t.color,color:'#FFF',padding:'10px 16px',borderRadius:12,fontSize:12,fontWeight:700,boxShadow:'0 4px 16px rgba(0,0,0,.2)',animation:'slideIn .3s ease',maxWidth:280}}>
+            {t.msg}
+          </div>
+        ))}
+      </div>
       <ConversationalOrb metrics={metrics}/>
 
       {/* MODAL: Contactar proveedor */}
