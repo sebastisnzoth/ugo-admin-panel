@@ -55,6 +55,7 @@ export function SecScout() {
   const [genLoading, setGenLoading] = useState(false);
   const [stats, setStats] = useState({found:0,contacted:0,interested:0,joined:0});
   const [exportData, setExportData] = useState<Provider[]>([]);
+  const [added, setAdded] = useState<Set<string>>(new Set());
   const mapRef = useRef<any>(null);
   const mapInst = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
@@ -103,6 +104,38 @@ export function SecScout() {
     } catch { alert('Error al buscar.'); }
   };
 
+  const addToHugo = useCallback(async (p: Provider) => {
+    try {
+      const catRes = await fetch(`${SB_URL}/rest/v1/categorias?activa=eq.true&nombre=ilike.*${encodeURIComponent(CAT_LABELS[cat])}*&limit=1`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+      });
+      const cats = await catRes.json();
+      const catId = cats?.[0]?.id;
+
+      const r = await fetch(`${SB_URL}/rest/v1/usuarios`, {
+        method: 'POST',
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({
+          nombre: p.name.split(' ')[0],
+          apellido: p.name.split(' ').slice(1).join(' ')||'(Scout)',
+          telefono: p.phone||'',
+          tipo: 'proveedor',
+          activo: false,
+          online: false,
+          lat: p.lat, lng: p.lng,
+          zona: locLabel.split(',')[0] || 'Florianópolis',
+          pais: 'BR', karma: 5,
+          categorias_ids: catId ? [catId] : [],
+          email: p.tags?.email||p.tags?.['contact:email']||null,
+        })
+      });
+      if (r.ok || r.status === 201) {
+        setAdded(prev => new Set([...prev, p.id]));
+        setStats(s => ({ ...s, joined: s.joined + 1 }));
+      }
+    } catch(e: any) { alert('Error al agregar: ' + e.message); }
+  }, [cat, locLabel]);
+
   const doSearch = async () => {
     if (lat === null) return alert('Primero detectá tu ubicación.');
     setLoading(true); setLoadingMsg('Consultando OpenStreetMap...'); setResults([]); setSelected(null); setOutreach(null);
@@ -111,29 +144,14 @@ export function SecScout() {
     try {
       const tags = SC_TAGS[cat] || [['craft',cat]];
       const cond = tags.map(([k,v]) => `node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`).join('');
-      // Intentar múltiples endpoints de Overpass (por si uno falla/bloquea CORS)
-      const OVERPASS = [
-        'https://overpass-api.de/api/interpreter',
-        'https://overpass.kumi.systems/api/interpreter',
-        'https://overpass.openstreetmap.ru/api/interpreter',
-      ];
-      const body_ov = 'data='+encodeURIComponent(`[out:json][timeout:25];(${cond});out body;`);
-      let d: any = null;
-      for (const ep of OVERPASS) {
-        try {
-          const ctrl = new AbortController();
-          const tid = setTimeout(()=>ctrl.abort(), 15000);
-          const r = await fetch(ep, { method:'POST', body:body_ov, signal:ctrl.signal });
-          clearTimeout(tid);
-          d = await r.json();
-          if (d.elements) break;
-        } catch(e:any) {
-          if (e.name==='AbortError') setLoadingMsg('Timeout, probando otro servidor...');
-          else setLoadingMsg(`Error en ${ep.split('/')[2]}, reintentando...`);
-          continue;
-        }
-      }
-      if (!d || !d.elements) throw new Error('Overpass API no respondió. Verificá tu conexión a internet.');
+      setLoadingMsg('Buscando negocios en OpenStreetMap...');
+      const ovRes = await fetch('/api/overpass', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query: `[out:json][timeout:25];(${cond});out body;` }),
+      });
+      const d = await ovRes.json();
+      if (!d.elements) throw new Error(d.error || 'Sin resultados de OpenStreetMap');
       const provs: Provider[] = (d.elements||[]).map((el:any) => {
         const eLat = el.lat ?? el.center?.lat; const eLng = el.lon ?? el.center?.lon;
         if (!eLat||!eLng) return null;
@@ -262,6 +280,11 @@ export function SecScout() {
                     <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{p.address||CAT_LABELS[cat]}{p.phone&&` · 📱 ${p.phone}`}</div>
                   </div>
                   <span style={S.pill(p.dist<2000?'g':'a')}>{fmtD(p.dist)}</span>
+                  <button
+                    style={{...S.btn(added.has(p.id)?'s':'p'),padding:'4px 10px',fontSize:'9px',flexShrink:0}}
+                    onClick={e=>{e.stopPropagation();if(!added.has(p.id))addToHugo(p);}}
+                    disabled={added.has(p.id)}
+                  >{added.has(p.id)?'✓ En Hugo':'+ Hugo'}</button>
                 </div>
               ))}
             </div>
