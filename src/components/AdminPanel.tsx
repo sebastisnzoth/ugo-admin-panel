@@ -247,6 +247,26 @@ function downloadCSV(data: any[], filename: string) {
 }
 
 export function AdminPanel() {
+  const [session, setSession] = useState<any>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [loginEmail, setLoginEmail] = useState('sebastianzoth@gmail.com');
+  const [loginPass, setLoginPass] = useState('');
+  const [loginErr, setLoginErr] = useState('');
+
+  useEffect(() => {
+    (supabase as any).auth.getSession().then(({ data }: any) => {
+      setSession(data.session); setAuthLoading(false);
+    });
+    const { data: { subscription } } = (supabase as any).auth.onAuthStateChange((_: any, s: any) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const doLogin = async () => {
+    setLoginErr('');
+    const { error } = await (supabase as any).auth.signInWithPassword({ email: loginEmail, password: loginPass });
+    if (error) setLoginErr(error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
+  };
+
   const [section, setSection] = useState<Section>('dashboard');
   const [clock, setClock] = useState('');
   const [usrTab, setUsrTab] = useState<'perfiles'|'auth'>('perfiles');
@@ -300,7 +320,7 @@ export function AdminPanel() {
   const feed = useActivityFeed();
   const weekData = useWeekMetrics();
   const { users, suspenderProveedor, reactivarProveedor, crearUsuario, updateUsuario } = useUsuarios();
-  const { users: authUsers, loading: authLoading } = useAuthUsers(authEnabled);
+  const { users: authUsers, loading: authUsersLoading } = useAuthUsers(authEnabled);
   const { categorias, crear: crearCat, actualizar: actualizarCat, toggleActiva } = useCategorias();
   const { tarifas, upsert: upsertTarifa } = useTarifas();
   const { config, update: updateConfig } = useConfigSistema();
@@ -770,6 +790,33 @@ export function AdminPanel() {
     [{id:'usuarios',icon:'◎',label:'Usrs'},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
     [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
   ];
+
+  if (authLoading) return (
+    <div style={{position:'fixed',inset:0,background:'#F7F7F7',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{fontFamily:'Inter',fontSize:'13px',color:'#888'}}>Cargando U.GO...</div>
+    </div>
+  );
+
+  if (!session) return (
+    <div style={{position:'fixed',inset:0,background:'linear-gradient(160deg,#0f1117,#1a2530)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'24px'}}>
+      <div style={{fontFamily:'Inter',fontWeight:900,fontSize:'36px',color:'#FFF',letterSpacing:'-1.5px',marginBottom:'4px'}}>U.GO</div>
+      <div style={{fontFamily:'Inter',fontSize:'11px',color:'rgba(255,255,255,.4)',textTransform:'uppercase',letterSpacing:'2.5px',marginBottom:'32px'}}>Panel de Control</div>
+      <div style={{background:'#FFF',borderRadius:'24px',padding:'24px',width:'100%',maxWidth:'360px'}}>
+        {loginErr && <div style={{background:'#FEF2F2',border:'1px solid #FCA5A5',borderRadius:'10px',padding:'9px 12px',fontSize:'12px',color:'#DC2626',marginBottom:'12px'}}>{loginErr}</div>}
+        <div style={{fontWeight:800,fontSize:'20px',marginBottom:'4px'}}>Acceso restringido</div>
+        <div style={{fontSize:'13px',color:'#888',marginBottom:'20px'}}>Solo administradores autorizados</div>
+        <div style={{marginBottom:'11px'}}>
+          <div style={{fontSize:'10px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.6px',color:'#888',marginBottom:'4px'}}>Email</div>
+          <input value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} type="email" style={{width:'100%',padding:'11px 13px',border:'1.5px solid #E5E5E5',borderRadius:'12px',fontSize:'14px',fontFamily:'Inter',outline:'none',color:'#111'}}/>
+        </div>
+        <div style={{marginBottom:'16px'}}>
+          <div style={{fontSize:'10px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.6px',color:'#888',marginBottom:'4px'}}>Contraseña</div>
+          <input value={loginPass} onChange={e=>setLoginPass(e.target.value)} onKeyDown={e=>e.key==='Enter'&&doLogin()} type="password" placeholder="••••••••" style={{width:'100%',padding:'11px 13px',border:'1.5px solid #E5E5E5',borderRadius:'12px',fontSize:'14px',fontFamily:'Inter',outline:'none',color:'#111'}}/>
+        </div>
+        <button onClick={doLogin} style={{width:'100%',padding:'13px',background:'#111',color:'#FFF',border:'none',borderRadius:'14px',fontSize:'14px',fontWeight:700,cursor:'pointer',fontFamily:'Inter'}}>Ingresar →</button>
+      </div>
+    </div>
+  );
 
   return (
     <>

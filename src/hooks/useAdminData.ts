@@ -106,7 +106,21 @@ export function useOpenDisputes() {
     if (data) setDisputes(data as any); setLoading(false);
   }, []);
   const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {
-    await (supabase as any).rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });
+    const sb = supabase as any;
+    // Update disputa state
+    const { error } = await sb.from('disputas').update({
+      estado: 'resuelta', resolucion,
+      resuelta_at: new Date().toISOString()
+    }).eq('id', id);
+    if (error) { console.error('resolverDisputa:', error.message); return; }
+    // Update escrow
+    const { data: d } = await sb.from('disputas').select('servicio_id').eq('id', id).single();
+    if (d?.servicio_id) {
+      await sb.from('escrow').update({
+        estado: favorDe === 'proveedor' ? 'liberado' : 'reembolsado',
+        liberado_at: new Date().toISOString()
+      }).eq('servicio_id', d.servicio_id);
+    }
     await fetch();
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('disputas', fetch); return u; }, [fetch]);
@@ -125,7 +139,9 @@ export function usePendingDocuments() {
   }, []);
   const updateEstado = useCallback(async (id: string, estado: string, notas?: string) => {
     const sb = supabase as any;
-    await sb.from('documentos').update({ estado, notas, revisado_at: new Date().toISOString() }).eq('id', id);
+    const { error } = await sb.from('documentos')
+      .update({ estado, notas, revisado_at: new Date().toISOString() }).eq('id', id);
+    if (error) { console.error('updateEstado:', error.message); return; }
     await fetch();
   }, [fetch]);
   const getSignedUrl = useCallback(async (path: string) => {
@@ -329,7 +345,9 @@ export function useVault() {
     if (data) setEscrows(data); setLoading(false);
   }, []);
   const liberarEscrow = useCallback(async (id: string) => {
-    await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id }); await fetch();
+    const { error } = await (supabase as any).from('escrow')
+      .update({ estado:'liberado', liberado_at: new Date().toISOString() }).eq('id', id);
+    if (!error) await fetch(); else console.error('liberarEscrow:', error.message);
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
   return { escrows, loading, liberarEscrow };
