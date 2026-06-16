@@ -710,9 +710,12 @@ function tgl(){
 
 async function signInGoogle(){
   try{
-    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href.split('#')[0]}});
-    if(error) showErr('Google no está configurado aún. Usá email y contraseña.');
-  }catch(e){ showErr('Google no disponible. Usá email y contraseña.'); }
+    const{error}=await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{redirectTo:'https://ugo-admin-panel.vercel.app/client.html'}
+    });
+    if(error) showErr(error.message);
+  }catch(e){ showErr('Error con Google: '+e.message); }
 }
 async function doLogout(){ await sb.auth.signOut(); CLIENT=null;SESSION=null;ACTIVE_SVC=null; }
 function haversine(lat1,lng1,lat2,lng2){const R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
