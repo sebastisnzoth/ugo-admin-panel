@@ -799,6 +799,7 @@ export function AdminPanel() {
     [{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
     [{id:'usuarios',icon:'◎',label:'Usrs'},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
     [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
+    [{id:'scout',icon:'📡',label:'Scout'},{id:'avanzado',icon:'◧',label:'Avanz'}],
   ];
 
   if (authLoading) return (
@@ -880,6 +881,8 @@ export function AdminPanel() {
           {section==='notificaciones'&&renderNotificaciones()}
           {section==='reportes'&&renderReportes()}
           {section==='config'&&renderConfig()}
+          {section==='scout'&&<SecScout/>}
+          {section==='avanzado'&&<SecAvanzado/>}
         </main>
 
         <aside className="ua-hugo">
