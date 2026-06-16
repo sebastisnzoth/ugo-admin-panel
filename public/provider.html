@@ -206,7 +206,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const FN=SB_URL+'/functions/v1';
-const sb=supabase.createClient(SB_URL,SB_KEY);
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
 
 // ── STATE ──
 let SESSION=null,PROV=null,lang='es',screen='home',isOnline=false;
@@ -272,8 +272,17 @@ const tt=()=>TR[lang];
 sb.auth.onAuthStateChange(async(ev,ses)=>{
   SESSION=ses;
   if(ses){ await initProvider(); document.getElementById('auth').classList.add('hide'); }
-  else{ document.getElementById('auth').classList.remove('hide'); loadCats(); }
+  else if(ev!=='INITIAL_SESSION'){ document.getElementById('auth').classList.remove('hide'); loadCats(); }
 });
+// Fallback: captura redirect OAuth si onAuthStateChange no alcanza
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session&&!SESSION){
+    SESSION=session;
+    await initProvider();
+    document.getElementById('auth').classList.add('hide');
+  } else if(!session){ loadCats(); }
+})();
 
 function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
 function showErr(m){ const e=document.getElementById('aerr'); e.textContent=m; e.style.display=m?'block':'none'; }
