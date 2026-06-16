@@ -209,16 +209,20 @@ const tt=()=>TR[lang];
 // ── AUTH ──
 sb.auth.onAuthStateChange(async(ev,ses)=>{
   SESSION=ses;
-  if(ses){ await initClient(); document.getElementById('auth').classList.add('hide'); }
-  else if(ev!=='INITIAL_SESSION') document.getElementById('auth').classList.remove('hide');
+  if(ses){ document.getElementById('auth').classList.add('hide'); await initClient(); }
+  else if(ev==='SIGNED_OUT') document.getElementById('auth').classList.remove('hide');
 });
-// Fallback: captura redirect de OAuth por si onAuthStateChange no alcanza
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(session&&!SESSION){
-    SESSION=session;
-    await initClient();
-    document.getElementById('auth').classList.add('hide');
+  if(session){ SESSION=session; document.getElementById('auth').classList.add('hide'); await initClient(); }
+  else{
+    setTimeout(async()=>{
+      if(!SESSION){
+        const{data:{session:s2}}=await sb.auth.getSession();
+        if(s2){ SESSION=s2; document.getElementById('auth').classList.add('hide'); await initClient(); }
+        else document.getElementById('auth').classList.remove('hide');
+      }
+    },800);
   }
 })();
 function sw(v){document.getElementById('vlog').style.display=v==='log'?'':'none';document.getElementById('vreg').style.display=v==='reg'?'':'none';showErr('');}

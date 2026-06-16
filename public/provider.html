@@ -271,17 +271,31 @@ const tt=()=>TR[lang];
 // ── AUTH ──
 sb.auth.onAuthStateChange(async(ev,ses)=>{
   SESSION=ses;
-  if(ses){ await initProvider(); document.getElementById('auth').classList.add('hide'); }
-  else if(ev!=='INITIAL_SESSION'){ document.getElementById('auth').classList.remove('hide'); loadCats(); }
+  if(ses){
+    document.getElementById('auth').classList.add('hide'); // ocultar PRIMERO
+    await initProvider();
+  } else if(ev==='SIGNED_OUT'){
+    document.getElementById('auth').classList.remove('hide'); loadCats();
+  }
 });
-// Fallback: captura redirect OAuth si onAuthStateChange no alcanza
+
+// Chequeo activo al cargar — cubre redirect OAuth
 (async()=>{
   const{data:{session}}=await sb.auth.getSession();
-  if(session&&!SESSION){
+  if(session){
     SESSION=session;
-    await initProvider();
     document.getElementById('auth').classList.add('hide');
-  } else if(!session){ loadCats(); }
+    await initProvider();
+  } else {
+    // Retry a los 800ms (token puede estar procesándose aún)
+    setTimeout(async()=>{
+      if(!SESSION){
+        const{data:{session:s2}}=await sb.auth.getSession();
+        if(s2){ SESSION=s2; document.getElementById('auth').classList.add('hide'); await initProvider(); }
+        else { document.getElementById('auth').classList.remove('hide'); loadCats(); }
+      }
+    },800);
+  }
 })();
 
 function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
