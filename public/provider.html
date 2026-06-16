@@ -281,11 +281,10 @@ function showOk(m){ const e=document.getElementById('aok'); e.textContent=m; e.s
 
 
 async function signInGoogle(){
-  const{error}=await sb.auth.signInWithOAuth({
-    provider:'google',
-    options:{redirectTo:window.location.href.split('#')[0]}
-  });
-  if(error) showErr(error.message);
+  try{
+    const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.href.split('#')[0]}});
+    if(error) showErr('Google no está configurado aún. Usá email y contraseña.');
+  }catch(e){ showErr('Google no disponible. Usá email y contraseña.'); }
 }
 async function doLogin(){
   const email=document.getElementById('le').value.trim();
