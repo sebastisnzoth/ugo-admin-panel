@@ -1,12 +1,11 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Supabase anon key es pública por diseño — safe hardcodear
 const sb = createClient(
   'https://byajcqrgetloavrgyqak.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs'
 );
 
-const MODELS = ['gemini-1.5-flash', 'gemini-1.5-flash-8b', 'gemini-1.5-pro'];
+const MODELS = ['gemini-flash-latest', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-8b'];
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -17,7 +16,6 @@ export default async function handler(req: any, res: any) {
   try {
     const { message, role = 'admin', history = [], context = '' } = req.body;
 
-    // Leer key y prompt desde DB
     const { data: rows } = await sb
       .from('config_sistema')
       .select('clave, valor')
@@ -27,13 +25,11 @@ export default async function handler(req: any, res: any) {
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
 
     const geminiKey = cfg['api_gemini_key']?.trim();
-    if (!geminiKey) {
-      return res.status(500).json({ hugo_mensaje: 'Sin Gemini API Key. Ve a ⚙ Config → API Keys en el panel.' });
-    }
+    if (!geminiKey) return res.status(500).json({ hugo_mensaje: 'Sin Gemini API Key. Configurala en ⚙ Config del panel.' });
 
     const systemPrompt =
-      (cfg[`hugo_prompt_${role}`] || 'Eres Hugo, núcleo de inteligencia de U.GO. Respondé en español, conciso. Máximo 4 frases.') +
-      (context ? `\n\nESTADO DEL SISTEMA:\n${context}` : '');
+      (cfg[`hugo_prompt_${role}`] || 'Eres Hugo, núcleo de inteligencia de U.GO. Respondé en español. Máximo 4 frases.') +
+      (context ? `\n\nESTADO:\n${context}` : '');
 
     const geminiHistory = history.slice(-6).map((m: any) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -46,19 +42,16 @@ export default async function handler(req: any, res: any) {
       generationConfig: { maxOutputTokens: 400, temperature: 0.7 },
     });
 
+    let lastErr = '';
     for (const model of MODELS) {
       const r = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
         { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-goog-api-key': geminiKey }, body }
       );
-      const data = await r.json();
+      const d = await r.json();
+      if (d.error) { lastErr = `${model}: ${d.error.message}`; continue; }
 
-      if (data.error) {
-        console.error(`[${model}] ${data.error.message}`);
-        continue;
-      }
-
-      const texto = data.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+      const texto = d.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
       if (!texto) continue;
 
       const match = texto.match(/\[ACCION:\s*([^\]]+)\]/i);
@@ -69,10 +62,9 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    return res.status(500).json({ hugo_mensaje: 'Gemini no respondió. Verificá el API Key en ⚙ Config.' });
+    return res.status(500).json({ hugo_mensaje: `Gemini no respondió. ${lastErr}` });
 
   } catch (err: any) {
-    console.error('[hugo/chat]', err.message);
     return res.status(500).json({ hugo_mensaje: `Error: ${err.message}` });
   }
 }
