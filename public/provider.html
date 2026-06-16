@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>U.GO — Proveedor</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-serif;}
@@ -200,7 +200,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
 </nav>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
 // ── CONFIG ──
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
@@ -376,13 +376,18 @@ async function initProvider(){
 function initMap(){
   if(MAP) return;
   MAP=L.map('map',{zoomControl:false,center:[myLat,myLng],zoom:14});
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19}).addTo(MAP);
+  const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19});
+  tileLayer.addTo(MAP);
+  tileLayer.on('tileerror',()=>{
+    MAP.eachLayer(l=>{if(l instanceof L.TileLayer) MAP.removeLayer(l);});
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(MAP);
+  });
   // Heat spots (demand zones)
   [[-27.590,-48.548,400,'rgba(239,68,68,.15)'],[- 27.610,-48.520,300,'rgba(245,158,11,.12)'],[-27.575,-48.565,280,'rgba(239,68,68,.1)']].forEach(([la,ln,r,c])=>{
     L.circle([la,ln],{radius:r,color:c,fillColor:c,fillOpacity:1,stroke:false}).addTo(MAP);
   });
   myMark=L.marker([myLat,myLng],{icon:L.divIcon({html:`<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(0,200,215,.5);">🔧</div>`,className:'',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(MAP);
-  setTimeout(()=>MAP.invalidateSize(),300);
+  [100,300,600,1200].forEach(t=>setTimeout(()=>MAP?.invalidateSize(),t));
 }
 
 function updateMark(){ if(myMark) myMark.setLatLng([myLat,myLng]); }
