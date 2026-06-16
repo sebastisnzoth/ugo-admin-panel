@@ -111,10 +111,29 @@ export function SecScout() {
     try {
       const tags = SC_TAGS[cat] || [['craft',cat]];
       const cond = tags.map(([k,v]) => `node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`).join('');
-      const r = await fetch('https://overpass-api.de/api/interpreter', {
-        method:'POST', body:'data='+encodeURIComponent(`[out:json][timeout:20];(${cond});out body;`)
-      });
-      const d = await r.json();
+      // Intentar múltiples endpoints de Overpass (por si uno falla/bloquea CORS)
+      const OVERPASS = [
+        'https://overpass-api.de/api/interpreter',
+        'https://overpass.kumi.systems/api/interpreter',
+        'https://overpass.openstreetmap.ru/api/interpreter',
+      ];
+      const body_ov = 'data='+encodeURIComponent(`[out:json][timeout:25];(${cond});out body;`);
+      let d: any = null;
+      for (const ep of OVERPASS) {
+        try {
+          const ctrl = new AbortController();
+          const tid = setTimeout(()=>ctrl.abort(), 15000);
+          const r = await fetch(ep, { method:'POST', body:body_ov, signal:ctrl.signal });
+          clearTimeout(tid);
+          d = await r.json();
+          if (d.elements) break;
+        } catch(e:any) {
+          if (e.name==='AbortError') setLoadingMsg('Timeout, probando otro servidor...');
+          else setLoadingMsg(`Error en ${ep.split('/')[2]}, reintentando...`);
+          continue;
+        }
+      }
+      if (!d || !d.elements) throw new Error('Overpass API no respondió. Verificá tu conexión a internet.');
       const provs: Provider[] = (d.elements||[]).map((el:any) => {
         const eLat = el.lat ?? el.center?.lat; const eLng = el.lon ?? el.center?.lon;
         if (!eLat||!eLng) return null;
