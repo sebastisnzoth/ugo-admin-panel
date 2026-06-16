@@ -309,9 +309,18 @@ async function loadCats(){
 }
 
 async function initProvider(){
-  // Cargar perfil
-  const{data}=await sb.from('usuarios').select('*').eq('auth_id',SESSION.user.id).single();
-  if(!data){ await sb.auth.signOut(); return; }
+  const{data,error}=await sb.from('usuarios').select('*').eq('auth_id',SESSION.user.id).single();
+  if(!data){
+    // Perfil no encontrado — puede pasar si se registró con el método viejo
+    // Intentar por email
+    const{data:byEmail}=await sb.from('usuarios').select('*').eq('email',SESSION.user.email).single();
+    if(byEmail){
+      // Ligar auth_id
+      await sb.from('usuarios').update({auth_id:SESSION.user.id}).eq('email',SESSION.user.email);
+      await initProvider(); return;
+    }
+    showToast('❌ Perfil no encontrado. Contactá a soporte.'); await sb.auth.signOut(); return;
+  }
   PROV=data; isOnline=data.online||false;
   document.getElementById('top-s').textContent=`${data.nombre} ${data.apellido||''} ${tt().sub} ${data.karma}`;
   updateOnlineUI();
@@ -347,10 +356,15 @@ function clearClientMap(){ if(clientMark){MAP.removeLayer(clientMark);clientMark
 // ── GPS ──
 function startGPS(){
   if(!navigator.geolocation) return;
+  let lastUpdLat=0,lastUpdLng=0;
   watchId=navigator.geolocation.watchPosition(async pos=>{
     myLat=pos.coords.latitude; myLng=pos.coords.longitude; updateMark();
-    if(isOnline&&SESSION) await callFn('provider-status',{online:true,lat:myLat,lng:myLng});
-  },null,{enableHighAccuracy:true,maximumAge:12000});
+    // Solo actualiza DB si movió >30 metros (ahorra llamadas a Supabase)
+    if(isOnline&&SESSION&&haversine(lastUpdLat,lastUpdLng,myLat,myLng)*1000>30){
+      lastUpdLat=myLat; lastUpdLng=myLng;
+      callFn('provider-status',{online:true,lat:myLat,lng:myLng});
+    }
+  },e=>console.warn('GPS:',e.message),{enableHighAccuracy:true,maximumAge:8000,timeout:15000});
 }
 
 // ── ONLINE TOGGLE ──
@@ -385,7 +399,8 @@ function showJobCard(job){
   const neto=job.tarifa?Math.round(job.tarifa*.85):'~';
   const fee=job.tarifa?Math.round(job.tarifa*.15):'~';
 
-  const render=()=>{
+  // Render inicial
+  const renderCard=()=>{
     document.getElementById('job-card').innerHTML=`
       <div>
         <div style="background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
@@ -396,9 +411,9 @@ function showJobCard(job){
           <div style="display:flex;align-items:center;gap:8px;">
             <svg width="36" height="36" viewBox="0 0 36 36" style="transform:rotate(-90deg);">
               <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
-              <circle cx="18" cy="18" r="15" fill="none" stroke="var(--c)" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="${94.2*(1-secs/30)}" style="transition:stroke-dashoffset 1s linear;"/>
+              <circle cx="18" cy="18" r="15" fill="none" stroke="var(--c)" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="0" id="cnt-circ" style="transition:stroke-dashoffset .9s linear;"/>
             </svg>
-            <span style="font-size:18px;font-weight:900;color:#FFF;min-width:26px;">${secs}</span>
+            <span id="cnt-num" style="font-size:18px;font-weight:900;color:#FFF;min-width:26px;">${secs}</span>
           </div>
         </div>
         <div style="padding:14px 16px;">
@@ -425,9 +440,17 @@ function showJobCard(job){
       </div>`;
   };
 
-  render(); document.getElementById('job-notif').classList.add('show'); closeSheet();
+  renderCard(); document.getElementById('job-notif').classList.add('show'); closeSheet();
   if(cntTid) clearInterval(cntTid);
-  cntTid=setInterval(()=>{ secs--; render(); if(secs<=0){clearInterval(cntTid);rejectJob(job.id);} },1000);
+  cntTid=setInterval(()=>{
+    secs--;
+    // Solo actualizar el timer, no re-renderizar todo el card
+    const numEl=document.getElementById('cnt-num');
+    const circEl=document.getElementById('cnt-circ');
+    if(numEl) numEl.textContent=String(secs);
+    if(circEl) circEl.style.strokeDashoffset=String(94.2*(1-secs/30));
+    if(secs<=0){clearInterval(cntTid);rejectJob(job.id);}
+  },1000);
 }
 
 function rejectJob(id){ clearInterval(cntTid); document.getElementById('job-notif').classList.remove('show'); document.getElementById('nbadge').classList.remove('show'); showRadar(); }
@@ -498,7 +521,14 @@ function startNavigation(){
       </div>
     </div>`);
   if(etaTid) clearInterval(etaTid);
-  etaTid=setInterval(()=>{ if(etaV>0){etaV--;const el=document.getElementById('eta-n');if(el)el.textContent=etaV;} },60000);
+  // Actualizar ETA cada 10s basado en GPS real
+  etaTid=setInterval(()=>{
+    if(!ACTIVE) return;
+    const distKm=haversine(myLat,myLng,ACTIVE.lat||myLat,ACTIVE.lng||myLng);
+    etaV=Math.max(0,Math.round(distKm/0.5)); // 30km/h promedio = 0.5km/min
+    const el=document.getElementById('eta-n');
+    if(el) el.textContent=String(etaV);
+  },10000);
 }
 
 // ── ARRIVED ──
@@ -554,9 +584,10 @@ function showUpload(){
       <div style="flex:1;overflow-y:auto;padding:13px;">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
           ${[['ph1','#F0F4FF','#C7D3F7',tt_().tbTabl],['ph2','#F0FDF4','#BBF7D0',tt_().tbCab],['ph3','#F5F3FF','#DDD6FE',tt_().tbToma],['ph4','#FFFBEB','#FDE68A',tt_().tbPrueba]].map(([id,bg,bc,lb])=>`
-          <div id="${id}" onclick="selectPhoto('${id}','${lb}')" style="background:${bg};border-radius:14px;height:106px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:2px dashed ${bc};transition:all .2s;">
+          <label id="${id}" style="background:${bg};border-radius:14px;height:106px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:2px dashed ${bc};transition:all .2s;position:relative;overflow:hidden;">
+            <input type="file" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="photoSelected('${id}','${lb}',this)"/>
             <div style="font-size:24px;">📷</div><div style="font-size:10px;color:#888;">${lb}</div>
-          </div>`).join('')}
+          </label>`).join('')}
         </div>
         <div style="margin-bottom:12px;">
           <div style="font-size:12px;color:#888;margin-bottom:6px;">Nota para el cliente (opcional)</div>
@@ -575,7 +606,19 @@ function showUpload(){
 function selectPhoto(id,lb){
   photosSelected++;
   const el=document.getElementById(id);
-  if(el){ el.innerHTML=`<div style="font-size:28px;">✅</div><div style="font-size:10px;color:#16A34A;font-weight:600;">${lb}</div>`; el.style.borderStyle='solid'; el.style.borderColor='#22C55E'; el.style.background='rgba(34,197,94,.06)'; }
+  if(el){ el.style.borderColor='#22C55E'; el.style.borderStyle='solid'; el.style.background='rgba(34,197,94,.06)'; el.innerHTML=`<div style="font-size:28px;">✅</div><div style="font-size:10px;color:#16A34A;font-weight:600;">${lb}</div>`; }
+}
+function photoSelected(id,lb,input){
+  if(!input.files?.length) return;
+  photosSelected++;
+  const el=document.getElementById(id);
+  if(!el) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    el.style.padding='0'; el.style.borderColor='#22C55E'; el.style.borderStyle='solid';
+    el.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"/><div style="position:absolute;bottom:4px;right:4px;background:#22C55E;color:#FFF;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;">✓ ${lb}</div>`;
+  };
+  reader.readAsDataURL(input.files[0]);
 }
 
 async function sendPhotos(){
@@ -793,7 +836,12 @@ async function sendChat(){
   document.getElementById('ci').innerHTML='';
   try{
     const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Online:${isOnline},JOB_ACTIVO:${!!ACTIVE}`:'';
-    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[]})});
+    // Historial: últimos 4 mensajes del chat
+    const chatMsgs=Array.from(document.querySelectorAll('#cm .cmsg')).slice(-4).map(el=>({
+      role:el.classList.contains('cmsg-r')?'user':'assistant',
+      content:el.querySelector('.b-u,.b-me')?.textContent||''
+    }));
+    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:chatMsgs})});
     const d=await r.json();
     document.getElementById('typ')?.remove();
     addMsg('ugo',d.hugo_mensaje||'...');
@@ -803,7 +851,8 @@ async function sendChat(){
 }
 
 async function sendSug(el,sug){addMsg('user',sug);el.closest('#ci').innerHTML='';showTyping();
-  try{const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:sug,context:`Proveedor:${PROV?.nombre},Online:${isOnline}`,history:[]})});
+  try{const chatH=Array.from(document.querySelectorAll('#cm .cmsg')).slice(-4).map(el=>({role:el.classList.contains('cmsg-r')?'user':'assistant',content:el.querySelector('.b-u,.b-me')?.textContent||''}));
+    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:sug,context:`Proveedor:${PROV?.nombre},Online:${isOnline}`,history:chatH})});
     const d=await r.json();document.getElementById('typ')?.remove();addMsg('ugo',d.hugo_mensaje||'...');}
   catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
 }
@@ -874,7 +923,7 @@ async function callFn(name,body){
   catch(e){console.error(name,e);return null;}
 }
 function haversine(lat1,lng1,lat2,lng2){const R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function showToast(msg){const t=document.createElement('div');t.style.cssText='position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#111;color:#FFF;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:999;white-space:nowrap;animation:fi .2s ease;';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+function showToast(msg,type='n'){const colors={n:'#111',ok:'#15803D',err:'#DC2626'};const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${colors[type]||colors.n};color:#FFF;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;animation:fi .2s ease;max-width:90vw;text-align:center;`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
 </script>
 </body>
 </html>
