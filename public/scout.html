@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hugo Scout · U.GO</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow-y:auto;font-family:'Syne',sans-serif;background:#0e0e10;color:#e8e8e8;}
+:root{
+  --bg:#0e0e10;--bg2:#18181b;--bg3:#242428;--card:#1c1c20;
+  --border:rgba(255,255,255,.08);--border2:rgba(255,255,255,.14);
+  --cyan:#00f2ff;--cdim:rgba(0,242,255,.07);--text:#e8e8e8;--muted:rgba(232,232,232,.45);
+  --green:#06C167;--amber:#f59e0b;--red:#ef4444;
+  --head:'Syne',sans-serif;--mono:'Space Mono',monospace;
+}
+/* Nav back */
+.scout-nav{display:flex;align-items:center;gap:12px;padding:14px 20px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;}
+.scout-nav a{color:var(--cyan);font-size:12px;text-decoration:none;opacity:.7;transition:opacity .15s;}
+.scout-nav a:hover{opacity:1;}
+.scout-title{font-size:14px;font-weight:700;color:var(--text);}
+.scout-badge{background:var(--cdim);border:1px solid var(--border2);color:var(--cyan);font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;}
+.scout-wrap{max-width:900px;margin:0 auto;padding:20px;}
+
+/* Metric cards */
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px;}
+.ml{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.mv{font-size:20px;font-weight:800;font-family:var(--mono);}
+.mv.c{color:var(--cyan);}.mv.g{color:var(--green);}.mv.a{color:var(--amber);}
+
+/* Panel cards */
+.pn{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.ph{margin-bottom:14px;}
+.pt{font-size:16px;font-weight:800;font-family:var(--head);}
+.ps{font-size:11px;color:var(--muted);margin-top:3px;}
+
+/* Buttons */
+.dbtn{padding:7px 14px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;border:none;font-family:var(--head);transition:all .15s;}
+.dbtn-c{background:var(--cyan);color:#000;}
+.dbtn-c:hover{opacity:.88;}
+.dbtn-n{background:var(--bg3);color:var(--text);border:1px solid var(--border2);}
+.dbtn-n:hover{background:var(--card);}
+.dbtn:disabled{opacity:.35;cursor:not-allowed;}
+
+/* Scout specific */
+/* ── SCOUT ── */
+.sc-map{height:255px;border-radius:11px;border:1px solid var(--border);background:var(--bg2);overflow:hidden;margin-bottom:11px;}
+.sc-ctrl{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-bottom:11px;}
+.sc-fl{flex:1.5;min-width:130px;}
+.sc-fr{min-width:85px;max-width:100px;}
+.sc-fl label,.sc-fr label{display:block;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.sc-fl select,.sc-fr select,.sc-inp{background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--mono);font-size:11px;padding:6px 9px;width:100%;outline:none;transition:border-color .15s;appearance:none;}
+.sc-fl select:focus,.sc-fr select:focus,.sc-inp:focus{border-color:var(--border2);}
+.sc-fl select option,.sc-fr select option{background:var(--bg3);}
+.sc-pgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:11px;}
+.sc-pc{background:var(--card);border:1px solid var(--border);border-radius:11px;padding:11px;cursor:pointer;transition:border-color .18s;}
+.sc-pc:hover{border-color:rgba(0,242,255,.18);}
+.sc-pc.sel{border-color:var(--border2);}
+.sc-dist{display:inline-flex;align-items:center;gap:3px;font-size:9px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:2px;}
+.sc-d0{background:rgba(0,229,122,.1);color:var(--green);}
+.sc-d1{background:rgba(245,158,11,.1);color:var(--amber);}
+.sc-d2{background:rgba(255,255,255,.05);color:var(--muted);}
+.sc-ri{font-size:11px;color:var(--muted);display:flex;align-items:flex-start;gap:5px;margin-bottom:3px;line-height:1.4;overflow:hidden;}
+.sc-ri span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sc-panel{border:1px solid var(--border2);border-radius:11px;padding:14px;margin-bottom:11px;display:none;background:rgba(0,242,255,.02);}
+.sc-psec{margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+.sc-psec:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none;}
+.sc-slb{font-size:9px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:7px;display:flex;align-items:center;justify-content:space-between;}
+.sc-ci{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.sc-cv{font-size:11px;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.sc-cv.mu{color:var(--muted);}
+.sc-tbt{padding:4px 10px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:10px;cursor:pointer;font-family:var(--mono);transition:all .15s;}
+.sc-tbt.on{background:var(--cdim);border-color:var(--border2);color:var(--cyan);}
+.sc-tbt:hover:not(.on){background:rgba(255,255,255,.04);}
+.sc-mb{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:10px;min-height:80px;font-size:11px;line-height:1.7;color:var(--text);margin-bottom:9px;word-break:break-word;}
+.sc-esb{background:var(--cdim);border:1px solid var(--border2);border-radius:7px;padding:5px 9px;font-size:10px;color:var(--cyan);margin-bottom:7px;display:none;}
+.sc-acts{display:flex;gap:5px;flex-wrap:wrap;}
+.sc-bt{padding:5px 11px;border-radius:7px;border:1px solid var(--border);background:transparent;color:var(--muted);font-family:var(--mono);font-size:10px;cursor:pointer;transition:all .18s;display:inline-flex;align-items:center;gap:4px;text-decoration:none;}
+.sc-bt:hover:not(:disabled){background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.14);}
+.sc-bt:disabled{opacity:.38;cursor:not-allowed;}
+.sc-bt.pr{background:var(--cdim);border-color:var(--border2);color:var(--cyan);}
+.sc-bt.pr:hover:not(:disabled){background:rgba(0,242,255,.12);}
+.sc-bt.g{background:rgba(0,229,122,.08);border-color:rgba(0,229,122,.25);color:var(--green);}
+.sc-bt.g:hover:not(:disabled){background:rgba(0,229,122,.15);}
+.sc-ld{display:none;text-align:center;padding:1.5rem;}
+.sc-emp{display:none;text-align:center;padding:2rem;color:var(--muted);}
+.sc-rbar{display:none;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.sc-arow{display:none;margin-bottom:11px;}
+.sc-note{padding:8px 12px;background:var(--cdim);border:1px solid var(--border);border-radius:8px;font-size:10px;color:var(--muted);display:flex;gap:6px;line-height:1.5;}
+.sc-loc{display:flex;align-items:center;gap:11px;padding:11px 14px;margin-bottom:11px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- TOPBAR -->
+<header id="tb">
+  <span class="logo">U.GO</span>
+  <span class="logo-sub">Panel Soberano</span>
+  <div class="tb-chip chip-amber" onclick="nav('disputas')">⚠&nbsp; 3 disputas abiertas</div>
+  <div class="tb-chip chip-amber" onclick="nav('documentos')" style="margin-left:5px;">📋&nbsp; 7 docs pendientes</div>
+  <div class="tb-chip chip-red" onclick="nav('mapa')" style="margin-left:5px;">📍&nbsp; Norte da Ilha sin cobertura</div>
+  <div class="tb-right">
+    <div class="live-pill"><div class="live-dot"></div>Sistema activo</div>
+    <div id="clock"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav id="sb">
+  <button class="nb on" data-s="dashboard" onclick="nav('dashboard')">📊<span class="nb-tip">Dashboard</span></button>
+  <button class="nb" data-s="mapa" onclick="nav('mapa')">🗺<span class="nb-tip">Mapa de calor</span></button>
+  <button class="nb" data-s="servicios" onclick="nav('servicios')">⚡<span class="nb-tip">Servicios</span></button>
+  <button class="nb" data-s="disputas" onclick="nav('disputas')">⚖<span class="nb-tip">Disputas</span></button>
+  <button class="nb" data-s="usuarios" onclick="nav('usuarios')">👥<span class="nb-tip">Usuarios</span></button>
+  <button class="nb" data-s="documentos" onclick="nav('documentos')">📋<span class="nb-tip">Documentos</span></button>
+  <button class="nb" data-s="finanzas" onclick="nav('finanzas')">💎<span class="nb-tip">Finanzas</span></button>
+
+</style>
+</head>
+<body>
+<!-- NAV -->
+<div class="scout-nav">
+  <a href="/">← Panel de Control</a>
+  <span style="color:var(--muted);">·</span>
+  <span class="scout-title">Hugo Scout</span>
+  <span class="scout-badge">📡 Reclutamiento</span>
+</div>
+
+<div class="scout-wrap">
+  <!-- SCOUT -->
+  <section id="sec-scout" class="sec">
+    <div class="ph">
+      <div class="pt">Hugo Scout</div>
+      <div class="ps">Reclutamiento de proveedores por geolocalización · WhatsApp + Email outreach</div>
+    </div>
+
+    <div class="mg" style="margin-bottom:11px;">
+      <div class="mc"><div class="ml">Encontrados</div><div class="mv c" id="sc-sf">0</div></div>
+      <div class="mc"><div class="ml">Contactados</div><div class="mv g" id="sc-sc">0</div></div>
+      <div class="mc"><div class="ml">Interesados</div><div class="mv a" id="sc-si">0</div></div>
+      <div class="mc"><div class="ml">Incorporados</div><div class="mv" id="sc-sj">0</div></div>
+    </div>
+
+    <div class="pn sc-loc">
+      <div style="width:36px;height:36px;border-radius:50%;background:var(--cdim);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;color:var(--cyan);flex-shrink:0;font-size:16px;">📡</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">Ubicación del cliente</div>
+        <div style="font-size:12px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" id="sc-loc-lbl">Sin ubicación — detecta GPS o ingresa dirección</div>
+      </div>
+      <button class="dbtn dbtn-c" id="sc-gps-bt" onclick="scGetGPS()">📍 GPS</button>
+      <button class="dbtn dbtn-n" onclick="scToggleAddr()" title="Dirección manual">⌨</button>
+    </div>
+
+    <div class="sc-arow" id="sc-arow">
+      <div style="display:flex;gap:6px;">
+        <input type="text" class="sc-inp" id="sc-addr" placeholder="Dirección, barrio o ciudad..." style="flex:1;">
+        <button class="dbtn dbtn-c" onclick="scGeocode()">🔍 Ir</button>
+        <button class="dbtn dbtn-n" onclick="scToggleAddr()">✕</button>
+      </div>
+    </div>
+
+    <div class="sc-ctrl">
+      <div class="sc-fl">
+        <label>Categoría de servicio</label>
+        <select id="sc-cat">
+          <option value="electrician">Electricista / Eletricista</option>
+          <option value="plumber">Plomero / Encanador</option>
+          <option value="cleaning">Limpieza / Limpeza</option>
+          <option value="locksmith">Cerrajero / Chaveiro</option>
+          <option value="painter">Pintor</option>
+          <option value="carpenter">Carpintero / Marceneiro</option>
+          <option value="gardener">Jardinero / Jardineiro</option>
+          <option value="hvac">Climatización / AC</option>
+          <option value="it">Técnico TI</option>
+          <option value="appliance">Electrodomésticos</option>
+        </select>
+      </div>
+      <div class="sc-fr">
+        <label>Radio</label>
+        <select id="sc-rad">
+          <option value="1000">1 km</option>
+          <option value="2000" selected>2 km</option>
+          <option value="5000">5 km</option>
+          <option value="10000">10 km</option>
+        </select>
+      </div>
+      <button class="dbtn dbtn-c" id="sc-srch-bt" onclick="scDoSearch()" disabled style="align-self:flex-end;">🔎 Buscar cerca</button>
+      <button class="dbtn dbtn-n" id="sc-exp-bt" onclick="scExportCSV()" disabled style="align-self:flex-end;" title="Exportar CSV">⬇ CSV</button>
+    </div>
+
+    <div class="sc-map" id="sc-map">
+      <div id="sc-map-ph" style="height:255px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--muted);">
+        <div style="font-size:28px;">🗺</div>
+        <div style="font-size:11px;">Detecta GPS o ingresa dirección</div>
+        <div style="font-size:10px;color:var(--muted);">Clic en el mapa para fijar ubicación del cliente</div>
+      </div>
+    </div>
+
+    <div class="sc-ld" id="sc-ld">
+      <div class="typing" style="justify-content:center;margin-bottom:5px;"><span></span><span></span><span></span></div>
+      <div style="font-size:11px;color:var(--muted);" id="sc-ld-t">Buscando...</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px;opacity:.6;" id="sc-ld-s">Consultando OpenStreetMap</div>
+    </div>
+
+    <div class="sc-rbar" id="sc-rbar">
+      <span style="font-family:var(--head);font-size:13px;font-weight:700;">Proveedores cercanos</span>
+      <span style="font-size:10px;color:var(--muted);" id="sc-rmeta"></span>
+    </div>
+
+    <div class="sc-pgrid" id="sc-grid"></div>
+
+    <div class="sc-emp" id="sc-emp">
+      <div style="font-size:24px;margin-bottom:8px;">🔍</div>
+      <div style="font-size:11px;margin-bottom:11px;" id="sc-emp-t">Sin resultados. Amplía el radio.</div>
+      <button class="dbtn dbtn-c" onclick="scDoSearch(true)">🤖 Buscar con Claude IA</button>
+    </div>
+
+    <!-- Outreach Panel -->
+    <div class="sc-panel" id="sc-panel">
+
+      <div class="sc-psec">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+          <div>
+            <div style="font-family:var(--head);font-size:14px;font-weight:700;color:var(--text);" id="sc-op-nm">—</div>
+            <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+              <span style="font-size:10px;color:var(--muted);" id="sc-op-cat"></span>
+              <span class="sc-dist sc-d0" id="sc-op-dist"></span>
+            </div>
+          </div>
+          <button class="dbtn dbtn-n" onclick="scClosePanel()" style="padding:3px 8px;">✕</button>
+        </div>
+      </div>
+
+      <div class="sc-psec">
+        <div class="sc-slb">
+          <span>Datos de contacto</span>
+          <button class="dbtn dbtn-c" id="sc-ext-bt" onclick="scExtractData()" style="font-size:9px;padding:3px 8px;">🔍 Extraer datos</button>
+        </div>
+        <div id="sc-c-phone" style="display:none;" class="sc-ci"><span style="font-size:12px;color:var(--muted);">📞</span><span class="sc-cv" id="sc-cv-phone"></span><button class="sc-bt" onclick="scCpyField('sc-cv-phone')" style="padding:3px 7px;font-size:9px;">⎘</button></div>
+        <div id="sc-c-email" style="display:none;" class="sc-ci"><span style="font-size:12px;color:var(--muted);">✉</span><span class="sc-cv" id="sc-cv-email"></span><button class="sc-bt" onclick="scCpyField('sc-cv-email')" style="padding:3px 7px;font-size:9px;">⎘</button></div>
+        <div id="sc-c-email-empty" class="sc-ci"><span style="font-size:12px;color:var(--muted);">✉</span><span class="sc-cv mu">Email no encontrado</span><button class="dbtn dbtn-n" onclick="scExtractData()" style="font-size:9px;padding:3px 8px;">🔍 Buscar</button></div>
+        <div id="sc-c-web" style="display:none;" class="sc-ci"><span style="font-size:12px;color:var(--muted);">🌐</span><a class="sc-cv" id="sc-cv-web" href="#" target="_blank" style="color:var(--cyan);text-decoration:none;"></a></div>
+        <div id="sc-c-ig" style="display:none;" class="sc-ci"><span style="font-size:12px;color:var(--muted);">📸</span><span class="sc-cv" id="sc-cv-ig"></span></div>
+        <div id="sc-c-hrs" style="display:none;" class="sc-ci"><span style="font-size:12px;color:var(--muted);">🕐</span><span class="sc-cv" id="sc-cv-hrs"></span></div>
+      </div>
+
+      <div class="sc-psec">
+        <div class="sc-slb">
+          <span>Mensaje de outreach</span>
+          <button class="dbtn dbtn-n" onclick="scRegenMsg()" style="font-size:9px;padding:3px 8px;">↺ Regenerar</button>
+        </div>
+        <div style="display:flex;gap:4px;margin-bottom:9px;">
+          <button class="sc-tbt on" id="sc-wa-tb" onclick="scSwitchTab('wa',this)">📲 WhatsApp</button>
+          <button class="sc-tbt" id="sc-em-tb" onclick="scSwitchTab('em',this)">✉ Email</button>
+        </div>
+        <div class="sc-esb" id="sc-esb"></div>
+        <div class="sc-mb" id="sc-msg-box">
+          <div class="typing"><span></span><span></span><span></span></div>
+        </div>
+        <div class="sc-acts">
+          <button class="sc-bt" id="sc-cpy-bt" onclick="scCpyMsg()">⎘ Copiar</button>
+          <a id="sc-wa-link" class="sc-bt g" href="#" target="_blank" style="display:none;">📲 Enviar WA</a>
+          <a id="sc-gm-link" class="sc-bt" href="#" target="_blank" style="display:none;">✉ Gmail</a>
+          <a id="sc-ml-link" class="sc-bt" href="#" target="_blank" style="display:none;">📧 Mail app</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="sc-note">
+      <span>ℹ</span>
+      <div>Búsqueda via <strong style="color:var(--cyan);">OpenStreetMap + Claude IA</strong>. Extracción de email vía web search. Producción: <strong style="color:var(--cyan);">Google Places Nearby Search API</strong> + clave en <code>ANTHROPIC_API_KEY</code> Vercel.</div>
+    </div>
+  </section>
+
+</main>
+
+<!-- HUGO ADMIN PANEL -->
+<aside id="hp">
+  <div class="hphead">
+    <div>
+      <div class="ow" id="orb" onclick="ask('Dame un resumen completo del estado del sistema ahora.')">
+        <div class="or2"></div>
+        <div class="or1"></div>
+        <div class="oi" id="orbi">🌀</div>
+      </div>
+      <div class="ostate" id="ost">inactivo</div>
+    </div>
+    <div style="flex:1;margin-left:9px;">
+      <div class="hptitle">Hugo Admin</div>
+      <div class="hpsub">Orbe soberano · ejecuta solo con autorización</div>
+    </div>
+  </div>
+  <div id="hm">
+    <div class="msg msg-h">
+      <div class="msnd">Hugo</div>
+      <div class="mbub">Sistema operativo. Detecto <span style="color:var(--amber)">3 disputas</span> (R$535 retenidos), <span style="color:var(--red)">Norte da Ilha sin cobertura</span>, y <span style="color:var(--green)">89 proveedores online</span>. ¿Qué revisamos?</div>
+    </div>
+  </div>
+  <div id="ac"></div>
+  <div class="hinrow">
+    <input class="hin" id="hin" placeholder="Pregunta al orbe admin..." onkeydown="if(event.key==='Enter')send()">
+    <button class="hsend" onclick="send()">→</button>
+  </div>
+</aside>
+
+</div>
+<script>
+const SYS = `Eres Hugo en modo ADMINISTRADOR SOBERANO del sistema U.GO — marketplace de servicios de LATAM.
+
+ESTADO DEL SISTEMA AHORA:
+- Servicios activos: 47 (bóveda total R$23.450)
+- Proveedores online: 89/134 registrados
+- Disputas: 3 abiertas (D-2847: trabajo incompleto R$180, D-2845: horas extra R$250, D-2841: no llegó R$105)
+- Zona sin cobertura: Norte da Ilha (8 pedidos fallidos hoy)
+- Documentos pendientes: 7 (1 OCR ilegible)
+- Proveedor suspendido: Pedro Mendes (rating 3.2)
+- Spike de demanda previsto: Beira Mar Norte 18:00 (3 proveedores vs 12 esperados)
+- Ingresos hoy: R$4.200 · Comisión U.GO: R$630 · Mes: R$28.450
+
+REGLAS ESTRICTAS:
+1. Responde en español, conciso y profesional (máx 3-4 frases)
+2. Detecta anomalías y propón acciones concretas
+3. Cuando propongas una acción ejecutable (liberar fondos, suspender usuario, enviar notificaciones masivas, reembolsar), termina TU MENSAJE con exactamente:
+   [ACCION: descripción breve de la acción]
+4. NUNCA ejecutes acciones financieras o de suspensión sin autorización explícita del admin
+5. Si el admin autoriza, confirma la ejecución brevemente`;
+
+let hist=[], thinking=false, pending=null;
+
+async function send(pre){
+  if(thinking)return;
+  const inp=document.getElementById('hin');
+  const msg=pre||inp.value.trim();
+  if(!msg)return;
+  inp.value='';
+  addMsg(msg,'a');
+  hist.push({role:'user',content:msg});
+  setOrb('thinking');
+  showTyp();
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:hist})
+    });
+    const d=await r.json();
+    const raw=d.content?.[0]?.text||'Error de conexión. Intenta de nuevo.';
+    hideTyp();
+    const m=raw.match(/\[ACCION: (.+)\]/);
+    const clean=raw.replace(/\[ACCION: .+\]/,'').trim();
+    hist.push({role:'assistant',content:clean});
+    addMsg(clean,'h');
+    if(m){pending=m[1];showAuth(pending);}
+    setOrb('idle');
+  }catch(e){
+    hideTyp();
+    addMsg('Sin conexión con el backend. Verifica tu API key.','h');
+    setOrb('idle');
+  }
+}
+
+function ask(prompt){
+  nav('dashboard');
+  setTimeout(()=>{
+    document.getElementById('hin').value=prompt;
+    send(prompt);
+  },80);
+}
+
+function addMsg(txt,who){
+  const c=document.getElementById('hm');
+  const d=document.createElement('div');
+  d.className=`msg msg-${who}`;
+  d.innerHTML=`<div class="msnd">${who==='h'?'Hugo':'Admin'}</div><div class="mbub">${txt.replace(/\n/g,'<br>')}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+
+function showTyp(){
+  thinking=true;
+  const c=document.getElementById('hm');
+  const d=document.createElement('div');
+  d.className='msg msg-h';d.id='typ';
+  d.innerHTML='<div class="mbub"><div class="typing"><span></span><span></span><span></span></div></div>';
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function hideTyp(){thinking=false;document.getElementById('typ')?.remove();}
+
+function showAuth(action){
+  document.getElementById('ac').innerHTML=`
+    <div class="acard">
+      <div class="atitle">⚠ Autorización requerida</div>
+      <div class="adesc">${action}</div>
+      <div class="abtns">
+        <button class="ayes" onclick="auth(true)">✓ Autorizar</button>
+        <button class="ano" onclick="auth(false)">✗ Cancelar</button>
+      </div>
+    </div>`;
+}
+function auth(ok){
+  document.getElementById('ac').innerHTML='';
+  if(ok){
+    addMsg('Autorizado. Ejecutando...','a');
+    hist.push({role:'user',content:'Autorizado. Ejecuta y confirma brevemente.'});
+    send('Autorizado. Confirma la ejecución brevemente.');
+  }else{
+    addMsg('Acción cancelada.','a');
+  }
+  pending=null;
+}
+
+function setOrb(s){
+  const o=document.getElementById('orb'),i=document.getElementById('orbi'),l=document.getElementById('ost');
+  o.classList.toggle('thinking',s==='thinking');
+  i.textContent=s==='thinking'?'🧠':s==='listening'?'🎙':'🌀';
+  l.textContent=s==='thinking'?'procesando...':s==='listening'?'● escuchando':'inactivo';
+}
+
+// Navigation
+function nav(s){
+  document.querySelectorAll('.sec').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.nb[data-s]').forEach(x=>x.classList.remove('on'));
+  document.getElementById('sec-'+s)?.classList.add('on');
+  document.querySelector(`.nb[data-s="${s}"]`)?.classList.add('on');
+  if(s==='mapa')setTimeout(drawFull,80);
+  if(s==='scout')setTimeout(scNavInit,80);
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// ── HUGO SCOUT ──────────────────────────────────────────────
+const SC_API='/api/proxy';
+let scLat=null,scLng=null,scMap=null,scUMark=null,scPMarks=[],scProvs=[],scSelIdx=null,scTab='wa';
+let scWa={},scEm={},scEx={},scMapInited=false;
+
+const SC_TAGS={electrician:[['craft','electrician'],['shop','electrician']],plumber:[['craft','plumber']],cleaning:[['craft','cleaning'],['shop','dry_cleaning']],locksmith:[['craft','locksmith']],painter:[['craft','painter'],['craft','decorator']],carpenter:[['craft','carpenter'],['craft','joiner']],gardener:[['craft','gardener'],['craft','landscaping']],hvac:[['craft','hvac'],['craft','refrigeration']],it:[['shop','computer'],['craft','it'],['craft','electronics_repair']],appliance:[['craft','electronics_repair'],['shop','electronics_repair']]};
+const SC_ICO={electrician:'⚡',plumber:'🔧',cleaning:'🧹',locksmith:'🔑',painter:'🎨',carpenter:'🪚',gardener:'🌿',hvac:'❄',it:'💻',appliance:'🔌'};
+
+function scNavInit(){if(!scMapInited&&scLat&&scLng)scInitMap(scLat,scLng);}
+
+function scInitMap(lat,lng){
+  if(!scMapInited){
+    delete L.Icon.Default.prototype._getIconUrl;
+    L.Icon.Default.mergeOptions({iconRetinaUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',iconUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',shadowUrl:'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'});
+    scMap=L.map('sc-map').setView([lat,lng],14);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(scMap);
+    scMap.on('click',e=>scSetLoc(e.latlng.lat,e.latlng.lng));
+    document.getElementById('sc-map-ph')?.remove();scMapInited=true;
+  }else scMap.setView([lat,lng],14);
+  if(scUMark)scUMark.remove();
+  scUMark=L.marker([lat,lng],{icon:L.divIcon({html:'<div style="width:14px;height:14px;background:#00f2ff;border:3px solid white;border-radius:50%"></div>',iconSize:[14,14],iconAnchor:[7,7],className:''})}).addTo(scMap).bindPopup('<b>Ubicación cliente</b>');
+}
+
+function scSetLoc(lat,lng,label){
+  scLat=lat;scLng=lng;
+  if(scMapInited)scInitMap(lat,lng);
+  else if(document.getElementById('sec-scout')?.classList.contains('on'))scInitMap(lat,lng);
+  document.getElementById('sc-srch-bt').disabled=false;
+  document.getElementById('sc-loc-lbl').textContent=label||(lat.toFixed(5)+', '+lng.toFixed(5));
+  if(!label)fetch('https://nominatim.openstreetmap.org/reverse?lat='+lat+'&lon='+lng+'&format=json').then(r=>r.json()).then(d=>{const p=[d.address?.suburb||d.address?.neighbourhood,d.address?.city||d.address?.town,d.address?.state].filter(Boolean);if(p.length)document.getElementById('sc-loc-lbl').textContent=p.join(', ')+' ('+lat.toFixed(4)+', '+lng.toFixed(4)+')';}).catch(()=>{});
+}
+
+function scGetGPS(){
+  const b=document.getElementById('sc-gps-bt');b.textContent='⏳ Detectando...';b.disabled=true;
+  if(!navigator.geolocation){scSetLoc(-27.5969,-48.5495,'Florianópolis, SC (demo)');b.textContent='📍 GPS';b.disabled=false;return;}
+  navigator.geolocation.getCurrentPosition(p=>{scSetLoc(p.coords.latitude,p.coords.longitude);b.textContent='📍 GPS ✓';b.disabled=false;},_=>{scSetLoc(-27.5969,-48.5495,'Florianópolis, SC (demo)');b.textContent='📍 GPS';b.disabled=false;},{timeout:8000});
+}
+
+function scToggleAddr(){const r=document.getElementById('sc-arow');r.style.display=r.style.display==='none'?'block':'none';if(r.style.display!=='none')setTimeout(()=>document.getElementById('sc-addr').focus(),50);}
+
+async function scGeocode(){
+  const q=document.getElementById('sc-addr').value.trim();if(!q)return;
+  try{const r=await fetch('https://nominatim.openstreetmap.org/search?q='+encodeURIComponent(q)+'&format=json&limit=1');const d=await r.json();if(!d.length){alert('No encontrado.');return;}scSetLoc(parseFloat(d[0].lat),parseFloat(d[0].lon),d[0].display_name.split(',').slice(0,3).join(','));document.getElementById('sc-arow').style.display='none';}catch(e){alert('Error.');}
+}
+
+function scHav(a,b,c,d){const R=6371,dA=(c-a)*Math.PI/180,dB=(d-b)*Math.PI/180,x=Math.sin(dA/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dB/2)**2;return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));}
+function scFmtD(d){return d==null?'?':d<1?Math.round(d*1000)+'m':d.toFixed(1)+'km';}
+function scEsc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function scCatLabel(){const s=document.getElementById('sc-cat');return s.options[s.selectedIndex].text.split('/')[0].trim();}
+
+async function scCallAI(sys,msgs,search=false){
+  let ms=[...msgs],txt='';
+  for(let i=0;i<6;i++){
+    const body={model:'claude-sonnet-4-6',max_tokens:2000,system:sys,messages:ms};
+    if(search)body.tools=[{type:'web_search_20250305',name:'web_search'}];
+    const r=await fetch(SC_API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();if(d.error)throw new Error(d.error.message);
+    txt=(d.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('');
+    if(d.stop_reason==='end_turn')break;
+    if(d.stop_reason==='tool_use'){ms=[...ms,{role:'assistant',content:d.content}];const tr=(d.content||[]).filter(b=>b.type==='tool_use').map(b=>({type:'tool_result',tool_use_id:b.id,content:'done'}));ms=[...ms,{role:'user',content:tr}];}
+  }return txt;
+}
+
+async function scDoSearch(aiOnly=false){
+  if(!scLat||!scLng)return;
+  const cat=document.getElementById('sc-cat').value,rad=parseInt(document.getElementById('sc-rad').value);
+  scWa={};scEm={};scEx={};scSelIdx=null;scPMarks.forEach(m=>m.remove());scPMarks=[];
+  scShowLd('Buscando '+scCatLabel()+' en '+rad/1000+' km...','Consultando OpenStreetMap...');
+  document.getElementById('sc-rbar').style.display='none';document.getElementById('sc-grid').innerHTML='';document.getElementById('sc-emp').style.display='none';document.getElementById('sc-panel').style.display='none';
+  let list=[];
+  if(!aiOnly){try{list=await scSearchOSM(scLat,scLng,cat,rad);}catch(e){console.warn('OSM:',e);}}
+  if(list.length<3){document.getElementById('sc-ld-s').textContent='Usando Claude IA...';try{const ai=await scSearchAI(scLat,scLng,cat,rad);const names=new Set(list.map(p=>p.name.toLowerCase()));list=[...list,...ai.filter(p=>!names.has(p.name.toLowerCase()))];}catch(e){console.warn('AI:',e);}}
+  scHideLd();
+  if(!list.length){document.getElementById('sc-emp').style.display='block';document.getElementById('sc-exp-bt').disabled=true;return;}
+  scProvs=list.sort((a,b)=>(a.dist??99)-(b.dist??99));
+  scRenderGrid(scProvs,cat);
+  scProvs.forEach((p,i)=>{if(!p.lat||!p.lng)return;const col=p.dist<1?'#00e57a':p.dist<3?'#f59e0b':'#888';const m=L.marker([p.lat,p.lng],{icon:L.divIcon({html:'<div style="width:10px;height:10px;background:'+col+';border:2px solid white;border-radius:50%"></div>',iconSize:[10,10],iconAnchor:[5,5],className:''})}).addTo(scMap).bindPopup('<b>'+scEsc(p.name)+'</b><br>'+scFmtD(p.dist));m.on('click',()=>scOpenPanel(i));scPMarks.push(m);});
+  const gp=scProvs.filter(p=>p.lat&&p.lng);if(gp.length&&scMap)try{scMap.fitBounds([[scLat,scLng],...gp.map(p=>[p.lat,p.lng])],{padding:[20,20]});}catch(e){}
+  document.getElementById('sc-rbar').style.display='flex';document.getElementById('sc-rmeta').textContent=scProvs.length+' · '+(scProvs.some(p=>p.src==='ai')?'OSM + Claude IA':'OpenStreetMap');
+  document.getElementById('sc-exp-bt').disabled=false;document.getElementById('sc-sf').textContent=scProvs.length;
+}
+
+async function scSearchOSM(lat,lng,cat,rad){
+  const tags=SC_TAGS[cat]||[['craft',cat]],cond=tags.map(([k,v])=>'node["'+k+'"="'+v+'"](around:'+rad+','+lat+','+lng+');').join('');
+  const r=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',body:'data='+encodeURIComponent('[out:json][timeout:20];('+cond+');out body;')});
+  const d=await r.json();
+  return(d.elements||[]).filter(e=>e.tags?.name).map(e=>({name:e.tags.name,lat:e.lat,lng:e.lon,phone:e.tags.phone||e.tags['contact:phone']||null,website:e.tags.website||e.tags['contact:website']||null,address:[e.tags['addr:street'],e.tags['addr:housenumber']].filter(Boolean).join(' ')||e.tags['addr:city']||null,dist:scHav(lat,lng,e.lat,e.lon),src:'osm'}));
+}
+
+async function scSearchAI(lat,lng,cat,rad){
+  const sys='You are a business finder for U.GO. Find real local businesses near GPS coordinates. Return ONLY valid JSON array (no markdown). Each: {"name":"string","phone":"string or null","address":"string","website":"string or null","dist":number_km,"lat":null,"lng":null,"src":"ai"}. Find 6 real businesses.';
+  const q='Find real '+cat+' ('+scCatLabel()+') businesses within '+rad/1000+'km of lat='+lat.toFixed(4)+', lng='+lng.toFixed(4)+'. Return JSON only.';
+  const txt=await scCallAI(sys,[{role:'user',content:q}],true);
+  const clean=txt.replace(/```(?:json)?/g,'').replace(/```/g,''),arr=clean.match(/\[[\s\S]*\]/);if(!arr)return[];
+  try{return JSON.parse(arr[0]).map(p=>({...p,dist:typeof p.dist==='number'?p.dist:99,src:'ai'}));}catch(e){return[];}
+}
+
+function scRenderGrid(list,cat){
+  const ico=SC_ICO[cat]||'🏢';
+  document.getElementById('sc-grid').innerHTML=list.map((p,i)=>{
+    const dc=p.dist<1?'sc-d0':p.dist<3?'sc-d1':'sc-d2';
+    return'<div class="sc-pc" id="sc-pc'+i+'" onclick="scOpenPanel('+i+')">'+
+    '<div style="display:flex;align-items:flex-start;gap:9px;margin-bottom:6px;">'+
+    '<div style="width:28px;height:28px;border-radius:7px;background:var(--cdim);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;">'+ico+'</div>'+
+    '<div style="flex:1;min-width:0;"><div style="font-family:var(--head);font-size:12px;font-weight:700;color:var(--text);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="'+scEsc(p.name)+'">'+scEsc(p.name)+'</div>'+
+    '<div class="sc-dist '+dc+'">📍 '+scFmtD(p.dist)+'</div></div></div>'+
+    (p.address?'<div class="sc-ri"><span style="flex-shrink:0;font-size:10px;">📍</span><span>'+scEsc(p.address)+'</span></div>':'')+
+    (p.phone?'<div class="sc-ri"><span style="flex-shrink:0;font-size:10px;">📞</span><span>'+scEsc(p.phone)+'</span></div>':'')+
+    '<div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);font-size:10px;color:var(--cyan);">→ Ver outreach</div></div>';
+  }).join('');
+}
+
+function scOpenPanel(i){
+  scSelIdx=i;const p=scProvs[i];
+  document.querySelectorAll('.sc-pc').forEach((c,j)=>c.classList.toggle('sel',j===i));
+  if(p.lat&&p.lng&&scMap){scMap.setView([p.lat,p.lng],16);scPMarks.filter((_,j)=>j===i).forEach(m=>m.openPopup());}
+  document.getElementById('sc-op-nm').textContent=p.name;
+  document.getElementById('sc-op-cat').textContent=scCatLabel();
+  const dd=document.getElementById('sc-op-dist');dd.textContent='📍 '+scFmtD(p.dist);dd.className='sc-dist '+(p.dist<1?'sc-d0':p.dist<3?'sc-d1':'sc-d2');
+  scRenderContactRows(i);scTab='wa';scSetTabOn('sc-wa-tb');
+  if(scWa[i])scRenderMsg('wa',scWa[i]);else{scSetMsgLd();scGenWA(i);}
+  document.getElementById('sc-panel').style.display='block';
+  setTimeout(()=>document.getElementById('sc-panel').scrollIntoView({behavior:'smooth',block:'start'}),80);
+}
+
+function scRenderContactRows(i){
+  const p=scProvs[i],ex=scEx[i]||{};
+  const phone=ex.phone||p.phone,email=ex.email||null,web=ex.website||p.website,ig=ex.instagram||null,hrs=ex.hours||null;
+  scSh('sc-c-phone',!!phone);if(phone)scTx('sc-cv-phone',phone);
+  scSh('sc-c-email',!!email);if(email)scTx('sc-cv-email',email);
+  scSh('sc-c-email-empty',!email);
+  scSh('sc-c-web',!!web);if(web){const a=document.getElementById('sc-cv-web');a.href=web;a.textContent=web.replace(/^https?:\/\//,'').substring(0,32);}
+  scSh('sc-c-ig',!!ig);if(ig)scTx('sc-cv-ig','@'+ig.replace(/^@/,''));
+  scSh('sc-c-hrs',!!hrs);if(hrs)scTx('sc-cv-hrs',hrs);
+}
+function scSh(id,v){document.getElementById(id).style.display=v?'flex':'none';}
+function scTx(id,v){document.getElementById(id).textContent=v;}
+function scClosePanel(){document.getElementById('sc-panel').style.display='none';document.querySelectorAll('.sc-pc').forEach(c=>c.classList.remove('sel'));scSelIdx=null;}
+
+async function scExtractData(){
+  if(scSelIdx===null)return;const p=scProvs[scSelIdx],idx=scSelIdx,btn=document.getElementById('sc-ext-bt');
+  btn.textContent='⏳';btn.disabled=true;
+  const sys='You are a business researcher. Search the web for contact info. Return ONLY valid JSON (no markdown): {"email":"string or null","phone":"full phone with country code or null","website":"full URL or null","instagram":"handle without @ or null","hours":"business hours or null"}';
+  const q='Find contact info for "'+p.name+'" '+(p.address?'at '+p.address+', ':'')+'Brazil. Find their email, phone, website, Instagram, and hours.';
+  try{const txt=await scCallAI(sys,[{role:'user',content:q}],true);const clean=txt.replace(/```(?:json)?/g,'').replace(/```/g,''),obj=clean.match(/\{[\s\S]*?\}/);if(obj){scEx[idx]=JSON.parse(obj[0]);if(scSelIdx===idx)scRenderContactRows(idx);}}
+  catch(e){console.warn(e);}finally{btn.textContent='🔍 Extraer datos';btn.disabled=false;}
+}
+
+function scSetMsgLd(){
+  document.getElementById('sc-msg-box').innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  document.getElementById('sc-esb').style.display='none';
+  ['sc-wa-link','sc-gm-link','sc-ml-link'].forEach(id=>document.getElementById(id).style.display='none');
+}
+
+function scRenderMsg(type,raw){
+  let subj='',body=raw;const esb=document.getElementById('sc-esb');
+  if(type==='em'){const sm=raw.match(/^Assunto:\s*(.+)/im);if(sm){subj=sm[1].trim();body=raw.replace(/^Assunto:\s*.+\n?/im,'').trim();}if(subj){esb.textContent='Assunto: '+subj;esb.style.display='block';}else esb.style.display='none';}
+  else esb.style.display='none';
+  document.getElementById('sc-msg-box').innerHTML=scEsc(body).replace(/\*(.*?)\*/g,'<strong>$1</strong>').replace(/\n/g,'<br>');
+  const p=scSelIdx!==null?scProvs[scSelIdx]:null,ex=scSelIdx!==null?(scEx[scSelIdx]||{}):null;
+  const waL=document.getElementById('sc-wa-link'),gmL=document.getElementById('sc-gm-link'),mlL=document.getElementById('sc-ml-link');
+  if(type==='wa'&&p?.phone){waL.href='https://wa.me/'+(p.phone||'').replace(/[^0-9]/g,'')+'?text='+encodeURIComponent(body);waL.style.display='inline-flex';}else waL.style.display='none';
+  if(type==='em'){const email=ex?.email||'';if(email){gmL.href='https://mail.google.com/mail/?view=cm&fs=1&to='+encodeURIComponent(email)+'&su='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);gmL.style.display='inline-flex';mlL.href='mailto:'+encodeURIComponent(email)+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(body);mlL.style.display='inline-flex';}else{gmL.style.display='none';mlL.style.display='none';}}else{gmL.style.display='none';mlL.style.display='none';}
+}
+
+async function scGenWA(i){
+  if(scWa[i]){if(scSelIdx===i)scRenderMsg('wa',scWa[i]);return;}
+  const p=scProvs[i];
+  const sys='You are Hugo Scout for U.GO marketplace in Latin America. Write a warm WhatsApp message (max 100 words) in Brazilian Portuguese inviting this service business to join U.GO. Use *bold* for key points, max 2 emojis. Benefits: receive nearby job requests via app, 85% of payment, zero fees, secure escrow. Do NOT use brackets. Be specific.';
+  const q='Write WhatsApp outreach for: Business='+p.name+', Service='+scCatLabel()+', Distance='+scFmtD(p.dist)+' from client area'+(p.phone?', Phone='+p.phone:'')+(p.address?', Address='+p.address:'');
+  try{const txt=await scCallAI(sys,[{role:'user',content:q}],false);scWa[i]=txt;if(scSelIdx===i&&scTab==='wa')scRenderMsg('wa',txt);}
+  catch(e){if(scSelIdx===i)document.getElementById('sc-msg-box').textContent='Error generando mensaje.';}
+}
+
+async function scGenEM(i){
+  if(scEm[i]){if(scSelIdx===i)scRenderMsg('em',scEm[i]);return;}
+  const p=scProvs[i],ex=scEx[i]||{};
+  const sys='You are Hugo Scout for U.GO marketplace in Latin America. Write a professional email in Brazilian Portuguese to invite this business to join U.GO. FIRST LINE must be exactly "Assunto: [subject]", then blank line, then body (150-200 words). Benefits: nearby job requests, 85% payment, zero fees, secure escrow. Do NOT use brackets. Be specific.';
+  const q='Write email outreach for: Business='+p.name+', Service='+scCatLabel()+', Distance='+scFmtD(p.dist)+(ex.email?', Email='+ex.email:'')+(p.address?', Address='+p.address:'');
+  try{const txt=await scCallAI(sys,[{role:'user',content:q}],false);scEm[i]=txt;if(scSelIdx===i&&scTab==='em')scRenderMsg('em',txt);}
+  catch(e){if(scSelIdx===i)document.getElementById('sc-msg-box').textContent='Error generando email.';}
+}
+
+function scSwitchTab(tab,btn){
+  scTab=tab;scSetTabOn(tab==='wa'?'sc-wa-tb':'sc-em-tb');
+  if(scSelIdx===null)return;
+  if(tab==='wa'){if(scWa[scSelIdx])scRenderMsg('wa',scWa[scSelIdx]);else{scSetMsgLd();scGenWA(scSelIdx);}}
+  else{if(scEm[scSelIdx])scRenderMsg('em',scEm[scSelIdx]);else{scSetMsgLd();scGenEM(scSelIdx);}}
+}
+function scSetTabOn(id){document.querySelectorAll('.sc-tbt').forEach(t=>t.classList.remove('on'));document.getElementById(id).classList.add('on');}
+async function scRegenMsg(){if(scSelIdx===null)return;if(scTab==='wa')delete scWa[scSelIdx];else delete scEm[scSelIdx];scSetMsgLd();scTab==='wa'?scGenWA(scSelIdx):scGenEM(scSelIdx);}
+
+function scCpyMsg(){
+  if(scSelIdx===null)return;const cache=scTab==='wa'?scWa:scEm,raw=cache[scSelIdx];if(!raw)return;
+  navigator.clipboard.writeText(raw).then(()=>{const b=document.getElementById('sc-cpy-bt');if(b){const p=b.textContent;b.textContent='✓ Copiado';setTimeout(()=>b.textContent=p,2000);}}).catch(()=>alert('Error al copiar.'));
+}
+function scCpyField(id){const v=document.getElementById(id)?.textContent;if(!v)return;navigator.clipboard.writeText(v).catch(()=>{});}
+
+function scExportCSV(){
+  const rows=[['Nombre','Teléfono','Email','Dirección','Distancia','Website','Instagram','Fuente'],...scProvs.map((p,i)=>{const ex=scEx[i]||{};return[p.name,ex.phone||p.phone||'',ex.email||'',p.address||'',scFmtD(p.dist),ex.website||p.website||'',ex.instagram||'',p.src||''];})];
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download='scout_proveedores.csv';document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+}
+function scShowLd(t,s){document.getElementById('sc-ld').style.display='block';document.getElementById('sc-ld-t').textContent=t;document.getElementById('sc-ld-s').textContent=s;}
+function scHideLd(){document.getElementById('sc-ld').style.display='none';}
+</script>
+</body>
+
+
+// Nav init on load
+window.addEventListener('load', () => {
+  scNavInit && scNavInit();
+});
+</script>
+</body>
+</html>
