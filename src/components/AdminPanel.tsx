@@ -230,14 +230,26 @@ export function AdminPanel() {
     (supabase as any).auth.getSession().then(({ data }: any) => {
       setSession(data.session); setAuthLoading(false);
     });
-    const { data: { subscription } } = (supabase as any).auth.onAuthStateChange((_: any, s: any) => setSession(s));
+    const { data: { subscription } } = (supabase as any).auth.onAuthStateChange((_: any, s: any) => {
+      if (s && s.user?.email?.toLowerCase() !== 'sebastianzoth@gmail.com') {
+        (supabase as any).auth.signOut();
+        return;
+      }
+      setSession(s);
+    });
     return () => subscription.unsubscribe();
   }, []);
 
+  const ADMIN_EMAIL = 'sebastianzoth@gmail.com';
+
   const doLogin = async () => {
     setLoginErr('');
+    if (loginEmail.trim().toLowerCase() !== ADMIN_EMAIL) {
+      setLoginErr('Acceso denegado. Solo el administrador puede ingresar.');
+      return;
+    }
     const { error } = await (supabase as any).auth.signInWithPassword({ email: loginEmail, password: loginPass });
-    if (error) setLoginErr(error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
+    if (error) setLoginErr(error.message === 'Invalid login credentials' ? 'Contraseña incorrecta' : error.message);
   };
 
   const [section, setSection] = useState<Section>('dashboard');
