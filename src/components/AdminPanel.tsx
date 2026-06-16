@@ -9,6 +9,7 @@ import {
 import { supabase } from '../lib/supabase';
 import { resetRealtimeChannel, onRealtimeEvent } from '../hooks/useAdminData';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
+import { SecScout } from './ScoutSection';
 import { ConversationalOrb } from './ConversationalOrb';
 
 type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout';
