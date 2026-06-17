@@ -872,6 +872,7 @@ async function showTrabajos(){
 }
 
 // ── HUGO CHAT ──
+let provChatHistory=[];
 function openChat(){
   provChatHistory=[];
   const tt_=tt();
@@ -902,67 +903,45 @@ async function sendChat(){
   const msg=inp?.value.trim();if(!msg)return;inp.value='';
   addMsg('user',msg);showTyping();
   document.getElementById('ci').innerHTML='';
+  provChatHistory.push({role:'user',content:msg});
   try{
-    const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Online:${isOnline},JOB_ACTIVO:${!!ACTIVE}`:'';
-    // Historial: últimos 4 mensajes del chat
-    const chatMsgs=Array.from(document.querySelectorAll('#cm .cmsg')).slice(-4).map(el=>({
-      role:el.classList.contains('cmsg-r')?'user':'assistant',
-      content:el.querySelector('.b-u,.b-me')?.textContent||''
-    }));
-    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:chatMsgs})});
-    const d=await r.json();
-    document.getElementById('typ')?.remove();
-    addMsg('ugo',d.hugo_mensaje||'...');
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:buildProvCtx(),history:provChatHistory.slice(-8)})});
+    const d=await r.json();document.getElementById('typ')?.remove();
+    const reply=d.hugo_mensaje||'...';addMsg('ugo',reply);
+    provChatHistory.push({role:'assistant',content:reply});
   }catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
+  showProvSugs();
+}
   const ci=document.getElementById('ci');
   if(ci) ci.innerHTML=tt().hSugs.map(s=>`<button style="padding:6px 12px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onclick="sendSug(this,'${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('');
 }
 
-async function sendSug(el,sug){addMsg('user',sug);el.closest('#ci').innerHTML='';showTyping();
-  try{const chatH=Array.from(document.querySelectorAll('#cm .cmsg')).slice(-4).map(el=>({role:el.classList.contains('cmsg-r')?'user':'assistant',content:el.querySelector('.b-u,.b-me')?.textContent||''}));
-    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:sug,context:`Proveedor:${PROV?.nombre},Online:${isOnline}`,history:chatH})});
-    const d=await r.json();document.getElementById('typ')?.remove();addMsg('ugo',d.hugo_mensaje||'...');}
-  catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
+function buildProvCtx(){
+  if(!PROV) return '';
+  return [`Proveedor:${PROV.nombre},Karma:${PROV.karma},Servicios:${PROV.servicios_completados||0}`,`Online:${isOnline},JobActivo:${!!ACTIVE}`,ACTIVE?`TrabajoActual:estado=${ACTIVE.estado}`:''  ,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
+}
+function showProvSugs(){
+  const el=document.getElementById('ci'); if(!el) return;
+  el.innerHTML=tt().hSugs.map(s=>`<button onclick="sendSug(this,'${s.replace(/'/g,"\'"  )}')" style="padding:6px 12px;border-radius:20px;border:1.5px solid #E5E5E5;background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onmouseover="this.style.borderColor='#00C8D7'" onmouseout="this.style.borderColor='#E5E5E5'">${s}</button>`).join('');
+}
+async function sendSug(el,sug){
+  addMsg('user',sug);
+  const ci=el.closest('#ci')||document.getElementById('ci');
+  if(ci) ci.innerHTML='';
+  showTyping();
+  provChatHistory.push({role:'user',content:sug});
+  try{
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({role:'proveedor',message:sug,context:buildProvCtx(),history:provChatHistory.slice(-8)})});
+    const d=await r.json();
+    document.getElementById('typ')?.remove();
+    const reply=d.hugo_mensaje||'...';
+    addMsg('ugo',reply);
+    provChatHistory.push({role:'assistant',content:reply});
+  }catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
+  showProvSugs();
 }
 
-function addMsg(from,text){
-  const cm=document.getElementById('cm');if(!cm)return;
-  const t=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
-  const d=document.createElement('div');d.className='cmsg'+(from==='user'?' cmsg-r':'');
-  if(from==='ugo') d.innerHTML=`<div style="display:flex;align-items:flex-start;gap:7px;max-width:85%;"><div class="uorb" style="flex-shrink:0;margin-top:2px;">🌀</div><div><div class="b-u" style="border-radius:4px 16px 16px 16px;">${text.replace(/
-/g,'<br>')}</div><div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-left:4px;">${t}</div></div></div>`;
-  else d.innerHTML=`<div style="display:flex;flex-direction:column;align-items:flex-end;max-width:85%;"><div class="b-me" style="border-radius:16px 4px 16px 16px;">${text}</div><div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-right:4px;">${t}</div></div>`;
-  cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);
-}
-function showTyping(){const cm=document.getElementById('cm');if(!cm)return;const d=document.createElement('div');d.className='cmsg';d.id='typ';d.innerHTML=`<div class="uorb">🌀</div><div class="b-u"><div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="animation-delay:0s"></span><span class="dot" style="animation-delay:.15s"></span><span class="dot" style="animation-delay:.3s"></span></div></div>`;cm.appendChild(d);cm.scrollTop=cm.scrollHeight;}
-
-// ── ADMIN REALTIME ──
-function subscribeNotifs(){
-  if(!PROV) return;
-  rtNotif=sb.channel('notifs-'+PROV.id)
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'notificaciones',filter:`usuario_id=eq.${PROV.id}`},p=>showAdminNotif(p.new))
-    .subscribe();
-}
-function subscribeStatus(){
-  if(!PROV) return;
-  rtStatus=sb.channel('status-'+PROV.id)
-    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${PROV.id}`},p=>{ if(!p.new.activo) document.getElementById('susp-screen').classList.add('show'); })
-    .subscribe();
-}
-function showAdminNotif(n){
-  const card=document.getElementById('adm-card'),ov=document.getElementById('adm-overlay');
-  card.innerHTML=`
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-      <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🌀</div>
-      <div><div style="font-size:10px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;">Mensaje de U.GO</div><div style="font-weight:800;font-size:15px;margin-top:1px;">${n.titulo}</div></div>
-    </div>
-    <div style="font-size:13px;color:#444;line-height:1.5;margin-bottom:14px;">${n.cuerpo}</div>
-    <button style="width:100%;padding:11px;background:#111;color:#FFF;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;" onclick="document.getElementById('adm-overlay').classList.remove('show')">Entendido ✓</button>`;
-  ov.classList.add('show');
-  if(navigator.vibrate) navigator.vibrate([200,100,200]);
-}
-
-// ── LOGOUT ──
 async function doLogout(){
   if(watchId) navigator.geolocation.clearWatch(watchId);
   if(rtJobs){sb.removeChannel(rtJobs);rtJobs=null;}
