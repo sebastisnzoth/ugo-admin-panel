@@ -71,3 +71,4 @@ export default defineConfig([
   },
 ])
 ```
+# Hugo Admin v2
