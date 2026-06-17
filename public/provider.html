@@ -115,8 +115,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
     <div id="vlog">
       <div class="atit">Bienvenido</div>
       <div class="adesc">Ingresá a tu cuenta de proveedor</div>
-      <div class="afl"><label>Email</label><input id="le" type="email" placeholder="tu@email.com"/></div>
-      <div class="afl"><label>Contraseña</label><input id="lp" type="password" placeholder="••••••••"/></div>
+      <div class="afl"><label for="le">Email</label><input id="le" type="email" placeholder="tu@email.com"/></div>
+      <div class="afl"><label for="lp">Contraseña</label><input id="lp" type="password" placeholder="••••••••"/></div>
       <button class="abtn" onclick="doLogin()">Ingresar →</button>
       <div style="display:flex;align-items:center;gap:10px;margin:14px 0;"><div style="flex:1;height:1px;background:#E5E5E5;"></div><span style="font-size:11px;color:#AAA;white-space:nowrap;">o continuar con</span><div style="flex:1;height:1px;background:#E5E5E5;"></div></div>
       <button onclick="signInGoogle()" style="width:100%;padding:12px;background:#FFF;border:1.5px solid #E0E0E0;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s;" onmouseover="this.style.borderColor='#4285F4'" onmouseout="this.style.borderColor='#E0E0E0'">
@@ -129,12 +129,12 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
       <div class="atit">Crear cuenta</div>
       <div class="adesc">Registrate como proveedor de U.GO</div>
       <div class="ag2">
-        <div class="afl"><label>Nombre</label><input id="rn" placeholder="Juan"/></div>
-        <div class="afl"><label>Apellido</label><input id="ra" placeholder="García"/></div>
+        <div class="afl"><label for="rn">Nombre</label><input id="rn" placeholder="Juan"/></div>
+        <div class="afl"><label for="ra">Apellido</label><input id="ra" placeholder="García"/></div>
       </div>
-      <div class="afl"><label>Email</label><input id="re" type="email" placeholder="tu@email.com"/></div>
-      <div class="afl"><label>Teléfono</label><input id="rt" type="tel" placeholder="+55 48 9 9999-9999"/></div>
-      <div class="afl"><label>Contraseña</label><input id="rp" type="password" placeholder="Mínimo 6 caracteres"/></div>
+      <div class="afl"><label for="re">Email</label><input id="re" type="email" placeholder="tu@email.com"/></div>
+      <div class="afl"><label for="rt">Teléfono</label><input id="rt" type="tel" placeholder="+55 48 9 9999-9999"/></div>
+      <div class="afl"><label for="rp">Contraseña</label><input id="rp" type="password" placeholder="Mínimo 6 caracteres"/></div>
       <div class="afl"><label>Categoría principal</label><select id="rcat"><option value="">Cargando...</option></select></div>
       <button class="abtn" onclick="doRegister()">Crear cuenta →</button>
       <div style="display:flex;align-items:center;gap:10px;margin:14px 0;"><div style="flex:1;height:1px;background:#E5E5E5;"></div><span style="font-size:11px;color:#AAA;white-space:nowrap;">o registrarse con</span><div style="flex:1;height:1px;background:#E5E5E5;"></div></div>
