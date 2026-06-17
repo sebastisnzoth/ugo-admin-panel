@@ -155,97 +155,48 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const FN=SB_URL+'/functions/v1';
-const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
-
-// ── STATE ──
-let SESSION=null,CLIENT=null,lang='es',myLat=-27.5954,myLng=-48.5480;
-let MAP=null,myMark=null,provMark=null,routeLine=null;
-let ACTIVE_SVC=null,SELECTED_PROV=null,starsV=0;
-let rtSvc=null,rtProv=null,rtNotif=null;
-let chatHistory=[];
-let pendingCatId=null,pendingDesc='',pendingProviders=[];
-
-// ── TRANSLATIONS ──
-const TR={
-  es:{sub:'● Sistema activo',loc:'Florianópolis',lb:'PT',
-      hello:'¡Hola',wlc:'Soy Hugo, tu asistente de servicios. ¿Qué necesitás hoy?',
-      sugs:['🔧 Electricista','🪠 Plomero','🧹 Limpieza','🎨 Pintura','❄️ Aire acond.','🔑 Cerrajero'],
-      searching:'Buscando proveedores disponibles...',noProvs:'Sin proveedores disponibles ahora. Te avisamos cuando haya uno cerca.',
-      book:'Contratar por R$',confirm:'Confirmar servicio',cancel:'Cancelar',
-      tracked:'Tu proveedor está en camino',eta:'ETA',min:'min',
-      inprog:'Servicio en progreso',worknote:'Marco está trabajando...',
-      photos:'Fotos del trabajo',photosD:'Tu proveedor envió evidencias del trabajo realizado',
-      approve:'✓ Aprobar y liberar pago',dispute:'⚑ Abrir disputa',
-      rq:'¿Cómo estuvo el servicio?',cm:'Comentario (opcional)...',sbm:'Enviar calificación',
-      done:'¡Trabajo completado!',dones:'Tu pago fue liberado al proveedor',
-      ns:'Solicitar otro servicio',
-      noJob:'Sin servicios activos',noJobS:'Usá el botón ● para solicitar un servicio',
-      bovTitle:'🔒 Bóveda U.GO',bovP:'Tu pago está protegido. Se libera al proveedor solo cuando vos aprobás el trabajo.',
-      histTitle:'Historial de servicios',
-      perfTitle:'Mi perfil',perfServ:'Servicios',perfGasto:'Gasto total',
-      cerrar:'Cerrar sesión',
-      nlt:{r:'Inicio',t:'Servicios',b:'Bóveda',p:'Perfil'}},
-  pt:{sub:'● Sistema ativo',loc:'Florianópolis',lb:'ES',
-      hello:'Olá',wlc:'Sou o Hugo, seu assistente de serviços. O que você precisa hoje?',
-      sugs:['🔧 Eletricista','🪠 Encanador','🧹 Limpeza','🎨 Pintura','❄️ Ar condic.','🔑 Chaveiro'],
-      searching:'Buscando profissionais disponíveis...',noProvs:'Sem profissionais disponíveis agora. Avisaremos quando houver um perto.',
-      book:'Contratar por R$',confirm:'Confirmar serviço',cancel:'Cancelar',
-      tracked:'Seu profissional está a caminho',eta:'ETA',min:'min',
-      inprog:'Serviço em andamento',worknote:'Marco está trabalhando...',
-      photos:'Fotos do trabalho',photosD:'Seu profissional enviou evidências do trabalho realizado',
-      approve:'✓ Aprovar e liberar pagamento',dispute:'⚑ Abrir disputa',
-      rq:'Como foi o serviço?',cm:'Comentário (opcional)...',sbm:'Enviar avaliação',
-      done:'Trabalho concluído!',dones:'Seu pagamento foi liberado ao profissional',
-      ns:'Solicitar outro serviço',
-      noJob:'Sem serviços ativos',noJobS:'Use o botão ● para solicitar um serviço',
-      bovTitle:'🔒 Cofre U.GO',bovP:'Seu pagamento está protegido. É liberado ao profissional somente quando você aprovar o trabalho.',
-      histTitle:'Histórico de serviços',
-      perfTitle:'Meu perfil',perfServ:'Serviços',perfGasto:'Gasto total',
-      cerrar:'Sair da conta',
-      nlt:{r:'Início',t:'Serviços',b:'Cofre',p:'Perfil'}},
-};
-const tt=()=>TR[lang];
-
-// ── AUTH ──
-async function bootAuth(){
-  const hideAuth=()=>document.getElementById('auth')?.classList.add('hide');
-  const showAuth=()=>document.getElementById('auth')?.classList.remove('hide');
-
-  // 1. PKCE: ?code= en la URL (Google OAuth)
-  const code=new URLSearchParams(window.location.search).get('code');
-  if(code){
-    const{data,error}=await sb.auth.exchangeCodeForSession(code);
-    if(data?.session){
-      SESSION=data.session;
-      window.history.replaceState({},'',window.location.pathname);
-      hideAuth(); await initClient(); return;
-    }
-  }
-
-  // 2. Implicit: #access_token en el hash
-  if(window.location.hash.includes('access_token')){
-    await new Promise(r=>setTimeout(r,300));
-    const{data}=await sb.auth.getSession();
-    if(data?.session){
-      SESSION=data.session;
-      window.history.replaceState({},'',window.location.pathname);
-      hideAuth(); await initClient(); return;
-    }
-  }
-
-  // 3. Sesión guardada
-  const{data:{session}}=await sb.auth.getSession();
-  if(session){ SESSION=session; hideAuth(); await initClient(); return; }
-
-  showAuth();
-}
-
-sb.auth.onAuthStateChange(async(ev,ses)=>{
-  if(ev==='SIGNED_IN'&&ses&&!SESSION){ SESSION=ses; document.getElementById('auth')?.classList.add('hide'); await initClient(); }
-  if(ev==='SIGNED_OUT'){ SESSION=null; document.getElementById('auth')?.classList.remove('hide'); }
+// ── AUTH — limpia y simple ────────────────────────────────────────
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  auth: { detectSessionInUrl: true, persistSession: true, autoRefreshToken: true, flowType: 'implicit' }
 });
 
-bootAuth();
+async function signInGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://ugo-admin-panel.vercel.app/client.html' }
+  });
+  if (error) showErr('Google: ' + error.message);
+}
+
+async function doLogin() {
+  const email = document.getElementById('le').value.trim();
+  const pass  = document.getElementById('lp').value;
+  if (!email || !pass) return showErr('Completá email y contraseña');
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) showErr(error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
+}
+
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    SESSION = session;
+    document.getElementById('auth').classList.add('hide');
+    await initClient();
+  } else {
+    document.getElementById('auth').classList.remove('hide');
+  }
+})();
+
+sb.auth.onAuthStateChange(async (event, session) => {
+  SESSION = session;
+  if (event === 'SIGNED_IN' && session) {
+    document.getElementById('auth').classList.add('hide');
+    initClient();
+  } else if (event === 'SIGNED_OUT') {
+    document.getElementById('auth').classList.remove('hide');
+    SESSION = null;
+  }
+});
 function sw(v){document.getElementById('vlog').style.display=v==='log'?'':'none';document.getElementById('vreg').style.display=v==='reg'?'':'none';showErr('');}
 function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.style.display=m?'block':'none';}
 async function doLogin(){

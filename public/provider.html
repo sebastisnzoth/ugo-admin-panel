@@ -206,115 +206,52 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const FN=SB_URL+'/functions/v1';
-const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
-
-// ── STATE ──
-let SESSION=null,PROV=null,lang='es',screen='home',isOnline=false;
-let myLat=-27.5954,myLng=-48.5480,watchId=null;
-let MAP=null,myMark=null,clientMark=null,routeLine=null;
-let ACTIVE=null,cntTid=null,etaTid=null;
-let rtJobs=null,rtNotif=null,rtStatus=null;
-
-// ── TRANSLATIONS ──
-const TR={
-  es:{online:'Online',offline:'Offline',sub:'· ⭐',lb:'PT',
-      searching:'Buscando trabajos en tu zona...',simulate:'Simular trabajo →',
-      jobIn:'¡Trabajo disponible!',accept:'Aceptar — R$',reject:'Rechazar',
-      jobType:'Tipo',jobAddr:'Dirección',jobDist:'Distancia',jobDesc:'Descripción',
-      jobVal:'Valor neto',jobComis:'Comisión U.GO',jobTotal:'Total',
-      nav:'Navegar al cliente →',arriving:'En camino',arrivedBtn:'Llegué al cliente',
-      inService:'Servicio en progreso',startBtn:'Iniciar trabajo →',
-      uploadBtn:'Subir fotos del trabajo terminado →',
-      uploadDone:'Fotos enviadas al cliente',awaitAppr:'Esperando aprobación...',
-      ugoMed:'U.GO está monitoreando el trabajo. El cliente recibirá las fotos y aprobará el pago.',
-      approved:'¡Cliente aprobó el trabajo! 🎉',paid:'Pago recibido',newJob:'Buscar otro trabajo →',
-      earn:'Ganancias',earnToday:'Hoy',earnWeek:'Semana',earnMonth:'Mes',
-      earnPend:'En bóveda',earnComp:'Completados',earnRating:'Rating',earnHist:'Historial',
-      perfTitle:'Mi perfil',perfServ:'Servicios',perfRat:'Rating',perfKarma:'Karma',
-      perfDocs:'Documentos',perfCats:'Categorías',perfReviews:'Reseñas',verified:'✅ Verificado',
-      hello:'¡Hola! 👋',hugoH2:'Soy tu asistente U.GO.',hugoQ:'¿En qué puedo ayudarte?',
-      hSugs:['¿Debo aceptar este trabajo?','¿Dónde hay más demanda?','¿Cómo mejoro mi rating?','Ver mis ganancias'],
-      ol:'● Online',nlt:{r:'Radar',t:'Trabajos',g:'Ganancias',p:'Perfil'},
-      photos:'Fotos del trabajo',photosS:'Adjuntá fotos para que el cliente apruebe.',
-      enviar:'Enviar fotos al cliente →',tbTabl:'Antes',tbCab:'Proceso',tbToma:'Detalle',tbPrueba:'Terminado',
-      etaLabel:'ETA',min:'min',working:'Trabajando...',sist:'Sistema activo',
-      noJobs:'Sin trabajos activos',noJobsS:'Activá tu disponibilidad para recibir trabajo',
-      resenias:'Reseñas recientes',cerrar:'Cerrar sesión',
-  },
-  pt:{online:'Online',offline:'Offline',sub:'· ⭐',lb:'ES',
-      searching:'Buscando trabalhos na sua zona...',simulate:'Simular trabalho →',
-      jobIn:'Trabalho disponível!',accept:'Aceitar — R$',reject:'Recusar',
-      jobType:'Tipo',jobAddr:'Endereço',jobDist:'Distância',jobDesc:'Descrição',
-      jobVal:'Valor líquido',jobComis:'Comissão U.GO',jobTotal:'Total',
-      nav:'Navegar ao cliente →',arriving:'A caminho',arrivedBtn:'Cheguei ao cliente',
-      inService:'Serviço em andamento',startBtn:'Iniciar trabalho →',
-      uploadBtn:'Enviar fotos do trabalho concluído →',
-      uploadDone:'Fotos enviadas ao cliente',awaitAppr:'Aguardando aprovação...',
-      ugoMed:'U.GO está monitorando o trabalho. O cliente receberá as fotos e aprovará o pagamento.',
-      approved:'Cliente aprovou o trabalho! 🎉',paid:'Pagamento recebido',newJob:'Buscar outro trabalho →',
-      earn:'Ganhos',earnToday:'Hoje',earnWeek:'Semana',earnMonth:'Mês',
-      earnPend:'Na bóveda',earnComp:'Concluídos',earnRating:'Avaliação',earnHist:'Histórico',
-      perfTitle:'Meu perfil',perfServ:'Serviços',perfRat:'Avaliação',perfKarma:'Karma',
-      perfDocs:'Documentos',perfCats:'Categorias',perfReviews:'Avaliações',verified:'✅ Verificado',
-      hello:'Olá! 👋',hugoH2:'Sou seu assistente U.GO.',hugoQ:'Como posso te ajudar?',
-      hSugs:['Devo aceitar este trabalho?','Onde há mais demanda?','Como melhoro minha avaliação?','Ver meus ganhos'],
-      ol:'● Online',nlt:{r:'Radar',t:'Trabalhos',g:'Ganhos',p:'Perfil'},
-      photos:'Fotos do trabalho',photosS:'Adicione fotos para o cliente aprovar.',
-      enviar:'Enviar fotos ao cliente →',tbTabl:'Antes',tbCab:'Processo',tbToma:'Detalhe',tbPrueba:'Concluído',
-      etaLabel:'ETA',min:'min',working:'Trabalhando...',sist:'Sistema ativo',
-      noJobs:'Sem trabalhos ativos',noJobsS:'Ative sua disponibilidade para receber trabalho',
-      resenias:'Avaliações recentes',cerrar:'Sair da conta',
-  }
-};
-const tt=()=>TR[lang];
-
-// ── AUTH ──
-// ── AUTH BOOTSTRAP — maneja email/password + Google OAuth ──────────
-async function bootAuth(){
-  const hideAuth=()=>document.getElementById('auth')?.classList.add('hide');
-  const showAuth=()=>{ document.getElementById('auth')?.classList.remove('hide'); loadCats(); };
-
-  // 1. PKCE: ?code= en la URL (Google OAuth con PKCE flow)
-  const urlParams=new URLSearchParams(window.location.search);
-  const code=urlParams.get('code');
-  if(code){
-    const{data,error}=await sb.auth.exchangeCodeForSession(code);
-    if(data?.session){
-      SESSION=data.session;
-      window.history.replaceState({},'',window.location.pathname);
-      hideAuth(); await initProvider(); return;
-    }
-  }
-
-  // 2. Implicit: #access_token= en el hash (Google OAuth con implicit flow)
-  if(window.location.hash.includes('access_token')){
-    const{data}=await sb.auth.getSession();
-    if(data?.session){
-      SESSION=data.session;
-      window.history.replaceState({},'',window.location.pathname);
-      hideAuth(); await initProvider(); return;
-    }
-  }
-
-  // 3. Sesión existente (refresh token en localStorage)
-  const{data:{session}}=await sb.auth.getSession();
-  if(session){ SESSION=session; hideAuth(); await initProvider(); return; }
-
-  // 4. Sin sesión → mostrar login
-  showAuth();
-}
-
-// Listener para cambios posteriores (logout, token refresh)
-sb.auth.onAuthStateChange(async(ev,ses)=>{
-  if(ev==='SIGNED_IN'&&ses&&!SESSION){
-    SESSION=ses; document.getElementById('auth')?.classList.add('hide'); await initProvider();
-  }
-  if(ev==='SIGNED_OUT'){
-    SESSION=null; document.getElementById('auth')?.classList.remove('hide'); loadCats();
-  }
+// ── AUTH — limpia y simple ────────────────────────────────────────
+const sb = supabase.createClient(SB_URL, SB_KEY, {
+  auth: { detectSessionInUrl: true, persistSession: true, autoRefreshToken: true, flowType: 'implicit' }
 });
 
-bootAuth();
+async function signInGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: 'https://ugo-admin-panel.vercel.app/provider.html' }
+  });
+  if (error) showErr('Google: ' + error.message);
+}
+
+async function doLogin() {
+  const email = document.getElementById('le').value.trim();
+  const pass  = document.getElementById('lp').value;
+  if (!email || !pass) return showErr('Completá email y contraseña');
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) showErr(error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
+}
+
+// Init: detecta sesión existente o OAuth redirect
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    SESSION = session;
+    document.getElementById('auth').classList.add('hide');
+    await initProvider();
+  } else {
+    document.getElementById('auth').classList.remove('hide');
+    loadCats();
+  }
+})();
+
+// Escucha cambios futuros
+sb.auth.onAuthStateChange(async (event, session) => {
+  SESSION = session;
+  if (event === 'SIGNED_IN' && session) {
+    document.getElementById('auth').classList.add('hide');
+    initProvider();
+  } else if (event === 'SIGNED_OUT') {
+    document.getElementById('auth').classList.remove('hide');
+    SESSION = null;
+    loadCats();
+  }
+});
 
 function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
 function showErr(m){ const e=document.getElementById('aerr'); e.textContent=m; e.style.display=m?'block':'none'; }
