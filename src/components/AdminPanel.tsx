@@ -222,6 +222,48 @@ function downloadCSV(data: any[], filename: string) {
   a.click();
 }
 
+// ── Memoria del Orbe Component ─────────────────────────────
+function MemoriaOrbe({ usuarioId }: { usuarioId: string }) {
+  const [prefs, setPrefs] = React.useState<any[]>([]);
+  const [newKey, setNewKey] = React.useState('');
+  const [newVal, setNewVal] = React.useState('');
+
+  React.useEffect(() => {
+    (supabase as any).from('user_preferences').select('*').eq('usuario_id', usuarioId)
+      .then(({ data }: any) => { if (data) setPrefs(data); });
+  }, [usuarioId]);
+
+  const save = async () => {
+    if (!newKey.trim()) return;
+    await (supabase as any).rpc('upsert_user_preference', {
+      p_usuario_id: usuarioId,
+      p_categoria: newKey,
+      p_data: { nota: newVal }
+    });
+    setPrefs(p => [...p.filter(x => x.categoria_key !== newKey), { categoria_key: newKey, data: { nota: newVal } }]);
+    setNewKey(''); setNewVal('');
+  };
+
+  return (
+    <div>
+      <div style={{display:'flex',flexDirection:'column',gap:6,marginBottom:8}}>
+        {prefs.map(p => (
+          <div key={p.categoria_key} style={{background:'var(--bg)',borderRadius:8,padding:'6px 10px',fontSize:11,display:'flex',gap:8}}>
+            <span style={{color:'var(--cyan)',fontWeight:700}}>{p.categoria_key}:</span>
+            <span style={{color:'var(--muted)'}}>{JSON.stringify(p.data)}</span>
+          </div>
+        ))}
+        {!prefs.length && <div style={{fontSize:10,color:'var(--muted)'}}>Sin preferencias registradas</div>}
+      </div>
+      <div style={{display:'flex',gap:6}}>
+        <input className="finput" style={{flex:1}} value={newKey} onChange={e=>setNewKey(e.target.value)} placeholder="Clave (ej: preferencias_servicio)"/>
+        <input className="finput" style={{flex:2}} value={newVal} onChange={e=>setNewVal(e.target.value)} placeholder="Valor (ej: no tocar timbre)"/>
+        <button className="btn btn-p" onClick={save}>+</button>
+      </div>
+    </div>
+  );
+}
+
 export function AdminPanel() {
   const [session, setSession] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);

@@ -21,6 +21,20 @@ export default async function handler(req: any, res: any) {
       .select('clave, valor')
       .in('clave', [`hugo_prompt_${role}`, 'api_gemini_key']);
 
+    // Inyectar preferencias del usuario si es cliente o proveedor
+    let prefsContext = '';
+    if (role !== 'admin' && context.includes('Cliente:') || context.includes('Proveedor:')) {
+      // Extract usuario info from context to get preferences
+      const { data: prefs } = await sb
+        .from('user_preferences')
+        .select('categoria_key, data')
+        .limit(5);
+      if (prefs?.length) {
+        prefsContext = '\nPREFERENCIAS: ' + prefs.map((p: any) =>
+          `${p.categoria_key}=${JSON.stringify(p.data)}`).join(' | ');
+      }
+    }
+
     const cfg: Record<string, string> = {};
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
 
@@ -29,7 +43,7 @@ export default async function handler(req: any, res: any) {
 
     const systemPrompt =
       (cfg[`hugo_prompt_${role}`] || 'Eres Hugo, núcleo de inteligencia de U.GO. Respondé en español. Máximo 4 frases.') +
-      (context ? `\n\nESTADO:\n${context}` : '');
+      (context ? `\n\nESTADO:\n${context}` : '') + prefsContext;
 
     const geminiHistory = history.slice(-6).map((m: any) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
