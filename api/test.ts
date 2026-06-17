@@ -20,10 +20,10 @@ export default async function handler(req: any, res: any) {
     let geminiError = '';
     if (key) {
       const r = await fetch(
-        'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent',
+        'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent',
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-goog-api-key': key },
+          headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
           body: JSON.stringify({ contents: [{ role:'user', parts:[{ text:'Di "hola"' }] }] }),
         }
       );
