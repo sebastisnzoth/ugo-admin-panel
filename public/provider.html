@@ -206,7 +206,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-ser
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const FN=SB_URL+'/functions/v1';
-const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true}});
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
 
 // ── STATE ──
 let SESSION=null,PROV=null,lang='es',screen='home',isOnline=false;
@@ -269,34 +269,52 @@ const TR={
 const tt=()=>TR[lang];
 
 // ── AUTH ──
+// ── AUTH BOOTSTRAP — maneja email/password + Google OAuth ──────────
+async function bootAuth(){
+  const hideAuth=()=>document.getElementById('auth')?.classList.add('hide');
+  const showAuth=()=>{ document.getElementById('auth')?.classList.remove('hide'); loadCats(); };
+
+  // 1. PKCE: ?code= en la URL (Google OAuth con PKCE flow)
+  const urlParams=new URLSearchParams(window.location.search);
+  const code=urlParams.get('code');
+  if(code){
+    const{data,error}=await sb.auth.exchangeCodeForSession(code);
+    if(data?.session){
+      SESSION=data.session;
+      window.history.replaceState({},'',window.location.pathname);
+      hideAuth(); await initProvider(); return;
+    }
+  }
+
+  // 2. Implicit: #access_token= en el hash (Google OAuth con implicit flow)
+  if(window.location.hash.includes('access_token')){
+    const{data}=await sb.auth.getSession();
+    if(data?.session){
+      SESSION=data.session;
+      window.history.replaceState({},'',window.location.pathname);
+      hideAuth(); await initProvider(); return;
+    }
+  }
+
+  // 3. Sesión existente (refresh token en localStorage)
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){ SESSION=session; hideAuth(); await initProvider(); return; }
+
+  // 4. Sin sesión → mostrar login
+  showAuth();
+}
+
+// Listener para cambios posteriores (logout, token refresh)
 sb.auth.onAuthStateChange(async(ev,ses)=>{
-  SESSION=ses;
-  if(ses){
-    document.getElementById('auth').classList.add('hide'); // ocultar PRIMERO
-    await initProvider();
-  } else if(ev==='SIGNED_OUT'){
-    document.getElementById('auth').classList.remove('hide'); loadCats();
+  if(ev==='SIGNED_IN'&&ses&&!SESSION){
+    SESSION=ses; document.getElementById('auth')?.classList.add('hide'); await initProvider();
+  }
+  if(ev==='SIGNED_OUT'){
+    SESSION=null; document.getElementById('auth')?.classList.remove('hide'); loadCats();
   }
 });
 
-// Chequeo activo al cargar — cubre redirect OAuth
-(async()=>{
-  const{data:{session}}=await sb.auth.getSession();
-  if(session){
-    SESSION=session;
-    document.getElementById('auth').classList.add('hide');
-    await initProvider();
-  } else {
-    // Retry a los 800ms (token puede estar procesándose aún)
-    setTimeout(async()=>{
-      if(!SESSION){
-        const{data:{session:s2}}=await sb.auth.getSession();
-        if(s2){ SESSION=s2; document.getElementById('auth').classList.add('hide'); await initProvider(); }
-        else { document.getElementById('auth').classList.remove('hide'); loadCats(); }
-      }
-    },800);
-  }
-})();
+bootAuth();
 
 function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
 function showErr(m){ const e=document.getElementById('aerr'); e.textContent=m; e.style.display=m?'block':'none'; }
