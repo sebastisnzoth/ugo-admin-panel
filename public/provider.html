@@ -323,12 +323,16 @@ function showOk(m){ const e=document.getElementById('aok'); e.textContent=m; e.s
 
 async function signInGoogle(){
   try{
-    const{error}=await sb.auth.signInWithOAuth({
-      provider:'google',
-      options:{redirectTo:'https://ugo-admin-panel.vercel.app/provider.html'}
-    });
-    if(error) showErr(error.message);
-  }catch(e){ showErr('Error con Google: '+e.message); }
+    const redirectTo='https://ugo-admin-panel.vercel.app/provider.html';
+    console.log('[Google OAuth] iniciando con redirectTo:', redirectTo);
+    const{data,error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo,scopes:'email profile'}});
+    console.log('[Google OAuth] resultado:', {data,error});
+    if(error) showErr('Google: '+error.message);
+    // Si no hay error, el browser debería redirigir automáticamente
+  }catch(e){
+    console.error('[Google OAuth] excepción:', e);
+    showErr('Error Google: '+e.message);
+  }
 }
 async function doLogin(){
   const email=document.getElementById('le').value.trim();

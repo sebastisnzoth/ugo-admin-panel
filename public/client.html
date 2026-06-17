@@ -809,12 +809,16 @@ function tgl(){
 
 async function signInGoogle(){
   try{
-    const{error}=await sb.auth.signInWithOAuth({
-      provider:'google',
-      options:{redirectTo:'https://ugo-admin-panel.vercel.app/client.html'}
-    });
-    if(error) showErr(error.message);
-  }catch(e){ showErr('Error con Google: '+e.message); }
+    const redirectTo='https://ugo-admin-panel.vercel.app/client.html';
+    console.log('[Google OAuth] iniciando con redirectTo:', redirectTo);
+    const{data,error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo,scopes:'email profile'}});
+    console.log('[Google OAuth] resultado:', {data,error});
+    if(error) showErr('Google: '+error.message);
+    // Si no hay error, el browser debería redirigir automáticamente
+  }catch(e){
+    console.error('[Google OAuth] excepción:', e);
+    showErr('Error Google: '+e.message);
+  }
 }
 async function doLogout(){ await sb.auth.signOut(); CLIENT=null;SESSION=null;ACTIVE_SVC=null; }
 function haversine(lat1,lng1,lat2,lng2){const R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
