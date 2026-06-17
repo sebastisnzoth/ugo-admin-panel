@@ -409,81 +409,122 @@ function onPhotosReady(){ showPhotos(); }
 function openChat(){
   setActiveNav('radar');
   chatHistory=[];
-  openSheet('min(85vh,700px)',`
-    <div style="display:flex;flex-direction:column;height:100%;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px;flex-shrink:0;">
-        <div class="uorb" style="width:30px;height:30px;font-size:15px;">🌀</div>
-        <div><div style="font-weight:700;font-size:14px;">Hugo</div><div style="font-size:11px;color:#22C55E;">● Online</div></div>
-        <button onclick="closeSheet()" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">✕</button>
+  openSheet('min(88vh,720px)',`
+    <div style="display:flex;flex-direction:column;height:100%;background:#FFF;">
+      <!-- Header -->
+      <div style="padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px;flex-shrink:0;background:#FAFAFA;">
+        <div style="position:relative;">
+          <div class="uorb" style="width:36px;height:36px;font-size:18px;animation:op 2.5s ease-in-out infinite;">🌀</div>
+          <div style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;border-radius:50%;background:#22C55E;border:2px solid #FFF;"></div>
+        </div>
+        <div>
+          <div style="font-weight:800;font-size:14px;">Hugo</div>
+          <div style="font-size:10px;color:#22C55E;font-weight:600;">● En línea · U.GO Asistente</div>
+        </div>
+        <button onclick="closeSheet()" style="margin-left:auto;width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.07);border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
       </div>
-      <div id="cm" style="flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:8px;"></div>
-      <div id="c-sugs" style="padding:0 12px 8px;display:flex;flex-wrap:wrap;gap:7px;"></div>
-      <div id="c-action" style="padding:0 12px 10px;display:none;">
-        <button class="btng" id="c-search-btn">🔍 Buscar proveedores disponibles</button>
-      </div>
-      <div style="display:flex;gap:8px;padding:10px 12px 16px;border-top:1px solid var(--b);">
-        <input id="chat-in" placeholder="Escribí tu mensaje..." style="flex:1;padding:10px 14px;border:1.5px solid var(--b);border-radius:24px;font-size:13px;font-family:inherit;outline:none;transition:border .2s;" onfocus="this.style.borderColor='#00C8D7'" onblur="this.style.borderColor='var(--b)'" onkeydown="if(event.key==='Enter')sendChat()"/>
-        <button onclick="sendChat()" style="width:40px;height:40px;border-radius:50%;background:#111;color:#FFF;border:none;font-size:18px;cursor:pointer;">↑</button>
+      <!-- Messages -->
+      <div id="cm" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;background:#F8F8F8;"></div>
+      <!-- Suggestions -->
+      <div id="c-sugs" style="padding:8px 12px 4px;display:flex;flex-wrap:wrap;gap:6px;background:#FFF;border-top:1px solid var(--b);"></div>
+      <!-- Input -->
+      <div style="display:flex;gap:8px;padding:10px 12px 20px;background:#FFF;">
+        <input id="chat-in" placeholder="Escribí acá..." style="flex:1;padding:11px 16px;border:2px solid #E5E5E5;border-radius:26px;font-size:13px;font-family:inherit;outline:none;background:#F8F9FA;color:#111;transition:border .2s;"
+          onfocus="this.style.borderColor='#00C8D7';this.style.background='#FFF'"
+          onblur="this.style.borderColor='#E5E5E5';this.style.background='#F8F9FA'"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat();}"/>
+        <button id="send-btn" onclick="sendChat()" style="width:42px;height:42px;border-radius:50%;background:#111;color:#FFF;border:none;font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;">↑</button>
       </div>
     </div>`);
-  // Mostrar suggestions
   showSugs();
-  // Saludo inicial
-  const tt_=tt();
-  setTimeout(()=>addMsg('ugo',`${tt_.hello}, ${CLIENT?.nombre||''}! 👋 ${tt_.wlc}`),400);
+  // Greeting from Hugo via API
+  const ctx=CLIENT?`Cliente:${CLIENT.nombre},GPS:${myLat.toFixed(4)},${myLng.toFixed(4)},Ciudad:Florianópolis`:'';
+  setTimeout(async()=>{
+    showTyping();
+    try{
+      const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({role:'cliente',message:'__INICIO__',context:ctx,history:[]})});
+      const d=await r.json();
+      document.getElementById('typ')?.remove();
+      const greeting=d.hugo_mensaje||`¡Hola, ${CLIENT?.nombre||''}! 👋 Soy Hugo. ¿Qué servicio necesitás hoy?`;
+      addMsg('ugo',greeting);
+      chatHistory.push({role:'assistant',content:greeting});
+    }catch{
+      document.getElementById('typ')?.remove();
+      addMsg('ugo',`¡Hola, ${CLIENT?.nombre||''}! 👋 Soy Hugo. ¿Qué servicio necesitás hoy?`);
+    }
+  },300);
 }
 
 function showSugs(){
-  const sugs=document.getElementById('c-sugs'); if(!sugs) return;
-  sugs.innerHTML=tt().sugs.map(s=>`<button onclick="sendSug('${s}')" style="padding:7px 13px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;" onmouseover="this.style.borderColor='#00C8D7'" onmouseout="this.style.borderColor='var(--b)'">${s}</button>`).join('');
+  const el=document.getElementById('c-sugs'); if(!el) return;
+  el.innerHTML=tt().sugs.map(s=>`<button onclick="sendSug('${s}')"
+    style="padding:6px 12px;border-radius:20px;border:1.5px solid #E5E5E5;background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .15s;"
+    onmouseover="this.style.borderColor='#00C8D7';this.style.color='#00828F'"
+    onmouseout="this.style.borderColor='#E5E5E5';this.style.color=''">${s}</button>`).join('');
 }
 
 async function sendChat(){
   const inp=document.getElementById('chat-in');
   const msg=inp?.value.trim(); if(!msg) return;
-  inp.value=''; addMsg('user',msg); showTyping();
+  inp.value=''; addMsg('user',msg);
   const sugs=document.getElementById('c-sugs'); if(sugs) sugs.innerHTML='';
+  showTyping();
   await callHugo(msg);
 }
 
 async function sendSug(sug){
   addMsg('user',sug);
   const sugs=document.getElementById('c-sugs'); if(sugs) sugs.innerHTML='';
+  // Auto-detect category
+  const catMap={electricista:'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d',eletricista:'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d',plomero:'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d',encanador:'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d'};
+  for(const[k,v] of Object.entries(catMap)){if(sug.toLowerCase().includes(k)){pendingCatId=v;break;}}
   showTyping();
-  // Detectar categoría del suggestion
-  const catMap={'electricista':'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d','eletricista':'6b389fbd-4de4-4715-bbdb-1ac800ddaa5d'};
-  const lower=sug.toLowerCase();
-  for(const[k,v] of Object.entries(catMap)){if(lower.includes(k)){pendingCatId=v;break;}}
   await callHugo(sug);
 }
 
 async function callHugo(msg){
   chatHistory.push({role:'user',content:msg});
-  const ctx=CLIENT?`Cliente:${CLIENT.nombre},Ubicación:Florianópolis,GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`:'';
+  const ctx=CLIENT?`Cliente:${CLIENT.nombre},GPS:${myLat.toFixed(4)},${myLng.toFixed(4)},Ciudad:Florianópolis,ServicioActivo:${!!ACTIVE_SVC}`:'';
   try{
-    const r=await fetch('https://ugo-admin-panel.vercel.app/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:chatHistory.slice(-6)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:chatHistory.slice(-8)})});
     const d=await r.json();
-    const reply=d.hugo_mensaje||'...';
     document.getElementById('typ')?.remove();
+    const reply=(d.hugo_mensaje||'...').trim();
     addMsg('ugo',reply);
     chatHistory.push({role:'assistant',content:reply});
-    // Show search button after 2 exchanges
-    if(chatHistory.length>=4){
-      const ca=document.getElementById('c-action'); if(ca){ca.style.display='block';}
-      const sb_btn=document.getElementById('c-search-btn');
-      if(sb_btn) sb_btn.onclick=()=>searchProviders();
+
+    // Detectar trigger de búsqueda en respuesta de Hugo
+    if(reply.includes('[BUSCAR_PROVEEDORES]')||reply.toLowerCase().includes('buscando proveedores')){
+      const cleanReply=reply.replace('[BUSCAR_PROVEEDORES]','').trim();
+      document.querySelector('#cm .b-u:last-child').textContent=cleanReply;
+      setTimeout(()=>searchProviders(),800);
     }
   }catch{
     document.getElementById('typ')?.remove();
-    addMsg('ugo','Estoy teniendo dificultades para conectar. Intentá de nuevo en un momento.');
+    addMsg('ugo','Sin conexión con Hugo en este momento. Intentá de nuevo.');
   }
 }
 
 function addMsg(from,text){
   const cm=document.getElementById('cm');if(!cm)return;
+  const t=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
   const d=document.createElement('div');d.className='cmsg'+(from==='user'?' cmsg-r':'');
-  if(from==='ugo') d.innerHTML=`<div class="uorb">🌀</div><div class="b-u">${text}</div>`;
-  else d.innerHTML=`<div class="b-me">${text}</div>`;
+  if(from==='ugo') d.innerHTML=`
+    <div style="display:flex;align-items:flex-start;gap:7px;max-width:85%;">
+      <div class="uorb" style="flex-shrink:0;margin-top:2px;">🌀</div>
+      <div>
+        <div class="b-u" style="border-radius:4px 16px 16px 16px;">${text.replace(/
+/g,'<br>')}</div>
+        <div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-left:4px;">${t}</div>
+      </div>
+    </div>`;
+  else d.innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:flex-end;max-width:85%;">
+      <div class="b-me" style="border-radius:16px 4px 16px 16px;">${text}</div>
+      <div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-right:4px;">${t}</div>
+    </div>`;
   cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);
 }
 function showTyping(){
