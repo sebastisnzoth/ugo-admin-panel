@@ -855,6 +855,7 @@ async function showTrabajos(){
 
 // ── HUGO CHAT ──
 function openChat(){
+  provChatHistory=[];
   const tt_=tt();
   openSheet('min(82vh,700px)',`
     <div style="display:flex;flex-direction:column;height:100%;">
@@ -906,7 +907,15 @@ async function sendSug(el,sug){addMsg('user',sug);el.closest('#ci').innerHTML=''
   catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
 }
 
-function addMsg(from,text){const cm=document.getElementById('cm');if(!cm)return;const d=document.createElement('div');d.className='cmsg'+(from==='user'?' cmsg-r':'');if(from==='ugo')d.innerHTML=`<div class="uorb">🌀</div><div class="b-u">${text}</div>`;else d.innerHTML=`<div class="b-me">${text}</div>`;cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);}
+function addMsg(from,text){
+  const cm=document.getElementById('cm');if(!cm)return;
+  const t=new Date().toLocaleTimeString('es',{hour:'2-digit',minute:'2-digit'});
+  const d=document.createElement('div');d.className='cmsg'+(from==='user'?' cmsg-r':'');
+  if(from==='ugo') d.innerHTML=`<div style="display:flex;align-items:flex-start;gap:7px;max-width:85%;"><div class="uorb" style="flex-shrink:0;margin-top:2px;">🌀</div><div><div class="b-u" style="border-radius:4px 16px 16px 16px;">${text.replace(/
+/g,'<br>')}</div><div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-left:4px;">${t}</div></div></div>`;
+  else d.innerHTML=`<div style="display:flex;flex-direction:column;align-items:flex-end;max-width:85%;"><div class="b-me" style="border-radius:16px 4px 16px 16px;">${text}</div><div style="font-size:9px;color:rgba(0,0,0,.3);margin-top:3px;padding-right:4px;">${t}</div></div>`;
+  cm.appendChild(d);setTimeout(()=>cm.scrollTop=cm.scrollHeight,40);
+}
 function showTyping(){const cm=document.getElementById('cm');if(!cm)return;const d=document.createElement('div');d.className='cmsg';d.id='typ';d.innerHTML=`<div class="uorb">🌀</div><div class="b-u"><div style="display:flex;gap:4px;align-items:center;"><span class="dot" style="animation-delay:0s"></span><span class="dot" style="animation-delay:.15s"></span><span class="dot" style="animation-delay:.3s"></span></div></div>`;cm.appendChild(d);cm.scrollTop=cm.scrollHeight;}
 
 // ── ADMIN REALTIME ──
