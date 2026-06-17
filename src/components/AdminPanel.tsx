@@ -8,11 +8,11 @@ import {
 } from '../hooks/useAdminData';
 import { supabase } from '../lib/supabase';
 import { resetRealtimeChannel, onRealtimeEvent } from '../hooks/useAdminData';
-import { SecZonas, SecPromos, SecRatings, SecAvanzado } from './AdvancedSections';
+import { SecZonas, SecPromos, SecRatings, SecAvanzado, SecValidacionPaises } from './AdvancedSections';
 import { SecScout } from './ScoutSection';
 import { ConversationalOrb } from './ConversationalOrb';
 
-type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout';
+type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'validacion_paises';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
 
 const CSS = `
@@ -841,7 +841,7 @@ export function AdminPanel() {
     [{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
     [{id:'usuarios',icon:'◎',label:'Usrs'},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
     [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
-    [{id:'scout',icon:'📡',label:'Scout'},{id:'avanzado',icon:'◧',label:'Avanz'}],
+    [{id:'scout',icon:'📡',label:'Scout'},{id:'validacion_paises',icon:'🌎',label:'KYC'},{id:'avanzado',icon:'◧',label:'Avanz'}],
   ];
 
   if (authLoading) return (

@@ -510,6 +510,77 @@ function TabReferidos() {
   );
 }
 
+const SBv_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
+const SBv_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+
+export function SecValidacionPaises() {
+  const [paises, setPaises] = React.useState<any[]>([]);
+  const [sel, setSel] = React.useState<any>(null);
+
+  React.useEffect(() => {
+    fetch(`${SBv_URL}/rest/v1/config_validacion_pais?select=*&order=pais`,
+      {headers:{apikey:SBv_KEY,Authorization:`Bearer ${SBv_KEY}`}})
+      .then(r=>r.json()).then(data => { if(Array.isArray(data)) setPaises(data); });
+  }, []);
+
+  const toggle = async (id: string, activo: boolean) => {
+    await fetch(`${SBv_URL}/rest/v1/config_validacion_pais?id=eq.${id}`,
+      {method:'PATCH',headers:{apikey:SBv_KEY,Authorization:`Bearer ${SBv_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({activo})});
+    setPaises(p => p.map(x => x.id===id ? {...x,activo} : x));
+  };
+
+  return (
+    <div className="pad">
+      <div className="st">🌎 Validación KYC por País</div>
+      <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:'12px',height:'calc(100% - 60px)'}}>
+        {/* Lista de países */}
+        <div className="tw" style={{height:'fit-content'}}>
+          {paises.map(p => (
+            <div key={p.id} onClick={()=>setSel(p)}
+              style={{padding:'10px 13px',borderBottom:'1px solid var(--border)',cursor:'pointer',background:sel?.id===p.id?'rgba(5,148,79,.05)':'#FFF',display:'flex',alignItems:'center',gap:'9px',transition:'background .1s'}}>
+              <span style={{fontSize:'18px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[p.codigo_iso]||'🌐'}</span>
+              <div style={{flex:1}}>
+                <div style={{fontSize:'12px',fontWeight:700}}>{p.pais}</div>
+                <div style={{fontSize:'10px',color:'var(--muted)'}}>{p.docs_requeridos?.join(', ')}</div>
+              </div>
+              <button onClick={e=>{e.stopPropagation();toggle(p.id,!p.activo);}}
+                style={{padding:'2px 8px',borderRadius:'20px',border:'none',cursor:'pointer',fontSize:'9px',fontWeight:700,
+                  background:p.activo?'rgba(5,148,79,.1)':'rgba(0,0,0,.06)',color:p.activo?'#05944F':'#888'}}>
+                {p.activo?'● ON':'○ OFF'}
+              </button>
+            </div>
+          ))}
+        </div>
+        {/* Detalle del país seleccionado */}
+        {sel ? (
+          <div className="tw" style={{padding:'16px',overflowY:'auto'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'14px'}}>
+              <span style={{fontSize:'28px'}}>{{'BR':'🇧🇷','AR':'🇦🇷','CL':'🇨🇱','CO':'🇨🇴','MX':'🇲🇽','UY':'🇺🇾'}[sel.codigo_iso]||'🌐'}</span>
+              <div>
+                <div style={{fontWeight:800,fontSize:'16px'}}>{sel.pais}</div>
+                <div style={{fontSize:'11px',color:'var(--muted)'}}>ISO: {sel.codigo_iso} · Docs: {sel.docs_requeridos?.join(', ')}</div>
+              </div>
+            </div>
+            {Object.entries((sel.reglas_ocr?.docs||{})).map(([tipo, cfg]: any) => (
+              <div key={tipo} style={{background:'var(--bg)',borderRadius:'12px',padding:'12px',marginBottom:'10px'}}>
+                <div style={{fontWeight:700,fontSize:'12px',marginBottom:'3px'}}>{tipo} — {cfg.nombre_completo}</div>
+                {cfg.formato_regex && <div style={{fontSize:'10px',color:'var(--muted)',fontFamily:'monospace',marginBottom:'5px'}}>Regex: {cfg.formato_regex}</div>}
+                {cfg.digitos && <div style={{fontSize:'10px',color:'var(--muted)',marginBottom:'5px'}}>Dígitos: {cfg.digitos}</div>}
+                <div style={{fontSize:'11px',color:'#444',lineHeight:1.5,background:'#FFF',borderRadius:'8px',padding:'8px'}}>{cfg.prompt_gemini}</div>
+              </div>
+            ))}
+            <div style={{fontSize:'11px',color:'var(--muted)',fontStyle:'italic',marginTop:'8px'}}>{sel.reglas_ocr?.nota_cultural}</div>
+          </div>
+        ) : (
+          <div style={{display:'flex',alignItems:'center',justifyContent:'center',color:'var(--muted)',fontSize:'13px'}}>
+            Seleccioná un país para ver la configuración de validación
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export function SecAvanzado() {
   const [tab, setTab] = useState<AdvTab>('surge');
   const TABS: { id: AdvTab; label: string }[] = [
