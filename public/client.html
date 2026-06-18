@@ -330,7 +330,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
   if(ev==='SIGNED_OUT'){SESSION=null;CLI=null;document.getElementById('auth').classList.remove('hide');document.getElementById('top').classList.add('hide');document.getElementById('nav').classList.add('hide');}
 });
 
-async function onLogin(){
+async function onLogin(){try{
   document.getElementById('auth').classList.add('hide');
   document.getElementById('top').classList.remove('hide');
   document.getElementById('nav').classList.remove('hide');
@@ -338,17 +338,24 @@ async function onLogin(){
   initMap();
   startGPS();
   navGo('home');
-}
+}catch(e){console.error('onLogin error:',e);showErr('Error al cargar: '+e.message);}}
 
 async function loadCli(){
-  const{data}=await sb.from('usuarios').select('*').eq('id',SESSION.user.id).single();
-  if(data){CLI=data;document.getElementById('cli-name').textContent=data.nombre||SESSION.user.email;}
-  else{
+  const uid=SESSION.user.id;
+  const{data}=await sb.from('usuarios').select('*').eq('id',uid).maybeSingle();
+  if(data){
+    CLI=data;
+    document.getElementById('cli-name').textContent=data.nombre||SESSION.user.email;
+  } else {
     const meta=SESSION.user.user_metadata||{};
-    const nombre=meta.nombre||meta.full_name||SESSION.user.email.split('@')[0];
-    await sb.from('usuarios').upsert({id:SESSION.user.id,email:SESSION.user.email,nombre,tipo:'cliente',activo:true,karma:5.0},{onConflict:'id'});
+    const nombre=meta.nombre||meta.full_name||meta.name||SESSION.user.email.split('@')[0];
+    const{error}=await sb.from('usuarios').upsert(
+      {id:uid,auth_id:uid,email:SESSION.user.email,nombre,tipo:'cliente',activo:true,karma:5.0},
+      {onConflict:'id',ignoreDuplicates:false}
+    );
     CLI={nombre};
     document.getElementById('cli-name').textContent=nombre;
+    if(error) console.warn('upsert usuario:', error.message);
   }
 }
 

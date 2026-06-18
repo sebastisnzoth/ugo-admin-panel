@@ -391,7 +391,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
   if(ev==='SIGNED_OUT'){SESSION=null;PROV=null;document.getElementById('auth').classList.remove('hide');document.getElementById('top').classList.add('hide');document.getElementById('nav').classList.add('hide');}
 });
 
-async function onLogin(){
+async function onLogin(){try{
   document.getElementById('auth').classList.add('hide');
   document.getElementById('top').classList.remove('hide');
   document.getElementById('nav').classList.remove('hide');
@@ -399,20 +399,26 @@ async function onLogin(){
   initMap();
   startGPS();
   navGo('home');
-}
+}catch(e){console.error('onLogin error:',e);showErr('Error al cargar: '+e.message);}}
 
 // ── PROVIDER DATA ───────────────────────────────────────────
 async function loadProv(){
-  const{data}=await sb.from('usuarios').select('*').eq('id',SESSION.user.id).single();
+  const uid=SESSION.user.id;
+  const{data}=await sb.from('usuarios').select('*').eq('id',uid).maybeSingle();
   if(data){
     PROV=data;
     document.getElementById('prov-name').textContent=data.nombre||SESSION.user.email;
   } else {
     const meta=SESSION.user.user_metadata||{};
-    const nombre=meta.nombre||meta.full_name||SESSION.user.email.split('@')[0];
-    await sb.from('usuarios').upsert({id:SESSION.user.id,email:SESSION.user.email,nombre,tipo:'proveedor',activo:true,karma:5.0},{onConflict:'id'});
-    PROV={nombre,karma:5.0,servicios_completados:0,categoria:'General'};
+    const nombre=meta.nombre||meta.full_name||meta.name||SESSION.user.email.split('@')[0];
+    const cat=meta.categoria||'General';
+    const{error}=await sb.from('usuarios').upsert(
+      {id:uid,auth_id:uid,email:SESSION.user.email,nombre,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},
+      {onConflict:'id',ignoreDuplicates:false}
+    );
+    PROV={nombre,karma:5.0,servicios_completados:0,categoria:cat};
     document.getElementById('prov-name').textContent=nombre;
+    if(error) console.warn('upsert usuario:', error.message);
   }
 }
 
