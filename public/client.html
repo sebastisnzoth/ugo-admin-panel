@@ -241,7 +241,7 @@ async function loadCli(){
 function initMap(){
   if(MAP)return;
   MAP=L.map('map',{zoomControl:false,attributionControl:false}).setView([myLat,myLng],14);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(MAP);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(MAP);
 }
 
 function startGPS(){
