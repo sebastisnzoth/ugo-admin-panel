@@ -283,16 +283,29 @@ function sw(v){
 
 // ── AUTH ────────────────────────────────────────────────────
 async function signInGoogle(){
-  const{error}=await sb.auth.signInWithOAuth({provider:'google',
-    options:{redirectTo:'https://ugo-admin-panel.vercel.app/client.html'}});
+  localStorage.setItem('ugo_redirect_app','client');
+  const{error}=await sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo:'https://ugo-admin-panel.vercel.app/client.html',skipBrowserRedirect:false}
+  });
   if(error) showErr('Google: '+error.message);
 }
 async function doLogin(){
   const email=document.getElementById('le').value.trim();
   const pass=document.getElementById('lp').value;
-  if(!email||!pass) return showErr('Completá todos los campos');
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error) showErr(error.message.includes('Invalid')?'Email o contraseña incorrectos':error.message);
+  if(!email||!pass) return showErr('Completá email y contraseña');
+  const btn=document.querySelector('.btn-main');
+  if(btn){btn.textContent='Ingresando...';btn.disabled=true;}
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+  if(error){
+    showErr(error.message.includes('Invalid')?'Email o contraseña incorrectos':error.message);
+    return;
+  }
+  if(data?.session){
+    SESSION=data.session;
+    await onLogin();
+  }
 }
 async function doRegister(){
   const n=document.getElementById('rn').value.trim();
