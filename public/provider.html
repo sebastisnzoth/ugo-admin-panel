@@ -5,921 +5,499 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>U.GO — Proveedor</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;font-family:'Inter',-apple-system,sans-serif;}
-:root{--c:#00C8D7;--cd:rgba(0,200,215,.1);--cm:rgba(0,200,215,.26);--k:#111;--w:#FFF;--bg:#F7F7F7;--m:#888;--b:#EBEBEB;--g:#22C55E;--r:#EF4444;--a:#F59E0B;}
-
-/* ── AUTH ── */
-#auth{position:fixed;inset:0;z-index:200;background:linear-gradient(160deg,#0f1117,#1a2530);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;}
-#auth.hide{display:none;}
-.al{font-size:38px;font-weight:900;color:#FFF;letter-spacing:-1.5px;}
-.als{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:2.5px;margin-top:2px;margin-bottom:32px;}
-.acard{background:#FFF;border-radius:24px;padding:22px;width:100%;max-width:380px;}
-.atit{font-size:19px;font-weight:800;margin-bottom:3px;}
-.adesc{font-size:13px;color:#888;margin-bottom:18px;}
-.afl label{display:block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#888;margin-bottom:4px;}
-.afl{margin-bottom:11px;}
-.afl input,.afl select{width:100%;padding:11px 13px;border:1.5px solid #E5E5E5;border-radius:12px;font-size:14px;font-family:inherit;outline:none;transition:border .2s;color:#111;}
-.afl input:focus,.afl select:focus{border-color:var(--c);}
-.ag2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.abtn{width:100%;padding:13px;background:#111;color:#FFF;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:5px;transition:opacity .2s;}
-.abtn:active{opacity:.8;}
-.alink{text-align:center;font-size:13px;color:#888;margin-top:11px;cursor:pointer;line-height:1.5;}
-.alink b{color:#00828F;}
-.aerr{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:9px 12px;font-size:12px;color:#DC2626;margin-bottom:10px;display:none;}
-.aok{background:#F0FDF4;border:1px solid #86EFAC;border-radius:10px;padding:9px 12px;font-size:12px;color:#16A34A;margin-bottom:10px;display:none;}
-
-/* ── MAP ── */
+html,body{height:100%;overflow:hidden;background:#1A2030;font-family:'Inter',-apple-system,sans-serif;}
+:root{--c:#00C8D7;--k:#111;--w:#FFF;--bg:#F7F7F7;--m:#888;--b:#EBEBEB;--g:#22C55E;--r:#EF4444;}
 #map{position:fixed;inset:0;z-index:0;}
-.leaflet-container{background:#EAE6DF;}
 
-/* ── TOP ── */
+/* AUTH */
+#auth{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#0a0a0a 0%,#0d1117 100%);display:flex;align-items:center;justify-content:center;padding:24px;}
+.auth-box{width:100%;max-width:360px;}
+.auth-logo{font-size:36px;font-weight:900;color:#FFF;letter-spacing:-1px;margin-bottom:4px;}
+.auth-logo span{color:var(--c);}
+.auth-sub{font-size:13px;color:#888;margin-bottom:32px;}
+.auth-tabs{display:flex;background:rgba(255,255,255,.06);border-radius:14px;padding:3px;margin-bottom:20px;}
+.auth-tab{flex:1;text-align:center;padding:9px;border-radius:11px;font-size:13px;font-weight:600;color:#888;cursor:pointer;transition:all .2s;}
+.auth-tab.on{background:rgba(255,255,255,.12);color:#FFF;}
+.auth-form{display:none;}
+.auth-form.on{display:block;}
+.afl{margin-bottom:12px;}
+.afl label{display:block;font-size:11px;font-weight:700;color:#666;margin-bottom:5px;text-transform:uppercase;letter-spacing:.5px;}
+.afl input{width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#FFF;font-size:14px;font-family:inherit;outline:none;transition:border .2s;}
+.afl input:focus{border-color:var(--c);}
+.afl input::placeholder{color:#555;}
+.btn-main{width:100%;padding:14px;background:var(--c);color:#000;font-weight:800;font-size:14px;border:none;border-radius:14px;cursor:pointer;margin-top:4px;font-family:inherit;transition:opacity .2s;}
+.btn-main:active{opacity:.85;}
+.btn-google{width:100%;padding:13px;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.12);border-radius:14px;color:#FFF;font-weight:600;font-size:13px;cursor:pointer;margin-top:10px;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;}
+.btn-google:active{background:rgba(255,255,255,.15);}
+.auth-or{text-align:center;color:#444;font-size:12px;margin:10px 0;}
+#aerr{color:#EF4444;font-size:12px;margin-top:8px;display:none;padding:8px 12px;background:rgba(239,68,68,.1);border-radius:8px;}
+
+/* TOP */
 #top{position:fixed;top:0;left:0;right:0;z-index:20;padding:max(48px,env(safe-area-inset-top,48px)) 18px 14px;background:linear-gradient(to bottom,rgba(255,255,255,.97) 65%,transparent);display:flex;align-items:center;justify-content:space-between;}
 .logo{font-weight:900;font-size:22px;letter-spacing:-.6px;color:var(--k);}
+.logo span{color:var(--c);}
 .logo-s{font-size:11px;color:var(--m);margin-top:-2px;}
 .top-r{display:flex;align-items:center;gap:8px;}
+
+/* TOGGLE ONLINE */
 #online-tog{display:flex;align-items:center;gap:8px;background:#FFF;border-radius:24px;padding:7px 14px;box-shadow:0 2px 12px rgba(0,0,0,.12);cursor:pointer;border:none;font-family:inherit;transition:all .25s;}
 #online-tog.on{background:#111;}
 .tog-dot{width:9px;height:9px;border-radius:50%;background:#CCC;transition:background .25s;}
-#online-tog.on .tog-dot{background:var(--g);animation:bl 1.5s infinite;}
+#online-tog.on .tog-dot{background:#22C55E;animation:blink 1.5s infinite;}
 .tog-label{font-size:12px;font-weight:700;color:#888;transition:color .25s;}
 #online-tog.on .tog-label{color:#FFF;}
-.langb{background:var(--k);color:var(--w);border:none;border-radius:14px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.4;}}
 
-/* ── JOB NOTIFICATION ── */
-#job-notif{position:fixed;left:0;right:0;bottom:78px;z-index:40;padding:0 14px 12px;transform:translateY(110%);transition:transform .4s cubic-bezier(.32,.72,0,1);}
+/* JOB NOTIF */
+#job-notif{position:fixed;left:14px;right:14px;bottom:90px;z-index:40;background:#FFF;border-radius:20px;box-shadow:0 8px 32px rgba(0,0,0,.2);padding:16px;transform:translateY(200%);transition:transform .4s cubic-bezier(.32,.72,0,1);}
 #job-notif.show{transform:translateY(0);}
+.jn-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.jn-ic{width:40px;height:40px;border-radius:12px;background:rgba(0,200,215,.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+.jn-title{font-weight:800;font-size:14px;}
+.jn-sub{font-size:12px;color:var(--m);}
+.jn-timer{text-align:center;margin-bottom:12px;}
+.jn-bar-bg{height:4px;background:#F0F0F0;border-radius:2px;margin-bottom:6px;overflow:hidden;}
+.jn-bar{height:100%;background:var(--c);transition:width .1s linear;}
+.jn-secs{font-size:12px;font-weight:700;color:var(--m);}
+.jn-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.jn-acc{padding:12px;background:#111;color:#FFF;font-weight:700;font-size:13px;border:none;border-radius:12px;cursor:pointer;font-family:inherit;}
+.jn-rej{padding:12px;background:#F5F5F5;color:var(--m);font-weight:700;font-size:13px;border:none;border-radius:12px;cursor:pointer;font-family:inherit;}
 
-/* ── SHEET ── */
-#sheet{position:fixed;left:0;right:0;z-index:25;background:var(--w);border-top-left-radius:26px;border-top-right-radius:26px;box-shadow:0 -6px 28px rgba(0,0,0,.13);transition:bottom .38s cubic-bezier(.32,.72,0,1),height .38s cubic-bezier(.32,.72,0,1);overflow:hidden;bottom:78px;height:0;}
-.handle{width:34px;height:4px;background:var(--b);border-radius:2px;margin:9px auto 0;flex-shrink:0;}
-#sb{height:calc(100% - 22px);overflow-y:auto;overflow-x:hidden;}
+/* SHEET */
+#sheet{position:fixed;left:0;right:0;z-index:25;background:var(--w);border-radius:26px 26px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);overflow:hidden;bottom:78px;height:0;transition:height .35s cubic-bezier(.32,.72,0,1);}
+#sb{height:calc(100% - 18px);overflow-y:auto;padding-bottom:20px;}
+.handle{width:34px;height:4px;background:#E5E5E5;border-radius:2px;margin:9px auto 6px;}
+.pad{padding:0 18px;}
+.st{font-weight:800;font-size:16px;margin:14px 0 12px;}
 
-/* ── NAV ── */
+/* NAV */
 #nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--w);border-top:1px solid var(--b);padding:8px 4px max(20px,env(safe-area-inset-bottom,20px));display:flex;align-items:center;justify-content:space-around;height:78px;}
-.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 10px;border-radius:12px;position:relative;}
-.ni-ic{font-size:19px;line-height:1;}
+.ni{display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 14px;border-radius:12px;position:relative;}
+.ni-ic{font-size:20px;line-height:1;}
 .ni-lb{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--m);}
 .ni.on .ni-lb{color:var(--c);}
-.nbadge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:var(--r);border-radius:50%;border:1.5px solid #FFF;display:none;}
-.nbadge.show{display:block;}
 
-/* ── ORB ── */
-#orb{width:60px;height:60px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:4px solid var(--w);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;margin-top:-24px;animation:op 2.5s ease-in-out infinite;border:none;font-family:inherit;transition:transform .15s;}
-#orb:active{transform:scale(.93);}
+/* ORB */
+.orb-btn{width:56px;height:56px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00ECF8,#009AAA);box-shadow:0 0 16px rgba(0,200,215,.5);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:22px;animation:pulse 3s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 16px rgba(0,200,215,.5);}50%{box-shadow:0 0 28px rgba(0,200,215,.8);}}
 
-/* ── UTILS ── */
-.btnm{width:100%;padding:14px;background:var(--k);color:var(--w);border:none;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:opacity .2s;}
-.btnm:active{opacity:.85;}
-.btng{width:100%;padding:14px;background:var(--g);color:var(--w);border:none;border-radius:26px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;}
-.btnr{width:100%;padding:11px;background:none;color:var(--r);border:1.5px solid var(--r);border-radius:26px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;}
-.sbox{background:#F5F5F5;border-radius:12px;padding:8px;text-align:center;}
-.slbl{font-size:9px;color:var(--m);text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
-.sval{font-weight:800;font-size:16px;}
-.pill-g{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(34,197,94,.1);color:#16A34A;}
-.pill-c{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:var(--cd);color:#00828F;}
-.pill-a{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);color:#B45309;}
-.uorb{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
-.b-u{background:#F0F0F0;border-radius:16px 16px 16px 4px;padding:9px 13px;font-size:13px;max-width:80%;line-height:1.5;}
-.b-me{background:var(--k);color:var(--w);border-radius:16px 16px 4px 16px;padding:9px 13px;font-size:13px;max-width:80%;line-height:1.5;}
-.cmsg{display:flex;gap:7px;align-items:flex-end;animation:fi .2s ease;}
-.cmsg-r{justify-content:flex-end;}
-.dot{width:6px;height:6px;border-radius:50%;background:#999;animation:da 1s ease-in-out infinite;display:inline-block;}
+/* CHAT */
+#chat-sheet{position:fixed;left:0;right:0;bottom:0;z-index:50;background:#FFF;border-radius:28px 28px 0 0;box-shadow:0 -4px 30px rgba(0,0,0,.15);height:0;overflow:hidden;transition:height .35s cubic-bezier(.32,.72,0,1);}
+.chat-top{padding:12px 18px 10px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.chat-orb{width:32px;height:32px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:16px;}
+.chat-title{font-weight:800;font-size:15px;flex:1;}
+.chat-close{background:none;border:none;font-size:22px;cursor:pointer;color:#BBB;line-height:1;}
+#chat-msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.msg{max-width:82%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.5;}
+.msg-h{background:linear-gradient(135deg,rgba(0,200,215,.12),rgba(0,200,215,.06));align-self:flex-start;border-radius:4px 18px 18px 18px;}
+.msg-u{background:#111;color:#FFF;align-self:flex-end;border-radius:18px 18px 4px 18px;}
+.msg-typing{padding:10px 16px;background:rgba(0,0,0,.04);border-radius:4px 18px 18px 18px;align-self:flex-start;width:56px;display:none;}
+.typing-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#BBB;animation:tdot 1.2s infinite;margin:0 2px;}
+.typing-dot:nth-child(2){animation-delay:.2s;}
+.typing-dot:nth-child(3){animation-delay:.4s;}
+@keyframes tdot{0%,80%,100%{transform:scale(.8);}40%{transform:scale(1.2);}}
+.chat-sugs{display:flex;flex-wrap:wrap;gap:6px;padding:8px 14px;flex-shrink:0;}
+.sug{padding:7px 14px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;white-space:nowrap;transition:border-color .15s;}
+.sug:active{border-color:var(--c);}
+.chat-input-row{display:flex;gap:8px;padding:10px 14px max(24px,env(safe-area-inset-bottom,24px));border-top:1px solid var(--b);flex-shrink:0;}
+.chat-input-row input{flex:1;padding:11px 16px;border:1.5px solid var(--b);border-radius:24px;font-size:14px;font-family:inherit;outline:none;}
+.chat-input-row input:focus{border-color:var(--c);}
+.chat-send{width:40px;height:40px;border-radius:50%;background:#111;border:none;color:#FFF;font-size:18px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 
-/* ── ADMIN NOTIF OVERLAY ── */
-#adm-overlay{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.55);display:none;align-items:flex-end;padding:20px;}
-#adm-overlay.show{display:flex;}
+/* CARDS */
+.tw{background:#FFF;border-radius:16px;border:1px solid var(--b);}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;}
+.stat-card{background:var(--bg);border-radius:14px;padding:14px;text-align:center;}
+.stat-val{font-size:22px;font-weight:900;color:var(--k);}
+.stat-lbl{font-size:10px;color:var(--m);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.hist-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--bg);}
+.hist-ic{width:38px;height:38px;border-radius:12px;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.hist-info{flex:1;}
+.hist-title{font-weight:700;font-size:13px;}
+.hist-sub{font-size:11px;color:var(--m);}
+.hist-val{font-weight:800;font-size:13px;color:var(--g);}
 
-/* ── SUSPENSION ── */
-#susp-screen{position:fixed;inset:0;z-index:300;background:#0f1117;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center;}
-#susp-screen.show{display:flex;}
+/* PROFILE */
+.prof-head{text-align:center;padding:20px 0 10px;}
+.prof-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--c),#0080AA);margin:0 auto 10px;display:flex;align-items:center;justify-content:center;font-size:28px;color:#FFF;font-weight:800;}
+.prof-name{font-weight:800;font-size:18px;}
+.prof-email{font-size:12px;color:var(--m);margin-top:2px;}
+.prof-karma{display:inline-flex;align-items:center;gap:4px;background:rgba(0,200,215,.1);color:var(--c);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin-top:8px;}
+.prof-row{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-bottom:1px solid var(--bg);}
+.prof-lbl{font-size:13px;color:var(--m);}
+.prof-val{font-size:13px;font-weight:700;}
+.btn-logout{width:100%;padding:13px;background:#FFF;border:1.5px solid #E5E5E5;border-radius:14px;color:var(--r);font-weight:700;font-size:14px;cursor:pointer;margin-top:16px;font-family:inherit;}
 
-@keyframes op{0%,100%{box-shadow:0 0 0 8px rgba(0,200,215,.14),0 4px 18px rgba(0,200,215,.42);}50%{box-shadow:0 0 0 16px rgba(0,200,215,.06),0 4px 26px rgba(0,200,215,.64);}}
-@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
-@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-@keyframes da{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-4px);opacity:1}}
-::-webkit-scrollbar{width:2px;}::-webkit-scrollbar-thumb{background:rgba(0,0,0,.12);}
+/* TOAST */
+#toast{position:fixed;top:max(58px,env(safe-area-inset-top,58px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#FFF;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap;transition:transform .3s;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+.hide{display:none!important;}
 </style>
 </head>
 <body>
 
 <!-- AUTH -->
 <div id="auth">
-  <div class="al">U.GO</div>
-  <div class="als">Portal Proveedor</div>
-  <div class="acard">
-    <div id="aerr" class="aerr"></div>
-    <div id="aok" class="aok"></div>
-    <div id="vlog">
-      <div class="atit">Bienvenido</div>
-      <div class="adesc">Ingresá a tu cuenta de proveedor</div>
-      <div class="afl"><label for="le">Email</label><input id="le" type="email" placeholder="tu@email.com"/></div>
-      <div class="afl"><label for="lp">Contraseña</label><input id="lp" type="password" placeholder="••••••••"/></div>
-      <button class="abtn" onclick="doLogin()">Ingresar →</button>
-      <div style="display:flex;align-items:center;gap:10px;margin:14px 0;"><div style="flex:1;height:1px;background:#E5E5E5;"></div><span style="font-size:11px;color:#AAA;white-space:nowrap;">o continuar con</span><div style="flex:1;height:1px;background:#E5E5E5;"></div></div>
-      <button onclick="signInGoogle()" style="width:100%;padding:12px;background:#FFF;border:1.5px solid #E0E0E0;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s;" onmouseover="this.style.borderColor='#4285F4'" onmouseout="this.style.borderColor='#E0E0E0'">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
-        Continuar con Google
-      </button>
-      <div class="alink" onclick="sw('reg')">¿No tenés cuenta? <b>Registrate aquí</b></div>
+<div class="auth-box">
+  <div class="auth-logo">U<span>.</span>GO</div>
+  <div class="auth-sub">Panel de Proveedores</div>
+  <div class="auth-tabs">
+    <div class="auth-tab on" onclick="sw('log')">Ingresar</div>
+    <div class="auth-tab" onclick="sw('reg')">Registrarse</div>
+  </div>
+  <div id="vlog" class="auth-form on">
+    <div class="afl"><label for="le">Email</label><input id="le" type="email" placeholder="tucorreo@email.com"></div>
+    <div class="afl"><label for="lp">Contraseña</label><input id="lp" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="btn-main" onclick="doLogin()">Ingresar →</button>
+    <div class="auth-or">o</div>
+    <button class="btn-google" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+      Continuar con Google
+    </button>
+    <div id="aerr"></div>
+  </div>
+  <div id="vreg" class="auth-form">
+    <div class="afl"><label for="rn">Nombre completo</label><input id="rn" type="text" placeholder="Juan García"></div>
+    <div class="afl"><label for="rcat">Categoría</label>
+      <select id="rcat" style="width:100%;padding:12px 14px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:12px;color:#FFF;font-size:14px;font-family:inherit;outline:none;">
+        <option value="Electricista">⚡ Electricista</option>
+        <option value="Plomero">🔧 Plomero</option>
+        <option value="Limpieza">🧹 Limpieza</option>
+        <option value="Pintor">🎨 Pintor</option>
+        <option value="Carpintero">🪚 Carpintero</option>
+        <option value="Cerrajero">🔑 Cerrajero</option>
+        <option value="Jardinero">🌿 Jardinero</option>
+      </select>
     </div>
-    <div id="vreg" style="display:none">
-      <div class="atit">Crear cuenta</div>
-      <div class="adesc">Registrate como proveedor de U.GO</div>
-      <div class="ag2">
-        <div class="afl"><label for="rn">Nombre</label><input id="rn" placeholder="Juan"/></div>
-        <div class="afl"><label for="ra">Apellido</label><input id="ra" placeholder="García"/></div>
-      </div>
-      <div class="afl"><label for="re">Email</label><input id="re" type="email" placeholder="tu@email.com"/></div>
-      <div class="afl"><label for="rt">Teléfono</label><input id="rt" type="tel" placeholder="+55 48 9 9999-9999"/></div>
-      <div class="afl"><label for="rp">Contraseña</label><input id="rp" type="password" placeholder="Mínimo 6 caracteres"/></div>
-      <div class="afl"><label>Categoría principal</label><select id="rcat"><option value="">Cargando...</option></select></div>
-      <button class="abtn" onclick="doRegister()">Crear cuenta →</button>
-      <div style="display:flex;align-items:center;gap:10px;margin:14px 0;"><div style="flex:1;height:1px;background:#E5E5E5;"></div><span style="font-size:11px;color:#AAA;white-space:nowrap;">o registrarse con</span><div style="flex:1;height:1px;background:#E5E5E5;"></div></div>
-      <button onclick="signInGoogle()" style="width:100%;padding:12px;background:#FFF;border:1.5px solid #E0E0E0;border-radius:14px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;transition:border-color .2s;" onmouseover="this.style.borderColor='#4285F4'" onmouseout="this.style.borderColor='#E0E0E0'">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.6a7.8 7.8 0 0 0 2.38-5.88c0-.57-.05-.66-.15-1.18z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.8 4.8 0 0 1-7.18-2.54H1.83v2.07A8 8 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.5 10.52a4.8 4.8 0 0 1 0-3.04V5.41H1.83a8 8 0 0 0 0 7.18l2.67-2.07z"/><path fill="#EA4335" d="M8.98 4.18c1.17 0 2.23.4 3.06 1.2l2.3-2.3A8 8 0 0 0 1.83 5.4L4.5 7.49a4.77 4.77 0 0 1 4.48-3.3z"/></svg>
-        Continuar con Google
-      </button>
-      <div class="alink" onclick="sw('log')">¿Ya tenés cuenta? <b>Ingresá aquí</b></div>
-    </div>
+    <div class="afl"><label for="re">Email</label><input id="re" type="email" placeholder="tucorreo@email.com"></div>
+    <div class="afl"><label for="rp">Contraseña</label><input id="rp" type="password" placeholder="mínimo 6 caracteres"></div>
+    <button class="btn-main" onclick="doRegister()">Crear cuenta →</button>
+    <div class="auth-or">o</div>
+    <button class="btn-google" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
+      Continuar con Google
+    </button>
+    <div id="aerr2"></div>
   </div>
 </div>
-
-<!-- SUSPENSION -->
-<div id="susp-screen">
-  <div style="font-size:56px;margin-bottom:16px;">⛔</div>
-  <div style="font-size:24px;font-weight:900;color:#FFF;margin-bottom:8px;">Cuenta suspendida</div>
-  <div style="font-size:14px;color:rgba(255,255,255,.5);max-width:300px;line-height:1.6;margin-bottom:20px;">Tu cuenta fue suspendida por el equipo de U.GO. Contactá a soporte.</div>
-  <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:12px 20px;font-size:13px;color:rgba(255,255,255,.5);margin-bottom:20px;">soporte@ugo.com.br</div>
-  <button onclick="location.reload()" style="padding:12px 24px;background:#FFF;color:#111;border:none;border-radius:14px;font-size:14px;font-weight:700;cursor:pointer;">Intentar de nuevo</button>
-</div>
-
-<!-- ADMIN NOTIFICATION OVERLAY -->
-<div id="adm-overlay">
-  <div id="adm-card" style="background:#FFF;border-radius:22px;padding:20px;width:100%;max-width:420px;margin:0 auto;box-shadow:0 8px 40px rgba(0,0,0,.25);animation:fi .3s ease;"></div>
 </div>
 
 <!-- MAP -->
 <div id="map"></div>
 
-<!-- TOP -->
-<div id="top">
+<!-- TOP BAR -->
+<div id="top" class="hide">
   <div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <div class="logo">U.GO</div>
-      <span style="font-size:11px;font-weight:700;background:rgba(0,200,215,.12);color:#00828F;padding:3px 9px;border-radius:20px;">PRO</span>
-    </div>
-    <div class="logo-s" id="top-s">Cargando...</div>
+    <div class="logo">U<span>.</span>GO</div>
+    <div class="logo-s" id="prov-name">Cargando...</div>
   </div>
   <div class="top-r">
     <button id="online-tog" onclick="toggleOnline()">
       <div class="tog-dot"></div>
-      <span class="tog-label" id="tog-lbl">Offline</span>
+      <div class="tog-label">OFFLINE</div>
     </button>
-    <button class="langb" id="lb" onclick="tgl()">PT</button>
   </div>
 </div>
 
 <!-- JOB NOTIFICATION -->
 <div id="job-notif">
-  <div id="job-card" style="background:#FFF;border-radius:22px;box-shadow:0 8px 32px rgba(0,0,0,.18);overflow:hidden;"></div>
+  <div class="jn-head">
+    <div class="jn-ic" id="jn-ic">⚡</div>
+    <div>
+      <div class="jn-title" id="jn-title">Nuevo pedido</div>
+      <div class="jn-sub" id="jn-sub">2.3 km — R$120</div>
+    </div>
+  </div>
+  <div class="jn-timer">
+    <div class="jn-bar-bg"><div class="jn-bar" id="jn-bar" style="width:100%"></div></div>
+    <div class="jn-secs" id="jn-secs">30s</div>
+  </div>
+  <div class="jn-btns">
+    <button class="jn-rej" onclick="rejectJob()">Rechazar</button>
+    <button class="jn-acc" onclick="acceptJob()">✓ Aceptar</button>
+  </div>
 </div>
 
 <!-- SHEET -->
-<div id="sheet"><div class="handle"></div><div id="sb"></div></div>
+<div id="sheet">
+  <div class="handle"></div>
+  <div id="sb"></div>
+</div>
+
+<!-- CHAT SHEET -->
+<div id="chat-sheet">
+  <div class="chat-top">
+    <div class="chat-orb">🌀</div>
+    <div class="chat-title">Hugo</div>
+    <button class="chat-close" onclick="closeChat()">✕</button>
+  </div>
+  <div id="chat-msgs" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
+    <div class="msg-typing" id="typing"><span class="typing-dot"></span><span class="typing-dot"></span><span class="typing-dot"></span></div>
+  </div>
+  <div class="chat-sugs" id="chat-sugs"></div>
+  <div class="chat-input-row">
+    <input id="chat-in" placeholder="Escribí tu mensaje..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">↑</button>
+  </div>
+</div>
 
 <!-- NAV -->
-<nav id="nav">
-  <button class="ni on" id="ni-radar" onclick="navTo('radar')"><span class="ni-ic">📡</span><span class="ni-lb" id="nl-r">Radar</span></button>
-  <button class="ni" id="ni-trab" onclick="navTo('trabajos')" style="position:relative;"><span class="ni-ic">📋</span><span class="nbadge" id="nbadge"></span><span class="ni-lb" id="nl-t">Trabajos</span></button>
-  <button id="orb" onclick="openChat()">🌀</button>
-  <button class="ni" id="ni-gan" onclick="navTo('ganancias')"><span class="ni-ic">💰</span><span class="ni-lb" id="nl-g">Ganancias</span></button>
-  <button class="ni" id="ni-perf" onclick="navTo('perfil')"><span class="ni-ic">👤</span><span class="ni-lb" id="nl-p">Perfil</span></button>
+<nav id="nav" class="hide">
+  <button class="ni on" onclick="navGo('home')" id="ni-home"><span class="ni-ic">🗺</span><span class="ni-lb">Mapa</span></button>
+  <button class="ni" onclick="navGo('earn')" id="ni-earn"><span class="ni-ic">💰</span><span class="ni-lb">Ganancias</span></button>
+  <button class="ni" onclick="openChat()" id="ni-hugo"><button class="orb-btn">🌀</button></button>
+  <button class="ni" onclick="navGo('hist')" id="ni-hist"><span class="ni-ic">📋</span><span class="ni-lb">Historial</span></button>
+  <button class="ni" onclick="navGo('prof')" id="ni-prof"><span class="ni-ic">👤</span><span class="ni-lb">Perfil</span></button>
 </nav>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-// ── CONFIG ──
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
-const FN=SB_URL+'/functions/v1';
-// ── AUTH — limpia y simple ────────────────────────────────────────
-const sb = supabase.createClient(SB_URL, SB_KEY, {
-  auth: { detectSessionInUrl: true, persistSession: true, autoRefreshToken: true, flowType: 'implicit' }
-});
+const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
 
-async function signInGoogle() {
-  const { error } = await sb.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: 'https://ugo-admin-panel.vercel.app/provider.html' }
-  });
-  if (error) showErr('Google: ' + error.message);
+let SESSION=null,PROV=null,myMap=null,myMarker=null,myLat=-27.5969,myLng=-48.5495;
+let isOnline=false,ACTIVE=null,jobTimer=null,chatHistory=[],SEC=30;
+
+// ── UTILS ───────────────────────────────────────────────────
+function showErr(m){const e=document.getElementById('aerr');e.textContent=m;e.style.display='block';}
+function showErr2(m){const e=document.getElementById('aerr2');e.textContent=m;e.style.display='block';}
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+function sw(v){
+  document.getElementById('vlog').classList.toggle('on',v==='log');
+  document.getElementById('vreg').classList.toggle('on',v==='reg');
+  document.querySelectorAll('.auth-tab').forEach((t,i)=>t.classList.toggle('on',(v==='log'&&i===0)||(v==='reg'&&i===1)));
+  document.getElementById('aerr').style.display='none';
 }
 
-async function doLogin() {
-  const email = document.getElementById('le').value.trim();
-  const pass  = document.getElementById('lp').value;
-  if (!email || !pass) return showErr('Completá email y contraseña');
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) showErr(error.message === 'Invalid login credentials' ? 'Email o contraseña incorrectos' : error.message);
-}
-
-// Init: detecta sesión existente o OAuth redirect
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    SESSION = session;
-    document.getElementById('auth').classList.add('hide');
-    await initProvider();
-  } else {
-    document.getElementById('auth').classList.remove('hide');
-    loadCats();
-  }
-})();
-
-// Escucha cambios futuros
-sb.auth.onAuthStateChange(async (event, session) => {
-  SESSION = session;
-  if (event === 'SIGNED_IN' && session) {
-    document.getElementById('auth').classList.add('hide');
-    initProvider();
-  } else if (event === 'SIGNED_OUT') {
-    document.getElementById('auth').classList.remove('hide');
-    SESSION = null;
-    loadCats();
-  }
-});
-
-function sw(v){ document.getElementById('vlog').style.display=v==='log'?'':'none'; document.getElementById('vreg').style.display=v==='reg'?'':'none'; showErr(''); }
-function showErr(m){ const e=document.getElementById('aerr'); e.textContent=m; e.style.display=m?'block':'none'; }
-function showOk(m){ const e=document.getElementById('aok'); e.textContent=m; e.style.display=m?'block':'none'; }
-
-
+// ── AUTH ────────────────────────────────────────────────────
 async function signInGoogle(){
-  try{
-    const redirectTo='https://ugo-admin-panel.vercel.app/provider.html';
-    console.log('[Google OAuth] iniciando con redirectTo:', redirectTo);
-    const{data,error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo,scopes:'email profile'}});
-    console.log('[Google OAuth] resultado:', {data,error});
-    if(error) showErr('Google: '+error.message);
-    // Si no hay error, el browser debería redirigir automáticamente
-  }catch(e){
-    console.error('[Google OAuth] excepción:', e);
-    showErr('Error Google: '+e.message);
-  }
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',
+    options:{redirectTo:'https://ugo-admin-panel.vercel.app/provider.html'}});
+  if(error) showErr('Google: '+error.message);
 }
 async function doLogin(){
   const email=document.getElementById('le').value.trim();
   const pass=document.getElementById('lp').value;
   if(!email||!pass) return showErr('Completá todos los campos');
   const{error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error) showErr(error.message==='Invalid login credentials'?'Email o contraseña incorrectos':error.message);
+  if(error) showErr(error.message.includes('Invalid')? 'Email o contraseña incorrectos':error.message);
 }
-
 async function doRegister(){
-  const nombre=document.getElementById('rn').value.trim();
-  const apellido=document.getElementById('ra').value.trim();
-  const email=document.getElementById('re').value.trim();
-  const tel=document.getElementById('rt').value.trim();
-  const pass=document.getElementById('rp').value;
-  const catId=document.getElementById('rcat').value;
-  if(!nombre||!email||!pass||!catId) return showErr('Completá todos los campos');
-  if(pass.length<6) return showErr('La contraseña debe tener al menos 6 caracteres');
-
-  // Usar Edge Function que confirma email automáticamente (sin verificación)
-  const r=await fetch(`${SB_URL}/functions/v1/register-provider`,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SB_KEY},
-    body:JSON.stringify({nombre,apellido,email,password:pass,telefono:tel,categoria_id:catId})
-  });
-  const d=await r.json();
-  if(!d.ok) return showErr(d.error);
-
-  // Login automático después del registro
-  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(error) return showErr('Cuenta creada. Ingresá con tu email y contraseña.');
-  showOk('¡Bienvenido! Ingresando...');
+  const n=document.getElementById('rn').value.trim();
+  const cat=document.getElementById('rcat').value;
+  const e=document.getElementById('re').value.trim();
+  const p=document.getElementById('rp').value;
+  if(!n||!e||!p) return showErr2('Completá todos los campos');
+  if(p.length<6) return showErr2('La contraseña debe tener al menos 6 caracteres');
+  const{data,error}=await sb.auth.signUp({email:e,password:p,options:{data:{nombre:n,tipo:'proveedor',categoria:cat}}});
+  if(error) return showErr2(error.message);
+  if(data.user) await sb.from('usuarios').upsert({id:data.user.id,email:e,nombre:n,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},{onConflict:'id'});
+  toast('¡Cuenta creada! Iniciando...');
+}
+async function doLogout(){
+  await sb.auth.signOut();
+  SESSION=null;PROV=null;isOnline=false;
+  document.getElementById('auth').classList.remove('hide');
+  document.getElementById('top').classList.add('hide');
+  document.getElementById('nav').classList.add('hide');
 }
 
-async function loadCats(){
-  const{data}=await sb.from('categorias').select('id,nombre,emoji').eq('activa',true);
-  const sel=document.getElementById('rcat');
-  if(data?.length) sel.innerHTML=data.map(c=>`<option value="${c.id}">${c.emoji} ${c.nombre}</option>`).join('');
+// ── SESSION INIT ────────────────────────────────────────────
+(async()=>{
+  const{data:{session}}=await sb.auth.getSession();
+  if(session){SESSION=session;await onLogin();}
+})();
+sb.auth.onAuthStateChange(async(ev,ses)=>{
+  if(ev==='SIGNED_IN'&&ses&&!SESSION){SESSION=ses;await onLogin();}
+  if(ev==='SIGNED_OUT'){SESSION=null;PROV=null;document.getElementById('auth').classList.remove('hide');document.getElementById('top').classList.add('hide');document.getElementById('nav').classList.add('hide');}
+});
+
+async function onLogin(){
+  document.getElementById('auth').classList.add('hide');
+  document.getElementById('top').classList.remove('hide');
+  document.getElementById('nav').classList.remove('hide');
+  await loadProv();
+  initMap();
+  startGPS();
+  navGo('home');
 }
 
-async function initProvider(){
-  const{data,error}=await sb.from('usuarios').select('*').eq('auth_id',SESSION.user.id).single();
-  if(!data){
-    const{data:byEmail}=await sb.from('usuarios').select('*').eq('email',SESSION.user.email).single();
-    if(byEmail){ await sb.from('usuarios').update({auth_id:SESSION.user.id}).eq('email',SESSION.user.email); await initProvider(); return; }
-    // Google OAuth: crear perfil automáticamente
+// ── PROVIDER DATA ───────────────────────────────────────────
+async function loadProv(){
+  const{data}=await sb.from('usuarios').select('*').eq('id',SESSION.user.id).single();
+  if(data){
+    PROV=data;
+    document.getElementById('prov-name').textContent=data.nombre||SESSION.user.email;
+  } else {
     const meta=SESSION.user.user_metadata||{};
-    const nombre=(meta.full_name||meta.name||SESSION.user.email.split('@')[0]).split(' ')[0];
-    const apellido=(meta.full_name||meta.name||'').split(' ').slice(1).join(' ');
-    const{data:cats}=await sb.from('categorias').select('id').eq('activa',true).limit(1);
-    await sb.from('usuarios').insert({auth_id:SESSION.user.id,email:SESSION.user.email,nombre,apellido,tipo:'proveedor',karma:5,activo:true,online:false,categorias_ids:cats?.[0]?.id?[cats[0].id]:[],pais:'BR',zona:'Florianópolis'});
-    await initProvider(); return;
+    const nombre=meta.nombre||meta.full_name||SESSION.user.email.split('@')[0];
+    await sb.from('usuarios').upsert({id:SESSION.user.id,email:SESSION.user.email,nombre,tipo:'proveedor',activo:true,karma:5.0},{onConflict:'id'});
+    PROV={nombre,karma:5.0,servicios_completados:0,categoria:'General'};
+    document.getElementById('prov-name').textContent=nombre;
   }
-  PROV=data; isOnline=data.online||false;
-  document.getElementById('top-s').textContent=`${data.nombre} ${data.apellido||''} ${tt().sub} ${data.karma}`;
-  updateOnlineUI();
-  initMap(); startGPS();
-  subscribeJobs(); subscribeNotifs(); subscribeStatus();
-  showRadar(); updateNavLabels();
 }
 
-// ── MAP ──
+// ── MAP ─────────────────────────────────────────────────────
 function initMap(){
-  if(MAP) return;
-  MAP=L.map('map',{zoomControl:false,center:[myLat,myLng],zoom:14});
-  const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19});
-  tileLayer.addTo(MAP);
-  tileLayer.on('tileerror',()=>{
-    MAP.eachLayer(l=>{if(l instanceof L.TileLayer) MAP.removeLayer(l);});
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(MAP);
-  });
-  // Heat spots (demand zones)
-  [[-27.590,-48.548,400,'rgba(239,68,68,.15)'],[- 27.610,-48.520,300,'rgba(245,158,11,.12)'],[-27.575,-48.565,280,'rgba(239,68,68,.1)']].forEach(([la,ln,r,c])=>{
-    L.circle([la,ln],{radius:r,color:c,fillColor:c,fillOpacity:1,stroke:false}).addTo(MAP);
-  });
-  myMark=L.marker([myLat,myLng],{icon:L.divIcon({html:`<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,#00ECF8,#009AAA);border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:19px;box-shadow:0 4px 14px rgba(0,200,215,.5);">🔧</div>`,className:'',iconSize:[44,44],iconAnchor:[22,22]})}).addTo(MAP);
-  [100,300,600,1200].forEach(t=>setTimeout(()=>MAP?.invalidateSize(),t));
+  if(myMap) return;
+  myMap=L.map('map',{zoomControl:false,attributionControl:false}).setView([myLat,myLng],14);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',{maxZoom:19}).addTo(myMap);
+  const icon=L.divIcon({className:'',html:'<div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#0080AA);border:3px solid #FFF;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;font-size:20px;">🔧</div>',iconSize:[44,44],iconAnchor:[22,22]});
+  myMarker=L.marker([myLat,myLng],{icon}).addTo(myMap);
 }
-
-function updateMark(){ if(myMark) myMark.setLatLng([myLat,myLng]); }
-
-function showClientOnMap(lat,lng){
-  if(clientMark) MAP.removeLayer(clientMark);
-  clientMark=L.marker([lat,lng],{icon:L.divIcon({html:`<div style="width:38px;height:38px;border-radius:50%;background:#EF4444;border:3px solid white;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 4px 14px rgba(239,68,68,.4);">📍</div>`,className:'',iconSize:[38,38],iconAnchor:[19,19]})}).addTo(MAP);
-  if(routeLine) MAP.removeLayer(routeLine);
-  routeLine=L.polyline([[myLat,myLng],[lat,lng]],{color:'#00C8D7',weight:5,opacity:.8,dashArray:'10,6'}).addTo(MAP);
-  MAP.fitBounds([[myLat,myLng],[lat,lng]],{padding:[80,80]});
-}
-
-function clearClientMap(){ if(clientMark){MAP.removeLayer(clientMark);clientMark=null;} if(routeLine){MAP.removeLayer(routeLine);routeLine=null;} MAP.setView([myLat,myLng],14); }
-
-// ── GPS ──
 function startGPS(){
   if(!navigator.geolocation) return;
-  let lastUpdLat=0,lastUpdLng=0;
-  watchId=navigator.geolocation.watchPosition(async pos=>{
-    myLat=pos.coords.latitude; myLng=pos.coords.longitude; updateMark();
-    // Solo actualiza DB si movió >30 metros (ahorra llamadas a Supabase)
-    if(isOnline&&SESSION&&haversine(lastUpdLat,lastUpdLng,myLat,myLng)*1000>30){
-      lastUpdLat=myLat; lastUpdLng=myLng;
-      callFn('provider-status',{online:true,lat:myLat,lng:myLng});
-    }
-  },e=>console.warn('GPS:',e.message),{enableHighAccuracy:true,maximumAge:8000,timeout:15000});
+  navigator.geolocation.watchPosition(pos=>{
+    myLat=pos.coords.latitude;myLng=pos.coords.longitude;
+    if(myMarker) myMarker.setLatLng([myLat,myLng]);
+    if(myMap) myMap.panTo([myLat,myLng]);
+    if(isOnline&&SESSION) sb.from('usuarios').update({lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
+  },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
 
-// ── ONLINE TOGGLE ──
+// ── ONLINE TOGGLE ───────────────────────────────────────────
 async function toggleOnline(){
-  if(!SESSION||!PROV) return;
-  const next=!isOnline;
-  showToast(next?'Conectando...':'Desconectando...');
-  const r=await callFn('provider-status',{online:next,lat:myLat,lng:myLng});
-  if(r?.ok){ isOnline=next; updateOnlineUI(); subscribeJobs(); showRadar(); showToast(next?'✅ Online — listo para recibir pedidos':'⏸ Offline'); }
+  isOnline=!isOnline;
+  const tog=document.getElementById('online-tog');
+  tog.classList.toggle('on',isOnline);
+  tog.querySelector('.tog-label').textContent=isOnline?'EN LÍNEA':'OFFLINE';
+  if(SESSION) await sb.from('usuarios').update({activo:isOnline,lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
+  toast(isOnline?'¡Estás en línea! Recibirás pedidos':'Te pusiste offline');
+  if(isOnline) simulateJob();
 }
 
-function updateOnlineUI(){
-  const tog=document.getElementById('online-tog'),lbl=document.getElementById('tog-lbl');
-  tog.classList.toggle('on',isOnline); lbl.textContent=isOnline?tt().online:tt().offline;
-  if(PROV) document.getElementById('top-s').textContent=`${PROV.nombre} ${PROV.apellido||''} ${tt().sub} ${PROV.karma}`;
+// ── JOB SIMULATION ──────────────────────────────────────────
+function simulateJob(){
+  if(!isOnline) return;
+  setTimeout(()=>{
+    if(!isOnline) return;
+    const jobs=[{cat:'Electricista',ic:'⚡',price:120,dist:1.8},{cat:'Plomero',ic:'🔧',price:150,dist:2.3},{cat:'Limpieza',ic:'🧹',price:80,dist:0.9}];
+    const j=jobs[Math.floor(Math.random()*jobs.length)];
+    document.getElementById('jn-ic').textContent=j.ic;
+    document.getElementById('jn-title').textContent=j.cat+' solicitado';
+    document.getElementById('jn-sub').textContent=j.dist+'km — R$'+j.price;
+    document.getElementById('job-notif').classList.add('show');
+    SEC=30;startJobTimer();
+  },5000);
 }
-
-// ── REALTIME JOB SUBSCRIPTION ──
-function subscribeJobs(){
-  if(rtJobs){sb.removeChannel(rtJobs);rtJobs=null;}
-  if(!isOnline||!SESSION) return;
-  rtJobs=sb.channel('jobs-'+Date.now())
-    .on('postgres_changes',{event:'INSERT',schema:'public',table:'servicios',filter:'estado=eq.negociando'},p=>{ if(!ACTIVE) showJobCard(p.new); })
-    .subscribe();
-}
-
-// ── JOB NOTIFICATION CARD ──
-function showJobCard(job){
-  let secs=30;
-  document.getElementById('nbadge').classList.add('show');
-  const dist=haversine(myLat,myLng,job.lat_cliente||myLat,job.lng_cliente||myLng);
-  const neto=job.tarifa?Math.round(job.tarifa*.85):'~';
-  const fee=job.tarifa?Math.round(job.tarifa*.15):'~';
-
-  // Render inicial
-  const renderCard=()=>{
-    document.getElementById('job-card').innerHTML=`
-      <div>
-        <div style="background:#111;padding:14px 16px;display:flex;align-items:center;justify-content:space-between;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:bl 1s infinite;"></div>
-            <div style="font-size:13px;font-weight:700;color:#FFF;">🎯 ${tt().jobIn}</div>
-          </div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <svg width="36" height="36" viewBox="0 0 36 36" style="transform:rotate(-90deg);">
-              <circle cx="18" cy="18" r="15" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="3"/>
-              <circle cx="18" cy="18" r="15" fill="none" stroke="var(--c)" stroke-width="3" stroke-dasharray="94.2" stroke-dashoffset="0" id="cnt-circ" style="transition:stroke-dashoffset .9s linear;"/>
-            </svg>
-            <span id="cnt-num" style="font-size:18px;font-weight:900;color:#FFF;min-width:26px;">${secs}</span>
-          </div>
-        </div>
-        <div style="padding:14px 16px;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-            <div><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${tt().jobType}</div>
-              <div style="font-weight:700;font-size:15px;">🔧 ${job.zona||'Servicio'}</div></div>
-            <div><div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;">${tt().jobDist}</div>
-              <div style="font-weight:700;font-size:15px;">📍 ${dist.toFixed(1)} km</div></div>
-          </div>
-          <div style="background:#F8F8F8;border-radius:14px;padding:10px 12px;margin-bottom:12px;">
-            <div style="font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${tt().jobDesc}</div>
-            <div style="font-size:13px;color:#333;">${job.descripcion||'Sin descripción'}</div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
-            <div class="sbox"><div class="slbl">${tt().jobVal}</div><div class="sval" style="color:var(--g);">R$${neto}</div></div>
-            <div class="sbox"><div class="slbl">${tt().jobComis}</div><div class="sval">R$${fee}</div></div>
-            <div class="sbox"><div class="slbl">${tt().jobTotal}</div><div class="sval">R$${job.tarifa||'~'}</div></div>
-          </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-            <button class="btnr" style="padding:13px;" onclick="rejectJob('${job.id}')">✕ ${tt().reject}</button>
-            <button class="btng" style="padding:13px;" onclick="acceptJob('${job.id}',${job.lat_cliente||myLat},${job.lng_cliente||myLng},${job.tarifa||0},'${job.descripcion||''}')">✓ ${tt().accept}${neto}</button>
-          </div>
-        </div>
-      </div>`;
-  };
-
-  renderCard(); document.getElementById('job-notif').classList.add('show'); closeSheet();
-  if(cntTid) clearInterval(cntTid);
-  cntTid=setInterval(()=>{
-    secs--;
-    // Solo actualizar el timer, no re-renderizar todo el card
-    const numEl=document.getElementById('cnt-num');
-    const circEl=document.getElementById('cnt-circ');
-    if(numEl) numEl.textContent=String(secs);
-    if(circEl) circEl.style.strokeDashoffset=String(94.2*(1-secs/30));
-    if(secs<=0){clearInterval(cntTid);rejectJob(job.id);}
+function startJobTimer(){
+  clearInterval(jobTimer);
+  jobTimer=setInterval(()=>{
+    SEC--;
+    document.getElementById('jn-secs').textContent=SEC+'s';
+    document.getElementById('jn-bar').style.width=(SEC/30*100)+'%';
+    if(SEC<=0){clearInterval(jobTimer);document.getElementById('job-notif').classList.remove('show');toast('Pedido expirado');}
   },1000);
 }
-
-function rejectJob(id){ clearInterval(cntTid); document.getElementById('job-notif').classList.remove('show'); document.getElementById('nbadge').classList.remove('show'); showRadar(); }
-
-async function acceptJob(id,clLat,clLng,tarifa,desc){
-  clearInterval(cntTid); document.getElementById('job-notif').classList.remove('show'); document.getElementById('nbadge').classList.remove('show');
-  showToast('⏳ Aceptando pedido...');
-  const r=await callFn('service-accept',{servicio_id:id});
-  if(r?.ok){
-    ACTIVE={id,lat:clLat,lng:clLng,tarifa,desc,...r};
-    showClientOnMap(clLat,clLng);
-    showJobDetails(ACTIVE);
-  } else showToast('❌ '+(r?.error||'No disponible'));
+function acceptJob(){
+  clearInterval(jobTimer);
+  document.getElementById('job-notif').classList.remove('show');
+  toast('✓ Pedido aceptado');
+  navGo('earn');
+}
+function rejectJob(){
+  clearInterval(jobTimer);
+  document.getElementById('job-notif').classList.remove('show');
+  toast('Pedido rechazado');
 }
 
-// ── JOB DETAILS ──
-function showJobDetails(job){
-  screen='accepted'; setActiveNav('trabajos');
-  const tt_=tt(),neto=Math.round((job.tarifa||85)*.85);
-  openSheet('min(88vh,700px)',`
-    <div style="display:flex;flex-direction:column;height:100%;">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px;flex-shrink:0;">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div>
-        <div style="font-weight:700;font-size:15px;">Trabajo aceptado ✓</div>
-      </div>
-      <div style="flex:1;overflow-y:auto;padding:14px;">
-        <div style="display:flex;align-items:center;gap:11px;padding:12px;background:#F8F8F8;border-radius:16px;margin-bottom:13px;">
-          <div style="width:42px;height:42px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#FFF;font-size:14px;flex-shrink:0;">${job.cliente?.nombre?.[0]||'C'}</div>
-          <div><div style="font-weight:700;font-size:14px;">Cliente verificado</div><div style="font-size:12px;color:#888;">⭐ · Datos protegidos</div></div>
-          <div style="margin-left:auto;"><span class="pill-c">🔒 Privado</span></div>
-        </div>
-        <div style="background:#F8F8F8;border-radius:16px;padding:14px;margin-bottom:12px;">
-          ${[[tt_().jobDesc,job.desc||job.descripcion||'—'],[tt_().jobDist,haversine(myLat,myLng,job.lat||myLat,job.lng||myLng).toFixed(1)+' km']].map(([k,v])=>`
-            <div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--b);font-size:13px;"><span style="color:#888;">${k}</span><span style="font-weight:500;max-width:60%;text-align:right;">${v}</span></div>`).join('')}
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;">
-          <div class="sbox"><div class="slbl">${tt_().jobVal}</div><div class="sval" style="color:var(--g);">R$${neto}</div></div>
-          <div class="sbox"><div class="slbl">${tt_().etaLabel}</div><div class="sval" style="color:var(--c);">~${Math.round(haversine(myLat,myLng,job.lat||myLat,job.lng||myLng)/30*60)} min</div></div>
-        </div>
-        <div style="background:var(--cd);border-radius:14px;padding:12px;font-size:12px;color:#444;border:1px solid var(--cm);">🔒 Recibirás R$${neto} cuando el cliente apruebe el trabajo.</div>
-      </div>
-      <div style="padding:13px 14px 28px;border-top:1px solid var(--b);flex-shrink:0;">
-        <button class="btnm" onclick="startNavigation()">🗺 ${tt_().nav}</button>
-      </div>
-    </div>`);
-}
-
-// ── NAVIGATION ──
-function startNavigation(){
-  screen='navigating';
-  updateStatus('en_camino');
-  const neto=Math.round((ACTIVE?.tarifa||85)*.85);
-  let etaV=Math.max(3,Math.round(haversine(myLat,myLng,ACTIVE?.lat||myLat,ACTIVE?.lng||myLng)/30*60));
-  const tt_=tt();
-  openSheet('min(42vh,320px)',`
-    <div style="padding:12px 14px;">
-      <div style="background:#FFF;border-radius:18px;padding:12px 13px;box-shadow:0 2px 12px rgba(0,0,0,.09);display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-        <div style="width:40px;height:40px;border-radius:50%;background:#111;display:flex;align-items:center;justify-content:center;font-weight:700;color:#FFF;flex-shrink:0;">📍</div>
-        <div style="flex:1;"><div style="font-weight:700;font-size:13px;">→ Dirección del cliente</div><div style="font-size:12px;color:#888;">${tt_().arriving}</div></div>
-        <div style="background:var(--cd);border-radius:12px;padding:7px 10px;text-align:center;">
-          <div id="eta-n" style="font-weight:800;font-size:20px;color:var(--c);">${etaV}</div>
-          <div style="font-size:10px;color:var(--c);">${tt_().min}</div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px;">
-        <button style="padding:12px;background:#F5F5F5;border:none;border-radius:16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;" onclick="openChat()">💬 Chat Hugo</button>
-        <button class="btnm" style="border-radius:16px;" onclick="showArrived()">${tt_().arrivedBtn} →</button>
-      </div>
-    </div>`);
-  if(etaTid) clearInterval(etaTid);
-  // Actualizar ETA cada 10s basado en GPS real
-  etaTid=setInterval(()=>{
-    if(!ACTIVE) return;
-    const distKm=haversine(myLat,myLng,ACTIVE.lat||myLat,ACTIVE.lng||myLng);
-    etaV=Math.max(0,Math.round(distKm/0.5)); // 30km/h promedio = 0.5km/min
-    const el=document.getElementById('eta-n');
-    if(el) el.textContent=String(etaV);
-  },10000);
-}
-
-// ── ARRIVED ──
-function showArrived(){
-  screen='arrived';
-  openSheet('min(35vh,260px)',`
-    <div style="padding:16px 18px;text-align:center;">
-      <div style="font-size:42px;margin-bottom:10px;">📍</div>
-      <div style="font-weight:800;font-size:18px;margin-bottom:6px;">¡Llegaste al cliente!</div>
-      <div style="font-size:13px;color:#888;margin-bottom:16px;">El cliente fue notificado de tu llegada</div>
-      <button class="btnm" onclick="startService()">${tt().startBtn}</button>
-    </div>`);
-}
-
-// ── IN SERVICE ──
-function startService(){
-  screen='inservice'; updateStatus('ejecutando');
-  const tt_=tt();
-  openSheet('min(52vh,420px)',`
-    <div style="display:flex;flex-direction:column;height:100%;padding:12px 14px;">
-      <div style="padding-bottom:10px;border-bottom:1px solid var(--b);margin-bottom:10px;">
-        <div style="font-weight:700;font-size:15px;">${tt_().inService}</div>
-        <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--g);margin-top:2px;">
-          <div style="width:5px;height:5px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div>${tt_().working}
-        </div>
-      </div>
-      <div style="background:var(--cd);border-radius:14px;padding:12px;border:1px solid var(--cm);margin-bottom:10px;">
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:5px;">
-          <div class="uorb" style="width:24px;height:24px;font-size:12px;">🌀</div>
-          <div style="font-weight:700;font-size:12px;">U.GO</div>
-          <span class="pill-c" style="margin-left:auto;">Monitoreando</span>
-        </div>
-        <div style="font-size:12px;color:#444;line-height:1.6;">${tt_().ugoMed}</div>
-      </div>
-      <div style="flex:1;background:#F7F7F7;border-radius:14px;padding:11px;overflow-y:auto;" id="svc-ch"></div>
-      <div style="padding-top:10px;flex-shrink:0;">
-        <button class="btnm" onclick="showUpload()">${tt_().uploadBtn}</button>
-      </div>
-    </div>`);
-}
-
-// ── PHOTOS ──
-let photosSelected=0;
-function showUpload(){
-  photosSelected=0;
-  const tt_=tt();
-  openSheet('min(85vh,680px)',`
-    <div style="display:flex;flex-direction:column;height:100%;">
-      <div style="padding:12px 14px;border-bottom:1px solid var(--b);flex-shrink:0;">
-        <div style="font-weight:700;font-size:15px;">📷 ${tt_().photos}</div>
-        <div style="font-size:12px;color:#888;margin-top:2px;">${tt_().photosS}</div>
-      </div>
-      <div style="flex:1;overflow-y:auto;padding:13px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
-          ${[['ph1','#F0F4FF','#C7D3F7',tt_().tbTabl],['ph2','#F0FDF4','#BBF7D0',tt_().tbCab],['ph3','#F5F3FF','#DDD6FE',tt_().tbToma],['ph4','#FFFBEB','#FDE68A',tt_().tbPrueba]].map(([id,bg,bc,lb])=>`
-          <label id="${id}" style="background:${bg};border-radius:14px;height:106px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;border:2px dashed ${bc};transition:all .2s;position:relative;overflow:hidden;">
-            <input type="file" accept="image/*" capture="environment" style="position:absolute;inset:0;opacity:0;cursor:pointer;" onchange="photoSelected('${id}','${lb}',this)"/>
-            <div style="font-size:24px;">📷</div><div style="font-size:10px;color:#888;">${lb}</div>
-          </label>`).join('')}
-        </div>
-        <div style="margin-bottom:12px;">
-          <div style="font-size:12px;color:#888;margin-bottom:6px;">Nota para el cliente (opcional)</div>
-          <textarea id="job-note" style="width:100%;border:1.5px solid var(--b);border-radius:14px;padding:10px;font-size:13px;resize:none;outline:none;font-family:inherit;line-height:1.5;color:#111;" rows="3" placeholder="Describí brevemente el trabajo realizado..."></textarea>
-        </div>
-        <div style="background:var(--cd);border-radius:13px;padding:11px;font-size:12px;color:#444;border:1px solid var(--cm);">
-          🔒 El pago se libera cuando el cliente apruebe las fotos.
-        </div>
-      </div>
-      <div style="padding:13px 14px 28px;border-top:1px solid var(--b);flex-shrink:0;">
-        <button class="btng" onclick="sendPhotos()">${tt_().enviar}</button>
-      </div>
-    </div>`);
-}
-
-function selectPhoto(id,lb){
-  photosSelected++;
-  const el=document.getElementById(id);
-  if(el){ el.style.borderColor='#22C55E'; el.style.borderStyle='solid'; el.style.background='rgba(34,197,94,.06)'; el.innerHTML=`<div style="font-size:28px;">✅</div><div style="font-size:10px;color:#16A34A;font-weight:600;">${lb}</div>`; }
-}
-function photoSelected(id,lb,input){
-  if(!input.files?.length) return;
-  photosSelected++;
-  const el=document.getElementById(id);
-  if(!el) return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    el.style.padding='0'; el.style.borderColor='#22C55E'; el.style.borderStyle='solid';
-    el.innerHTML=`<img src="${e.target.result}" style="width:100%;height:100%;object-fit:cover;border-radius:12px;"/><div style="position:absolute;bottom:4px;right:4px;background:#22C55E;color:#FFF;font-size:9px;font-weight:700;padding:2px 6px;border-radius:8px;">✓ ${lb}</div>`;
+// ── NAV ─────────────────────────────────────────────────────
+function navGo(sec){
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  const el=document.getElementById('ni-'+sec);
+  if(el) el.classList.add('on');
+  const sh=document.getElementById('sheet');
+  const sections={
+    home:()=>{sh.style.height='0';},
+    earn:()=>{sh.style.height='min(70vh,600px)';document.getElementById('sb').innerHTML=earnHTML();},
+    hist:()=>{sh.style.height='min(70vh,600px)';document.getElementById('sb').innerHTML=histHTML();loadHist();},
+    prof:()=>{sh.style.height='min(70vh,600px)';document.getElementById('sb').innerHTML=profHTML();}
   };
-  reader.readAsDataURL(input.files[0]);
+  (sections[sec]||sections.home)();
 }
 
-async function sendPhotos(){
-  screen='awaitappr';
-  openSheet('min(44vh,340px)',`
-    <div style="padding:20px;text-align:center;">
-      <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#00ECF8,#009AAA);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 16px;animation:op 1.8s ease-in-out infinite;">🌀</div>
-      <div style="font-weight:700;font-size:18px;margin-bottom:8px;">${tt().uploadDone}</div>
-      <div style="font-size:13px;color:#888;margin-bottom:16px;">${tt().awaitAppr}</div>
-      <div style="background:var(--cd);border-radius:14px;padding:12px;font-size:12px;color:#444;border:1px solid var(--cm);text-align:left;">🌀 ${tt().ugoMed}</div>
-    </div>`);
-  // Marcar como completado en Supabase
-  await updateStatus('completado');
-  // Simular aprobación del cliente tras 4s
-  setTimeout(showApproved,4500);
+function earnHTML(){return`<div class="pad">
+<div class="st">💰 Ganancias</div>
+<div class="stat-grid">
+  <div class="stat-card"><div class="stat-val">R$${(PROV?.ganancias_mes||0).toFixed(0)}</div><div class="stat-lbl">Este mes</div></div>
+  <div class="stat-card"><div class="stat-val">${PROV?.servicios_completados||0}</div><div class="stat-lbl">Servicios</div></div>
+  <div class="stat-card"><div class="stat-val">★ ${(PROV?.karma||5).toFixed(1)}</div><div class="stat-lbl">Karma</div></div>
+  <div class="stat-card"><div class="stat-val">15%</div><div class="stat-lbl">Comisión U.GO</div></div>
+</div></div>`;}
+
+async function loadHist(){
+  if(!SESSION) return;
+  const{data}=await sb.from('servicios').select('*').eq('proveedor_id',SESSION.user.id).order('created_at',{ascending:false}).limit(20);
+  const c=document.getElementById('sb');
+  if(!data||!data.length){c.innerHTML='<div class="pad"><div class="st">📋 Historial</div><p style="color:#888;font-size:13px;">Sin servicios aún</p></div>';return;}
+  c.innerHTML='<div class="pad"><div class="st">📋 Historial</div>'+data.map(s=>`<div class="hist-item"><div class="hist-ic">🔧</div><div class="hist-info"><div class="hist-title">${s.categoria||'Servicio'}</div><div class="hist-sub">${new Date(s.created_at).toLocaleDateString()}</div></div><div class="hist-val">R$${s.tarifa||0}</div></div>`).join('')+'</div>';
 }
+function histHTML(){return'<div class="pad"><div class="st">📋 Historial</div><p style="color:#888;font-size:13px;">Cargando...</p></div>';}
 
-function showApproved(){
-  const tarifa=ACTIVE?.tarifa||85, neto=Math.round(tarifa*.85), fee=Math.round(tarifa*.15);
-  openSheet('min(58vh,460px)',`
-    <div style="padding:20px;">
-      <div style="text-align:center;margin-bottom:18px;">
-        <div style="font-size:56px;margin-bottom:10px;">🎉</div>
-        <div style="font-weight:800;font-size:20px;margin-bottom:6px;">${tt().approved}</div>
-        <div style="font-size:13px;color:#888;">El cliente aprobó el trabajo</div>
-      </div>
-      <div style="background:#111;color:#FFF;border-radius:20px;padding:18px;margin-bottom:14px;text-align:center;">
-        <div style="font-size:11px;opacity:.5;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px;">${tt().paid}</div>
-        <div style="font-size:38px;font-weight:900;color:var(--g);">R$${neto}</div>
-        <div style="font-size:11px;opacity:.45;margin-top:4px;">+ Comisión U.GO: R$${fee}</div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">
-        <div class="sbox"><div class="slbl">Rating</div><div class="sval">⭐ 5.0</div></div>
-        <div class="sbox"><div class="slbl">Tiempo</div><div class="sval">~30min</div></div>
-        <div class="sbox"><div class="slbl">Karma</div><div class="sval" style="color:var(--g);">+2</div></div>
-      </div>
-      <button class="btnm" onclick="resetJob()">${tt().newJob}</button>
-    </div>`);
-  clearClientMap(); if(PROV){PROV.karma=Math.min(100,(PROV.karma||50)+2);} ACTIVE=null;
-}
+function profHTML(){
+  const n=PROV?.nombre||SESSION?.user?.email?.split('@')[0]||'Usuario';
+  const e=SESSION?.user?.email||'';
+  return`<div class="pad">
+  <div class="prof-head">
+    <div class="prof-av">${n[0]?.toUpperCase()||'U'}</div>
+    <div class="prof-name">${n}</div>
+    <div class="prof-email">${e}</div>
+    <div class="prof-karma">⚡ Karma ${(PROV?.karma||5).toFixed(1)}</div>
+  </div>
+  <div class="prof-row"><span class="prof-lbl">Categoría</span><span class="prof-val">${PROV?.categoria||'General'}</span></div>
+  <div class="prof-row"><span class="prof-lbl">Servicios</span><span class="prof-val">${PROV?.servicios_completados||0} completados</span></div>
+  <div class="prof-row"><span class="prof-lbl">Estado</span><span class="prof-val">${isOnline?'🟢 En línea':'⚫ Offline'}</span></div>
+  <button class="btn-logout" onclick="doLogout()">Cerrar sesión</button>
+</div>`;}
 
-function resetJob(){ ACTIVE=null; screen='home'; clearClientMap(); showRadar(); setActiveNav('radar'); }
-
-// ── STATUS UPDATE ──
-async function updateStatus(estado){ if(!ACTIVE||!SESSION) return; await callFn('service-status',{servicio_id:ACTIVE.id,estado,lat:myLat,lng:myLng}); }
-
-// ── GANANCIAS ──
-async function showGanancias(){
-  const tt_=tt();
-  openSheet('min(62vh,500px)',`<div style="padding:16px 18px;"><div style="font-weight:800;font-size:17px;margin-bottom:14px;">💰 ${tt_().earn}</div><div style="text-align:center;padding:24px;color:#888;">Cargando...</div></div>`);
-  if(!PROV) return;
-  const now=new Date(),hoy=now.toISOString().split('T')[0];
-  const semStart=new Date(now); semStart.setDate(now.getDate()-7);
-  const mesStart=new Date(now.getFullYear(),now.getMonth(),1).toISOString();
-  const{data}=await sb.from('servicios').select('tarifa,ganancia_proveedor,completado_at,zona,categorias:categoria_id(nombre,emoji)').eq('proveedor_id',PROV.id).eq('estado','completado').order('completado_at',{ascending:false}).limit(20);
-  const todayS=(data||[]).filter(s=>s.completado_at?.startsWith(hoy));
-  const weekS=(data||[]).filter(s=>new Date(s.completado_at)>=semStart);
-  const monthS=(data||[]).filter(s=>s.completado_at>=mesStart);
-  const net=s=>Number(s.ganancia_proveedor)||Math.round(Number(s.tarifa||0)*.85);
-  const sum=arr=>arr.reduce((a,s)=>a+net(s),0);
-  const pending=(data||[]).filter(s=>!s.ganancia_proveedor).reduce((a,s)=>a+Math.round(Number(s.tarifa||0)*.85),0);
-  openSheet('min(62vh,500px)',`
-    <div style="padding:16px 18px;">
-      <div style="font-weight:800;font-size:17px;margin-bottom:14px;">💰 ${tt_().earn}</div>
-      <div style="background:#111;color:#FFF;border-radius:20px;padding:20px;margin-bottom:12px;">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;text-align:center;">
-          <div style="border-right:1px solid rgba(255,255,255,.1);padding-right:12px;">
-            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnToday}</div>
-            <div style="font-size:22px;font-weight:900;color:var(--c);">R$${sum(todayS)}</div>
-          </div>
-          <div style="border-right:1px solid rgba(255,255,255,.1);padding:0 12px;">
-            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnWeek}</div>
-            <div style="font-size:22px;font-weight:900;">R$${sum(weekS)}</div>
-          </div>
-          <div style="padding-left:12px;">
-            <div style="font-size:10px;opacity:.5;margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;">${tt_().earnMonth}</div>
-            <div style="font-size:22px;font-weight:900;">R$${sum(monthS)}</div>
-          </div>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-bottom:13px;">
-        <div class="sbox"><div class="slbl">${tt_().earnPend}</div><div class="sval">R$${pending}</div></div>
-        <div class="sbox"><div class="slbl">${tt_().earnComp}</div><div class="sval">${data?.length||0}</div></div>
-        <div class="sbox"><div class="slbl">${tt_().earnRating}</div><div class="sval">⭐ ${PROV.karma}</div></div>
-      </div>
-      <div style="font-weight:700;font-size:13px;margin-bottom:9px;">${tt_().earnHist}</div>
-      <div style="border-radius:16px;overflow:hidden;border:1px solid var(--b);">
-        ${!data?.length?'<div style="padding:16px;text-align:center;color:#888;font-size:13px;">Sin historial aún</div>':
-          data.slice(0,6).map((s,i,a)=>`
-          <div style="padding:11px 14px;${i<a.length-1?'border-bottom:1px solid var(--b);':''}display:flex;align-items:center;gap:10px;background:#FFF;">
-            <div style="width:36px;height:36px;border-radius:12px;background:#F5F5F5;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;">${s.categorias?.emoji||'🔧'}</div>
-            <div style="flex:1;">
-              <div style="font-weight:600;font-size:13px;">${s.categorias?.nombre||'Servicio'} · ${s.zona||'—'}</div>
-              <div style="font-size:11px;color:#888;margin-top:1px;">${s.completado_at?new Date(s.completado_at).toLocaleDateString('pt-BR'):''}</div>
-            </div>
-            <div style="text-align:right;">
-              <div style="font-weight:700;font-size:14px;">R$${net(s)}</div>
-              <div style="font-size:10px;color:${s.ganancia_proveedor?'#16A34A':'#B45309'};font-weight:600;margin-top:1px;">${s.ganancia_proveedor?'Pagado':'Pendiente'}</div>
-            </div>
-          </div>`).join('')}
-      </div>
-    </div>`);
-}
-
-// ── PERFIL ──
-async function showPerfil(){
-  const tt_=tt();
-  if(!PROV) return;
-  const init=(PROV.nombre?.[0]||'P')+(PROV.apellido?.[0]||'');
-  const colors=['#3B82F6','#8B5CF6','#EC4899','#F59E0B','#10B981'];
-  const bg=colors[PROV.id?.charCodeAt(0)%colors.length]||'#3B82F6';
-  // Cargar reseñas reales
-  const{data:reviews}=await sb.from('servicios').select('rating_cliente,clientes:cliente_id(nombre)').eq('proveedor_id',PROV.id).not('rating_cliente','is',null).order('completado_at',{ascending:false}).limit(5);
-  // Cargar categorías
-  const{data:cats}=await sb.from('categorias').select('nombre,emoji').in('id',PROV.categorias_ids||[]);
-  openSheet('min(75vh,600px)',`
-    <div style="padding:16px 18px;">
-      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
-        <div style="width:64px;height:64px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:800;color:#FFF;font-size:22px;position:relative;">
-          ${init}
-          <div style="position:absolute;bottom:1px;right:1px;width:16px;height:16px;border-radius:50%;background:${isOnline?'var(--g)':'#CCC'};border:2.5px solid #FFF;"></div>
-        </div>
-        <div>
-          <div style="font-weight:800;font-size:18px;">${PROV.nombre} ${PROV.apellido||''}</div>
-          <div style="font-size:12px;color:#888;margin-top:2px;">${PROV.zona||'Florianópolis'}</div>
-          <span class="pill-g" style="margin-top:4px;display:inline-block;">${tt_().verified}</span>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div class="sbox"><div class="slbl">${tt_().perfServ}</div><div class="sval">${PROV.servicios_completados||0}</div></div>
-        <div class="sbox"><div class="slbl">${tt_().perfRat}</div><div class="sval">⭐ ${PROV.karma||5}</div></div>
-        <div class="sbox"><div class="slbl">${tt_().perfKarma}</div><div class="sval">${PROV.karma||5}</div></div>
-      </div>
-      <div style="background:rgba(34,197,94,.08);border-radius:14px;padding:12px;border:1px solid rgba(34,197,94,.2);margin-bottom:14px;">
-        <div style="font-weight:700;font-size:12px;color:#16A34A;margin-bottom:6px;">${tt_().perfDocs}</div>
-        ${['🪪 CPF / RG','📱 Teléfono verificado','📷 Foto de perfil'].map(d=>`<div style="font-size:12px;color:#555;padding:3px 0;">${d} — <span style="color:#16A34A;font-weight:600;">Válido</span></div>`).join('')}
-      </div>
-      ${cats?.length?`<div style="margin-bottom:14px;"><div style="font-weight:700;font-size:13px;margin-bottom:8px;">${tt_().perfCats}</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${cats.map(c=>`<span class="pill-c">${c.emoji} ${c.nombre}</span>`).join('')}</div></div>`:''}
-      ${reviews?.length?`<div style="margin-bottom:14px;"><div style="font-weight:700;font-size:13px;margin-bottom:9px;">${tt_().perfReviews}</div>${reviews.map(r=>`<div style="background:#F8F8F8;border-radius:14px;padding:11px;margin-bottom:7px;"><div style="font-weight:600;font-size:12px;">${r.clientes?.nombre||'Cliente'} · ${'⭐'.repeat(r.rating_cliente)}</div></div>`).join('')}</div>`:''}
-      <div style="display:flex;gap:8px;">
-        <button class="btnr" style="flex:1;" onclick="doLogout()">${tt_().cerrar}</button>
-      </div>
-    </div>`);
-}
-
-// ── RADAR ──
-function showRadar(){
-  setActiveNav('radar'); screen='home';
-  const tt_=tt();
-  openSheet('min(46vh,360px)',`
-    <div style="padding:16px 18px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
-        <div>
-          <div style="font-weight:700;font-size:15px;">${isOnline?tt_().searching:tt_().noJobs}</div>
-          ${isOnline?`<div style="display:flex;align-items:center;gap:6px;margin-top:4px;"><div style="width:6px;height:6px;border-radius:50%;background:var(--g);animation:bl 1.5s infinite;"></div><span style="font-size:12px;color:var(--g);font-weight:600;">${tt_().sist}</span></div>`:`<div style="font-size:13px;color:#888;margin-top:4px;">${tt_().noJobsS}</div>`}
-        </div>
-        ${!isOnline?`<button class="btng" style="padding:9px 16px;font-size:12px;border-radius:20px;width:auto;" onclick="toggleOnline()">${tt_().online} →</button>`:''}
-      </div>
-      ${isOnline?`
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;">
-        <div class="sbox"><div class="slbl">Hoy</div><div class="sval" style="color:var(--c);">R$${PROV?Math.round((PROV.servicios_completados||0)*42):0}</div></div>
-        <div class="sbox"><div class="slbl">Servicios</div><div class="sval">${PROV?.servicios_completados||0}</div></div>
-        <div class="sbox"><div class="slbl">Karma</div><div class="sval">⭐ ${PROV?.karma||5}</div></div>
-      </div>
-      <div style="font-size:13px;color:#888;text-align:center;padding:8px;">Recibirás una notificación cuando haya un trabajo disponible</div>
-      `:``}
-    </div>`);
-}
-
-// ── TRABAJOS ──
-async function showTrabajos(){
-  if(ACTIVE){showJobDetails(ACTIVE);return;}
-  const{data}=await sb.from('servicios').select('*,categorias:categoria_id(nombre,emoji)').eq('proveedor_id',PROV?.id).not('estado','eq','completado').not('estado','eq','cancelado');
-  openSheet('min(50vh,400px)',`
-    <div style="padding:16px 18px;">
-      <div style="font-weight:800;font-size:17px;margin-bottom:14px;">📋 ${tt().nlt.t}</div>
-      ${!data?.length?`<div style="text-align:center;padding:24px;"><div style="font-size:34px;margin-bottom:9px;">📋</div><div style="font-weight:700;font-size:15px;margin-bottom:4px;">${tt().noJobs}</div><div style="font-size:13px;color:#888;">${tt().noJobsS}</div></div>`:
-        data.map(s=>`<div style="background:#F8F8F8;border-radius:14px;padding:12px;margin-bottom:8px;display:flex;align-items:center;gap:10px;">
-          <div style="font-size:22px;">${s.categorias?.emoji||'🔧'}</div>
-          <div style="flex:1;"><div style="font-weight:700;font-size:13px;">${s.categorias?.nombre||'Servicio'}</div><div style="font-size:11px;color:#888;margin-top:2px;">${s.estado}</div></div>
-          <span class="pill-c">${s.estado}</span>
-        </div>`).join('')}
-    </div>`);
-}
-
-// ── HUGO CHAT ──
-let provChatHistory=[];
+// ── CHAT ────────────────────────────────────────────────────
+const SUGS=['¿Cuánto gané hoy?','Ver mis servicios','Mejorar mi perfil','Ayuda con disputa'];
 function openChat(){
-  provChatHistory=[];
-  const tt_=tt();
-  openSheet('min(82vh,700px)',`
-    <div style="display:flex;flex-direction:column;height:100%;">
-      <div style="padding:10px 14px;border-bottom:1px solid var(--b);display:flex;align-items:center;gap:9px;flex-shrink:0;">
-        <div class="uorb" style="width:28px;height:28px;font-size:14px;">🌀</div>
-        <div><div style="font-weight:700;font-size:14px;">Hugo</div><div style="font-size:11px;color:var(--g);">${tt_().ol}</div></div>
-        <button onclick="closeSheet();" style="margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:#999;line-height:1;">✕</button>
-      </div>
-      <div id="cm" style="flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:8px;"></div>
-      <div style="padding:10px 13px 12px;border-top:1px solid var(--b);flex-shrink:0;">
-        <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px;" id="ci">
-          ${tt_().hSugs.map(s=>`<button style="padding:6px 12px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onclick="sendSug(this,'${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('')}
-        </div>
-        <div style="display:flex;gap:8px;">
-          <input id="chat-in" placeholder="${tt_().hugoQ}" style="flex:1;padding:10px 14px;border:1.5px solid var(--b);border-radius:24px;font-size:13px;font-family:inherit;outline:none;" onkeydown="if(event.key==='Enter')sendChat()"/>
-          <button onclick="sendChat()" style="width:40px;height:40px;border-radius:50%;background:#111;color:#FFF;border:none;font-size:18px;cursor:pointer;">↑</button>
-        </div>
-      </div>
-    </div>`);
-  const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Servicios:${PROV.servicios_completados||0},Online:${isOnline},JOB_ACTIVO:${!!ACTIVE}`:'';
-  setTimeout(()=>{addMsg('ugo',`${tt_().hello} ${PROV?.nombre||''}. ${tt_().hugoH2}`);setTimeout(()=>addMsg('ugo',tt_().hugoQ),700);},400);
+  const cs=document.getElementById('chat-sheet');
+  cs.style.height='min(82vh,680px)';
+  document.getElementById('chat-sugs').innerHTML=SUGS.map(s=>`<button class="sug" onclick="sendSug('${s}')">${s}</button>`).join('');
+  if(!chatHistory.length) hugoSend('__INICIO__');
 }
-
-async function sendChat(){
-  const inp=document.getElementById('chat-in');
-  const msg=inp?.value.trim();if(!msg)return;inp.value='';
-  addMsg('user',msg);showTyping();
-  document.getElementById('ci').innerHTML='';
-  provChatHistory.push({role:'user',content:msg});
-  try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:buildProvCtx(),history:provChatHistory.slice(-8)})});
-    const d=await r.json();document.getElementById('typ')?.remove();
-    const reply=d.hugo_mensaje||'...';addMsg('ugo',reply);
-    provChatHistory.push({role:'assistant',content:reply});
-  }catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
-  showProvSugs();
+function closeChat(){document.getElementById('chat-sheet').style.height='0';}
+function addMsg(role,text){
+  const d=document.getElementById('chat-msgs');
+  const el=document.createElement('div');
+  el.className='msg '+(role==='user'?'msg-u':'msg-h');
+  el.textContent=text;
+  d.insertBefore(el,document.getElementById('typing'));
+  d.scrollTop=d.scrollHeight;
 }
-  const ci=document.getElementById('ci');
-  if(ci) ci.innerHTML=tt().hSugs.map(s=>`<button style="padding:6px 12px;border-radius:20px;border:1.5px solid var(--b);background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onclick="sendSug(this,'${s.replace(/'/g,"\\'")}')"> ${s}</button>`).join('');
-}
-
-function buildProvCtx(){
-  if(!PROV) return '';
-  return [`Proveedor:${PROV.nombre},Karma:${PROV.karma},Servicios:${PROV.servicios_completados||0}`,`Online:${isOnline},JobActivo:${!!ACTIVE}`,ACTIVE?`TrabajoActual:estado=${ACTIVE.estado}`:''  ,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
-}
-function showProvSugs(){
-  const el=document.getElementById('ci'); if(!el) return;
-  el.innerHTML=tt().hSugs.map(s=>`<button onclick="sendSug(this,'${s.replace(/'/g,"\'"  )}')" style="padding:6px 12px;border-radius:20px;border:1.5px solid #E5E5E5;background:#FFF;font-size:12px;cursor:pointer;font-family:inherit;" onmouseover="this.style.borderColor='#00C8D7'" onmouseout="this.style.borderColor='#E5E5E5'">${s}</button>`).join('');
-}
-async function sendSug(el,sug){
-  addMsg('user',sug);
-  const ci=el.closest('#ci')||document.getElementById('ci');
-  if(ci) ci.innerHTML='';
-  showTyping();
-  provChatHistory.push({role:'user',content:sug});
+function showTyping(v){document.getElementById('typing').style.display=v?'block':'none';}
+async function hugoSend(msg){
+  showTyping(true);
+  const ctx=PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma},Servicios:${PROV.servicios_completados||0},Online:${isOnline}`:'';
   try{
     const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({role:'proveedor',message:sug,context:buildProvCtx(),history:provChatHistory.slice(-8)})});
+      body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:chatHistory.slice(-8)})});
     const d=await r.json();
-    document.getElementById('typ')?.remove();
+    showTyping(false);
     const reply=d.hugo_mensaje||'...';
-    addMsg('ugo',reply);
-    provChatHistory.push({role:'assistant',content:reply});
-  }catch{document.getElementById('typ')?.remove();addMsg('ugo','Sin conexión con Hugo.');}
-  showProvSugs();
+    addMsg('hugo',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  }catch{showTyping(false);addMsg('hugo','Sin conexión con Hugo.');}
 }
-
-async function doLogout(){
-  if(watchId) navigator.geolocation.clearWatch(watchId);
-  if(rtJobs){sb.removeChannel(rtJobs);rtJobs=null;}
-  if(rtNotif){sb.removeChannel(rtNotif);rtNotif=null;}
-  if(rtStatus){sb.removeChannel(rtStatus);rtStatus=null;}
-  if(isOnline&&SESSION) await callFn('provider-status',{online:false,lat:myLat,lng:myLng});
-  await sb.auth.signOut();
-  PROV=null;SESSION=null;ACTIVE=null;isOnline=false;
+async function sendChat(){
+  const inp=document.getElementById('chat-in');
+  const msg=inp.value.trim();if(!msg) return;
+  inp.value='';addMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+  document.getElementById('chat-sugs').innerHTML='';
+  await hugoSend(msg);
+  document.getElementById('chat-sugs').innerHTML=SUGS.map(s=>`<button class="sug" onclick="sendSug('${s}')">${s}</button>`).join('');
 }
-
-// ── NAV ──
-const NAV_MAP={radar:'radar',trabajos:'trab',ganancias:'gan',perfil:'perf'};
-function navTo(id){
-  setActiveNav(id);
-  if(id==='radar') showRadar();
-  else if(id==='trabajos') showTrabajos();
-  else if(id==='ganancias') showGanancias();
-  else if(id==='perfil') showPerfil();
-}
-function setActiveNav(id){ document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on')); document.getElementById('ni-'+(NAV_MAP[id]||id))?.classList.add('on'); }
-function updateNavLabels(){const tt_=tt();document.getElementById('nl-r').textContent=tt_().nlt.r;document.getElementById('nl-t').textContent=tt_().nlt.t;document.getElementById('nl-g').textContent=tt_().nlt.g;document.getElementById('nl-p').textContent=tt_().nlt.p;document.getElementById('lb').textContent=tt_().lb;}
-
-// ── LANGUAGE ──
-function tgl(){lang=lang==='es'?'pt':'es';updateOnlineUI();updateNavLabels();if(screen==='home')showRadar();}
-
-// ── SHEET ──
-function openSheet(h,html){const s=document.getElementById('sheet');s.style.height=h;document.getElementById('sb').innerHTML=`<div class="handle"></div>${html}`;}
-function closeSheet(){document.getElementById('sheet').style.height='0';}
-
-// ── UTILS ──
-async function callFn(name,body){
-  if(!SESSION) return null;
-  try{const r=await fetch(`${FN}/${name}`,{method:'POST',headers:{Authorization:`Bearer ${SESSION.access_token}`,'Content-Type':'application/json'},body:JSON.stringify(body)});return await r.json();}
-  catch(e){console.error(name,e);return null;}
-}
-function haversine(lat1,lng1,lat2,lng2){const R=6371,dL=(lat2-lat1)*Math.PI/180,dN=(lng2-lng1)*Math.PI/180;const a=Math.sin(dL/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dN/2)**2;return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
-function showToast(msg,type='n'){const colors={n:'#111',ok:'#15803D',err:'#DC2626'};const t=document.createElement('div');t.style.cssText=`position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:${colors[type]||colors.n};color:#FFF;padding:10px 18px;border-radius:24px;font-size:13px;font-weight:600;z-index:9999;white-space:nowrap;animation:fi .2s ease;max-width:90vw;text-align:center;`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),3000);}
+async function sendSug(s){addMsg('user',s);chatHistory.push({role:'user',content:s});document.getElementById('chat-sugs').innerHTML='';await hugoSend(s);}
 </script>
 </body>
 </html>
