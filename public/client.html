@@ -154,7 +154,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <div id="chat">
   <div class="ctop"><div class="corb">🌀</div><div class="ctitle"><div class="ctit">Hugo</div><div class="cst">● Tu asistente personal</div></div><button class="cclose" onclick="closeChat()">✕</button></div>
   <div id="cmsgs"></div><div id="csugs"></div>
-  <div id="cinrow"><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="csend" onclick="sendChat()">↑</button></div>
+  <div id="cinrow"><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="micbtn" onclick="startRec()" style="width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s">🎤</button><button id="csend" onclick="sendChat()">↑</button></div>
 </div>
 
 <nav id="nav" class="hide">
@@ -410,11 +410,70 @@ async function hugoCall(msg){
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
-    addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});
+    addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
 async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
 function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
+
+/* ── VOZ (Web Speech API) ── */
+const hasSpeech = 'speechSynthesis' in window;
+const hasRec    = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in window;
+let speaking = false, recording = false, rec = null;
+
+function hugoSpeak(text) {
+  if (!hasSpeech || !text) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.slice(0, 200));
+  u.lang = 'es-AR'; u.rate = 1.05; u.pitch = 1;
+  // Preferir voz en español si disponible
+  const voices = window.speechSynthesis.getVoices();
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) u.voice = esVoice;
+  u.onstart = () => speaking = true;
+  u.onend = () => { speaking = false; updateMicBtn(); };
+  window.speechSynthesis.speak(u);
+}
+
+function startRec() {
+  if (!hasRec) { toast('Tu navegador no soporta reconocimiento de voz'); return; }
+  if (recording) { stopRec(); return; }
+  const SR = window.webkitSpeechRecognition || window.SpeechRecognition;
+  rec = new SR();
+  rec.lang = 'es-AR'; rec.continuous = false; rec.interimResults = false;
+  rec.onstart = () => { recording = true; updateMicBtn(); };
+  rec.onresult = (e) => {
+    const txt = e.results[0][0].transcript;
+    const inp = document.getElementById('cin');
+    if (inp) inp.value = txt;
+    stopRec();
+    setTimeout(() => sendChat(), 200);
+  };
+  rec.onerror = () => stopRec();
+  rec.onend = () => { recording = false; updateMicBtn(); };
+  rec.start();
+}
+
+function stopRec() {
+  if (rec) { try { rec.stop(); } catch(e) {} rec = null; }
+  recording = false; updateMicBtn();
+}
+
+function updateMicBtn() {
+  const btn = document.getElementById('micbtn');
+  if (!btn) return;
+  if (recording) {
+    btn.textContent = '🔴'; btn.style.background = '#EF4444';
+  } else {
+    btn.textContent = '🎤'; btn.style.background = '#111';
+  }
+}
+
+// Esperar voces disponibles
+if (hasSpeech) {
+  window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
 </script>
 </body>
 </html>
