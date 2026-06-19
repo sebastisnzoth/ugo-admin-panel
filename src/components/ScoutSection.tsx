@@ -56,17 +56,57 @@ export function SecScout() {
   const [stats, setStats] = useState({found:0,contacted:0,interested:0,joined:0});
   const [exportData, setExportData] = useState<Provider[]>([]);
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [prospectos, setProspectos] = useState<any[]>([]);
+  const [loadingPs, setLoadingPs] = useState(false);
+  const [approving, setApproving] = useState<string|null>(null);
   const mapRef = useRef<any>(null);
   const mapInst = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const centerMark = useRef<any>(null);
 
+  const loadProspectos = useCallback(async () => {
+    setLoadingPs(true);
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts?order=created_at.desc&limit=30`, {
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+      });
+      const data = await r.json();
+      if (Array.isArray(data)) setProspectos(data);
+    } catch {}
+    setLoadingPs(false);
+  }, []);
+
+  const aprobar = useCallback(async (id: string) => {
+    setApproving(id);
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/rpc/aprobar_prospecto`, {
+        method: 'POST',
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ p_prospecto_id: id, p_admin_email: 'sebastianzoth@gmail.com' })
+      });
+      const data = await r.json();
+      if (data.ok) {
+        await loadProspectos();
+        // Copiar link al clipboard
+        if (data.link_onboarding) {
+          navigator.clipboard.writeText(data.link_onboarding).catch(()=>{});
+          alert(`✅ Aprobado\n\nLink de invitación copiado:\n${data.link_onboarding}`);
+        }
+      } else {
+        alert('Error: ' + (data.error || data.message || 'Revisar Supabase'));
+      }
+    } catch(e: any) { alert('Error: ' + e.message); }
+    setApproving(null);
+  }, [loadProspectos]);
+
+  // Load prospectos on mount
+  useEffect(() => { loadProspectos(); }, [loadProspectos]);
+
   // Init map
   useEffect(() => {
     if (!mapRef.current || mapInst.current || typeof L === 'undefined') return;
     const map = L.map(mapRef.current, { zoomControl:true, center:[-27.5954,-48.5480], zoom:13 });
-    L.tileLayer('https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/{s}/{z}/{x}/{y}.png', {attribution:'© OSM'});
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {attribution:'© CARTO', maxZoom:19}).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors', maxZoom:19}).addTo(map);
     mapInst.current = map;
     [100,400,800].forEach(t => setTimeout(()=>map.invalidateSize(),t));
   }, []);
@@ -106,34 +146,31 @@ export function SecScout() {
 
   const addToHugo = useCallback(async (p: Provider) => {
     try {
-      const catRes = await fetch(`${SB_URL}/rest/v1/categorias?activa=eq.true&nombre=ilike.*${encodeURIComponent(CAT_LABELS[cat])}*&limit=1`, {
-        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
-      });
-      const cats = await catRes.json();
-      const catId = cats?.[0]?.id;
-
-      const r = await fetch(`${SB_URL}/rest/v1/usuarios`, {
+      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts`, {
         method: 'POST',
-        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal,resolution=ignore-duplicates' },
         body: JSON.stringify({
-          nombre: p.name.split(' ')[0],
-          apellido: p.name.split(' ').slice(1).join(' ')||'(Scout)',
-          telefono: p.phone||'',
-          tipo: 'proveedor',
-          activo: false,
-          online: false,
-          lat: p.lat, lng: p.lng,
-          zona: locLabel.split(',')[0] || 'Florianópolis',
-          pais: 'BR', karma: 5,
-          categorias_ids: catId ? [catId] : [],
-          email: p.tags?.email||p.tags?.['contact:email']||null,
+          nombre: p.name,
+          categoria: cat,
+          telefono: p.phone || null,
+          email: p.tags?.email || p.tags?.['contact:email'] || null,
+          website: p.tags?.website || null,
+          direccion: p.address || null,
+          ciudad: locLabel.split(',')[0]?.trim() || 'Florianópolis',
+          pais: 'BR',
+          latitud: p.lat,
+          longitud: p.lng,
+          fuente: 'osm',
+          score_confianza: p.phone ? 60 : 30,
+          notas_hugo: `Encontrado via Scout Radar · ${CAT_LABELS[cat]} · ${fmtD(p.dist)}`,
+          estado: 'prospecto_pendiente',
         })
       });
       if (r.ok || r.status === 201) {
         setAdded(prev => new Set([...prev, p.id]));
         setStats(s => ({ ...s, joined: s.joined + 1 }));
       }
-    } catch(e: any) { alert('Error al agregar: ' + e.message); }
+    } catch(e: any) { alert('Error al guardar: ' + (e as any).message); }
   }, [cat, locLabel]);
 
   const doSearch = async () => {
@@ -357,6 +394,50 @@ export function SecScout() {
             ))}
           </div>
         </div>
+      </div>
+      {/* ── PROSPECTOS PENDIENTES ── */}
+      <div style={{marginTop:'16px'}}>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
+          <div style={{fontSize:'13px',fontWeight:700,color:'#111'}}>🗂 Prospectos en Supabase</div>
+          <button style={S.btn('s')} onClick={loadProspectos} disabled={loadingPs}>
+            {loadingPs ? '⏳' : '↻ Actualizar'}
+          </button>
+        </div>
+        {prospectos.length === 0 && !loadingPs && (
+          <div style={{...S.card,textAlign:'center',padding:'20px',color:'rgba(0,0,0,.4)',fontSize:'12px'}}>
+            Sin prospectos aún. Buscá negocios y pulsá "+ Hugo" para agregarlos.
+          </div>
+        )}
+        {prospectos.map(p => (
+          <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',marginBottom:'8px'}}>
+            <div style={{width:'38px',height:'38px',borderRadius:'50%',background:p.estado==='aprobado'?'rgba(5,148,79,.1)':'rgba(245,158,11,.1)',border:`1.5px solid ${p.estado==='aprobado'?'rgba(5,148,79,.3)':'rgba(245,158,11,.3)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>
+              {p.estado==='aprobado'?'✅':'⏳'}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.nombre}</div>
+              <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>
+                {p.categoria} · {p.ciudad} {p.telefono ? `· 📱 ${p.telefono}` : ''} · Score: {p.score_confianza}/100
+              </div>
+            </div>
+            <div style={{display:'flex',gap:'6px',flexShrink:0}}>
+              {p.estado === 'prospecto_pendiente' && (
+                <button
+                  style={{...S.btn(),padding:'5px 12px',fontSize:'10px',whiteSpace:'nowrap'}}
+                  onClick={() => aprobar(p.id)}
+                  disabled={approving === p.id}
+                >
+                  {approving === p.id ? '⏳' : '✓ Aprobar'}
+                </button>
+              )}
+              {p.estado === 'aprobado' && (
+                <span style={S.pill('g')}>Aprobado</span>
+              )}
+              {p.estado === 'rechazado' && (
+                <span style={S.pill('a')}>Rechazado</span>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
