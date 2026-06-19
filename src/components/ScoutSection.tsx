@@ -152,28 +152,6 @@ export function SecScout() {
     } catch { alert('Error al buscar dirección.'); }
   };
 
-  // ── Búsqueda Overpass con fallbacks ───────────────────────
-  const buildQuery = (la:number, ln:number, rad:string, cfg:typeof CAT_CONFIG[string], useNameFallback=false) => {
-    if (useNameFallback) {
-      // Fallback: buscar por nombre con regex (case-insensitive)
-      return `[out:json][timeout:30];(node["name"~"${cfg.nameRegex}",i](around:${rad},${la},${ln});way["name"~"${cfg.nameRegex}",i](around:${rad},${la},${ln}););out center;`;
-    }
-    // Query primaria: por tags específicos
-    const parts = cfg.tags.map(([k,v]) =>
-      `node["${k}"="${v}"](around:${rad},${la},${ln});way["${k}"="${v}"](around:${rad},${la},${ln});`
-    ).join('');
-    return `[out:json][timeout:30];(${parts});out center;`;
-  };
-
-  const runOverpass = async (query:string): Promise<any[]> => {
-    const r = await fetch('/api/overpass', {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({query}),
-    });
-    const d = await r.json();
-    return d.elements || [];
-  };
 
   const doSearch = async () => {
     if (lat === null || lng === null) return;
@@ -184,53 +162,35 @@ export function SecScout() {
     const cfg = CAT_CONFIG[cat];
 
     try {
-      // Intento 1: tags específicos
-      setLoadingMsg(`Buscando ${cfg.emoji} ${cfg.label} en OSM...`);
-      let elements = await runOverpass(buildQuery(lat, lng, radius, cfg, false));
+      setLoadingMsg(`${cfg.emoji} Buscando con Foursquare + OSM...`);
 
-      // Intento 2: radio doble
-      if (elements.length === 0) {
-        const doubleRad = String(parseInt(radius)*2);
-        setLoadingMsg(`Sin resultados — ampliando a ${fmtD(parseInt(doubleRad))}...`);
-        elements = await runOverpass(buildQuery(lat, lng, doubleRad, cfg, false));
-      }
+      const r = await fetch('/api/scout/places', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lat, lng, radius: parseInt(radius), categoria: cat }),
+      });
 
-      // Intento 3: fallback por nombre regex
-      if (elements.length === 0) {
-        setLoadingMsg(`Buscando por nombre: "${cfg.nameRegex.split('|')[0]}"...`);
-        elements = await runOverpass(buildQuery(lat, lng, radius, cfg, true));
-      }
+      if (!r.ok) throw new Error(`Error ${r.status}`);
+      const data = await r.json();
 
-      // Intento 4: nombre + radio doble
-      if (elements.length === 0) {
-        const doubleRad = String(parseInt(radius)*2);
-        setLoadingMsg(`Último intento — radio ${fmtD(parseInt(doubleRad))} por nombre...`);
-        elements = await runOverpass(buildQuery(lat, lng, doubleRad, cfg, true));
-      }
-
-      if (elements.length === 0) {
+      if (!data.results || data.results.length === 0) {
         setLoadingMsg('');
         setLoading(false);
-        alert(`No se encontraron negocios de "${cfg.label}" en esta zona.\n\nTip: Probá un radio mayor o una categoría diferente.`);
+        alert(`Sin resultados para "${cfg.label}" en ${fmtD(parseInt(radius))} radio.\n\nTip: Probá un radio mayor o categoría diferente.`);
         return;
       }
 
-      const provs: Provider[] = elements.map((el:any) => {
-        const eLat = el.lat ?? el.center?.lat;
-        const eLng = el.lon ?? el.center?.lon;
-        if (!eLat || !eLng) return null;
-        const dist = haversine(lat, lng, eLat, eLng);
-        return {
-          id: String(el.id),
-          name: el.tags?.name || el.tags?.['name:pt'] || el.tags?.brand || `${cfg.emoji} ${cfg.label}`,
-          phone: el.tags?.phone || el.tags?.['contact:phone'] || el.tags?.['phone:mobile'] || undefined,
-          address: el.tags?.['addr:street']
-            ? `${el.tags['addr:street']} ${el.tags['addr:housenumber']||''}`.trim()
-            : el.tags?.['addr:city'] || undefined,
-          lat:eLat, lng:eLng, dist,
-          tags: el.tags,
-        };
-      }).filter(Boolean).sort((a:any,b:any)=>a.dist-b.dist).slice(0,40);
+      const sourceLabel = data.source === 'foursquare' ? '📍 Foursquare' : '🗺 OpenStreetMap';
+      setLoadingMsg(`${sourceLabel} — ${data.results.length} encontrados`);
+
+      const provs: Provider[] = data.results.map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        phone: p.phone || undefined,
+        address: p.address || undefined,
+        lat: p.lat, lng: p.lng, dist: p.dist,
+        tags: { website: p.website, rating: p.rating, source: p.source },
+      }));
 
       setResults(provs);
       setExportData(provs);
@@ -238,11 +198,12 @@ export function SecScout() {
       // Pines en mapa
       provs.forEach((p:Provider) => {
         const color = distColor(p.dist);
+        const isFsq = p.tags?.source === 'foursquare';
         const mk = L.marker([p.lat,p.lng], {icon:L.divIcon({
-          html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};border:3px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:10px;color:#FFF;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.25);">${p.phone?'📱':'📍'}</div>`,
+          html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};border:3px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:12px;color:#FFF;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.25);">${p.phone?'📱':'📍'}</div>`,
           className:'',iconSize:[30,30],iconAnchor:[15,15]
         })}).addTo(mapInst.current);
-        mk.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:140px;"><b style="font-size:12px;">${p.name}</b><br><span style="font-size:10px;color:#666;">${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}</span>${p.phone?`<br><span style="font-size:11px;">📱 ${p.phone}</span>`:''}</div>`);
+        mk.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:160px;"><b style="font-size:12px;">${p.name}</b><br><span style="font-size:10px;color:#666;">${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}</span>${p.phone?`<br><span style="font-size:11px;color:#05944F;">📱 ${p.phone}</span>`:''}<br><span style="font-size:9px;color:#aaa;">${isFsq?'📍 Foursquare':'🗺 OpenStreetMap'}</span></div>`);
         mk.on('click', () => { setSelected(p); setOutreach(null); setManualPhone(''); });
         markersRef.current.push(mk);
       });
@@ -462,7 +423,8 @@ export function SecScout() {
                     </div>
                   </div>
                   <div style={{display:'flex',gap:'5px',flexShrink:0}}>
-                    {contacted.has(p.id)&&<span style={{...S.pill('g'),fontSize:'8px'}}>Contactado</span>}
+                    {p.tags?.source==='foursquare'&&<span style={{fontSize:'8px',padding:'1px 6px',borderRadius:'10px',background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}>FSQ</span>}
+                  {contacted.has(p.id)&&<span style={{...S.pill('g'),fontSize:'8px'}}>Contactado</span>}
                     <button
                       style={{...S.btn(added.has(p.id)?'s':'p'),padding:'4px 10px',fontSize:'9px'}}
                       onClick={e=>{e.stopPropagation();if(!added.has(p.id))addToHugo(p);}}
@@ -507,7 +469,9 @@ export function SecScout() {
                   <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{CAT_CONFIG[cat]?.label} · {fmtD(selected.dist)}</div>
                   {selected.phone&&<div style={{fontSize:'12px',marginTop:'5px',color:'#05944F',fontWeight:600}}>📱 {selected.phone}</div>}
                   {selected.address&&<div style={{fontSize:'10px',marginTop:'3px',color:'rgba(0,0,0,.55)'}}>📍 {selected.address}</div>}
-                  {selected.tags?.website&&<div style={{fontSize:'10px',marginTop:'3px'}}><a href={selected.tags.website} target="_blank" rel="noreferrer" style={{color:'#276EF1'}}>🌐 {selected.tags.website}</a></div>}
+                  {selected.tags?.website&&<div style={{fontSize:'10px',marginTop:'3px'}}><a href={selected.tags.website} target="_blank" rel="noreferrer" style={{color:'#276EF1'}}>🌐 Website</a></div>}
+                  {selected.tags?.rating&&<div style={{fontSize:'10px',marginTop:'3px',color:'#F59E0B'}}>★ {Number(selected.tags.rating).toFixed(1)}/5</div>}
+                  {selected.tags?.source&&<div style={{fontSize:'9px',marginTop:'2px',color:'rgba(0,0,0,.35)'}}>{selected.tags.source==='foursquare'?'📍 Foursquare':'🗺 OpenStreetMap'}</div>}
                 </div>
 
                 {/* Teléfono manual si no tiene */}
