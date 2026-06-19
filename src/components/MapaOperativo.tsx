@@ -60,8 +60,8 @@ export function SecMapaOperativo() {
     setLoading(true);
     try {
       const [u, s] = await Promise.all([
-        get('usuarios?select=id,nombre,tipo,email,telefono,categoria,karma,activo,online,lat,lng,endereco,bio&tipo=neq.admin&not.lat=is.null&limit=200'),
-        get('servicios?select=id,estado,cliente_id,proveedor_id,descripcion,tarifa,created_at,lat_cliente,lng_cliente,lat_proveedor,lng_proveedor&estado=in.(negociando,confirmado,en_camino,ejecutando)&limit=50'),
+        get('usuarios?select=id,nombre,tipo,email,telefono,categoria,karma,activo,online,lat,lng,endereco,bio&tipo=in.(proveedor,cliente)&lat=not.is.null&limit=200'),
+        get('servicios?select=id,estado,cliente_id,proveedor_id,descripcion,tarifa,created_at,lat_cliente,lng_cliente,proveedor:proveedor_id(lat,lng)&estado=in.(negociando,confirmado,en_camino,ejecutando)&limit=50'),
       ]);
       setUsers(Array.isArray(u) ? u : []);
       setServices(Array.isArray(s) ? s : []);
@@ -119,13 +119,15 @@ export function SecMapaOperativo() {
       markersRef.current.push(m);
     });
 
-    // Draw lines for active services
+    // Draw lines for active services (uses provider coords from JOIN or fallback)
     services.forEach(s => {
-      if (!s.lat_cliente || !s.lng_cliente || !s.lat_proveedor || !s.lng_proveedor) return;
+      const provLat = s.proveedor?.lat;
+      const provLng = s.proveedor?.lng;
+      if (!s.lat_cliente || !s.lng_cliente || !provLat || !provLng) return;
       const color = s.estado === 'en_camino' ? '#F59E0B' : '#EF4444';
       const line = L.polyline(
-        [[s.lat_cliente, s.lng_cliente],[s.lat_proveedor, s.lng_proveedor]],
-        { color, weight: 2.5, opacity: 0.7, dashArray: '6 4' }
+        [[s.lat_cliente, s.lng_cliente],[provLat, provLng]],
+        { color, weight: 2.5, opacity: 0.8, dashArray: '6 4' }
       ).addTo(mapRef.current);
       line.on('click', () => setSelected({ _service: true, ...s }));
       linesRef.current.push(line);
