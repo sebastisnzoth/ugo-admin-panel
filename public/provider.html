@@ -289,7 +289,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadProv();initMap();startGPS();nav2('home');
+    await loadProv();initMap();startGPS();nav2('home');subscribeToJobs();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -391,33 +391,14 @@ function showJobOffer(j){
     if(jSec<=0){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido expirado — pasó al próximo proveedor');}
   },1000);
 }
-function acceptJob(){
-  clearInterval(jobTimer);$('jobnot').classList.remove('show');
-  jobState='en_camino';ACTIVE_JOB=JOB;
-  $('jbico').textContent=ACTIVE_JOB.ic;
-  $('jbtit').textContent=ACTIVE_JOB.t+' — '+ACTIVE_JOB.addr;
-  $('jbsub').textContent=`${ACTIVE_JOB.d}km · R$${ACTIVE_JOB.p}`;
-  $('jobbar').classList.add('show');
-  $('jbbtn').textContent='✓ Llegué';
-  toast('✅ Pedido aceptado — ¡Navegá hacia el cliente!');
-  MAP?.panTo([myLat+.005,myLng+.005]);
-}
+function acceptJob(){acceptJobReal();}
 function rejectJob(){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido rechazado');}
 function navigateJob(){
   if(!ACTIVE_JOB)return;
   const addr=encodeURIComponent(ACTIVE_JOB.addr||'Florianópolis, SC');
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${addr}&travelmode=driving`,'_blank');
 }
-function nextJobState(){
-  if(jobState==='en_camino'){
-    jobState='ejecutando';$('jbbtn').textContent='✓ Completar';$('jbsub').textContent='Ejecutando el servicio...';toast('📍 Ubicación confirmada');
-  } else if(jobState==='ejecutando'){
-    jobState='idle';$('jobbar').classList.remove('show');ACTIVE_JOB=null;
-    toast('🎉 Servicio completado · R$'+JOB?.p+' acreditados');
-    JOB=null;
-    if(PROV){PROV.servicios_completados=(PROV.servicios_completados||0)+1;}
-  }
-}
+function nextJobState(){nextJobStateReal();}
 
 /* ── NAV ── */
 function nav2(sec){
@@ -621,6 +602,95 @@ function updateMicBtn() {
 // Esperar voces disponibles
 if (hasSpeech) {
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
+
+/* ── REALTIME JOB SUBSCRIPTION ── */
+function subscribeToJobs() {
+  if (!SESSION) return;
+  const uid = SESSION.user.id;
+
+  // Escuchar notificaciones de nuevos pedidos
+  sb.channel('notif_' + uid)
+    .on('postgres_changes', {
+      event: 'INSERT', schema: 'public', table: 'notificaciones',
+      filter: `usuario_id=eq.${uid}`
+    }, async (payload) => {
+      if (payload.new.tipo === 'nuevo_pedido') {
+        const datos = payload.new.datos || {};
+        const realJob = {
+          ic: { Electricista:'⚡', Plomero:'🔧', Limpieza:'🧹', Pintor:'🎨', Carpintero:'🪚' }[PROV?.categoria] || '🔧',
+          t: PROV?.categoria || 'Servicio',
+          p: datos.tarifa || 80,
+          d: ((Math.random() * 4) + 0.5).toFixed(1),
+          addr: datos.direccion || 'Dirección del cliente',
+          servicio_id: datos.servicio_id,
+          cliente_nombre: datos.cliente_nombre || 'Cliente'
+        };
+        showJobOffer(realJob);
+      }
+    })
+    .subscribe();
+
+  // Marcar notificaciones como leídas cuando se abre la app
+  setTimeout(() => {
+    sb.from('notificaciones').update({ leida: true }).eq('usuario_id', uid).eq('leida', false);
+  }, 3000);
+}
+
+// Override acceptJob to also update DB
+const _origAcceptJob = acceptJob;
+async function acceptJobReal() {
+  clearInterval(jobTimer);
+  $('jobnot').classList.remove('show');
+  jobState = 'en_camino';
+  ACTIVE_JOB = JOB;
+
+  // Update service in DB if we have a real service_id
+  if (JOB?.servicio_id) {
+    await sb.from('servicios').update({
+      proveedor_id: SESSION.user.id,
+      estado: 'en_camino',
+      confirmado_at: new Date().toISOString()
+    }).eq('id', JOB.servicio_id);
+  }
+
+  $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
+  $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
+  $('jbsub').textContent = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}`;
+  $('jobbar').classList.add('show');
+  $('jbbtn').textContent = '✓ Llegué';
+  toast('✅ Pedido aceptado — ¡Navegá al cliente!');
+}
+
+// Override nextJobState to update DB
+async function nextJobStateReal() {
+  if (jobState === 'en_camino') {
+    jobState = 'ejecutando';
+    $('jbbtn').textContent = '✓ Completar';
+    $('jbsub').textContent = 'Ejecutando el servicio...';
+    toast('📍 Ubicación confirmada');
+    if (ACTIVE_JOB?.servicio_id) {
+      await sb.from('servicios').update({ estado: 'ejecutando' }).eq('id', ACTIVE_JOB.servicio_id);
+    }
+  } else if (jobState === 'ejecutando') {
+    jobState = 'idle';
+    $('jobbar').classList.remove('show');
+    const tarifa = ACTIVE_JOB?.p || 0;
+    if (ACTIVE_JOB?.servicio_id) {
+      await sb.from('servicios').update({
+        estado: 'completado',
+        completado_at: new Date().toISOString()
+      }).eq('id', ACTIVE_JOB.servicio_id);
+    }
+    // Update provider stats
+    await sb.from('usuarios').update({
+      servicios_completados: (PROV?.servicios_completados || 0) + 1
+    }).eq('id', SESSION.user.id);
+    if (PROV) PROV.servicios_completados = (PROV.servicios_completados || 0) + 1;
+    ACTIVE_JOB = null; JOB = null;
+    toast(`🎉 Servicio completado · R$${tarifa} acreditados`);
+  }
 }
 
 </script>

@@ -341,9 +341,10 @@ async function selCat(cat,el){
 
 function hireProv(p){
   SELECTED_PROV=p;
-  openChatWith(p);
-  const msg=`Quiero contratar a ${p.nombre} para ${p.categoria}. Mi dirección es: ${myAddr||'mi ubicación actual'}`;
-  setTimeout(()=>{addMsg('u',msg);chatHistory.push({role:'user',content:msg});showSugs([]);hugoCall(msg);},600);
+  // Confirm with user
+  const ok=confirm(`¿Contratar a ${p.nombre} (${p.categoria}) por R$${p.tarifa_base||80}+?`);
+  if(!ok) return;
+  createService(p);
 }
 
 function histHTML(){return`<div class="pad"><div class="stt">📋 Historial de servicios</div><div id="hlist"><p style="color:var(--m);font-size:13px">Cargando...</p></div></div>`;}

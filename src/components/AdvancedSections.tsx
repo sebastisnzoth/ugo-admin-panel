@@ -614,3 +614,155 @@ export function SecAvanzado() {
     </div>
   );
 }
+
+/* ─────────────────────────────────────────────
+   SecImportProviders — Import CSV / Excel
+───────────────────────────────────────────── */
+const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
+const SB_IMP_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+
+function parseCSV(text: string): Record<string,string>[] {
+  const lines = text.trim().split('\n');
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
+  return lines.slice(1).map(line => {
+    // Handle quoted CSV
+    const vals: string[] = [];
+    let cur = '', inQ = false;
+    for (const ch of line + ',') {
+      if (ch === '"') { inQ = !inQ; }
+      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
+      else cur += ch;
+    }
+    return Object.fromEntries(headers.map((h,i) => [h, vals[i] || '']));
+  }).filter(r => Object.values(r).some(v => v));
+}
+
+export function SecImportProviders() {
+  const [rows, setRows] = React.useState<Record<string,string>[]>([]);
+  const [status, setStatus] = React.useState<string>('');
+  const [loading, setLoading] = React.useState(false);
+  const [result, setResult] = React.useState<{ok:number,err:number,errores:string[]}|null>(null);
+  const [dragging, setDragging] = React.useState(false);
+
+  const processFile = (file: File) => {
+    setResult(null);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      if (!text) { setStatus('❌ Archivo vacío'); return; }
+      const parsed = parseCSV(text);
+      setRows(parsed);
+      setStatus(`✅ ${parsed.length} filas cargadas. Revisá la vista previa y hacé clic en Importar.`);
+    };
+    reader.readAsText(file, 'UTF-8');
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault(); setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) processFile(file);
+  };
+
+  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) processFile(file);
+  };
+
+  const doImport = async () => {
+    if (!rows.length) return;
+    setLoading(true); setResult(null);
+    try {
+      const r = await fetch(`${SB_IMP_URL}/functions/v1/import-providers`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_IMP_KEY}` },
+        body: JSON.stringify({ proveedores: rows })
+      });
+      const d = await r.json();
+      setResult(d);
+      setStatus(`Importación completa: ${d.ok} exitosos, ${d.err} con error.`);
+    } catch(e: any) {
+      setStatus('❌ Error: ' + e.message);
+    } finally { setLoading(false); }
+  };
+
+  const preview = rows.slice(0, 5);
+  const cols = rows[0] ? Object.keys(rows[0]) : [];
+
+  return (
+    <div className="pad" style={{overflowY:'auto',height:'calc(100% - 40px)'}}>
+      <div className="st">📥 Importar Proveedores (CSV)</div>
+      <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'16px',lineHeight:1.6}}>
+        Subí un archivo CSV con los datos de los proveedores. Columnas reconocidas:<br/>
+        <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:'4px',fontSize:'11px'}}>
+          nombre, email, categoria, telefono, zona, tarifa_base, bio, lat, lng, pais, activo
+        </code>
+      </p>
+
+      {/* Drop Zone */}
+      <div
+        onDragOver={e=>{e.preventDefault();setDragging(true);}}
+        onDragLeave={()=>setDragging(false)}
+        onDrop={onDrop}
+        onClick={()=>document.getElementById('csvfile')?.click()}
+        style={{border:`2px dashed ${dragging?'var(--primary)':'#ddd'}`,borderRadius:'16px',padding:'32px',textAlign:'center',cursor:'pointer',marginBottom:'16px',background:dragging?'rgba(5,148,79,.03)':'#fafafa',transition:'all .2s'}}>
+        <div style={{fontSize:'32px',marginBottom:'8px'}}>📄</div>
+        <div style={{fontWeight:700,fontSize:'14px'}}>Arrastrá tu CSV aquí</div>
+        <div style={{fontSize:'12px',color:'var(--muted)',marginTop:'4px'}}>o hacé clic para seleccionar</div>
+        <input id="csvfile" type="file" accept=".csv,.txt" style={{display:'none'}} onChange={onFile}/>
+      </div>
+
+      {/* Download template */}
+      <a
+        href="data:text/csv;charset=utf-8,nombre,email,categoria,telefono,zona,tarifa_base,bio,lat,lng,pais%0AJuan Garcia,juan@email.com,Electricista,+55489999-9999,Centro,90,Electricista con 10 años de experiencia,-27.5969,-48.5495,BR"
+        download="template_proveedores.csv"
+        style={{fontSize:'12px',color:'var(--primary)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'4px',marginBottom:'16px'}}>
+        ⬇ Descargar plantilla CSV
+      </a>
+
+      {status && (
+        <div style={{padding:'10px 14px',background:status.startsWith('❌')?'#fef2f2':'#f0fdf4',borderRadius:'10px',fontSize:'13px',marginBottom:'16px',color:status.startsWith('❌')?'#dc2626':'#166534'}}>
+          {status}
+        </div>
+      )}
+
+      {result && result.errores?.length > 0 && (
+        <div style={{background:'#fef2f2',borderRadius:'10px',padding:'10px 14px',marginBottom:'16px'}}>
+          <div style={{fontWeight:700,fontSize:'12px',color:'#dc2626',marginBottom:'4px'}}>Errores:</div>
+          {result.errores.map((e,i) => <div key={i} style={{fontSize:'11px',color:'#dc2626'}}>• {e}</div>)}
+        </div>
+      )}
+
+      {/* Preview */}
+      {preview.length > 0 && (
+        <>
+          <div style={{fontWeight:700,fontSize:'13px',marginBottom:'8px'}}>Vista previa ({rows.length} filas)</div>
+          <div style={{overflowX:'auto',marginBottom:'16px',borderRadius:'12px',border:'1px solid var(--border)'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px'}}>
+              <thead>
+                <tr style={{background:'#f5f5f5'}}>
+                  {cols.map(c=><th key={c} style={{padding:'8px 10px',textAlign:'left',fontWeight:700,borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}}>{c}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {preview.map((row,i)=>(
+                  <tr key={i} style={{borderBottom:'1px solid #f5f5f5'}}>
+                    {cols.map(c=><td key={c} style={{padding:'7px 10px',maxWidth:'120px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row[c]}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {rows.length > 5 && <div style={{padding:'8px 10px',fontSize:'11px',color:'var(--muted)'}}>... y {rows.length-5} filas más</div>}
+          </div>
+
+          <button
+            onClick={doImport}
+            disabled={loading}
+            style={{width:'100%',padding:'13px',background:loading?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading?'not-allowed':'pointer',fontFamily:'inherit'}}>
+            {loading ? '⏳ Importando...' : `📥 Importar ${rows.length} proveedores`}
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
