@@ -183,6 +183,68 @@ async function searchFoursquare(lat, lng, radius, categoria, fsqKey) {
   return searchResults;
 }
 
+
+async function searchOverpass(lat, lng, radius, categoria) {
+  const tags = OVERPASS_TAGS[categoria] || [];
+  const nameRx = NAME_REGEX[categoria] || '';
+  const ENDPOINTS = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.ru/api/interpreter',
+  ];
+
+  const tryQuery = async (query) => {
+    for (const ep of ENDPOINTS) {
+      try {
+        const r = await fetch(ep, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: 'data=' + encodeURIComponent(query),
+          signal: AbortSignal.timeout(15000),
+        });
+        if (!r.ok) continue;
+        const d = await r.json();
+        if (d.elements?.length > 0) return d.elements;
+      } catch { continue; }
+    }
+    return [];
+  };
+
+  const tagQuery = (rad) => {
+    const parts = tags.map(([k,v]) =>
+      `node["${k}"="${v}"](around:${rad},${lat},${lng});way["${k}"="${v}"](around:${rad},${lat},${lng});`
+    ).join('');
+    return `[out:json][timeout:30];(${parts});out center;`;
+  };
+
+  const nameQuery = (rad) =>
+    `[out:json][timeout:30];(node["name"~"${nameRx}",i](around:${rad},${lat},${lng});way["name"~"${nameRx}",i](around:${rad},${lat},${lng}););out center;`;
+
+  let elements = [];
+  if (tags.length) elements = await tryQuery(tagQuery(radius));
+  if (!elements.length && nameRx) elements = await tryQuery(nameQuery(radius));
+  if (!elements.length && nameRx) elements = await tryQuery(nameQuery(radius * 2));
+
+  return elements.map(el => {
+    const eLat = el.lat ?? el.center?.lat;
+    const eLng = el.lon ?? el.center?.lon;
+    if (!eLat || !eLng) return null;
+    const address = el.tags?.['addr:street']
+      ? `${el.tags['addr:street']} ${el.tags['addr:housenumber']||''}`.trim()
+      : el.tags?.['addr:city'] || null;
+    return {
+      id: String(el.id),
+      name: el.tags?.name || el.tags?.['name:pt'] || `Serviço ${categoria}`,
+      phone: el.tags?.phone || el.tags?.['contact:phone'] || null,
+      address,
+      website: el.tags?.website || null,
+      lat: eLat, lng: eLng,
+      dist: haversine(lat, lng, eLat, eLng),
+      rating: null, source: 'osm', tags: {},
+    };
+  }).filter(Boolean).sort((a, b) => a.dist - b.dist);
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Headers', 'content-type');
