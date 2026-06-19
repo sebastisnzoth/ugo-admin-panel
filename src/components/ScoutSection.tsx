@@ -5,57 +5,61 @@ declare const L: any;
 const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
-const SC_TAGS: Record<string,string[][]> = {
-  electricista:[['craft','electrician'],['shop','electrician']],
-  plomero:[['craft','plumber'],['craft','plumbing']],
-  limpeza:[['craft','cleaning'],['shop','dry_cleaning']],
-  chaveiro:[['craft','locksmith']],
-  pintura:[['craft','painter'],['craft','decorator']],
-  carpintaria:[['craft','carpenter'],['craft','joiner']],
-  jardinagem:[['craft','gardener'],['craft','landscaping']],
-  climatizacao:[['craft','hvac'],['craft','refrigeration']],
-  ti_redes:[['shop','computer'],['craft','electronics_repair']],
-  reformas:[['craft','renovation'],['craft','builder']],
-};
-
-const CAT_LABELS: Record<string,string> = {
-  electricista:'Electricista',plomero:'Plomero',limpeza:'Limpeza',
-  chaveiro:'Chaveiro',pintura:'Pintura',carpintaria:'Carpintaria',
-  jardinagem:'Jardinagem',climatizacao:'Climatização',ti_redes:'TI & Redes',reformas:'Reformas'
+// Slugs reales de la tabla categorias + queries Overpass optimizadas para Brasil
+const CAT_CONFIG: Record<string,{label:string; emoji:string; tags:string[][]; nameRegex:string}> = {
+  electricista: { label:'Electricista', emoji:'⚡', tags:[['craft','electrician'],['shop','electronics_repair']], nameRegex:'elétric|eletric|instalação elétrica|eletricista' },
+  plomero:      { label:'Plomero',      emoji:'🔧', tags:[['craft','plumber'],['craft','plumbing']], nameRegex:'hidrau|encanador|plomber|desentupid' },
+  limpeza:      { label:'Limpeza',      emoji:'🧹', tags:[['craft','cleaning'],['shop','laundry']], nameRegex:'limpeza|faxina|clean|higieniz' },
+  chaveiro:     { label:'Chaveiro',     emoji:'🔑', tags:[['craft','locksmith']], nameRegex:'chaveiro|chaves|fechadura|segurança resid' },
+  pintura:      { label:'Pintura',      emoji:'🎨', tags:[['craft','painter']], nameRegex:'pintura|pintor|reforma|decoração' },
+  carpintaria:  { label:'Carpintaria',  emoji:'🪚', tags:[['craft','carpenter'],['craft','joiner']], nameRegex:'carpintaria|marcenaria|marceneiro|moveis' },
+  jardinagem:   { label:'Jardinagem',   emoji:'🌿', tags:[['craft','gardener']], nameRegex:'jardim|jardineiro|paisagismo|grama|poda' },
+  climatizacao: { label:'Climatização', emoji:'❄️', tags:[['craft','hvac'],['craft','refrigeration']], nameRegex:'ar condicionado|climatização|refrigeração|hvac' },
+  ti_redes:     { label:'TI & Redes',   emoji:'💻', tags:[['shop','computer'],['craft','electronics_repair']], nameRegex:'informática|computador|ti |redes|assistência técnica' },
+  reformas:     { label:'Reformas',     emoji:'🏠', tags:[['craft','builder'],['craft','construction']], nameRegex:'reforma|construção|obras|pedreiro|empreit' },
 };
 
 const DIST_COLORS = ['#05944F','#F59E0B','#E11900'];
 const distColor = (d:number) => d<1000?DIST_COLORS[0]:d<3000?DIST_COLORS[1]:DIST_COLORS[2];
 const fmtD = (d:number) => d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
 
-type Provider = { id:string; name:string; phone?:string; address?:string; lat:number; lng:number; dist:number; tags:any; };
+type Provider = {
+  id:string; name:string; phone?:string; address?:string;
+  lat:number; lng:number; dist:number; tags:any;
+};
 
 const S = {
-  card: {background:'#FFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'14px',padding:'14px',marginBottom:'10px',boxShadow:'0 1px 4px rgba(0,0,0,.06)'},
+  card: {background:'#FFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'14px',padding:'14px',boxShadow:'0 1px 4px rgba(0,0,0,.06)'},
   label: {fontSize:'10px',fontWeight:700,textTransform:'uppercase' as const,letterSpacing:'.6px',color:'rgba(0,0,0,.5)',marginBottom:'5px',display:'block'},
   input: {width:'100%',padding:'9px 12px',border:'2px solid rgba(0,0,0,.15)',borderRadius:'9px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',color:'#111',background:'#F8F9FA',transition:'border .2s'},
   select: {width:'100%',padding:'9px 12px',border:'2px solid rgba(0,0,0,.15)',borderRadius:'9px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',color:'#111',background:'#F8F9FA',cursor:'pointer'},
-  btn: (v='p') => ({padding:'8px 16px',borderRadius:'50px',border:'none',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'11px',fontWeight:700,background:v==='p'?'#05944F':v==='d'?'rgba(225,25,0,.1)':'rgba(0,0,0,.07)',color:v==='p'?'#FFF':v==='d'?'#E11900':'#111',transition:'opacity .15s'} as React.CSSProperties),
-  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'20px',fontSize:'9px',fontWeight:700,background:c==='g'?'rgba(5,148,79,.09)':'rgba(245,158,11,.09)',color:c==='g'?'#05944F':'#996000',border:`1px solid ${c==='g'?'rgba(5,148,79,.2)':'rgba(245,158,11,.2)'}`} as React.CSSProperties),
+  btn: (v='p') => ({padding:'8px 16px',borderRadius:'50px',border:'none',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'11px',fontWeight:700,
+    background:v==='p'?'#05944F':v==='d'?'rgba(225,25,0,.1)':v==='wa'?'#25D366':'rgba(0,0,0,.07)',
+    color:v==='p'?'#FFF':v==='d'?'#E11900':v==='wa'?'#FFF':'#111',transition:'opacity .15s'} as React.CSSProperties),
+  pill: (c='g') => ({display:'inline-flex',alignItems:'center',padding:'2px 8px',borderRadius:'20px',fontSize:'9px',fontWeight:700,
+    background:c==='g'?'rgba(5,148,79,.09)':'rgba(245,158,11,.09)',
+    color:c==='g'?'#05944F':'#996000',border:`1px solid ${c==='g'?'rgba(5,148,79,.2)':'rgba(245,158,11,.2)'}`} as React.CSSProperties),
 };
 
 export function SecScout() {
   const [lat, setLat] = useState<number|null>(null);
   const [lng, setLng] = useState<number|null>(null);
-  const [locLabel, setLocLabel] = useState('Sin ubicación — usá GPS o ingresá dirección');
+  const [locLabel, setLocLabel] = useState('Florianópolis, SC (predeterminado)');
   const [addr, setAddr] = useState('');
   const [showAddr, setShowAddr] = useState(false);
   const [cat, setCat] = useState('electricista');
-  const [radius, setRadius] = useState('2000');
+  const [radius, setRadius] = useState('5000');
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
   const [results, setResults] = useState<Provider[]>([]);
   const [selected, setSelected] = useState<Provider|null>(null);
   const [outreach, setOutreach] = useState<{type:'wa'|'email';text:string}|null>(null);
   const [genLoading, setGenLoading] = useState(false);
+  const [manualPhone, setManualPhone] = useState('');
   const [stats, setStats] = useState({found:0,contacted:0,interested:0,joined:0});
   const [exportData, setExportData] = useState<Provider[]>([]);
   const [added, setAdded] = useState<Set<string>>(new Set());
+  const [contacted, setContacted] = useState<Set<string>>(new Set());
   const [prospectos, setProspectos] = useState<any[]>([]);
   const [loadingPs, setLoadingPs] = useState(false);
   const [approving, setApproving] = useState<string|null>(null);
@@ -64,327 +68,518 @@ export function SecScout() {
   const markersRef = useRef<any[]>([]);
   const centerMark = useRef<any>(null);
 
+  // ── Carga prospectos guardados ─────────────────────────────
   const loadProspectos = useCallback(async () => {
     setLoadingPs(true);
     try {
-      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts?order=created_at.desc&limit=30`, {
+      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts?order=created_at.desc&limit=50`, {
         headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
       });
       const data = await r.json();
-      if (Array.isArray(data)) setProspectos(data);
+      if (Array.isArray(data)) {
+        setProspectos(data);
+        const n = { found:0, contacted:0, interested:0, joined:0 };
+        data.forEach((p:any) => {
+          n.found++;
+          if (['invitado','en_revision','aprobado'].includes(p.estado)) n.contacted++;
+          if (p.estado === 'en_revision') n.interested++;
+          if (p.estado === 'aprobado') n.joined++;
+        });
+        setStats(n);
+      }
     } catch {}
     setLoadingPs(false);
   }, []);
 
-  const aprobar = useCallback(async (id: string) => {
-    setApproving(id);
-    try {
-      const r = await fetch(`${SB_URL}/rest/v1/rpc/aprobar_prospecto`, {
-        method: 'POST',
-        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ p_prospecto_id: id, p_admin_email: 'sebastianzoth@gmail.com' })
-      });
-      const data = await r.json();
-      if (data.ok) {
-        await loadProspectos();
-        // Copiar link al clipboard
-        if (data.link_onboarding) {
-          navigator.clipboard.writeText(data.link_onboarding).catch(()=>{});
-          alert(`✅ Aprobado\n\nLink de invitación copiado:\n${data.link_onboarding}`);
-        }
-      } else {
-        alert('Error: ' + (data.error || data.message || 'Revisar Supabase'));
-      }
-    } catch(e: any) { alert('Error: ' + e.message); }
-    setApproving(null);
-  }, [loadProspectos]);
-
-  // Load prospectos on mount
   useEffect(() => { loadProspectos(); }, [loadProspectos]);
 
-  // Init map
+  // ── Init mapa Leaflet ──────────────────────────────────────
   useEffect(() => {
     if (!mapRef.current || mapInst.current || typeof L === 'undefined') return;
     const map = L.map(mapRef.current, { zoomControl:true, center:[-27.5954,-48.5480], zoom:13 });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {attribution:'© OpenStreetMap contributors', maxZoom:19}).addTo(map);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution:'© OpenStreetMap contributors', maxZoom:19
+    }).addTo(map);
     mapInst.current = map;
     [100,400,800].forEach(t => setTimeout(()=>map.invalidateSize(),t));
+    // Default: mostrar Florianópolis
+    setLat(-27.5954); setLng(-48.5480);
   }, []);
 
+  // ── Ubicación ──────────────────────────────────────────────
   const setLocation = useCallback((la:number, ln:number, label?:string) => {
     setLat(la); setLng(ln);
     if (label) setLocLabel(label);
     const map = mapInst.current; if (!map) return;
     map.setView([la,ln],14);
     if (centerMark.current) map.removeLayer(centerMark.current);
-    centerMark.current = L.marker([la,ln], {icon: L.divIcon({html:'<div style="width:16px;height:16px;border-radius:50%;background:#111;border:3px solid #FFF;box-shadow:0 2px 8px rgba(0,0,0,.3);"></div>',className:'',iconSize:[16,16],iconAnchor:[8,8]})}).addTo(map);
+    centerMark.current = L.marker([la,ln], {icon: L.divIcon({
+      html:'<div style="width:16px;height:16px;border-radius:50%;background:#111;border:3px solid #FFF;box-shadow:0 2px 8px rgba(0,0,0,.3);"></div>',
+      className:'',iconSize:[16,16],iconAnchor:[8,8]
+    })}).addTo(map);
     if (!label) {
       fetch(`https://nominatim.openstreetmap.org/reverse?lat=${la}&lon=${ln}&format=json`)
-        .then(r=>r.json()).then(d=>{ const p=[d.address?.suburb||d.address?.neighbourhood,d.address?.city||d.address?.town].filter(Boolean); if(p.length) setLocLabel(p.join(', ')+` (${la.toFixed(4)}, ${ln.toFixed(4)})`); }).catch(()=>{});
+        .then(r=>r.json()).then(d=>{
+          const p=[d.address?.suburb||d.address?.neighbourhood,d.address?.city||d.address?.town].filter(Boolean);
+          if(p.length) setLocLabel(p.join(', '));
+        }).catch(()=>{});
     }
   }, []);
 
   const getGPS = () => {
-    if (!navigator.geolocation) return setLocation(-27.5954,-48.5480,'Florianópolis, SC (demo)');
+    if (!navigator.geolocation) {
+      setLocLabel('Florianópolis, SC (GPS no disponible)');
+      return;
+    }
+    setLocLabel('Detectando GPS...');
     navigator.geolocation.getCurrentPosition(
       p => setLocation(p.coords.latitude, p.coords.longitude),
-      () => setLocation(-27.5954,-48.5480,'Florianópolis, SC (demo)'),
-      {timeout:8000}
+      () => {
+        setLocation(-27.5954,-48.5480,'Florianópolis, SC (GPS denegado — usando predeterminado)');
+      },
+      {timeout:8000, enableHighAccuracy:true}
     );
   };
 
   const geocode = async () => {
     if (!addr.trim()) return;
     try {
-      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1`);
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr+', Brasil')}&format=json&limit=1`);
       const d = await r.json();
       if (!d.length) return alert('No encontrado. Probá con más detalle.');
       setLocation(parseFloat(d[0].lat), parseFloat(d[0].lon), d[0].display_name.split(',').slice(0,3).join(','));
       setShowAddr(false);
-    } catch { alert('Error al buscar.'); }
+    } catch { alert('Error al buscar dirección.'); }
   };
 
-  const addToHugo = useCallback(async (p: Provider) => {
-    try {
-      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts`, {
-        method: 'POST',
-        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json', Prefer: 'return=minimal,resolution=ignore-duplicates' },
-        body: JSON.stringify({
-          nombre: p.name,
-          categoria: cat,
-          telefono: p.phone || null,
-          email: p.tags?.email || p.tags?.['contact:email'] || null,
-          website: p.tags?.website || null,
-          direccion: p.address || null,
-          ciudad: locLabel.split(',')[0]?.trim() || 'Florianópolis',
-          pais: 'BR',
-          latitud: p.lat,
-          longitud: p.lng,
-          fuente: 'osm',
-          score_confianza: p.phone ? 60 : 30,
-          notas_hugo: `Encontrado via Scout Radar · ${CAT_LABELS[cat]} · ${fmtD(p.dist)}`,
-          estado: 'prospecto_pendiente',
-        })
-      });
-      if (r.ok || r.status === 201) {
-        setAdded(prev => new Set([...prev, p.id]));
-        setStats(s => ({ ...s, joined: s.joined + 1 }));
-      }
-    } catch(e: any) { alert('Error al guardar: ' + (e as any).message); }
-  }, [cat, locLabel]);
+  // ── Búsqueda Overpass con fallbacks ───────────────────────
+  const buildQuery = (la:number, ln:number, rad:string, cfg:typeof CAT_CONFIG[string], useNameFallback=false) => {
+    if (useNameFallback) {
+      // Fallback: buscar por nombre con regex (case-insensitive)
+      return `[out:json][timeout:30];(node["name"~"${cfg.nameRegex}",i](around:${rad},${la},${ln});way["name"~"${cfg.nameRegex}",i](around:${rad},${la},${ln}););out center;`;
+    }
+    // Query primaria: por tags específicos
+    const parts = cfg.tags.map(([k,v]) =>
+      `node["${k}"="${v}"](around:${rad},${la},${ln});way["${k}"="${v}"](around:${rad},${la},${ln});`
+    ).join('');
+    return `[out:json][timeout:30];(${parts});out center;`;
+  };
+
+  const runOverpass = async (query:string): Promise<any[]> => {
+    const r = await fetch('/api/overpass', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({query}),
+    });
+    const d = await r.json();
+    return d.elements || [];
+  };
 
   const doSearch = async () => {
-    if (lat === null) return alert('Primero detectá tu ubicación.');
-    setLoading(true); setLoadingMsg('Consultando OpenStreetMap...'); setResults([]); setSelected(null); setOutreach(null);
+    if (lat === null || lng === null) return;
+    setLoading(true); setResults([]); setSelected(null); setOutreach(null); setManualPhone('');
     markersRef.current.forEach(m => mapInst.current?.removeLayer(m));
     markersRef.current = [];
+
+    const cfg = CAT_CONFIG[cat];
+
     try {
-      const tags = SC_TAGS[cat] || [['craft',cat]];
-      const cond = tags.map(([k,v]) => `node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`).join('');
-      setLoadingMsg('Buscando negocios en OpenStreetMap...');
-      const ovRes = await fetch('/api/overpass', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: `[out:json][timeout:25];(${cond});out body;` }),
-      });
-      const d = await ovRes.json();
-      if (!d.elements) throw new Error(d.error || 'Sin resultados de OpenStreetMap');
-      const provs: Provider[] = (d.elements||[]).map((el:any) => {
-        const eLat = el.lat ?? el.center?.lat; const eLng = el.lon ?? el.center?.lon;
-        if (!eLat||!eLng) return null;
-        const dist = haversine(lat!, lng!, eLat, eLng);
-        return { id:String(el.id), name:el.tags?.name||el.tags?.['name:pt']||el.tags?.brand||`${CAT_LABELS[cat]} sin nombre`, phone:el.tags?.phone||el.tags?.['contact:phone'], address:el.tags?.['addr:street']?`${el.tags['addr:street']} ${el.tags['addr:housenumber']||''}`.trim():undefined, lat:eLat, lng:eLng, dist, tags:el.tags };
-      }).filter(Boolean).sort((a:any,b:any)=>a.dist-b.dist).slice(0,30);
-      setResults(provs); setExportData(provs);
-      setStats(s => ({...s, found: provs.length}));
-      // Map markers
+      // Intento 1: tags específicos
+      setLoadingMsg(`Buscando ${cfg.emoji} ${cfg.label} en OSM...`);
+      let elements = await runOverpass(buildQuery(lat, lng, radius, cfg, false));
+
+      // Intento 2: radio doble
+      if (elements.length === 0) {
+        const doubleRad = String(parseInt(radius)*2);
+        setLoadingMsg(`Sin resultados — ampliando a ${fmtD(parseInt(doubleRad))}...`);
+        elements = await runOverpass(buildQuery(lat, lng, doubleRad, cfg, false));
+      }
+
+      // Intento 3: fallback por nombre regex
+      if (elements.length === 0) {
+        setLoadingMsg(`Buscando por nombre: "${cfg.nameRegex.split('|')[0]}"...`);
+        elements = await runOverpass(buildQuery(lat, lng, radius, cfg, true));
+      }
+
+      // Intento 4: nombre + radio doble
+      if (elements.length === 0) {
+        const doubleRad = String(parseInt(radius)*2);
+        setLoadingMsg(`Último intento — radio ${fmtD(parseInt(doubleRad))} por nombre...`);
+        elements = await runOverpass(buildQuery(lat, lng, doubleRad, cfg, true));
+      }
+
+      if (elements.length === 0) {
+        setLoadingMsg('');
+        setLoading(false);
+        alert(`No se encontraron negocios de "${cfg.label}" en esta zona.\n\nTip: Probá un radio mayor o una categoría diferente.`);
+        return;
+      }
+
+      const provs: Provider[] = elements.map((el:any) => {
+        const eLat = el.lat ?? el.center?.lat;
+        const eLng = el.lon ?? el.center?.lon;
+        if (!eLat || !eLng) return null;
+        const dist = haversine(lat, lng, eLat, eLng);
+        return {
+          id: String(el.id),
+          name: el.tags?.name || el.tags?.['name:pt'] || el.tags?.brand || `${cfg.emoji} ${cfg.label}`,
+          phone: el.tags?.phone || el.tags?.['contact:phone'] || el.tags?.['phone:mobile'] || undefined,
+          address: el.tags?.['addr:street']
+            ? `${el.tags['addr:street']} ${el.tags['addr:housenumber']||''}`.trim()
+            : el.tags?.['addr:city'] || undefined,
+          lat:eLat, lng:eLng, dist,
+          tags: el.tags,
+        };
+      }).filter(Boolean).sort((a:any,b:any)=>a.dist-b.dist).slice(0,40);
+
+      setResults(provs);
+      setExportData(provs);
+
+      // Pines en mapa
       provs.forEach((p:Provider) => {
         const color = distColor(p.dist);
-        const mk = L.marker([p.lat,p.lng], {icon:L.divIcon({html:`<div style="width:28px;height:28px;border-radius:50%;background:${color};border:2.5px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:11px;color:#FFF;font-weight:700;box-shadow:0 2px 6px rgba(0,0,0,.2);">${fmtD(p.dist)[0]}</div>`,className:'',iconSize:[28,28],iconAnchor:[14,14]})}).addTo(mapInst.current!);
-        mk.bindPopup(`<b>${p.name}</b><br>${fmtD(p.dist)}${p.phone?'<br>📱 '+p.phone:''}`);
-        mk.on('click', () => setSelected(p));
+        const mk = L.marker([p.lat,p.lng], {icon:L.divIcon({
+          html:`<div style="width:30px;height:30px;border-radius:50%;background:${color};border:3px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:10px;color:#FFF;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.25);">${p.phone?'📱':'📍'}</div>`,
+          className:'',iconSize:[30,30],iconAnchor:[15,15]
+        })}).addTo(mapInst.current);
+        mk.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:140px;"><b style="font-size:12px;">${p.name}</b><br><span style="font-size:10px;color:#666;">${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}</span>${p.phone?`<br><span style="font-size:11px;">📱 ${p.phone}</span>`:''}</div>`);
+        mk.on('click', () => { setSelected(p); setOutreach(null); setManualPhone(''); });
         markersRef.current.push(mk);
       });
-      if (provs.length && mapInst.current) {
-        const bounds = L.latLngBounds([[lat!,lng!], ...provs.map((p:Provider)=>[p.lat,p.lng])]);
+
+      if (mapInst.current) {
+        const bounds = L.latLngBounds([[lat,lng], ...provs.map((p:Provider)=>[p.lat,p.lng])]);
         mapInst.current.fitBounds(bounds, {padding:[30,30]});
       }
-    } catch(e:any) { alert('Error: '+e.message); }
+
+    } catch(e:any) {
+      alert('Error al buscar: ' + e.message);
+    }
+    setLoadingMsg('');
     setLoading(false);
   };
 
+  // ── Guardar prospecto en Supabase ─────────────────────────
+  const addToHugo = useCallback(async (p: Provider) => {
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts`, {
+        method:'POST',
+        headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal,resolution=ignore-duplicates'},
+        body: JSON.stringify({
+          nombre:p.name, categoria:cat,
+          telefono:p.phone||null, email:p.tags?.email||p.tags?.['contact:email']||null,
+          website:p.tags?.website||null, direccion:p.address||null,
+          ciudad:locLabel.split(',')[0]?.trim()||'Florianópolis', pais:'BR',
+          latitud:p.lat, longitud:p.lng, fuente:'osm',
+          score_confianza:p.phone?65:30,
+          notas_hugo:`Scout ${CAT_CONFIG[cat]?.emoji} ${CAT_CONFIG[cat]?.label} · ${fmtD(p.dist)}`,
+          estado:'prospecto_pendiente',
+        })
+      });
+      if (r.ok||r.status===201||r.status===409) {
+        setAdded(prev=>new Set([...prev,p.id]));
+        await loadProspectos();
+      }
+    } catch(e:any) { alert('Error al guardar: '+e.message); }
+  }, [cat, locLabel, loadProspectos]);
+
+  // ── Marcar como contactado ─────────────────────────────────
+  const markContacted = useCallback(async (p: Provider) => {
+    setContacted(prev=>new Set([...prev,p.id]));
+    // Actualizar en Supabase si ya fue guardado
+    try {
+      await fetch(`${SB_URL}/rest/v1/prospectos_scouts?nombre=eq.${encodeURIComponent(p.name)}&estado=eq.prospecto_pendiente`, {
+        method:'PATCH',
+        headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
+        body: JSON.stringify({estado:'invitado'})
+      });
+      await loadProspectos();
+    } catch {}
+  }, [loadProspectos]);
+
+  // ── Generar mensaje con Gemini ─────────────────────────────
   const genOutreach = async (type: 'wa'|'email') => {
     if (!selected) return;
     setGenLoading(true); setOutreach(null);
+    const cfg = CAT_CONFIG[cat];
     const sys = type==='wa'
-      ? 'You are Hugo Scout for U.GO marketplace in Latin America. Write a warm WhatsApp message (max 100 words) in Brazilian Portuguese inviting this service business to join U.GO. Use *bold* for key points, max 2 emojis. Benefits: receive nearby job requests via app, 85% of payment, zero fees, secure escrow. Be specific. NO brackets.'
-      : 'You are Hugo Scout for U.GO marketplace in Latin America. Write a professional email in Brazilian Portuguese to invite this business to join U.GO. FIRST LINE must be exactly "Assunto: [subject]", then blank line, then body (150-200 words). Benefits: nearby job requests, 85% payment, zero fees, secure escrow. Be specific. NO brackets.';
-    const q = `${type==='wa'?'WhatsApp':'Email'} outreach for: Business=${selected.name}, Service=${CAT_LABELS[cat]}, Distance=${fmtD(selected.dist)}${selected.phone?', Phone='+selected.phone:''}${selected.address?', Address='+selected.address:''}`;
+      ? `Você é Hugo, assistente do U.GO — marketplace de serviços no Brasil. Escreva uma mensagem de WhatsApp CURTA (máx 80 palavras) em português brasileiro convidando este negócio para se tornar provedor do U.GO. Tom: amigável, direto. Destaque: receba pedidos próximos, 85% do pagamento garantido, sem mensalidade. Termine com o link: https://ugo.app/cadastro. NÃO use colchetes. Use no máximo 1 emoji.`
+      : `Você é Hugo, assistente do U.GO — marketplace de serviços no Brasil. Escreva um email PROFISSIONAL em português brasileiro. PRIMEIRA LINHA deve ser exatamente "Assunto: [escreva aqui o assunto]". Depois uma linha em branco e o corpo (máx 150 palavras). Convide este negócio para ser provedor do U.GO. Benefícios: pedidos próximos, 85% do valor, sem taxa mensal, pagamento via escrow seguro. Termine com: https://ugo.app/cadastro`;
+    const q = `Negócio: ${selected.name} | Serviço: ${cfg.label} | Distância: ${fmtD(selected.dist)}${selected.phone?` | Tel: ${selected.phone}`:''}${selected.address?` | Endereço: ${selected.address}`:''}`;
     try {
-      const r = await fetch('/api/proxy', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({system:sys,messages:[{role:'user',content:q}],max_tokens:400})});
+      const r = await fetch('/api/proxy', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({system:sys, messages:[{role:'user',content:q}], max_tokens:350})
+      });
       const d = await r.json();
-      const text = d.content?.[0]?.text || d.error || 'Error generando mensaje.';
-      setOutreach({type,text});
-      setStats(s => ({...s,contacted:s.contacted+1}));
-    } catch(e:any) { setOutreach({type,text:'Error: '+e.message}); }
+      const text = d.content?.[0]?.text || d.error || 'Error al generar.';
+      setOutreach({type, text});
+      setStats(s=>({...s, contacted:s.contacted+1}));
+    } catch(e:any) { setOutreach({type, text:'Error: '+e.message}); }
     setGenLoading(false);
   };
 
+  // ── Aprobar prospecto ──────────────────────────────────────
+  const aprobar = useCallback(async (id:string) => {
+    setApproving(id);
+    try {
+      const r = await fetch(`${SB_URL}/rest/v1/rpc/aprobar_prospecto`, {
+        method:'POST',
+        headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
+        body: JSON.stringify({p_prospecto_id:id, p_admin_email:'sebastianzoth@gmail.com'})
+      });
+      const d = await r.json();
+      if (d.ok) {
+        await loadProspectos();
+        if (d.link_onboarding) {
+          await navigator.clipboard.writeText(d.link_onboarding).catch(()=>{});
+          alert(`✅ Proveedor activado\n\nLink de onboarding copiado:\n${d.link_onboarding}`);
+        }
+      } else alert('Error: '+(d.error||d.message||'Revisar Supabase'));
+    } catch(e:any) { alert('Error: '+e.message); }
+    setApproving(null);
+  }, [loadProspectos]);
+
   const exportCSV = () => {
-    const rows = [['Nombre','Teléfono','Email','Dirección','Distancia','Categoría'],...exportData.map(p=>[p.name,p.phone||'',p.tags?.email||p.tags?.['contact:email']||'',p.address||'',fmtD(p.dist),CAT_LABELS[cat]])];
-    const csv = rows.map(r=>r.map(c=>'"'+(c||'').replace(/"/g,'""')+'"').join(',')).join('\n');
-    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-    a.download=`scout_${cat}_${new Date().toISOString().split('T')[0]}.csv`; a.click();
+    const cfg = CAT_CONFIG[cat];
+    const rows = [
+      ['Nombre','Teléfono','Email','Dirección','Distancia','Categoría','En Hugo'],
+      ...exportData.map(p=>[
+        p.name, p.phone||'', p.tags?.email||'', p.address||'',
+        fmtD(p.dist), cfg.label, added.has(p.id)?'Sí':'No'
+      ])
+    ];
+    const csv = rows.map(r=>r.map(c=>`"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download = `scout_${cat}_${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
   };
 
-  return (
-    <div style={{padding:'16px',overflowY:'auto',height:'100%'}}>
-      <div style={{fontFamily:'Inter',fontSize:'18px',fontWeight:800,color:'#111',marginBottom:'4px',letterSpacing:'-.4px'}}>📡 Hugo Scout</div>
-      <div style={{fontSize:'12px',color:'rgba(0,0,0,.5)',marginBottom:'14px'}}>Reclutamiento de proveedores por geolocalización · WhatsApp + Email outreach con Gemini</div>
+  const phoneToUse = selected?.phone || manualPhone;
 
-      {/* Stats */}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px',marginBottom:'12px'}}>
-        {[['Encontrados',stats.found,'#276EF1'],['Contactados',stats.contacted,'#05944F'],['Interesados',stats.interested,'#996000'],['Incorporados',stats.joined,'#111']].map(([l,v,c])=>(
-          <div key={l as string} style={{...S.card,padding:'10px 12px'}}>
+  return (
+    <div style={{padding:'16px',overflowY:'auto',height:'100%',fontFamily:'Inter,sans-serif'}}>
+
+      <div style={{fontSize:'18px',fontWeight:800,color:'#111',marginBottom:'2px',letterSpacing:'-.4px'}}>📡 Hugo Scout</div>
+      <div style={{fontSize:'12px',color:'rgba(0,0,0,.5)',marginBottom:'14px'}}>Reclutamiento de proveedores por geolocalización · Outreach WhatsApp + Email con Gemini</div>
+
+      {/* Stats — reales desde Supabase */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'8px',marginBottom:'14px'}}>
+        {([['Encontrados',stats.found,'#276EF1'],['Contactados',stats.contacted,'#05944F'],['Interesados',stats.interested,'#996000'],['Incorporados',stats.joined,'#111']] as [string,number,string][]).map(([l,v,c])=>(
+          <div key={l} style={{...S.card,padding:'10px 12px'}}>
             <div style={{fontSize:'9px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.45)',marginBottom:'3px'}}>{l}</div>
-            <div style={{fontSize:'20px',fontWeight:800,color:c as string,fontFamily:'Inter'}}>{v}</div>
+            <div style={{fontSize:'20px',fontWeight:800,color:c,fontFamily:'Inter'}}>{v}</div>
           </div>
         ))}
       </div>
 
       <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:'12px'}}>
-        {/* LEFT */}
+        {/* ── IZQUIERDA ── */}
         <div>
-          {/* Location */}
-          <div style={S.card}>
-            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'8px'}}>
-              <div style={{width:'34px',height:'34px',borderRadius:'50%',background:'rgba(5,148,79,.08)',border:'1px solid rgba(5,148,79,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'15px',flexShrink:0}}>📡</div>
+          {/* Ubicación */}
+          <div style={{...S.card,marginBottom:'10px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:showAddr?'8px':0}}>
+              <div style={{width:'34px',height:'34px',borderRadius:'50%',background:'rgba(5,148,79,.08)',border:'1px solid rgba(5,148,79,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'15px',flexShrink:0}}>📍</div>
               <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:'1px'}}>Ubicación del cliente</div>
+                <div style={{fontSize:'9px',color:'rgba(0,0,0,.45)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:'1px'}}>Zona de búsqueda</div>
                 <div style={{fontSize:'12px',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{locLabel}</div>
               </div>
               <button style={S.btn()} onClick={getGPS}>📍 GPS</button>
-              <button style={S.btn('s')} onClick={()=>setShowAddr(v=>!v)}>⌨</button>
+              <button style={S.btn('s')} onClick={()=>setShowAddr(v=>!v)} title="Ingresar dirección">⌨</button>
             </div>
-            {showAddr && (
-              <div style={{display:'flex',gap:'7px',marginTop:'6px'}}>
-                <input style={S.input} value={addr} onChange={e=>setAddr(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocode()} placeholder="Dirección, barrio o ciudad..."/>
-                <button style={S.btn()} onClick={geocode}>🔍</button>
+            {showAddr&&(
+              <div style={{display:'flex',gap:'7px'}}>
+                <input style={S.input} value={addr} onChange={e=>setAddr(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocode()} placeholder="Barrio, ciudad o dirección..."/>
+                <button style={S.btn()} onClick={geocode}>Buscar</button>
                 <button style={S.btn('s')} onClick={()=>setShowAddr(false)}>✕</button>
               </div>
             )}
           </div>
 
-          {/* Controls */}
-          <div style={{...S.card,display:'grid',gridTemplateColumns:'1fr 120px auto auto',gap:'10px',alignItems:'flex-end'}}>
-            <div><label style={S.label}>Categoría</label>
-              <select style={S.select} value={cat} onChange={e=>setCat(e.target.value)}>
-                <option value="electricista">Electricista</option>
-                <option value="plomero">Plomero</option>
-                <option value="limpeza">Limpeza</option>
-                <option value="chaveiro">Chaveiro</option>
-                <option value="pintura">Pintura</option>
-                <option value="carpintaria">Carpintaria</option>
-                <option value="jardinagem">Jardinagem</option>
-                <option value="climatizacao">Climatização</option>
-                <option value="ti_redes">TI &amp; Redes</option>
-                <option value="reformas">Reformas</option>
+          {/* Controles */}
+          <div style={{...S.card,display:'grid',gridTemplateColumns:'1fr 130px auto auto',gap:'10px',alignItems:'flex-end',marginBottom:'10px'}}>
+            <div>
+              <label style={S.label}>Categoría</label>
+              <select style={S.select} value={cat} onChange={e=>{setCat(e.target.value);setResults([]);setSelected(null);}}>
+                {Object.entries(CAT_CONFIG).map(([k,v])=><option key={k} value={k}>{v.emoji} {v.label}</option>)}
               </select>
             </div>
-            <div><label style={S.label}>Radio</label>
+            <div>
+              <label style={S.label}>Radio</label>
               <select style={S.select} value={radius} onChange={e=>setRadius(e.target.value)}>
-                {[['1000','1 km'],['2000','2 km'],['5000','5 km'],['10000','10 km']].map(([v,l])=><option key={v} value={v}>{l}</option>)}
+                <option value="2000">2 km</option>
+                <option value="5000">5 km</option>
+                <option value="10000">10 km</option>
+                <option value="20000">20 km</option>
               </select>
             </div>
-            <button style={{...S.btn(),whiteSpace:'nowrap'}} onClick={doSearch} disabled={lat===null||loading}>🔎 Buscar</button>
-            <button style={{...S.btn('s'),whiteSpace:'nowrap'}} onClick={exportCSV} disabled={!exportData.length}>⬇ CSV</button>
+            <button style={{...S.btn(),whiteSpace:'nowrap'}} onClick={doSearch} disabled={loading}>
+              {loading?'⏳ Buscando...':'🔎 Buscar'}
+            </button>
+            <button style={{...S.btn('s'),whiteSpace:'nowrap'}} onClick={exportCSV} disabled={!exportData.length} title="Exportar CSV">⬇ CSV</button>
           </div>
 
-          {/* Map */}
-          <div style={{...S.card,padding:0,overflow:'hidden',height:'280px',position:'relative'}}>
+          {/* Mapa */}
+          <div style={{...S.card,padding:0,overflow:'hidden',height:'260px',position:'relative',marginBottom:'10px'}}>
             <div ref={mapRef} style={{width:'100%',height:'100%'}}/>
-            {!lat && <div style={{position:'absolute',inset:0,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',background:'#F8F9FA',gap:'6px',color:'rgba(0,0,0,.4)',zIndex:1000,pointerEvents:'none'}}>
-              <div style={{fontSize:'28px'}}>🗺</div>
-              <div style={{fontSize:'11px'}}>Detectá GPS o ingresá dirección</div>
+            {loading&&<div style={{position:'absolute',inset:0,background:'rgba(255,255,255,.88)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:1000}}>
+              <div style={{fontSize:'24px',marginBottom:'8px',animation:'spin 1s linear infinite'}}>⟳</div>
+              <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>{loadingMsg}</div>
+              <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
             </div>}
           </div>
 
-          {/* Results */}
-          {loading && <div style={{...S.card,textAlign:'center',padding:'20px',color:'rgba(0,0,0,.5)',fontSize:'12px'}}>
-            <div style={{marginBottom:'6px'}}>⏳ {loadingMsg}</div>
-          </div>}
+          {/* Leyenda */}
+          <div style={{display:'flex',gap:'12px',marginBottom:'10px',fontSize:'10px',color:'rgba(0,0,0,.5)'}}>
+            {[['#05944F','< 1km'],['#F59E0B','1–3km'],['#E11900','> 3km']].map(([c,l])=>(
+              <span key={l}><span style={{display:'inline-block',width:8,height:8,borderRadius:'50%',background:c,marginRight:4}}/>{l}</span>
+            ))}
+            <span style={{marginLeft:'auto'}}>📱 = con teléfono · 📍 = sin teléfono</span>
+          </div>
 
-          {!loading && results.length > 0 && (
-            <div style={{marginTop:'8px'}}>
-              <div style={{fontSize:'11px',fontWeight:700,marginBottom:'8px',color:'rgba(0,0,0,.6)'}}>{results.length} proveedores encontrados</div>
+          {/* Resultados */}
+          {!loading&&results.length>0&&(
+            <div>
+              <div style={{fontSize:'11px',fontWeight:700,marginBottom:'8px',color:'rgba(0,0,0,.6)',display:'flex',alignItems:'center',gap:'8px'}}>
+                {results.length} proveedores · {results.filter(p=>p.phone).length} con teléfono
+                <span style={{marginLeft:'auto',fontSize:'10px',color:'rgba(0,0,0,.4)'}}>Clic para seleccionar → Outreach</span>
+              </div>
               {results.map(p=>(
-                <div key={p.id} onClick={()=>setSelected(s=>s?.id===p.id?null:p)}
-                  style={{...S.card,cursor:'pointer',borderColor:selected?.id===p.id?'#05944F':'rgba(0,0,0,.1)',background:selected?.id===p.id?'rgba(5,148,79,.03)':'#FFF',display:'flex',alignItems:'center',gap:'10px',padding:'10px 12px'}}>
-                  <div style={{width:'32px',height:'32px',borderRadius:'50%',background:distColor(p.dist),display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:800,color:'#FFF',flexShrink:0}}>{fmtD(p.dist)}</div>
+                <div key={p.id} onClick={()=>{setSelected(s=>s?.id===p.id?null:p);setOutreach(null);setManualPhone('');}}
+                  style={{...S.card,cursor:'pointer',borderColor:selected?.id===p.id?'#05944F':'rgba(0,0,0,.1)',
+                    background:selected?.id===p.id?'rgba(5,148,79,.03)':'#FFF',
+                    display:'flex',alignItems:'center',gap:'10px',padding:'10px 12px',marginBottom:'6px',
+                    borderLeft:`3px solid ${p.phone?'#05944F':'#E5E5E5'}`}}>
+                  <div style={{width:'32px',height:'32px',borderRadius:'50%',background:distColor(p.dist),display:'flex',alignItems:'center',justifyContent:'center',fontSize:'10px',fontWeight:800,color:'#FFF',flexShrink:0}}>
+                    {fmtD(p.dist)}
+                  </div>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</div>
-                    <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{p.address||CAT_LABELS[cat]}{p.phone&&` · 📱 ${p.phone}`}</div>
+                    <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>
+                      {p.address||CAT_CONFIG[cat]?.label}
+                      {p.phone&&<span style={{color:'#05944F',marginLeft:6}}>📱 {p.phone}</span>}
+                    </div>
                   </div>
-                  <span style={S.pill(p.dist<2000?'g':'a')}>{fmtD(p.dist)}</span>
-                  <button
-                    style={{...S.btn(added.has(p.id)?'s':'p'),padding:'4px 10px',fontSize:'9px',flexShrink:0}}
-                    onClick={e=>{e.stopPropagation();if(!added.has(p.id))addToHugo(p);}}
-                    disabled={added.has(p.id)}
-                  >{added.has(p.id)?'✓ En Hugo':'+ Hugo'}</button>
+                  <div style={{display:'flex',gap:'5px',flexShrink:0}}>
+                    {contacted.has(p.id)&&<span style={{...S.pill('g'),fontSize:'8px'}}>Contactado</span>}
+                    <button
+                      style={{...S.btn(added.has(p.id)?'s':'p'),padding:'4px 10px',fontSize:'9px'}}
+                      onClick={e=>{e.stopPropagation();if(!added.has(p.id))addToHugo(p);}}
+                      disabled={added.has(p.id)}
+                    >{added.has(p.id)?'✓ Guardado':'+ Hugo'}</button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          {!loading && results.length===0 && lat && (
+          {!loading&&results.length===0&&lat&&(
             <div style={{...S.card,textAlign:'center',padding:'24px',color:'rgba(0,0,0,.4)'}}>
               <div style={{fontSize:'28px',marginBottom:'8px'}}>🔍</div>
-              <div style={{fontSize:'12px'}}>Tocá "Buscar" para encontrar proveedores</div>
+              <div style={{fontSize:'12px',fontWeight:600,marginBottom:'6px'}}>Tocá "Buscar" para encontrar proveedores</div>
+              <div style={{fontSize:'10px',lineHeight:1.6}}>Hugo usa OpenStreetMap con 4 estrategias de búsqueda.<br/>Si no hay resultados, probá un radio mayor.</div>
             </div>
           )}
         </div>
 
-        {/* RIGHT — Outreach */}
-        <div>
+        {/* ── DERECHA: Outreach ── */}
+        <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
+
+          {/* Panel de outreach */}
           <div style={S.card}>
-            <div style={{fontSize:'11px',fontWeight:700,marginBottom:'12px'}}>✉️ Panel de Outreach</div>
-            {!selected ? (
-              <div style={{textAlign:'center',padding:'24px 0',color:'rgba(0,0,0,.35)'}}>
-                <div style={{fontSize:'24px',marginBottom:'8px'}}>👆</div>
-                <div style={{fontSize:'11px'}}>Seleccioná un proveedor del mapa o de la lista</div>
+            <div style={{fontSize:'11px',fontWeight:700,marginBottom:'12px',display:'flex',alignItems:'center',gap:'6px'}}>
+              ✉️ Panel de Outreach
+              {selected&&<span style={{...S.pill('g'),marginLeft:'auto'}}>{CAT_CONFIG[cat]?.emoji} {CAT_CONFIG[cat]?.label}</span>}
+            </div>
+
+            {!selected?(
+              <div style={{textAlign:'center',padding:'28px 0',color:'rgba(0,0,0,.35)'}}>
+                <div style={{fontSize:'28px',marginBottom:'8px'}}>👆</div>
+                <div style={{fontSize:'11px',fontWeight:600,marginBottom:'4px'}}>Seleccioná un proveedor</div>
+                <div style={{fontSize:'10px',lineHeight:1.6}}>Del mapa o de la lista de resultados<br/>para generar el mensaje de Hugo</div>
               </div>
-            ) : (
+            ):(
               <>
+                {/* Info del seleccionado */}
                 <div style={{background:'#F8F9FA',borderRadius:'10px',padding:'10px 12px',marginBottom:'12px'}}>
-                  <div style={{fontWeight:700,fontSize:'13px',marginBottom:'3px'}}>{selected.name}</div>
-                  <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{CAT_LABELS[cat]} · {fmtD(selected.dist)}</div>
-                  {selected.phone && <div style={{fontSize:'11px',marginTop:'4px'}}>📱 {selected.phone}</div>}
-                  {selected.address && <div style={{fontSize:'11px',marginTop:'2px',color:'rgba(0,0,0,.55)'}}>📍 {selected.address}</div>}
+                  <div style={{fontWeight:700,fontSize:'13px',marginBottom:'2px'}}>{selected.name}</div>
+                  <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{CAT_CONFIG[cat]?.label} · {fmtD(selected.dist)}</div>
+                  {selected.phone&&<div style={{fontSize:'12px',marginTop:'5px',color:'#05944F',fontWeight:600}}>📱 {selected.phone}</div>}
+                  {selected.address&&<div style={{fontSize:'10px',marginTop:'3px',color:'rgba(0,0,0,.55)'}}>📍 {selected.address}</div>}
+                  {selected.tags?.website&&<div style={{fontSize:'10px',marginTop:'3px'}}><a href={selected.tags.website} target="_blank" rel="noreferrer" style={{color:'#276EF1'}}>🌐 {selected.tags.website}</a></div>}
                 </div>
 
+                {/* Teléfono manual si no tiene */}
+                {!selected.phone&&(
+                  <div style={{marginBottom:'10px'}}>
+                    <label style={S.label}>📱 Ingresar teléfono para WhatsApp</label>
+                    <div style={{display:'flex',gap:'6px'}}>
+                      <input style={{...S.input,flex:1}} value={manualPhone} onChange={e=>setManualPhone(e.target.value)} placeholder="+55 48 9 9999-9999"/>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botones generar */}
                 <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'7px',marginBottom:'12px'}}>
-                  <button style={S.btn()} onClick={()=>genOutreach('wa')} disabled={genLoading}>📲 WhatsApp</button>
+                  <button style={S.btn('wa')} onClick={()=>genOutreach('wa')} disabled={genLoading}>📲 WhatsApp</button>
                   <button style={S.btn('s')} onClick={()=>genOutreach('email')} disabled={genLoading}>📧 Email</button>
                 </div>
 
-                {genLoading && <div style={{textAlign:'center',padding:'12px',color:'rgba(0,0,0,.4)',fontSize:'11px'}}>Gemini generando mensaje...</div>}
+                {genLoading&&(
+                  <div style={{textAlign:'center',padding:'14px',color:'rgba(0,0,0,.4)',fontSize:'11px',background:'#F8F9FA',borderRadius:'8px',marginBottom:'10px'}}>
+                    ✨ Gemini generando mensaje...
+                  </div>
+                )}
 
-                {outreach && (
-                  <div style={{background:'#F8F9FA',border:'1px solid rgba(0,0,0,.1)',borderRadius:'10px',padding:'11px'}}>
+                {outreach&&(
+                  <div style={{background:'#F8F9FA',border:'1px solid rgba(0,0,0,.1)',borderRadius:'10px',padding:'12px'}}>
                     <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'8px'}}>
-                      <span style={{fontSize:'10px',fontWeight:700,color:'rgba(0,0,0,.5)',textTransform:'uppercase'}}>{outreach.type==='wa'?'📲 WhatsApp':'📧 Email'}</span>
-                      <button style={{...S.btn('s'),padding:'3px 10px',fontSize:'9px'}} onClick={()=>navigator.clipboard.writeText(outreach.text)}>Copiar</button>
+                      <span style={{fontSize:'10px',fontWeight:700,color:'rgba(0,0,0,.5)',textTransform:'uppercase'}}>
+                        {outreach.type==='wa'?'📲 WhatsApp':'📧 Email'}
+                      </span>
+                      <button style={{...S.btn('s'),padding:'3px 10px',fontSize:'9px'}}
+                        onClick={()=>{navigator.clipboard.writeText(outreach.text);markContacted(selected);}}>
+                        📋 Copiar
+                      </button>
                     </div>
-                    <div style={{fontSize:'12px',lineHeight:1.6,whiteSpace:'pre-wrap',color:'#111'}}>{outreach.text}</div>
-                    {outreach.type==='wa' && selected.phone && (
-                      <a href={`https://wa.me/${selected.phone.replace(/\D/g,'')}?text=${encodeURIComponent(outreach.text)}`} target="_blank"
-                        style={{display:'block',marginTop:'10px',padding:'8px',background:'#25D366',color:'#FFF',borderRadius:'8px',textAlign:'center',textDecoration:'none',fontSize:'11px',fontWeight:700}}>
-                        Enviar por WhatsApp →
-                      </a>
-                    )}
-                    <div style={{display:'flex',gap:'7px',marginTop:'8px'}}>
-                      <button style={{...S.btn('s'),flex:1,fontSize:'9px'}} onClick={()=>setStats(s=>({...s,interested:s.interested+1}))}>⭐ Interesado</button>
-                      <button style={{...S.btn(),flex:1,fontSize:'9px'}} onClick={()=>setStats(s=>({...s,joined:s.joined+1}))}>✅ Incorporado</button>
+                    <div style={{fontSize:'11px',lineHeight:1.65,whiteSpace:'pre-wrap',color:'#111',maxHeight:'180px',overflowY:'auto'}}>
+                      {outreach.text}
+                    </div>
+
+                    {/* Acciones de envío */}
+                    <div style={{marginTop:'10px',display:'flex',flexDirection:'column',gap:'6px'}}>
+                      {outreach.type==='wa'&&phoneToUse&&(
+                        <a href={`https://wa.me/${phoneToUse.replace(/\D/g,'')}?text=${encodeURIComponent(outreach.text)}`}
+                          target="_blank" rel="noreferrer"
+                          style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',padding:'9px',background:'#25D366',color:'#FFF',borderRadius:'9px',textDecoration:'none',fontSize:'11px',fontWeight:700}}
+                          onClick={()=>markContacted(selected)}>
+                          Abrir WhatsApp y enviar →
+                        </a>
+                      )}
+                      {outreach.type==='wa'&&!phoneToUse&&(
+                        <div style={{fontSize:'10px',color:'#E11900',textAlign:'center',padding:'6px',background:'rgba(225,25,0,.05)',borderRadius:'7px'}}>
+                          ⚠ Ingresá el teléfono arriba para enviar por WhatsApp
+                        </div>
+                      )}
+                      {outreach.type==='email'&&(selected.tags?.email||selected.tags?.['contact:email'])&&(
+                        <a href={`mailto:${selected.tags?.email||selected.tags?.['contact:email']}?subject=${encodeURIComponent(outreach.text.split('\n')[0].replace('Assunto:','').trim())}&body=${encodeURIComponent(outreach.text.split('\n').slice(2).join('\n'))}`}
+                          style={{display:'flex',alignItems:'center',justifyContent:'center',gap:'6px',padding:'9px',background:'#276EF1',color:'#FFF',borderRadius:'9px',textDecoration:'none',fontSize:'11px',fontWeight:700}}
+                          onClick={()=>markContacted(selected)}>
+                          Abrir cliente de email →
+                        </a>
+                      )}
+                      {outreach.type==='email'&&!(selected.tags?.email||selected.tags?.['contact:email'])&&(
+                        <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',textAlign:'center'}}>
+                          Sin email registrado en OSM — copiá el mensaje y envialo manualmente
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Marcar estado */}
+                    <div style={{display:'flex',gap:'6px',marginTop:'8px'}}>
+                      <button style={{...S.btn('s'),flex:1,fontSize:'9px'}} onClick={()=>{markContacted(selected);setStats(s=>({...s,interested:s.interested+1}));}}>⭐ Interesado</button>
+                      <button style={{...S.btn(),flex:1,fontSize:'9px'}} onClick={()=>{markContacted(selected);addToHugo(selected);setStats(s=>({...s,joined:s.joined+1}));}}>✅ Incorporar</button>
                     </div>
                   </div>
                 )}
@@ -392,61 +587,79 @@ export function SecScout() {
             )}
           </div>
 
-          {/* Legend */}
-          <div style={{...S.card,padding:'10px 12px'}}>
-            <div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.4)',marginBottom:'8px'}}>Distancia</div>
-            {[['#05944F','Menos de 1km'],['#996000','1–3 km'],['#E11900','Más de 3km']].map(([c,l])=>(
-              <div key={l} style={{display:'flex',alignItems:'center',gap:'7px',marginBottom:'5px'}}>
-                <div style={{width:'10px',height:'10px',borderRadius:'50%',background:c,flexShrink:0}}/>
-                <span style={{fontSize:'10px',color:'rgba(0,0,0,.6)'}}>{l}</span>
-              </div>
-            ))}
+          {/* Instrucciones */}
+          <div style={{...S.card,padding:'12px',fontSize:'10px',color:'rgba(0,0,0,.5)',lineHeight:1.7}}>
+            <div style={{fontWeight:700,marginBottom:'6px',color:'rgba(0,0,0,.7)'}}>💡 Cómo funciona</div>
+            1. Pulsá <b>Buscar</b> para encontrar proveedores<br/>
+            2. Clic en uno para seleccionarlo<br/>
+            3. Generá mensaje de <b>WhatsApp</b> o <b>Email</b><br/>
+            4. Envialo directamente o copiá el texto<br/>
+            5. Pulsá <b>+ Hugo</b> para guardar en Supabase<br/>
+            6. Aprobá desde la lista de abajo
           </div>
         </div>
       </div>
-      {/* ── PROSPECTOS PENDIENTES ── */}
+
+      {/* ── PROSPECTOS GUARDADOS ── */}
       <div style={{marginTop:'16px'}}>
-        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
-          <div style={{fontSize:'13px',fontWeight:700,color:'#111'}}>🗂 Prospectos en Supabase</div>
-          <button style={S.btn('s')} onClick={loadProspectos} disabled={loadingPs}>
-            {loadingPs ? '⏳' : '↻ Actualizar'}
+        <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
+          <div style={{fontSize:'13px',fontWeight:700,color:'#111'}}>🗂 Prospectos en Supabase ({prospectos.length})</div>
+          <button style={{...S.btn('s'),padding:'5px 12px',fontSize:'10px'}} onClick={loadProspectos} disabled={loadingPs}>
+            {loadingPs?'⏳':'↻ Actualizar'}
           </button>
         </div>
-        {prospectos.length === 0 && !loadingPs && (
+
+        {prospectos.length===0&&!loadingPs&&(
           <div style={{...S.card,textAlign:'center',padding:'20px',color:'rgba(0,0,0,.4)',fontSize:'12px'}}>
-            Sin prospectos aún. Buscá negocios y pulsá "+ Hugo" para agregarlos.
+            Sin prospectos guardados. Buscá y pulsá "+ Hugo" para agregar.
           </div>
         )}
-        {prospectos.map(p => (
-          <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px',marginBottom:'8px'}}>
-            <div style={{width:'38px',height:'38px',borderRadius:'50%',background:p.estado==='aprobado'?'rgba(5,148,79,.1)':'rgba(245,158,11,.1)',border:`1.5px solid ${p.estado==='aprobado'?'rgba(5,148,79,.3)':'rgba(245,158,11,.3)'}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>
-              {p.estado==='aprobado'?'✅':'⏳'}
-            </div>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.nombre}</div>
-              <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>
-                {p.categoria} · {p.ciudad} {p.telefono ? `· 📱 ${p.telefono}` : ''} · Score: {p.score_confianza}/100
+
+        <div style={{display:'flex',flexDirection:'column',gap:'8px'}}>
+          {prospectos.map(p=>{
+            const estadoColor:Record<string,string> = {
+              prospecto_pendiente:'#996000', invitado:'#276EF1',
+              en_revision:'#7356BF', aprobado:'#05944F', rechazado:'#E11900'
+            };
+            return (
+              <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px'}}>
+                <div style={{width:'36px',height:'36px',borderRadius:'50%',background:`rgba(${p.estado==='aprobado'?'5,148,79':'153,96,0'},.1)`,border:`1.5px solid rgba(${p.estado==='aprobado'?'5,148,79':'153,96,0'},.3)`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'16px',flexShrink:0}}>
+                  {p.estado==='aprobado'?'✅':p.estado==='invitado'?'📨':p.estado==='rechazado'?'❌':'⏳'}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.nombre}</div>
+                  <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>
+                    {p.categoria} · {p.ciudad}
+                    {p.telefono&&` · 📱 ${p.telefono}`}
+                    {` · Score: ${p.score_confianza}/100`}
+                  </div>
+                </div>
+                <div style={{display:'flex',gap:'6px',flexShrink:0,alignItems:'center'}}>
+                  <span style={{fontSize:'9px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',border:`1px solid ${estadoColor[p.estado]||'#999'}`,color:estadoColor[p.estado]||'#999',background:`${estadoColor[p.estado]||'#999'}14`}}>
+                    {p.estado?.replace('_',' ').toUpperCase()}
+                  </span>
+                  {p.estado==='prospecto_pendiente'&&(
+                    <button style={{...S.btn(),padding:'5px 12px',fontSize:'10px',whiteSpace:'nowrap'}}
+                      onClick={()=>aprobar(p.id)} disabled={approving===p.id}>
+                      {approving===p.id?'⏳':'✓ Aprobar'}
+                    </button>
+                  )}
+                  {p.estado==='invitado'&&(
+                    <button style={{...S.btn('s'),padding:'5px 10px',fontSize:'10px'}}
+                      onClick={async()=>{
+                        await fetch(`${SB_URL}/rest/v1/prospectos_scouts?id=eq.${p.id}`,{
+                          method:'PATCH',
+                          headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
+                          body:JSON.stringify({estado:'en_revision'})
+                        });
+                        loadProspectos();
+                      }}>⭐ Interesado</button>
+                  )}
+                </div>
               </div>
-            </div>
-            <div style={{display:'flex',gap:'6px',flexShrink:0}}>
-              {p.estado === 'prospecto_pendiente' && (
-                <button
-                  style={{...S.btn(),padding:'5px 12px',fontSize:'10px',whiteSpace:'nowrap'}}
-                  onClick={() => aprobar(p.id)}
-                  disabled={approving === p.id}
-                >
-                  {approving === p.id ? '⏳' : '✓ Aprobar'}
-                </button>
-              )}
-              {p.estado === 'aprobado' && (
-                <span style={S.pill('g')}>Aprobado</span>
-              )}
-              {p.estado === 'rechazado' && (
-                <span style={S.pill('a')}>Rechazado</span>
-              )}
-            </div>
-          </div>
-        ))}
+            );
+          })}
+        </div>
       </div>
     </div>
   );
