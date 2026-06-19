@@ -615,88 +615,127 @@ export function SecAvanzado() {
   );
 }
 
+
 /* ─────────────────────────────────────────────
-   SecImportProviders — Import CSV / Excel
+   SecImportProviders — CSV + Excel (Bing format)
 ───────────────────────────────────────────── */
+import * as XLSX from 'xlsx';
+
 const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_IMP_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
-function parseCSV(text: string): Record<string,string>[] {
-  const lines = text.trim().split('\n');
-  if (lines.length < 2) return [];
-  const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g,'').toLowerCase());
-  return lines.slice(1).map(line => {
-    // Handle quoted CSV
-    const vals: string[] = [];
-    let cur = '', inQ = false;
-    for (const ch of line + ',') {
-      if (ch === '"') { inQ = !inQ; }
-      else if (ch === ',' && !inQ) { vals.push(cur.trim()); cur = ''; }
-      else cur += ch;
-    }
-    return Object.fromEntries(headers.map((h,i) => [h, vals[i] || '']));
-  }).filter(r => Object.values(r).some(v => v));
+// Map Bing/generic column names → U.GO fields
+const CAT_MAP: Record<string,string> = {
+  'pintura':'Pintor','pinturas':'Pintor','pintor':'Pintor',
+  'limpeza':'Limpieza','faxina':'Limpieza','cleaning':'Limpieza','limpieza':'Limpieza',
+  'eletricista':'Electricista','electricista':'Electricista','electrical':'Electricista','elétrica':'Electricista',
+  'encanamento':'Plomero','plomero':'Plomero','plomería':'Plomero','hidráulica':'Plomero',
+  'marcenaria':'Carpintero','carpinteiro':'Carpintero','carpintero':'Carpintero',
+  'serralheiro':'Cerrajero','cerrajero':'Cerrajero','fechadura':'Cerrajero',
+  'jardinagem':'Jardinero','jardinero':'Jardinero','garden':'Jardinero',
+  'ar condicionado':'AC/Clima','refrigeração':'AC/Clima','hvac':'AC/Clima',
+};
+
+function mapCategory(raw: string): string {
+  const key = (raw||'').toLowerCase().trim();
+  for (const [k,v] of Object.entries(CAT_MAP)) {
+    if (key.includes(k)) return v;
+  }
+  return raw || 'Geral';
+}
+
+function parseRows(rawRows: Record<string,string>[]): Record<string,string>[] {
+  return rawRows.map(r => {
+    // Normalize keys
+    const n: Record<string,string> = {};
+    for (const [k,v] of Object.entries(r)) n[k.toLowerCase().trim()] = String(v||'').trim();
+    
+    // Map Bing columns or generic columns
+    const nome     = n['name']    || n['nome']    || n['nombre']   || '';
+    const addr     = n['address'] || n['endereco']|| n['direccion']|| n['address'] || '';
+    const lat      = n['latitude']|| n['lat']     || '';
+    const lng      = n['longitude']||n['lng']     || n['lon']      || '';
+    const cat      = mapCategory(n['category']||n['categoria']||n['servico']||n['servico']||'');
+    const tel      = n['phone']   || n['telefone']|| n['telefono'] || '';
+    const site     = n['website'] || n['site']    || '';
+    const rating   = n['rating']  || n['karma']   || '';
+    
+    // Clean phone: remove (48), spaces, etc.
+    const telClean = tel.replace(/[()\s-]/g,'').replace(/\*\*\*PRO\*\*\*/,'');
+    
+    return { nome, endereco:addr, lat, lng, categoria:cat, telefone:telClean, website:site, karma:rating, pais:'BR' };
+  }).filter(r => r.nome && r.nome !== '***PRO***');
 }
 
 export function SecImportProviders() {
-  const [rows, setRows] = React.useState<Record<string,string>[]>([]);
-  const [status, setStatus] = React.useState<string>('');
+  const [rows, setRows]       = React.useState<Record<string,string>[]>([]);
+  const [raw,  setRaw]        = React.useState<Record<string,string>[]>([]);
+  const [status, setStatus]   = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
-  const [result, setResult] = React.useState<{ok:number,err:number,errores:string[]}|null>(null);
+  const [result, setResult]   = React.useState<any>(null);
   const [dragging, setDragging] = React.useState(false);
 
   const processFile = (file: File) => {
-    setResult(null);
+    setResult(null); setRows([]); setRaw([]);
     const reader = new FileReader();
     reader.onload = (e) => {
-      const text = e.target?.result as string;
-      if (!text) { setStatus('❌ Archivo vacío'); return; }
-      const parsed = parseCSV(text);
-      setRows(parsed);
-      setStatus(`✅ ${parsed.length} filas cargadas. Revisá la vista previa y hacé clic en Importar.`);
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer);
+        const wb   = XLSX.read(data, { type: 'array' });
+        const ws   = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json<Record<string,string>>(ws, { defval: '' });
+        if (!json.length) { setStatus('❌ Archivo vacío o sin datos'); return; }
+        const mapped = parseRows(json);
+        setRaw(json);
+        setRows(mapped);
+        setStatus(`✅ ${json.length} filas cargadas → ${mapped.length} proveedores válidos mapeados`);
+      } catch(err: any) {
+        setStatus('❌ Error al leer archivo: ' + err.message);
+      }
     };
-    reader.readAsText(file, 'UTF-8');
+    reader.readAsArrayBuffer(file);
   };
 
   const onDrop = (e: React.DragEvent) => {
     e.preventDefault(); setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) processFile(file);
+    const file = e.dataTransfer.files[0]; if(file) processFile(file);
   };
-
   const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) processFile(file);
+    const file = e.target.files?.[0]; if(file) processFile(file);
   };
 
   const doImport = async () => {
     if (!rows.length) return;
     setLoading(true); setResult(null);
     try {
+      const payload = rows.map(r => ({
+        nombre: r.nome, endereco: r.endereco,
+        lat: parseFloat(r.lat)||null, lng: parseFloat(r.lng)||null,
+        categoria: r.categoria, telefono: r.telefone,
+        bio: r.website ? `Website: ${r.website}` : null,
+        karma: parseFloat(r.karma)||5.0,
+        tipo:'proveedor', pais:r.pais||'BR', activo:true
+      }));
       const r = await fetch(`${SB_IMP_URL}/functions/v1/import-providers`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SB_IMP_KEY}` },
-        body: JSON.stringify({ proveedores: rows })
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_IMP_KEY}`},
+        body: JSON.stringify({ proveedores: payload })
       });
       const d = await r.json();
       setResult(d);
-      setStatus(`Importación completa: ${d.ok} exitosos, ${d.err} con error.`);
+      setStatus(`✅ Importados: ${d.ok} exitosos · ${d.err} con error de ${rows.length} total`);
     } catch(e: any) {
       setStatus('❌ Error: ' + e.message);
     } finally { setLoading(false); }
   };
 
-  const preview = rows.slice(0, 5);
-  const cols = rows[0] ? Object.keys(rows[0]) : [];
+  const preview = rows.slice(0, 8);
 
   return (
     <div className="pad" style={{overflowY:'auto',height:'calc(100% - 40px)'}}>
-      <div className="st">📥 Importar Proveedores (CSV)</div>
-      <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'16px',lineHeight:1.6}}>
-        Subí un archivo CSV con los datos de los proveedores. Columnas reconocidas:<br/>
-        <code style={{background:'#f5f5f5',padding:'2px 6px',borderRadius:'4px',fontSize:'11px'}}>
-          nombre, email, categoria, telefono, zona, tarifa_base, bio, lat, lng, pais, activo
-        </code>
+      <div className="st">📥 Importar Proveedores (Excel / CSV)</div>
+      <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'14px',lineHeight:1.6}}>
+        Soporta el formato de exportación de Bing Maps y cualquier Excel/CSV con columnas de nombre, dirección, lat/lng, categoría y teléfono.
       </p>
 
       {/* Drop Zone */}
@@ -704,62 +743,64 @@ export function SecImportProviders() {
         onDragOver={e=>{e.preventDefault();setDragging(true);}}
         onDragLeave={()=>setDragging(false)}
         onDrop={onDrop}
-        onClick={()=>document.getElementById('csvfile')?.click()}
-        style={{border:`2px dashed ${dragging?'var(--primary)':'#ddd'}`,borderRadius:'16px',padding:'32px',textAlign:'center',cursor:'pointer',marginBottom:'16px',background:dragging?'rgba(5,148,79,.03)':'#fafafa',transition:'all .2s'}}>
-        <div style={{fontSize:'32px',marginBottom:'8px'}}>📄</div>
-        <div style={{fontWeight:700,fontSize:'14px'}}>Arrastrá tu CSV aquí</div>
-        <div style={{fontSize:'12px',color:'var(--muted)',marginTop:'4px'}}>o hacé clic para seleccionar</div>
-        <input id="csvfile" type="file" accept=".csv,.txt" style={{display:'none'}} onChange={onFile}/>
+        onClick={()=>document.getElementById('xlsxfile')?.click()}
+        style={{border:`2.5px dashed ${dragging?'#05944F':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(5,148,79,.04)':'#fafafa',transition:'all .2s'}}>
+        <div style={{fontSize:'36px',marginBottom:'8px'}}>{dragging?'🎯':'📊'}</div>
+        <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo Excel o CSV aquí</div>
+        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.xlsx · .xls · .csv — clic para seleccionar</div>
+        <input id="xlsxfile" type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={onFile}/>
       </div>
 
-      {/* Download template */}
-      <a
-        href="data:text/csv;charset=utf-8,nombre,email,categoria,telefono,zona,tarifa_base,bio,lat,lng,pais%0AJuan Garcia,juan@email.com,Electricista,+55489999-9999,Centro,90,Electricista con 10 años de experiencia,-27.5969,-48.5495,BR"
-        download="template_proveedores.csv"
-        style={{fontSize:'12px',color:'var(--primary)',textDecoration:'none',display:'inline-flex',alignItems:'center',gap:'4px',marginBottom:'16px'}}>
-        ⬇ Descargar plantilla CSV
-      </a>
-
+      {/* Status */}
       {status && (
-        <div style={{padding:'10px 14px',background:status.startsWith('❌')?'#fef2f2':'#f0fdf4',borderRadius:'10px',fontSize:'13px',marginBottom:'16px',color:status.startsWith('❌')?'#dc2626':'#166534'}}>
+        <div style={{padding:'10px 14px',background:status.startsWith('❌')?'#fef2f2':'#f0fdf4',borderRadius:'10px',fontSize:'13px',marginBottom:'14px',color:status.startsWith('❌')?'#dc2626':'#166534',lineHeight:1.5}}>
           {status}
         </div>
       )}
 
-      {result && result.errores?.length > 0 && (
-        <div style={{background:'#fef2f2',borderRadius:'10px',padding:'10px 14px',marginBottom:'16px'}}>
-          <div style={{fontWeight:700,fontSize:'12px',color:'#dc2626',marginBottom:'4px'}}>Errores:</div>
-          {result.errores.map((e,i) => <div key={i} style={{fontSize:'11px',color:'#dc2626'}}>• {e}</div>)}
+      {/* Result details */}
+      {result?.errores?.length > 0 && (
+        <div style={{background:'#fef2f2',borderRadius:'10px',padding:'10px 14px',marginBottom:'14px',fontSize:'11px',color:'#dc2626'}}>
+          <strong>Errores ({result.errores.length}):</strong>
+          {result.errores.map((e: string, i: number) => <div key={i}>• {e}</div>)}
         </div>
       )}
 
-      {/* Preview */}
+      {/* Column mapping preview */}
       {preview.length > 0 && (
         <>
-          <div style={{fontWeight:700,fontSize:'13px',marginBottom:'8px'}}>Vista previa ({rows.length} filas)</div>
-          <div style={{overflowX:'auto',marginBottom:'16px',borderRadius:'12px',border:'1px solid var(--border)'}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px'}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
+            <div style={{fontWeight:700,fontSize:'13px'}}>{rows.length} proveedores listos para importar</div>
+            <div style={{fontSize:'11px',color:'#888'}}>Vista previa: {Math.min(8,rows.length)} de {rows.length}</div>
+          </div>
+          <div style={{overflowX:'auto',marginBottom:'16px',borderRadius:'12px',border:'1px solid #e5e5e5'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px',minWidth:'600px'}}>
               <thead>
                 <tr style={{background:'#f5f5f5'}}>
-                  {cols.map(c=><th key={c} style={{padding:'8px 10px',textAlign:'left',fontWeight:700,borderBottom:'1px solid var(--border)',whiteSpace:'nowrap'}}>{c}</th>)}
+                  {['Nombre','Categoría','Teléfono','Dirección','Lat','Lng'].map(h=>(
+                    <th key={h} style={{padding:'8px 10px',textAlign:'left',fontWeight:700,borderBottom:'1px solid #e5e5e5',whiteSpace:'nowrap',color:'#555'}}>{h}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {preview.map((row,i)=>(
-                  <tr key={i} style={{borderBottom:'1px solid #f5f5f5'}}>
-                    {cols.map(c=><td key={c} style={{padding:'7px 10px',maxWidth:'120px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row[c]}</td>)}
+                {preview.map((row,i) => (
+                  <tr key={i} style={{borderBottom:'1px solid #f5f5f5',background:i%2===0?'#fff':'#fafafa'}}>
+                    <td style={{padding:'7px 10px',fontWeight:600,maxWidth:'140px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row.nome}</td>
+                    <td style={{padding:'7px 10px'}}><span style={{background:'rgba(0,200,215,.1)',color:'#0080AA',borderRadius:'20px',padding:'2px 8px',fontSize:'10px',fontWeight:700}}>{row.categoria}</span></td>
+                    <td style={{padding:'7px 10px'}}>{row.telefone}</td>
+                    <td style={{padding:'7px 10px',maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#666'}}>{row.endereco}</td>
+                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace'}}>{parseFloat(row.lat||'0').toFixed(4)}</td>
+                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace'}}>{parseFloat(row.lng||'0').toFixed(4)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {rows.length > 5 && <div style={{padding:'8px 10px',fontSize:'11px',color:'var(--muted)'}}>... y {rows.length-5} filas más</div>}
+            {rows.length > 8 && <div style={{padding:'8px 10px',fontSize:'11px',color:'#888'}}>... y {rows.length-8} proveedores más</div>}
           </div>
 
-          <button
-            onClick={doImport}
-            disabled={loading}
-            style={{width:'100%',padding:'13px',background:loading?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading?'not-allowed':'pointer',fontFamily:'inherit'}}>
-            {loading ? '⏳ Importando...' : `📥 Importar ${rows.length} proveedores`}
+          <button onClick={doImport} disabled={loading}
+            style={{width:'100%',padding:'14px',background:loading?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading?'not-allowed':'pointer',fontFamily:'inherit',transition:'background .2s'}}>
+            {loading ? '⏳ Importando...' : `📥 Importar ${rows.length} proveedores a U.GO`}
           </button>
         </>
       )}
