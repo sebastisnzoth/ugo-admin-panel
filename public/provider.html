@@ -693,6 +693,84 @@ async function nextJobStateReal() {
   }
 }
 
+/* ── SCOUT: Invitación de Hugo ── */
+(function(){
+  const params = new URLSearchParams(location.search);
+  const invId  = params.get('inv');
+  if (!invId) return;
+
+  // Mostrar overlay de invitación
+  async function loadInvitacion() {
+    try {
+      const r = await fetch(
+        `${SB_URL}/rest/v1/invitaciones_scout?id=eq.${invId}&select=*,prospectos_scouts(nombre,categoria,ciudad)`,
+        { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+      );
+      const data = await r.json();
+      const inv  = data?.[0];
+      if (!inv || inv.estado === 'rechazada') return;
+
+      const prosp = inv.prospectos_scouts || {};
+      const msg   = inv.mensaje_hugo || `¡Hola ${prosp.nombre || ''}! Te invitamos a unirte a U.GO.`;
+
+      // Crear overlay
+      const overlay = document.createElement('div');
+      overlay.id = 'inv-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(26,32,48,.97);display:flex;align-items:center;justify-content:center;padding:20px;';
+      overlay.innerHTML = `
+        <div style="background:#FFF;border-radius:20px;padding:24px;max-width:360px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.4);">
+          <div style="text-align:center;margin-bottom:16px;">
+            <div style="width:56px;height:56px;border-radius:50%;background:rgba(0,200,215,.12);border:2px solid rgba(0,200,215,.3);display:flex;align-items:center;justify-content:center;font-size:26px;margin:0 auto 10px;">🌀</div>
+            <div style="font-size:17px;font-weight:800;color:#111;letter-spacing:-.3px;">U.GO te invita</div>
+            <div style="font-size:12px;color:#888;margin-top:3px;">Marketplace de servicios LATAM</div>
+          </div>
+          <div style="background:#F8F9FA;border-radius:12px;padding:14px;font-size:13px;line-height:1.7;color:#333;margin-bottom:16px;white-space:pre-wrap;">${msg}</div>
+          <div style="display:grid;gap:8px;">
+            <button onclick="invAceptar('${invId}')" style="padding:13px;background:#00C8D7;border:none;border-radius:12px;color:#FFF;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;">✓ ¡Quiero unirme a U.GO!</button>
+            <button onclick="invCerrar('${invId}')" style="padding:11px;background:transparent;border:1.5px solid #EBEBEB;border-radius:12px;color:#888;font-size:13px;cursor:pointer;font-family:inherit;">Ahora no</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+    } catch(e) { console.warn('[Scout inv]', e); }
+  }
+
+  window.invAceptar = async function(id) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/invitaciones_scout?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: 'aceptada', fecha_respuesta: new Date().toISOString() })
+      });
+    } catch {}
+    document.getElementById('inv-overlay')?.remove();
+    // Si no está logueado, mostrar pantalla de auth
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      const auth = document.getElementById('auth');
+      if (auth) auth.classList.remove('hide');
+      toast('¡Genial! Creá tu cuenta para continuar 🚀');
+    }
+  };
+
+  window.invCerrar = async function(id) {
+    try {
+      await fetch(`${SB_URL}/rest/v1/invitaciones_scout?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: 'rechazada', fecha_respuesta: new Date().toISOString() })
+      });
+    } catch {}
+    document.getElementById('inv-overlay')?.remove();
+  };
+
+  // Cargar después de que el DOM esté listo
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', loadInvitacion);
+  } else {
+    loadInvitacion();
+  }
+})();
+
 </script>
 </body>
 </html>
