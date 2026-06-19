@@ -157,6 +157,10 @@ const CSS = `
 .report-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;}
 .report-card{background:#FFF;border:1px solid var(--border);border-radius:16px;padding:16px;cursor:pointer;transition:all .15s;box-shadow:0 1px 4px rgba(0,0,0,.07);}
 .report-card:hover{border-color:#05944F;box-shadow:0 4px 16px rgba(5,148,79,.1);}
+.tab-row{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;align-items:center;}
+.tab-btn{padding:5px 14px;border-radius:20px;font-size:10px;font-weight:700;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--muted);font-family:var(--head);transition:all .15s;}
+.tab-btn:hover{border-color:var(--bord2);color:var(--text);}
+.tab-btn.active{background:#05944F;color:#FFF;border-color:#05944F;}
 .report-icon{font-size:24px;margin-bottom:8px;}
 .report-title{font-size:12px;font-weight:700;margin-bottom:4px;color:#111;}
 .report-desc{font-size:10px;color:var(--muted);margin-bottom:12px;line-height:1.5;}
@@ -395,7 +399,7 @@ export function AdminPanel() {
     const link = document.createElement('link'); link.rel='stylesheet'; link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
     const script = document.createElement('script'); script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.onload=()=>setLeafletReady(true); document.body.appendChild(script);
   }, []);
-  useEffect(() => { if (!leafletReady || !mapDivRef.current || mapRef.current) return; const L=(window as any).L; mapRef.current=L.map(mapDivRef.current,{center:[-27.5954,-48.5480],zoom:13,zoomControl:false}); L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{attribution:'© CARTO',maxZoom:19}).addTo(mapRef.current); L.control.zoom({position:'bottomright'}).addTo(mapRef.current); }, [leafletReady]);
+  useEffect(() => { if (!leafletReady || !mapDivRef.current || mapRef.current) return; const L=(window as any).L; mapRef.current=L.map(mapDivRef.current,{center:[-27.5954,-48.5480],zoom:13,zoomControl:false}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(mapRef.current); L.control.zoom({position:'bottomright'}).addTo(mapRef.current); }, [leafletReady]);
   useEffect(() => { if (section==='mapa' && mapRef.current) setTimeout(()=>mapRef.current?.invalidateSize(), 60); }, [section]);
   useEffect(() => {
     if (!mapRef.current || !leafletReady) return; const L=(window as any).L;
@@ -926,6 +930,13 @@ export function AdminPanel() {
           {section==='config'&&renderConfig()}
           {section==='scout'&&<SecScout/>}
           {section==='avanzado'&&<SecAvanzado/>}
+          {section==='mapa_ops'&&<SecMapaOperativo/>}
+          {section==='conexiones'&&renderConexiones()}
+          {section==='zonas'&&<SecZonas/>}
+          {section==='promos'&&<SecPromos/>}
+          {section==='ratings'&&<SecRatings/>}
+          {section==='validacion_paises'&&<SecValidacionPaises/>}
+          {section==='import_provs'&&<SecImportProviders/>}
         </main>
 
         <aside className="ua-hugo">
@@ -937,7 +948,7 @@ export function AdminPanel() {
             <div ref={msgEndRef}/>
           </div>
           <div className="hugo-inp-row">
-            <input ref={msgEndRef as any} className="hugo-in" placeholder="Pregunta a Hugo..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendHugo(input)}/>
+            <input className="hugo-in" placeholder="Pregunta a Hugo..." value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendHugo(input)}/>
             <button className="hugo-send" onClick={()=>sendHugo(input)}>→</button>
           </div>
         </aside>

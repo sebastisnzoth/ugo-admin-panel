@@ -6,22 +6,22 @@ const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
 const SC_TAGS: Record<string,string[][]> = {
-  electrician:[['craft','electrician'],['shop','electrician']],
-  plumber:[['craft','plumber'],['craft','plumbing']],
-  cleaning:[['craft','cleaning'],['shop','dry_cleaning']],
-  locksmith:[['craft','locksmith']],
-  painter:[['craft','painter'],['craft','decorator']],
-  carpenter:[['craft','carpenter'],['craft','joiner']],
-  gardener:[['craft','gardener'],['craft','landscaping']],
-  hvac:[['craft','hvac'],['craft','refrigeration']],
-  it:[['shop','computer'],['craft','electronics_repair']],
-  appliance:[['craft','electronics_repair']],
+  electricista:[['craft','electrician'],['shop','electrician']],
+  plomero:[['craft','plumber'],['craft','plumbing']],
+  limpeza:[['craft','cleaning'],['shop','dry_cleaning']],
+  chaveiro:[['craft','locksmith']],
+  pintura:[['craft','painter'],['craft','decorator']],
+  carpintaria:[['craft','carpenter'],['craft','joiner']],
+  jardinagem:[['craft','gardener'],['craft','landscaping']],
+  climatizacao:[['craft','hvac'],['craft','refrigeration']],
+  ti_redes:[['shop','computer'],['craft','electronics_repair']],
+  reformas:[['craft','renovation'],['craft','builder']],
 };
 
 const CAT_LABELS: Record<string,string> = {
-  electrician:'Electricista',plumber:'Plomero',cleaning:'Limpieza',
-  locksmith:'Cerrajero',painter:'Pintor',carpenter:'Carpintero',
-  gardener:'Jardinero',hvac:'Climatización',it:'Técnico TI',appliance:'Electrodomésticos'
+  electricista:'Electricista',plomero:'Plomero',limpeza:'Limpeza',
+  chaveiro:'Chaveiro',pintura:'Pintura',carpintaria:'Carpintaria',
+  jardinagem:'Jardinagem',climatizacao:'Climatização',ti_redes:'TI & Redes',reformas:'Reformas'
 };
 
 const DIST_COLORS = ['#05944F','#F59E0B','#E11900'];
@@ -45,7 +45,7 @@ export function SecScout() {
   const [locLabel, setLocLabel] = useState('Sin ubicación — usá GPS o ingresá dirección');
   const [addr, setAddr] = useState('');
   const [showAddr, setShowAddr] = useState(false);
-  const [cat, setCat] = useState('electrician');
+  const [cat, setCat] = useState('electricista');
   const [radius, setRadius] = useState('2000');
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('');
@@ -279,7 +279,16 @@ export function SecScout() {
           <div style={{...S.card,display:'grid',gridTemplateColumns:'1fr 120px auto auto',gap:'10px',alignItems:'flex-end'}}>
             <div><label style={S.label}>Categoría</label>
               <select style={S.select} value={cat} onChange={e=>setCat(e.target.value)}>
-                {Object.entries(CAT_LABELS).map(([k,v])=><option key={k} value={k}>{v}</option>)}
+                <option value="electricista">Electricista</option>
+                <option value="plomero">Plomero</option>
+                <option value="limpeza">Limpeza</option>
+                <option value="chaveiro">Chaveiro</option>
+                <option value="pintura">Pintura</option>
+                <option value="carpintaria">Carpintaria</option>
+                <option value="jardinagem">Jardinagem</option>
+                <option value="climatizacao">Climatização</option>
+                <option value="ti_redes">TI &amp; Redes</option>
+                <option value="reformas">Reformas</option>
               </select>
             </div>
             <div><label style={S.label}>Radio</label>
