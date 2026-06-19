@@ -9,10 +9,11 @@ import {
 import { supabase } from '../lib/supabase';
 import { resetRealtimeChannel, onRealtimeEvent } from '../hooks/useAdminData';
 import { SecZonas, SecPromos, SecRatings, SecAvanzado, SecValidacionPaises, SecImportProviders } from './AdvancedSections';
+import { SecMapaOperativo } from './MapaOperativo';
 import { SecScout } from './ScoutSection';
 import { ConversationalOrb } from './ConversationalOrb';
 
-type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'validacion_paises'|'import_provs';
+type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'validacion_paises'|'import_provs'|'mapa_ops';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
 
 const CSS = `
@@ -838,7 +839,7 @@ export function AdminPanel() {
   // ── Nav ────────────────────────────────────────────────────
   const NAV: {id:Section;icon:string;label:string;badge?:number}[][] = [
     [{id:'dashboard',icon:'◈',label:'Panel'},{id:'mapa',icon:'◉',label:'Mapa'},{id:'alertas',icon:'△',label:'Alertas',badge:(criticalCount+warningCount)||undefined}],
-    [{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
+    [{id:'mapa_ops',icon:'🗺',label:'Mapa Live'},{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
     [{id:'usuarios',icon:'◎',label:'Usrs'},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
     [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
     [{id:'scout',icon:'📡',label:'Scout'},{id:'validacion_paises',icon:'🌎',label:'KYC'},{id:'import_provs',icon:'📥',label:'Import'},{id:'avanzado',icon:'◧',label:'Avanz'}],
