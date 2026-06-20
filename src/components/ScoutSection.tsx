@@ -41,6 +41,20 @@ const S = {
     color:c==='g'?'#05944F':'#996000',border:`1px solid ${c==='g'?'rgba(5,148,79,.2)':'rgba(245,158,11,.2)'}`} as React.CSSProperties),
 };
 
+
+const FSQ_SEARCH_QUERIES: Record<string, string[]> = {
+  electricista: ['eletricista', 'elétrica', 'instalação elétrica'],
+  plomero:      ['encanador', 'hidráulica', 'desentupidora'],
+  limpeza:      ['limpeza', 'faxina', 'limpadora'],
+  chaveiro:     ['chaveiro', 'chaves'],
+  pintura:      ['pintor', 'pintura'],
+  carpintaria:  ['carpintaria', 'marcenaria'],
+  jardinagem:   ['jardineiro', 'jardinagem', 'paisagismo'],
+  climatizacao: ['ar condicionado', 'climatização'],
+  ti_redes:     ['informática', 'assistência técnica'],
+  reformas:     ['reforma', 'pedreiro', 'construção'],
+};
+
 export function SecScout() {
   const [lat, setLat] = useState<number|null>(null);
   const [lng, setLng] = useState<number|null>(null);
@@ -60,6 +74,7 @@ export function SecScout() {
   const [exportData, setExportData] = useState<Provider[]>([]);
   const [added, setAdded] = useState<Set<string>>(new Set());
   const [contacted, setContacted] = useState<Set<string>>(new Set());
+  const [fsqKey, setFsqKey] = useState('');
   const [prospectos, setProspectos] = useState<any[]>([]);
   const [loadingPs, setLoadingPs] = useState(false);
   const [approving, setApproving] = useState<string|null>(null);
@@ -91,7 +106,13 @@ export function SecScout() {
     setLoadingPs(false);
   }, []);
 
-  useEffect(() => { loadProspectos(); }, [loadProspectos]);
+  useEffect(() => {
+    loadProspectos();
+    // Cargar Foursquare key desde Supabase para llamar directo desde browser
+    fetch(`${SB_URL}/rest/v1/config_sistema?clave=eq.api_foursquare_key&select=valor`, {
+      headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
+    }).then(r=>r.json()).then(d => { if(d?.[0]?.valor) setFsqKey(d[0].valor.trim()); });
+  }, [loadProspectos]);
 
   // ── Init mapa Leaflet ──────────────────────────────────────
   useEffect(() => {
@@ -162,35 +183,88 @@ export function SecScout() {
     const cfg = CAT_CONFIG[cat];
 
     try {
-      setLoadingMsg(`${cfg.emoji} Buscando con Foursquare + OSM...`);
+      let provs: Provider[] = [];
+      let sourceLabel = '';
 
-      const r = await fetch('/api/scout/places', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lat, lng, radius: parseInt(radius), categoria: cat }),
-      });
+      // ── Foursquare directo desde browser (evita bloqueo de IPs Vercel) ──
+      if (fsqKey) {
+        setLoadingMsg(`${cfg.emoji} Buscando en Foursquare...`);
+        try {
+          const fsqQueries = FSQ_SEARCH_QUERIES[cat] || [cat];
+          const seen = new Set<string>();
 
-      if (!r.ok) throw new Error(`Error ${r.status}`);
-      const data = await r.json();
+          for (const q of fsqQueries.slice(0, 2)) {
+            const url = new URL('https://places-api.foursquare.com/places/search');
+            url.searchParams.set('ll', `${lat},${lng}`);
+            url.searchParams.set('radius', radius);
+            url.searchParams.set('query', q);
+            url.searchParams.set('limit', '30');
+            url.searchParams.set('fields', 'fsq_place_id,name,geocodes,location,tel,website,rating,distance');
 
-      if (!data.results || data.results.length === 0) {
+            const r = await fetch(url.toString(), {
+              headers: {
+                'Authorization': fsqKey,
+                'X-Places-Api-Version': '2025-06-17',
+                'Accept': 'application/json',
+              },
+              signal: AbortSignal.timeout(15000),
+            });
+
+            if (!r.ok) { console.warn('[FSQ]', r.status, await r.text()); continue; }
+            const d = await r.json();
+            const items = d.places || d.results || [];
+            for (const p of items) {
+              const geo = p.geocodes?.main || p.geocodes?.roof;
+              if (!geo || seen.has(p.fsq_place_id)) continue;
+              seen.add(p.fsq_place_id);
+              const loc = p.location || {};
+              const address = [loc.address, loc.locality].filter(Boolean).join(', ');
+              const dist = p.distance || haversine(lat, lng, geo.latitude, geo.longitude);
+              provs.push({
+                id: p.fsq_place_id,
+                name: p.name,
+                phone: p.tel || undefined,
+                address: address || undefined,
+                lat: geo.latitude, lng: geo.longitude, dist,
+                tags: { website: p.website, rating: p.rating ? (p.rating/2) : null, source: 'foursquare' },
+              });
+            }
+          }
+          if (provs.length) sourceLabel = `📍 Foursquare — ${provs.length} encontrados`;
+        } catch(e: any) { console.warn('[FSQ browser]', e.message); }
+      }
+
+      // ── Fallback OSM si Foursquare da 0 ──────────────────────────
+      if (provs.length === 0) {
+        setLoadingMsg('🗺 Sin resultados en Foursquare — buscando en OpenStreetMap...');
+        try {
+          const r = await fetch('/api/scout/places', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ lat, lng, radius: parseInt(radius), categoria: cat, fsqDisabled: true }),
+          });
+          if (r.ok) {
+            const data = await r.json();
+            provs = (data.results || []).map((p: any) => ({
+              id: p.id, name: p.name,
+              phone: p.phone || undefined,
+              address: p.address || undefined,
+              lat: p.lat, lng: p.lng, dist: p.dist,
+              tags: { website: p.website, rating: null, source: 'osm' },
+            }));
+            if (provs.length) sourceLabel = `🗺 OpenStreetMap — ${provs.length} encontrados`;
+          }
+        } catch(e: any) { console.warn('[OSM fallback]', e.message); }
+      }
+
+      if (provs.length === 0) {
         setLoadingMsg('');
         setLoading(false);
         alert(`Sin resultados para "${cfg.label}" en ${fmtD(parseInt(radius))} radio.\n\nTip: Probá un radio mayor o categoría diferente.`);
         return;
       }
 
-      const sourceLabel = data.source === 'foursquare' ? '📍 Foursquare' : '🗺 OpenStreetMap';
-      setLoadingMsg(`${sourceLabel} — ${data.results.length} encontrados`);
-
-      const provs: Provider[] = data.results.map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        phone: p.phone || undefined,
-        address: p.address || undefined,
-        lat: p.lat, lng: p.lng, dist: p.dist,
-        tags: { website: p.website, rating: p.rating, source: p.source },
-      }));
+      setLoadingMsg(sourceLabel);
 
       setResults(provs);
       setExportData(provs);
