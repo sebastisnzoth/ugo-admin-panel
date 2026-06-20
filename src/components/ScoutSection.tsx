@@ -284,22 +284,62 @@ export function SecScout() {
   const aprobar = useCallback(async (id:string) => {
     setApproving(id);
     try {
+      // 1. Aprobar prospecto → crear usuario proveedor
       const r = await fetch(`${SB_URL}/rest/v1/rpc/aprobar_prospecto`, {
         method:'POST',
         headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
         body: JSON.stringify({p_prospecto_id:id, p_admin_email:'sebastianzoth@gmail.com'})
       });
       const d = await r.json();
-      if (d.ok) {
-        await loadProspectos();
-        if (d.link_onboarding) {
-          await navigator.clipboard.writeText(d.link_onboarding).catch(()=>{});
-          alert(`✅ Proveedor activado\n\nLink de onboarding copiado:\n${d.link_onboarding}`);
-        }
-      } else alert('Error: '+(d.error||d.message||'Revisar Supabase'));
+      if (!d.ok) { alert('Error: '+(d.error||d.message||'Revisar Supabase')); setApproving(null); return; }
+
+      // 2. Generar mensaje de invitación con Hugo
+      const prosp = prospectos.find(p => p.id === id);
+      const catCfg = CAT_CONFIG[prosp?.categoria||cat];
+      const msgBody = {
+        mode:'admin',
+        messages:[{role:'user',content:`Genera un mensaje de WhatsApp en português brasileiro (máx 80 palabras) invitando a "${prosp?.nombre||'este negocio'}" (${catCfg?.label||prosp?.categoria}) a ser proveedor de U.GO. Menciona: 85% del pago garantizado, sin mensualidad, clientes verificados. Link: ${d.link_onboarding||'https://ugo.app/cadastro'}. Solo el texto del mensaje, sin JSON.`}],
+        max_tokens:200,
+      };
+      let waMsg = `Olá ${prosp?.nombre}! Sou Hugo do U.GO 🌀 Convidamos você para ser nosso prestador de ${catCfg?.label||prosp?.categoria} em ${prosp?.cidade||'sua cidade'}. Receba clientes verificados, 85% do valor garantido, sem mensalidade. Cadastre-se: ${d.link_onboarding||'https://ugo.app/cadastro'}`;
+
+      try {
+        const gr = await fetch('/api/proxy', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(msgBody)});
+        const gd = await gr.json();
+        const txt = gd.content?.[0]?.text?.trim();
+        if (txt && txt.length > 20) waMsg = txt;
+      } catch {}
+
+      // 3. Enviar WhatsApp automático si tiene teléfono
+      let waSent = false;
+      if (prosp?.telefono) {
+        try {
+          const wr = await fetch('/api/whatsapp/send', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ to: prosp.telefono, message: waMsg, prospecto_id: id })
+          });
+          const wd = await wr.json();
+          waSent = wd.ok;
+        } catch {}
+      }
+
+      await loadProspectos();
+
+      // 4. Feedback al admin
+      const lines = [
+        `✅ ${prosp?.nombre} aprobado como proveedor`,
+        waSent ? `📲 WhatsApp enviado a ${prosp?.telefono}` : prosp?.telefono ? '⚠️ WhatsApp no enviado — revisá el token en config_sistema' : '📋 Sin teléfono — copiá el link:',
+        d.link_onboarding || '',
+      ].filter(Boolean);
+      alert(lines.join('\n\n'));
+
+      if (d.link_onboarding && !waSent) {
+        navigator.clipboard.writeText(d.link_onboarding).catch(()=>{});
+      }
+
     } catch(e:any) { alert('Error: '+e.message); }
     setApproving(null);
-  }, [loadProspectos]);
+  }, [loadProspectos, prospectos, cat]);
 
   const exportCSV = () => {
     const cfg = CAT_CONFIG[cat];

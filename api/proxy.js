@@ -1,56 +1,122 @@
+// api/proxy.js
+// Hugo AI proxy — carga system prompts desde Supabase según modo
+// Nunca expone keys ni prompts al cliente
+
 import { createClient } from '@supabase/supabase-js';
 
-const sb = createClient(
-  'https://byajcqrgetloavrgyqak.supabase.co',
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs'
-);
+const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+const sb = createClient(SB_URL, SB_KEY);
 
-const MODELS = ['gemini-flash-latest'];
+async function getConfig(keys) {
+  const { data } = await sb.from('config_sistema').select('clave,valor').in('clave', keys);
+  const map = {};
+  (data || []).forEach(r => { map[r.clave] = r.valor; });
+  return map;
+}
+
+function injectContext(prompt, context = {}) {
+  let p = prompt;
+  Object.entries(context).forEach(([k, v]) => {
+    p = p.replaceAll(`{{${k}}}`, v ?? '—');
+  });
+  return p;
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  const {
+    mode = 'admin',       // 'cliente' | 'proveedor' | 'admin'
+    messages = [],
+    system,               // legacy: si lo mandan directo lo usamos
+    context = {},         // variables dinámicas para inyectar en el prompt
+    max_tokens = 800,
+  } = req.body;
 
   try {
-    // Leer Gemini key desde Supabase
-    const { data } = await sb.from('config_sistema').select('valor').eq('clave','api_gemini_key').single();
-    const geminiKey = data?.valor?.trim();
-    if (!geminiKey) return res.status(500).json({ error: 'Sin Gemini API Key configurada' });
+    // Cargar keys desde Supabase
+    const cfg = await getConfig([
+      'api_groq_key',
+      'api_gemini_key',
+      `hugo_prompt_${mode}`,
+    ]);
 
-    // Convertir request de formato Anthropic → Gemini
-    const { system, messages, max_tokens = 400 } = req.body;
-    const userMsg = messages?.find(m => m.role === 'user')?.content || '';
-    const prompt = system ? `${system}\n\n${userMsg}` : userMsg;
+    // Sistema: prioridad → Supabase prompt → legacy system → fallback
+    let systemPrompt = system || cfg[`hugo_prompt_${mode}`] || 'Eres Hugo, asistente de U.GO.';
+    systemPrompt = injectContext(systemPrompt, context);
 
-    const body = JSON.stringify({
-      contents: [{ role: 'user', parts: [{ text: prompt }] }],
-      generationConfig: { maxOutputTokens: max_tokens, temperature: 0.7 }
-    });
+    const groqKey  = cfg['api_groq_key'];
+    const geminiKey = cfg['api_gemini_key'];
 
-    let lastErr = '';
-    for (const model of MODELS) {
-      const r = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey }, body }
-      );
-      const d = await r.json();
-      if (d.error) { lastErr = d.error.message; continue; }
-      const text = d.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-      if (!text) continue;
+    // ── 1. Intentar Groq (llama-3.3-70b) ──────────────────────
+    if (groqKey) {
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages,
+            ],
+            max_tokens,
+            temperature: 0.7,
+            response_format: mode !== 'admin' ? { type: 'json_object' } : undefined,
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
 
-      // Responder en formato compatible con lo que espera Scout
-      return res.json({
-        content: [{ type: 'text', text }],
-        model
-      });
+        if (r.ok) {
+          const d = await r.json();
+          const text = d.choices?.[0]?.message?.content || '';
+          return res.json({ content: [{ type: 'text', text }], model: 'groq/llama-3.3-70b', mode });
+        }
+      } catch(e) {
+        console.warn('[Hugo] Groq falló:', e.message);
+      }
     }
 
-    return res.status(500).json({ error: `Gemini falló: ${lastErr}` });
+    // ── 2. Fallback Gemini ─────────────────────────────────────
+    if (geminiKey) {
+      try {
+        const geminiMessages = messages.map(m => ({
+          role: m.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: m.content }],
+        }));
 
-  } catch (err) {
-    return res.status(500).json({ error: err.message });
+        const r = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              system_instruction: { parts: [{ text: systemPrompt }] },
+              contents: geminiMessages,
+              generationConfig: { maxOutputTokens: max_tokens, temperature: 0.7 },
+            }),
+            signal: AbortSignal.timeout(15000),
+          }
+        );
+
+        if (r.ok) {
+          const d = await r.json();
+          const text = d.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          return res.json({ content: [{ type: 'text', text }], model: 'gemini-2.0-flash', mode });
+        }
+      } catch(e) {
+        console.warn('[Hugo] Gemini falló:', e.message);
+      }
+    }
+
+    return res.status(503).json({ error: 'Todos los modelos de IA no disponibles.' });
+
+  } catch(e) {
+    console.error('[Hugo proxy] Error:', e.message);
+    return res.status(500).json({ error: e.message });
   }
 }

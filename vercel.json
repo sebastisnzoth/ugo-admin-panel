@@ -12,6 +12,10 @@
       "destination": "/api/scout/$1"
     },
     {
+      "source": "/api/whatsapp/(.*)",
+      "destination": "/api/whatsapp/$1"
+    },
+    {
       "source": "/provider.html",
       "destination": "/provider.html"
     },
