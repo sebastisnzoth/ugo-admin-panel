@@ -71,6 +71,8 @@ export function SecScout() {
   const [contacted,setContacted] = useState<Set<string>>(new Set());
   const [prospectos,setProspectos] = useState<any[]>([]);
   const [approving,setApproving] = useState<string|null>(null);
+  const [selMap,setSelMap]       = useState<Set<string>>(new Set());
+  const [bulkLoading,setBulkLoading] = useState(false);
   const [stats,setStats]       = useState({found:0,contacted:0,joined:0});
   const [leafletReady,setLeafletReady] = useState(false);
 
@@ -280,6 +282,63 @@ export function SecScout() {
     } else alert('Error: '+(d.error||d.message||'Revisar Supabase'));
     setApproving(null);
   },[prospectos,loadProspectos]);
+
+
+  // ── Aprobación masiva ─────────────────────────────────────────
+  const toggleSel = (id:string) => setSelMap(prev => {
+    const n = new Set(prev);
+    n.has(id) ? n.delete(id) : n.add(id);
+    return n;
+  });
+
+  const selAll = () => {
+    const pending = prospectos.filter(p => p.estado !== 'aprobado' && p.estado !== 'rechazado');
+    setSelMap(new Set(pending.map(p => p.id)));
+  };
+
+  const selNone = () => setSelMap(new Set());
+
+  const aprobarBulk = async () => {
+    if (!selMap.size) return;
+    const ids = Array.from(selMap);
+    setBulkLoading(true);
+    let ok=0, err=0;
+    for (const id of ids) {
+      try {
+        const prosp = prospectos.find(p=>p.id===id);
+        if (!prosp) continue;
+        // Insert directly to usuarios
+        const slug = (prosp.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'.').slice(0,25);
+        const email = `${slug}.${Date.now().toString(36)}@ugo-import.br`;
+        const row = {
+          email, nombre: prosp.nombre||prosp.name||'',
+          tipo: 'proveedor', activo: true, karma: 5.0,
+          telefono: prosp.telefono||null,
+          categoria: prosp.categoria||'Geral',
+          endereco: prosp.direccion||prosp.address||null,
+          lat: prosp.lat||null, lng: prosp.lng||null,
+          bio: prosp.website?`Website: ${prosp.website}`:null,
+          pais: prosp.pais||'BR', updated_at: new Date().toISOString()
+        };
+        const r1 = await fetch(`${SB_URL}/rest/v1/usuarios`, {
+          method:'POST',
+          headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+          body: JSON.stringify(row)
+        });
+        // Update prospecto estado
+        await fetch(`${SB_URL}/rest/v1/prospectos_scouts?id=eq.${id}`, {
+          method:'PATCH',
+          headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
+          body: JSON.stringify({estado:'aprobado', aprobado_at: new Date().toISOString()})
+        });
+        if (r1.ok||r1.status===201) ok++; else err++;
+      } catch { err++; }
+    }
+    setBulkLoading(false);
+    setSelMap(new Set());
+    alert(`✅ ${ok} proveedores aprobados y guardados como usuarios.${err>0?`\n⚠️ ${err} errores.`:''}`);
+    await loadProspectos();
+  };
 
   const phoneToUse = selected?.phone||manualPhone;
   const stColors:Record<string,string> = {prospecto_pendiente:'#996000',invitado:'#276EF1',en_revision:'#7356BF',aprobado:'#05944F',rechazado:'#E11900'};
@@ -494,9 +553,20 @@ export function SecScout() {
           <button style={{...S.btn('s'),padding:'5px 12px',fontSize:'10px',background:'rgba(0,0,0,.07)',color:'#111'}} onClick={loadProspectos}>↻</button>
         </div>
         <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-          {prospectos.map(p=>(
-            <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'12px',padding:'10px 14px'}}>
-              <div style={{width:'34px',height:'34px',borderRadius:'50%',background:`${stColors[p.estado]||'#999'}18`,border:`1.5px solid ${stColors[p.estado]||'#999'}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'15px',flexShrink:0}}>{stIcons[p.estado]||'⏳'}</div>
+          {/* Bulk bar */}
+              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,flexWrap:'wrap'}}>
+                <span style={{fontSize:11,fontWeight:700,color:'rgba(0,0,0,.5)'}}>📋 {prospectos.length}</span>
+                <button onClick={selAll} style={{fontSize:'9px',padding:'3px 8px',borderRadius:20,border:'1px solid #ddd',background:'transparent',cursor:'pointer',fontWeight:700}}>☑ Todos</button>
+                <button onClick={selNone} style={{fontSize:'9px',padding:'3px 8px',borderRadius:20,border:'1px solid #ddd',background:'transparent',cursor:'pointer',fontWeight:700}}>☐ Ninguno</button>
+                {selMap.size>0&&<button onClick={aprobarBulk} disabled={bulkLoading}
+                  style={{padding:'4px 12px',borderRadius:20,border:'none',background:'#05944F',color:'#fff',cursor:'pointer',fontWeight:700,fontSize:'10px',marginLeft:'auto'}}>
+                  {bulkLoading?'⏳...':<>✅ Aprobar <b>{selMap.size}</b> seleccionados</>}
+                </button>}
+              </div>
+              {prospectos.map(p=>(
+            <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'8px',padding:'8px 10px',outline:selMap.has(p.id)?'2px solid #05944F':'none',cursor:'pointer'}}>
+              <input type="checkbox" checked={selMap.has(p.id)} onChange={e=>{e.stopPropagation();toggleSel(p.id);}} style={{flexShrink:0,width:14,height:14,cursor:'pointer'}}/>
+              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:`${stColors[p.estado]||'#999'}18`,border:`1.5px solid ${stColors[p.estado]||'#999'}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'15px',flexShrink:0}}>{stIcons[p.estado]||'⏳'}</div>
               <div style={{flex:1,minWidth:0}}>
                 <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.nombre}</div>
                 <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{p.categoria} · {p.ciudad}{p.telefono?` · 📱 ${p.telefono}`:''}</div>
