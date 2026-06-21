@@ -380,7 +380,22 @@ export function SecScout() {
               {loading?'⏳...':'🔎 Buscar'}
             </button>
             <button style={{...S.btn('s'),whiteSpace:'nowrap',background:'rgba(0,0,0,.07)',color:'#111'}}
-              onClick={()=>{ const csv=[['Nombre','Tel','Dir'],...results.map(p=>[p.name,p.phone||'',p.address||''])].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n'); const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download=`scout_${cat}.csv`; a.click(); }}
+              onClick={()=>{
+                const hdr = ['nombre','categoria','direccion','ciudad','pais','telefono','email','website','latitud','longitud','score_confianza','notas_hugo','fuente'];
+                const rows = results.map(p => [
+                  p.name, cat, p.address||'', locLabel.split(',')[0]?.trim()||'Florianópolis', 'BR',
+                  p.phone||'', '', p.website||'',
+                  p.lat?.toFixed(6)||'', p.lng?.toFixed(6)||'',
+                  p.phone?'65':'30',
+                  `Scout ${CAT_CONFIG[cat]?.emoji} ${CAT_CONFIG[cat]?.label} · ${fmtD(p.dist)}`,
+                  'scout_export'
+                ]);
+                const csv = [hdr,...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+                a.download = `scout_${cat}_${new Date().toISOString().split('T')[0]}.csv`;
+                a.click();
+              }}
               disabled={!results.length}>⬇ CSV</button>
           </div>
 

@@ -647,30 +647,51 @@ function normalizeCategory(raw: string): string {
   return raw || 'reformas';
 }
 
+// Detectar categoría desde el nombre cuando no hay columna categoria
+function detectCatFromName(name: string): string {
+  const n = name.toLowerCase();
+  if (/eletric|electr|elétric/.test(n))              return 'electricista';
+  if (/encanad|hidráulic|plomero|plumb/.test(n))     return 'plomero';
+  if (/limpez|faxin|limpador|clean/.test(n))         return 'limpeza';
+  if (/chaveiro|locksmith|fechadura/.test(n))        return 'chaveiro';
+  if (/pintor|pintura|painter/.test(n))              return 'pintura';
+  if (/carpint|marcen|carpenter/.test(n))            return 'carpintaria';
+  if (/jardin|paisag|garden/.test(n))               return 'jardinagem';
+  if (/ar condic|climatiz|refriger|hvac/.test(n))    return 'climatizacao';
+  if (/informátic|computad|assist.técn|ti |redes/.test(n)) return 'ti_redes';
+  if (/reform|pedreiro|construct|obras/.test(n))     return 'reformas';
+  return 'reformas';
+}
+
 function parseCSVRows(rawRows: Record<string,string>[]): Record<string,string>[] {
   return rawRows.map(r => {
     const n: Record<string,string> = {};
     for (const [k,v] of Object.entries(r)) n[k.toLowerCase().trim()] = String(v||'').trim();
 
-    // Detectar si es formato prospectos_scouts (nuestro formato nativo)
-    const isNativo = 'nombre' in n || 'latitud' in n;
-
-    const nombre   = n['nombre']   || n['name']     || n['nome']     || '';
-    const cat      = normalizeCategory(n['categoria'] || n['category'] || n['servico'] || '');
-    const direccion= n['direccion']|| n['address']   || n['endereco'] || n['direccion'] || '';
+    const nome     = n['nombre']   || n['name']     || n['nome']     || '';
+    // Categoría: columna explícita > detección desde nombre
+    const rawCat   = n['categoria'] || n['category'] || n['servico'] || '';
+    const cat      = rawCat ? normalizeCategory(rawCat) : detectCatFromName(nome);
+    const direccion= n['dir'] || n['direccion']|| n['address']   || n['endereco'] || '';
     const ciudad   = n['ciudad']   || n['city']      || n['municipio']|| 'Florianópolis';
     const pais     = n['pais']     || n['country']   || 'BR';
-    const telefono = (n['telefono']|| n['phone']     || n['tel']      || '').replace(/[()\s-]/g,'').replace(/\*\*\*PRO\*\*\*/,'');
+    // Teléfono: limpiar formato +55 48 99972-1743 → +5548999721743
+    const telRaw   = n['tel'] || n['telefono']|| n['phone'] || n['telefone'] || '';
+    const telefono = telRaw.replace(/[()\s-]/g,'').replace(/\*\*\*PRO\*\*\*/,'');
     const email    = n['email']    || '';
     const website  = n['website']  || n['site']      || n['url']      || '';
-    const latitud  = n['latitud']  || n['latitude']  || n['lat']      || '';
-    const longitud = n['longitud'] || n['longitude'] || n['lng']      || n['lon'] || '';
+    // Lat/lng: si vienen en 0.0000 también se considera vacío
+    const latRaw   = n['latitud']  || n['latitude']  || n['lat']      || '';
+    const lngRaw   = n['longitud'] || n['longitude'] || n['lng']      || n['lon'] || '';
+    const latitud  = latRaw && parseFloat(latRaw) !== 0 ? latRaw : '';
+    const longitud = lngRaw && parseFloat(lngRaw) !== 0 ? lngRaw : '';
     const score    = n['score_confianza'] || n['rating'] || '50';
-    const notas    = n['notas_hugo'] || n['notas'] || 'Importado via CSV';
+    const notas    = n['notas_hugo'] || n['notas'] || `Importado via CSV · ${cat}`;
     const fuente   = n['fuente']   || 'csv_import';
 
-    return { nombre, categoria:cat, direccion, ciudad, pais, telefono, email, website,
-      latitud, longitud, score_confianza:score, notas_hugo:notas, fuente, estado:'prospecto_pendiente' };
+    return { nombre:nome, categoria:cat, direccion, ciudad, pais, telefono, email, website,
+      latitud, longitud, score_confianza:score, notas_hugo:notas, fuente, estado:'prospecto_pendiente',
+      _needs_geocode: (!latitud || !longitud) && direccion ? 'true' : 'false' };
   }).filter(r => r.nombre && r.nombre !== '***PRO***' && r.nombre.length > 1);
 }
 
@@ -692,7 +713,7 @@ export function SecImportProviders() {
   const processFile = (file: File) => {
     setResult(null); setRows([]); setSelected(new Set());
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
       try {
         const data = new Uint8Array(e.target?.result as ArrayBuffer);
         const wb   = XLSX.read(data, { type: 'array' });
@@ -700,9 +721,32 @@ export function SecImportProviders() {
         const json = XLSX.utils.sheet_to_json<Record<string,string>>(ws, { defval: '' });
         if (!json.length) { setStatus('❌ Archivo vacío'); return; }
         const mapped = parseCSVRows(json);
+
+        // Geocodificar filas sin lat/lng usando Nominatim
+        const needsGeo = mapped.filter(r => r._needs_geocode === 'true').length;
+        if (needsGeo > 0) {
+          setStatus(`⏳ Geocodificando ${needsGeo} direcciones sin coordenadas (puede tardar ~${needsGeo}s)...`);
+          for (let i = 0; i < mapped.length; i++) {
+            if (mapped[i]._needs_geocode !== 'true') continue;
+            try {
+              const addr = encodeURIComponent(`${mapped[i].direccion}, ${mapped[i].ciudad}, Brasil`);
+              const gr = await fetch(`https://nominatim.openstreetmap.org/search?q=${addr}&format=json&limit=1`, {
+                headers: { 'User-Agent': 'ugo-scout-import/1.0' }
+              });
+              const gd = await gr.json();
+              if (gd?.[0]) {
+                mapped[i].latitud  = parseFloat(gd[0].lat).toFixed(6);
+                mapped[i].longitud = parseFloat(gd[0].lon).toFixed(6);
+              }
+              await new Promise(res => setTimeout(res, 1100)); // rate limit Nominatim
+            } catch { /* skip, sin coordenadas */ }
+          }
+        }
+
         setRows(mapped);
-        setSelected(new Set(mapped.map((_,i) => i))); // seleccionar todos
-        setStatus(`✅ ${json.length} filas leídas → ${mapped.length} proveedores válidos mapeados`);
+        setSelected(new Set(mapped.map((_,i) => i)));
+        const geoOk = mapped.filter(r => r.latitud && r.longitud).length;
+        setStatus(`✅ ${json.length} filas → ${mapped.length} válidos · ${geoOk} con coordenadas · ${needsGeo} geocodificados`);
       } catch(err: any) { setStatus('❌ Error: ' + err.message); }
     };
     reader.readAsArrayBuffer(file);
