@@ -800,19 +800,27 @@ export function SecImportProviders() {
               score_confianza: r.score_confianza   ? parseInt(r.score_confianza) : 50,
               notas_hugo:      r.notas_hugo        || 'Importado via CSV',
             }))
-          : chunk.map(r => ({
-              nombre:   r.nombre   || '(sin nombre)',
-              categoria:r.categoria|| 'reformas',
-              telefono: r.telefono || null,
-              email:    r.email    || null,
-              lat:      r.latitud && parseFloat(r.latitud) !== 0 ? parseFloat(r.latitud) : null,
-              lng:      r.longitud && parseFloat(r.longitud) !== 0 ? parseFloat(r.longitud) : null,
-              zona:     r.ciudad   || 'Florianópolis',
-              pais:     r.pais     || 'BR',
-              tipo:     'proveedor',
-              activo:   false,
-              karma:    5.0,
-            }));
+          : null; // usuarios usa RPC → se maneja abajo
+
+        // ── USUARIOS: usa RPC SECURITY DEFINER (bypasea RLS) ──
+        if (destino === 'usuarios') {
+          const rpcRes = await fetch(`${SB_IMP_URL}/rest/v1/rpc/import_proveedores_csv`, {
+            method: 'POST',
+            headers: { 'Content-Type':'application/json','apikey':SB_IMP_KEY,'Authorization':`Bearer ${SB_IMP_KEY}` },
+            body: JSON.stringify({ p_rows: JSON.stringify(chunk) }),
+          });
+          const rpcD = await rpcRes.json();
+          if (rpcRes.ok && rpcD.ok) {
+            ok  += rpcD.insertados || 0;
+            dup += rpcD.duplicados || 0;
+            err += rpcD.errores    || 0;
+            if (rpcD.detalle?.length) errList.push(...rpcD.detalle.map((e:string)=>`Lote ${ci+1}: ${e}`));
+          } else {
+            err += chunk.length;
+            errList.push(`Lote ${ci+1}: ${rpcD.message || rpcD.error || rpcRes.status}`);
+          }
+          continue; // saltar el fetch REST abajo
+        }
 
         const res = await fetch(`${SB_IMP_URL}/rest/v1/${table}`, {
           method: 'POST',
