@@ -381,19 +381,35 @@ export function SecScout() {
             </button>
             <button style={{...S.btn('s'),whiteSpace:'nowrap',background:'rgba(0,0,0,.07)',color:'#111'}}
               onClick={()=>{
-                const hdr = ['nombre','categoria','direccion','ciudad','pais','telefono','email','website','latitud','longitud','score_confianza','notas_hugo','fuente'];
+                // Formato exacto de prospectos_scouts — listo para re-importar
+                const hdr = ['id','nombre','categoria','direccion','ciudad','pais','telefono','email','website','rating','reviews_count','latitud','longitud','fuente','estado','fecha_prospectado','notas_hugo','score_confianza'];
+                const now = new Date().toISOString().replace('T',' ').slice(0,19);
+                const ciudad = locLabel.split(',')[0]?.trim()||'Florianópolis';
                 const rows = results.map(p => [
-                  p.name, cat, p.address||'', locLabel.split(',')[0]?.trim()||'Florianópolis', 'BR',
-                  p.phone||'', '', p.website||'',
-                  p.lat?.toFixed(6)||'', p.lng?.toFixed(6)||'',
-                  p.phone?'65':'30',
-                  `Scout ${CAT_CONFIG[cat]?.emoji} ${CAT_CONFIG[cat]?.label} · ${fmtD(p.dist)}`,
-                  'scout_export'
+                  '',                                // id — vacío, lo genera Supabase
+                  p.name,                           // nombre
+                  cat,                              // categoria (slug real)
+                  p.address||'',                    // direccion
+                  ciudad,                           // ciudad
+                  'Brasil',                         // pais
+                  p.phone||'',                      // telefono
+                  '',                               // email
+                  p.website||'',                    // website
+                  p.tags?.rating||'',               // rating
+                  '0',                              // reviews_count
+                  p.lat?.toFixed(10)||'',           // latitud (10 decimales como el original)
+                  p.lng?.toFixed(10)||'',           // longitud
+                  'scout_export',                   // fuente
+                  'prospecto_pendiente',            // estado
+                  now,                              // fecha_prospectado
+                  `Scout ${CAT_CONFIG[cat]?.emoji||''} ${CAT_CONFIG[cat]?.label||cat} · ${fmtD(p.dist)}`, // notas_hugo
+                  p.phone ? '65' : '30',            // score_confianza
                 ]);
                 const csv = [hdr,...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
+                const blob = new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
                 const a = document.createElement('a');
-                a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
-                a.download = `scout_${cat}_${new Date().toISOString().split('T')[0]}.csv`;
+                a.href = URL.createObjectURL(blob);
+                a.download = `prospectos_scouts_${cat}_${new Date().toISOString().split('T')[0]}.csv`;
                 a.click();
               }}
               disabled={!results.length}>⬇ CSV</button>

@@ -695,10 +695,10 @@ function parseCSVRows(rawRows: Record<string,string>[]): Record<string,string>[]
   }).filter(r => r.nombre && r.nombre !== '***PRO***' && r.nombre.length > 1);
 }
 
-// Template CSV para descargar
-const TEMPLATE_CSV = `nombre,categoria,direccion,ciudad,pais,telefono,email,website,latitud,longitud,score_confianza,notas_hugo
-João Eletricista,electricista,"Rua das Flores 123, Centro",Florianópolis,BR,+55 48 99999-0001,joao@email.com,https://joao.com.br,-27.5954,-48.5480,70,Especialista em instalações residenciais
-Maria Limpeza,limpeza,"Av. Hercílio Luz 456, Centro",Florianópolis,BR,+55 48 99999-0002,,,−27.6000,-48.5500,65,
+// Template CSV — formato exacto prospectos_scouts (mismo que exporta Scout)
+const TEMPLATE_CSV = `id,nombre,categoria,direccion,ciudad,pais,telefono,email,website,rating,reviews_count,latitud,longitud,fuente,estado,fecha_prospectado,notas_hugo,score_confianza
+,João Eletricista,electricista,"Rua das Flores 123, Centro",Florianópolis,Brasil,+55 48 99999-0001,joao@email.com,https://joao.com.br,,0,-27.5954000000,-48.5480000000,csv_import,prospecto_pendiente,2026-06-21 00:00:00,Especialista em instalações residenciais,70
+,Maria Limpeza,limpeza,"Av. Hercílio Luz 456, Centro",Florianópolis,Brasil,+55 48 99999-0002,,,,,0,-27.6000000000,-48.5500000000,csv_import,prospecto_pendiente,2026-06-21 00:00:00,,65
 `;
 
 export function SecImportProviders() {
