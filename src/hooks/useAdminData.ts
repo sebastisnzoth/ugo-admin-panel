@@ -196,7 +196,7 @@ export function useUsuarios() {
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
     const { data } = await (supabase as any).from('usuarios')
-      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,pais,telefono,servicios_completados,fecha_registro,updated_at')
+      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,pais,telefono,servicios_completados,fecha_registro,updated_at,lat,lng,categoria,bio,endereco,tarifa_base,foto_url,georef,subcategoria_id,prospecto_id')
       .order('fecha_registro', { ascending: false }).limit(200);
     if (data) setUsers(data); setLoading(false);
   }, []);
@@ -214,10 +214,27 @@ export function useUsuarios() {
     await fetch(); return res.data;
   }, [fetch]);
   const updateUsuario = useCallback(async (id: string, data: any) => {
-    await (supabase as any).rpc('admin_update_usuario', {
-      p_id: id, p_nombre: data.nombre, p_apellido: data.apellido,
-      p_telefono: data.telefono, p_zona: data.zona, p_activo: data.activo,
-    }); await fetch();
+    const payload: Record<string,any> = {
+      nombre:      data.nombre     || null,
+      apellido:    data.apellido   || null,
+      telefono:    data.telefono   || null,
+      zona:        data.zona       || null,
+      pais:        data.pais       || 'BR',
+      activo:      data.activo,
+      karma:       data.karma      ? parseFloat(data.karma)    : undefined,
+      categoria:   data.categoria  || null,
+      endereco:    data.endereco   || null,
+      bio:         data.bio        || null,
+      tarifa_base: data.tarifa_base? parseFloat(data.tarifa_base) : undefined,
+      foto_url:    data.foto_url   || null,
+      georef:      data.georef     || null,
+      lat:         data.lat        ? parseFloat(data.lat) : null,
+      lng:         data.lng        ? parseFloat(data.lng) : null,
+    };
+    // Remove undefined keys
+    Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
+    await (supabase as any).from('usuarios').update(payload).eq('id', id);
+    await fetch();
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('usuarios', fetch); return u; }, [fetch]);
   return { users, loading, suspenderProveedor, reactivarProveedor, crearUsuario, updateUsuario, refetch: fetch };

@@ -344,7 +344,13 @@ export function AdminPanel() {
 
   // Forms
   const [catForm, setCatForm] = useState({ nombre:'', emoji:'🔧' });
-  const [userForm, setUserForm] = useState({ email:'', nombre:'', apellido:'', tipo:'cliente', telefono:'', zona:'', pais:'BR' });
+  const [userForm, setUserForm] = useState<Record<string,any>>({
+    email:'', nombre:'', apellido:'', tipo:'cliente', telefono:'',
+    zona:'', pais:'BR', endereco:'', lat:'', lng:'', georef:'',
+    categoria:'', bio:'', tarifa_base:'', karma:'5', activo:true, foto_url:''
+  });
+  const [geoSearching, setGeoSearching] = useState(false);
+  const [geoInput, setGeoInput] = useState('');
   const [servForm, setServForm] = useState({ cliente_id:'', proveedor_id:'', categoria_id:'', descripcion:'', zona:'', tarifa:'' });
   const [disputeRes, setDisputeRes] = useState('');
   const [disputeFavor, setDisputeFavor] = useState<'cliente'|'proveedor'>('cliente');
@@ -549,23 +555,25 @@ export function AdminPanel() {
 
   const renderUsuarios = () => (
     <div className="pad">
-      <div className="st">Usuarios<button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>{setUserForm({email:'',nombre:'',apellido:'',tipo:'cliente',telefono:'',zona:'',pais:'BR'});setModal({type:'user-form'});}}>+ Crear usuario</button></div>
+      <div className="st">Usuarios<button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>{setUserForm({email:'',nombre:'',apellido:'',tipo:'cliente',telefono:'',zona:'',pais:'BR',endereco:'',lat:'',lng:'',georef:'',categoria:'',bio:'',tarifa_base:'',karma:'5',activo:true,foto_url:''});setGeoInput('');setModal({type:'user-form'});}}>+ Crear usuario</button></div>
       <div className="tab-row">
         {(['perfiles','auth'] as const).map(t=><button key={t} className={`tab-btn${usrTab===t?' active':''}`} onClick={()=>setUsrTab(t)}>{t==='perfiles'?`Perfiles (${users.length})`:`Auth Users${authUsers.length?` (${authUsers.length})`:''}`}</button>)}
         {usrTab==='perfiles'&&<div style={{marginLeft:'auto',display:'flex',gap:3}}>{(['all','proveedor','cliente'] as const).map(f=><button key={f} className={`tab-btn${usrFilter===f?' active':''}`} onClick={()=>setUsrFilter(f)}>{f==='all'?'Todos':f}</button>)}</div>}
       </div>
       {usrTab==='perfiles'?(
         <div className="tw">
-          <div className="th"><div className="tc" style={{flex:2}}>Nombre</div><div className="tc" style={{flex:2}}>Email</div><div className="tc" style={{flex:1}}>Tipo</div><div className="tc" style={{flex:1}}>Karma</div><div className="tc" style={{flex:0.8}}>Estado</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
+          <div className="th"><div className="tc" style={{flex:2}}>Nombre</div><div className="tc" style={{flex:1.8}}>Email / Tel</div><div className="tc" style={{flex:0.9}}>Tipo</div><div className="tc" style={{flex:1.2}}>Categoría</div><div className="tc" style={{flex:1}}>Zona / Geo</div><div className="tc" style={{flex:0.7}}>Karma</div><div className="tc" style={{flex:0.7}}>Estado</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
           {filtUsers.map(u=>(
             <div key={u.id} className="tr">
               <div className="tc" style={{flex:2}}>{u.nombre} {u.apellido||''}{u.online&&<span style={{color:'var(--green)',marginLeft:4,fontSize:8}}>●</span>}</div>
-              <div className="tc" style={{flex:2,color:'var(--muted)'}}>{u.email}</div>
-              <div className="tc" style={{flex:1}}><span className={`pill pill-${u.tipo==='admin'?'c':u.tipo==='proveedor'?'a':'m'}`}>{u.tipo}</span></div>
-              <div className="tc" style={{flex:1,color:Number(u.karma)<4?'var(--red)':'var(--text)'}}>{u.karma}⭐</div>
-              <div className="tc" style={{flex:0.8}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?'activo':'inactivo'}</span></div>
+              <div className="tc" style={{flex:1.8}}><div style={{fontSize:10}}>{u.email}</div>{u.telefono&&<div style={{fontSize:9,color:'var(--muted)',marginTop:1}}>📱 {u.telefono}</div>}</div>
+              <div className="tc" style={{flex:0.9}}><span className={`pill pill-${u.tipo==='admin'?'c':u.tipo==='proveedor'?'a':'m'}`}>{u.tipo}</span></div>
+              <div className="tc" style={{flex:1.2}}><span style={{fontSize:10,color:'var(--muted)'}}>{u.categoria||'—'}</span></div>
+              <div className="tc" style={{flex:1}}><div style={{fontSize:10}}>{u.zona||'—'}</div><div style={{fontSize:9,color:u.lat?'var(--green)':'var(--muted)'}}>{u.lat?`🌍 ${Number(u.lat).toFixed(3)},${Number(u.lng).toFixed(3)}`:'Sin geo'}</div></div>
+              <div className="tc" style={{flex:0.7,color:Number(u.karma)<4?'var(--red)':'var(--text)'}}>{u.karma}⭐</div>
+              <div className="tc" style={{flex:0.7}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?'activo':'inactivo'}</span></div>
               <div className="tc" style={{flex:1.5,display:'flex',gap:3}}>
-                <button className="btn btn-s btn-sm" onClick={()=>{setUserForm({email:u.email,nombre:u.nombre,apellido:u.apellido||'',tipo:u.tipo,telefono:u.telefono||'',zona:u.zona||'',pais:u.pais||'BR'});setModal({type:'user-edit',data:u});}}>Editar</button>
+                <button className="btn btn-s btn-sm" onClick={()=>{setUserForm({email:u.email,nombre:u.nombre,apellido:u.apellido||'',tipo:u.tipo,telefono:u.telefono||'',zona:u.zona||'',pais:u.pais||'BR',endereco:u.endereco||'',lat:u.lat||'',lng:u.lng||'',georef:u.georef||'',categoria:u.categoria||'',bio:u.bio||'',tarifa_base:u.tarifa_base||'',karma:u.karma||'5',activo:u.activo,foto_url:u.foto_url||''});setGeoInput('');setModal({type:'user-edit',data:u});}}>Editar</button>
                 {u.tipo==='proveedor'&&<button className="btn btn-p btn-sm" onClick={()=>{setContactModal(u);setContactMsg({titulo:'',cuerpo:''});setContactSent(false);}}>📨</button>}
                 {u.tipo==='proveedor'&&u.activo&&<button className="btn btn-d btn-sm" onClick={()=>suspenderProveedor(u.id,'Suspensión manual')}>Susp.</button>}
                 {u.tipo==='proveedor'&&!u.activo&&<button className="btn btn-g btn-sm" onClick={()=>reactivarProveedor(u.id)}>Reactiv.</button>}
@@ -983,20 +991,84 @@ export function AdminPanel() {
       {/* MODAL: Usuario */}
       {(modal.type==='user-form'||modal.type==='user-edit')&&(
         <div className="modal-bd" onClick={e=>{if(e.target===e.currentTarget)closeModal();}}>
-          <div className="modal-box">
-            <div className="modal-title"><span>{modal.type==='user-form'?'Crear':'Editar'} usuario</span><button className="mclose" onClick={closeModal}>✕</button></div>
-            <div className="fgrid">
-              <div className="fg"><label>Nombre</label><input className="finput" value={userForm.nombre} onChange={e=>setUserForm(p=>({...p,nombre:e.target.value}))} placeholder="Nombre"/></div>
-              <div className="fg"><label>Apellido</label><input className="finput" value={userForm.apellido} onChange={e=>setUserForm(p=>({...p,apellido:e.target.value}))} placeholder="Apellido"/></div>
-              <div className="fg full"><label>Email</label><input className="finput" value={userForm.email} onChange={e=>setUserForm(p=>({...p,email:e.target.value}))} placeholder="email@ejemplo.com" disabled={modal.type==='user-edit'}/></div>
-              <div className="fg"><label>Tipo</label><select className="fselect" value={userForm.tipo} onChange={e=>setUserForm(p=>({...p,tipo:e.target.value}))} disabled={modal.type==='user-edit'}><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option></select></div>
-              <div className="fg"><label>Teléfono</label><input className="finput" value={userForm.telefono} onChange={e=>setUserForm(p=>({...p,telefono:e.target.value}))} placeholder="+55 48 9 9999-9999"/></div>
-              <div className="fg"><label>Zona</label><input className="finput" value={userForm.zona} onChange={e=>setUserForm(p=>({...p,zona:e.target.value}))} placeholder="Ej: Centro, Lagoa"/></div>
-              <div className="fg"><label>País</label><select className="fselect" value={userForm.pais} onChange={e=>setUserForm(p=>({...p,pais:e.target.value}))}><option value="BR">Brasil 🇧🇷</option><option value="AR">Argentina 🇦🇷</option><option value="CO">Colombia 🇨🇴</option><option value="MX">México 🇲🇽</option></select></div>
+          <div className="modal-box" style={{width:'min(720px,96vw)'}}>
+            <div className="modal-title">
+              <span>{modal.type==='user-form'?'Crear':'Editar'} usuario {modal.data&&<span style={{fontSize:12,color:'var(--muted)',fontWeight:400}}>— {modal.data.email}</span>}</span>
+              <button className="mclose" onClick={closeModal}>✕</button>
             </div>
+
+            {/* ── IDENTIDAD ── */}
+            <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.7px',color:'var(--muted)',marginBottom:8,paddingBottom:4,borderBottom:'1px solid var(--border)'}}>👤 Identidad</div>
+            <div className="fgrid" style={{marginBottom:14}}>
+              <div className="fg"><label>Nombre *</label><input className="finput" value={userForm.nombre} onChange={e=>setUserForm((p:any)=>({...p,nombre:e.target.value}))} placeholder="Nombre"/></div>
+              <div className="fg"><label>Apellido</label><input className="finput" value={userForm.apellido} onChange={e=>setUserForm((p:any)=>({...p,apellido:e.target.value}))} placeholder="Apellido"/></div>
+              <div className="fg full"><label>Email *</label><input className="finput" value={userForm.email} onChange={e=>setUserForm((p:any)=>({...p,email:e.target.value}))} placeholder="email@ejemplo.com" disabled={modal.type==='user-edit'} style={{opacity:modal.type==='user-edit'?0.6:1}}/></div>
+              <div className="fg"><label>Teléfono</label><input className="finput" value={userForm.telefono} onChange={e=>setUserForm((p:any)=>({...p,telefono:e.target.value}))} placeholder="+55 48 9 9999-9999"/></div>
+              <div className="fg"><label>Tipo</label><select className="fselect" value={userForm.tipo} onChange={e=>setUserForm((p:any)=>({...p,tipo:e.target.value}))} disabled={modal.type==='user-edit'} style={{opacity:modal.type==='user-edit'?0.6:1}}><option value="cliente">Cliente</option><option value="proveedor">Proveedor</option><option value="admin">Admin</option></select></div>
+              <div className="fg"><label>Foto URL</label><input className="finput" value={userForm.foto_url} onChange={e=>setUserForm((p:any)=>({...p,foto_url:e.target.value}))} placeholder="https://..."/></div>
+            </div>
+
+            {/* ── LOCALIZACIÓN ── */}
+            <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.7px',color:'var(--muted)',marginBottom:8,paddingBottom:4,borderBottom:'1px solid var(--border)'}}>📍 Localización</div>
+            <div style={{marginBottom:10}}>
+              <label style={{fontSize:11,fontWeight:600,display:'block',marginBottom:4}}>Buscar dirección</label>
+              <div style={{display:'flex',gap:7}}>
+                <input className="finput" value={geoInput} onChange={e=>setGeoInput(e.target.value)}
+                  onKeyDown={async e=>{if(e.key!=='Enter')return; if(!geoInput.trim())return; setGeoSearching(true);
+                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput+', Brasil')}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+                    const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
+                    else alert('No encontrado'); setGeoSearching(false);}}
+                  placeholder="Ej: Trindade, Florianópolis — Enter para buscar"/>
+                <button className="btn btn-s btn-sm" style={{whiteSpace:'nowrap'}} disabled={geoSearching||!geoInput.trim()}
+                  onClick={async()=>{if(!geoInput.trim())return; setGeoSearching(true);
+                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput+', Brasil')}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+                    const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
+                    else alert('No encontrado'); setGeoSearching(false);}}>
+                  {geoSearching?'⏳':'🔍'}
+                </button>
+              </div>
+            </div>
+            <div className="fgrid" style={{marginBottom:14}}>
+              <div className="fg"><label>Latitud</label><input className="finput" value={userForm.lat} onChange={e=>setUserForm((p:any)=>({...p,lat:e.target.value}))} placeholder="-27.5954" style={{fontFamily:'monospace',fontSize:11}}/></div>
+              <div className="fg"><label>Longitud</label><input className="finput" value={userForm.lng} onChange={e=>setUserForm((p:any)=>({...p,lng:e.target.value}))} placeholder="-48.5480" style={{fontFamily:'monospace',fontSize:11}}/></div>
+              <div className="fg"><label>Zona / Barrio</label><input className="finput" value={userForm.zona} onChange={e=>setUserForm((p:any)=>({...p,zona:e.target.value}))} placeholder="Ej: Centro, Trindade"/></div>
+              <div className="fg"><label>País</label><select className="fselect" value={userForm.pais} onChange={e=>setUserForm((p:any)=>({...p,pais:e.target.value}))}><option value="BR">Brasil 🇧🇷</option><option value="AR">Argentina 🇦🇷</option><option value="CO">Colombia 🇨🇴</option><option value="MX">México 🇲🇽</option><option value="PE">Perú 🇵🇪</option><option value="CL">Chile 🇨🇱</option></select></div>
+              <div className="fg full"><label>Dirección (endereco)</label><input className="finput" value={userForm.endereco} onChange={e=>setUserForm((p:any)=>({...p,endereco:e.target.value}))} placeholder="Rua das Flores, 123, Centro"/></div>
+              <div className="fg full"><label>Referencia de ubicación (georef)</label><input className="finput" value={userForm.georef} onChange={e=>setUserForm((p:any)=>({...p,georef:e.target.value}))} placeholder="Próximo al centro comercial"/></div>
+            </div>
+
+            {/* ── PERFIL PROFESIONAL (solo proveedores) ── */}
+            {(userForm.tipo==='proveedor'||modal.data?.tipo==='proveedor')&&(
+              <>
+                <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.7px',color:'var(--muted)',marginBottom:8,paddingBottom:4,borderBottom:'1px solid var(--border)'}}>🔧 Perfil profesional</div>
+                <div className="fgrid" style={{marginBottom:14}}>
+                  <div className="fg"><label>Categoría</label>
+                    <select className="fselect" value={userForm.categoria} onChange={e=>setUserForm((p:any)=>({...p,categoria:e.target.value}))}>
+                      <option value="">— Seleccionar —</option>
+                      {categorias.map((c:any)=><option key={c.id} value={c.slug}>{c.emoji} {c.nombre}</option>)}
+                    </select>
+                  </div>
+                  <div className="fg"><label>Tarifa base (R$)</label><input className="finput" type="number" value={userForm.tarifa_base} onChange={e=>setUserForm((p:any)=>({...p,tarifa_base:e.target.value}))} placeholder="80"/></div>
+                  <div className="fg"><label>Karma / Rating</label><input className="finput" type="number" step="0.1" min="0" max="5" value={userForm.karma} onChange={e=>setUserForm((p:any)=>({...p,karma:e.target.value}))} placeholder="5.0"/></div>
+                  <div className="fg"><label>Estado</label>
+                    <select className="fselect" value={userForm.activo?'1':'0'} onChange={e=>setUserForm((p:any)=>({...p,activo:e.target.value==='1'}))}>
+                      <option value="1">✅ Activo</option>
+                      <option value="0">❌ Inactivo</option>
+                    </select>
+                  </div>
+                  <div className="fg full"><label>Bio / Descripción</label><textarea className="finput" rows={2} value={userForm.bio} onChange={e=>setUserForm((p:any)=>({...p,bio:e.target.value}))} placeholder="Especialista en instalações elétricas residenciais..." style={{resize:'vertical'}}/></div>
+                </div>
+              </>
+            )}
+
             <div className="modal-acts">
-              <button className="btn btn-p" disabled={!userForm.nombre.trim()||!userForm.email.trim()} onClick={async()=>{if(modal.type==='user-form')await crearUsuario(userForm);else await updateUsuario(modal.data.id,{...userForm,activo:modal.data.activo});closeModal();}}>
-                {modal.type==='user-form'?'Crear usuario':'Guardar cambios'}
+              <button className="btn btn-p" disabled={!userForm.nombre.trim()||!userForm.email.trim()}
+                onClick={async()=>{
+                  if(modal.type==='user-form') await crearUsuario(userForm);
+                  else await updateUsuario(modal.data.id, userForm);
+                  closeModal();
+                }}>
+                {modal.type==='user-form'?'Crear usuario':'💾 Guardar cambios'}
               </button>
               <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
