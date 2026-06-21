@@ -617,66 +617,80 @@ export function SecAvanzado() {
 
 
 /* ─────────────────────────────────────────────
-   SecImportProviders — CSV + Excel (Bing format)
+   SecImportProviders — CSV/Excel + inserción Supabase directa
+   Formato: prospectos_scouts o genérico con auto-mapeo
 ───────────────────────────────────────────── */
 import * as XLSX from 'xlsx';
 
 const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_IMP_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
-// Map Bing/generic column names → U.GO fields
-const CAT_MAP: Record<string,string> = {
-  'pintura':'Pintor','pinturas':'Pintor','pintor':'Pintor',
-  'limpeza':'Limpieza','faxina':'Limpieza','cleaning':'Limpieza','limpieza':'Limpieza',
-  'eletricista':'Electricista','electricista':'Electricista','electrical':'Electricista','elétrica':'Electricista',
-  'encanamento':'Plomero','plomero':'Plomero','plomería':'Plomero','hidráulica':'Plomero',
-  'marcenaria':'Carpintero','carpinteiro':'Carpintero','carpintero':'Carpintero',
-  'serralheiro':'Cerrajero','cerrajero':'Cerrajero','fechadura':'Cerrajero',
-  'jardinagem':'Jardinero','jardinero':'Jardinero','garden':'Jardinero',
-  'ar condicionado':'AC/Clima','refrigeração':'AC/Clima','hvac':'AC/Clima',
-};
+// Categorías válidas
+const CATS_VALID = ['electricista','plomero','limpeza','pintura','carpintaria','jardinagem','climatizacao','ti_redes','reformas','chaveiro'];
 
-function mapCategory(raw: string): string {
-  const key = (raw||'').toLowerCase().trim();
-  for (const [k,v] of Object.entries(CAT_MAP)) {
-    if (key.includes(k)) return v;
-  }
-  return raw || 'Geral';
+function normalizeCategory(raw: string): string {
+  const k = (raw||'').toLowerCase().trim();
+  if (CATS_VALID.includes(k)) return k;
+  const map: Record<string,string> = {
+    'limpeza':'limpeza','limpieza':'limpeza','cleaning':'limpeza','faxina':'limpeza',
+    'eletricista':'electricista','electrician':'electricista','elétrica':'electricista',
+    'encanador':'plomero','hidráulica':'plomero','plumbing':'plomero',
+    'pintor':'pintura','painter':'pintura','pintura':'pintura',
+    'carpinteiro':'carpintaria','marcenaria':'carpintaria','carpenter':'carpintaria',
+    'chaveiro':'chaveiro','locksmith':'chaveiro',
+    'jardineiro':'jardinagem','gardener':'jardinagem','garden':'jardinagem',
+    'ar condicionado':'climatizacao','hvac':'climatizacao','climatização':'climatizacao',
+    'informática':'ti_redes','computer':'ti_redes','assistência técnica':'ti_redes',
+    'reforma':'reformas','pedreiro':'reformas','construção':'reformas',
+  };
+  for (const [k2,v] of Object.entries(map)) { if (k.includes(k2)) return v; }
+  return raw || 'reformas';
 }
 
-function parseRows(rawRows: Record<string,string>[]): Record<string,string>[] {
+function parseCSVRows(rawRows: Record<string,string>[]): Record<string,string>[] {
   return rawRows.map(r => {
-    // Normalize keys
     const n: Record<string,string> = {};
     for (const [k,v] of Object.entries(r)) n[k.toLowerCase().trim()] = String(v||'').trim();
-    
-    // Map Bing columns or generic columns
-    const nome     = n['name']    || n['nome']    || n['nombre']   || '';
-    const addr     = n['address'] || n['endereco']|| n['direccion']|| n['address'] || '';
-    const lat      = n['latitude']|| n['lat']     || '';
-    const lng      = n['longitude']||n['lng']     || n['lon']      || '';
-    const cat      = mapCategory(n['category']||n['categoria']||n['servico']||n['servico']||'');
-    const tel      = n['phone']   || n['telefone']|| n['telefono'] || '';
-    const site     = n['website'] || n['site']    || '';
-    const rating   = n['rating']  || n['karma']   || '';
-    
-    // Clean phone: remove (48), spaces, etc.
-    const telClean = tel.replace(/[()\s-]/g,'').replace(/\*\*\*PRO\*\*\*/,'');
-    
-    return { nome, endereco:addr, lat, lng, categoria:cat, telefone:telClean, website:site, karma:rating, pais:'BR' };
-  }).filter(r => r.nome && r.nome !== '***PRO***');
+
+    // Detectar si es formato prospectos_scouts (nuestro formato nativo)
+    const isNativo = 'nombre' in n || 'latitud' in n;
+
+    const nombre   = n['nombre']   || n['name']     || n['nome']     || '';
+    const cat      = normalizeCategory(n['categoria'] || n['category'] || n['servico'] || '');
+    const direccion= n['direccion']|| n['address']   || n['endereco'] || n['direccion'] || '';
+    const ciudad   = n['ciudad']   || n['city']      || n['municipio']|| 'Florianópolis';
+    const pais     = n['pais']     || n['country']   || 'BR';
+    const telefono = (n['telefono']|| n['phone']     || n['tel']      || '').replace(/[()\s-]/g,'').replace(/\*\*\*PRO\*\*\*/,'');
+    const email    = n['email']    || '';
+    const website  = n['website']  || n['site']      || n['url']      || '';
+    const latitud  = n['latitud']  || n['latitude']  || n['lat']      || '';
+    const longitud = n['longitud'] || n['longitude'] || n['lng']      || n['lon'] || '';
+    const score    = n['score_confianza'] || n['rating'] || '50';
+    const notas    = n['notas_hugo'] || n['notas'] || 'Importado via CSV';
+    const fuente   = n['fuente']   || 'csv_import';
+
+    return { nombre, categoria:cat, direccion, ciudad, pais, telefono, email, website,
+      latitud, longitud, score_confianza:score, notas_hugo:notas, fuente, estado:'prospecto_pendiente' };
+  }).filter(r => r.nombre && r.nombre !== '***PRO***' && r.nombre.length > 1);
 }
+
+// Template CSV para descargar
+const TEMPLATE_CSV = `nombre,categoria,direccion,ciudad,pais,telefono,email,website,latitud,longitud,score_confianza,notas_hugo
+João Eletricista,electricista,"Rua das Flores 123, Centro",Florianópolis,BR,+55 48 99999-0001,joao@email.com,https://joao.com.br,-27.5954,-48.5480,70,Especialista em instalações residenciais
+Maria Limpeza,limpeza,"Av. Hercílio Luz 456, Centro",Florianópolis,BR,+55 48 99999-0002,,,−27.6000,-48.5500,65,
+`;
 
 export function SecImportProviders() {
   const [rows, setRows]       = React.useState<Record<string,string>[]>([]);
-  const [raw,  setRaw]        = React.useState<Record<string,string>[]>([]);
   const [status, setStatus]   = React.useState<string>('');
   const [loading, setLoading] = React.useState(false);
-  const [result, setResult]   = React.useState<any>(null);
+  const [result, setResult]   = React.useState<{ok:number;dup:number;err:number;errList:string[]}|null>(null);
   const [dragging, setDragging] = React.useState(false);
+  const [destino, setDestino] = React.useState<'prospectos'|'usuarios'>('prospectos');
+  const [selected, setSelected] = React.useState<Set<number>>(new Set());
 
   const processFile = (file: File) => {
-    setResult(null); setRows([]); setRaw([]);
+    setResult(null); setRows([]); setSelected(new Set());
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -684,123 +698,203 @@ export function SecImportProviders() {
         const wb   = XLSX.read(data, { type: 'array' });
         const ws   = wb.Sheets[wb.SheetNames[0]];
         const json = XLSX.utils.sheet_to_json<Record<string,string>>(ws, { defval: '' });
-        if (!json.length) { setStatus('❌ Archivo vacío o sin datos'); return; }
-        const mapped = parseRows(json);
-        setRaw(json);
+        if (!json.length) { setStatus('❌ Archivo vacío'); return; }
+        const mapped = parseCSVRows(json);
         setRows(mapped);
-        setStatus(`✅ ${json.length} filas cargadas → ${mapped.length} proveedores válidos mapeados`);
-      } catch(err: any) {
-        setStatus('❌ Error al leer archivo: ' + err.message);
-      }
+        setSelected(new Set(mapped.map((_,i) => i))); // seleccionar todos
+        setStatus(`✅ ${json.length} filas leídas → ${mapped.length} proveedores válidos mapeados`);
+      } catch(err: any) { setStatus('❌ Error: ' + err.message); }
     };
     reader.readAsArrayBuffer(file);
   };
 
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault(); setDragging(false);
-    const file = e.dataTransfer.files[0]; if(file) processFile(file);
+  const toggleAll = () => {
+    if (selected.size === rows.length) setSelected(new Set());
+    else setSelected(new Set(rows.map((_,i) => i)));
   };
-  const onFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]; if(file) processFile(file);
+  const toggleRow = (i: number) => {
+    const s = new Set(selected);
+    s.has(i) ? s.delete(i) : s.add(i);
+    setSelected(s);
   };
 
   const doImport = async () => {
-    if (!rows.length) return;
+    const toImport = rows.filter((_,i) => selected.has(i));
+    if (!toImport.length) { setStatus('❌ Seleccioná al menos una fila'); return; }
     setLoading(true); setResult(null);
-    try {
-      const payload = rows.map(r => ({
-        nombre: r.nome, endereco: r.endereco,
-        lat: parseFloat(r.lat)||null, lng: parseFloat(r.lng)||null,
-        categoria: r.categoria, telefono: r.telefone,
-        bio: r.website ? `Website: ${r.website}` : null,
-        karma: parseFloat(r.karma)||5.0,
-        tipo:'proveedor', pais:r.pais||'BR', activo:true
-      }));
-      const r = await fetch(`${SB_IMP_URL}/functions/v1/import-providers`, {
-        method:'POST',
-        headers:{'Content-Type':'application/json','Authorization':`Bearer ${SB_IMP_KEY}`},
-        body: JSON.stringify({ proveedores: payload })
-      });
-      const d = await r.json();
-      setResult(d);
-      setStatus(`✅ Importados: ${d.ok} exitosos · ${d.err} con error de ${rows.length} total`);
-    } catch(e: any) {
-      setStatus('❌ Error: ' + e.message);
-    } finally { setLoading(false); }
+
+    const table = destino === 'prospectos' ? 'prospectos_scouts' : 'usuarios';
+    let ok = 0, dup = 0, err = 0;
+    const errList: string[] = [];
+
+    // Insertar en lotes de 20
+    const chunks = [];
+    for (let i = 0; i < toImport.length; i += 20) chunks.push(toImport.slice(i, i+20));
+
+    for (const chunk of chunks) {
+      try {
+        const payload = destino === 'prospectos'
+          ? chunk.map(r => ({
+              nombre: r.nombre, categoria: r.categoria, direccion: r.direccion || null,
+              ciudad: r.ciudad, pais: r.pais,
+              telefono: r.telefono || null, email: r.email || null, website: r.website || null,
+              latitud: r.latitud ? parseFloat(r.latitud) : null,
+              longitud: r.longitud ? parseFloat(r.longitud) : null,
+              fuente: r.fuente || 'csv_import', estado: 'prospecto_pendiente',
+              score_confianza: parseInt(r.score_confianza)||50,
+              notas_hugo: r.notas_hugo || 'Importado via CSV',
+            }))
+          : chunk.map(r => ({
+              nombre: r.nombre, categoria: r.categoria,
+              telefono: r.telefono || null, email: r.email || null,
+              lat: r.latitud ? parseFloat(r.latitud) : null,
+              lng: r.longitud ? parseFloat(r.longitud) : null,
+              zona: r.ciudad, pais: r.pais, tipo: 'proveedor', activo: false, karma: 5.0,
+            }));
+
+        const res = await fetch(`${SB_IMP_URL}/rest/v1/${table}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json', 'apikey': SB_IMP_KEY,
+            'Authorization': `Bearer ${SB_IMP_KEY}`,
+            'Prefer': 'return=minimal,resolution=ignore-duplicates',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok || res.status === 201) ok += chunk.length;
+        else if (res.status === 409) { dup += chunk.length; }
+        else {
+          const d = await res.json().catch(()=>({}));
+          err += chunk.length;
+          errList.push(`Lote ${chunks.indexOf(chunk)+1}: ${d.message||res.status}`);
+        }
+      } catch(e: any) {
+        err += chunk.length;
+        errList.push(e.message);
+      }
+    }
+
+    // Log en import_logs
+    await fetch(`${SB_IMP_URL}/rest/v1/import_logs`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SB_IMP_KEY, 'Authorization': `Bearer ${SB_IMP_KEY}` },
+      body: JSON.stringify({ tipo:`${destino}_csv`, total_filas:toImport.length, insertados:ok, duplicados:dup, errores:err, detalles:{errList} }),
+    }).catch(()=>{});
+
+    setResult({ ok, dup, err, errList });
+    setStatus(`✅ ${ok} importados · ${dup} duplicados · ${err} errores`);
+    setLoading(false);
   };
 
-  const preview = rows.slice(0, 8);
+  const downloadTemplate = () => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([TEMPLATE_CSV], {type:'text/csv'}));
+    a.download = 'template_provedores_ugo.csv';
+    a.click();
+  };
+
+  const preview = rows.slice(0, 6);
 
   return (
     <div className="pad" style={{overflowY:'auto',height:'calc(100% - 40px)'}}>
-      <div className="st">📥 Importar Proveedores (Excel / CSV)</div>
+      <div className="st">📥 Importar Proveedores</div>
       <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'14px',lineHeight:1.6}}>
-        Soporta el formato de exportación de Bing Maps y cualquier Excel/CSV con columnas de nombre, dirección, lat/lng, categoría y teléfono.
+        Soporta CSV y Excel. Detecta automáticamente el formato. Compatible con el formato de exportación del Scout Radar.
       </p>
+
+      <div style={{display:'flex',gap:'10px',marginBottom:'14px',flexWrap:'wrap',alignItems:'center'}}>
+        <button onClick={downloadTemplate} style={{padding:'7px 14px',background:'rgba(0,0,0,.06)',border:'1px solid #ddd',borderRadius:'8px',fontSize:'11px',cursor:'pointer',fontFamily:'inherit'}}>
+          ⬇ Descargar template CSV
+        </button>
+        <div style={{display:'flex',gap:'6px',alignItems:'center'}}>
+          <span style={{fontSize:'11px',color:'#666'}}>Destino:</span>
+          {(['prospectos','usuarios'] as const).map(d => (
+            <button key={d} onClick={()=>setDestino(d)}
+              style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#05944F':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(5,148,79,.08)':'#fff',color:destino===d?'#05944F':'#666',fontFamily:'inherit'}}>
+              {d==='prospectos'?'📋 Prospectos (scout)':'👤 Usuarios directos'}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Drop Zone */}
       <div
         onDragOver={e=>{e.preventDefault();setDragging(true);}}
         onDragLeave={()=>setDragging(false)}
-        onDrop={onDrop}
-        onClick={()=>document.getElementById('xlsxfile')?.click()}
+        onDrop={e=>{e.preventDefault();setDragging(false);const f=e.dataTransfer.files[0];if(f)processFile(f);}}
+        onClick={()=>document.getElementById('imp-file')?.click()}
         style={{border:`2.5px dashed ${dragging?'#05944F':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(5,148,79,.04)':'#fafafa',transition:'all .2s'}}>
         <div style={{fontSize:'36px',marginBottom:'8px'}}>{dragging?'🎯':'📊'}</div>
         <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo Excel o CSV aquí</div>
-        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.xlsx · .xls · .csv — clic para seleccionar</div>
-        <input id="xlsxfile" type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={onFile}/>
+        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.xlsx · .xls · .csv — o clic para seleccionar</div>
+        <input id="imp-file" type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)processFile(f);}}/>
       </div>
 
-      {/* Status */}
       {status && (
         <div style={{padding:'10px 14px',background:status.startsWith('❌')?'#fef2f2':'#f0fdf4',borderRadius:'10px',fontSize:'13px',marginBottom:'14px',color:status.startsWith('❌')?'#dc2626':'#166534',lineHeight:1.5}}>
           {status}
         </div>
       )}
 
-      {/* Result details */}
-      {result?.errores?.length > 0 && (
-        <div style={{background:'#fef2f2',borderRadius:'10px',padding:'10px 14px',marginBottom:'14px',fontSize:'11px',color:'#dc2626'}}>
-          <strong>Errores ({result.errores.length}):</strong>
-          {result.errores.map((e: string, i: number) => <div key={i}>• {e}</div>)}
+      {result && (
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',marginBottom:'14px'}}>
+          {[['Importados',result.ok,'#05944F'],['Duplicados',result.dup,'#996000'],['Errores',result.err,'#dc2626']].map(([l,v,c])=>(
+            <div key={String(l)} style={{background:'#f9f9f9',border:'1px solid #e5e5e5',borderRadius:'10px',padding:'10px',textAlign:'center'}}>
+              <div style={{fontSize:'22px',fontWeight:800,color:String(c)}}>{v}</div>
+              <div style={{fontSize:'10px',color:'#666'}}>{l}</div>
+            </div>
+          ))}
         </div>
       )}
 
-      {/* Column mapping preview */}
-      {preview.length > 0 && (
+      {rows.length > 0 && (
         <>
-          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
-            <div style={{fontWeight:700,fontSize:'13px'}}>{rows.length} proveedores listos para importar</div>
-            <div style={{fontSize:'11px',color:'#888'}}>Vista previa: {Math.min(8,rows.length)} de {rows.length}</div>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px',gap:'10px',flexWrap:'wrap'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+              <input type="checkbox" checked={selected.size===rows.length} onChange={toggleAll} style={{width:'15px',height:'15px',cursor:'pointer'}}/>
+              <div style={{fontWeight:700,fontSize:'13px'}}>{rows.length} proveedores — {selected.size} seleccionados</div>
+            </div>
+            <div style={{fontSize:'11px',color:'#888'}}>Vista previa de 6</div>
           </div>
-          <div style={{overflowX:'auto',marginBottom:'16px',borderRadius:'12px',border:'1px solid #e5e5e5'}}>
-            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px',minWidth:'600px'}}>
+
+          <div style={{overflowX:'auto',marginBottom:'14px',borderRadius:'12px',border:'1px solid #e5e5e5'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'11px',minWidth:'700px'}}>
               <thead>
                 <tr style={{background:'#f5f5f5'}}>
-                  {['Nombre','Categoría','Teléfono','Dirección','Lat','Lng'].map(h=>(
+                  <th style={{padding:'8px 10px',width:'30px'}}></th>
+                  {['Nombre','Categoría','Teléfono','Ciudad','Lat','Lng','Score'].map(h=>(
                     <th key={h} style={{padding:'8px 10px',textAlign:'left',fontWeight:700,borderBottom:'1px solid #e5e5e5',whiteSpace:'nowrap',color:'#555'}}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {preview.map((row,i) => (
-                  <tr key={i} style={{borderBottom:'1px solid #f5f5f5',background:i%2===0?'#fff':'#fafafa'}}>
-                    <td style={{padding:'7px 10px',fontWeight:600,maxWidth:'140px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row.nome}</td>
+                  <tr key={i} onClick={()=>toggleRow(i)} style={{borderBottom:'1px solid #f5f5f5',background:selected.has(i)?'rgba(5,148,79,.04)':i%2===0?'#fff':'#fafafa',cursor:'pointer'}}>
+                    <td style={{padding:'7px 10px',textAlign:'center'}}>
+                      <input type="checkbox" checked={selected.has(i)} onChange={()=>toggleRow(i)} onClick={e=>e.stopPropagation()} style={{width:'14px',height:'14px'}}/>
+                    </td>
+                    <td style={{padding:'7px 10px',fontWeight:600,maxWidth:'130px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{row.nombre}</td>
                     <td style={{padding:'7px 10px'}}><span style={{background:'rgba(0,200,215,.1)',color:'#0080AA',borderRadius:'20px',padding:'2px 8px',fontSize:'10px',fontWeight:700}}>{row.categoria}</span></td>
-                    <td style={{padding:'7px 10px'}}>{row.telefone}</td>
-                    <td style={{padding:'7px 10px',maxWidth:'200px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:'#666'}}>{row.endereco}</td>
-                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace'}}>{parseFloat(row.lat||'0').toFixed(4)}</td>
-                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace'}}>{parseFloat(row.lng||'0').toFixed(4)}</td>
+                    <td style={{padding:'7px 10px'}}>{row.telefono||<span style={{color:'#ccc'}}>—</span>}</td>
+                    <td style={{padding:'7px 10px',color:'#666'}}>{row.ciudad}</td>
+                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace',fontSize:'10px'}}>{parseFloat(row.latitud||'0').toFixed(4)}</td>
+                    <td style={{padding:'7px 10px',color:'#888',fontFamily:'monospace',fontSize:'10px'}}>{parseFloat(row.longitud||'0').toFixed(4)}</td>
+                    <td style={{padding:'7px 10px',textAlign:'center'}}>
+                      <span style={{background:`rgba(${parseInt(row.score_confianza||'50')>60?'5,148,79':'153,96,0'},.1)`,color:parseInt(row.score_confianza||'50')>60?'#05944F':'#996000',borderRadius:'20px',padding:'2px 8px',fontSize:'10px',fontWeight:700}}>
+                        {row.score_confianza||'50'}
+                      </span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-            {rows.length > 8 && <div style={{padding:'8px 10px',fontSize:'11px',color:'#888'}}>... y {rows.length-8} proveedores más</div>}
+            {rows.length > 6 && <div style={{padding:'8px 10px',fontSize:'11px',color:'#888',textAlign:'center'}}>... y {rows.length-6} más</div>}
           </div>
 
-          <button onClick={doImport} disabled={loading}
-            style={{width:'100%',padding:'14px',background:loading?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading?'not-allowed':'pointer',fontFamily:'inherit',transition:'background .2s'}}>
-            {loading ? '⏳ Importando...' : `📥 Importar ${rows.length} proveedores a U.GO`}
+          <button onClick={doImport} disabled={loading||selected.size===0}
+            style={{width:'100%',padding:'14px',background:loading||selected.size===0?'#ccc':'#111',color:'#fff',fontWeight:800,fontSize:'14px',border:'none',borderRadius:'13px',cursor:loading||selected.size===0?'not-allowed':'pointer',fontFamily:'inherit',transition:'background .2s'}}>
+            {loading ? '⏳ Importando...' : `📥 Importar ${selected.size} proveedores a U.GO → ${destino==='prospectos'?'Prospectos':'Usuarios'}`}
           </button>
         </>
       )}
