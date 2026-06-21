@@ -395,7 +395,7 @@ export function SecScout() {
                   p.phone||'',                      // telefono
                   '',                               // email
                   p.website||'',                    // website
-                  p.tags?.rating||'',               // rating
+                  '',               // rating
                   '0',                              // reviews_count
                   p.lat?.toFixed(10)||'',           // latitud (10 decimales como el original)
                   p.lng?.toFixed(10)||'',           // longitud
