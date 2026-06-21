@@ -707,7 +707,7 @@ export function SecImportProviders() {
   const [loading, setLoading] = React.useState(false);
   const [result, setResult]   = React.useState<{ok:number;dup:number;err:number;errList:string[]}|null>(null);
   const [dragging, setDragging] = React.useState(false);
-  const [destino, setDestino] = React.useState<'prospectos'|'usuarios'>('prospectos');
+  const [destino, setDestino] = React.useState<'prospectos'|'usuarios'>('usuarios');
   const [selected, setSelected] = React.useState<Set<number>>(new Set());
 
   const processFile = (file: File) => {
@@ -892,7 +892,7 @@ export function SecImportProviders() {
           {(['prospectos','usuarios'] as const).map(d => (
             <button key={d} onClick={()=>setDestino(d)}
               style={{padding:'5px 12px',border:'1.5px solid',borderColor:destino===d?'#05944F':'#ddd',borderRadius:'20px',fontSize:'10px',fontWeight:700,cursor:'pointer',background:destino===d?'rgba(5,148,79,.08)':'#fff',color:destino===d?'#05944F':'#666',fontFamily:'inherit'}}>
-              {d==='prospectos'?'📋 Prospectos (scout)':'👤 Usuarios directos'}
+              {d==='prospectos'?'📋 Solo prospectos':'👤 Proveedores (recomendado)'}
             </button>
           ))}
         </div>
