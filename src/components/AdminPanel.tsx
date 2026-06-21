@@ -393,11 +393,18 @@ export function AdminPanel() {
     return () => clearInterval(t);
   }, []);
 
-  // Leaflet
+  // Leaflet + TomTom Services SDK
   useEffect(() => {
     if ((window as any).L) { setLeafletReady(true); return; }
     const link = document.createElement('link'); link.rel='stylesheet'; link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(link);
     const script = document.createElement('script'); script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'; script.onload=()=>setLeafletReady(true); document.body.appendChild(script);
+    // TomTom Services SDK para POI search en Scout
+    if (!(window as any).tt) {
+      const ttScript = document.createElement('script');
+      ttScript.src = 'https://api.tomtom.com/maps-sdk-for-web/cdn/6.x/6.25.1/services/services-web.min.js';
+      ttScript.async = true;
+      document.head.appendChild(ttScript);
+    }
   }, []);
   useEffect(() => { if (!leafletReady || !mapDivRef.current || mapRef.current) return; const L=(window as any).L; mapRef.current=L.map(mapDivRef.current,{center:[-27.5954,-48.5480],zoom:13,zoomControl:false}); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors',maxZoom:19}).addTo(mapRef.current); L.control.zoom({position:'bottomright'}).addTo(mapRef.current); }, [leafletReady]);
   useEffect(() => { if (section==='mapa' && mapRef.current) setTimeout(()=>mapRef.current?.invalidateSize(), 60); }, [section]);

@@ -186,50 +186,72 @@ export function SecScout() {
       let provs: Provider[] = [];
       let sourceLabel = '';
 
-      // ── TomTom Search API directo desde browser (soporta CORS) ──
-      if (fsqKey) {
+      // ── TomTom Maps SDK (tt.services) — evita CORS y auth issues ──
+      if (fsqKey && typeof (window as any).tt !== 'undefined') {
         setLoadingMsg(`${cfg.emoji} Buscando en TomTom...`);
         try {
+          const tt = (window as any).tt;
           const ttQueries = FSQ_SEARCH_QUERIES[cat] || [cat];
           const seen = new Set<string>();
 
           for (const q of ttQueries.slice(0, 2)) {
-            const url = new URL(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json`);
-            url.searchParams.set('key', fsqKey);
-            url.searchParams.set('lat', String(lat));
-            url.searchParams.set('lon', String(lng));
-            url.searchParams.set('radius', radius);
-            url.searchParams.set('limit', '30');
-            url.searchParams.set('language', 'pt-BR');
-            url.searchParams.set('idxSet', 'POI');
-            url.searchParams.set('countrySet', 'BR,AR,CL,CO,MX,PE,UY,PY,BO,EC,VE');
-
-            const r = await fetch(url.toString(), { signal: AbortSignal.timeout(15000) });
-            if (!r.ok) { console.warn('[TomTom]', r.status, await r.text()); continue; }
-
-            const d = await r.json();
-            const items = d.results || [];
-            for (const p of items) {
-              if (!p.position || seen.has(p.id)) continue;
-              seen.add(p.id);
-              const dist = p.dist || haversine(lat, lng, p.position.lat, p.position.lon);
-              const phone = p.poi?.phone || p.poi?.phones?.[0] || undefined;
-              provs.push({
-                id: String(p.id),
-                name: p.poi?.name || p.address?.freeformAddress || q,
-                phone,
-                address: p.address?.freeformAddress || p.address?.municipality || undefined,
-                lat: p.position.lat, lng: p.position.lon, dist,
-                tags: {
-                  website: p.poi?.url || undefined,
-                  rating: null,
-                  source: 'tomtom',
-                },
+            try {
+              const res = await tt.services.fuzzySearch({
+                key: fsqKey,
+                query: q,
+                center: { lat, lng },
+                radius: parseInt(radius),
+                limit: 30,
+                language: 'pt-BR',
+                idxSet: 'POI',
               });
-            }
+              const items = res?.results || [];
+              for (const p of items) {
+                const pid = p.id || String(p.position?.lat)+String(p.position?.lng);
+                if (!p.position || seen.has(pid)) continue;
+                seen.add(pid);
+                const dist = p.dist ?? haversine(lat, lng, p.position.lat, p.position.lng);
+                provs.push({
+                  id: pid,
+                  name: p.poi?.name || p.address?.freeformAddress || q,
+                  phone: p.poi?.phone || undefined,
+                  address: p.address?.freeformAddress || p.address?.municipality || undefined,
+                  lat: p.position.lat, lng: p.position.lng, dist,
+                  tags: { website: p.poi?.url || undefined, rating: null, source: 'tomtom' },
+                });
+              }
+            } catch(qe: any) { console.warn('[TT SDK]', q, qe.message); }
           }
           if (provs.length) sourceLabel = `🗺 TomTom — ${provs.length} encontrados`;
-        } catch(e: any) { console.warn('[TomTom browser]', e.message); }
+        } catch(e: any) { console.warn('[TomTom SDK]', e.message); }
+      } else if (fsqKey && typeof (window as any).tt === 'undefined') {
+        // SDK no cargado todavía — fallback directo REST
+        setLoadingMsg(`${cfg.emoji} Buscando en TomTom...`);
+        try {
+          const ttQueries = FSQ_SEARCH_QUERIES[cat] || [cat];
+          const seen = new Set<string>();
+          for (const q of ttQueries.slice(0, 2)) {
+            const url = `https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json?key=${fsqKey}&lat=${lat}&lon=${lng}&radius=${radius}&limit=30&language=pt-BR&idxSet=POI`;
+            try {
+              const r = await fetch(url, { signal: AbortSignal.timeout(12000) });
+              if (!r.ok) { console.warn('[TT REST]', r.status); continue; }
+              const d = await r.json();
+              for (const p of (d.results||[])) {
+                if (!p.position || seen.has(String(p.id))) continue;
+                seen.add(String(p.id));
+                const dist = p.dist ?? haversine(lat, lng, p.position.lat, p.position.lon);
+                provs.push({
+                  id: String(p.id), name: p.poi?.name || p.address?.freeformAddress || q,
+                  phone: p.poi?.phone || undefined,
+                  address: p.address?.freeformAddress || undefined,
+                  lat: p.position.lat, lng: p.position.lon, dist,
+                  tags: { website: p.poi?.url || undefined, rating: null, source: 'tomtom' },
+                });
+              }
+            } catch {}
+          }
+          if (provs.length) sourceLabel = `🗺 TomTom — ${provs.length} encontrados`;
+        } catch(e: any) { console.warn('[TomTom REST]', e.message); }
       }
 
       // ── Fallback OSM si Foursquare da 0 ──────────────────────────
