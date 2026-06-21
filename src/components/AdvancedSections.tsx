@@ -807,7 +807,7 @@ export function SecImportProviders() {
           const rpcRes = await fetch(`${SB_IMP_URL}/rest/v1/rpc/import_proveedores_csv`, {
             method: 'POST',
             headers: { 'Content-Type':'application/json','apikey':SB_IMP_KEY,'Authorization':`Bearer ${SB_IMP_KEY}` },
-            body: JSON.stringify({ p_rows: JSON.stringify(chunk) }),
+            body: JSON.stringify({ p_rows: chunk }),
           });
           const rpcD = await rpcRes.json();
           if (rpcRes.ok && rpcD.ok) {
