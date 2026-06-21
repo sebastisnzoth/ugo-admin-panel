@@ -1033,13 +1033,13 @@ export function AdminPanel() {
               <div style={{display:'flex',gap:7}}>
                 <input className="finput" value={geoInput} onChange={e=>setGeoInput(e.target.value)}
                   onKeyDown={async e=>{if(e.key!=='Enter')return; if(!geoInput.trim())return; setGeoSearching(true);
-                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput+', Brasil')}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
                     else alert('No encontrado'); setGeoSearching(false);}}
                   placeholder="Ej: Trindade, Florianópolis — Enter para buscar"/>
                 <button className="btn btn-s btn-sm" style={{whiteSpace:'nowrap'}} disabled={geoSearching||!geoInput.trim()}
                   onClick={async()=>{if(!geoInput.trim())return; setGeoSearching(true);
-                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput+', Brasil')}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+                    const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
                     const d=await r.json(); if(d[0]){setUserForm((p:any)=>({...p,lat:d[0].lat,lng:d[0].lon,zona:d[0].address?.city||d[0].address?.town||d[0].address?.municipality||p.zona,endereco:d[0].display_name.split(',').slice(0,4).join(',')})); setGeoInput('');}
                     else alert('No encontrado'); setGeoSearching(false);}}>
                   {geoSearching?'⏳':'🔍'}

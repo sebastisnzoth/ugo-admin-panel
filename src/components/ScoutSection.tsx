@@ -139,7 +139,7 @@ export function SecScout() {
   const geocode = async () => {
     if (!addrInput.trim()) return;
     setAddrLoading(true);
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addrInput+', Brasil')}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-scout/1.0'}});
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addrInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-scout/1.0'}});
     const d = await r.json();
     if (d[0]) {
       const la=parseFloat(d[0].lat), lo=parseFloat(d[0].lon);
@@ -147,7 +147,18 @@ export function SecScout() {
       const parts=[d[0].address?.suburb||d[0].address?.neighbourhood,d[0].address?.city||d[0].address?.town||d[0].address?.municipality].filter(Boolean);
       setLocLabel(parts.join(', ')||d[0].display_name.split(',').slice(0,3).join(','));
       setAddrInput('');
-    } else alert('No encontrado. Probá con ciudad, barrio o dirección.');
+    } else {
+      // Try without country restriction
+      const r2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addrInput)}&format=json&limit=3&addressdetails=1`,{headers:{'User-Agent':'ugo-scout/1.0'}});
+      const d2 = await r2.json();
+      if (d2[0]) {
+        const la=parseFloat(d2[0].lat), lo=parseFloat(d2[0].lon);
+        setLat(la); setLng(lo); setCenter(la,lo);
+        const parts=[d2[0].address?.city||d2[0].address?.town||d2[0].address?.municipality,d2[0].address?.country].filter(Boolean);
+        setLocLabel(parts.join(', ')||d2[0].display_name.split(',').slice(0,3).join(','));
+        setAddrInput('');
+      } else alert('No encontrado. Probá con: "Buenos Aires, Argentina" o "Santiago, Chile"');
+    }
     setAddrLoading(false);
   };
 
@@ -330,6 +341,10 @@ export function SecScout() {
                 <option value="5000">5 km</option>
                 <option value="10000">10 km</option>
                 <option value="20000">20 km</option>
+                <option value="50000">50 km</option>
+                <option value="100000">100 km</option>
+                <option value="200000">200 km</option>
+                <option value="500000">500 km (país)</option>
               </select>
             </div>
             <button style={S.btn()} onClick={doSearch} disabled={loading}>
@@ -342,7 +357,7 @@ export function SecScout() {
                 const now=new Date().toISOString().replace('T',' ').slice(0,19);
                 const ciudad=locLabel.split(',')[0]?.trim()||'Florianópolis';
                 const cfg=CAT_CONFIG[cat];
-                const rows=results.map(p=>['',p.name,cat,p.address||'',ciudad,'Brasil',p.phone||'','',p.website||'','','0',p.lat?.toFixed(10)||'',p.lng?.toFixed(10)||'',p.source==='tomtom'?'tomtom':p.source==='cnpj_br'?'cnpj_br':'osm','prospecto_pendiente',now,`Scout ${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}`,p.phone?'65':'30']);
+                const rows=results.map(p=>['',p.name,cat,p.address||'',ciudad,locLabel.split(',').slice(-1)[0]?.trim()||'Brasil',p.phone||'','',p.website||'','','0',p.lat?.toFixed(10)||'',p.lng?.toFixed(10)||'',p.source==='tomtom'?'tomtom':p.source==='cnpj_br'?'cnpj_br':'osm','prospecto_pendiente',now,`Scout ${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}`,p.phone?'65':'30']);
                 const csv=[hdr,...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
                 const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
                 a.download=`prospectos_scouts_${cat}_${new Date().toISOString().split('T')[0]}.csv`; a.click();
