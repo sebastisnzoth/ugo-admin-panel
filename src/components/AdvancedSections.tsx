@@ -771,63 +771,91 @@ export function SecImportProviders() {
     let ok = 0, dup = 0, err = 0;
     const errList: string[] = [];
 
-    // Insertar en lotes de 20
-    const chunks = [];
-    for (let i = 0; i < toImport.length; i += 20) chunks.push(toImport.slice(i, i+20));
+    // Insertar de a 1 para mejor control de errores (o lotes de 10)
+    const BATCH = 10;
+    const chunks: typeof toImport[] = [];
+    for (let i = 0; i < toImport.length; i += BATCH) chunks.push(toImport.slice(i, i+BATCH));
 
-    for (const chunk of chunks) {
+    for (let ci = 0; ci < chunks.length; ci++) {
+      const chunk = chunks[ci];
+      setStatus(`⏳ Insertando lote ${ci+1}/${chunks.length}...`);
+
       try {
         const payload = destino === 'prospectos'
           ? chunk.map(r => ({
-              nombre: r.nombre, categoria: r.categoria, direccion: r.direccion || null,
-              ciudad: r.ciudad, pais: r.pais,
-              telefono: r.telefono || null, email: r.email || null, website: r.website || null,
-              latitud: r.latitud ? parseFloat(r.latitud) : null,
-              longitud: r.longitud ? parseFloat(r.longitud) : null,
-              fuente: r.fuente || 'csv_import', estado: 'prospecto_pendiente',
-              score_confianza: parseInt(r.score_confianza)||50,
-              notas_hugo: r.notas_hugo || 'Importado via CSV',
+              nombre:          r.nombre            || '(sin nombre)',
+              categoria:       r.categoria         || 'reformas',
+              direccion:       r.direccion         || null,
+              ciudad:          r.ciudad            || 'Florianópolis',
+              pais:            r.pais              || 'BR',
+              telefono:        r.telefono          || null,
+              email:           r.email             || null,
+              website:         r.website           || null,
+              rating:          r.rating && parseFloat(r.rating) ? parseFloat(r.rating) : null,
+              reviews_count:   r.reviews_count     ? parseInt(r.reviews_count) : 0,
+              latitud:         r.latitud && parseFloat(r.latitud) !== 0 ? parseFloat(r.latitud) : null,
+              longitud:        r.longitud && parseFloat(r.longitud) !== 0 ? parseFloat(r.longitud) : null,
+              fuente:          r.fuente            || 'csv_import',
+              estado:          'prospecto_pendiente',
+              score_confianza: r.score_confianza   ? parseInt(r.score_confianza) : 50,
+              notas_hugo:      r.notas_hugo        || 'Importado via CSV',
             }))
           : chunk.map(r => ({
-              nombre: r.nombre, categoria: r.categoria,
-              telefono: r.telefono || null, email: r.email || null,
-              lat: r.latitud ? parseFloat(r.latitud) : null,
-              lng: r.longitud ? parseFloat(r.longitud) : null,
-              zona: r.ciudad, pais: r.pais, tipo: 'proveedor', activo: false, karma: 5.0,
+              nombre:   r.nombre   || '(sin nombre)',
+              categoria:r.categoria|| 'reformas',
+              telefono: r.telefono || null,
+              email:    r.email    || null,
+              lat:      r.latitud && parseFloat(r.latitud) !== 0 ? parseFloat(r.latitud) : null,
+              lng:      r.longitud && parseFloat(r.longitud) !== 0 ? parseFloat(r.longitud) : null,
+              zona:     r.ciudad   || 'Florianópolis',
+              pais:     r.pais     || 'BR',
+              tipo:     'proveedor',
+              activo:   false,
+              karma:    5.0,
             }));
 
         const res = await fetch(`${SB_IMP_URL}/rest/v1/${table}`, {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json', 'apikey': SB_IMP_KEY,
+            'Content-Type': 'application/json',
+            'apikey':        SB_IMP_KEY,
             'Authorization': `Bearer ${SB_IMP_KEY}`,
-            'Prefer': 'return=minimal,resolution=ignore-duplicates',
+            'Prefer':        'return=minimal,resolution=ignore-duplicates',
           },
           body: JSON.stringify(payload),
         });
 
-        if (res.ok || res.status === 201) ok += chunk.length;
-        else if (res.status === 409) { dup += chunk.length; }
-        else {
-          const d = await res.json().catch(()=>({}));
+        if (res.ok || res.status === 201 || res.status === 204) {
+          ok += chunk.length;
+        } else if (res.status === 409) {
+          dup += chunk.length;
+        } else {
+          let msg = `HTTP ${res.status}`;
+          try {
+            const d = await res.json();
+            msg = d.message || d.details || d.error || msg;
+          } catch {}
           err += chunk.length;
-          errList.push(`Lote ${chunks.indexOf(chunk)+1}: ${d.message||res.status}`);
+          errList.push(`Lote ${ci+1}: ${msg}`);
+          console.error('[Import] Supabase error:', msg);
         }
       } catch(e: any) {
         err += chunk.length;
-        errList.push(e.message);
+        errList.push(`Lote ${ci+1}: ${e.message}`);
       }
     }
 
-    // Log en import_logs
+    // Log
     await fetch(`${SB_IMP_URL}/rest/v1/import_logs`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'apikey': SB_IMP_KEY, 'Authorization': `Bearer ${SB_IMP_KEY}` },
+      headers: { 'Content-Type':'application/json','apikey':SB_IMP_KEY,'Authorization':`Bearer ${SB_IMP_KEY}` },
       body: JSON.stringify({ tipo:`${destino}_csv`, total_filas:toImport.length, insertados:ok, duplicados:dup, errores:err, detalles:{errList} }),
     }).catch(()=>{});
 
     setResult({ ok, dup, err, errList });
-    setStatus(`✅ ${ok} importados · ${dup} duplicados · ${err} errores`);
+    setStatus(err > 0
+      ? `⚠️ ${ok} importados · ${dup} duplicados · ${err} errores → ver detalles`
+      : `✅ ${ok} importados correctamente · ${dup} duplicados ignorados`);
     setLoading(false);
   };
 
@@ -882,14 +910,22 @@ export function SecImportProviders() {
       )}
 
       {result && (
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',marginBottom:'14px'}}>
-          {[['Importados',result.ok,'#05944F'],['Duplicados',result.dup,'#996000'],['Errores',result.err,'#dc2626']].map(([l,v,c])=>(
-            <div key={String(l)} style={{background:'#f9f9f9',border:'1px solid #e5e5e5',borderRadius:'10px',padding:'10px',textAlign:'center'}}>
-              <div style={{fontSize:'22px',fontWeight:800,color:String(c)}}>{v}</div>
-              <div style={{fontSize:'10px',color:'#666'}}>{l}</div>
+        <>
+          <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',marginBottom:'10px'}}>
+            {([['Importados',result.ok,'#05944F'],['Duplicados',result.dup,'#996000'],['Errores',result.err,'#dc2626']] as [string,number,string][]).map(([l,v,col])=>(
+              <div key={l} style={{background:'#f9f9f9',border:'1px solid #e5e5e5',borderRadius:'10px',padding:'10px',textAlign:'center'}}>
+                <div style={{fontSize:'22px',fontWeight:800,color:col}}>{v}</div>
+                <div style={{fontSize:'10px',color:'#666'}}>{l}</div>
+              </div>
+            ))}
+          </div>
+          {result.errList.length > 0 && (
+            <div style={{background:'#fef2f2',border:'1px solid #fecaca',borderRadius:'10px',padding:'10px 12px',marginBottom:'10px',fontSize:'11px',color:'#dc2626',lineHeight:1.6}}>
+              <strong>Detalle de errores:</strong>
+              {result.errList.map((e,i) => <div key={i}>• {e}</div>)}
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {rows.length > 0 && (
