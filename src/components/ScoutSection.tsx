@@ -108,8 +108,8 @@ export function SecScout() {
 
   useEffect(() => {
     loadProspectos();
-    // Cargar Foursquare key desde Supabase para llamar directo desde browser
-    fetch(`${SB_URL}/rest/v1/config_sistema?clave=eq.api_foursquare_key&select=valor`, {
+    // Cargar TomTom key desde Supabase para búsqueda directa desde browser
+    fetch(`${SB_URL}/rest/v1/config_sistema?clave=eq.api_tomtom_key&select=valor`, {
       headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` }
     }).then(r=>r.json()).then(d => { if(d?.[0]?.valor) setFsqKey(d[0].valor.trim()); });
   }, [loadProspectos]);
@@ -186,57 +186,55 @@ export function SecScout() {
       let provs: Provider[] = [];
       let sourceLabel = '';
 
-      // ── Foursquare directo desde browser (evita bloqueo de IPs Vercel) ──
+      // ── TomTom Search API directo desde browser (soporta CORS) ──
       if (fsqKey) {
-        setLoadingMsg(`${cfg.emoji} Buscando en Foursquare...`);
+        setLoadingMsg(`${cfg.emoji} Buscando en TomTom...`);
         try {
-          const fsqQueries = FSQ_SEARCH_QUERIES[cat] || [cat];
+          const ttQueries = FSQ_SEARCH_QUERIES[cat] || [cat];
           const seen = new Set<string>();
 
-          for (const q of fsqQueries.slice(0, 2)) {
-            const url = new URL('https://places-api.foursquare.com/places/search');
-            url.searchParams.set('ll', `${lat},${lng}`);
+          for (const q of ttQueries.slice(0, 2)) {
+            const url = new URL(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json`);
+            url.searchParams.set('key', fsqKey);
+            url.searchParams.set('lat', String(lat));
+            url.searchParams.set('lon', String(lng));
             url.searchParams.set('radius', radius);
-            url.searchParams.set('query', q);
             url.searchParams.set('limit', '30');
-            url.searchParams.set('fields', 'fsq_place_id,name,geocodes,location,tel,website,rating,distance');
+            url.searchParams.set('language', 'pt-BR');
+            url.searchParams.set('idxSet', 'POI');
+            url.searchParams.set('countrySet', 'BR,AR,CL,CO,MX,PE,UY,PY,BO,EC,VE');
 
-            const r = await fetch(url.toString(), {
-              headers: {
-                'Authorization': fsqKey,
-                'X-Places-Api-Version': '2025-06-17',
-                'Accept': 'application/json',
-              },
-              signal: AbortSignal.timeout(15000),
-            });
+            const r = await fetch(url.toString(), { signal: AbortSignal.timeout(15000) });
+            if (!r.ok) { console.warn('[TomTom]', r.status, await r.text()); continue; }
 
-            if (!r.ok) { console.warn('[FSQ]', r.status, await r.text()); continue; }
             const d = await r.json();
-            const items = d.places || d.results || [];
+            const items = d.results || [];
             for (const p of items) {
-              const geo = p.geocodes?.main || p.geocodes?.roof;
-              if (!geo || seen.has(p.fsq_place_id)) continue;
-              seen.add(p.fsq_place_id);
-              const loc = p.location || {};
-              const address = [loc.address, loc.locality].filter(Boolean).join(', ');
-              const dist = p.distance || haversine(lat, lng, geo.latitude, geo.longitude);
+              if (!p.position || seen.has(p.id)) continue;
+              seen.add(p.id);
+              const dist = p.dist || haversine(lat, lng, p.position.lat, p.position.lon);
+              const phone = p.poi?.phone || p.poi?.phones?.[0] || undefined;
               provs.push({
-                id: p.fsq_place_id,
-                name: p.name,
-                phone: p.tel || undefined,
-                address: address || undefined,
-                lat: geo.latitude, lng: geo.longitude, dist,
-                tags: { website: p.website, rating: p.rating ? (p.rating/2) : null, source: 'foursquare' },
+                id: String(p.id),
+                name: p.poi?.name || p.address?.freeformAddress || q,
+                phone,
+                address: p.address?.freeformAddress || p.address?.municipality || undefined,
+                lat: p.position.lat, lng: p.position.lon, dist,
+                tags: {
+                  website: p.poi?.url || undefined,
+                  rating: null,
+                  source: 'tomtom',
+                },
               });
             }
           }
-          if (provs.length) sourceLabel = `📍 Foursquare — ${provs.length} encontrados`;
-        } catch(e: any) { console.warn('[FSQ browser]', e.message); }
+          if (provs.length) sourceLabel = `🗺 TomTom — ${provs.length} encontrados`;
+        } catch(e: any) { console.warn('[TomTom browser]', e.message); }
       }
 
       // ── Fallback OSM si Foursquare da 0 ──────────────────────────
       if (provs.length === 0) {
-        setLoadingMsg('🗺 Sin resultados en Foursquare — buscando en OpenStreetMap...');
+        setLoadingMsg('🗺 Sin resultados en TomTom — buscando en OpenStreetMap...');
         try {
           const r = await fetch('/api/scout/places', {
             method: 'POST',
@@ -537,7 +535,7 @@ export function SecScout() {
                     </div>
                   </div>
                   <div style={{display:'flex',gap:'5px',flexShrink:0}}>
-                    {p.tags?.source==='foursquare'&&<span style={{fontSize:'8px',padding:'1px 6px',borderRadius:'10px',background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}>FSQ</span>}
+                    {p.tags?.source==='tomtom'&&<span style={{fontSize:'8px',padding:'1px 6px',borderRadius:'10px',background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}>TT</span>}
                   {contacted.has(p.id)&&<span style={{...S.pill('g'),fontSize:'8px'}}>Contactado</span>}
                     <button
                       style={{...S.btn(added.has(p.id)?'s':'p'),padding:'4px 10px',fontSize:'9px'}}
