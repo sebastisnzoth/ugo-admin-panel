@@ -417,7 +417,25 @@ export function AdminPanel() {
   useEffect(() => {
     if (!mapRef.current || !leafletReady) return; const L=(window as any).L;
     markersRef.current.forEach(m=>m.remove()); markersRef.current=[];
-    mapProviders.forEach(p=>{ if(!p.lat||!p.lng) return; const color=p.disponible?'#00e57a':'#f59e0b'; const icon=L.divIcon({html:`<div style="width:11px;height:11px;border-radius:50%;background:${color};border:2px solid #070a0d;box-shadow:0 0 7px ${color}88;"></div>`,className:'',iconSize:[11,11],iconAnchor:[5,5]}); const m=L.marker([p.lat,p.lng],{icon}).addTo(mapRef.current).bindPopup(`<div style="font-family:'Space Mono',monospace;"><div style="color:#00f2ff;font-weight:700;margin-bottom:3px;">${p.nombre} ${p.apellido||''}</div><div>⭐ ${p.karma} · ${p.servicios_completados} servicios</div><div style="margin-top:2px;">${p.disponible?'🟢 Disponible':`🟡 ${p.categoria_nombre||'En trabajo'}`}</div>${p.zona?`<div style="color:#888;font-size:10px;margin-top:2px;">${p.zona}</div>`:''}</div>`); markersRef.current.push(m); });
+    mapProviders.forEach(p=>{ if(!p.lat||!p.lng) return;
+    const CAT_EM: Record<string,string> = {electricista:'⚡',plomero:'🔧',limpeza:'🧹',chaveiro:'🔑',pintura:'🎨',carpintaria:'🪚',jardinagem:'🌿',climatizacao:'❄️',ti_redes:'💻',reformas:'🏠'};
+    const mkPin = (color:string, emoji:string, sz=32) => {
+      const tail=Math.round(sz*.4);
+      return L.divIcon({html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28));"><div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${color};border:2.5px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.43)}px;">${emoji}</div><div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;border-top:${Math.round(tail*1.4)}px solid ${color};margin-top:-2px;"></div></div>`,className:'',iconSize:[sz,sz+Math.round(tail*1.4)+2],iconAnchor:[sz/2,sz+Math.round(tail*1.4)+2],popupAnchor:[0,-(sz+Math.round(tail*1.4)+2)]});
+    };
+    const color = p.disponible?'#05944F':'#F59E0B';
+    const emoji = CAT_EM[p.categoria||'']||'🔧';
+    const icon = mkPin(color, emoji, 32);
+    const m=L.marker([p.lat,p.lng],{icon}).addTo(mapRef.current).bindPopup(`
+      <div style="font-family:Inter,sans-serif;min-width:160px;padding:2px;">
+        <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${p.nombre} ${p.apellido||''}</div>
+        <div style="font-size:10px;color:#6B7280;margin-bottom:4px;">${emoji} ${p.categoria_nombre||p.categoria||''} · ⭐ ${p.karma}</div>
+        ${p.telefono?`<div style="font-size:11px;color:#05944F;font-weight:600;">📱 ${p.telefono}</div>`:''}
+        <div style="font-size:11px;font-weight:600;color:${color};margin-top:3px;">${p.disponible?'🟢 Disponible':'🟡 Offline'}</div>
+        ${p.zona?`<div style="color:#9CA3AF;font-size:10px;margin-top:3px;">📍 ${p.zona}</div>`:''}
+        <div style="color:#ccc;font-size:9px;margin-top:3px;">${p.servicios_completados||0} servicios completados</div>
+      </div>`);
+    markersRef.current.push(m); });
   }, [mapProviders, leafletReady]);
   useEffect(() => { msgEndRef.current?.scrollIntoView({ behavior:'smooth' }); }, [chat, hugoLoading]);
   useEffect(() => { if (usrTab==='auth') setAuthEnabled(true); }, [usrTab]);
