@@ -85,16 +85,20 @@ async function searchTomTom(lat, lng, radius, categoria, ttKey) {
 }
 
 async function searchOverpass(lat, lng, radius, categoria) {
-  const tags = OVERPASS_TAGS[categoria] || [];
   const nameRx = NAME_REGEX[categoria] || '';
-  const EPS = ['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
+  const tags   = OVERPASS_TAGS[categoria] || [];
+  const EPS    = [
+    'https://overpass-api.de/api/interpreter',
+    'https://overpass.kumi.systems/api/interpreter',
+    'https://overpass.openstreetmap.ru/api/interpreter',
+  ];
 
   const run = async (q) => {
     for (const ep of EPS) {
       try {
         const r = await fetch(ep, {
           method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'},
-          body:'data='+encodeURIComponent(q), signal:AbortSignal.timeout(15000),
+          body:'data='+encodeURIComponent(q), signal:AbortSignal.timeout(20000),
         });
         if (!r.ok) continue;
         const d = await r.json();
@@ -104,30 +108,62 @@ async function searchOverpass(lat, lng, radius, categoria) {
     return [];
   };
 
-  const tagQ = (r) => {
-    const p = tags.map(([k,v])=>`node["${k}"="${v}"](around:${r},${lat},${lng});way["${k}"="${v}"](around:${r},${lat},${lng});`).join('');
-    return `[out:json][timeout:25];(${p});out center;`;
-  };
-  const nameQ = (r) => `[out:json][timeout:25];(node["name"~"${nameRx}",i](around:${r},${lat},${lng});way["name"~"${nameRx}",i](around:${r},${lat},${lng}););out center;`;
-
-  let els = [];
-  if (tags.length) els = await run(tagQ(radius));
-  if (!els.length && nameRx) els = await run(nameQ(radius));
-  if (!els.length && nameRx) els = await run(nameQ(radius*2));
-
-  return els.map(el => {
+  const fmt = (el) => {
     const eLat = el.lat ?? el.center?.lat, eLng = el.lon ?? el.center?.lon;
     if (!eLat || !eLng) return null;
+    const addr = [el.tags?.['addr:street'], el.tags?.['addr:housenumber'], el.tags?.['addr:city']]
+      .filter(Boolean).join(' ') || el.tags?.['addr:full'] || null;
     return {
       id: String(el.id),
-      name: el.tags?.name || el.tags?.['name:pt'] || `Serviço ${categoria}`,
-      phone: el.tags?.phone || el.tags?.['contact:phone'] || null,
-      address: el.tags?.['addr:street'] ? `${el.tags['addr:street']} ${el.tags['addr:housenumber']||''}`.trim() : null,
-      website: el.tags?.website || null,
+      name: el.tags?.name || el.tags?.['name:pt'] || el.tags?.['name:en'] || null,
+      phone: el.tags?.phone || el.tags?.['contact:phone'] || el.tags?.['phone:mobile'] || null,
+      address: addr, website: el.tags?.website || el.tags?.['contact:website'] || null,
       lat: eLat, lng: eLng, dist: haversine(lat, lng, eLat, eLng),
       rating: null, source: 'osm',
     };
-  }).filter(Boolean).sort((a,b)=>a.dist-b.dist);
+  };
+
+  const rad2 = radius * 2;
+  let els = [];
+
+  // 1. Tags específicos
+  if (tags.length) {
+    const parts = tags.map(([k,v]) =>
+      `node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`
+    ).join('');
+    els = await run(`[out:json][timeout:25];(${parts});out center;`);
+  }
+
+  // 2. Nombre regex en radio normal
+  if (!els.length && nameRx) {
+    els = await run(`[out:json][timeout:25];(node["name"~"${nameRx}",i](around:${radius},${lat},${lng});way["name"~"${nameRx}",i](around:${radius},${lat},${lng}););out center;`);
+  }
+
+  // 3. Nombre regex en radio doble
+  if (!els.length && nameRx) {
+    els = await run(`[out:json][timeout:25];(node["name"~"${nameRx}",i](around:${rad2},${lat},${lng});way["name"~"${nameRx}",i](around:${rad2},${lat},${lng}););out center;`);
+  }
+
+  // 4. Cualquier negocio con teléfono + filtro por nombre (red ancha)
+  if (!els.length && nameRx) {
+    const q4 = `[out:json][timeout:25];(node["phone"]["name"~"${nameRx}",i](around:${rad2},${lat},${lng}););out center;`;
+    els = await run(q4);
+  }
+
+  // 5. Último recurso: cualquier shop/office/craft en el área
+  if (!els.length) {
+    const q5 = `[out:json][timeout:25];(node["shop"](around:${radius},${lat},${lng});node["office"](around:${radius},${lat},${lng});node["craft"](around:${radius},${lat},${lng}););out center;`;
+    const allEls = await run(q5);
+    // Filtrar por relevancia si hay regex
+    if (nameRx) {
+      const rx = new RegExp(nameRx, 'i');
+      els = allEls.filter(el => el.tags?.name && rx.test(el.tags.name));
+    } else {
+      els = allEls.slice(0, 30);
+    }
+  }
+
+  return els.map(fmt).filter(Boolean).sort((a,b)=>a.dist-b.dist);
 }
 
 export default async function handler(req, res) {
