@@ -62,6 +62,8 @@ export function SecScout() {
   const [approving, setApproving] = useState<string|null>(null);
   const [stats, setStats]     = useState({found:0,contacted:0,joined:0});
   const [ttReady, setTtReady] = useState(false);
+  const [addrInput, setAddrInput] = useState('');
+  const [addrLoading, setAddrLoading] = useState(false);
   const [ttError, setTtError] = useState('');
 
   const mapRef     = useRef<HTMLDivElement>(null);
@@ -158,6 +160,28 @@ export function SecScout() {
       },
       () => setLocLabel('Florianópolis, SC (GPS denegado)')
     );
+  };
+
+  // ── Geocodificar dirección escrita ───────────────────────────
+  const geocodeAddr = async () => {
+    if (!addrInput.trim()) return;
+    setAddrLoading(true);
+    try {
+      const q = encodeURIComponent(addrInput + ', Brasil');
+      const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1&addressdetails=1`, {
+        headers: { 'User-Agent': 'ugo-scout/1.0' }
+      });
+      const d = await r.json();
+      if (!d.length) { alert('No se encontró "' + addrInput + '". Probá con ciudad, barrio o dirección.'); setAddrLoading(false); return; }
+      const la = parseFloat(d[0].lat), lo = parseFloat(d[0].lon);
+      setLat(la); setLng(lo);
+      const parts = [d[0].address?.suburb||d[0].address?.neighbourhood, d[0].address?.city||d[0].address?.town||d[0].address?.municipality, d[0].address?.state].filter(Boolean);
+      const label = parts.length ? parts.join(', ') : d[0].display_name.split(',').slice(0,3).join(',');
+      setLocLabel(label);
+      setAddrInput('');
+      if (ttMap.current?.mapLibreMap) ttMap.current.mapLibreMap.flyTo({ center:[lo,la], zoom:13 });
+    } catch(e: any) { alert('Error: ' + e.message); }
+    setAddrLoading(false);
   };
 
   // ── BUSCAR con TomTom SDK ────────────────────────────────────
@@ -350,13 +374,30 @@ export function SecScout() {
       <div style={{display:'grid',gridTemplateColumns:'1fr 330px',gap:'12px'}}>
         {/* MAP PANEL */}
         <div>
-          {/* Ubicación */}
-          <div style={{...S.card,marginBottom:'10px',display:'flex',alignItems:'center',gap:'10px'}}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:'9px',color:'rgba(0,0,0,.4)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:'1px'}}>Zona</div>
-              <div style={{fontSize:'12px',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{locLabel}</div>
+          {/* Ubicación — GPS o texto manual */}
+          <div style={{...S.card,marginBottom:'10px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontSize:'9px',color:'rgba(0,0,0,.4)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:'1px'}}>📍 Zona de búsqueda</div>
+                <div style={{fontSize:'12px',fontWeight:600,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',color:locLabel.includes('denegado')?'#dc2626':'#111'}}>{locLabel}</div>
+              </div>
+              <button style={{...S.btn('s'),padding:'6px 12px',background:'rgba(0,0,0,.06)',color:'#111',fontSize:'11px',whiteSpace:'nowrap'}} onClick={getGPS}>📱 GPS</button>
             </div>
-            <button style={S.btn()} onClick={getGPS}>📍 GPS</button>
+            <div style={{display:'flex',gap:'7px'}}>
+              <input
+                style={{...S.input,flex:1,fontSize:'12px',padding:'8px 12px'}}
+                value={addrInput}
+                onChange={e=>setAddrInput(e.target.value)}
+                onKeyDown={e=>e.key==='Enter'&&geocodeAddr()}
+                placeholder='Escribí ciudad, barrio o dirección... (ej: Centro, Florianópolis)'
+              />
+              <button
+                style={{...S.btn(),padding:'8px 16px',whiteSpace:'nowrap',opacity:addrLoading?0.6:1}}
+                onClick={geocodeAddr}
+                disabled={addrLoading||!addrInput.trim()}>
+                {addrLoading?'⏳':'🔍 Ir'}
+              </button>
+            </div>
           </div>
 
           {/* Controles */}
