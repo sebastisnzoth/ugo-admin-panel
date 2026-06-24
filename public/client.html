@@ -157,6 +157,40 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <div id="cinrow"><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="micbtn" onclick="startRec()" style="width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s">🎤</button><button id="csend" onclick="sendChat()">↑</button></div>
 </div>
 
+
+<!-- PROVIDER CARD SHEET -->
+<div id="pcard" style="position:fixed;left:0;right:0;bottom:0;z-index:45;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -4px 30px rgba(0,0,0,.15);transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);padding-bottom:env(safe-area-inset-bottom,0)">
+  <div style="width:32px;height:4px;background:#e5e5e5;border-radius:2px;margin:10px auto 0"></div>
+  <div style="padding:14px 18px 18px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div id="pc-av" style="width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,#00C8D7,#0080AA);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">🔧</div>
+      <div style="flex:1;min-width:0">
+        <div id="pc-name" style="font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+        <div id="pc-cat" style="font-size:12px;color:#888;margin-top:2px"></div>
+        <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+          <span id="pc-karma" style="font-size:12px;color:#F59E0B;font-weight:700"></span>
+          <span id="pc-status" style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px"></span>
+        </div>
+      </div>
+      <button onclick="closePCard()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#ccc;flex-shrink:0;line-height:1">✕</button>
+    </div>
+    <div style="background:#f8f8f8;border-radius:14px;padding:12px;margin-bottom:14px;display:flex;flex-direction:column;gap:8px">
+      <div id="pc-addr" style="font-size:12px;color:#555;display:flex;align-items:flex-start;gap:7px"><span>📍</span><span id="pc-addr-t" style="flex:1"></span></div>
+      <div id="pc-phone-row" style="font-size:12px;color:#555;display:none;align-items:center;gap:7px"><span>📱</span><span id="pc-phone-t"></span></div>
+      <div style="font-size:12px;color:#555;display:flex;align-items:center;gap:7px"><span>💰</span><span id="pc-price-t"></span></div>
+      <div id="pc-web-row" style="font-size:12px;display:none;align-items:center;gap:7px"><span>🌐</span><a id="pc-web-a" href="#" target="_blank" style="color:#00C8D7;text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1"></a></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button onclick="pcChat()" style="padding:13px;background:#f5f5f5;border:none;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">💬 Consultar</button>
+      <button onclick="pcHire()" style="padding:13px;background:#111;color:#fff;border:none;border-radius:14px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">⚡ Contratar</button>
+    </div>
+    <div id="pc-call-row" style="margin-top:8px;display:none">
+      <a id="pc-tel-a" href="tel:" style="display:block;padding:12px;background:rgba(0,200,215,.08);border-radius:14px;text-align:center;font-weight:700;font-size:13px;color:#0080AA;text-decoration:none">📞 Llamar directamente</a>
+    </div>
+  </div>
+</div>
+<div id="pcard-bg" onclick="closePCard()" style="position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.3);display:none"></div>
+
 <nav id="nav" class="hide">
   <button class="ni on" id="ni-home" onclick="nav2('home')"><div class="niic">🗺</div><div class="nilb">Inicio</div></button>
   <button class="ni" id="ni-svcs" onclick="nav2('svcs')"><div class="niic">🔧</div><div class="nilb">Servicios</div></button>
@@ -271,7 +305,7 @@ function startGPS(){
 
 async function loadProviders(){
   const icons={Electricista:'⚡',Plomero:'🔧',Limpieza:'🧹',Pintor:'🎨',Carpintero:'🪚',Cerrajero:'🔑',Jardinero:'🌿'};
-  const{data}=await sb.from('usuarios').select('id,nombre,categoria,karma,tarifa_base,lat,lng').eq('tipo','proveedor').eq('activo',true).not('lat','is',null).limit(20);
+  const{data}=await sb.from('usuarios').select('id,nombre,categoria,karma,tarifa_base,lat,lng').eq('tipo','proveedor').not('lat','is',null).limit(60);
   const real=(data||[]).filter(p=>p.lat&&p.lng);
   const sim=[
     {nombre:'Carlos R.',categoria:'Electricista',karma:4.8,tarifa_base:90,lat:myLat+.013,lng:myLng+.009},
@@ -473,6 +507,61 @@ function updateMicBtn() {
 // Esperar voces disponibles
 if (hasSpeech) {
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+}
+
+
+/* ── PROVIDER CARD ── */
+let PCARD_PROV = null;
+
+function showPCard(p) {
+  PCARD_PROV = p;
+  SELECTED_PROV = p;
+  const CAT_IC = {Electricista:'⚡',Plomero:'🔧',Limpieza:'🧹',Pintor:'🎨',Carpintero:'🪚',Cerrajero:'🔑',Jardinero:'🌿',Pintor:'🎨',jardinagem:'🌿',electricista:'⚡',plomero:'🔧',limpeza:'🧹','AC/Clima':'❄️'};
+  const ic = CAT_IC[p.categoria] || CAT_IC[p.categoria?.toLowerCase()] || '🔧';
+  // Header
+  document.getElementById('pc-av').textContent = ic;
+  document.getElementById('pc-name').textContent = p.nombre || '—';
+  document.getElementById('pc-cat').textContent = (p.categoria||'').replace('_',' ');
+  const k = document.getElementById('pc-karma');
+  k.textContent = '★ ' + (p.karma||5).toFixed(1);
+  const st = document.getElementById('pc-status');
+  st.textContent = p.online ? '🟢 Online' : (p.activo ? '✓ Activo' : '⏳ Pendiente activación');
+  st.style.background = p.online ? 'rgba(34,197,94,.1)' : p.activo ? 'rgba(0,200,215,.08)' : 'rgba(0,0,0,.05)';
+  st.style.color = p.online ? '#22C55E' : p.activo ? '#0080AA' : '#888';
+  // Details
+  const addr = document.getElementById('pc-addr');
+  addr.querySelector('span:last-child').textContent = p.endereco || 'Sin dirección';
+  const ph = document.getElementById('pc-phone');
+  ph.style.display = p.telefono ? 'flex' : 'none';
+  if (p.telefono) ph.querySelector('span:last-child').textContent = p.telefono;
+  const pr = document.getElementById('pc-price');
+  pr.querySelector('span:last-child').textContent = p.tarifa_base ? 'Desde R$' + p.tarifa_base : 'Precio a consultar';
+  // Website
+  const wb = document.getElementById('pc-web');
+  const rawBio = p.bio || '';
+  const isUrl = rawBio.startsWith('http');
+  wb.style.display = isUrl ? 'flex' : 'none';
+  if (isUrl) { document.getElementById('pc-web-a').href = rawBio; document.getElementById('pc-web-a').textContent = rawBio.replace('https://','').replace('http://','').split('/')[0]; }
+  // Phone button
+  const pb = document.getElementById('pc-phone-btn');
+  pb.style.display = p.telefono ? 'block' : 'none';
+  if (p.telefono) document.getElementById('pc-tel-a').href = 'tel:' + p.telefono;
+  // Show card
+  document.getElementById('pcard').style.transform = 'translateY(0)';
+  document.getElementById('pcard-bg').style.display = 'block';
+}
+
+function closePCard() {
+  document.getElementById('pcard').style.transform = 'translateY(100%)';
+  document.getElementById('pcard-bg').style.display = 'none';
+}
+
+function pcChat() { closePCard(); openChatWith(PCARD_PROV); }
+function pcHire() {
+  closePCard();
+  if (!PCARD_PROV) return;
+  const ok = confirm('¿Contratar a ' + PCARD_PROV.nombre + ' (' + (PCARD_PROV.categoria||'') + ') por R$' + (PCARD_PROV.tarifa_base||80) + '+?');
+  if (ok) createService(PCARD_PROV);
 }
 
 </script>
