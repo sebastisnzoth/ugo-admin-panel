@@ -98,6 +98,11 @@ export function SecMapaOperativo() {
   const [addAddr,   setAddAddr]   = React.useState('');
   const [addLoading,setAddLoading]= React.useState(false);
   const [addGeo,    setAddGeo]    = React.useState(false);
+  // Búsqueda por localidad
+  const [geoSearch, setGeoSearch] = React.useState('');
+  const [geoLoading,setGeoLoading]= React.useState(false);
+  const [geoRadius, setGeoRadius] = React.useState(0); // 0 = sin filtro por radio
+  const [geoCenter, setGeoCenter] = React.useState<[number,number]|null>(null);
 
   // ── Leaflet init ─────────────────────────────────────────────
   React.useEffect(() => {
@@ -132,11 +137,29 @@ export function SecMapaOperativo() {
       if (!Array.isArray(u)) { setError(u?.message||'Error cargando usuarios'); setLoading(false); return; }
       setUsers(u); setServices(Array.isArray(s)?s:[]);
       setLastUpd(new Date().toLocaleTimeString('es-AR'));
+      // Auto-fit mapa a los proveedores cargados
+      if (mapInst.current && Array.isArray(u) && u.length > 0) {
+        const pts = u.filter((x:any)=>x.lat&&x.lng).map((x:any)=>[x.lat,x.lng]);
+        if (pts.length > 0) {
+          try { mapInst.current.fitBounds(pts, {padding:[30,30], maxZoom:14, animate:false}); } catch{}
+        }
+      }
     } catch(e:any) { setError(e.message); }
     setLoading(false);
   }
 
   React.useEffect(()=>{ if(!autoRefresh)return; const t=setInterval(loadData,15000); return()=>clearInterval(t); },[autoRefresh]);
+
+  // Filtro por radio desde geoCenter
+  const visibleUsers = geoCenter && geoRadius > 0
+    ? users.filter(u => {
+        if (!u.lat||!u.lng) return false;
+        const R=6371000,dL=(u.lat-geoCenter[0])*Math.PI/180,dN=(u.lng-geoCenter[1])*Math.PI/180;
+        const a=Math.sin(dL/2)**2+Math.cos(geoCenter[0]*Math.PI/180)*Math.cos(u.lat*Math.PI/180)*Math.sin(dN/2)**2;
+        const dist=R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        return dist <= geoRadius;
+      })
+    : users;
 
   // ── Render markers ────────────────────────────────────────────
   React.useEffect(() => {
@@ -144,7 +167,7 @@ export function SecMapaOperativo() {
     markersRef.current.forEach(m=>m.remove()); markersRef.current=[];
     linesRef.current.forEach(l=>l.remove());   linesRef.current=[];
 
-    const filtered = users.filter(u => {
+    const filtered = visibleUsers.filter(u => {
       if (!u.lat||!u.lng) return false;
       if (u.tipo==='proveedor'&&!showProv) return false;
       if (u.tipo==='cliente'&&!showCli) return false;
@@ -193,7 +216,7 @@ export function SecMapaOperativo() {
   },[users,services,showProv,showCli,statusFil,catFil,zonaFil]);
 
   // ── Stats ─────────────────────────────────────────────────────
-  const provs   = users.filter(u=>u.tipo==='proveedor');
+  const provs   = visibleUsers.filter(u=>u.tipo==='proveedor');
   const online  = provs.filter(u=>u.online).length;
   const offline = provs.filter(u=>!u.online&&u.activo!==false).length;
   const clis    = users.filter(u=>u.tipo==='cliente').length;
@@ -236,6 +259,33 @@ export function SecMapaOperativo() {
     setAddLoading(false);
   };
 
+  // ── Buscar por localidad + radio ─────────────────────────────
+  const searchByLocation = async () => {
+    if (!geoSearch.trim()) return;
+    setGeoLoading(true);
+    try {
+      const r = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoSearch)}&format=json&limit=1&addressdetails=1`,
+        {headers:{'User-Agent':'ugo-admin/1.0'}}
+      );
+      const d = await r.json();
+      if (!d[0]) { alert('Localidad no encontrada. Probá con ciudad, barrio o municipio.'); setGeoLoading(false); return; }
+      const la = parseFloat(d[0].lat), lo = parseFloat(d[0].lon);
+      setGeoCenter([la, lo]);
+      if (mapInst.current) {
+        const zoom = geoRadius > 0 ? Math.max(10, 14 - Math.log2(geoRadius/1000)) : 13;
+        mapInst.current.setView([la, lo], Math.round(zoom));
+        // Mostrar círculo de radio si está activado
+        if (geoRadius > 0) {
+          (mapInst.current as any)._geoCircle?.remove();
+          const circle = L.circle([la,lo],{radius:geoRadius,color:'#276EF1',fillColor:'#276EF1',fillOpacity:.08,weight:1.5,dashArray:'6 4'}).addTo(mapInst.current);
+          (mapInst.current as any)._geoCircle = circle;
+        }
+      }
+    } catch(e:any) { alert('Error: '+e.message); }
+    setGeoLoading(false);
+  };
+
   const inp = {padding:'7px 10px',border:'1.5px solid rgba(0,0,0,.15)',borderRadius:'8px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',background:'#F8F9FA',color:'#111',width:'100%'} as React.CSSProperties;
   const sel = {...inp,cursor:'pointer'};
 
@@ -261,6 +311,29 @@ export function SecMapaOperativo() {
         ))}
 
         <div style={{flex:1}}/>
+        {/* Búsqueda por localidad */}
+        <div style={{display:'flex',gap:6,alignItems:'center'}}>
+          <input
+            value={geoSearch} onChange={e=>setGeoSearch(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&searchByLocation()}
+            placeholder="🔍 Buscar ciudad, barrio..."
+            style={{padding:'6px 12px',border:'1.5px solid #e5e5e5',borderRadius:8,fontSize:12,fontFamily:'Inter,sans-serif',outline:'none',width:200,background:'#F8F9FA'}}
+          />
+          <select value={geoRadius} onChange={e=>{setGeoRadius(parseInt(e.target.value));if(e.target.value==='0'){(mapInst.current as any)?._geoCircle?.remove();setGeoCenter(null);}}}
+            style={{padding:'6px 10px',border:'1.5px solid #e5e5e5',borderRadius:8,fontSize:11,fontFamily:'Inter,sans-serif',outline:'none',background:'#F8F9FA',cursor:'pointer'}}>
+            <option value="0">Sin radio</option>
+            <option value="2000">2 km</option>
+            <option value="5000">5 km</option>
+            <option value="10000">10 km</option>
+            <option value="20000">20 km</option>
+          </select>
+          <button onClick={searchByLocation} disabled={geoLoading||!geoSearch.trim()}
+            style={{padding:'6px 12px',background:'#276EF1',color:'#fff',border:'none',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer',whiteSpace:'nowrap'}}>
+            {geoLoading?'⏳':'🗺 Ir'}
+          </button>
+          {geoCenter&&<button onClick={()=>{setGeoCenter(null);setGeoSearch('');setGeoRadius(0);(mapInst.current as any)?._geoCircle?.remove();}}
+            style={{padding:'6px 10px',background:'rgba(225,25,0,.1)',color:'#E11900',border:'none',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer'}}>✕ Radio</button>}
+        </div>
         {error&&<span style={{fontSize:11,color:'#E11900'}}>⚠️ {error}</span>}
         <span style={{fontSize:10,color:'#aaa'}}>{shown} visibles · {lastUpd}</span>
         <button onClick={()=>setShowAdd(a=>!a)}
