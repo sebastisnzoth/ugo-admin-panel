@@ -137,7 +137,32 @@ export function SecScout() {
       setStats({found:data.length,contacted:data.filter((p:any)=>p.estado==='invitado').length,joined:data.filter((p:any)=>p.estado==='aprobado').length});
     }
   },[]);
-  useEffect(()=>{ loadProspectos(); },[loadProspectos]);
+  useEffect(()=>{ loadProspectos(); loadDbProviders(); },[loadProspectos]);
+
+  // ── Carga proveedores de Supabase para mostrar en mapa ───────
+  const loadDbProviders = useCallback(async () => {
+    const r = await fetch(`${SB_URL}/rest/v1/vista_todos_proveedores?select=id,nombre,lat,lng,categoria,cat_emoji,pin_color,estado_mapa,telefono,zona`,{
+      headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
+    const data = await r.json();
+    if (!Array.isArray(data)||!mapInst.current) return;
+    // Capa separada de proveedores DB (pines más pequeños)
+    data.forEach((p:any) => {
+      const sz=24, tail=Math.round(sz*.4);
+      const mk = L.marker([p.lat,p.lng],{icon:L.divIcon({
+        html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));opacity:.85;">
+          <div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${p.pin_color||'#6B7280'};border:2px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.43)}px;">${p.cat_emoji||'📍'}</div>
+          <div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;border-top:${Math.round(tail*1.4)}px solid ${p.pin_color||'#6B7280'};margin-top:-1px;"></div>
+        </div>`,className:'',iconSize:[sz,sz+Math.round(tail*1.4)+1],iconAnchor:[sz/2,sz+Math.round(tail*1.4)+1],popupAnchor:[0,-(sz+Math.round(tail*1.4)+1)]
+      }),zIndexOffset:-100}).addTo(mapInst.current);
+      mk.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:140px;padding:2px;">
+        <div style="font-size:9px;font-weight:700;color:#276EF1;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">✅ Registrado en U.GO</div>
+        <div style="font-weight:700;font-size:12px;">${p.nombre}</div>
+        <div style="font-size:10px;color:#666;">${p.cat_emoji||''} ${p.categoria||'—'}${p.telefono?` · 📱 ${p.telefono}`:''}</div>
+        <div style="font-size:10px;color:${p.pin_color||'#666'};margin-top:3px;">${p.estado_mapa==='online'?'🟢 Online':p.estado_mapa==='offline'?'🟡 Offline':'🔴 Inactivo'}</div>
+        ${p.zona?`<div style="font-size:9px;color:#aaa;margin-top:2px;">📍 ${p.zona}</div>`:''}
+      </div>`);
+    });
+  },[]);
 
   // ── GPS ───────────────────────────────────────────────────────
   const getGPS = () => {

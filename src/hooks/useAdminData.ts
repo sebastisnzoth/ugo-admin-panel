@@ -88,7 +88,10 @@ export function useMapProviders() {
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
-    const { data } = await (supabase as any).from('vista_proveedores_online').select('id,nombre,apellido,karma,lat,lng,zona,disponible,servicio_estado,categoria_nombre,categoria_emoji,servicios_completados');
+    // Todos los proveedores con coordenadas (importados, online, offline)
+    const { data } = await (supabase as any)
+      .from('vista_todos_proveedores')
+      .select('id,nombre,apellido,karma,lat,lng,zona,pais,telefono,categoria,cat_emoji,pin_color,estado_mapa,activo,online,servicios_completados');
     if (data) setProviders(data); setLoading(false);
   }, []);
   useEffect(() => { fetch(); const u = ['usuarios','servicios'].map(tb => subscribe(tb, fetch)); return () => u.forEach(f => f()); }, [fetch]);

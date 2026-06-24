@@ -418,20 +418,21 @@ export function AdminPanel() {
     if (!mapRef.current || !leafletReady) return; const L=(window as any).L;
     markersRef.current.forEach(m=>m.remove()); markersRef.current=[];
     mapProviders.forEach(p=>{ if(!p.lat||!p.lng) return;
-    const CAT_EM: Record<string,string> = {electricista:'⚡',plomero:'🔧',limpeza:'🧹',chaveiro:'🔑',pintura:'🎨',carpintaria:'🪚',jardinagem:'🌿',climatizacao:'❄️',ti_redes:'💻',reformas:'🏠'};
+    // pin_color y cat_emoji vienen de vista_todos_proveedores
     const mkPin = (color:string, emoji:string, sz=32) => {
       const tail=Math.round(sz*.4);
       return L.divIcon({html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28));"><div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${color};border:2.5px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.43)}px;">${emoji}</div><div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;border-top:${Math.round(tail*1.4)}px solid ${color};margin-top:-2px;"></div></div>`,className:'',iconSize:[sz,sz+Math.round(tail*1.4)+2],iconAnchor:[sz/2,sz+Math.round(tail*1.4)+2],popupAnchor:[0,-(sz+Math.round(tail*1.4)+2)]});
     };
-    const color = p.disponible?'#05944F':'#F59E0B';
-    const emoji = CAT_EM[p.categoria||'']||'🔧';
+    const color = p.pin_color || (p.online&&p.activo?'#05944F':p.activo?'#F59E0B':'#E11900');
+    const emoji = p.cat_emoji || '🔧';
+    const estado = p.estado_mapa || (p.online?'online':p.activo?'offline':'inactivo');
     const icon = mkPin(color, emoji, 32);
     const m=L.marker([p.lat,p.lng],{icon}).addTo(mapRef.current).bindPopup(`
       <div style="font-family:Inter,sans-serif;min-width:160px;padding:2px;">
         <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${p.nombre} ${p.apellido||''}</div>
-        <div style="font-size:10px;color:#6B7280;margin-bottom:4px;">${emoji} ${p.categoria_nombre||p.categoria||''} · ⭐ ${p.karma}</div>
+        <div style="font-size:10px;color:#6B7280;margin-bottom:4px;">${emoji} ${p.categoria||'—'} · ⭐ ${p.karma||'5'}</div>
         ${p.telefono?`<div style="font-size:11px;color:#05944F;font-weight:600;">📱 ${p.telefono}</div>`:''}
-        <div style="font-size:11px;font-weight:600;color:${color};margin-top:3px;">${p.disponible?'🟢 Disponible':'🟡 Offline'}</div>
+        <div style="font-size:11px;font-weight:600;color:${color};margin-top:3px;">${estado==='online'?'🟢 Online':estado==='offline'?'🟡 Registrado · Offline':'🔴 Inactivo'}</div>
         ${p.zona?`<div style="color:#9CA3AF;font-size:10px;margin-top:3px;">📍 ${p.zona}</div>`:''}
         <div style="color:#ccc;font-size:9px;margin-top:3px;">${p.servicios_completados||0} servicios completados</div>
       </div>`);
@@ -441,7 +442,8 @@ export function AdminPanel() {
   useEffect(() => { if (usrTab==='auth') setAuthEnabled(true); }, [usrTab]);
 
   const maxRev = useMemo(() => Math.max(1, ...weekData.map(d => Number(d.ingresos_brutos)||0)), [weekData]);
-  const provDisp = mapProviders.filter(p=>p.disponible).length;
+  const provOnline  = mapProviders.filter(p=>p.estado_mapa==='online'||p.online).length;
+  const provOffline = mapProviders.filter(p=>(p.estado_mapa==='offline'||(!p.online&&p.activo))).length;
   const filtUsers = useMemo(() => users.filter(u=>usrFilter==='all'||u.tipo===usrFilter), [users, usrFilter]);
 
   const sendHugo = useCallback(async (text: string) => {
@@ -935,7 +937,7 @@ export function AdminPanel() {
 
         <main className="ua-main">
           <div className="map-wrap" style={{display:section==='mapa'?'block':'none'}}>
-            <div className="map-stats"><div className="map-pill"><span style={{color:'var(--green)'}}>●</span>{provDisp} libres</div><div className="map-pill"><span style={{color:'var(--amber)'}}>●</span>{mapProviders.filter(p=>!p.disponible).length} en servicio</div></div>
+            <div className="map-stats"><div className="map-pill"><span style={{color:'#05944F'}}>●</span>{provOnline} online</div><div className="map-pill"><span style={{color:'#F59E0B'}}>●</span>{provOffline} offline</div><div className="map-pill"><span style={{color:'#6B7280'}}>●</span>{mapProviders.length} total</div></div>
             <div ref={mapDivRef} style={{height:'100%',width:'100%',background:'var(--bg)'}}/>
             <div className="map-sb">
               <div className="map-sb-h">Proveedores online</div>
