@@ -28,6 +28,10 @@
       "destination": "/scout.html"
     },
     {
+      "source": "/api/cascade",
+      "destination": "/api/cascade"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

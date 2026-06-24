@@ -281,6 +281,47 @@ async function createService(prov) {
   // 3. Mostrar pantalla de tracking
   showTracking(prov);
   watchService(svc.id);
+  startCascade(svc.id);
+}
+
+// ── Cascade matching timer ────────────────────────
+let cascadeT2 = null, cascadeT3 = null;
+
+function startCascade(svcId) {
+  clearTimeout(cascadeT2); clearTimeout(cascadeT3);
+
+  // Nivel 2: 90s → WA a offline cercanos (10km)
+  cascadeT2 = setTimeout(async () => {
+    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
+    document.getElementById('tr-sub').textContent = 'Buscando más proveedores...';
+    await fetch('/api/cascade', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ servicio_id: svcId, nivel: 2 })
+    });
+  }, 90_000);
+
+  // Nivel 3: 4.5min → WA a todos en 20km
+  cascadeT3 = setTimeout(async () => {
+    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
+    document.getElementById('tr-sub').textContent = 'Notificando a todos los proveedores del área...';
+    await fetch('/api/cascade', {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ servicio_id: svcId, nivel: 3 })
+    });
+    // 10min sin nadie → aviso al cliente
+    setTimeout(() => {
+      if (!ACTIVE_SVC?.proveedor_id) {
+        document.getElementById('tr-status').textContent = '😔 Sin disponibilidad';
+        document.getElementById('tr-sub').textContent = 'Te avisamos cuando haya un proveedor disponible.';
+        document.getElementById('tr-cancel').textContent = 'Volver';
+      }
+    }, 330_000);
+  }, 270_000);
+}
+
+function stopCascade() {
+  clearTimeout(cascadeT2); clearTimeout(cascadeT3);
+  cascadeT2 = null; cascadeT3 = null;
 }
 
 // ── Mostrar overlay de tracking ───────────────────
@@ -329,6 +370,7 @@ function onServiceUpdate(svc) {
   ACTIVE_SVC = { ...ACTIVE_SVC, ...svc };
   const st = svc.estado;
 
+  stopCascade();
   if (st === 'confirmado' || st === 'en_camino') {
     setTrackStep(2);
     document.getElementById('tr-status').textContent = '✅ ¡Proveedor aceptó!';
@@ -448,6 +490,7 @@ async function cancelService() {
   if (svcChannel)  { sb.removeChannel(svcChannel);  svcChannel  = null; }
   if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
   document.getElementById('track-overlay').style.display = 'none';
+  stopCascade();
   ACTIVE_SVC = null;
   toast('Pedido cancelado.');
   nav2('home');
