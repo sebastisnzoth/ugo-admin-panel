@@ -1,426 +1,436 @@
+// MapaOperativo.tsx — Mapa Live con todos los proveedores + filtros + teardrop pins
 import React from 'react';
 
-const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
+const SB_URL  = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
-
-function getAuthHeaders(): Record<string, string> {
-  // Try to get the admin session token from Supabase localStorage
-  try {
-    const key = `sb-byajcqrgetloavrgyqak-auth-token`;
-    const raw = localStorage.getItem(key);
-    if (raw) {
-      const session = JSON.parse(raw);
-      const token = session?.access_token || session?.session?.access_token;
-      if (token) return { apikey: SB_ANON, Authorization: `Bearer ${token}` };
-    }
-  } catch {}
-  return { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` };
-}
-
-const get = (path: string) =>
-  fetch(`${SB_URL}/rest/v1/${path}`, { headers: getAuthHeaders() }).then(r => r.json());
-
-const CATS = ['Todos', 'Pintor', 'Plomero', 'Electricista', 'Limpieza', 'Carpintero', 'Cerrajero', 'Jardinero', 'AC/Clima', 'Geral'];
-const CAT_IC: Record<string, string> = {
-  Pintor: '🎨', Plomero: '🔧', Electricista: '⚡', Limpieza: '🧹',
-  Carpintero: '🪚', Cerrajero: '🔑', Jardinero: '🌿', 'AC/Clima': '❄️', Geral: '🔨'
-};
 
 declare const L: any;
 
+// ── Slugs reales de la DB ──────────────────────────────────────
+const CATS = [
+  {slug:'todos',   label:'Todos',        emoji:'📍'},
+  {slug:'electricista', label:'Electricista', emoji:'⚡'},
+  {slug:'plomero',      label:'Plomero',      emoji:'🔧'},
+  {slug:'limpeza',      label:'Limpeza',      emoji:'🧹'},
+  {slug:'chaveiro',     label:'Chaveiro',     emoji:'🔑'},
+  {slug:'pintura',      label:'Pintura',      emoji:'🎨'},
+  {slug:'carpintaria',  label:'Carpintaria',  emoji:'🪚'},
+  {slug:'jardinagem',   label:'Jardinagem',   emoji:'🌿'},
+  {slug:'climatizacao', label:'Climatização', emoji:'❄️'},
+  {slug:'ti_redes',     label:'TI & Redes',   emoji:'💻'},
+  {slug:'reformas',     label:'Reformas',     emoji:'🏠'},
+];
+const CAT_EMOJI: Record<string,string> = Object.fromEntries(CATS.map(c=>[c.slug,c.emoji]));
+
+// ── Teardrop pin (igual que Scout y Mapa Admin) ───────────────
+function makePin(color:string, emoji:string, sz=32) {
+  const tail = Math.round(sz*0.4);
+  return L.divIcon({
+    html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28));">
+      <div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${color};border:2.5px solid #FFF;
+        display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.43)}px;">${emoji}</div>
+      <div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;
+        border-top:${Math.round(tail*1.4)}px solid ${color};margin-top:-2px;"></div>
+    </div>`,
+    className:'',
+    iconSize:[sz, sz+Math.round(tail*1.4)+2],
+    iconAnchor:[sz/2, sz+Math.round(tail*1.4)+2],
+    popupAnchor:[0, -(sz+Math.round(tail*1.4)+2)],
+  });
+}
+
+function pinColor(online:boolean, activo:boolean) {
+  return online&&activo?'#05944F':activo?'#F59E0B':'#E11900';
+}
+
+function clientPin() {
+  return L.divIcon({
+    html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 5px rgba(0,0,0,.25));">
+      <div style="width:26px;height:26px;border-radius:50%;background:#276EF1;border:2.5px solid #FFF;
+        display:flex;align-items:center;justify-content:center;font-size:12px;">👤</div>
+      <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;
+        border-top:8px solid #276EF1;margin-top:-1px;"></div>
+    </div>`,
+    className:'', iconSize:[26,35], iconAnchor:[13,35], popupAnchor:[0,-35],
+  });
+}
+
+function sbFetch(path:string) {
+  return fetch(`${SB_URL}/rest/v1/${path}`,{
+    headers:{apikey:SB_ANON,Authorization:`Bearer ${SB_ANON}`}
+  }).then(r=>r.json());
+}
+
+// ── Panel de detalle helper ───────────────────────────────────
+function DField({label,val,mono,small}:{label:string;val:any;mono?:boolean;small?:boolean}) {
+  return (
+    <div style={{marginBottom:9}}>
+      <div style={{fontSize:9,fontWeight:700,color:'#bbb',textTransform:'uppercase',letterSpacing:.5,marginBottom:2}}>{label}</div>
+      <div style={{fontSize:small?10:12,fontWeight:600,color:'#111',wordBreak:'break-all',fontFamily:mono?'monospace':'inherit',lineHeight:1.4}}>{val||'—'}</div>
+    </div>
+  );
+}
+
 export function SecMapaOperativo() {
-  const mapRef    = React.useRef<any>(null);
-  const mapEl     = React.useRef<HTMLDivElement>(null);
+  const mapEl      = React.useRef<HTMLDivElement>(null);
+  const mapInst    = React.useRef<any>(null);
   const markersRef = React.useRef<any[]>([]);
   const linesRef   = React.useRef<any[]>([]);
 
-  const [users,    setUsers]    = React.useState<any[]>([]);
-  const [services, setServices] = React.useState<any[]>([]);
-  const [selected, setSelected] = React.useState<any>(null);
-  const [loading,  setLoading]  = React.useState(true);
-  const [lastUpd,  setLastUpd]  = React.useState('—');
-  const [error,    setError]    = React.useState('');
+  const [users,      setUsers]      = React.useState<any[]>([]);
+  const [services,   setServices]   = React.useState<any[]>([]);
+  const [selected,   setSelected]   = React.useState<any>(null);
+  const [loading,    setLoading]    = React.useState(true);
+  const [lastUpd,    setLastUpd]    = React.useState('—');
+  const [error,      setError]      = React.useState('');
+  const [autoRefresh,setAutoRefresh]= React.useState(true);
 
-  // Filters
-  const [showProv,    setShowProv]    = React.useState(true);
-  const [showCli,     setShowCli]     = React.useState(true);
-  const [onlyOnline,  setOnlyOnline]  = React.useState(false);
-  const [catFilter,   setCatFilter]   = React.useState('Todos');
-  const [autoRefresh, setAutoRefresh] = React.useState(true);
+  // Filtros
+  const [showProv,  setShowProv]  = React.useState(true);
+  const [showCli,   setShowCli]   = React.useState(true);
+  const [statusFil, setStatusFil] = React.useState<'todos'|'online'|'offline'>('todos');
+  const [catFil,    setCatFil]    = React.useState('todos');
+  const [zonaFil,   setZonaFil]   = React.useState('');
 
-  // Load Leaflet
+  // Agregar proveedor
+  const [showAdd,   setShowAdd]   = React.useState(false);
+  const [addForm,   setAddForm]   = React.useState({nombre:'',categoria:'electricista',telefono:'',email:'',zona:'',lat:'',lng:''});
+  const [addAddr,   setAddAddr]   = React.useState('');
+  const [addLoading,setAddLoading]= React.useState(false);
+  const [addGeo,    setAddGeo]    = React.useState(false);
+
+  // ── Leaflet init ─────────────────────────────────────────────
   React.useEffect(() => {
-    const loadLeaflet = () => {
-      if ((window as any).L) { initMap(); return; }
-      const css = document.createElement('link');
-      css.rel = 'stylesheet';
-      css.href = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css';
-      document.head.appendChild(css);
-      const js = document.createElement('script');
-      js.src = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js';
-      js.onload = () => initMap();
-      document.head.appendChild(js);
-    };
-    loadLeaflet();
-  }, []);
+    if ((window as any).L) { initMap(); return; }
+    const css = document.createElement('link');
+    css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+    document.head.appendChild(css);
+    const js = document.createElement('script');
+    js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+    js.onload=()=>initMap();
+    document.head.appendChild(js);
+  },[]);
 
   function initMap() {
-    if (mapRef.current || !mapEl.current) return;
-    mapRef.current = (window as any).L.map(mapEl.current, {
-      zoomControl: true, attributionControl: false
-    }).setView([-27.5969, -48.5495], 12);
-    (window as any).L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 })
-      .addTo(mapRef.current);
+    if (mapInst.current||!mapEl.current) return;
+    const map = L.map(mapEl.current,{zoomControl:true,attributionControl:false}).setView([-27.5969,-48.5495],12);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+    mapInst.current = map;
+    [100,400,800].forEach(t=>setTimeout(()=>map.invalidateSize(),t));
     loadData();
   }
 
-  React.useEffect(() => {
-    if ((window as any).L && !mapRef.current && mapEl.current) initMap();
-  });
-
+  // ── Cargar datos ──────────────────────────────────────────────
   async function loadData() {
-    setLoading(true);
-    setError('');
+    setLoading(true); setError('');
     try {
-      const [u, s] = await Promise.all([
-        get('usuarios?select=id,nombre,tipo,email,telefono,categoria,karma,activo,online,lat,lng,endereco,bio,auth_id&tipo=in.(proveedor,cliente)&lat=not.is.null&limit=300'),
-        get('servicios?select=id,estado,cliente_id,proveedor_id,descripcion,tarifa,created_at,lat_cliente,lng_cliente,proveedor:proveedor_id(lat,lng)&estado=in.(negociando,confirmado,en_camino,ejecutando)&limit=50'),
+      // Todos los proveedores y clientes con coordenadas (activos e inactivos)
+      const [u,s] = await Promise.all([
+        sbFetch('usuarios?select=id,nombre,apellido,tipo,email,telefono,categoria,karma,activo,online,lat,lng,zona,endereco,bio&tipo=in.(proveedor,cliente)&lat=not.is.null&limit=500'),
+        sbFetch('servicios?select=id,estado,descripcion,tarifa,created_at,lat_cliente,lng_cliente,proveedor:proveedor_id(lat,lng)&estado=in.(negociando,confirmado,en_camino,ejecutando)&limit=100'),
       ]);
-
-      const usersArr = Array.isArray(u) ? u : [];
-      const svcsArr  = Array.isArray(s) ? s : [];
-
-      if (!usersArr.length && u?.message) {
-        setError(`API: ${u.message}`);
-      }
-
-      setUsers(usersArr);
-      setServices(svcsArr);
+      if (!Array.isArray(u)) { setError(u?.message||'Error cargando usuarios'); setLoading(false); return; }
+      setUsers(u); setServices(Array.isArray(s)?s:[]);
       setLastUpd(new Date().toLocaleTimeString('es-AR'));
-    } catch (e: any) {
-      setError(e.message);
-    }
+    } catch(e:any) { setError(e.message); }
     setLoading(false);
   }
 
-  // Auto-refresh
-  React.useEffect(() => {
-    if (!autoRefresh) return;
-    const t = setInterval(loadData, 15000);
-    return () => clearInterval(t);
-  }, [autoRefresh]);
+  React.useEffect(()=>{ if(!autoRefresh)return; const t=setInterval(loadData,15000); return()=>clearInterval(t); },[autoRefresh]);
 
-  // Render markers
+  // ── Render markers ────────────────────────────────────────────
   React.useEffect(() => {
-    const Lmap = (window as any).L;
-    if (!mapRef.current || !Lmap) return;
-
-    markersRef.current.forEach(m => m.remove());
-    linesRef.current.forEach(l => l.remove());
-    markersRef.current = [];
-    linesRef.current   = [];
+    if (!mapInst.current||!L) return;
+    markersRef.current.forEach(m=>m.remove()); markersRef.current=[];
+    linesRef.current.forEach(l=>l.remove());   linesRef.current=[];
 
     const filtered = users.filter(u => {
-      if (!u.lat || !u.lng) return false;
-      if (u.tipo === 'proveedor' && !showProv) return false;
-      if (u.tipo === 'cliente'   && !showCli)  return false;
-      if (onlyOnline && u.tipo === 'proveedor' && !u.online) return false;
-      if (catFilter !== 'Todos' && u.tipo === 'proveedor' && u.categoria !== catFilter) return false;
+      if (!u.lat||!u.lng) return false;
+      if (u.tipo==='proveedor'&&!showProv) return false;
+      if (u.tipo==='cliente'&&!showCli) return false;
+      if (u.tipo==='proveedor') {
+        if (statusFil==='online'&&!u.online) return false;
+        if (statusFil==='offline'&&u.online) return false;
+        if (catFil!=='todos'&&u.categoria!==catFil) return false;
+        if (zonaFil&&!(u.zona||'').toLowerCase().includes(zonaFil.toLowerCase())) return false;
+      }
       return true;
     });
 
     filtered.forEach(u => {
-      const isProv   = u.tipo === 'proveedor';
-      const isOnline = u.online;
-      const ic       = isProv ? (CAT_IC[u.categoria] || '🔧') : '👤';
-      const bg       = isProv ? (isOnline ? '#22C55E' : '#9CA3AF') : '#3B82F6';
-      const sz       = isProv ? 40 : 32;
-      const pulse    = isProv && isOnline ? `animation:mapPulse 2s infinite;` : '';
-      const html     = `<div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${bg};
-        border:2.5px solid #fff;box-shadow:0 2px 10px rgba(0,0,0,.28);
-        display:flex;align-items:center;justify-content:center;
-        font-size:${isProv ? 17 : 14}px;cursor:pointer;${pulse}
-        transition:transform .15s;">${ic}</div>`;
-      const icon = Lmap.divIcon({ className: '', html, iconSize: [sz, sz], iconAnchor: [sz / 2, sz / 2] });
-      const m = Lmap.marker([u.lat, u.lng], { icon }).addTo(mapRef.current);
-      m.on('click', () => setSelected(u));
+      const isProv = u.tipo==='proveedor';
+      let icon;
+      if (isProv) {
+        const color = pinColor(u.online,u.activo!==false);
+        const emoji = CAT_EMOJI[u.categoria||'']||'🔧';
+        icon = makePin(color,emoji,32);
+      } else {
+        icon = clientPin();
+      }
+
+      const m = L.marker([u.lat,u.lng],{icon}).addTo(mapInst.current);
+      m.bindPopup(`
+        <div style="font-family:Inter,sans-serif;min-width:170px;padding:2px;">
+          <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${u.nombre} ${u.apellido||''}</div>
+          <div style="font-size:10px;color:#6B7280;margin-bottom:4px;">${CAT_EMOJI[u.categoria||'']||''} ${u.categoria||u.tipo} · ⭐ ${u.karma||5}</div>
+          ${u.telefono?`<div style="font-size:11px;color:#05944F;font-weight:600;">📱 ${u.telefono}</div>`:''}
+          ${isProv?`<div style="font-size:11px;font-weight:600;color:${pinColor(u.online,u.activo!==false)};margin-top:3px;">${u.online?'🟢 Online':u.activo!==false?'🟡 Registrado':'🔴 Inactivo'}</div>`:''}
+          ${u.zona?`<div style="font-size:10px;color:#9CA3AF;margin-top:3px;">📍 ${u.zona}</div>`:''}
+        </div>`);
+      m.on('click',()=>setSelected(u));
       markersRef.current.push(m);
     });
 
-    // Lines for active services
+    // Líneas de servicios activos
     services.forEach(s => {
-      const pLat = s.proveedor?.lat;
-      const pLng = s.proveedor?.lng;
-      if (!s.lat_cliente || !s.lng_cliente || !pLat || !pLng) return;
-      const color = s.estado === 'en_camino' ? '#F59E0B' : '#EF4444';
-      const line = Lmap.polyline(
-        [[s.lat_cliente, s.lng_cliente], [pLat, pLng]],
-        { color, weight: 2.5, opacity: 0.85, dashArray: '6 4' }
-      ).addTo(mapRef.current);
-      line.on('click', () => setSelected({ _svc: true, ...s }));
+      if (!s.lat_cliente||!s.lng_cliente||!s.proveedor?.lat||!s.proveedor?.lng) return;
+      const color = s.estado==='en_camino'?'#F59E0B':'#8B5CF6';
+      const line = L.polyline([[s.lat_cliente,s.lng_cliente],[s.proveedor.lat,s.proveedor.lng]],
+        {color,weight:2.5,opacity:.85,dashArray:'6 4'}).addTo(mapInst.current);
       linesRef.current.push(line);
     });
 
-  }, [users, services, showProv, showCli, onlyOnline, catFilter]);
+  },[users,services,showProv,showCli,statusFil,catFil,zonaFil]);
 
-  // Stats
-  const stats = React.useMemo(() => ({
-    provs:  users.filter(u => u.tipo === 'proveedor').length,
-    clis:   users.filter(u => u.tipo === 'cliente').length,
-    online: users.filter(u => u.tipo === 'proveedor' && u.online).length,
-    svcs:   services.length,
-    shown:  users.filter(u => {
-      if (u.tipo === 'proveedor' && !showProv) return false;
-      if (u.tipo === 'cliente'   && !showCli)  return false;
-      if (onlyOnline && u.tipo === 'proveedor' && !u.online) return false;
-      if (catFilter !== 'Todos' && u.tipo === 'proveedor' && u.categoria !== catFilter) return false;
-      return !!u.lat;
-    }).length,
-  }), [users, services, showProv, showCli, onlyOnline, catFilter]);
+  // ── Stats ─────────────────────────────────────────────────────
+  const provs   = users.filter(u=>u.tipo==='proveedor');
+  const online  = provs.filter(u=>u.online).length;
+  const offline = provs.filter(u=>!u.online&&u.activo!==false).length;
+  const clis    = users.filter(u=>u.tipo==='cliente').length;
+  const shown   = markersRef.current.length;
+
+  // ── Geocodificar dirección para agregar proveedor ─────────────
+  const geocodeAdd = async () => {
+    if (!addAddr.trim()) return;
+    setAddGeo(true);
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addAddr+', Brasil')}&format=json&limit=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+    const d = await r.json();
+    if (d[0]) { setAddForm(f=>({...f,lat:parseFloat(d[0].lat).toFixed(6),lng:parseFloat(d[0].lon).toFixed(6),zona:d[0].address?.city||d[0].address?.town||f.zona})); setAddAddr(''); }
+    else alert('No encontrado. Probá con ciudad, barrio o dirección.');
+    setAddGeo(false);
+  };
+
+  // ── Guardar proveedor nuevo ───────────────────────────────────
+  const saveProvider = async () => {
+    if (!addForm.nombre.trim()) return alert('Nombre requerido');
+    setAddLoading(true);
+    const email = addForm.email.trim()||`import_${Math.random().toString(36).slice(2)}@ugo.app`;
+    const r = await fetch(`${SB_URL}/rest/v1/rpc/import_proveedores_csv`,{
+      method:'POST',
+      headers:{apikey:SB_ANON,Authorization:`Bearer ${SB_ANON}`,'Content-Type':'application/json'},
+      body:JSON.stringify({p_rows:[{
+        nombre:addForm.nombre, categoria:addForm.categoria, telefono:addForm.telefono,
+        email, ciudad:addForm.zona||'Florianópolis', pais:'BR',
+        latitud:addForm.lat, longitud:addForm.lng, notas_hugo:'Agregado manualmente desde Mapa Operativo',
+      }]}),
+    });
+    const d = await r.json();
+    if (d.ok) {
+      alert(`✅ ${addForm.nombre} agregado como proveedor`);
+      setAddForm({nombre:'',categoria:'electricista',telefono:'',email:'',zona:'',lat:'',lng:''});
+      setShowAdd(false);
+      loadData();
+      // Mover mapa al nuevo proveedor
+      if (addForm.lat&&addForm.lng&&mapInst.current) mapInst.current.setView([parseFloat(addForm.lat),parseFloat(addForm.lng)],15);
+    } else alert('Error: '+(d.error||d.detalle?.[0]||'Revisar Supabase'));
+    setAddLoading(false);
+  };
+
+  const inp = {padding:'7px 10px',border:'1.5px solid rgba(0,0,0,.15)',borderRadius:'8px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',background:'#F8F9FA',color:'#111',width:'100%'} as React.CSSProperties;
+  const sel = {...inp,cursor:'pointer'};
 
   return (
-    <div style={{ height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <style>{`@keyframes mapPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.5)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}`}</style>
+    <div style={{height:'100%',display:'flex',flexDirection:'column',overflow:'hidden'}}>
+      <style>{`@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(5,148,79,.4)}50%{box-shadow:0 0 0 8px rgba(5,148,79,0)}}`}</style>
 
-      {/* ── HEADER ── */}
-      <div style={{ padding: '8px 14px', borderBottom: '1px solid var(--border)', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', background: '#fff' }}>
-        <span style={{ fontWeight: 800, fontSize: 14 }}>🗺 Mapa Operativo</span>
+      {/* HEADER */}
+      <div style={{padding:'8px 14px',borderBottom:'1px solid #e5e5e5',flexShrink:0,display:'flex',alignItems:'center',gap:8,flexWrap:'wrap',background:'#fff'}}>
+        <span style={{fontWeight:800,fontSize:14}}>🗺 Mapa Operativo</span>
 
-        {/* Stat chips */}
         {[
-          { ic: '🔧', label: 'Proveedores', val: stats.provs, c: '#6366F1' },
-          { ic: '🟢', label: 'Online',      val: stats.online, c: '#22C55E' },
-          { ic: '👤', label: 'Clientes',    val: stats.clis,  c: '#3B82F6' },
-          { ic: '🔗', label: 'Activos',     val: stats.svcs,  c: '#F59E0B' },
-        ].map(s => (
-          <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 5, background: s.c + '14', borderRadius: 20, padding: '3px 10px' }}>
-            <span style={{ fontSize: 10 }}>{s.ic}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, color: s.c }}>{s.val} {s.label}</span>
+          {ic:'🔧',label:'Proveedores',val:provs.length,c:'#276EF1'},
+          {ic:'🟢',label:'Online',val:online,c:'#05944F'},
+          {ic:'🟡',label:'Offline',val:offline,c:'#F59E0B'},
+          {ic:'👤',label:'Clientes',val:clis,c:'#276EF1'},
+          {ic:'🔗',label:'Servicios',val:services.length,c:'#8B5CF6'},
+        ].map(s=>(
+          <div key={s.label} style={{display:'flex',alignItems:'center',gap:4,background:s.c+'14',borderRadius:20,padding:'3px 9px'}}>
+            <span style={{fontSize:10}}>{s.ic}</span>
+            <span style={{fontSize:10,fontWeight:700,color:s.c}}>{s.val} {s.label}</span>
           </div>
         ))}
 
-        <div style={{ flex: 1 }} />
-
-        {error && <span style={{ fontSize: 11, color: '#EF4444', maxWidth: 200 }}>⚠️ {error}</span>}
-        <span style={{ fontSize: 11, color: '#aaa' }}>
-          {stats.shown} visibles · {lastUpd}
-        </span>
-        <button onClick={loadData} disabled={loading}
-          style={{ padding: '5px 12px', background: '#111', color: '#fff', border: 'none', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-          {loading ? '⏳' : '↺ Actualizar'}
+        <div style={{flex:1}}/>
+        {error&&<span style={{fontSize:11,color:'#E11900'}}>⚠️ {error}</span>}
+        <span style={{fontSize:10,color:'#aaa'}}>{shown} visibles · {lastUpd}</span>
+        <button onClick={()=>setShowAdd(a=>!a)}
+          style={{padding:'6px 12px',background:showAdd?'#E11900':'#05944F',color:'#fff',border:'none',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer'}}>
+          {showAdd?'✕ Cerrar':'+ Proveedor'}
         </button>
-        <label style={{ fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
-          <input type="checkbox" checked={autoRefresh} onChange={e => setAutoRefresh(e.target.checked)} style={{ accentColor: '#22C55E' }} />
-          Auto (15s)
+        <button onClick={loadData} disabled={loading}
+          style={{padding:'6px 12px',background:'#111',color:'#fff',border:'none',borderRadius:8,fontSize:11,fontWeight:700,cursor:'pointer'}}>
+          {loading?'⏳':'↺'}
+        </button>
+        <label style={{fontSize:11,fontWeight:600,display:'flex',alignItems:'center',gap:4,cursor:'pointer'}}>
+          <input type="checkbox" checked={autoRefresh} onChange={e=>setAutoRefresh(e.target.checked)}/> Auto
         </label>
       </div>
 
-      <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{flex:1,display:'flex',overflow:'hidden'}}>
 
-        {/* ── FILTERS ── */}
-        <div style={{ width: 185, flexShrink: 0, borderRight: '1px solid var(--border)', overflowY: 'auto', background: '#fafafa', padding: '12px 10px' }}>
+        {/* FILTROS */}
+        <div style={{width:190,flexShrink:0,borderRight:'1px solid #e5e5e5',overflowY:'auto',background:'#FAFAFA',padding:'12px 10px'}}>
 
-          <Fsec title="TIPO">
-            <Fcheck label="🔧 Proveedores" color="#6366F1" val={showProv} set={setShowProv} />
-            <Fcheck label="👤 Clientes"    color="#3B82F6" val={showCli}  set={setShowCli}  />
-          </Fsec>
+          {/* Agregar proveedor */}
+          {showAdd&&(
+            <div style={{background:'#fff',border:'1px solid #e5e5e5',borderRadius:10,padding:'10px',marginBottom:12}}>
+              <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'#111',marginBottom:8}}>+ Agregar Proveedor</div>
+              <div style={{marginBottom:6}}>
+                <div style={{fontSize:9,color:'#aaa',textTransform:'uppercase',marginBottom:3}}>Nombre *</div>
+                <input style={inp} value={addForm.nombre} onChange={e=>setAddForm(f=>({...f,nombre:e.target.value}))} placeholder="Nombre del proveedor"/>
+              </div>
+              <div style={{marginBottom:6}}>
+                <div style={{fontSize:9,color:'#aaa',textTransform:'uppercase',marginBottom:3}}>Categoría</div>
+                <select style={sel} value={addForm.categoria} onChange={e=>setAddForm(f=>({...f,categoria:e.target.value}))}>
+                  {CATS.filter(c=>c.slug!=='todos').map(c=><option key={c.slug} value={c.slug}>{c.emoji} {c.label}</option>)}
+                </select>
+              </div>
+              <div style={{marginBottom:6}}>
+                <div style={{fontSize:9,color:'#aaa',textTransform:'uppercase',marginBottom:3}}>Teléfono</div>
+                <input style={inp} value={addForm.telefono} onChange={e=>setAddForm(f=>({...f,telefono:e.target.value}))} placeholder="+55 48 99999-0000"/>
+              </div>
+              <div style={{marginBottom:6}}>
+                <div style={{fontSize:9,color:'#aaa',textTransform:'uppercase',marginBottom:3}}>Dirección → Geo</div>
+                <div style={{display:'flex',gap:4}}>
+                  <input style={{...inp,flex:1}} value={addAddr} onChange={e=>setAddAddr(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocodeAdd()} placeholder="Bairro, cidade..."/>
+                  <button onClick={geocodeAdd} disabled={addGeo||!addAddr.trim()} style={{padding:'6px 8px',background:'#111',color:'#fff',border:'none',borderRadius:6,cursor:'pointer',fontSize:11}}>
+                    {addGeo?'⏳':'🔍'}
+                  </button>
+                </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:4,marginBottom:8}}>
+                <div>
+                  <div style={{fontSize:9,color:'#aaa',marginBottom:2}}>Lat</div>
+                  <input style={{...inp,fontFamily:'monospace',fontSize:10}} value={addForm.lat} onChange={e=>setAddForm(f=>({...f,lat:e.target.value}))} placeholder="-27.59"/>
+                </div>
+                <div>
+                  <div style={{fontSize:9,color:'#aaa',marginBottom:2}}>Lng</div>
+                  <input style={{...inp,fontFamily:'monospace',fontSize:10}} value={addForm.lng} onChange={e=>setAddForm(f=>({...f,lng:e.target.value}))} placeholder="-48.54"/>
+                </div>
+              </div>
+              <button onClick={saveProvider} disabled={addLoading||!addForm.nombre.trim()||!addForm.lat}
+                style={{width:'100%',padding:'8px',background:addLoading||!addForm.nombre.trim()||!addForm.lat?'#ccc':'#05944F',color:'#fff',border:'none',borderRadius:8,fontSize:12,fontWeight:700,cursor:'pointer'}}>
+                {addLoading?'⏳ Guardando...':'✅ Incluir en Supabase'}
+              </button>
+            </div>
+          )}
 
-          <Fsec title="ESTADO">
-            {[
-              { label: '⚫ Todos',       val: false },
-              { label: '🟢 Solo online', val: true },
-            ].map(opt => (
-              <label key={String(opt.val)} style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-                <input type="radio" checked={onlyOnline === opt.val} onChange={() => setOnlyOnline(opt.val)} style={{ accentColor: '#22C55E' }} />
-                {opt.label}
+          {/* Tipo */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>TIPO</div>
+            {[{v:showProv,s:setShowProv,l:'🔧 Proveedores',c:'#276EF1'},{v:showCli,s:setShowCli,l:'👤 Clientes',c:'#3B82F6'}].map(({v,s,l,c})=>(
+              <label key={l} style={{display:'flex',alignItems:'center',gap:7,marginBottom:6,cursor:'pointer',fontSize:12,fontWeight:600}}>
+                <input type="checkbox" checked={v} onChange={e=>s(e.target.checked)} style={{accentColor:c}}/>{l}
               </label>
             ))}
-          </Fsec>
+          </div>
 
-          <Fsec title="CATEGORÍA">
-            {CATS.map(cat => (
-              <div key={cat} onClick={() => setCatFilter(cat)}
-                style={{
-                  padding: '5px 9px', borderRadius: 7, cursor: 'pointer', fontSize: 12, fontWeight: 600,
-                  background: catFilter === cat ? 'rgba(0,200,215,.12)' : 'transparent',
-                  color: catFilter === cat ? '#0080AA' : '#555',
-                  borderLeft: catFilter === cat ? '3px solid #00C8D7' : '3px solid transparent',
-                  marginBottom: 2, transition: 'all .15s'
-                }}>
-                {CAT_IC[cat] || '•'} {cat}
+          {/* Estado */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>ESTADO</div>
+            {[{v:'todos',l:'⚫ Todos'},{v:'online',l:'🟢 Online'},{v:'offline',l:'🟡 Offline / Importados'}].map(opt=>(
+              <label key={opt.v} style={{display:'flex',alignItems:'center',gap:7,marginBottom:6,cursor:'pointer',fontSize:11,fontWeight:600}}>
+                <input type="radio" checked={statusFil===opt.v} onChange={()=>setStatusFil(opt.v as any)}/>{opt.l}
+              </label>
+            ))}
+          </div>
+
+          {/* Categoría */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>CATEGORÍA</div>
+            {CATS.map(cat=>(
+              <div key={cat.slug} onClick={()=>setCatFil(cat.slug)}
+                style={{padding:'5px 8px',borderRadius:7,cursor:'pointer',fontSize:11,fontWeight:600,
+                  background:catFil===cat.slug?'rgba(5,148,79,.1)':'transparent',
+                  color:catFil===cat.slug?'#05944F':'#555',
+                  borderLeft:catFil===cat.slug?'3px solid #05944F':'3px solid transparent',
+                  marginBottom:2,transition:'all .15s'}}>
+                {cat.emoji} {cat.label}
               </div>
             ))}
-          </Fsec>
+          </div>
 
-          <Fsec title="LEYENDA">
-            {[
-              { color: '#22C55E', label: 'Proveedor online', dot: true },
-              { color: '#9CA3AF', label: 'Proveedor offline', dot: true },
-              { color: '#3B82F6', label: 'Cliente', dot: true },
-              { color: '#F59E0B', label: 'En camino', dash: true },
-              { color: '#EF4444', label: 'Ejecutando', dash: true },
-            ].map(l => (
-              <div key={l.label} style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 5 }}>
-                {l.dash
-                  ? <div style={{ width: 18, height: 0, borderTop: `2.5px dashed ${l.color}`, flexShrink: 0 }} />
-                  : <div style={{ width: 11, height: 11, borderRadius: '50%', background: l.color, flexShrink: 0 }} />
-                }
-                <span style={{ fontSize: 10, color: '#666' }}>{l.label}</span>
+          {/* Zona */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>ZONA / BARRIO</div>
+            <input style={{...inp,fontSize:11}} value={zonaFil} onChange={e=>setZonaFil(e.target.value)} placeholder="Filtrar por zona..."/>
+          </div>
+
+          {/* Leyenda */}
+          <div style={{marginBottom:12}}>
+            <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>LEYENDA</div>
+            {[['#05944F','Online + activo'],['#F59E0B','Registrado / offline'],['#E11900','Inactivo'],['#276EF1','Cliente'],['#F59E0B','Servicio en camino (línea)'],['#8B5CF6','Ejecutando (línea)']].map(([c,l])=>(
+              <div key={String(l)} style={{display:'flex',alignItems:'center',gap:6,marginBottom:5}}>
+                <div style={{width:10,height:10,borderRadius:'50%',background:String(c),flexShrink:0}}/>
+                <span style={{fontSize:10,color:'#666'}}>{l}</span>
               </div>
             ))}
-          </Fsec>
+          </div>
         </div>
 
-        {/* ── MAP ── */}
-        <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-          <div ref={mapEl} style={{ width: '100%', height: '100%' }} />
-
-          {loading && (
-            <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,.95)', padding: '8px 16px', borderRadius: 20, fontSize: 12, fontWeight: 700, boxShadow: '0 2px 10px rgba(0,0,0,.15)', zIndex: 999, whiteSpace: 'nowrap' }}>
-              ⏳ Cargando datos...
+        {/* MAPA */}
+        <div style={{flex:1,position:'relative',overflow:'hidden'}}>
+          <div ref={mapEl} style={{width:'100%',height:'100%'}}/>
+          {loading&&(
+            <div style={{position:'absolute',top:12,left:'50%',transform:'translateX(-50%)',background:'rgba(255,255,255,.95)',padding:'8px 16px',borderRadius:20,fontSize:12,fontWeight:700,boxShadow:'0 2px 10px rgba(0,0,0,.15)',zIndex:999,whiteSpace:'nowrap'}}>
+              ⏳ Cargando proveedores...
             </div>
           )}
-
-          {!loading && stats.shown === 0 && !error && (
-            <div style={{ position: 'absolute', top: 12, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,.97)', padding: '10px 18px', borderRadius: 12, fontSize: 12, fontWeight: 600, boxShadow: '0 2px 10px rgba(0,0,0,.15)', zIndex: 999, textAlign: 'center' }}>
-              📍 Sin marcadores visibles con los filtros actuales<br/>
-              <span style={{ fontSize: 11, color: '#888' }}>Verificá que los filtros estén correctos</span>
+          {!loading&&shown===0&&(
+            <div style={{position:'absolute',top:12,left:'50%',transform:'translateX(-50%)',background:'rgba(255,255,255,.97)',padding:'10px 18px',borderRadius:12,fontSize:12,fontWeight:600,boxShadow:'0 2px 10px rgba(0,0,0,.15)',zIndex:999,textAlign:'center'}}>
+              📍 Sin marcadores con los filtros actuales<br/>
+              <span style={{fontSize:11,color:'#888'}}>Cambiá el estado a "Todos" o importá proveedores</span>
             </div>
           )}
         </div>
 
-        {/* ── DETAIL PANEL ── */}
-        {selected && (
-          <div style={{ width: 230, flexShrink: 0, borderLeft: '1px solid var(--border)', overflowY: 'auto', background: '#fff', display: 'flex', flexDirection: 'column' }}>
-            {/* Header */}
-            <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
-              <span style={{ fontWeight: 800, fontSize: 13 }}>
-                {selected._svc ? '🔗 Servicio' : selected.tipo === 'proveedor' ? '🔧 Proveedor' : '👤 Cliente'}
-              </span>
-              <button onClick={() => setSelected(null)} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: '#bbb', lineHeight: 1 }}>✕</button>
+        {/* PANEL DETALLE */}
+        {selected&&(
+          <div style={{width:230,flexShrink:0,borderLeft:'1px solid #e5e5e5',overflowY:'auto',background:'#fff',display:'flex',flexDirection:'column'}}>
+            <div style={{padding:'10px 12px',borderBottom:'1px solid #e5e5e5',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+              <span style={{fontWeight:800,fontSize:13}}>{selected.tipo==='proveedor'?'🔧 Proveedor':'👤 Cliente'}</span>
+              <button onClick={()=>setSelected(null)} style={{background:'none',border:'none',fontSize:18,cursor:'pointer',color:'#bbb'}}>✕</button>
             </div>
-
-            <div style={{ padding: '12px', flex: 1, overflowY: 'auto' }}>
-              {selected._svc ? (
-                /* Service */
-                <>
-                  <StatusBadge e={selected.estado} />
-                  <div style={{ marginTop: 10 }}>
-                    <DField label="Descripción" val={selected.descripcion || '—'} />
-                    <DField label="Tarifa"       val={selected.tarifa ? `R$${selected.tarifa}` : '—'} />
-                    <DField label="Creado"        val={selected.created_at ? new Date(selected.created_at).toLocaleString('es-AR') : '—'} small />
-                  </div>
-                </>
-              ) : (
-                /* User */
-                <>
-                  {/* Avatar */}
-                  <div style={{ textAlign: 'center', marginBottom: 12 }}>
-                    <div style={{
-                      width: 52, height: 52, borderRadius: '50%', margin: '0 auto 8px',
-                      background: selected.tipo === 'proveedor' ? 'linear-gradient(135deg,#00C8D7,#0080AA)' : 'linear-gradient(135deg,#3B82F6,#1D4ED8)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, color: '#fff', fontWeight: 800
-                    }}>
-                      {(selected.nombre || 'U')[0].toUpperCase()}
-                    </div>
-                    <div style={{ fontWeight: 800, fontSize: 14, marginBottom: 4 }}>{selected.nombre}</div>
-                    {selected.tipo === 'proveedor' && (
-                      <div style={{
-                        display: 'inline-flex', alignItems: 'center', gap: 4, borderRadius: 20, padding: '3px 10px',
-                        background: selected.online ? 'rgba(34,197,94,.1)' : 'rgba(0,0,0,.05)',
-                        fontSize: 11, fontWeight: 700, color: selected.online ? '#22C55E' : '#888'
-                      }}>
-                        {selected.online ? '🟢 En línea' : '⚫ Offline'}
-                      </div>
-                    )}
-                  </div>
-
-                  {selected.tipo === 'proveedor' && (
-                    <DField label="Categoría" val={`${CAT_IC[selected.categoria] || '🔧'} ${selected.categoria || '—'}`} />
-                  )}
-                  <DField label="Email"     val={selected.email || '—'} small />
-                  <DField label="Teléfono"  val={selected.telefono || '—'} />
-                  {selected.tipo === 'proveedor' && (
-                    <DField label="Karma" val={`★ ${(selected.karma || 5).toFixed(1)}`} />
-                  )}
-                  <DField label="Dirección" val={selected.endereco || '—'} small />
-                  {selected.bio && <DField label="Web/Bio" val={selected.bio} small />}
-                  <DField label="GPS" val={`${(selected.lat || 0).toFixed(5)}, ${(selected.lng || 0).toFixed(5)}`} small mono />
-
-                  {/* Action buttons */}
-                  <div style={{ display: 'flex', gap: 6, marginTop: 14, flexWrap: 'wrap' }}>
-                    {selected.telefono && (
-                      <a href={`tel:${selected.telefono}`}
-                        style={{ flex: 1, minWidth: 80, padding: '8px 4px', background: '#111', color: '#fff', borderRadius: 10, fontSize: 11, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
-                        📞 Llamar
-                      </a>
-                    )}
-                    {selected.lat && (
-                      <a href={`https://www.google.com/maps?q=${selected.lat},${selected.lng}`} target="_blank" rel="noreferrer"
-                        style={{ flex: 1, minWidth: 80, padding: '8px 4px', background: 'rgba(0,200,215,.1)', color: '#0080AA', borderRadius: 10, fontSize: 11, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
-                        🗺 Maps
-                      </a>
-                    )}
-                    {selected.email && (
-                      <a href={`mailto:${selected.email}`}
-                        style={{ flex: 1, minWidth: 80, padding: '8px 4px', background: '#f5f5f5', color: '#555', borderRadius: 10, fontSize: 11, fontWeight: 700, textAlign: 'center', textDecoration: 'none' }}>
-                        ✉️ Email
-                      </a>
-                    )}
-                  </div>
-                </>
-              )}
+            <div style={{padding:12,flex:1}}>
+              <div style={{textAlign:'center',marginBottom:12}}>
+                <div style={{width:52,height:52,borderRadius:'50%',margin:'0 auto 8px',
+                  background:selected.tipo==='proveedor'?pinColor(selected.online,selected.activo!==false):'#276EF1',
+                  display:'flex',alignItems:'center',justifyContent:'center',fontSize:22,border:'3px solid #FFF',boxShadow:'0 2px 10px rgba(0,0,0,.15)'}}>
+                  {CAT_EMOJI[selected.categoria||'']||'🔧'}
+                </div>
+                <div style={{fontWeight:800,fontSize:14,marginBottom:4}}>{selected.nombre} {selected.apellido||''}</div>
+                <div style={{display:'inline-flex',alignItems:'center',gap:4,borderRadius:20,padding:'3px 10px',
+                  background:pinColor(selected.online,selected.activo!==false)+'18',
+                  fontSize:11,fontWeight:700,color:pinColor(selected.online,selected.activo!==false)}}>
+                  {selected.online?'🟢 Online':selected.activo!==false?'🟡 Registrado':'🔴 Inactivo'}
+                </div>
+              </div>
+              {selected.tipo==='proveedor'&&<DField label="Categoría" val={`${CAT_EMOJI[selected.categoria||'']||''} ${selected.categoria||'—'}`}/>}
+              <DField label="Email"     val={selected.email} small/>
+              <DField label="Teléfono"  val={selected.telefono}/>
+              <DField label="Karma"     val={selected.karma?`★ ${Number(selected.karma).toFixed(1)}`:'—'}/>
+              <DField label="Zona"      val={selected.zona}/>
+              <DField label="Dirección" val={selected.endereco} small/>
+              <DField label="GPS" val={`${Number(selected.lat||0).toFixed(5)}, ${Number(selected.lng||0).toFixed(5)}`} small mono/>
+              <div style={{display:'flex',gap:6,marginTop:14,flexWrap:'wrap'}}>
+                {selected.telefono&&<a href={`tel:${selected.telefono}`} style={{flex:1,minWidth:80,padding:'8px 4px',background:'#111',color:'#fff',borderRadius:10,fontSize:11,fontWeight:700,textAlign:'center',textDecoration:'none'}}>📞 Llamar</a>}
+                {selected.telefono&&<a href={`https://wa.me/${(selected.telefono||'').replace(/\D/g,'')}`} target="_blank" rel="noreferrer" style={{flex:1,minWidth:80,padding:'8px 4px',background:'#25D366',color:'#fff',borderRadius:10,fontSize:11,fontWeight:700,textAlign:'center',textDecoration:'none'}}>💬 WA</a>}
+                {selected.lat&&<a href={`https://www.google.com/maps?q=${selected.lat},${selected.lng}`} target="_blank" rel="noreferrer" style={{flex:1,minWidth:80,padding:'8px 4px',background:'rgba(39,110,241,.1)',color:'#276EF1',borderRadius:10,fontSize:11,fontWeight:700,textAlign:'center',textDecoration:'none'}}>🗺 Maps</a>}
+              </div>
             </div>
           </div>
         )}
       </div>
-    </div>
-  );
-}
-
-/* ── SUB-COMPONENTS ── */
-function Fsec({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <div style={{ fontSize: 9, fontWeight: 800, color: '#aaa', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 7 }}>{title}</div>
-      {children}
-    </div>
-  );
-}
-
-function Fcheck({ label, color, val, set }: { label: string; color: string; val: boolean; set: (v: boolean) => void }) {
-  return (
-    <label style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 7, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
-      <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} style={{ accentColor: color }} />
-      {label}
-    </label>
-  );
-}
-
-function DField({ label, val, small, mono }: { label: string; val: any; small?: boolean; mono?: boolean }) {
-  return (
-    <div style={{ marginBottom: 9 }}>
-      <div style={{ fontSize: 9, fontWeight: 700, color: '#bbb', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 2 }}>{label}</div>
-      <div style={{ fontSize: small ? 10 : 12, fontWeight: 600, color: '#111', wordBreak: 'break-all', fontFamily: mono ? 'monospace' : 'inherit', lineHeight: 1.4 }}>
-        {val}
-      </div>
-    </div>
-  );
-}
-
-function StatusBadge({ e }: { e: string }) {
-  const MAP: Record<string, [string, string]> = {
-    negociando: ['#F59E0B', '🤝 Negociando'],
-    confirmado: ['#3B82F6', '✅ Confirmado'],
-    en_camino:  ['#F59E0B', '🚗 En camino'],
-    ejecutando: ['#8B5CF6', '🔧 Ejecutando'],
-    completado: ['#22C55E', '✓ Completado'],
-    cancelado:  ['#EF4444', '✕ Cancelado'],
-  };
-  const [c, l] = MAP[e] || ['#888', e];
-  return (
-    <div style={{ background: c + '18', color: c, borderRadius: 20, padding: '5px 12px', fontSize: 12, fontWeight: 700, textAlign: 'center' }}>
-      {l}
     </div>
   );
 }
