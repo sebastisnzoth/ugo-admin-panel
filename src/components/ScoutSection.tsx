@@ -9,26 +9,22 @@ const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJ
 // Categorías con label en ES / PT / EN
 const CAT_CONFIG: Record<string,{label:string;emoji:string;grupo:string}> = {
   // ── HOGAR ──────────────────────────────────────────────────
-  electricista:      {label:'Electricista · Eletricista',      emoji:'⚡', grupo:'🏠 Hogar'},
-  plomero:           {label:'Plomero · Encanador',             emoji:'🔧', grupo:'🏠 Hogar'},
-  limpeza:           {label:'Limpieza · Faxina · Cleaning',    emoji:'🧹', grupo:'🏠 Hogar'},
-  cerrajero:         {label:'Cerrajero · Chaveiro · Locksmith',emoji:'🔑', grupo:'🏠 Hogar'},
-  pintura:           {label:'Pintor · Painter',                emoji:'🎨', grupo:'🏠 Hogar'},
-  carpintaria:       {label:'Carpintero · Marceneiro',         emoji:'🪚', grupo:'🏠 Hogar'},
-  jardinagem:        {label:'Jardinero · Jardineiro',          emoji:'🌿', grupo:'🏠 Hogar'},
-  climatizacao:      {label:'AC/Clima · HVAC',                 emoji:'❄️', grupo:'🏠 Hogar'},
-  ti_redes:          {label:'TI · Informática · IT',           emoji:'💻', grupo:'🏠 Hogar'},
-  reformas:          {label:'Reformas · Handyman',             emoji:'🏠', grupo:'🏠 Hogar'},
-  // ── AUTOMOTRIZ ─────────────────────────────────────────────
-  mecanico_geral:    {label:'Mecánico General · Oficina Mecânica', emoji:'🔩', grupo:'🚗 Automotriz'},
-  mecanico_eletrico: {label:'Mecánico Eléctrico · Elétrica Auto',  emoji:'⚡🚗',grupo:'🚗 Automotriz'},
-  pintura_chapa:     {label:'Pintura y Chapa · Funilaria',         emoji:'🛠️', grupo:'🚗 Automotriz'},
-  auxilio_ruta:      {label:'Auxilio en Ruta · Socorro',           emoji:'🚨', grupo:'🚗 Automotriz'},
-  vulcanizacion:     {label:'Gomería · Borracharia · Tires',       emoji:'🔘', grupo:'🚗 Automotriz'},
-  electricista_auto: {label:'Electricista Automotriz',             emoji:'🔌', grupo:'🚗 Automotriz'},
-  lavado_auto:       {label:'Lavado de Autos · Lava Rápido',       emoji:'🚿', grupo:'🚗 Automotriz'},
+  electricista:      {label:'Electricista · Eletricista',       emoji:'⚡',  grupo:'🏠 Hogar'},
+  plomero:           {label:'Plomero · Encanador · Hidráulica', emoji:'🚿',  grupo:'🏠 Hogar'},
+  limpeza:           {label:'Limpieza · Faxina',                emoji:'🧹',  grupo:'🏠 Hogar'},
+  chaveiro:          {label:'Chaveiro · Cerrajero · Locksmith',  emoji:'🔑',  grupo:'🏠 Hogar'},
+  pintura:           {label:'Pintura · Pintor',                  emoji:'🎨',  grupo:'🏠 Hogar'},
+  carpintaria:       {label:'Carpintaria · Marcenaria',          emoji:'🪚',  grupo:'🏠 Hogar'},
+  jardinagem:        {label:'Jardinagem · Paisagismo',           emoji:'🌿',  grupo:'🏠 Hogar'},
+  climatizacao:      {label:'Climatização · AC · HVAC',         emoji:'❄️',  grupo:'🏠 Hogar'},
+  ti_redes:          {label:'TI · Informática · Redes',          emoji:'💻',  grupo:'🏠 Hogar'},
+  reformas:          {label:'Reformas · Construção',             emoji:'🏗️', grupo:'🏠 Hogar'},
+  marido_aluguel:    {label:'Marido de Aluguel · Serv. Gerais',  emoji:'🛠️', grupo:'🏠 Hogar'},
+  mudanca:           {label:'Mudança · Frete',                   emoji:'📦',  grupo:'🏠 Hogar'},
+  // ── AUTOMOTIVO ─────────────────────────────────────────────
+  automotivo:        {label:'Automotivo (todos os serviços)',    emoji:'🚗',  grupo:'🚗 Automotivo'},
   // ── PERSONALIZADO ──────────────────────────────────────────
-  custom:            {label:'✏️ Categoría personalizada...',       emoji:'🔍', grupo:'⚙️ Personalizado'},
+  custom:            {label:'✏️ Categoría personalizada...',    emoji:'🔍',  grupo:'⚙️ Personalizado'},
 };
 
 const fmtD = (d:number) => d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
