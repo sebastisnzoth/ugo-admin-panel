@@ -200,7 +200,260 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 </nav>
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js">
+
+/* ═══════════════════════════════════════════════════
+   ETAPA 1 — createService + watchService (Realtime)
+═══════════════════════════════════════════════════ */
+let ACTIVE_SVC = null;     // servicio activo
+let svcChannel = null;     // canal realtime
+let provChannel = null;    // canal GPS proveedor
+let trMap = null;          // mapa de tracking
+let trProvMarker = null;   // pin del proveedor en tracking
+let myRating = 0;
+
+async function createService(prov) {
+  if (!SESSION || !prov) return;
+  toast('⏳ Creando pedido...');
+
+  // 1. Insertar en servicios
+  const tarifa = prov.tarifa_base || 80;
+  const { data: svc, error } = await sb.from('servicios').insert({
+    cliente_id:      SESSION.user.id,
+    proveedor_id:    prov.id || null,
+    estado:          'negociando',
+    descripcion:     `Servicio de ${prov.categoria}`,
+    zona:            CLI?.zona || '',
+    direccion_cliente: CLI?.endereco || '',
+    lat_cliente:     myLat || null,
+    lng_cliente:     myLng || null,
+    tarifa:          tarifa,
+    comision_ugo:    +(tarifa * 0.15).toFixed(2),
+    ganancia_proveedor: +(tarifa * 0.85).toFixed(2),
+  }).select().single();
+
+  if (error) { toast('Error: ' + error.message); return; }
+  ACTIVE_SVC = { ...svc, prov };
+
+  // 2. Notificar al proveedor elegido
+  if (prov.id) {
+    await sb.from('notificaciones').insert({
+      usuario_id: prov.id,
+      tipo:       'nuevo_pedido',
+      titulo:     `Nuevo pedido · ${prov.categoria}`,
+      cuerpo:     `Cliente a ${prov._dist || '?'} km · R$${tarifa}`,
+      datos: {
+        servicio_id:     svc.id,
+        tarifa:          tarifa,
+        ganancia:        +(tarifa * 0.85).toFixed(2),
+        cliente_nombre:  CLI?.nombre || 'Cliente',
+        categoria:       prov.categoria,
+        direccion:       CLI?.endereco || '',
+        lat_cliente:     myLat,
+        lng_cliente:     myLng,
+      },
+      leida: false,
+    });
+  } else {
+    // Sin proveedor específico → notificar a los online de esa categoría
+    const { data: provs } = await sb.from('usuarios')
+      .select('id')
+      .eq('tipo', 'proveedor')
+      .eq('categoria', prov.categoria)
+      .eq('online', true)
+      .eq('activo', true)
+      .limit(10);
+    if (provs?.length) {
+      await sb.from('notificaciones').insert(
+        provs.map(p => ({
+          usuario_id: p.id, tipo: 'nuevo_pedido',
+          titulo: `Nuevo pedido · ${prov.categoria}`,
+          cuerpo: `Cliente solicita servicio · R$${tarifa}`,
+          datos:  { servicio_id: svc.id, tarifa, categoria: prov.categoria,
+                    lat_cliente: myLat, lng_cliente: myLng,
+                    cliente_nombre: CLI?.nombre || 'Cliente' },
+          leida: false,
+        }))
+      );
+    }
+  }
+
+  // 3. Mostrar pantalla de tracking
+  showTracking(prov);
+  watchService(svc.id);
+}
+
+// ── Mostrar overlay de tracking ───────────────────
+function showTracking(prov) {
+  const ov = document.getElementById('track-overlay');
+  ov.style.display = 'flex';
+  document.getElementById('tr-title').textContent = `${prov.categoria} solicitado`;
+  document.getElementById('tr-sub').textContent   = `Esperando que ${prov.nombre || 'el proveedor'} acepte...`;
+  document.getElementById('tr-status').textContent = '🔍 Buscando proveedor...';
+  document.getElementById('tr-pcard').style.display  = 'none';
+  document.getElementById('tr-rating').style.display = 'none';
+  document.getElementById('tr-cancel').style.display = 'block';
+  setTrackStep(1);
+
+  // Mini mapa de tracking
+  setTimeout(() => {
+    if (!trMap && document.getElementById('tr-map')) {
+      trMap = L.map('tr-map', { zoomControl: false, attributionControl: false })
+               .setView([myLat || -27.5954, myLng || -48.5480], 14);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(trMap);
+    }
+    if (trMap && myLat) {
+      trMap.setView([myLat, myLng], 14);
+      // Pin del cliente
+      L.marker([myLat, myLng], { icon: L.divIcon({
+        html: '<div style="width:14px;height:14px;border-radius:50%;background:#276EF1;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)"></div>',
+        className: '', iconSize: [14,14], iconAnchor: [7,7]
+      })}).addTo(trMap);
+    }
+  }, 300);
+}
+
+// ── Realtime: escucha cambios del servicio ─────────
+function watchService(svcId) {
+  if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
+  svcChannel = sb.channel('svc_' + svcId)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'servicios',
+      filter: `id=eq.${svcId}`
+    }, payload => onServiceUpdate(payload.new))
+    .subscribe();
+}
+
+function onServiceUpdate(svc) {
+  if (!ACTIVE_SVC) return;
+  ACTIVE_SVC = { ...ACTIVE_SVC, ...svc };
+  const st = svc.estado;
+
+  if (st === 'confirmado' || st === 'en_camino') {
+    setTrackStep(2);
+    document.getElementById('tr-status').textContent = '✅ ¡Proveedor aceptó!';
+    document.getElementById('tr-cancel').style.display = 'none';
+    showProvCard();
+    if (st === 'en_camino') {
+      setTrackStep(3);
+      document.getElementById('tr-status').textContent = '🚗 Proveedor en camino';
+      startTrackingProv(svc.proveedor_id);
+    }
+  } else if (st === 'ejecutando') {
+    setTrackStep(3);
+    document.getElementById('tr-status').textContent = '🔧 Servicio en curso';
+    if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
+  } else if (st === 'completado') {
+    setTrackStep(4);
+    if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
+    showRating(svc.tarifa || ACTIVE_SVC.prov?.tarifa_base || 80);
+  }
+}
+
+// ── GPS proveedor en tiempo real ──────────────────
+function startTrackingProv(provId) {
+  if (!provId || provChannel) return;
+  provChannel = sb.channel('prov_loc_' + provId)
+    .on('postgres_changes', {
+      event: 'UPDATE', schema: 'public', table: 'usuarios',
+      filter: `id=eq.${provId}`
+    }, payload => {
+      const { lat, lng } = payload.new;
+      if (!lat || !lng || !trMap) return;
+      if (!trProvMarker) {
+        const sz = 32, tail = 13;
+        trProvMarker = L.marker([lat, lng], { icon: L.divIcon({
+          html: `<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.3))"><div style="width:${sz}px;height:${sz}px;border-radius:50%;background:#05944F;border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:14px;">🔧</div><div style="width:0;height:0;border-left:${tail/2+1}px solid transparent;border-right:${tail/2+1}px solid transparent;border-top:${tail}px solid #05944F;margin-top:-2px;"></div></div>`,
+          className: '', iconSize: [sz, sz+tail+2], iconAnchor: [sz/2, sz+tail+2]
+        })}).addTo(trMap);
+      } else {
+        trProvMarker.setLatLng([lat, lng]);
+      }
+      // ETA estimado (distancia simple)
+      if (myLat && myLng) {
+        const km = haversineKm(myLat, myLng, lat, lng);
+        const min = Math.round(km / 30 * 60);
+        document.getElementById('tr-eta').style.display = 'block';
+        document.getElementById('tr-eta').textContent   = `ETA ~${min} min`;
+      }
+      trMap.panTo([lat, lng]);
+    })
+    .subscribe();
+}
+
+function haversineKm(la1,ln1,la2,ln2){
+  const R=6371,dL=(la2-la1)*Math.PI/180,dN=(ln2-ln1)*Math.PI/180;
+  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+
+// ── UI helpers ────────────────────────────────────
+function setTrackStep(n) {
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById('tr-s'+i);
+    if (el) el.style.background = i <= n ? 'var(--c)' : '#222';
+  });
+}
+
+async function showProvCard() {
+  if (!ACTIVE_SVC?.proveedor_id) return;
+  const { data } = await sb.from('usuarios').select('nombre,karma,categoria,lat,lng').eq('id', ACTIVE_SVC.proveedor_id).single();
+  if (!data) return;
+  const card = document.getElementById('tr-pcard');
+  card.style.display = 'block';
+  document.getElementById('tr-pav').textContent   = data.nombre?.[0]?.toUpperCase() || '🔧';
+  document.getElementById('tr-pname').textContent = data.nombre || 'Proveedor';
+  document.getElementById('tr-pcat').textContent  = data.categoria || '';
+  document.getElementById('tr-pkr').textContent   = `★ ${(data.karma||5).toFixed(1)}`;
+  document.getElementById('tr-kval').textContent  = (data.karma||5).toFixed(1);
+  if (data.lat && myLat) {
+    const km = haversineKm(myLat, myLng, data.lat, data.lng);
+    document.getElementById('tr-pdist').textContent = `${km.toFixed(1)} km`;
+  }
+}
+
+function showRating(tarifa) {
+  document.getElementById('tr-pcard').style.display  = 'none';
+  document.getElementById('tr-eta').style.display    = 'none';
+  document.getElementById('tr-rating').style.display = 'block';
+  document.getElementById('tr-final-price').textContent = `R$ ${Number(tarifa).toFixed(2)}`;
+  document.getElementById('tr-status').textContent = '🎉 ¡Completado!';
+}
+
+function setStar(n) {
+  myRating = n;
+  document.querySelectorAll('.star').forEach((s, i) => s.textContent = i < n ? '★' : '☆');
+}
+
+async function submitRating() {
+  if (!myRating || !ACTIVE_SVC) return;
+  await sb.from('servicios').update({ rating_cliente: myRating }).eq('id', ACTIVE_SVC.id);
+  // Actualizar karma del proveedor
+  if (ACTIVE_SVC.proveedor_id) {
+    const { data: p } = await sb.from('usuarios').select('karma,servicios_completados').eq('id', ACTIVE_SVC.proveedor_id).single();
+    if (p) {
+      const newKarma = ((p.karma * p.servicios_completados) + myRating) / (p.servicios_completados + 1);
+      await sb.from('usuarios').update({ karma: +newKarma.toFixed(2) }).eq('id', ACTIVE_SVC.proveedor_id);
+    }
+  }
+  document.getElementById('track-overlay').style.display = 'none';
+  ACTIVE_SVC = null; myRating = 0;
+  toast('✅ ¡Gracias por tu calificación!');
+  nav2('home');
+}
+
+async function cancelService() {
+  if (!ACTIVE_SVC || !confirm('¿Cancelar el pedido?')) return;
+  await sb.from('servicios').update({ estado: 'cancelado' }).eq('id', ACTIVE_SVC.id);
+  if (svcChannel)  { sb.removeChannel(svcChannel);  svcChannel  = null; }
+  if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
+  document.getElementById('track-overlay').style.display = 'none';
+  ACTIVE_SVC = null;
+  toast('Pedido cancelado.');
+  nav2('home');
+}
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
@@ -565,5 +818,76 @@ function pcHire() {
 }
 
 </script>
+
+<!-- TRACKING OVERLAY — aparece cuando hay un servicio activo -->
+<div id="track-overlay" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(26,32,48,.97);flex-direction:column;">
+  <!-- Header -->
+  <div style="padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;">
+    <div>
+      <div id="tr-status" style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--c);margin-bottom:3px;">Buscando proveedor...</div>
+      <div id="tr-title"  style="font-size:18px;font-weight:800;color:#fff;">Pedido enviado</div>
+      <div id="tr-sub"   style="font-size:12px;color:#555;margin-top:2px;"></div>
+    </div>
+    <button onclick="cancelService()" id="tr-cancel"
+      style="padding:8px 14px;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">
+      ✕ Cancelar
+    </button>
+  </div>
+  <!-- Progress bar -->
+  <div style="padding:14px 20px 0;">
+    <div style="display:flex;gap:6px;align-items:center;">
+      <div id="tr-s1" class="tr-step on" style="flex:1;height:4px;border-radius:4px;background:var(--c);transition:all .5s;"></div>
+      <div id="tr-s2" class="tr-step"    style="flex:1;height:4px;border-radius:4px;background:#222;transition:all .5s;"></div>
+      <div id="tr-s3" class="tr-step"    style="flex:1;height:4px;border-radius:4px;background:#222;transition:all .5s;"></div>
+      <div id="tr-s4" class="tr-step"    style="flex:1;height:4px;border-radius:4px;background:#222;transition:all .5s;"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:#444;">
+      <span>Buscando</span><span>Aceptado</span><span>En camino</span><span>Listo</span>
+    </div>
+  </div>
+  <!-- Map mini (reutiliza el mapa principal) -->
+  <div style="flex:1;position:relative;margin:12px 0 0;">
+    <div id="tr-map" style="width:100%;height:100%;"></div>
+    <!-- ETA chip -->
+    <div id="tr-eta" style="display:none;position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:rgba(26,32,48,.92);border:1px solid var(--c);border-radius:20px;padding:6px 16px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap;"></div>
+  </div>
+  <!-- Provider card (aparece cuando acepta) -->
+  <div id="tr-pcard" style="display:none;padding:14px 20px;background:rgba(255,255,255,.04);border-top:1px solid #1a1a1a;">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div id="tr-pav" style="width:44px;height:44px;border-radius:50%;background:var(--c);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#000;flex-shrink:0;"></div>
+      <div style="flex:1;">
+        <div id="tr-pname" style="font-size:14px;font-weight:800;color:#fff;"></div>
+        <div id="tr-pcat"  style="font-size:11px;color:#555;margin-top:2px;"></div>
+        <div style="display:flex;gap:4px;margin-top:6px;">
+          <div id="tr-pkr" style="font-size:11px;color:var(--o);">★ 5.0</div>
+          <div style="color:#333;">·</div>
+          <div id="tr-pdist" style="font-size:11px;color:#555;"></div>
+        </div>
+      </div>
+      <div id="tr-karma-ring" style="width:44px;height:44px;border-radius:50%;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;">
+        <span id="tr-kval" style="font-size:13px;font-weight:800;color:#fff;">5.0</span>
+      </div>
+    </div>
+  </div>
+  <!-- Rating screen -->
+  <div id="tr-rating" style="display:none;padding:20px;text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;">🎉</div>
+    <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:4px;">¡Servicio completado!</div>
+    <div id="tr-final-price" style="font-size:24px;font-weight:900;color:var(--c);margin:12px 0;"></div>
+    <div style="font-size:13px;color:#555;margin-bottom:16px;">¿Cómo estuvo el servicio?</div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-bottom:16px;" id="star-row">
+      <span class="star" onclick="setStar(1)" style="font-size:32px;cursor:pointer;">☆</span>
+      <span class="star" onclick="setStar(2)" style="font-size:32px;cursor:pointer;">☆</span>
+      <span class="star" onclick="setStar(3)" style="font-size:32px;cursor:pointer;">☆</span>
+      <span class="star" onclick="setStar(4)" style="font-size:32px;cursor:pointer;">☆</span>
+      <span class="star" onclick="setStar(5)" style="font-size:32px;cursor:pointer;">☆</span>
+    </div>
+    <button onclick="submitRating()" id="rate-btn"
+      style="width:100%;max-width:280px;padding:14px;background:var(--c);color:#000;font-weight:800;font-size:15px;border:none;border-radius:14px;cursor:pointer;">
+      Enviar calificación
+    </button>
+  </div>
+</div>
+
 </body>
 </html>
