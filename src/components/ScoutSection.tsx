@@ -6,17 +6,29 @@ declare const L: any;
 const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
-const CAT_CONFIG: Record<string,{label:string;emoji:string}> = {
-  electricista:{label:'Electricista',emoji:'⚡'},
-  plomero:{label:'Plomero',emoji:'🔧'},
-  limpeza:{label:'Limpeza',emoji:'🧹'},
-  chaveiro:{label:'Chaveiro',emoji:'🔑'},
-  pintura:{label:'Pintura',emoji:'🎨'},
-  carpintaria:{label:'Carpintaria',emoji:'🪚'},
-  jardinagem:{label:'Jardinagem',emoji:'🌿'},
-  climatizacao:{label:'Climatização',emoji:'❄️'},
-  ti_redes:{label:'TI & Redes',emoji:'💻'},
-  reformas:{label:'Reformas',emoji:'🏠'},
+// Categorías con label en ES / PT / EN
+const CAT_CONFIG: Record<string,{label:string;emoji:string;grupo:string}> = {
+  // ── HOGAR ──────────────────────────────────────────────────
+  electricista:      {label:'Electricista · Eletricista',      emoji:'⚡', grupo:'🏠 Hogar'},
+  plomero:           {label:'Plomero · Encanador',             emoji:'🔧', grupo:'🏠 Hogar'},
+  limpeza:           {label:'Limpieza · Faxina · Cleaning',    emoji:'🧹', grupo:'🏠 Hogar'},
+  cerrajero:         {label:'Cerrajero · Chaveiro · Locksmith',emoji:'🔑', grupo:'🏠 Hogar'},
+  pintura:           {label:'Pintor · Painter',                emoji:'🎨', grupo:'🏠 Hogar'},
+  carpintaria:       {label:'Carpintero · Marceneiro',         emoji:'🪚', grupo:'🏠 Hogar'},
+  jardinagem:        {label:'Jardinero · Jardineiro',          emoji:'🌿', grupo:'🏠 Hogar'},
+  climatizacao:      {label:'AC/Clima · HVAC',                 emoji:'❄️', grupo:'🏠 Hogar'},
+  ti_redes:          {label:'TI · Informática · IT',           emoji:'💻', grupo:'🏠 Hogar'},
+  reformas:          {label:'Reformas · Handyman',             emoji:'🏠', grupo:'🏠 Hogar'},
+  // ── AUTOMOTRIZ ─────────────────────────────────────────────
+  mecanico_geral:    {label:'Mecánico General · Oficina Mecânica', emoji:'🔩', grupo:'🚗 Automotriz'},
+  mecanico_eletrico: {label:'Mecánico Eléctrico · Elétrica Auto',  emoji:'⚡🚗',grupo:'🚗 Automotriz'},
+  pintura_chapa:     {label:'Pintura y Chapa · Funilaria',         emoji:'🛠️', grupo:'🚗 Automotriz'},
+  auxilio_ruta:      {label:'Auxilio en Ruta · Socorro',           emoji:'🚨', grupo:'🚗 Automotriz'},
+  vulcanizacion:     {label:'Gomería · Borracharia · Tires',       emoji:'🔘', grupo:'🚗 Automotriz'},
+  electricista_auto: {label:'Electricista Automotriz',             emoji:'🔌', grupo:'🚗 Automotriz'},
+  lavado_auto:       {label:'Lavado de Autos · Lava Rápido',       emoji:'🚿', grupo:'🚗 Automotriz'},
+  // ── PERSONALIZADO ──────────────────────────────────────────
+  custom:            {label:'✏️ Categoría personalizada...',       emoji:'🔍', grupo:'⚙️ Personalizado'},
 };
 
 const fmtD = (d:number) => d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
@@ -74,6 +86,7 @@ export function SecScout() {
   const [selMap,setSelMap]       = useState<Set<string>>(new Set());
   const [bulkLoading,setBulkLoading] = useState(false);
   const [stats,setStats]       = useState({found:0,contacted:0,joined:0});
+  const [customCat,setCustomCat] = useState('');
   const [leafletReady,setLeafletReady] = useState(false);
 
   const mapRef    = useRef<HTMLDivElement>(null);
@@ -168,13 +181,14 @@ export function SecScout() {
   const doSearch = async () => {
     setLoading(true); setResults([]); setSelected(null); setOutreach(null);
     markers.current.forEach(m=>mapInst.current?.removeLayer(m)); markers.current=[];
-    const cfg = CAT_CONFIG[cat];
-    setLoadMsg(`${cfg.emoji} Buscando ${cfg.label}...`);
+    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
+    const searchLabel = cat==='custom' ? (customCat||'?') : cfg.label;
+    setLoadMsg(`${cfg.emoji} Buscando ${searchLabel}...`);
 
     try {
       const r = await fetch('/api/scout/places',{
         method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({lat,lng,radius:parseInt(radius),categoria:cat}),
+        body: JSON.stringify({lat,lng,radius:parseInt(radius),categoria:cat,customCat:cat==='custom'?customCat:undefined}),
       });
       const data = await r.json();
       const provs: Provider[] = (data.results||[]).map((p:any)=>({
@@ -222,7 +236,7 @@ export function SecScout() {
 
   // ── Guardar en Supabase ───────────────────────────────────────
   const addToHugo = useCallback(async (p:Provider) => {
-    const cfg = CAT_CONFIG[cat];
+    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
     await fetch(`${SB_URL}/rest/v1/prospectos_scouts`,{
       method:'POST',
       headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal,resolution=ignore-duplicates'},
@@ -242,7 +256,7 @@ export function SecScout() {
   const genOutreach = async (type:'wa'|'email') => {
     if (!selected) return;
     setGenLoading(true); setOutreach(null);
-    const cfg = CAT_CONFIG[cat];
+    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
     const prompt = type==='wa'
       ? `Você é Hugo do U.GO. Escreva mensagem WhatsApp curta (máx 80 palavras) em português convidando ${selected.name} (${cfg.label}) para ser provedor do U.GO. Benefícios: 85% do valor garantido, sem mensalidade, clientes verificados. Link: https://ugo.app/cadastro. Máx 1 emoji, sem colchetes.`
       : `Você é Hugo do U.GO. Escreva email profissional em português para ${selected.name}. Primeira linha: "Assunto: [assunto]". Convide para ser provedor U.GO. Máx 150 palavras. Link: https://ugo.app/cadastro`;
@@ -390,9 +404,29 @@ export function SecScout() {
             <div>
               <label style={S.lbl}>Categoría</label>
               <select style={S.sel} value={cat} onChange={e=>{setCat(e.target.value);setResults([]);setSelected(null);}}>
-                {Object.entries(CAT_CONFIG).map(([k,v])=><option key={k} value={k}>{v.emoji} {v.label}</option>)}
+  {(() => {
+                const groups: Record<string,Array<[string,{label:string;emoji:string;grupo:string}]>> = {};
+                Object.entries(CAT_CONFIG).forEach(([k,v]) => {
+                  if (!groups[v.grupo]) groups[v.grupo] = [];
+                  groups[v.grupo].push([k,v]);
+                });
+                return Object.entries(groups).map(([grupo, items]) => (
+                  <optgroup key={grupo} label={grupo}>
+                    {items.map(([k,v]) => <option key={k} value={k}>{v.emoji} {v.label}</option>)}
+                  </optgroup>
+                ));
+              })()}
               </select>
             </div>
+            {cat==='custom'&&(
+              <div>
+                <label style={S.lbl}>Categoría personalizada</label>
+                <input style={S.inp} value={customCat}
+                  onChange={e=>setCustomCat(e.target.value)}
+                  onKeyDown={e=>e.key==='Enter'&&doSearch()}
+                  placeholder="Ej: cerrajero, taller mecánico, pintor..."/>
+              </div>
+            )}
             <div>
               <label style={S.lbl}>Radio</label>
               <select style={S.sel} value={radius} onChange={e=>setRadius(e.target.value)}>
@@ -415,7 +449,7 @@ export function SecScout() {
                 const hdr=['id','nombre','categoria','direccion','ciudad','pais','telefono','email','website','rating','reviews_count','latitud','longitud','fuente','estado','fecha_prospectado','notas_hugo','score_confianza'];
                 const now=new Date().toISOString().replace('T',' ').slice(0,19);
                 const ciudad=locLabel.split(',')[0]?.trim()||'Florianópolis';
-                const cfg=CAT_CONFIG[cat];
+                const cfg=CAT_CONFIG[cat]||{label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
                 const rows=results.map(p=>['',p.name,cat,p.address||'',ciudad,locLabel.split(',').slice(-1)[0]?.trim()||'Brasil',p.phone||'','',p.website||'','','0',p.lat?.toFixed(10)||'',p.lng?.toFixed(10)||'',p.source==='tomtom'?'tomtom':p.source==='cnpj_br'?'cnpj_br':'osm','prospecto_pendiente',now,`Scout ${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}`,p.phone?'65':'30']);
                 const csv=[hdr,...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
                 const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));

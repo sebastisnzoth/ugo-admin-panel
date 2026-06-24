@@ -8,44 +8,71 @@ const sb = createClient(
 
 // ── Búsquedas multilingüales por categoría (ES + PT + EN + FR) ───
 const TT_QUERIES = {
-  electricista:  ['electrician','eletricista','electricista','électricien','elektrikçi'],
-  plomero:       ['plumber','encanador','plomero','plombier','tesisatçı'],
-  limpeza:       ['cleaning','limpeza','limpieza','nettoyage','temizlik','maid service'],
-  chaveiro:      ['locksmith','chaveiro','cerrajero','serrurier'],
-  pintura:       ['painter','pintor','peintre','boyacı'],
-  carpintaria:   ['carpenter','carpinteiro','carpintero','menuisier','marangoz'],
-  jardinagem:    ['gardener','jardineiro','jardinero','jardinier','bahçıvan'],
-  climatizacao:  ['hvac','air conditioning','ar condicionado','climatización','climatisation'],
-  ti_redes:      ['computer repair','informática','IT services','réparation informatique'],
-  reformas:      ['handyman','builder','pedreiro','reformas','bricoleur','tamirci'],
+  // ── Hogar ──────────────────────────────────────────────────
+  electricista:      ['electrician','eletricista','electricista','électricien'],
+  plomero:           ['plumber','encanador','plomero','plombier'],
+  limpeza:           ['cleaning service','limpeza','limpieza','faxina','nettoyage'],
+  cerrajero:         ['locksmith','chaveiro','cerrajero','serrurier','schlüsseldienst'],
+  pintura:           ['painter','pintor','peintre','maler'],
+  carpintaria:       ['carpenter','carpinteiro','carpintero','menuisier'],
+  jardinagem:        ['gardener','jardineiro','jardinero','jardinier'],
+  climatizacao:      ['hvac','air conditioning','ar condicionado','climatización'],
+  ti_redes:          ['computer repair','informática','IT services'],
+  reformas:          ['handyman','pedreiro','reformas','bricoleur'],
+  // ── Automotriz ─────────────────────────────────────────────
+  mecanico_geral:    ['auto repair','oficina mecânica','taller mecánico','mécanicien auto','kfz werkstatt','mecanico'],
+  mecanico_eletrico: ['electric car repair','elétrica automotiva','mecánico eléctrico','réparation voiture électrique','elektroauto werkstatt'],
+  pintura_chapa:     ['body shop','funilaria','pintura y chapa','carrosserie','karosserie','chapa y pintura'],
+  auxilio_ruta:      ['roadside assistance','socorro mecânico','auxilio en ruta','dépannage auto','pannenhilfe'],
+  vulcanizacion:     ['tire shop','borracharia','gomería','pneumatique','reifenservice','vulcanización'],
+  electricista_auto: ['auto electrician','eletricista automotivo','electricista automotriz','électricien auto'],
+  lavado_auto:       ['car wash','lava rápido','lavado de autos','lavage auto','autowaschanlage'],
 };
 
 // OSM tags son universales (en inglés internacionalmente)
 const OVERPASS_TAGS = {
-  electricista:  [['craft','electrician'],['shop','electrician']],
-  plomero:       [['craft','plumber'],['shop','plumbing']],
-  limpeza:       [['craft','cleaning'],['shop','laundry'],['amenity','laundry']],
-  chaveiro:      [['craft','locksmith']],
-  pintura:       [['craft','painter']],
-  carpintaria:   [['craft','carpenter'],['shop','carpenter']],
-  jardinagem:    [['craft','gardener'],['shop','garden_centre']],
-  climatizacao:  [['craft','hvac'],['shop','hvac']],
-  ti_redes:      [['shop','computer'],['craft','electronics_repair']],
-  reformas:      [['craft','builder'],['craft','construction'],['shop','hardware']],
+  // ── Hogar ──────────────────────────────────────────────────
+  electricista:      [['craft','electrician'],['shop','electrician']],
+  plomero:           [['craft','plumber'],['shop','plumbing']],
+  limpeza:           [['craft','cleaning'],['shop','laundry'],['amenity','laundry']],
+  cerrajero:         [['craft','locksmith'],['shop','locksmith']],
+  pintura:           [['craft','painter'],['shop','paint']],
+  carpintaria:       [['craft','carpenter'],['shop','carpenter']],
+  jardinagem:        [['craft','gardener'],['shop','garden_centre'],['landuse','garden_centre']],
+  climatizacao:      [['craft','hvac'],['shop','hvac'],['craft','heating']],
+  ti_redes:          [['shop','computer'],['craft','electronics_repair']],
+  reformas:          [['craft','builder'],['craft','construction'],['shop','hardware']],
+  // ── Automotriz ─────────────────────────────────────────────
+  mecanico_geral:    [['shop','car_repair'],['amenity','car_service'],['craft','mechanic']],
+  mecanico_eletrico: [['shop','car_repair'],['amenity','car_service']],
+  pintura_chapa:     [['shop','car_repair'],['craft','body_builder']],
+  auxilio_ruta:      [['amenity','car_service'],['shop','car_repair']],
+  vulcanizacion:     [['shop','tyres'],['craft','tyre'],['amenity','tyre']],
+  electricista_auto: [['shop','car_parts'],['shop','car_repair']],
+  lavado_auto:       [['amenity','car_wash'],['shop','car_wash']],
 };
 
 // Regex multilingüal para búsqueda por nombre
 const NAME_REGEX = {
-  electricista:  'electr|eletric|電気|전기',
-  plomero:       'plumb|encanad|plomer|hydraul|hydrau',
-  limpeza:       'clean|limpez|limpiez|nettoy|temizl|faxin',
-  chaveiro:      'locks|chavei|cerraj|serrum|schloss',
-  pintura:       'paint|pintor|pintur|peintr|boya',
-  carpintaria:   'carpent|marcen|menuisi|marangoz|木工',
-  jardinagem:    'garden|jardim|jardin|bahç|庭',
-  climatizacao:  'hvac|air.cond|climatiz|ar.cond|clim|냉난방',
-  ti_redes:      'comput|inform|tech|répar.inform|bilgisay',
-  reformas:      'handyman|reform|builder|bricoleur|repair|tamirci',
+  // ── Hogar ──────────────────────────────────────────────────
+  electricista:      'electr|eletric|électri',
+  plomero:           'plumb|encanad|plomer|hydraul',
+  limpeza:           'clean|limpez|limpiez|nettoy|faxin|housekeep',
+  cerrajero:         'locks|chavei|cerraj|serrur|schloss',
+  pintura:           'paint|pintor|pintur|peintr',
+  carpintaria:       'carpent|marcen|menuisi',
+  jardinagem:        'garden|jardim|jardin',
+  climatizacao:      'hvac|air.cond|climatiz|ar.cond|clim',
+  ti_redes:          'comput|inform|tech|répar.inform',
+  reformas:          'handyman|reform|builder|bricoleur',
+  // ── Automotriz ─────────────────────────────────────────────
+  mecanico_geral:    'mecân|mecani|auto.repair|oficina.mec|taller.mec|mécanici|werkstatt|garage',
+  mecanico_eletrico: 'elétric.auto|electric.car|mecani.elet|voiture.élect|elektroauto',
+  pintura_chapa:     'funilaria|body.shop|pintura.chapa|chapa|carrosserie|karosserie',
+  auxilio_ruta:      'socorro|auxili|roadside|dépann|pannenhil|grua|remolque',
+  vulcanizacion:     'borrachar|gomeria|pneumati|reifenserv|tyre|tire|vulcaniz',
+  electricista_auto: 'eletric.auto|electr.auto|automo.electr|auto.electri',
+  lavado_auto:       'lava.rapid|car.wash|lavado.auto|lavage.auto|autowash',
 };
 
 function haversine(lat1,lng1,lat2,lng2){
@@ -163,8 +190,15 @@ export default async function handler(req, res) {
   if (req.method==='OPTIONS') return res.status(200).end();
   if (req.method!=='POST') return res.status(405).json({error:'Method not allowed'});
 
-  const { lat, lng, radius=5000, categoria='electricista' } = req.body;
+  const { lat, lng, radius=5000, categoria='electricista', customCat='' } = req.body;
   if (!lat||!lng) return res.status(400).json({error:'lat y lng requeridos'});
+  
+  // Para categoría personalizada, inyectar en las queries
+  if (categoria==='custom' && customCat) {
+    TT_QUERIES['custom'] = [customCat, customCat+' service', customCat+' company'];
+    OVERPASS_TAGS['custom'] = [];
+    NAME_REGEX['custom'] = customCat.toLowerCase().replace(/\s+/g,'|');
+  }
 
   try {
     let results=[], source='none';
