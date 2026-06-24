@@ -88,7 +88,7 @@ export function SecMapaOperativo() {
   // Filtros
   const [showProv,  setShowProv]  = React.useState(true);
   const [showCli,   setShowCli]   = React.useState(true);
-  const [statusFil, setStatusFil] = React.useState<'todos'|'online'|'offline'>('todos');
+  const [statusFil, setStatusFil] = React.useState<'todos'|'online'|'offline'|'inactivo'>('todos');
   const [catFil,    setCatFil]    = React.useState('todos');
   const [zonaFil,   setZonaFil]   = React.useState('');
 
@@ -137,13 +137,7 @@ export function SecMapaOperativo() {
       if (!Array.isArray(u)) { setError(u?.message||'Error cargando usuarios'); setLoading(false); return; }
       setUsers(u); setServices(Array.isArray(s)?s:[]);
       setLastUpd(new Date().toLocaleTimeString('es-AR'));
-      // Auto-fit mapa a los proveedores cargados
-      if (mapInst.current && Array.isArray(u) && u.length > 0) {
-        const pts = u.filter((x:any)=>x.lat&&x.lng).map((x:any)=>[x.lat,x.lng]);
-        if (pts.length > 0) {
-          try { mapInst.current.fitBounds(pts, {padding:[30,30], maxZoom:14, animate:false}); } catch{}
-        }
-      }
+
     } catch(e:any) { setError(e.message); }
     setLoading(false);
   }
@@ -172,8 +166,9 @@ export function SecMapaOperativo() {
       if (u.tipo==='proveedor'&&!showProv) return false;
       if (u.tipo==='cliente'&&!showCli) return false;
       if (u.tipo==='proveedor') {
-        if (statusFil==='online'&&!u.online) return false;
-        if (statusFil==='offline'&&u.online) return false;
+        if (statusFil==='online' && !u.online) return false;
+        if (statusFil==='offline' && (u.online || u.activo===false)) return false;
+        if (statusFil==='inactivo' && u.activo!==false) return false;
         if (catFil!=='todos'&&u.categoria!==catFil) return false;
         if (zonaFil&&!(u.zona||'').toLowerCase().includes(zonaFil.toLowerCase())) return false;
       }
@@ -204,6 +199,14 @@ export function SecMapaOperativo() {
       markersRef.current.push(m);
     });
 
+    // Auto-fit bounds a todos los markers visibles
+    if (filtered.length > 0 && !geoCenter) {
+      const pts = filtered.filter((u:any)=>u.lat&&u.lng).map((u:any)=>[u.lat,u.lng]);
+      if (pts.length > 0) {
+        try { mapInst.current.fitBounds(pts, {padding:[40,40], maxZoom:14}); } catch {}
+      }
+    }
+
     // Líneas de servicios activos
     services.forEach(s => {
       if (!s.lat_cliente||!s.lng_cliente||!s.proveedor?.lat||!s.proveedor?.lng) return;
@@ -213,7 +216,7 @@ export function SecMapaOperativo() {
       linesRef.current.push(line);
     });
 
-  },[users,services,showProv,showCli,statusFil,catFil,zonaFil]);
+  },[users,services,showProv,showCli,statusFil,catFil,zonaFil,geoCenter,geoRadius]);
 
   // ── Stats ─────────────────────────────────────────────────────
   const provs   = visibleUsers.filter(u=>u.tipo==='proveedor');
@@ -411,7 +414,7 @@ export function SecMapaOperativo() {
           {/* Estado */}
           <div style={{marginBottom:12}}>
             <div style={{fontSize:9,fontWeight:700,color:'#aaa',textTransform:'uppercase',letterSpacing:1,marginBottom:6}}>ESTADO</div>
-            {[{v:'todos',l:'⚫ Todos'},{v:'online',l:'🟢 Online'},{v:'offline',l:'🟡 Offline / Importados'}].map(opt=>(
+            {[{v:'todos',l:'⚫ Todos'},{v:'online',l:'🟢 Online'},{v:'offline',l:'🟡 Activos / Offline'},{v:'inactivo',l:'🔴 Inactivos'}].map(opt=>(
               <label key={opt.v} style={{display:'flex',alignItems:'center',gap:7,marginBottom:6,cursor:'pointer',fontSize:11,fontWeight:600}}>
                 <input type="radio" checked={statusFil===opt.v} onChange={()=>setStatusFil(opt.v as any)}/>{opt.l}
               </label>
