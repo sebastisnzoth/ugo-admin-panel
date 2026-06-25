@@ -13,7 +13,7 @@ import { SecMapaOperativo } from './MapaOperativo';
 import { SecScout } from './ScoutSection';
 import { ConversationalOrb } from './ConversationalOrb';
 
-type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'validacion_paises'|'import_provs'|'mapa_ops'|'tiendas';
+type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'analytics'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'validacion_paises'|'import_provs'|'mapa_ops'|'tiendas';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
 
 const CSS = `
@@ -850,6 +850,89 @@ export function AdminPanel() {
     </div>
   );
 
+  const renderAnalytics = () => {
+    const totalServices = services.length;
+    const completedServices = services.filter(s => s.estado === 'completado').length;
+    const totalRevenue = services.filter(s => s.estado === 'completado').reduce((sum, s) => sum + (s.tarifa || 0), 0);
+    const activeProviders = users.filter(u => u.tipo === 'proveedor' && u.online).length;
+    const avgRating = (services.filter(s => s.rating_cliente).reduce((sum, s) => sum + s.rating_cliente, 0) / Math.max(completedServices, 1)).toFixed(1);
+    
+    // Servicios por día (últimos 7 días)
+    const last7 = Array.from({length: 7}, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      return d.toISOString().split('T')[0];
+    }).reverse();
+    
+    const servByDay = last7.map(day => 
+      services.filter(s => s.created_at?.startsWith(day) && s.estado === 'completado').length
+    );
+    
+    const maxSday = Math.max(...servByDay, 5);
+
+    return (
+      <div className="pad">
+        <div className="st">📊 Analytics</div>
+        
+        {/* KPIs */}
+        <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'20px'}}>
+          <div style={{background:'linear-gradient(135deg,#0f172e,#1a2e50)',border:'1px solid #2d3e5f',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Ingresos Totales</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>R$ {totalRevenue.toFixed(0)}</div>
+          </div>
+          <div style={{background:'linear-gradient(135deg,#0f2e1e,#1a502e)',border:'1px solid #2d5f3f',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Servicios Completados</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>{completedServices} / {totalServices}</div>
+          </div>
+          <div style={{background:'linear-gradient(135deg,#2e0f17,#502a1a)',border:'1px solid #5f2d3e',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Proveedores Activos</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>{activeProviders}</div>
+          </div>
+          <div style={{background:'linear-gradient(135deg,#2e2e0f,#505017)',border:'1px solid #5f5f2d',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Rating Promedio</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>★ {avgRating}</div>
+          </div>
+        </div>
+
+        {/* Chart: Servicios últimos 7 días */}
+        <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'16px',marginBottom:'20px'}}>
+          <div style={{fontSize:'13px',fontWeight:700,marginBottom:'12px',color:'var(--text)'}}>Servicios últimos 7 días</div>
+          <svg viewBox="0 0 400 150" style={{width:'100%',height:'150px'}}>
+            {servByDay.map((count, i) => (
+              <g key={i}>
+                <rect x={i * 57 + 10} y={130 - (count / maxSday) * 100} width="40" height={(count / maxSday) * 100} fill="#00f2ff" opacity="0.8" rx="4" />
+                <text x={i * 57 + 30} y="145" fontSize="10" fill="#888" textAnchor="middle">
+                  {count}
+                </text>
+              </g>
+            ))}
+          </svg>
+        </div>
+
+        {/* Stats table */}
+        <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'16px'}}>
+          <div style={{fontSize:'13px',fontWeight:700,marginBottom:'12px',color:'var(--text)'}}>Resumen por estado</div>
+          <table style={{width:'100%',fontSize:'12px',borderCollapse:'collapse'}}>
+            <thead>
+              <tr style={{borderBottom:'1px solid var(--border)'}}>
+                <th style={{textAlign:'left',padding:'8px',color:'var(--muted)'}}>Estado</th>
+                <th style={{textAlign:'right',padding:'8px',color:'var(--muted)'}}>Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              {['negociando','confirmado','en_camino','ejecutando','completado','cancelado'].map(state => (
+                <tr key={state} style={{borderBottom:'1px solid var(--border)'}}>
+                  <td style={{padding:'8px',textTransform:'capitalize'}}>{state}</td>
+                  <td style={{textAlign:'right',padding:'8px',fontWeight:700}}>{services.filter(s => s.estado === state).length}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    );
+  };
+
   const renderConfig = () => (
     <div className="pad">
       <div className="st">Configuración del sistema</div>
@@ -993,7 +1076,7 @@ export function AdminPanel() {
     [{id:'dashboard',icon:'◈',label:'Panel'},{id:'mapa',icon:'◉',label:'Mapa'},{id:'alertas',icon:'△',label:'Alertas',badge:(criticalCount+warningCount)||undefined}],
     [{id:'mapa_ops',icon:'🗺',label:'Mapa Live'},{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
     [{id:'usuarios',icon:'◎',label:'Usrs',badge:pendienteDocs.length||undefined},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
-    [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
+    [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'analytics',icon:'📊',label:'Analytics'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
     [{id:'scout',icon:'📡',label:'Scout'},{id:'validacion_paises',icon:'🌎',label:'KYC'},{id:'import_provs',icon:'📥',label:'Import'},{id:'tiendas',icon:'🛒',label:'Tiendas'},{id:'avanzado',icon:'◧',label:'Avanz'}],
   ];
 
@@ -1076,6 +1159,7 @@ export function AdminPanel() {
           {section==='notificaciones'&&renderNotificaciones()}
           {section==='reportes'&&renderReportes()}
           {section==='config'&&renderConfig()}
+          {section==='analytics'&&renderAnalytics()}
           {section==='scout'&&<SecScout/>}
           {section==='avanzado'&&<SecAvanzado/>}
           {section==='mapa_ops'&&<SecMapaOperativo/>}

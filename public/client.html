@@ -473,19 +473,47 @@ function setStar(n) {
 
 async function submitRating() {
   if (!myRating || !ACTIVE_SVC) return;
-  await sb.from('servicios').update({ rating_cliente: myRating }).eq('id', ACTIVE_SVC.id);
-  // Actualizar karma del proveedor
-  if (ACTIVE_SVC.proveedor_id) {
-    const { data: p } = await sb.from('usuarios').select('karma,servicios_completados').eq('id', ACTIVE_SVC.proveedor_id).single();
-    if (p) {
-      const newKarma = ((p.karma * p.servicios_completados) + myRating) / (p.servicios_completados + 1);
-      await sb.from('usuarios').update({ karma: +newKarma.toFixed(2) }).eq('id', ACTIVE_SVC.proveedor_id);
+  
+  const comentario = document.getElementById('tr-comment')?.value?.trim() || '';
+  
+  try {
+    // 1. Guardar en tabla servicios
+    await sb.from('servicios')
+      .update({ rating_cliente: myRating })
+      .eq('id', ACTIVE_SVC.id);
+    
+    // 2. Guardar en tabla resenas
+    await sb.from('resenas').insert({
+      servicio_id: ACTIVE_SVC.id,
+      cliente_id: ACTIVE_SVC.cliente_id,
+      proveedor_id: ACTIVE_SVC.proveedor_id,
+      puntuacion: myRating,
+      comentario: comentario
+    });
+    
+    // 3. Actualizar karma del proveedor
+    if (ACTIVE_SVC.proveedor_id) {
+      const { data: p } = await sb.from('usuarios')
+        .select('karma,servicios_completados')
+        .eq('id', ACTIVE_SVC.proveedor_id)
+        .single();
+      
+      if (p) {
+        const newKarma = ((p.karma * p.servicios_completados) + myRating) / (p.servicios_completados + 1);
+        await sb.from('usuarios')
+          .update({ karma: +newKarma.toFixed(2) })
+          .eq('id', ACTIVE_SVC.proveedor_id);
+      }
     }
+    
+    document.getElementById('track-overlay').style.display = 'none';
+    ACTIVE_SVC = null;
+    myRating = 0;
+    toast('✅ ¡Gracias por tu calificación!');
+    nav2('home');
+  } catch (e) {
+    alert('Error al guardar: ' + e.message);
   }
-  document.getElementById('track-overlay').style.display = 'none';
-  ACTIVE_SVC = null; myRating = 0;
-  toast('✅ ¡Gracias por tu calificación!');
-  nav2('home');
 }
 
 async function cancelService() {
@@ -980,6 +1008,7 @@ async function initiateMercadoPagoPayment() {
       <span class="star" onclick="setStar(4)" style="font-size:32px;cursor:pointer;">☆</span>
       <span class="star" onclick="setStar(5)" style="font-size:32px;cursor:pointer;">☆</span>
     </div>
+    <textarea id="tr-comment" placeholder="Cuéntanos tu experiencia (opcional)" style="width:100%;max-width:280px;padding:10px;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;color:#333;font-family:inherit;font-size:12px;margin-bottom:12px;resize:none;height:60px;"></textarea>
     <button onclick="submitRating()" id="rate-btn"
       style="width:100%;max-width:280px;padding:14px;background:var(--c);color:#000;font-weight:800;font-size:15px;border:none;border-radius:14px;cursor:pointer;">
       Enviar calificación
