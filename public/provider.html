@@ -211,12 +211,140 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <button class="ni on" id="ni-home" onclick="nav2('home')"><div class="niic">🗺</div><div class="nilb">Mapa</div></button>
   <button class="ni" id="ni-earn" onclick="nav2('earn')"><div class="niic">💰</div><div class="nilb">Ganancias</div></button>
   <div class="ni" onclick="openChat()"><button class="norb">🌀</button></div>
+  <button class="ni" id="ni-shop" onclick="nav2('shop')"><div class="niic">🛒</div><div class="nilb">Insumos</div></button>
   <button class="ni" id="ni-docs" onclick="nav2('docs')"><div class="niic">📄</div><div class="nilb">Docs</div></button>
   <button class="ni" id="ni-prof" onclick="nav2('prof')"><div class="niic">👤</div><div class="nilb">Perfil</div></button>
 </nav>
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js">
+
+/* ═══════════════════════════════════════════════════
+   INSUMOS — Búsqueda ML filtrada por categoría
+═══════════════════════════════════════════════════ */
+const INSUMO_MAP = {
+  electricista:  [{slug:'mat_eletrico',    label:'⚡ Material Elétrico',    q:'material eletrico cabo fio'},
+                  {slug:'ferragens',       label:'🔩 Ferragens',             q:'ferragem parafuso bucha'}],
+  plomero:       [{slug:'mat_hidraulico',  label:'🚿 Material Hidráulico',  q:'tubo cano conexao hidraulica'},
+                  {slug:'ferragens',       label:'🔩 Ferragens',             q:'vedacao teflon cola pvc'}],
+  limpeza:       [{slug:'limpeza',         label:'🧹 Produtos de Limpeza',  q:'produto limpeza detergente'},
+                  {slug:'ferragens',       label:'🔩 Acessórios',            q:'pano microfibra balde mop'}],
+  chaveiro:      [{slug:'ferragens',       label:'🔩 Ferragens',             q:'fechadura cilindro chave'},
+                  {slug:'mat_eletrico',    label:'⚡ Elétrico',              q:'alarme sensor'}],
+  pintura:       [{slug:'pintura',         label:'🎨 Tintas & Pincéis',     q:'tinta latex pincel rolo'},
+                  {slug:'ferragens',       label:'🔩 Ferragens',             q:'lixa fita crepe massa corrida'}],
+  carpintaria:   [{slug:'ferragens',       label:'🔩 Madeiras & Ferragens',  q:'madeira parafuso broca'},
+                  {slug:'ferragens',       label:'🔧 Ferramentas',           q:'furadeira parafusadeira'}],
+  jardinagem:    [{slug:'mat_jardim',      label:'🌿 Jardinagem',            q:'terra adubo vaso planta'},
+                  {slug:'mat_jardim',      label:'🌱 Ferramentas',           q:'poda tesoura regador'}],
+  climatizacao:  [{slug:'ferragens',       label:'❄️ Peças AC',             q:'gas r22 r410 filtro ar'},
+                  {slug:'mat_eletrico',    label:'⚡ Elétrico',              q:'cabo eletrico disjuntor'}],
+  ti_redes:      [{slug:'ferragens',       label:'💻 Informática',           q:'cabo de rede roteador switch'},
+                  {slug:'mat_eletrico',    label:'⚡ Elétrico',              q:'fonte tomada extensao'}],
+  reformas:      [{slug:'ferragens',       label:'🏗️ Construção',          q:'cimento areia tinta argamassa'},
+                  {slug:'mat_hidraulico',  label:'🚿 Hidráulico',            q:'tubo conexao'}],
+  automotivo:    [{slug:'mat_auto',        label:'🚗 Peças Automotivas',     q:'peca auto veiculo'},
+                  {slug:'ferragens',       label:'🔧 Ferramentas',           q:'chave ferramenta mecanico'}],
+  marido_aluguel:[{slug:'ferragens',       label:'🔩 Ferragens Gerais',      q:'parafuso bucha broca'},
+                  {slug:'ferragens',       label:'🔧 Ferramentas',           q:'martelo chave alicate'}],
+  mudanca:       [{slug:'ferragens',       label:'📦 Embalagens',            q:'caixa papelao fita embalar'},
+                  {slug:'ferragens',       label:'🔧 Ferramentas',           q:'carrinho transporte dolly'}],
+};
+
+let shopSite = 'MLB'; // BR=MLB, AR=MLA
+let shopQuery = '';
+let shopResults = [];
+
+function shopHTML() {
+  const cats = INSUMO_MAP[PROV?.categoria] || [{slug:'ferragens',label:'🔩 Ferragens',q:'ferragem'}];
+  const defaultQ = cats[0]?.q || '';
+  return `<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+    <div style="font-size:17px;font-weight:800;color:var(--t);margin-bottom:3px">🛒 Insumos</div>
+    <div style="font-size:11px;color:var(--m);margin-bottom:14px">Buscá materiales para tu trabajo</div>
+
+    <!-- Búsqueda -->
+    <div style="display:flex;gap:7px;margin-bottom:10px">
+      <input id="shop-input" value="${shopQuery||defaultQ}"
+        style="flex:1;padding:10px 14px;border:1.5px solid var(--b);border-radius:10px;font-size:13px;font-family:inherit;outline:none;background:rgba(255,255,255,.06);color:var(--t)"
+        placeholder="Ej: cabo elétrico 2.5mm..."
+        onkeydown="if(event.key==='Enter')doShopSearch()"
+      />
+      <button onclick="doShopSearch()" style="padding:10px 16px;background:var(--c);color:#000;border:none;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer">🔍</button>
+    </div>
+
+    <!-- Sugerencias por categoría -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      ${cats.map(cat=>`<button onclick="quickSearch('${cat.q.replace(/'/g,"\'")}')"
+        style="padding:5px 11px;border-radius:20px;border:1px solid var(--b);background:rgba(255,255,255,.05);color:var(--m);font-size:11px;font-weight:600;cursor:pointer">
+        ${cat.label}
+      </button>`).join('')}
+    </div>
+
+    <!-- País -->
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;color:var(--m)">
+      <span>Mercado Libre:</span>
+      <button onclick="setShopSite('MLB')" id="sh-br" style="padding:4px 10px;border-radius:20px;border:1px solid var(--b);font-size:11px;cursor:pointer;background:shopSite==='MLB'?'var(--c)':'rgba(255,255,255,.05)'">🇧🇷 Brasil</button>
+      <button onclick="setShopSite('MLA')" id="sh-ar" style="padding:4px 10px;border-radius:20px;border:1px solid var(--b);font-size:11px;cursor:pointer;background:shopSite==='MLA'?'var(--c)':'rgba(255,255,255,.05)'">🇦🇷 Argentina</button>
+    </div>
+
+    <!-- Resultados -->
+    <div id="shop-results" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px">
+      <div style="grid-column:1/-1;text-align:center;color:var(--m);padding:24px;font-size:12px">
+        Buscá un material arriba o tocá una sugerencia ☝️
+      </div>
+    </div>
+  </div>`;
+}
+
+function setShopSite(site) {
+  shopSite = site;
+  document.querySelectorAll('[id^="sh-"]').forEach(b=>{
+    b.style.background = b.id===('sh-'+(site==='MLB'?'br':'ar')) ? 'rgba(0,242,255,.15)' : 'rgba(255,255,255,.05)';
+    b.style.borderColor = b.id===('sh-'+(site==='MLB'?'br':'ar')) ? 'var(--c)' : 'var(--b)';
+    b.style.color = b.id===('sh-'+(site==='MLB'?'br':'ar')) ? 'var(--c)' : 'var(--m)';
+  });
+}
+
+function quickSearch(q) {
+  const inp = document.getElementById('shop-input');
+  if (inp) inp.value = q;
+  shopQuery = q;
+  doShopSearch();
+}
+
+async function doShopSearch() {
+  const inp = document.getElementById('shop-input');
+  const q = (inp?.value || shopQuery).trim();
+  if (!q) return;
+  shopQuery = q;
+  const el = document.getElementById('shop-results');
+  if (!el) return;
+  el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--m);font-size:13px">⏳ Buscando...</div>';
+  try {
+    const r = await fetch(`https://api.mercadolibre.com/sites/${shopSite}/search?q=${encodeURIComponent(q)}&limit=8`);
+    const d = await r.json();
+    const items = d.results || [];
+    if (!items.length) {
+      el.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--m);font-size:12px">Sin resultados. Probá otro término.</div>';
+      return;
+    }
+    el.innerHTML = items.map(item=>`
+      <a href="${item.permalink}" target="_blank" rel="noreferrer"
+        style="display:flex;flex-direction:column;background:rgba(255,255,255,.05);border:1px solid var(--b);border-radius:12px;overflow:hidden;text-decoration:none;transition:border-color .15s"
+        onmouseenter="this.style.borderColor='var(--c)'" onmouseleave="this.style.borderColor='var(--b)'">
+        ${item.thumbnail?`<img src="${item.thumbnail.replace('http:','https:')}" alt="" style="width:100%;aspect-ratio:1;object-fit:cover"/>`:''}
+        <div style="padding:8px">
+          <div style="font-size:10px;font-weight:600;color:var(--t);line-height:1.3;margin-bottom:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">${item.title}</div>
+          <div style="font-size:13px;font-weight:800;color:#05944F">R$ ${Number(item.price).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+          <div style="font-size:9px;color:var(--m);margin-top:3px">Mercado Libre →</div>
+        </div>
+      </a>`).join('');
+  } catch(e) {
+    el.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--red);font-size:12px">Error: ${e.message}</div>`;
+  }
+}
+
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
@@ -407,7 +535,7 @@ function nav2(sec){
   const sh=$('sheet');
   if(sec==='home'){sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
-  const fn={earn:earnHTML,docs:docsHTML,prof:profHTML};
+  const fn={earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
   if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
 }
 
