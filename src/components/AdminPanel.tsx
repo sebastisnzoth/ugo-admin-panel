@@ -326,7 +326,8 @@ export function AdminPanel() {
   const [section, setSection] = useState<Section>('dashboard');
   const [clock, setClock] = useState('');
   const [usrTab, setUsrTab] = useState<'perfiles'|'auth'>('perfiles');
-  const [usrFilter, setUsrFilter] = useState<'all'|'proveedor'|'cliente'>('all');
+  const [usrFilter, setUsrFilter] = useState<'all'|'proveedor'|'cliente'|'pendiente'>('all');
+  const [docStatus, setDocStatus] = useState<Record<string,string>>({});
   const [authEnabled, setAuthEnabled] = useState(false);
   const [leafletReady, setLeafletReady] = useState(false);
   const mapDivRef = useRef<HTMLDivElement>(null);
@@ -385,6 +386,17 @@ export function AdminPanel() {
   const feed = useActivityFeed();
   const weekData = useWeekMetrics();
   const { users, suspenderProveedor, reactivarProveedor, crearUsuario, updateUsuario } = useUsuarios();
+
+  // Semáforo docs por proveedor
+  useEffect(() => {
+    if (!users.length) return;
+    (supabase as any).from('vista_doc_semaforo').select('id,semaforo').then(({data}:any) => {
+      if (!data) return;
+      const map: Record<string,string> = {};
+      data.forEach((r:any) => { map[r.id] = r.semaforo; });
+      setDocStatus(map);
+    });
+  }, [users]);
   const { users: authUsers, loading: authUsersLoading } = useAuthUsers(authEnabled);
   const { categorias, provCounts, crear: crearCat, actualizar: actualizarCat, toggleActiva, crearSub, toggleSub, eliminarSub } = useCategorias();
   const { tarifas, upsert: upsertTarifa } = useTarifas();
@@ -446,7 +458,8 @@ export function AdminPanel() {
   const maxRev = useMemo(() => Math.max(1, ...weekData.map(d => Number(d.ingresos_brutos)||0)), [weekData]);
   const provOnline  = mapProviders.filter(p=>p.estado_mapa==='online'||p.online).length;
   const provOffline = mapProviders.filter(p=>(p.estado_mapa==='offline'||(!p.online&&p.activo))).length;
-  const filtUsers = useMemo(() => users.filter(u=>usrFilter==='all'||u.tipo===usrFilter), [users, usrFilter]);
+  const pendienteDocs = useMemo(() => users.filter(u => u.tipo==='proveedor' && (!docStatus[u.id]||docStatus[u.id]==='sin_docs'||docStatus[u.id]==='pendiente')), [users, docStatus]);
+  const filtUsers = useMemo(() => usrFilter==='pendiente' ? pendienteDocs : users.filter(u=>usrFilter==='all'||u.tipo===usrFilter), [users, usrFilter, pendienteDocs]);
 
   const sendHugo = useCallback(async (text: string) => {
     if (!text.trim()||hugoLoading) return; setInput('');
@@ -580,7 +593,7 @@ export function AdminPanel() {
       <div className="st">Usuarios<button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>{setUserForm({email:'',nombre:'',apellido:'',tipo:'cliente',telefono:'',zona:'',pais:'BR',endereco:'',lat:'',lng:'',georef:'',categoria:'',bio:'',tarifa_base:'',karma:'5',activo:true,foto_url:''});setGeoInput('');setModal({type:'user-form'});}}>+ Crear usuario</button></div>
       <div className="tab-row">
         {(['perfiles','auth'] as const).map(t=><button key={t} className={`tab-btn${usrTab===t?' active':''}`} onClick={()=>setUsrTab(t)}>{t==='perfiles'?`Perfiles (${users.length})`:`Auth Users${authUsers.length?` (${authUsers.length})`:''}`}</button>)}
-        {usrTab==='perfiles'&&<div style={{marginLeft:'auto',display:'flex',gap:3}}>{(['all','proveedor','cliente'] as const).map(f=><button key={f} className={`tab-btn${usrFilter===f?' active':''}`} onClick={()=>setUsrFilter(f)}>{f==='all'?'Todos':f}</button>)}</div>}
+        {usrTab==='perfiles'&&<div style={{marginLeft:'auto',display:'flex',gap:3}}>{(['all','proveedor','cliente','pendiente'] as const).map(f=><button key={f} className={`tab-btn${usrFilter===f?' active':''}`} onClick={()=>setUsrFilter(f)} style={f==='pendiente'?{color:'var(--amber)'}:{}}>{f==='all'?'Todos':f==='pendiente'?`⏳ Docs (${pendienteDocs.length})`:f}</button>)}</div>}
       </div>
       {usrTab==='perfiles'?(
         <div className="tw">
@@ -590,7 +603,13 @@ export function AdminPanel() {
               <div className="tc" style={{flex:2}}>{u.nombre} {u.apellido||''}{u.online&&<span style={{color:'var(--green)',marginLeft:4,fontSize:8}}>●</span>}</div>
               <div className="tc" style={{flex:1.8}}><div style={{fontSize:10}}>{u.email}</div>{u.telefono&&<div style={{fontSize:9,color:'var(--muted)',marginTop:1}}>📱 {u.telefono}</div>}</div>
               <div className="tc" style={{flex:0.9}}><span className={`pill pill-${u.tipo==='admin'?'c':u.tipo==='proveedor'?'a':'m'}`}>{u.tipo}</span></div>
-              <div className="tc" style={{flex:1.2}}><span style={{fontSize:10,color:'var(--muted)'}}>{u.categoria||'—'}</span></div>
+              <div className="tc" style={{flex:1.2}}>
+                <div style={{display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
+                  <span>{({'electricista':'⚡','limpeza':'🧹','ti_redes':'💻','chaveiro':'🔑','jardinagem':'🌿','pintura':'🎨','climatizacao':'❄️','marido_aluguel':'🛠️','automotivo':'🚗','plomero':'🚿','reformas':'🏗️','carpintaria':'🪚','mudanca':'📦','ugoboy':'🛵'} as Record<string,string>)[u.categoria]||''}</span>
+                  <span style={{fontSize:10,color:'var(--muted)'}}>{u.categoria||'—'}</span>
+                  {u.tipo==='proveedor'&&<span title={docStatus[u.id]||'sin docs'} style={{display:'inline-block',width:7,height:7,borderRadius:'50%',background:docStatus[u.id]==='aprobado'?'var(--green)':docStatus[u.id]==='pendiente'?'var(--amber)':docStatus[u.id]==='rechazado'?'var(--red)':'#ccc'}}/>}
+                </div>
+              </div>
               <div className="tc" style={{flex:1}}><div style={{fontSize:10}}>{u.zona||'—'}</div><div style={{fontSize:9,color:u.lat?'var(--green)':'var(--muted)'}}>{u.lat?`🌍 ${Number(u.lat).toFixed(3)},${Number(u.lng).toFixed(3)}`:'Sin geo'}</div></div>
               <div className="tc" style={{flex:0.7,color:Number(u.karma)<4?'var(--red)':'var(--text)'}}>{u.karma}⭐</div>
               <div className="tc" style={{flex:0.7}}><span className={`pill pill-${u.activo?'g':'r'}`}>{u.activo?'activo':'inactivo'}</span></div>
@@ -973,7 +992,7 @@ export function AdminPanel() {
   const NAV: {id:Section;icon:string;label:string;badge?:number}[][] = [
     [{id:'dashboard',icon:'◈',label:'Panel'},{id:'mapa',icon:'◉',label:'Mapa'},{id:'alertas',icon:'△',label:'Alertas',badge:(criticalCount+warningCount)||undefined}],
     [{id:'mapa_ops',icon:'🗺',label:'Mapa Live'},{id:'servicios',icon:'⊞',label:'Servs'},{id:'disputas',icon:'⊘',label:'Disput',badge:disputes.length||undefined},{id:'finanzas',icon:'⊛',label:'Finanzas'}],
-    [{id:'usuarios',icon:'◎',label:'Usrs'},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
+    [{id:'usuarios',icon:'◎',label:'Usrs',badge:pendienteDocs.length||undefined},{id:'documentos',icon:'⊟',label:'Docs',badge:docs.length||undefined}],
     [{id:'categorias',icon:'⊕',label:'Cats'},{id:'tarifas',icon:'⊙',label:'Tarifas'},{id:'notificaciones',icon:'⊜',label:'Notifs'},{id:'reportes',icon:'⊗',label:'Reports'},{id:'config',icon:'⚙',label:'Config'}],
     [{id:'scout',icon:'📡',label:'Scout'},{id:'validacion_paises',icon:'🌎',label:'KYC'},{id:'import_provs',icon:'📥',label:'Import'},{id:'avanzado',icon:'◧',label:'Avanz'}],
   ];

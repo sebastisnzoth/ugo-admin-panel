@@ -199,7 +199,7 @@ export function useUsuarios() {
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
     const { data } = await (supabase as any).from('usuarios')
-      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,pais,telefono,servicios_completados,fecha_registro,updated_at,lat,lng,categoria,bio,endereco,tarifa_base,foto_url,georef,subcategoria_id,prospecto_id')
+      .select('id,nombre,apellido,email,tipo,activo,online,karma,zona,pais,telefono,servicios_completados,fecha_registro,updated_at,lat,lng,categoria,categorias_ids,bio,endereco,tarifa_base,foto_url,georef,subcategoria_id,prospecto_id')
       .order('fecha_registro', { ascending: false }).limit(200);
     if (data) setUsers(data); setLoading(false);
   }, []);
