@@ -448,10 +448,15 @@ async function doLogin(){
   if(!email||!pass){showErr('Completá email y contraseña');return;}
   const btn=document.querySelector('#vlog .abtn');
   if(btn){btn.textContent='Ingresando...';btn.disabled=true;}
-  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-  if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
-  if(error){showErr(error.message.includes('Invalid')||error.message.includes('invalid')?'Email o contraseña incorrectos':error.message);return;}
-  if(data.session){SESSION=data.session;await bootApp();}
+  try{
+    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+    if(error){showErr(error.message.includes('Invalid')||error.message.includes('invalid')?'Email o contraseña incorrectos':error.message);return;}
+    if(data.session){SESSION=data.session;await bootApp();}
+  }catch(e){
+    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+    showErr('Error: '+e.message);
+  }
 }
 async function doRegister(){
   clearErrs();
@@ -460,13 +465,16 @@ async function doRegister(){
   if(pass.length<6){showErr2('Contraseña mínimo 6 caracteres');return;}
   const btn=document.querySelector('#vreg .abtn');
   if(btn){btn.textContent='Creando...';btn.disabled=true;}
-  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,tipo:'proveedor',categoria:cat}}});
-  if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}
-  if(error){showErr2(error.message);return;}
-  if(data.user){
-    await sb.from('usuarios').upsert({id:data.user.id,auth_id:data.user.id,email,nombre,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},{onConflict:'id'});
-    if(data.session){SESSION=data.session;await bootApp();}else toast('¡Cuenta creada! Iniciá sesión.');
-  }
+  try{
+    const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,tipo:'proveedor',categoria:cat}}});
+    if(error){showErr2(error.message);if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}return;}
+    if(data.user){
+      try{
+        await sb.from('usuarios').upsert({id:data.user.id,auth_id:data.user.id,email,nombre,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},{onConflict:'id'});
+      }catch(e){console.log('User profile insert (may fail due to RLS):', e);}
+      if(data.session){SESSION=data.session;await bootApp();}else toast('¡Cuenta creada! Iniciá sesión.');
+    }
+  }catch(e){showErr2('Error: '+e.message);if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}}
 }
 async function doLogout(){
   await sb.auth.signOut();SESSION=null;PROV=null;isOnline=false;
