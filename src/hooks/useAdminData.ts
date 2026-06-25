@@ -448,3 +448,34 @@ export function usePendingWithdrawals() {
   }, []);
   return items;
 }
+
+// ─── Tiendas & Insumos ───────────────────────────────────────
+export function useTiendas() {
+  const [tiendas, setTiendas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetch = useCallback(async () => {
+    const { data } = await (supabase as any)
+      .from('tiendas').select('*').order('nombre');
+    if (data) setTiendas(data);
+    setLoading(false);
+  }, []);
+
+  const crear = useCallback(async (data: any) => {
+    await (supabase as any).from('tiendas').insert(data);
+    await fetch();
+  }, [fetch]);
+
+  const actualizar = useCallback(async (id: string, data: any) => {
+    await (supabase as any).from('tiendas').update(data).eq('id', id);
+    await fetch();
+  }, [fetch]);
+
+  const eliminar = useCallback(async (id: string) => {
+    await (supabase as any).from('tiendas').delete().eq('id', id);
+    await fetch();
+  }, [fetch]);
+
+  useEffect(() => { fetch(); }, [fetch]);
+  return { tiendas, loading, crear, actualizar, eliminar, refetch: fetch };
+}

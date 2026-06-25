@@ -989,3 +989,210 @@ export function SecImportProviders() {
     </div>
   );
 }
+
+/* ═══════════════════════════════════════════════════════
+   SecTiendasInsumos — Panel de Tiendas Asociadas + ML
+═══════════════════════════════════════════════════════ */
+import { useTiendas } from '../hooks/useAdminData';
+
+const INSUMO_CATS = [
+  {slug:'mat_eletrico',    label:'Material Elétrico',    emoji:'🔌'},
+  {slug:'mat_hidraulico',  label:'Material Hidráulico',  emoji:'🚿'},
+  {slug:'ferragens',       label:'Ferragens & Construção',emoji:'🔩'},
+  {slug:'mat_jardim',      label:'Jardinagem & Paisagismo',emoji:'🌿'},
+  {slug:'mat_auto',        label:'Automotivo & Peças',   emoji:'🚗'},
+];
+
+const BLANK_TIENDA = {
+  nombre:'', categoria_slug:'ferragens', telefono:'', email:'',
+  website:'', endereco:'', lat:'', lng:'', zona:'', pais:'BR',
+  ml_store_url:'', comision_pct:10, notas:'', activa:true, verificada:false,
+};
+
+export function SecTiendasInsumos() {
+  const { tiendas, loading, crear, actualizar, eliminar } = useTiendas();
+  const [form,    setForm]    = React.useState<any>(BLANK_TIENDA);
+  const [editing, setEditing] = React.useState<string|null>(null);
+  const [showForm,setShowForm]= React.useState(false);
+  const [catFil,  setCatFil]  = React.useState('todos');
+  const [mlQuery, setMlQuery] = React.useState('');
+  const [mlRes,   setMlRes]   = React.useState<any[]>([]);
+  const [mlLoading,setMlLoad] = React.useState(false);
+  const [geoInput,setGeoInput]= React.useState('');
+
+  const filtered = catFil==='todos' ? tiendas : tiendas.filter(t=>t.categoria_slug===catFil);
+
+  const openNew  = () => { setForm(BLANK_TIENDA); setEditing(null); setShowForm(true); };
+  const openEdit = (t:any) => { setForm({...t}); setEditing(t.id); setShowForm(true); };
+
+  const save = async () => {
+    const payload = { ...form, lat: form.lat?parseFloat(form.lat):null, lng: form.lng?parseFloat(form.lng):null, comision_pct: parseFloat(form.comision_pct)||10 };
+    if (editing) await actualizar(editing, payload);
+    else         await crear(payload);
+    setShowForm(false);
+  };
+
+  const geocode = async () => {
+    if (!geoInput.trim()) return;
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoInput)}&format=json&limit=1`,{headers:{'User-Agent':'ugo-admin/1.0'}});
+    const d = await r.json();
+    if (d[0]) { setForm((p:any)=>({...p,lat:parseFloat(d[0].lat).toFixed(6),lng:parseFloat(d[0].lon).toFixed(6)})); setGeoInput(''); }
+    else alert('No encontrado');
+  };
+
+  const searchML = async () => {
+    if (!mlQuery.trim()) return;
+    setMlLoad(true); setMlRes([]);
+    try {
+      const site = form.pais==='AR'?'MLA':'MLB';
+      const r = await fetch(`https://api.mercadolibre.com/sites/${site}/search?q=${encodeURIComponent(mlQuery)}&limit=6`);
+      const d = await r.json();
+      setMlRes(d.results||[]);
+    } catch(e) { alert('Error ML'); }
+    setMlLoad(false);
+  };
+
+  const inp = {padding:'7px 10px',border:'1.5px solid var(--border)',borderRadius:8,fontSize:12,fontFamily:'inherit',outline:'none',background:'#f8f8f8',width:'100%'} as React.CSSProperties;
+
+  const catEmoji = (slug:string) => INSUMO_CATS.find(c=>c.slug===slug)?.emoji||'🛒';
+  const catLabel = (slug:string) => INSUMO_CATS.find(c=>c.slug===slug)?.label||slug;
+
+  return (
+    <div className="pad" style={{overflowY:'auto',height:'calc(100vh - 110px)'}}>
+      {/* Header */}
+      <div className="st">
+        🛒 Tiendas & Insumos
+        <span style={{fontSize:10,fontWeight:400,color:'var(--muted)',marginLeft:8}}>{tiendas.length} tiendas · {tiendas.filter(t=>t.activa).length} activas</span>
+        <button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={openNew}>+ Nueva tienda</button>
+      </div>
+
+      {/* Info ML */}
+      <div style={{background:'rgba(255,165,0,.08)',border:'1px solid rgba(255,165,0,.2)',borderRadius:10,padding:'10px 14px',marginBottom:14,fontSize:11,color:'#996000'}}>
+        <b>🛒 Integración Mercado Libre:</b> Los proveedores buscan insumos desde la app. U.GO usa la API pública de ML para mostrar resultados.
+        Cuando configures una cuenta afiliado, los links generan comisión automáticamente — sin cambios de código.
+      </div>
+
+      {/* Filtros por categoría */}
+      <div style={{display:'flex',gap:6,marginBottom:14,flexWrap:'wrap'}}>
+        {[{slug:'todos',label:'Todas',emoji:'🛒'},...INSUMO_CATS].map(c=>(
+          <button key={c.slug} onClick={()=>setCatFil(c.slug)}
+            style={{padding:'5px 12px',borderRadius:20,border:`1px solid ${catFil===c.slug?'#05944F':'var(--border)'}`,
+              background:catFil===c.slug?'rgba(5,148,79,.1)':'transparent',
+              color:catFil===c.slug?'#05944F':'var(--muted)',fontSize:11,fontWeight:600,cursor:'pointer'}}>
+            {c.emoji} {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Formulario nueva/editar tienda */}
+      {showForm&&(
+        <div style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:16,marginBottom:16}}>
+          <div style={{fontWeight:700,fontSize:13,marginBottom:12}}>{editing?'✏️ Editar tienda':'➕ Nueva tienda'}</div>
+          <div className="fgrid">
+            <div className="fg"><label className="flabel">Nombre *</label><input style={inp} value={form.nombre} onChange={e=>setForm((p:any)=>({...p,nombre:e.target.value}))} placeholder="Ferretería Silva"/></div>
+            <div className="fg"><label className="flabel">Categoría de insumos</label>
+              <select style={{...inp,cursor:'pointer'}} value={form.categoria_slug} onChange={e=>setForm((p:any)=>({...p,categoria_slug:e.target.value}))}>
+                {INSUMO_CATS.map(c=><option key={c.slug} value={c.slug}>{c.emoji} {c.label}</option>)}
+              </select>
+            </div>
+            <div className="fg"><label className="flabel">Teléfono</label><input style={inp} value={form.telefono} onChange={e=>setForm((p:any)=>({...p,telefono:e.target.value}))} placeholder="+55 48 9 9999-0000"/></div>
+            <div className="fg"><label className="flabel">Email</label><input style={inp} value={form.email} onChange={e=>setForm((p:any)=>({...p,email:e.target.value}))} placeholder="tienda@email.com"/></div>
+            <div className="fg full"><label className="flabel">Dirección → geocodificar</label>
+              <div style={{display:'flex',gap:6}}>
+                <input style={{...inp,flex:1}} value={geoInput} onChange={e=>setGeoInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&geocode()} placeholder="Rua das Flores 123, Florianópolis"/>
+                <button className="btn btn-s btn-sm" onClick={geocode} disabled={!geoInput.trim()}>🔍</button>
+              </div>
+            </div>
+            <div className="fg"><label className="flabel">Lat</label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lat} onChange={e=>setForm((p:any)=>({...p,lat:e.target.value}))} placeholder="-27.5954"/></div>
+            <div className="fg"><label className="flabel">Lng</label><input style={{...inp,fontFamily:'monospace',fontSize:11}} value={form.lng} onChange={e=>setForm((p:any)=>({...p,lng:e.target.value}))} placeholder="-48.5480"/></div>
+            <div className="fg"><label className="flabel">País</label>
+              <select style={{...inp,cursor:'pointer'}} value={form.pais} onChange={e=>setForm((p:any)=>({...p,pais:e.target.value}))}>
+                <option value="BR">Brasil 🇧🇷</option><option value="AR">Argentina 🇦🇷</option>
+              </select>
+            </div>
+            <div className="fg"><label className="flabel">Comisión %</label><input style={inp} type="number" value={form.comision_pct} onChange={e=>setForm((p:any)=>({...p,comision_pct:e.target.value}))} placeholder="10"/></div>
+            <div className="fg full"><label className="flabel">Link tienda ML (opcional)</label><input style={inp} value={form.ml_store_url} onChange={e=>setForm((p:any)=>({...p,ml_store_url:e.target.value}))} placeholder="https://www.mercadolibre.com.br/perfil/VENDEDOR"/></div>
+            <div className="fg full"><label className="flabel">Notas internas</label><input style={inp} value={form.notas} onChange={e=>setForm((p:any)=>({...p,notas:e.target.value}))} placeholder="Contacto: João · Descuento 5% para proveedores U.GO"/></div>
+            <div className="fg" style={{display:'flex',gap:12,alignItems:'center'}}>
+              <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
+                <input type="checkbox" checked={form.activa} onChange={e=>setForm((p:any)=>({...p,activa:e.target.checked}))} style={{accentColor:'#05944F'}}/> Activa
+              </label>
+              <label style={{display:'flex',alignItems:'center',gap:6,fontSize:12,cursor:'pointer'}}>
+                <input type="checkbox" checked={form.verificada} onChange={e=>setForm((p:any)=>({...p,verificada:e.target.checked}))} style={{accentColor:'#276EF1'}}/> Verificada
+              </label>
+            </div>
+          </div>
+          <div style={{display:'flex',gap:8,marginTop:12}}>
+            <button className="btn btn-p" onClick={save} disabled={!form.nombre.trim()}>💾 Guardar</button>
+            <button className="btn btn-s" onClick={()=>setShowForm(false)}>Cancelar</button>
+          </div>
+        </div>
+      )}
+
+      {/* Lista de tiendas */}
+      {loading ? <div style={{padding:20,textAlign:'center',color:'var(--muted)'}}>Cargando...</div> : (
+        <>
+          {filtered.length===0&&<div style={{padding:20,textAlign:'center',color:'var(--muted)',fontSize:12}}>
+            Sin tiendas registradas. Agregá la primera con "+ Nueva tienda".
+          </div>}
+          {filtered.map(t=>(
+            <div key={t.id} style={{background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:'12px 14px',marginBottom:8,display:'flex',alignItems:'center',gap:12,opacity:t.activa?1:.6}}>
+              <div style={{width:42,height:42,borderRadius:10,background:'rgba(5,148,79,.1)',border:'1px solid rgba(5,148,79,.2)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:20,flexShrink:0}}>
+                {catEmoji(t.categoria_slug)}
+              </div>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:2}}>
+                  <span style={{fontWeight:700,fontSize:13}}>{t.nombre}</span>
+                  {t.verificada&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(39,110,241,.1)',color:'#276EF1',border:'1px solid rgba(39,110,241,.2)',fontWeight:700}}>✓ Verificada</span>}
+                  {!t.activa&&<span style={{fontSize:9,padding:'1px 6px',borderRadius:10,background:'rgba(225,25,0,.1)',color:'var(--red)',fontWeight:700}}>Inactiva</span>}
+                </div>
+                <div style={{fontSize:10,color:'var(--muted)',display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <span>{catEmoji(t.categoria_slug)} {catLabel(t.categoria_slug)}</span>
+                  {t.zona&&<span>📍 {t.zona}</span>}
+                  {t.telefono&&<span>📱 {t.telefono}</span>}
+                  <span style={{color:'#05944F',fontWeight:600}}>Comisión: {t.comision_pct}%</span>
+                  {t.ml_store_url&&<a href={t.ml_store_url} target="_blank" rel="noreferrer" style={{color:'#FFE600',fontWeight:600,textDecoration:'none'}}>🛒 ML</a>}
+                </div>
+              </div>
+              <div style={{display:'flex',gap:5,flexShrink:0}}>
+                <button className="btn btn-s btn-sm" onClick={()=>openEdit(t)}>✏️</button>
+                <button className="btn btn-d btn-sm" onClick={()=>{ if(confirm(`¿Eliminar "${t.nombre}"?`)) eliminar(t.id); }}>×</button>
+              </div>
+            </div>
+          ))}
+        </>
+      )}
+
+      {/* Test de búsqueda ML */}
+      <div style={{marginTop:20,background:'var(--surface)',border:'1px solid var(--border)',borderRadius:12,padding:16}}>
+        <div style={{fontWeight:700,fontSize:13,marginBottom:10}}>🔍 Test — Búsqueda Mercado Libre</div>
+        <div style={{display:'flex',gap:8,marginBottom:12}}>
+          <input style={{...inp,flex:1}} value={mlQuery} onChange={e=>setMlQuery(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&searchML()} placeholder="Ej: cabo elétrico 2.5mm, tornillo, pincel..."/>
+          <select style={{...inp,width:'auto',cursor:'pointer'}} value={form.pais} onChange={e=>setForm((p:any)=>({...p,pais:e.target.value}))}>
+            <option value="BR">🇧🇷 MLB</option><option value="AR">🇦🇷 MLA</option>
+          </select>
+          <button className="btn btn-p btn-sm" onClick={searchML} disabled={mlLoading||!mlQuery.trim()}>
+            {mlLoading?'⏳':'🔍 Buscar'}
+          </button>
+        </div>
+        {mlRes.length>0&&(
+          <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))',gap:8}}>
+            {mlRes.map((item:any)=>(
+              <a key={item.id} href={item.permalink} target="_blank" rel="noreferrer"
+                style={{display:'flex',gap:8,padding:'8px 10px',background:'#fafafa',border:'1px solid var(--border)',borderRadius:10,textDecoration:'none',alignItems:'center'}}>
+                {item.thumbnail&&<img src={item.thumbnail} alt="" style={{width:40,height:40,objectFit:'cover',borderRadius:6,flexShrink:0}}/>}
+                <div style={{minWidth:0}}>
+                  <div style={{fontSize:10,fontWeight:600,color:'var(--text)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',marginBottom:2}}>{item.title}</div>
+                  <div style={{fontSize:11,fontWeight:800,color:'#05944F'}}>R$ {Number(item.price).toLocaleString('pt-BR',{minimumFractionDigits:2})}</div>
+                  <div style={{fontSize:9,color:'var(--muted)'}}>ML →</div>
+                </div>
+              </a>
+            ))}
+          </div>
+        )}
+        {mlRes.length===0&&!mlLoading&&mlQuery&&<div style={{fontSize:11,color:'var(--muted)',textAlign:'center',padding:10}}>Sin resultados. Probá con otro término.</div>}
+      </div>
+    </div>
+  );
+}
