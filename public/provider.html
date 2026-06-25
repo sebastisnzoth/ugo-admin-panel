@@ -63,6 +63,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 /* ACTIVE JOB BAR */
 #jobbar{position:fixed;left:0;right:0;bottom:78px;z-index:35;background:#111;color:#fff;padding:12px 16px;display:none;align-items:center;gap:12px}
 #jobbar.show{display:flex}
+#zona-map{width:100%;height:300px;border-radius:12px;margin-bottom:12px}
 .jbico{font-size:20px}
 .jbinfo{flex:1}.jbtit{font-weight:700;font-size:13px}.jbsub{font-size:11px;color:#aaa}
 .jbbtn{padding:8px 14px;background:var(--c);color:#000;font-weight:700;font-size:12px;border:none;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -416,6 +417,7 @@ const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Com
 const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
 let EARNINGS_RANGE={start:null,end:null};
+let ZONE_MAP=null,ZONE_CIRCLE=null,ZONE_RADIUS=15;
 let CHECKING_DISTANCE_INTERVAL=null;
 let LAST_ACTIVITY='';let DOC_MODAL=null;let CONFIG_OPEN=false;
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
@@ -600,9 +602,10 @@ function nav2(sec){
   const el=$('ni-'+sec);if(el)el.classList.add('on');
   const sh=$('sheet');
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
+  if(sec==='prof'){setTimeout(() => initZoneMap(), 200);}
   sh.style.height='min(75vh,620px)';
   const fn={home:homeHTML,earn:earningsHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='prof')setTimeout(()=>initZoneMap(),200);}
 }
 
 
@@ -1043,10 +1046,25 @@ function profHTML(){
   <div class="phead"><div class="pav">${n[0]?.toUpperCase()||'U'}</div><div class="pname">${n}</div><div class="pkr">★ Karma ${(PROV?.karma||5).toFixed(1)}</div></div>
   ${tarifaPreview}
   <div style="background:#f8f8f8;border-radius:12px;margin-bottom:14px">
-    <div onclick="const el=document.getElementById('cfg-content');el.style.display=el.style.display==='none'?'block':'none';document.getElementById('cfg-arrow').style.transform=el.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--k)">
-      <span>⚙️ Configuración</span>
-      <span id="cfg-arrow" style="transition:transform .3s">▼</span>
+    <div onclick="const el=document.getElementById('zona-content');el.style.display=el.style.display==='none'?'block':'none';document.getElementById('zona-arrow').style.transform=el.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--k)">
+      <span>🗺️ Mapa de zona</span>
+      <span id="zona-arrow" style="transition:transform .3s">▼</span>
     </div>
+    <div id="zona-content" style="padding:12px;border-top:1px solid #e5e5e5;display:none;background:#fff;border-radius:0 0 12px 12px">
+      <div id="zona-map" style="width:100%;height:300px;border-radius:12px;margin-bottom:12px;background:#e5e5e5"></div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:8px;text-transform:uppercase">Radio de cobertura: <span id="zona-radio-val">15</span> km</label>
+        <input id="zona-radio" type="range" min="5" max="25" value="15" style="width:100%;cursor:pointer;margin-bottom:8px" onchange="updateZoneRadius()">
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:#888">
+          <span>5 km</span>
+          <span>25 km</span>
+        </div>
+      </div>
+      <button onclick="saveZonePreference()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit">
+        ✓ Guardar zona
+      </button>
+    </div>
+  </div>
     <div id="cfg-content" style="padding:12px;border-top:1px solid #e5e5e5;display:none;background:#fff;border-radius:0 0 12px 12px">
       <div style="margin-bottom:12px">
         <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:6px">Tarifa Base (R$)</label>
@@ -1525,6 +1543,72 @@ async function solicitarRetiro() {
     nav2('earn');
   } catch (error) {
     alert('Error: ' + error.message);
+  }
+}
+
+/* ── ZONA PREFERIDA ── */
+function initZoneMap() {
+  setTimeout(() => {
+    if (!document.getElementById('zona-map') || ZONE_MAP) return;
+    const lat = PROV?.lat || -27.5969;
+    const lng = PROV?.lng || -48.5494;
+    
+    ZONE_MAP = L.map('zona-map', { scrollWheelZoom: false }).setView([lat, lng], 12);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap',
+      maxZoom: 19
+    }).addTo(ZONE_MAP);
+    
+    // Marcador del proveedor
+    L.marker([lat, lng], {
+      icon: L.icon({
+        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDMyIDQwIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjEyIiByPSI4IiBmaWxsPSIjMDBDOEQ3Ii8+PHBvbHlnb24gcG9pbnRzPSIxNiwzMiA4LDE4IDI0LDE4IiBmaWxsPSIjMDBDOEQ3Ii8+PC9zdmc+',
+        iconSize: [32, 40],
+        iconAnchor: [16, 40]
+      })
+    }).addTo(ZONE_MAP).bindPopup('Tu ubicación');
+    
+    // Círculo de cobertura
+    ZONE_RADIUS = PROV?.zona_radio || 15;
+    ZONE_CIRCLE = L.circle([lat, lng], {
+      radius: ZONE_RADIUS * 1000,
+      color: 'var(--c)',
+      fillColor: 'rgba(0,200,215,0.1)',
+      fillOpacity: 0.3,
+      weight: 2,
+      dashArray: '5,5'
+    }).addTo(ZONE_MAP);
+    
+    document.getElementById('zona-radio').value = ZONE_RADIUS;
+    document.getElementById('zona-radio-val').textContent = ZONE_RADIUS;
+  }, 100);
+}
+
+function updateZoneRadius() {
+  const val = parseInt(document.getElementById('zona-radio')?.value) || 15;
+  ZONE_RADIUS = val;
+  document.getElementById('zona-radio-val').textContent = val;
+  if (ZONE_CIRCLE) {
+    ZONE_CIRCLE.setRadius(val * 1000);
+  }
+}
+
+async function saveZonePreference() {
+  if (!ZONE_RADIUS || !SESSION) {
+    alert('Error al guardar');
+    return;
+  }
+  
+  try {
+    const {error} = await sb.from('usuarios').update({
+      zona_radio: ZONE_RADIUS
+    }).eq('id', SESSION.user.id);
+    
+    if (error) throw error;
+    PROV = {...PROV, zona_radio: ZONE_RADIUS};
+    toast('✅ Zona guardada');
+  } catch (e) {
+    alert('Error: ' + e.message);
   }
 }
 
