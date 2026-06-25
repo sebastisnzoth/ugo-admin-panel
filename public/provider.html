@@ -344,6 +344,64 @@ async function doShopSearch() {
   }
 }
 
+
+function openDocModal(doc) {
+  const puedoResubmitir = doc.estado === 'rechazado' && (doc.intentos_resubmision || 0) < 3;
+  if (!puedoResubmitir && doc.estado !== 'rechazado') return;
+  DOC_MODAL = doc;
+  const html = `
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99;display:flex;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeDocModal()">
+      <div style="background:#fff;border-radius:20px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto">
+        <div style="padding:16px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center">
+          <div><div style="font-weight:800;font-size:14px">\${doc.tipo}</div><div style="font-size:11px;color:#888;margin-top:2px">\${doc.estado} · v\${doc.version||1}</div></div>
+          <button onclick="closeDocModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888">✕</button>
+        </div>
+        <div style="padding:16px">
+          \${doc.notas_rechazo ? `<div style="background:#FFE5E5;border-left:3px solid #FF4444;padding:12px;margin-bottom:14px;border-radius:6px"><div style="font-weight:700;color:#FF4444;font-size:11px">RAZÓN:</div><div style="color:#333;font-size:12px;margin-top:4px">\${doc.notas_rechazo}</div></div>` : ''}
+          \${doc.url_storage ? `<div style="margin-bottom:14px"><img src="\${doc.url_storage}" alt="" style="width:100%;border-radius:12px;max-height:300px;object-fit:cover"/></div>` : ''}
+          \${doc.estado === 'rechazado' && (doc.intentos_resubmision||0) < 3 ? `
+            <button onclick="triggerDocUpload('\${doc.id}','\${doc.tipo}')" style="width:100%;padding:12px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:8px;font-family:inherit">
+              📸 Resubmitir foto
+            </button>
+            <div style="font-size:11px;color:#888;text-align:center">\${3-(doc.intentos_resubmision||0)} intento(s) restante(s)</div>
+          ` : `<div style="text-align:center;padding:12px;color:#888;font-size:12px">\${doc.estado==='aprobado'?'✅ Documento aprobado':'⏳ En revisión'}</div>`}
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function closeDocModal() {
+  document.querySelector('[style*="position:fixed"][style*="z-index:99"]')?.remove();
+  DOC_MODAL = null;
+}
+
+async function triggerDocUpload(docId, docType) {
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'image/*';
+  inp.onchange = async (e) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    closeDocModal();
+    try {
+      const fname = \`docs/\${SESSION.user.id}/\${docType}-\${Date.now()}\`;
+      const {data:u,error:ue} = await sb.storage.from('documentos').upload(fname, f, {upsert:true});
+      if (ue) throw ue;
+      const url = \`https://byajcqrgetloavrgyqak.supabase.co/storage/v1/object/public/documentos/\${fname}\`;
+      const {error:derr} = await sb.from('documentos').update({
+        url_storage: url, estado: 'procesando', version: (DOC_MODAL?.version||1)+1,
+        intentos_resubmision: (DOC_MODAL?.intentos_resubmision||0)+1
+      }).eq('id', docId);
+      if (derr) throw derr;
+      toast('✅ Documento resubmitido');
+      setTimeout(() => loadDocsList(), 500);
+    } catch(e) { alert('Error: '+e.message); }
+  };
+  inp.click();
+}
+
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -357,7 +415,7 @@ const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Com
 const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
 let CHECKING_DISTANCE_INTERVAL=null;
-let LAST_ACTIVITY='';
+let LAST_ACTIVITY='';let DOC_MODAL=null;
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
@@ -854,7 +912,45 @@ async function saveProfile(){
 
 /* ── DOCS ── */
 let currentDocType=null;
-async function initDocs(){
+async async function loadDocsList() {
+  if (!SESSION) return;
+  const { data: docs } = await sb.from('documentos')
+    .select('*')
+    .eq('usuario_id', SESSION.user.id)
+    .order('created_at', { ascending: false });
+  if (!docs) return;
+  const docsByType = {};
+  docs.forEach(d => {
+    if (!docsByType[d.tipo]) docsByType[d.tipo] = d;
+  });
+  Object.entries(docsByType).forEach(([type, doc]) => {
+    const el = document.getElementById('st-'+type);
+    if (!el) return;
+    const rechazado = doc.estado === 'rechazado';
+    const puedoResubmitir = rechazado && (doc.intentos_resubmision || 0) < 3;
+    const bloqueado = rechazado && (doc.intentos_resubmision || 0) >= 3;
+    
+    let statusText = '● Pendiente';
+    let statusClass = 'ds-pen';
+    if (doc.estado === 'aprobado') { statusText = '✓ Aprobado'; statusClass = 'ds-app'; }
+    else if (doc.estado === 'procesando') { statusText = '⏳ Procesando'; statusClass = 'ds-proc'; }
+    else if (rechazado) { statusText = \`❌ Rechazado (\${doc.intentos_resubmision||0}/3)\`; statusClass = 'ds-rej'; }
+    
+    el.textContent = statusText;
+    el.className = 'doc-status ' + statusClass;
+    
+    if (puedoResubmitir) {
+      const cardEl = document.getElementById('doc-'+type);
+      if (cardEl) {
+        cardEl.onclick = () => openDocModal(doc);
+        cardEl.style.cursor = 'pointer';
+        cardEl.style.borderColor = '#FF4444';
+      }
+    }
+  });
+}
+
+function initDocs(){
   if(!SESSION)return;
   const{data}=await sb.from('documentos').select('tipo,estado').eq('usuario_id',SESSION.user.id);
   if(!data)return;
