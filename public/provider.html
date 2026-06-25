@@ -602,10 +602,10 @@ function nav2(sec){
   const el=$('ni-'+sec);if(el)el.classList.add('on');
   const sh=$('sheet');
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
-  if(sec==='prof'){setTimeout(() => initZoneMap(), 200);}
+  if(sec==='prof'){setTimeout(() => {initZoneMap();loadSubcategories();}, 200);}
   sh.style.height='min(75vh,620px)';
   const fn={home:homeHTML,earn:earningsHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='prof')setTimeout(()=>initZoneMap(),200);}
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='prof')setTimeout(()=>{initZoneMap();loadSubcategories();},200);}
 }
 
 
@@ -1084,9 +1084,19 @@ function profHTML(){
   <div class="pfield"><label for="pn">Nombre</label><input id="pn" value="${n}" placeholder="Tu nombre completo"></div>
   <div class="pfield"><label for="ptel">Teléfono</label><input id="ptel" value="${PROV?.telefono||''}" placeholder="+55 48 9xxxx-xxxx" type="tel"></div>
   <div class="pfield"><label for="pcat">Categoría</label>
-    <select id="pcat">
+    <select id="pcat" onchange="loadSubcategories()">
       ${['Electricista','Plomero','Limpieza','Pintor','Carpintero','Cerrajero','Jardinero','AC/Clima'].map(c=>`<option ${(PROV?.categoria||'')==c?'selected':''}>${c}</option>`).join('')}
     </select>
+  </div>
+  <!-- SUBCATEGORÍAS -->
+  <div class="pfield">
+    <label style="display:block;font-size:11px;font-weight:700;color:var(--m);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Especialización (subcategorías)</label>
+    <div id="subcat-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
+      <div style="text-align:center;color:#888;font-size:12px;padding:20px">Cargando...</div>
+    </div>
+    <button type="button" onclick="saveSubcategorias()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">
+      ✓ Guardar especialización
+    </button>
   </div>
   <div class="pfield"><label for="pbio">Bio (aparece en tu perfil público)</label><input id="pbio" value="${PROV?.bio||''}" placeholder="Especialista en instalaciones eléctricas con 10 años..."></div>
   <button class="psave" onclick="saveProfile()">💾 Guardar cambios</button>
@@ -1543,6 +1553,88 @@ async function solicitarRetiro() {
     nav2('earn');
   } catch (error) {
     alert('Error: ' + error.message);
+  }
+}
+
+/* ── SUBCATEGORÍAS ── */
+let SELECTED_SUBCATS = [];
+
+async function loadSubcategories() {
+  const cat = document.getElementById('pcat')?.value || PROV?.categoria || '';
+  if (!cat) return;
+  
+  const { data: subcats } = await sb.from('subcategorias')
+    .select('*')
+    .eq('activa', true)
+    .order('nombre');
+  
+  if (!subcats) {
+    document.getElementById('subcat-list').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888">Sin subcategorías disponibles</div>';
+    return;
+  }
+  
+  // Cargar las subcategorías seleccionadas del proveedor
+  const { data: selected } = await sb.from('proveedor_subcategorias')
+    .select('subcategoria_id')
+    .eq('proveedor_id', SESSION?.user?.id);
+  
+  SELECTED_SUBCATS = (selected || []).map(s => s.subcategoria_id);
+  
+  // Filtrar por categoría actual
+  const catSlug = cat.toLowerCase().replace(/\s+/g, '_');
+  const filtered = subcats.filter(s => s.nombre && s.nombre.length > 0);
+  
+  if (filtered.length === 0) {
+    document.getElementById('subcat-list').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-size:12px;padding:12px">Sin subcategorías para esta categoría</div>';
+    return;
+  }
+  
+  document.getElementById('subcat-list').innerHTML = filtered.map(s => `
+    <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#f8f8f8;border-radius:8px;cursor:pointer;border:2px solid ${SELECTED_SUBCATS.includes(s.id)?'var(--c)':'transparent'};transition:.2s">
+      <input type="checkbox" value="${s.id}" ${SELECTED_SUBCATS.includes(s.id)?'checked':''} onchange="toggleSubcat('${s.id}')" style="width:16px;height:16px;cursor:pointer">
+      <span style="font-size:12px;font-weight:600;color:var(--k);flex:1">${s.nombre}</span>
+    </label>
+  `).join('');
+}
+
+function toggleSubcat(subcatId) {
+  const idx = SELECTED_SUBCATS.indexOf(subcatId);
+  if (idx > -1) {
+    SELECTED_SUBCATS.splice(idx, 1);
+  } else {
+    SELECTED_SUBCATS.push(subcatId);
+  }
+}
+
+async function saveSubcategorias() {
+  if (!SESSION || !SELECTED_SUBCATS.length) {
+    alert('Selecciona al menos una especialización');
+    return;
+  }
+  
+  try {
+    // Eliminar subcategorías anteriores
+    await sb.from('proveedor_subcategorias')
+      .delete()
+      .eq('proveedor_id', SESSION.user.id);
+    
+    // Insertar nuevas
+    if (SELECTED_SUBCATS.length > 0) {
+      const { error } = await sb.from('proveedor_subcategorias')
+        .insert(
+          SELECTED_SUBCATS.map(subId => ({
+            proveedor_id: SESSION.user.id,
+            subcategoria_id: subId,
+            activa: true
+          }))
+        );
+      
+      if (error) throw error;
+    }
+    
+    toast('✅ Especialización guardada');
+  } catch (e) {
+    alert('Error: ' + e.message);
   }
 }
 
