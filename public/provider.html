@@ -213,6 +213,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <div class="ni" onclick="openChat()"><button class="norb">🌀</button></div>
   <button class="ni" id="ni-shop" onclick="nav2('shop')"><div class="niic">🛒</div><div class="nilb">Insumos</div></button>
   <button class="ni" id="ni-docs" onclick="nav2('docs')"><div class="niic">📄</div><div class="nilb">Docs</div></button>
+  <button class="ni" id="ni-earn" onclick="nav2('earn')"><div class="niic">📊</div><div class="nilb">Ganancias</div></button>
   <button class="ni" id="ni-prof" onclick="nav2('prof')"><div class="niic">👤</div><div class="nilb">Perfil</div></button>
 </nav>
 <div id="toast"></div>
@@ -414,6 +415,7 @@ const TIMELINE_STATES = ['negociando','confirmado','en_camino','ejecutando','com
 const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Completado'];
 const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
+let EARNINGS_RANGE={start:null,end:null};
 let CHECKING_DISTANCE_INTERVAL=null;
 let LAST_ACTIVITY='';let DOC_MODAL=null;let CONFIG_OPEN=false;
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
@@ -599,7 +601,7 @@ function nav2(sec){
   const sh=$('sheet');
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
-  const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
+  const fn={home:homeHTML,earn:earningsHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
   if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
 }
 
@@ -839,18 +841,118 @@ function homeHTML() {
   </div>`;
 }
 
-function earnHTML(){
-  return`<div class="pad">
-  <div class="stt">💰 Ganancias del mes</div>
-  <div class="sgrid">
-    <div class="sstat"><div class="sval">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div><div class="slbl">Este mes</div></div>
-    <div class="sstat"><div class="sval">${PROV?.servicios_completados||0}</div><div class="slbl">Servicios</div></div>
-    <div class="sstat"><div class="sval">★${(PROV?.karma||5).toFixed(1)}</div><div class="slbl">Karma</div></div>
-    <div class="sstat"><div class="sval">15%</div><div class="slbl">Comisión U.GO</div></div>
-  </div>
-  <div class="stt" style="margin-top:8px">📋 Últimos servicios</div>
-  <div id="hlist"><p style="color:var(--m);font-size:13px;padding:8px 0">Cargando...</p></div>
+/* ═══════════════════════════════════════════════════
+   GANANCIAS — Gráfico y análisis
+═══════════════════════════════════════════════════ */
+async function loadEarningsData(startDate, endDate) {
+  if (!SESSION) return null;
+  const { data: srv } = await sb.from('servicios')
+    .select('id,estado,tarifa,created_at,completado_at')
+    .eq('proveedor_id', SESSION.user.id)
+    .gte('created_at', startDate.toISOString())
+    .lte('created_at', endDate.toISOString())
+    .order('created_at', { ascending: true });
+  if (!srv) return null;
+  const byDay = {};
+  srv.forEach(s => {
+    const day = new Date(s.created_at).toLocaleDateString('es-AR');
+    if (!byDay[day]) byDay[day] = {completed: 0, total: 0, count: 0, commission: 0};
+    if (s.estado === 'completado') {
+      byDay[day].completed += (s.tarifa||0)*0.85;
+      byDay[day].commission += (s.tarifa||0)*0.15;
+    }
+    byDay[day].total += (s.tarifa||0)*0.85;
+    byDay[day].count++;
+  });
+  const totalEarned = Object.values(byDay).reduce((a,d)=>a+d.completed,0);
+  const totalCompleted = srv.filter(s=>s.estado==='completado').length;
+  const totalCommission = Object.values(byDay).reduce((a,d)=>a+d.commission,0);
+  const avgPerService = totalCompleted > 0 ? totalEarned/totalCompleted : 0;
+  const today = new Date();
+  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+  const daysElapsed = today.getDate();
+  const projectedEarnings = totalCompleted > 0 ? (totalEarned/daysElapsed)*daysInMonth : 0;
+  return {byDay, totalEarned, totalCompleted, totalCommission, avgPerService, projectedEarnings};
+}
+
+function renderEarningsChart(data) {
+  if (!data) return '<div style="padding:20px;text-align:center;color:#888">Sin datos</div>';
+  const days = Object.entries(data.byDay).slice(-14);
+  const maxVal = Math.max(...days.map(d=>d[1].completed),1);
+  const chartHeight = 150;
+  return `<div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px">Últimas 2 semanas</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-around;gap:4px;height:${chartHeight}px;margin-bottom:10px;padding:10px 0">
+      ${days.map(([day,d])=>{const h = (d.completed/maxVal)*chartHeight;return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;height:${h}px;background:linear-gradient(180deg,var(--c),var(--g));border-radius:4px 4px 0 0" title="R$ ${d.completed.toFixed(0)}"></div><div style="font-size:8px;color:#888;text-align:center;width:100%">${day.split('/')[0]}</div></div>`;}).join('')}
+    </div>
   </div>`;
+}
+
+function earningsHTML() {
+  const now = new Date();
+  const start = new Date(now.getFullYear(), now.getMonth(), 1);
+  const end = new Date();
+  setTimeout(() => updateEarningsChart(), 100);
+  return `<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+    <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:12px">📊 Ganancias</div>
+    <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:4px">Desde</label>
+        <input id="earn-start" type="date" value="${start.toISOString().split('T')[0]}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:12px" onchange="updateEarningsChart()"></div>
+      <div><label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:4px">Hasta</label>
+        <input id="earn-end" type="date" value="${end.toISOString().split('T')[0]}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:12px" onchange="updateEarningsChart()"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Ganancia neta</div>
+        <div id="earn-total" style="font-size:20px;font-weight:900;color:var(--c)">R$ 0</div></div>
+      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Servicios</div>
+        <div id="earn-count" style="font-size:20px;font-weight:900;color:var(--g)">0</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div style="background:#f8f8f8;border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Comisión U.GO</div>
+        <div id="earn-commission" style="font-size:16px;font-weight:900;color:#FF9800">R$ 0</div></div>
+      <div style="background:#f8f8f8;border-radius:12px;padding:12px;text-align:center">
+        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Promedio/servicio</div>
+        <div id="earn-avg" style="font-size:16px;font-weight:900;color:var(--k)">R$ 0</div></div>
+    </div>
+    <div id="earn-projection" style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;margin-bottom:14px;display:none">
+      <div style="font-size:11px;font-weight:700;color:var(--c);text-transform:uppercase;margin-bottom:8px">📈 Proyección fin de mes</div>
+      <div id="earn-proj-val" style="font-size:18px;font-weight:900;color:var(--c)">R$ 0</div>
+      <div style="font-size:11px;color:#666;margin-top:6px">Si mantienes el ritmo actual</div></div>
+    <div id="earn-chart"></div>
+  </div>`;
+}
+
+async function updateEarningsChart() {
+  const startStr = document.getElementById('earn-start')?.value;
+  const endStr = document.getElementById('earn-end')?.value;
+  if (!startStr || !endStr) return;
+  const start = new Date(startStr + 'T00:00:00');
+  const end = new Date(endStr + 'T23:59:59');
+  const data = await loadEarningsData(start, end);
+  if (!data) return;
+  const tid = document.getElementById('earn-total');
+  if (tid) tid.textContent = 'R$ ' + data.totalEarned.toFixed(0);
+  const cid = document.getElementById('earn-count');
+  if (cid) cid.textContent = data.totalCompleted;
+  const cmid = document.getElementById('earn-commission');
+  if (cmid) cmid.textContent = 'R$ ' + data.totalCommission.toFixed(0);
+  const aid = document.getElementById('earn-avg');
+  if (aid) aid.textContent = 'R$ ' + data.avgPerService.toFixed(0);
+  const now = new Date();
+  const projDiv = document.getElementById('earn-projection');
+  if (end >= now && projDiv) {
+    projDiv.style.display = 'block';
+    const pv = document.getElementById('earn-proj-val');
+    if (pv) pv.textContent = 'R$ ' + data.projectedEarnings.toFixed(0);
+  }
+  const chart = document.getElementById('earn-chart');
+  if (chart) chart.innerHTML = renderEarningsChart(data);
+}
+
+function earnHTML(){
 }
 
 function docsHTML(){return`<div class="pad">
