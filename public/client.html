@@ -389,6 +389,10 @@ function onServiceUpdate(svc) {
     setTrackStep(4);
     if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
     showRating(svc.tarifa || ACTIVE_SVC.prov?.tarifa_base || 80);
+  } else if (st === 'confirmado') {
+    // Mostrar botón de pago si no hay pago aún
+    const pagoBtn = document.getElementById('pago-btn');
+    if (pagoBtn) pagoBtn.style.display = 'block';
   }
 }
 
@@ -860,6 +864,52 @@ function pcHire() {
   if (ok) createService(PCARD_PROV);
 }
 
+/* ── MERCADO PAGO ── */
+async function initiateMercadoPagoPayment() {
+  if (!ACTIVE_SVC || !SESSION) {
+    alert('Error: No hay servicio activo');
+    return;
+  }
+  
+  try {
+    const btn = document.getElementById('pago-btn');
+    if (btn) btn.disabled = true;
+    
+    const monto = ACTIVE_SVC.tarifa || 100;
+    
+    const response = await fetch('/api/pagos/crear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        servicioId: ACTIVE_SVC.id,
+        montoTotal: monto,
+        clienteId: SESSION.user.id,
+        proveedorId: ACTIVE_SVC.proveedor_id,
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      alert('Error: ' + (data.error || 'Error desconocido'));
+      if (btn) btn.disabled = false;
+      return;
+    }
+    
+    // Redirigir a Mercado Pago
+    if (data.initPoint) {
+      window.location.href = data.initPoint;
+    } else {
+      alert('Error: No se pudo obtener el link de pago');
+      if (btn) btn.disabled = false;
+    }
+  } catch (error) {
+    alert('Error: ' + error.message);
+    const btn = document.getElementById('pago-btn');
+    if (btn) btn.disabled = false;
+  }
+}
+
 </script>
 
 <!-- TRACKING OVERLAY — aparece cuando hay un servicio activo -->
@@ -871,10 +921,16 @@ function pcHire() {
       <div id="tr-title"  style="font-size:18px;font-weight:800;color:#fff;">Pedido enviado</div>
       <div id="tr-sub"   style="font-size:12px;color:#555;margin-top:2px;"></div>
     </div>
-    <button onclick="cancelService()" id="tr-cancel"
-      style="padding:8px 14px;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">
-      ✕ Cancelar
-    </button>
+    <div style="display:flex;gap:8px">
+      <button onclick="initiateMercadoPagoPayment()" id="pago-btn"
+        style="flex:1;padding:10px 14px;background:var(--c);color:#000;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:none;">
+        💳 Pagar con Mercado Pago
+      </button>
+      <button onclick="cancelService()" id="tr-cancel"
+        style="flex:1;padding:8px 14px;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">
+        ✕ Cancelar
+      </button>
+    </div>
   </div>
   <!-- Progress bar -->
   <div style="padding:14px 20px 0;">

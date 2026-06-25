@@ -922,6 +922,41 @@ function earningsHTML() {
       <div id="earn-proj-val" style="font-size:18px;font-weight:900;color:var(--c)">R$ 0</div>
       <div style="font-size:11px;color:#666;margin-top:6px">Si mantienes el ritmo actual</div></div>
     <div id="earn-chart"></div>
+    
+    <!-- RETIROS SECTION -->
+    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e5e5">
+      <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:12px">💰 Solicitar Retiro</div>
+      <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:12px">
+        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Saldo disponible</div>
+        <div id="saldo-disp" style="font-size:18px;font-weight:900;color:var(--g)">Cargando...</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Monto a retirar (R$)</label>
+        <input id="retiro-monto" type="number" min="50" max="9999" placeholder="Mínimo: R$ 50" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Banco</label>
+        <select id="retiro-banco" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
+          <option value="">Seleccionar banco...</option>
+          <option value="itau">Itaú</option>
+          <option value="bradesco">Bradesco</option>
+          <option value="bb">Banco do Brasil</option>
+          <option value="santander">Santander</option>
+          <option value="caixa">Caixa</option>
+          <option value="otro">Otro</option>
+        </select>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Número de cuenta (sin espacios)</label>
+        <input id="retiro-cuenta" type="text" placeholder="ej: 123456789" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
+      </div>
+      <button onclick="solicitarRetiro()" style="width:100%;padding:12px;background:var(--g);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:8px">
+        ✓ Solicitar retiro
+      </button>
+      <div style="font-size:10px;color:#888;text-align:center">
+        Se acreditará en 1-2 días hábiles. Comisión: 2%
+      </div>
+    </div>
   </div>`;
 }
 
@@ -1449,6 +1484,49 @@ async function nextJobStateReal() {
     loadInvitacion();
   }
 })();
+
+/* ── RETIROS MERCADO PAGO ── */
+async function solicitarRetiro() {
+  const monto = parseFloat(document.getElementById('retiro-monto')?.value);
+  const banco = document.getElementById('retiro-banco')?.value;
+  const cuenta = document.getElementById('retiro-cuenta')?.value?.trim();
+  
+  if (isNaN(monto) || monto < 50) {
+    alert('Monto mínimo: R$ 50');
+    return;
+  }
+  if (!banco || !cuenta) {
+    alert('Completa todos los campos');
+    return;
+  }
+  
+  try {
+    const response = await fetch('/api/retiros/solicitar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proveedorId: SESSION.user.id,
+        monto,
+        cuentaBanco: { banco, cuenta, tipo: 'cuenta_corriente' },
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      alert('Error: ' + (data.error || 'Error desconocido'));
+      return;
+    }
+    
+    alert('✅ Retiro solicitado\n\nMonto: R$ ' + monto + '\nSe acreditará en 1-2 días hábiles');
+    document.getElementById('retiro-monto').value = '';
+    document.getElementById('retiro-banco').value = '';
+    document.getElementById('retiro-cuenta').value = '';
+    nav2('earn');
+  } catch (error) {
+    alert('Error: ' + error.message);
+  }
+}
 
 </script>
 </body>
