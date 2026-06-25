@@ -415,7 +415,7 @@ const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Com
 const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
 let CHECKING_DISTANCE_INTERVAL=null;
-let LAST_ACTIVITY='';let DOC_MODAL=null;
+let LAST_ACTIVITY='';let DOC_MODAL=null;let CONFIG_OPEN=false;
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
@@ -874,10 +874,58 @@ function docsHTML(){return`<div class="pad">
   <input type="file" id="fileinput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
 </div>`;}
 
+async function getCityFromGPS() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(''); return; }
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        const r = await fetch(\`https://nominatim.openstreetmap.org/reverse?lat=\${pos.coords.latitude}&lon=\${pos.coords.longitude}&format=json\`,
+          {headers: {'User-Agent': 'ugo-provider/1.0'}});
+        const d = await r.json();
+        const city = d.address?.city || d.address?.town || d.address?.village || '';
+        resolve(city);
+      } catch(e) { resolve(''); }
+    }, () => resolve(''));
+  });
+}
+
 function profHTML(){
   const n=PROV?.nombre||'';const e=SESSION?.user?.email||'';
-  return`<div class="pad">
+  const tarifaPreview = `<div style="background:linear-gradient(135deg,rgba(0,200,215,.1),rgba(0,200,215,.05));border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div>
+      <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px">Tarifa Base</div>
+      <div style="font-size:18px;font-weight:900;color:var(--c)">R$ ${PROV?.tarifa_base||80}</div>
+    </div>
+    <div>
+      <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px">Zona</div>
+      <div style="font-size:13px;font-weight:700;color:var(--k)">${PROV?.zona||PROV?.endereco||'No configurada'}</div>
+    </div>
+  </div>`;
+  
+  return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
   <div class="phead"><div class="pav">${n[0]?.toUpperCase()||'U'}</div><div class="pname">${n}</div><div class="pkr">★ Karma ${(PROV?.karma||5).toFixed(1)}</div></div>
+  ${tarifaPreview}
+  <div style="background:#f8f8f8;border-radius:12px;margin-bottom:14px">
+    <div onclick="const el=document.getElementById('cfg-content');el.style.display=el.style.display==='none'?'block':'none';document.getElementById('cfg-arrow').style.transform=el.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--k)">
+      <span>⚙️ Configuración</span>
+      <span id="cfg-arrow" style="transition:transform .3s">▼</span>
+    </div>
+    <div id="cfg-content" style="padding:12px;border-top:1px solid #e5e5e5;display:none;background:#fff;border-radius:0 0 12px 12px">
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:6px">Tarifa Base (R$)</label>
+        <input id="tarifa-cfg" type="number" min="30" max="500" value="${PROV?.tarifa_base||80}" style="width:100%;padding:10px;border:1px solid #e5e5e5;border-radius:8px;font-family:inherit;font-size:14px">
+        <div style="font-size:9px;color:#888;margin-top:4px">Mínimo R$ 30 • Máximo R$ 500</div>
+      </div>
+      <div style="margin-bottom:12px">
+        <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:6px">Zona de Trabajo</label>
+        <input id="zona-cfg" type="text" value="${PROV?.zona||PROV?.endereco||''}" placeholder="ej: Florianópolis, SC" style="width:100%;padding:10px;border:1px solid #e5e5e5;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:6px">
+        <button onclick="suggestCityFromGPS()" style="width:100%;padding:8px;background:rgba(0,200,215,.15);color:var(--c);border:1px solid rgba(0,200,215,.3);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">📍 Detectar ciudad</button>
+      </div>
+      <button onclick="saveTarifaZona()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;margin-bottom:10px;font-family:inherit">
+        ✓ Guardar configuración
+      </button>
+    </div>
+  </div>
   <div class="pfield"><label for="pn">Nombre</label><input id="pn" value="${n}" placeholder="Tu nombre completo"></div>
   <div class="pfield"><label for="ptel">Teléfono</label><input id="ptel" value="${PROV?.telefono||''}" placeholder="+55 48 9xxxx-xxxx" type="tel"></div>
   <div class="pfield"><label for="pcat">Categoría</label>
@@ -885,21 +933,75 @@ function profHTML(){
       ${['Electricista','Plomero','Limpieza','Pintor','Carpintero','Cerrajero','Jardinero','AC/Clima'].map(c=>`<option ${(PROV?.categoria||'')==c?'selected':''}>${c}</option>`).join('')}
     </select>
   </div>
-  <div class="pfield"><label for="ptarifa">Tarifa base (R$ por visita)</label><input id="ptarifa" value="${PROV?.tarifa_base||''}" placeholder="80" type="number" min="0"></div>
-  <div class="pfield"><label for="pend">Dirección / Zona de trabajo</label><input id="pend" value="${PROV?.endereco||''}" placeholder="Ej: Centro, Florianópolis"></div>
   <div class="pfield"><label for="pbio">Bio (aparece en tu perfil público)</label><input id="pbio" value="${PROV?.bio||''}" placeholder="Especialista en instalaciones eléctricas con 10 años..."></div>
   <button class="psave" onclick="saveProfile()">💾 Guardar cambios</button>
   <button class="blogout" onclick="doLogout()">Cerrar sesión</button>
-</div>`;}
+</div>`;
 
-/* ── PROFILE SAVE ── */
+/* ── TARIFA & ZONA CONFIG ── */
+async function suggestCityFromGPS() {
+  if (!navigator.geolocation) {
+    alert('Geolocalización no disponible');
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
+      const data = await res.json();
+      const city = data.address?.city || data.address?.town || data.address?.village || 'Desconocida';
+      const state = data.address?.state || '';
+      const fullCity = state ? `${city}, ${state.substring(0,2).toUpperCase()}` : city;
+      document.getElementById('zona-cfg').value = fullCity;
+      toast('📍 Ciudad detectada: ' + fullCity);
+    } catch(e) {
+      alert('Error al detectar: ' + e.message);
+    }
+  }, () => alert('Permiso de ubicación denegado'));
+}
+
+async function saveTarifaZona() {
+  const tarifa = parseInt(document.getElementById('tarifa-cfg').value);
+  const zona = document.getElementById('zona-cfg').value.trim();
+  
+  if (isNaN(tarifa) || tarifa < 30 || tarifa > 500) {
+    alert('Tarifa debe estar entre R$ 30 y R$ 500');
+    return;
+  }
+  if (!zona) {
+    alert('Ingresa una zona');
+    return;
+  }
+  
+  try {
+    const {error} = await sb.from('usuarios').update({
+      tarifa_base: tarifa,
+      zona: zona
+    }).eq('id', SESSION.user.id);
+    
+    if (error) throw error;
+    
+    PROV = {...PROV, tarifa_base: tarifa, zona: zona};
+    toast('✅ Configuración guardada');
+    nav2('prof');
+  } catch(e) {
+    alert('Error: ' + e.message);
+  }
+}
+
+
 async function saveProfile(){
+  const tarifa = parseFloat($('ptarifa')?.value) || PROV?.tarifa_base || 80;
+  
+  if (isNaN(tarifa) || tarifa < 30 || tarifa > 500) {
+    alert('Tarifa debe estar entre R$ 30 y R$ 500');
+    return;
+  }
+  
   const update={
     nombre:$('pn')?.value||PROV.nombre,
     telefono:$('ptel')?.value||'',
     categoria:$('pcat')?.value||PROV.categoria,
-    tarifa_base:parseFloat($('ptarifa')?.value)||0,
-    endereco:$('pend')?.value||'',
+    tarifa_base: tarifa,
     bio:$('pbio')?.value||'',
     updated_at:new Date().toISOString()
   };
