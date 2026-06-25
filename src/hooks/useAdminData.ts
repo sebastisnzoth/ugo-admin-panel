@@ -259,25 +259,76 @@ export function useAuthUsers(enabled: boolean) {
 // ─── Categorías CRUD ─────────────────────────────────────────
 export function useCategorias() {
   const [categorias, setCategorias] = useState<any[]>([]);
+  const [provCounts, setProvCounts] = useState<Record<string,number>>({});
   const [loading, setLoading] = useState(true);
+
   const fetch = useCallback(async () => {
-    const { data } = await (supabase as any).from('categorias').select('*').order('nombre');
-    if (data) setCategorias(data); setLoading(false);
+    // Categorías con subcategorías anidadas
+    const { data } = await (supabase as any)
+      .from('categorias')
+      .select('*, subcategorias(id,nombre,slug,activa)')
+      .order('nombre');
+    if (data) setCategorias(data);
+
+    // Conteo de proveedores por categoría
+    const { data: counts } = await (supabase as any)
+      .from('usuarios')
+      .select('categoria')
+      .eq('tipo', 'proveedor')
+      .not('categoria', 'is', null);
+    if (counts) {
+      const map: Record<string,number> = {};
+      counts.forEach((u: any) => { map[u.categoria] = (map[u.categoria]||0)+1; });
+      setProvCounts(map);
+    }
+    setLoading(false);
   }, []);
+
   const crear = useCallback(async (nombre: string, emoji: string) => {
-    const res = await (supabase as any).rpc('admin_crear_categoria', { p_nombre: nombre, p_emoji: emoji });
-    await fetch(); return res.data;
-  }, [fetch]);
-  const actualizar = useCallback(async (id: string, nombre: string, emoji: string, activa: boolean) => {
-    await (supabase as any).rpc('admin_update_categoria', { p_id: id, p_nombre: nombre, p_emoji: emoji, p_activa: activa });
+    const slug = nombre.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    await (supabase as any).from('categorias').insert({ nombre, emoji, slug, activa: true });
     await fetch();
   }, [fetch]);
+
+  const actualizar = useCallback(async (id: string, nombre: string, emoji: string, activa: boolean) => {
+    await (supabase as any).from('categorias').update({ nombre, emoji, activa }).eq('id', id);
+    await fetch();
+  }, [fetch]);
+
   const toggleActiva = useCallback(async (id: string, activa: boolean) => {
-    const cat = categorias.find(c => c.id === id);
-    if (cat) await actualizar(id, cat.nombre, cat.emoji, activa);
-  }, [categorias, actualizar]);
-  useEffect(() => { fetch(); const u = subscribe('categorias', fetch); return u; }, [fetch]);
-  return { categorias, loading, crear, actualizar, toggleActiva, refetch: fetch };
+    await (supabase as any).from('categorias').update({ activa }).eq('id', id);
+    await fetch();
+  }, [fetch]);
+
+  // Subcategorías CRUD
+  const crearSub = useCallback(async (categoria_id: string, nombre: string) => {
+    const slug = nombre.toLowerCase()
+      .normalize('NFD').replace(/[̀-ͯ]/g,'')
+      .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+    await (supabase as any).from('subcategorias').insert({ categoria_id, nombre, slug, activa: true });
+    await fetch();
+  }, [fetch]);
+
+  const toggleSub = useCallback(async (id: string, activa: boolean) => {
+    await (supabase as any).from('subcategorias').update({ activa }).eq('id', id);
+    await fetch();
+  }, [fetch]);
+
+  const eliminarSub = useCallback(async (id: string) => {
+    await (supabase as any).from('subcategorias').delete().eq('id', id);
+    await fetch();
+  }, [fetch]);
+
+  useEffect(() => {
+    fetch();
+    const u1 = subscribe('categorias', fetch);
+    const u2 = subscribe('subcategorias', fetch);
+    return () => { u1(); u2(); };
+  }, [fetch]);
+
+  return { categorias, provCounts, loading, crear, actualizar, toggleActiva, crearSub, toggleSub, eliminarSub, refetch: fetch };
 }
 
 // ─── Tarifas CRUD ────────────────────────────────────────────

@@ -344,6 +344,8 @@ export function AdminPanel() {
 
   // Forms
   const [catForm, setCatForm] = useState({ nombre:'', emoji:'🔧' });
+  const [expandedCats, setExpandedCats] = useState<Set<string>>(new Set());
+  const [newSubName, setNewSubName] = useState<Record<string,string>>({});
   const [userForm, setUserForm] = useState<Record<string,any>>({
     email:'', nombre:'', apellido:'', tipo:'cliente', telefono:'',
     zona:'', pais:'BR', endereco:'', lat:'', lng:'', georef:'',
@@ -384,7 +386,7 @@ export function AdminPanel() {
   const weekData = useWeekMetrics();
   const { users, suspenderProveedor, reactivarProveedor, crearUsuario, updateUsuario } = useUsuarios();
   const { users: authUsers, loading: authUsersLoading } = useAuthUsers(authEnabled);
-  const { categorias, crear: crearCat, actualizar: actualizarCat, toggleActiva } = useCategorias();
+  const { categorias, provCounts, crear: crearCat, actualizar: actualizarCat, toggleActiva, crearSub, toggleSub, eliminarSub } = useCategorias();
   const { tarifas, upsert: upsertTarifa } = useTarifas();
   const { config, update: updateConfig } = useConfigSistema();
   const { hist: notifHist, enviar: enviarNotif } = useNotificaciones();
@@ -643,22 +645,114 @@ export function AdminPanel() {
     </div>
   );
 
+  const toggleCatExpand = (id: string) => setExpandedCats(prev => {
+    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
+  });
+
   const renderCategorias = () => (
-    <div className="pad">
-      <div className="st">Categorías<button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>{setCatForm({nombre:'',emoji:'🔧'});setModal({type:'cat-form'});}}>+ Nueva</button></div>
-      <div className="cat-grid">
-        {categorias.map(c=>(
-          <div key={c.id} className={`cat-card${!c.activa?' cat-inactive':''}`}>
-            <div className="cat-emoji">{c.emoji}</div>
-            <div className="cat-name">{c.nombre}</div>
-            <div className="cat-slug">{c.slug}</div>
-            <div className="cat-actions">
-              <button className="btn btn-s btn-sm" onClick={()=>{setCatForm({nombre:c.nombre,emoji:c.emoji});setModal({type:'cat-form',data:c});}}>Editar</button>
-              <button className={`btn btn-sm ${c.activa?'btn-d':'btn-g'}`} onClick={()=>toggleActiva(c.id,!c.activa)}>{c.activa?'Desact.':'Activ.'}</button>
-            </div>
-          </div>
-        ))}
+    <div className="pad" style={{overflowY:'auto',height:'calc(100vh - 110px)'}}>
+      <div className="st">
+        Categorías
+        <span style={{fontSize:10,fontWeight:400,color:'var(--muted)',marginLeft:8}}>
+          {categorias.length} cats · {categorias.reduce((a:number,c:any)=>a+(c.subcategorias?.length||0),0)} subcats
+        </span>
+        <button className="btn btn-p btn-sm" style={{marginLeft:'auto'}}
+          onClick={()=>{setCatForm({nombre:'',emoji:'🔧'});setModal({type:'cat-form'});}}>
+          + Nueva
+        </button>
       </div>
+
+      {categorias.map((cat:any) => {
+        const expanded = expandedCats.has(cat.id);
+        const count    = provCounts[cat.slug] || 0;
+        const subs:any[]= cat.subcategorias || [];
+        return (
+          <div key={cat.id} style={{marginBottom:8,border:'1px solid var(--border)',borderRadius:12,overflow:'hidden',opacity:cat.activa?1:.55,transition:'opacity .2s'}}>
+            {/* ── Fila de categoría ── */}
+            <div style={{display:'flex',alignItems:'center',gap:10,padding:'10px 14px',
+              background:'var(--surface)',cursor:'pointer',userSelect:'none'}}
+              onClick={()=>toggleCatExpand(cat.id)}>
+              <span style={{fontSize:22,flexShrink:0}}>{cat.emoji}</span>
+              <div style={{flex:1,minWidth:0}}>
+                <div style={{fontWeight:700,fontSize:13}}>{cat.nombre}</div>
+                <div style={{fontSize:10,color:'var(--muted)',marginTop:2,display:'flex',gap:8,flexWrap:'wrap'}}>
+                  <code style={{fontSize:9,background:'rgba(0,0,0,.06)',padding:'1px 5px',borderRadius:4}}>{cat.slug}</code>
+                  <span style={{color:count>0?'var(--green)':'var(--muted)',fontWeight:count>0?700:400}}>{count} proveedores</span>
+                  <span>{subs.length} subcats</span>
+                </div>
+              </div>
+              <div style={{display:'flex',gap:5,flexShrink:0,alignItems:'center'}}>
+                <button className="btn btn-s btn-sm"
+                  onClick={e=>{e.stopPropagation();setCatForm({nombre:cat.nombre,emoji:cat.emoji});setModal({type:'cat-form',data:cat});}}>
+                  ✏️
+                </button>
+                <button className={`btn btn-sm ${cat.activa?'btn-d':'btn-g'}`}
+                  onClick={e=>{e.stopPropagation();toggleActiva(cat.id,!cat.activa);}}>
+                  {cat.activa?'Off':'On'}
+                </button>
+                <span style={{color:'var(--muted)',fontSize:11,marginLeft:2}}>{expanded?'▲':'▼'}</span>
+              </div>
+            </div>
+
+            {/* ── Subcategorías expandibles ── */}
+            {expanded && (
+              <div style={{padding:'10px 14px 12px',borderTop:'1px solid var(--border)',background:'#fafafa'}}>
+                <div style={{fontSize:9,fontWeight:700,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.8px',marginBottom:8}}>
+                  Subcategorías
+                </div>
+
+                {/* Chips de subcategorías */}
+                <div style={{display:'flex',flexWrap:'wrap',gap:5,marginBottom:10}}>
+                  {subs.map((s:any)=>(
+                    <span key={s.id} style={{display:'inline-flex',alignItems:'center',gap:4,padding:'4px 10px',
+                      borderRadius:20,fontSize:11,fontWeight:600,
+                      background:s.activa?'rgba(5,148,79,.1)':'rgba(0,0,0,.05)',
+                      border:`1px solid ${s.activa?'rgba(5,148,79,.25)':'rgba(0,0,0,.1)'}`,
+                      color:s.activa?'#05944F':'#888'}}>
+                      {s.nombre}
+                      <button title={s.activa?'Desactivar':'Activar'}
+                        onClick={()=>toggleSub(s.id,!s.activa)}
+                        style={{background:'none',border:'none',cursor:'pointer',fontSize:10,padding:'0 1px',color:'inherit',lineHeight:1}}>
+                        {s.activa?'●':'○'}
+                      </button>
+                      <button title="Eliminar"
+                        onClick={()=>{ if(confirm(`¿Eliminar "${s.nombre}"?`)) eliminarSub(s.id); }}
+                        style={{background:'none',border:'none',cursor:'pointer',fontSize:11,padding:'0 1px',color:'var(--red)',lineHeight:1}}>
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                  {!subs.length && <span style={{fontSize:11,color:'var(--muted)'}}>Sin subcategorías</span>}
+                </div>
+
+                {/* Input nueva subcategoría */}
+                <div style={{display:'flex',gap:6}}>
+                  <input
+                    value={newSubName[cat.id]||''}
+                    onChange={e=>setNewSubName(p=>({...p,[cat.id]:e.target.value}))}
+                    onKeyDown={async e=>{
+                      if(e.key!=='Enter'||!newSubName[cat.id]?.trim())return;
+                      await crearSub(cat.id,newSubName[cat.id].trim());
+                      setNewSubName(p=>({...p,[cat.id]:''}));
+                    }}
+                    placeholder="Nueva subcategoría… (Enter para guardar)"
+                    style={{flex:1,padding:'5px 10px',border:'1px solid var(--border)',borderRadius:8,fontSize:11,fontFamily:'inherit',outline:'none'}}
+                  />
+                  <button className="btn btn-p btn-sm"
+                    disabled={!newSubName[cat.id]?.trim()}
+                    onClick={async()=>{
+                      if(!newSubName[cat.id]?.trim())return;
+                      await crearSub(cat.id,newSubName[cat.id].trim());
+                      setNewSubName(p=>({...p,[cat.id]:''}));
+                    }}>
+                    + Add
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 
