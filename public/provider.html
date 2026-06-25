@@ -926,9 +926,11 @@ function earningsHTML() {
       <div style="font-size:11px;color:#666;margin-top:6px">Si mantienes el ritmo actual</div></div>
     <div id="earn-chart"></div>
     
-    <!-- RETIROS SECTION -->
+    <!-- HISTORIAL RETIROS -->
     <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e5e5">
-      <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:12px">💰 Solicitar Retiro</div>
+      <div style="font-size:12px;font-weight:800;color:var(--k);margin-bottom:12px">📜 Historial de retiros</div>
+      <div id="retiro-hist" style="background:#f8f8f8;border-radius:12px;padding:12px">Cargando...</div>
+    </div>
       <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:12px">
         <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Saldo disponible</div>
         <div id="saldo-disp" style="font-size:18px;font-weight:900;color:var(--g)">Cargando...</div>
@@ -988,7 +990,39 @@ async function updateEarningsChart() {
   }
   const chart = document.getElementById('earn-chart');
   if (chart) chart.innerHTML = renderEarningsChart(data);
+  loadWithdrawalHistory();
 }
+
+async function loadWithdrawalHistory() {
+  if (!SESSION) return;
+  const {data: retiros} = await sb.from('retiros')
+    .select('*')
+    .eq('proveedor_id', SESSION.user.id)
+    .order('fecha_solicitud', {ascending: false})
+    .limit(10);
+  
+  if (!retiros || retiros.length === 0) {
+    document.getElementById('retiro-hist').innerHTML = '<div style="text-align:center;color:#888;font-size:12px;padding:12px">Sin retiros aún</div>';
+    return;
+  }
+  
+  document.getElementById('retiro-hist').innerHTML = retiros.map(r => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:12px">
+      <div>
+        <div style="font-weight:700;color:var(--k)">R$ ${r.monto}</div>
+        <div style="color:#888;font-size:11px;margin-top:2px">${new Date(r.fecha_solicitud).toLocaleDateString('es-AR')}</div>
+      </div>
+      <div style="text-align:right">
+        <span style="display:inline-block;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;${
+          r.estado==='completado'?'background:#22C55E;color:#fff':
+          r.estado==='procesando'?'background:#FF9800;color:#fff':
+          'background:#EF4444;color:#fff'
+        }">${r.estado}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
 
 function earnHTML(){
 }
