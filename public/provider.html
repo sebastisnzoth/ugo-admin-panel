@@ -352,6 +352,8 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
 
 let SESSION=null,PROV=null,MAP=null,MARKER=null;
+let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
+let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
@@ -533,10 +535,98 @@ function nav2(sec){
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   const el=$('ni-'+sec);if(el)el.classList.add('on');
   const sh=$('sheet');
-  if(sec==='home'){sh.style.height='0';return;}
+  if(sec==='home'){loadDashboard();sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
-  const fn={earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
+  const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
   if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
+}
+
+
+/* ═══════════════════════════════════════════════════
+   INICIO — Dashboard mejorado
+═══════════════════════════════════════════════════ */
+async function loadDashboard() {
+  if (!PROV) return;
+  const hoy = new Date().toLocaleDateString('es-AR');
+  const { data: srv } = await sb.from('servicios')
+    .select('id,estado,tarifa,completado_at,cancelado_at')
+    .eq('proveedor_id', PROV.id)
+    .gte('created_at', new Date().toISOString().split('T')[0]);
+  
+  if (srv) {
+    COMPLETED_TODAY = srv.filter(s=>s.estado==='completado').length;
+    REJECTED_TODAY  = srv.filter(s=>s.estado==='cancelado').length;
+    EARNED_TODAY    = srv.filter(s=>s.estado==='completado').reduce((a,s)=>a+((s.tarifa||0)*0.85),0);
+    EARNED_ACTIVE   = srv.filter(s=>s.estado==='en_camino'||s.estado==='ejecutando').reduce((a,s)=>a+((s.tarifa||0)*0.85),0);
+  }
+  
+  const { data: notif } = await sb.from('notificaciones')
+    .select('id,datos,created_at')
+    .eq('usuario_id', PROV.id)
+    .eq('tipo', 'nuevo_pedido')
+    .gte('created_at', new Date(Date.now()-7200000).toISOString())
+    .order('created_at', {ascending: false})
+    .limit(10);
+  
+  PENDING_JOBS = (notif||[]).map(n=>({
+    id: n.datos?.servicio_id,
+    tarifa: n.datos?.tarifa,
+    ganancia: n.datos?.ganancia,
+    cat: n.datos?.categoria,
+    dist: n.datos?.distancia_km || 0,
+    minAgo: Math.round((Date.now()-new Date(n.created_at).getTime())/60000),
+  })).filter(j=>j.id);
+  
+  LAST_ACTIVITY = PENDING_JOBS[0] ? `hace ${PENDING_JOBS[0].minAgo}m` : 'Sin actividad';
+}
+
+function homeHTML() {
+  const zona = PROV?.zona || 'No configurada';
+  const online = PROV?.online ? '🟢 ONLINE' : '🔴 OFFLINE';
+  
+  return `<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+    <div style="background:linear-gradient(135deg,rgba(0,200,215,.15),rgba(0,128,170,.1));border:1px solid rgba(0,200,215,.3);border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div>
+          <div style="font-size:28px;font-weight:900;color:white">${online}</div>
+          <div style="font-size:12px;color:#aaa;margin-top:3px">📍 ${zona}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:11px;color:#aaa;margin-bottom:4px">Karma</div>
+          <div style="font-size:24px;font-weight:900;color:var(--c)">${(PROV?.karma||5).toFixed(1)}⭐</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:#aaa;margin-top:8px">Última actividad: ${LAST_ACTIVITY}</div>
+    </div>
+
+    <div style="background:#f8f8f8;border-radius:16px;padding:16px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:12px">Ganancias hoy</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+        <div style="background:#fff;border-radius:12px;padding:12px;text-align:center;border:1px solid #e5e5e5">
+          <div style="font-size:18px;font-weight:900;color:var(--k)">R$ ${EARNED_TODAY.toFixed(0)}</div>
+          <div style="font-size:10px;color:#888;margin-top:3px">✓ Completados</div>
+        </div>
+        <div style="background:#fff;border-radius:12px;padding:12px;text-align:center;border:1px solid #e5e5e5">
+          <div style="font-size:18px;font-weight:900;color:#FF9800">R$ ${EARNED_ACTIVE.toFixed(0)}</div>
+          <div style="font-size:10px;color:#888;margin-top:3px">⏳ En progreso</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;font-size:11px;color:#888">
+        <span>${COMPLETED_TODAY} completados</span>
+        <span>•</span>
+        <span style="color:#FF4444">${REJECTED_TODAY} cancelados</span>
+      </div>
+    </div>
+
+    <div style="margin-bottom:20px">
+      <div style="font-size:13px;font-weight:800;color:var(--k);margin-bottom:12px">📋 Próximos pedidos</div>
+      ${PENDING_JOBS.length===0 ? `<div style="text-align:center;padding:20px;color:#888;font-size:12px;background:#f8f8f8;border-radius:12px">Sin pedidos pendientes. Cuando llegue uno, aparecerá aquí. 🌀</div>` : PENDING_JOBS.slice(0,3).map(job=>`<div style="background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:12px;margin-bottom:8px;display:flex;gap:10px;cursor:pointer" onclick="toggleSheet()"><div style="width:40px;height:40px;border-radius:10px;background:rgba(0,200,215,.1);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔧</div><div style="flex:1;minWidth:0"><div style="font-weight:700;font-size:12px;color:var(--k)">R$ ${job.tarifa} • Ganancia ${job.ganancia}</div><div style="font-size:11px;color:#888;margin-top:2px">${job.dist.toFixed(1)}km • ${job.cat}</div><div style="font-size:10px;color:#FF9800;margin-top:4px;font-weight:700">⏳ Hace ${job.minAgo}m</div></div></div>`).join('')}
+    </div>
+
+    <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px;font-size:11px;color:#05944F">
+      💡 Aceptá pedidos dentro de 90s para subirle prioridad. Después van a más proveedores.
+    </div>
+  </div>`;
 }
 
 function earnHTML(){
