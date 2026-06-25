@@ -8,7 +8,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://byajcqrgetloavrgyqak.supabase.co https://api.anthropic.com https://api.github.com https://cdnjs.cloudflare.com"
+          "value": "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' data: https:; connect-src 'self' https://byajcqrgetloavrgyqak.supabase.co https://api.anthropic.com https://api.github.com https://*.tile.openstreetmap.org; frame-src 'self'"
         }
       ]
     }
