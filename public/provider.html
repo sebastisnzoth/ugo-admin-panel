@@ -63,7 +63,6 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 /* ACTIVE JOB BAR */
 #jobbar{position:fixed;left:0;right:0;bottom:78px;z-index:35;background:#111;color:#fff;padding:12px 16px;display:none;align-items:center;gap:12px}
 #jobbar.show{display:flex}
-#zona-map{width:100%;height:300px;border-radius:12px;margin-bottom:12px}
 .jbico{font-size:20px}
 .jbinfo{flex:1}.jbtit{font-weight:700;font-size:13px}.jbsub{font-size:11px;color:#aaa}
 .jbbtn{padding:8px 14px;background:var(--c);color:#000;font-weight:700;font-size:12px;border:none;border-radius:20px;cursor:pointer;font-family:inherit;white-space:nowrap}
@@ -192,7 +191,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <!-- ACTIVE JOB BAR -->
 <div id="jobbar">
   <div class="jbico" id="jbico">🔧</div>
-  <div class="jbinfo" onclick="showTimelineSheet()"><div class="jbtit" id="jbtit">Trabajo activo</div><div class="jbsub" id="jbsub">En camino...</div></div>
+  <div class="jbinfo"><div class="jbtit" id="jbtit">Trabajo activo</div><div class="jbsub" id="jbsub">En camino...</div></div>
   <button class="jbnav" id="jbnav" onclick="navigateJob()">🗺 Navegar</button>
   <button class="jbbtn" id="jbbtn" onclick="nextJobState()">Llegué</button>
 </div>
@@ -214,7 +213,6 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <div class="ni" onclick="openChat()"><button class="norb">🌀</button></div>
   <button class="ni" id="ni-shop" onclick="nav2('shop')"><div class="niic">🛒</div><div class="nilb">Insumos</div></button>
   <button class="ni" id="ni-docs" onclick="nav2('docs')"><div class="niic">📄</div><div class="nilb">Docs</div></button>
-  <button class="ni" id="ni-earn" onclick="nav2('earn')"><div class="niic">📊</div><div class="nilb">Ganancias</div></button>
   <button class="ni" id="ni-prof" onclick="nav2('prof')"><div class="niic">👤</div><div class="nilb">Perfil</div></button>
 </nav>
 <div id="toast"></div>
@@ -346,64 +344,6 @@ async function doShopSearch() {
   }
 }
 
-
-function openDocModal(doc) {
-  const puedoResubmitir = doc.estado === 'rechazado' && (doc.intentos_resubmision || 0) < 3;
-  if (!puedoResubmitir && doc.estado !== 'rechazado') return;
-  DOC_MODAL = doc;
-  const html = `
-    <div style="position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99;display:flex;align-items:center;justify-content:center;padding:16px" onclick="if(event.target===this)closeDocModal()">
-      <div style="background:#fff;border-radius:20px;max-width:500px;width:100%;max-height:85vh;overflow-y:auto">
-        <div style="padding:16px;border-bottom:1px solid #e5e5e5;display:flex;justify-content:space-between;align-items:center">
-          <div><div style="font-weight:800;font-size:14px">\${doc.tipo}</div><div style="font-size:11px;color:#888;margin-top:2px">\${doc.estado} · v\${doc.version||1}</div></div>
-          <button onclick="closeDocModal()" style="background:none;border:none;font-size:24px;cursor:pointer;color:#888">✕</button>
-        </div>
-        <div style="padding:16px">
-          \${doc.notas_rechazo ? `<div style="background:#FFE5E5;border-left:3px solid #FF4444;padding:12px;margin-bottom:14px;border-radius:6px"><div style="font-weight:700;color:#FF4444;font-size:11px">RAZÓN:</div><div style="color:#333;font-size:12px;margin-top:4px">\${doc.notas_rechazo}</div></div>` : ''}
-          \${doc.url_storage ? `<div style="margin-bottom:14px"><img src="\${doc.url_storage}" alt="" style="width:100%;border-radius:12px;max-height:300px;object-fit:cover"/></div>` : ''}
-          \${doc.estado === 'rechazado' && (doc.intentos_resubmision||0) < 3 ? `
-            <button onclick="triggerDocUpload('\${doc.id}','\${doc.tipo}')" style="width:100%;padding:12px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;margin-bottom:8px;font-family:inherit">
-              📸 Resubmitir foto
-            </button>
-            <div style="font-size:11px;color:#888;text-align:center">\${3-(doc.intentos_resubmision||0)} intento(s) restante(s)</div>
-          ` : `<div style="text-align:center;padding:12px;color:#888;font-size:12px">\${doc.estado==='aprobado'?'✅ Documento aprobado':'⏳ En revisión'}</div>`}
-        </div>
-      </div>
-    </div>
-  `;
-  document.body.insertAdjacentHTML('beforeend', html);
-}
-
-function closeDocModal() {
-  document.querySelector('[style*="position:fixed"][style*="z-index:99"]')?.remove();
-  DOC_MODAL = null;
-}
-
-async function triggerDocUpload(docId, docType) {
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'image/*';
-  inp.onchange = async (e) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    closeDocModal();
-    try {
-      const fname = \`docs/\${SESSION.user.id}/\${docType}-\${Date.now()}\`;
-      const {data:u,error:ue} = await sb.storage.from('documentos').upload(fname, f, {upsert:true});
-      if (ue) throw ue;
-      const url = \`https://byajcqrgetloavrgyqak.supabase.co/storage/v1/object/public/documentos/\${fname}\`;
-      const {error:derr} = await sb.from('documentos').update({
-        url_storage: url, estado: 'procesando', version: (DOC_MODAL?.version||1)+1,
-        intentos_resubmision: (DOC_MODAL?.intentos_resubmision||0)+1
-      }).eq('id', docId);
-      if (derr) throw derr;
-      toast('✅ Documento resubmitido');
-      setTimeout(() => loadDocsList(), 500);
-    } catch(e) { alert('Error: '+e.message); }
-  };
-  inp.click();
-}
-
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
@@ -412,14 +352,8 @@ const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
 
 let SESSION=null,PROV=null,MAP=null,MARKER=null;
-const TIMELINE_STATES = ['negociando','confirmado','en_camino','ejecutando','completado'];
-const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Completado'];
-const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
-let EARNINGS_RANGE={start:null,end:null};
-let ZONE_MAP=null,ZONE_CIRCLE=null,ZONE_RADIUS=15;
-let CHECKING_DISTANCE_INTERVAL=null;
-let LAST_ACTIVITY='';let DOC_MODAL=null;let CONFIG_OPEN=false;
+let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
@@ -448,15 +382,10 @@ async function doLogin(){
   if(!email||!pass){showErr('Completá email y contraseña');return;}
   const btn=document.querySelector('#vlog .abtn');
   if(btn){btn.textContent='Ingresando...';btn.disabled=true;}
-  try{
-    const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
-    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
-    if(error){showErr(error.message.includes('Invalid')||error.message.includes('invalid')?'Email o contraseña incorrectos':error.message);return;}
-    if(data.session){SESSION=data.session;await bootApp();}
-  }catch(e){
-    if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
-    showErr('Error: '+e.message);
-  }
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(btn){btn.textContent='Ingresar →';btn.disabled=false;}
+  if(error){showErr(error.message.includes('Invalid')||error.message.includes('invalid')?'Email o contraseña incorrectos':error.message);return;}
+  if(data.session){SESSION=data.session;await bootApp();}
 }
 async function doRegister(){
   clearErrs();
@@ -465,16 +394,13 @@ async function doRegister(){
   if(pass.length<6){showErr2('Contraseña mínimo 6 caracteres');return;}
   const btn=document.querySelector('#vreg .abtn');
   if(btn){btn.textContent='Creando...';btn.disabled=true;}
-  try{
-    const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,tipo:'proveedor',categoria:cat}}});
-    if(error){showErr2(error.message);if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}return;}
-    if(data.user){
-      try{
-        await sb.from('usuarios').upsert({id:data.user.id,auth_id:data.user.id,email,nombre,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},{onConflict:'id'});
-      }catch(e){console.log('User profile insert (may fail due to RLS):', e);}
-      if(data.session){SESSION=data.session;await bootApp();}else toast('¡Cuenta creada! Iniciá sesión.');
-    }
-  }catch(e){showErr2('Error: '+e.message);if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}}
+  const{data,error}=await sb.auth.signUp({email,password:pass,options:{data:{nombre,tipo:'proveedor',categoria:cat}}});
+  if(btn){btn.textContent='Crear cuenta →';btn.disabled=false;}
+  if(error){showErr2(error.message);return;}
+  if(data.user){
+    await sb.from('usuarios').upsert({id:data.user.id,auth_id:data.user.id,email,nombre,tipo:'proveedor',categoria:cat,activo:true,karma:5.0},{onConflict:'id'});
+    if(data.session){SESSION=data.session;await bootApp();}else toast('¡Cuenta creada! Iniciá sesión.');
+  }
 }
 async function doLogout(){
   await sb.auth.signOut();SESSION=null;PROV=null;isOnline=false;
@@ -610,164 +536,15 @@ function nav2(sec){
   const el=$('ni-'+sec);if(el)el.classList.add('on');
   const sh=$('sheet');
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
-  if(sec==='prof'){setTimeout(() => {initZoneMap();loadSubcategories();}, 200);}
   sh.style.height='min(75vh,620px)';
-  const fn={home:homeHTML,earn:earningsHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='prof')setTimeout(()=>{initZoneMap();loadSubcategories();},200);}
+  const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
 }
 
 
 /* ═══════════════════════════════════════════════════
    INICIO — Dashboard mejorado
 ═══════════════════════════════════════════════════ */
-
-/* ═══════════════════════════════════════════════════
-   TIMELINE — Visualización de progreso del servicio
-═══════════════════════════════════════════════════ */
-function renderTimelineMini(state) {
-  const idx = TIMELINE_STATES.indexOf(state) || 0;
-  return `<div style="display:flex;align-items:center;gap:4px;font-size:10px;color:#aaa;margin-top:6px">
-    ${TIMELINE_STATES.map((s,i)=>`
-      <div style="display:flex;flex-direction:column;align-items:center;flex:1">
-        <div style="width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;margin-bottom:2px;
-          background:${i<=idx?'var(--c)':'#333'};color:${i<=idx?'#000':'#666'}">
-          ${i<idx?'✓':TIMELINE_ICONS[i]}
-        </div>
-        <div style="font-size:8px;text-align:center;width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-          ${TIMELINE_LABELS[i]}
-        </div>
-      </div>
-    `).join('')}
-  </div>`;
-}
-
-function timelineSheet(svc) {
-  const state = svc.estado || 'negociando';
-  const idx = TIMELINE_STATES.indexOf(state) || 0;
-  const createdAt = new Date(svc.created_at);
-  const elapsed = Math.floor((Date.now() - createdAt.getTime()) / 60000);
-  
-  return \`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
-    <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:14px">📊 Progreso del servicio</div>
-    
-    <!-- Timeline visual -->
-    <div style="background:#f8f8f8;border-radius:16px;padding:16px;margin-bottom:16px">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        \${TIMELINE_STATES.map((s,i)=>{
-          const isActive = i===idx;
-          const isDone = i<idx;
-          return \`<div style="display:flex;gap:10px;align-items:flex-start">
-            <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;
-                background:\${isActive?'var(--c)':isDone?'var(--g)':'#ddd'};color:\${isActive||isDone?'#000':'#999'};font-weight:800">
-                \${isDone?'✓':TIMELINE_ICONS[i]}
-              </div>
-              \${i<TIMELINE_STATES.length-1?\`<div style="width:2px;height:20px;background:\${isDone||isActive?'var(--c)':'#ddd'}"></div>\`:''}
-            </div>
-            <div style="padding-top:4px;flex:1">
-              <div style="font-weight:700;font-size:13px;color:\${isActive?'var(--c)':isDone?'var(--g)':'#888'}">
-                \${TIMELINE_LABELS[i]}
-              </div>
-              <div style="font-size:11px;color:#aaa;margin-top:3px">
-                \${isDone ? '✓ Completado' : isActive ? '🔄 Ahora' : '⏳ Pendiente'}
-              </div>
-            </div>
-          </div>\`;
-        }).join('')}
-      </div>
-    </div>
-
-    <!-- Info del servicio -->
-    <div style="background:#f8f8f8;border-radius:16px;padding:14px;margin-bottom:16px;font-size:12px">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-        <div>
-          <div style="color:#888;font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:4px">Tarifa</div>
-          <div style="font-weight:800;color:var(--k);font-size:14px">R\$ \${svc.tarifa||0}</div>
-        </div>
-        <div>
-          <div style="color:#888;font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:4px">Ganancia</div>
-          <div style="font-weight:800;color:var(--g);font-size:14px">R\$ \${Math.round((svc.tarifa||0)*0.85)}</div>
-        </div>
-      </div>
-      <div style="border-top:1px solid #e5e5e5;padding-top:8px;color:#888">
-        Hace \${elapsed}m · \${svc.categoria||'Servicio'}
-      </div>
-    </div>
-
-    <!-- Botones de control -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      \${state==='en_camino'?
-        \`<button onclick="changeServiceState('\${svc.id}','ejecutando')" style="padding:12px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
-          ⚙️ Llegué — Empezar
-        </button>\`:''}
-      \${state==='ejecutando'?
-        \`<button onclick="changeServiceState('\${svc.id}','completado')" style="padding:12px;background:var(--g);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
-          ✅ Completado
-        </button>\`:''}
-      <button onclick="toggleSheet()" style="padding:12px;background:#f0f0f0;color:#888;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
-        Cerrar
-      </button>
-    </div>
-
-    <!-- Auto-advance info -->
-    \${state==='en_camino'?
-      \`<div style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;font-size:11px;color:var(--c)">
-        📍 Cuando llegues a 50m del cliente, avanzará automáticamente a "Ejecutando"
-      </div>\`:''}
-  </div>\`;
-}
-
-async function changeServiceState(svcId, newState) {
-  await sb.from('servicios').update({estado: newState}).eq('id', svcId);
-  if(newState==='completado') {
-    nav2('earn');
-    return;
-  }
-  if($('sb').innerHTML.includes('Progreso')) {
-    const {data} = await sb.from('servicios').select('*').eq('id', svcId).single();
-    if(data) {
-      \$('sb').innerHTML = timelineSheet(data);
-    }
-  }
-}
-
-function startDistanceCheck(svcId, clientLat, clientLng) {
-  if(CHECKING_DISTANCE_INTERVAL) clearInterval(CHECKING_DISTANCE_INTERVAL);
-  CHECKING_DISTANCE_INTERVAL = setInterval(async ()=>{
-    if(!ACTIVE_SVC || ACTIVE_SVC.id!==svcId) {
-      clearInterval(CHECKING_DISTANCE_INTERVAL);
-      return;
-    }
-    if(navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(async (pos)=>{
-        const d = haversineKm(pos.coords.latitude, pos.coords.longitude, clientLat, clientLng);
-        if(d<0.05 && ACTIVE_SVC.estado==='en_camino') {
-          const {error} = await sb.from('servicios').update({estado:'ejecutando'}).eq('id', svcId);
-          if(!error) {
-            alert('¡Llegaste! El servicio cambió a "Ejecutando"');
-            const {data} = await sb.from('servicios').select('*').eq('id', svcId).single();
-            if(data && \$('sb').innerHTML.includes('Progreso')) {
-              \$('sb').innerHTML = timelineSheet(data);
-            }
-          }
-        }
-      });
-    }
-  }, 10000);
-}
-
-function haversineKm(la1, ln1, la2, ln2) {
-  const R=6371, dL=(la2-la1)*Math.PI/180, dN=(ln2-ln1)*Math.PI/180;
-  const a=Math.sin(dL/2)**2+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)**2;
-  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
-}
-
-function showTimelineSheet() {
-  if (!ACTIVE_SVC) return;
-  $('sb').innerHTML = timelineSheet(ACTIVE_SVC);
-  $('sheet').style.height = 'min(75vh,620px)';
-}
-
 async function loadDashboard() {
   if (!PROV) return;
   const hoy = new Date().toLocaleDateString('es-AR');
@@ -852,187 +629,18 @@ function homeHTML() {
   </div>`;
 }
 
-/* ═══════════════════════════════════════════════════
-   GANANCIAS — Gráfico y análisis
-═══════════════════════════════════════════════════ */
-async function loadEarningsData(startDate, endDate) {
-  if (!SESSION) return null;
-  const { data: srv } = await sb.from('servicios')
-    .select('id,estado,tarifa,created_at,completado_at')
-    .eq('proveedor_id', SESSION.user.id)
-    .gte('created_at', startDate.toISOString())
-    .lte('created_at', endDate.toISOString())
-    .order('created_at', { ascending: true });
-  if (!srv) return null;
-  const byDay = {};
-  srv.forEach(s => {
-    const day = new Date(s.created_at).toLocaleDateString('es-AR');
-    if (!byDay[day]) byDay[day] = {completed: 0, total: 0, count: 0, commission: 0};
-    if (s.estado === 'completado') {
-      byDay[day].completed += (s.tarifa||0)*0.85;
-      byDay[day].commission += (s.tarifa||0)*0.15;
-    }
-    byDay[day].total += (s.tarifa||0)*0.85;
-    byDay[day].count++;
-  });
-  const totalEarned = Object.values(byDay).reduce((a,d)=>a+d.completed,0);
-  const totalCompleted = srv.filter(s=>s.estado==='completado').length;
-  const totalCommission = Object.values(byDay).reduce((a,d)=>a+d.commission,0);
-  const avgPerService = totalCompleted > 0 ? totalEarned/totalCompleted : 0;
-  const today = new Date();
-  const daysInMonth = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-  const daysElapsed = today.getDate();
-  const projectedEarnings = totalCompleted > 0 ? (totalEarned/daysElapsed)*daysInMonth : 0;
-  return {byDay, totalEarned, totalCompleted, totalCommission, avgPerService, projectedEarnings};
-}
-
-function renderEarningsChart(data) {
-  if (!data) return '<div style="padding:20px;text-align:center;color:#888">Sin datos</div>';
-  const days = Object.entries(data.byDay).slice(-14);
-  const maxVal = Math.max(...days.map(d=>d[1].completed),1);
-  const chartHeight = 150;
-  return `<div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:14px">
-    <div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;margin-bottom:10px">Últimas 2 semanas</div>
-    <div style="display:flex;align-items:flex-end;justify-content:space-around;gap:4px;height:${chartHeight}px;margin-bottom:10px;padding:10px 0">
-      ${days.map(([day,d])=>{const h = (d.completed/maxVal)*chartHeight;return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;height:${h}px;background:linear-gradient(180deg,var(--c),var(--g));border-radius:4px 4px 0 0" title="R$ ${d.completed.toFixed(0)}"></div><div style="font-size:8px;color:#888;text-align:center;width:100%">${day.split('/')[0]}</div></div>`;}).join('')}
-    </div>
-  </div>`;
-}
-
-function earningsHTML() {
-  const now = new Date();
-  const start = new Date(now.getFullYear(), now.getMonth(), 1);
-  const end = new Date();
-  setTimeout(() => updateEarningsChart(), 100);
-  return `<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
-    <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:12px">📊 Ganancias</div>
-    <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div><label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:4px">Desde</label>
-        <input id="earn-start" type="date" value="${start.toISOString().split('T')[0]}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:12px" onchange="updateEarningsChart()"></div>
-      <div><label style="font-size:10px;font-weight:700;color:#888;display:block;margin-bottom:4px">Hasta</label>
-        <input id="earn-end" type="date" value="${end.toISOString().split('T')[0]}" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:12px" onchange="updateEarningsChart()"></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;text-align:center">
-        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Ganancia neta</div>
-        <div id="earn-total" style="font-size:20px;font-weight:900;color:var(--c)">R$ 0</div></div>
-      <div style="background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:12px;padding:12px;text-align:center">
-        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Servicios</div>
-        <div id="earn-count" style="font-size:20px;font-weight:900;color:var(--g)">0</div></div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
-      <div style="background:#f8f8f8;border-radius:12px;padding:12px;text-align:center">
-        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Comisión U.GO</div>
-        <div id="earn-commission" style="font-size:16px;font-weight:900;color:#FF9800">R$ 0</div></div>
-      <div style="background:#f8f8f8;border-radius:12px;padding:12px;text-align:center">
-        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Promedio/servicio</div>
-        <div id="earn-avg" style="font-size:16px;font-weight:900;color:var(--k)">R$ 0</div></div>
-    </div>
-    <div id="earn-projection" style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;margin-bottom:14px;display:none">
-      <div style="font-size:11px;font-weight:700;color:var(--c);text-transform:uppercase;margin-bottom:8px">📈 Proyección fin de mes</div>
-      <div id="earn-proj-val" style="font-size:18px;font-weight:900;color:var(--c)">R$ 0</div>
-      <div style="font-size:11px;color:#666;margin-top:6px">Si mantienes el ritmo actual</div></div>
-    <div id="earn-chart"></div>
-    
-    <!-- HISTORIAL RETIROS -->
-    <div style="margin-top:20px;padding-top:20px;border-top:1px solid #e5e5e5">
-      <div style="font-size:12px;font-weight:800;color:var(--k);margin-bottom:12px">📜 Historial de retiros</div>
-      <div id="retiro-hist" style="background:#f8f8f8;border-radius:12px;padding:12px">Cargando...</div>
-    </div>
-      <div style="background:#f8f8f8;border-radius:12px;padding:12px;margin-bottom:12px">
-        <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:6px">Saldo disponible</div>
-        <div id="saldo-disp" style="font-size:18px;font-weight:900;color:var(--g)">Cargando...</div>
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Monto a retirar (R$)</label>
-        <input id="retiro-monto" type="number" min="50" max="9999" placeholder="Mínimo: R$ 50" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Banco</label>
-        <select id="retiro-banco" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
-          <option value="">Seleccionar banco...</option>
-          <option value="itau">Itaú</option>
-          <option value="bradesco">Bradesco</option>
-          <option value="bb">Banco do Brasil</option>
-          <option value="santander">Santander</option>
-          <option value="caixa">Caixa</option>
-          <option value="otro">Otro</option>
-        </select>
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:6px;text-transform:uppercase">Número de cuenta (sin espacios)</label>
-        <input id="retiro-cuenta" type="text" placeholder="ej: 123456789" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:8px">
-      </div>
-      <button onclick="solicitarRetiro()" style="width:100%;padding:12px;background:var(--g);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit;margin-bottom:8px">
-        ✓ Solicitar retiro
-      </button>
-      <div style="font-size:10px;color:#888;text-align:center">
-        Se acreditará en 1-2 días hábiles. Comisión: 2%
-      </div>
-    </div>
-  </div>`;
-}
-
-async function updateEarningsChart() {
-  const startStr = document.getElementById('earn-start')?.value;
-  const endStr = document.getElementById('earn-end')?.value;
-  if (!startStr || !endStr) return;
-  const start = new Date(startStr + 'T00:00:00');
-  const end = new Date(endStr + 'T23:59:59');
-  const data = await loadEarningsData(start, end);
-  if (!data) return;
-  const tid = document.getElementById('earn-total');
-  if (tid) tid.textContent = 'R$ ' + data.totalEarned.toFixed(0);
-  const cid = document.getElementById('earn-count');
-  if (cid) cid.textContent = data.totalCompleted;
-  const cmid = document.getElementById('earn-commission');
-  if (cmid) cmid.textContent = 'R$ ' + data.totalCommission.toFixed(0);
-  const aid = document.getElementById('earn-avg');
-  if (aid) aid.textContent = 'R$ ' + data.avgPerService.toFixed(0);
-  const now = new Date();
-  const projDiv = document.getElementById('earn-projection');
-  if (end >= now && projDiv) {
-    projDiv.style.display = 'block';
-    const pv = document.getElementById('earn-proj-val');
-    if (pv) pv.textContent = 'R$ ' + data.projectedEarnings.toFixed(0);
-  }
-  const chart = document.getElementById('earn-chart');
-  if (chart) chart.innerHTML = renderEarningsChart(data);
-  loadWithdrawalHistory();
-}
-
-async function loadWithdrawalHistory() {
-  if (!SESSION) return;
-  const {data: retiros} = await sb.from('retiros')
-    .select('*')
-    .eq('proveedor_id', SESSION.user.id)
-    .order('fecha_solicitud', {ascending: false})
-    .limit(10);
-  
-  if (!retiros || retiros.length === 0) {
-    document.getElementById('retiro-hist').innerHTML = '<div style="text-align:center;color:#888;font-size:12px;padding:12px">Sin retiros aún</div>';
-    return;
-  }
-  
-  document.getElementById('retiro-hist').innerHTML = retiros.map(r => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #e5e5e5;font-size:12px">
-      <div>
-        <div style="font-weight:700;color:var(--k)">R$ ${r.monto}</div>
-        <div style="color:#888;font-size:11px;margin-top:2px">${new Date(r.fecha_solicitud).toLocaleDateString('es-AR')}</div>
-      </div>
-      <div style="text-align:right">
-        <span style="display:inline-block;padding:4px 8px;border-radius:6px;font-size:10px;font-weight:700;${
-          r.estado==='completado'?'background:#22C55E;color:#fff':
-          r.estado==='procesando'?'background:#FF9800;color:#fff':
-          'background:#EF4444;color:#fff'
-        }">${r.estado}</span>
-      </div>
-    </div>
-  `).join('');
-}
-
-
 function earnHTML(){
+  return`<div class="pad">
+  <div class="stt">💰 Ganancias del mes</div>
+  <div class="sgrid">
+    <div class="sstat"><div class="sval">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div><div class="slbl">Este mes</div></div>
+    <div class="sstat"><div class="sval">${PROV?.servicios_completados||0}</div><div class="slbl">Servicios</div></div>
+    <div class="sstat"><div class="sval">★${(PROV?.karma||5).toFixed(1)}</div><div class="slbl">Karma</div></div>
+    <div class="sstat"><div class="sval">15%</div><div class="slbl">Comisión U.GO</div></div>
+  </div>
+  <div class="stt" style="margin-top:8px">📋 Últimos servicios</div>
+  <div id="hlist"><p style="color:var(--m);font-size:13px;padding:8px 0">Cargando...</p></div>
+  </div>`;
 }
 
 function docsHTML(){return`<div class="pad">
@@ -1056,159 +664,32 @@ function docsHTML(){return`<div class="pad">
   <input type="file" id="fileinput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
 </div>`;}
 
-async function getCityFromGPS() {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) { resolve(''); return; }
-    navigator.geolocation.getCurrentPosition(async (pos) => {
-      try {
-        const r = await fetch(\`https://nominatim.openstreetmap.org/reverse?lat=\${pos.coords.latitude}&lon=\${pos.coords.longitude}&format=json\`,
-          {headers: {'User-Agent': 'ugo-provider/1.0'}});
-        const d = await r.json();
-        const city = d.address?.city || d.address?.town || d.address?.village || '';
-        resolve(city);
-      } catch(e) { resolve(''); }
-    }, () => resolve(''));
-  });
-}
-
 function profHTML(){
   const n=PROV?.nombre||'';const e=SESSION?.user?.email||'';
-  const tarifaPreview = `<div style="background:linear-gradient(135deg,rgba(0,200,215,.1),rgba(0,200,215,.05));border-radius:12px;padding:12px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-    <div>
-      <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px">Tarifa Base</div>
-      <div style="font-size:18px;font-weight:900;color:var(--c)">R$ ${PROV?.tarifa_base||80}</div>
-    </div>
-    <div>
-      <div style="font-size:10px;color:#888;font-weight:700;text-transform:uppercase;margin-bottom:4px">Zona</div>
-      <div style="font-size:13px;font-weight:700;color:var(--k)">${PROV?.zona||PROV?.endereco||'No configurada'}</div>
-    </div>
-  </div>`;
-  
-  return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  return`<div class="pad">
   <div class="phead"><div class="pav">${n[0]?.toUpperCase()||'U'}</div><div class="pname">${n}</div><div class="pkr">★ Karma ${(PROV?.karma||5).toFixed(1)}</div></div>
-  ${tarifaPreview}
-  <div style="background:#f8f8f8;border-radius:12px;margin-bottom:14px">
-    <div onclick="const el=document.getElementById('zona-content');el.style.display=el.style.display==='none'?'block':'none';document.getElementById('zona-arrow').style.transform=el.style.display==='none'?'rotate(0deg)':'rotate(180deg)'" style="padding:12px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--k)">
-      <span>🗺️ Mapa de zona</span>
-      <span id="zona-arrow" style="transition:transform .3s">▼</span>
-    </div>
-    <div id="zona-content" style="padding:12px;border-top:1px solid #e5e5e5;display:none;background:#fff;border-radius:0 0 12px 12px">
-      <div id="zona-map" style="width:100%;height:300px;border-radius:12px;margin-bottom:12px;background:#e5e5e5"></div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;display:block;margin-bottom:8px;text-transform:uppercase">Radio de cobertura: <span id="zona-radio-val">15</span> km</label>
-        <input id="zona-radio" type="range" min="5" max="25" value="15" style="width:100%;cursor:pointer;margin-bottom:8px" onchange="updateZoneRadius()">
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:#888">
-          <span>5 km</span>
-          <span>25 km</span>
-        </div>
-      </div>
-      <button onclick="saveZonePreference()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit">
-        ✓ Guardar zona
-      </button>
-    </div>
-  </div>
-    <div id="cfg-content" style="padding:12px;border-top:1px solid #e5e5e5;display:none;background:#fff;border-radius:0 0 12px 12px">
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:6px">Tarifa Base (R$)</label>
-        <input id="tarifa-cfg" type="number" min="30" max="500" value="${PROV?.tarifa_base||80}" style="width:100%;padding:10px;border:1px solid #e5e5e5;border-radius:8px;font-family:inherit;font-size:14px">
-        <div style="font-size:9px;color:#888;margin-top:4px">Mínimo R$ 30 • Máximo R$ 500</div>
-      </div>
-      <div style="margin-bottom:12px">
-        <label style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;display:block;margin-bottom:6px">Zona de Trabajo</label>
-        <input id="zona-cfg" type="text" value="${PROV?.zona||PROV?.endereco||''}" placeholder="ej: Florianópolis, SC" style="width:100%;padding:10px;border:1px solid #e5e5e5;border-radius:8px;font-family:inherit;font-size:14px;margin-bottom:6px">
-        <button onclick="suggestCityFromGPS()" style="width:100%;padding:8px;background:rgba(0,200,215,.15);color:var(--c);border:1px solid rgba(0,200,215,.3);border-radius:8px;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit">📍 Detectar ciudad</button>
-      </div>
-      <button onclick="saveTarifaZona()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;margin-bottom:10px;font-family:inherit">
-        ✓ Guardar configuración
-      </button>
-    </div>
-  </div>
   <div class="pfield"><label for="pn">Nombre</label><input id="pn" value="${n}" placeholder="Tu nombre completo"></div>
   <div class="pfield"><label for="ptel">Teléfono</label><input id="ptel" value="${PROV?.telefono||''}" placeholder="+55 48 9xxxx-xxxx" type="tel"></div>
   <div class="pfield"><label for="pcat">Categoría</label>
-    <select id="pcat" onchange="loadSubcategories()">
+    <select id="pcat">
       ${['Electricista','Plomero','Limpieza','Pintor','Carpintero','Cerrajero','Jardinero','AC/Clima'].map(c=>`<option ${(PROV?.categoria||'')==c?'selected':''}>${c}</option>`).join('')}
     </select>
   </div>
-  <!-- SUBCATEGORÍAS -->
-  <div class="pfield">
-    <label style="display:block;font-size:11px;font-weight:700;color:var(--m);margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Especialización (subcategorías)</label>
-    <div id="subcat-list" style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:10px">
-      <div style="text-align:center;color:#888;font-size:12px;padding:20px">Cargando...</div>
-    </div>
-    <button type="button" onclick="saveSubcategorias()" style="width:100%;padding:10px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:8px;cursor:pointer;font-family:inherit;font-size:12px">
-      ✓ Guardar especialización
-    </button>
-  </div>
+  <div class="pfield"><label for="ptarifa">Tarifa base (R$ por visita)</label><input id="ptarifa" value="${PROV?.tarifa_base||''}" placeholder="80" type="number" min="0"></div>
+  <div class="pfield"><label for="pend">Dirección / Zona de trabajo</label><input id="pend" value="${PROV?.endereco||''}" placeholder="Ej: Centro, Florianópolis"></div>
   <div class="pfield"><label for="pbio">Bio (aparece en tu perfil público)</label><input id="pbio" value="${PROV?.bio||''}" placeholder="Especialista en instalaciones eléctricas con 10 años..."></div>
   <button class="psave" onclick="saveProfile()">💾 Guardar cambios</button>
   <button class="blogout" onclick="doLogout()">Cerrar sesión</button>
-</div>`;
+</div>`;}
 
-/* ── TARIFA & ZONA CONFIG ── */
-async function suggestCityFromGPS() {
-  if (!navigator.geolocation) {
-    alert('Geolocalización no disponible');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(async (pos) => {
-    try {
-      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${pos.coords.latitude}&lon=${pos.coords.longitude}`);
-      const data = await res.json();
-      const city = data.address?.city || data.address?.town || data.address?.village || 'Desconocida';
-      const state = data.address?.state || '';
-      const fullCity = state ? `${city}, ${state.substring(0,2).toUpperCase()}` : city;
-      document.getElementById('zona-cfg').value = fullCity;
-      toast('📍 Ciudad detectada: ' + fullCity);
-    } catch(e) {
-      alert('Error al detectar: ' + e.message);
-    }
-  }, () => alert('Permiso de ubicación denegado'));
-}
-
-async function saveTarifaZona() {
-  const tarifa = parseInt(document.getElementById('tarifa-cfg').value);
-  const zona = document.getElementById('zona-cfg').value.trim();
-  
-  if (isNaN(tarifa) || tarifa < 30 || tarifa > 500) {
-    alert('Tarifa debe estar entre R$ 30 y R$ 500');
-    return;
-  }
-  if (!zona) {
-    alert('Ingresa una zona');
-    return;
-  }
-  
-  try {
-    const {error} = await sb.from('usuarios').update({
-      tarifa_base: tarifa,
-      zona: zona
-    }).eq('id', SESSION.user.id);
-    
-    if (error) throw error;
-    
-    PROV = {...PROV, tarifa_base: tarifa, zona: zona};
-    toast('✅ Configuración guardada');
-    nav2('prof');
-  } catch(e) {
-    alert('Error: ' + e.message);
-  }
-}
-
-
+/* ── PROFILE SAVE ── */
 async function saveProfile(){
-  const tarifa = parseFloat($('ptarifa')?.value) || PROV?.tarifa_base || 80;
-  
-  if (isNaN(tarifa) || tarifa < 30 || tarifa > 500) {
-    alert('Tarifa debe estar entre R$ 30 y R$ 500');
-    return;
-  }
-  
   const update={
     nombre:$('pn')?.value||PROV.nombre,
     telefono:$('ptel')?.value||'',
     categoria:$('pcat')?.value||PROV.categoria,
-    tarifa_base: tarifa,
+    tarifa_base:parseFloat($('ptarifa')?.value)||0,
+    endereco:$('pend')?.value||'',
     bio:$('pbio')?.value||'',
     updated_at:new Date().toISOString()
   };
@@ -1221,45 +702,7 @@ async function saveProfile(){
 
 /* ── DOCS ── */
 let currentDocType=null;
-async async function loadDocsList() {
-  if (!SESSION) return;
-  const { data: docs } = await sb.from('documentos')
-    .select('*')
-    .eq('usuario_id', SESSION.user.id)
-    .order('created_at', { ascending: false });
-  if (!docs) return;
-  const docsByType = {};
-  docs.forEach(d => {
-    if (!docsByType[d.tipo]) docsByType[d.tipo] = d;
-  });
-  Object.entries(docsByType).forEach(([type, doc]) => {
-    const el = document.getElementById('st-'+type);
-    if (!el) return;
-    const rechazado = doc.estado === 'rechazado';
-    const puedoResubmitir = rechazado && (doc.intentos_resubmision || 0) < 3;
-    const bloqueado = rechazado && (doc.intentos_resubmision || 0) >= 3;
-    
-    let statusText = '● Pendiente';
-    let statusClass = 'ds-pen';
-    if (doc.estado === 'aprobado') { statusText = '✓ Aprobado'; statusClass = 'ds-app'; }
-    else if (doc.estado === 'procesando') { statusText = '⏳ Procesando'; statusClass = 'ds-proc'; }
-    else if (rechazado) { statusText = \`❌ Rechazado (\${doc.intentos_resubmision||0}/3)\`; statusClass = 'ds-rej'; }
-    
-    el.textContent = statusText;
-    el.className = 'doc-status ' + statusClass;
-    
-    if (puedoResubmitir) {
-      const cardEl = document.getElementById('doc-'+type);
-      if (cardEl) {
-        cardEl.onclick = () => openDocModal(doc);
-        cardEl.style.cursor = 'pointer';
-        cardEl.style.borderColor = '#FF4444';
-      }
-    }
-  });
-}
-
-function initDocs(){
+async function initDocs(){
   if(!SESSION)return;
   const{data}=await sb.from('documentos').select('tipo,estado').eq('usuario_id',SESSION.user.id);
   if(!data)return;
@@ -1421,27 +864,20 @@ async function acceptJobReal() {
   jobState = 'en_camino';
   ACTIVE_JOB = JOB;
 
-  // Load full service and update DB
+  // Update service in DB if we have a real service_id
   if (JOB?.servicio_id) {
-    const {data: svc} = await sb.from('servicios')
-      .select('*').eq('id', JOB.servicio_id).single();
-    if(svc) ACTIVE_SVC = svc;
-    
     await sb.from('servicios').update({
       proveedor_id: SESSION.user.id,
       estado: 'en_camino',
       confirmado_at: new Date().toISOString()
     }).eq('id', JOB.servicio_id);
-    
-    // Start auto-distance check
-    startDistanceCheck(JOB.servicio_id, svc.lat_cliente, svc.lng_cliente);
   }
 
   $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
-  $('jbsub').innerHTML = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}${renderTimelineMini('en_camino')}`;
+  $('jbsub').textContent = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}`;
   $('jobbar').classList.add('show');
-  $('jbbtn').textContent = '✓ Llegoé';
+  $('jbbtn').textContent = '✓ Llegué';
   toast('✅ Pedido aceptado — ¡Navegá al cliente!');
 }
 
@@ -1450,10 +886,9 @@ async function nextJobStateReal() {
   if (jobState === 'en_camino') {
     jobState = 'ejecutando';
     $('jbbtn').textContent = '✓ Completar';
-    $('jbsub').innerHTML = 'Ejecutando el servicio...' + renderTimelineMini('ejecutando');
+    $('jbsub').textContent = 'Ejecutando el servicio...';
     toast('📍 Ubicación confirmada');
     if (ACTIVE_JOB?.servicio_id) {
-      ACTIVE_SVC = {...ACTIVE_SVC, estado: 'ejecutando'};
       await sb.from('servicios').update({ estado: 'ejecutando' }).eq('id', ACTIVE_JOB.servicio_id);
     }
   } else if (jobState === 'ejecutando') {
@@ -1466,14 +901,13 @@ async function nextJobStateReal() {
         completado_at: new Date().toISOString()
       }).eq('id', ACTIVE_JOB.servicio_id);
     }
+    // Update provider stats
     await sb.from('usuarios').update({
       servicios_completados: (PROV?.servicios_completados || 0) + 1
     }).eq('id', SESSION.user.id);
     if (PROV) PROV.servicios_completados = (PROV.servicios_completados || 0) + 1;
-    ACTIVE_SVC = null;
     ACTIVE_JOB = null; JOB = null;
     toast(`🎉 Servicio completado · R$${tarifa} acreditados`);
-    nav2('home');
   }
 }
 
@@ -1554,197 +988,6 @@ async function nextJobStateReal() {
     loadInvitacion();
   }
 })();
-
-/* ── RETIROS MERCADO PAGO ── */
-async function solicitarRetiro() {
-  const monto = parseFloat(document.getElementById('retiro-monto')?.value);
-  const banco = document.getElementById('retiro-banco')?.value;
-  const cuenta = document.getElementById('retiro-cuenta')?.value?.trim();
-  
-  if (isNaN(monto) || monto < 50) {
-    alert('Monto mínimo: R$ 50');
-    return;
-  }
-  if (!banco || !cuenta) {
-    alert('Completa todos los campos');
-    return;
-  }
-  
-  try {
-    const response = await fetch('/api/retiros/solicitar', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        proveedorId: SESSION.user.id,
-        monto,
-        cuentaBanco: { banco, cuenta, tipo: 'cuenta_corriente' },
-      }),
-    });
-    
-    const data = await response.json();
-    
-    if (!data.success) {
-      alert('Error: ' + (data.error || 'Error desconocido'));
-      return;
-    }
-    
-    alert('✅ Retiro solicitado\n\nMonto: R$ ' + monto + '\nSe acreditará en 1-2 días hábiles');
-    document.getElementById('retiro-monto').value = '';
-    document.getElementById('retiro-banco').value = '';
-    document.getElementById('retiro-cuenta').value = '';
-    nav2('earn');
-  } catch (error) {
-    alert('Error: ' + error.message);
-  }
-}
-
-/* ── SUBCATEGORÍAS ── */
-let SELECTED_SUBCATS = [];
-
-async function loadSubcategories() {
-  const cat = document.getElementById('pcat')?.value || PROV?.categoria || '';
-  if (!cat) return;
-  
-  const { data: subcats } = await sb.from('subcategorias')
-    .select('*')
-    .eq('activa', true)
-    .order('nombre');
-  
-  if (!subcats) {
-    document.getElementById('subcat-list').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888">Sin subcategorías disponibles</div>';
-    return;
-  }
-  
-  // Cargar las subcategorías seleccionadas del proveedor
-  const { data: selected } = await sb.from('proveedor_subcategorias')
-    .select('subcategoria_id')
-    .eq('proveedor_id', SESSION?.user?.id);
-  
-  SELECTED_SUBCATS = (selected || []).map(s => s.subcategoria_id);
-  
-  // Filtrar por categoría actual
-  const catSlug = cat.toLowerCase().replace(/\s+/g, '_');
-  const filtered = subcats.filter(s => s.nombre && s.nombre.length > 0);
-  
-  if (filtered.length === 0) {
-    document.getElementById('subcat-list').innerHTML = '<div style="grid-column:1/-1;text-align:center;color:#888;font-size:12px;padding:12px">Sin subcategorías para esta categoría</div>';
-    return;
-  }
-  
-  document.getElementById('subcat-list').innerHTML = filtered.map(s => `
-    <label style="display:flex;align-items:center;gap:8px;padding:10px;background:#f8f8f8;border-radius:8px;cursor:pointer;border:2px solid ${SELECTED_SUBCATS.includes(s.id)?'var(--c)':'transparent'};transition:.2s">
-      <input type="checkbox" value="${s.id}" ${SELECTED_SUBCATS.includes(s.id)?'checked':''} onchange="toggleSubcat('${s.id}')" style="width:16px;height:16px;cursor:pointer">
-      <span style="font-size:12px;font-weight:600;color:var(--k);flex:1">${s.nombre}</span>
-    </label>
-  `).join('');
-}
-
-function toggleSubcat(subcatId) {
-  const idx = SELECTED_SUBCATS.indexOf(subcatId);
-  if (idx > -1) {
-    SELECTED_SUBCATS.splice(idx, 1);
-  } else {
-    SELECTED_SUBCATS.push(subcatId);
-  }
-}
-
-async function saveSubcategorias() {
-  if (!SESSION || !SELECTED_SUBCATS.length) {
-    alert('Selecciona al menos una especialización');
-    return;
-  }
-  
-  try {
-    // Eliminar subcategorías anteriores
-    await sb.from('proveedor_subcategorias')
-      .delete()
-      .eq('proveedor_id', SESSION.user.id);
-    
-    // Insertar nuevas
-    if (SELECTED_SUBCATS.length > 0) {
-      const { error } = await sb.from('proveedor_subcategorias')
-        .insert(
-          SELECTED_SUBCATS.map(subId => ({
-            proveedor_id: SESSION.user.id,
-            subcategoria_id: subId,
-            activa: true
-          }))
-        );
-      
-      if (error) throw error;
-    }
-    
-    toast('✅ Especialización guardada');
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
-}
-
-/* ── ZONA PREFERIDA ── */
-function initZoneMap() {
-  setTimeout(() => {
-    if (!document.getElementById('zona-map') || ZONE_MAP) return;
-    const lat = PROV?.lat || -27.5969;
-    const lng = PROV?.lng || -48.5494;
-    
-    ZONE_MAP = L.map('zona-map', { scrollWheelZoom: false }).setView([lat, lng], 12);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap',
-      maxZoom: 19
-    }).addTo(ZONE_MAP);
-    
-    // Marcador del proveedor
-    L.marker([lat, lng], {
-      icon: L.icon({
-        iconUrl: 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSI0MCIgdmlld0JveD0iMCAwIDMyIDQwIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjEyIiByPSI4IiBmaWxsPSIjMDBDOEQ3Ii8+PHBvbHlnb24gcG9pbnRzPSIxNiwzMiA4LDE4IDI0LDE4IiBmaWxsPSIjMDBDOEQ3Ii8+PC9zdmc+',
-        iconSize: [32, 40],
-        iconAnchor: [16, 40]
-      })
-    }).addTo(ZONE_MAP).bindPopup('Tu ubicación');
-    
-    // Círculo de cobertura
-    ZONE_RADIUS = PROV?.zona_radio || 15;
-    ZONE_CIRCLE = L.circle([lat, lng], {
-      radius: ZONE_RADIUS * 1000,
-      color: 'var(--c)',
-      fillColor: 'rgba(0,200,215,0.1)',
-      fillOpacity: 0.3,
-      weight: 2,
-      dashArray: '5,5'
-    }).addTo(ZONE_MAP);
-    
-    document.getElementById('zona-radio').value = ZONE_RADIUS;
-    document.getElementById('zona-radio-val').textContent = ZONE_RADIUS;
-  }, 100);
-}
-
-function updateZoneRadius() {
-  const val = parseInt(document.getElementById('zona-radio')?.value) || 15;
-  ZONE_RADIUS = val;
-  document.getElementById('zona-radio-val').textContent = val;
-  if (ZONE_CIRCLE) {
-    ZONE_CIRCLE.setRadius(val * 1000);
-  }
-}
-
-async function saveZonePreference() {
-  if (!ZONE_RADIUS || !SESSION) {
-    alert('Error al guardar');
-    return;
-  }
-  
-  try {
-    const {error} = await sb.from('usuarios').update({
-      zona_radio: ZONE_RADIUS
-    }).eq('id', SESSION.user.id);
-    
-    if (error) throw error;
-    PROV = {...PROV, zona_radio: ZONE_RADIUS};
-    toast('✅ Zona guardada');
-  } catch (e) {
-    alert('Error: ' + e.message);
-  }
-}
 
 </script>
 </body>
