@@ -15,12 +15,44 @@
   <body>
     <div id="root"></div>
       <script>
-    // OAuth redirect intercept — si venimos del callback de Google, ir al destino correcto
+    // ── U.GO OAuth Intercept v2 ─────────────────────────────────────────
+    // Supabase redirige post-Google siempre a la raíz (/), porque
+    // client.html y provider.html no están en su whitelist de redirects.
+    // Este script intercepta ANTES que React monte, detecta el callback
+    // OAuth y reenvía al destino correcto PRESERVANDO los params de URL
+    // para que Supabase pueda intercambiar el code (PKCE) o el token
+    // (implicit) en la página correcta.
+    //
+    // Flujos cubiertos:
+    //   PKCE     → /?code=XXX&...          → /client.html?code=XXX&...
+    //   Implicit → /#access_token=XXX&...  → /client.html#access_token=XXX&...
+    //   Error    → /?error=XXX             → /client.html?error=XXX (para mostrar error)
+    //   Sin dest → no redirige (acceso directo al admin)
+    //   dest sin params OAuth → no redirige (evita loop)
+    // ───────────────────────────────────────────────────────────────────
     (function(){
-      var dest = localStorage.getItem('ugo_oauth_dest');
-      if (dest && (location.hash.includes('access_token') || location.search.includes('code='))) {
+      try {
+        var dest = localStorage.getItem('ugo_oauth_dest');
+        if (!dest) return; // acceso directo al admin, no hacer nada
+
+        var qs = location.search;   // ?code=... o ?error=...
+        var hash = location.hash;   // #access_token=... (implicit flow)
+
+        var isOAuthCallback = (
+          qs.includes('code=') ||       // PKCE flow
+          qs.includes('error=') ||      // OAuth rechazado
+          hash.includes('access_token') // Implicit flow
+        );
+
+        if (!isOAuthCallback) return;   // dest guardado pero no es un OAuth callback
+
         localStorage.removeItem('ugo_oauth_dest');
-        window.location.replace(dest);
+        // Preservar TODOS los parámetros para que Supabase pueda
+        // intercambiar el code en la página destino (mismo origin = misma localStorage)
+        window.location.replace(dest + qs + hash);
+      } catch(e) {
+        // Si localStorage falla (modo privado extremo), limpiar y seguir
+        localStorage.removeItem('ugo_oauth_dest');
       }
     })();
   </script>
