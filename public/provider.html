@@ -135,6 +135,48 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 .hide{display:none!important}
+/* Onboarding */
+#onboarding{position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,#08090d,#0d1117);display:flex;align-items:center;justify-content:center;padding:24px}
+.ob-box{max-width:340px;width:100%;text-align:center}
+.ob-icon{font-size:58px;margin-bottom:18px}
+.ob-tit{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;line-height:1.3}
+.ob-sub{font-size:14px;color:#666;line-height:1.6;margin-bottom:24px}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:.25s}
+.ob-dot.on{background:var(--c);width:22px;border-radius:4px}
+.ob-btn{width:100%;padding:14px;background:var(--c);color:#000;font-weight:800;font-size:15px;border:none;border-radius:14px;cursor:pointer;font-family:inherit}
+.ob-skip{display:block;margin-top:12px;color:#444;font-size:12px;cursor:pointer;background:none;border:none;font-family:inherit;width:100%}
+/* Service chat panel */
+#svc-chat-prov{position:fixed;left:0;right:0;bottom:78px;z-index:45;background:#fff;border-radius:22px 22px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.15);height:0;overflow:hidden;transition:height .3s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column}
+#svc-chat-prov.open{height:50vh}
+.svc-chat-hd{padding:12px 16px 8px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.svc-chat-tit{font-weight:700;font-size:13px;color:#111}
+.svc-chat-close{background:none;border:none;font-size:20px;cursor:pointer;color:#ccc}
+.svc-chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.scm{max-width:80%;padding:8px 12px;border-radius:16px;font-size:13px;line-height:1.45;word-break:break-word}
+.scm-p{background:#111;color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.scm-c{background:#f0f0f0;color:#111;align-self:flex-start;border-radius:4px 16px 16px 16px}
+.scm-upd{align-self:center;background:rgba(0,200,215,.12);color:#0080aa;font-size:11px;padding:5px 14px;border-radius:20px;font-weight:700}
+.svc-chat-in{display:flex;gap:7px;padding:9px 12px max(20px,env(safe-area-inset-bottom,20px));border-top:1px solid #f0f0f0;flex-shrink:0}
+.svc-chat-inp{flex:1;padding:9px 14px;border:1.5px solid #e5e5e5;border-radius:20px;font-size:13px;font-family:inherit;outline:none}
+.svc-chat-inp:focus{border-color:var(--c)}
+.svc-chat-send{width:36px;height:36px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+/* Quick update buttons */
+.quick-upd-row{display:flex;gap:6px;padding:8px 12px;border-bottom:1px solid #f0f0f0;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.quick-upd-row::-webkit-scrollbar{display:none}
+.qub{padding:6px 12px;background:#f0f0f0;border:none;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap}
+.qub:active{background:#e0e0e0}
+/* Modal overlay */
+.modal-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;animation:fdin .2s}
+@keyframes fdin{from{opacity:0}to{opacity:1}}
+.modal-box{background:#fff;border-radius:24px 24px 0 0;padding:20px 20px max(24px,env(safe-area-inset-bottom,24px));width:100%;max-width:440px}
+.mbox-t{font-weight:800;font-size:16px;margin-bottom:5px;color:var(--k)}
+.mbox-s{font-size:13px;color:var(--m);margin-bottom:16px;line-height:1.45}
+.reason-btn{width:100%;padding:12px 14px;background:#f8f8f8;border:1.5px solid transparent;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:8px;transition:.15s;display:block}
+.reason-btn.on{border-color:var(--c);background:rgba(0,200,215,.07)}
+.mbox-actions{display:flex;gap:8px;margin-top:6px}
+.mbox-back{flex:1;padding:12px;background:#f5f5f5;border:none;border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#888}
+.mbox-confirm{flex:1;padding:12px;background:#111;color:#fff;border:none;border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
 </style>
 </head>
 <body>
@@ -171,6 +213,22 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 </div>
 </div>
 
+<!-- ONBOARDING -->
+<div id="onboarding" style="display:none">
+  <div class="ob-box">
+    <div class="ob-icon" id="ob-icon">🛠</div>
+    <div class="ob-tit" id="ob-tit">Bienvenido, profesional</div>
+    <div class="ob-sub" id="ob-sub">U.GO conecta tu experiencia con clientes que te necesitan. Trabajá cuando quieras, cobrá rápido.</div>
+    <div class="ob-dots">
+      <div class="ob-dot on" id="ob-d0"></div>
+      <div class="ob-dot" id="ob-d1"></div>
+      <div class="ob-dot" id="ob-d2"></div>
+    </div>
+    <button class="ob-btn" id="ob-next-btn" onclick="obNext()">Siguiente →</button>
+    <button class="ob-skip" onclick="obDone()">Omitir</button>
+  </div>
+</div>
+
 <!-- MAP -->
 <div id="map"></div>
 
@@ -192,8 +250,27 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <div id="jobbar">
   <div class="jbico" id="jbico">🔧</div>
   <div class="jbinfo" onclick="showTimelineSheet()"><div class="jbtit" id="jbtit">Trabajo activo</div><div class="jbsub" id="jbsub">En camino...</div></div>
-  <button class="jbnav" id="jbnav" onclick="navigateJob()">🗺 Navegar</button>
+  <button class="jbnav" id="jb-chat-btn" onclick="openSvcChatProv()" style="display:none">💬<span id="jb-chat-badge"></span></button>
+  <button class="jbnav" id="jbnav" onclick="navigateJob()">🗺</button>
   <button class="jbbtn" id="jbbtn" onclick="nextJobState()">Llegué</button>
+</div>
+
+<!-- SERVICE CHAT PANEL (provider) -->
+<div id="svc-chat-prov">
+  <div class="svc-chat-hd">
+    <span class="svc-chat-tit">💬 Chat con el cliente</span>
+    <button class="svc-chat-close" onclick="closeSvcChatProv()">✕</button>
+  </div>
+  <div class="quick-upd-row">
+    <button class="qub" onclick="sendQuickUpdate('🚗 Voy para allá')">🚗 Voy para allá</button>
+    <button class="qub" onclick="sendQuickUpdate('Llego en ~15 minutos 📍')">⏱ ~15 min</button>
+    <button class="qub" onclick="sendQuickUpdate('✅ Ya llegué')">✅ Llegué</button>
+  </div>
+  <div class="svc-chat-msgs" id="svc-chat-msgs-prov"></div>
+  <div class="svc-chat-in">
+    <input class="svc-chat-inp" id="svc-chat-inp-prov" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')sendSvcMsgProv()">
+    <button class="svc-chat-send" onclick="sendSvcMsgProv()">↑</button>
+  </div>
 </div>
 
 <!-- SHEET -->
@@ -361,6 +438,7 @@ let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
+let ACTIVE_SVC=null;
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -424,8 +502,25 @@ async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadProv();initMap();startGPS();nav2('home');subscribeToJobs();
+    if(!localStorage.getItem('ugo_prov_onboarded')){showOnboarding();}
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
+
+let _obStep=0;
+const _obSteps=[
+  {icon:'🛠',tit:'Bienvenido, profesional',sub:'U.GO conecta tu experiencia con clientes que te necesitan. Trabajá cuando quieras, cobrá rápido.'},
+  {icon:'📲',tit:'Aceptá trabajos fácil',sub:'Recibís pedidos en tiempo real. Aceptá, navegá a la dirección y completá el trabajo.'},
+  {icon:'💰',tit:'Cobrá sin complicaciones',sub:'Tus ganancias se acreditan automáticamente. Completá tu perfil y documentos para activarte.'},
+];
+function showOnboarding(){_obStep=0;_obRender();$('onboarding').style.display='flex';}
+function _obRender(){
+  const s=_obSteps[_obStep];
+  $('ob-icon').textContent=s.icon;$('ob-tit').textContent=s.tit;$('ob-sub').textContent=s.sub;
+  document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('on',i===_obStep));
+  $('ob-next-btn').textContent=_obStep===2?'¡Empezar! →':'Siguiente →';
+}
+function obNext(){if(_obStep<2){_obStep++;_obRender();}else{obDone();}}
+function obDone(){localStorage.setItem('ugo_prov_onboarded','1');$('onboarding').style.display='none';}
 
 /* ── PROVIDER DATA ── */
 async function loadProv(){
@@ -452,23 +547,7 @@ function initMap(){
   renderDemandBubbles();
 }
 function renderDemandBubbles(){
-  const now=new Date().getMinutes();
-  const jobs=[
-    {lat:myLat+.013,lng:myLng+.009,ic:'⚡',p:120,t:'Electricista',age:2},
-    {lat:myLat-.008,lng:myLng+.014,ic:'🔧',p:95,t:'Plomero',age:18},
-    {lat:myLat+.006,lng:myLng-.011,ic:'🧹',p:80,t:'Limpieza',age:5},
-    {lat:myLat-.014,lng:myLng+.005,ic:'🎨',p:110,t:'Pintor',age:30},
-    {lat:myLat+.02,lng:myLng+.003,ic:'🌿',p:70,t:'Jardinero',age:8},
-  ];
-  jobs.forEach(j=>{
-    const urgent=j.age<10;
-    const color=urgent?'#EF4444':'#F59E0B';
-    const html=`<div style="background:#fff;border-radius:18px;padding:5px 10px;box-shadow:0 2px 12px rgba(0,0,0,.18);display:flex;align-items:center;gap:5px;white-space:nowrap;border:2px solid ${color}"><span>${j.ic}</span><span style="font-size:11px;font-weight:800">R$${j.p}</span>${urgent?`<span style="width:6px;height:6px;border-radius:50%;background:${color};animation:bl 1s infinite"></span>`:''}</div>`;
-    const ic=L.divIcon({className:'',html,iconSize:[null,null]});
-    L.marker([j.lat,j.lng],{icon:ic}).addTo(MAP).on('click',()=>{
-      if(isOnline){showJobOffer(j);}else toast('Ponete en línea para recibir pedidos');
-    });
-  });
+  // No fake bubbles — real demand comes from notifications
 }
 
 function startGPS(){
@@ -526,13 +605,43 @@ function showJobOffer(j){
   },1000);
 }
 function acceptJob(){acceptJobReal();}
-function rejectJob(){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido rechazado');}
+function rejectJob(){
+  clearInterval(jobTimer);$('jobnot').classList.remove('show');
+  const notifId=JOB?.notifId;JOB=null;
+  const existing=document.getElementById('reject-modal');if(existing)existing.remove();
+  const ov=document.createElement('div');ov.id='reject-modal';ov.className='modal-ov';
+  let _reason='';
+  const reasons=['Estoy lejos','Estoy ocupado','No es mi especialidad','Otro motivo'];
+  ov.innerHTML=`<div class="modal-box">
+    <div class="mbox-t">¿Por qué rechazás?</div>
+    <div class="mbox-s">Opcional — nos ayuda a mejorar</div>
+    ${reasons.map((r,i)=>`<button class="reason-btn" id="rr${i}" onclick="document.querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on');_pRejReason='${r}'">${r}</button>`).join('')}
+    <div class="mbox-actions">
+      <button class="mbox-back" onclick="document.getElementById('reject-modal').remove()">Omitir</button>
+      <button class="mbox-confirm" onclick="_saveRejection('${notifId||''}');document.getElementById('reject-modal').remove()">Confirmar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  toast('Pedido rechazado');
+}
+let _pRejReason='';
+async function _saveRejection(notifId){
+  if(!notifId||!_pRejReason)return;
+  await sb.from('notificaciones').update({leida:true,metadata:{razon_rechazo:_pRejReason}}).eq('id',notifId);
+  _pRejReason='';
+}
 function navigateJob(){
   if(!ACTIVE_JOB)return;
   const addr=encodeURIComponent(ACTIVE_JOB.addr||'Florianópolis, SC');
   window.open(`https://www.google.com/maps/dir/?api=1&destination=${addr}&travelmode=driving`,'_blank');
 }
 function nextJobState(){nextJobStateReal();}
+
+function toggleSheet(){
+  const sh=$('sheet');
+  if(sh.style.height==='0px'||sh.style.height==='0'){sh.style.height='min(75vh,620px)';}
+  else{sh.style.height='0';}
+}
 
 /* ── NAV ── */
 function nav2(sec){
@@ -542,7 +651,7 @@ function nav2(sec){
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
   const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='earn')loadHistSheet();if(sec==='prof')loadMyReviews();}
 }
 
 
@@ -619,7 +728,7 @@ function timelineSheet(svc) {
         </div>
       </div>
       <div style="border-top:1px solid #e5e5e5;padding-top:8px;color:#888">
-        Hace \${elapsed}m · \${svc.categoria||'Servicio'}
+        Hace ${elapsed<60?elapsed+'m':Math.floor(elapsed/60)+'h '+elapsed%60+'m'} · \${svc.categoria||'Servicio'}
       </div>
     </div>
 
@@ -831,11 +940,19 @@ function profHTML(){
   <div class="pfield"><label for="pend">Dirección / Zona de trabajo</label><input id="pend" value="${PROV?.endereco||''}" placeholder="Ej: Centro, Florianópolis"></div>
   <div class="pfield"><label for="pbio">Bio (aparece en tu perfil público)</label><input id="pbio" value="${PROV?.bio||''}" placeholder="Especialista en instalaciones eléctricas con 10 años..."></div>
   <button class="psave" onclick="saveProfile()">💾 Guardar cambios</button>
+  <details style="margin-top:16px;background:#f8f8f8;border-radius:14px;overflow:hidden">
+    <summary style="padding:14px 16px;font-weight:700;font-size:13px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      ⭐ Mis reseñas <span id="rev-badge" style="background:var(--c);color:#000;border-radius:20px;padding:2px 8px;font-size:11px">...</span>
+    </summary>
+    <div id="my-reviews" style="padding:0 16px 16px"><p style="color:var(--m);font-size:12px">Cargando reseñas...</p></div>
+  </details>
   <button class="blogout" onclick="doLogout()">Cerrar sesión</button>
 </div>`;}
 
 /* ── PROFILE SAVE ── */
 async function saveProfile(){
+  const btn=document.querySelector('.psave');
+  if(btn){btn.textContent='⏳ Guardando...';btn.disabled=true;}
   const update={
     nombre:$('pn')?.value||PROV.nombre,
     telefono:$('ptel')?.value||'',
@@ -846,23 +963,51 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   const{error}=await sb.from('usuarios').update(update).eq('id',SESSION.user.id);
+  if(btn){btn.textContent='💾 Guardar cambios';btn.disabled=false;}
   if(error){toast('❌ Error al guardar: '+error.message);return;}
   Object.assign(PROV,update);
   $('pname').textContent=update.nombre;
   toast('✅ Perfil guardado');
 }
 
+/* ── REVIEWS ── */
+async function loadMyReviews(){
+  const el=$('my-reviews');if(!el||!SESSION)return;
+  const{data}=await sb.from('resenas').select('estrellas,comentario,created_at').eq('proveedor_id',SESSION.user.id).order('created_at',{ascending:false}).limit(10);
+  const badge=$('rev-badge');
+  if(!data?.length){
+    if(badge)badge.textContent='0';
+    el.innerHTML='<p style="color:var(--m);font-size:12px;padding:4px 0">Aún no tienes reseñas.</p>';
+    return;
+  }
+  if(badge)badge.textContent=data.length+'+';
+  const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
+  el.innerHTML=data.map(r=>`<div style="border-top:1px solid #e5e5e5;padding:10px 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="color:#f59e0b;font-size:14px">${stars(r.estrellas||5)}</span><span style="font-size:10px;color:#aaa">${new Date(r.created_at).toLocaleDateString('es-AR')}</span></div>${r.comentario?`<div style="font-size:12px;color:#555">"${r.comentario}"</div>`:''}</div>`).join('');
+}
+
 /* ── DOCS ── */
 let currentDocType=null;
 async function initDocs(){
   if(!SESSION)return;
-  const{data}=await sb.from('documentos').select('tipo,estado').eq('usuario_id',SESSION.user.id);
+  const{data}=await sb.from('documentos').select('tipo,estado,notas').eq('usuario_id',SESSION.user.id);
   if(!data)return;
   const map={cpf:'cpf',selfie:'selfie',cert:'cert'};
   const statusMap={aprobado:'<span class="doc-status ds-ok">✓ Aprobado</span>',rechazado:'<span class="doc-status ds-err">✕ Rechazado</span>',pendiente:'<span class="doc-status ds-pen">● En revisión</span>',procesando:'<span class="doc-status ds-pen">⏳ Procesando</span>'};
   data.forEach(doc=>{
     const key=Object.keys(map).find(k=>doc.tipo.includes(k));
-    if(key){const el=$('st-'+key);if(el)el.outerHTML=statusMap[doc.estado]||statusMap.pendiente;$('doc-'+key)?.classList.add('uploaded');}
+    if(key){
+      const el=$('st-'+key);
+      if(el)el.outerHTML=statusMap[doc.estado]||statusMap.pendiente;
+      $('doc-'+key)?.classList.add('uploaded');
+      if(doc.estado==='rechazado'&&doc.notas){
+        const card=$('doc-'+key+'--card')||$('doc-'+key)?.closest('[id]');
+        const noteEl=document.createElement('div');
+        noteEl.style.cssText='font-size:11px;color:var(--red);margin-top:4px;padding:6px 10px;background:rgba(239,68,68,.08);border-radius:8px;border-left:3px solid var(--red)';
+        noteEl.textContent='⚠ '+doc.notas;
+        const docEl=$('doc-'+key);
+        if(docEl)docEl.parentNode.insertBefore(noteEl,docEl.nextSibling);
+      }
+    }
   });
 }
 function uploadDoc(tipo){
@@ -909,8 +1054,10 @@ function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});show
 async function loadHistSheet(){
   const{data}=await sb.from('servicios').select('*').eq('proveedor_id',SESSION.user.id).order('created_at',{ascending:false}).limit(20);
   const el=$('hlist');if(!el)return;
-  if(!data?.length){el.innerHTML='<p style="color:var(--m);font-size:13px;padding:8px 0">Sin servicios completados aún.</p>';return;}
-  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')}</div></div><div class="shval">R$${s.tarifa||0}</div></div>`).join('');
+  if(!data?.length){el.innerHTML='<div style="text-align:center;padding:32px 16px;color:var(--m)"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-weight:700;font-size:14px;margin-bottom:6px">Aún no completaste servicios</div><div style="font-size:12px">¡Empieza a aceptar trabajos y verás tu historial aquí!</div></div>';return;}
+  const stColor={completado:'var(--g)',cancelado:'var(--red)',negociando:'#f59e0b',confirmado:'var(--c)',en_camino:'var(--c)',ejecutando:'var(--c)'};
+  const stLabel={completado:'Completado',cancelado:'Cancelado',negociando:'Negociando',confirmado:'Confirmado',en_camino:'En camino',ejecutando:'Ejecutando'};
+  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic" style="background:${stColor[s.estado]||'var(--m)'}22;color:${stColor[s.estado]||'var(--m)'}">${s.estado==='completado'?'✓':s.estado==='cancelado'?'✕':'🔧'}</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · <span style="color:${stColor[s.estado]||'var(--m)'};font-weight:700">${stLabel[s.estado]||s.estado}</span></div></div><div class="shval" style="color:${s.estado==='cancelado'?'var(--red)':'var(--g)'}">R$${s.tarifa||0}</div></div>`).join('');
 }
 
 // Lazy load history when earn section shown
@@ -1036,8 +1183,60 @@ async function acceptJobReal() {
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
   $('jbsub').innerHTML = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}${renderTimelineMini('en_camino')}`;
   $('jobbar').classList.add('show');
-  $('jbbtn').textContent = '✓ Llegoé';
+  $('jbbtn').textContent = '✓ Llegué';
   toast('✅ Pedido aceptado — ¡Navegá al cliente!');
+  if (JOB?.servicio_id) { subscribeSvcChatProv(JOB.servicio_id); }
+}
+
+/* ── SERVICE CHAT (PROVEEDOR) ── */
+let _svcChatProvCh = null;
+let _unreadProvChat = 0;
+
+function openSvcChatProv(){
+  const c=$('svc-chat-prov');if(!c)return;
+  c.classList.add('open');_unreadProvChat=0;_updateProvChatBadge();
+}
+function closeSvcChatProv(){const c=$('svc-chat-prov');if(c)c.classList.remove('open');}
+
+function _updateProvChatBadge(){
+  const b=$('jb-chat-badge');
+  if(b)b.textContent=_unreadProvChat>0?` (${_unreadProvChat})`:'';
+}
+
+function _appendSvcMsgProv(msg){
+  const el=$('svc-chat-msgs-prov');if(!el)return;
+  const div=document.createElement('div');
+  if(msg.tipo==='update'){div.className='scm scm-upd';div.textContent=msg.texto;}
+  else if(msg.emisor_tipo==='proveedor'){div.className='scm scm-p';div.textContent=msg.texto;}
+  else{div.className='scm scm-c';div.textContent=msg.texto;}
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+
+async function sendSvcMsgProv(){
+  if(!ACTIVE_SVC)return;
+  const inp=$('svc-chat-inp-prov');if(!inp||!inp.value.trim())return;
+  const texto=inp.value.trim();inp.value='';
+  await sb.from('mensajes').insert({servicio_id:ACTIVE_SVC.id,emisor_tipo:'proveedor',tipo:'mensaje',texto});
+}
+
+async function sendQuickUpdate(texto){
+  if(!ACTIVE_SVC)return;
+  await sb.from('mensajes').insert({servicio_id:ACTIVE_SVC.id,emisor_tipo:'proveedor',tipo:'update',texto});
+  toast('📤 '+texto,2500);
+}
+
+function subscribeSvcChatProv(svcId){
+  if(_svcChatProvCh)_svcChatProvCh.unsubscribe();
+  _svcChatProvCh=sb.channel('svc_chat_'+svcId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'mensajes',filter:`servicio_id=eq.${svcId}`},payload=>{
+      const msg=payload.new;
+      _appendSvcMsgProv(msg);
+      if(msg.emisor_tipo==='cliente'){
+        const c=$('svc-chat-prov');
+        if(!c||!c.classList.contains('open')){_unreadProvChat++;_updateProvChatBadge();}
+      }
+    }).subscribe();
+  const btn=$('jb-chat-btn');if(btn)btn.style.display='flex';
 }
 
 // Override nextJobState to update DB
