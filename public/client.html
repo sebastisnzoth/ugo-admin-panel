@@ -106,6 +106,22 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 .hide{display:none!important}
+/* Modal overlay */
+.modal-ov{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;animation:fdin .2s}
+@keyframes fdin{from{opacity:0}to{opacity:1}}
+.modal-box{background:#fff;border-radius:24px 24px 0 0;padding:20px 20px max(24px,env(safe-area-inset-bottom,24px));width:100%;max-width:440px}
+.mbox-t{font-weight:800;font-size:16px;margin-bottom:5px;color:var(--k)}
+.mbox-s{font-size:13px;color:var(--m);margin-bottom:16px;line-height:1.45}
+.reason-btn{width:100%;padding:12px 14px;background:#f8f8f8;border:1.5px solid transparent;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;margin-bottom:8px;transition:.15s;display:block}
+.reason-btn.on{border-color:var(--r);background:rgba(239,68,68,.07);color:var(--r)}
+.mbox-actions{display:flex;gap:8px;margin-top:6px}
+.mbox-back{flex:1;padding:12px;background:#f5f5f5;border:none;border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;color:#888}
+.mbox-confirm{flex:1;padding:12px;background:#111;color:#fff;border:none;border-radius:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit}
+.mbox-danger{background:var(--r)}
+.mbox-confirm:disabled{opacity:.4;cursor:not-allowed}
+/* Skeleton loader */
+.skel{background:linear-gradient(90deg,#f0f0f0 25%,#e5e5e5 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.4s infinite;border-radius:8px;display:block}
+@keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 </style>
 </head>
 <body>
@@ -517,15 +533,38 @@ async function submitRating() {
 }
 
 async function cancelService() {
-  if (!ACTIVE_SVC || !confirm('¿Cancelar el pedido?')) return;
-  await sb.from('servicios').update({ estado: 'cancelado' }).eq('id', ACTIVE_SVC.id);
-  if (svcChannel)  { sb.removeChannel(svcChannel);  svcChannel  = null; }
-  if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
-  document.getElementById('track-overlay').style.display = 'none';
-  stopCascade();
-  ACTIVE_SVC = null;
-  toast('Pedido cancelado.');
-  nav2('home');
+  if (!ACTIVE_SVC) return;
+  showCancelModal();
+}
+
+let _cancelReason = '';
+function showCancelModal(){
+  const existing=document.getElementById('cancel-modal');if(existing)existing.remove();
+  _cancelReason='';
+  const reasons=['Cambié de opinión','El proveedor tardó demasiado','Encontré otro proveedor','Error al solicitar','Otro motivo'];
+  const ov=document.createElement('div');
+  ov.id='cancel-modal';ov.className='modal-ov';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="mbox-t">Cancelar servicio</div>
+    <div class="mbox-s">¿Por qué querés cancelar? (opcional)</div>
+    ${reasons.map(r=>`<button class="reason-btn" onclick="_cancelReason='${r}';this.closest('.modal-box').querySelectorAll('.reason-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on')">${r}</button>`).join('')}
+    <div class="mbox-actions">
+      <button class="mbox-back" onclick="document.getElementById('cancel-modal').remove()">↩ Volver</button>
+      <button class="mbox-confirm mbox-danger" onclick="doCancelService()">Cancelar pedido</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+async function doCancelService(){
+  const modal=document.getElementById('cancel-modal');if(modal)modal.remove();
+  if(!ACTIVE_SVC)return;
+  await sb.from('servicios').update({estado:'cancelado'}).eq('id',ACTIVE_SVC.id);
+  if(svcChannel){sb.removeChannel(svcChannel);svcChannel=null;}
+  if(provChannel){sb.removeChannel(provChannel);provChannel=null;}
+  document.getElementById('track-overlay').style.display='none';
+  stopCascade();ACTIVE_SVC=null;_cancelReason='';
+  toast('Pedido cancelado.');nav2('home');
 }
 
 </script>
@@ -682,10 +721,13 @@ function svcsHTML(){return`<div class="pad">
 
 async function selCat(cat,el){
   document.querySelectorAll('.catb').forEach(b=>b.classList.remove('on'));el.classList.add('on');
-  const pl=$('plist');pl.innerHTML='<p style="color:var(--m);font-size:13px">Buscando proveedores cerca tuyo...</p>';
+  const pl=$('plist');
+  pl.innerHTML=[1,2,3].map(()=>`<div class="pc" style="pointer-events:none"><span class="skel" style="width:46px;height:46px;border-radius:13px;flex-shrink:0"></span><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:55%"></span><span class="skel" style="height:11px;width:35%"></span></div></div>`).join('');
   const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
-  if(!data?.length){pl.innerHTML=`<p style="color:var(--m);font-size:13px;padding:8px 0">Sin ${cat.toLowerCase()}s disponibles ahora. <a href="#" onclick="openChat()" style="color:var(--c)">Pedile a Hugo que busque</a>.</p>`;return;}
-  const dist=p=>`${(Math.random()*4+.5).toFixed(1)}km`;
+  if(!data?.length){
+    pl.innerHTML=`<div style="text-align:center;padding:28px 0"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-weight:800;font-size:14px;margin-bottom:6px">Sin ${cat.toLowerCase()}s disponibles</div><p style="font-size:12px;color:var(--m);margin-bottom:16px;line-height:1.5">No hay proveedores activos en esta categoría. Probá con otra o pedile ayuda a Hugo.</p><button onclick="openChat()" style="padding:10px 18px;background:var(--c);color:#000;font-weight:700;font-size:13px;border:none;border-radius:12px;cursor:pointer;font-family:inherit">💬 Pedirle a Hugo</button></div>`;
+    return;
+  }
   pl.innerHTML=data.map(p=>`<div class="pc">
     <div class="pcav">${p.nombre?.[0]?.toUpperCase()||'🔧'}</div>
     <div class="pcinfo">
@@ -697,24 +739,41 @@ async function selCat(cat,el){
         <button class="pcbtn pcbtn-c" onclick="hireProv(${JSON.stringify(p).replace(/"/g,"'")})">⚡ Contratar</button>
       </div>
     </div>
-    <div class="pcr"><div class="pcprice">R$${p.tarifa_base||80}+</div><div class="pcdist">${dist(p)}</div></div>
+    <div class="pcr"><div class="pcprice">R$${p.tarifa_base||80}+</div><div class="pcdist">${p.lat&&p.lng?calcDist(myLat,myLng,p.lat,p.lng)+'km':'?'}</div></div>
   </div>`).join('');
 }
 
 function hireProv(p){
   SELECTED_PROV=p;
-  // Confirm with user
-  const ok=confirm(`¿Contratar a ${p.nombre} (${p.categoria}) por R$${p.tarifa_base||80}+?`);
-  if(!ok) return;
-  createService(p);
+  showHireConfirm(p);
 }
 
-function histHTML(){return`<div class="pad"><div class="stt">📋 Historial de servicios</div><div id="hlist"><p style="color:var(--m);font-size:13px">Cargando...</p></div></div>`;}
+function showHireConfirm(p){
+  const existing=document.getElementById('hire-modal');if(existing)existing.remove();
+  const pJson=JSON.stringify(p).replace(/"/g,"'");
+  const ov=document.createElement('div');
+  ov.id='hire-modal';ov.className='modal-ov';
+  ov.innerHTML=`<div class="modal-box">
+    <div class="mbox-t">⚡ Contratar a ${p.nombre||'este proveedor'}</div>
+    <div class="mbox-s">${p.categoria||'Servicio'} · R$${p.tarifa_base||80}+ por visita<br>★ ${(p.karma||5).toFixed(1)} karma</div>
+    <div class="mbox-actions">
+      <button class="mbox-back" onclick="document.getElementById('hire-modal').remove()">Cancelar</button>
+      <button class="mbox-confirm" onclick="document.getElementById('hire-modal').remove();createService(${pJson})">Confirmar →</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+function histHTML(){return`<div class="pad"><div class="stt">📋 Historial de servicios</div><div id="hlist"><div style="display:flex;flex-direction:column;gap:8px">${[1,2,3].map(()=>`<div class="shi" style="pointer-events:none"><span class="skel" style="width:36px;height:36px;border-radius:11px;flex-shrink:0"></span><div style="flex:1;display:flex;flex-direction:column;gap:5px"><span class="skel" style="height:13px;width:60%"></span><span class="skel" style="height:11px;width:40%"></span></div></div>`).join('')}</div></div></div>`;}
 async function loadHist(){
   const{data}=await sb.from('servicios').select('*').eq('cliente_id',SESSION.user.id).order('created_at',{ascending:false}).limit(20);
   const el=$('hlist');if(!el)return;
-  if(!data?.length){el.innerHTML='<p style="color:var(--m);font-size:13px;padding:8px 0">Sin servicios aún. ¡Contratá tu primer proveedor!</p>';return;}
-  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div></div><div class="shval">R$${s.tarifa||0}</div></div>`).join('');
+  if(!data?.length){
+    el.innerHTML=`<div style="text-align:center;padding:28px 0"><div style="font-size:40px;margin-bottom:10px">📋</div><div style="font-weight:800;font-size:15px;margin-bottom:6px">Sin servicios aún</div><p style="font-size:13px;color:var(--m);margin-bottom:18px;line-height:1.5">¡Contratá tu primer proveedor y empezá a disfrutar el servicio!</p><button onclick="nav2('svcs')" style="padding:11px 22px;background:#111;color:#fff;font-weight:700;font-size:13px;border:none;border-radius:13px;cursor:pointer;font-family:inherit">🔧 Ver servicios disponibles</button></div>`;
+    return;
+  }
+  const estadoColor={completado:'var(--g)',cancelado:'var(--r)',ejecutando:'var(--c)',en_camino:'var(--o)',negociando:'var(--m)',confirmado:'var(--c)'};
+  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div></div><div style="text-align:right"><div class="shval" style="color:${estadoColor[s.estado]||'var(--g)'}">R$${s.tarifa||0}</div><div style="font-size:10px;color:var(--m);margin-top:2px">${s.estado}</div></div></div>`).join('');
 }
 
 function profHTML(){
@@ -729,8 +788,11 @@ function profHTML(){
 </div>`;}
 
 async function saveProfile(){
+  const btn=document.querySelector('.psave');
+  if(btn){btn.textContent='⏳ Guardando...';btn.disabled=true;}
   const update={nombre:$('pn')?.value||CLI.nombre,telefono:$('ptel')?.value||'',endereco:$('pend')?.value||'',updated_at:new Date().toISOString()};
   const{error}=await sb.from('usuarios').update(update).eq('id',SESSION.user.id);
+  if(btn){btn.textContent='💾 Guardar cambios';btn.disabled=false;}
   if(error){toast('❌ Error: '+error.message);return;}
   Object.assign(CLI,update);
   $('cname').textContent=update.nombre;
@@ -742,15 +804,13 @@ async function saveProfile(){
 function rateService(){
   $('svcbar').classList.remove('show');
   $('sb').innerHTML=`<div class="pad"><div class="stt">⭐ Calificar servicio</div>
-  <p style="font-size:13px;color:var(--m);margin-bottom:16px">¿Cómo fue tu experiencia?</p>
-  <div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStar(${i})">★</span>`).join('')}</div>
-  <div style="margin-top:16px"><button onclick="submitRating()" style="width:100%;padding:13px;background:#111;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:13px;cursor:pointer;font-family:inherit">Enviar calificación</button></div>
+  <p style="font-size:13px;color:var(--m);margin-bottom:16px">¿Cómo fue tu experiencia con el proveedor?</p>
+  <div class="stars" id="stars">${[1,2,3,4,5].map(i=>`<span class="star" onclick="setStar(${i})">☆</span>`).join('')}</div>
+  <div style="margin-top:14px"><textarea id="tr-comment" placeholder="Comentario opcional..." style="width:100%;padding:10px 13px;border:1.5px solid var(--b);border-radius:12px;font-size:13px;font-family:inherit;outline:none;resize:none;height:72px"></textarea></div>
+  <div style="margin-top:10px"><button onclick="submitRating()" style="width:100%;padding:13px;background:#111;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:13px;cursor:pointer;font-family:inherit">Enviar calificación ★</button></div>
   </div>`;
-  $('sheet').style.height='min(50vh,400px)';
+  $('sheet').style.height='min(60vh,480px)';
 }
-let starRating=5;
-function setStar(n){starRating=n;document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
-function submitRating(){$('sheet').style.height='0';toast('⭐ ¡Gracias por tu calificación!');}
 
 /* HUGO CHAT */
 const HSUGS=['Necesito un electricista','¿Cuánto cuesta la limpieza?','¿Hay proveedores cerca?','Estado de mi pedido','Reportar un problema'];
@@ -857,23 +917,21 @@ function showPCard(p) {
   st.style.background = p.online ? 'rgba(34,197,94,.1)' : p.activo ? 'rgba(0,200,215,.08)' : 'rgba(0,0,0,.05)';
   st.style.color = p.online ? '#22C55E' : p.activo ? '#0080AA' : '#888';
   // Details
-  const addr = document.getElementById('pc-addr');
-  addr.querySelector('span:last-child').textContent = p.endereco || 'Sin dirección';
-  const ph = document.getElementById('pc-phone');
-  ph.style.display = p.telefono ? 'flex' : 'none';
-  if (p.telefono) ph.querySelector('span:last-child').textContent = p.telefono;
-  const pr = document.getElementById('pc-price');
-  pr.querySelector('span:last-child').textContent = p.tarifa_base ? 'Desde R$' + p.tarifa_base : 'Precio a consultar';
+  const addrT = document.getElementById('pc-addr-t');
+  if (addrT) addrT.textContent = p.endereco || 'Sin dirección registrada';
+  const ph = document.getElementById('pc-phone-row');
+  if (ph) { ph.style.display = p.telefono ? 'flex' : 'none'; const phT=document.getElementById('pc-phone-t');if(phT&&p.telefono)phT.textContent=p.telefono; }
+  const prT = document.getElementById('pc-price-t');
+  if (prT) prT.textContent = p.tarifa_base ? 'Desde R$' + p.tarifa_base + ' por visita' : 'Precio a consultar';
   // Website
-  const wb = document.getElementById('pc-web');
+  const wb = document.getElementById('pc-web-row');
   const rawBio = p.bio || '';
   const isUrl = rawBio.startsWith('http');
-  wb.style.display = isUrl ? 'flex' : 'none';
-  if (isUrl) { document.getElementById('pc-web-a').href = rawBio; document.getElementById('pc-web-a').textContent = rawBio.replace('https://','').replace('http://','').split('/')[0]; }
-  // Phone button
-  const pb = document.getElementById('pc-phone-btn');
-  pb.style.display = p.telefono ? 'block' : 'none';
-  if (p.telefono) document.getElementById('pc-tel-a').href = 'tel:' + p.telefono;
+  if (wb) { wb.style.display = isUrl ? 'flex' : 'none'; }
+  if (isUrl) { const wa=document.getElementById('pc-web-a');if(wa){wa.href=rawBio;wa.textContent=rawBio.replace('https://','').replace('http://','').split('/')[0];} }
+  // Phone call button
+  const pb = document.getElementById('pc-call-row');
+  if (pb) { pb.style.display = p.telefono ? 'block' : 'none'; const ta=document.getElementById('pc-tel-a');if(ta&&p.telefono)ta.href='tel:'+p.telefono; }
   // Show card
   document.getElementById('pcard').style.transform = 'translateY(0)';
   document.getElementById('pcard-bg').style.display = 'block';
@@ -888,8 +946,7 @@ function pcChat() { closePCard(); openChatWith(PCARD_PROV); }
 function pcHire() {
   closePCard();
   if (!PCARD_PROV) return;
-  const ok = confirm('¿Contratar a ' + PCARD_PROV.nombre + ' (' + (PCARD_PROV.categoria||'') + ') por R$' + (PCARD_PROV.tarifa_base||80) + '+?');
-  if (ok) createService(PCARD_PROV);
+  showHireConfirm(PCARD_PROV);
 }
 
 /* ── MERCADO PAGO ── */

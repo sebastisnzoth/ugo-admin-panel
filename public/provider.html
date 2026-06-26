@@ -361,6 +361,7 @@ let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
+let ACTIVE_SVC=null;
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -534,6 +535,12 @@ function navigateJob(){
 }
 function nextJobState(){nextJobStateReal();}
 
+function toggleSheet(){
+  const sh=$('sheet');
+  if(sh.style.height==='0px'||sh.style.height==='0'){sh.style.height='min(75vh,620px)';}
+  else{sh.style.height='0';}
+}
+
 /* ── NAV ── */
 function nav2(sec){
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
@@ -542,7 +549,7 @@ function nav2(sec){
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
   const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();if(sec==='earn')loadHistSheet();if(sec==='prof')loadMyReviews();}
 }
 
 
@@ -619,7 +626,7 @@ function timelineSheet(svc) {
         </div>
       </div>
       <div style="border-top:1px solid #e5e5e5;padding-top:8px;color:#888">
-        Hace \${elapsed}m · \${svc.categoria||'Servicio'}
+        Hace ${elapsed<60?elapsed+'m':Math.floor(elapsed/60)+'h '+elapsed%60+'m'} · \${svc.categoria||'Servicio'}
       </div>
     </div>
 
@@ -831,11 +838,19 @@ function profHTML(){
   <div class="pfield"><label for="pend">Dirección / Zona de trabajo</label><input id="pend" value="${PROV?.endereco||''}" placeholder="Ej: Centro, Florianópolis"></div>
   <div class="pfield"><label for="pbio">Bio (aparece en tu perfil público)</label><input id="pbio" value="${PROV?.bio||''}" placeholder="Especialista en instalaciones eléctricas con 10 años..."></div>
   <button class="psave" onclick="saveProfile()">💾 Guardar cambios</button>
+  <details style="margin-top:16px;background:#f8f8f8;border-radius:14px;overflow:hidden">
+    <summary style="padding:14px 16px;font-weight:700;font-size:13px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center">
+      ⭐ Mis reseñas <span id="rev-badge" style="background:var(--c);color:#000;border-radius:20px;padding:2px 8px;font-size:11px">...</span>
+    </summary>
+    <div id="my-reviews" style="padding:0 16px 16px"><p style="color:var(--m);font-size:12px">Cargando reseñas...</p></div>
+  </details>
   <button class="blogout" onclick="doLogout()">Cerrar sesión</button>
 </div>`;}
 
 /* ── PROFILE SAVE ── */
 async function saveProfile(){
+  const btn=document.querySelector('.psave');
+  if(btn){btn.textContent='⏳ Guardando...';btn.disabled=true;}
   const update={
     nombre:$('pn')?.value||PROV.nombre,
     telefono:$('ptel')?.value||'',
@@ -846,23 +861,51 @@ async function saveProfile(){
     updated_at:new Date().toISOString()
   };
   const{error}=await sb.from('usuarios').update(update).eq('id',SESSION.user.id);
+  if(btn){btn.textContent='💾 Guardar cambios';btn.disabled=false;}
   if(error){toast('❌ Error al guardar: '+error.message);return;}
   Object.assign(PROV,update);
   $('pname').textContent=update.nombre;
   toast('✅ Perfil guardado');
 }
 
+/* ── REVIEWS ── */
+async function loadMyReviews(){
+  const el=$('my-reviews');if(!el||!SESSION)return;
+  const{data}=await sb.from('resenas').select('estrellas,comentario,created_at').eq('proveedor_id',SESSION.user.id).order('created_at',{ascending:false}).limit(10);
+  const badge=$('rev-badge');
+  if(!data?.length){
+    if(badge)badge.textContent='0';
+    el.innerHTML='<p style="color:var(--m);font-size:12px;padding:4px 0">Aún no tienes reseñas.</p>';
+    return;
+  }
+  if(badge)badge.textContent=data.length+'+';
+  const stars=n=>'★'.repeat(n)+'☆'.repeat(5-n);
+  el.innerHTML=data.map(r=>`<div style="border-top:1px solid #e5e5e5;padding:10px 0"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="color:#f59e0b;font-size:14px">${stars(r.estrellas||5)}</span><span style="font-size:10px;color:#aaa">${new Date(r.created_at).toLocaleDateString('es-AR')}</span></div>${r.comentario?`<div style="font-size:12px;color:#555">"${r.comentario}"</div>`:''}</div>`).join('');
+}
+
 /* ── DOCS ── */
 let currentDocType=null;
 async function initDocs(){
   if(!SESSION)return;
-  const{data}=await sb.from('documentos').select('tipo,estado').eq('usuario_id',SESSION.user.id);
+  const{data}=await sb.from('documentos').select('tipo,estado,notas').eq('usuario_id',SESSION.user.id);
   if(!data)return;
   const map={cpf:'cpf',selfie:'selfie',cert:'cert'};
   const statusMap={aprobado:'<span class="doc-status ds-ok">✓ Aprobado</span>',rechazado:'<span class="doc-status ds-err">✕ Rechazado</span>',pendiente:'<span class="doc-status ds-pen">● En revisión</span>',procesando:'<span class="doc-status ds-pen">⏳ Procesando</span>'};
   data.forEach(doc=>{
     const key=Object.keys(map).find(k=>doc.tipo.includes(k));
-    if(key){const el=$('st-'+key);if(el)el.outerHTML=statusMap[doc.estado]||statusMap.pendiente;$('doc-'+key)?.classList.add('uploaded');}
+    if(key){
+      const el=$('st-'+key);
+      if(el)el.outerHTML=statusMap[doc.estado]||statusMap.pendiente;
+      $('doc-'+key)?.classList.add('uploaded');
+      if(doc.estado==='rechazado'&&doc.notas){
+        const card=$('doc-'+key+'--card')||$('doc-'+key)?.closest('[id]');
+        const noteEl=document.createElement('div');
+        noteEl.style.cssText='font-size:11px;color:var(--red);margin-top:4px;padding:6px 10px;background:rgba(239,68,68,.08);border-radius:8px;border-left:3px solid var(--red)';
+        noteEl.textContent='⚠ '+doc.notas;
+        const docEl=$('doc-'+key);
+        if(docEl)docEl.parentNode.insertBefore(noteEl,docEl.nextSibling);
+      }
+    }
   });
 }
 function uploadDoc(tipo){
@@ -909,8 +952,10 @@ function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});show
 async function loadHistSheet(){
   const{data}=await sb.from('servicios').select('*').eq('proveedor_id',SESSION.user.id).order('created_at',{ascending:false}).limit(20);
   const el=$('hlist');if(!el)return;
-  if(!data?.length){el.innerHTML='<p style="color:var(--m);font-size:13px;padding:8px 0">Sin servicios completados aún.</p>';return;}
-  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')}</div></div><div class="shval">R$${s.tarifa||0}</div></div>`).join('');
+  if(!data?.length){el.innerHTML='<div style="text-align:center;padding:32px 16px;color:var(--m)"><div style="font-size:40px;margin-bottom:12px">📋</div><div style="font-weight:700;font-size:14px;margin-bottom:6px">Aún no completaste servicios</div><div style="font-size:12px">¡Empieza a aceptar trabajos y verás tu historial aquí!</div></div>';return;}
+  const stColor={completado:'var(--g)',cancelado:'var(--red)',negociando:'#f59e0b',confirmado:'var(--c)',en_camino:'var(--c)',ejecutando:'var(--c)'};
+  const stLabel={completado:'Completado',cancelado:'Cancelado',negociando:'Negociando',confirmado:'Confirmado',en_camino:'En camino',ejecutando:'Ejecutando'};
+  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic" style="background:${stColor[s.estado]||'var(--m)'}22;color:${stColor[s.estado]||'var(--m)'}">${s.estado==='completado'?'✓':s.estado==='cancelado'?'✕':'🔧'}</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · <span style="color:${stColor[s.estado]||'var(--m)'};font-weight:700">${stLabel[s.estado]||s.estado}</span></div></div><div class="shval" style="color:${s.estado==='cancelado'?'var(--red)':'var(--g)'}">R$${s.tarifa||0}</div></div>`).join('');
 }
 
 // Lazy load history when earn section shown
@@ -1036,7 +1081,7 @@ async function acceptJobReal() {
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
   $('jbsub').innerHTML = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}${renderTimelineMini('en_camino')}`;
   $('jobbar').classList.add('show');
-  $('jbbtn').textContent = '✓ Llegoé';
+  $('jbbtn').textContent = '✓ Llegué';
   toast('✅ Pedido aceptado — ¡Navegá al cliente!');
 }
 

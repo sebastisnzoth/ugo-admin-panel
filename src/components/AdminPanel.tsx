@@ -299,18 +299,25 @@ export function AdminPanel() {
     setTimeout(() => setRtToasts(p => p.filter(t => t.id !== id)), 4000);
   }, []);
 
-  // Realtime live events → toasts
+  // Realtime live events → toasts + connection status
   useEffect(() => {
     if (!session) return;
     resetRealtimeChannel();
+    setRtStatus('reconnecting');
+    const ch = (supabase as any).channel('admin-status-probe').subscribe((s: string) => {
+      if (s === 'SUBSCRIBED') setRtStatus('connected');
+      else if (s === 'CLOSED' || s === 'CHANNEL_ERROR') setRtStatus('disconnected');
+      else setRtStatus('reconnecting');
+    });
     const unsub = onRealtimeEvent(({ table, type, row }) => {
+      setRtStatus('connected');
       if (table === 'servicios' && type === 'INSERT') addToast(`⚡ Nuevo servicio creado — ${row.zona || 'Sin zona'}`, '#276EF1');
       if (table === 'servicios' && type === 'UPDATE' && row.estado === 'completado') addToast(`✅ Servicio completado — R$${row.tarifa || '—'}`, '#05944F');
       if (table === 'disputas' && type === 'INSERT') addToast(`⚠ Nueva disputa abierta`, '#996000');
       if (table === 'usuarios' && type === 'UPDATE' && row.online === true) addToast(`🟢 Proveedor online: ${row.nombre || '—'}`, '#05944F');
       if (table === 'documentos' && type === 'INSERT') addToast(`📄 Nuevo documento pendiente`, '#7356BF');
     });
-    return () => { unsub(); };
+    return () => { unsub(); (supabase as any).removeChannel(ch); };
   }, [session, addToast]);
 
   const doLogin = async () => {
@@ -327,6 +334,7 @@ export function AdminPanel() {
   const [clock, setClock] = useState('');
   const [usrTab, setUsrTab] = useState<'perfiles'|'auth'>('perfiles');
   const [usrFilter, setUsrFilter] = useState<'all'|'proveedor'|'cliente'|'pendiente'>('all');
+  const [docsFilter, setDocsFilter] = useState<'todos'|'pendiente'|'aprobado'|'rechazado'>('todos');
   const [docStatus, setDocStatus] = useState<Record<string,string>>({});
   const [authEnabled, setAuthEnabled] = useState(false);
   const [leafletReady, setLeafletReady] = useState(false);
@@ -365,6 +373,8 @@ export function AdminPanel() {
   const [rtToasts, setRtToasts] = useState<{id:number;msg:string;color:string}[]>([]);
   const [contactMsg, setContactMsg] = useState({ titulo:'', cuerpo:'' });
   const [contactSent, setContactSent] = useState(false);
+  const [formSaving, setFormSaving] = useState(false);
+  const [rtStatus, setRtStatus] = useState<'connected'|'reconnecting'|'disconnected'>('disconnected');
 
   // Hugo
   const [chat, setChat] = useState<{role:'hugo'|'admin'; text:string; action?:string; ts:Date}[]>([
@@ -547,14 +557,18 @@ export function AdminPanel() {
     </div>
   );
 
+  const isStalled = (s: any) => {
+    const mins = (Date.now() - new Date(s.created_at).getTime()) / 60000;
+    return (s.estado === 'negociando' && mins > 120) || (s.estado === 'en_camino' && mins > 240);
+  };
   const renderServicios = () => (
     <div className="pad">
       <div className="st">Servicios<button className="btn btn-p btn-sm" style={{marginLeft:'auto'}} onClick={()=>setModal({type:'servicio-form'})}>+ Crear servicio</button></div>
       <div className="tw">
         <div className="th"><div className="tc" style={{flex:2}}>Categoría</div><div className="tc" style={{flex:1.5}}>Cliente</div><div className="tc" style={{flex:1.5}}>Proveedor</div><div className="tc" style={{flex:1}}>Estado</div><div className="tc" style={{flex:1}}>Tarifa</div><div className="tc" style={{flex:1}}>Hace</div><div className="tc" style={{flex:1}}>Acciones</div></div>
         {services.map(s=>(
-          <div key={s.id} className="tr">
-            <div className="tc" style={{flex:2}}>{(s as any).categorias?.emoji} {(s as any).categorias?.nombre||'—'}<div style={{fontSize:9,color:'var(--muted)'}}>{s.zona}</div></div>
+          <div key={s.id} className="tr" style={isStalled(s)?{background:'rgba(245,158,11,.08)',borderLeft:'3px solid var(--amber)'}:{}}>
+            <div className="tc" style={{flex:2}}>{(s as any).categorias?.emoji} {(s as any).categorias?.nombre||'—'}{isStalled(s)&&<span title="Servicio estancado" style={{marginLeft:4,color:'var(--amber)'}}>⚠</span>}<div style={{fontSize:9,color:'var(--muted)'}}>{s.zona}</div></div>
             <div className="tc" style={{flex:1.5}}>{(s as any).clientes?.nombre||'—'}</div>
             <div className="tc" style={{flex:1.5}}>{(s as any).proveedores?.nombre||'—'}</div>
             <div className="tc" style={{flex:1}}><span className={`pill pill-${sc(s.estado)}`}>{s.estado}</span></div>
@@ -565,7 +579,7 @@ export function AdminPanel() {
             </div>
           </div>
         ))}
-        {services.length===0&&<div style={{padding:'20px',textAlign:'center',color:'var(--muted)',fontSize:10}}>Sin servicios activos</div>}
+        {services.length===0&&<div style={{padding:'32px',textAlign:'center',color:'var(--muted)'}}><div style={{fontSize:32,marginBottom:8}}>📭</div><div style={{fontWeight:700,marginBottom:4}}>Sin servicios activos</div><div style={{fontSize:11}}>Aquí aparecerán los servicios en curso en tiempo real.</div></div>}
       </div>
     </div>
   );
@@ -584,7 +598,7 @@ export function AdminPanel() {
           </div>
         </div></div>
       ))}
-      {disputes.length===0&&<div style={{textAlign:'center',padding:'40px',color:'var(--green)',fontSize:12}}>✅ Sin disputas abiertas</div>}
+      {disputes.length===0&&<div style={{padding:'32px',textAlign:'center'}}><div style={{fontSize:32,marginBottom:8}}>⚖️</div><div style={{fontWeight:700,color:'var(--green)',marginBottom:4}}>Sin disputas abiertas</div><div style={{fontSize:11,color:'var(--muted)'}}>Cuando un cliente o proveedor abra una disputa, aparecerá aquí para que puedas resolverla.</div></div>}
     </div>
   );
 
@@ -640,29 +654,42 @@ export function AdminPanel() {
     </div>
   );
 
-  const renderDocumentos = () => (
+  const renderDocumentos = () => {
+    const daysPending = (d: any) => Math.floor((Date.now() - new Date(d.created_at).getTime()) / 86400000);
+    const filteredDocs = docsFilter === 'todos' ? docs : docs.filter(d => d.estado === docsFilter);
+    return (
     <div className="pad">
       <div className="st">Verificación de documentos</div>
+      <div className="tab-row">
+        {(['todos','pendiente','aprobado','rechazado'] as const).map(f=>(
+          <button key={f} className={`tab-btn${docsFilter===f?' active':''}`} onClick={()=>setDocsFilter(f)}>
+            {f==='todos'?`Todos (${docs.length})`:f==='pendiente'?`⏳ Pendiente (${docs.filter(d=>d.estado==='pendiente').length})`:f==='aprobado'?`✓ Aprobado (${docs.filter(d=>d.estado==='aprobado').length})`:`✗ Rechazado (${docs.filter(d=>d.estado==='rechazado').length})`}
+          </button>
+        ))}
+      </div>
       <div className="tw">
-        <div className="th"><div className="tc" style={{flex:2}}>Proveedor</div><div className="tc" style={{flex:1.5}}>Documento</div><div className="tc" style={{flex:1}}>Estado</div><div className="tc" style={{flex:1}}>OCR</div><div className="tc" style={{flex:0.8}}>Hace</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
-        {docs.map(d=>(
+        <div className="th"><div className="tc" style={{flex:2}}>Proveedor</div><div className="tc" style={{flex:1.5}}>Documento</div><div className="tc" style={{flex:1}}>Estado</div><div className="tc" style={{flex:1}}>OCR</div><div className="tc" style={{flex:0.8}}>Días</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
+        {filteredDocs.map(d=>{
+          const days = daysPending(d);
+          return (
           <div key={d.id} className="tr">
             <div className="tc" style={{flex:2}}>{(d as any).usuarios?.nombre} {(d as any).usuarios?.apellido||''}<div style={{fontSize:9,color:'var(--muted)'}}>{(d as any).usuarios?.email}</div></div>
             <div className="tc" style={{flex:1.5}}>{d.tipo.toUpperCase()}</div>
-            <div className="tc" style={{flex:1}}><span className={`pill pill-${d.estado==='pendiente'?'a':'c'}`}>{d.estado}</span></div>
+            <div className="tc" style={{flex:1}}><span className={`pill pill-${d.estado==='pendiente'?'a':d.estado==='aprobado'?'g':'r'}`}>{d.estado}</span></div>
             <div className="tc" style={{flex:1}}>{d.ocr_valido===true?<span style={{color:'var(--green)'}}>✓</span>:d.ocr_valido===false?<span style={{color:'var(--red)'}}>✗</span>:'—'}</div>
-            <div className="tc" style={{flex:0.8,color:'var(--muted)'}}>{timeAgo(d.created_at!)}</div>
+            <div className="tc" style={{flex:0.8,color:days>14?'var(--red)':'var(--muted)',fontWeight:days>14?700:400}}>{days}d{days>14&&' ⚠'}</div>
             <div className="tc" style={{flex:1.5,display:'flex',gap:3}}>
               <button className="btn btn-s btn-sm" onClick={()=>openDocPreview(d)}>Ver</button>
               <button className="btn btn-p btn-sm" onClick={()=>updateEstado(d.id,'aprobado')}>✓</button>
               <button className="btn btn-d btn-sm" onClick={()=>updateEstado(d.id,'rechazado')}>✗</button>
             </div>
           </div>
-        ))}
-        {docs.length===0&&<div style={{padding:'20px',textAlign:'center',color:'var(--muted)',fontSize:10}}>Sin documentos pendientes</div>}
+        );})}
+        {filteredDocs.length===0&&<div style={{padding:'32px',textAlign:'center',color:'var(--muted)'}}><div style={{fontSize:28,marginBottom:8}}>📄</div><div style={{fontWeight:700,marginBottom:4}}>{docsFilter==='todos'?'Sin documentos':'Sin documentos '+docsFilter+'s'}</div><div style={{fontSize:11}}>{docsFilter==='todos'?'Los documentos enviados por proveedores para verificación aparecerán aquí.':'Cambia el filtro para ver otros documentos.'}</div></div>}
       </div>
     </div>
-  );
+  );};
+
 
   const toggleCatExpand = (id: string) => setExpandedCats(prev => {
     const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
@@ -1066,7 +1093,7 @@ export function AdminPanel() {
             <div className="tc" style={{flex:1}}><button className="btn btn-g btn-sm" onClick={()=>liberarEscrow(e.id)}>Liberar</button></div>
           </div>
         ))}
-        {escrows.length===0&&<div style={{padding:'20px',textAlign:'center',color:'var(--muted)',fontSize:10}}>Bóveda vacía</div>}
+        {escrows.length===0&&<div style={{padding:'32px',textAlign:'center'}}><div style={{fontSize:32,marginBottom:8}}>🏦</div><div style={{fontWeight:700,marginBottom:4}}>Bóveda vacía</div><div style={{fontSize:11,color:'var(--muted)'}}>Los fondos retenidos en escrow de servicios completados aparecerán aquí pendientes de liberación.</div></div>}
       </div>
     </div>
   );
@@ -1114,7 +1141,7 @@ export function AdminPanel() {
         <div className="ua-tb">
           <div><div className="ua-logo">U.GO</div><div className="ua-logo-sub">Quantum OS</div></div>
           {metrics&&<>{criticalCount>0&&<div className="chip chip-r" onClick={()=>setSection('alertas')}>🚨 {criticalCount} críticas</div>}{disputes.length>0&&<div className="chip chip-a">⚖️ {disputes.length}</div>}</>}
-          <div className="ua-tb-r"><div className="live-pill"><div className="live-dot"/>LIVE</div><div className="ua-clock">{clock}</div></div>
+          <div className="ua-tb-r"><div className="live-pill" style={rtStatus==='disconnected'?{borderColor:'rgba(225,25,0,.3)',background:'rgba(225,25,0,.06)',color:'var(--red)'}:rtStatus==='reconnecting'?{borderColor:'rgba(245,158,11,.3)',background:'rgba(245,158,11,.06)',color:'var(--amber)'}:{}}><div className="live-dot" style={rtStatus==='disconnected'?{background:'var(--red)',animationPlayState:'paused'}:rtStatus==='reconnecting'?{background:'var(--amber)'}:{}}/>{rtStatus==='connected'?'LIVE':rtStatus==='reconnecting'?'SYNC…':'OFFLINE'}</div><div className="ua-clock">{clock}</div></div>
         </div>
 
         <nav className="ua-nav">
@@ -1197,8 +1224,8 @@ export function AdminPanel() {
               <div className="fg"><label>Nombre</label><input className="finput" value={catForm.nombre} onChange={e=>setCatForm(p=>({...p,nombre:e.target.value}))} placeholder="Ej: Electricista"/></div>
             </div>
             <div className="modal-acts">
-              <button className="btn btn-p" disabled={!catForm.nombre.trim()} onClick={async()=>{if(modal.data)await actualizarCat(modal.data.id,catForm.nombre,catForm.emoji,modal.data.activa);else await crearCat(catForm.nombre,catForm.emoji);closeModal();}}>
-                {modal.data?'Guardar cambios':'Crear categoría'}
+              <button className="btn btn-p" disabled={!catForm.nombre.trim()||formSaving} onClick={async()=>{setFormSaving(true);if(modal.data)await actualizarCat(modal.data.id,catForm.nombre,catForm.emoji,modal.data.activa);else await crearCat(catForm.nombre,catForm.emoji);setFormSaving(false);closeModal();}}>
+                {formSaving?'⏳ Guardando...':(modal.data?'Guardar cambios':'Crear categoría')}
               </button>
               <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
@@ -1280,13 +1307,15 @@ export function AdminPanel() {
             )}
 
             <div className="modal-acts">
-              <button className="btn btn-p" disabled={!userForm.nombre.trim()||!userForm.email.trim()}
+              <button className="btn btn-p" disabled={!userForm.nombre.trim()||!userForm.email.trim()||formSaving}
                 onClick={async()=>{
+                  setFormSaving(true);
                   if(modal.type==='user-form') await crearUsuario(userForm);
                   else await updateUsuario(modal.data.id, userForm);
+                  setFormSaving(false);
                   closeModal();
                 }}>
-                {modal.type==='user-form'?'Crear usuario':'💾 Guardar cambios'}
+                {formSaving?'⏳ Guardando...':(modal.type==='user-form'?'Crear usuario':'💾 Guardar cambios')}
               </button>
               <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
@@ -1308,8 +1337,8 @@ export function AdminPanel() {
               <div className="fg full"><label>Descripción</label><textarea className="ftextarea" value={servForm.descripcion} onChange={e=>setServForm(p=>({...p,descripcion:e.target.value}))} placeholder="Descripción del trabajo..."/></div>
             </div>
             <div className="modal-acts">
-              <button className="btn btn-p" disabled={!servForm.cliente_id} onClick={async()=>{await crearServicio({...servForm,tarifa:servForm.tarifa?Number(servForm.tarifa):null});refetchServices();closeModal();}}>
-                Crear servicio
+              <button className="btn btn-p" disabled={!servForm.cliente_id||formSaving} onClick={async()=>{setFormSaving(true);await crearServicio({...servForm,tarifa:servForm.tarifa?Number(servForm.tarifa):null});refetchServices();setFormSaving(false);closeModal();}}>
+                {formSaving?'⏳ Creando...':'Crear servicio'}
               </button>
               <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
