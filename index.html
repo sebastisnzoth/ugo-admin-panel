@@ -14,6 +14,16 @@
 </head>
   <body>
     <div id="root"></div>
+      <script>
+    // OAuth redirect intercept — si venimos del callback de Google, ir al destino correcto
+    (function(){
+      var dest = localStorage.getItem('ugo_oauth_dest');
+      if (dest && (location.hash.includes('access_token') || location.search.includes('code='))) {
+        localStorage.removeItem('ugo_oauth_dest');
+        window.location.replace(dest);
+      }
+    })();
+  </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
