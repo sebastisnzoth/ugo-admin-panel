@@ -570,7 +570,29 @@ function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('sho
 function sw(v){['vlog','vreg'].forEach((id,i)=>$(id).classList.toggle('on',i===(v==='log'?0:1)));document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('on',i===(v==='log'?0:1)));clearErrs();}
 
 /* AUTH */
-async function signInGoogle(){clearErrs();localStorage.setItem('ugo_oauth_dest','/client.html');const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://ugo-admin-panel.vercel.app/'}});if(error){localStorage.removeItem('ugo_oauth_dest');showErr('Google: '+error.message);}}
+async function signInGoogle(){
+  clearErrs();
+  try {
+    // Limpiar cualquier dest anterior y setear el nuestro
+    localStorage.removeItem('ugo_oauth_dest');
+    localStorage.setItem('ugo_oauth_dest','/client.html');
+    const{error}=await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{
+        redirectTo:'https://ugo-admin-panel.vercel.app/',
+        queryParams:{prompt:'select_account'}
+      }
+    });
+    if(error){
+      localStorage.removeItem('ugo_oauth_dest');
+      showErr('Google: '+error.message);
+    }
+    // Si no hay error, el browser redirige → no ejecuta más código
+  } catch(e) {
+    localStorage.removeItem('ugo_oauth_dest');
+    showErr('Error al conectar con Google');
+  }
+}
 async function doLogin(){
   clearErrs();const email=$('le').value.trim(),pass=$('lp').value;
   if(!email||!pass){showErr('Completá email y contraseña');return;}
