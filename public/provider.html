@@ -377,9 +377,24 @@ function sw(v){
 /* ── AUTH ── */
 async function signInGoogle(){
   clearErrs();
-  localStorage.setItem('ugo_oauth_dest','/provider.html');
-  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://ugo-admin-panel.vercel.app/'}});
-  if(error){localStorage.removeItem('ugo_oauth_dest');showErr('Google: '+error.message);}
+  try {
+    localStorage.removeItem('ugo_oauth_dest');
+    localStorage.setItem('ugo_oauth_dest','/provider.html');
+    const{error}=await sb.auth.signInWithOAuth({
+      provider:'google',
+      options:{
+        redirectTo:'https://ugo-admin-panel.vercel.app/',
+        queryParams:{prompt:'select_account'}
+      }
+    });
+    if(error){
+      localStorage.removeItem('ugo_oauth_dest');
+      showErr('Google: '+error.message);
+    }
+  } catch(e) {
+    localStorage.removeItem('ugo_oauth_dest');
+    showErr('Error al conectar con Google');
+  }
 }
 async function doLogin(){
   clearErrs();
