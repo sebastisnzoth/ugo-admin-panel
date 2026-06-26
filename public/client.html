@@ -128,6 +128,88 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
 #toast.show{transform:translateX(-50%) translateY(0)}
 .hide{display:none!important}
+
+/* ── HOME BAR ── */
+#home-bar{position:fixed;left:0;right:0;z-index:15;display:none;flex-direction:column;gap:8px;
+  padding:max(58px,env(safe-area-inset-top,58px)) 0 12px;pointer-events:none}
+#home-bar.show{display:flex}
+.hb-banner{margin:0 16px;background:#111;border-radius:16px;padding:11px 14px;
+  display:flex;align-items:center;gap:10px;pointer-events:all;cursor:pointer}
+.hb-bpulse{width:8px;height:8px;border-radius:50%;background:var(--g);animation:bl 1.2s infinite;flex-shrink:0}
+.hb-btxt{flex:1;font-size:12px;font-weight:700;color:#fff;line-height:1.3}
+.hb-beta{font-size:11px;color:var(--c);font-weight:800;flex-shrink:0}
+.qcat-row{display:flex;gap:7px;overflow-x:auto;padding:0 16px;scrollbar-width:none;pointer-events:all}
+.qcat-row::-webkit-scrollbar{display:none}
+.qcat-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;background:#fff;
+  border:1.5px solid #e5e5e5;border-radius:20px;font-size:12px;font-weight:700;
+  cursor:pointer;white-space:nowrap;font-family:inherit;color:#111;
+  box-shadow:0 1px 4px rgba(0,0,0,.08);transition:all .14s;flex-shrink:0;pointer-events:all}
+.qcat-btn:active{border-color:var(--c);background:#f0fdfe;transform:scale(.96)}
+#prov-count{margin:0 16px;font-size:11px;color:#888;font-weight:600;pointer-events:none}
+
+/* ── CHAT STEP DOTS ── */
+.chat-steps{display:flex;gap:5px;padding:4px 0 0;justify-content:center}
+.cstep{height:3px;border-radius:2px;background:#e8e8e8;transition:all .3s ease}
+.cstep.done{background:#22C55E;width:18px}
+.cstep.active{background:var(--c);width:28px}
+.cstep.idle{width:18px}
+.step-label{font-size:9px;color:var(--m);text-align:center;margin-top:3px;letter-spacing:.2px}
+
+/* ── PROVIDER CARDS HORIZONTAL ── */
+.pcard-scroll{display:flex;gap:9px;overflow-x:auto;padding:10px 14px 14px;scrollbar-width:none}
+.pcard-scroll::-webkit-scrollbar{display:none}
+.pcard-h{background:#fff;border:1.5px solid #ebebeb;border-radius:18px;
+  padding:13px 12px 11px;min-width:148px;max-width:148px;flex-shrink:0;
+  cursor:pointer;transition:all .15s;display:flex;flex-direction:column;gap:6px}
+.pcard-h:active{transform:scale(.96)}
+.pcard-h.recommended{border-color:var(--c);background:#f0fdfe}
+.pcard-rec-badge{font-size:9px;font-weight:700;color:var(--c);text-transform:uppercase;letter-spacing:.4px}
+.pcard-av-h{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-weight:800;font-size:16px;color:#fff;flex-shrink:0}
+.pcard-name-h{font-weight:700;font-size:13px;color:#111;line-height:1.2}
+.pcard-stars-h{font-size:11px;color:#F59E0B;font-weight:600}
+.pcard-price-h{font-size:12px;color:#777}
+.pcard-eta-h{font-size:11px;color:var(--c);font-weight:700}
+.pcard-hire-h{width:100%;padding:8px;background:#111;color:#fff;border:none;
+  border-radius:12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;
+  margin-top:2px;transition:opacity .15s}
+.pcard-hire-h:active{opacity:.75}
+
+/* ── CONFIRM SHEET ── */
+#confirm-sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;
+  border-radius:26px 26px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.18);
+  transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);
+  padding-bottom:env(safe-area-inset-bottom,0)}
+#confirm-sheet.open{transform:translateY(0)}
+.cs-handle{width:36px;height:4px;background:#e0e0e0;border-radius:2px;margin:10px auto 0}
+.cs-body{padding:16px 20px 20px}
+.cs-title{font-size:16px;font-weight:800;color:#111;margin-bottom:14px}
+.cs-row{display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:0.5px solid #f0f0f0}
+.cs-row:last-of-type{border-bottom:none}
+.cs-lbl{font-size:12px;color:#888}
+.cs-val{font-size:13px;font-weight:700;color:#111;text-align:right;max-width:60%}
+.cs-escrow{background:#f0fdfe;border:1.5px solid rgba(0,200,215,.2);border-radius:14px;
+  padding:10px 13px;margin:10px 0;font-size:11px;color:#007a8a;line-height:1.5}
+.cs-total{display:flex;justify-content:space-between;align-items:center;
+  padding:12px 0 0;margin-top:4px}
+.cs-total-lbl{font-size:13px;font-weight:700;color:#111}
+.cs-total-val{font-size:20px;font-weight:900;color:#111}
+.cs-btn{width:100%;padding:14px;background:#111;color:#fff;border:none;border-radius:16px;
+  font-size:15px;font-weight:800;cursor:pointer;font-family:inherit;margin-top:14px}
+.cs-btn:active{opacity:.85}
+.cs-cancel{width:100%;padding:10px;background:none;border:none;color:#888;
+  font-size:13px;cursor:pointer;font-family:inherit;margin-top:4px}
+
+/* ── CASCADE WAIT ── */
+#cascade-info{padding:8px 20px 0;display:none}
+#cascade-info.show{display:block}
+.cascade-msg{font-size:12px;color:#888;text-align:center;line-height:1.6}
+.cascade-dots{display:flex;justify-content:center;gap:5px;margin-top:8px}
+.cascade-dot{width:6px;height:6px;border-radius:50%;background:#333;animation:cd 1.4s ease-in-out infinite}
+.cascade-dot:nth-child(2){animation-delay:.2s}
+.cascade-dot:nth-child(3){animation-delay:.4s}
+@keyframes cd{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
 </style>
 </head>
 <body>
@@ -174,7 +256,23 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <div id="sheet"><div class="shandle"></div><div id="sb"></div></div>
 
 <div id="chat">
-  <div class="ctop"><div class="corb">🌀</div><div class="ctitle"><div class="ctit">Hugo</div><div class="cst">● Tu asistente personal</div></div><button class="cclose" onclick="closeChat()">✕</button></div>
+  <div class="ctop">
+    <div class="corb"></div>
+    <div class="ctitle" style="flex:1">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div class="ctit">Hugo</div>
+        <button class="cclose" onclick="closeChat()">✕</button>
+      </div>
+      <div class="chat-steps">
+        <div class="cstep active" id="cs1" title="Servicio"></div>
+        <div class="cstep idle"   id="cs2" title="Ubicación"></div>
+        <div class="cstep idle"   id="cs3" title="Horario"></div>
+        <div class="cstep idle"   id="cs4" title="Descripción"></div>
+        <div class="cstep idle"   id="cs5" title="Confirmar"></div>
+      </div>
+      <div class="step-label" id="step-label">Contame qué necesitás</div>
+    </div>
+  </div>
   <div id="cmsgs"></div><div id="csugs"></div>
   <div id="cinrow"><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="micbtn" onclick="startRec()" style="width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s">🎤</button><button id="csend" onclick="sendChat()">↑</button></div>
 </div>
@@ -213,6 +311,18 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 </div>
 <div id="pcard-bg" onclick="closePCard()" style="position:fixed;inset:0;z-index:44;background:rgba(0,0,0,.3);display:none"></div>
 
+
+<!-- HOME BAR — categorías rápidas + banner servicio activo -->
+<div id="home-bar">
+  <div id="hb-svc-banner" class="hb-banner" style="display:none" onclick="showActiveService()">
+    <div class="hb-bpulse"></div>
+    <div class="hb-btxt" id="hb-svc-txt">Servicio activo</div>
+    <div class="hb-beta" id="hb-svc-eta">Ver →</div>
+  </div>
+  <div class="qcat-row" id="qcat-row"></div>
+  <div id="prov-count"></div>
+</div>
+
 <nav id="nav" class="hide">
   <button class="ni on" id="ni-home" onclick="nav2('home')"><div class="niic">🗺</div><div class="nilb">Inicio</div></button>
   <button class="ni" id="ni-svcs" onclick="nav2('svcs')"><div class="niic">🔧</div><div class="nilb">Servicios</div></button>
@@ -220,6 +330,32 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <button class="ni" id="ni-hist" onclick="nav2('hist')"><div class="niic">📋</div><div class="nilb">Historial</div></button>
   <button class="ni" id="ni-prof" onclick="nav2('prof')"><div class="niic">👤</div><div class="nilb">Perfil</div></button>
 </nav>
+
+<!-- CASCADE INFO — durante búsqueda de proveedor -->
+<div id="cascade-info">
+  <div class="cascade-msg" id="cascade-msg">Notificando proveedores cercanos...</div>
+  <div class="cascade-dots"><div class="cascade-dot"></div><div class="cascade-dot"></div><div class="cascade-dot"></div></div>
+</div>
+
+<!-- CONFIRM SHEET — resumen antes de reservar -->
+<div id="confirm-sheet">
+  <div class="cs-handle"></div>
+  <div class="cs-body">
+    <div class="cs-title">Confirmá tu pedido</div>
+    <div class="cs-row"><span class="cs-lbl">Servicio</span><span class="cs-val" id="cs-srv">—</span></div>
+    <div class="cs-row"><span class="cs-lbl">Proveedor</span><span class="cs-val" id="cs-prov">—</span></div>
+    <div class="cs-row"><span class="cs-lbl">Calificación</span><span class="cs-val" id="cs-rating">—</span></div>
+    <div class="cs-row"><span class="cs-lbl">ETA estimado</span><span class="cs-val" id="cs-eta">—</span></div>
+    <div class="cs-escrow">🔒 El pago queda en garantía hasta que aprobés el trabajo. Si hay algún problema, Hugo media la resolución.</div>
+    <div class="cs-total">
+      <span class="cs-total-lbl">Total a reservar</span>
+      <span class="cs-total-val" id="cs-total">R$—</span>
+    </div>
+    <button class="cs-btn" onclick="confirmAndBook()">Confirmar y reservar →</button>
+    <button class="cs-cancel" onclick="hideConfirmSheet()">Cancelar</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js">
@@ -312,10 +448,17 @@ let cascadeT2 = null, cascadeT3 = null;
 function startCascade(svcId) {
   clearTimeout(cascadeT2); clearTimeout(cascadeT3);
 
+  // Mostrar info de cascade
+  const ci = $('cascade-info');
+  const cm = $('cascade-msg');
+  if(ci){ci.classList.add('show');}
+  if(cm){cm.textContent='Notificando proveedores más cercanos...';}
+
   // Nivel 2: 90s → WA a offline cercanos (10km)
   cascadeT2 = setTimeout(async () => {
     if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
-    document.getElementById('tr-sub').textContent = 'Buscando más proveedores...';
+    document.getElementById('tr-sub').textContent = 'Expandiendo búsqueda...';
+    if(cm){cm.textContent='Sin respuesta aún. Notificando proveedores en 10km...';}
     await fetch('/api/cascade', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ servicio_id: svcId, nivel: 2 })
@@ -325,7 +468,7 @@ function startCascade(svcId) {
   // Nivel 3: 4.5min → WA a todos en 20km
   cascadeT3 = setTimeout(async () => {
     if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
-    document.getElementById('tr-sub').textContent = 'Notificando a todos los proveedores del área...';
+    document.getElementById('tr-sub').textContent = 'Notificando a todos los proveedores del área...';if($('cascade-msg')){$('cascade-msg').textContent='Buscando en toda el área. Casi listo...';};
     await fetch('/api/cascade', {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify({ servicio_id: svcId, nivel: 3 })
@@ -377,6 +520,10 @@ function showTracking(prov) {
 }
 
 // ── Realtime: escucha cambios del servicio ─────────
+function hideCascadeInfo(){
+  const ci=$('cascade-info');if(ci)ci.classList.remove('show');
+}
+
 function watchService(svcId) {
   if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
   svcChannel = sb.channel('svc_' + svcId)
@@ -398,6 +545,7 @@ function onServiceUpdate(svc) {
     document.getElementById('tr-status').textContent = '✅ ¡Proveedor aceptó!';
     document.getElementById('tr-cancel').style.display = 'none';
     showProvCard();
+    hideCascadeInfo();
     if (st === 'en_camino') {
       setTrackStep(3);
       document.getElementById('tr-status').textContent = '🚗 Proveedor en camino';
@@ -563,6 +711,62 @@ let chatHistory=[], SELECTED_PROV=null;
 const $=id=>document.getElementById(id);
 const CATS=[{ic:'⚡',lb:'Electricista'},{ic:'🔧',lb:'Plomero'},{ic:'🧹',lb:'Limpieza'},{ic:'🎨',lb:'Pintor'},{ic:'🪚',lb:'Carpintero'},{ic:'🔑',lb:'Cerrajero'},{ic:'🌿',lb:'Jardinero'},{ic:'❄️',lb:'AC/Clima'}];
 
+// ── Estado del flujo Hugo ─────────────────────────────────────────
+let CHAT_STEP = 0; // 0=idle 1=servicio 2=ubicación 3=horario 4=desc 5=confirmar
+const STEP_LABELS = ['Contame qué necesitás','¿Qué servicio?','Tu ubicación','¿Cuándo?','Describí el problema','Listo para confirmar'];
+let PENDING_PROV = null; // proveedor pendiente de confirmación
+const PROV_COLORS = ['#00C8D7','#7C3AED','#059669','#DC2626','#D97706','#2563EB','#DB2777','#0891B2'];
+
+
+
+// ── Home bar ──────────────────────────────────────────────────────
+function buildHomeBar() {
+  const row = $('qcat-row');
+  if (!row) return;
+  row.innerHTML = CATS.map(cat =>
+    `<button class="qcat-btn" onclick="quickCat('${cat.lb}')">${cat.ic} ${cat.lb}</button>`
+  ).join('');
+}
+
+function quickCat(cat) {
+  openChat();
+  setTimeout(() => {
+    CHAT_STEP = 1;
+    updateChatStep(1);
+    sendSug('Necesito un ' + cat);
+  }, 320);
+}
+
+async function loadProvCount() {
+  const el = $('prov-count');
+  if (!el || !myLat) return;
+  try {
+    const { count } = await sb.from('usuarios')
+      .select('id', { count: 'exact', head: true })
+      .eq('tipo', 'proveedor')
+      .eq('online', true)
+      .not('lat', 'is', null);
+    if (el) el.textContent = count > 0
+      ? `${count} proveedore${count !== 1 ? 's' : ''} disponible${count !== 1 ? 's' : ''} cerca`
+      : 'Sin proveedores online en este momento';
+  } catch(e) { if(el) el.textContent = ''; }
+}
+
+function showActiveBanner() {
+  const banner = $('hb-svc-banner');
+  if (!banner || !ACTIVE_SVC) return;
+  const estado = ACTIVE_SVC.estado || 'activo';
+  const labels = {negociando:'Buscando proveedor...',en_camino:'Proveedor en camino',ejecutando:'En trabajo',completado:'Trabajo completado'};
+  $('hb-svc-txt').textContent = labels[estado] || 'Servicio activo';
+  $('hb-svc-eta').textContent = 'Ver →';
+  banner.style.display = 'flex';
+}
+
+function showActiveService() {
+  const ov = document.getElementById('track-overlay');
+  if (ov) ov.style.display = 'flex';
+}
+
 function showErr(m){const e=$('aerr');if(e){e.textContent=m;e.style.display='block';}}
 function showErr2(m){const e=$('aerr2');if(e){e.textContent=m;e.style.display='block';}}
 function clearErrs(){['aerr','aerr2'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});}
@@ -627,7 +831,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{if(ev==='SIGNED_IN'&&ses&&!SESSION){SE
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadCli();initMap();startGPS();nav2('home');
+    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -712,7 +916,14 @@ function nav2(sec){
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
   const el=$('ni-'+sec);if(el)el.classList.add('on');
   const sh=$('sheet');
-  if(sec==='home'){sh.style.height='0';return;}
+  const hb=$('home-bar');
+  if(sec==='home'){
+    sh.style.height='0';
+    if(hb){hb.classList.add('show');buildHomeBar();loadProvCount();}
+    if(ACTIVE_SVC) showActiveBanner();
+    return;
+  }
+  if(hb) hb.classList.remove('show');
   sh.style.height='min(78vh,660px)';
   const fn={svcs:svcsHTML,hist:histHTML,prof:profHTML};
   if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='hist')loadHist();}
@@ -798,10 +1009,93 @@ function submitRating(){$('sheet').style.height='0';toast('⭐ ¡Gracias por tu 
 
 /* HUGO CHAT */
 const HSUGS=['⚡ Necesito un electricista urgente','🧹 ¿Cuánto cuesta el servicio de limpieza?','📍 ¿Hay proveedores disponibles cerca?','📦 Estado de mi pedido actual','🛠 Solicitar otro tipo de servicio'];
-function openChat(){document.getElementById('chat').style.height='min(88vh,720px)';showSugs(HSUGS);if(!chatHistory.length)hugoCall('__INICIO__');}
+function openChat(){
+  document.getElementById('chat').style.height='min(88vh,720px)';
+  if(!chatHistory.length){
+    CHAT_STEP=0;
+    updateChatStep(0);
+    showSugs(HSUGS);
+    hugoCall('__INICIO__');
+  }
+}
+
+// ── Step dots ──────────────────────────────────────────────────────
+function updateChatStep(step) {
+  CHAT_STEP = step;
+  const labels = ['Contame qué necesitás','¿Qué servicio?','Tu ubicación','¿Cuándo?','Describí el problema','Confirmar pedido'];
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('cs' + i);
+    if (!el) continue;
+    el.className = 'cstep ' + (i < step ? 'done' : i === step ? 'active' : 'idle');
+  }
+  const lbl = document.getElementById('step-label');
+  if (lbl) lbl.textContent = labels[Math.min(step, labels.length - 1)];
+}
+
+// ── Provider cards ─────────────────────────────────────────────────
+function showProviderCards(provs) {
+  if (!provs || !provs.length) return;
+  const colors = PROV_COLORS;
+  const html = `<div class="pcard-scroll">` +
+    provs.map((p, i) => {
+      const isRec = i === 0;
+      const color = colors[i % colors.length];
+      const km = (p.lat && myLat) ? haversineKm(myLat, myLng, p.lat, p.lng) : null;
+      const eta = km ? Math.round(km * 3.5 + 5) : '?';
+      return `<div class="pcard-h${isRec ? ' recommended' : ''}" onclick="selectProvCard(${JSON.stringify({id:p.id,nombre:p.nombre,categoria:p.categoria,karma:p.karma,tarifa_base:p.tarifa_base,lat:p.lat,lng:p.lng}).replace(/"/g,'&quot;')})">
+        ${isRec ? '<div class="pcard-rec-badge">★ Recomendado</div>' : '<div style="height:14px"></div>'}
+        <div class="pcard-av-h" style="background:${color}">${(p.nombre||'?')[0].toUpperCase()}</div>
+        <div class="pcard-name-h">${p.nombre || 'Proveedor'}</div>
+        <div class="pcard-stars-h">★ ${(p.karma||5).toFixed(1)}</div>
+        <div class="pcard-price-h">R$ ${p.tarifa_base || 80}</div>
+        <div class="pcard-eta-h">~${eta} min</div>
+        <button class="pcard-hire-h" onclick="event.stopPropagation();selectProvCard(${JSON.stringify({id:p.id,nombre:p.nombre,categoria:p.categoria,karma:p.karma,tarifa_base:p.tarifa_base,lat:p.lat,lng:p.lng}).replace(/"/g,'&quot;')})">Elegir</button>
+      </div>`;
+    }).join('') + '</div>';
+  const sugs = $('csugs');
+  if (sugs) sugs.innerHTML = html;
+}
+
+function selectProvCard(prov) {
+  SELECTED_PROV = prov;
+  PENDING_PROV = prov;
+  updateChatStep(5);
+  showConfirmSheet(prov);
+}
+
+// ── Confirm sheet ──────────────────────────────────────────────────
+function showConfirmSheet(prov) {
+  const km = (prov.lat && myLat) ? haversineKm(myLat, myLng, prov.lat, prov.lng) : null;
+  const eta = km ? Math.round(km * 3.5 + 5) : '?';
+  const tarifa = prov.tarifa_base || 80;
+  $('cs-srv').textContent = prov.categoria || 'Servicio';
+  $('cs-prov').textContent = prov.nombre || 'Proveedor';
+  $('cs-rating').textContent = '★ ' + (prov.karma || 5).toFixed(1) + ' · Excelente';
+  $('cs-eta').textContent = '~' + eta + ' minutos';
+  $('cs-total').textContent = 'R$ ' + tarifa;
+  const sheet = $('confirm-sheet');
+  if (sheet) sheet.classList.add('open');
+  closeChat();
+}
+
+function hideConfirmSheet() {
+  const sheet = $('confirm-sheet');
+  if (sheet) sheet.classList.remove('open');
+  PENDING_PROV = null;
+}
+
+async function confirmAndBook() {
+  if (!PENDING_PROV) return;
+  hideConfirmSheet();
+  await createService(PENDING_PROV);
+}
+
+
 function openChatWith(p){
   SELECTED_PROV=p;
+  PENDING_PROV=p;
   document.getElementById('chat').style.height='min(88vh,720px)';
+  updateChatStep(5);
   showSugs([`Contratar a ${p.nombre}`,`¿Cuánto cobra ${p.nombre}?`,'¿Cuándo puede venir?']);
   if(!chatHistory.length)hugoCall(`El cliente quiere consultar sobre el servicio de ${p.categoria} de ${p.nombre}`);
 }
@@ -818,10 +1112,44 @@ async function hugoCall(msg){
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
+
+    // ── Avanzar step según historial ──────────────────────────────
+    const msgCount = chatHistory.filter(m=>m.role==='user').length;
+    if(msg==='__INICIO__'){updateChatStep(1);}
+    else if(msgCount===1){updateChatStep(2);}
+    else if(msgCount===2){updateChatStep(3);}
+    else if(msgCount===3){updateChatStep(4);}
+    else if(msgCount>=4){updateChatStep(5);}
+
+    // ── Buscar proveedores si Hugo lo indica o hay suficiente contexto ─
+    if(d.accion==='BUSCAR_PROVEEDOR' || (msgCount>=3 && !SELECTED_PROV)){
+      const cat = SELECTED_CAT || (chatHistory.find(m=>m.role==='user')?.content||'');
+      if(cat){
+        const {data:provs} = await sb.from('usuarios')
+          .select('id,nombre,karma,categoria,tarifa_base,lat,lng')
+          .eq('tipo','proveedor').eq('online',true)
+          .ilike('categoria','%'+cat.split(' ')[0]+'%')
+          .not('lat','is',null).limit(5);
+        if(provs?.length) showProviderCards(provs);
+      }
+    }
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
-async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
-function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
+async async function sendChat(){
+  const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';
+  addMsg('u',msg);chatHistory.push({role:'user',content:msg});
+  // Detectar categoría en el mensaje
+  CATS.forEach(cat=>{if(msg.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
+  showSugs([]);
+  await hugoCall(msg);
+  showSugs(HSUGS);
+}
+function sendSug(s){
+  addMsg('u',s);chatHistory.push({role:'user',content:s});
+  CATS.forEach(cat=>{if(s.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
+  showSugs([]);
+  hugoCall(s).then(()=>showSugs(HSUGS));
+}
 
 /* ── VOZ (Web Speech API) ── */
 const hasSpeech = 'speechSynthesis' in window;
