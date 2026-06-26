@@ -377,8 +377,9 @@ function sw(v){
 /* ── AUTH ── */
 async function signInGoogle(){
   clearErrs();
-  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://ugo-admin-panel.vercel.app/provider.html'}});
-  if(error)showErr('Google: '+error.message);
+  localStorage.setItem('ugo_oauth_dest','/provider.html');
+  const{error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:'https://ugo-admin-panel.vercel.app/'}});
+  if(error){localStorage.removeItem('ugo_oauth_dest');showErr('Google: '+error.message);}
 }
 async function doLogin(){
   clearErrs();
