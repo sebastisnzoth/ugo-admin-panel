@@ -1135,7 +1135,7 @@ async function hugoCall(msg){
     }
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
-async async function sendChat(){
+async function sendChat(){
   const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';
   addMsg('u',msg);chatHistory.push({role:'user',content:msg});
   // Detectar categoría en el mensaje
