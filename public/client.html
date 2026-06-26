@@ -122,6 +122,44 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 /* Skeleton loader */
 .skel{background:linear-gradient(90deg,#f0f0f0 25%,#e5e5e5 50%,#f0f0f0 75%);background-size:200% 100%;animation:sk 1.4s infinite;border-radius:8px;display:block}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
+/* Onboarding */
+#onboarding{position:fixed;inset:0;z-index:999;background:linear-gradient(160deg,#08090d,#0d1117);display:flex;align-items:center;justify-content:center;padding:24px}
+.ob-box{max-width:340px;width:100%;text-align:center}
+.ob-icon{font-size:58px;margin-bottom:18px}
+.ob-tit{font-size:22px;font-weight:800;color:#fff;margin-bottom:8px;line-height:1.3}
+.ob-sub{font-size:14px;color:#666;line-height:1.6;margin-bottom:24px}
+.ob-dots{display:flex;justify-content:center;gap:6px;margin-bottom:24px}
+.ob-dot{width:8px;height:8px;border-radius:50%;background:#333;transition:.25s}
+.ob-dot.on{background:var(--c);width:22px;border-radius:4px}
+.ob-btn{width:100%;padding:14px;background:var(--c);color:#000;font-weight:800;font-size:15px;border:none;border-radius:14px;cursor:pointer;font-family:inherit}
+.ob-skip{display:block;margin-top:12px;color:#444;font-size:12px;cursor:pointer;background:none;border:none;font-family:inherit;width:100%}
+/* Sort chips */
+.sort-row{display:flex;gap:6px;margin-bottom:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.sort-row::-webkit-scrollbar{display:none}
+.sort-chip{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:700;border:1.5px solid var(--b);background:#fff;cursor:pointer;white-space:nowrap;font-family:inherit;flex-shrink:0;transition:.15s}
+.sort-chip.on{background:#111;color:#fff;border-color:#111}
+/* Provider profile modal */
+.prov-rev{padding:8px 0;border-top:1px solid #f0f0f0}
+.prov-rev-stars{color:#F59E0B;font-size:13px;margin-bottom:3px}
+.prov-rev-txt{font-size:12px;color:#555;font-style:italic;line-height:1.4}
+.prov-rev-date{font-size:10px;color:#aaa;margin-top:2px}
+/* Service chat panel */
+#svc-chat{position:absolute;bottom:0;left:0;right:0;background:#fff;border-radius:22px 22px 0 0;height:0;overflow:hidden;transition:height .3s cubic-bezier(.32,.72,0,1);z-index:20;display:flex;flex-direction:column}
+#svc-chat.open{height:55vh}
+.svc-chat-hd{padding:12px 16px 8px;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.svc-chat-tit{font-weight:700;font-size:13px;color:#111}
+.svc-chat-close{background:none;border:none;font-size:20px;cursor:pointer;color:#ccc}
+.svc-chat-msgs{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:7px;min-height:0}
+.scm{max-width:80%;padding:8px 12px;border-radius:16px;font-size:13px;line-height:1.45;word-break:break-word}
+.scm-c{background:#111;color:#fff;align-self:flex-end;border-radius:16px 16px 4px 16px}
+.scm-p{background:#f0f0f0;color:#111;align-self:flex-start;border-radius:4px 16px 16px 16px}
+.scm-upd{align-self:center;background:rgba(0,200,215,.12);color:#0080aa;font-size:11px;padding:5px 14px;border-radius:20px;font-weight:700}
+.svc-chat-in{display:flex;gap:7px;padding:9px 12px max(20px,env(safe-area-inset-bottom,20px));border-top:1px solid #f0f0f0;flex-shrink:0}
+.svc-chat-inp{flex:1;padding:9px 14px;border:1.5px solid #e5e5e5;border-radius:20px;font-size:13px;font-family:inherit;outline:none}
+.svc-chat-inp:focus{border-color:var(--c)}
+.svc-chat-send{width:36px;height:36px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.shi{cursor:pointer;transition:background .15s}
+.shi:active{background:#f9f9f9;border-radius:12px}
 </style>
 </head>
 <body>
@@ -150,6 +188,22 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
     <div id="aerr2"></div>
   </div>
 </div>
+</div>
+
+<!-- ONBOARDING -->
+<div id="onboarding" style="display:none">
+  <div class="ob-box">
+    <div class="ob-icon" id="ob-icon">🗺</div>
+    <div class="ob-tit" id="ob-tit">Bienvenido a U.GO</div>
+    <div class="ob-sub" id="ob-sub">Encontrá profesionales cerca tuyo en segundos. Electricistas, plomeros, limpieza y más.</div>
+    <div class="ob-dots">
+      <div class="ob-dot on" id="ob-d0"></div>
+      <div class="ob-dot" id="ob-d1"></div>
+      <div class="ob-dot" id="ob-d2"></div>
+    </div>
+    <button class="ob-btn" id="ob-next-btn" onclick="obNext()">Siguiente →</button>
+    <button class="ob-skip" onclick="obDone()">Omitir</button>
+  </div>
 </div>
 
 <div id="map"></div>
@@ -379,6 +433,7 @@ function watchService(svcId) {
       filter: `id=eq.${svcId}`
     }, payload => onServiceUpdate(payload.new))
     .subscribe();
+  subscribeSvcChat(svcId);
 }
 
 function onServiceUpdate(svc) {
@@ -623,8 +678,27 @@ async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadCli();initMap();startGPS();nav2('home');
+    if(!localStorage.getItem('ugo_onboarded')){showOnboarding();}
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
+
+let _obStep=0;
+const _obSteps=[
+  {icon:'🗺',tit:'Bienvenido a U.GO',sub:'Encontrá profesionales cerca tuyo en segundos. Electricistas, plomeros, limpieza y más.'},
+  {icon:'⚡',tit:'Elegí y contratá fácil',sub:'Explorá categorías, revisá el perfil del proveedor y contratá con un toque.'},
+  {icon:'📍',tit:'Seguí tu servicio',sub:'Monitoreo en tiempo real: sabés exactamente dónde está el proveedor y cuándo llega.'},
+];
+function showOnboarding(){_obStep=0;_obRender();$('onboarding').style.display='flex';}
+function _obRender(){
+  const s=_obSteps[_obStep];
+  $('ob-icon').textContent=s.icon;$('ob-tit').textContent=s.tit;$('ob-sub').textContent=s.sub;
+  document.querySelectorAll('.ob-dot').forEach((d,i)=>d.classList.toggle('on',i===_obStep));
+  $('ob-next-btn').textContent=_obStep===2?'¡Empezar! →':'Siguiente →';
+}
+function obNext(){
+  if(_obStep<2){_obStep++;_obRender();}else{obDone();}
+}
+function obDone(){localStorage.setItem('ugo_onboarded','1');$('onboarding').style.display='none';}
 
 async function loadCli(){
   const uid=SESSION.user.id;
@@ -674,15 +748,7 @@ async function loadProviders(){
   const icons={Electricista:'⚡',Plomero:'🔧',Limpieza:'🧹',Pintor:'🎨',Carpintero:'🪚',Cerrajero:'🔑',Jardinero:'🌿'};
   const{data}=await sb.from('usuarios').select('id,nombre,categoria,karma,tarifa_base,lat,lng').eq('tipo','proveedor').not('lat','is',null).limit(60);
   const real=(data||[]).filter(p=>p.lat&&p.lng);
-  const sim=[
-    {nombre:'Carlos R.',categoria:'Electricista',karma:4.8,tarifa_base:90,lat:myLat+.013,lng:myLng+.009},
-    {nombre:'Ana M.',categoria:'Limpieza',karma:4.9,tarifa_base:75,lat:myLat-.007,lng:myLng+.013},
-    {nombre:'Pedro S.',categoria:'Plomero',karma:4.7,tarifa_base:100,lat:myLat+.006,lng:myLng-.011},
-    {nombre:'Luis T.',categoria:'Pintor',karma:4.6,tarifa_base:85,lat:myLat-.012,lng:myLng-.007},
-    {nombre:'Julia F.',categoria:'Jardinero',karma:5.0,tarifa_base:70,lat:myLat+.009,lng:myLng+.018},
-    {nombre:'Marco P.',categoria:'Cerrajero',karma:4.8,tarifa_base:120,lat:myLat-.004,lng:myLng+.021},
-  ];
-  const provs=[...real,...(real.length<4?sim:[])];
+  const provs=[...real];
   provs.forEach(p=>{
     const ic=icons[p.categoria]||'🔧';
     const dist=calcDist(myLat,myLng,p.lat,p.lng);
@@ -713,39 +779,100 @@ function nav2(sec){
   if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='hist')loadHist();}
 }
 
+let _sortCrit='karma';
 function svcsHTML(){return`<div class="pad">
   <div class="stt">🔧 ¿Qué necesitás?</div>
   <div class="cgrid">${CATS.map(c=>`<div class="catb" onclick="selCat('${c.lb}',this)"><div class="catic">${c.ic}</div><div class="catlb">${c.lb}</div></div>`).join('')}</div>
+  <div class="sort-row" id="sort-row" style="display:none">
+    <button class="sort-chip on" id="sc-karma" onclick="sortProvs('karma',this)">⭐ Mejor karma</button>
+    <button class="sort-chip" id="sc-dist" onclick="sortProvs('dist',this)">📍 Más cerca</button>
+    <button class="sort-chip" id="sc-price" onclick="sortProvs('price',this)">💰 Menor precio</button>
+  </div>
   <div id="plist"><p style="color:var(--m);font-size:13px">Seleccioná una categoría o pedile a Hugo directamente →</p></div>
 </div>`;}
 
-async function selCat(cat,el){
-  document.querySelectorAll('.catb').forEach(b=>b.classList.remove('on'));el.classList.add('on');
-  const pl=$('plist');
-  pl.innerHTML=[1,2,3].map(()=>`<div class="pc" style="pointer-events:none"><span class="skel" style="width:46px;height:46px;border-radius:13px;flex-shrink:0"></span><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:55%"></span><span class="skel" style="height:11px;width:35%"></span></div></div>`).join('');
-  const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
-  if(!data?.length){
-    pl.innerHTML=`<div style="text-align:center;padding:28px 0"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-weight:800;font-size:14px;margin-bottom:6px">Sin ${cat.toLowerCase()}s disponibles</div><p style="font-size:12px;color:var(--m);margin-bottom:16px;line-height:1.5">No hay proveedores activos en esta categoría. Probá con otra o pedile ayuda a Hugo.</p><button onclick="openChat()" style="padding:10px 18px;background:var(--c);color:#000;font-weight:700;font-size:13px;border:none;border-radius:12px;cursor:pointer;font-family:inherit">💬 Pedirle a Hugo</button></div>`;
-    return;
-  }
-  pl.innerHTML=data.map(p=>`<div class="pc">
+let _lastCatProvs=[];
+function sortProvs(crit,el){
+  _sortCrit=crit;
+  document.querySelectorAll('.sort-chip').forEach(c=>c.classList.remove('on'));
+  if(el)el.classList.add('on');
+  _renderProvs(_lastCatProvs);
+}
+function _renderProvs(data){
+  const pl=$('plist');if(!pl)return;
+  const sorted=[...data].sort((a,b)=>{
+    if(_sortCrit==='dist'){const da=calcDist(myLat,myLng,a.lat||myLat,a.lng||myLng),db=calcDist(myLat,myLng,b.lat||myLat,b.lng||myLng);return parseFloat(da)-parseFloat(db);}
+    if(_sortCrit==='price')return (a.tarifa_base||80)-(b.tarifa_base||80);
+    return (b.karma||5)-(a.karma||5);
+  });
+  pl.innerHTML=sorted.map(p=>`<div class="pc" onclick="showProviderProfile(${JSON.stringify(p).replace(/"/g,"'")})">
     <div class="pcav">${p.nombre?.[0]?.toUpperCase()||'🔧'}</div>
     <div class="pcinfo">
       <div class="pcname">${p.nombre}</div>
       <div class="pccat">${p.categoria} <span class="pckr">★${(p.karma||5).toFixed(1)}</span></div>
       ${p.endereco?`<div style="font-size:10px;color:var(--m);margin-top:2px">📍 ${p.endereco.split(',')[0]}</div>`:''}
-      <div class="pcbtns">
-        <button class="pcbtn pcbtn-h" onclick="openChatWith(${JSON.stringify(p).replace(/"/g,"'")})">💬 Consultar</button>
-        <button class="pcbtn pcbtn-c" onclick="hireProv(${JSON.stringify(p).replace(/"/g,"'")})">⚡ Contratar</button>
-      </div>
     </div>
-    <div class="pcr"><div class="pcprice">R$${p.tarifa_base||80}+</div><div class="pcdist">${p.lat&&p.lng?calcDist(myLat,myLng,p.lat,p.lng)+'km':'?'}</div></div>
+    <div class="pcr"><div class="pcprice">R\$${p.tarifa_base||80}+</div><div class="pcdist">${p.lat&&p.lng?calcDist(myLat,myLng,p.lat,p.lng)+'km':'?'}</div></div>
   </div>`).join('');
+}
+
+async function selCat(cat,el){
+  document.querySelectorAll('.catb').forEach(b=>b.classList.remove('on'));el.classList.add('on');
+  const pl=$('plist');
+  pl.innerHTML=[1,2,3].map(()=>`<div class="pc" style="pointer-events:none"><span class="skel" style="width:46px;height:46px;border-radius:13px;flex-shrink:0"></span><div style="flex:1;display:flex;flex-direction:column;gap:6px"><span class="skel" style="height:13px;width:55%"></span><span class="skel" style="height:11px;width:35%"></span></div></div>`).join('');
+  const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(12);
+  const sr=$('sort-row');
+  if(!data?.length){
+    if(sr)sr.style.display='none';
+    pl.innerHTML=`<div style="text-align:center;padding:28px 0"><div style="font-size:36px;margin-bottom:10px">🔍</div><div style="font-weight:800;font-size:14px;margin-bottom:6px">Sin ${cat.toLowerCase()}s disponibles</div><p style="font-size:12px;color:var(--m);margin-bottom:16px;line-height:1.5">No hay proveedores activos en esta categoría. Probá con otra o pedile ayuda a Hugo.</p><button onclick="openChat()" style="padding:10px 18px;background:var(--c);color:#000;font-weight:700;font-size:13px;border:none;border-radius:12px;cursor:pointer;font-family:inherit">💬 Pedirle a Hugo</button></div>`;
+    return;
+  }
+  _lastCatProvs=data;
+  if(sr)sr.style.display='flex';
+  _renderProvs(data);
 }
 
 function hireProv(p){
   SELECTED_PROV=p;
   showHireConfirm(p);
+}
+
+async function showProviderProfile(p){
+  SELECTED_PROV=p;
+  const existing=document.getElementById('prov-profile-modal');if(existing)existing.remove();
+  const ov=document.createElement('div');ov.id='prov-profile-modal';ov.className='modal-ov';
+  const CAT_IC={Electricista:'⚡',Plomero:'🔧',Limpieza:'🧹',Pintor:'🎨',Carpintero:'🪚',Cerrajero:'🔑',Jardinero:'🌿'};
+  const ic=CAT_IC[p.categoria]||'🔧';
+  const dist=p.lat&&p.lng?calcDist(myLat,myLng,p.lat,p.lng)+'km':'?';
+  const pJson=JSON.stringify(p).replace(/"/g,"'");
+  ov.innerHTML=`<div class="modal-box" style="max-height:80vh;overflow-y:auto">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+      <div style="width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#00C8D7,#0080AA);display:flex;align-items:center;justify-content:center;font-size:26px;flex-shrink:0">${ic}</div>
+      <div style="flex:1">
+        <div style="font-weight:800;font-size:16px">${p.nombre||'Proveedor'}</div>
+        <div style="font-size:12px;color:#888;margin-top:1px">${p.categoria||'Servicio'}</div>
+        <div style="font-size:12px;color:#F59E0B;font-weight:700;margin-top:2px">★${(p.karma||5).toFixed(1)} · 📍${dist}</div>
+      </div>
+      <button onclick="document.getElementById('prov-profile-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#ccc">✕</button>
+    </div>
+    ${p.bio&&!p.bio.startsWith('http')?`<div style="font-size:13px;color:#444;line-height:1.55;margin-bottom:12px;padding:10px;background:#f8f8f8;border-radius:10px">${p.bio}</div>`:''}
+    <div style="display:flex;justify-content:space-between;margin-bottom:14px;padding:10px;background:#f8f8f8;border-radius:10px">
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800">R\$${p.tarifa_base||80}+</div><div style="font-size:10px;color:#888">por visita</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800">${p.servicios_completados||0}</div><div style="font-size:10px;color:#888">servicios</div></div>
+      <div style="text-align:center"><div style="font-size:16px;font-weight:800">${(p.karma||5).toFixed(1)}</div><div style="font-size:10px;color:#888">karma</div></div>
+    </div>
+    <div id="prov-revs-area"><div style="text-align:center;padding:8px;font-size:12px;color:#aaa">Cargando reseñas...</div></div>
+    <div class="mbox-actions" style="margin-top:14px">
+      <button class="mbox-back" onclick="document.getElementById('prov-profile-modal').remove();openChatWith(${pJson})">💬 Consultar</button>
+      <button class="mbox-confirm" onclick="document.getElementById('prov-profile-modal').remove();showHireConfirm(${pJson})">⚡ Contratar</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  // Load reviews
+  const{data:revs}=await sb.from('resenas').select('*').eq('proveedor_id',p.id).order('created_at',{ascending:false}).limit(3);
+  const ra=document.getElementById('prov-revs-area');if(!ra)return;
+  if(!revs?.length){ra.innerHTML='<div style="font-size:12px;color:#aaa;text-align:center;padding:6px 0">Sin reseñas aún</div>';return;}
+  ra.innerHTML=`<div style="font-size:11px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Últimas reseñas</div>`+revs.map(r=>`<div class="prov-rev"><div class="prov-rev-stars">${'★'.repeat(r.calificacion||5)}${'☆'.repeat(5-(r.calificacion||5))}</div>${r.comentario?`<div class="prov-rev-txt">"${r.comentario}"</div>`:''}<div class="prov-rev-date">${new Date(r.created_at).toLocaleDateString('es-AR')}</div></div>`).join('');
 }
 
 function showHireConfirm(p){
@@ -773,7 +900,37 @@ async function loadHist(){
     return;
   }
   const estadoColor={completado:'var(--g)',cancelado:'var(--r)',ejecutando:'var(--c)',en_camino:'var(--o)',negociando:'var(--m)',confirmado:'var(--c)'};
-  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div></div><div style="text-align:right"><div class="shval" style="color:${estadoColor[s.estado]||'var(--g)'}">R$${s.tarifa||0}</div><div style="font-size:10px;color:var(--m);margin-top:2px">${s.estado}</div></div></div>`).join('');
+  el.innerHTML=data.map(s=>`<div class="shi" onclick="showHistDetail(${JSON.stringify(s).replace(/"/g,"'")})"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div></div><div style="text-align:right"><div class="shval" style="color:${estadoColor[s.estado]||'var(--g)'}">R\$${s.tarifa||0}</div><div style="font-size:10px;color:var(--m);margin-top:2px">${s.estado}</div></div></div>`).join('');
+}
+
+function showHistDetail(s){
+  const existing=document.getElementById('hist-detail-modal');if(existing)existing.remove();
+  const estadoEmoji={completado:'✅',cancelado:'❌',ejecutando:'🔧',en_camino:'🚗',negociando:'⏳',confirmado:'✓'};
+  const ov=document.createElement('div');ov.id='hist-detail-modal';ov.className='modal-ov';
+  const fecha=new Date(s.created_at).toLocaleDateString('es-AR',{day:'2-digit',month:'long',year:'numeric'});
+  ov.innerHTML=`<div class="modal-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="mbox-t">Detalle del servicio</div>
+      <button onclick="document.getElementById('hist-detail-modal').remove()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#ccc">✕</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Fecha</span><span style="font-weight:600">${fecha}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Categoría</span><span style="font-weight:600">${s.categoria||s.descripcion||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Dirección</span><span style="font-weight:600;text-align:right;max-width:60%">${s.direccion_cliente||'—'}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Monto</span><span style="font-weight:800;color:var(--g)">R\$${s.tarifa||0}</span></div>
+      <div style="display:flex;justify-content:space-between;font-size:13px"><span style="color:#888">Estado</span><span style="font-weight:700">${estadoEmoji[s.estado]||''} ${s.estado}</span></div>
+      ${s.comentario_cliente?`<div style="font-size:12px;color:#555;background:#f8f8f8;border-radius:10px;padding:10px;line-height:1.5">"${s.comentario_cliente}"</div>`:''}
+      ${s.estado==='cancelado'&&s.razon_cancelacion?`<div style="font-size:12px;color:var(--r);background:rgba(239,68,68,.07);border-radius:10px;padding:10px">Cancelado: ${s.razon_cancelacion}</div>`:''}
+    </div>
+    ${s.estado==='completado'&&s.proveedor_id?`<button class="mbox-confirm" onclick="document.getElementById('hist-detail-modal').remove();_rehireById('${s.proveedor_id}')">🔄 Re-contratar mismo proveedor</button>`:`<button class="mbox-back" onclick="document.getElementById('hist-detail-modal').remove()">Cerrar</button>`}
+  </div>`;
+  document.body.appendChild(ov);
+}
+
+async function _rehireById(provId){
+  const{data}=await sb.from('usuarios').select('*').eq('id',provId).maybeSingle();
+  if(data){nav2('svcs');setTimeout(()=>showProviderProfile(data),300);}
+  else toast('Proveedor no disponible');
 }
 
 function profHTML(){
@@ -949,6 +1106,54 @@ function pcHire() {
   showHireConfirm(PCARD_PROV);
 }
 
+/* ── SERVICE CHAT ── */
+let svcChatChannel=null;
+let _unreadSvcChat=0;
+
+function openSvcChat(){
+  const chat=$('svc-chat');if(!chat)return;
+  chat.classList.add('open');_unreadSvcChat=0;_updateChatBadge();
+}
+function closeSvcChat(){const chat=$('svc-chat');if(chat)chat.classList.remove('open');}
+
+function _updateChatBadge(){
+  const b=$('tr-chat-badge');
+  if(b)b.textContent=_unreadSvcChat>0?`(${_unreadSvcChat}) `:'';
+}
+
+function _appendSvcMsg(msg){
+  const el=$('svc-chat-msgs');if(!el)return;
+  const div=document.createElement('div');
+  if(msg.tipo==='update'){div.className='scm scm-upd';div.textContent=msg.texto;}
+  else if(msg.emisor_tipo==='cliente'){div.className='scm scm-c';div.textContent=msg.texto;}
+  else{div.className='scm scm-p';div.textContent=msg.texto;}
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+
+async function sendSvcMsg(){
+  if(!ACTIVE_SVC)return;
+  const inp=$('svc-chat-inp');if(!inp||!inp.value.trim())return;
+  const texto=inp.value.trim();inp.value='';
+  await sb.from('mensajes').insert({servicio_id:ACTIVE_SVC.id,emisor_tipo:'cliente',tipo:'mensaje',texto});
+}
+
+function subscribeSvcChat(svcId){
+  if(svcChatChannel)svcChatChannel.unsubscribe();
+  svcChatChannel=sb.channel('svc_chat_'+svcId)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'mensajes',filter:`servicio_id=eq.${svcId}`},payload=>{
+      const msg=payload.new;
+      _appendSvcMsg(msg);
+      if(msg.emisor_tipo==='proveedor'){
+        if(msg.tipo==='update'){toast('💬 '+msg.texto,3500);}
+        else{
+          const chat=$('svc-chat');
+          if(!chat||!chat.classList.contains('open')){_unreadSvcChat++;_updateChatBadge();}
+        }
+      }
+    }).subscribe();
+  const btn=$('tr-chat-btn');if(btn)btn.style.display='flex';
+}
+
 /* ── MERCADO PAGO ── */
 async function initiateMercadoPagoPayment() {
   if (!ACTIVE_SVC || !SESSION) {
@@ -1010,6 +1215,10 @@ async function initiateMercadoPagoPayment() {
         style="flex:1;padding:10px 14px;background:var(--c);color:#000;border:none;border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:none;">
         💳 Pagar con Mercado Pago
       </button>
+      <button onclick="openSvcChat()" id="tr-chat-btn"
+        style="flex:1;padding:8px 14px;background:rgba(0,200,215,.15);color:var(--c);border:1px solid rgba(0,200,215,.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;display:none;">
+        💬 <span id="tr-chat-badge"></span>Chat
+      </button>
       <button onclick="cancelService()" id="tr-cancel"
         style="flex:1;padding:8px 14px;background:rgba(239,68,68,.15);color:#EF4444;border:1px solid rgba(239,68,68,.3);border-radius:10px;font-size:12px;font-weight:700;cursor:pointer;">
         ✕ Cancelar
@@ -1050,6 +1259,18 @@ async function initiateMercadoPagoPayment() {
       <div id="tr-karma-ring" style="width:44px;height:44px;border-radius:50%;border:3px solid var(--c);display:flex;align-items:center;justify-content:center;">
         <span id="tr-kval" style="font-size:13px;font-weight:800;color:#fff;">5.0</span>
       </div>
+    </div>
+  </div>
+  <!-- Service chat panel -->
+  <div id="svc-chat" style="position:relative">
+    <div class="svc-chat-hd">
+      <span class="svc-chat-tit">💬 Chat con el proveedor</span>
+      <button class="svc-chat-close" onclick="closeSvcChat()">✕</button>
+    </div>
+    <div class="svc-chat-msgs" id="svc-chat-msgs"></div>
+    <div class="svc-chat-in">
+      <input class="svc-chat-inp" id="svc-chat-inp" placeholder="Escribí un mensaje..." onkeydown="if(event.key==='Enter')sendSvcMsg()">
+      <button class="svc-chat-send" onclick="sendSvcMsg()">↑</button>
     </div>
   </div>
   <!-- Rating screen -->
