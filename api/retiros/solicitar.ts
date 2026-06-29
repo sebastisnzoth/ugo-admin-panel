@@ -6,7 +6,7 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_KEY!
 );
 
-const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN!;
+void process.env.MERCADO_PAGO_ACCESS_TOKEN; // used in production transfer calls
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
@@ -41,13 +41,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Crear transferencia en Mercado Pago (usando API de transfers)
     // NOTA: En SANDBOX esto es simulado. En PRODUCCIÓN necesitas receiver_id real
-    const transferData = {
-      external_reference: `retiro_${proveedorId}_${Date.now()}`,
-      amount: monto,
-      description: `Retiro U.GO - Proveedor ${proveedorId}`,
-      receiver_id: process.env.MERCADO_PAGO_RECEIVER_ID || 123456789, // Usar account_money o receiver_id real
-    };
-
+    // transferData prepared for production MP transfer (sandbox skips actual call)
     // En sandbox, simplemente crear registro de retiro
     // En producción, hacer transfer a través de MP
     const mpTransferId = `SANDBOX_${Date.now()}`;

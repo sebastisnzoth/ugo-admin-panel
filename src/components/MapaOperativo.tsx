@@ -203,7 +203,7 @@ export function SecMapaOperativo() {
     if (filtered.length > 0 && !geoCenter) {
       const pts = filtered.filter((u:any)=>u.lat&&u.lng).map((u:any)=>[u.lat,u.lng]);
       if (pts.length > 0) {
-        try { mapInst.current.fitBounds(pts, {padding:[40,40], maxZoom:14}); } catch {}
+        try { mapInst.current.fitBounds(pts, {padding:[40,40], maxZoom:14}); } catch (_) { /* map not ready */ }
       }
     }
 

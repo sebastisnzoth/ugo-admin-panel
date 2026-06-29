@@ -228,6 +228,7 @@ function downloadCSV(data: any[], filename: string) {
 }
 
 // ── Memoria del Orbe Component ─────────────────────────────
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function MemoriaOrbe({ usuarioId }: { usuarioId: string }) {
   const [prefs, setPrefs] = React.useState<any[]>([]);
   const [newKey, setNewKey] = React.useState('');
@@ -407,7 +408,7 @@ export function AdminPanel() {
       setDocStatus(map);
     });
   }, [users]);
-  const { users: authUsers, loading: authUsersLoading } = useAuthUsers(authEnabled);
+  const { users: authUsers } = useAuthUsers(authEnabled);
   const { categorias, provCounts, crear: crearCat, actualizar: actualizarCat, toggleActiva, crearSub, toggleSub, eliminarSub } = useCategorias();
   const { tarifas, upsert: upsertTarifa } = useTarifas();
   const { config, update: updateConfig } = useConfigSistema();
@@ -692,7 +693,7 @@ export function AdminPanel() {
 
 
   const toggleCatExpand = (id: string) => setExpandedCats(prev => {
-    const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n;
+    const n = new Set(prev); if(n.has(id)){n.delete(id);}else{n.add(id);} return n;
   });
 
   const renderCategorias = () => (

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import type { AdminDashboard, Servicio, Disputa, Documento, Usuario, MetricasDia } from '../lib/database.types';
+import type { AdminDashboard, Disputa, MetricasDia } from '../lib/database.types';
 
 // ─── Canal realtime autenticado ──────────────────────────────
 let globalChannel: any = null;
@@ -262,7 +262,7 @@ export function useCategorias() {
   const [provCounts, setProvCounts] = useState<Record<string,number>>({});
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
+  const loadCats = useCallback(async () => {
     // Categorías con subcategorías anidadas
     const { data } = await (supabase as any)
       .from('categorias')
@@ -289,18 +289,18 @@ export function useCategorias() {
       .normalize('NFD').replace(/[̀-ͯ]/g,'')
       .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
     await (supabase as any).from('categorias').insert({ nombre, emoji, slug, activa: true });
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   const actualizar = useCallback(async (id: string, nombre: string, emoji: string, activa: boolean) => {
     await (supabase as any).from('categorias').update({ nombre, emoji, activa }).eq('id', id);
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   const toggleActiva = useCallback(async (id: string, activa: boolean) => {
     await (supabase as any).from('categorias').update({ activa }).eq('id', id);
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   // Subcategorías CRUD
   const crearSub = useCallback(async (categoria_id: string, nombre: string) => {
@@ -308,27 +308,27 @@ export function useCategorias() {
       .normalize('NFD').replace(/[̀-ͯ]/g,'')
       .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
     await (supabase as any).from('subcategorias').insert({ categoria_id, nombre, slug, activa: true });
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   const toggleSub = useCallback(async (id: string, activa: boolean) => {
     await (supabase as any).from('subcategorias').update({ activa }).eq('id', id);
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   const eliminarSub = useCallback(async (id: string) => {
     await (supabase as any).from('subcategorias').delete().eq('id', id);
-    await fetch();
-  }, [fetch]);
+    await loadCats();
+  }, [loadCats]);
 
   useEffect(() => {
-    fetch();
-    const u1 = subscribe('categorias', fetch);
-    const u2 = subscribe('subcategorias', fetch);
+    loadCats();
+    const u1 = subscribe('categorias', loadCats);
+    const u2 = subscribe('subcategorias', loadCats);
     return () => { u1(); u2(); };
-  }, [fetch]);
+  }, [loadCats]);
 
-  return { categorias, provCounts, loading, crear, actualizar, toggleActiva, crearSub, toggleSub, eliminarSub, refetch: fetch };
+  return { categorias, provCounts, loading, crear, actualizar, toggleActiva, crearSub, toggleSub, eliminarSub, refetch: loadCats };
 }
 
 // ─── Tarifas CRUD ────────────────────────────────────────────
@@ -423,7 +423,7 @@ export function useExport() {
 export function useVault() {
   const [escrows, setEscrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetch = useCallback(async () => {
+  const loadEscrows = useCallback(async () => {
     const { data } = await (supabase as any).from('escrow')
       .select('id,monto_total,comision_ugo,monto_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
       .eq('estado','retenido').order('created_at', { ascending: true });
@@ -432,9 +432,9 @@ export function useVault() {
   const liberarEscrow = useCallback(async (id: string) => {
     const { error } = await (supabase as any).from('escrow')
       .update({ estado:'liberado', liberado_at: new Date().toISOString() }).eq('id', id);
-    if (!error) await fetch(); else console.error('liberarEscrow:', error.message);
-  }, [fetch]);
-  useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
+    if (!error) await loadEscrows(); else console.error('liberarEscrow:', error.message);
+  }, [loadEscrows]);
+  useEffect(() => { loadEscrows(); const u = subscribe('escrow', loadEscrows); return u; }, [loadEscrows]);
   return { escrows, loading, liberarEscrow };
 }
 

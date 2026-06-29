@@ -8,7 +8,9 @@ export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   const { data } = await sb.from('config_sistema').select('valor').eq('clave','api_gemini_key').single();
   const key = data?.valor?.trim();
-  let geminiOk = false, geminiError = '';
+  let geminiOk = false;
+  // eslint-disable-next-line prefer-const
+  let geminiError = '';
   try {
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
       { method:'POST', headers:{'Content-Type':'application/json','x-goog-api-key':key},

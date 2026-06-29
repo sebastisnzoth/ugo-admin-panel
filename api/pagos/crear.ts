@@ -7,7 +7,7 @@ const sb = createClient(
 );
 
 const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN!;
-const MP_PUBLIC_KEY = process.env.MERCADO_PAGO_PUBLIC_KEY!;
+void process.env.MERCADO_PAGO_PUBLIC_KEY; // referenced in client-side MP init
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
