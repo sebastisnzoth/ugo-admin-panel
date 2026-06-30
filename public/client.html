@@ -711,6 +711,28 @@ let chatHistory=[], SELECTED_PROV=null;
 const $=id=>document.getElementById(id);
 const CATS=[{ic:'⚡',lb:'Electricista'},{ic:'🔧',lb:'Plomero'},{ic:'🧹',lb:'Limpieza'},{ic:'🎨',lb:'Pintor'},{ic:'🪚',lb:'Carpintero'},{ic:'🔑',lb:'Cerrajero'},{ic:'🌿',lb:'Jardinero'},{ic:'❄️',lb:'AC/Clima'}];
 
+// Mapeo categoría visible (ES) → término real guardado en usuarios.categoria (PT, según import de Scout).
+// Algunos labels no tienen oferta real en la base (ver CAT_SIN_OFERTA) — se informa al cliente en vez de fallar en silencio.
+const CAT_DB_MAP={
+  'Electricista':'electricista',
+  'Limpieza':'limpeza',
+  'Pintor':'pintura',
+  'Cerrajero':'chaveiro',
+  'Jardinero':'jardinagem',
+  'AC/Clima':'climatizacao',
+  'Carpintero':'marido_aluguel', // sin categoría exacta — handyman es lo más cercano
+  'Plomero':null // sin oferta de proveedores en la base actualmente
+};
+function catToDbTerm(label){
+  if(!label)return null;
+  // match exacto contra CATS primero
+  const exact=CATS.find(c=>c.lb.toLowerCase()===label.toLowerCase());
+  if(exact)return CAT_DB_MAP[exact.lb];
+  // si no hay match exacto, buscar qué categoría está contenida en el texto libre
+  const found=CATS.find(c=>label.toLowerCase().includes(c.lb.toLowerCase()));
+  return found?CAT_DB_MAP[found.lb]:null;
+}
+
 // ── Estado del flujo Hugo ─────────────────────────────────────────
 let CHAT_STEP = 0; // 0=idle 1=servicio 2=ubicación 3=horario 4=desc 5=confirmar
 const STEP_LABELS = ['Contame qué necesitás','¿Qué servicio?','Tu ubicación','¿Cuándo?','Describí el problema','Listo para confirmar'];
@@ -1175,14 +1197,36 @@ async function hugoCall(msg){
 
     // ── Buscar proveedores si Hugo lo indica o hay suficiente contexto ─
     if(d.accion==='BUSCAR_PROVEEDOR' || (msgCount>=3 && !SELECTED_PROV)){
-      const cat = SELECTED_CAT || (chatHistory.find(m=>m.role==='user')?.content||'');
-      if(cat){
-        const {data:provs} = await sb.from('usuarios')
+      const catLabel = SELECTED_CAT || (chatHistory.find(m=>m.role==='user')?.content||'');
+      const dbTerm = catToDbTerm(catLabel);
+
+      if(dbTerm){
+        // 1er intento: proveedores ONLINE ahora en esa categoría
+        let {data:provs} = await sb.from('usuarios')
           .select('id,nombre,karma,categoria,tarifa_base,lat,lng')
           .eq('tipo','proveedor').eq('online',true)
-          .ilike('categoria','%'+cat.split(' ')[0]+'%')
+          .ilike('categoria','%'+dbTerm+'%')
           .not('lat','is',null).limit(5);
-        if(provs?.length) showProviderCards(provs);
+
+        if(provs?.length){
+          showProviderCards(provs);
+        } else {
+          // 2do intento: fallback — hay proveedores en la categoría pero ninguno online ahora.
+          // Mostramos los más cercanos igual, marcados como "no disponible ahora" en vez de fallar en silencio.
+          const {data:offlineProvs} = await sb.from('usuarios')
+            .select('id,nombre,karma,categoria,tarifa_base,lat,lng')
+            .eq('tipo','proveedor')
+            .ilike('categoria','%'+dbTerm+'%')
+            .not('lat','is',null).limit(5);
+          if(offlineProvs?.length){
+            addMsg('h','Por ahora no hay proveedores conectados en este momento, pero estos suelen atender en tu zona. ¿Querés que te avise apenas se conecte alguno?');
+            showProviderCards(offlineProvs);
+          } else {
+            addMsg('h','No encontré proveedores de esa categoría en tu zona todavía. ¿Querés que te avise cuando se sume alguno, o preferís otra categoría?');
+          }
+        }
+      } else if(catLabel){
+        addMsg('h','Por ahora no tenemos ese servicio disponible en tu zona. ¿Te ayudo con otra categoría?');
       }
     }
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
