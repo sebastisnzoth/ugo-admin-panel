@@ -854,29 +854,81 @@ function initMap(){
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OSM'}).addTo(MAP);
 }
 
+let GPS_WATCH_ID=null;
+let GPS_DENIED=false;
+
 function startGPS(){
-  if(!navigator.geolocation)return;
-  navigator.geolocation.getCurrentPosition(pos=>{
-    myLat=pos.coords.latitude;myLng=pos.coords.longitude;
-    if(MAP)MAP.setView([myLat,myLng],15);
-    // My location dot
-    L.circleMarker([myLat,myLng],{radius:9,fillColor:'#00C8D7',color:'#fff',weight:3,opacity:1,fillOpacity:1}).addTo(MAP)
+  if(!navigator.geolocation){
+    toast('⚠️ Tu navegador no soporta geolocalización');
+    loadProviders();
+    return;
+  }
+  // Lectura inicial rápida (puede ser imprecisa pero es instantánea)
+  navigator.geolocation.getCurrentPosition(
+    pos=>onGpsSuccess(pos),
+    err=>onGpsError(err),
+    {enableHighAccuracy:false,timeout:6000,maximumAge:60000}
+  );
+  // Tracking continuo — refina la posición y la mantiene actualizada
+  // si el cliente se mueve antes de confirmar el pedido
+  if(GPS_WATCH_ID===null){
+    GPS_WATCH_ID=navigator.geolocation.watchPosition(
+      pos=>onGpsSuccess(pos),
+      err=>onGpsError(err,true),
+      {enableHighAccuracy:true,timeout:10000,maximumAge:15000}
+    );
+  }
+}
+
+function onGpsSuccess(pos){
+  GPS_DENIED=false;
+  myLat=pos.coords.latitude;myLng=pos.coords.longitude;
+  if(MAP)MAP.setView([myLat,myLng],15);
+  if(window.MY_DOT){MY_DOT.setLatLng([myLat,myLng]);}
+  else if(MAP){
+    window.MY_DOT=L.circleMarker([myLat,myLng],{radius:9,fillColor:'#00C8D7',color:'#fff',weight:3,opacity:1,fillOpacity:1}).addTo(MAP)
       .bindTooltip('📍 Tu ubicación',{permanent:false});
-    // Geocode
+  }
+  // Geocode (throttled — solo si pasaron >15s desde el último)
+  const now=Date.now();
+  if(!window._lastGeocode||now-window._lastGeocode>15000){
+    window._lastGeocode=now;
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${myLat}&lon=${myLng}&format=json`)
       .then(r=>r.json()).then(d=>{
         const parts=d.display_name?.split(',')||[];
         myAddr=parts.slice(0,3).join(',').trim();
         const short=d.address?.suburb||d.address?.neighbourhood||d.address?.city||parts[0]||'Mi ubicación';
         $('lchip').textContent='📍 '+short;
-        // Save address to profile
         if(SESSION&&!CLI?.endereco){
           sb.from('usuarios').update({lat:myLat,lng:myLng,endereco:myAddr}).eq('id',SESSION.user.id);
           if(CLI)CLI.endereco=myAddr;
         }
       }).catch(()=>{$('lchip').textContent='📍 Mi ubicación';});
-    loadProviders();
-  },{enableHighAccuracy:true,timeout:8000});
+  }
+  loadProviders();
+}
+
+function onGpsError(err,silent){
+  if(err.code===err.PERMISSION_DENIED){
+    GPS_DENIED=true;
+    if(!silent){
+      $('lchip').textContent='📍 Activá el GPS';
+      toast('📍 Necesitamos tu ubicación para mostrarte proveedores cerca. Activala en los permisos del navegador.',4500);
+    }
+  } else if(!silent){
+    toast('⚠️ No pudimos obtener tu ubicación, usando zona aproximada',3000);
+  }
+  // Fallback: seguir con la ubicación default (Florianópolis) para no bloquear la app
+  loadProviders();
+}
+
+function refreshMyLocation(){
+  if(GPS_DENIED){
+    toast('📍 Activá la ubicación en los permisos del navegador y volvé a intentar',3500);
+    return;
+  }
+  toast('📍 Actualizando ubicación...',1500);
+  navigator.geolocation.getCurrentPosition(onGpsSuccess,err=>onGpsError(err),{enableHighAccuracy:true,timeout:8000});
 }
 
 async function loadProviders(){
