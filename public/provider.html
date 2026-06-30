@@ -439,7 +439,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadProv();initMap();startGPS();nav2('home');subscribeToJobs();
+    await loadProv();initMap();nav2('home');subscribeToJobs();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -487,33 +487,98 @@ function renderDemandBubbles(){
   });
 }
 
+let GPS_WATCH_ID=null;
+let GPS_DENIED=false;
+let _lastGpsWrite=0;
+
+// Frecuencia de escritura a Supabase según contexto:
+//  - en_camino (yendo al trabajo): cada 5s — el cliente necesita verte moverte en tiempo real
+//  - online idle (esperando pedido): cada 45s — solo para aparecer en el radar del cliente
+//  - offline: GPS apagado, cero consumo
+function gpsWriteIntervalMs(){
+  return jobState==='en_camino' ? 5000 : 45000;
+}
+
 function startGPS(){
-  if(!navigator.geolocation)return;
-  navigator.geolocation.watchPosition(pos=>{
-    myLat=pos.coords.latitude;myLng=pos.coords.longitude;
-    if(MARKER)MARKER.setLatLng([myLat,myLng]);
-    if(MAP&&!isOnline)MAP.panTo([myLat,myLng]);
-    // Geocode dirección
+  if(!navigator.geolocation){
+    toast('⚠️ Tu navegador no soporta geolocalización');
+    return;
+  }
+  if(GPS_WATCH_ID!==null)return; // ya está corriendo
+  GPS_WATCH_ID=navigator.geolocation.watchPosition(
+    pos=>onGpsSuccess(pos),
+    err=>onGpsError(err),
+    {enableHighAccuracy:true,timeout:10000,maximumAge:8000}
+  );
+}
+
+function stopGPS(){
+  if(GPS_WATCH_ID!==null){
+    navigator.geolocation.clearWatch(GPS_WATCH_ID);
+    GPS_WATCH_ID=null;
+  }
+}
+
+function onGpsSuccess(pos){
+  GPS_DENIED=false;
+  myLat=pos.coords.latitude;myLng=pos.coords.longitude;
+  if(MARKER)MARKER.setLatLng([myLat,myLng]);
+  if(MAP&&!isOnline)MAP.panTo([myLat,myLng]);
+
+  const now=Date.now();
+  const dueWrite = (now-_lastGpsWrite) >= gpsWriteIntervalMs();
+  if(!dueWrite)return; // throttle — no escribir a Supabase todavía
+
+  _lastGpsWrite=now;
+
+  // Geocode solo si no tenemos dirección guardada aún (evita llamadas innecesarias a Nominatim)
+  if(PROV && !PROV.endereco){
     fetch(`https://nominatim.openstreetmap.org/reverse?lat=${myLat}&lon=${myLng}&format=json`)
       .then(r=>r.json()).then(d=>{
         const addr=d.display_name?.split(',').slice(0,3).join(', ')||'';
-        if(addr&&PROV&&!PROV.endereco){
-          PROV.endereco=addr;
-          sb.from('usuarios').update({lat:myLat,lng:myLng,endereco:addr}).eq('id',SESSION.user.id);
-        } else if(isOnline){
-          sb.from('usuarios').update({lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
-        }
+        if(addr){PROV.endereco=addr;}
+        sb.from('usuarios').update({lat:myLat,lng:myLng,endereco:addr||null}).eq('id',SESSION.user.id);
       }).catch(()=>{
-        if(isOnline)sb.from('usuarios').update({lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
+        sb.from('usuarios').update({lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
       });
-  },{enableHighAccuracy:true,timeout:10000,maximumAge:20000});
+  } else {
+    sb.from('usuarios').update({lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
+  }
+}
+
+function onGpsError(err){
+  if(err.code===err.PERMISSION_DENIED){
+    GPS_DENIED=true;
+    toast('📍 Necesitamos tu ubicación para mostrarte pedidos cerca. Activala en los permisos del navegador.',4500);
+    // Si estaba online, lo volvemos offline porque sin GPS no puede recibir pedidos
+    if(isOnline){
+      isOnline=false;
+      $('tog')?.classList.remove('on');
+      if($('toglb'))$('toglb').textContent='OFFLINE';
+    }
+  } else {
+    toast('⚠️ Señal GPS débil, reintentando...',2500);
+  }
 }
 
 /* ── ONLINE ── */
 async function toggleOnline(){
+  // Si va a pasar a online, primero verificar que el GPS funcione
+  if(!isOnline && GPS_DENIED){
+    toast('📍 Activá la ubicación en tu navegador para poder ponerte en línea',3500);
+    return;
+  }
   isOnline=!isOnline;
   $('tog').classList.toggle('on',isOnline);
   $('toglb').textContent=isOnline?'EN LÍNEA':'OFFLINE';
+
+  if(isOnline){
+    startGPS();
+    _lastGpsWrite=0; // forzar escritura inmediata al pasar a online
+  } else if(jobState==='idle'){
+    stopGPS(); // solo apagamos GPS si no hay trabajo activo en curso
+  }
+
   await sb.from('usuarios').update({activo:isOnline,online:isOnline,lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
   toast(isOnline?'✅ Estás en línea — ya podés recibir pedidos':'⚫ Te pusiste offline');
   if(isOnline){MAP?.panTo([myLat,myLng]);setTimeout(()=>showJobOffer(null),8000);}
@@ -1031,6 +1096,8 @@ async function acceptJobReal() {
   $('jobnot').classList.remove('show');
   jobState = 'en_camino';
   ACTIVE_JOB = JOB;
+  startGPS(); // asegurar tracking activo — el cliente necesita verte en camino
+  _lastGpsWrite = 0; // forzar escritura inmediata al pasar a en_camino (alta frecuencia)
 
   // Load full service and update DB
   if (JOB?.servicio_id) {
