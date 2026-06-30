@@ -6,7 +6,14 @@ const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL as string
 const SUPABASE_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY as string
   || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 
+// detectSessionInUrl: false → CRÍTICO. El panel admin NO debe procesar
+// tokens OAuth desde la URL: ese trabajo es exclusivo del script
+// interceptor en index.html, que redirige a /provider.html o /client.html
+// ANTES de que React monte. Si este cliente también detecta el hash,
+// crea sesión acá mismo y el listener de abajo (AdminPanel.tsx) la
+// cierra de inmediato por no ser el admin — carrera que rompía el login
+// de Google para proveedores y clientes.
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { autoRefreshToken: true, persistSession: true },
+  auth: { autoRefreshToken: true, persistSession: true, detectSessionInUrl: false },
   realtime: { params: { eventsPerSecond: 10 } },
 });
