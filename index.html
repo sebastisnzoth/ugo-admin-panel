@@ -47,6 +47,14 @@
         if (!isOAuthCallback) return;   // dest guardado pero no es un OAuth callback
 
         localStorage.removeItem('ugo_oauth_dest');
+        // Frenar la carga del resto del documento (incl. el module script
+        // de React) para que no llegue a ejecutarse: si llegara a correr,
+        // su propio cliente Supabase podría procesar el hash OAuth antes
+        // de que esta navegación termine, generando sesión + logout
+        // automático en el panel admin (carrera ya resuelta también en
+        // src/lib/supabase.ts con detectSessionInUrl:false, esto es
+        // defensa en profundidad).
+        try { window.stop(); } catch(e) {}
         // Preservar TODOS los parámetros para que Supabase pueda
         // intercambiar el code en la página destino (mismo origin = misma localStorage)
         window.location.replace(dest + qs + hash);
