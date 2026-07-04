@@ -1245,7 +1245,16 @@ async function hugoCall(msg){
     const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:chatHistory.slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
-    const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
+    let reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
+    // Guard: si por algún motivo llega JSON crudo (con o sin preámbulo), extraer el mensaje
+    if(reply.includes('"hugo_mensaje"')){
+      try{
+        const s=reply.slice(reply.indexOf('{'),reply.lastIndexOf('}')+1);
+        const p=JSON.parse(s);
+        if(p.hugo_mensaje)reply=p.hugo_mensaje;
+        if(p.accion&&!d.accion)d.accion=p.accion;
+      }catch(_){reply=reply.replace(/\{[\s\S]*\}/,'').trim()||'¿En qué puedo ayudarte?';}
+    }
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
 
     // ── Avanzar step según historial ──────────────────────────────
