@@ -183,6 +183,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <!-- JOB INCOMING -->
 <div id="jobnot">
   <div class="jnh"><div class="jnic" id="jnic">⚡</div><div><div class="jntit" id="jtit">Nuevo pedido</div><div class="jnsub" id="jsub">2.3km · R$120</div></div></div>
+  <div id="jdesc" style="display:none;font-size:12px;color:#ccc;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:8px 0 2px;line-height:1.45"></div>
+  <div id="jfoto" style="display:none;margin:8px 0 2px"><img id="jfoto-img" src="" alt="foto del problema" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="window.open(this.src,'_blank')"></div>
   <div class="jnbar-bg"><div class="jnbar" id="jbar" style="width:100%"></div></div>
   <div class="jnsecs" id="jsecs">30s para aceptar</div>
   <div class="jnbtns"><button class="jnrej" onclick="rejectJob()">✕ Rechazar</button><button class="jnacc" onclick="acceptJob()">✓ Aceptar</button></div>
@@ -598,6 +600,9 @@ function showJobOffer(j){
   $('jnic').textContent=JOB.ic;
   $('jtit').textContent=JOB.t+' solicitado';
   $('jsub').textContent=`${JOB.d}km de distancia · R$${JOB.p}`;
+  // Descripción y foto del problema (si el cliente las envió)
+  const de=$('jdesc');if(de){de.style.display=JOB.desc?'block':'none';de.textContent=JOB.desc?('📝 '+JOB.desc):'';}
+  const jf=$('jfoto');if(jf){jf.style.display=JOB.foto?'block':'none';if(JOB.foto)$('jfoto-img').src=JOB.foto;}
   $('jobnot').classList.add('show');
   jSec=30;clearInterval(jobTimer);
   jobTimer=setInterval(()=>{
@@ -657,32 +662,32 @@ function timelineSheet(svc) {
   const createdAt = new Date(svc.created_at);
   const elapsed = Math.floor((Date.now() - createdAt.getTime()) / 60000);
   
-  return \`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  return `<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
     <div style="font-size:14px;font-weight:800;color:var(--k);margin-bottom:14px">📊 Progreso del servicio</div>
     
     <!-- Timeline visual -->
     <div style="background:#f8f8f8;border-radius:16px;padding:16px;margin-bottom:16px">
       <div style="display:flex;flex-direction:column;gap:12px">
-        \${TIMELINE_STATES.map((s,i)=>{
+        ${TIMELINE_STATES.map((s,i)=>{
           const isActive = i===idx;
           const isDone = i<idx;
-          return \`<div style="display:flex;gap:10px;align-items:flex-start">
+          return `<div style="display:flex;gap:10px;align-items:flex-start">
             <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
               <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;
-                background:\${isActive?'var(--c)':isDone?'var(--g)':'#ddd'};color:\${isActive||isDone?'#000':'#999'};font-weight:800">
-                \${isDone?'✓':TIMELINE_ICONS[i]}
+                background:${isActive?'var(--c)':isDone?'var(--g)':'#ddd'};color:${isActive||isDone?'#000':'#999'};font-weight:800">
+                ${isDone?'✓':TIMELINE_ICONS[i]}
               </div>
-              \${i<TIMELINE_STATES.length-1?\`<div style="width:2px;height:20px;background:\${isDone||isActive?'var(--c)':'#ddd'}"></div>\`:''}
+              ${i<TIMELINE_STATES.length-1?`<div style="width:2px;height:20px;background:${isDone||isActive?'var(--c)':'#ddd'}"></div>`:''}
             </div>
             <div style="padding-top:4px;flex:1">
-              <div style="font-weight:700;font-size:13px;color:\${isActive?'var(--c)':isDone?'var(--g)':'#888'}">
-                \${TIMELINE_LABELS[i]}
+              <div style="font-weight:700;font-size:13px;color:${isActive?'var(--c)':isDone?'var(--g)':'#888'}">
+                ${TIMELINE_LABELS[i]}
               </div>
               <div style="font-size:11px;color:#aaa;margin-top:3px">
-                \${isDone ? '✓ Completado' : isActive ? '🔄 Ahora' : '⏳ Pendiente'}
+                ${isDone ? '✓ Completado' : isActive ? '🔄 Ahora' : '⏳ Pendiente'}
               </div>
             </div>
-          </div>\`;
+          </div>`;
         }).join('')}
       </div>
     </div>
@@ -692,39 +697,39 @@ function timelineSheet(svc) {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
         <div>
           <div style="color:#888;font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:4px">Tarifa</div>
-          <div style="font-weight:800;color:var(--k);font-size:14px">R\$ \${svc.tarifa||0}</div>
+          <div style="font-weight:800;color:var(--k);font-size:14px">R\$ ${svc.tarifa||0}</div>
         </div>
         <div>
           <div style="color:#888;font-weight:700;font-size:10px;text-transform:uppercase;margin-bottom:4px">Ganancia</div>
-          <div style="font-weight:800;color:var(--g);font-size:14px">R\$ \${Math.round((svc.tarifa||0)*0.85)}</div>
+          <div style="font-weight:800;color:var(--g);font-size:14px">R\$ ${Math.round((svc.tarifa||0)*0.85)}</div>
         </div>
       </div>
       <div style="border-top:1px solid #e5e5e5;padding-top:8px;color:#888">
-        Hace \${elapsed}m · \${svc.categoria||'Servicio'}
+        Hace ${elapsed}m · ${svc.categoria||'Servicio'}
       </div>
     </div>
 
     <!-- Botones de control -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
-      \${state==='en_camino'?
-        \`<button onclick="changeServiceState('\${svc.id}','ejecutando')" style="padding:12px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
+      ${state==='en_camino'?
+        `<button onclick="changeServiceState('${svc.id}','ejecutando')" style="padding:12px;background:var(--c);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
           ⚙️ Llegué — Empezar
-        </button>\`:''}
-      \${state==='ejecutando'?
-        \`<button onclick="changeServiceState('\${svc.id}','completado')" style="padding:12px;background:var(--g);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
+        </button>`:''}
+      ${state==='ejecutando'?
+        `<button onclick="changeServiceState('${svc.id}','completado')" style="padding:12px;background:var(--g);color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
           ✅ Completado
-        </button>\`:''}
+        </button>`:''}
       <button onclick="toggleSheet()" style="padding:12px;background:#f0f0f0;color:#888;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">
         Cerrar
       </button>
     </div>
 
     <!-- Auto-advance info -->
-    \${state==='en_camino'?
-      \`<div style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;font-size:11px;color:var(--c)">
+    ${state==='en_camino'?
+      `<div style="background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;font-size:11px;color:var(--c)">
         📍 Cuando llegues a 50m del cliente, avanzará automáticamente a "Ejecutando"
-      </div>\`:''}
-  </div>\`;
+      </div>`:''}
+  </div>`;
 }
 
 async function changeServiceState(svcId, newState) {
@@ -736,7 +741,7 @@ async function changeServiceState(svcId, newState) {
   if($('sb').innerHTML.includes('Progreso')) {
     const {data} = await sb.from('servicios').select('*').eq('id', svcId).single();
     if(data) {
-      \$('sb').innerHTML = timelineSheet(data);
+      $('sb').innerHTML = timelineSheet(data);
     }
   }
 }
@@ -756,8 +761,8 @@ function startDistanceCheck(svcId, clientLat, clientLng) {
           if(!error) {
             alert('¡Llegaste! El servicio cambió a "Ejecutando"');
             const {data} = await sb.from('servicios').select('*').eq('id', svcId).single();
-            if(data && \$('sb').innerHTML.includes('Progreso')) {
-              \$('sb').innerHTML = timelineSheet(data);
+            if(data && $('sb').innerHTML.includes('Progreso')) {
+              $('sb').innerHTML = timelineSheet(data);
             }
           }
         }
@@ -1073,10 +1078,14 @@ function subscribeToJobs() {
           ic: { Electricista:'⚡', Plomero:'🔧', Limpieza:'🧹', Pintor:'🎨', Carpintero:'🪚' }[PROV?.categoria] || '🔧',
           t: PROV?.categoria || 'Servicio',
           p: datos.tarifa || 80,
-          d: ((Math.random() * 4) + 0.5).toFixed(1),
+          d: (datos.lat_cliente && myLat)
+               ? haversineKm(myLat, myLng, datos.lat_cliente, datos.lng_cliente).toFixed(1)
+               : ((Math.random() * 4) + 0.5).toFixed(1),
           addr: datos.direccion || 'Dirección del cliente',
           servicio_id: datos.servicio_id,
-          cliente_nombre: datos.cliente_nombre || 'Cliente'
+          cliente_nombre: datos.cliente_nombre || 'Cliente',
+          desc: datos.descripcion || '',
+          foto: datos.foto_url || null
         };
         showJobOffer(realJob);
       }
