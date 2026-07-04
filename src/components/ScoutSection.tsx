@@ -11,6 +11,7 @@ const CAT_CONFIG: Record<string,{label:string;emoji:string;grupo:string}> = {
   // ── HOGAR ──────────────────────────────────────────────────
   electricista:      {label:'Electricista · Eletricista',       emoji:'⚡',  grupo:'🏠 Hogar'},
   plomero:           {label:'Plomero · Encanador · Hidráulica', emoji:'🚿',  grupo:'🏠 Hogar'},
+  gasista:           {label:'Gasista Matriculado · Gas Fitter',  emoji:'🔥',  grupo:'🏠 Hogar'},
   limpeza:           {label:'Limpieza · Faxina',                emoji:'🧹',  grupo:'🏠 Hogar'},
   chaveiro:          {label:'Chaveiro · Cerrajero · Locksmith',  emoji:'🔑',  grupo:'🏠 Hogar'},
   pintura:           {label:'Pintura · Pintor',                  emoji:'🎨',  grupo:'🏠 Hogar'},

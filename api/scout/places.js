@@ -11,6 +11,7 @@ const TT_QUERIES = {
   // ── Hogar ──────────────────────────────────────────────────
   electricista:      ['electrician','eletricista','electricista','électricien'],
   plomero:           ['plumber','encanador','plomero','plombier'],
+  gasista:           ['gasista matriculado','gas fitter','gasista','plombier gaz','gasinstallateur','instalador gas','gas technician'],
   limpeza:           ['cleaning service','limpeza','limpieza','faxina','nettoyage'],
   cerrajero:         ['locksmith','chaveiro','cerrajero','serrurier','schlüsseldienst'],
   pintura:           ['painter','pintor','peintre','maler'],
@@ -34,6 +35,7 @@ const OVERPASS_TAGS = {
   // ── Hogar ──────────────────────────────────────────────────
   electricista:      [['craft','electrician'],['shop','electrician']],
   plomero:           [['craft','plumber'],['shop','plumbing']],
+  gasista:           [['craft','gas'],['craft','plumber'],['shop','gas'],['amenity','gas']],
   limpeza:           [['craft','cleaning'],['shop','laundry'],['amenity','laundry']],
   cerrajero:         [['craft','locksmith'],['shop','locksmith']],
   pintura:           [['craft','painter'],['shop','paint']],
@@ -57,6 +59,7 @@ const NAME_REGEX = {
   // ── Hogar ──────────────────────────────────────────────────
   electricista:      'electr|eletric|électri',
   plomero:           'plumb|encanad|plomer|hydraul',
+  gasista:           'gasist|gas.fit|gas.tech|plomb.gaz|gasinstall|instalad.gas|matriculad',
   limpeza:           'clean|limpez|limpiez|nettoy|faxin|housekeep',
   cerrajero:         'locks|chavei|cerraj|serrur|schloss',
   pintura:           'paint|pintor|pintur|peintr',
