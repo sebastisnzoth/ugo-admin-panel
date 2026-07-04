@@ -7,12 +7,38 @@ const sb = createClient(
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+// ── Extrae el primer objeto JSON balanceado de un texto (tolera preámbulo y fences) ──
+function extractJson(raw: string): any | null {
+  if (!raw) return null;
+  const t = raw.replace(/```json/gi, '').replace(/```/g, '');
+  const start = t.indexOf('{');
+  if (start < 0) return null;
+  let depth = 0, inStr = false, esc = false;
+  for (let i = start; i < t.length; i++) {
+    const c = t[i];
+    if (esc) { esc = false; continue; }
+    if (c === '\\') { if (inStr) esc = true; continue; }
+    if (c === '"') { inStr = !inStr; continue; }
+    if (inStr) continue;
+    if (c === '{') depth++;
+    else if (c === '}') {
+      depth--;
+      if (depth === 0) {
+        try { return JSON.parse(t.slice(start, i + 1)); } catch { return null; }
+      }
+    }
+  }
+  return null;
+}
+
 // Intenta Gemini, con retry
-async function callGemini(key: string, prompt: string, hist: any[], sys: string): Promise<string> {
+async function callGemini(key: string, prompt: string, hist: any[], sys: string, jsonMode: boolean): Promise<string> {
+  const genCfg: any = { maxOutputTokens: 400, temperature: 0.7 };
+  if (jsonMode) genCfg.responseMimeType = 'application/json';
   const body = JSON.stringify({
     system_instruction: { parts: [{ text: sys }] },
     contents: [...hist, { role: 'user', parts: [{ text: prompt }] }],
-    generationConfig: { maxOutputTokens: 400, temperature: 0.7 }
+    generationConfig: genCfg
   });
   for (let i = 0; i < 3; i++) {
     const r = await fetch(
@@ -33,16 +59,18 @@ async function callGemini(key: string, prompt: string, hist: any[], sys: string)
 }
 
 // Fallback: Groq (si hay key configurada)
-async function callGroq(key: string, prompt: string, hist: any[], sys: string): Promise<string> {
+async function callGroq(key: string, prompt: string, hist: any[], sys: string, jsonMode: boolean): Promise<string> {
   const messages = [
     { role: 'system', content: sys },
     ...hist.map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content })),
     { role: 'user', content: prompt }
   ];
+  const body: any = { model: 'llama-3.3-70b-versatile', messages, max_tokens: 400, temperature: 0.7 };
+  if (jsonMode) body.response_format = { type: 'json_object' };
   const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-    body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages, max_tokens: 400, temperature: 0.7 })
+    body: JSON.stringify(body)
   });
   const d = await r.json();
   return d.choices?.[0]?.message?.content || '';
@@ -67,8 +95,13 @@ export default async function handler(req: any, res: any) {
       return res.status(500).json({ hugo_mensaje: 'Sin API Key de IA configurada.' });
     }
 
-    const sys = (cfg[`hugo_prompt_${role}`] || 'Eres Hugo de U.GO. Responde en español, máximo 3 frases.')
+    // cliente/proveedor responden JSON estructurado; admin usa protocolo [ACCION] en texto plano
+    const jsonMode = role === 'cliente' || role === 'proveedor';
+    let sys = (cfg[`hugo_prompt_${role}`] || 'Eres Hugo de U.GO. Responde en español, máximo 3 frases.')
       + (context ? `\nCONTEXTO: ${context}` : '');
+    if (jsonMode) {
+      sys += '\nREGLA ABSOLUTA: Responde ÚNICAMENTE con el objeto JSON. Sin texto antes ni después, sin markdown, sin backticks.';
+    }
     const userMsg = message === '__INICIO__' ? `Saluda brevemente al usuario: ${context}` : message;
     const hist = history.slice(-8).map((m: any) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
@@ -82,7 +115,7 @@ export default async function handler(req: any, res: any) {
     if (groqKey) {
       try {
         const histGroq = history.slice(-8).map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
-        texto = await callGroq(groqKey, userMsg, histGroq, sys.replace('model','assistant'));
+        texto = await callGroq(groqKey, userMsg, histGroq, sys.replace('model','assistant'), jsonMode);
         usedModel = 'groq/llama-3.3-70b';
       } catch (e) {
         console.error('Groq failed, trying Gemini:', e);
@@ -91,16 +124,39 @@ export default async function handler(req: any, res: any) {
 
     // 2. Fallback a Gemini
     if (!texto && geminiKey) {
-      texto = await callGemini(geminiKey, userMsg, hist, sys);
+      texto = await callGemini(geminiKey, userMsg, hist, sys, jsonMode);
       usedModel = 'gemini-flash-latest';
     }
 
     if (!texto) throw new Error('Ningún proveedor de IA respondió.');
 
-    const match = texto.match(/\[ACCION:\s*([^\]]+)\]/i);
+    // ── Normalizar salida: si el modelo emitió JSON (con o sin preámbulo), extraerlo ──
+    const parsed = extractJson(texto);
+    const matchAccion = texto.match(/\[ACCION:\s*([^\]]+)\]/i);
+
+    if (parsed && typeof parsed.hugo_mensaje === 'string' && parsed.hugo_mensaje.trim()) {
+      return res.json({
+        hugo_mensaje: parsed.hugo_mensaje.trim(),
+        accion:       parsed.accion ?? matchAccion?.[1]?.trim() ?? null,
+        ui_action:    parsed.ui_action ?? null,
+        datos:        parsed.datos ?? null,
+        model:        usedModel
+      });
+    }
+
+    // Texto plano (modo admin o modelo que no siguió el formato): limpiar JSON residual y [ACCION]
+    let plano = texto
+      .replace(/```json[\s\S]*?```/gi, '')
+      .replace(/\{[\s\S]*"hugo_mensaje"[\s\S]*\}/g, '')
+      .replace(/\[ACCION:[^\]]+\]/gi, '')
+      .trim();
+    if (!plano) plano = 'Hola, ¿en qué puedo ayudarte?';
+
     return res.json({
-      hugo_mensaje: texto.replace(/\[ACCION:[^\]]+\]/gi, '').trim(),
-      accion: match?.[1]?.trim() ?? null,
+      hugo_mensaje: plano,
+      accion: matchAccion?.[1]?.trim() ?? null,
+      ui_action: null,
+      datos: null,
       model: usedModel
     });
   } catch (err: any) {
