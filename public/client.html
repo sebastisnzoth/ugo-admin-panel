@@ -770,6 +770,25 @@ let chatHistory=[], SELECTED_PROV=null;
 const $=id=>document.getElementById(id);
 const CATS=[{ic:'⚡',lb:'Electricista'},{ic:'🔧',lb:'Plomero'},{ic:'🧹',lb:'Limpieza'},{ic:'🎨',lb:'Pintor'},{ic:'🪚',lb:'Carpintero'},{ic:'🔑',lb:'Cerrajero'},{ic:'🌿',lb:'Jardinero'},{ic:'❄️',lb:'AC/Clima'}];
 
+// ── Detección de categoría robusta: ES + PT, sin acentos, por oficio o por síntoma ──
+const CAT_ALIASES={
+  'Electricista':['electric','eletric','luz','enchufe','tomada','termica','disyuntor','breaker','cortocircuito','corto circuito','apagon','cableado','fiacao','chispa','quemado electr','se corto la luz'],
+  'Plomero':['plomer','encanador','fontaner','desagote','destap','caneria','cano roto','fuga de agua','perdida de agua','pierde agua','inodoro','canilla','grifo','torneira','vazamento','ducha'],
+  'Limpieza':['limpiez','limpez','limpiar','limpar','faxina','diarista'],
+  'Pintor':['pintor','pintur','pintar'],
+  'Carpintero':['carpint','marceneir','mueble','madera','movel','estante','placard'],
+  'Cerrajero':['cerrajer','chaveiro','cerradur','llave','fechadur','candado','me quede afuera','puerta trabada'],
+  'Jardinero':['jardin','jardim','pasto','cesped','grama','poda','arbol'],
+  'AC/Clima':['aire acond','ar condicionado','split','climatiza','refrigera','heladera','freezer','geladeira']
+};
+function normTxt(s){return(' '+(s||'')+' ').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');}
+function detectCat(text){
+  const t=normTxt(text);
+  for(const c of CATS){if(t.includes(normTxt(c.lb).trim()))return c.lb;}
+  for(const[lb,keys]of Object.entries(CAT_ALIASES)){if(keys.some(k=>t.includes(k)))return lb;}
+  return null;
+}
+
 // Mapeo categoría visible (ES) → término real guardado en usuarios.categoria (PT, según import de Scout).
 // Algunos labels no tienen oferta real en la base (ver CAT_SIN_OFERTA) — se informa al cliente en vez de fallar en silencio.
 const CAT_DB_MAP={
@@ -780,7 +799,7 @@ const CAT_DB_MAP={
   'Jardinero':'jardinagem',
   'AC/Clima':'climatizacao',
   'Carpintero':'marido_aluguel', // sin categoría exacta — handyman es lo más cercano
-  'Plomero':null // sin oferta de proveedores en la base actualmente
+  'Plomero':'plomero' // categoría cargada en la base (import AR)
 };
 function catToDbTerm(label){
   if(!label)return null;
@@ -1262,12 +1281,29 @@ async function hugoCall(msg){
     if(msg==='__INICIO__'){updateChatStep(1);}
     else if(msgCount>=1 && CHAT_STEP<2){updateChatStep(2);}
 
+    // Si Hugo identificó el servicio en su JSON, usarlo para fijar categoría
+    if(!SELECTED_CAT && d.datos?.servicio){
+      const dc=detectCat(d.datos.servicio);
+      if(dc)SELECTED_CAT=dc;
+    }
+    // Último recurso: detectar por síntoma en todo lo que escribió el usuario
+    if(!SELECTED_CAT && msgCount>=1){
+      const allUser=chatHistory.filter(m=>m.role==='user').map(m=>m.content).join(' ');
+      const dc=detectCat(allUser);
+      if(dc)SELECTED_CAT=dc;
+    }
+
     // ── Si Hugo indica buscar (o hay contexto de sobra) → radar en el mapa ─
-    if(!RADAR_DONE && SELECTED_CAT && ((d.accion==='BUSCAR_PROVEEDOR' && msgCount>=2) || msgCount>=3)){
-      if(!PROBLEM_DESC){
+    if(!RADAR_DONE && ((d.accion==='BUSCAR_PROVEEDOR' && msgCount>=2) || msgCount>=3)){
+      if(!SELECTED_CAT){
+        // Sin categoría identificable → pedirla con chips (sin gastar otra llamada a la API)
+        const m2='¿De qué tipo de servicio se trata? Elegí una categoría:';
+        addMsg('h',m2);chatHistory.push({role:'assistant',content:m2});
+        $('csugs').innerHTML=CATS.map(c=>`<button class="csug" onclick="sendSug('Necesito un ${c.lb}')">${c.ic} ${c.lb}</button>`).join('');
+      } else if(!PROBLEM_DESC){
         // Tomar como descripción el último mensaje del usuario que no sea la categoría
         const um=chatHistory.filter(m=>m.role==='user').map(m=>m.content);
-        PROBLEM_DESC=um.reverse().find(t=>!CATS.some(c=>t.toLowerCase().includes(c.lb.toLowerCase())))||um[0]||'';
+        PROBLEM_DESC=um.reverse().find(t=>!detectCat(t)||t.length>30)||um[0]||'';
         askFoto();
       }else{
         startRadarSearch();
@@ -1279,7 +1315,7 @@ async function sendChat(){
   const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';
   addMsg('u',msg);chatHistory.push({role:'user',content:msg});
   // Detectar categoría en el mensaje
-  CATS.forEach(cat=>{if(msg.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
+  {const dc=detectCat(msg);if(dc)SELECTED_CAT=dc;}
   showSugs([]);
   // ── Paso 2: si ya hay categoría y este mensaje es la descripción del problema → foto (local, sin API)
   if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
@@ -1292,7 +1328,7 @@ async function sendChat(){
 }
 function sendSug(s){
   addMsg('u',s);chatHistory.push({role:'user',content:s});
-  CATS.forEach(cat=>{if(s.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
+  {const dc=detectCat(s);if(dc)SELECTED_CAT=dc;}
   showSugs([]);
   if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
     PROBLEM_DESC=s;
@@ -1332,7 +1368,13 @@ async function onFotoPicked(ev){
     w.innerHTML=`<img src="${FOTO_URL}" alt="foto del problema">`;
     d.appendChild(w);requestAnimationFrame(()=>d.scrollTop=d.scrollHeight);
     startRadarSearch();
-  }catch(e){toast('❌ No se pudo subir la foto: '+e.message);}
+  }catch(e){
+    toast('❌ No se pudo subir la foto: '+(e.message||e));
+    // No dejar el flujo colgado: ofrecer reintentar o seguir sin foto
+    $('csugs').innerHTML=
+      `<button class="csug" onclick="pickFoto()">📷 Reintentar foto</button>`+
+      `<button class="csug" onclick="skipFoto()">Continuar sin foto →</button>`;
+  }
 }
 function compressImg(file,maxSide,q){
   return new Promise((res,rej)=>{
