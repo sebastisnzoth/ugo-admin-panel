@@ -175,6 +175,36 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   margin-top:2px;transition:opacity .15s}
 .pcard-hire-h:active{opacity:.75}
 
+/* ── RADAR (búsqueda en mapa) ── */
+#radar-ov{display:none;position:fixed;inset:0;z-index:30;pointer-events:none}
+#radar-ov.show{display:block}
+.radar-center{position:absolute;left:50%;top:42%;transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#00C8D7;border:3px solid #fff;box-shadow:0 0 0 4px rgba(0,200,215,.25),0 2px 8px rgba(0,0,0,.3)}
+.radar-ring{position:absolute;left:50%;top:42%;width:60px;height:60px;border-radius:50%;border:2px solid rgba(0,200,215,.55);transform:translate(-50%,-50%) scale(.3);opacity:0;animation:radarw 2.4s ease-out infinite}
+.radar-ring:nth-child(2){animation-delay:.8s}
+.radar-ring:nth-child(3){animation-delay:1.6s}
+@keyframes radarw{0%{transform:translate(-50%,-50%) scale(.3);opacity:.9}100%{transform:translate(-50%,-50%) scale(6);opacity:0}}
+.radar-lbl{position:absolute;left:50%;top:56%;transform:translateX(-50%);background:rgba(17,17,17,.88);color:#fff;font-size:12px;font-weight:700;padding:8px 16px;border-radius:20px;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+/* ── TERNA SHEET (hasta 3 proveedores) ── */
+#terna-sheet{position:fixed;left:0;right:0;bottom:0;z-index:48;background:#fff;border-radius:24px 24px 0 0;box-shadow:0 -6px 30px rgba(0,0,0,.18);transform:translateY(110%);transition:transform .38s cubic-bezier(.32,.72,0,1);max-height:62vh;overflow-y:auto;padding-bottom:calc(14px + env(safe-area-inset-bottom,0))}
+#terna-sheet.open{transform:translateY(0)}
+.tn-handle{width:34px;height:4px;background:#e5e5e5;border-radius:2px;margin:10px auto 4px}
+.tn-title{font-size:15px;font-weight:800;padding:6px 18px 2px}
+.tn-sub{font-size:11.5px;color:#888;padding:0 18px 10px}
+.tn-card{display:flex;align-items:center;gap:12px;margin:0 14px 10px;padding:12px;border:1.5px solid #eee;border-radius:16px;background:#fff}
+.tn-card.rec{border-color:rgba(0,200,215,.5);background:#f7feff}
+.tn-av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:800;color:#fff;flex-shrink:0}
+.tn-info{flex:1;min-width:0}
+.tn-name{font-size:14px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tn-meta{font-size:11.5px;color:#777;margin-top:2px}
+.tn-meta b{color:#F59E0B;font-weight:800}
+.tn-price{font-size:14px;font-weight:900;text-align:right}
+.tn-eta{font-size:10.5px;color:#888;text-align:right}
+.tn-pick{padding:10px 16px;background:#111;color:#fff;border:none;border-radius:12px;font-weight:800;font-size:12.5px;cursor:pointer;font-family:inherit;flex-shrink:0}
+.tn-close{display:block;margin:4px auto 0;background:none;border:none;color:#999;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit;padding:8px}
+/* ── FOTO en chat ── */
+.msg-img{max-width:70%;align-self:flex-end;border-radius:14px 14px 4px 14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+.msg-img img{display:block;width:100%;height:auto}
+.foto-btn{width:38px;height:38px;border-radius:50%;background:#f0f0f0;border:none;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 /* ── CONFIRM SHEET ── */
 #confirm-sheet{position:fixed;left:0;right:0;bottom:0;z-index:60;background:#fff;
   border-radius:26px 26px 0 0;box-shadow:0 -4px 32px rgba(0,0,0,.18);
@@ -265,16 +295,17 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
       </div>
       <div class="chat-steps">
         <div class="cstep active" id="cs1" title="Servicio"></div>
-        <div class="cstep idle"   id="cs2" title="Ubicación"></div>
-        <div class="cstep idle"   id="cs3" title="Horario"></div>
-        <div class="cstep idle"   id="cs4" title="Descripción"></div>
+        <div class="cstep idle"   id="cs2" title="Problema"></div>
+        <div class="cstep idle"   id="cs3" title="Foto"></div>
+        <div class="cstep idle"   id="cs4" title="Búsqueda"></div>
         <div class="cstep idle"   id="cs5" title="Confirmar"></div>
       </div>
       <div class="step-label" id="step-label">Contame qué necesitás</div>
     </div>
   </div>
   <div id="cmsgs"></div><div id="csugs"></div>
-  <div id="cinrow"><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="micbtn" onclick="startRec()" style="width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s">🎤</button><button id="csend" onclick="sendChat()">↑</button></div>
+  <div id="cinrow"><button class="foto-btn" onclick="pickFoto()" title="Enviar foto">📷</button><input id="cin" placeholder="¿Qué servicio necesitás?" onkeydown="if(event.key==='Enter')sendChat()"><button id="micbtn" onclick="startRec()" style="width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:16px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:.2s">🎤</button><button id="csend" onclick="sendChat()">↑</button></div>
+  <input type="file" id="foto-input" accept="image/*" capture="environment" style="display:none" onchange="onFotoPicked(event)">
 </div>
 
 
@@ -356,9 +387,26 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   </div>
 </div>
 
+<!-- RADAR — búsqueda animada sobre el mapa -->
+<div id="radar-ov">
+  <div class="radar-ring"></div><div class="radar-ring"></div><div class="radar-ring"></div>
+  <div class="radar-center"></div>
+  <div class="radar-lbl" id="radar-lbl">Buscando proveedores cerca...</div>
+</div>
+
+<!-- TERNA — hasta 3 proveedores en bottom sheet -->
+<div id="terna-sheet">
+  <div class="tn-handle"></div>
+  <div class="tn-title" id="tn-title">Proveedores disponibles</div>
+  <div class="tn-sub" id="tn-sub">Elegí tu favorito. El pago queda protegido en garantía.</div>
+  <div id="terna-list"></div>
+  <button class="tn-close" onclick="closeTerna(true)">Cancelar búsqueda</button>
+</div>
+
 <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js">
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+<script>
 
 /* ═══════════════════════════════════════════════════
    ETAPA 1 — createService + watchService (Realtime)
@@ -376,11 +424,13 @@ async function createService(prov) {
 
   // 1. Insertar en servicios
   const tarifa = prov.tarifa_base || 80;
+  const descReal = PROBLEM_DESC || `Servicio de ${prov.categoria}`;
   const { data: svc, error } = await sb.from('servicios').insert({
     cliente_id:      SESSION.user.id,
     proveedor_id:    prov.id || null,
     estado:          'negociando',
-    descripcion:     `Servicio de ${prov.categoria}`,
+    descripcion:     descReal,
+    foto_url:        FOTO_URL || null,
     zona:            CLI?.zona || '',
     direccion_cliente: CLI?.endereco || '',
     lat_cliente:     myLat || null,
@@ -406,6 +456,8 @@ async function createService(prov) {
         ganancia:        +(tarifa * 0.85).toFixed(2),
         cliente_nombre:  CLI?.nombre || 'Cliente',
         categoria:       prov.categoria,
+        descripcion:     descReal,
+        foto_url:        FOTO_URL || null,
         direccion:       CLI?.endereco || '',
         lat_cliente:     myLat,
         lng_cliente:     myLng,
@@ -428,6 +480,7 @@ async function createService(prov) {
           titulo: `Nuevo pedido · ${prov.categoria}`,
           cuerpo: `Cliente solicita servicio · R$${tarifa}`,
           datos:  { servicio_id: svc.id, tarifa, categoria: prov.categoria,
+                    descripcion: descReal, foto_url: FOTO_URL || null,
                     lat_cliente: myLat, lng_cliente: myLng,
                     cliente_nombre: CLI?.nombre || 'Cliente' },
           leida: false,
@@ -679,6 +732,7 @@ async function submitRating() {
     document.getElementById('track-overlay').style.display = 'none';
     ACTIVE_SVC = null;
     myRating = 0;
+    resetFlow();
     toast('✅ ¡Gracias por tu calificación!');
     nav2('home');
   } catch (e) {
@@ -694,8 +748,13 @@ async function cancelService() {
   document.getElementById('track-overlay').style.display = 'none';
   stopCascade();
   ACTIVE_SVC = null;
+  resetFlow();
   toast('Pedido cancelado.');
   nav2('home');
+}
+
+function resetFlow(){
+  if (typeof window.__resetHugoFlow === 'function') window.__resetHugoFlow();
 }
 
 </script>
@@ -734,9 +793,13 @@ function catToDbTerm(label){
 }
 
 // ── Estado del flujo Hugo ─────────────────────────────────────────
-let CHAT_STEP = 0; // 0=idle 1=servicio 2=ubicación 3=horario 4=desc 5=confirmar
-const STEP_LABELS = ['Contame qué necesitás','¿Qué servicio?','Tu ubicación','¿Cuándo?','Describí el problema','Listo para confirmar'];
+let CHAT_STEP = 0; // 0=idle 1=servicio 2=problema 3=foto 4=búsqueda 5=confirmar
+const STEP_LABELS = ['Contame qué necesitás','¿Qué servicio?','¿Cuál es el problema?','Foto del problema','Buscando proveedores','Confirmar pedido'];
 let PENDING_PROV = null; // proveedor pendiente de confirmación
+let SELECTED_CAT = null; // categoría detectada (paso 1)
+let PROBLEM_DESC = '';   // descripción real del problema (paso 2)
+let FOTO_URL = null;     // foto del problema subida a storage (paso 3)
+let RADAR_DONE = false;  // evita doble búsqueda
 const PROV_COLORS = ['#00C8D7','#7C3AED','#059669','#DC2626','#D97706','#2563EB','#DB2777','#0891B2'];
 
 
@@ -1077,9 +1140,7 @@ function rateService(){
   </div>`;
   $('sheet').style.height='min(50vh,400px)';
 }
-let starRating=5;
-function setStar(n){starRating=n;document.querySelectorAll('.star').forEach((s,i)=>s.classList.toggle('on',i<n));}
-function submitRating(){$('sheet').style.height='0';toast('⭐ ¡Gracias por tu calificación!');}
+/* setStar() y submitRating() viven en el bloque de tracking (guardan en DB y actualizan karma) */
 
 /* HUGO CHAT */
 const HSUGS=['⚡ Necesito un electricista urgente','🧹 ¿Cuánto cuesta el servicio de limpieza?','📍 ¿Hay proveedores disponibles cerca?','📦 Estado de mi pedido actual','🛠 Solicitar otro tipo de servicio'];
@@ -1096,7 +1157,7 @@ function openChat(){
 // ── Step dots ──────────────────────────────────────────────────────
 function updateChatStep(step) {
   CHAT_STEP = step;
-  const labels = ['Contame qué necesitás','¿Qué servicio?','Tu ubicación','¿Cuándo?','Describí el problema','Confirmar pedido'];
+  const labels = STEP_LABELS;
   for (let i = 1; i <= 5; i++) {
     const el = document.getElementById('cs' + i);
     if (!el) continue;
@@ -1190,43 +1251,17 @@ async function hugoCall(msg){
     // ── Avanzar step según historial ──────────────────────────────
     const msgCount = chatHistory.filter(m=>m.role==='user').length;
     if(msg==='__INICIO__'){updateChatStep(1);}
-    else if(msgCount===1){updateChatStep(2);}
-    else if(msgCount===2){updateChatStep(3);}
-    else if(msgCount===3){updateChatStep(4);}
-    else if(msgCount>=4){updateChatStep(5);}
+    else if(msgCount>=1 && CHAT_STEP<2){updateChatStep(2);}
 
-    // ── Buscar proveedores si Hugo lo indica o hay suficiente contexto ─
-    if(d.accion==='BUSCAR_PROVEEDOR' || (msgCount>=3 && !SELECTED_PROV)){
-      const catLabel = SELECTED_CAT || (chatHistory.find(m=>m.role==='user')?.content||'');
-      const dbTerm = catToDbTerm(catLabel);
-
-      if(dbTerm){
-        // 1er intento: proveedores ONLINE ahora en esa categoría
-        let {data:provs} = await sb.from('usuarios')
-          .select('id,nombre,karma,categoria,tarifa_base,lat,lng')
-          .eq('tipo','proveedor').eq('online',true)
-          .ilike('categoria','%'+dbTerm+'%')
-          .not('lat','is',null).limit(5);
-
-        if(provs?.length){
-          showProviderCards(provs);
-        } else {
-          // 2do intento: fallback — hay proveedores en la categoría pero ninguno online ahora.
-          // Mostramos los más cercanos igual, marcados como "no disponible ahora" en vez de fallar en silencio.
-          const {data:offlineProvs} = await sb.from('usuarios')
-            .select('id,nombre,karma,categoria,tarifa_base,lat,lng')
-            .eq('tipo','proveedor')
-            .ilike('categoria','%'+dbTerm+'%')
-            .not('lat','is',null).limit(5);
-          if(offlineProvs?.length){
-            addMsg('h','Por ahora no hay proveedores conectados en este momento, pero estos suelen atender en tu zona. ¿Querés que te avise apenas se conecte alguno?');
-            showProviderCards(offlineProvs);
-          } else {
-            addMsg('h','No encontré proveedores de esa categoría en tu zona todavía. ¿Querés que te avise cuando se sume alguno, o preferís otra categoría?');
-          }
-        }
-      } else if(catLabel){
-        addMsg('h','Por ahora no tenemos ese servicio disponible en tu zona. ¿Te ayudo con otra categoría?');
+    // ── Si Hugo indica buscar (o hay contexto de sobra) → radar en el mapa ─
+    if(!RADAR_DONE && SELECTED_CAT && ((d.accion==='BUSCAR_PROVEEDOR' && msgCount>=2) || msgCount>=3)){
+      if(!PROBLEM_DESC){
+        // Tomar como descripción el último mensaje del usuario que no sea la categoría
+        const um=chatHistory.filter(m=>m.role==='user').map(m=>m.content);
+        PROBLEM_DESC=um.reverse().find(t=>!CATS.some(c=>t.toLowerCase().includes(c.lb.toLowerCase())))||um[0]||'';
+        askFoto();
+      }else{
+        startRadarSearch();
       }
     }
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
@@ -1237,6 +1272,12 @@ async function sendChat(){
   // Detectar categoría en el mensaje
   CATS.forEach(cat=>{if(msg.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
   showSugs([]);
+  // ── Paso 2: si ya hay categoría y este mensaje es la descripción del problema → foto (local, sin API)
+  if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
+    PROBLEM_DESC=msg;
+    askFoto();
+    return;
+  }
   await hugoCall(msg);
   showSugs(HSUGS);
 }
@@ -1244,8 +1285,154 @@ function sendSug(s){
   addMsg('u',s);chatHistory.push({role:'user',content:s});
   CATS.forEach(cat=>{if(s.toLowerCase().includes(cat.lb.toLowerCase()))SELECTED_CAT=cat.lb;});
   showSugs([]);
+  if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
+    PROBLEM_DESC=s;
+    askFoto();
+    return;
+  }
   hugoCall(s).then(()=>showSugs(HSUGS));
 }
+
+/* ── PASO 3: FOTO DEL PROBLEMA ─────────────────────────────────── */
+function askFoto(){
+  updateChatStep(3);
+  const hMsg='Para enviarte al especialista adecuado, ¿podés subir o tomar una foto del problema?';
+  addMsg('h',hMsg);chatHistory.push({role:'assistant',content:hMsg});hugoSpeak(hMsg);
+  $('csugs').innerHTML=
+    `<button class="csug" onclick="pickFoto()">📷 Tomar / subir foto</button>`+
+    `<button class="csug" onclick="skipFoto()">Continuar sin foto →</button>`;
+}
+function pickFoto(){$('foto-input').click();}
+function skipFoto(){
+  addMsg('u','Continuar sin foto');
+  startRadarSearch();
+}
+async function onFotoPicked(ev){
+  const file=ev.target.files?.[0];ev.target.value='';
+  if(!file)return;
+  toast('📤 Subiendo foto...');
+  try{
+    const blob=await compressImg(file,1280,.72);
+    const path=`${SESSION.user.id}/${Date.now()}.jpg`;
+    const{error}=await sb.storage.from('evidencias').upload(path,blob,{contentType:'image/jpeg'});
+    if(error)throw error;
+    const{data}=sb.storage.from('evidencias').getPublicUrl(path);
+    FOTO_URL=data.publicUrl;
+    // Burbuja con la imagen en el chat
+    const d=$('cmsgs');const w=document.createElement('div');w.className='msg-img';
+    w.innerHTML=`<img src="${FOTO_URL}" alt="foto del problema">`;
+    d.appendChild(w);requestAnimationFrame(()=>d.scrollTop=d.scrollHeight);
+    startRadarSearch();
+  }catch(e){toast('❌ No se pudo subir la foto: '+e.message);}
+}
+function compressImg(file,maxSide,q){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=()=>{
+      let{width:w,height:h}=img;
+      if(Math.max(w,h)>maxSide){const r=maxSide/Math.max(w,h);w=Math.round(w*r);h=Math.round(h*r);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      c.toBlob(b=>b?res(b):rej(new Error('compress')),'image/jpeg',q);
+    };
+    img.onerror=()=>rej(new Error('img'));
+    img.src=URL.createObjectURL(file);
+  });
+}
+
+/* ── PASO 4: RADAR EN EL MAPA ──────────────────────────────────── */
+async function startRadarSearch(){
+  if(RADAR_DONE)return;RADAR_DONE=true;
+  updateChatStep(4);
+  const hMsg='Perfecto. Estoy escaneando los mejores proveedores cerca tuyo...';
+  addMsg('h',hMsg);chatHistory.push({role:'assistant',content:hMsg});
+  closeChat();
+  // Mapa protagonista: centrar en el cliente con leve zoom out
+  if(MAP&&myLat)MAP.setView([myLat,myLng],13.6,{animate:true});
+  const cat=SELECTED_CAT||'proveedores';
+  $('radar-lbl').textContent=`Buscando ${cat.toLowerCase()}s cerca...`;
+  $('radar-ov').classList.add('show');
+  const t0=Date.now();
+  let provs=await queryTerna();
+  // Mínimo 2.4s de animación para que el radar se perciba
+  const wait=Math.max(0,2400-(Date.now()-t0));
+  setTimeout(()=>{
+    $('radar-ov').classList.remove('show');
+    if(provs?.online?.length){showTerna(provs.online,false);}
+    else if(provs?.offline?.length){showTerna(provs.offline,true);}
+    else{
+      openChat();
+      const m='No encontré proveedores de esa categoría en tu zona todavía. ¿Querés que te avise cuando se sume alguno, o probamos otra categoría?';
+      addMsg('h',m);chatHistory.push({role:'assistant',content:m});hugoSpeak(m);
+      RADAR_DONE=false;updateChatStep(2);
+      showSugs(HSUGS);
+    }
+  },wait);
+}
+async function queryTerna(){
+  const dbTerm=catToDbTerm(SELECTED_CAT);
+  if(!dbTerm)return null;
+  const sel='id,nombre,karma,categoria,tarifa_base,lat,lng';
+  let{data:online}=await sb.from('usuarios').select(sel)
+    .eq('tipo','proveedor').eq('online',true).gte('karma',4.0)
+    .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
+  // Sin filtro de karma si el estricto no devuelve nada
+  if(!online?.length){
+    ({data:online}=await sb.from('usuarios').select(sel)
+      .eq('tipo','proveedor').eq('online',true)
+      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12));
+  }
+  let offline=null;
+  if(!online?.length){
+    ({data:offline}=await sb.from('usuarios').select(sel)
+      .eq('tipo','proveedor')
+      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12));
+  }
+  const rank=a=>(a||[]).map(p=>({...p,_km:(p.lat&&myLat)?haversineKm(myLat,myLng,p.lat,p.lng):99}))
+    .sort((x,y)=>(x._km-y._km)||((y.karma||0)-(x.karma||0))).slice(0,3);
+  return{online:rank(online),offline:rank(offline)};
+}
+
+/* ── PASO 5: TERNA (bottom sheet) ──────────────────────────────── */
+function showTerna(provs,esOffline){
+  $('tn-title').textContent=esOffline?'Sin conexión ahora, pero atienden tu zona':'Proveedores disponibles';
+  $('tn-sub').textContent=esOffline
+    ?'Ninguno está online en este momento. Podés reservar igual y Hugo los contacta.'
+    :'Elegí tu favorito. El pago queda protegido en garantía.';
+  $('terna-list').innerHTML=provs.map((p,i)=>{
+    const color=PROV_COLORS[i%PROV_COLORS.length];
+    const eta=p._km<90?Math.round(p._km*3.5+5):'?';
+    const pj=JSON.stringify({id:p.id,nombre:p.nombre,categoria:p.categoria,karma:p.karma,tarifa_base:p.tarifa_base,lat:p.lat,lng:p.lng}).replace(/"/g,'&quot;');
+    return`<div class="tn-card${i===0?' rec':''}">
+      <div class="tn-av" style="background:${color}">${(p.nombre||'?')[0].toUpperCase()}</div>
+      <div class="tn-info">
+        <div class="tn-name">${p.nombre||'Proveedor'}</div>
+        <div class="tn-meta"><b>★ ${(p.karma||5).toFixed(1)}</b> · A ${eta} min${i===0?' · Recomendado':''}</div>
+      </div>
+      <div><div class="tn-price">R$ ${p.tarifa_base||80}</div><div class="tn-eta">visita/diagnóstico</div></div>
+      <button class="tn-pick" onclick="pickTerna(${pj})">Elegir</button>
+    </div>`;
+  }).join('');
+  $('terna-sheet').classList.add('open');
+}
+function pickTerna(prov){
+  closeTerna(false);
+  SELECTED_PROV=prov;PENDING_PROV=prov;
+  updateChatStep(5);
+  showConfirmSheet(prov); // escrow + confirmación (paso 7)
+}
+function closeTerna(reset){
+  $('terna-sheet').classList.remove('open');
+  if(reset){RADAR_DONE=false;updateChatStep(2);openChat();showSugs(HSUGS);}
+}
+// Reset completo del flujo (tras completar/cancelar servicio)
+window.__resetHugoFlow=function(){
+  PROBLEM_DESC='';FOTO_URL=null;RADAR_DONE=false;PENDING_PROV=null;SELECTED_PROV=null;
+  SELECTED_CAT=null;chatHistory=[];CHAT_STEP=0;
+  const cm=$('cmsgs');if(cm)cm.innerHTML='';
+  $('terna-sheet').classList.remove('open');
+  $('radar-ov').classList.remove('show');
+};
 
 /* ── VOZ (Web Speech API) ── */
 const hasSpeech = 'speechSynthesis' in window;
