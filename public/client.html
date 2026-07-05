@@ -377,6 +377,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
     <div class="cs-row"><span class="cs-lbl">Proveedor</span><span class="cs-val" id="cs-prov">—</span></div>
     <div class="cs-row"><span class="cs-lbl">Calificación</span><span class="cs-val" id="cs-rating">—</span></div>
     <div class="cs-row"><span class="cs-lbl">ETA estimado</span><span class="cs-val" id="cs-eta">—</span></div>
+    <div id="cs-desglose" style="background:#f7f7f7;border-radius:12px;padding:10px 12px;margin:10px 0 2px;font-size:12px;color:#555;display:flex;flex-direction:column;gap:5px"></div>
     <div class="cs-escrow">🔒 El pago queda en garantía hasta que aprobés el trabajo. Si hay algún problema, Hugo media la resolución.</div>
     <div class="cs-total">
       <span class="cs-total-lbl">Total a reservar</span>
@@ -423,7 +424,8 @@ async function createService(prov) {
   toast('⏳ Creando pedido...');
 
   // 1. Insertar en servicios
-  const tarifa = prov.tarifa_base || 80;
+  const f = prov._tarifa || calcTarifa(prov);
+  const tarifa = f.total;
   const descReal = PROBLEM_DESC || `Servicio de ${prov.categoria}`;
   const { data: svc, error } = await sb.from('servicios').insert({
     cliente_id:      SESSION.user.id,
@@ -454,6 +456,7 @@ async function createService(prov) {
         servicio_id:     svc.id,
         tarifa:          tarifa,
         ganancia:        +(tarifa * 0.85).toFixed(2),
+        desglose:        f,
         cliente_nombre:  CLI?.nombre || 'Cliente',
         categoria:       prov.categoria,
         descripcion:     descReal,
@@ -821,6 +824,27 @@ let FOTO_URL = null;     // foto del problema subida a storage (paso 3)
 let RADAR_DONE = false;  // evita doble búsqueda
 const PROV_COLORS = ['#00C8D7','#7C3AED','#059669','#DC2626','#D97706','#2563EB','#DB2777','#0891B2'];
 
+/* ── TARIFARIO (estilo Uber: base + desplazamiento + cuota, con mínima) ── */
+let TARIFARIO={base:45,minima:80,por_km:6,cuota_solicitud:8,espera_por_min:2.5,mult_categoria:{}};
+async function loadTarifario(){
+  try{
+    const{data}=await sb.from('config_sistema').select('valor').eq('clave','tarifario').single();
+    if(data?.valor)TARIFARIO={...TARIFARIO,...(typeof data.valor==='string'?JSON.parse(data.valor):data.valor)};
+  }catch(_){/* defaults */}
+}
+function calcTarifa(prov){
+  const km=(prov.lat&&myLat)?haversineKm(myLat,myLng,prov.lat,prov.lng):3;
+  const mult=TARIFARIO.mult_categoria?.[SELECTED_CAT||prov.categoria]||1;
+  // Si el proveedor fijó su propia tarifa base, se respeta; si no, base de plataforma × categoría
+  const base=+(prov.tarifa_base||TARIFARIO.base*mult).toFixed(2);
+  const desplazamiento=+(km*TARIFARIO.por_km).toFixed(2);
+  const cuota=TARIFARIO.cuota_solicitud;
+  const subtotal=base+desplazamiento+cuota;
+  const total=Math.max(TARIFARIO.minima,Math.round(subtotal));
+  return{base,km:+km.toFixed(1),desplazamiento,cuota,minima:TARIFARIO.minima,
+         aplico_minima:subtotal<TARIFARIO.minima,total};
+}
+
 
 
 // ── Home bar ──────────────────────────────────────────────────────
@@ -935,7 +959,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{if(ev==='SIGNED_IN'&&ses&&!SESSION){SE
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);
+    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -1055,7 +1079,7 @@ async function loadProviders(){
     const icon=L.divIcon({className:'',html,iconSize:[null,null],iconAnchor:[50,20]});
     L.marker([p.lat,p.lng],{icon}).addTo(MAP).on('click',()=>{
       SELECTED_PROV=p;
-      toast(`${p.nombre} · ${p.categoria} · ★${(p.karma||5).toFixed(1)} · R$${p.tarifa_base||80}+`);
+      toast(`${p.nombre} · ${p.categoria} · ★${(p.karma||5).toFixed(1)} · R$${calcTarifa(p).total} est.`);
       openChatWith(p);
     });
   });
@@ -1108,14 +1132,14 @@ async function selCat(cat,el){
         <button class="pcbtn pcbtn-c" onclick="hireProv(${JSON.stringify(p).replace(/"/g,"'")})">⚡ Contratar</button>
       </div>
     </div>
-    <div class="pcr"><div class="pcprice">R$${p.tarifa_base||80}+</div><div class="pcdist">${dist(p)}</div></div>
+    <div class="pcr"><div class="pcprice">R$${calcTarifa(p).total}</div><div class="pcdist">${dist(p)}</div></div>
   </div>`).join('');
 }
 
 function hireProv(p){
   SELECTED_PROV=p;
   // Confirm with user
-  const ok=confirm(`¿Contratar a ${p.nombre} (${p.categoria}) por R$${p.tarifa_base||80}+?`);
+  const ok=confirm(`¿Contratar a ${p.nombre} (${p.categoria}) por R$${calcTarifa(p).total} estimado?`);
   if(!ok) return;
   createService(p);
 }
@@ -1201,7 +1225,7 @@ function showProviderCards(provs) {
         <div class="pcard-av-h" style="background:${color}">${(p.nombre||'?')[0].toUpperCase()}</div>
         <div class="pcard-name-h">${p.nombre || 'Proveedor'}</div>
         <div class="pcard-stars-h">★ ${(p.karma||5).toFixed(1)}</div>
-        <div class="pcard-price-h">R$ ${p.tarifa_base || 80}</div>
+        <div class="pcard-price-h">R$ ${calcTarifa(p).total}</div>
         <div class="pcard-eta-h">~${eta} min</div>
         <button class="pcard-hire-h" onclick="event.stopPropagation();selectProvCard(${JSON.stringify({id:p.id,nombre:p.nombre,categoria:p.categoria,karma:p.karma,tarifa_base:p.tarifa_base,lat:p.lat,lng:p.lng}).replace(/"/g,'&quot;')})">Elegir</button>
       </div>`;
@@ -1221,12 +1245,19 @@ function selectProvCard(prov) {
 function showConfirmSheet(prov) {
   const km = (prov.lat && myLat) ? haversineKm(myLat, myLng, prov.lat, prov.lng) : null;
   const eta = km ? Math.round(km * 3.5 + 5) : '?';
-  const tarifa = prov.tarifa_base || 80;
+  const f = calcTarifa(prov);
+  prov._tarifa = f; // se usa al reservar
   $('cs-srv').textContent = prov.categoria || 'Servicio';
   $('cs-prov').textContent = prov.nombre || 'Proveedor';
   $('cs-rating').textContent = '★ ' + (prov.karma || 5).toFixed(1) + ' · Excelente';
   $('cs-eta').textContent = '~' + eta + ' minutos';
-  $('cs-total').textContent = 'R$ ' + tarifa;
+  const row=(l,v)=>`<div style="display:flex;justify-content:space-between"><span>${l}</span><span style="font-weight:700;color:#333">${v}</span></div>`;
+  $('cs-desglose').innerHTML =
+    row('Tarifa base','R$ '+f.base.toFixed(2))+
+    row(`Desplazamiento (${f.km} km × R$${TARIFARIO.por_km})`,'R$ '+f.desplazamiento.toFixed(2))+
+    row('Cuota de solicitud','R$ '+f.cuota.toFixed(2))+
+    (f.aplico_minima?row('Tarifa mínima aplicada','R$ '+f.minima.toFixed(2)):'');
+  $('cs-total').textContent = 'R$ ' + f.total;
   const sheet = $('confirm-sheet');
   if (sheet) sheet.classList.add('open');
   closeChat();
@@ -1453,6 +1484,7 @@ function showTerna(provs,esOffline){
   $('terna-list').innerHTML=provs.map((p,i)=>{
     const color=PROV_COLORS[i%PROV_COLORS.length];
     const eta=p._km<90?Math.round(p._km*3.5+5):'?';
+    const f=calcTarifa(p);
     const pj=JSON.stringify({id:p.id,nombre:p.nombre,categoria:p.categoria,karma:p.karma,tarifa_base:p.tarifa_base,lat:p.lat,lng:p.lng}).replace(/"/g,'&quot;');
     return`<div class="tn-card${i===0?' rec':''}">
       <div class="tn-av" style="background:${color}">${(p.nombre||'?')[0].toUpperCase()}</div>
@@ -1460,7 +1492,7 @@ function showTerna(provs,esOffline){
         <div class="tn-name">${p.nombre||'Proveedor'}</div>
         <div class="tn-meta"><b>★ ${(p.karma||5).toFixed(1)}</b> · A ${eta} min${i===0?' · Recomendado':''}</div>
       </div>
-      <div><div class="tn-price">R$ ${p.tarifa_base||80}</div><div class="tn-eta">visita/diagnóstico</div></div>
+      <div><div class="tn-price">R$ ${f.total}</div><div class="tn-eta">estimado</div></div>
       <button class="tn-pick" onclick="pickTerna(${pj})">Elegir</button>
     </div>`;
   }).join('');
