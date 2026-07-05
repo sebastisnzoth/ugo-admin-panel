@@ -583,7 +583,7 @@ async function toggleOnline(){
 
   await sb.from('usuarios').update({activo:isOnline,online:isOnline,lat:myLat,lng:myLng}).eq('id',SESSION.user.id);
   toast(isOnline?'✅ Estás en línea — ya podés recibir pedidos':'⚫ Te pusiste offline');
-  if(isOnline){MAP?.panTo([myLat,myLng]);setTimeout(()=>showJobOffer(null),8000);}
+  if(isOnline){MAP?.panTo([myLat,myLng]);} // demo de oferta fake desactivada: solo pedidos reales por Realtime
 }
 
 /* ── JOB FLOW ── */
@@ -1100,40 +1100,107 @@ function subscribeToJobs() {
 
 // Override acceptJob to also update DB
 const _origAcceptJob = acceptJob;
+let pagoChannelProv = null;   // realtime de pagos (escrow)
+let svcChannelProv  = null;   // realtime del servicio (cancelaciones del cliente)
+let ESCROW_OK = false;
+
 async function acceptJobReal() {
   clearInterval(jobTimer);
   $('jobnot').classList.remove('show');
-  jobState = 'en_camino';
+  // ── HANDSHAKE: aceptar = CONFIRMADO. Se sale recién cuando el cliente asegura el pago ──
+  jobState = 'confirmado';
+  ESCROW_OK = false;
   ACTIVE_JOB = JOB;
-  startGPS(); // asegurar tracking activo — el cliente necesita verte en camino
-  _lastGpsWrite = 0; // forzar escritura inmediata al pasar a en_camino (alta frecuencia)
 
-  // Load full service and update DB
   if (JOB?.servicio_id) {
     const {data: svc} = await sb.from('servicios')
       .select('*').eq('id', JOB.servicio_id).single();
     if(svc) ACTIVE_SVC = svc;
-    
+
     await sb.from('servicios').update({
       proveedor_id: SESSION.user.id,
-      estado: 'en_camino',
+      estado: 'confirmado',
       confirmado_at: new Date().toISOString()
     }).eq('id', JOB.servicio_id);
-    
-    // Start auto-distance check
-    startDistanceCheck(JOB.servicio_id, svc.lat_cliente, svc.lng_cliente);
+
+    watchPagoProv(JOB.servicio_id);
+    watchSvcProv(JOB.servicio_id);
+    checkPagoProv(JOB.servicio_id); // por si el pago ya entró
   }
 
   $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
-  $('jbsub').innerHTML = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}${renderTimelineMini('en_camino')}`;
+  $('jbsub').innerHTML = `R$${ACTIVE_JOB.p || 0} · ${ACTIVE_JOB.cliente_nombre || 'Cliente'}${renderTimelineMini('confirmado')}`;
   $('jobbar').classList.add('show');
-  $('jbbtn').textContent = '✓ Llegoé';
-  toast('✅ Pedido aceptado — ¡Navegá al cliente!');
+  $('jbbtn').textContent = '🔒 Esperando pago...';
+  $('jbbtn').disabled = true;
+  $('jbbtn').style.opacity = '.55';
+  toast('✅ Aceptaste el pedido. Hugo le pidió el pago al cliente — salís cuando esté protegido en la bóveda.');
+}
+
+// Escrow asegurado → habilitar salida
+function onEscrowOkProv(){
+  if (ESCROW_OK) return; ESCROW_OK = true;
+  $('jbbtn').textContent = '🚗 Salir en camino';
+  $('jbbtn').disabled = false;
+  $('jbbtn').style.opacity = '1';
+  $('jbsub').innerHTML = `💰 Pago protegido en la bóveda · R$${ACTIVE_JOB?.p || 0}` + renderTimelineMini('confirmado');
+  toast('💰 Pago del cliente protegido en la bóveda. ¡Podés salir!');
+  try{ navigator.vibrate && navigator.vibrate([120,60,120]); }catch(_){}
+}
+function watchPagoProv(svcId){
+  if(pagoChannelProv){sb.removeChannel(pagoChannelProv);pagoChannelProv=null;}
+  pagoChannelProv=sb.channel('pago_prov_'+svcId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${svcId}`},
+      p=>{if(p.new?.estado==='aprobado'||p.new?.estado==='pagado')onEscrowOkProv();})
+    .subscribe();
+}
+async function checkPagoProv(svcId){
+  const{data}=await sb.from('pagos').select('estado').eq('servicio_id',svcId).in('estado',['aprobado','pagado']).limit(1);
+  if(data?.length)onEscrowOkProv();
+}
+// Si el cliente cancela mientras esperás, enterate al instante
+function watchSvcProv(svcId){
+  if(svcChannelProv){sb.removeChannel(svcChannelProv);svcChannelProv=null;}
+  svcChannelProv=sb.channel('svc_prov_'+svcId)
+    .on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`id=eq.${svcId}`},
+      p=>{if(p.new?.estado==='cancelado')onClienteCancelo();})
+    .subscribe();
+}
+function onClienteCancelo(){
+  toast('😕 El cliente canceló el pedido.');
+  cleanupJobChannels();
+  jobState='idle';ESCROW_OK=false;
+  ACTIVE_SVC=null;ACTIVE_JOB=null;JOB=null;
+  $('jobbar').classList.remove('show');
+  nav2('home');
+}
+function cleanupJobChannels(){
+  if(pagoChannelProv){sb.removeChannel(pagoChannelProv);pagoChannelProv=null;}
+  if(svcChannelProv){sb.removeChannel(svcChannelProv);svcChannelProv=null;}
+}
+
+// Paso 2 del handshake: con la bóveda asegurada, salir en camino
+async function salirEnCamino(){
+  jobState = 'en_camino';
+  startGPS();
+  _lastGpsWrite = 0; // alta frecuencia inmediata — el cliente te ve moverte en vivo
+  if (ACTIVE_JOB?.servicio_id) {
+    await sb.from('servicios').update({ estado: 'en_camino' }).eq('id', ACTIVE_JOB.servicio_id);
+    if (ACTIVE_SVC?.lat_cliente) startDistanceCheck(ACTIVE_JOB.servicio_id, ACTIVE_SVC.lat_cliente, ACTIVE_SVC.lng_cliente);
+  }
+  $('jbsub').innerHTML = `R$${ACTIVE_JOB?.p || 0} · ${ACTIVE_JOB?.cliente_nombre || 'Cliente'}` + renderTimelineMini('en_camino');
+  $('jbbtn').textContent = '✓ Llegué';
+  toast('🚗 En camino — ¡Navegá al cliente!');
 }
 
 // Override nextJobState to update DB
 async function nextJobStateReal() {
+  if (jobState === 'confirmado') {
+    if (!ESCROW_OK) { toast('🔒 Esperando que el cliente proteja el pago en la bóveda...'); return; }
+    await salirEnCamino();
+    return;
+  }
   if (jobState === 'en_camino') {
     jobState = 'ejecutando';
     $('jbbtn').textContent = '✓ Completar';
@@ -1157,9 +1224,11 @@ async function nextJobStateReal() {
       servicios_completados: (PROV?.servicios_completados || 0) + 1
     }).eq('id', SESSION.user.id);
     if (PROV) PROV.servicios_completados = (PROV.servicios_completados || 0) + 1;
+    cleanupJobChannels();
+    ESCROW_OK = false;
     ACTIVE_SVC = null;
     ACTIVE_JOB = null; JOB = null;
-    toast(`🎉 Servicio completado · R$${tarifa} acreditados`);
+    toast(`🎉 Servicio completado · R$${(tarifa*0.85).toFixed(0)} netos van a tu bóveda al aprobarlo el cliente`);
     nav2('home');
   }
 }
