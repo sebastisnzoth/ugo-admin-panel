@@ -415,9 +415,37 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 let ACTIVE_SVC = null;     // servicio activo
 let svcChannel = null;     // canal realtime
 let provChannel = null;    // canal GPS proveedor
+let pagoChannel = null;    // canal realtime de pagos (escrow)
 let trMap = null;          // mapa de tracking
 let trProvMarker = null;   // pin del proveedor en tracking
 let myRating = 0;
+let SVC_PAGADO = false;    // escrow asegurado
+
+// Hugo narra cada etapa del proceso dentro del tracking
+function trHugo(text){
+  const box=document.getElementById('tr-hugo');
+  const txt=document.getElementById('tr-hugo-txt');
+  if(box&&txt){box.style.display='flex';txt.textContent=text;}
+  try{if(typeof hugoSpeak==='function')hugoSpeak(text);}catch(_){}
+}
+
+// Escrow: escuchar la tabla pagos para anunciar el pago protegido al instante
+function watchPagos(svcId){
+  if(pagoChannel){sb.removeChannel(pagoChannel);pagoChannel=null;}
+  pagoChannel=sb.channel('pago_'+svcId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${svcId}`},
+      p=>{if(p.new?.estado==='aprobado'||p.new?.estado==='pagado')onPagoAprobado();})
+    .subscribe();
+}
+function onPagoAprobado(){
+  if(SVC_PAGADO)return;SVC_PAGADO=true;
+  const pb=document.getElementById('pago-btn');if(pb)pb.style.display='none';
+  trHugo(`Pago protegido en la bóveda ✓ Tu dinero queda congelado hasta que apruebes el trabajo. ${ACTIVE_SVC?.prov?.nombre||'El proveedor'} ya puede ponerse en marcha.`);
+}
+async function checkPagoExistente(svcId){
+  const{data}=await sb.from('pagos').select('estado').eq('servicio_id',svcId).in('estado',['aprobado','pagado']).limit(1);
+  if(data?.length)onPagoAprobado();
+}
 
 async function createService(prov) {
   if (!SESSION || !prov) return;
@@ -493,10 +521,13 @@ async function createService(prov) {
     }
   }
 
-  // 3. Mostrar pantalla de tracking
+  // 3. Mostrar pantalla de tracking — Hugo toma el control del proceso
+  SVC_PAGADO=false;
   showTracking(prov);
   watchService(svc.id);
+  watchPagos(svc.id);
   startCascade(svc.id);
+  trHugo(`Listo. Le avisé a ${prov.nombre||'el proveedor'} de tu problema${FOTO_URL?' con la foto':''}. Tiene 90 segundos para aceptar; si no responde, busco al siguiente disponible. Yo me encargo de todo.`);
 }
 
 // ── Cascade matching timer ────────────────────────
@@ -591,36 +622,65 @@ function watchService(svcId) {
     .subscribe();
 }
 
+let LAST_ESTADO = null;
 function onServiceUpdate(svc) {
   if (!ACTIVE_SVC) return;
   ACTIVE_SVC = { ...ACTIVE_SVC, ...svc };
   const st = svc.estado;
+  if (st === LAST_ESTADO) return; // evitar narración duplicada
+  LAST_ESTADO = st;
+  const nom = ACTIVE_SVC.prov?.nombre || 'El proveedor';
 
-  stopCascade();
-  if (st === 'confirmado' || st === 'en_camino') {
+  if (st === 'confirmado') {
+    stopCascade(); hideCascadeInfo();
     setTrackStep(2);
     document.getElementById('tr-status').textContent = '✅ ¡Proveedor aceptó!';
+    document.getElementById('tr-sub').textContent = 'Aseguremos el pago para que salga en camino';
     document.getElementById('tr-cancel').style.display = 'none';
     showProvCard();
-    hideCascadeInfo();
-    if (st === 'en_camino') {
-      setTrackStep(3);
-      document.getElementById('tr-status').textContent = '🚗 Proveedor en camino';
-      startTrackingProv(svc.proveedor_id);
+    // ── ESCROW: paso de pago (antes esta rama era inalcanzable) ──
+    if (!SVC_PAGADO) {
+      const pagoBtn = document.getElementById('pago-btn');
+      if (pagoBtn) pagoBtn.style.display = 'block';
+      trHugo(`¡${nom} aceptó tu pedido! 🎉 Ahora protegé tu pago de R$${ACTIVE_SVC.tarifa} en la bóveda: el dinero queda congelado y solo se libera cuando VOS apruebes el trabajo terminado.`);
+      checkPagoExistente(ACTIVE_SVC.id);
     }
+  } else if (st === 'en_camino') {
+    stopCascade(); hideCascadeInfo();
+    setTrackStep(3);
+    document.getElementById('tr-status').textContent = '🚗 Proveedor en camino';
+    showProvCard();
+    startTrackingProv(svc.proveedor_id);
+    trHugo(`${nom} está en camino 🚗 Seguí su ubicación en vivo en el mapa. Te aviso cuando llegue.`);
   } else if (st === 'ejecutando') {
     setTrackStep(3);
     document.getElementById('tr-status').textContent = '🔧 Servicio en curso';
     if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
+    trHugo(`${nom} llegó y está trabajando en tu problema 🔧 Cualquier cosa que necesites, escribime.`);
   } else if (st === 'completado') {
     setTrackStep(4);
     if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
     showRating(svc.tarifa || ACTIVE_SVC.prov?.tarifa_base || 80);
-  } else if (st === 'confirmado') {
-    // Mostrar botón de pago si no hay pago aún
-    const pagoBtn = document.getElementById('pago-btn');
-    if (pagoBtn) pagoBtn.style.display = 'block';
+    trHugo(`¡${nom} marcó el trabajo como terminado! 🎉 Revisalo y calificá tu experiencia: con tu aprobación libero el pago de la bóveda.`);
+  } else if (st === 'cancelado' || st === 'rechazado') {
+    // El proveedor no puede tomar el trabajo → Hugo busca otro
+    stopCascade(); hideCascadeInfo();
+    if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
+    if (provChannel){ sb.removeChannel(provChannel); provChannel = null; }
+    trHugo(`${nom} no puede tomar el trabajo en este momento 😕 Tranquilo: puedo buscarte otro proveedor ya mismo.`);
+    document.getElementById('tr-status').textContent = '🔄 Buscando alternativa';
+    const c = document.getElementById('tr-cancel');
+    if (c) { c.style.display='block'; c.textContent='🔁 Buscar otro proveedor'; c.onclick = buscarOtroProveedor; }
   }
+}
+
+function buscarOtroProveedor(){
+  document.getElementById('track-overlay').style.display='none';
+  const c=document.getElementById('tr-cancel');
+  if(c){c.textContent='✕ Cancelar';c.onclick=cancelService;}
+  ACTIVE_SVC=null;LAST_ESTADO=null;SVC_PAGADO=false;
+  RADAR_DONE=false;
+  if(typeof startRadarSearch==='function')startRadarSearch().catch(e=>typeof radarFail==='function'&&radarFail(e));
 }
 
 // ── GPS proveedor en tiempo real ──────────────────
@@ -698,6 +758,38 @@ function setStar(n) {
   document.querySelectorAll('.star').forEach((s, i) => s.textContent = i < n ? '★' : '☆');
 }
 
+// Al volver del pago de MP (o reabrir la app) con un servicio en curso, retomar el tracking
+async function resumeActiveService(){
+  try{
+    if(!SESSION)return;
+    const {data:svcs}=await sb.from('servicios')
+      .select('*')
+      .eq('cliente_id',SESSION.user.id)
+      .in('estado',['negociando','confirmado','en_camino','ejecutando'])
+      .order('created_at',{ascending:false})
+      .limit(1);
+    const svc=svcs?.[0];
+    if(!svc)return;
+    let prov=null;
+    if(svc.proveedor_id){
+      const {data:p}=await sb.from('usuarios').select('id,nombre,karma,categoria,tarifa_base,lat,lng').eq('id',svc.proveedor_id).single();
+      prov=p;
+    }
+    ACTIVE_SVC={...svc,prov:prov||{categoria:'Servicio'}};
+    SVC_PAGADO=false;LAST_ESTADO=null;
+    showTracking(ACTIVE_SVC.prov);
+    watchService(svc.id);
+    watchPagos(svc.id);
+    if(svc.estado==='negociando'){
+      startCascade(svc.id);
+      trHugo('Retomamos tu pedido en curso. Sigo esperando la confirmación del proveedor.');
+    }else{
+      onServiceUpdate(svc);
+      checkPagoExistente(svc.id);
+    }
+  }catch(e){console.error('resume:',e);}
+}
+
 async function submitRating() {
   if (!myRating || !ACTIVE_SVC) return;
   
@@ -733,11 +825,14 @@ async function submitRating() {
       }
     }
     
+    if (pagoChannel) { sb.removeChannel(pagoChannel); pagoChannel = null; }
     document.getElementById('track-overlay').style.display = 'none';
     ACTIVE_SVC = null;
     myRating = 0;
+    LAST_ESTADO = null;
+    SVC_PAGADO = false;
     resetFlow();
-    toast('✅ ¡Gracias por tu calificación!');
+    toast('✅ Trato cerrado: pago liberado al proveedor. ¡Gracias!');
     nav2('home');
   } catch (e) {
     alert('Error al guardar: ' + e.message);
@@ -749,9 +844,12 @@ async function cancelService() {
   await sb.from('servicios').update({ estado: 'cancelado' }).eq('id', ACTIVE_SVC.id);
   if (svcChannel)  { sb.removeChannel(svcChannel);  svcChannel  = null; }
   if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
+  if (pagoChannel) { sb.removeChannel(pagoChannel); pagoChannel = null; }
   document.getElementById('track-overlay').style.display = 'none';
   stopCascade();
   ACTIVE_SVC = null;
+  LAST_ESTADO = null;
+  SVC_PAGADO = false;
   resetFlow();
   toast('Pedido cancelado.');
   nav2('home');
@@ -962,6 +1060,7 @@ async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();
+    setTimeout(()=>{if(typeof resumeActiveService==='function')resumeActiveService();},800);
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -1780,6 +1879,11 @@ async function initiateMercadoPagoPayment() {
     <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:#444;">
       <span>Buscando</span><span>Aceptado</span><span>En camino</span><span>Listo</span>
     </div>
+  </div>
+  <!-- Hugo gestiona el proceso: narración por etapa -->
+  <div id="tr-hugo" style="display:none;margin:10px 20px 0;padding:10px 12px;background:rgba(0,200,215,.08);border:1px solid rgba(0,200,215,.3);border-radius:12px;align-items:flex-start;gap:9px;">
+    <div style="width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#7ff5ff,#00C8D7 60%,#0a6f7a);flex-shrink:0;box-shadow:0 0 8px rgba(0,200,215,.6)"></div>
+    <div id="tr-hugo-txt" style="font-size:12.5px;color:#dff8fb;line-height:1.45;font-weight:500;"></div>
   </div>
   <!-- Map mini (reutiliza el mapa principal) -->
   <div style="flex:1;position:relative;margin:12px 0 0;">
