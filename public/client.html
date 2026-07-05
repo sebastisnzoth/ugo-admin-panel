@@ -1199,7 +1199,7 @@ function openChat(){
 
 /* ══ WIZARD: formulario conversacional paso a paso ══
    Cada paso valida antes de avanzar. Todo local: 0 tokens de API. */
-function hLocal(t){addMsg('h',t);chatHistory.push({role:'assistant',content:t});hugoSpeak(t);}
+function hLocal(t){addMsg('h',t);chatHistory.push({role:'assistant',content:t});try{hugoSpeak(t);}catch(_){}}
 function uLocal(t){addMsg('u',t);chatHistory.push({role:'user',content:t});}
 
 function wizardStart(){
@@ -1264,7 +1264,19 @@ function wizardPick(step,val){
 function wizardDone(){
   FLOW.active=false;FLOW.esperaTexto=null;
   hLocal('¡Listo! Tengo todo lo necesario ✓ Buscando los mejores proveedores para vos...');
-  startRadarSearch();
+  startRadarSearch().catch(e=>radarFail(e));
+}
+function radarFail(e){
+  console.error('radar:',e);
+  $('radar-ov').classList.remove('show');
+  document.getElementById('chat').style.height='min(88vh,720px)';
+  hLocal('⚠️ Hubo un problema buscando proveedores: '+(e?.message||e)+'. Tocá para reintentar.');
+  RADAR_DONE=false;
+  $('csugs').innerHTML='<button class="csug" onclick="retryRadar()">🔁 Reintentar búsqueda</button>';
+}
+function retryRadar(){
+  uLocal('Reintentar búsqueda');
+  startRadarSearch().catch(e=>radarFail(e));
 }
 function wizardAnswer(text){
   const t=text.trim();
@@ -1385,6 +1397,7 @@ function openChatWith(p){
   if(!chatHistory.length)hugoCall(`El cliente quiere consultar sobre el servicio de ${p.categoria} de ${p.nombre}`);
 }
 function closeChat(){document.getElementById('chat').style.height='0';}
+console.log('U.GO client build: wizard-v2 2026-07-05');
 function showSugs(list){$('csugs').innerHTML=list.map(s=>`<button class="csug" onclick="sendSug('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');}
 function addMsg(role,text){const d=$('cmsgs');const el=document.createElement('div');el.className='msg '+(role==='u'?'mu':'mh');el.textContent=text;d.appendChild(el);requestAnimationFrame(()=>d.scrollTop=d.scrollHeight);}
 function showTyp(on){const ex=$('mtyp');if(on&&!ex){const t=document.createElement('div');t.id='mtyp';t.className='mtyp';t.innerHTML='<span class="td"></span><span class="td"></span><span class="td"></span>';$('cmsgs').appendChild(t);$('cmsgs').scrollTop=99999;}else if(!on&&ex)ex.remove();}
@@ -1477,47 +1490,55 @@ function compressImg(file,maxSide,q){
 /* ── PASO 4: RADAR EN EL MAPA ──────────────────────────────────── */
 async function startRadarSearch(){
   if(RADAR_DONE)return;RADAR_DONE=true;
-  updateChatStep(6); // todos los pasos completos
-  closeChat();
-  // Mapa protagonista: centrar en el cliente con leve zoom out
-  if(MAP&&myLat)MAP.setView([myLat,myLng],13.6,{animate:true});
-  const cat=SELECTED_CAT||'proveedores';
-  $('radar-lbl').textContent=`Buscando ${cat.toLowerCase()}s cerca...`;
-  $('radar-ov').classList.add('show');
-  const t0=Date.now();
-  let provs=await queryTerna();
-  // Mínimo 2.4s de animación para que el radar se perciba
-  const wait=Math.max(0,2400-(Date.now()-t0));
-  setTimeout(()=>{
-    $('radar-ov').classList.remove('show');
-    if(provs?.online?.length){showTerna(provs.online,false);}
-    else if(provs?.offline?.length){showTerna(provs.offline,true);}
-    else{
-      document.getElementById('chat').style.height='min(88vh,720px)';
-      hLocal('No encontré proveedores de esa categoría en tu zona todavía 😕 Probemos con otra categoría:');
-      RADAR_DONE=false;FLOW.active=true;
-      wizardAsk(1);
-    }
-  },wait);
+  try{
+    updateChatStep(6); // todos los pasos completos
+    closeChat();
+    if(MAP&&myLat)MAP.setView([myLat,myLng],13.6,{animate:true});
+    const cat=SELECTED_CAT||'proveedores';
+    $('radar-lbl').textContent=`Buscando ${cat.toLowerCase()}s cerca...`;
+    $('radar-ov').classList.add('show');
+    const t0=Date.now();
+    const provs=await queryTerna();
+    const wait=Math.max(0,2400-(Date.now()-t0));
+    setTimeout(()=>{
+      try{
+        $('radar-ov').classList.remove('show');
+        if(provs?.online?.length){showTerna(provs.online,false);}
+        else if(provs?.offline?.length){showTerna(provs.offline,true);}
+        else{
+          document.getElementById('chat').style.height='min(88vh,720px)';
+          hLocal('No encontré proveedores de esa categoría en tu zona todavía 😕 Probemos con otra categoría:');
+          RADAR_DONE=false;FLOW.active=true;
+          wizardAsk(1);
+        }
+      }catch(e){radarFail(e);}
+    },wait);
+  }catch(e){radarFail(e);}
 }
 async function queryTerna(){
   const dbTerm=catToDbTerm(SELECTED_CAT);
   if(!dbTerm)return null;
   const sel='id,nombre,karma,categoria,tarifa_base,lat,lng';
-  let{data:online}=await sb.from('usuarios').select(sel)
+  let r1=await sb.from('usuarios').select(sel)
     .eq('tipo','proveedor').eq('online',true).gte('karma',4.0)
     .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
+  if(r1.error)console.error('terna q1:',r1.error.message);
+  let online=r1.data;
   // Sin filtro de karma si el estricto no devuelve nada
   if(!online?.length){
-    ({data:online}=await sb.from('usuarios').select(sel)
+    const r2=await sb.from('usuarios').select(sel)
       .eq('tipo','proveedor').eq('online',true)
-      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12));
+      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
+    if(r2.error)throw new Error('DB: '+r2.error.message);
+    online=r2.data;
   }
   let offline=null;
   if(!online?.length){
-    ({data:offline}=await sb.from('usuarios').select(sel)
+    const r3=await sb.from('usuarios').select(sel)
       .eq('tipo','proveedor')
-      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12));
+      .ilike('categoria','%'+dbTerm+'%').not('lat','is',null).limit(12);
+    if(r3.error)throw new Error('DB: '+r3.error.message);
+    offline=r3.data;
   }
   const rank=a=>(a||[]).map(p=>({...p,_km:(p.lat&&myLat)?haversineKm(myLat,myLng,p.lat,p.lng):99}))
     .sort((x,y)=>(x._km-y._km)||((y.karma||0)-(x.karma||0))).slice(0,3);
@@ -1573,17 +1594,18 @@ const hasRec    = 'webkitSpeechRecognition' in window || 'SpeechRecognition' in 
 let speaking = false, recording = false, rec = null;
 
 function hugoSpeak(text) {
-  if (!hasSpeech || !text) return;
-  window.speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text.slice(0, 200));
-  u.lang = 'es-AR'; u.rate = 1.05; u.pitch = 1;
-  // Preferir voz en español si disponible
-  const voices = window.speechSynthesis.getVoices();
-  const esVoice = voices.find(v => v.lang.startsWith('es'));
-  if (esVoice) u.voice = esVoice;
-  u.onstart = () => speaking = true;
-  u.onend = () => { speaking = false; updateMicBtn(); };
-  window.speechSynthesis.speak(u);
+  try {
+    if (!hasSpeech || !text) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text.slice(0, 200));
+    u.lang = 'es-AR'; u.rate = 1.05; u.pitch = 1;
+    const voices = window.speechSynthesis.getVoices() || [];
+    const esVoice = voices.find(v => v && v.lang && v.lang.startsWith('es'));
+    if (esVoice) u.voice = esVoice;
+    u.onstart = () => speaking = true;
+    u.onend = () => { speaking = false; updateMicBtn(); };
+    window.speechSynthesis.speak(u);
+  } catch(_) { /* la voz jamás debe romper el flujo */ }
 }
 
 function startRec() {
