@@ -297,8 +297,8 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
         <div class="cstep active" id="cs1" title="Servicio"></div>
         <div class="cstep idle"   id="cs2" title="Problema"></div>
         <div class="cstep idle"   id="cs3" title="Foto"></div>
-        <div class="cstep idle"   id="cs4" title="Búsqueda"></div>
-        <div class="cstep idle"   id="cs5" title="Confirmar"></div>
+        <div class="cstep idle"   id="cs4" title="Horario"></div>
+        <div class="cstep idle"   id="cs5" title="Ubicación"></div>
       </div>
       <div class="step-label" id="step-label">Contame qué necesitás</div>
     </div>
@@ -426,7 +426,7 @@ async function createService(prov) {
   // 1. Insertar en servicios
   const f = prov._tarifa || calcTarifa(prov);
   const tarifa = f.total;
-  const descReal = PROBLEM_DESC || `Servicio de ${prov.categoria}`;
+  const descReal = (PROBLEM_DESC || `Servicio de ${prov.categoria}`) + (FLOW.cuando ? ` — Para: ${FLOW.cuando}` : '');
   const { data: svc, error } = await sb.from('servicios').insert({
     cliente_id:      SESSION.user.id,
     proveedor_id:    prov.id || null,
@@ -434,7 +434,7 @@ async function createService(prov) {
     descripcion:     descReal,
     foto_url:        FOTO_URL || null,
     zona:            CLI?.zona || '',
-    direccion_cliente: CLI?.endereco || '',
+    direccion_cliente: FLOW.ubicacion || CLI?.endereco || '',
     lat_cliente:     myLat || null,
     lng_cliente:     myLng || null,
     tarifa:          tarifa,
@@ -461,7 +461,8 @@ async function createService(prov) {
         categoria:       prov.categoria,
         descripcion:     descReal,
         foto_url:        FOTO_URL || null,
-        direccion:       CLI?.endereco || '',
+        horario:         FLOW.cuando || 'Ahora',
+        direccion:       FLOW.ubicacion || CLI?.endereco || '',
         lat_cliente:     myLat,
         lng_cliente:     myLng,
       },
@@ -814,13 +815,15 @@ function catToDbTerm(label){
   return found?CAT_DB_MAP[found.lb]:null;
 }
 
-// ── Estado del flujo Hugo ─────────────────────────────────────────
-let CHAT_STEP = 0; // 0=idle 1=servicio 2=problema 3=foto 4=búsqueda 5=confirmar
-const STEP_LABELS = ['Contame qué necesitás','¿Qué servicio?','¿Cuál es el problema?','Foto del problema','Buscando proveedores','Confirmar pedido'];
+// ── Estado del flujo: FORMULARIO CONVERSACIONAL de 5 pasos con validación ──
+let CHAT_STEP = 0;
+const STEP_LABELS = ['','Paso 1/5 · Servicio','Paso 2/5 · Problema','Paso 3/5 · Foto','Paso 4/5 · Horario','Paso 5/5 · Ubicación'];
+const CUANDO_OPTS = ['⏱ Ahora','🌤 Hoy más tarde','📅 Mañana','🗓 Otra fecha'];
+let FLOW = {active:false, step:0, cuando:null, ubicacion:null, esperaTexto:null};
 let PENDING_PROV = null; // proveedor pendiente de confirmación
-let SELECTED_CAT = null; // categoría detectada (paso 1)
-let PROBLEM_DESC = '';   // descripción real del problema (paso 2)
-let FOTO_URL = null;     // foto del problema subida a storage (paso 3)
+let SELECTED_CAT = null; // categoría (paso 1)
+let PROBLEM_DESC = '';   // descripción del problema (paso 2)
+let FOTO_URL = null;     // foto en storage (paso 3)
 let RADAR_DONE = false;  // evita doble búsqueda
 const PROV_COLORS = ['#00C8D7','#7C3AED','#059669','#DC2626','#D97706','#2563EB','#DB2777','#0891B2'];
 
@@ -859,10 +862,9 @@ function buildHomeBar() {
 function quickCat(cat) {
   openChat();
   setTimeout(() => {
-    CHAT_STEP = 1;
-    updateChatStep(1);
-    sendSug('Necesito un ' + cat);
-  }, 320);
+    if (!FLOW.active) wizardStart();
+    if (FLOW.step === 1) wizardPick(1, cat);
+  }, 350);
 }
 
 async function loadProvCount() {
@@ -1190,10 +1192,108 @@ const HSUGS=['⚡ Necesito un electricista urgente','🧹 ¿Cuánto cuesta el se
 function openChat(){
   document.getElementById('chat').style.height='min(88vh,720px)';
   if(!chatHistory.length){
-    CHAT_STEP=0;
-    updateChatStep(0);
-    showSugs(HSUGS);
-    hugoCall('__INICIO__');
+    hLocal(`¡Hola${CLI?.nombre?' '+CLI.nombre.split(' ')[0]:''}! 👋 Te ayudo a pedir tu servicio en 5 pasos simples.`);
+    wizardStart();
+  }
+}
+
+/* ══ WIZARD: formulario conversacional paso a paso ══
+   Cada paso valida antes de avanzar. Todo local: 0 tokens de API. */
+function hLocal(t){addMsg('h',t);chatHistory.push({role:'assistant',content:t});hugoSpeak(t);}
+function uLocal(t){addMsg('u',t);chatHistory.push({role:'user',content:t});}
+
+function wizardStart(){
+  FLOW={active:true,step:0,cuando:null,ubicacion:null,esperaTexto:null};
+  SELECTED_CAT=null;PROBLEM_DESC='';FOTO_URL=null;RADAR_DONE=false;
+  wizardAsk(1);
+}
+function wizardBack(){if(FLOW.step>1)wizardAsk(FLOW.step-1);}
+function catChipsHTML(){return CATS.map(c=>`<button class="csug" onclick="wizardPick(1,'${c.lb}')">${c.ic} ${c.lb}</button>`).join('');}
+
+function wizardAsk(n){
+  FLOW.step=n;FLOW.esperaTexto=null;updateChatStep(n);
+  const back=n>1?`<button class="csug" onclick="wizardBack()" style="opacity:.7">← Volver</button>`:'';
+  if(n===1){
+    hLocal('Paso 1 de 5 — ¿Qué servicio necesitás? Elegí una categoría o escribilo con tus palabras.');
+    $('csugs').innerHTML=catChipsHTML();
+    FLOW.esperaTexto='cat';
+  }else if(n===2){
+    hLocal(`Paso 2 de 5 — ¿Cuál es el problema exacto? Contame con detalle. Ej: "saltó la térmica y huele a quemado en la cocina".`);
+    $('csugs').innerHTML=back;
+    FLOW.esperaTexto='problema';
+  }else if(n===3){
+    hLocal('Paso 3 de 5 — ¿Tenés una foto del problema? Ayuda al especialista a llegar preparado. Es opcional.');
+    $('csugs').innerHTML=
+      `<button class="csug" onclick="pickFoto()">📷 Tomar / subir foto</button>`+
+      `<button class="csug" onclick="skipFoto()">Continuar sin foto →</button>`+back;
+  }else if(n===4){
+    hLocal('Paso 4 de 5 — ¿Para cuándo lo necesitás?');
+    $('csugs').innerHTML=CUANDO_OPTS.map(o=>`<button class="csug" onclick="wizardPick(4,'${o}')">${o}</button>`).join('')+back;
+  }else if(n===5){
+    const dir=FLOW.ubicacion||myAddr||CLI?.endereco||'Tu ubicación GPS actual';
+    hLocal(`Paso 5 de 5 — ¿El servicio es en esta dirección? 📍 ${dir}`);
+    $('csugs').innerHTML=
+      `<button class="csug" onclick="wizardPick(5,'ok')">✓ Sí, es correcta</button>`+
+      `<button class="csug" onclick="wizardOtraDir()">✏️ Usar otra dirección</button>`+back;
+  }
+}
+function wizardOtraDir(){
+  FLOW.esperaTexto='ubicacion';
+  hLocal('Escribí la dirección completa: calle, número y barrio.');
+  $('csugs').innerHTML='';
+}
+function wizardPick(step,val){
+  if(step===1){
+    uLocal(val);SELECTED_CAT=val;
+    hLocal(`Perfecto: ${val} ✓`);wizardAsk(2);
+  }else if(step===4){
+    uLocal(val);
+    if(val.includes('Otra')){
+      FLOW.esperaTexto='cuando';
+      hLocal('¿Qué día y hora te viene bien? Ej: "sábado a la mañana".');
+      $('csugs').innerHTML='';return;
+    }
+    FLOW.cuando=val.replace(/^\S+\s/,'');
+    hLocal(`Agendado: ${FLOW.cuando} ✓`);wizardAsk(5);
+  }else if(step===5&&val==='ok'){
+    uLocal('Sí, es correcta');
+    if(!FLOW.ubicacion)FLOW.ubicacion=myAddr||CLI?.endereco||'GPS actual';
+    wizardDone();
+  }
+}
+function wizardDone(){
+  FLOW.active=false;FLOW.esperaTexto=null;
+  hLocal('¡Listo! Tengo todo lo necesario ✓ Buscando los mejores proveedores para vos...');
+  startRadarSearch();
+}
+function wizardAnswer(text){
+  const t=text.trim();
+  if(FLOW.esperaTexto==='cat'||FLOW.step===1){
+    const dc=detectCat(t);
+    if(dc){SELECTED_CAT=dc;hLocal(`Entendido: ${dc} ✓`);wizardAsk(2);}
+    else{hLocal('No pude identificar la categoría 🤔 Elegí una de estas opciones para continuar:');$('csugs').innerHTML=catChipsHTML();}
+    return;
+  }
+  if(FLOW.esperaTexto==='problema'){
+    if(t.length<5){hLocal('Necesito un poco más de detalle para mandarte al especialista correcto. ¿Qué está pasando exactamente?');return;}
+    PROBLEM_DESC=t;
+    hLocal('Anotado ✓');wizardAsk(3);
+    return;
+  }
+  if(FLOW.esperaTexto==='cuando'){
+    if(t.length<3){hLocal('Decime un día y horario aproximado, ej: "mañana a las 10".');return;}
+    FLOW.cuando=t;hLocal(`Agendado: ${t} ✓`);wizardAsk(5);
+    return;
+  }
+  if(FLOW.esperaTexto==='ubicacion'||FLOW.step===5){
+    if(t.length<8){hLocal('Esa dirección parece incompleta. Escribí calle, número y barrio:');return;}
+    FLOW.ubicacion=t;hLocal('Dirección actualizada ✓');wizardAsk(5);
+    return;
+  }
+  if(FLOW.step===3){
+    if(/\bno\b|sin foto|salta|skip/i.test(t)){skipFoto();}
+    else hLocal('Usá los botones de arriba: subí una foto o tocá "Continuar sin foto".');
+    return;
   }
 }
 
@@ -1306,82 +1406,33 @@ async function hugoCall(msg){
       }catch(_){reply=reply.replace(/\{[\s\S]*\}/,'').trim()||'¿En qué puedo ayudarte?';}
     }
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
-
-    // ── Avanzar step según historial ──────────────────────────────
-    const msgCount = chatHistory.filter(m=>m.role==='user').length;
-    if(msg==='__INICIO__'){updateChatStep(1);}
-    else if(msgCount>=1 && CHAT_STEP<2){updateChatStep(2);}
-
-    // Si Hugo identificó el servicio en su JSON, usarlo para fijar categoría
-    if(!SELECTED_CAT && d.datos?.servicio){
-      const dc=detectCat(d.datos.servicio);
-      if(dc)SELECTED_CAT=dc;
-    }
-    // Último recurso: detectar por síntoma en todo lo que escribió el usuario
-    if(!SELECTED_CAT && msgCount>=1){
-      const allUser=chatHistory.filter(m=>m.role==='user').map(m=>m.content).join(' ');
-      const dc=detectCat(allUser);
-      if(dc)SELECTED_CAT=dc;
-    }
-
-    // ── Si Hugo indica buscar (o hay contexto de sobra) → radar en el mapa ─
-    if(!RADAR_DONE && ((d.accion==='BUSCAR_PROVEEDOR' && msgCount>=2) || msgCount>=3)){
-      if(!SELECTED_CAT){
-        // Sin categoría identificable → pedirla con chips (sin gastar otra llamada a la API)
-        const m2='¿De qué tipo de servicio se trata? Elegí una categoría:';
-        addMsg('h',m2);chatHistory.push({role:'assistant',content:m2});
-        $('csugs').innerHTML=CATS.map(c=>`<button class="csug" onclick="sendSug('Necesito un ${c.lb}')">${c.ic} ${c.lb}</button>`).join('');
-      } else if(!PROBLEM_DESC){
-        // Tomar como descripción el último mensaje del usuario que no sea la categoría
-        const um=chatHistory.filter(m=>m.role==='user').map(m=>m.content);
-        PROBLEM_DESC=um.reverse().find(t=>!detectCat(t)||t.length>30)||um[0]||'';
-        askFoto();
-      }else{
-        startRadarSearch();
-      }
-    }
+    // El flujo de contratación ahora lo maneja el wizard local (0 tokens).
+    // hugoCall queda solo para conversación libre (consultas sobre un proveedor, dudas, etc.)
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
 async function sendChat(){
   const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';
   addMsg('u',msg);chatHistory.push({role:'user',content:msg});
-  // Detectar categoría en el mensaje
-  {const dc=detectCat(msg);if(dc)SELECTED_CAT=dc;}
   showSugs([]);
-  // ── Paso 2: si ya hay categoría y este mensaje es la descripción del problema → foto (local, sin API)
-  if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
-    PROBLEM_DESC=msg;
-    askFoto();
-    return;
-  }
+  if(FLOW.active){wizardAnswer(msg);return;}          // formulario: 0 tokens
+  if(PENDING_PROV&&/^contratar/i.test(msg)){showConfirmSheet(PENDING_PROV);return;}
   await hugoCall(msg);
-  showSugs(HSUGS);
 }
 function sendSug(s){
   addMsg('u',s);chatHistory.push({role:'user',content:s});
-  {const dc=detectCat(s);if(dc)SELECTED_CAT=dc;}
   showSugs([]);
-  if(SELECTED_CAT && !PROBLEM_DESC && CHAT_STEP>=2 && !RADAR_DONE){
-    PROBLEM_DESC=s;
-    askFoto();
-    return;
-  }
-  hugoCall(s).then(()=>showSugs(HSUGS));
+  if(FLOW.active){wizardAnswer(s);return;}
+  if(PENDING_PROV&&/^contratar/i.test(s)){showConfirmSheet(PENDING_PROV);return;}
+  hugoCall(s);
 }
 
 /* ── PASO 3: FOTO DEL PROBLEMA ─────────────────────────────────── */
-function askFoto(){
-  updateChatStep(3);
-  const hMsg='Para enviarte al especialista adecuado, ¿podés subir o tomar una foto del problema?';
-  addMsg('h',hMsg);chatHistory.push({role:'assistant',content:hMsg});hugoSpeak(hMsg);
-  $('csugs').innerHTML=
-    `<button class="csug" onclick="pickFoto()">📷 Tomar / subir foto</button>`+
-    `<button class="csug" onclick="skipFoto()">Continuar sin foto →</button>`;
-}
+function askFoto(){wizardAsk(3);} // compat
 function pickFoto(){$('foto-input').click();}
 function skipFoto(){
-  addMsg('u','Continuar sin foto');
-  startRadarSearch();
+  uLocal('Continuar sin foto');
+  hLocal('Sin problema ✓');
+  wizardAsk(4);
 }
 async function onFotoPicked(ev){
   const file=ev.target.files?.[0];ev.target.value='';
@@ -1398,7 +1449,8 @@ async function onFotoPicked(ev){
     const d=$('cmsgs');const w=document.createElement('div');w.className='msg-img';
     w.innerHTML=`<img src="${FOTO_URL}" alt="foto del problema">`;
     d.appendChild(w);requestAnimationFrame(()=>d.scrollTop=d.scrollHeight);
-    startRadarSearch();
+    hLocal('¡Excelente foto! ✓ El especialista va a saber exactamente qué llevar.');
+    wizardAsk(4);
   }catch(e){
     toast('❌ No se pudo subir la foto: '+(e.message||e));
     // No dejar el flujo colgado: ofrecer reintentar o seguir sin foto
@@ -1425,9 +1477,7 @@ function compressImg(file,maxSide,q){
 /* ── PASO 4: RADAR EN EL MAPA ──────────────────────────────────── */
 async function startRadarSearch(){
   if(RADAR_DONE)return;RADAR_DONE=true;
-  updateChatStep(4);
-  const hMsg='Perfecto. Estoy escaneando los mejores proveedores cerca tuyo...';
-  addMsg('h',hMsg);chatHistory.push({role:'assistant',content:hMsg});
+  updateChatStep(6); // todos los pasos completos
   closeChat();
   // Mapa protagonista: centrar en el cliente con leve zoom out
   if(MAP&&myLat)MAP.setView([myLat,myLng],13.6,{animate:true});
@@ -1443,11 +1493,10 @@ async function startRadarSearch(){
     if(provs?.online?.length){showTerna(provs.online,false);}
     else if(provs?.offline?.length){showTerna(provs.offline,true);}
     else{
-      openChat();
-      const m='No encontré proveedores de esa categoría en tu zona todavía. ¿Querés que te avise cuando se sume alguno, o probamos otra categoría?';
-      addMsg('h',m);chatHistory.push({role:'assistant',content:m});hugoSpeak(m);
-      RADAR_DONE=false;updateChatStep(2);
-      showSugs(HSUGS);
+      document.getElementById('chat').style.height='min(88vh,720px)';
+      hLocal('No encontré proveedores de esa categoría en tu zona todavía 😕 Probemos con otra categoría:');
+      RADAR_DONE=false;FLOW.active=true;
+      wizardAsk(1);
     }
   },wait);
 }
@@ -1512,6 +1561,7 @@ function closeTerna(reset){
 window.__resetHugoFlow=function(){
   PROBLEM_DESC='';FOTO_URL=null;RADAR_DONE=false;PENDING_PROV=null;SELECTED_PROV=null;
   SELECTED_CAT=null;chatHistory=[];CHAT_STEP=0;
+  FLOW={active:false,step:0,cuando:null,ubicacion:null,esperaTexto:null};
   const cm=$('cmsgs');if(cm)cm.innerHTML='';
   $('terna-sheet').classList.remove('open');
   $('radar-ov').classList.remove('show');
