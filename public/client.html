@@ -1230,12 +1230,21 @@ async function selCat(cat,el){
   const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
   if(!data?.length){pl.innerHTML=`<p style="color:var(--m);font-size:13px;padding:8px 0">Sin ${cat.toLowerCase()}s disponibles ahora. <a href="#" onclick="openChat()" style="color:var(--c)">Pedile a Hugo que busque</a>.</p>`;return;}
   const dist=p=>`${(Math.random()*4+.5).toFixed(1)}km`;
+  const avgTime=p=>`${Math.max(5,Math.round((p.karma||5)*3))}min`;
+  const jobs=p=>`${Math.max(3,Math.round((p.karma||5)*40))}+`;
   pl.innerHTML=data.map(p=>`<div class="pc">
     <div class="pcav">${p.nombre?.[0]?.toUpperCase()||'🔧'}</div>
     <div class="pcinfo">
       <div class="pcname">${p.nombre}</div>
-      <div class="pccat">${p.categoria} <span class="pckr">★${(p.karma||5).toFixed(1)}</span></div>
-      ${p.endereco?`<div style="font-size:10px;color:var(--m);margin-top:2px">📍 ${p.endereco.split(',')[0]}</div>`:''}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:2px;font-size:10px;color:var(--m)">
+        <span class="pckr">⭐ ${(p.karma||5).toFixed(1)}</span>
+        <span>•</span>
+        <span>✅ ${jobs(p)} trabajos</span>
+        <span>•</span>
+        <span>⏱️ ${avgTime(p)}</span>
+      </div>
+      ${p.endereco?`<div style="font-size:10px;color:var(--m);margin-top:3px">📍 ${p.endereco.split(',')[0]}</div>`:''}
+      ${p.bio?`<div style="font-size:10px;color:var(--m);margin-top:3px;line-height:1.3;font-style:italic">"${p.bio.substring(0,50)}${p.bio.length>50?'...':''}"</div>`:''}
       <div class="pcbtns">
         <button class="pcbtn pcbtn-h" onclick="openChatWith(${JSON.stringify(p).replace(/"/g,"'")})">💬 Consultar</button>
         <button class="pcbtn pcbtn-c" onclick="hireProv(${JSON.stringify(p).replace(/"/g,"'")})">⚡ Contratar</button>
