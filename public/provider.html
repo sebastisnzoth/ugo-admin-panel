@@ -1396,6 +1396,47 @@ async function acceptJobReal() {
 }
 
 // Escrow asegurado → habilitar salida
+
+async function acceptJobReal(){
+  if(!JOB||!JOB.servicio_id)return;
+  const svc_id=JOB.servicio_id;
+  
+  // CLAIM ATÓMICO: solo actualizar si proveedor_id sigue siendo NULL
+  const{data:updated,error}=await sb.from('servicios')
+    .update({proveedor_id:SESSION.user.id,estado:'aceptado'})
+    .eq('id',svc_id)
+    .is('proveedor_id',null)  // ← Claim atómico: solo si sigue siendo NULL
+    .select()
+    .single();
+  
+  if(error||!updated){
+    toast('⚠️ Otro proveedor tomó este pedido más rápido');
+    rejectJob();
+    return;
+  }
+  
+  // Proveedor asignado exitosamente
+  $('jobnot').classList.remove('show');
+  clearInterval(jobTimer);
+  ACTIVE_JOB=JOB;
+  
+  // Notificar al cliente que fue aceptado
+  await sb.from('notificaciones').insert({
+    usuario_id:updated.cliente_id,
+    tipo:'pedido_aceptado',
+    titulo:`Proveedor encontrado · ${PROV?.nombre}`,
+    cuerpo:`${PROV?.nombre} está en camino. ⏱ ${Math.round(updated.tarifa*0.85)} netos para vos`,
+    datos:{servicio_id:svc_id,proveedor_id:SESSION.user.id,proveedor_nombre:PROV?.nombre}
+  });
+  
+  toast(`✓ Pedido ${svc_id.slice(0,8)} asignado a vos`);
+  $('jobbar').classList.add('show');
+  jobState='aceptado';
+  $('jbbtn').textContent='En camino ➜';
+  $('jbsub').textContent='Confirmación del cliente...';
+}
+
+
 function onEscrowOkProv(){
   if (ESCROW_OK) return; ESCROW_OK = true;
   $('jbbtn').textContent = '🚗 Salir en camino';
