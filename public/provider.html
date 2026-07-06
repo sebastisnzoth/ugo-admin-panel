@@ -488,6 +488,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
 
 /* ── BOOT ── */
 async function bootApp(){
+  await loadHugoContext();
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadProv();
@@ -498,6 +499,103 @@ async function bootApp(){
       return;
     }
     initMap();nav2('home');subscribeToJobs();
+
+/* ──────── HUGO V2: MEMORY + REGIONAL CONTEXT (PROVEEDOR) ──────── */
+
+async function loadHugoContext() {
+  if (!SESSION?.user?.id) return;
+  
+  try {
+    const {data, error} = await sb.from('usuarios')
+      .select('hugo_context, region_cuenta')
+      .eq('id', SESSION.user.id)
+      .single();
+    
+    if (error || !data) return;
+    
+    HUGO_CONTEXT = data.hugo_context || {};
+    HUGO_REGION = data.region_cuenta;
+    
+    console.log('[Hugo v2] Contexto cargado (proveedor)', {region: HUGO_REGION});
+  } catch (e) {
+    console.warn('[Hugo] Error loading context:', e.message);
+  }
+}
+
+async function saveHugoContext(message, role) {
+  if (!SESSION?.user?.id) return;
+  
+  try {
+    const current = HUGO_CONTEXT.interaction_history || [];
+    const newHistory = [
+      ...current.slice(-9),
+      {
+        role: role || 'assistant',
+        text: message.substring(0, 200),
+        timestamp: new Date().toISOString()
+      }
+    ];
+    
+    const updateData = {
+      hugo_context: {
+        ...HUGO_CONTEXT,
+        interaction_history: newHistory,
+        last_update: new Date().toISOString()
+      }
+    };
+    
+    await sb.from('usuarios')
+      .update(updateData)
+      .eq('id', SESSION.user.id);
+    
+    HUGO_CONTEXT = updateData.hugo_context;
+  } catch (e) {
+    console.warn('[Hugo] Error saving context:', e.message);
+  }
+}
+
+async function getHugoPrompt(contextType) {
+  try {
+    const {data, error} = await sb.from('hugo_prompts_v2')
+      .select('prompt_text, system_prompt, tone')
+      .eq('role_type', 'proveedor')
+      .eq('region', HUGO_REGION || 'BR')
+      .eq('context_type', contextType)
+      .eq('active', true)
+      .single();
+    
+    if (error || !data) {
+      console.warn('[Hugo] Prompt no encontrado:', contextType);
+      return null;
+    }
+    
+    return data;
+  } catch (e) {
+    console.warn('[Hugo] Error fetching prompt:', e.message);
+    return null;
+  }
+}
+
+function injectRegionalContext(prompt) {
+  if (!HUGO_REGION) return prompt;
+  
+  const regionalMap = {
+    BR: { currency: 'R$', language: 'português' },
+    AR: { currency: '$', language: 'español' }
+  };
+  
+  const regional = regionalMap[HUGO_REGION] || regionalMap.BR;
+  let enhanced = prompt;
+  enhanced = enhanced.replace(/{currency}/g, regional.currency);
+  
+  const system_instruction = `Eres Hugo, socio estratégico de U.GO para proveedores.
+Región: ${HUGO_REGION === 'BR' ? 'Brasil' : 'Argentina'}.
+Moneda: ${regional.currency}.
+Lenguaje: ${regional.language}.
+Tu objetivo: ayudar al proveedor a ganar más dinero, gestionar su agenda, proteger su reputación.`;
+  
+  return {prompt: enhanced, system: system_instruction};
+}
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
