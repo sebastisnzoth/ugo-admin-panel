@@ -1,3 +1,21 @@
+# Hugo 2.0 — Entrega 2: Región + prompts dinámicos
+
+**Fecha**: Julio 6, 2026
+**Sin migraciones nuevas**: reutiliza `regiones`, `usuarios.region_cuenta` (Etapa 1) y `hugo_prompts_v2` (ya creada y poblada con 16 prompts BR/AR).
+
+## Bug de raíz corregido
+`usuarios.region_cuenta` es **UUID** (FK a regiones), pero provider.html comparaba `region_cuenta === 'BR'` → siempre falso → todos los proveedores veían el flujo AR (DNI/CUIT/CBU), incluso los de Brasil. Además ningún código escribía `region_cuenta` (0 de 1010 usuarios la tenían).
+
+## Cambios
+- **client.html / provider.html**: `resolveRegion()` al boot — resuelve `region_cuenta` → código (`BR`/`AR`) vía tabla `regiones`; si falta, infiere desde `usuarios.pais` (texto libre) y **auto-repara** persistiendo el UUID. El chat manda `region` a `/api/hugo/chat`.
+- **provider.html**: las 4 comparaciones rotas usan ahora `REGION_CODE`; el paso 2 del wizard tiene selector de país (🇧🇷/🇦🇷) que guarda `region_cuenta`.
+- **api/hugo/chat.ts**: con `hugo_v2_enabled='true'` y `region` presente, suma al system prompt la instrucción regional (idioma pt-BR/es-AR + moneda desde `regiones`) y el estilo de `hugo_prompts_v2` (role, region, context_type, mayor version activa). Si `__INICIO__` matchea una plantilla sin placeholders, responde directo sin llamar a la IA.
+
+## Rollback
+El mismo kill-switch: `hugo_v2_enabled='false'` desactiva la parte de prompts/región del API. El fix del wizard del proveedor no depende del flag (es corrección de bug, no feature).
+
+---
+
 # Hugo 2.0 — Entrega 1: Memoria persistente
 
 **Fecha**: Julio 6, 2026

@@ -367,6 +367,23 @@ let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
 /* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
 let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
+/* Hugo 2.0: región del proveedor. region_cuenta es UUID (FK regiones) — se resuelve a código 'BR'/'AR'. */
+let REGIONS=[],REGION_CODE=null;
+async function resolveRegion(u){
+  try{
+    const{data:regs}=await sb.from('regiones').select('id,codigo_pais,moneda,simbolo_moneda');
+    if(!regs?.length)return;
+    REGIONS=regs;
+    let reg=u?.region_cuenta?regs.find(r=>r.id===u.region_cuenta):null;
+    if(!reg){
+      const p=(u?.pais||'').toLowerCase();
+      const esAR=/^ar$|argentin|quilmes|buenos|bs\.?\s?as|c[oó]rdoba|rosario|la plata|mendoza/.test(p);
+      reg=regs.find(r=>r.codigo_pais===(esAR?'AR':'BR'))||regs[0];
+      if(SESSION&&reg)sb.from('usuarios').update({region_cuenta:reg.id}).eq('id',SESSION.user.id).then(()=>{});
+    }
+    REGION_CODE=reg?.codigo_pais||null;
+  }catch(e){console.warn('region:',e?.message||e);}
+}
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -492,6 +509,7 @@ async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadProv();
+    await resolveRegion(PROV); // antes del wizard: los pasos 3-4 dependen de la región
     // Verificar estado de verificación
     if(PROV?.estado_verificacion && PROV.estado_verificacion !== 'verificado'){
       $('nav').classList.add('hide');
@@ -669,7 +687,18 @@ function showJobOffer(j){
   },1000);
 }
 function acceptJob(){acceptJobReal();}
-function rejectJob(){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido rechazado');}
+function rejectJob(release=true){
+  clearInterval(jobTimer);$('jobnot').classList.remove('show');
+  const svcId=JOB?.servicio_id;JOB=null;
+  // Si el pedido estaba asignado a mí ("elegir uno"), liberarlo en la DB para que
+  // el cascade del cliente busque otro proveedor en vez de dejarlo esperando.
+  if(release&&svcId&&SESSION){
+    sb.from('servicios').update({proveedor_id:null})
+      .eq('id',svcId).eq('proveedor_id',SESSION.user.id).eq('estado','negociando')
+      .then(()=>{});
+  }
+  toast('Pedido rechazado');
+}
 function navigateJob(){
   if(!ACTIVE_JOB)return;
   const addr=encodeURIComponent(ACTIVE_JOB.addr||'Florianópolis, SC');
@@ -953,6 +982,7 @@ function wizardHTML() {
   } else if (WIZARD_STEP === 2) {
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 Tu Perfil Profesional</div>
       <input type="text" id="w2-nombre" placeholder="Nombre completo" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <select id="w2-region" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px"><option value="BR"${REGION_CODE!=='AR'?' selected':''}>🇧🇷 Brasil</option><option value="AR"${REGION_CODE==='AR'?' selected':''}>🇦🇷 Argentina</option></select>
       <select id="w2-cat" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px"><option value="">Categoría</option><option value="electricista">⚡ Electricista</option><option value="plomero">🔧 Plomero</option><option value="limpieza">🧹 Limpieza</option><option value="pintor">🎨 Pintor</option><option value="carpintero">🪚 Carpintero</option></select>
       <input type="number" id="w2-años" placeholder="Años de experiencia" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
       <div style="font-size:12px;color:var(--m);margin-bottom:10px">Foto (opcional)</div>
@@ -960,7 +990,7 @@ function wizardHTML() {
       <button onclick="paso2_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
     </div>`;
   } else if (WIZARD_STEP === 3) {
-    const region = PROV?.region_cuenta ? (PROV.region_cuenta === 'BR' ? 'Brasil' : 'Argentina') : '?';
+    const region = REGION_CODE === 'AR' ? 'Argentina' : 'Brasil';
     const esAR = region === 'Argentina';
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📄 Documentos (${region})</div>
       <input type="text" id="w3-doc1" placeholder="${esAR ? 'DNI' : 'CPF'}" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
@@ -970,7 +1000,7 @@ function wizardHTML() {
       <button onclick="paso3_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
     </div>`;
   } else if (WIZARD_STEP === 4) {
-    const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+    const region = REGION_CODE || 'BR';
     const esPIX = region === 'BR';
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">💰 Datos de Cobro</div>
       ${esPIX ? `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">Clave PIX (email, teléfono o CPF)</div><input type="text" id="w4-pix" placeholder="tu@email.com" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>` : `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">CBU/Alias (Mercado Pago)</div><input type="text" id="w4-cbu" placeholder="1234567890123456789012" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>`}
@@ -1018,11 +1048,17 @@ async function paso2_guardar() {
     } catch(e) { console.error('Upload:', e); }
   }
   
+  // Región elegida → guardar el UUID de regiones (los pasos 3-4 dependen de esto)
+  const regSel = $('w2-region')?.value || REGION_CODE || 'BR';
+  const regRow = REGIONS.find(r => r.codigo_pais === regSel);
+  REGION_CODE = regSel;
+
   await sb.from('usuarios').update({
-    nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2
+    nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2,
+    ...(regRow ? { region_cuenta: regRow.id } : {})
   }).eq('id', SESSION.user.id);
-  
-  PROV = { ...PROV, nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2 };
+
+  PROV = { ...PROV, nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2, ...(regRow ? { region_cuenta: regRow.id } : {}) };
   WIZARD_STEP = 3;
   showWizard(2);
 }
@@ -1032,7 +1068,7 @@ function paso3_init() {
 }
 
 async function paso3_guardar() {
-  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const region = REGION_CODE || 'BR';
   const esAR = region === 'AR';
   const doc1 = $(esAR ? 'w3-doc1' : 'w3-doc1').value.trim();
   const doc2 = $(esAR ? 'w3-cuit' : 'w3-rg').value.trim();
@@ -1077,7 +1113,7 @@ async function paso3_guardar() {
 }
 
 async function paso4_guardar() {
-  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const region = REGION_CODE || 'BR';
   const esPIX = region === 'BR';
   
   const payoutData = esPIX ? { pix_key: $('w4-pix').value.trim() } : { cbu: $('w4-cbu').value.trim() };
@@ -1265,7 +1301,7 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma||5},Cat:${PROV.categoria||'?'},Servicios:${PROV.servicios_completados||0},Tarifa:R$${PROV.tarifa_base||0}`:'',`Online:${isOnline}`,`EstadoTrabajo:${jobState}`,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,region:REGION_CODE||undefined,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
@@ -1389,29 +1425,55 @@ let pagoChannelProv = null;   // realtime de pagos (escrow)
 let svcChannelProv  = null;   // realtime del servicio (cancelaciones del cliente)
 let ESCROW_OK = false;
 
-async function acceptJobReal() {
+// ── Aceptar pedido — cubre AMBOS caminos del despacho híbrido:
+//    · "El más rápido" (broadcast): proveedor_id NULL → claim atómico, gana el primero
+//    · "Elegir uno": el servicio ya viene asignado a este proveedor → confirma directo
+//    En ambos casos el estado pasa a 'confirmado' (enum válido) y se queda esperando
+//    el pago del cliente (handshake escrow) antes de habilitar la salida.
+async function acceptJobReal(){
+  if(!JOB||!JOB.servicio_id){ // job de demo sin servicio real: solo UI
+    clearInterval(jobTimer);$('jobnot').classList.remove('show');
+    jobState='confirmado';ESCROW_OK=false;ACTIVE_JOB=JOB;
+    return;
+  }
+  const svc_id=JOB.servicio_id, uid=SESSION.user.id;
+
+  // Un solo UPDATE cubre ambos caminos: sin dueño (claim) o asignado a mí.
+  // El .eq('estado','negociando') evita aceptar pedidos ya cancelados/confirmados.
+  const{data:updated,error}=await sb.from('servicios')
+    .update({proveedor_id:uid,estado:'confirmado',confirmado_at:new Date().toISOString()})
+    .eq('id',svc_id)
+    .eq('estado','negociando')
+    .or(`proveedor_id.is.null,proveedor_id.eq.${uid}`)
+    .select()
+    .maybeSingle();
+
+  if(error||!updated){
+    toast('⚠️ Este pedido ya no está disponible (otro proveedor lo tomó o fue cancelado)');
+    rejectJob(false); // solo limpiar UI: el servicio no es nuestro
+    return;
+  }
+
   clearInterval(jobTimer);
   $('jobnot').classList.remove('show');
-  // ── HANDSHAKE: aceptar = CONFIRMADO. Se sale recién cuando el cliente asegura el pago ──
-  jobState = 'confirmado';
-  ESCROW_OK = false;
-  ACTIVE_JOB = JOB;
+  jobState='confirmado';
+  ESCROW_OK=false;
+  ACTIVE_JOB=JOB;
+  ACTIVE_SVC=updated;
 
-  if (JOB?.servicio_id) {
-    const {data: svc} = await sb.from('servicios')
-      .select('*').eq('id', JOB.servicio_id).single();
-    if(svc) ACTIVE_SVC = svc;
+  watchPagoProv(svc_id);
+  watchSvcProv(svc_id);
+  checkPagoProv(svc_id); // por si el pago ya entró
 
-    await sb.from('servicios').update({
-      proveedor_id: SESSION.user.id,
-      estado: 'confirmado',
-      confirmado_at: new Date().toISOString()
-    }).eq('id', JOB.servicio_id);
-
-    watchPagoProv(JOB.servicio_id);
-    watchSvcProv(JOB.servicio_id);
-    checkPagoProv(JOB.servicio_id); // por si el pago ya entró
-  }
+  // Avisar al cliente (además del realtime de servicios)
+  await sb.from('notificaciones').insert({
+    usuario_id:updated.cliente_id,
+    tipo:'pedido_aceptado',
+    titulo:`Proveedor encontrado · ${PROV?.nombre||''}`,
+    cuerpo:`${PROV?.nombre||'Tu proveedor'} aceptó tu pedido. Asegurá el pago para que salga en camino.`,
+    datos:{servicio_id:svc_id,proveedor_id:uid,proveedor_nombre:PROV?.nombre},
+    leida:false
+  });
 
   $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
@@ -1421,47 +1483,6 @@ async function acceptJobReal() {
   $('jbbtn').disabled = true;
   $('jbbtn').style.opacity = '.55';
   toast('✅ Aceptaste el pedido. Hugo le pidió el pago al cliente — salís cuando esté protegido en la bóveda.');
-}
-
-// Escrow asegurado → habilitar salida
-
-async function acceptJobReal(){
-  if(!JOB||!JOB.servicio_id)return;
-  const svc_id=JOB.servicio_id;
-  
-  // CLAIM ATÓMICO: solo actualizar si proveedor_id sigue siendo NULL
-  const{data:updated,error}=await sb.from('servicios')
-    .update({proveedor_id:SESSION.user.id,estado:'aceptado'})
-    .eq('id',svc_id)
-    .is('proveedor_id',null)  // ← Claim atómico: solo si sigue siendo NULL
-    .select()
-    .single();
-  
-  if(error||!updated){
-    toast('⚠️ Otro proveedor tomó este pedido más rápido');
-    rejectJob();
-    return;
-  }
-  
-  // Proveedor asignado exitosamente
-  $('jobnot').classList.remove('show');
-  clearInterval(jobTimer);
-  ACTIVE_JOB=JOB;
-  
-  // Notificar al cliente que fue aceptado
-  await sb.from('notificaciones').insert({
-    usuario_id:updated.cliente_id,
-    tipo:'pedido_aceptado',
-    titulo:`Proveedor encontrado · ${PROV?.nombre}`,
-    cuerpo:`${PROV?.nombre} está en camino. ⏱ ${Math.round(updated.tarifa*0.85)} netos para vos`,
-    datos:{servicio_id:svc_id,proveedor_id:SESSION.user.id,proveedor_nombre:PROV?.nombre}
-  });
-  
-  toast(`✓ Pedido ${svc_id.slice(0,8)} asignado a vos`);
-  $('jobbar').classList.add('show');
-  jobState='aceptado';
-  $('jbbtn').textContent='En camino ➜';
-  $('jbsub').textContent='Confirmación del cliente...';
 }
 
 

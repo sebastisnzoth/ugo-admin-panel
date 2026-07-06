@@ -124,11 +124,11 @@ export function useOpenDisputes() {
   }, []);
   const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {
     const sb = supabase as any;
-    // Update disputa state
-    const { error } = await sb.from('disputas').update({
-      estado: 'resuelta', resolucion,
-      resuelta_at: new Date().toISOString()
-    }).eq('id', id);
+    // Vía RPC: setea el estado correcto del enum (resuelta_cliente/resuelta_proveedor)
+    // y registra en audit_log. Un update directo con estado 'resuelta' falla: no existe en el enum.
+    const { error } = await sb.rpc('admin_resolver_disputa', {
+      p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe,
+    });
     if (error) { console.error('resolverDisputa:', error.message); return; }
     // Update escrow
     const { data: d } = await sb.from('disputas').select('servicio_id').eq('id', id).single();
@@ -430,8 +430,8 @@ export function useVault() {
     if (data) setEscrows(data); setLoading(false);
   }, []);
   const liberarEscrow = useCallback(async (id: string) => {
-    const { error } = await (supabase as any).from('escrow')
-      .update({ estado:'liberado', liberado_at: new Date().toISOString() }).eq('id', id);
+    // RPC admin_liberar_escrow: mismo efecto que el update directo pero con audit_log
+    const { error } = await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id, p_notas: 'Liberado desde panel admin' });
     if (!error) await fetch(); else console.error('liberarEscrow:', error.message);
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
@@ -441,9 +441,11 @@ export function useVault() {
 export function usePendingWithdrawals() {
   const [items, setItems] = useState<any[]>([]);
   useEffect(() => {
+    // Retiro pendiente = escrow liberado que aún no tiene transferencia ejecutada.
+    // (liberado_at siempre se setea al liberar, filtrar por él dejaba la lista vacía)
     (supabase as any).from('escrow')
       .select('id,monto_proveedor,created_at,proveedores:proveedor_id(nombre,stripe_account_id)')
-      .eq('estado','liberado').is('liberado_at', null).order('created_at', { ascending: true }).limit(20)
+      .eq('estado','liberado').is('stripe_transfer_id', null).order('created_at', { ascending: true }).limit(20)
       .then(({ data }: any) => { if (data) setItems(data); });
   }, []);
   return items;
