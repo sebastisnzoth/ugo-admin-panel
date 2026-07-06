@@ -22,8 +22,10 @@ export default async function handler(req, res) {
   if (phone.length < 10) return res.status(400).json({ error: 'Número inválido' });
 
   try {
-    const { data: cfgRows } = await sb.from('config_sistema').select('clave,valor')
-      .in('clave', ['whatsapp_access_token', 'whatsapp_phone_number_id']);
+    const { data: cfgRows } = await sb.rpc('config_backend', {
+      p_token: process.env.UGO_BACKEND_TOKEN || '',
+      p_claves: ['whatsapp_access_token', 'whatsapp_phone_number_id'],
+    });
     const cfg = {};
     (cfgRows || []).forEach(r => { cfg[r.clave] = r.valor; });
 

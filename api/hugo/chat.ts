@@ -7,6 +7,11 @@ const sb = createClient(
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
+// config_sistema ya no es legible por REST (las API keys estaban expuestas);
+// el backend lee las claves secretas vía RPC config_backend con este token.
+// Se configura como env var en Vercel — nunca hardcodearlo en el repo.
+const BACKEND_TOKEN = process.env.UGO_BACKEND_TOKEN || '';
+
 // ── Extrae el primer objeto JSON balanceado de un texto (tolera preámbulo y fences) ──
 function extractJson(raw: string): any | null {
   if (!raw) return null;
@@ -83,8 +88,10 @@ export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') return res.status(405).end();
   try {
     const { message, role = 'admin', history = [], context = '', region = '', context_type = 'initial' } = req.body;
-    const { data: rows } = await sb.from('config_sistema').select('clave,valor')
-      .in('clave', [`hugo_prompt_${role}`, 'api_gemini_key', 'api_groq_key', 'hugo_v2_enabled']);
+    const { data: rows } = await sb.rpc('config_backend', {
+      p_token: BACKEND_TOKEN,
+      p_claves: [`hugo_prompt_${role}`, 'api_gemini_key', 'api_groq_key', 'hugo_v2_enabled'],
+    });
     const cfg: Record<string, string> = {};
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
 

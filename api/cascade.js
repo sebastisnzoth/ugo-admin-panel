@@ -76,10 +76,11 @@ export default async function handler(req, res) {
 
     if (!nearby.length) return res.json({ ok: true, notified: 0, nivel });
 
-    // Obtener token WA y proxy AI
-    const { data: cfgRows } = await sb.from('config_sistema')
-      .select('clave,valor')
-      .in('clave', ['whatsapp_access_token','whatsapp_phone_number_id','api_groq_key']);
+    // Obtener token WA y proxy AI (vía RPC: config_sistema ya no es legible por REST)
+    const { data: cfgRows } = await sb.rpc('config_backend', {
+      p_token: process.env.UGO_BACKEND_TOKEN || '',
+      p_claves: ['whatsapp_access_token','whatsapp_phone_number_id','api_groq_key'],
+    });
     const cfg = {};
     (cfgRows||[]).forEach(r => cfg[r.clave] = r.valor);
 
@@ -88,21 +89,12 @@ export default async function handler(req, res) {
     const emoji     = cat?.emoji || '🔧';
     const catNombre = cat?.nombre || catSlug;
 
-    // Insertar notificaciones in-app para todos
-    await sb.from('notificaciones').insert(
-      nearby.map(p => ({
-        usuario_id: p.id,
-        tipo: 'nuevo_pedido',
-        titulo: `${emoji} Nuevo pedido · ${catNombre}`,
-        cuerpo: `R$${tarifa} · Ganancia R$${ganancia} · ${haversineKm(svc.lat_cliente, svc.lng_cliente, p.lat, p.lng).toFixed(1)}km`,
-        datos: {
-          servicio_id: svc.id,
-          tarifa, ganancia, categoria: catSlug,
-          lat_cliente: svc.lat_cliente, lng_cliente: svc.lng_cliente,
-        },
-        leida: false,
-      }))
-    );
+    // Notificaciones in-app vía RPC validado (INSERT directo ya no está permitido:
+    // el contenido se deriva del servicio real y se deduplica server-side)
+    await sb.rpc('notificar_nuevo_pedido', {
+      p_servicio_id: svc.id,
+      p_usuario_ids: nearby.map(p => p.id),
+    });
 
     // WhatsApp a los que tienen teléfono (si tenemos token)
     let waSent = 0;

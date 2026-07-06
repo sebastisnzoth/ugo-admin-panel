@@ -5,9 +5,9 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin','*');
   const log = [];
   try {
-    const { data } = await sb.from('config_sistema').select('valor').eq('clave','api_tomtom_key').single();
-    const key = data?.valor?.trim();
-    log.push({ step:'key', ok:!!key, len:key?.length, preview:key?.slice(0,10)+'...' });
+    const { data } = await sb.rpc('config_backend', { p_token: process.env.UGO_BACKEND_TOKEN || '', p_claves: ['api_tomtom_key'] });
+    const key = data?.[0]?.valor?.trim();
+    log.push({ step:'key', ok:!!key }); // sin longitud ni preview: no filtrar material de la key
 
     // Test TomTom con variantes de la key
     const variants = [

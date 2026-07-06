@@ -6,8 +6,8 @@ const sb = createClient(
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  const { data } = await sb.from('config_sistema').select('valor').eq('clave','api_gemini_key').single();
-  const key = data?.valor?.trim();
+  const { data } = await sb.rpc('config_backend', { p_token: process.env.UGO_BACKEND_TOKEN || '', p_claves: ['api_gemini_key'] });
+  const key = data?.[0]?.valor?.trim();
   let geminiOk = false, geminiError = '';
   try {
     const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
@@ -17,5 +17,5 @@ export default async function handler(req: any, res: any) {
     geminiOk = !!d.candidates?.[0]?.content?.parts?.[0]?.text;
     geminiError = d.error?.message || '';
   } catch(e:any) { geminiError = e.message; }
-  return res.json({ supabase_ok:!!key, key_prefix:key?.slice(0,10)+'...', gemini_ok:geminiOk, gemini_error:geminiError });
+  return res.json({ supabase_ok:!!key, gemini_ok:geminiOk, gemini_error:geminiError });
 }

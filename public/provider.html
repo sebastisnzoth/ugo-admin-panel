@@ -1465,15 +1465,9 @@ async function acceptJobReal(){
   watchSvcProv(svc_id);
   checkPagoProv(svc_id); // por si el pago ya entró
 
-  // Avisar al cliente (además del realtime de servicios)
-  await sb.from('notificaciones').insert({
-    usuario_id:updated.cliente_id,
-    tipo:'pedido_aceptado',
-    titulo:`Proveedor encontrado · ${PROV?.nombre||''}`,
-    cuerpo:`${PROV?.nombre||'Tu proveedor'} aceptó tu pedido. Asegurá el pago para que salga en camino.`,
-    datos:{servicio_id:svc_id,proveedor_id:uid,proveedor_nombre:PROV?.nombre},
-    leida:false
-  });
+  // Avisar al cliente (además del realtime de servicios) — RPC validado:
+  // solo el proveedor asignado al servicio puede emitir esta notificación
+  await sb.rpc('notificar_pedido_aceptado',{p_servicio_id:svc_id});
 
   $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
