@@ -1707,9 +1707,22 @@ function showTerna(provs,esOffline){
   const tarifa=SELECTED_CAT?calcTarifa({tarifa_base:100}):0;
   const broadcast_html=`<div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:center"><button onclick="broadcastToAll()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00C8D7,#0098aa);color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit;font-size:14px">⚡ El más rápido — Notificar a todos</button></div>`;
   $('terna-list').innerHTML+=broadcast_html;
-  $('terna-sheet').classList.add('open');
+  setupHugoTimeout(15000); $('terna-sheet').classList.add('open');
 }
+/* Hugo 2.0 proactivo: si la terna queda abierta sin elegir, sugiere "El más rápido" (local, 0 tokens) */
+let HUGO_TIMEOUT_T=null;
+function setupHugoTimeout(ms){
+  clearHugoTimeout();
+  HUGO_TIMEOUT_T=setTimeout(()=>{
+    if(!$('terna-sheet')?.classList.contains('open'))return;
+    toast('💡 Hugo: si estás apurado, tocá "⚡ El más rápido" y notifico a todos a la vez.');
+    try{hugoSpeak('Si estás apurado, tocá El más rápido y notifico a todos a la vez.');}catch(_){}
+  },ms||15000);
+}
+function clearHugoTimeout(){if(HUGO_TIMEOUT_T){clearTimeout(HUGO_TIMEOUT_T);HUGO_TIMEOUT_T=null;}}
+
 function pickTerna(prov){
+  clearHugoTimeout();
   closeTerna(false);
   SELECTED_PROV=prov;PENDING_PROV=prov;
   updateChatStep(5);
@@ -1776,6 +1789,7 @@ async function broadcastToAll(){
 }
 
 function closeTerna(reset){
+  clearHugoTimeout();
   $('terna-sheet').classList.remove('open');
   if(reset){RADAR_DONE=false;updateChatStep(2);openChat();showSugs(HSUGS);}
 }
