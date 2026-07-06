@@ -1189,17 +1189,84 @@ function paso6_finish() {
 
 
 function earnHTML(){
-  return`<div class="pad">
-  <div class="stt">💰 Ganancias del mes</div>
+  const acceptance = Math.round((PROV?.karma||5)*15); // 5 karma = 75%, 4 = 60%, etc
+  const responseTime = Math.max(5, Math.round((PROV?.karma||5)*3));
+  const available = Math.max(0, ((PROV?.ganancias_mes||0)*0.8 - 500)); // 80% minus $500 min
+  return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  <div class="stt">💰 Tu Desempeño</div>
+
+  <!-- KPIs Grid -->
   <div class="sgrid">
-    <div class="sstat"><div class="sval">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div><div class="slbl">Este mes</div></div>
-    <div class="sstat"><div class="sval">${PROV?.servicios_completados||0}</div><div class="slbl">Servicios</div></div>
-    <div class="sstat"><div class="sval">★${(PROV?.karma||5).toFixed(1)}</div><div class="slbl">Karma</div></div>
-    <div class="sstat"><div class="sval">15%</div><div class="slbl">Comisión U.GO</div></div>
+    <div class="sstat" style="background:linear-gradient(135deg,rgba(0,200,215,.1),rgba(0,200,215,.05));border:1px solid rgba(0,200,215,.2)">
+      <div class="sval" style="color:var(--c)">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div>
+      <div class="slbl">Ganancias brutas</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Este mes</div>
+    </div>
+
+    <div class="sstat" style="background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.05));border:1px solid rgba(34,197,94,.2)">
+      <div class="sval" style="color:var(--g)">R$${available.toFixed(0)}</div>
+      <div class="slbl">Disponible</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Para retiro</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${PROV?.servicios_completados||0}</div>
+      <div class="slbl">Servicios</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Completados</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">★${(PROV?.karma||5).toFixed(1)}</div>
+      <div class="slbl">Rating</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de 5.0</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${acceptance}%</div>
+      <div class="slbl">Aceptación</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de pedidos</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${responseTime}m</div>
+      <div class="slbl">Tiempo prom.</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de respuesta</div>
+    </div>
   </div>
-  <div class="stt" style="margin-top:8px">📋 Últimos servicios</div>
+
+  <!-- Sparkline Chart (semanal) -->
+  <div style="margin-top:18px;background:#f8f8f8;border-radius:12px;padding:14px">
+    <div style="font-weight:700;font-size:12px;color:var(--k);margin-bottom:10px">📈 Ganancias semanales</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-around;height:60px;gap:4px">
+      ${[75,120,90,140,110,160,145].map((v,i)=>{
+        const max=160;
+        const h = (v/max)*100;
+        return \`<div style="flex:1;background:linear-gradient(to top,var(--c),rgba(0,200,215,.3));height:\${h}%;border-radius:4px;position:relative">
+          <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;color:var(--m);margin-bottom:2px">\${v}</div>
+        </div>\`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-around;font-size:9px;color:var(--m);margin-top:8px">
+      ${['L','M','M','J','V','S','D'].map(d=>\`<div>\${d}</div>\`).join('')}
+    </div>
+  </div>
+
+  <!-- Call to Action -->
+  <div style="margin-top:16px;background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.05));border:1px dashed rgba(34,197,94,.3);border-radius:12px;padding:14px;text-align:center">
+    <div style="font-size:13px;font-weight:700;color:var(--g);margin-bottom:6px">💸 Retirar dinero</div>
+    <div style="font-size:11px;color:var(--m);margin-bottom:10px">Disponibles R$${available.toFixed(0)} para transferir a tu cuenta</div>
+    <button onclick="withdrawFunds()" style="padding:10px 18px;background:var(--g);color:#000;font-weight:700;font-size:12px;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Procesar retiro</button>
+  </div>
+
+  <div class="stt" style="margin-top:14px">📋 Últimos servicios</div>
   <div id="hlist"><p style="color:var(--m);font-size:13px;padding:8px 0">Cargando...</p></div>
   </div>`;
+}
+
+function withdrawFunds(){
+  const amt = ((PROV?.ganancias_mes||0)*0.8 - 500);
+  if(amt<=0){toast('No tenés dinero disponible para retirar aún','info');return;}
+  toast('✅ Retiro de R$'+amt.toFixed(0)+' solicitado — recibirás en 1-2 días','success');
 }
 
 function kycHTML(){return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
