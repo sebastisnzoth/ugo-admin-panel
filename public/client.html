@@ -465,6 +465,7 @@ async function createService(prov) {
     direccion_cliente: FLOW.ubicacion || CLI?.endereco || '',
     lat_cliente:     myLat || null,
     lng_cliente:     myLng || null,
+    categoria_id:    await categoriaIdFor(catToDbTerm(SELECTED_CAT) || (prov.categoria||'').toLowerCase()),
     tarifa:          tarifa,
     comision_ugo:    +(tarifa * 0.15).toFixed(2),
     ganancia_proveedor: +(tarifa * 0.85).toFixed(2),
@@ -479,7 +480,7 @@ async function createService(prov) {
       usuario_id: prov.id,
       tipo:       'nuevo_pedido',
       titulo:     `Nuevo pedido · ${prov.categoria}`,
-      cuerpo:     `Cliente a ${prov._dist || '?'} km · R$${tarifa}`,
+      cuerpo:     `Cliente a ${(prov.lat&&myLat)?haversineKm(myLat,myLng,prov.lat,prov.lng).toFixed(1):'?'} km · R$${tarifa}`,
       datos: {
         servicio_id:     svc.id,
         tarifa:          tarifa,
@@ -542,9 +543,20 @@ function startCascade(svcId) {
   if(ci){ci.classList.add('show');}
   if(cm){cm.textContent='Notificando proveedores más cercanos...';}
 
-  // Nivel 2: 90s → WA a offline cercanos (10km)
+  // Nivel 2: 90s → WA a offline cercanos (10km).
+  // Si el pedido era "elegir uno" y el proveedor no respondió, se lo libera
+  // primero (cumple la promesa de Hugo: "si no responde, busco al siguiente").
   cascadeT2 = setTimeout(async () => {
-    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
+    if (!ACTIVE_SVC || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'negociando')) return;
+    if (ACTIVE_SVC.proveedor_id) {
+      const { data: rel } = await sb.from('servicios')
+        .update({ proveedor_id: null })
+        .eq('id', svcId).eq('estado', 'negociando').not('proveedor_id', 'is', null)
+        .select('id').maybeSingle();
+      if (!rel) return; // aceptó justo a tiempo (o se canceló): no expandir
+      ACTIVE_SVC.proveedor_id = null;
+      trHugo('El proveedor no respondió a tiempo 😕 Como te prometí, ya estoy buscando al siguiente disponible en tu zona.');
+    }
     document.getElementById('tr-sub').textContent = 'Expandiendo búsqueda...';
     if(cm){cm.textContent='Sin respuesta aún. Notificando proveedores en 10km...';}
     await fetch('/api/cascade', {
@@ -555,7 +567,7 @@ function startCascade(svcId) {
 
   // Nivel 3: 4.5min → WA a todos en 20km
   cascadeT3 = setTimeout(async () => {
-    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id) return;
+    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'negociando')) return;
     document.getElementById('tr-sub').textContent = 'Notificando a todos los proveedores del área...';if($('cascade-msg')){$('cascade-msg').textContent='Buscando en toda el área. Casi listo...';};
     await fetch('/api/cascade', {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -579,10 +591,11 @@ function stopCascade() {
 
 // ── Mostrar overlay de tracking ───────────────────
 function showTracking(prov) {
+  prov = prov || {}; // broadcast: sin proveedor asignado todavía
   const ov = document.getElementById('track-overlay');
   ov.style.display = 'flex';
-  document.getElementById('tr-title').textContent = `${prov.categoria} solicitado`;
-  document.getElementById('tr-sub').textContent   = `Esperando que ${prov.nombre || 'el proveedor'} acepte...`;
+  document.getElementById('tr-title').textContent = `${prov.categoria || SELECTED_CAT || 'Servicio'} solicitado`;
+  document.getElementById('tr-sub').textContent   = prov.nombre ? `Esperando que ${prov.nombre} acepte...` : 'Buscando al proveedor más rápido de tu zona...';
   document.getElementById('tr-status').textContent = '🔍 Buscando proveedor...';
   document.getElementById('tr-pcard').style.display  = 'none';
   document.getElementById('tr-rating').style.display = 'none';
@@ -810,19 +823,11 @@ async function submitRating() {
       comentario: comentario
     });
     
-    // 3. Actualizar karma del proveedor
+    // 3. Actualizar karma del proveedor — vía RPC SECURITY DEFINER:
+    // RLS no permite que un cliente actualice la fila de otro usuario,
+    // así que el recálculo (promedio real de resenas) lo hace la función.
     if (ACTIVE_SVC.proveedor_id) {
-      const { data: p } = await sb.from('usuarios')
-        .select('karma,servicios_completados')
-        .eq('id', ACTIVE_SVC.proveedor_id)
-        .single();
-      
-      if (p) {
-        const newKarma = ((p.karma * p.servicios_completados) + myRating) / (p.servicios_completados + 1);
-        await sb.from('usuarios')
-          .update({ karma: +newKarma.toFixed(2) })
-          .eq('id', ACTIVE_SVC.proveedor_id);
-      }
+      await sb.rpc('recalcular_karma_proveedor', { p_proveedor_id: ACTIVE_SVC.proveedor_id });
     }
     
     if (pagoChannel) { sb.removeChannel(pagoChannel); pagoChannel = null; }
@@ -923,6 +928,18 @@ const CAT_DB_MAP={
   'Carpintero':'marido_aluguel', // sin categoría exacta — handyman es lo más cercano
   'Plomero':'plomero' // categoría cargada en la base (import AR)
 };
+// Cache de categorias (id por slug) — los servicios guardan categoria_id para que el cascade pueda matchear
+let CATEGORIAS_CACHE=null;
+async function categoriaIdFor(slug){
+  if(!slug)return null;
+  try{
+    if(!CATEGORIAS_CACHE){
+      const{data}=await sb.from('categorias').select('id,slug');
+      CATEGORIAS_CACHE=data||[];
+    }
+    return CATEGORIAS_CACHE.find(c=>c.slug===slug)?.id||null;
+  }catch(_){return null;}
+}
 function catToDbTerm(label){
   if(!label)return null;
   // match exacto contra CATS primero
@@ -1752,8 +1769,9 @@ function pickTerna(prov){
 async function broadcastToAll(){
   closeTerna(false);
   const desc=PROBLEM_DESC||'Sin descripción';
-  const tarifa=calcTarifa({tarifa_base:100});
-  
+  const tarifa=calcTarifa({tarifa_base:100}).total; // calcTarifa devuelve un objeto; acá va el monto
+  const dbcat=catToDbTerm(SELECTED_CAT);
+
   // 1. Crear servicio SIN proveedor asignado
   const{data:svc,error}=await sb.from('servicios').insert({
     cliente_id:SESSION.user.id,
@@ -1765,23 +1783,24 @@ async function broadcastToAll(){
     direccion_cliente:FLOW.ubicacion||CLI?.endereco||'',
     lat_cliente:myLat||null,
     lng_cliente:myLng||null,
+    categoria_id:await categoriaIdFor(dbcat), // el cascade (nivel 2/3) matchea por esta columna
     tarifa:tarifa,
     comision_ugo:+(tarifa*0.15).toFixed(2),
     ganancia_proveedor:+(tarifa*0.85).toFixed(2),
   }).select().single();
-  
+
   if(error){toast('Error: '+error.message);return;}
   ACTIVE_SVC=svc;
-  
+
   // 2. Notificar a TODOS los online en 10km de la categoría
-  const dbcat=catToDbTerm(SELECTED_CAT);
-  const{data:all_provs}=await sb.from('usuarios').select('id,nombre,categoria').eq('tipo','proveedor').eq('online',true).eq('activo',true).eq('estado_verificacion','verificado').not('lat','is',null).limit(50);
-  
+  const{data:all_provs}=await sb.from('usuarios').select('id,nombre,categoria,lat,lng').eq('tipo','proveedor').eq('online',true).eq('activo',true).eq('estado_verificacion','verificado').not('lat','is',null).limit(50);
+
   let nearby_provs=[];
   if(all_provs){
     nearby_provs=all_provs.filter(p=>{
-      const dist=haversineKm(myLat,myLng,p.lat||0,p.lng||0);
-      return dist<=10 && p.categoria.toLowerCase().includes(dbcat);
+      if(!p.lat||!p.lng)return false;
+      const dist=haversineKm(myLat,myLng,p.lat,p.lng);
+      return dist<=10&&(!dbcat||(p.categoria||'').toLowerCase().includes(dbcat));
     }).slice(0,20);
   }
   
@@ -1900,21 +1919,19 @@ function showPCard(p) {
   st.style.background = p.online ? 'rgba(34,197,94,.1)' : p.activo ? 'rgba(0,200,215,.08)' : 'rgba(0,0,0,.05)';
   st.style.color = p.online ? '#22C55E' : p.activo ? '#0080AA' : '#888';
   // Details
-  const addr = document.getElementById('pc-addr');
-  addr.querySelector('span:last-child').textContent = p.endereco || 'Sin dirección';
-  const ph = document.getElementById('pc-phone');
+  document.getElementById('pc-addr-t').textContent = p.endereco || 'Sin dirección';
+  const ph = document.getElementById('pc-phone-row');
   ph.style.display = p.telefono ? 'flex' : 'none';
-  if (p.telefono) ph.querySelector('span:last-child').textContent = p.telefono;
-  const pr = document.getElementById('pc-price');
-  pr.querySelector('span:last-child').textContent = p.tarifa_base ? 'Desde R$' + p.tarifa_base : 'Precio a consultar';
+  if (p.telefono) document.getElementById('pc-phone-t').textContent = p.telefono;
+  document.getElementById('pc-price-t').textContent = p.tarifa_base ? 'Desde R$' + p.tarifa_base : 'Precio a consultar';
   // Website
-  const wb = document.getElementById('pc-web');
+  const wb = document.getElementById('pc-web-row');
   const rawBio = p.bio || '';
   const isUrl = rawBio.startsWith('http');
   wb.style.display = isUrl ? 'flex' : 'none';
   if (isUrl) { document.getElementById('pc-web-a').href = rawBio; document.getElementById('pc-web-a').textContent = rawBio.replace('https://','').replace('http://','').split('/')[0]; }
   // Phone button
-  const pb = document.getElementById('pc-phone-btn');
+  const pb = document.getElementById('pc-call-row');
   pb.style.display = p.telefono ? 'block' : 'none';
   if (p.telefono) document.getElementById('pc-tel-a').href = 'tel:' + p.telefono;
   // Show card

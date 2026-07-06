@@ -687,7 +687,18 @@ function showJobOffer(j){
   },1000);
 }
 function acceptJob(){acceptJobReal();}
-function rejectJob(){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido rechazado');}
+function rejectJob(release=true){
+  clearInterval(jobTimer);$('jobnot').classList.remove('show');
+  const svcId=JOB?.servicio_id;JOB=null;
+  // Si el pedido estaba asignado a mí ("elegir uno"), liberarlo en la DB para que
+  // el cascade del cliente busque otro proveedor en vez de dejarlo esperando.
+  if(release&&svcId&&SESSION){
+    sb.from('servicios').update({proveedor_id:null})
+      .eq('id',svcId).eq('proveedor_id',SESSION.user.id).eq('estado','negociando')
+      .then(()=>{});
+  }
+  toast('Pedido rechazado');
+}
 function navigateJob(){
   if(!ACTIVE_JOB)return;
   const addr=encodeURIComponent(ACTIVE_JOB.addr||'Florianópolis, SC');
@@ -1414,29 +1425,55 @@ let pagoChannelProv = null;   // realtime de pagos (escrow)
 let svcChannelProv  = null;   // realtime del servicio (cancelaciones del cliente)
 let ESCROW_OK = false;
 
-async function acceptJobReal() {
+// ── Aceptar pedido — cubre AMBOS caminos del despacho híbrido:
+//    · "El más rápido" (broadcast): proveedor_id NULL → claim atómico, gana el primero
+//    · "Elegir uno": el servicio ya viene asignado a este proveedor → confirma directo
+//    En ambos casos el estado pasa a 'confirmado' (enum válido) y se queda esperando
+//    el pago del cliente (handshake escrow) antes de habilitar la salida.
+async function acceptJobReal(){
+  if(!JOB||!JOB.servicio_id){ // job de demo sin servicio real: solo UI
+    clearInterval(jobTimer);$('jobnot').classList.remove('show');
+    jobState='confirmado';ESCROW_OK=false;ACTIVE_JOB=JOB;
+    return;
+  }
+  const svc_id=JOB.servicio_id, uid=SESSION.user.id;
+
+  // Un solo UPDATE cubre ambos caminos: sin dueño (claim) o asignado a mí.
+  // El .eq('estado','negociando') evita aceptar pedidos ya cancelados/confirmados.
+  const{data:updated,error}=await sb.from('servicios')
+    .update({proveedor_id:uid,estado:'confirmado',confirmado_at:new Date().toISOString()})
+    .eq('id',svc_id)
+    .eq('estado','negociando')
+    .or(`proveedor_id.is.null,proveedor_id.eq.${uid}`)
+    .select()
+    .maybeSingle();
+
+  if(error||!updated){
+    toast('⚠️ Este pedido ya no está disponible (otro proveedor lo tomó o fue cancelado)');
+    rejectJob(false); // solo limpiar UI: el servicio no es nuestro
+    return;
+  }
+
   clearInterval(jobTimer);
   $('jobnot').classList.remove('show');
-  // ── HANDSHAKE: aceptar = CONFIRMADO. Se sale recién cuando el cliente asegura el pago ──
-  jobState = 'confirmado';
-  ESCROW_OK = false;
-  ACTIVE_JOB = JOB;
+  jobState='confirmado';
+  ESCROW_OK=false;
+  ACTIVE_JOB=JOB;
+  ACTIVE_SVC=updated;
 
-  if (JOB?.servicio_id) {
-    const {data: svc} = await sb.from('servicios')
-      .select('*').eq('id', JOB.servicio_id).single();
-    if(svc) ACTIVE_SVC = svc;
+  watchPagoProv(svc_id);
+  watchSvcProv(svc_id);
+  checkPagoProv(svc_id); // por si el pago ya entró
 
-    await sb.from('servicios').update({
-      proveedor_id: SESSION.user.id,
-      estado: 'confirmado',
-      confirmado_at: new Date().toISOString()
-    }).eq('id', JOB.servicio_id);
-
-    watchPagoProv(JOB.servicio_id);
-    watchSvcProv(JOB.servicio_id);
-    checkPagoProv(JOB.servicio_id); // por si el pago ya entró
-  }
+  // Avisar al cliente (además del realtime de servicios)
+  await sb.from('notificaciones').insert({
+    usuario_id:updated.cliente_id,
+    tipo:'pedido_aceptado',
+    titulo:`Proveedor encontrado · ${PROV?.nombre||''}`,
+    cuerpo:`${PROV?.nombre||'Tu proveedor'} aceptó tu pedido. Asegurá el pago para que salga en camino.`,
+    datos:{servicio_id:svc_id,proveedor_id:uid,proveedor_nombre:PROV?.nombre},
+    leida:false
+  });
 
   $('jbico').textContent = ACTIVE_JOB.ic || '🔧';
   $('jbtit').textContent = (ACTIVE_JOB.t || 'Servicio') + (ACTIVE_JOB.addr ? ' — ' + ACTIVE_JOB.addr : '');
@@ -1446,47 +1483,6 @@ async function acceptJobReal() {
   $('jbbtn').disabled = true;
   $('jbbtn').style.opacity = '.55';
   toast('✅ Aceptaste el pedido. Hugo le pidió el pago al cliente — salís cuando esté protegido en la bóveda.');
-}
-
-// Escrow asegurado → habilitar salida
-
-async function acceptJobReal(){
-  if(!JOB||!JOB.servicio_id)return;
-  const svc_id=JOB.servicio_id;
-  
-  // CLAIM ATÓMICO: solo actualizar si proveedor_id sigue siendo NULL
-  const{data:updated,error}=await sb.from('servicios')
-    .update({proveedor_id:SESSION.user.id,estado:'aceptado'})
-    .eq('id',svc_id)
-    .is('proveedor_id',null)  // ← Claim atómico: solo si sigue siendo NULL
-    .select()
-    .single();
-  
-  if(error||!updated){
-    toast('⚠️ Otro proveedor tomó este pedido más rápido');
-    rejectJob();
-    return;
-  }
-  
-  // Proveedor asignado exitosamente
-  $('jobnot').classList.remove('show');
-  clearInterval(jobTimer);
-  ACTIVE_JOB=JOB;
-  
-  // Notificar al cliente que fue aceptado
-  await sb.from('notificaciones').insert({
-    usuario_id:updated.cliente_id,
-    tipo:'pedido_aceptado',
-    titulo:`Proveedor encontrado · ${PROV?.nombre}`,
-    cuerpo:`${PROV?.nombre} está en camino. ⏱ ${Math.round(updated.tarifa*0.85)} netos para vos`,
-    datos:{servicio_id:svc_id,proveedor_id:SESSION.user.id,proveedor_nombre:PROV?.nombre}
-  });
-  
-  toast(`✓ Pedido ${svc_id.slice(0,8)} asignado a vos`);
-  $('jobbar').classList.add('show');
-  jobState='aceptado';
-  $('jbbtn').textContent='En camino ➜';
-  $('jbsub').textContent='Confirmación del cliente...';
 }
 
 

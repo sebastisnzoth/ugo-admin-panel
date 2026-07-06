@@ -26,11 +26,14 @@ export default async function handler(req, res) {
   try {
     // Verificar que el servicio sigue sin proveedor
     const { data: svc } = await sb.from('servicios')
-      .select('id,estado,categoria_id,lat_cliente,lng_cliente,tarifa,descripcion')
+      .select('id,estado,proveedor_id,categoria_id,lat_cliente,lng_cliente,tarifa,descripcion')
       .eq('id', servicio_id).single();
 
     if (!svc || svc.estado !== 'negociando' || svc.proveedor_id) {
       return res.json({ ok: true, msg: 'Servicio ya tiene proveedor o fue cancelado' });
+    }
+    if (!svc.categoria_id || svc.lat_cliente == null || svc.lng_cliente == null) {
+      return res.json({ ok: true, notified: 0, nivel, msg: 'Servicio sin categoría o sin ubicación: no se puede expandir' });
     }
 
     // Configuración por nivel
