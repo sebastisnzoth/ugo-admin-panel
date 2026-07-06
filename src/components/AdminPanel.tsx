@@ -643,19 +643,48 @@ export function AdminPanel() {
   const renderDocumentos = () => (
     <div className="pad">
       <div className="st">Verificación de documentos</div>
+
+      {/* Document queue by age */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:10,marginBottom:16}}>
+        {[
+          {label:'< 24 horas',filter:(d:any)=>{const h=Math.floor((Date.now()-new Date(d.created_at).getTime())/3600000);return h<24;}},
+          {label:'24-72 horas',filter:(d:any)=>{const h=Math.floor((Date.now()-new Date(d.created_at).getTime())/3600000);return h>=24&&h<=72;}},
+          {label:'> 72 horas',filter:(d:any)=>{const h=Math.floor((Date.now()-new Date(d.created_at).getTime())/3600000);return h>72;}}
+        ].map((bucket,i)=>(
+          <div key={i} style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:12,padding:'12px 16px',textAlign:'center'}}>
+            <div style={{fontSize:10,color:'var(--muted)',marginBottom:4,textTransform:'uppercase',letterSpacing:'.5px'}}>
+              {bucket.label}
+            </div>
+            <div style={{fontSize:24,fontWeight:900,color:'#fff'}}>
+              {docs.filter(bucket.filter).length}
+            </div>
+          </div>
+        ))}
+      </div>
+
       <div className="tw">
-        <div className="th"><div className="tc" style={{flex:2}}>Proveedor</div><div className="tc" style={{flex:1.5}}>Documento</div><div className="tc" style={{flex:1}}>Estado</div><div className="tc" style={{flex:1}}>OCR</div><div className="tc" style={{flex:0.8}}>Hace</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
+        <div className="th"><div className="tc" style={{flex:0.8}}>Foto</div><div className="tc" style={{flex:2}}>Proveedor</div><div className="tc" style={{flex:1.5}}>Documento</div><div className="tc" style={{flex:1}}>Estado</div><div className="tc" style={{flex:1}}>OCR</div><div className="tc" style={{flex:0.8}}>Hace</div><div className="tc" style={{flex:1.5}}>Acciones</div></div>
         {docs.map(d=>(
           <div key={d.id} className="tr">
+            <div className="tc" style={{flex:0.8}}>
+              {d.thumbnail_url ? (
+                <img src={d.thumbnail_url} alt="thumbnail" style={{width:'40px',height:'40px',borderRadius:6,objectFit:'cover',cursor:'pointer',border:'1px solid var(--border)'}} onClick={()=>openDocPreview(d)} title="Click para ver documento completo"/>
+              ) : (
+                <div style={{width:'40px',height:'40px',borderRadius:6,background:'var(--bg3)',display:'flex',alignItems:'center',justifyContent:'center',fontSize:9,color:'var(--muted)'}}>sin foto</div>
+              )}
+            </div>
             <div className="tc" style={{flex:2}}>{(d as any).usuarios?.nombre} {(d as any).usuarios?.apellido||''}<div style={{fontSize:9,color:'var(--muted)'}}>{(d as any).usuarios?.email}</div></div>
             <div className="tc" style={{flex:1.5}}>{d.tipo.toUpperCase()}</div>
-            <div className="tc" style={{flex:1}}><span className={`pill pill-${d.estado==='pendiente'?'a':'c'}`}>{d.estado}</span></div>
-            <div className="tc" style={{flex:1}}>{d.ocr_valido===true?<span style={{color:'var(--green)'}}>✓</span>:d.ocr_valido===false?<span style={{color:'var(--red)'}}>✗</span>:'—'}</div>
+            <div className="tc" style={{flex:1}}><span className={`pill pill-${d.estado==='pendiente'?'a':d.estado==='procesando'?'w':'c'}`}>{d.estado}</span></div>
+            <div className="tc" style={{flex:1}}>
+              {d.ocr_valido===true?<span style={{color:'var(--green)'}}>✓</span>:d.ocr_valido===false?<span style={{color:'var(--red)'}}>✗</span>:'—'}
+              {typeof d.ocr_confianza === 'number' && <div style={{fontSize:9,color:'var(--muted)',marginTop:2}}>{(d.ocr_confianza*100).toFixed(0)}%</div>}
+            </div>
             <div className="tc" style={{flex:0.8,color:'var(--muted)'}}>{timeAgo(d.created_at!)}</div>
             <div className="tc" style={{flex:1.5,display:'flex',gap:3}}>
               <button className="btn btn-s btn-sm" onClick={()=>openDocPreview(d)}>Ver</button>
-              <button className="btn btn-p btn-sm" onClick={()=>updateEstado(d.id,'aprobado')}>✓</button>
-              <button className="btn btn-d btn-sm" onClick={()=>updateEstado(d.id,'rechazado')}>✗</button>
+              <button className="btn btn-p btn-sm" onClick={()=>updateEstado(d.id,'aprobado','')}>✓</button>
+              <button className="btn btn-d btn-sm" onClick={()=>updateEstado(d.id,'rechazado','')}>✗</button>
             </div>
           </div>
         ))}
@@ -856,25 +885,51 @@ export function AdminPanel() {
     const totalRevenue = services.filter(s => s.estado === 'completado').reduce((sum, s) => sum + (s.tarifa || 0), 0);
     const activeProviders = users.filter(u => u.tipo === 'proveedor' && u.online).length;
     const avgRating = (services.filter(s => s.rating_cliente).reduce((sum, s) => sum + s.rating_cliente, 0) / Math.max(completedServices, 1)).toFixed(1);
-    
+
+    // Document review time (promedio de revisado_at - created_at para docs completados)
+    const reviewedDocs = docs.filter(d => d.revisado_at && d.created_at && ['aprobado','rechazado'].includes(d.estado));
+    const avgReviewTimeMs = reviewedDocs.length > 0
+      ? reviewedDocs.reduce((sum, d) => sum + (new Date(d.revisado_at).getTime() - new Date(d.created_at).getTime()), 0) / reviewedDocs.length
+      : 0;
+    const avgReviewTimeHours = (avgReviewTimeMs / (1000 * 60 * 60)).toFixed(1);
+
     // Servicios por día (últimos 7 días)
     const last7 = Array.from({length: 7}, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
       return d.toISOString().split('T')[0];
     }).reverse();
-    
-    const servByDay = last7.map(day => 
+
+    const servByDay = last7.map(day =>
       services.filter(s => s.created_at?.startsWith(day) && s.estado === 'completado').length
     );
-    
+
     const maxSday = Math.max(...servByDay, 5);
+
+    // KPIs por región (BR/AR)
+    const regionMetrics: Record<string, any> = {};
+    users.forEach(u => {
+      const region = u.pais === 'AR' ? 'Argentina' : u.pais === 'BR' ? 'Brasil' : null;
+      if (region) {
+        if (!regionMetrics[region]) {
+          regionMetrics[region] = { ingresos: 0, servicios: 0, moneda: region === 'Argentina' ? 'ARS' : 'BRL', simbolo: region === 'Argentina' ? 'ARS $' : 'R$' };
+        }
+      }
+    });
+    services.filter(s => s.estado === 'completado').forEach(s => {
+      const cliente = users.find(u => u.id === s.cliente_id);
+      const region = cliente?.pais === 'AR' ? 'Argentina' : cliente?.pais === 'BR' ? 'Brasil' : null;
+      if (region && regionMetrics[region]) {
+        regionMetrics[region].ingresos += s.tarifa || 0;
+        regionMetrics[region].servicios += 1;
+      }
+    });
 
     return (
       <div className="pad">
         <div className="st">📊 Analytics</div>
-        
-        {/* KPIs */}
+
+        {/* KPIs principales */}
         <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(200px,1fr))',gap:'12px',marginBottom:'20px'}}>
           <div style={{background:'linear-gradient(135deg,#0f172e,#1a2e50)',border:'1px solid #2d3e5f',borderRadius:'12px',padding:'16px',color:'#fff'}}>
             <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Ingresos Totales</div>
@@ -892,7 +947,31 @@ export function AdminPanel() {
             <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Rating Promedio</div>
             <div style={{fontSize:'24px',fontWeight:900}}>★ {avgRating}</div>
           </div>
+          <div style={{background:'linear-gradient(135deg,#1e0f2e,#3a1a50)',border:'1px solid #3f2d5f',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Documentos Revisados</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>{reviewedDocs.length}</div>
+          </div>
+          <div style={{background:'linear-gradient(135deg,#2e1f0f,#50331a)',border:'1px solid #5f432d',borderRadius:'12px',padding:'16px',color:'#fff'}}>
+            <div style={{fontSize:'12px',color:'#aaa',marginBottom:'4px'}}>Tiempo Promedio Revisión</div>
+            <div style={{fontSize:'24px',fontWeight:900}}>{avgReviewTimeHours}h</div>
+          </div>
         </div>
+
+        {/* KPIs por región */}
+        {Object.keys(regionMetrics).length > 0 && (
+          <div style={{marginBottom:'20px'}}>
+            <div style={{fontSize:'13px',fontWeight:700,marginBottom:'12px',color:'var(--text)'}}>📍 Ingresos por región</div>
+            <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(250px,1fr))',gap:12}}>
+              {Object.entries(regionMetrics).map(([region,metrics]:any) => (
+                <div key={region} style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'14px'}}>
+                  <div style={{fontSize:11,color:'var(--muted)',textTransform:'uppercase',letterSpacing:'.5px',marginBottom:8}}>{region}</div>
+                  <div style={{fontSize:20,fontWeight:900,color:'#fff',marginBottom:6}}>{metrics.simbolo} {metrics.ingresos.toFixed(0)}</div>
+                  <div style={{fontSize:10,color:'var(--muted)'}}>{metrics.servicios} servicios completados</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Chart: Servicios últimos 7 días */}
         <div style={{background:'var(--card)',border:'1px solid var(--border)',borderRadius:'12px',padding:'16px',marginBottom:'20px'}}>
@@ -1340,20 +1419,83 @@ export function AdminPanel() {
         </div>
       )}
 
-      {/* MODAL: Document preview */}
+      {/* MODAL: Document preview with OCR */}
       {modal.type==='doc-preview'&&modal.data&&(
         <div className="modal-bd" onClick={e=>{if(e.target===e.currentTarget)closeModal();}}>
-          <div className="modal-box">
+          <div className="modal-box" style={{display:'flex',flexDirection:'column',height:'90vh',maxWidth:'90vw'}}>
             <div className="modal-title"><span>📄 {modal.data.tipo?.toUpperCase()} — {(modal.data.usuarios?.nombre||'')} {modal.data.usuarios?.apellido||''}</span><button className="mclose" onClick={closeModal}>✕</button></div>
-            {previewLoading&&<div style={{textAlign:'center',padding:'30px',color:'var(--muted)'}}>Cargando documento...</div>}
-            {previewUrl&&!previewLoading&&(previewUrl.includes('.pdf')||modal.data.url_storage?.includes('.pdf')?<iframe src={previewUrl} className="modal-pdf" title="doc"/>:<img src={previewUrl} className="modal-preview" alt="documento"/>)}
-            {!previewUrl&&!previewLoading&&<div style={{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:10,background:'var(--bg2)',borderRadius:5}}>Sin archivo adjunto</div>}
-            <div style={{marginTop:10,fontSize:10,color:'var(--muted)'}}>Notas:</div>
-            <textarea className="ftextarea" style={{marginTop:5}} value={docNotes} onChange={e=>setDocNotes(e.target.value)} placeholder="Motivo de aprobación/rechazo..."/>
+
+            {/* Retry history chip */}
+            {modal.data.intentos_resubmision > 0 && (
+              <div style={{background:'rgba(249,115,22,.1)',border:'1px solid rgba(249,115,22,.3)',borderRadius:8,padding:'10px 12px',fontSize:11,marginBottom:10}}>
+                <div style={{fontWeight:700,color:'#f97316',marginBottom:4}}>⚠️ Reenvío #{modal.data.intentos_resubmision}</div>
+                {modal.data.notas_rechazo && (
+                  <div style={{color:'var(--muted)',fontSize:10,lineHeight:1.5}}>
+                    <strong>Razón anterior:</strong> {modal.data.notas_rechazo}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Two-column layout: Document + OCR fields */}
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:16,flex:1,minHeight:0,marginBottom:10}}>
+              {/* Left column: Document */}
+              <div style={{border:'1px solid var(--border)',borderRadius:12,overflow:'auto',background:'var(--bg2)',display:'flex',flexDirection:'column'}}>
+                {previewLoading&&<div style={{textAlign:'center',padding:'30px',color:'var(--muted)',flex:1,display:'flex',alignItems:'center',justifyContent:'center'}}>Cargando documento...</div>}
+                {previewUrl&&!previewLoading&&(previewUrl.includes('.pdf')||modal.data.url_storage?.includes('.pdf')?<iframe src={previewUrl} className="modal-pdf" title="doc" style={{flex:1,border:'none'}}/>:<img src={previewUrl} className="modal-preview" alt="documento" style={{maxWidth:'100%',height:'auto'}}/>)}
+                {!previewUrl&&!previewLoading&&<div style={{textAlign:'center',padding:'20px',color:'var(--muted)',fontSize:10}}>Sin archivo adjunto</div>}
+              </div>
+
+              {/* Right column: OCR fields + confidence */}
+              <div style={{display:'flex',flexDirection:'column',gap:12,overflowY:'auto'}}>
+                {/* Confidence badge */}
+                {typeof modal.data.ocr_confianza === 'number' && (
+                  <div style={{
+                    background: modal.data.ocr_confianza >= 0.85 ? 'rgba(34,197,94,.1)' : modal.data.ocr_confianza >= 0.6 ? 'rgba(249,115,22,.1)' : 'rgba(239,68,68,.1)',
+                    border: `1px solid ${modal.data.ocr_confianza >= 0.85 ? 'rgba(34,197,94,.3)' : modal.data.ocr_confianza >= 0.6 ? 'rgba(249,115,22,.3)' : 'rgba(239,68,68,.3)'}`,
+                    borderRadius:8,
+                    padding:'10px 12px'
+                  }}>
+                    <div style={{fontSize:11,fontWeight:700,marginBottom:4,color:modal.data.ocr_confianza >= 0.85 ? '#22c55e' : modal.data.ocr_confianza >= 0.6 ? '#f97316' : '#ef4444'}}>
+                      {modal.data.ocr_confianza >= 0.85 ? '✓' : modal.data.ocr_confianza >= 0.6 ? '⚠️' : '✗'} Confianza: {(modal.data.ocr_confianza * 100).toFixed(0)}%
+                    </div>
+                    <div style={{fontSize:10,color:'var(--muted)'}}>
+                      {modal.data.ocr_valido === true ? '✓ Validado correctamente' : modal.data.ocr_valido === false ? '✗ Fallos detectados' : 'Pendiente de validación'}
+                    </div>
+                  </div>
+                )}
+
+                {/* OCR fields */}
+                {modal.data.ocr_resultado && typeof modal.data.ocr_resultado === 'object' && (
+                  <div style={{background:'var(--bg2)',border:'1px solid var(--border)',borderRadius:8,padding:12}}>
+                    <div style={{fontSize:11,fontWeight:700,marginBottom:8,textTransform:'uppercase',letterSpacing:'.5px',color:'var(--muted)'}}>Campos OCR extraídos</div>
+                    <div style={{display:'flex',flexDirection:'column',gap:8}}>
+                      {Object.entries(modal.data.ocr_resultado).map(([key,val]:any) => (
+                        <div key={key} style={{display:'grid',gridTemplateColumns:'120px 1fr',gap:8,fontSize:11,padding:'6px 0',borderBottom:'1px solid rgba(255,255,255,.05)'}}>
+                          <div style={{fontWeight:700,color:'var(--muted)',textTransform:'capitalize'}}>{key.replace(/_/g,' ')}</div>
+                          <div style={{color:'#fff',wordBreak:'break-word'}}>{String(val)}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {!modal.data.ocr_resultado && (
+                  <div style={{background:'var(--bg2)',border:'1px dashed var(--border)',borderRadius:8,padding:12,textAlign:'center',color:'var(--muted)',fontSize:11}}>
+                    OCR sin datos
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Notes textarea and actions */}
+            <div style={{fontSize:10,color:'var(--muted)',marginBottom:6}}>📝 Notas de revisión:</div>
+            <textarea className="ftextarea" style={{marginBottom:10,height:'80px',resize:'none'}} value={docNotes} onChange={e=>setDocNotes(e.target.value)} placeholder="Motivo de aprobación/rechazo..."/>
             <div className="modal-acts">
-              <button className="btn btn-g" onClick={()=>{updateEstado(modal.data.id,'aprobado',docNotes);closeModal();}}>✓ Aprobar</button>
-              <button className="btn btn-d" onClick={()=>{updateEstado(modal.data.id,'rechazado',docNotes);closeModal();}}>✗ Rechazar</button>
-              <button className="btn btn-s" onClick={()=>{updateEstado(modal.data.id,'reenvio_solicitado',docNotes);closeModal();}}>↺ Pedir reenvío</button>
+              <button className="btn btn-g" onClick={()=>{updateEstado(modal.data.id,'aprobado',docNotes,undefined);closeModal();}}>✓ Aprobar</button>
+              <button className="btn btn-d" onClick={()=>{updateEstado(modal.data.id,'rechazado',undefined,docNotes);closeModal();}}>✗ Rechazar</button>
+              <button className="btn btn-p" onClick={()=>{updateEstado(modal.data.id,'pedir_resubmision',undefined,docNotes);closeModal();}}>↺ Pedir reenvío</button>
+              <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
           </div>
         </div>

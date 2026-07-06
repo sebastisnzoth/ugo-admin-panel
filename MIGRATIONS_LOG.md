@@ -1,3 +1,106 @@
+# ETAPA 4: Dashboard Admin — OCR Visual + Métricas
+
+**Fecha**: Julio 6, 2026
+**Rama**: `backup/etapa-4-ocr-metricas`
+**Sin migraciones DB**: cambios en AdminPanel.tsx y useAdminData.ts
+
+## Cambios principales
+
+### 1. Bug fix: OCR columns en usePendingDocuments()
+- **Antes**: `.select('id,tipo,estado,created_at,url_storage,descripcion,notas,usuarios:usuario_id(...)')` — faltaban campos OCR
+- **Después**: Agregadas columnas `ocr_resultado, ocr_valido, ocr_confianza, ocr_validado_at, notas_rechazo, intentos_resubmision, version, thumbnail_url, revisor_id`
+- Resultado: `AdminPanel.tsx` línea 653 ya no muestra `—` para OCR status
+
+### 2. updateEstado() mejorado
+- Nuevo parámetro `notasRechazo?: string` diferenciado de `notas` genérico
+- Al rechazar o pedir reenvío, persiste notas en columna `notas_rechazo` (distinct)
+- Al pedir reenvío, incrementa `intentos_resubmision` (para historial)
+
+### 3. Modal doc-preview: Rediseño OCR + historial
+**Cambios visuales**:
+- Layout dos columnas: documento izq (img/PDF) | OCR fields + confidence dcha
+- Badge de confianza: verde ≥85%, amber 60-85%, rojo <60% con icono visual
+- Retry history: si `intentos_resubmision > 0`, muestra chip "Reenvío #N" con `notas_rechazo` anterior
+- Campos OCR: lista `campo: valor` desde `ocr_resultado` JSONB (no JSON crudo)
+- Textarea de notas separadas para aprovación vs rechazo/reenvío
+
+**Columnas renderizadas**:
+- Proveedor (nombre + email)
+- Documento (tipo DNI/CUIT/etc)
+- Estado (pendiente/procesando/aprobado/rechazado)
+- OCR confianza (% visual)
+- Antigüedad (timeAgo)
+- Acciones: Ver / Aprobar / Rechazar
+
+### 4. renderDocumentos() mejorado
+**Buckets de antigüedad**:
+- 3 KPI cards: <24h | 24-72h | >72h (ayuda al admin priorizar docs viejos)
+- Cálculo: `Math.floor((Date.now() - created_at) / 3600000)`
+
+**Tabla de documentos**:
+- Columna NUEVA: Thumbnail (si `thumbnail_url` existe, mostrar miniatura; else "sin foto")
+- Confianza OCR: debajo del status OCR, muestra % en pequeño
+- Click en thumbnail → abre modal (shortcut visual)
+
+### 5. renderAnalytics() extendido
+**KPIs por región**:
+- Lee `pais` de usuarios en servicios completados
+- Desglosar: Brasil (BRL, R$) | Argentina (ARS, ARS $)
+- Cada región: ingresos totales + cantidad servicios completados
+
+**Tiempo promedio de revisión**:
+- Calcula: `avg(revisado_at - created_at)` para docs con estado `aprobado` o `rechazado`
+- KPI card nueva: muestra en horas
+- Usa array `reviewedDocs` internamente
+
+**Cola de documentos**:
+- KPI card: total documentos revisados (aprobado + rechazado)
+- Separado de las buckets de antigüedad (que están en renderDocumentos)
+
+## Archivos modificados
+
+- `src/hooks/useAdminData.ts` (~20 líneas)
+  - Línea 153: Expandido select en usePendingDocuments()
+  - Línea 157-167: updateEstado() signature + payload OCR-aware
+  
+- `src/components/AdminPanel.tsx` (~400 líneas cambiadas/nuevas)
+  - renderDocumentos(): Buckets de antigüedad + thumbnails + OCR % en tabla
+  - Modal doc-preview: 2-column layout + confidence badge + retry history
+  - renderAnalytics(): KPIs por región + avg review time + metrics computed
+
+## Testing checklist
+
+- [ ] `tsc -b && npm run build` sin errores ✅
+- [ ] Admin abre panel → documentos muestran OCR % (no `—`)
+- [ ] Click en thumbnail → modal abre, muestra documento + OCR fields lado a lado
+- [ ] Confidence badge: ≥85%=verde, 60-85%=amber, <60%=rojo
+- [ ] Retry history chip aparece si `intentos_resubmision > 0` con `notas_rechazo`
+- [ ] Al rechazar/pedir reenvío, notas se guardan en `notas_rechazo` (SQL: verify `notas_rechazo` column updated)
+- [ ] Buckets de antigüedad (<24h, 24-72h, >72h) suman docs correctamente
+- [ ] Analytics: KPIs por región muestran R$ para Brasil y ARS $ para Argentina
+- [ ] Tiempo promedio revisión calcula bien (sample: 3 docs con tiempos distintos)
+
+## Rollback
+
+No hay cambios en DB, solo UI/lógica:
+```bash
+git reset --hard <commit-anterior>
+```
+
+O simplemente revertir los 2 archivos:
+```sql
+-- No aplica (sin migraciones DB)
+```
+
+## Notas
+
+- OCR visual assume `ocr_resultado` es JSONB válido; si viene como string, parsear en frontend
+- `thumbnail_url` es opcional — si no existe, mostrar fallback "sin foto"
+- Region matching: usa `pais` de usuarios (texto: 'BR'/'AR') para desglosar — no usa `region_cuenta` UUID (eso se lee en ocr_confianza y confundiría)
+- Timeago helper reutilizado (`timeAgo` ya existe en AdminPanel.tsx)
+
+---
+
 # Regiones: seed UY/PY + tarifario_base BR/AR
 
 **Fecha**: Julio 6, 2026 · **Solo datos, sin DDL ni deploy**
