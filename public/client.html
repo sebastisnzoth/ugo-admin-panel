@@ -869,6 +869,8 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,pers
 let SESSION=null,CLI=null,MAP=null;
 let myLat=-27.5969,myLng=-48.5495,myAddr='';
 let chatHistory=[], SELECTED_PROV=null;
+/* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
+let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
 const $=id=>document.getElementById(id);
 const CATS=[{ic:'⚡',lb:'Electricista'},{ic:'🔧',lb:'Plomero'},{ic:'🧹',lb:'Limpieza'},{ic:'🎨',lb:'Pintor'},{ic:'🪚',lb:'Carpintero'},{ic:'🔑',lb:'Cerrajero'},{ic:'🌿',lb:'Jardinero'},{ic:'❄️',lb:'AC/Clima'}];
 
@@ -1057,10 +1059,9 @@ async function doLogout(){
 sb.auth.onAuthStateChange(async(ev,ses)=>{if(ev==='SIGNED_IN'&&ses&&!SESSION){SESSION=ses;await bootApp();}if(ev==='SIGNED_OUT'){SESSION=null;}});
 
 async function bootApp(){
-  await loadHugoContext(); // Cargar memoria de Hugo
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();
+    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();loadHugoContext();
     setTimeout(()=>{if(typeof resumeActiveService==='function')resumeActiveService();},800);
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
@@ -1289,10 +1290,43 @@ function rateService(){
 
 /* HUGO CHAT */
 const HSUGS=['⚡ Necesito un electricista urgente','🧹 ¿Cuánto cuesta el servicio de limpieza?','📍 ¿Hay proveedores disponibles cerca?','📦 Estado de mi pedido actual','🛠 Solicitar otro tipo de servicio'];
+
+/* ── HUGO 2.0: memoria entre sesiones ──────────────────────────────
+   Al boot carga la sesión activa de hugo_sessions + últimos 10 mensajes
+   de hugo_chat. chatHistory sigue arrancando vacío (el wizard depende
+   de eso); la memoria solo se antepone al history de hugoCall. */
+async function loadHugoContext(){
+  try{
+    const{data:flag}=await sb.from('config_sistema').select('valor').eq('clave','hugo_v2_enabled').maybeSingle();
+    HUGO_V2=flag?.valor==='true';
+    if(!HUGO_V2||!SESSION)return;
+    let{data:ses}=await sb.from('hugo_sessions').select('id,metadatos').eq('usuario_id',SESSION.user.id).eq('rol','cliente').eq('activa',true).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(!ses){
+      const{data:nueva,error}=await sb.from('hugo_sessions').insert({usuario_id:SESSION.user.id,rol:'cliente',activa:true,metadatos:{}}).select('id,metadatos').single();
+      if(error)throw error;
+      ses=nueva;
+    }
+    HUGO_SID=ses.id;HUGO_META=ses.metadatos||{};
+    const{data:msgs}=await sb.from('hugo_chat').select('rol_mensaje,contenido').eq('session_id',HUGO_SID).order('created_at',{ascending:false}).limit(10);
+    HUGO_MEMORY=(msgs||[]).reverse().map(m=>({role:m.rol_mensaje==='hugo'?'assistant':'user',content:m.contenido}));
+  }catch(e){console.warn('Hugo memoria desactivada:',e?.message||e);HUGO_V2=false;HUGO_SID=null;}
+}
+function hugoSave(rol,contenido,extra){
+  if(!HUGO_V2||!HUGO_SID||!contenido)return;
+  sb.from('hugo_chat').insert({session_id:HUGO_SID,usuario_id:SESSION.user.id,rol_mensaje:rol,contenido,...(extra||{})})
+    .then(({error})=>{if(error)console.warn('hugoSave:',error.message);else sb.from('hugo_sessions').update({updated_at:new Date().toISOString()}).eq('id',HUGO_SID).then(()=>{});});
+}
+function hugoMeta(patch){
+  if(!HUGO_V2||!HUGO_SID)return;
+  HUGO_META={...HUGO_META,...patch};
+  sb.from('hugo_sessions').update({metadatos:HUGO_META}).eq('id',HUGO_SID).then(()=>{});
+}
+
 function openChat(){
   document.getElementById('chat').style.height='min(88vh,720px)';
   if(!chatHistory.length){
-    hLocal(`¡Hola${CLI?.nombre?' '+CLI.nombre.split(' ')[0]:''}! 👋 Te ayudo a pedir tu servicio en 5 pasos simples.`);
+    const recuerdo=HUGO_META.preferred_category?` La última vez pediste ${HUGO_META.preferred_category}.`:'';
+    hLocal(`¡Hola${CLI?.nombre?' '+CLI.nombre.split(' ')[0]:''}! 👋${recuerdo} Te ayudo a pedir tu servicio en 5 pasos simples.`);
     wizardStart();
   }
 }
@@ -1300,7 +1334,7 @@ function openChat(){
 /* ══ WIZARD: formulario conversacional paso a paso ══
    Cada paso valida antes de avanzar. Todo local: 0 tokens de API. */
 function hLocal(t){addMsg('h',t);chatHistory.push({role:'assistant',content:t});try{hugoSpeak(t);}catch(_){}}
-function uLocal(t){addMsg('u',t);chatHistory.push({role:'user',content:t});}
+function uLocal(t){addMsg('u',t);chatHistory.push({role:'user',content:t});hugoSave('user',t);}
 
 function wizardStart(){
   FLOW={active:true,step:0,cuando:null,ubicacion:null,esperaTexto:null};
@@ -1364,6 +1398,9 @@ function wizardPick(step,val){
 function wizardDone(){
   FLOW.active=false;FLOW.esperaTexto=null;
   hLocal('¡Listo! Tengo todo lo necesario ✓ Buscando los mejores proveedores para vos...');
+  // Memoria: resumen compacto del pedido (el paso a paso del wizard es ruido)
+  hugoSave('hugo',`Pedido armado: ${SELECTED_CAT||'servicio'} — ${PROBLEM_DESC||'sin descripción'} (${FLOW.cuando||'lo antes posible'}, en ${FLOW.ubicacion||'ubicación GPS'})`);
+  hugoMeta({preferred_category:SELECTED_CAT,last_request_at:new Date().toISOString()});
   startRadarSearch().catch(e=>radarFail(e));
 }
 function radarFail(e){
@@ -1505,7 +1542,7 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[CLI?`Cliente:${CLI.nombre}`:'',`Ubicacion:${myLat.toFixed(4)},${myLng.toFixed(4)}`,myAddr?`Direccion:${myAddr}`:'',SELECTED_PROV?`ProveedorSeleccionado:${SELECTED_PROV.nombre} (${SELECTED_PROV.categoria} R$${SELECTED_PROV.tarifa_base||80})`:''].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:chatHistory.slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     let reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
@@ -1519,20 +1556,21 @@ async function hugoCall(msg){
       }catch(_){reply=reply.replace(/\{[\s\S]*\}/,'').trim()||'¿En qué puedo ayudarte?';}
     }
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
+    hugoSave('hugo',reply,d.accion?{accion:String(d.accion)}:null);
     // El flujo de contratación ahora lo maneja el wizard local (0 tokens).
     // hugoCall queda solo para conversación libre (consultas sobre un proveedor, dudas, etc.)
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
 async function sendChat(){
   const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';
-  addMsg('u',msg);chatHistory.push({role:'user',content:msg});
+  addMsg('u',msg);chatHistory.push({role:'user',content:msg});hugoSave('user',msg);
   showSugs([]);
   if(FLOW.active){wizardAnswer(msg);return;}          // formulario: 0 tokens
   if(PENDING_PROV&&/^contratar/i.test(msg)){showConfirmSheet(PENDING_PROV);return;}
   await hugoCall(msg);
 }
 function sendSug(s){
-  addMsg('u',s);chatHistory.push({role:'user',content:s});
+  addMsg('u',s);chatHistory.push({role:'user',content:s});hugoSave('user',s);
   showSugs([]);
   if(FLOW.active){wizardAnswer(s);return;}
   if(PENDING_PROV&&/^contratar/i.test(s)){showConfirmSheet(PENDING_PROV);return;}
@@ -1671,6 +1709,18 @@ function showTerna(provs,esOffline){
   $('terna-list').innerHTML+=broadcast_html;
   setupHugoTimeout(15000); $('terna-sheet').classList.add('open');
 }
+/* Hugo 2.0 proactivo: si la terna queda abierta sin elegir, sugiere "El más rápido" (local, 0 tokens) */
+let HUGO_TIMEOUT_T=null;
+function setupHugoTimeout(ms){
+  clearHugoTimeout();
+  HUGO_TIMEOUT_T=setTimeout(()=>{
+    if(!$('terna-sheet')?.classList.contains('open'))return;
+    toast('💡 Hugo: si estás apurado, tocá "⚡ El más rápido" y notifico a todos a la vez.');
+    try{hugoSpeak('Si estás apurado, tocá El más rápido y notifico a todos a la vez.');}catch(_){}
+  },ms||15000);
+}
+function clearHugoTimeout(){if(HUGO_TIMEOUT_T){clearTimeout(HUGO_TIMEOUT_T);HUGO_TIMEOUT_T=null;}}
+
 function pickTerna(prov){
   clearHugoTimeout();
   closeTerna(false);
@@ -1739,6 +1789,7 @@ async function broadcastToAll(){
 }
 
 function closeTerna(reset){
+  clearHugoTimeout();
   $('terna-sheet').classList.remove('open');
   if(reset){RADAR_DONE=false;updateChatStep(2);openChat();showSugs(HSUGS);}
 }

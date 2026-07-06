@@ -352,7 +352,6 @@ async function doShopSearch() {
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
-const $ = id => document.getElementById(id);
 
 
 
@@ -366,6 +365,8 @@ let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
+/* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
+let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -488,7 +489,6 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
 
 /* ── BOOT ── */
 async function bootApp(){
-  await loadHugoContext();
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadProv();
@@ -498,104 +498,7 @@ async function bootApp(){
       showWizard(PROV.onboarding_paso || 0);
       return;
     }
-    initMap();nav2('home');subscribeToJobs();
-
-/* ──────── HUGO V2: MEMORY + REGIONAL CONTEXT (PROVEEDOR) ──────── */
-
-async function loadHugoContext() {
-  if (!SESSION?.user?.id) return;
-  
-  try {
-    const {data, error} = await sb.from('usuarios')
-      .select('hugo_context, region_cuenta')
-      .eq('id', SESSION.user.id)
-      .single();
-    
-    if (error || !data) return;
-    
-    HUGO_CONTEXT = data.hugo_context || {};
-    HUGO_REGION = data.region_cuenta;
-    
-    console.log('[Hugo v2] Contexto cargado (proveedor)', {region: HUGO_REGION});
-  } catch (e) {
-    console.warn('[Hugo] Error loading context:', e.message);
-  }
-}
-
-async function saveHugoContext(message, role) {
-  if (!SESSION?.user?.id) return;
-  
-  try {
-    const current = HUGO_CONTEXT.interaction_history || [];
-    const newHistory = [
-      ...current.slice(-9),
-      {
-        role: role || 'assistant',
-        text: message.substring(0, 200),
-        timestamp: new Date().toISOString()
-      }
-    ];
-    
-    const updateData = {
-      hugo_context: {
-        ...HUGO_CONTEXT,
-        interaction_history: newHistory,
-        last_update: new Date().toISOString()
-      }
-    };
-    
-    await sb.from('usuarios')
-      .update(updateData)
-      .eq('id', SESSION.user.id);
-    
-    HUGO_CONTEXT = updateData.hugo_context;
-  } catch (e) {
-    console.warn('[Hugo] Error saving context:', e.message);
-  }
-}
-
-async function getHugoPrompt(contextType) {
-  try {
-    const {data, error} = await sb.from('hugo_prompts_v2')
-      .select('prompt_text, system_prompt, tone')
-      .eq('role_type', 'proveedor')
-      .eq('region', HUGO_REGION || 'BR')
-      .eq('context_type', contextType)
-      .eq('active', true)
-      .single();
-    
-    if (error || !data) {
-      console.warn('[Hugo] Prompt no encontrado:', contextType);
-      return null;
-    }
-    
-    return data;
-  } catch (e) {
-    console.warn('[Hugo] Error fetching prompt:', e.message);
-    return null;
-  }
-}
-
-function injectRegionalContext(prompt) {
-  if (!HUGO_REGION) return prompt;
-  
-  const regionalMap = {
-    BR: { currency: 'R$', language: 'português' },
-    AR: { currency: '$', language: 'español' }
-  };
-  
-  const regional = regionalMap[HUGO_REGION] || regionalMap.BR;
-  let enhanced = prompt;
-  enhanced = enhanced.replace(/{currency}/g, regional.currency);
-  
-  const system_instruction = `Eres Hugo, socio estratégico de U.GO para proveedores.
-Región: ${HUGO_REGION === 'BR' ? 'Brasil' : 'Argentina'}.
-Moneda: ${regional.currency}.
-Lenguaje: ${regional.language}.
-Tu objetivo: ayudar al proveedor a ganar más dinero, gestionar su agenda, proteger su reputación.`;
-  
-  return {prompt: enhanced, system: system_instruction};
-}
+    initMap();nav2('home');subscribeToJobs();loadHugoContext();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -1327,6 +1230,32 @@ async function handleFile(input){
 
 /* ── HUGO CHAT ── */
 const HSUGS=['¿Cuánto gané hoy?','¿Cómo mejorar mi karma?','Ayuda con un cliente','¿Cómo subo mi tarifa?','Ver mis servicios del mes'];
+
+/* ── HUGO 2.0: memoria entre sesiones ──────────────────────────────
+   Al boot carga la sesión activa de hugo_sessions + últimos 10 mensajes
+   de hugo_chat; la memoria se antepone al history de hugoCall. */
+async function loadHugoContext(){
+  try{
+    const{data:flag}=await sb.from('config_sistema').select('valor').eq('clave','hugo_v2_enabled').maybeSingle();
+    HUGO_V2=flag?.valor==='true';
+    if(!HUGO_V2||!SESSION)return;
+    let{data:ses}=await sb.from('hugo_sessions').select('id,metadatos').eq('usuario_id',SESSION.user.id).eq('rol','proveedor').eq('activa',true).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(!ses){
+      const{data:nueva,error}=await sb.from('hugo_sessions').insert({usuario_id:SESSION.user.id,rol:'proveedor',activa:true,metadatos:{}}).select('id,metadatos').single();
+      if(error)throw error;
+      ses=nueva;
+    }
+    HUGO_SID=ses.id;HUGO_META=ses.metadatos||{};
+    const{data:msgs}=await sb.from('hugo_chat').select('rol_mensaje,contenido').eq('session_id',HUGO_SID).order('created_at',{ascending:false}).limit(10);
+    HUGO_MEMORY=(msgs||[]).reverse().map(m=>({role:m.rol_mensaje==='hugo'?'assistant':'user',content:m.contenido}));
+  }catch(e){console.warn('Hugo memoria desactivada:',e?.message||e);HUGO_V2=false;HUGO_SID=null;}
+}
+function hugoSave(rol,contenido,extra){
+  if(!HUGO_V2||!HUGO_SID||!contenido)return;
+  sb.from('hugo_chat').insert({session_id:HUGO_SID,usuario_id:SESSION.user.id,rol_mensaje:rol,contenido,...(extra||{})})
+    .then(({error})=>{if(error)console.warn('hugoSave:',error.message);else sb.from('hugo_sessions').update({updated_at:new Date().toISOString()}).eq('id',HUGO_SID).then(()=>{});});
+}
+
 function openChat(){document.getElementById('chat').style.height='min(85vh,700px)';showSugs(HSUGS);if(!chatHistory.length)hugoCall('__INICIO__');}
 function closeChat(){document.getElementById('chat').style.height='0';}
 function showSugs(list){$('csugs').innerHTML=list.map(s=>`<button class="csug" onclick="sendSug('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');}
@@ -1336,15 +1265,16 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma||5},Cat:${PROV.categoria||'?'},Servicios:${PROV.servicios_completados||0},Tarifa:R$${PROV.tarifa_base||0}`:'',`Online:${isOnline}`,`EstadoTrabajo:${jobState}`,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:chatHistory.slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
+    if(msg!=='__INICIO__')hugoSave('hugo',reply,d.accion?{accion:String(d.accion)}:null); // el saludo diario no aporta memoria
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
-async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
-function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
+async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});hugoSave('user',msg);showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
+function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});hugoSave('user',s);showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
 
 /* ── HISTORY lazy load ── */
 async function loadHistSheet(){
