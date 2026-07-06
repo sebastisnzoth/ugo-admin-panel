@@ -1649,7 +1649,7 @@ function showTerna(provs,esOffline){
   $('tn-title').textContent=esOffline?'Sin conexión ahora, pero atienden tu zona':'Proveedores disponibles';
   $('tn-sub').textContent=esOffline
     ?'Ninguno está online en este momento. Podés reservar igual y Hugo los contacta.'
-    :'Elegí tu favorito. El pago queda protegido en garantía.';
+    :'Elegí tu favorito o tocá "El más rápido". El pago queda protegido en garantía.';
   $('terna-list').innerHTML=provs.map((p,i)=>{
     const color=PROV_COLORS[i%PROV_COLORS.length];
     const eta=p._km<90?Math.round(p._km*3.5+5):'?';
@@ -1665,14 +1665,77 @@ function showTerna(provs,esOffline){
       <button class="tn-pick" onclick="pickTerna(${pj})">Elegir</button>
     </div>`;
   }).join('');
+  const tarifa=SELECTED_CAT?calcTarifa({tarifa_base:100}):0;
+  const broadcast_html=`<div style="padding:12px 16px;border-top:1px solid #f0f0f0;text-align:center"><button onclick="broadcastToAll()" style="width:100%;padding:12px;background:linear-gradient(135deg,#00C8D7,#0098aa);color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit;font-size:14px">⚡ El más rápido — Notificar a todos</button></div>`;
+  $('terna-list').innerHTML+=broadcast_html;
   $('terna-sheet').classList.add('open');
 }
 function pickTerna(prov){
   closeTerna(false);
   SELECTED_PROV=prov;PENDING_PROV=prov;
   updateChatStep(5);
-  showConfirmSheet(prov); // escrow + confirmación (paso 7)
+  // Mostrar "notificando exclusivamente por 90s"
+  toast(`Notificando a ${prov.nombre} por 90 segundos...`);
+  showConfirmSheet(prov);
 }
+/* ── BROADCAST HÍBRIDO ── */
+async function broadcastToAll(){
+  closeTerna(false);
+  const desc=PROBLEM_DESC||'Sin descripción';
+  const tarifa=calcTarifa({tarifa_base:100});
+  
+  // 1. Crear servicio SIN proveedor asignado
+  const{data:svc,error}=await sb.from('servicios').insert({
+    cliente_id:SESSION.user.id,
+    proveedor_id:null,
+    estado:'negociando',
+    descripcion:desc,
+    foto_url:FOTO_URL||null,
+    zona:CLI?.zona||'',
+    direccion_cliente:FLOW.ubicacion||CLI?.endereco||'',
+    lat_cliente:myLat||null,
+    lng_cliente:myLng||null,
+    tarifa:tarifa,
+    comision_ugo:+(tarifa*0.15).toFixed(2),
+    ganancia_proveedor:+(tarifa*0.85).toFixed(2),
+  }).select().single();
+  
+  if(error){toast('Error: '+error.message);return;}
+  ACTIVE_SVC=svc;
+  
+  // 2. Notificar a TODOS los online en 10km de la categoría
+  const dbcat=catToDbTerm(SELECTED_CAT);
+  const{data:all_provs}=await sb.from('usuarios').select('id,nombre,categoria').eq('tipo','proveedor').eq('online',true).eq('activo',true).eq('estado_verificacion','verificado').not('lat','is',null).limit(50);
+  
+  let nearby_provs=[];
+  if(all_provs){
+    nearby_provs=all_provs.filter(p=>{
+      const dist=haversineKm(myLat,myLng,p.lat||0,p.lng||0);
+      return dist<=10 && p.categoria.toLowerCase().includes(dbcat);
+    }).slice(0,20);
+  }
+  
+  if(nearby_provs.length){
+    await sb.from('notificaciones').insert(
+      nearby_provs.map(p=>({
+        usuario_id:p.id,tipo:'nuevo_pedido',
+        titulo:`Nuevo pedido · ${SELECTED_CAT}`,
+        cuerpo:`Cliente solicita servicio · R$${tarifa}`,
+        datos:{servicio_id:svc.id,tarifa,categoria:SELECTED_CAT,descripcion:desc,foto_url:FOTO_URL||null,lat_cliente:myLat,lng_cliente:myLng,cliente_nombre:CLI?.nombre||'Cliente'},
+        leida:false,
+      }))
+    );
+  }
+  
+  toast(`📡 Notificando a ${nearby_provs.length} proveedores en tu zona...`);
+  SVC_PAGADO=false;
+  showTracking(null);
+  watchService(svc.id);
+  watchPagos(svc.id);
+  startCascade(svc.id);
+  trHugo(`Envié tu pedido a todos los proveedores disponibles en 10km. El primero que acepte te lo confirma. Mientras tanto, protejo tu pago en la bóveda.`);
+}
+
 function closeTerna(reset){
   $('terna-sheet').classList.remove('open');
   if(reset){RADAR_DONE=false;updateChatStep(2);openChat();showSugs(HSUGS);}
