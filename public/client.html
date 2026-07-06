@@ -474,29 +474,11 @@ async function createService(prov) {
   if (error) { toast('Error: ' + error.message); return; }
   ACTIVE_SVC = { ...svc, prov };
 
-  // 2. Notificar al proveedor elegido
+  // 2. Notificar al proveedor elegido — vía RPC validado (el INSERT directo en
+  //    notificaciones ya no está permitido; el contenido se arma server-side
+  //    desde el servicio real, con dedupe)
   if (prov.id) {
-    await sb.from('notificaciones').insert({
-      usuario_id: prov.id,
-      tipo:       'nuevo_pedido',
-      titulo:     `Nuevo pedido · ${prov.categoria}`,
-      cuerpo:     `Cliente a ${(prov.lat&&myLat)?haversineKm(myLat,myLng,prov.lat,prov.lng).toFixed(1):'?'} km · R$${tarifa}`,
-      datos: {
-        servicio_id:     svc.id,
-        tarifa:          tarifa,
-        ganancia:        +(tarifa * 0.85).toFixed(2),
-        desglose:        f,
-        cliente_nombre:  CLI?.nombre || 'Cliente',
-        categoria:       prov.categoria,
-        descripcion:     descReal,
-        foto_url:        FOTO_URL || null,
-        horario:         FLOW.cuando || 'Ahora',
-        direccion:       FLOW.ubicacion || CLI?.endereco || '',
-        lat_cliente:     myLat,
-        lng_cliente:     myLng,
-      },
-      leida: false,
-    });
+    await sb.rpc('notificar_nuevo_pedido', { p_servicio_id: svc.id, p_usuario_ids: [prov.id] });
   } else {
     // Sin proveedor específico → notificar a los online de esa categoría
     const { data: provs } = await sb.from('usuarios')
@@ -507,18 +489,7 @@ async function createService(prov) {
       .eq('activo', true)
       .limit(10);
     if (provs?.length) {
-      await sb.from('notificaciones').insert(
-        provs.map(p => ({
-          usuario_id: p.id, tipo: 'nuevo_pedido',
-          titulo: `Nuevo pedido · ${prov.categoria}`,
-          cuerpo: `Cliente solicita servicio · R$${tarifa}`,
-          datos:  { servicio_id: svc.id, tarifa, categoria: prov.categoria,
-                    descripcion: descReal, foto_url: FOTO_URL || null,
-                    lat_cliente: myLat, lng_cliente: myLng,
-                    cliente_nombre: CLI?.nombre || 'Cliente' },
-          leida: false,
-        }))
-      );
+      await sb.rpc('notificar_nuevo_pedido', { p_servicio_id: svc.id, p_usuario_ids: provs.map(p => p.id) });
     }
   }
 
@@ -1805,15 +1776,8 @@ async function broadcastToAll(){
   }
   
   if(nearby_provs.length){
-    await sb.from('notificaciones').insert(
-      nearby_provs.map(p=>({
-        usuario_id:p.id,tipo:'nuevo_pedido',
-        titulo:`Nuevo pedido · ${SELECTED_CAT}`,
-        cuerpo:`Cliente solicita servicio · R$${tarifa}`,
-        datos:{servicio_id:svc.id,tarifa,categoria:SELECTED_CAT,descripcion:desc,foto_url:FOTO_URL||null,lat_cliente:myLat,lng_cliente:myLng,cliente_nombre:CLI?.nombre||'Cliente'},
-        leida:false,
-      }))
-    );
+    // RPC validado: contenido derivado del servicio real + dedupe server-side
+    await sb.rpc('notificar_nuevo_pedido',{p_servicio_id:svc.id,p_usuario_ids:nearby_provs.map(p=>p.id)});
   }
   
   toast(`📡 Notificando a ${nearby_provs.length} proveedores en tu zona...`);

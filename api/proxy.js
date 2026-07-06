@@ -8,8 +8,11 @@ const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const sb = createClient(SB_URL, SB_KEY);
 
+// Env var en Vercel — nunca hardcodear el token en el repo.
+const BACKEND_TOKEN = process.env.UGO_BACKEND_TOKEN || '';
+
 async function getConfig(keys) {
-  const { data } = await sb.from('config_sistema').select('clave,valor').in('clave', keys);
+  const { data } = await sb.rpc('config_backend', { p_token: BACKEND_TOKEN, p_claves: keys });
   const map = {};
   (data || []).forEach(r => { map[r.clave] = r.valor; });
   return map;

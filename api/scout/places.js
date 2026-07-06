@@ -207,8 +207,8 @@ export default async function handler(req, res) {
     let results=[], source='none';
 
     // 1. TomTom (si key)
-    const { data:ttData } = await sb.from('config_sistema').select('valor').eq('clave','api_tomtom_key').single();
-    const ttKey = ttData?.valor?.trim();
+    const { data:ttData } = await sb.rpc('config_backend', { p_token: process.env.UGO_BACKEND_TOKEN || '', p_claves: ['api_tomtom_key'] });
+    const ttKey = ttData?.[0]?.valor?.trim();
     if (ttKey) {
       results = await searchTomTom(lat, lng, radius, categoria, ttKey);
       if (results.length) source='tomtom';
