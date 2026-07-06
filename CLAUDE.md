@@ -1,0 +1,131 @@
+# U.GO Quantum OS — Guía de Desarrollo (CLAUDE.md)
+
+> Este archivo se lee al iniciar cualquier sesión de Claude Code en este
+> repo. Está escrito para *este* proyecto puntual, no es una plantilla
+> genérica — cada regla acá viene de algo que pasó o se verificó en este
+> código.
+
+## Contexto del proyecto
+
+U.GO es un marketplace on-demand de servicios del hogar para LATAM
+(electricistas, plomeros, limpieza, etc.), lanzado en Brasil con
+expansión activa a Argentina. Hugo es el asistente de IA embebido que
+intermedia cliente↔proveedor en los tres roles (cliente, proveedor,
+admin). El admin soberano es el email definido en `AdminPanel.tsx`.
+
+## Comportamiento y estrategia
+
+- Actuá como ingeniero de software senior: priorizá corrección y
+  mantenibilidad sobre velocidad aparente.
+- **Antes de escribir código en cambios no triviales**: generá un plan
+  breve y esperá confirmación si el cambio toca arquitectura, esquema de
+  DB, o más de un módulo. Para fixes acotados y bien definidos, podés
+  implementar directo.
+- Evaluá siempre efectos secundarios sobre el resto del sistema antes de
+  tocar algo — en este repo el error típico es tocar un lugar donde una
+  lógica está duplicada (ver "Guardrails" abajo) y dejar los otros
+  desincronizados.
+
+## Reglas no negociables
+
+1. **Rama backup antes de cualquier cambio**: `backup/[descripción]`
+   desde `main` actual. Sin excepción, incluso para cambios chicos.
+2. **Nunca rollback ni force-push** sin autorización explícita.
+3. **Archivos completos**, no diffs parciales, en cada entrega.
+4. **SHA fresco inmediatamente antes de cada PUT** a `/contents/{path}` —
+   Vercel actualiza el SHA en cada deploy; un SHA viejo da 409.
+5. **Documentar en `MIGRATIONS_LOG.md`** al cierre de cada etapa: qué
+   cambió, cómo revertir.
+
+## Verificación antes de dar algo por terminado
+
+- **No hay suite de tests automatizada en este repo** (no existe
+  `npm test` en `package.json`). No asumirla ni inventarla — la
+  verificación real es:
+  - `npm run build` (= `tsc -b && vite build`) debe terminar sin errores
+    para todo lo que esté bajo `src/`.
+  - `client.html` y `provider.html` son HTML de archivo único con
+    `<script>` inline — **no pasan por `tsc` ni por el build de Vite**.
+    Cada bloque `<script>` tocado se valida aparte con `node --check`
+    (o `acorn`). Mismatches de `async`/`await` en estos archivos ya
+    rompieron el boot completo más de una vez en este proyecto.
+  - Confirmar el deploy real en Vercel antes de reportar como
+    terminado: el commit debe mostrar `state: success` en
+    `/repos/.../commits/{sha}/status`, no alcanza con que el push haya
+    funcionado.
+  - Para flujos de UI (wizard, chat de Hugo, etc.) no hay tests
+    automatizados: el smoke test es manual, simulando el flujo real
+    antes de mergear a `main`.
+
+## Seguridad
+
+- **Este repo es público.** Nunca commitear API keys, tokens ni
+  particularmente la `service_role` key de Supabase en ningún archivo,
+  ni siquiera en `.md` de documentación interna. Todo secreto vive en
+  Vercel → Environment Variables.
+- Las claves de terceros (Groq, Gemini, TomTom, WhatsApp) se guardan en
+  `config_sistema` y se leen server-side vía el RPC `config_backend`
+  (que valida un token de entorno) — nunca hardcodeadas en el repo ni
+  legibles por REST con la anon key.
+- No tocar las policies de RLS de `documentos` / `config_sistema` /
+  `notificaciones` / `servicios` sin entender el impacto — fueron
+  endurecidas deliberadamente tras una auditoría de seguridad.
+
+## Guardrails específicos de este repo
+
+- **`COMPONENT_LIBRARY.md`** describe un sistema de componentes
+  (`@/components/UI/Button`, `DataTable`, `Modal`, `useForm`) que **no
+  existe en el código real** — verificado: no hay carpeta `components/UI`
+  ni `Button.tsx` en `main`. Es documentación aspiracional/planificada,
+  desincronizada del código. Seguir los patrones reales de
+  `AdminPanel.tsx` (clases `.pad/.st/.tw/.tr/.tc/.pill/.btn`, estilos
+  inline), no ese doc.
+- Si hay un skill `senior-frontend` instalado (vía
+  `claude-code-templates`): es genérico, no calibrado a este repo — no
+  usar sus scripts de scaffolding automático acá; como mucho, referencia
+  pasiva de patterns.
+- `config_sistema.hugo_prompt_cliente/proveedor/admin` ya son
+  region-agnósticos (sin hardcodeo de país/moneda/idioma) — no
+  reintroducir esa lógica ahí; el idioma/moneda regional se resuelve en
+  `api/hugo/chat.ts`.
+- `regiones.tarifario_base` y `regiones.activo` son decisiones de
+  negocio — no tocarlas sin pedido explícito, incluso si el código
+  "podría" activarlas.
+
+## Comandos del proyecto
+
+```bash
+npm install        # instalar dependencias
+npm run dev        # desarrollo local (vite)
+npm run build      # tsc -b && vite build — validación real de TS/JSX
+npm run lint       # eslint .
+npm run preview    # preview del build de producción
+```
+
+No existe `npm test`.
+
+## Stack y arquitectura
+
+- **Admin panel**: React 18 + Vite + TypeScript + Tailwind, componente
+  grande en `src/components/AdminPanel.tsx` + hooks en `src/hooks/`.
+- **Apps cliente/proveedor**: `public/client.html` / `public/provider.html`,
+  HTML de archivo único con `<script>` inline — fuera del build de Vite.
+- **Backend**: Supabase (proyecto `byajcqrgetloavrgyqak`, São Paulo /
+  sa-east-1), RLS activo en todas las tablas.
+- **IA (Hugo)**: Groq (`llama-3.3-70b-versatile`, primario) + Gemini
+  Flash (fallback), prompts base en `config_sistema`, lógica regional en
+  `api/hugo/chat.ts`.
+- **Deploy**: Vercel, auto-deploy desde `main`.
+- **Regiones activas**: Brasil (BRL) y Argentina (ARS). Uruguay y
+  Paraguay existen en la tabla `regiones` pero con `activo=false` hasta
+  decisión de negocio.
+- **Diseño**: dark quantum — Inter + JetBrains Mono, gradientes. Nunca
+  glassmorphism.
+
+## Estilo de comunicación con Sergio
+
+- Español rioplatense.
+- Prefiere implementación directa sin pedir confirmación en cada paso,
+  salvo cuando el cambio es de arquitectura o potencialmente destructivo.
+- Espera archivos completos, no fragmentos parciales.
+- Monitorea el uso de tokens — respuestas concisas y al punto.
