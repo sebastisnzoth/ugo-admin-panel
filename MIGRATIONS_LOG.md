@@ -1,3 +1,19 @@
+# Regiones: seed UY/PY + tarifario_base BR/AR
+
+**Fecha**: Julio 6, 2026 · **Solo datos, sin DDL ni deploy**
+
+## Cambios
+- `regiones`: filas UY (UYU/$U) y PY (PYG/₲) creadas con `activo=false` (no operativas hasta lanzamiento; payout Mercado Pago)
+- `tarifario_base` BR: `{base:30, km:2.5, request_fee:5, comision:0.15}` (BRL)
+- `tarifario_base` AR: `{base:9000, km:800, request_fee:1500, comision:0.15}` (ARS)
+- Valores BR/AR son de arranque — ajustar desde admin según mercado
+- Prompts `hugo_prompt_*` en `config_sistema` limpiados: sin hardcodeo de Brasil/R$/idioma, sin placeholders `{{}}`; backups en `hugo_prompt_*_old_20260706`
+
+## Rollback
+`UPDATE regiones SET tarifario_base='{}' WHERE codigo_pais IN ('BR','AR');` · `DELETE FROM regiones WHERE codigo_pais IN ('UY','PY');` · restaurar prompts desde las filas `_old_20260706`.
+
+---
+
 # Hugo 2.0 — Entrega 2: Región + prompts dinámicos
 
 **Fecha**: Julio 6, 2026
