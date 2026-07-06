@@ -1494,7 +1494,7 @@ export function AdminPanel() {
             <div className="modal-acts">
               <button className="btn btn-g" onClick={()=>{updateEstado(modal.data.id,'aprobado',docNotes,undefined);closeModal();}}>✓ Aprobar</button>
               <button className="btn btn-d" onClick={()=>{updateEstado(modal.data.id,'rechazado',undefined,docNotes);closeModal();}}>✗ Rechazar</button>
-              <button className="btn btn-p" onClick={()=>{updateEstado(modal.data.id,'pedir_resubmision',undefined,docNotes);closeModal();}}>↺ Pedir reenvío</button>
+              <button className="btn btn-p" onClick={()=>{updateEstado(modal.data.id,'reenvio_solicitado',undefined,docNotes);closeModal();}}>↺ Pedir reenvío</button>
               <button className="btn btn-s" onClick={closeModal}>Cancelar</button>
             </div>
           </div>
