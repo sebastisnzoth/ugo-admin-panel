@@ -352,6 +352,9 @@ async function doShopSearch() {
 const SB_URL='https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
 const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,persistSession:true,autoRefreshToken:true,flowType:'implicit'}});
+const $ = id => document.getElementById(id);
+
+
 
 let SESSION=null,PROV=null,MAP=null,MARKER=null;
 const TIMELINE_STATES = ['negociando','confirmado','en_camino','ejecutando','completado'];
@@ -431,6 +434,52 @@ async function doLogout(){
 }
 
 /* ── SESSION ── */
+
+/* ── VALIDADORES DE DOCUMENTOS ── */
+function validateCPF(cpf) {
+  cpf = cpf.replace(/\D/g, '');
+  if (cpf.length !== 11) return false;
+  if (/^(\d)\1{10}$/.test(cpf)) return false;
+  let sum = 0, remainder;
+  for (let i = 1; i <= 9; i++) sum += parseInt(cpf.substring(i - 1, i)) * (11 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  if (remainder !== parseInt(cpf.substring(9, 10))) return false;
+  sum = 0;
+  for (let i = 1; i <= 10; i++) sum += parseInt(cpf.substring(i - 1, i)) * (12 - i);
+  remainder = (sum * 10) % 11;
+  if (remainder === 10 || remainder === 11) remainder = 0;
+  return remainder === parseInt(cpf.substring(10, 11));
+}
+
+function validateDNI(dni) {
+  dni = dni.replace(/\D/g, '');
+  if (dni.length !== 8) return false;
+  const table = 'KJHGFEDCBA';
+  const remainder = parseInt(dni) % 23;
+  return table[remainder] === dni.charAt(dni.length - 1).toUpperCase() || !dni.match(/[A-Z]/);
+}
+
+function compressImage(file, maxWidth = 1200, quality = 0.7) {
+  return new Promise((res) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let w = img.width, h = img.height;
+        if (w > maxWidth) { h = (h * maxWidth) / w; w = maxWidth; }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        canvas.toBlob(res, 'image/jpeg', quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+
 (async()=>{const{data:{session}}=await sb.auth.getSession();if(session){SESSION=session;await bootApp();}})();
 sb.auth.onAuthStateChange(async(ev,ses)=>{
   if(ev==='SIGNED_IN'&&ses&&!SESSION){SESSION=ses;await bootApp();}
@@ -441,7 +490,14 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadProv();initMap();nav2('home');subscribeToJobs();
+    await loadProv();
+    // Verificar estado de verificación
+    if(PROV?.estado_verificacion && PROV.estado_verificacion !== 'verificado'){
+      $('nav').classList.add('hide');
+      showWizard(PROV.onboarding_paso || 0);
+      return;
+    }
+    initMap();nav2('home');subscribeToJobs();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -866,6 +922,207 @@ function homeHTML() {
     </div>
   </div>`;
 }
+
+
+/* ════════════════════════════════════════════════════════════════
+   WIZARD DE ONBOARDING (6 PASOS)
+   ════════════════════════════════════════════════════════════════ */
+
+let WIZARD_STEP = 1;
+let WIZARD_DATA = {};
+
+async function showWizard(paso) {
+  WIZARD_STEP = Math.max(1, Math.min(6, paso + 1));
+  $('map').innerHTML = `<div class="pad" style="padding-top:80px;text-align:center;color:#888">Completando tu perfil...</div>`;
+  if ($('top')) $('top').classList.add('hide');
+  if ($('nav')) $('nav').classList.add('hide');
+  if ($('sheet')) $('sheet').style.height = '100vh';
+  $('sb').innerHTML = wizardHTML();
+  if (WIZARD_STEP === 2) paso2_init();
+  if (WIZARD_STEP === 3) paso3_init();
+  if (WIZARD_STEP === 5) paso5_init();
+}
+
+function wizardHTML() {
+  const progress = (WIZARD_STEP / 6) * 100;
+  let stepHTML = '';
+  
+  if (WIZARD_STEP === 1) {
+    stepHTML = `<div style="text-align:center;padding:40px 16px"><div style="font-size:32px;margin-bottom:16px">🎯</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">¡Bienvenido a U.GO!</div><div style="color:var(--m);margin-bottom:24px">Vamos a completar tu perfil en 6 pasos rápidos.</div><button onclick="paso1_continuar()" style="width:100%;padding:14px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">Empezar →</button></div>`;
+  } else if (WIZARD_STEP === 2) {
+    stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 Tu Perfil Profesional</div>
+      <input type="text" id="w2-nombre" placeholder="Nombre completo" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <select id="w2-cat" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px"><option value="">Categoría</option><option value="electricista">⚡ Electricista</option><option value="plomero">🔧 Plomero</option><option value="limpieza">🧹 Limpieza</option><option value="pintor">🎨 Pintor</option><option value="carpintero">🪚 Carpintero</option></select>
+      <input type="number" id="w2-años" placeholder="Años de experiencia" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <div style="font-size:12px;color:var(--m);margin-bottom:10px">Foto (opcional)</div>
+      <input type="file" id="w2-foto" accept="image/*" style="width:100%;margin-bottom:16px">
+      <button onclick="paso2_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
+    </div>`;
+  } else if (WIZARD_STEP === 3) {
+    const region = PROV?.region_cuenta ? (PROV.region_cuenta === 'BR' ? 'Brasil' : 'Argentina') : '?';
+    const esAR = region === 'Argentina';
+    stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📄 Documentos (${region})</div>
+      <input type="text" id="w3-doc1" placeholder="${esAR ? 'DNI' : 'CPF'}" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      ${esAR ? `<input type="text" id="w3-cuit" placeholder="CUIT" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">` : `<input type="text" id="w3-rg" placeholder="RG" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">`}
+      <div style="font-size:12px;color:var(--m);margin-bottom:8px">Selfie con documento</div>
+      <input type="file" id="w3-selfie" accept="image/*" style="width:100%;margin-bottom:16px">
+      <button onclick="paso3_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
+    </div>`;
+  } else if (WIZARD_STEP === 4) {
+    const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+    const esPIX = region === 'BR';
+    stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">💰 Datos de Cobro</div>
+      ${esPIX ? `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">Clave PIX (email, teléfono o CPF)</div><input type="text" id="w4-pix" placeholder="tu@email.com" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>` : `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">CBU/Alias (Mercado Pago)</div><input type="text" id="w4-cbu" placeholder="1234567890123456789012" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>`}
+      <button onclick="paso4_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
+    </div>`;
+  } else if (WIZARD_STEP === 5) {
+    stepHTML = `<div style="padding:16px;text-align:center"><div style="font-size:32px;margin-bottom:12px">⏳</div><div style="font-size:16px;font-weight:800;margin-bottom:8px">Revisando tus documentos...</div><div style="color:var(--m);margin-bottom:24px;font-size:13px">Nuestro equipo verificará tu información en 2-4 horas. Mientras tanto, puedes ver la demanda en tu zona.</div><div style="background:rgba(0,200,215,.1);border-radius:12px;padding:14px;margin-bottom:20px"><div style="font-size:13px;font-weight:700;margin-bottom:6px">📊 Demanda en tu zona</div><div id="demand-preview" style="font-size:12px;color:var(--m)">Cargando...</div></div><button onclick="paso5_logout()" style="width:100%;padding:12px;background:#f5f5f5;color:var(--m);font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Volver a intentar más tarde</button></div>`;
+  } else if (WIZARD_STEP === 6) {
+    stepHTML = `<div style="padding:40px 16px;text-align:center"><div style="font-size:40px;margin-bottom:16px">✅</div><div style="font-size:18px;font-weight:800;margin-bottom:8px">¡Verificado!</div><div style="color:var(--m);margin-bottom:24px">Tu cuenta está activada. ¡Empezá a ganar!</div><button onclick="paso6_finish()" style="width:100%;padding:14px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:12px;cursor:pointer;font-family:inherit">Abrir la app →</button></div>`;
+  }
+  
+  return `<div style="height:100%;overflow-y:auto;padding-bottom:20px">
+    <div style="background:linear-gradient(90deg,var(--c) 0%,var(--c) ${progress}%,#f0f0f0 ${progress}%,#f0f0f0 100%);height:4px;margin-bottom:20px"></div>
+    ${stepHTML}
+  </div>`;
+}
+
+function paso1_continuar() {
+  WIZARD_STEP = 2;
+  showWizard(WIZARD_STEP - 1);
+}
+
+function paso2_init() {
+  if (PROV?.nombre) $('w2-nombre').value = PROV.nombre;
+  if (PROV?.categoria) $('w2-cat').value = PROV.categoria.toLowerCase();
+}
+
+async function paso2_guardar() {
+  const nombre = $('w2-nombre').value.trim();
+  const cat = $('w2-cat').value;
+  const años = parseInt($('w2-años').value);
+  const fotoInput = $('w2-foto');
+  
+  if (!nombre || !cat) { toast('Completá nombre y categoría'); return; }
+  
+  let fotoUrl = PROV?.foto_url || null;
+  if (fotoInput?.files?.length > 0) {
+    const compressed = await compressImage(fotoInput.files[0]);
+    const formData = new FormData();
+    formData.append('file', compressed, 'avatar.jpg');
+    try {
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      fotoUrl = data.url;
+    } catch(e) { console.error('Upload:', e); }
+  }
+  
+  await sb.from('usuarios').update({
+    nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2
+  }).eq('id', SESSION.user.id);
+  
+  PROV = { ...PROV, nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2 };
+  WIZARD_STEP = 3;
+  showWizard(2);
+}
+
+function paso3_init() {
+  // Pre-llenar si es necesario
+}
+
+async function paso3_guardar() {
+  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const esAR = region === 'AR';
+  const doc1 = $(esAR ? 'w3-doc1' : 'w3-doc1').value.trim();
+  const doc2 = $(esAR ? 'w3-cuit' : 'w3-rg').value.trim();
+  const selfieInput = $('w3-selfie');
+  
+  if (!doc1 || !doc2) { toast('Completá todos los documentos'); return; }
+  
+  if (!esAR && !validateCPF(doc1)) { toast('CPF inválido'); return; }
+  if (esAR && !validateDNI(doc1)) { toast('DNI inválido'); return; }
+  
+  if (!selfieInput?.files?.length) { toast('Cargá una selfie'); return; }
+  
+  const compressed = await compressImage(selfieInput.files[0]);
+  const formData = new FormData();
+  formData.append('file', compressed, 'selfie.jpg');
+  
+  let selfieUrl = null;
+  try {
+    const res = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await res.json();
+    selfieUrl = data.url;
+  } catch(e) { console.error('Upload:', e); }
+  
+  await sb.from('documentos').insert({
+    usuario_id: SESSION.user.id,
+    tipo_doc: esAR ? 'dni' : 'cpf',
+    numero_doc: doc1,
+    doc2: doc2,
+    selfie_url: selfieUrl,
+    estado: 'pendiente',
+    ocr_valido: false
+  });
+  
+  await sb.from('usuarios').update({
+    estado_verificacion: 'docs_pendientes',
+    onboarding_paso: 3
+  }).eq('id', SESSION.user.id);
+  
+  PROV = { ...PROV, estado_verificacion: 'docs_pendientes', onboarding_paso: 3 };
+  WIZARD_STEP = 4;
+  showWizard(3);
+}
+
+async function paso4_guardar() {
+  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const esPIX = region === 'BR';
+  
+  const payoutData = esPIX ? { pix_key: $('w4-pix').value.trim() } : { cbu: $('w4-cbu').value.trim() };
+  
+  if (!payoutData[esPIX ? 'pix_key' : 'cbu']) { toast('Completá los datos de cobro'); return; }
+  
+  await sb.from('usuarios').update({
+    payout_data: payoutData,
+    estado_verificacion: 'en_revision',
+    onboarding_paso: 4
+  }).eq('id', SESSION.user.id);
+  
+  PROV = { ...PROV, payout_data: payoutData, estado_verificacion: 'en_revision', onboarding_paso: 4 };
+  WIZARD_STEP = 5;
+  showWizard(4);
+}
+
+async function paso5_init() {
+  // Escuchar cambios en usuarios via Realtime
+  const channel = sb.channel(`usuario-${SESSION.user.id}`).on(
+    'postgres_changes',
+    { event: '*', schema: 'public', table: 'usuarios', filter: `id=eq.${SESSION.user.id}` },
+    (payload) => {
+      if (payload.new?.estado_verificacion === 'verificado') {
+        PROV = payload.new;
+        WIZARD_STEP = 6;
+        showWizard(5);
+      } else if (payload.new?.estado_verificacion === 'rechazado') {
+        PROV = payload.new;
+        toast('Los documentos fueron rechazados. Motivo: ' + (payload.new.motivo_rechazo || 'N/A'));
+        WIZARD_STEP = 3;
+        showWizard(2);
+      }
+    }
+  ).subscribe();
+}
+
+function paso5_logout() {
+  doLogout();
+}
+
+function paso6_finish() {
+  WIZARD_STEP = 1;
+  bootApp();
+}
+
 
 function earnHTML(){
   return`<div class="pad">
