@@ -132,8 +132,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #cin:focus{border-color:var(--c)}
 #csend{width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 
-#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
+#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:10px 16px;border-radius:18px;font-size:13px;font-weight:600;white-space:normal;max-width:80%;text-align:center;transition:transform .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;gap:8px}
 #toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--g);color:#000}
+#toast.error{background:var(--r);color:#fff}
+#toast.info{background:var(--c);color:#000}
+#toast.warning{background:var(--o);color:#000}
 .hide{display:none!important}
 </style>
 </head>
@@ -397,7 +401,15 @@ const $=id=>document.getElementById(id);
 function showErr(m){const e=$('aerr');if(!e)return;e.textContent=m;e.style.display='block';}
 function showErr2(m){const e=$('aerr2');if(!e)return;e.textContent=m;e.style.display='block';}
 function clearErrs(){['aerr','aerr2'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});}
-function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function toast(m,d=2800,type='info'){
+  const t=$('toast');
+  ['success','error','info','warning'].forEach(cls=>t.classList.remove(cls));
+  t.classList.add(type);
+  const icon = type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';
+  t.innerHTML = `<span>${icon}</span><span>${m}</span>`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),d);
+}
 function sw(v){
   ['vlog','vreg'].forEach((id,i)=>$(id).classList.toggle('on',i===(v==='log'?0:1)));
   document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('on',i===(v==='log'?0:1)));
