@@ -55,36 +55,7 @@ export default async function handler(req, res) {
     const groqKey  = cfg['api_groq_key'];
     const geminiKey = cfg['api_gemini_key'];
 
-    // ── 1. Intentar Groq (llama-3.3-70b) ──────────────────────
-    if (groqKey) {
-      try {
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              ...messages,
-            ],
-            max_tokens,
-            temperature: 0.7,
-            response_format: mode !== 'admin' ? { type: 'json_object' } : undefined,
-          }),
-          signal: AbortSignal.timeout(15000),
-        });
-
-        if (r.ok) {
-          const d = await r.json();
-          const text = d.choices?.[0]?.message?.content || '';
-          return res.json({ content: [{ type: 'text', text }], model: 'groq/llama-3.3-70b', mode });
-        }
-      } catch(e) {
-        console.warn('[Hugo] Groq falló:', e.message);
-      }
-    }
-
-    // ── 2. Fallback Gemini ─────────────────────────────────────
+    // ── 1. Intentar Gemini (primario) ──────────────────────────
     if (geminiKey) {
       try {
         const geminiMessages = messages.map(m => ({
@@ -113,6 +84,35 @@ export default async function handler(req, res) {
         }
       } catch(e) {
         console.warn('[Hugo] Gemini falló:', e.message);
+      }
+    }
+
+    // ── 2. Fallback Groq (llama-3.3-70b) ──────────────────────
+    if (groqKey) {
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages,
+            ],
+            max_tokens,
+            temperature: 0.7,
+            response_format: mode !== 'admin' ? { type: 'json_object' } : undefined,
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+
+        if (r.ok) {
+          const d = await r.json();
+          const text = d.choices?.[0]?.message?.content || '';
+          return res.json({ content: [{ type: 'text', text }], model: 'groq/llama-3.3-70b', mode });
+        }
+      } catch(e) {
+        console.warn('[Hugo] Groq falló:', e.message);
       }
     }
 
