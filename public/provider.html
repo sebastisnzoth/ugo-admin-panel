@@ -367,6 +367,23 @@ let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
 /* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
 let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
+/* Hugo 2.0: región del proveedor. region_cuenta es UUID (FK regiones) — se resuelve a código 'BR'/'AR'. */
+let REGIONS=[],REGION_CODE=null;
+async function resolveRegion(u){
+  try{
+    const{data:regs}=await sb.from('regiones').select('id,codigo_pais,moneda,simbolo_moneda');
+    if(!regs?.length)return;
+    REGIONS=regs;
+    let reg=u?.region_cuenta?regs.find(r=>r.id===u.region_cuenta):null;
+    if(!reg){
+      const p=(u?.pais||'').toLowerCase();
+      const esAR=/^ar$|argentin|quilmes|buenos|bs\.?\s?as|c[oó]rdoba|rosario|la plata|mendoza/.test(p);
+      reg=regs.find(r=>r.codigo_pais===(esAR?'AR':'BR'))||regs[0];
+      if(SESSION&&reg)sb.from('usuarios').update({region_cuenta:reg.id}).eq('id',SESSION.user.id).then(()=>{});
+    }
+    REGION_CODE=reg?.codigo_pais||null;
+  }catch(e){console.warn('region:',e?.message||e);}
+}
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -492,6 +509,7 @@ async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
     await loadProv();
+    await resolveRegion(PROV); // antes del wizard: los pasos 3-4 dependen de la región
     // Verificar estado de verificación
     if(PROV?.estado_verificacion && PROV.estado_verificacion !== 'verificado'){
       $('nav').classList.add('hide');
@@ -953,6 +971,7 @@ function wizardHTML() {
   } else if (WIZARD_STEP === 2) {
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📋 Tu Perfil Profesional</div>
       <input type="text" id="w2-nombre" placeholder="Nombre completo" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
+      <select id="w2-region" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px"><option value="BR"${REGION_CODE!=='AR'?' selected':''}>🇧🇷 Brasil</option><option value="AR"${REGION_CODE==='AR'?' selected':''}>🇦🇷 Argentina</option></select>
       <select id="w2-cat" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px"><option value="">Categoría</option><option value="electricista">⚡ Electricista</option><option value="plomero">🔧 Plomero</option><option value="limpieza">🧹 Limpieza</option><option value="pintor">🎨 Pintor</option><option value="carpintero">🪚 Carpintero</option></select>
       <input type="number" id="w2-años" placeholder="Años de experiencia" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
       <div style="font-size:12px;color:var(--m);margin-bottom:10px">Foto (opcional)</div>
@@ -960,7 +979,7 @@ function wizardHTML() {
       <button onclick="paso2_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
     </div>`;
   } else if (WIZARD_STEP === 3) {
-    const region = PROV?.region_cuenta ? (PROV.region_cuenta === 'BR' ? 'Brasil' : 'Argentina') : '?';
+    const region = REGION_CODE === 'AR' ? 'Argentina' : 'Brasil';
     const esAR = region === 'Argentina';
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">📄 Documentos (${region})</div>
       <input type="text" id="w3-doc1" placeholder="${esAR ? 'DNI' : 'CPF'}" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit;margin-bottom:10px">
@@ -970,7 +989,7 @@ function wizardHTML() {
       <button onclick="paso3_guardar()" style="width:100%;padding:12px;background:#00C8D7;color:#000;font-weight:700;border:none;border-radius:11px;cursor:pointer;font-family:inherit">Continuar →</button>
     </div>`;
   } else if (WIZARD_STEP === 4) {
-    const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+    const region = REGION_CODE || 'BR';
     const esPIX = region === 'BR';
     stepHTML = `<div style="padding:16px"><div style="font-size:14px;font-weight:800;margin-bottom:12px">💰 Datos de Cobro</div>
       ${esPIX ? `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">Clave PIX (email, teléfono o CPF)</div><input type="text" id="w4-pix" placeholder="tu@email.com" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>` : `<div style="margin-bottom:14px"><div style="font-size:12px;color:var(--m);margin-bottom:6px">CBU/Alias (Mercado Pago)</div><input type="text" id="w4-cbu" placeholder="1234567890123456789012" style="width:100%;padding:11px;border:1.5px solid var(--b);border-radius:11px;font-size:14px;font-family:inherit"></div>`}
@@ -1018,11 +1037,17 @@ async function paso2_guardar() {
     } catch(e) { console.error('Upload:', e); }
   }
   
+  // Región elegida → guardar el UUID de regiones (los pasos 3-4 dependen de esto)
+  const regSel = $('w2-region')?.value || REGION_CODE || 'BR';
+  const regRow = REGIONS.find(r => r.codigo_pais === regSel);
+  REGION_CODE = regSel;
+
   await sb.from('usuarios').update({
-    nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2
+    nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2,
+    ...(regRow ? { region_cuenta: regRow.id } : {})
   }).eq('id', SESSION.user.id);
-  
-  PROV = { ...PROV, nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2 };
+
+  PROV = { ...PROV, nombre, categoria: cat, experiencia_años: años, foto_url: fotoUrl, onboarding_paso: 2, ...(regRow ? { region_cuenta: regRow.id } : {}) };
   WIZARD_STEP = 3;
   showWizard(2);
 }
@@ -1032,7 +1057,7 @@ function paso3_init() {
 }
 
 async function paso3_guardar() {
-  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const region = REGION_CODE || 'BR';
   const esAR = region === 'AR';
   const doc1 = $(esAR ? 'w3-doc1' : 'w3-doc1').value.trim();
   const doc2 = $(esAR ? 'w3-cuit' : 'w3-rg').value.trim();
@@ -1077,7 +1102,7 @@ async function paso3_guardar() {
 }
 
 async function paso4_guardar() {
-  const region = PROV?.region_cuenta === 'BR' ? 'BR' : 'AR';
+  const region = REGION_CODE || 'BR';
   const esPIX = region === 'BR';
   
   const payoutData = esPIX ? { pix_key: $('w4-pix').value.trim() } : { cbu: $('w4-cbu').value.trim() };
@@ -1265,7 +1290,7 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma||5},Cat:${PROV.categoria||'?'},Servicios:${PROV.servicios_completados||0},Tarifa:R$${PROV.tarifa_base||0}`:'',`Online:${isOnline}`,`EstadoTrabajo:${jobState}`,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,region:REGION_CODE||undefined,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';

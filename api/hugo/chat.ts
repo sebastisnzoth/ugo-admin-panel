@@ -82,11 +82,39 @@ export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
   try {
-    const { message, role = 'admin', history = [], context = '' } = req.body;
+    const { message, role = 'admin', history = [], context = '', region = '', context_type = 'initial' } = req.body;
     const { data: rows } = await sb.from('config_sistema').select('clave,valor')
-      .in('clave', [`hugo_prompt_${role}`, 'api_gemini_key', 'api_groq_key']);
+      .in('clave', [`hugo_prompt_${role}`, 'api_gemini_key', 'api_groq_key', 'hugo_v2_enabled']);
     const cfg: Record<string, string> = {};
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
+
+    // ── Hugo 2.0: contexto regional + prompts dinámicos (hugo_prompts_v2) ──
+    const v2 = cfg['hugo_v2_enabled'] === 'true';
+    const regionOk = v2 && /^[A-Z]{2}$/.test(region) && (role === 'cliente' || role === 'proveedor');
+    let regionalSys = '';
+    let plantilla: any = null;
+    if (regionOk) {
+      const [{ data: reg }, { data: pr }] = await Promise.all([
+        sb.from('regiones').select('codigo_pais,moneda,simbolo_moneda').eq('codigo_pais', region).maybeSingle(),
+        sb.from('hugo_prompts_v2').select('prompt_text,system_prompt,tone')
+          .eq('role_type', role).eq('region', region).eq('context_type', context_type).eq('active', true)
+          .order('version', { ascending: false }).limit(1).maybeSingle()
+      ]);
+      plantilla = pr;
+      const idioma = region === 'BR'
+        ? 'Responde SIEMPRE em português brasileiro, informal e caloroso.'
+        : 'Respondé SIEMPRE en español rioplatense, con voseo, cercano.';
+      regionalSys = `\nREGIÓN DEL USUARIO: ${region}.`
+        + (reg ? ` Moneda: ${reg.simbolo_moneda} (${reg.moneda}) — usá SIEMPRE esa moneda en los precios.` : '')
+        + ` ${idioma}`
+        + (plantilla?.system_prompt ? `\n${plantilla.system_prompt}` : '')
+        + (plantilla?.prompt_text ? `\nESTILO de referencia para la situación "${context_type}": "${plantilla.prompt_text}"` : '');
+    }
+
+    // Saludo inicial: si hay plantilla regional sin placeholders, se responde directo (0 tokens de IA)
+    if (message === '__INICIO__' && plantilla?.prompt_text && !plantilla.prompt_text.includes('{')) {
+      return res.json({ hugo_mensaje: plantilla.prompt_text, accion: null, ui_action: null, datos: null, model: 'template/hugo_prompts_v2' });
+    }
 
     const geminiKey = cfg['api_gemini_key']?.trim();
     const groqKey   = cfg['api_groq_key']?.trim();
@@ -98,6 +126,7 @@ export default async function handler(req: any, res: any) {
     // cliente/proveedor responden JSON estructurado; admin usa protocolo [ACCION] en texto plano
     const jsonMode = role === 'cliente' || role === 'proveedor';
     let sys = (cfg[`hugo_prompt_${role}`] || 'Eres Hugo de U.GO. Responde en español, máximo 3 frases.')
+      + regionalSys
       + (context ? `\nCONTEXTO: ${context}` : '');
     if (jsonMode) {
       sys += '\nREGLA ABSOLUTA: Responde ÚNICAMENTE con el objeto JSON. Sin texto antes ni después, sin markdown, sin backticks.';

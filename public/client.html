@@ -871,6 +871,24 @@ let myLat=-27.5969,myLng=-48.5495,myAddr='';
 let chatHistory=[], SELECTED_PROV=null;
 /* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
 let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
+/* Hugo 2.0: región del usuario (tabla regiones). REGIONS cachea la tabla; REGION_CODE es 'BR'/'AR'. */
+let REGIONS=[],REGION_CODE=null;
+async function resolveRegion(u){
+  try{
+    const{data:regs}=await sb.from('regiones').select('id,codigo_pais,moneda,simbolo_moneda');
+    if(!regs?.length)return;
+    REGIONS=regs;
+    let reg=u?.region_cuenta?regs.find(r=>r.id===u.region_cuenta):null;
+    if(!reg){
+      // Inferir desde usuarios.pais (texto libre) y auto-reparar region_cuenta
+      const p=(u?.pais||'').toLowerCase();
+      const esAR=/^ar$|argentin|quilmes|buenos|bs\.?\s?as|c[oó]rdoba|rosario|la plata|mendoza/.test(p);
+      reg=regs.find(r=>r.codigo_pais===(esAR?'AR':'BR'))||regs[0];
+      if(SESSION&&reg)sb.from('usuarios').update({region_cuenta:reg.id}).eq('id',SESSION.user.id).then(()=>{});
+    }
+    REGION_CODE=reg?.codigo_pais||null;
+  }catch(e){console.warn('region:',e?.message||e);}
+}
 const $=id=>document.getElementById(id);
 const CATS=[{ic:'⚡',lb:'Electricista'},{ic:'🔧',lb:'Plomero'},{ic:'🧹',lb:'Limpieza'},{ic:'🎨',lb:'Pintor'},{ic:'🪚',lb:'Carpintero'},{ic:'🔑',lb:'Cerrajero'},{ic:'🌿',lb:'Jardinero'},{ic:'❄️',lb:'AC/Clima'}];
 
@@ -1061,7 +1079,7 @@ sb.auth.onAuthStateChange(async(ev,ses)=>{if(ev==='SIGNED_IN'&&ses&&!SESSION){SE
 async function bootApp(){
   try{
     $('auth').classList.add('hide');$('top').classList.remove('hide');$('nav').classList.remove('hide');
-    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();loadHugoContext();
+    await loadCli();initMap();startGPS();nav2('home');buildHomeBar();setTimeout(loadProvCount,1500);loadTarifario();loadHugoContext();resolveRegion(CLI);
     setTimeout(()=>{if(typeof resumeActiveService==='function')resumeActiveService();},800);
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
@@ -1542,7 +1560,7 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[CLI?`Cliente:${CLI.nombre}`:'',`Ubicacion:${myLat.toFixed(4)},${myLng.toFixed(4)}`,myAddr?`Direccion:${myAddr}`:'',SELECTED_PROV?`ProveedorSeleccionado:${SELECTED_PROV.nombre} (${SELECTED_PROV.categoria} R$${SELECTED_PROV.tarifa_base||80})`:''].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'cliente',message:msg,context:ctx,region:REGION_CODE||undefined,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     let reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
