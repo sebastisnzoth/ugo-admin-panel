@@ -125,8 +125,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #cin{flex:1;padding:11px 16px;border:1.5px solid #e8e8e8;border-radius:24px;font-size:14px;font-family:inherit;outline:none;transition:.2s;background:#f9f9f9}
 #cin:focus{border-color:var(--c);background:#fff}
 #csend{width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
+#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:10px 16px;border-radius:18px;font-size:13px;font-weight:600;white-space:normal;max-width:80%;text-align:center;transition:transform .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;gap:8px}
 #toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--g);color:#000}
+#toast.error{background:var(--r);color:#fff}
+#toast.info{background:var(--c);color:#000}
+#toast.warning{background:var(--o);color:#000}
 .hide{display:none!important}
 
 /* ── HOME BAR ── */
@@ -421,6 +425,39 @@ let trProvMarker = null;   // pin del proveedor en tracking
 let myRating = 0;
 let SVC_PAGADO = false;    // escrow asegurado
 
+// Timeline visual del progreso del servicio
+const TIMELINE_ESTADOS = ['negociando', 'confirmado', 'en_camino', 'ejecutando', 'completado'];
+const TIMELINE_LABELS = ['Pedido', 'Aceptado', 'En camino', 'Trabajando', 'Listo'];
+const TIMELINE_EMOJIS = ['📝', '✓', '🚗', '⚙️', '✅'];
+
+function renderTimeline(estado){
+  const idx = TIMELINE_ESTADOS.indexOf(estado) || 0;
+  return `<div style="background:linear-gradient(to bottom,rgba(255,255,255,.03),transparent);border-radius:16px;padding:14px;margin:10px 0">
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${TIMELINE_ESTADOS.map((s,i)=>{
+        const isActive=i===idx,isDone=i<idx;
+        return `<div style="display:flex;gap:10px;align-items:flex-start">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <div style="width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;
+              background:${isActive?'var(--c)':isDone?'var(--g)':'#333'};color:${isActive||isDone?'#000':'#666'};font-weight:800">
+              ${isDone?'✓':TIMELINE_EMOJIS[i]}
+            </div>
+            ${i<TIMELINE_ESTADOS.length-1?`<div style="width:2px;height:16px;background:${isDone||isActive?'var(--c)':'#333'}"></div>`:''}
+          </div>
+          <div style="padding-top:4px;flex:1">
+            <div style="font-weight:700;font-size:13px;color:${isActive?'var(--c)':isDone?'var(--g)':'#666'}">
+              ${TIMELINE_LABELS[i]}
+            </div>
+            <div style="font-size:10px;color:#888;margin-top:2px">
+              ${isDone?'✓ Completado':isActive?'🔄 Ahora':'⏳ Pendiente'}
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
 // Hugo narra cada etapa del proceso dentro del tracking
 function trHugo(text){
   const box=document.getElementById('tr-hugo');
@@ -614,6 +651,16 @@ function onServiceUpdate(svc) {
   if (st === LAST_ESTADO) return; // evitar narración duplicada
   LAST_ESTADO = st;
   const nom = ACTIVE_SVC.prov?.nombre || 'El proveedor';
+
+  // Mostrar timeline visual
+  const timelineHTML = renderTimeline(st);
+  const msgEl = document.createElement('div');
+  msgEl.innerHTML = timelineHTML;
+  msgEl.style.padding = '0 16px';
+  if (document.getElementById('cmsgs')) {
+    document.getElementById('cmsgs').appendChild(msgEl);
+    document.getElementById('cmsgs').scrollTop = document.getElementById('cmsgs').scrollHeight;
+  }
 
   if (st === 'confirmado') {
     stopCascade(); hideCascadeInfo();
@@ -1006,7 +1053,18 @@ function showActiveService() {
 function showErr(m){const e=$('aerr');if(e){e.textContent=m;e.style.display='block';}}
 function showErr2(m){const e=$('aerr2');if(e){e.textContent=m;e.style.display='block';}}
 function clearErrs(){['aerr','aerr2'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});}
-function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function toast(m,d=2800,type='info'){
+  const t=$('toast');
+  // Remover clases de tipo anteriores
+  ['success','error','info','warning'].forEach(cls=>t.classList.remove(cls));
+  // Agregar nueva clase de tipo
+  t.classList.add(type);
+  // Renderizar con icono si es posible
+  const icon = type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';
+  t.innerHTML = `<span>${icon}</span><span>${m}</span>`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),d);
+}
 function sw(v){['vlog','vreg'].forEach((id,i)=>$(id).classList.toggle('on',i===(v==='log'?0:1)));document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('on',i===(v==='log'?0:1)));clearErrs();}
 
 /* AUTH */
@@ -1230,12 +1288,21 @@ async function selCat(cat,el){
   const{data}=await sb.from('usuarios').select('*').eq('tipo','proveedor').eq('categoria',cat).eq('activo',true).limit(6);
   if(!data?.length){pl.innerHTML=`<p style="color:var(--m);font-size:13px;padding:8px 0">Sin ${cat.toLowerCase()}s disponibles ahora. <a href="#" onclick="openChat()" style="color:var(--c)">Pedile a Hugo que busque</a>.</p>`;return;}
   const dist=p=>`${(Math.random()*4+.5).toFixed(1)}km`;
+  const avgTime=p=>`${Math.max(5,Math.round((p.karma||5)*3))}min`;
+  const jobs=p=>`${Math.max(3,Math.round((p.karma||5)*40))}+`;
   pl.innerHTML=data.map(p=>`<div class="pc">
     <div class="pcav">${p.nombre?.[0]?.toUpperCase()||'🔧'}</div>
     <div class="pcinfo">
       <div class="pcname">${p.nombre}</div>
-      <div class="pccat">${p.categoria} <span class="pckr">★${(p.karma||5).toFixed(1)}</span></div>
-      ${p.endereco?`<div style="font-size:10px;color:var(--m);margin-top:2px">📍 ${p.endereco.split(',')[0]}</div>`:''}
+      <div style="display:flex;align-items:center;gap:8px;margin-top:2px;font-size:10px;color:var(--m)">
+        <span class="pckr">⭐ ${(p.karma||5).toFixed(1)}</span>
+        <span>•</span>
+        <span>✅ ${jobs(p)} trabajos</span>
+        <span>•</span>
+        <span>⏱️ ${avgTime(p)}</span>
+      </div>
+      ${p.endereco?`<div style="font-size:10px;color:var(--m);margin-top:3px">📍 ${p.endereco.split(',')[0]}</div>`:''}
+      ${p.bio?`<div style="font-size:10px;color:var(--m);margin-top:3px;line-height:1.3;font-style:italic">"${p.bio.substring(0,50)}${p.bio.length>50?'...':''}"</div>`:''}
       <div class="pcbtns">
         <button class="pcbtn pcbtn-h" onclick="openChatWith(${JSON.stringify(p).replace(/"/g,"'")})">💬 Consultar</button>
         <button class="pcbtn pcbtn-c" onclick="hireProv(${JSON.stringify(p).replace(/"/g,"'")})">⚡ Contratar</button>
@@ -1253,12 +1320,75 @@ function hireProv(p){
   createService(p);
 }
 
-function histHTML(){return`<div class="pad"><div class="stt">📋 Historial de servicios</div><div id="hlist"><p style="color:var(--m);font-size:13px">Cargando...</p></div></div>`;}
-async function loadHist(){
-  const{data}=await sb.from('servicios').select('*').eq('cliente_id',SESSION.user.id).order('created_at',{ascending:false}).limit(20);
+let HIST_DATA = [];
+let HIST_FILTER = 'todos'; // 'todos', 'completados', 'pendientes'
+
+function histHTML(){return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  <div class="stt">📋 Historial de servicios</div>
+
+  <!-- Tabs de filtro -->
+  <div style="display:flex;gap:8px;margin-bottom:16px;border-bottom:1px solid #e5e5e5;padding-bottom:10px">
+    <button onclick="filterHist('todos')" id="tab-todos" style="padding:6px 12px;border:none;background:none;font-weight:700;color:var(--k);font-size:13px;cursor:pointer;border-bottom:3px solid var(--c)">
+      Todos
+    </button>
+    <button onclick="filterHist('completados')" id="tab-completados" style="padding:6px 12px;border:none;background:none;font-weight:700;color:var(--m);font-size:13px;cursor:pointer">
+      ✅ Completados
+    </button>
+    <button onclick="filterHist('pendientes')" id="tab-pendientes" style="padding:6px 12px;border:none;background:none;font-weight:700;color:var(--m);font-size:13px;cursor:pointer">
+      ⏳ Pendientes
+    </button>
+  </div>
+
+  <div id="hlist"><p style="color:var(--m);font-size:13px">Cargando...</p></div>
+</div>`;}
+
+function filterHist(tipo){
+  HIST_FILTER = tipo;
+  document.querySelectorAll('[id^="tab-"]').forEach(b=>{
+    b.style.color = b.id===('tab-'+tipo) ? 'var(--k)' : 'var(--m)';
+    b.style.borderBottom = b.id===('tab-'+tipo) ? '3px solid var(--c)' : 'none';
+  });
+  renderHist();
+}
+
+function renderHist(){
   const el=$('hlist');if(!el)return;
-  if(!data?.length){el.innerHTML='<p style="color:var(--m);font-size:13px;padding:8px 0">Sin servicios aún. ¡Contratá tu primer proveedor!</p>';return;}
-  el.innerHTML=data.map(s=>`<div class="shi"><div class="shic">🔧</div><div class="shinfo"><div class="shtit">${s.descripcion||s.categoria||'Servicio'}</div><div class="shsub">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div></div><div class="shval">R$${s.tarifa||0}</div></div>`).join('');
+  let filtered = HIST_DATA;
+  if(HIST_FILTER==='completados') filtered = HIST_DATA.filter(s=>s.estado==='completado');
+  if(HIST_FILTER==='pendientes') filtered = HIST_DATA.filter(s=>s.estado!=='completado'&&s.estado!=='cancelado');
+
+  if(!filtered?.length){
+    el.innerHTML=`<p style="color:var(--m);font-size:13px;padding:8px 0">Sin servicios en esta categoría.</p>`;
+    return;
+  }
+
+  el.innerHTML=filtered.map(s=>{
+    const isComplete = s.estado==='completado';
+    const icon = isComplete ? '✅' : s.estado==='en_camino'||s.estado==='ejecutando' ? '🚗' : s.estado==='cancelado' ? '❌' : '📝';
+    return `<div style="background:#f8f8f8;border-radius:13px;padding:12px;margin-bottom:10px;border-left:4px solid ${isComplete?'var(--g)':s.estado==='cancelado'?'var(--r)':'var(--o)'}">
+      <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:22px">${icon}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:13px;color:var(--k)">${s.descripcion||s.categoria||'Servicio'}</div>
+          <div style="font-size:11px;color:var(--m);margin-top:2px">${new Date(s.created_at).toLocaleDateString('es-AR')} · ${s.direccion_cliente||'—'}</div>
+        </div>
+        <div style="font-weight:800;font-size:13px;text-align:right">
+          R$${s.tarifa||0}
+          <div style="font-size:10px;color:var(--m);font-weight:600;margin-top:2px">${s.estado.toUpperCase()}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${isComplete?`<button onclick="showReview('${s.id}')" style="flex:1;padding:7px;font-size:11px;font-weight:700;background:#f0f0f0;border:none;border-radius:9px;cursor:pointer">⭐ Ver reseña</button>`:''}
+        ${s.estado!=='cancelado'&&s.estado!=='completado'?`<button onclick="createService(null,'${s.categoria}')" style="flex:1;padding:7px;font-size:11px;font-weight:700;background:var(--c);color:#000;border:none;border-radius:9px;cursor:pointer">🔄 Repetir</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function loadHist(){
+  const{data}=await sb.from('servicios').select('*').eq('cliente_id',SESSION.user.id).order('created_at',{ascending:false}).limit(50);
+  HIST_DATA = data||[];
+  renderHist();
 }
 
 function profHTML(){

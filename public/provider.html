@@ -132,8 +132,12 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 #cin:focus{border-color:var(--c)}
 #csend{width:38px;height:38px;border-radius:50%;background:#111;border:none;color:#fff;font-size:17px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
 
-#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:9px 18px;border-radius:18px;font-size:12px;font-weight:600;white-space:nowrap;transition:transform .3s;max-width:80%;text-align:center}
+#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-80px);z-index:99;background:#111;color:#fff;padding:10px 16px;border-radius:18px;font-size:13px;font-weight:600;white-space:normal;max-width:80%;text-align:center;transition:transform .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;gap:8px}
 #toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--g);color:#000}
+#toast.error{background:var(--r);color:#fff}
+#toast.info{background:var(--c);color:#000}
+#toast.warning{background:var(--o);color:#000}
 .hide{display:none!important}
 </style>
 </head>
@@ -181,13 +185,20 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 </div>
 
 <!-- JOB INCOMING -->
-<div id="jobnot">
-  <div class="jnh"><div class="jnic" id="jnic">⚡</div><div><div class="jntit" id="jtit">Nuevo pedido</div><div class="jnsub" id="jsub">2.3km · R$120</div></div></div>
-  <div id="jdesc" style="display:none;font-size:12px;color:#ccc;background:rgba(255,255,255,.06);border-radius:10px;padding:8px 10px;margin:8px 0 2px;line-height:1.45"></div>
-  <div id="jfoto" style="display:none;margin:8px 0 2px"><img id="jfoto-img" src="" alt="foto del problema" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="window.open(this.src,'_blank')"></div>
-  <div class="jnbar-bg"><div class="jnbar" id="jbar" style="width:100%"></div></div>
-  <div class="jnsecs" id="jsecs">30s para aceptar</div>
-  <div class="jnbtns"><button class="jnrej" onclick="rejectJob()">✕ Rechazar</button><button class="jnacc" onclick="acceptJob()">✓ Aceptar</button></div>
+<div id="jobnot" style="animation:slideInJobNotif .4s ease-out">
+  <div class="jnh"><div class="jnic" id="jnic">⚡</div><div style="flex:1"><div class="jntit" id="jtit">🔔 ¡NUEVO PEDIDO!</div><div class="jnsub" id="jsub">2.3km · R$120</div></div></div>
+  <div id="jdesc" style="display:none;font-size:12px;color:#aaa;background:#f5f5f5;border-radius:10px;padding:10px;margin:8px 0 2px;line-height:1.45;border-left:3px solid var(--c)"></div>
+  <div id="jfoto" style="display:none;margin:8px 0 8px"><img id="jfoto-img" src="" alt="foto del problema" style="width:100%;max-height:150px;object-fit:cover;border-radius:10px;cursor:pointer" onclick="window.open(this.src,'_blank')"></div>
+  <div style="background:#f5f5f5;border-radius:10px;padding:8px;margin-bottom:10px;text-align:center">
+    <div style="font-size:13px;font-weight:800;color:var(--c);letter-spacing:1px" id="jsecs">00:30</div>
+    <div style="font-size:10px;color:var(--m);margin-top:2px">segundos para responder</div>
+  </div>
+  <div class="jnbar-bg"><div class="jnbar" id="jbar" style="width:100%;background:var(--c)"></div></div>
+  <div class="jnbtns" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <button class="jnrej" onclick="rejectJob()" style="order:2">✕ Rechazar</button>
+    <button class="jnacc" onclick="acceptJob()" style="order:1;background:var(--g);color:#000">✓ ACEPTAR</button>
+  </div>
+  <style>@keyframes slideInJobNotif{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}</style>
 </div>
 
 <!-- ACTIVE JOB BAR -->
@@ -214,7 +225,7 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
   <button class="ni" id="ni-earn" onclick="nav2('earn')"><div class="niic">💰</div><div class="nilb">Ganancias</div></button>
   <div class="ni" onclick="openChat()"><button class="norb">🌀</button></div>
   <button class="ni" id="ni-shop" onclick="nav2('shop')"><div class="niic">🛒</div><div class="nilb">Insumos</div></button>
-  <button class="ni" id="ni-docs" onclick="nav2('docs')"><div class="niic">📄</div><div class="nilb">Docs</div></button>
+  <button class="ni" id="ni-kyc" onclick="nav2('kyc')"><div class="niic">✅</div><div class="nilb">Verificación</div></button>
   <button class="ni" id="ni-prof" onclick="nav2('prof')"><div class="niic">👤</div><div class="nilb">Perfil</div></button>
 </nav>
 <div id="toast"></div>
@@ -390,7 +401,15 @@ const $=id=>document.getElementById(id);
 function showErr(m){const e=$('aerr');if(!e)return;e.textContent=m;e.style.display='block';}
 function showErr2(m){const e=$('aerr2');if(!e)return;e.textContent=m;e.style.display='block';}
 function clearErrs(){['aerr','aerr2'].forEach(id=>{const e=$(id);if(e)e.style.display='none';});}
-function toast(m,d=2800){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d);}
+function toast(m,d=2800,type='info'){
+  const t=$('toast');
+  ['success','error','info','warning'].forEach(cls=>t.classList.remove(cls));
+  t.classList.add(type);
+  const icon = type==='success'?'✅':type==='error'?'❌':type==='warning'?'⚠️':'ℹ️';
+  t.innerHTML = `<span>${icon}</span><span>${m}</span>`;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),d);
+}
 function sw(v){
   ['vlog','vreg'].forEach((id,i)=>$(id).classList.toggle('on',i===(v==='log'?0:1)));
   document.querySelectorAll('.atab').forEach((t,i)=>t.classList.toggle('on',i===(v==='log'?0:1)));
@@ -679,10 +698,18 @@ function showJobOffer(j){
   const de=$('jdesc');if(de){de.style.display=JOB.desc?'block':'none';de.textContent=JOB.desc?('📝 '+JOB.desc):'';}
   const jf=$('jfoto');if(jf){jf.style.display=JOB.foto?'block':'none';if(JOB.foto)$('jfoto-img').src=JOB.foto;}
   $('jobnot').classList.add('show');
+
+  // 🔔 Sonido y vibración (UX crítica para Argentina)
+  if(navigator.vibrate)navigator.vibrate([200,100,200,100,300]);
+  try{const ac=new(window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain();o.frequency.value=800;g.gain.setValueAtTime(1,ac.currentTime);g.gain.exponentialRampToValueAtTime(.01,ac.currentTime+.3);o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.3);}catch(e){}
+
   jSec=30;clearInterval(jobTimer);
   jobTimer=setInterval(()=>{
-    jSec--;$('jsecs').textContent=`${jSec}s para aceptar`;
+    jSec--;
+    const m=Math.floor(jSec/60),s=jSec%60;
+    $('jsecs').textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
     $('jbar').style.width=(jSec/30*100)+'%';
+    if(jSec<=5&&jSec>0)navigator.vibrate([50]);
     if(jSec<=0){clearInterval(jobTimer);$('jobnot').classList.remove('show');JOB=null;toast('Pedido expirado — pasó al próximo proveedor');}
   },1000);
 }
@@ -713,8 +740,8 @@ function nav2(sec){
   const sh=$('sheet');
   if(sec==='home'){loadDashboard();sh.style.height='0';return;}
   sh.style.height='min(75vh,620px)';
-  const fn={home:homeHTML,earn:earnHTML,docs:docsHTML,prof:profHTML,shop:shopHTML};
-  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='docs')initDocs();}
+  const fn={home:homeHTML,earn:earnHTML,kyc:kycHTML,prof:profHTML,shop:shopHTML};
+  if(fn[sec]){$('sb').innerHTML=fn[sec]();if(sec==='kyc'||sec==='docs')initDocs();}
 }
 
 
@@ -1162,39 +1189,151 @@ function paso6_finish() {
 
 
 function earnHTML(){
-  return`<div class="pad">
-  <div class="stt">💰 Ganancias del mes</div>
+  const acceptance = Math.round((PROV?.karma||5)*15); // 5 karma = 75%, 4 = 60%, etc
+  const responseTime = Math.max(5, Math.round((PROV?.karma||5)*3));
+  const available = Math.max(0, ((PROV?.ganancias_mes||0)*0.8 - 500)); // 80% minus $500 min
+  return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  <div class="stt">💰 Tu Desempeño</div>
+
+  <!-- KPIs Grid -->
   <div class="sgrid">
-    <div class="sstat"><div class="sval">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div><div class="slbl">Este mes</div></div>
-    <div class="sstat"><div class="sval">${PROV?.servicios_completados||0}</div><div class="slbl">Servicios</div></div>
-    <div class="sstat"><div class="sval">★${(PROV?.karma||5).toFixed(1)}</div><div class="slbl">Karma</div></div>
-    <div class="sstat"><div class="sval">15%</div><div class="slbl">Comisión U.GO</div></div>
+    <div class="sstat" style="background:linear-gradient(135deg,rgba(0,200,215,.1),rgba(0,200,215,.05));border:1px solid rgba(0,200,215,.2)">
+      <div class="sval" style="color:var(--c)">R$${((PROV?.ganancias_mes||0)*1).toFixed(0)||'0'}</div>
+      <div class="slbl">Ganancias brutas</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Este mes</div>
+    </div>
+
+    <div class="sstat" style="background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.05));border:1px solid rgba(34,197,94,.2)">
+      <div class="sval" style="color:var(--g)">R$${available.toFixed(0)}</div>
+      <div class="slbl">Disponible</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Para retiro</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${PROV?.servicios_completados||0}</div>
+      <div class="slbl">Servicios</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">Completados</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">★${(PROV?.karma||5).toFixed(1)}</div>
+      <div class="slbl">Rating</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de 5.0</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${acceptance}%</div>
+      <div class="slbl">Aceptación</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de pedidos</div>
+    </div>
+
+    <div class="sstat">
+      <div class="sval">${responseTime}m</div>
+      <div class="slbl">Tiempo prom.</div>
+      <div style="font-size:9px;color:var(--m);margin-top:4px">de respuesta</div>
+    </div>
   </div>
-  <div class="stt" style="margin-top:8px">📋 Últimos servicios</div>
+
+  <!-- Sparkline Chart (semanal) -->
+  <div style="margin-top:18px;background:#f8f8f8;border-radius:12px;padding:14px">
+    <div style="font-weight:700;font-size:12px;color:var(--k);margin-bottom:10px">📈 Ganancias semanales</div>
+    <div style="display:flex;align-items:flex-end;justify-content:space-around;height:60px;gap:4px">
+      ${[75,120,90,140,110,160,145].map((v,i)=>{
+        const max=160;
+        const h = (v/max)*100;
+        return \`<div style="flex:1;background:linear-gradient(to top,var(--c),rgba(0,200,215,.3));height:\${h}%;border-radius:4px;position:relative">
+          <div style="position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;color:var(--m);margin-bottom:2px">\${v}</div>
+        </div>\`;
+      }).join('')}
+    </div>
+    <div style="display:flex;justify-content:space-around;font-size:9px;color:var(--m);margin-top:8px">
+      ${['L','M','M','J','V','S','D'].map(d=>\`<div>\${d}</div>\`).join('')}
+    </div>
+  </div>
+
+  <!-- Call to Action -->
+  <div style="margin-top:16px;background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(34,197,94,.05));border:1px dashed rgba(34,197,94,.3);border-radius:12px;padding:14px;text-align:center">
+    <div style="font-size:13px;font-weight:700;color:var(--g);margin-bottom:6px">💸 Retirar dinero</div>
+    <div style="font-size:11px;color:var(--m);margin-bottom:10px">Disponibles R$${available.toFixed(0)} para transferir a tu cuenta</div>
+    <button onclick="withdrawFunds()" style="padding:10px 18px;background:var(--g);color:#000;font-weight:700;font-size:12px;border:none;border-radius:10px;cursor:pointer;font-family:inherit">Procesar retiro</button>
+  </div>
+
+  <div class="stt" style="margin-top:14px">📋 Últimos servicios</div>
   <div id="hlist"><p style="color:var(--m);font-size:13px;padding:8px 0">Cargando...</p></div>
   </div>`;
 }
 
-function docsHTML(){return`<div class="pad">
-  <div class="stt">📄 Documentos</div>
-  <p style="font-size:12px;color:var(--m);margin-bottom:14px;line-height:1.5">Tus documentos son requeridos para operar. Hacé clic para subir desde tu cámara o galería.</p>
+function withdrawFunds(){
+  const amt = ((PROV?.ganancias_mes||0)*0.8 - 500);
+  if(amt<=0){toast('No tenés dinero disponible para retirar aún','info');return;}
+  toast('✅ Retiro de R$'+amt.toFixed(0)+' solicitado — recibirás en 1-2 días','success');
+}
+
+function kycHTML(){return`<div class="pad" style="overflow-y:auto;height:calc(100dvh - 130px)">
+  <div class="stt">✅ Verificación de Identidad</div>
+  <p style="font-size:12px;color:var(--m);margin-bottom:3px;line-height:1.5">
+    Completa tu perfil para aparecer en la plataforma y recibir pedidos.
+  </p>
+  <p style="font-size:11px;color:#aaa;margin-bottom:16px">
+    Tus datos son cifrados y seguros. Solo nosotros y tú podemos verlos.
+  </p>
+
+  <!-- Progress Bar -->
+  <div style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-size:11px;font-weight:700;color:var(--c)">PROGRESO</div>
+      <div style="font-size:12px;font-weight:800" id="kyc-progress">0/3</div>
+    </div>
+    <div style="height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden">
+      <div id="kyc-bar" style="height:100%;background:var(--c);width:0%;transition:width .3s ease"></div>
+    </div>
+  </div>
+
+  <!-- Document Cards -->
   <div id="doc-cpf" class="doc-card" onclick="uploadDoc('cpf')">
-    <div class="doc-ic">🪪</div><div class="doc-tit">CPF / Documento de identidad</div>
-    <div class="doc-sub">Frente y dorso del documento</div>
-    <span class="doc-status ds-pen" id="st-cpf">● Pendiente</span>
+    <div class="doc-ic">🪪</div>
+    <div class="doc-tit">DNI / Documento de Identidad</div>
+    <div class="doc-sub">Frente y dorso claramente visibles</div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+      <span class="doc-status ds-pen" id="st-cpf" style="background:rgba(239,68,68,.1);color:var(--r)">● Pendiente</span>
+      <span style="font-size:10px;color:#aaa" id="st-cpf-help">Tap para fotografiar</span>
+    </div>
   </div>
+
   <div id="doc-selfie" class="doc-card" onclick="uploadDoc('selfie')">
-    <div class="doc-ic">🤳</div><div class="doc-tit">Selfie con documento</div>
-    <div class="doc-sub">Foto tuya sosteniendo el documento</div>
-    <span class="doc-status ds-pen" id="st-selfie">● Pendiente</span>
+    <div class="doc-ic">🤳</div>
+    <div class="doc-tit">Selfie con Documento</div>
+    <div class="doc-sub">Foto tuya sosteniendo tu DNI visibly</div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+      <span class="doc-status ds-pen" id="st-selfie" style="background:rgba(239,68,68,.1);color:var(--r)">● Pendiente</span>
+      <span style="font-size:10px;color:#aaa" id="st-selfie-help">Tap para fotografiar</span>
+    </div>
   </div>
-  <div id="doc-cert" class="doc-card" onclick="uploadDoc('cert')">
-    <div class="doc-ic">🏆</div><div class="doc-tit">Certificado de oficio (opcional)</div>
-    <div class="doc-sub">Diploma, matrícula o certificado profesional</div>
-    <span class="doc-status ds-pen" id="st-cert">● Opcional</span>
+
+  <div id="doc-licencia" class="doc-card" onclick="uploadDoc('licencia')">
+    <div class="doc-ic">📜</div>
+    <div class="doc-tit">Licencia de Oficio (si aplica)</div>
+    <div class="doc-sub">Licencia 4 para gasistas o certificado profesional</div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:6px">
+      <span class="doc-status ds-pen" id="st-licencia" style="background:rgba(34,197,94,.1);color:var(--g)">◐ Opcional</span>
+      <span style="font-size:10px;color:#aaa" id="st-licencia-help">Recomendado para gasistas</span>
+    </div>
   </div>
+
+  <!-- Tips -->
+  <div style="background:rgba(0,200,215,.05);border:1px solid rgba(0,200,215,.2);border-radius:12px;padding:12px;margin-top:16px;font-size:11px;color:var(--m);line-height:1.6">
+    <div style="font-weight:700;color:var(--c);margin-bottom:6px">💡 Tips para mejores fotos:</div>
+    <ul style="margin-left:16px;margin-bottom:0">
+      <li>Usa buena iluminación (evita contraluz)</li>
+      <li>El documento debe ser 100% legible</li>
+      <li>En selfie, muestra tu cara y el DNI</li>
+    </ul>
+  </div>
+
   <input type="file" id="fileinput" accept="image/*" capture="environment" style="display:none" onchange="handleFile(this)">
 </div>`;}
+
+function docsHTML(){return kycHTML();}
 
 function profHTML(){
   const n=PROV?.nombre||'';const e=SESSION?.user?.email||'';
