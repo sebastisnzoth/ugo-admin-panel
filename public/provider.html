@@ -366,6 +366,8 @@ let LAST_ACTIVITY='';
 let myLat=-27.5969,myLng=-48.5495,isOnline=false;
 let JOB=null,jobTimer=null,jSec=30,jobState='idle';
 let chatHistory=[];
+/* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
+let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
 
 /* ── UTILS ── */
 const $=id=>document.getElementById(id);
@@ -497,7 +499,7 @@ async function bootApp(){
       showWizard(PROV.onboarding_paso || 0);
       return;
     }
-    initMap();nav2('home');subscribeToJobs();
+    initMap();nav2('home');subscribeToJobs();loadHugoContext();
   }catch(e){console.error('boot:',e);toast('Error al cargar. Recargá la página.');}
 }
 
@@ -1229,6 +1231,32 @@ async function handleFile(input){
 
 /* ── HUGO CHAT ── */
 const HSUGS=['¿Cuánto gané hoy?','¿Cómo mejorar mi karma?','Ayuda con un cliente','¿Cómo subo mi tarifa?','Ver mis servicios del mes'];
+
+/* ── HUGO 2.0: memoria entre sesiones ──────────────────────────────
+   Al boot carga la sesión activa de hugo_sessions + últimos 10 mensajes
+   de hugo_chat; la memoria se antepone al history de hugoCall. */
+async function loadHugoContext(){
+  try{
+    const{data:flag}=await sb.from('config_sistema').select('valor').eq('clave','hugo_v2_enabled').maybeSingle();
+    HUGO_V2=flag?.valor==='true';
+    if(!HUGO_V2||!SESSION)return;
+    let{data:ses}=await sb.from('hugo_sessions').select('id,metadatos').eq('usuario_id',SESSION.user.id).eq('rol','proveedor').eq('activa',true).order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    if(!ses){
+      const{data:nueva,error}=await sb.from('hugo_sessions').insert({usuario_id:SESSION.user.id,rol:'proveedor',activa:true,metadatos:{}}).select('id,metadatos').single();
+      if(error)throw error;
+      ses=nueva;
+    }
+    HUGO_SID=ses.id;HUGO_META=ses.metadatos||{};
+    const{data:msgs}=await sb.from('hugo_chat').select('rol_mensaje,contenido').eq('session_id',HUGO_SID).order('created_at',{ascending:false}).limit(10);
+    HUGO_MEMORY=(msgs||[]).reverse().map(m=>({role:m.rol_mensaje==='hugo'?'assistant':'user',content:m.contenido}));
+  }catch(e){console.warn('Hugo memoria desactivada:',e?.message||e);HUGO_V2=false;HUGO_SID=null;}
+}
+function hugoSave(rol,contenido,extra){
+  if(!HUGO_V2||!HUGO_SID||!contenido)return;
+  sb.from('hugo_chat').insert({session_id:HUGO_SID,usuario_id:SESSION.user.id,rol_mensaje:rol,contenido,...(extra||{})})
+    .then(({error})=>{if(error)console.warn('hugoSave:',error.message);else sb.from('hugo_sessions').update({updated_at:new Date().toISOString()}).eq('id',HUGO_SID).then(()=>{});});
+}
+
 function openChat(){document.getElementById('chat').style.height='min(85vh,700px)';showSugs(HSUGS);if(!chatHistory.length)hugoCall('__INICIO__');}
 function closeChat(){document.getElementById('chat').style.height='0';}
 function showSugs(list){$('csugs').innerHTML=list.map(s=>`<button class="csug" onclick="sendSug('${s.replace(/'/g,"\\'")}')">${s}</button>`).join('');}
@@ -1238,15 +1266,16 @@ async function hugoCall(msg){
   showTyp(true);
   const ctx=[PROV?`Proveedor:${PROV.nombre},Karma:${PROV.karma||5},Cat:${PROV.categoria||'?'},Servicios:${PROV.servicios_completados||0},Tarifa:R$${PROV.tarifa_base||0}`:'',`Online:${isOnline}`,`EstadoTrabajo:${jobState}`,`GPS:${myLat.toFixed(4)},${myLng.toFixed(4)}`].filter(Boolean).join(' | ');
   try{
-    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:chatHistory.slice(-8)})});
+    const r=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role:'proveedor',message:msg,context:ctx,history:[...HUGO_MEMORY,...chatHistory].slice(-8)})});
     if(!r.ok)throw new Error('HTTP '+r.status);
     const d=await r.json();showTyp(false);
     const reply=d.hugo_mensaje||'Sin respuesta de Hugo.';
     addMsg('h',reply);chatHistory.push({role:'assistant',content:reply});hugoSpeak(reply);
+    if(msg!=='__INICIO__')hugoSave('hugo',reply,d.accion?{accion:String(d.accion)}:null); // el saludo diario no aporta memoria
   }catch(e){showTyp(false);addMsg('h','⚠️ Error: '+e.message);}
 }
-async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
-function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
+async function sendChat(){const inp=$('cin');const msg=inp.value.trim();if(!msg)return;inp.value='';addMsg('u',msg);chatHistory.push({role:'user',content:msg});hugoSave('user',msg);showSugs([]);await hugoCall(msg);showSugs(HSUGS);}
+function sendSug(s){addMsg('u',s);chatHistory.push({role:'user',content:s});hugoSave('user',s);showSugs([]);hugoCall(s).then(()=>showSugs(HSUGS));}
 
 /* ── HISTORY lazy load ── */
 async function loadHistSheet(){
