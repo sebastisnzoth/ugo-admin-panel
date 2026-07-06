@@ -158,9 +158,9 @@ export function usePendingDocuments() {
     const sb = supabase as any;
     const payload: any = { estado, revisado_at: new Date().toISOString() };
     if (notas) payload.notas = notas;
-    if (notasRechazo && (estado === 'rechazado' || estado === 'pedir_resubmision')) {
+    if (notasRechazo && (estado === 'rechazado' || estado === 'reenvio_solicitado')) {
       payload.notas_rechazo = notasRechazo;
-      if (estado === 'pedir_resubmision') payload.intentos_resubmision = (docs.find(d => d.id === id)?.intentos_resubmision || 0) + 1;
+      if (estado === 'reenvio_solicitado') payload.intentos_resubmision = (docs.find(d => d.id === id)?.intentos_resubmision || 0) + 1;
     }
     const { error } = await sb.from('documentos').update(payload).eq('id', id);
     if (error) { console.error('updateEstado:', error.message); return; }
