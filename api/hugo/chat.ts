@@ -188,24 +188,22 @@ export default async function handler(req: any, res: any) {
       .trim();
     if (!plano) plano = 'Hola, ¿en qué puedo ayudarte?';
 
-    const response = {
-      hugo_mensaje: plano,
-      accion: matchAccion?.[1]?.trim() ?? null,
-      ui_action: null,
-      datos: null,
-      model: usedModel
-    };
-
     // Log interaction if usuario_id provided (fire-and-forget)
     if (usuario_id) {
       sb.rpc('hugo_log_interaction', {
         p_usuario_id: usuario_id,
         p_tipo: 'chat',
-        p_contexto: { message, response: response.hugo_mensaje, model: usedModel }
+        p_contexto: { message, response: plano, model: usedModel }
       }).catch(() => {});
     }
 
-    return res.json(response);
+    return res.json({
+      hugo_mensaje: plano,
+      accion: matchAccion?.[1]?.trim() ?? null,
+      ui_action: null,
+      datos: null,
+      model: usedModel
+    });
   } catch (err: any) {
     return res.status(500).json({ hugo_mensaje: `Error: ${err.message}` });
   }
