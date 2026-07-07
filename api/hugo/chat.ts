@@ -87,7 +87,7 @@ export default async function handler(req: any, res: any) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
   try {
-    const { message, role = 'admin', history = [], context = '', region = '', context_type = 'initial' } = req.body;
+    const { message, role = 'admin', history = [], context = '', region = '', context_type = 'initial', usuario_id = '' } = req.body;
     const { data: rows } = await sb.rpc('config_backend', {
       p_token: BACKEND_TOKEN,
       p_claves: [`hugo_prompt_${role}`, 'api_gemini_key', 'api_groq_key', 'hugo_v2_enabled'],
@@ -188,13 +188,24 @@ export default async function handler(req: any, res: any) {
       .trim();
     if (!plano) plano = 'Hola, ¿en qué puedo ayudarte?';
 
-    return res.json({
+    const response = {
       hugo_mensaje: plano,
       accion: matchAccion?.[1]?.trim() ?? null,
       ui_action: null,
       datos: null,
       model: usedModel
-    });
+    };
+
+    // Log interaction if usuario_id provided (fire-and-forget)
+    if (usuario_id) {
+      sb.rpc('hugo_log_interaction', {
+        p_usuario_id: usuario_id,
+        p_tipo: 'chat',
+        p_contexto: { message, response: response.hugo_mensaje, model: usedModel }
+      }).catch(() => {});
+    }
+
+    return res.json(response);
   } catch (err: any) {
     return res.status(500).json({ hugo_mensaje: `Error: ${err.message}` });
   }
