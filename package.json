@@ -1,6 +1,7 @@
 {
   "name": "ugo-deploy",
   "private": true,
+  "_redeploy": "1783455225",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
