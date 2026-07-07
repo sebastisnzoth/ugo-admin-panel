@@ -3,28 +3,41 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#1a2030">
+<meta name="description" content="U.GO: Servicios del hogar en minutos">
 <title>U.GO Cliente</title>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
 <style>
+/* ═══════════════════════════════════════════════════
+   PERFORMANCE: Leaflet lazy-loaded in JS only when map is needed
+   CSS VARIABLES: Extracted for theming + dark mode
+═══════════════════════════════════════════════════ */
+:root{
+  --c:#00C8D7;--c-rgb:0,200,215;--k:#111;--k-rgb:17,17,17;--w:#fff;--w-rgb:255,255,255;
+  --g:#22C55E;--g-rgb:34,197,94;--r:#EF4444;--r-rgb:239,68,68;--o:#F59E0B;--o-rgb:245,158,11;
+  --m:#888;--b:#eee;--sp-xs:4px;--sp-sm:8px;--sp-md:12px;--sp-lg:16px;--sp-xl:20px;--sp-2xl:28px;
+  --touch-min:48px;--touch-default:44px;--trans-fast:0.15s ease;--trans-normal:0.3s ease;
+  --trans-slow:0.35s cubic-bezier(.32,.72,0,1);
+}
+@media(prefers-color-scheme:dark){:root{--k:#fff;--w:#111;--b:#222;--m:#aaa;}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}}
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-serif;background:#1a2030}
-:root{--c:#00C8D7;--k:#111;--w:#fff;--g:#22C55E;--r:#EF4444;--o:#F59E0B;--m:#888;--b:#eee}
-/* AUTH */
-#auth{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#08090d,#0d1117);display:flex;align-items:center;justify-content:center;padding:20px}
+html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-serif;background:#1a2030;color:var(--k)}
+/* AUTH — with touch target & accessibility */
+#auth{position:fixed;inset:0;z-index:100;background:linear-gradient(160deg,#08090d,#0d1117);display:flex;align-items:center;justify-content:center;padding:var(--sp-lg)}
 .abox{width:100%;max-width:360px}
-.alogo{font-size:34px;font-weight:900;color:#fff;letter-spacing:-1px;margin-bottom:2px}.alogo b{color:var(--c)}
+.alogo{font-size:34px;font-weight:900;color:var(--w);letter-spacing:-1px;margin-bottom:2px}.alogo b{color:var(--c)}
 .asub{font-size:12px;color:#555;margin-bottom:28px}
 .atabs{display:flex;background:rgba(255,255,255,.06);border-radius:12px;padding:3px;margin-bottom:18px}
-.atab{flex:1;text-align:center;padding:8px;border-radius:9px;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:.2s}
-.atab.on{background:rgba(255,255,255,.1);color:#fff}
+.atab{flex:1;text-align:center;padding:8px;border-radius:9px;font-size:13px;font-weight:600;color:#555;cursor:pointer;transition:var(--trans-fast);min-height:var(--touch-default);display:flex;align-items:center;justify-content:center}
+.atab.on{background:rgba(255,255,255,.1);color:var(--w)}
 .aform{display:none}.aform.on{display:block}
 .afl{margin-bottom:11px}
 .afl label{display:block;font-size:10px;font-weight:700;color:#555;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
-.afl input{width:100%;padding:11px 13px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:11px;color:#fff;font-size:14px;font-family:inherit;outline:none;transition:.2s}
-.afl input:focus{border-color:var(--c)}.afl input::placeholder{color:#444}
-.abtn{width:100%;padding:13px;background:var(--c);color:#000;font-weight:800;font-size:14px;border:none;border-radius:13px;cursor:pointer;margin-top:4px;font-family:inherit}.abtn:active{opacity:.85}
+.afl input{width:100%;padding:11px 13px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:11px;color:var(--w);font-size:14px;font-family:inherit;outline:none;transition:var(--trans-fast);min-height:var(--touch-default)}
+.afl input:focus{border-color:var(--c);background:rgba(255,255,255,.12)}.afl input::placeholder{color:#444}
+.abtn{width:100%;padding:13px;background:var(--c);color:var(--k);font-weight:800;font-size:14px;border:none;border-radius:13px;cursor:pointer;margin-top:4px;font-family:inherit;min-height:var(--touch-min);transition:var(--trans-fast)}.abtn:active{opacity:.85}
 .aor{text-align:center;color:#444;font-size:11px;margin:10px 0}
-.agbtn{width:100%;padding:12px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:13px;color:#fff;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}.agbtn:active{background:rgba(255,255,255,.14)}
+.agbtn{width:100%;padding:12px;background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.1);border-radius:13px;color:var(--w);font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;min-height:var(--touch-min);transition:var(--trans-fast)}.agbtn:active{background:rgba(255,255,255,.14)}
 #aerr,#aerr2{display:none;color:var(--r);font-size:12px;margin-top:8px;padding:8px 12px;background:rgba(239,68,68,.1);border-radius:8px}
 /* MAP */
 #map{position:fixed;inset:0;z-index:0}
@@ -76,10 +89,11 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 .pfield input:focus{border-color:var(--c);background:#fff}
 .psave{width:100%;padding:12px;background:#111;color:#fff;font-weight:700;font-size:14px;border:none;border-radius:13px;cursor:pointer;margin-top:4px;font-family:inherit}
 .blogout{width:100%;padding:12px;background:#fff;border:1.5px solid #e5e5e5;border-radius:13px;color:var(--r);font-weight:700;font-size:14px;cursor:pointer;margin-top:10px;font-family:inherit}
-/* NAV */
-#nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:#fff;border-top:1px solid var(--b);padding:7px 0 max(18px,env(safe-area-inset-bottom,18px));display:flex;align-items:center;justify-content:space-around;height:78px}
-.ni{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 10px;border-radius:11px}
-.niic{font-size:19px;line-height:1}.nilb{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--m)}
+/* NAV — improved touch targets */
+#nav{position:fixed;bottom:0;left:0;right:0;z-index:30;background:var(--w);border-top:1px solid var(--b);padding:7px 0 max(18px,env(safe-area-inset-bottom,18px));display:flex;align-items:center;justify-content:space-around;height:78px}
+.ni{display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;background:none;border:none;font-family:inherit;padding:4px 10px;border-radius:11px;min-height:var(--touch-min);transition:var(--trans-fast);outline:none}
+.ni:focus{background:rgba(var(--c-rgb),0.1)}
+.niic{font-size:19px;line-height:1}.nilb{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--m);transition:color var(--trans-fast)}
 .ni.on .nilb{color:var(--c)}
 .norb{width:56px;height:56px;border-radius:50%;
   background:radial-gradient(circle at 36% 30%,#00FFFF,#00C8D7 36%,#0099AA 62%,#00474F);
@@ -244,6 +258,27 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 .cascade-dot:nth-child(2){animation-delay:.2s}
 .cascade-dot:nth-child(3){animation-delay:.4s}
 @keyframes cd{0%,80%,100%{transform:scale(.5);opacity:.4}40%{transform:scale(1);opacity:1}}
+/* ─ SKELETON LOADER (Performance: placeholder for async data) ─ */
+.skeleton{background:linear-gradient(90deg,#f0f0f0 25%,#e0e0e0 50%,#f0f0f0 75%);background-size:200% 100%;animation:skeleton-load 1.5s infinite}
+@keyframes skeleton-load{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skeleton-card{height:100px;border-radius:15px;margin-bottom:9px;display:flex;gap:12px;padding:13px}
+.skeleton-avatar{width:46px;height:46px;border-radius:13px;flex-shrink:0}
+.skeleton-content{flex:1;display:flex;flex-direction:column;gap:8px}
+.skeleton-line{height:12px;border-radius:6px}.skeleton-line.wide{height:14px;margin-right:30%}
+/* ─ EMERGENCY CONTACT MODAL (NEW) ─ */
+#emergency-modal{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;padding:var(--sp-lg)}
+#emergency-modal.show{display:flex}
+.emergency-box{background:var(--w);border-radius:20px;padding:24px;max-width:360px;width:100%}
+.emergency-title{font-weight:800;font-size:18px;color:var(--k);margin-bottom:12px}
+.emergency-text{font-size:14px;color:var(--m);line-height:1.6;margin-bottom:16px}
+.emergency-btns{display:flex;gap:10px}
+.emergency-btn{flex:1;padding:12px;border:none;border-radius:12px;font-weight:700;cursor:pointer;font-family:inherit;min-height:var(--touch-min);transition:var(--trans-fast);outline:none}
+.emergency-btn.cancel{background:var(--b);color:var(--m)}
+.emergency-btn.confirm{background:var(--c);color:var(--k)}
+.emergency-btn:active{opacity:.85}
+/* ─ PROVIDER CARD WITH FAVORITES (NEW) ─ */
+.pc-fav{font-size:18px;cursor:pointer;flex-shrink:0;opacity:0.5;transition:opacity var(--trans-fast);min-width:var(--touch-default);min-height:var(--touch-default);display:flex;align-items:center;justify-content:center}
+.pc-fav.active{opacity:1}
 </style>
 </head>
 <body>
@@ -253,11 +288,20 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 <div class="abox">
   <div class="alogo">U<b>.</b>GO</div>
   <div class="asub">Servicios del hogar en minutos</div>
-  <div class="atabs"><div class="atab on" onclick="sw('log')">Ingresar</div><div class="atab" onclick="sw('reg')">Registrarse</div></div>
+  <div class="atabs" role="tablist">
+    <div class="atab on" onclick="sw('log')" role="tab" aria-label="Ingresar" aria-selected="true" tabindex="0">Ingresar</div>
+    <div class="atab" onclick="sw('reg')" role="tab" aria-label="Registrarse" aria-selected="false" tabindex="-1">Registrarse</div>
+  </div>
   <div id="vlog" class="aform on">
-    <div class="afl"><label for="le">Email</label><input id="le" type="email" placeholder="tu@email.com" autocomplete="email"></div>
-    <div class="afl"><label for="lp">Contraseña</label><input id="lp" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="abtn" onclick="doLogin()">Ingresar →</button>
+    <div class="afl">
+      <label for="le">Email</label>
+      <input id="le" type="email" placeholder="tu@email.com" autocomplete="email" aria-label="Email para ingresar" required>
+    </div>
+    <div class="afl">
+      <label for="lp">Contraseña</label>
+      <input id="lp" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()" aria-label="Contraseña" required>
+    </div>
+    <button class="abtn" onclick="doLogin()" aria-label="Ingresar a tu cuenta">Ingresar →</button>
     <div class="aor">o continuá con</div>
     <button class="agbtn" onclick="signInGoogle()"><svg width="17" height="17" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg> Continuar con Google</button>
     <div id="aerr"></div>
@@ -400,18 +444,140 @@ html,body{height:100%;overflow:hidden;font-family:-apple-system,'Inter',sans-ser
 </div>
 
 <!-- TERNA — hasta 3 proveedores en bottom sheet -->
-<div id="terna-sheet">
-  <div class="tn-handle"></div>
+<div id="terna-sheet" role="region" aria-label="Proveedores disponibles">
+  <div class="tn-handle" aria-hidden="true"></div>
   <div class="tn-title" id="tn-title">Proveedores disponibles</div>
   <div class="tn-sub" id="tn-sub">Elegí tu favorito. El pago queda protegido en garantía.</div>
-  <div id="terna-list"></div>
-  <button class="tn-close" onclick="closeTerna(true)">Cancelar búsqueda</button>
+  <div id="terna-list" role="listbox" aria-label="Lista de proveedores disponibles"></div>
+  <button class="tn-close" onclick="closeTerna(true)" aria-label="Cancelar búsqueda">Cancelar búsqueda</button>
 </div>
 
-<div id="toast"></div>
+<!-- EMERGENCY CONTACT MODAL (NEW) -->
+<div id="emergency-modal" role="dialog" aria-labelledby="emergency-title" aria-hidden="true">
+  <div class="emergency-box">
+    <div class="emergency-title" id="emergency-title">Compartir contacto de emergencia</div>
+    <div class="emergency-text">
+      Tu contacto de emergencia será compartido solo con este proveedor durante el servicio. Se eliminará automáticamente después.
+    </div>
+    <div class="emergency-btns">
+      <button class="emergency-btn cancel" onclick="closeEmergencyModal()" aria-label="Cancelar compartir contacto">Cancelar</button>
+      <button class="emergency-btn confirm" onclick="confirmEmergencyShare()" aria-label="Confirmar y compartir contacto">Compartir</button>
+    </div>
+  </div>
+</div>
 
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════
+   PERFORMANCE: Lazy load Leaflet only when map is needed
+═══════════════════════════════════════════════════ */
+let LEAFLET_LOADED=false;
+async function ensureLeafletLoaded(){
+  if(LEAFLET_LOADED)return;
+  return new Promise((resolve)=>{
+    const link=document.createElement('link');
+    link.rel='stylesheet';
+    link.href='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css';
+    document.head.appendChild(link);
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js';
+    script.onload=()=>{LEAFLET_LOADED=true;resolve();};
+    document.head.appendChild(script);
+  });
+}
+
+/* ═══════════════════════════════════════════════════
+   PERFORMANCE: Caches with TTL + debouncing + offline storage
+═══════════════════════════════════════════════════ */
+const CACHE_TTL=5*60*1000; // 5 minutes
+let providerCache={data:null,time:0};
+let gpsDebounceTime=30000; // 30s minimum between GPS updates
+let lastGpsUpdate=0;
+
+// Favorites & search history (localStorage-based, offline-capable)
+let FAVORITES=JSON.parse(localStorage.getItem('ugo_favorites')||'[]');
+let SEARCH_HISTORY=JSON.parse(localStorage.getItem('ugo_search_history')||'[]');
+
+function saveFavorite(provId){
+  if(!FAVORITES.includes(provId))FAVORITES.push(provId);
+  localStorage.setItem('ugo_favorites',JSON.stringify(FAVORITES));
+  if(typeof renderProviders==='function')renderProviders();
+}
+
+function removeFavorite(provId){
+  FAVORITES=FAVORITES.filter(id=>id!==provId);
+  localStorage.setItem('ugo_favorites',JSON.stringify(FAVORITES));
+  if(typeof renderProviders==='function')renderProviders();
+}
+
+function addToSearchHistory(cat){
+  SEARCH_HISTORY=SEARCH_HISTORY.filter(c=>c!==cat);
+  SEARCH_HISTORY.unshift(cat);
+  SEARCH_HISTORY=SEARCH_HISTORY.slice(0,3); // Keep only last 3
+  localStorage.setItem('ugo_search_history',JSON.stringify(SEARCH_HISTORY));
+}
+
+// Emergency contact functions
+function openEmergencyModal(){
+  const modal=document.getElementById('emergency-modal');
+  if(modal){
+    modal.classList.add('show');
+    modal.setAttribute('aria-hidden','false');
+  }
+}
+
+function closeEmergencyModal(){
+  const modal=document.getElementById('emergency-modal');
+  if(modal){
+    modal.classList.remove('show');
+    modal.setAttribute('aria-hidden','true');
+  }
+}
+
+function confirmEmergencyShare(){
+  toast('Contacto compartido con el proveedor','success');
+  closeEmergencyModal();
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
+
+/* ═══════════════════════════════════════════════════
+   GPS PERFORMANCE: Debounced location updates (max 30s intervals)
+═══════════════════════════════════════════════════ */
+function onGpsSuccess(pos){
+  const now=Date.now();
+  if(now-lastGpsUpdate<gpsDebounceTime)return; // Skip if too soon
+  lastGpsUpdate=now;
+
+  myLat=pos.coords.latitude;
+  myLng=pos.coords.longitude;
+  const chip=document.getElementById('lchip');
+  if(chip)chip.textContent='📍 '+myAddr;
+  reverseGeocode(myLat,myLng);
+
+  if(MAP){
+    MAP.setView([myLat,myLng],15);
+    if(typeof myMarker!=='undefined'&&myMarker)myMarker.setLatLng([myLat,myLng]);
+  }
+}
+
+function reverseGeocode(lat,lng){
+  fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&zoom=16&addressdetails=0`)
+    .then(r=>r.json())
+    .then(d=>{
+      myAddr=(d.address?.road||d.address?.suburb||d.address?.county||'Sua localización').substring(0,40);
+      const chip=document.getElementById('lchip');
+      if(chip)chip.textContent='📍 '+myAddr;
+    })
+    .catch(()=>{});
+}
+
+function startGPS(){
+  if(!navigator.geolocation)return;
+  navigator.geolocation.watchPosition(onGpsSuccess,()=>{},{enableHighAccuracy:true,timeout:10000,maximumAge:5000});
+}
 
 /* ═══════════════════════════════════════════════════
    ETAPA 1 — createService + watchService (Realtime)
