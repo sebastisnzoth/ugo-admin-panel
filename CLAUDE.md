@@ -104,6 +104,160 @@ npm run preview    # preview del build de producción
 
 No existe `npm test`.
 
+---
+
+## Database Schema: Client-Provider Memory (Hugo Blueprint)
+
+### Purpose
+Enable Hugo to maintain persistent, bidirectional context about all client-provider
+relationships, service history, quality metrics, and communication patterns.
+
+### Core Tables (Additions to existing schema)
+
+```sql
+-- 1. hugo_client_provider_relationships
+-- Tracks all client-provider connections with quality metrics
+CREATE TABLE hugo_client_provider_relationships (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  cliente_id UUID NOT NULL REFERENCES usuarios(id),
+  proveedor_id UUID NOT NULL REFERENCES usuarios(id),
+  total_servicios INT DEFAULT 0,
+  rating_promedio DECIMAL(2,1) DEFAULT 0.0,
+  resenas_count INT DEFAULT 0,
+  ultima_interaccion TIMESTAMP,
+  estado VARCHAR(20) DEFAULT 'activo', -- activo, pausado, finalizado
+  notas_relacion TEXT, -- admin notes about this relationship
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW(),
+  UNIQUE(cliente_id, proveedor_id),
+  INDEX idx_relationships_cliente (cliente_id),
+  INDEX idx_relationships_proveedor (proveedor_id)
+);
+
+-- 2. hugo_service_memory
+-- Complete history of each service for context retrieval
+CREATE TABLE hugo_service_memory (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  servicio_id UUID NOT NULL REFERENCES servicios(id) ON DELETE CASCADE,
+  cliente_id UUID NOT NULL REFERENCES usuarios(id),
+  proveedor_id UUID NOT NULL REFERENCES usuarios(id),
+  relacion_id UUID REFERENCES hugo_client_provider_relationships(id),
+  
+  -- Service details snapshot
+  categoria_nombre VARCHAR(100),
+  descripcion TEXT,
+  monto DECIMAL(10,2),
+  
+  -- Timeline
+  solicitado_at TIMESTAMP,
+  completado_at TIMESTAMP,
+  calidad_rating INT, -- 1-5 stars
+  velocidad_rating INT, -- 1-5 stars
+  comunicacion_rating INT, -- 1-5 stars
+  
+  -- Review & feedback
+  resena_cliente TEXT,
+  resena_proveedor TEXT,
+  
+  -- Issues/disputes
+  tiene_disputa BOOLEAN DEFAULT false,
+  motivo_disputa TEXT,
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  INDEX idx_service_memory_cliente (cliente_id),
+  INDEX idx_service_memory_proveedor (proveedor_id),
+  INDEX idx_service_memory_relation (relacion_id)
+);
+
+-- 3. hugo_interaction_log
+-- Tracks all interactions for context & personalization
+CREATE TABLE hugo_interaction_log (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  usuario_id UUID NOT NULL REFERENCES usuarios(id),
+  tipo VARCHAR(50), -- solicitud, confirmacion, mensaje, cancelacion, resena
+  contexto JSONB, -- flexible data for different interaction types
+  timestamp TIMESTAMP DEFAULT NOW(),
+  INDEX idx_log_usuario (usuario_id, timestamp DESC)
+);
+
+-- 4. hugo_memory_insights
+-- Aggregated insights for Hugo to use in decision-making
+CREATE TABLE hugo_memory_insights (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  
+  -- For client insights
+  cliente_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+  preferred_categories TEXT[], -- array of category IDs client prefers
+  preferred_price_range VARCHAR(20), -- 'economico', 'medio', 'premium'
+  preferred_schedule VARCHAR(50), -- 'urgente', 'flex', 'programado'
+  average_response_to_provider_seconds INT,
+  
+  -- For provider insights
+  proveedor_id UUID REFERENCES usuarios(id) ON DELETE CASCADE,
+  specialization_categories TEXT[], -- array of category IDs provider specializes in
+  average_completion_time_minutes INT,
+  response_reliability DECIMAL(3,1), -- % of accepted jobs
+  customer_satisfaction_score DECIMAL(2,1),
+  
+  -- Cross insights
+  relacion_strength DECIMAL(2,1), -- 0.0-1.0 how strong is this relationship
+  repeat_likelihood DECIMAL(2,1), -- probability client will hire provider again
+  
+  last_updated TIMESTAMP DEFAULT NOW(),
+  UNIQUE(cliente_id),
+  UNIQUE(proveedor_id)
+);
+
+-- 5. hugo_feature_flags
+-- Toggleable features in control panel (Modular Design requirement)
+CREATE TABLE hugo_feature_flags (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  feature_key VARCHAR(100) UNIQUE NOT NULL,
+  descripcion TEXT,
+  enabled BOOLEAN DEFAULT true,
+  grupo VARCHAR(50), -- 'admin', 'client_app', 'provider_app', 'analytics'
+  config JSONB, -- feature-specific configuration
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Schema Diagram
+```
+usuarios
+  ├─→ hugo_client_provider_relationships ←─ usuarios (reverse)
+  ├─→ hugo_service_memory ←─ servicios
+  ├─→ hugo_interaction_log
+  └─→ hugo_memory_insights (aggregated view)
+
+hugo_feature_flags (independent - controls UI/API feature toggles)
+```
+
+### Access Patterns (Hugo Queries)
+1. **"Who am I talking to?"** → `SELECT * FROM usuarios WHERE id = ?`
+2. **"What history do I have with this provider?"**
+   ```sql
+   SELECT * FROM hugo_service_memory 
+   WHERE cliente_id = ? AND proveedor_id = ?
+   ORDER BY completado_at DESC
+   ```
+3. **"What does this client prefer?"** 
+   ```sql
+   SELECT * FROM hugo_memory_insights WHERE cliente_id = ?
+   ```
+4. **"Is this feature enabled?"**
+   ```sql
+   SELECT config FROM hugo_feature_flags WHERE feature_key = ? AND enabled = true
+   ```
+5. **Generate bidirectional report**
+   ```sql
+   SELECT r.*, 
+          (SELECT COUNT(*) FROM hugo_service_memory WHERE relacion_id = r.id) as total_services,
+          (SELECT AVG(calidad_rating) FROM hugo_service_memory WHERE relacion_id = r.id) as avg_quality
+   FROM hugo_client_provider_relationships r
+   WHERE cliente_id = ? OR proveedor_id = ?
+   ```
+
 ## Stack y arquitectura
 
 - **Admin panel**: React 18 + Vite + TypeScript + Tailwind, componente
@@ -122,6 +276,36 @@ No existe `npm test`.
 - **Diseño**: dark quantum — Inter + JetBrains Mono, gradientes. Nunca
   glassmorphism.
 
+## 🤖 HUGO BLUEPRINT: Identity & Behavioral Protocol
+
+Hugo is the **central co-pilot and best friend** to both Clients and Providers.
+He bridges the gap seamlessly across all three roles: Cliente, Proveedor, Admin.
+
+### Hugo's Core Identity
+- **Role**: Senior Product Strategist + AI Co-pilot
+- **Responsibility**: Maintain persistent cross-entity memory and facilitate
+  relationships between clients and providers
+- **Authority Model**: 
+  - ALWAYS respond to direct user commands
+  - NEVER override user decisions under any circumstance
+  - ALWAYS consult user first and obtain explicit approval before architectural choices
+
+### Hugo's Memory System (Cross-Entity Context)
+At any given time, Hugo MUST perfectly know:
+1. **Who you're talking to** — identify user context (Client ID, Provider ID, Admin)
+2. **Service history** — exact services a Provider gave to a Client
+3. **Contractual data** — exact services a Client contracted from a Provider
+4. **Relationship insights** — quality metrics, ratings, communication history
+5. **Bidirectional visibility** — both clients and providers see each other's relevant data
+
+**Implementation**: See "Database Schema for Client-Provider Memory" below.
+
+### Control Panel Architectural Requirements (Hugo-Ready)
+1. **Toggleable Modular Design**: Every feature must be activatable/deactivatable via On/Off flags
+2. **Voice-Ready Management**: API endpoints and state management structured for voice control
+3. **Reporting Engine**: Clean data structures for instant performance/relationship reports
+4. **Real-time Sync**: Hugo memory updates reflect immediately in control panel
+
 ## Estilo de comunicación con Sergio
 
 - Español rioplatense.
@@ -129,3 +313,4 @@ No existe `npm test`.
   salvo cuando el cambio es de arquitectura o potencialmente destructivo.
 - Espera archivos completos, no fragmentos parciales.
 - Monitorea el uso de tokens — respuestas concisas y al punto.
+- **NEW RULE**: Architectural plans require explicit approval before coding.

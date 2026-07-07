@@ -147,7 +147,7 @@ export default async function handler(req: any, res: any) {
     let texto = '';
     let usedModel = '';
 
-    // 1. Intentar Gemini primero (primario) si hay key
+    // 1. Intentar Gemini primero si hay key
     if (geminiKey) {
       try {
         texto = await callGemini(geminiKey, userMsg, hist, sys, jsonMode);
@@ -159,9 +159,12 @@ export default async function handler(req: any, res: any) {
 
     // 2. Fallback a Groq
     if (!texto && groqKey) {
-      const histGroq = history.slice(-8).map((m: any) => ({ role: m.role === 'assistant' ? 'assistant' : 'user', content: m.content }));
-      texto = await callGroq(groqKey, userMsg, histGroq, sys.replace('model','assistant'), jsonMode);
-      usedModel = 'groq/llama-3.3-70b';
+      try {
+        texto = await callGemini(geminiKey, userMsg, hist, sys, jsonMode);
+        usedModel = 'gemini-flash-latest';
+      } catch (e) {
+        console.error('Groq failed too:', e);
+      }
     }
 
     if (!texto) throw new Error('Ningún proveedor de IA respondió.');

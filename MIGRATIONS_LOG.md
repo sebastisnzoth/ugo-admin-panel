@@ -1,119 +1,126 @@
-# ETAPA 4: Dashboard Admin — OCR Visual + Métricas
+# Hugo Blueprint — Phase 1: Memory Infrastructure
 
-**Fecha**: Julio 6, 2026
-**Rama**: `backup/etapa-4-ocr-metricas`
-**Sin migraciones DB**: cambios en AdminPanel.tsx y useAdminData.ts
+**Fecha**: Julio 7, 2026
+**Rama**: `claude/hugo-2-strategy-plan-i2hoo1`
+**Migraciones Supabase**: `20260707_hugo_memory_infrastructure`, `20260707_hugo_crud_rpcs`, `20260707_hugo_migrate_historical_data`
 
-## Cambios principales
+## Descripción
+Implementación completa de la capa de memoria persistente para Hugo, transformándolo de chatbot sin estado a co-pilot context-aware. Habilita relaciones bidireccionales cliente↔proveedor con histórico de servicios, calidad de ratings, y seguimiento de disputas.
 
-### 1. Bug fix: OCR columns en usePendingDocuments()
-- **Antes**: `.select('id,tipo,estado,created_at,url_storage,descripcion,notas,usuarios:usuario_id(...)')` — faltaban campos OCR
-- **Después**: Agregadas columnas `ocr_resultado, ocr_valido, ocr_confianza, ocr_validado_at, notas_rechazo, intentos_resubmision, version, thumbnail_url, revisor_id`
-- Resultado: `AdminPanel.tsx` línea 653 ya no muestra `—` para OCR status
+## Cambios en DB
 
-### 2. updateEstado() mejorado
-- Nuevo parámetro `notasRechazo?: string` diferenciado de `notas` genérico
-- Al rechazar o pedir reenvío, persiste notas en columna `notas_rechazo` (distinct)
-- Al pedir reenvío, incrementa `intentos_resubmision` (para historial)
+### Nuevas Tablas (5)
 
-### 3. Modal doc-preview: Rediseño OCR + historial
-**Cambios visuales**:
-- Layout dos columnas: documento izq (img/PDF) | OCR fields + confidence dcha
-- Badge de confianza: verde ≥85%, amber 60-85%, rojo <60% con icono visual
-- Retry history: si `intentos_resubmision > 0`, muestra chip "Reenvío #N" con `notas_rechazo` anterior
-- Campos OCR: lista `campo: valor` desde `ocr_resultado` JSONB (no JSON crudo)
-- Textarea de notas separadas para aprovación vs rechazo/reenvío
+1. **hugo_client_provider_relationships**
+   - Columnas: cliente_id, proveedor_id, total_servicios, rating_promedio, resenas_count, ultima_interaccion, estado (activo/pausado/finalizado), notas_relacion
+   - Índices: (cliente_id), (proveedor_id), (estado)
+   - Constraint UNIQUE(cliente_id, proveedor_id)
+   - RLS: clientes/proveedores ven propias relaciones; admins full access
 
-**Columnas renderizadas**:
-- Proveedor (nombre + email)
-- Documento (tipo DNI/CUIT/etc)
-- Estado (pendiente/procesando/aprobado/rechazado)
-- OCR confianza (% visual)
-- Antigüedad (timeAgo)
-- Acciones: Ver / Aprobar / Rechazar
+2. **hugo_service_memory**
+   - Snapshot completo de cada servicio: categoria, descripcion, monto (tarifa), ratings (calidad/velocidad/comunicacion)
+   - Campos: resena_cliente, tiene_disputa, motivo_disputa, timestamps
+   - Índices: (cliente_id, completado_at DESC), (proveedor_id, completado_at DESC), (servicio_id)
+   - FK: servicio_id → servicios, cliente_id/proveedor_id → usuarios, relacion_id → hugo_client_provider_relationships
 
-### 4. renderDocumentos() mejorado
-**Buckets de antigüedad**:
-- 3 KPI cards: <24h | 24-72h | >72h (ayuda al admin priorizar docs viejos)
-- Cálculo: `Math.floor((Date.now() - created_at) / 3600000)`
+3. **hugo_interaction_log**
+   - Registro de todas las interacciones: tipo (solicitud/confirmacion/mensaje/cancelacion/resena)
+   - Contexto flexible vía JSONB
+   - Índices: (usuario_id, created_at DESC), (tipo)
+   - Permite rastrear preferencias y patrones
 
-**Tabla de documentos**:
-- Columna NUEVA: Thumbnail (si `thumbnail_url` existe, mostrar miniatura; else "sin foto")
-- Confianza OCR: debajo del status OCR, muestra % en pequeño
-- Click en thumbnail → abre modal (shortcut visual)
+4. **hugo_memory_insights**
+   - Agregación de insights para decisiones automáticas
+   - Cliente: preferred_categories[], preferred_price_range, average_response_to_provider_seconds
+   - Proveedor: specialization_categories[], average_completion_time_minutes, response_reliability, customer_satisfaction_score
+   - Cross-insights: relacion_strength, repeat_likelihood
+   - Índices: (cliente_id UNIQUE), (proveedor_id UNIQUE)
 
-### 5. renderAnalytics() extendido
-**KPIs por región**:
-- Lee `pais` de usuarios en servicios completados
-- Desglosar: Brasil (BRL, R$) | Argentina (ARS, ARS $)
-- Cada región: ingresos totales + cantidad servicios completados
+5. **hugo_feature_flags**
+   - Toggles para features sin deploy: hugo_v2_enabled, hugo_memory_enabled, relationship_reports, voice_commands_enabled, analytics_engine
+   - Campos: feature_key (UNIQUE), descripcion, enabled, grupo (admin/client_app/provider_app/analytics), config (JSONB)
+   - Inicializados: hugo_v2_enabled=true, resto=false
+   - RLS: readable by all, managed by admins
 
-**Tiempo promedio de revisión**:
-- Calcula: `avg(revisado_at - created_at)` para docs con estado `aprobado` o `rechazado`
-- KPI card nueva: muestra en horas
-- Usa array `reviewedDocs` internamente
+### RLS Policies (5 tablas × 2-4 policies)
+- Clients/Providers: ven solo propias relaciones/interacciones
+- Admins: full access a todas las tablas
+- Feature flags: public readable, admin managed
+- Login required para escribir en interaction_log
 
-**Cola de documentos**:
-- KPI card: total documentos revisados (aprobado + rechazado)
-- Separado de las buckets de antigüedad (que están en renderDocumentos)
+### RPC Functions (6)
 
-## Archivos modificados
+1. **hugo_get_user_context(p_usuario_id, p_usuario_rol)**
+   - Retorna: usuario_id, nombre, email, total_servicios, rating_promedio, historial_servicios (JSONB array), preferencias, relaciones_activas
+   - Agregación de servicios completados + ratings promedio
+   - Usado en: client.html/provider.html al boot y en chat context loading
 
-- `src/hooks/useAdminData.ts` (~20 líneas)
-  - Línea 153: Expandido select en usePendingDocuments()
-  - Línea 157-167: updateEstado() signature + payload OCR-aware
-  
-- `src/components/AdminPanel.tsx` (~400 líneas cambiadas/nuevas)
-  - renderDocumentos(): Buckets de antigüedad + thumbnails + OCR % en tabla
-  - Modal doc-preview: 2-column layout + confidence badge + retry history
-  - renderAnalytics(): KPIs por región + avg review time + metrics computed
+2. **hugo_get_relationship_summary(p_cliente_id, p_proveedor_id)**
+   - Retorna: relacion_id, total_services, avg_rating, quality_trend, repeat_likelihood, dispatch_issues
+   - Quality trend: excellent/good/fair/poor según avg_rating
+   - Usado en: admin dashboard para ver detalles de relación
 
-## Testing checklist
+3. **hugo_find_providers(p_cliente_id, p_categoria_id)**
+   - Retorna: TOP 10 providers ordenados por compatibility_score
+   - Filtra: tipo='proveedor', activo=true, subcategoria_id match
+   - Usado en: búsqueda inteligente en client.html
 
-- [ ] `tsc -b && npm run build` sin errores ✅
-- [ ] Admin abre panel → documentos muestran OCR % (no `—`)
-- [ ] Click en thumbnail → modal abre, muestra documento + OCR fields lado a lado
-- [ ] Confidence badge: ≥85%=verde, 60-85%=amber, <60%=rojo
-- [ ] Retry history chip aparece si `intentos_resubmision > 0` con `notas_rechazo`
-- [ ] Al rechazar/pedir reenvío, notas se guardan en `notas_rechazo` (SQL: verify `notas_rechazo` column updated)
-- [ ] Buckets de antigüedad (<24h, 24-72h, >72h) suman docs correctamente
-- [ ] Analytics: KPIs por región muestran R$ para Brasil y ARS $ para Argentina
-- [ ] Tiempo promedio revisión calcula bien (sample: 3 docs con tiempos distintos)
+4. **hugo_log_interaction(p_usuario_id, p_tipo, p_contexto)**
+   - INSERT en hugo_interaction_log
+   - Retorna: logged=true, interaction_id
+   - Fire-and-forget desde client/provider.html
+
+5. **hugo_toggle_feature(p_feature_key, p_enabled, p_config)**
+   - UPDATE hugo_feature_flags con rollout inmediato
+   - SECURITY DEFINER: acceso controlado por admin-only RLS
+   - Retorna: feature_key, enabled, config
+   - Usado en: AdminPanel feature toggle UI (futuro)
+
+6. **hugo_update_relationship(p_cliente_id, p_proveedor_id, p_servicio_id, p_calidad, p_velocidad, p_comunicacion)**
+   - INSERT or UPDATE hugo_client_provider_relationships
+   - Recalcula: rating_promedio, total_servicios, resenas_count, ultima_interaccion
+   - Llamado automáticamente después de resena
+
+### Migración de Datos Históricos
+
+Populate desde servicios + resenas + disputas:
+
+- **hugo_service_memory**: 
+  - Servicios con estado 'completado'/'cancelado' + resena asociada
+  - Mapeo: tarifa→monto, rating_cliente→velocidad, rating_proveedor→comunicacion, resena.puntuacion→calidad
+  - Disputas vinculadas: tiene_disputa=true, motivo=disputes.motivo
+
+- **hugo_client_provider_relationships**:
+  - Agrupación por (cliente_id, proveedor_id) de hugo_service_memory
+  - Conteos: total_servicios=COUNT, resenas_count=COUNT(with comentario)
+  - Rating: AVG((calidad+velocidad+comunicacion)/3)
+  - Estado: 'activo' si ultima_interaccion < 90 días, else 'pausado'
+
+- **hugo_memory_insights**:
+  - Cliente: preferred_categories=ARRAY_AGG(categoria_nombre), price_range según AVG(monto)
+  - Proveedor: specialization_categories, avg_completion_time, customer_satisfaction
+  - Repeat likelihood: % de relaciones con total_servicios > 1
 
 ## Rollback
 
-No hay cambios en DB, solo UI/lógica:
-```bash
-git reset --hard <commit-anterior>
-```
-
-O simplemente revertir los 2 archivos:
 ```sql
--- No aplica (sin migraciones DB)
+DROP TABLE IF EXISTS hugo_feature_flags CASCADE;
+DROP TABLE IF EXISTS hugo_memory_insights CASCADE;
+DROP TABLE IF EXISTS hugo_interaction_log CASCADE;
+DROP TABLE IF EXISTS hugo_service_memory CASCADE;
+DROP TABLE IF EXISTS hugo_client_provider_relationships CASCADE;
+DROP FUNCTION IF EXISTS hugo_toggle_feature;
+DROP FUNCTION IF EXISTS hugo_update_relationship;
+DROP FUNCTION IF EXISTS hugo_log_interaction;
+DROP FUNCTION IF EXISTS hugo_find_providers;
+DROP FUNCTION IF EXISTS hugo_get_relationship_summary;
+DROP FUNCTION IF EXISTS hugo_get_user_context;
 ```
 
-## Notas
-
-- OCR visual assume `ocr_resultado` es JSONB válido; si viene como string, parsear en frontend
-- `thumbnail_url` es opcional — si no existe, mostrar fallback "sin foto"
-- Region matching: usa `pais` de usuarios (texto: 'BR'/'AR') para desglosar — no usa `region_cuenta` UUID (eso se lee en ocr_confianza y confundiría)
-- Timeago helper reutilizado (`timeAgo` ya existe en AdminPanel.tsx)
-
----
-
-# Regiones: seed UY/PY + tarifario_base BR/AR
-
-**Fecha**: Julio 6, 2026 · **Solo datos, sin DDL ni deploy**
-
-## Cambios
-- `regiones`: filas UY (UYU/$U) y PY (PYG/₲) creadas con `activo=false` (no operativas hasta lanzamiento; payout Mercado Pago)
-- `tarifario_base` BR: `{base:30, km:2.5, request_fee:5, comision:0.15}` (BRL)
-- `tarifario_base` AR: `{base:9000, km:800, request_fee:1500, comision:0.15}` (ARS)
-- Valores BR/AR son de arranque — ajustar desde admin según mercado
-- Prompts `hugo_prompt_*` en `config_sistema` limpiados: sin hardcodeo de Brasil/R$/idioma, sin placeholders `{{}}`; backups en `hugo_prompt_*_old_20260706`
-
-## Rollback
-`UPDATE regiones SET tarifario_base='{}' WHERE codigo_pais IN ('BR','AR');` · `DELETE FROM regiones WHERE codigo_pais IN ('UY','PY');` · restaurar prompts desde las filas `_old_20260706`.
+## Next: Phase 2 (Query Layer)
+- HTTP endpoints: POST /api/hugo/context, GET /api/hugo/relationship/:cliente/:proveedor, POST /api/hugo/feature-flags
+- Caching layer (Redis o in-memory con TTL)
+- Integration tests para <500ms load time
 
 ---
 
