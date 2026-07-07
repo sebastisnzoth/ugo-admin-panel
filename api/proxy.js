@@ -5,7 +5,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+const SB_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
 const sb = createClient(SB_URL, SB_KEY);
 
 // Env var en Vercel — nunca hardcodear el token en el repo.
@@ -55,36 +55,7 @@ export default async function handler(req, res) {
     const groqKey  = cfg['api_groq_key'];
     const geminiKey = cfg['api_gemini_key'];
 
-    // ── 1. Intentar Groq (llama-3.3-70b) ──────────────────────
-    if (groqKey) {
-      try {
-        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            model: 'llama-3.3-70b-versatile',
-            messages: [
-              { role: 'system', content: systemPrompt },
-              ...messages,
-            ],
-            max_tokens,
-            temperature: 0.7,
-            response_format: mode !== 'admin' ? { type: 'json_object' } : undefined,
-          }),
-          signal: AbortSignal.timeout(15000),
-        });
-
-        if (r.ok) {
-          const d = await r.json();
-          const text = d.choices?.[0]?.message?.content || '';
-          return res.json({ content: [{ type: 'text', text }], model: 'groq/llama-3.3-70b', mode });
-        }
-      } catch(e) {
-        console.warn('[Hugo] Groq falló:', e.message);
-      }
-    }
-
-    // ── 2. Fallback Gemini ─────────────────────────────────────
+    // ── 1. Intentar Gemini (primario) ──────────────────────────
     if (geminiKey) {
       try {
         const geminiMessages = messages.map(m => ({
@@ -113,6 +84,35 @@ export default async function handler(req, res) {
         }
       } catch(e) {
         console.warn('[Hugo] Gemini falló:', e.message);
+      }
+    }
+
+    // ── 2. Fallback Groq (llama-3.3-70b) ──────────────────────
+    if (groqKey) {
+      try {
+        const r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            model: 'llama-3.3-70b-versatile',
+            messages: [
+              { role: 'system', content: systemPrompt },
+              ...messages,
+            ],
+            max_tokens,
+            temperature: 0.7,
+            response_format: mode !== 'admin' ? { type: 'json_object' } : undefined,
+          }),
+          signal: AbortSignal.timeout(15000),
+        });
+
+        if (r.ok) {
+          const d = await r.json();
+          const text = d.choices?.[0]?.message?.content || '';
+          return res.json({ content: [{ type: 'text', text }], model: 'groq/llama-3.3-70b', mode });
+        }
+      } catch(e) {
+        console.warn('[Hugo] Groq falló:', e.message);
       }
     }
 

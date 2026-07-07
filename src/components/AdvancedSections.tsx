@@ -511,7 +511,7 @@ function TabReferidos() {
 }
 
 const SBv_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SBv_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+const SBv_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
 
 export function SecValidacionPaises() {
   const [paises, setPaises] = React.useState<any[]>([]);
@@ -623,7 +623,7 @@ export function SecAvanzado() {
 import * as XLSX from 'xlsx';
 
 const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SB_IMP_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5YWpjcXJnZXRsb2F2cmd5cWFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0NzA5NTMsImV4cCI6MjA5NzA0Njk1M30.vkeb10BBuu06mOrMdOw1K3SBhTbl02KbOUp6lSOhRDs';
+const SB_IMP_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
 
 // Categorías válidas
 const CATS_VALID = ['electricista','plomero','limpeza','pintura','carpintaria','jardinagem','climatizacao','ti_redes','reformas','chaveiro'];

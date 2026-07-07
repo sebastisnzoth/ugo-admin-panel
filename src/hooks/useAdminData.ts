@@ -150,17 +150,22 @@ export function usePendingDocuments() {
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
     const { data } = await (supabase as any).from('documentos')
-      .select('id,tipo,estado,created_at,url_storage,descripcion,notas,usuarios:usuario_id(nombre,apellido,email)')
+      .select('id,tipo,estado,created_at,url_storage,descripcion,notas,usuarios:usuario_id(nombre,apellido,email),ocr_resultado,ocr_valido,ocr_confianza,ocr_validado_at,notas_rechazo,intentos_resubmision,version,thumbnail_url,revisor_id')
       .in('estado', ['pendiente','procesando']).order('created_at', { ascending: true });
     if (data) setDocs(data); setLoading(false);
   }, []);
-  const updateEstado = useCallback(async (id: string, estado: string, notas?: string) => {
+  const updateEstado = useCallback(async (id: string, estado: string, notas?: string, notasRechazo?: string) => {
     const sb = supabase as any;
-    const { error } = await sb.from('documentos')
-      .update({ estado, notas, revisado_at: new Date().toISOString() }).eq('id', id);
+    const payload: any = { estado, revisado_at: new Date().toISOString() };
+    if (notas) payload.notas = notas;
+    if (notasRechazo && (estado === 'rechazado' || estado === 'reenvio_solicitado')) {
+      payload.notas_rechazo = notasRechazo;
+      if (estado === 'reenvio_solicitado') payload.intentos_resubmision = (docs.find(d => d.id === id)?.intentos_resubmision || 0) + 1;
+    }
+    const { error } = await sb.from('documentos').update(payload).eq('id', id);
     if (error) { console.error('updateEstado:', error.message); return; }
     await fetch();
-  }, [fetch]);
+  }, [fetch, docs]);
   const getSignedUrl = useCallback(async (path: string) => {
     if (!path) return null;
     const { data } = await (supabase as any).storage.from('documentos').createSignedUrl(path, 300);
