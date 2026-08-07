@@ -69,13 +69,13 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
     setTranscript('')
 
     try {
-      const tokenResponse = await fetch('/api/hugo/realtime-token', {
+      const tokenResponse = await fetch('/api/hugo/chat?mode=realtime', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ role, context }),
+        body: JSON.stringify({ mode: 'realtime', role, context }),
       })
       const tokenPayload = await tokenResponse.json().catch(() => ({}))
       if (!tokenResponse.ok || !tokenPayload?.value) {
