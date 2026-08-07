@@ -119,27 +119,58 @@ export default async function handler(req: any, res: any) {
   }
 
   const openaiKey = process.env.OPENAI_API_KEY?.trim() || '';
-  let openaiOk = false;
-  let openaiStatus = 0;
-  let openaiError = '';
+  const textModel = process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini';
+  let realtimeOk = false;
+  let realtimeStatus = 0;
+  let realtimeError = '';
+  let textOk = false;
+  let textStatus = 0;
+  let textError = '';
+
   try {
     if (openaiKey) {
       const r = await fetch('https://api.openai.com/v1/models/gpt-realtime-2.1', {
         headers: { Authorization: `Bearer ${openaiKey}` },
       });
-      openaiStatus = r.status;
+      realtimeStatus = r.status;
       const d: any = await r.json().catch(() => ({}));
-      openaiOk = r.ok;
-      openaiError = d?.error?.message || '';
+      realtimeOk = r.ok;
+      realtimeError = d?.error?.message || '';
     }
   } catch (e: any) {
-    openaiError = e?.message || String(e);
+    realtimeError = e?.message || String(e);
+  }
+
+  try {
+    if (openaiKey) {
+      const r = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${openaiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: textModel,
+          messages: [{ role: 'user', content: 'Respondé únicamente OK.' }],
+        }),
+      });
+      textStatus = r.status;
+      const d: any = await r.json().catch(() => ({}));
+      textOk = r.ok && !!d?.choices?.[0]?.message?.content;
+      textError = d?.error?.message || '';
+    }
+  } catch (e: any) {
+    textError = e?.message || String(e);
   }
 
   return res.json({
     openai_key_configured: !!openaiKey,
-    openai_model_access: openaiOk,
-    openai_status: openaiStatus,
-    openai_error: openaiError,
+    realtime_model_access: realtimeOk,
+    realtime_status: realtimeStatus,
+    realtime_error: realtimeError,
+    text_model: textModel,
+    text_model_access: textOk,
+    text_status: textStatus,
+    text_error: textError,
   });
 }
