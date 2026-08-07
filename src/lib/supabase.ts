@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from './database.types'
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL
-  || 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-  || import.meta.env.VITE_SUPABASE_ANON_KEY
-  || 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
+// Proyecto Supabase oficial de U.G.O. Mantenerlo explícito evita que variables
+// VITE legacy guardadas en Vercel reemplacen el backend durante el build.
+const SUPABASE_URL = 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
+const SUPABASE_KEY = 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_KEY, {
   auth: {
