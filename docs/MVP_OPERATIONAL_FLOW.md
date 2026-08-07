@@ -22,7 +22,7 @@ Cliente y Proveedor utilizan claves de almacenamiento de sesión distintas, por 
 
 ## Hugo Voice
 
-La voz conversacional usa OpenAI Realtime por WebRTC. `OPENAI_API_KEY` se configura únicamente en Vercel para Preview y Production; nunca se expone al frontend. El endpoint existente `/api/hugo/chat` emite el secreto efímero de Realtime después de validar la sesión del usuario.
+La voz conversacional usa OpenAI Realtime por WebRTC. `OPENAI_API_KEY` se configura únicamente en Vercel para Preview y Production; nunca se expone al frontend. El gateway de voz emite un secreto efímero de Realtime después de validar la sesión y el rol del usuario en U.G.O.
 
 ## Alcance
 
