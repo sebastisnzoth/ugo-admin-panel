@@ -16,7 +16,8 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
 
   const client = createClient(SUPABASE_URL, SUPABASE_KEY, {
     auth: {
-      storageKey: `ugo-${role}-auth`,
+      // v2 evita reutilizar JWT/sesiones persistidas del proyecto Supabase legacy.
+      storageKey: `ugo-v2-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
       detectSessionInUrl: false,
