@@ -16,9 +16,7 @@ const voiceSb = createClient(
 
 const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-// config_sistema ya no es legible por REST (las API keys estaban expuestas);
-// el backend lee las claves secretas vía RPC config_backend con este token.
-// Se configura como env var en Vercel — nunca hardcodearlo en el repo.
+// Configuración legacy. OpenAI se lee únicamente desde variables de entorno de Vercel.
 const BACKEND_TOKEN = process.env.UGO_BACKEND_TOKEN || '';
 
 function getBearer(req: any) {
@@ -54,7 +52,20 @@ async function handleRealtime(req: any, res: any) {
 
   const requestedRole: 'client' | 'provider' = req.body?.role === 'provider' ? 'provider' : 'client';
   const expectedDbRole = requestedRole === 'provider' ? 'proveedor' : 'cliente';
-  const { data: profile } = await voiceSb
+
+  // Propaga el JWT del usuario para que RLS pueda evaluar auth.uid().
+  const userSb = createClient(
+    process.env.VITE_SUPABASE_URL || 'https://trfsjuseqjxlhrxuvdsm.supabase.co',
+    process.env.VITE_SUPABASE_PUBLISHABLE_KEY
+      || process.env.VITE_SUPABASE_ANON_KEY
+      || 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8',
+    {
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+      auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+    }
+  );
+
+  const { data: profile } = await userSb
     .from('usuarios')
     .select('tipo,nombre')
     .eq('id', data.user.id)
@@ -73,7 +84,6 @@ async function handleRealtime(req: any, res: any) {
     headers: {
       Authorization: `Bearer ${openaiKey}`,
       'Content-Type': 'application/json',
-      // El UUID interno de Supabase es pseudónimo y no contiene email/nombre.
       'OpenAI-Safety-Identifier': `ugo-${data.user.id}`,
     },
     body: JSON.stringify({
@@ -111,7 +121,6 @@ async function handleRealtime(req: any, res: any) {
   });
 }
 
-// ── Extrae el primer objeto JSON balanceado de un texto (tolera preámbulo y fences) ──
 function extractJson(raw: string): any | null {
   if (!raw) return null;
   const t = raw.replace(/```json/gi, '').replace(/```/g, '');
@@ -135,7 +144,41 @@ function extractJson(raw: string): any | null {
   return null;
 }
 
-// Intenta Gemini, con retry
+async function callOpenAI(
+  key: string,
+  prompt: string,
+  hist: any[],
+  sys: string,
+  jsonMode: boolean
+): Promise<{ text: string; model: string }> {
+  const model = process.env.OPENAI_TEXT_MODEL || 'gpt-5.4-mini';
+  const messages = [
+    { role: 'system', content: sys },
+    ...hist.slice(-8).map((m: any) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: String(m.content || ''),
+    })),
+    { role: 'user', content: prompt },
+  ];
+
+  const body: any = { model, messages };
+  if (jsonMode) body.response_format = { type: 'json_object' };
+
+  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const d: any = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d?.error?.message || `OpenAI respondió ${r.status}`);
+  const text = d?.choices?.[0]?.message?.content || '';
+  if (!text) throw new Error('OpenAI no devolvió contenido.');
+  return { text, model: d?.model || model };
+}
+
 async function callGemini(key: string, prompt: string, hist: any[], sys: string, jsonMode: boolean): Promise<string> {
   const genCfg: any = { maxOutputTokens: 400, temperature: 0.7 };
   if (jsonMode) genCfg.responseMimeType = 'application/json';
@@ -149,7 +192,7 @@ async function callGemini(key: string, prompt: string, hist: any[], sys: string,
       'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent',
       { method: 'POST', headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body }
     );
-    const d = await r.json();
+    const d: any = await r.json();
     const text = d.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     if (text) return text;
     const err = d.error?.message || '';
@@ -162,7 +205,6 @@ async function callGemini(key: string, prompt: string, hist: any[], sys: string,
   throw new Error('Gemini con alta demanda. Intentá en unos segundos.');
 }
 
-// Fallback: Groq (si hay key configurada)
 async function callGroq(key: string, prompt: string, hist: any[], sys: string, jsonMode: boolean): Promise<string> {
   const messages = [
     { role: 'system', content: sys },
@@ -176,7 +218,8 @@ async function callGroq(key: string, prompt: string, hist: any[], sys: string, j
     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
     body: JSON.stringify(body)
   });
-  const d = await r.json();
+  const d: any = await r.json();
+  if (!r.ok) throw new Error(d?.error?.message || `Groq respondió ${r.status}`);
   return d.choices?.[0]?.message?.content || '';
 }
 
@@ -186,6 +229,7 @@ export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).end();
+
   try {
     if (req.query?.mode === 'realtime' || req.body?.mode === 'realtime') {
       return await handleRealtime(req, res);
@@ -199,7 +243,6 @@ export default async function handler(req: any, res: any) {
     const cfg: Record<string, string> = {};
     rows?.forEach((r: any) => { cfg[r.clave] = r.valor; });
 
-    // ── Hugo 2.0: contexto regional + prompts dinámicos (hugo_prompts_v2) ──
     const v2 = cfg['hugo_v2_enabled'] === 'true';
     const regionOk = v2 && /^[A-Z]{2}$/.test(region) && (role === 'cliente' || role === 'proveedor');
     let regionalSys = '';
@@ -222,28 +265,34 @@ export default async function handler(req: any, res: any) {
         + (plantilla?.prompt_text ? `\nESTILO de referencia para la situación "${context_type}": "${plantilla.prompt_text}"` : '');
     }
 
-    // Saludo inicial: si hay plantilla regional sin placeholders, se responde directo (0 tokens de IA)
     if (message === '__INICIO__' && plantilla?.prompt_text && !plantilla.prompt_text.includes('{')) {
       return res.json({ hugo_mensaje: plantilla.prompt_text, accion: null, ui_action: null, datos: null, model: 'template/hugo_prompts_v2' });
     }
 
+    const openaiKey = process.env.OPENAI_API_KEY?.trim();
     const geminiKey = cfg['api_gemini_key']?.trim();
-    const groqKey   = cfg['api_groq_key']?.trim();
+    const groqKey = cfg['api_groq_key']?.trim();
 
-    if (!geminiKey && !groqKey) {
-      return res.status(500).json({ hugo_mensaje: 'Sin API Key de IA configurada.' });
+    if (!openaiKey && !geminiKey && !groqKey) {
+      return res.status(503).json({ hugo_mensaje: 'OPENAI_API_KEY no está configurada en el servidor.' });
     }
 
-    // cliente/proveedor responden JSON estructurado; admin usa protocolo [ACCION] en texto plano
     const jsonMode = role === 'cliente' || role === 'proveedor';
-    let sys = (cfg[`hugo_prompt_${role}`] || 'Eres Hugo de U.GO. Responde en español, máximo 3 frases.')
+    let sys = (cfg[`hugo_prompt_${role}`] || [
+      'Sos Hugo, el núcleo de inteligencia de U.G.O.',
+      'Respondé en español natural, directo y útil, normalmente en una a tres frases.',
+      'Usá solamente los datos del contexto operativo para estados, métricas, precios, usuarios, servicios y pagos.',
+      'No afirmes que una operación fue ejecutada si el backend no confirmó esa acción.',
+    ].join(' '))
       + regionalSys
-      + (context ? `\nCONTEXTO: ${context}` : '');
+      + (context ? `\nCONTEXTO OPERATIVO ACTUAL: ${context}` : '');
+
     if (jsonMode) {
       sys += '\nREGLA ABSOLUTA: Responde ÚNICAMENTE con el objeto JSON. Sin texto antes ni después, sin markdown, sin backticks.';
     }
+
     const userMsg = message === '__INICIO__' ? `Saluda brevemente al usuario: ${context}` : message;
-    const hist = history.slice(-8).map((m: any) => ({
+    const geminiHist = history.slice(-8).map((m: any) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }]
     }));
@@ -251,17 +300,26 @@ export default async function handler(req: any, res: any) {
     let texto = '';
     let usedModel = '';
 
-    // 1. Intentar Gemini primero si hay key
-    if (geminiKey) {
+    // OpenAI es el cerebro principal de Hugo.
+    if (openaiKey) {
       try {
-        texto = await callGemini(geminiKey, userMsg, hist, sys, jsonMode);
+        const result = await callOpenAI(openaiKey, userMsg, history, sys, jsonMode);
+        texto = result.text;
+        usedModel = result.model;
+      } catch (e) {
+        console.error('OpenAI failed, trying legacy fallbacks:', e);
+      }
+    }
+
+    if (!texto && geminiKey) {
+      try {
+        texto = await callGemini(geminiKey, userMsg, geminiHist, sys, jsonMode);
         usedModel = 'gemini-flash-latest';
       } catch (e) {
         console.error('Gemini failed, trying Groq:', e);
       }
     }
 
-    // 2. Fallback a Groq
     if (!texto && groqKey) {
       try {
         texto = await callGroq(groqKey, userMsg, history.slice(-8), sys, jsonMode);
@@ -273,21 +331,19 @@ export default async function handler(req: any, res: any) {
 
     if (!texto) throw new Error('Ningún proveedor de IA respondió.');
 
-    // ── Normalizar salida: si el modelo emitió JSON (con o sin preámbulo), extraerlo ──
     const parsed = extractJson(texto);
     const matchAccion = texto.match(/\[ACCION:\s*([^\]]+)\]/i);
 
     if (parsed && typeof parsed.hugo_mensaje === 'string' && parsed.hugo_mensaje.trim()) {
       return res.json({
         hugo_mensaje: parsed.hugo_mensaje.trim(),
-        accion:       parsed.accion ?? matchAccion?.[1]?.trim() ?? null,
-        ui_action:    parsed.ui_action ?? null,
-        datos:        parsed.datos ?? null,
-        model:        usedModel
+        accion: parsed.accion ?? matchAccion?.[1]?.trim() ?? null,
+        ui_action: parsed.ui_action ?? null,
+        datos: parsed.datos ?? null,
+        model: usedModel
       });
     }
 
-    // Texto plano (modo admin o modelo que no siguió el formato): limpiar JSON residual y [ACCION]
     let plano = texto
       .replace(/```json[\s\S]*?```/gi, '')
       .replace(/\{[\s\S]*"hugo_mensaje"[\s\S]*\}/g, '')
@@ -303,6 +359,7 @@ export default async function handler(req: any, res: any) {
       model: usedModel
     });
   } catch (err: any) {
+    console.error('Hugo chat failed:', err);
     return res.status(500).json({ hugo_mensaje: `Error: ${err.message}` });
   }
 }
