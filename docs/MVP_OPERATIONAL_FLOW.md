@@ -20,6 +20,10 @@ Cliente y Proveedor utilizan claves de almacenamiento de sesión distintas, por 
 5. El cliente aprueba el trabajo. El pago de demostración cambia de `retenido` a `liberado`.
 6. El cliente deja una reseña y el Karma del proveedor se recalcula automáticamente.
 
+## Hugo Voice
+
+La voz conversacional usa OpenAI Realtime por WebRTC. `OPENAI_API_KEY` se configura únicamente en Vercel para Preview y Production; nunca se expone al frontend. El endpoint existente `/api/hugo/chat` emite el secreto efímero de Realtime después de validar la sesión del usuario.
+
 ## Alcance
 
 El flujo operacional y la bóveda de demostración usan datos reales. La integración con Mercado Pago, evidencias en Storage y los módulos avanzados del panel legado quedan fuera de esta rama.
