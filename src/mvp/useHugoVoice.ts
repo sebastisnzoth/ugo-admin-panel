@@ -87,7 +87,6 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
 
       const audio = new Audio()
       audio.autoplay = true
-      audio.playsInline = true
       audioRef.current = audio
       pc.ontrack = event => {
         audio.srcObject = event.streams[0]
