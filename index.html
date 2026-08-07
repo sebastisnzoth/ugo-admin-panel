@@ -10,60 +10,40 @@
       body { background: #070a0d; overflow: hidden; }
     </style>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
-</head>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Hugo Free Mode: AI sin API key del desarrollador. Puter usa una franquicia por usuario. -->
+    <script src="https://js.puter.com/v2/"></script>
+  </head>
   <body>
     <div id="root"></div>
-      <script>
-    // ── U.GO OAuth Intercept v2 ─────────────────────────────────────────
-    // Supabase redirige post-Google siempre a la raíz (/), porque
-    // client.html y provider.html no están en su whitelist de redirects.
-    // Este script intercepta ANTES que React monte, detecta el callback
-    // OAuth y reenvía al destino correcto PRESERVANDO los params de URL
-    // para que Supabase pueda intercambiar el code (PKCE) o el token
-    // (implicit) en la página correcta.
-    //
-    // Flujos cubiertos:
-    //   PKCE     → /?code=XXX&...          → /client.html?code=XXX&...
-    //   Implicit → /#access_token=XXX&...  → /client.html#access_token=XXX&...
-    //   Error    → /?error=XXX             → /client.html?error=XXX (para mostrar error)
-    //   Sin dest → no redirige (acceso directo al admin)
-    //   dest sin params OAuth → no redirige (evita loop)
-    // ───────────────────────────────────────────────────────────────────
-    (function(){
-      try {
-        var dest = localStorage.getItem('ugo_oauth_dest');
-        if (!dest) return; // acceso directo al admin, no hacer nada
+    <script>
+      // ── U.GO OAuth Intercept v2 ─────────────────────────────────────────
+      // Supabase redirige post-Google siempre a la raíz (/), porque
+      // client.html y provider.html no están en su whitelist de redirects.
+      // Este script intercepta ANTES que React monte, detecta el callback
+      // OAuth y reenvía al destino correcto PRESERVANDO los params de URL.
+      (function(){
+        try {
+          var dest = localStorage.getItem('ugo_oauth_dest');
+          if (!dest) return;
 
-        var qs = location.search;   // ?code=... o ?error=...
-        var hash = location.hash;   // #access_token=... (implicit flow)
+          var qs = location.search;
+          var hash = location.hash;
+          var isOAuthCallback = (
+            qs.includes('code=') ||
+            qs.includes('error=') ||
+            hash.includes('access_token')
+          );
 
-        var isOAuthCallback = (
-          qs.includes('code=') ||       // PKCE flow
-          qs.includes('error=') ||      // OAuth rechazado
-          hash.includes('access_token') // Implicit flow
-        );
-
-        if (!isOAuthCallback) return;   // dest guardado pero no es un OAuth callback
-
-        localStorage.removeItem('ugo_oauth_dest');
-        // Frenar la carga del resto del documento (incl. el module script
-        // de React) para que no llegue a ejecutarse: si llegara a correr,
-        // su propio cliente Supabase podría procesar el hash OAuth antes
-        // de que esta navegación termine, generando sesión + logout
-        // automático en el panel admin (carrera ya resuelta también en
-        // src/lib/supabase.ts con detectSessionInUrl:false, esto es
-        // defensa en profundidad).
-        try { window.stop(); } catch(e) {}
-        // Preservar TODOS los parámetros para que Supabase pueda
-        // intercambiar el code en la página destino (mismo origin = misma localStorage)
-        window.location.replace(dest + qs + hash);
-      } catch(e) {
-        // Si localStorage falla (modo privado extremo), limpiar y seguir
-        localStorage.removeItem('ugo_oauth_dest');
-      }
-    })();
-  </script>
+          if (!isOAuthCallback) return;
+          localStorage.removeItem('ugo_oauth_dest');
+          try { window.stop(); } catch(e) {}
+          window.location.replace(dest + qs + hash);
+        } catch(e) {
+          try { localStorage.removeItem('ugo_oauth_dest'); } catch(_) {}
+        }
+      })();
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
