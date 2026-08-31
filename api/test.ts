@@ -1,7 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.VITE_SUPABASE_URL || 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
-const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
+// Hugo debe autenticar siempre contra el proyecto UGO activo.
+// Las VITE_* legacy de Vercel todavía apuntan a un proyecto viejo y no deben afectar este backend.
+const SUPABASE_URL = 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
+const SUPABASE_ANON_KEY = 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.7-flash'
 
 function bearer(req: any) {
