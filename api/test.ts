@@ -29,17 +29,19 @@ async function geminiHealth(res: any) {
       headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
       body: JSON.stringify({
         contents: [{ role: 'user', parts: [{ text: 'Respondé únicamente OK.' }] }],
-        generationConfig: { maxOutputTokens: 20, temperature: 0 },
+        generationConfig: { maxOutputTokens: 500, temperature: 0 },
       }),
     })
     const payload: any = await response.json().catch(() => ({}))
     const text = payload?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || '').join('').trim() || ''
+    const finishReason = payload?.candidates?.[0]?.finishReason || null
     return res.status(response.ok && text ? 200 : 502).json({
       ok: Boolean(response.ok && text),
       keyConfigured: true,
       model: GEMINI_MODEL,
       googleStatus: response.status,
       response: text || null,
+      finishReason,
       error: payload?.error?.message || null,
     })
   } catch (error) {
