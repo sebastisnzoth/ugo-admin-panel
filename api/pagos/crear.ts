@@ -64,7 +64,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       .limit(1)
       .maybeSingle()
 
-    if (existing?.estado === 'liberado' || existing?.estado === 'retenido') {
+    if (existing?.estado === 'liberado' || (existing?.estado === 'retenido' && existing?.mp_payment_id)) {
       return res.status(200).json({
         success: true,
         alreadyPaid: true,
