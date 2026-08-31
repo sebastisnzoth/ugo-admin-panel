@@ -12,7 +12,7 @@ type Props = {
 
 const VOICE_LABELS: Record<string, string> = {
   idle: 'Voz apagada',
-  connecting: 'Conectando…',
+  connecting: 'Procesando…',
   ready: 'Te escucho',
   hearing: 'Escuchando…',
   speaking: 'Hugo está hablando',
@@ -78,7 +78,8 @@ export function VoiceHugoDock({ role, accessToken, service, availableOffers = 0 
           <span className={`mvp-voice-state ${voice.state}`}><i/>{VOICE_LABELS[voice.state]}</span>
         </div>
         {voice.error && <div className="mvp-voice-error">{voice.error}</div>}
-        {voice.transcript && <p className="mvp-voice-transcript">Hugo: {voice.transcript}</p>}
+        {voice.userTranscript && <p className="mvp-voice-transcript"><strong>Vos:</strong> {voice.userTranscript}</p>}
+        {voice.assistantTranscript && <p className="mvp-voice-transcript"><strong>Hugo:</strong> {voice.assistantTranscript}</p>}
       </div>
     </aside>}
   </>
