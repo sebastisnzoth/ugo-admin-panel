@@ -20,9 +20,37 @@ function extractJson(text: string) {
   return null
 }
 
+async function geminiHealth(res: any) {
+  const geminiKey = process.env.GEMINI_API_KEY?.trim()
+  if (!geminiKey) return res.status(503).json({ ok: false, keyConfigured: false, model: GEMINI_MODEL, error: 'GEMINI_API_KEY missing' })
+  try {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
+      body: JSON.stringify({
+        contents: [{ role: 'user', parts: [{ text: 'Respondé únicamente OK.' }] }],
+        generationConfig: { maxOutputTokens: 20, temperature: 0 },
+      }),
+    })
+    const payload: any = await response.json().catch(() => ({}))
+    const text = payload?.candidates?.[0]?.content?.parts?.map((p: any) => p?.text || '').join('').trim() || ''
+    return res.status(response.ok && text ? 200 : 502).json({
+      ok: Boolean(response.ok && text),
+      keyConfigured: true,
+      model: GEMINI_MODEL,
+      googleStatus: response.status,
+      response: text || null,
+      error: payload?.error?.message || null,
+    })
+  } catch (error) {
+    return res.status(502).json({ ok: false, keyConfigured: true, model: GEMINI_MODEL, error: error instanceof Error ? error.message : 'network error' })
+  }
+}
+
 export default async function handler(req: any, res: any) {
   res.setHeader('Cache-Control', 'no-store')
   if (req.method === 'OPTIONS') return res.status(200).end()
+  if (req.method === 'GET' && String(req.query?.health || '') === '1') return geminiHealth(res)
   if (req.method !== 'POST') return res.status(405).json({ error: 'Método no permitido' })
 
   try {
