@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { STATUS_LABELS, type Service } from './shared'
 import { useHugoVoice } from './useHugoVoice'
 import './voice.css'
@@ -56,6 +56,11 @@ export function VoiceHugoDock({ role, accessToken, service, availableOffers = 0 
   }, [availableOffers, role, service, text])
 
   const voice = useHugoVoice({ role, accessToken, context })
+
+  useEffect(() => {
+    if (role !== 'client' || !voice.userTranscript) return
+    window.dispatchEvent(new CustomEvent('ugo:hugo-user-text', { detail: { text: voice.userTranscript } }))
+  }, [role, voice.userTranscript])
 
   return <>
     <button
