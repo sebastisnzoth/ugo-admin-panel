@@ -1,56 +1,72 @@
-# CONFIGURAR VARIABLES DE ENTORNO EN VERCEL
+# U.G.O. — Configuración Mercado Pago (Etapa 2)
 
-Este documento indica QUÉ variables necesita el proyecto. Los VALORES reales
-nunca se documentan acá — viven únicamente en Vercel → Settings →
-Environment Variables. Este repo es público; ningún secreto debe aparecer
-en ningún archivo, ni siquiera de testing.
+Los valores secretos nunca se documentan en este repositorio. Configuralos únicamente en Vercel → Project Settings → Environment Variables.
 
-## 1. Ve a Vercel Dashboard
-https://vercel.com/dashboard
+## Proyecto Supabase activo
 
-## 2. Selecciona el proyecto "ugo-admin-panel"
+La aplicación MVP usa el proyecto indicado por `.env.example`:
 
-## 3. Abre Settings → Environment Variables
+```text
+https://trfsjuseqjxlhrxuvdsm.supabase.co
+```
 
-## 4. Variables requeridas (obtené los valores reales desde el proveedor
-## correspondiente o desde quien administre las credenciales del proyecto):
+No mezclar estas credenciales con proyectos Supabase anteriores.
+
+## Variables de Vercel
 
 ### Mercado Pago
-```
-MERCADO_PAGO_PUBLIC_KEY=
+
+```text
 MERCADO_PAGO_ACCESS_TOKEN=
-MERCADO_PAGO_RECEIVER_ID=
+MERCADO_PAGO_PUBLIC_KEY=
+APP_URL=https://TU-DOMINIO-DE-UGO
 ```
 
-### Supabase
-```
-VITE_SUPABASE_URL=https://byajcqrgetloavrgyqak.supabase.co
-VITE_SUPABASE_ANON_KEY=            # usar la publishable key (sb_publishable_...)
-SUPABASE_URL=https://byajcqrgetloavrgyqak.supabase.co
-SUPABASE_SERVICE_KEY=              # secret key (sb_secret_...)
-SUPABASE_SERVICE_ROLE_KEY=         # mismo valor que SUPABASE_SERVICE_KEY —
-                                    # el código usa ambos nombres en distintos
-                                    # endpoints, hay que setear los dos
+`APP_URL` debe ser la URL pública HTTPS que recibe los callbacks y el webhook. Si no está definida, el backend usa automáticamente la URL del deployment de Vercel.
+
+### Supabase server-side
+
+```text
+SUPABASE_URL=https://trfsjuseqjxlhrxuvdsm.supabase.co
+SUPABASE_SERVICE_KEY=
 ```
 
-## 5. Aplica los cambios
+### Supabase frontend
 
-Una vez guardadas las variables, tu app se redeployará automáticamente.
+```text
+VITE_SUPABASE_URL=https://trfsjuseqjxlhrxuvdsm.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=
+```
 
----
+## Migración requerida
 
-## TESTING (Mercado Pago Sandbox)
+Antes de probar checkout, aplicar:
 
-Usá las tarjetas de prueba oficiales de Mercado Pago para tu país
-(ver documentación de Mercado Pago — no se listan acá para evitar que
-queden desactualizadas o se confundan con credenciales reales).
+```text
+supabase/migrations/20260831_stage2_mercado_pago.sql
+```
 
----
+La migración es aditiva e idempotente. Agrega únicamente metadata de Mercado Pago e índices a `public.pagos`.
 
-## ENDPOINTS LISTOS PARA USAR
+## Flujo Etapa 2
 
-Una vez desplegado, estos endpoints funcionarán:
+1. Cliente crea el pedido.
+2. Hugo hace matching y envía ofertas.
+3. Proveedor acepta la misión.
+4. Cliente abre Mercado Pago desde U.G.O.
+5. `/api/pagos/crear` obtiene monto, moneda, cliente y proveedor directamente desde Supabase; no confía esos valores al navegador.
+6. Mercado Pago notifica `/api/pagos/webhook`.
+7. El webhook vuelve a consultar el pago en Mercado Pago y verifica monto + moneda.
+8. Solo un pago aprobado y consistente cambia la bóveda a `retenido`.
+9. Recién entonces el proveedor puede iniciar la misión desde la UI.
+10. Al terminar, el cliente aprueba y el RPC existente libera el pago.
 
-- **POST /api/pagos/crear** → Iniciar pago
-- **GET /api/pagos/webhook** → Confirmación de Mercado Pago
-- **POST /api/retiros/solicitar** → Proveedor solicita retiro
+## Endpoints
+
+- `POST /api/pagos/crear` — crea/reutiliza el checkout del servicio autenticado.
+- `GET|POST /api/pagos/webhook` — procesa notificaciones de Mercado Pago de forma idempotente.
+- `POST /api/retiros/solicitar` — retiro del proveedor (flujo separado).
+
+## Prueba recomendada
+
+Usar credenciales y usuarios de prueba oficiales de Mercado Pago. Probar primero en Preview antes de fusionar a `main`.
