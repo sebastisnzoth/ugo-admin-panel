@@ -2,11 +2,12 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
-const GEMINI_MODELS = [
-  process.env.GEMINI_MODEL || 'gemini-2.5-flash-lite',
-  'gemini-2.5-flash',
-  'gemini-flash-lite-latest',
-]
+const GEMINI_MODELS = Array.from(new Set([
+  process.env.GEMINI_MODEL,
+  'gemini-3.5-flash-lite',
+  'gemini-3.5-flash',
+  'gemini-3.7-flash',
+].filter(Boolean) as string[]))
 
 function bearer(req: any) {
   const raw = String(req.headers?.authorization || '')
@@ -37,7 +38,8 @@ async function callGemini(geminiKey: string, body: any) {
     if (response.ok) return { response, payload, model }
     lastStatus = response.status
     lastError = payload?.error?.message || `Gemini respondió ${response.status}`
-    const retryable = response.status === 429 || response.status === 503 || /high demand|overloaded|temporar/i.test(lastError)
+    const retryable = response.status === 404 || response.status === 429 || response.status === 503 || /high demand|overloaded|temporar|no longer available|not found|new users/i.test(lastError)
+    console.warn('Hugo Gemini fallback', { model, status: response.status, retryable, message: lastError })
     if (!retryable) break
   }
   throw Object.assign(new Error(lastError), { status: lastStatus || 502 })
@@ -85,7 +87,7 @@ export default async function handler(req: any, res: any) {
 
     const message = String(req.body?.message || '').trim().slice(0, 1200)
     if (!message) return res.status(400).json({ error: 'Mensaje requerido' })
-    const context = String(req.body?.context || '').slice(0, 1800)
+    const context = String(req.body?.context || '').slice(0, 1600)
     const history = Array.isArray(req.body?.history) ? req.body.history.slice(-2) : []
     const roleText = requestedRole === 'client' ? 'Cliente que busca contratar un servicio.' : 'Proveedor que recibe y ejecuta servicios.'
 
