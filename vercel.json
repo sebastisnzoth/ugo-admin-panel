@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/hugo/gemini",
+      "destination": "/api/test"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
