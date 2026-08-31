@@ -22,7 +22,8 @@ function puterText(result: any): string {
 export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
   const [state, setState] = useState<HugoVoiceState>('idle')
   const [error, setError] = useState('')
-  const [transcript, setTranscript] = useState('')
+  const [userTranscript, setUserTranscript] = useState('')
+  const [assistantTranscript, setAssistantTranscript] = useState('')
 
   const recognitionRef = useRef<any>(null)
   const runningRef = useRef(false)
@@ -46,6 +47,8 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
 
   const speak = useCallback((text: string) => new Promise<void>((resolve) => {
     if (!window.speechSynthesis) {
+      busyRef.current = false
+      if (runningRef.current) window.setTimeout(startRecognition, 180)
       resolve()
       return
     }
@@ -75,7 +78,7 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
 
   const askHugo = useCallback(async (userText: string) => {
     const puter = window.puter
-    if (!puter?.ai?.chat) throw new Error('El modo gratuito de Hugo todavía no cargó. Recargá la página.')
+    if (!puter?.ai?.chat) throw new Error('IA_NO_DISPONIBLE')
 
     busyRef.current = true
     setState('connecting')
@@ -108,14 +111,14 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
     })
 
     const reply = puterText(result)
-    if (!reply) throw new Error('Hugo no recibió una respuesta del modelo gratuito.')
+    if (!reply) throw new Error('RESPUESTA_VACIA')
 
     historyRef.current = [
       ...historyRef.current.slice(-6),
       { role: 'user', content: userText },
       { role: 'assistant', content: reply },
     ]
-    setTranscript(reply.slice(-900))
+    setAssistantTranscript(reply.slice(-900))
     await speak(reply)
   }, [speak])
 
@@ -128,7 +131,8 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
     historyRef.current = []
     setState('idle')
     setError('')
-    setTranscript('')
+    setUserTranscript('')
+    setAssistantTranscript('')
   }, [])
 
   useEffect(() => disconnect, [disconnect])
@@ -147,22 +151,18 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       setState('error')
       return
     }
-    if (!window.puter?.ai?.chat) {
-      setError('El modo gratuito de Hugo no cargó. Recargá la página.')
-      setState('error')
-      return
-    }
 
     setState('connecting')
     setError('')
-    setTranscript('')
+    setUserTranscript('')
+    setAssistantTranscript('')
     runningRef.current = true
     historyRef.current = []
 
     const recognition = new SR()
     recognition.lang = 'es-AR'
     recognition.continuous = false
-    recognition.interimResults = false
+    recognition.interimResults = true
     recognitionRef.current = recognition
 
     recognition.onstart = () => {
@@ -172,16 +172,34 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       if (runningRef.current) setState('hearing')
     }
     recognition.onresult = async (event: any) => {
-      const text = String(event?.results?.[0]?.[0]?.transcript || '').trim()
+      let text = ''
+      let isFinal = false
+      for (let i = event.resultIndex || 0; i < event.results.length; i += 1) {
+        const result = event.results[i]
+        text += String(result?.[0]?.transcript || '')
+        if (result?.isFinal) isFinal = true
+      }
+      text = text.trim()
       if (!text || !runningRef.current) return
+
+      // Paso 1: voz -> texto. Esto funciona aunque la IA no haya cargado.
+      setUserTranscript(text.slice(-900))
+      if (!isFinal) return
+
       try {
         await askHugo(text)
       } catch (e) {
-        const message = e instanceof Error ? e.message : 'No se pudo consultar a Hugo.'
         busyRef.current = false
-        runningRef.current = false
-        setError(message)
-        setState('error')
+        const code = e instanceof Error ? e.message : ''
+        if (code === 'IA_NO_DISPONIBLE') {
+          setAssistantTranscript('Te escuché bien. La voz a texto funciona; la respuesta de IA todavía no está disponible.')
+        } else {
+          setAssistantTranscript('Te escuché bien, pero no pude generar la respuesta de Hugo en este intento.')
+        }
+        if (runningRef.current) {
+          setState('ready')
+          window.setTimeout(startRecognition, 250)
+        }
       }
     }
     recognition.onerror = (event: any) => {
@@ -199,7 +217,7 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       if (runningRef.current && !busyRef.current) window.setTimeout(startRecognition, 220)
     }
 
-    setTranscript('Listo. Te escucho.')
+    setAssistantTranscript('Listo. Te escucho.')
     setState('ready')
     window.setTimeout(startRecognition, 120)
   }, [accessToken, askHugo, startRecognition, state])
@@ -207,7 +225,9 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
   return {
     state,
     error,
-    transcript,
+    userTranscript,
+    assistantTranscript,
+    transcript: assistantTranscript,
     active: state !== 'idle' && state !== 'error',
     connect,
     disconnect,
