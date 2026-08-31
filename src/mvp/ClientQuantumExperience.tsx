@@ -4,6 +4,7 @@ import maplibregl from'maplibre-gl'
 import'maplibre-gl/dist/maplibre-gl.css'
 import'./client-quantum.css'
 import type{Category}from'./shared'
+import{parseClientIntent}from'./hugoIntent'
 
 type ProviderMapRow={
  id:string
@@ -49,7 +50,7 @@ function HugoOrb({state,onClick}:{state:'IDLE'|'LISTENING'|'THINKING'|'SPEAKING'
 
 export function ClientQuantumExperience({supabase,categories,selectedCategoryId,onCategorySelect,onProviderPick}:Props){
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([])
- const[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[providers,setProviders]=useState<ProviderMapRow[]>([]),[selected,setSelected]=useState<string|null>(null),[drawer,setDrawer]=useState(false),[orb,setOrb]=useState<'IDLE'|'LISTENING'|'THINKING'|'SPEAKING'>('IDLE'),[geoStatus,setGeoStatus]=useState('Ubicación aproximada · Florianópolis')
+ const[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[providers,setProviders]=useState<ProviderMapRow[]>([]),[selected,setSelected]=useState<string|null>(null),[drawer,setDrawer]=useState(false),[orb,setOrb]=useState<'IDLE'|'LISTENING'|'THINKING'|'SPEAKING'>('IDLE'),[geoStatus,setGeoStatus]=useState('Ubicación aproximada · Florianópolis'),[intentStatus,setIntentStatus]=useState('')
 
  const filtered=useMemo(()=>providers.filter(p=>!selectedCategoryId||!p.categoria_principal_id||p.categoria_principal_id===selectedCategoryId),[providers,selectedCategoryId])
  const selectedProvider=useMemo(()=>filtered.find(p=>p.id===selected)||null,[filtered,selected])
@@ -65,6 +66,25 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
   const ch=supabase.channel('client-provider-map').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>load()).subscribe()
   return()=>{alive=false;supabase.removeChannel(ch)}
  },[supabase])
+
+ useEffect(()=>{
+  function onHugoText(event:Event){
+   const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim()
+   if(!text)return
+   const intent=parseClientIntent(text,categories)
+   setOrb('THINKING')
+   if(intent.categoryId){
+    onCategorySelect(intent.categoryId)
+    setIntentStatus(`Hugo entendió: ${intent.categoryName||'servicio'}${intent.urgency?' · urgente':''}`)
+    setDrawer(true)
+   }else{
+    setIntentStatus(intent.urgency?'Hugo entendió que es urgente. Decime qué profesional necesitás.':'Hugo escuchó el pedido, pero necesita que menciones el tipo de profesional.')
+   }
+   window.setTimeout(()=>setOrb('IDLE'),700)
+  }
+  window.addEventListener('ugo:hugo-user-text',onHugoText as EventListener)
+  return()=>window.removeEventListener('ugo:hugo-user-text',onHugoText as EventListener)
+ },[categories,onCategorySelect])
 
  useEffect(()=>{
   if(!navigator.geolocation)return
@@ -104,6 +124,7 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
   <div className="ugo-map-stage">
    <div ref={mapEl} className="ugo-map-canvas"/>
    <div className="ugo-map-topbar"><div><span className="ugo-live-dot"/>Hugo Radar</div><small>{geoStatus}</small></div>
+   {intentStatus&&<div className="ugo-intent-status">{intentStatus}</div>}
    <div className="ugo-category-rail">{categories.slice(0,8).map(c=><button type="button" key={c.id} className={selectedCategoryId===c.id?'active':''} onClick={()=>onCategorySelect(c.id)}><b>{c.emoji}</b><span>{c.nombre}</span></button>)}</div>
    <button type="button" className="ugo-nearby-button" onClick={()=>setDrawer(true)}>{filtered.filter(p=>p.online&&p.disponible).length} disponibles cerca</button>
    <HugoOrb state={orb} onClick={toggleHugo}/>
