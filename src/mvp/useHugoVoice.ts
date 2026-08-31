@@ -86,7 +86,7 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
     setState('connecting')
     setError('')
 
-    const response = await fetch('/api/hugo/gemini', {
+    const response = await fetch('/api/test', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
