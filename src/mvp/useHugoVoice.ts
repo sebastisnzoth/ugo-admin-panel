@@ -10,13 +10,13 @@ type VoiceOptions = {
 
 type ChatTurn = { role: 'user' | 'assistant'; content: string }
 
-function puterText(result: any): string {
-  const content = result?.message?.content
-  if (typeof content === 'string') return content.trim()
-  if (Array.isArray(content)) {
-    return content.map((part: any) => typeof part === 'string' ? part : part?.text || '').join(' ').trim()
-  }
-  return typeof result === 'string' ? result.trim() : ''
+type GeminiReply = {
+  reply: string
+  action?: 'none' | 'search_provider' | 'prepare_request'
+  category_hint?: string | null
+  urgent?: boolean
+  description?: string | null
+  model?: string
 }
 
 export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
@@ -31,9 +31,11 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
   const historyRef = useRef<ChatTurn[]>([])
   const roleRef = useRef(role)
   const contextRef = useRef(context)
+  const tokenRef = useRef(accessToken)
 
   useEffect(() => { roleRef.current = role }, [role])
   useEffect(() => { contextRef.current = context }, [context])
+  useEffect(() => { tokenRef.current = accessToken }, [accessToken])
 
   const startRecognition = useCallback(() => {
     if (!runningRef.current || busyRef.current || !recognitionRef.current) return
@@ -41,7 +43,7 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       recognitionRef.current.start()
       setState('ready')
     } catch {
-      // Algunos navegadores lanzan InvalidStateError si start() se llama dos veces.
+      // InvalidStateError si start() se llama dos veces.
     }
   }, [])
 
@@ -77,40 +79,30 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
   }), [startRecognition])
 
   const askHugo = useCallback(async (userText: string) => {
-    const puter = window.puter
-    if (!puter?.ai?.chat) throw new Error('IA_NO_DISPONIBLE')
+    const token = tokenRef.current
+    if (!token) throw new Error('SESION_REQUERIDA')
 
     busyRef.current = true
     setState('connecting')
     setError('')
 
-    const roleText = roleRef.current === 'client'
-      ? 'Estás hablando con un cliente que necesita resolver un servicio.'
-      : 'Estás hablando con un proveedor que recibe y ejecuta misiones.'
-
-    const system = [
-      'Sos Hugo, el asistente operativo de U.G.O.',
-      'Hablá en español rioplatense natural, con voseo, de forma breve y clara.',
-      roleText,
-      'No inventes estados, precios, personas, pagos ni acciones.',
-      'Usá únicamente el contexto operativo que recibís.',
-      'Si el usuario quiere aceptar, cancelar, aprobar, pagar o cambiar un estado, explicale qué acción visible debe usar; no digas que ya la ejecutaste.',
-      `CONTEXTO ACTUAL: ${contextRef.current || 'Sin contexto adicional.'}`,
-    ].join('\n')
-
-    const messages = [
-      { role: 'system', content: system },
-      ...historyRef.current.slice(-6),
-      { role: 'user', content: userText },
-    ]
-
-    const result = await puter.ai.chat(messages, {
-      model: 'gemini-3.6-flash',
-      temperature: 0.5,
-      max_tokens: 220,
+    const response = await fetch('/api/hugo/gemini', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        message: userText,
+        role: roleRef.current,
+        context: contextRef.current,
+        history: historyRef.current.slice(-6),
+      }),
     })
 
-    const reply = puterText(result)
+    const data = await response.json().catch(() => ({})) as GeminiReply & { error?: string }
+    if (!response.ok) throw new Error(data.error || `Gemini respondió ${response.status}`)
+    const reply = String(data.reply || '').trim()
     if (!reply) throw new Error('RESPUESTA_VACIA')
 
     historyRef.current = [
@@ -118,6 +110,19 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       { role: 'user', content: userText },
       { role: 'assistant', content: reply },
     ]
+
+    if (roleRef.current === 'client') {
+      window.dispatchEvent(new CustomEvent('ugo:hugo-ai-intent', {
+        detail: {
+          text: userText,
+          action: data.action || 'none',
+          categoryHint: data.category_hint || null,
+          urgent: Boolean(data.urgent),
+          description: data.description || userText,
+        },
+      }))
+    }
+
     setAssistantTranscript(reply.slice(-900))
     await speak(reply)
   }, [speak])
@@ -182,7 +187,6 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       text = text.trim()
       if (!text || !runningRef.current) return
 
-      // Paso 1: voz -> texto. Esto funciona aunque la IA no haya cargado.
       setUserTranscript(text.slice(-900))
       if (!isFinal) return
 
@@ -190,12 +194,8 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
         await askHugo(text)
       } catch (e) {
         busyRef.current = false
-        const code = e instanceof Error ? e.message : ''
-        if (code === 'IA_NO_DISPONIBLE') {
-          setAssistantTranscript('Te escuché bien. La voz a texto funciona; la respuesta de IA todavía no está disponible.')
-        } else {
-          setAssistantTranscript('Te escuché bien, pero no pude generar la respuesta de Hugo en este intento.')
-        }
+        const message = e instanceof Error ? e.message : 'No se pudo consultar a Gemini.'
+        setAssistantTranscript(`Te escuché bien, pero Gemini no respondió: ${message}`)
         if (runningRef.current) {
           setState('ready')
           window.setTimeout(startRecognition, 250)
@@ -217,7 +217,7 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
       if (runningRef.current && !busyRef.current) window.setTimeout(startRecognition, 220)
     }
 
-    setAssistantTranscript('Listo. Te escucho.')
+    setAssistantTranscript('Listo. Te escucho con Gemini.')
     setState('ready')
     window.setTimeout(startRecognition, 120)
   }, [accessToken, askHugo, startRecognition, state])
