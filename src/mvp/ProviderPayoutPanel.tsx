@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{money}from'./shared'
+import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
 
 type Props={accessToken:string}
 type Balance={total_liberado:number;total_retirado:number;saldo_disponible:number;saldo_procesando:number}
@@ -36,6 +37,8 @@ export function ProviderPayoutPanel({accessToken}:Props){
  return <div style={{marginTop:14}}><strong>💰 Ganancias y retiros</strong>
   <div style={{marginTop:8,fontSize:13}}>Disponible: <b>{money(balance.saldo_disponible)}</b> · En proceso: {money(balance.saldo_procesando)}</div>
   <div style={{marginTop:4,fontSize:11,opacity:.7}}>Liberado histórico: {money(balance.total_liberado)} · Retirado/comprometido: {money(balance.total_retirado)}</div>
+  <ProviderMercadoPagoConnect accessToken={accessToken}/>
+  <div style={{marginTop:16,paddingTop:14,borderTop:'1px solid #e5e7eb'}}><strong style={{fontSize:13}}>Retiro manual / legado</strong><p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>Se mantiene para saldos internos. Cuando Split Payments esté activo para un proveedor, Mercado Pago divide el cobro directamente y este retiro deja de ser el camino principal.</p></div>
   <label style={{display:'block',marginTop:10}}>Cuenta de cobro<input value={account} onChange={e=>setAccount(e.target.value)} placeholder="Mercado Pago / cuenta vinculada"/></label>
   <button type="button" className="mvp-voice-btn" onClick={saveAccount} disabled={busy}>Guardar cuenta</button>
   <label style={{display:'block',marginTop:10}}>Retirar<input type="number" min="50" max={Math.max(50,balance.saldo_disponible)} step="0.01" value={amount} onChange={e=>setAmount(e.target.value)} placeholder="50.00"/></label>
