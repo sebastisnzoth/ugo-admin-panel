@@ -4,6 +4,7 @@ import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 import{PixReconciliationPanel}from'./PixReconciliationPanel'
 import{WhatsAppAdminInbox}from'./WhatsAppAdminInbox'
+import{AdminFinancePanel}from'./AdminFinancePanel'
 
 type AdminProfile={tipo:string;activo:boolean}
 
@@ -15,6 +16,6 @@ export function AdminGate(){
  useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false)})},[])
  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');try{const{data,error}=await supabase.auth.signInWithPassword({email:email.trim(),password});if(error)throw error;const session=data.session;if(!session)throw new Error('No se pudo iniciar la sesión.');if(!(await authorizeSession(session))){await supabase.auth.signOut();throw new Error('Acceso denegado. Esta cuenta no tiene rol de administrador.')}setAllowed(true)}catch(x){setError(x instanceof Error?x.message:'No se pudo iniciar sesión.')}finally{setBusy(false)}}
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
- if(allowed)return <><AdminPanel/><PixReconciliationPanel/><WhatsAppAdminInbox/></>
+ if(allowed)return <><AdminPanel/><PixReconciliationPanel/><WhatsAppAdminInbox/><AdminFinancePanel/></>
  return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Panel de control</h1><p>Solo administradores autorizados.</p><form onSubmit={login}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label><label>Contraseña<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Validando…':'Ingresar →'}</button></form></div></div>
 }
