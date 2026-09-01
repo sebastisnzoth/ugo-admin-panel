@@ -3,13 +3,19 @@ import type{FormEvent}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
+type AdminProfile={tipo:string;activo:boolean}
+
 export function AdminGate(){
  const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[email,setEmail]=useState('demo.admin@ugo.test'),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false)
+ async function getAdminProfile(uid:string){
+  const{data,error}=await (supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle()
+  return{profile:(data||null)as AdminProfile|null,error}
+ }
  async function verify(){
   const{data:{session}}=await supabase.auth.getSession()
   if(!session){setAllowed(false);setChecking(false);return}
-  const{data,error}=await supabase.from('usuarios').select('tipo,activo').eq('id',session.user.id).maybeSingle()
-  if(error||!data||!data.activo||!['admin','superadmin'].includes(String(data.tipo))){await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}else setAllowed(true)
+  const{profile,error}=await getAdminProfile(session.user.id)
+  if(error||!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}else setAllowed(true)
   setChecking(false)
  }
  useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false)})},[])
@@ -20,7 +26,7 @@ export function AdminGate(){
    if(error)throw error
    const uid=data.user?.id
    if(!uid)throw new Error('No se pudo identificar la cuenta.')
-   const{data:profile,error:profileError}=await supabase.from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle()
+   const{profile,error:profileError}=await getAdminProfile(uid)
    if(profileError)throw profileError
    if(!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();throw new Error('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
    setAllowed(true)
