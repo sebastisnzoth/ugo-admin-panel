@@ -5,7 +5,7 @@ import { HaversineRoutingProvider } from './haversineRouting'
 export class OsrmRoutingProvider implements RoutingProvider {
   private readonly fallback = new HaversineRoutingProvider()
 
-  constructor(private readonly endpoint = '/api/routing') {}
+  constructor(private readonly endpoint = '/api/test?routing=1') {}
 
   async route(origin: Coordinates, destination: Coordinates): Promise<RouteSummary> {
     try {
