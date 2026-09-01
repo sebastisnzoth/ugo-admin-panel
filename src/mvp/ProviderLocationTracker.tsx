@@ -4,7 +4,7 @@ import type{Service}from'./shared'
 
 type Props={service?:Service|null}
 type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
-const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','en_progreso','esperando_aprobacion'])
+const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=10_000
 const MIN_MOVE_M=15
 const ARRIVAL_RADIUS_M=100
@@ -59,5 +59,5 @@ export function ProviderLocationTracker({service}:Props){
  },[available,serviceActive,service?.id,service?.estado])
 
  if(service?.estado!=='en_camino'||distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
- return <div style={{position:'fixed',left:'50%',bottom:96,transform:'translateX(-50%)',zIndex:80,background:'#fff',borderRadius:18,padding:'12px 16px',boxShadow:'0 8px 28px rgba(0,0,0,.18)',fontWeight:800,fontSize:14,maxWidth:'calc(100vw - 32px)',textAlign:'center'}}>📍 Estás a {Math.max(1,Math.round(distanceToClient))} m del cliente · Confirmá “Llegué al cliente”</div>
+ return <div style={{position:'fixed',left:'50%',bottom:96,transform:'translateX(-50%)',zIndex:80,background:'#fff',borderRadius:18,padding:'12px 16px',boxShadow:'0 8px 28px rgba(0,0,0,.18)',fontWeight:800,fontSize:14,maxWidth:'calc(100vw - 32px)',textAlign:'center'}}>📍 Estás a {Math.max(1,Math.round(distanceToClient))} m del cliente · Ya podés confirmar “Llegué al cliente”</div>
 }
