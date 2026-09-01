@@ -4,6 +4,10 @@ export class SpatiadDispatchProvider implements DispatchProvider {
   constructor(private readonly endpoint = '/api/dispatch') {}
 
   async start(request: DispatchRequest): Promise<DispatchResult> {
+    if (!request.pickup) {
+      throw new Error('Spatiad requiere coordenadas reales del pedido antes de iniciar el dispatch.')
+    }
+
     const response = await fetch(this.endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
