@@ -4,13 +4,15 @@ self.addEventListener('push',event=>{
   let payload={};
   try{payload=event.data?event.data.json():{}}catch{payload={body:event.data?.text()||''}}
   const title=payload.title||'U.GO';
+  const role=payload?.data?.role;
+  const roleUrl=role==='provider'?'/?app=provider':role==='client'?'/?app=client':(payload.url||'/');
   const options={
     body:payload.body||'Tenés una actualización en U.GO.',
     icon:'/favicon.svg',
     badge:'/favicon.svg',
     tag:payload.notificationId||payload.type||'ugo',
     renotify:true,
-    data:{url:payload.url||'/',...(payload.data||{})}
+    data:{...(payload.data||{}),url:roleUrl}
   };
   event.waitUntil(self.registration.showNotification(title,options));
 });
