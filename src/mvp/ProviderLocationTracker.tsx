@@ -6,6 +6,7 @@ type Props={service?:Service|null}
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=10_000
 const MIN_MOVE_M=15
+const ARRIVAL_RADIUS_M=100
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
@@ -16,6 +17,7 @@ function distanceMeters(a:[number,number],b:[number,number]){
 
 export function ProviderLocationTracker({service}:Props){
  const[available,setAvailable]=useState(false)
+ const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
  const serviceActive=Boolean(service&&ACTIVE_TRACKING_STATES.has(service.estado))
 
  useEffect(()=>{
@@ -42,12 +44,18 @@ export function ProviderLocationTracker({service}:Props){
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
    writing=true
-   const{error}=await (supabase as any).rpc('actualizar_ubicacion_proveedor',{p_lat:point[0],p_lng:point[1]})
+   const serviceId=service?.estado==='en_camino'?service.id:null
+   const{data,error}=await (supabase as any).rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:serviceId})
    writing=false
-   if(!error){lastWrite=Date.now();lastPoint=point}
+   if(!error){
+    lastWrite=Date.now();lastPoint=point
+    const meters=data==null?null:Number(data)
+    setDistanceToClient(Number.isFinite(meters as number)?meters:null)
+   }
   },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
- },[available,serviceActive])
+ },[available,serviceActive,service?.id,service?.estado])
 
- return null
+ if(service?.estado!=='en_camino'||distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
+ return <div style={{position:'fixed',left:'50%',bottom:96,transform:'translateX(-50%)',zIndex:80,background:'#fff',borderRadius:18,padding:'12px 16px',boxShadow:'0 8px 28px rgba(0,0,0,.18)',fontWeight:800,fontSize:14,maxWidth:'calc(100vw - 32px)',textAlign:'center'}}>📍 Estás a {Math.max(1,Math.round(distanceToClient))} m del cliente · Confirmá “Llegué al cliente”</div>
 }
