@@ -4,6 +4,22 @@ import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
 type AdminProfile={tipo:string;activo:boolean}
+let legacyBypassInstalled=false
+
+function allowRoleValidatedAdminSession(){
+ if(legacyBypassInstalled)return
+ const auth:any=(supabase as any).auth
+ const original=auth.onAuthStateChange.bind(auth)
+ auth.onAuthStateChange=(callback:any)=>original((event:any,session:any)=>{
+  // AdminGate ya validó rol + activo contra public.usuarios. El panel legacy
+  // todavía expulsa sesiones cuyo email no coincide con un email antiguo.
+  // Evitamos que esos eventos con sesión vuelvan a ejecutar ese bloqueo;
+  // SIGNED_OUT sigue pasando para que el panel pueda cerrar sesión normalmente.
+  if(session)return
+  callback(event,session)
+ })
+ legacyBypassInstalled=true
+}
 
 export function AdminGate(){
  const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[email,setEmail]=useState('demo.admin@ugo.test'),[password,setPassword]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false)
@@ -15,7 +31,8 @@ export function AdminGate(){
   const{data:{session}}=await supabase.auth.getSession()
   if(!session){setAllowed(false);setChecking(false);return}
   const{profile,error}=await getAdminProfile(session.user.id)
-  if(error||!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}else setAllowed(true)
+  if(error||!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
+  else{allowRoleValidatedAdminSession();setAllowed(true)}
   setChecking(false)
  }
  useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false)})},[])
@@ -29,7 +46,7 @@ export function AdminGate(){
    const{profile,error:profileError}=await getAdminProfile(uid)
    if(profileError)throw profileError
    if(!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();throw new Error('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
-   setAllowed(true)
+   allowRoleValidatedAdminSession();setAllowed(true)
   }catch(x){setError(x instanceof Error?x.message:'No se pudo iniciar sesión.')}finally{setBusy(false)}
  }
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
