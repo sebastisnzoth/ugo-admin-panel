@@ -5,6 +5,7 @@ import'maplibre-gl/dist/maplibre-gl.css'
 import{AuthScreen,LoadingScreen,PROVIDER_ACTIVE_STATES,money,timeAgo,useRoleSession,type Category,type Notice,type Offer,type Payment,type ProviderProfile,type Service}from'./shared'
 import{VoiceHugoDock}from'./VoiceHugoDock'
 import'./provider-prototype.css'
+import'./provider-responsive.css'
 
 type MercadoPagoPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null}
 type Tab='radar'|'jobs'|'earnings'|'profile'
