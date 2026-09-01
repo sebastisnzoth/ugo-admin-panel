@@ -1,7 +1,5 @@
-import React,{useCallback,useEffect,useRef,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
-import maplibregl from'maplibre-gl'
-import'maplibre-gl/dist/maplibre-gl.css'
 import{AuthScreen,LoadingScreen,PROVIDER_ACTIVE_STATES,money,timeAgo,useRoleSession,type Category,type Notice,type Offer,type Payment,type ProviderProfile,type Service}from'./shared'
 import{VoiceHugoDock}from'./VoiceHugoDock'
 import'./provider-prototype.css'
@@ -10,33 +8,44 @@ import'./provider-responsive.css'
 type MercadoPagoPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null}
 type Tab='radar'|'jobs'|'earnings'|'profile'
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
-const MAP_STYLE:any={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
+
+function osmEmbed([lng,lat]:[number,number]){
+ const dx=.045,dy=.032
+ const bbox=`${lng-dx}%2C${lat-dy}%2C${lng+dx}%2C${lat+dy}`
+ const marker=`${lat}%2C${lng}`
+ return `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${marker}`
+}
 
 export function ProviderApp(){
  const auth=useRoleSession('provider'),{supabase,session,profile}=auth
- const mapNode=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null)
- const[categories,setCategories]=useState<Category[]>([]),[provider,setProvider]=useState<ProviderProfile|null>(null),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<MercadoPagoPayment[]>([]),[notice,setNotice]=useState<Notice>(null),[busy,setBusy]=useState(false),[tab,setTab]=useState<Tab>('radar'),[offerOpen,setOfferOpen]=useState(true),[userPos,setUserPos]=useState<[number,number]>(FLORIPA)
- const loadData=useCallback(async()=>{if(!session)return;const[{data:c},{data:p},{data:o},{data:s},{data:pay}]=await Promise.all([supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle(),supabase.from('ofertas_servicio').select('*,servicio:servicios(*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre))').eq('proveedor_id',session.user.id).eq('estado','pendiente').order('created_at',{ascending:false}),supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',session.user.id).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1),supabase.from('pagos').select('*').eq('proveedor_id',session.user.id).order('created_at',{ascending:false})]);setCategories((c||[])as Category[]);setProvider((p as ProviderProfile|null)||null);setOffers((o||[])as Offer[]);setService(((s||[])[0]as Service|undefined)||null);setPayments((pay||[])as MercadoPagoPayment[])},[session,supabase])
+ const[categories,setCategories]=useState<Category[]>([]),[provider,setProvider]=useState<ProviderProfile|null>(null),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<MercadoPagoPayment[]>([]),[notice,setNotice]=useState<Notice>(null),[busy,setBusy]=useState(false),[tab,setTab]=useState<Tab>('radar'),[offerOpen,setOfferOpen]=useState(true),[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[mapKey,setMapKey]=useState(0)
+ const mapSrc=useMemo(()=>osmEmbed(userPos),[userPos,mapKey])
+ const loadData=useCallback(async()=>{if(!session)return;const[{data:c},{data:p},{data:o},{data:s},{data:pay}]=await Promise.all([
+  supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),
+  supabase.from('perfiles_proveedor').select('*').eq('usuario_id',session.user.id).maybeSingle(),
+  supabase.from('ofertas_servicio').select('*,servicio:servicios(*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre))').eq('proveedor_id',session.user.id).eq('estado','pendiente').order('created_at',{ascending:false}),
+  supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',session.user.id).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1),
+  supabase.from('pagos').select('*').eq('proveedor_id',session.user.id).order('created_at',{ascending:false})
+ ]);setCategories((c||[])as Category[]);setProvider((p as ProviderProfile|null)||null);setOffers((o||[])as Offer[]);setService(((s||[])[0]as Service|undefined)||null);setPayments((pay||[])as MercadoPagoPayment[])},[session,supabase])
  useEffect(()=>{loadData().catch((e:Error)=>setNotice({type:'error',text:e.message}))},[loadData])
  useEffect(()=>{if(!session)return;const ch:RealtimeChannel=supabase.channel(`provider-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio',filter:`proveedor_id=eq.${session.user.id}`},()=>{setOfferOpen(true);loadData()}).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${session.user.id}`},loadData).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${session.user.id}`},loadData).subscribe();return()=>{supabase.removeChannel(ch)}},[loadData,session,supabase])
  useEffect(()=>{navigator.geolocation?.getCurrentPosition(pos=>setUserPos([pos.coords.longitude,pos.coords.latitude]),()=>{}, {enableHighAccuracy:true,timeout:6000,maximumAge:60000})},[])
- useEffect(()=>{if(!mapNode.current||mapRef.current)return;const map=new maplibregl.Map({container:mapNode.current,style:MAP_STYLE,center:userPos,zoom:13,attributionControl:false});map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left');mapRef.current=map;return()=>{map.remove();mapRef.current=null}},[])
- useEffect(()=>{mapRef.current?.resize();mapRef.current?.easeTo({center:userPos,zoom:13,duration:700})},[userPos])
  async function update(next:Partial<ProviderProfile>){if(!session||!provider)return;setBusy(true);const{error}=await supabase.from('perfiles_proveedor').update(next).eq('usuario_id',session.user.id);setBusy(false);if(error)return setNotice({type:'error',text:error.message});await loadData()}
  async function toggleOnline(){if(!provider)return;const next=!provider.disponible;await update({disponible:next,online:next})}
  async function offer(id:string,accept:boolean){setBusy(true);const{error}=await supabase.rpc(accept?'aceptar_oferta':'rechazar_oferta',{p_oferta_id:id});setBusy(false);if(error)return setNotice({type:'error',text:error.message});setOfferOpen(false);setNotice({type:accept?'ok':'info',text:accept?'Misión aceptada. Esperando pago protegido del cliente.':'Oferta rechazada.'});await loadData()}
  async function advance(state:'en_camino'|'en_progreso'|'esperando_aprobacion'){if(!service)return;const currentPayment=payments.find(p=>p.servicio_id===service.id),funded=currentPayment?.estado==='retenido'&&Boolean(currentPayment.mp_payment_id);if(service.estado==='asignado'&&!funded)return setNotice({type:'info',text:'Todavía falta la confirmación de Mercado Pago.'});setBusy(true);const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:service.id,p_estado:state});setBusy(false);if(error)return setNotice({type:'error',text:error.message});await loadData()}
+ function centerMap(){navigator.geolocation?.getCurrentPosition(pos=>{setUserPos([pos.coords.longitude,pos.coords.latitude]);setMapKey(v=>v+1)},()=>setMapKey(v=>v+1),{enableHighAccuracy:true,timeout:6000,maximumAge:0})}
  if(auth.loading)return<LoadingScreen/>;if(!session||!profile)return<AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>;if(!provider)return<LoadingScreen label="Preparando perfil profesional…"/>
  const released=payments.filter(p=>p.estado==='liberado').reduce((n,p)=>n+Number(p.ganancia_proveedor||0),0),retained=payments.filter(p=>p.estado==='retenido'&&Boolean(p.mp_payment_id)).reduce((n,p)=>n+Number(p.ganancia_proveedor||0),0),currentPayment=service?payments.find(p=>p.servicio_id===service.id):null,funded=currentPayment?.estado==='retenido'&&Boolean(currentPayment.mp_payment_id),topOffer=offers[0]||null
  const action=service?.estado==='asignado'&&funded?{label:'Navegar al cliente',state:'en_camino' as const}:service?.estado==='en_camino'?{label:'Llegué al cliente',state:'en_progreso' as const}:service?.estado==='en_progreso'?{label:'Finalizar y pedir aprobación',state:'esperando_aprobacion' as const}:null
  const step=service?.estado==='asignado'?1:service?.estado==='en_camino'?2:service?.estado==='en_progreso'?3:service?.estado==='esperando_aprobacion'?4:0
  return <div className="ugo-provider-prototype">
-  <div ref={mapNode} className="ugo-provider-map"/>
+  <div className="ugo-provider-map"><iframe key={mapKey} title="Mapa UGO" src={mapSrc} loading="eager" referrerPolicy="no-referrer-when-downgrade"/></div>
   {tab==='radar'&&<>
    <div className="ugo-provider-topbar"><div className="ugo-provider-identity"><div className="ugo-provider-logo">U.GO <span>PRO</span></div><div className="ugo-provider-person"><b>{profile.nombre}</b><small>⭐ {Number(profile.karma||5).toFixed(1)}</small></div><button className={`ugo-provider-online ${provider.disponible?'on':''}`} onClick={toggleOnline} disabled={busy}><i/>{provider.disponible?'Online':'Offline'}</button><div className="ugo-provider-lang">PT</div></div></div>
    {offers.length>0&&<div className="ugo-provider-demo-markers">{offers.slice(0,3).map((o,i)=>{const initials=(o.servicio?.cliente?.nombre||'CL').split(' ').map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();return <span key={o.id} className={`m${i+1}`}><b>{initials}</b><em>{money(o.tarifa_ofrecida,o.servicio?.moneda)}</em></span>})}</div>}
    <div className="ugo-provider-status-card"><span><i/>{provider.disponible?'Online':'Offline'}</span><p>{provider.disponible?(offers.length?`${offers.length} trabajo${offers.length===1?'':'s'} disponible${offers.length===1?'':'s'} en tu zona`:'Buscando trabajos en tu zona...'):'Activá Online para recibir trabajos'}</p></div>
-   <button className="ugo-provider-center-map" onClick={()=>mapRef.current?.easeTo({center:userPos,zoom:13,duration:600})}>⌖ <b>CENTRAR MAPA</b></button>
+   <button className="ugo-provider-center-map" onClick={centerMap}>⌖ <b>CENTRAR MAPA</b></button>
    {service&&<div className="ugo-provider-mission-sheet"><small>MISIÓN ACTIVA</small><h3>{service.categoria?.emoji} {service.categoria?.nombre||'Servicio'}</h3><p>{service.cliente?.nombre||'Cliente UGO'} · {service.direccion_cliente||'Dirección por confirmar'}</p><div className="ugo-provider-step">{[1,2,3,4].map(n=><i key={n} className={n<=step?'done':''}/>)}</div><p>{service.descripcion}</p>{service.estado==='asignado'&&!funded&&<p style={{marginTop:10}}>Pago pendiente de protección.</p>}{action&&<button className="ugo-provider-primary" onClick={()=>advance(action.state)} disabled={busy}>{action.label}</button>}{service.estado==='esperando_aprobacion'&&<button className="ugo-provider-primary" disabled>Esperando aprobación del cliente</button>}</div>}
   </>}
   {notice&&<div className={`ugo-provider-notice ${notice.type}`}>{notice.text}</div>}
