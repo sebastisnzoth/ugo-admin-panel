@@ -27,7 +27,8 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
     if(roleRef.current==='client') window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:userText}}))
     const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({message:userText,role:roleRef.current,context:contextRef.current,history:historyRef.current.slice(-10)})})
     const data=await response.json().catch(()=>({})) as GeminiReply&{error?:string};if(!response.ok)throw new Error(data.error||`Gemini respondió ${response.status}`);const reply=String(data.reply||'').trim();if(!reply)throw new Error('RESPUESTA_VACIA')
-    historyRef.current=[...historyRef.current,{role:'user',content:userText},{role:'assistant',content:reply}].slice(-12);writeHistory(historyKeyRef.current,historyRef.current)
+    const nextTurns:ChatTurn[]=[...historyRef.current,{role:'user',content:userText},{role:'assistant',content:reply}]
+    historyRef.current=nextTurns.slice(-12);writeHistory(historyKeyRef.current,historyRef.current)
     if(roleRef.current==='client')window.dispatchEvent(new CustomEvent('ugo:hugo-ai-intent',{detail:{text:userText,action:data.action||'none',categoryHint:data.category_hint||null,urgent:Boolean(data.urgent),description:data.description||null}}))
     setAssistantTranscript(reply.slice(-500));await speak(reply)
   },[speak])
