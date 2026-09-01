@@ -1,6 +1,4 @@
 import React,{useCallback,useEffect,useState}from'react'
-import{ReactNode}from'react'
-import{File}from'buffer'
 import type{Service}from'./shared'
 import{supabase}from'../lib/supabase'
 
