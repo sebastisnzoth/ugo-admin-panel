@@ -25,9 +25,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { data: authData, error: authError } = await admin.auth.getUser(accessToken)
     if (authError || !authData.user) return res.status(401).json({ error: 'Sesión inválida o vencida.' })
 
-    // Ejecutar el RPC con la sesión real del proveedor. El RPC usa auth.uid(),
-    // valida rol, cuenta de cobro, saldo disponible y evita doble retiro concurrente.
-    const userClient = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '', {
+    const userClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
       global: { headers: { Authorization: `Bearer ${accessToken}` } },
       auth: { persistSession: false },
     })
