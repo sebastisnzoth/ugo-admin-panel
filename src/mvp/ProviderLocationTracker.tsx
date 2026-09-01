@@ -25,7 +25,7 @@ export function ProviderLocationTracker({service}:Props){
    if(!alive||!data.user)return
    const userId=data.user.id
    const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',userId).maybeSingle()
-   if(alive)setAvailable(Boolean(profile?.online||profile?.disponible))
+   if(alive)setAvailable(Boolean(profile&&(profile.online||profile.disponible)))
    channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},(payload:any)=>{
     const row=payload.new||{}
     if(alive)setAvailable(Boolean(row.online||row.disponible))
@@ -42,7 +42,7 @@ export function ProviderLocationTracker({service}:Props){
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
    writing=true
-   const{error}=await supabase.rpc('actualizar_ubicacion_proveedor',{p_lat:point[0],p_lng:point[1]})
+   const{error}=await (supabase as any).rpc('actualizar_ubicacion_proveedor',{p_lat:point[0],p_lng:point[1]})
    writing=false
    if(!error){lastWrite=Date.now();lastPoint=point}
   },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
