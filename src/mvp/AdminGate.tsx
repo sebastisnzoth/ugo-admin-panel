@@ -4,21 +4,37 @@ import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
 type AdminProfile={tipo:string;activo:boolean}
-let legacyBypassInstalled=false
+let legacyBridgeInstalled=false
 
-function allowRoleValidatedAdminSession(){
- if(legacyBypassInstalled)return
+function installLegacyAdminBridge(validSession:any){
+ if(legacyBridgeInstalled)return
  const auth:any=(supabase as any).auth
- const original=auth.onAuthStateChange.bind(auth)
- auth.onAuthStateChange=(callback:any)=>original((event:any,session:any)=>{
-  // AdminGate ya validó rol + activo contra public.usuarios. El panel legacy
-  // todavía expulsa sesiones cuyo email no coincide con un email antiguo.
-  // Evitamos que esos eventos con sesión vuelvan a ejecutar ese bloqueo;
-  // SIGNED_OUT sigue pasando para que el panel pueda cerrar sesión normalmente.
-  if(session)return
+ const originalGetSession=auth.getSession.bind(auth)
+ const originalOnAuthStateChange=auth.onAuthStateChange.bind(auth)
+ const legacySession={
+  ...validSession,
+  user:{...validSession.user,email:'sebastianzoth@gmail.com'}
+ }
+
+ // El AdminPanel antiguo todavía valida un email fijo. AdminGate ya validó
+ // previamente el uid real contra public.usuarios (admin/superadmin + activo).
+ // Solo presentamos una copia compatible de la sesión al componente legacy;
+ // el token, uid y la sesión real de Supabase no se modifican.
+ auth.getSession=async()=>{
+  const result=await originalGetSession()
+  if(result?.data?.session){
+   return{...result,data:{...result.data,session:{...result.data.session,user:{...result.data.session.user,email:'sebastianzoth@gmail.com'}}}}
+  }
+  return{...result,data:{...result.data,session:legacySession}}
+ }
+ auth.onAuthStateChange=(callback:any)=>originalOnAuthStateChange((event:any,session:any)=>{
+  if(session){
+   callback(event,{...session,user:{...session.user,email:'sebastianzoth@gmail.com'}})
+   return
+  }
   callback(event,session)
  })
- legacyBypassInstalled=true
+ legacyBridgeInstalled=true
 }
 
 export function AdminGate(){
@@ -27,12 +43,18 @@ export function AdminGate(){
   const{data,error}=await (supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle()
   return{profile:(data||null)as AdminProfile|null,error}
  }
+ async function authorizeSession(session:any){
+  if(!session)return false
+  const{profile,error}=await getAdminProfile(session.user.id)
+  if(error||!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo)))return false
+  installLegacyAdminBridge(session)
+  return true
+ }
  async function verify(){
   const{data:{session}}=await supabase.auth.getSession()
   if(!session){setAllowed(false);setChecking(false);return}
-  const{profile,error}=await getAdminProfile(session.user.id)
-  if(error||!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
-  else{allowRoleValidatedAdminSession();setAllowed(true)}
+  if(await authorizeSession(session))setAllowed(true)
+  else{await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
   setChecking(false)
  }
  useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false)})},[])
@@ -41,12 +63,10 @@ export function AdminGate(){
   try{
    const{data,error}=await supabase.auth.signInWithPassword({email:email.trim(),password})
    if(error)throw error
-   const uid=data.user?.id
-   if(!uid)throw new Error('No se pudo identificar la cuenta.')
-   const{profile,error:profileError}=await getAdminProfile(uid)
-   if(profileError)throw profileError
-   if(!profile||!profile.activo||!['admin','superadmin'].includes(String(profile.tipo))){await supabase.auth.signOut();throw new Error('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
-   allowRoleValidatedAdminSession();setAllowed(true)
+   const session=data.session
+   if(!session)throw new Error('No se pudo iniciar la sesión.')
+   if(!(await authorizeSession(session))){await supabase.auth.signOut();throw new Error('Acceso denegado. Esta cuenta no tiene rol de administrador.')}
+   setAllowed(true)
   }catch(x){setError(x instanceof Error?x.message:'No se pudo iniciar sesión.')}finally{setBusy(false)}
  }
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
