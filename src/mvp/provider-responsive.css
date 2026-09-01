@@ -1,0 +1,25 @@
+@media (min-width:900px){
+  .ugo-provider-prototype{left:0!important;right:0!important;width:100%!important;max-width:none!important;transform:none!important;border:0!important;border-radius:0!important;box-shadow:none!important}
+  .ugo-provider-prototype:before{display:none!important}
+  .ugo-provider-topbar{left:clamp(24px,4vw,64px)!important;right:clamp(24px,4vw,64px)!important;top:24px!important}
+  .ugo-provider-identity{max-width:760px;margin:0 auto;padding:12px 16px!important;border-radius:20px!important}
+  .ugo-provider-status-card{left:50%!important;right:auto!important;width:min(620px,54vw)!important;transform:translate(-50%,-50%)!important;top:54%!important;padding:22px 20px!important;border-radius:22px!important}
+  .ugo-provider-status-card p{font-size:14px!important}
+  .ugo-provider-demo-markers .m1{left:39%!important;top:39%!important}
+  .ugo-provider-demo-markers .m2{left:52%!important;top:34%!important}
+  .ugo-provider-demo-markers .m3{left:61%!important;top:54%!important}
+  .ugo-provider-center-map{left:clamp(24px,4vw,64px)!important;bottom:92px!important;padding:12px 16px!important;font-size:11px!important}
+  .ugo-provider-bottomnav{left:50%!important;right:auto!important;width:min(760px,70vw)!important;transform:translateX(-50%)!important;bottom:16px!important;border-radius:22px!important;border:1px solid rgba(20,33,42,.08)!important;box-shadow:0 10px 30px rgba(20,33,42,.16)!important;overflow:visible!important}
+  .ugo-provider-map{bottom:0!important}
+  .ugo-provider-mission-sheet{left:50%!important;right:auto!important;width:min(620px,54vw)!important;transform:translateX(-50%)!important;bottom:104px!important;max-height:44vh!important}
+  .ugo-provider-sheet{width:min(720px,72vw)!important;max-width:720px!important;border-radius:28px!important;max-height:78vh!important}
+  .ugo-provider-panel{inset:0!important;padding:110px max(7vw,72px) 110px!important}
+  .ugo-provider-panel>h2,.ugo-provider-panel-card{max-width:920px;margin-left:auto;margin-right:auto}
+}
+
+@media (min-width:1200px){
+  .ugo-provider-topbar{left:72px!important;right:72px!important}
+  .ugo-provider-status-card{width:min(680px,46vw)!important}
+  .ugo-provider-bottomnav{width:min(820px,62vw)!important}
+  .ugo-provider-mission-sheet{width:min(680px,46vw)!important}
+}
