@@ -3,6 +3,7 @@ import{supabase}from'../lib/supabase'
 import type{Service}from'./shared'
 
 type Props={service?:Service|null}
+type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=10_000
 const MIN_MOVE_M=15
@@ -27,9 +28,10 @@ export function ProviderLocationTracker({service}:Props){
    if(!alive||!data.user)return
    const userId=data.user.id
    const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',userId).maybeSingle()
-   if(alive)setAvailable(Boolean(profile&&(profile.online||profile.disponible)))
+   const trackingProfile=profile as TrackingProfile|null
+   if(alive)setAvailable(Boolean(trackingProfile&&(trackingProfile.online||trackingProfile.disponible)))
    channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},(payload:any)=>{
-    const row=payload.new||{}
+    const row=(payload.new||{}) as TrackingProfile
     if(alive)setAvailable(Boolean(row.online||row.disponible))
    }).subscribe()
   }).catch(()=>{})
