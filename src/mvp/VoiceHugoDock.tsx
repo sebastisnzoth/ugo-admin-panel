@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { STATUS_LABELS, type Service } from './shared'
 import { useHugoVoice } from './useHugoVoice'
+import { ProviderLocationTracker } from './ProviderLocationTracker'
 import './voice.css'
 
 type Props = { role:'client'|'provider'; accessToken?:string; service?:Service|null; availableOffers?:number; mode?:'dock'|'quantum'; draftContext?:string }
@@ -23,5 +24,5 @@ export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='
   </div>
  }
 
- return <><button className={`mvp-orb ${voice.active?'voice-live':''}`} onClick={()=>setOpen(v=>!v)} aria-label="Abrir Hugo"><span/></button>{open&&<aside className="mvp-hugo-panel"><div><div className="mvp-mini-orb"/><strong>Hugo</strong><button onClick={()=>setOpen(false)}>×</button></div><p>{text}</p><small>Contexto: {role} · {service?STATUS_LABELS[service.estado]:'sin servicio'}</small><div className="mvp-voice-controls"><div className="mvp-voice-row"><button className={`mvp-voice-btn ${voice.active?'stop':''}`} onClick={voice.active?voice.disconnect:voice.connect} disabled={voice.state==='connecting'}>{voice.active?'■ Cortar conversación':'🎙 Hablar con Hugo'}</button><span className={`mvp-voice-state ${voice.state}`}><i/>{VOICE_LABELS[voice.state]}</span></div>{voice.error&&<div className="mvp-voice-error">{voice.error}</div>}{voice.userTranscript&&<p className="mvp-voice-transcript"><strong>Vos:</strong> {voice.userTranscript}</p>}{voice.assistantTranscript&&<p className="mvp-voice-transcript"><strong>Hugo:</strong> {voice.assistantTranscript}</p>}</div></aside>}</>
+ return <>{role==='provider'&&<ProviderLocationTracker service={service}/>}<button className={`mvp-orb ${voice.active?'voice-live':''}`} onClick={()=>setOpen(v=>!v)} aria-label="Abrir Hugo"><span/></button>{open&&<aside className="mvp-hugo-panel"><div><div className="mvp-mini-orb"/><strong>Hugo</strong><button onClick={()=>setOpen(false)}>×</button></div><p>{text}</p><small>Contexto: {role} · {service?STATUS_LABELS[service.estado]:'sin servicio'}</small><div className="mvp-voice-controls"><div className="mvp-voice-row"><button className={`mvp-voice-btn ${voice.active?'stop':''}`} onClick={voice.active?voice.disconnect:voice.connect} disabled={voice.state==='connecting'}>{voice.active?'■ Cortar conversación':'🎙 Hablar con Hugo'}</button><span className={`mvp-voice-state ${voice.state}`}><i/>{VOICE_LABELS[voice.state]}</span></div>{voice.error&&<div className="mvp-voice-error">{voice.error}</div>}{voice.userTranscript&&<p className="mvp-voice-transcript"><strong>Vos:</strong> {voice.userTranscript}</p>}{voice.assistantTranscript&&<p className="mvp-voice-transcript"><strong>Hugo:</strong> {voice.assistantTranscript}</p>}</div></aside>}</>
 }
