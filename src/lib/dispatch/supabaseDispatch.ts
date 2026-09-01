@@ -1,8 +1,36 @@
 import { supabase } from '../supabase'
-import type { DispatchProvider, DispatchRequest, DispatchResult } from './types'
+import type { Coordinates, DispatchProvider, DispatchRequest, DispatchResult } from './types'
+
+function storedPickup(): Coordinates | null {
+  try {
+    const raw = sessionStorage.getItem('ugo:last-client-location')
+    if (!raw) return null
+    const value = JSON.parse(raw) as { latitude?: unknown; longitude?: unknown; at?: unknown }
+    const latitude = Number(value.latitude)
+    const longitude = Number(value.longitude)
+    const at = Number(value.at)
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null
+    if (Number.isFinite(at) && Date.now() - at > 10 * 60 * 1000) return null
+    return { latitude, longitude }
+  } catch {
+    return null
+  }
+}
+
+async function persistPickup(serviceId: string, pickup: Coordinates | null) {
+  if (!pickup) return
+  const { error } = await (supabase as any).rpc('guardar_ubicacion_servicio_cliente', {
+    p_servicio_id: serviceId,
+    p_lat: pickup.latitude,
+    p_lng: pickup.longitude,
+  })
+  if (error) console.warn('No se pudo persistir ubicación del servicio', error)
+}
 
 export class SupabaseDispatchProvider implements DispatchProvider {
   async start(request: DispatchRequest): Promise<DispatchResult> {
+    await persistPickup(request.serviceId, request.pickup || storedPickup())
+
     if (request.preferredProviderId) {
       const { data, error } = await (supabase as any).rpc('iniciar_matching_dirigido', {
         p_servicio_id: request.serviceId,
