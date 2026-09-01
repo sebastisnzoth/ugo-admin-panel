@@ -16,7 +16,7 @@ export type DispatchCandidate = {
 export type DispatchRequest = {
   serviceId: string
   category: string
-  pickup: Coordinates
+  pickup?: Coordinates | null
   initialRadiusKm?: number
   maxRadiusKm?: number
   timeoutSeconds?: number
