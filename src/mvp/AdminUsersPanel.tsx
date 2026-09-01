@@ -1,0 +1,36 @@
+import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{supabase}from'../lib/supabase'
+
+type AuthRow={id:string;email:string|null;email_confirmed:boolean;last_sign_in_at:string|null;created_at:string;usuario_nombre:string|null;usuario_tipo:string|null;has_profile:boolean}
+type UserRow={id:string;nombre:string;apellido:string|null;tipo:string;activo:boolean;foto_url:string|null;pais:string|null;zona:string|null;karma:number;servicios_completados:number;created_at:string;updated_at:string}
+type ClientProfile={usuario_id:string;telefono:string|null;direccion:string|null;barrio:string|null;ciudad:string|null}
+type ProviderProfile={usuario_id:string;telefono_profesional:string|null;ciudad_base:string|null;estado_verificacion:string;online:boolean;disponible:boolean;categoria?:{nombre:string;emoji:string}|null}
+type Row=UserRow&{email:string|null;email_confirmed:boolean;last_sign_in_at:string|null;telefono:string|null;ubicacion:string|null;verification:string|null;online:boolean;categoria?:{nombre:string;emoji:string}|null}
+
+export function AdminUsersPanel(){
+ const[open,setOpen]=useState(false),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>('todos'),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState('')
+ const load=useCallback(async()=>{
+  const[{data:auth,error:ae},{data:users,error:ue},{data:clients},{data:providers}]=await Promise.all([
+   (supabase as any).rpc('admin_get_auth_users'),
+   supabase.from('usuarios').select('id,nombre,apellido,tipo,activo,foto_url,pais,zona,karma,servicios_completados,created_at,updated_at').order('created_at',{ascending:false}).limit(500),
+   supabase.from('perfiles_cliente').select('usuario_id,telefono,direccion,barrio,ciudad'),
+   supabase.from('perfiles_proveedor').select('usuario_id,telefono_profesional,ciudad_base,estado_verificacion,online,disponible,categoria:categorias!perfiles_proveedor_categoria_principal_id_fkey(nombre,emoji)'),
+  ]);if(ae)throw ae;if(ue)throw ue
+  const am=new Map<string,AuthRow>((auth||[]).map((x:AuthRow)=>[x.id,x])),cm=new Map<string,ClientProfile>((clients||[]).map((x:ClientProfile)=>[x.usuario_id,x])),pm=new Map<string,ProviderProfile>((providers||[]).map((x:ProviderProfile)=>[x.usuario_id,x]))
+  setRows(((users||[]) as UserRow[]).map(u=>{const a=am.get(u.id),c=cm.get(u.id),p=pm.get(u.id);return{...u,email:a?.email||null,email_confirmed:Boolean(a?.email_confirmed),last_sign_in_at:a?.last_sign_in_at||null,telefono:p?.telefono_profesional||c?.telefono||null,ubicacion:p?.ciudad_base||[c?.direccion,c?.barrio,c?.ciudad].filter(Boolean).join(', ')||u.zona||null,verification:p?.estado_verificacion||null,online:Boolean(p?.online),categoria:p?.categoria||null}}))
+ },[])
+ useEffect(()=>{if(!open)return;load().catch(e=>setMessage(e.message));const ch=supabase.channel('admin-users-modern').on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_cliente'},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[open,load])
+ const visible=useMemo(()=>{const q=query.trim().toLowerCase();return rows.filter(r=>(filter==='todos'||r.tipo===filter||(filter==='admin'&&['admin','superadmin'].includes(r.tipo)))&&(!q||`${r.nombre} ${r.apellido||''} ${r.email||''} ${r.telefono||''} ${r.ubicacion||''}`.toLowerCase().includes(q)))},[rows,filter,query])
+ async function setActive(r:Row,next:boolean){setBusy(r.id);setMessage('');const{error}=await (supabase as any).rpc('admin_set_usuario_activo',{p_usuario_id:r.id,p_activo:next,p_motivo:next?'Reactivación desde Admin UGO':'Desactivación desde Admin UGO'});setBusy('');if(error)return setMessage(error.message);setMessage(next?'Usuario reactivado.':'Usuario desactivado. Sus próximas sesiones de Cliente/Proveedor serán rechazadas.');await load()}
+ return <>
+  <button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:118,zIndex:14016,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#fff',color:'#111',boxShadow:'0 8px 28px rgba(0,0,0,.22)',cursor:'pointer'}}>👥 Usuarios</button>
+  {open&&<aside style={{position:'fixed',left:18,bottom:168,zIndex:14015,width:'min(720px,calc(100vw - 36px))',maxHeight:'min(730px,calc(100vh - 190px))',overflow:'auto',background:'#fff',border:'1px solid #ddd',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)',padding:16,color:'#111'}}>
+   <div style={{display:'flex',alignItems:'center',gap:8}}><div style={{flex:1}}><strong>Usuarios UGO</strong><div style={{fontSize:11,opacity:.6}}>Perfiles + Supabase Auth</div></div><button onClick={()=>setOpen(false)} style={{border:0,background:'transparent',fontSize:22,cursor:'pointer'}}>×</button></div>
+   <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar nombre, email, teléfono o ubicación" style={{width:'100%',marginTop:12,padding:10,border:'1px solid #d0d5dd',borderRadius:12}}/>
+   <div style={{display:'flex',gap:5,overflowX:'auto',padding:'10px 0'}}>{(['todos','cliente','proveedor','admin'] as const).map(x=><button key={x} onClick={()=>setFilter(x)} style={{border:'1px solid #ddd',background:filter===x?'#111820':'#fff',color:filter===x?'#fff':'#111',borderRadius:999,padding:'7px 10px',fontSize:11,fontWeight:700}}>{x==='todos'?'Todos':x}</button>)}</div>
+   <div style={{fontSize:11,opacity:.6,marginBottom:7}}>{visible.length} de {rows.length} usuarios</div>
+   {visible.map(r=><article key={r.id} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:10,border:'1px solid #e5e7eb',borderRadius:15,padding:11,marginBottom:7}}><div><div style={{display:'flex',alignItems:'center',gap:6,flexWrap:'wrap'}}><strong>{r.nombre} {r.apellido||''}</strong>{r.online&&<span title="Online">🟢</span>}<span style={{fontSize:9,padding:'3px 6px',borderRadius:999,background:'#f2f4f7'}}>{r.tipo}</span><span style={{fontSize:9,padding:'3px 6px',borderRadius:999,background:r.activo?'#ecfdf3':'#fef3f2',color:r.activo?'#067647':'#b42318'}}>{r.activo?'activo':'inactivo'}</span></div><div style={{fontSize:11,marginTop:4}}>{r.email||'Sin email Auth'} {r.email_confirmed?'✓':''}</div><div style={{fontSize:10,opacity:.65,marginTop:2}}>{r.telefono||'Sin teléfono'} · {r.ubicacion||'Sin ubicación'}</div>{r.tipo==='proveedor'&&<div style={{fontSize:10,opacity:.7,marginTop:3}}>{r.categoria?.emoji||'🛠️'} {r.categoria?.nombre||'Sin categoría'} · verificación: {r.verification||'sin estado'} · ⭐ {Number(r.karma||0).toFixed(1)}</div>}<div style={{fontSize:9,opacity:.5,marginTop:3}}>Último acceso: {r.last_sign_in_at?new Date(r.last_sign_in_at).toLocaleString('pt-BR'):'nunca'}</div></div><div style={{display:'flex',alignItems:'center'}}>{r.activo?<button disabled={!!busy} onClick={()=>setActive(r,false)} style={{padding:'7px 9px',border:'1px solid #f4b4b4',borderRadius:9,background:'#fff',color:'#b42318'}}>Desactivar</button>:<button disabled={!!busy} onClick={()=>setActive(r,true)} style={{padding:'7px 9px',border:0,borderRadius:9,background:'#067647',color:'#fff'}}>Reactivar</button>}</div></article>)}
+   {message&&<div style={{fontSize:12,paddingTop:6}}>{message}</div>}
+  </aside>}
+ </>
+}
