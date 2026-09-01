@@ -10,6 +10,7 @@ import'./provider-responsive.css'
 type MercadoPagoPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null}
 type Tab='radar'|'jobs'|'earnings'|'profile'
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
+const MAP_STYLE:any={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
 
 export function ProviderApp(){
  const auth=useRoleSession('provider'),{supabase,session,profile}=auth
@@ -19,8 +20,8 @@ export function ProviderApp(){
  useEffect(()=>{loadData().catch((e:Error)=>setNotice({type:'error',text:e.message}))},[loadData])
  useEffect(()=>{if(!session)return;const ch:RealtimeChannel=supabase.channel(`provider-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio',filter:`proveedor_id=eq.${session.user.id}`},()=>{setOfferOpen(true);loadData()}).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${session.user.id}`},loadData).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${session.user.id}`},loadData).subscribe();return()=>{supabase.removeChannel(ch)}},[loadData,session,supabase])
  useEffect(()=>{navigator.geolocation?.getCurrentPosition(pos=>setUserPos([pos.coords.longitude,pos.coords.latitude]),()=>{}, {enableHighAccuracy:true,timeout:6000,maximumAge:60000})},[])
- useEffect(()=>{if(!mapNode.current||mapRef.current)return;const map=new maplibregl.Map({container:mapNode.current,style:'https://tiles.openfreemap.org/styles/positron',center:userPos,zoom:12.5,attributionControl:false});mapRef.current=map;return()=>{map.remove();mapRef.current=null}},[])
- useEffect(()=>{mapRef.current?.easeTo({center:userPos,zoom:13,duration:700})},[userPos])
+ useEffect(()=>{if(!mapNode.current||mapRef.current)return;const map=new maplibregl.Map({container:mapNode.current,style:MAP_STYLE,center:userPos,zoom:13,attributionControl:false});map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left');mapRef.current=map;return()=>{map.remove();mapRef.current=null}},[])
+ useEffect(()=>{mapRef.current?.resize();mapRef.current?.easeTo({center:userPos,zoom:13,duration:700})},[userPos])
  async function update(next:Partial<ProviderProfile>){if(!session||!provider)return;setBusy(true);const{error}=await supabase.from('perfiles_proveedor').update(next).eq('usuario_id',session.user.id);setBusy(false);if(error)return setNotice({type:'error',text:error.message});await loadData()}
  async function toggleOnline(){if(!provider)return;const next=!provider.disponible;await update({disponible:next,online:next})}
  async function offer(id:string,accept:boolean){setBusy(true);const{error}=await supabase.rpc(accept?'aceptar_oferta':'rechazar_oferta',{p_oferta_id:id});setBusy(false);if(error)return setNotice({type:'error',text:error.message});setOfferOpen(false);setNotice({type:accept?'ok':'info',text:accept?'Misión aceptada. Esperando pago protegido del cliente.':'Oferta rechazada.'});await loadData()}
@@ -33,8 +34,8 @@ export function ProviderApp(){
   <div ref={mapNode} className="ugo-provider-map"/>
   {tab==='radar'&&<>
    <div className="ugo-provider-topbar"><div className="ugo-provider-identity"><div className="ugo-provider-logo">U.GO <span>PRO</span></div><div className="ugo-provider-person"><b>{profile.nombre}</b><small>⭐ {Number(profile.karma||5).toFixed(1)}</small></div><button className={`ugo-provider-online ${provider.disponible?'on':''}`} onClick={toggleOnline} disabled={busy}><i/>{provider.disponible?'Online':'Offline'}</button><div className="ugo-provider-lang">PT</div></div></div>
-   <div className="ugo-provider-demo-markers"><span className="m1"><b>MR</b><em>R$85</em></span><span className="m2"><b>JA</b><em>R$75</em></span><span className="m3"><b>AS</b><em>R$70</em></span></div>
-   <div className="ugo-provider-status-card"><span><i/>{provider.disponible?'Online':'Offline'}</span><p>{provider.disponible?'Buscando trabajos en tu zona...':'Activá Online para recibir trabajos'}</p></div>
+   {offers.length>0&&<div className="ugo-provider-demo-markers">{offers.slice(0,3).map((o,i)=>{const initials=(o.servicio?.cliente?.nombre||'CL').split(' ').map((x:string)=>x[0]).join('').slice(0,2).toUpperCase();return <span key={o.id} className={`m${i+1}`}><b>{initials}</b><em>{money(o.tarifa_ofrecida,o.servicio?.moneda)}</em></span>})}</div>}
+   <div className="ugo-provider-status-card"><span><i/>{provider.disponible?'Online':'Offline'}</span><p>{provider.disponible?(offers.length?`${offers.length} trabajo${offers.length===1?'':'s'} disponible${offers.length===1?'':'s'} en tu zona`:'Buscando trabajos en tu zona...'):'Activá Online para recibir trabajos'}</p></div>
    <button className="ugo-provider-center-map" onClick={()=>mapRef.current?.easeTo({center:userPos,zoom:13,duration:600})}>⌖ <b>CENTRAR MAPA</b></button>
    {service&&<div className="ugo-provider-mission-sheet"><small>MISIÓN ACTIVA</small><h3>{service.categoria?.emoji} {service.categoria?.nombre||'Servicio'}</h3><p>{service.cliente?.nombre||'Cliente UGO'} · {service.direccion_cliente||'Dirección por confirmar'}</p><div className="ugo-provider-step">{[1,2,3,4].map(n=><i key={n} className={n<=step?'done':''}/>)}</div><p>{service.descripcion}</p>{service.estado==='asignado'&&!funded&&<p style={{marginTop:10}}>Pago pendiente de protección.</p>}{action&&<button className="ugo-provider-primary" onClick={()=>advance(action.state)} disabled={busy}>{action.label}</button>}{service.estado==='esperando_aprobacion'&&<button className="ugo-provider-primary" disabled>Esperando aprobación del cliente</button>}</div>}
   </>}
