@@ -1,0 +1,14 @@
+{
+  "name":"U.GO — Servicios por hora",
+  "short_name":"U.GO",
+  "start_url":"/",
+  "scope":"/",
+  "display":"standalone",
+  "background_color":"#ffffff",
+  "theme_color":"#05944F",
+  "description":"Servicios por hora con U.GO, Hugo y seguimiento en tiempo real.",
+  "icons":[
+    {"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"any"},
+    {"src":"/favicon.svg","sizes":"any","type":"image/svg+xml","purpose":"maskable"}
+  ]
+}
