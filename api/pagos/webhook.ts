@@ -16,10 +16,15 @@ function eventTypeFrom(req: VercelRequest) {
   return String(queryType || req.body?.type || req.body?.action || '')
 }
 
+function hintedServiceId(req: VercelRequest) {
+  const raw = Array.isArray(req.query.svc) ? req.query.svc[0] : req.query.svc
+  return String(raw || '')
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(200).json({ received: true })
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !MP_ACCESS_TOKEN) {
-    console.error('Mercado Pago webhook missing server configuration')
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    console.error('Mercado Pago webhook missing Supabase server configuration')
     return res.status(200).json({ received: true })
   }
 
@@ -32,8 +37,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
   try {
+    let serviceHint = hintedServiceId(req)
+    let hintedService:any = null
+    let token = MP_ACCESS_TOKEN || ''
+
+    if (serviceHint) {
+      const { data } = await sb.from('servicios').select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado').eq('id', serviceHint).maybeSingle()
+      hintedService = data
+      if (hintedService?.proveedor_id) {
+        const { data: oauthRows } = await sb.rpc('mp_oauth_get_private', { p_proveedor_id: hintedService.proveedor_id })
+        const seller = oauthRows?.[0]
+        if (seller?.access_token && (!seller.expires_at || new Date(seller.expires_at).getTime() > Date.now())) token = seller.access_token
+      }
+    }
+
+    if (!token) {
+      console.error('Mercado Pago webhook has no usable access token')
+      return res.status(200).json({ received: true })
+    }
+
     const mpResponse = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(paymentId)}`, {
-      headers: { Authorization: `Bearer ${MP_ACCESS_TOKEN}` },
+      headers: { Authorization: `Bearer ${token}` },
     })
 
     if (!mpResponse.ok) {
@@ -42,17 +66,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const paymentData = await mpResponse.json()
-    const servicioId = String(paymentData.external_reference || paymentData.metadata?.servicio_id || '')
+    const servicioId = String(paymentData.external_reference || paymentData.metadata?.servicio_id || serviceHint || '')
     if (!servicioId) return res.status(200).json({ received: true, ignored: true })
 
-    const { data: servicio, error: serviceError } = await sb
+    const servicio = hintedService?.id === servicioId ? hintedService : (await sb
       .from('servicios')
       .select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado')
       .eq('id', servicioId)
-      .maybeSingle()
+      .maybeSingle()).data
 
-    if (serviceError || !servicio) {
-      console.error('Servicio del webhook no encontrado:', serviceError)
+    if (!servicio) {
+      console.error('Servicio del webhook no encontrado')
       return res.status(200).json({ received: true })
     }
 
@@ -78,18 +102,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     let nuevoEstado = 'pendiente'
     if (paymentData.status === 'approved' && amountMatches && currencyMatches) nuevoEstado = 'retenido'
-    if (['rejected', 'cancelled', 'refunded', 'charged_back'].includes(paymentData.status)) nuevoEstado = 'fallido'
+    if (paymentData.status === 'refunded') nuevoEstado = 'reembolsado'
+    if (['rejected', 'cancelled', 'charged_back'].includes(paymentData.status)) nuevoEstado = 'fallido'
 
-    const { error: updateError } = await sb
-      .from('pagos')
-      .update({
-        estado: nuevoEstado,
-        mp_status: paymentData.status,
-        mp_payment_id: String(paymentData.id || paymentId),
-        fecha_confirmacion: nuevoEstado === 'retenido' ? new Date().toISOString() : null,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('id', pago.id)
+    const update:any = {
+      estado: nuevoEstado,
+      mp_status: paymentData.status,
+      mp_payment_id: String(paymentData.id || paymentId),
+      updated_at: new Date().toISOString(),
+    }
+    if (nuevoEstado === 'retenido') update.autorizado_at = new Date().toISOString()
+    if (nuevoEstado === 'reembolsado') update.reembolsado_at = new Date().toISOString()
+
+    const { error: updateError } = await sb.from('pagos').update(update).eq('id', pago.id)
 
     if (updateError) {
       console.error('Error actualizando pago:', updateError)
@@ -97,27 +122,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     if (paymentData.status === 'approved' && (!amountMatches || !currencyMatches)) {
-      console.error('Pago aprobado con monto/moneda inconsistente', {
-        servicioId,
-        expectedAmount,
-        paidAmount,
-        expectedCurrency,
-        paidCurrency,
-      })
+      console.error('Pago aprobado con monto/moneda inconsistente', { servicioId, expectedAmount, paidAmount, expectedCurrency, paidCurrency })
       return res.status(200).json({ received: true, updated: true, mismatch: true })
     }
 
-    if (nuevoEstado === 'retenido' && servicio.proveedor_id) {
-      await sb.from('notificaciones').insert({
-        usuario_id: servicio.proveedor_id,
-        tipo: 'pago_retenido',
-        titulo: 'Pago protegido',
-        cuerpo: `El pago del servicio #${servicio.numero || servicioId} quedó retenido. Ya podés iniciar la misión.`,
-        datos: { servicio_id: servicioId, pago_id: pago.id, monto: expectedAmount, moneda: expectedCurrency },
-      }).then(({ error }) => { if (error) console.error('No se pudo crear notificación:', error) })
-    }
-
-    return res.status(200).json({ received: true, updated: true, estado: nuevoEstado })
+    return res.status(200).json({ received: true, updated: true, estado: nuevoEstado, modeloPago: pago.modelo_pago || 'custodia_ugo' })
   } catch (error) {
     console.error('Error en webhook Mercado Pago:', error)
     return res.status(200).json({ received: true })
