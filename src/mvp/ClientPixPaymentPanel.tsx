@@ -1,10 +1,8 @@
 import React,{useCallback,useEffect,useState}from'react'
-import{createClient}from'@supabase/supabase-js'
+import{ReactNode}from'react'
+import{File}from'buffer'
 import type{Service}from'./shared'
-
-const supabaseUrl=import.meta.env.VITE_SUPABASE_URL as string
-const supabaseKey=import.meta.env.VITE_SUPABASE_ANON_KEY as string
-const supabase=createClient(supabaseUrl,supabaseKey)
+import{supabase}from'../lib/supabase'
 
 type Props={service:Service;accessToken?:string}
 type PixState={estado?:string;pix_copia_cola?:string|null;pix_qr_code?:string|null;pix_expira_at?:string|null;mp_payment_id?:string|null;metodo?:string|null}
