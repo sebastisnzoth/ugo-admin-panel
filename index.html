@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>U.GO — Panel de Control</title>
     <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#05944F" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="U.GO" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/favicon.svg" />
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { background: #070a0d; overflow: hidden; }
@@ -43,6 +49,11 @@
           try { localStorage.removeItem('ugo_oauth_dest'); } catch(_) {}
         }
       })();
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function(){
+          navigator.serviceWorker.register('/sw.js').catch(function(err){ console.warn('UGO service worker', err); });
+        });
+      }
     </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
