@@ -2,6 +2,7 @@ import React,{useEffect,useState}from'react'
 import type{FormEvent}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
+import{PixReconciliationPanel}from'./PixReconciliationPanel'
 
 type AdminProfile={tipo:string;activo:boolean}
 let legacyBridgeInstalled=false
@@ -70,6 +71,6 @@ export function AdminGate(){
   }catch(x){setError(x instanceof Error?x.message:'No se pudo iniciar sesión.')}finally{setBusy(false)}
  }
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
- if(allowed)return <AdminPanel/>
+ if(allowed)return <><AdminPanel/><PixReconciliationPanel/></>
  return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Panel de control</h1><p>Solo administradores autorizados.</p><form onSubmit={login}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label><label>Contraseña<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Validando…':'Ingresar →'}</button></form></div></div>
 }
