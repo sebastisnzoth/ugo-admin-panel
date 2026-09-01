@@ -1,96 +1,50 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { createClient } from '@supabase/supabase-js'
 
-const sb = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_KEY!
-);
-
-const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN!;
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(503).json({ error: 'Supabase no está configurado en el servidor.' })
+  }
+
+  const authHeader = req.headers.authorization || ''
+  const accessToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  if (!accessToken) return res.status(401).json({ error: 'Sesión requerida.' })
+
+  const monto = Number(req.body?.monto)
+  if (!Number.isFinite(monto) || monto < 50) {
+    return res.status(400).json({ error: 'El monto mínimo de retiro es R$ 50.' })
+  }
+
+  const admin = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
   try {
-    const { proveedorId, monto, cuentaBanco } = req.body;
+    const { data: authData, error: authError } = await admin.auth.getUser(accessToken)
+    if (authError || !authData.user) return res.status(401).json({ error: 'Sesión inválida o vencida.' })
 
-    if (!proveedorId || !monto || !cuentaBanco) {
-      return res.status(400).json({ error: 'Faltan parámetros' });
+    // Ejecutar el RPC con la sesión real del proveedor. El RPC usa auth.uid(),
+    // valida rol, cuenta de cobro, saldo disponible y evita doble retiro concurrente.
+    const userClient = createClient(SUPABASE_URL, process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '', {
+      global: { headers: { Authorization: `Bearer ${accessToken}` } },
+      auth: { persistSession: false },
+    })
+
+    const { data, error } = await (userClient as any).rpc('solicitar_retiro', { p_monto: monto })
+    if (error) {
+      const status = /saldo insuficiente|monto mínimo|configurá tu cuenta/i.test(error.message) ? 409 : 400
+      return res.status(status).json({ error: error.message })
     }
 
-    if (monto < 50) {
-      return res.status(400).json({ error: 'Monto mínimo: R$ 50' });
-    }
-
-    // Verificar que el proveedor tenga saldo disponible
-    const { data: pagos } = await sb
-      .from('pagos')
-      .select('monto_proveedor')
-      .eq('proveedor_id', proveedorId)
-      .eq('estado', 'confirmado');
-
-    const saldoDisponible = (pagos || []).reduce((a, p) => a + (p.monto_proveedor || 0), 0);
-
-    if (saldoDisponible < monto) {
-      return res.status(400).json({
-        error: 'Saldo insuficiente',
-        saldoDisponible,
-        requested: monto,
-      });
-    }
-
-    // Crear transferencia en Mercado Pago (usando API de transfers)
-    // NOTA: En SANDBOX esto es simulado. En PRODUCCIÓN necesitas receiver_id real
-    const transferData = {
-      external_reference: `retiro_${proveedorId}_${Date.now()}`,
-      amount: monto,
-      description: `Retiro U.GO - Proveedor ${proveedorId}`,
-      receiver_id: process.env.MERCADO_PAGO_RECEIVER_ID || 123456789, // Usar account_money o receiver_id real
-    };
-
-    // En sandbox, simplemente crear registro de retiro
-    // En producción, hacer transfer a través de MP
-    const mpTransferId = `SANDBOX_${Date.now()}`;
-
-    // Guardar retiro en DB
-    const { data: retiro, error: dbError } = await sb
-      .from('retiros')
-      .insert({
-        proveedor_id: proveedorId,
-        monto,
-        estado: 'procesando',
-        mp_transfer_id: mpTransferId,
-        cuenta_banco: cuentaBanco,
-      })
-      .select()
-      .single();
-
-    if (dbError) {
-      return res.status(500).json({ error: 'Error al crear retiro', details: dbError });
-    }
-
-    // En sandbox, confirmar automáticamente
-    if (process.env.NODE_ENV === 'development') {
-      setTimeout(async () => {
-        await sb
-          .from('retiros')
-          .update({
-            estado: 'completado',
-            fecha_completacion: new Date().toISOString(),
-          })
-          .eq('id', retiro.id);
-      }, 2000);
-    }
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
-      retiroId: retiro.id,
-      monto,
-      estado: 'procesando',
-      mensaje: 'Tu retiro está siendo procesado. Se acreditará en 1-2 días hábiles.',
-    });
-  } catch (error: any) {
-    console.error('Error en solicitar retiro:', error);
-    res.status(500).json({ error: error.message });
+      retiro: data,
+      mensaje: 'Solicitud de retiro registrada. UGO la procesará por el canal de pago configurado.',
+    })
+  } catch (error) {
+    console.error('Error en solicitar retiro:', error)
+    return res.status(500).json({ error: error instanceof Error ? error.message : 'No se pudo solicitar el retiro.' })
   }
 }
