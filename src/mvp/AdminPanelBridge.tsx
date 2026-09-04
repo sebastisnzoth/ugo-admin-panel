@@ -63,7 +63,13 @@ export function AdminPanelBridge(){
    headers.set('apikey',officialKey)
    headers.set('Authorization',`Bearer ${session?.access_token||officialKey}`)
 
-   const nextUrl=`${officialOrigin}${url.pathname}${url.search}`
+   // The legacy map expects lat/lng on usuarios. In the official schema provider
+   // coordinates live in perfiles_proveedor.ubicacion. Route only this map read to
+   // a compatibility view that exposes the expected shape.
+   const nextPath=url.pathname==='/rest/v1/usuarios'&&url.searchParams.get('lat')==='not.is.null'
+    ?'/rest/v1/vista_mapa_usuarios'
+    :url.pathname
+   const nextUrl=`${officialOrigin}${nextPath}${url.search}`
    return nativeFetch(nextUrl,{...init,headers})
   }) as typeof window.fetch
 
