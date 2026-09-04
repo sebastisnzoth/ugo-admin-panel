@@ -70,19 +70,61 @@ function targetTerms(categoria,customCat=''){
   return [...new Set(terms)];
 }
 
-function matchesCategory(place,categoria,customCat=''){
-  const haystack=normalize([
+function placeText(place){
+  return normalize([
     place.name,place.address,
     ...(Array.isArray(place.categories)?place.categories:[]),
     ...(Array.isArray(place.classifications)?place.classifications:[]),
     place.datasource?.raw?.craft,place.datasource?.raw?.shop,
     place.datasource?.raw?.amenity,place.datasource?.raw?.description
   ].filter(Boolean).join(' '));
+}
+
+function matchesCategory(place,categoria,customCat=''){
+  const haystack=placeText(place);
   return targetTerms(categoria,customCat).some(term=>haystack.includes(term));
 }
 
+function inferSubcategory(place,categoria){
+  const text=placeText(place);
+  const hit=(terms)=>terms.some(t=>text.includes(t));
+
+  const AUTO=['auto','automot','car ','carro','veicul','vehicle','oficina','mecan','funilar','borrachar','pneu','tire','tyre','lava rapido','car wash'];
+  const COMM=['comercial','commercial','empresa','company','corporat','industrial','industria','office','escritorio','loja','store','shopping','hotel','restaurant'];
+  const RES=['residencial','residential','casa','home','house','apart','condominio','condominium','predio','building'];
+
+  if(categoria==='automotivo'||categoria==='mecanico_geral') return {key:'mecanica',label:'Mecánica automotriz',confidence:'alta'};
+  if(categoria==='mecanico_eletrico'||categoria==='electricista_auto') return {key:'eletrica_auto',label:'Electricidad automotriz',confidence:'alta'};
+  if(categoria==='pintura_chapa') return {key:'chapa_pintura_auto',label:'Chapa y pintura automotriz',confidence:'alta'};
+  if(categoria==='auxilio_ruta') return {key:'auxilio_ruta',label:'Auxilio / remolque',confidence:'alta'};
+  if(categoria==='vulcanizacion') return {key:'neumaticos',label:'Neumáticos / gomería',confidence:'alta'};
+  if(categoria==='lavado_auto') return {key:'lavado_auto',label:'Lavado automotriz',confidence:'alta'};
+
+  if(categoria==='climatizacao' && hit(AUTO)) return {key:'automotriz',label:'Aire acondicionado automotriz',confidence:'alta'};
+  if(categoria==='electricista' && hit(AUTO)) return {key:'automotriz',label:'Electricidad automotriz',confidence:'media'};
+  if(categoria==='pintura' && hit(AUTO)) return {key:'automotriz',label:'Pintura automotriz',confidence:'media'};
+
+  if(hit(COMM)) return {key:'comercial',label:'Empresas / comercial',confidence:'media'};
+  if(hit(RES)) return {key:'residencial',label:'Casas / residencial',confidence:'media'};
+
+  const defaults={
+    climatizacao:'Climatización general',electricista:'Electricidad general',plomero:'Plomería general',gasista:'Gas general',
+    limpeza:'Limpieza general',chaveiro:'Cerrajería general',cerrajero:'Cerrajería general',pintura:'Pintura general',
+    carpintaria:'Carpintería general',jardinagem:'Jardinería general',ti_redes:'TI / redes general',reformas:'Reformas general',
+    marido_aluguel:'Servicios generales',mudanca:'Mudanzas / fletes'
+  };
+  return {key:'general',label:defaults[categoria]||'General',confidence:'baja'};
+}
+
+function enrichRows(rows,categoria){
+  return (rows||[]).map(p=>{
+    const sub=inferSubcategory(p,categoria);
+    return {...p,subcategoria:sub.key,subcategoria_label:sub.label,subcategoria_confianza:sub.confidence};
+  });
+}
+
 function validRows(rows,categoria,customCat=''){
-  return (rows||[]).filter(p=>hasPhone(p)&&matchesCategory(p,categoria,customCat)).sort((a,b)=>a.dist-b.dist);
+  return enrichRows(rows,categoria).filter(p=>hasPhone(p)&&matchesCategory(p,categoria,customCat)).sort((a,b)=>a.dist-b.dist);
 }
 
 async function searchTomTom(lat,lng,radius,categoria,customCat,key){
@@ -114,7 +156,7 @@ async function searchTomTom(lat,lng,radius,categoria,customCat,key){
       }
     }catch(e){console.warn('[TomTom]',e?.message||e);}
   }
-  return results.sort((a,b)=>a.dist-b.dist);
+  return validRows(results,categoria,customCat);
 }
 
 async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
@@ -154,7 +196,7 @@ async function searchOverpass(lat,lng,radius,categoria,customCat=''){
 async function searchNominatim(lat,lng,radius,categoria,customCat=''){
   const queries=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]),results=[];
   const bbox=[lat-radius/111000,lng-radius/85000,lat+radius/111000,lng+radius/85000].join(',');
-  for(const q of queries.slice(0,3)){try{const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&bounded=1&viewbox=${bbox}&extratags=1`;const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.2'},signal:AbortSignal.timeout(10000)});if(!r.ok)continue;const d=await r.json();for(const p of d){const pLat=parseFloat(p.lat),pLng=parseFloat(p.lon);if(!Number.isFinite(pLat)||!Number.isFinite(pLng))continue;results.push({id:`nom_${p.place_id}`,name:p.display_name?.split(',')[0]||q,phone:p.extratags?.phone||null,address:p.display_name||null,website:p.extratags?.website||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'nominatim',categories:[p.type,p.class,p.extratags?.craft,p.extratags?.shop].filter(Boolean)});}}catch(e){console.warn('[Nominatim]',e?.message||e);}}
+  for(const q of queries.slice(0,3)){try{const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&bounded=1&viewbox=${bbox}&extratags=1`;const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.3'},signal:AbortSignal.timeout(10000)});if(!r.ok)continue;const d=await r.json();for(const p of d){const pLat=parseFloat(p.lat),pLng=parseFloat(p.lon);if(!Number.isFinite(pLat)||!Number.isFinite(pLng))continue;results.push({id:`nom_${p.place_id}`,name:p.display_name?.split(',')[0]||q,phone:p.extratags?.phone||null,address:p.display_name||null,website:p.extratags?.website||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'nominatim',categories:[p.type,p.class,p.extratags?.craft,p.extratags?.shop].filter(Boolean)});}}catch(e){console.warn('[Nominatim]',e?.message||e);}}
   return validRows(results,categoria,customCat);
 }
 
@@ -171,6 +213,6 @@ export default async function handler(req,res){
     if(!results.length){results=await searchOverpass(nLat,nLng,nRadius,categoria,customCat);if(results.length)source='osm';}
     if(!results.length){results=await searchNominatim(nLat,nLng,nRadius,categoria,customCat);if(results.length)source='nominatim';}
     const seen=new Set();const deduped=validRows(results,categoria,customCat).filter(r=>{const key=`${Math.round((r.lat||0)*1000)}_${Math.round((r.lng||0)*1000)}`;if(seen.has(key))return false;seen.add(key);return true;});
-    return res.json({results:deduped.slice(0,60),total:deduped.length,source,categoria,strict:true,phoneOnly:true});
+    return res.json({results:deduped.slice(0,60),total:deduped.length,source,categoria,strict:true,phoneOnly:true,subcategories:true});
   }catch(e){return res.status(500).json({error:e?.message||'Scout search failed'});}
 }
