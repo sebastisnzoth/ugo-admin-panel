@@ -1,4 +1,4 @@
-// api/scout/places.js — Geoapify principal → OSM Overpass → Nominatim
+// api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
 
 const QUERIES = {
   electricista: ['electrician','eletricista','electricista','électricien'],
@@ -64,10 +64,52 @@ function matchesCategory(place,categoria,customCat=''){
   });
 }
 
+async function searchTomTom(lat,lng,radius,categoria,customCat,key){
+  if(!key) return [];
+  const queries=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]);
+  const results=[],seen=new Set();
+
+  for(const q of queries.slice(0,3)){
+    try{
+      const url=new URL(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json`);
+      url.searchParams.set('key',key);
+      url.searchParams.set('lat',String(lat));
+      url.searchParams.set('lon',String(lng));
+      url.searchParams.set('radius',String(Math.min(Number(radius)||5000,50000)));
+      url.searchParams.set('limit','40');
+      url.searchParams.set('idxSet','POI');
+
+      const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
+      if(!r.ok){ console.warn('[TomTom]',r.status,q); continue; }
+      const d=await r.json();
+      for(const p of (d.results||[])){
+        if(!p.position) continue;
+        const id=String(p.id||`${p.position.lat}_${p.position.lon}_${q}`);
+        if(seen.has(id)) continue;
+        seen.add(id);
+        const pLat=Number(p.position.lat),pLng=Number(p.position.lon);
+        if(!Number.isFinite(pLat)||!Number.isFinite(pLng)) continue;
+        results.push({
+          id:`tt_${id}`,
+          name:p.poi?.name||p.address?.freeformAddress||q,
+          phone:p.poi?.phone||null,
+          address:p.address?.freeformAddress||null,
+          website:p.poi?.url||null,
+          lat:pLat,
+          lng:pLng,
+          dist:Number.isFinite(Number(p.dist))?Number(p.dist):haversine(lat,lng,pLat,pLng),
+          source:'tomtom'
+        });
+      }
+    }catch(e){ console.warn('[TomTom]',e?.message||e); }
+  }
+
+  return results.sort((a,b)=>a.dist-b.dist);
+}
+
 async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
   if(!key) return [];
   const url = new URL('https://api.geoapify.com/v2/places');
-  // service + commercial da amplitud; UGO filtra la profesión por nombre/tags.
   url.searchParams.set('categories','service,commercial');
   url.searchParams.set('filter',`circle:${lng},${lat},${Math.min(Number(radius)||5000,50000)}`);
   url.searchParams.set('bias',`proximity:${lng},${lat}`);
@@ -183,10 +225,18 @@ export default async function handler(req,res){
   try{
     let results=[],source='none';
 
-    const geoKey=(process.env.GEOAPIFY_API_KEY||'').trim();
-    if(geoKey){
-      results=await searchGeoapify(nLat,nLng,nRadius,categoria,customCat,geoKey);
-      if(results.length) source='geoapify';
+    const tomTomKey=(process.env.TOMTOM_API_KEY||'').trim();
+    if(tomTomKey){
+      results=await searchTomTom(nLat,nLng,nRadius,categoria,customCat,tomTomKey);
+      if(results.length) source='tomtom';
+    }
+
+    if(!results.length){
+      const geoKey=(process.env.GEOAPIFY_API_KEY||'').trim();
+      if(geoKey){
+        results=await searchGeoapify(nLat,nLng,nRadius,categoria,customCat,geoKey);
+        if(results.length) source='geoapify';
+      }
     }
 
     if(!results.length){
