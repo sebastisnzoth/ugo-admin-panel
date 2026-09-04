@@ -19,9 +19,7 @@ async function getConfig(keys) {
 
 function injectContext(prompt, context = {}) {
   let p = prompt;
-  Object.entries(context).forEach(([k, v]) => {
-    p = p.replaceAll(`{{${k}}}`, v ?? '—');
-  });
+  Object.entries(context).forEach(([k, v]) => { p = p.replaceAll(`{{${k}}}`, v ?? '—'); });
   return p;
 }
 
@@ -62,7 +60,6 @@ async function adminCreateUser(req, res) {
 
     const { error: userError } = await admin.from('usuarios').upsert({ id: createdUserId, nombre, apellido, tipo: role, activo: true, pais: 'BR', email, es_demo: demo }, { onConflict: 'id' });
     if (userError) throw userError;
-
     if (role === 'cliente') {
       const { error } = await admin.from('perfiles_cliente').upsert({ usuario_id: createdUserId, ciudad: 'Florianópolis' }, { onConflict: 'usuario_id' });
       if (error) throw error;
@@ -85,7 +82,7 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  if (String(req.body?.action || '') === 'admin_create_user') return adminCreateUser(req, res);
+  if (String(req.query?.admin_create_user || '') === '1' || String(req.body?.action || '') === 'admin_create_user') return adminCreateUser(req, res);
 
   const { mode = 'admin', messages = [], system, context = {}, max_tokens = 800 } = req.body;
   try {
@@ -94,7 +91,6 @@ export default async function handler(req, res) {
     systemPrompt = injectContext(systemPrompt, context);
     const groqKey = cfg['api_groq_key'];
     const geminiKey = cfg['api_gemini_key'];
-
     if (geminiKey) {
       try {
         const geminiMessages = messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] }));
@@ -102,7 +98,6 @@ export default async function handler(req, res) {
         if (r.ok) { const d = await r.json(); const text = d.candidates?.[0]?.content?.parts?.[0]?.text || ''; return res.json({ content: [{ type: 'text', text }], model: 'gemini-2.0-flash', mode }); }
       } catch(e) { console.warn('[Hugo] Gemini falló:', e.message); }
     }
-
     if (groqKey) {
       try {
         const r = await fetch('https://api.groq.com/openai/v1/chat/completions', { method: 'POST', headers: { 'Authorization': `Bearer ${groqKey}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ model: 'llama-3.3-70b-versatile', messages: [{ role: 'system', content: systemPrompt }, ...messages], max_tokens, temperature: 0.7, response_format: mode !== 'admin' ? { type: 'json_object' } : undefined }), signal: AbortSignal.timeout(15000) });
