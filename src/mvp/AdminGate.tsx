@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react'
 import type{FormEvent}from'react'
-import{AdminPanel}from'../components/AdminPanel'
+import{AdminPanelBridge}from'./AdminPanelBridge'
 import{supabase}from'../lib/supabase'
 import{PixReconciliationPanel}from'./PixReconciliationPanel'
 import{WhatsAppAdminInbox}from'./WhatsAppAdminInbox'
@@ -42,7 +42,7 @@ export function AdminGate(){
   finally{setBusy(false)}
  }
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
- if(allowed)return <><AdminPanel/><PixReconciliationPanel/><WhatsAppAdminInbox/><AdminFinancePanel/><AdminProviderVerificationPanel/></>
+ if(allowed)return <><AdminPanelBridge/><PixReconciliationPanel/><WhatsAppAdminInbox/><AdminFinancePanel/><AdminProviderVerificationPanel/></>
  if(recovery)return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Nueva contraseña</h1><p>Definí una contraseña nueva para tu cuenta de administrador.</p><form onSubmit={saveNewPassword}><label>Nueva contraseña<input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} autoComplete="new-password" minLength={8} required/></label>{notice&&<div className="mvp-notice ok">{notice}</div>}{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Guardando…':'Guardar contraseña →'}</button></form></div></div>
  return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Panel de control</h1><p>Solo administradores autorizados.</p><form onSubmit={login}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="tu-email@dominio.com" required/></label><label>Contraseña<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>{notice&&<div className="mvp-notice ok">{notice}</div>}{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Validando…':'Ingresar →'}</button><button type="button" className="mvp-secondary" onClick={sendRecovery} disabled={busy}>Olvidé mi contraseña</button></form></div></div>
 }
