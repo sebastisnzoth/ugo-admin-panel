@@ -2,43 +2,29 @@ import React,{useEffect,useState}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
-// Compatibility bridge for the legacy AdminPanel.
-// AdminGate is the real authorization boundary (Supabase session + admin/superadmin role).
-// This bridge also redirects only the legacy Mapa Operativo REST calls to the official
-// Supabase project, without touching Scout's separate legacy prospect store.
 export function AdminPanelBridge(){
  const[ready,setReady]=useState(false)
  useEffect(()=>{
   const auth:any=(supabase as any).auth
   const originalAuth=auth.onAuthStateChange.bind(auth)
   auth.onAuthStateChange=(callback:any)=>originalAuth((event:any,session:any)=>{
-   if(session?.user){
-    callback(event,{...session,user:{...session.user,email:'sebastianzoth@gmail.com'}})
-    return
-   }
+   if(session?.user){callback(event,{...session,user:{...session.user,email:'sebastianzoth@gmail.com'}});return}
    callback(event,session)
   })
 
-  // Legacy Admin documents were stored in the private "documentos" bucket.
-  // New provider KYC files are stored in "provider-kyc". Keep the legacy Admin
-  // viewer working by trying provider-kyc first and falling back to documentos.
   const storage:any=(supabase as any).storage
   const originalStorageFrom=storage.from.bind(storage)
   storage.from=(bucket:string)=>{
    const client:any=originalStorageFrom(bucket)
    if(bucket!=='documentos')return client
-   return new Proxy(client,{
-    get(target:any,prop:string|symbol){
-     if(prop==='createSignedUrl')return async(path:string,expiresIn:number)=>{
-      const kyc:any=originalStorageFrom('provider-kyc')
-      const first=await kyc.createSignedUrl(path,expiresIn)
-      if(!first?.error&&first?.data?.signedUrl)return first
-      return target.createSignedUrl(path,expiresIn)
-     }
-     const value=target[prop]
-     return typeof value==='function'?value.bind(target):value
+   return new Proxy(client,{get(target:any,prop:string|symbol){
+    if(prop==='createSignedUrl')return async(path:string,expiresIn:number)=>{
+     const first=await originalStorageFrom('provider-kyc').createSignedUrl(path,expiresIn)
+     if(!first?.error&&first?.data?.signedUrl)return first
+     return target.createSignedUrl(path,expiresIn)
     }
-   })
+    const value=target[prop];return typeof value==='function'?value.bind(target):value
+   }})
   }
 
   const nativeFetch=window.fetch.bind(window)
@@ -49,36 +35,39 @@ export function AdminPanelBridge(){
   window.fetch=(async(input:RequestInfo|URL,init?:RequestInit)=>{
    const rawUrl=typeof input==='string'?input:input instanceof URL?input.toString():input.url
    if(!rawUrl.startsWith(legacyOrigin)||!officialOrigin||!officialKey)return nativeFetch(input,init)
-
    const url=new URL(rawUrl)
-   const isMapRequest=
-    url.pathname.startsWith('/rest/v1/usuarios')||
-    url.pathname.startsWith('/rest/v1/servicios')||
-    url.pathname.startsWith('/rest/v1/rpc/import_proveedores_csv')
-
-   if(!isMapRequest)return nativeFetch(input,init)
-
-   const headers=new Headers(init?.headers||((input instanceof Request)?input.headers:undefined))
    const{data:{session}}=await supabase.auth.getSession()
+   const headers=new Headers(init?.headers||((input instanceof Request)?input.headers:undefined))
    headers.set('apikey',officialKey)
    headers.set('Authorization',`Bearer ${session?.access_token||officialKey}`)
 
-   // The legacy map expects lat/lng on usuarios. In the official schema provider
-   // coordinates live in perfiles_proveedor.ubicacion. Route only this map read to
-   // a compatibility view that exposes the expected shape.
-   const nextPath=url.pathname==='/rest/v1/usuarios'&&url.searchParams.get('lat')==='not.is.null'
-    ?'/rest/v1/vista_mapa_usuarios'
-    :url.pathname
-   const nextUrl=`${officialOrigin}${nextPath}${url.search}`
-   return nativeFetch(nextUrl,{...init,headers})
+   if(url.pathname.startsWith('/rest/v1/usuarios')){
+    const q=new URLSearchParams(url.search)
+    q.set('select','id,nombre,apellido,tipo,email,telefono,categoria,karma,activo,online,lat,lng,zona,endereco,bio')
+    const next=`${officialOrigin}/rest/v1/mapa_operativo_usuarios?${q.toString()}`
+    return nativeFetch(next,{...init,headers})
+   }
+
+   if(url.pathname.startsWith('/rest/v1/servicios')){
+    const q=new URLSearchParams()
+    q.set('select','id,estado,descripcion,tarifa,created_at,lat_cliente,lng_cliente,proveedor_lat,proveedor_lng')
+    q.set('estado','in.(buscando,ofrecido,asignado,en_camino,llegado,en_progreso,esperando_aprobacion)')
+    q.set('limit','100')
+    const r=await nativeFetch(`${officialOrigin}/rest/v1/mapa_operativo_servicios?${q.toString()}`,{...init,headers})
+    if(!r.ok)return r
+    const rows=await r.json()
+    const body=JSON.stringify((Array.isArray(rows)?rows:[]).map((s:any)=>({...s,proveedor:s.proveedor_lat!=null&&s.proveedor_lng!=null?{lat:s.proveedor_lat,lng:s.proveedor_lng}:null})))
+    return new Response(body,{status:r.status,statusText:r.statusText,headers:{'Content-Type':'application/json'}})
+   }
+
+   if(url.pathname.startsWith('/rest/v1/rpc/import_proveedores_csv')){
+    return nativeFetch(`${officialOrigin}${url.pathname}${url.search}`,{...init,headers})
+   }
+   return nativeFetch(input,init)
   }) as typeof window.fetch
 
   setReady(true)
-  return()=>{
-   auth.onAuthStateChange=originalAuth
-   storage.from=originalStorageFrom
-   window.fetch=nativeFetch
-  }
+  return()=>{auth.onAuthStateChange=originalAuth;storage.from=originalStorageFrom;window.fetch=nativeFetch}
  },[])
  if(!ready)return <div className="mvp-loading"><p>Abriendo panel U.G.O.…</p></div>
  return <AdminPanel/>
