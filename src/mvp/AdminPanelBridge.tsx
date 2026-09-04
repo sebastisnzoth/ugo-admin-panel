@@ -19,6 +19,28 @@ export function AdminPanelBridge(){
    callback(event,session)
   })
 
+  // Legacy Admin documents were stored in the private "documentos" bucket.
+  // New provider KYC files are stored in "provider-kyc". Keep the legacy Admin
+  // viewer working by trying provider-kyc first and falling back to documentos.
+  const storage:any=(supabase as any).storage
+  const originalStorageFrom=storage.from.bind(storage)
+  storage.from=(bucket:string)=>{
+   const client:any=originalStorageFrom(bucket)
+   if(bucket!=='documentos')return client
+   return new Proxy(client,{
+    get(target:any,prop:string|symbol){
+     if(prop==='createSignedUrl')return async(path:string,expiresIn:number)=>{
+      const kyc:any=originalStorageFrom('provider-kyc')
+      const first=await kyc.createSignedUrl(path,expiresIn)
+      if(!first?.error&&first?.data?.signedUrl)return first
+      return target.createSignedUrl(path,expiresIn)
+     }
+     const value=target[prop]
+     return typeof value==='function'?value.bind(target):value
+    }
+   })
+  }
+
   const nativeFetch=window.fetch.bind(window)
   const legacyOrigin='https://byajcqrgetloavrgyqak.supabase.co'
   const officialOrigin=String((supabase as any).supabaseUrl||'').replace(/\/$/,'')
@@ -48,6 +70,7 @@ export function AdminPanelBridge(){
   setReady(true)
   return()=>{
    auth.onAuthStateChange=originalAuth
+   storage.from=originalStorageFrom
    window.fetch=nativeFetch
   }
  },[])
