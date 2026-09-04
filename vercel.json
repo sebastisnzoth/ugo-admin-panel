@@ -4,6 +4,10 @@
   "framework": "vite",
   "rewrites": [
     {
+      "source": "/api/admin/create-user",
+      "destination": "/api/proxy?admin_create_user=1"
+    },
+    {
       "source": "/api/hugo/gemini",
       "destination": "/api/test"
     },
