@@ -1,24 +1,28 @@
 // api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
 
 const QUERIES = {
-  electricista: ['electrician','eletricista','electricista','électricien'],
-  plomero: ['plumber','encanador','plomero','plombier','hidráulica'],
+  electricista: ['electrician','eletricista','electricista','electrical'],
+  plomero: ['plumber','encanador','plomero','plombier','hidraulica'],
   gasista: ['gasista','gas fitter','instalador gas','gas technician'],
   limpeza: ['cleaning','limpeza','limpieza','faxina','nettoyage'],
+  chaveiro: ['locksmith','chaveiro','cerrajero','serrurier'],
   cerrajero: ['locksmith','chaveiro','cerrajero','serrurier'],
   pintura: ['painter','pintor','pintura','peintre'],
   carpintaria: ['carpenter','carpinteiro','carpintero','marcenaria'],
-  jardinagem: ['gardener','jardineiro','jardinero','jardinagem'],
-  climatizacao: ['hvac','air conditioning','ar condicionado','climatização'],
-  ti_redes: ['computer repair','informática','IT services','assistência técnica'],
-  reformas: ['handyman','pedreiro','reformas','builder','construção'],
-  mecanico_geral: ['mecânico','mecanico','auto repair','oficina mecânica','taller mecánico','garage'],
-  mecanico_eletrico: ['elétrica automotiva','auto electrician','electric car repair','mecánico eléctrico'],
+  jardinagem: ['gardener','jardineiro','jardinero','jardinagem','paisagismo'],
+  climatizacao: ['hvac','air conditioning','ar condicionado','climatizacao'],
+  ti_redes: ['computer repair','informatica','IT services','assistencia tecnica','computer'],
+  reformas: ['handyman','pedreiro','reformas','builder','construcao'],
+  marido_aluguel: ['handyman','marido de aluguel','servicos gerais','faz tudo'],
+  mudanca: ['mudanca','frete','moving company','movers','transportadora'],
+  automotivo: ['auto repair','oficina mecanica','mecanico','car repair'],
+  mecanico_geral: ['mecanico','auto repair','oficina mecanica','taller mecanico','garage'],
+  mecanico_eletrico: ['eletrica automotiva','auto electrician','electric car repair','mecanico eletrico'],
   pintura_chapa: ['funilaria','body shop','chapa y pintura','carrosserie'],
-  auxilio_ruta: ['socorro mecânico','roadside assistance','auxilio en ruta','guincho','grua'],
-  vulcanizacion: ['borracharia','gomería','tire shop','tyre','vulcanización'],
+  auxilio_ruta: ['socorro mecanico','roadside assistance','auxilio en ruta','guincho','grua'],
+  vulcanizacion: ['borracharia','gomeria','tire shop','tyre','vulcanizacion'],
   electricista_auto: ['eletricista automotivo','auto electrician','electricista automotriz'],
-  lavado_auto: ['lava rápido','car wash','lavado de autos','lavage auto'],
+  lavado_auto: ['lava rapido','car wash','lavado de autos','lavage auto'],
 };
 
 const OVERPASS_TAGS = {
@@ -26,13 +30,17 @@ const OVERPASS_TAGS = {
   plomero: [['craft','plumber'],['shop','plumbing']],
   gasista: [['craft','gas'],['craft','plumber']],
   limpeza: [['craft','cleaning'],['shop','laundry'],['amenity','laundry']],
+  chaveiro: [['craft','locksmith'],['shop','locksmith']],
   cerrajero: [['craft','locksmith'],['shop','locksmith']],
   pintura: [['craft','painter'],['shop','paint']],
   carpintaria: [['craft','carpenter'],['shop','carpenter']],
   jardinagem: [['craft','gardener'],['shop','garden_centre']],
   climatizacao: [['craft','hvac'],['shop','hvac'],['craft','heating']],
   ti_redes: [['shop','computer'],['craft','electronics_repair']],
-  reformas: [['craft','builder'],['craft','construction'],['shop','hardware']],
+  reformas: [['craft','builder'],['craft','construction']],
+  marido_aluguel: [['craft','handyman'],['craft','builder']],
+  mudanca: [['office','moving_company'],['shop','storage_rental']],
+  automotivo: [['shop','car_repair'],['amenity','car_service'],['craft','mechanic']],
   mecanico_geral: [['shop','car_repair'],['amenity','car_service'],['craft','mechanic']],
   mecanico_eletrico: [['shop','car_repair'],['amenity','car_service']],
   pintura_chapa: [['shop','car_repair'],['craft','body_builder']],
@@ -52,16 +60,30 @@ function normalize(s=''){
   return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 }
 
+function targetTerms(categoria,customCat=''){
+  const raw=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]);
+  const terms=[];
+  for(const phrase of raw){
+    const n=normalize(phrase).trim();
+    if(n.length>=4) terms.push(n);
+    for(const p of n.split(/[^a-z0-9]+/).filter(Boolean)) if(p.length>=5) terms.push(p);
+  }
+  return [...new Set(terms)];
+}
+
 function matchesCategory(place,categoria,customCat=''){
-  const words = categoria==='custom' && customCat ? [customCat] : (QUERIES[categoria] || [categoria]);
-  const haystack = normalize([
-    place.name, place.address, place.categories?.join?.(' '), place.datasource?.raw?.craft,
-    place.datasource?.raw?.shop, place.datasource?.raw?.amenity
+  const terms=targetTerms(categoria,customCat);
+  const haystack=normalize([
+    place.name,
+    place.address,
+    ...(Array.isArray(place.categories)?place.categories:[]),
+    ...(Array.isArray(place.classifications)?place.classifications:[]),
+    place.datasource?.raw?.craft,
+    place.datasource?.raw?.shop,
+    place.datasource?.raw?.amenity,
+    place.datasource?.raw?.description,
   ].filter(Boolean).join(' '));
-  return words.some(w=>{
-    const parts=normalize(w).split(/\s+/).filter(p=>p.length>2);
-    return parts.length && parts.some(p=>haystack.includes(p));
-  });
+  return terms.some(term=>haystack.includes(term));
 }
 
 async function searchTomTom(lat,lng,radius,categoria,customCat,key){
@@ -69,14 +91,14 @@ async function searchTomTom(lat,lng,radius,categoria,customCat,key){
   const queries=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]);
   const results=[],seen=new Set();
 
-  for(const q of queries.slice(0,3)){
+  for(const q of queries.slice(0,4)){
     try{
       const url=new URL(`https://api.tomtom.com/search/2/search/${encodeURIComponent(q)}.json`);
       url.searchParams.set('key',key);
       url.searchParams.set('lat',String(lat));
       url.searchParams.set('lon',String(lng));
       url.searchParams.set('radius',String(Math.min(Number(radius)||5000,50000)));
-      url.searchParams.set('limit','40');
+      url.searchParams.set('limit','50');
       url.searchParams.set('idxSet','POI');
 
       const r=await fetch(url,{signal:AbortSignal.timeout(10000)});
@@ -86,10 +108,15 @@ async function searchTomTom(lat,lng,radius,categoria,customCat,key){
         if(!p.position) continue;
         const id=String(p.id||`${p.position.lat}_${p.position.lon}_${q}`);
         if(seen.has(id)) continue;
-        seen.add(id);
         const pLat=Number(p.position.lat),pLng=Number(p.position.lon);
         if(!Number.isFinite(pLat)||!Number.isFinite(pLng)) continue;
-        results.push({
+
+        const categories=(p.poi?.categories||[]).map(String);
+        const classifications=(p.poi?.classifications||[]).flatMap(c=>[
+          c?.code,
+          ...(c?.names||[]).map(n=>n?.name),
+        ]).filter(Boolean).map(String);
+        const candidate={
           id:`tt_${id}`,
           name:p.poi?.name||p.address?.freeformAddress||q,
           phone:p.poi?.phone||null,
@@ -98,8 +125,16 @@ async function searchTomTom(lat,lng,radius,categoria,customCat,key){
           lat:pLat,
           lng:pLng,
           dist:Number.isFinite(Number(p.dist))?Number(p.dist):haversine(lat,lng,pLat,pLng),
-          source:'tomtom'
-        });
+          source:'tomtom',
+          categories,
+          classifications,
+        };
+
+        // Filtro estricto: TomTom puede devolver POIs cercanos pero no relacionados.
+        // Solo aceptamos negocios cuyo nombre/categoria/clasificacion coincida con el servicio pedido.
+        if(!matchesCategory(candidate,categoria,customCat)) continue;
+        seen.add(id);
+        results.push(candidate);
       }
     }catch(e){ console.warn('[TomTom]',e?.message||e); }
   }
@@ -126,8 +161,8 @@ async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
       const coords=f.geometry?.coordinates||[];
       const pLng=Number(coords[0]??p.lon), pLat=Number(coords[1]??p.lat);
       if(!Number.isFinite(pLat)||!Number.isFinite(pLng)) return null;
-      const phone = p.contact?.phone || p.phone || p.datasource?.raw?.phone || p.datasource?.raw?.['contact:phone'] || null;
-      const website = p.website || p.contact?.website || p.datasource?.raw?.website || p.datasource?.raw?.['contact:website'] || null;
+      const phone=p.contact?.phone||p.phone||p.datasource?.raw?.phone||p.datasource?.raw?.['contact:phone']||null;
+      const website=p.website||p.contact?.website||p.datasource?.raw?.website||p.datasource?.raw?.['contact:website']||null;
       return {
         id:`geo_${p.place_id||p.osm_id||`${pLat}_${pLng}`}`,
         name:p.name||p.address_line1||p.formatted||'Profesional',
@@ -142,7 +177,6 @@ async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
         datasource:p.datasource||null,
       };
     }).filter(Boolean);
-
     return rows.filter(p=>matchesCategory(p,categoria,customCat)).sort((a,b)=>a.dist-b.dist);
   }catch(e){
     console.warn('[Geoapify]',e?.message||e);
@@ -151,9 +185,9 @@ async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
 }
 
 async function searchOverpass(lat,lng,radius,categoria,customCat=''){
-  const tags = categoria==='custom' ? [] : (OVERPASS_TAGS[categoria]||[]);
-  const words = categoria==='custom' && customCat ? [customCat] : (QUERIES[categoria]||[categoria]);
-  const nameRx = words.map(w=>normalize(w).replace(/[^a-z0-9]+/g,'.')).filter(Boolean).join('|');
+  const tags=categoria==='custom'?[]:(OVERPASS_TAGS[categoria]||[]);
+  const words=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]);
+  const nameRx=words.map(w=>normalize(w).replace(/[^a-z0-9]+/g,'.')).filter(Boolean).join('|');
   const endpoints=['https://overpass-api.de/api/interpreter','https://overpass.kumi.systems/api/interpreter'];
   const timeout=Number(radius)>100000?60:30;
 
@@ -174,7 +208,7 @@ async function searchOverpass(lat,lng,radius,categoria,customCat=''){
     const parts=tags.map(([k,v])=>`node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`).join('');
     els=await run(`[out:json][timeout:${timeout}];(${parts});out center;`);
   }
-  if(!els.length && nameRx){
+  if(!els.length&&nameRx){
     els=await run(`[out:json][timeout:${timeout}];(node["name"~"${nameRx}",i](around:${radius},${lat},${lng});way["name"~"${nameRx}",i](around:${radius},${lat},${lng}););out center;`);
   }
 
@@ -187,25 +221,37 @@ async function searchOverpass(lat,lng,radius,categoria,customCat=''){
       phone:t.phone||t['contact:phone']||t['contact:mobile']||null,
       address:[t['addr:street'],t['addr:housenumber'],t['addr:city']].filter(Boolean).join(', ')||null,
       website:t.website||t['contact:website']||null,
-      lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'osm'
+      lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'osm',
+      categories:[t.craft,t.shop,t.amenity,t.office].filter(Boolean)
     };
-  }).filter(Boolean).sort((a,b)=>a.dist-b.dist);
+  }).filter(Boolean).filter(p=>matchesCategory(p,categoria,customCat)).sort((a,b)=>a.dist-b.dist);
 }
 
 async function searchNominatim(lat,lng,radius,categoria,customCat=''){
   const queries=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]);
   const results=[];
   const bbox=[lat-radius/111000,lng-radius/85000,lat+radius/111000,lng+radius/85000].join(',');
-  for(const q of queries.slice(0,2)){
+  for(const q of queries.slice(0,3)){
     try{
       const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&bounded=1&viewbox=${bbox}&extratags=1`;
-      const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.0'},signal:AbortSignal.timeout(10000)});
+      const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.1'},signal:AbortSignal.timeout(10000)});
       if(!r.ok) continue;
       const d=await r.json();
       for(const p of d){
         const pLat=parseFloat(p.lat),pLng=parseFloat(p.lon);
         if(!Number.isFinite(pLat)||!Number.isFinite(pLng)) continue;
-        results.push({id:`nom_${p.place_id}`,name:p.display_name?.split(',')[0]||q,phone:p.extratags?.phone||null,address:p.display_name||null,website:p.extratags?.website||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'nominatim'});
+        const candidate={
+          id:`nom_${p.place_id}`,
+          name:p.display_name?.split(',')[0]||q,
+          phone:p.extratags?.phone||null,
+          address:p.display_name||null,
+          website:p.extratags?.website||null,
+          lat:pLat,lng:pLng,
+          dist:haversine(lat,lng,pLat,pLng),
+          source:'nominatim',
+          categories:[p.type,p.class,p.extratags?.craft,p.extratags?.shop].filter(Boolean)
+        };
+        if(matchesCategory(candidate,categoria,customCat)) results.push(candidate);
       }
     }catch(e){ console.warn('[Nominatim]',e?.message||e); }
   }
@@ -251,12 +297,13 @@ export default async function handler(req,res){
 
     const seen=new Set();
     const deduped=results.filter(r=>{
+      if(!matchesCategory(r,categoria,customCat)) return false;
       const key=`${Math.round((r.lat||0)*1000)}_${Math.round((r.lng||0)*1000)}`;
       if(seen.has(key)) return false;
       seen.add(key); return true;
     });
 
-    return res.json({results:deduped.slice(0,60),total:deduped.length,source,categoria});
+    return res.json({results:deduped.slice(0,60),total:deduped.length,source,categoria,strict:true});
   }catch(e){
     return res.status(500).json({error:e?.message||'Scout search failed'});
   }
