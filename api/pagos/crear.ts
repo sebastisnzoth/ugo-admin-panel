@@ -73,7 +73,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!servicio) return res.status(404).json({ error: 'Servicio no encontrado.' })
     if (servicio.cliente_id !== user.id) return res.status(403).json({ error: 'Este servicio no pertenece al cliente autenticado.' })
     if (!servicio.proveedor_id) return res.status(409).json({ error: 'El servicio todavía no tiene proveedor asignado.' })
-    if (!['asignado', 'en_camino', 'en_progreso', 'esperando_aprobacion'].includes(servicio.estado)) return res.status(409).json({ error: `El servicio no se puede pagar en estado ${servicio.estado}.` })
+    if (!['asignado', 'en_camino', 'llegado', 'en_progreso', 'esperando_aprobacion'].includes(servicio.estado)) return res.status(409).json({ error: `El servicio no se puede pagar en estado ${servicio.estado}.` })
 
     const montoTotal = Number(servicio.tarifa || 0)
     if (!Number.isFinite(montoTotal) || montoTotal <= 0) return res.status(409).json({ error: 'El servicio no tiene una tarifa válida.' })
@@ -81,11 +81,67 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const comisionUgo = Number(servicio.comision_ugo ?? Math.round(montoTotal * 0.15 * 100) / 100)
     const gananciaProveedor = Number(servicio.ganancia_proveedor ?? Math.round((montoTotal - comisionUgo) * 100) / 100)
     const moneda = servicio.moneda || 'BRL'
-    if ((metodo === 'pix' || metodo === 'pix_direto') && moneda !== 'BRL') return res.status(409).json({ error: 'Pix está disponible únicamente para pagos en BRL.' })
+
+    const [{ data: cliente }, { data: proveedor }] = await Promise.all([
+      sb.from('usuarios').select('id,es_demo').eq('id', user.id).maybeSingle(),
+      sb.from('usuarios').select('id,nombre,apellido,es_demo').eq('id', servicio.proveedor_id).maybeSingle(),
+    ])
+    const demoSebastian = Boolean(
+      cliente?.es_demo && proveedor?.es_demo &&
+      String(proveedor?.nombre || '').trim().toLowerCase() === 'sebastian' &&
+      String(proveedor?.apellido || '').trim().toLowerCase() === 'zoth'
+    )
 
     const { data: existing } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).limit(1).maybeSingle()
     const confirmed = existing?.estado === 'liberado' || (existing?.estado === 'retenido' && Boolean(existing?.mp_payment_id || existing?.pix_e2e_id))
-    if (confirmed) return res.status(200).json({ success: true, alreadyPaid: true, pagoId: existing.id, estado: existing.estado, metodo: existing.metodo || metodo, montoTotal: Number(existing.monto_bruto ?? montoTotal), comisionUgo: Number(existing.comision_ugo ?? comisionUgo), gananciaProveedor: Number(existing.ganancia_proveedor ?? gananciaProveedor) })
+    if (confirmed) return res.status(200).json({ success: true, alreadyPaid: true, demo: existing?.procesador === 'demo', pagoId: existing.id, estado: existing.estado, metodo: existing.metodo || metodo, montoTotal: Number(existing.monto_bruto ?? montoTotal), comisionUgo: Number(existing.comision_ugo ?? comisionUgo), gananciaProveedor: Number(existing.ganancia_proveedor ?? gananciaProveedor) })
+
+    if (demoSebastian) {
+      const ref = `SEBASTIAN-DEMO-${servicioId.replace(/-/g, '')}`
+      const paymentRow = {
+        servicio_id: servicioId,
+        cliente_id: user.id,
+        proveedor_id: servicio.proveedor_id,
+        procesador: 'demo',
+        metodo: 'demo_sebastian',
+        modelo_pago: 'custodia_ugo',
+        pago_externo_id: ref,
+        monto_bruto: montoTotal,
+        comision_ugo: comisionUgo,
+        ganancia_proveedor: gananciaProveedor,
+        moneda,
+        estado: 'retenido',
+        mp_payment_id: ref,
+        mp_preference_id: null,
+        mp_init_point: null,
+        mp_status: 'approved_demo',
+        pix_txid: null,
+        pix_copia_cola: null,
+        pix_qr_code: null,
+        pix_expira_at: null,
+        pix_e2e_id: null,
+        pix_informado_at: null,
+        pix_conciliado_at: null,
+        pix_conciliado_por: null,
+        pix_conciliacion_nota: 'PAGO DEMO EXCLUSIVO SEBASTIAN',
+        autorizado_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      const { data: pago, error } = existing?.id
+        ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single()
+        : await sb.from('pagos').insert(paymentRow).select().single()
+      if (error) throw error
+      await sb.from('notificaciones').insert({
+        usuario_id: servicio.proveedor_id,
+        tipo: 'pago_retenido',
+        titulo: 'Pago DEMO protegido',
+        cuerpo: `El cliente realizó el pago demo del servicio #${servicio.numero || servicio.id.slice(0, 8)}`,
+        datos: { servicio_id: servicioId, pago_id: pago.id, demo: true, proveedor: 'sebastian' },
+      })
+      return res.status(200).json({ success: true, alreadyPaid: true, demo: true, pagoId: pago.id, estado: 'retenido', metodo: 'demo_sebastian', montoTotal, comisionUgo, gananciaProveedor, moneda })
+    }
+
+    if ((metodo === 'pix' || metodo === 'pix_direto') && moneda !== 'BRL') return res.status(409).json({ error: 'Pix está disponible únicamente para pagos en BRL.' })
 
     if (metodo === 'pix_direto') {
       if (!UGO_PIX_KEY) return res.status(503).json({ error: 'Pix direto de UGO todavía no tiene UGO_PIX_KEY configurada en el servidor.' })
@@ -95,35 +151,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const txid = `UGO${servicioId.replace(/-/g, '').slice(0, 22)}`
       const copiaCola = buildDirectPix(UGO_PIX_KEY, montoTotal, txid)
       const paymentRow = {
-        servicio_id: servicioId,
-        cliente_id: user.id,
-        proveedor_id: servicio.proveedor_id,
-        procesador: 'pix_direto',
-        metodo: 'pix_direto',
-        monto_bruto: montoTotal,
-        comision_ugo: comisionUgo,
-        ganancia_proveedor: gananciaProveedor,
-        moneda,
-        estado: 'pendiente',
-        pago_externo_id: null,
-        mp_payment_id: null,
-        mp_preference_id: null,
-        mp_init_point: null,
-        mp_status: null,
-        pix_txid: txid,
-        pix_copia_cola: copiaCola,
-        pix_qr_code: null,
-        pix_expira_at: null,
-        pix_e2e_id: null,
-        pix_informado_at: null,
-        pix_conciliado_at: null,
-        pix_conciliado_por: null,
-        pix_conciliacion_nota: null,
-        updated_at: new Date().toISOString(),
+        servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'pix_direto', metodo: 'pix_direto', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: 'pendiente', pago_externo_id: null, mp_payment_id: null, mp_preference_id: null, mp_init_point: null, mp_status: null, pix_txid: txid, pix_copia_cola: copiaCola, pix_qr_code: null, pix_expira_at: null, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString(),
       }
-      const { data: pago, error } = existing?.id
-        ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single()
-        : await sb.from('pagos').insert(paymentRow).select().single()
+      const { data: pago, error } = existing?.id ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single() : await sb.from('pagos').insert(paymentRow).select().single()
       if (error) throw error
       return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'pix_direto', pixTxid: txid, pixCopiaCola: copiaCola, pixChave: UGO_PIX_KEY, montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
@@ -138,47 +168,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (metodo === 'pix') {
       if (!user.email) return res.status(409).json({ error: 'Tu cuenta necesita un email válido para generar el cobro Pix.' })
       const expiration = new Date(Date.now() + 30 * 60 * 1000).toISOString()
-      const pixPayload = {
-        transaction_amount: montoTotal,
-        description: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`,
-        payment_method_id: 'pix',
-        payer: { email: user.email },
-        external_reference: servicioId,
-        notification_url: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined,
-        date_of_expiration: expiration,
-        metadata: { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, metodo: 'pix' },
-      }
+      const pixPayload = { transaction_amount: montoTotal, description: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`, payment_method_id: 'pix', payer: { email: user.email }, external_reference: servicioId, notification_url: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined, date_of_expiration: expiration, metadata: { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, metodo: 'pix' } }
       const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MP_ACCESS_TOKEN}`, 'X-Idempotency-Key': `ugo-pix-${servicioId}` }, body: JSON.stringify(pixPayload) })
       if (!mpResponse.ok) return res.status(502).json({ error: 'Mercado Pago no pudo generar el Pix.', details: await mpResponse.json().catch(() => null) })
-
       const mpData = await mpResponse.json()
       const tx = mpData.point_of_interaction?.transaction_data || {}
-      const paymentRow = {
-        servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'mercadopago', metodo: 'pix', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda,
-        estado: mpData.status === 'approved' ? 'retenido' : 'pendiente', mp_payment_id: String(mpData.id || ''), mp_status: String(mpData.status || 'pending'), pix_txid: String(mpData.id || ''), pix_copia_cola: tx.qr_code || null, pix_qr_code: tx.qr_code_base64 || null, pix_expira_at: expiration, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString(),
-      }
+      const paymentRow = { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'mercadopago', metodo: 'pix', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: mpData.status === 'approved' ? 'retenido' : 'pendiente', mp_payment_id: String(mpData.id || ''), mp_status: String(mpData.status || 'pending'), pix_txid: String(mpData.id || ''), pix_copia_cola: tx.qr_code || null, pix_qr_code: tx.qr_code_base64 || null, pix_expira_at: expiration, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString() }
       const { data: pago, error } = existing?.id ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single() : await sb.from('pagos').insert(paymentRow).select().single()
       if (error) throw error
       return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'pix', paymentId: mpData.id, pixTxid: String(mpData.id || ''), pixCopiaCola: tx.qr_code || null, pixQrCode: tx.qr_code_base64 || null, pixTicketUrl: tx.ticket_url || null, pixExpiraAt: expiration, estado: paymentRow.estado, montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
 
-    if (existing?.mp_preference_id && existing?.mp_init_point && existing?.estado === 'pendiente' && existing?.metodo === 'mercadopago') {
-      return res.status(200).json({ success: true, pagoId: existing.id, metodo: 'mercadopago', preferenceId: existing.mp_preference_id, initPoint: existing.mp_init_point, montoTotal, comisionUgo, gananciaProveedor })
-    }
+    if (existing?.mp_preference_id && existing?.mp_init_point && existing?.estado === 'pendiente' && existing?.metodo === 'mercadopago') return res.status(200).json({ success: true, pagoId: existing.id, metodo: 'mercadopago', preferenceId: existing.mp_preference_id, initPoint: existing.mp_init_point, montoTotal, comisionUgo, gananciaProveedor })
 
-    const preference = {
-      items: [{ id: servicio.id, title: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`, description: servicio.descripcion || 'Pago de servicio U.G.O.', quantity: 1, currency_id: moneda, unit_price: montoTotal }],
-      payer: user.email ? { email: user.email } : undefined,
-      payment_methods: { excluded_payment_types: [{ id: 'atm' }] },
-      back_urls: baseUrl ? { success: `${baseUrl}/?app=client&pago=confirmado&svc=${servicioId}`, failure: `${baseUrl}/?app=client&pago=fallido&svc=${servicioId}`, pending: `${baseUrl}/?app=client&pago=pendiente&svc=${servicioId}` } : undefined,
-      notification_url: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined,
-      auto_return: baseUrl ? 'approved' : undefined,
-      external_reference: servicioId,
-      metadata: { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, metodo: 'mercadopago' },
-    }
+    const preference = { items: [{ id: servicio.id, title: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`, description: servicio.descripcion || 'Pago de servicio U.G.O.', quantity: 1, currency_id: moneda, unit_price: montoTotal }], payer: user.email ? { email: user.email } : undefined, payment_methods: { excluded_payment_types: [{ id: 'atm' }] }, back_urls: baseUrl ? { success: `${baseUrl}/?app=client&pago=confirmado&svc=${servicioId}`, failure: `${baseUrl}/?app=client&pago=fallido&svc=${servicioId}`, pending: `${baseUrl}/?app=client&pago=pendiente&svc=${servicioId}` } : undefined, notification_url: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined, auto_return: baseUrl ? 'approved' : undefined, external_reference: servicioId, metadata: { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, metodo: 'mercadopago' } }
     const mpResponse = await fetch('https://api.mercadopago.com/checkout/preferences', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MP_ACCESS_TOKEN}` }, body: JSON.stringify(preference) })
     if (!mpResponse.ok) return res.status(502).json({ error: 'Mercado Pago rechazó la creación del checkout.', details: await mpResponse.json().catch(() => null) })
-
     const mpData = await mpResponse.json()
     const paymentRow = { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'mercadopago', metodo: 'mercadopago', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: 'pendiente', mp_preference_id: mpData.id, mp_init_point: mpData.init_point, mp_status: 'preference_created', pix_txid: null, pix_copia_cola: null, pix_qr_code: null, pix_expira_at: null, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString() }
     const { data: pago, error } = existing?.id ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single() : await sb.from('pagos').insert(paymentRow).select().single()
