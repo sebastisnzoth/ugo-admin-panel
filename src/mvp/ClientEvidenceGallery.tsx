@@ -1,24 +1,25 @@
-import React,{useCallback,useEffect,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
-import{supabase}from'../lib/supabase'
+import{getRoleSupabase}from'../lib/roleSupabase'
 
 type Evidence={id:string;tipo:'antes'|'durante'|'despues'|'documento';storage_path:string;descripcion:string|null;created_at:string;url?:string|null}
 type Props={serviceId:string}
 const LABELS:Record<Evidence['tipo'],string>={antes:'Antes',durante:'Durante',despues:'Después',documento:'Documento'}
 
 export function ClientEvidenceGallery({serviceId}:Props){
+ const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[items,setItems]=useState<Evidence[]>([])
  const[loading,setLoading]=useState(true)
  const[error,setError]=useState('')
  const load=useCallback(async()=>{
   setLoading(true);setError('')
-  const{data,error}=await supabase.from('evidencias_servicio').select('id,tipo,storage_path,descripcion,created_at').eq('servicio_id',serviceId).order('created_at',{ascending:true})
+  const{data,error}=await (supabase as any).from('evidencias_servicio').select('id,tipo,storage_path,descripcion,created_at').eq('servicio_id',serviceId).order('created_at',{ascending:true})
   if(error){setError(error.message);setLoading(false);return}
   const rows=(data||[])as Evidence[]
-  const signed=await Promise.all(rows.map(async row=>{const{data:signedData}=await supabase.storage.from('service-evidence').createSignedUrl(row.storage_path,900);return{...row,url:signedData?.signedUrl||null}}))
+  const signed=await Promise.all(rows.map(async row=>{const{data:signedData,error:signedError}=await supabase.storage.from('service-evidence').createSignedUrl(row.storage_path,900);return{...row,url:signedError?null:signedData?.signedUrl||null}}))
   setItems(signed);setLoading(false)
- },[serviceId])
- useEffect(()=>{load().catch(()=>setLoading(false));const ch:RealtimeChannel=supabase.channel(`client-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},()=>{load().catch(()=>{})}).subscribe();return()=>{supabase.removeChannel(ch)}},[load,serviceId])
+ },[serviceId,supabase])
+ useEffect(()=>{load().catch(()=>setLoading(false));const ch:RealtimeChannel=supabase.channel(`client-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},()=>{load().catch(()=>{})}).subscribe();return()=>{supabase.removeChannel(ch)}},[load,serviceId,supabase])
  if(loading)return <div className="mvp-waiting">Cargando evidencias del trabajo…</div>
  if(error)return <div className="mvp-notice error">No se pudieron cargar las evidencias: {error}</div>
  if(!items.length)return <div className="mvp-waiting">El proveedor todavía no subió evidencias visibles.</div>
