@@ -1,0 +1,19 @@
+import React,{useEffect,useRef,useState}from'react'
+import type{SupabaseClient}from'@supabase/supabase-js'
+import maplibregl from'maplibre-gl'
+import{getRoutingProvider}from'../lib/routing/provider'
+
+const FLORIPA:[number,number]=[-48.5482,-27.5949]
+const MAP_STYLE:any={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
+type Props={supabase:SupabaseClient;providerId:string|null|undefined}
+
+export function ClientActiveMap({supabase,providerId}:Props){
+ const el=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),marks=useRef<maplibregl.Marker[]>([])
+ const[user,setUser]=useState<[number,number]>(FLORIPA),[provider,setProvider]=useState<[number,number]|null>(null),[eta,setEta]=useState<number|null>(null)
+ useEffect(()=>{navigator.geolocation?.getCurrentPosition(p=>setUser([p.coords.longitude,p.coords.latitude]),()=>{},{enableHighAccuracy:true,timeout:7000,maximumAge:45000})},[])
+ useEffect(()=>{if(!providerId){setProvider(null);return}let live=true;const load=async()=>{const{data}=await supabase.from('proveedores_mapa').select('lat,lng').eq('id',providerId).maybeSingle();if(live&&data?.lat!=null&&data?.lng!=null)setProvider([Number(data.lng),Number(data.lat)])};load().catch(()=>{});const ch=supabase.channel(`client-active-provider-${providerId}`).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>load()).subscribe();return()=>{live=false;supabase.removeChannel(ch)}},[providerId,supabase])
+ useEffect(()=>{if(!el.current||mapRef.current)return;const map=new maplibregl.Map({container:el.current,style:MAP_STYLE,center:user,zoom:14,attributionControl:false});mapRef.current=map;return()=>{marks.current.forEach(m=>m.remove());map.remove();mapRef.current=null}},[])
+ useEffect(()=>{const map=mapRef.current;if(!map)return;marks.current.forEach(m=>m.remove());marks.current=[];const u=document.createElement('div');u.className='ugo-active-user-dot';marks.current.push(new maplibregl.Marker({element:u}).setLngLat(user).addTo(map));if(provider){const p=document.createElement('div');p.className='ugo-active-provider-dot';p.textContent='●';marks.current.push(new maplibregl.Marker({element:p}).setLngLat(provider).addTo(map))}},[user,provider])
+ useEffect(()=>{const map=mapRef.current;if(!map||!provider)return;let alive=true;getRoutingProvider().route({latitude:provider[1],longitude:provider[0]},{latitude:user[1],longitude:user[0]}).then(route=>{if(!alive||!mapRef.current)return;const current=mapRef.current;const geometry=(route.geometry&&typeof route.geometry==='object'&&(route.geometry as any).type==='LineString')?route.geometry:{type:'LineString',coordinates:[provider,user]};setEta(Math.max(1,Math.round(route.etaSeconds/60)));const render=()=>{if(!alive||!current.isStyleLoaded())return;if(current.getLayer('ugo-active-route'))current.removeLayer('ugo-active-route');if(current.getSource('ugo-active-route'))current.removeSource('ugo-active-route');current.addSource('ugo-active-route',{type:'geojson',data:{type:'Feature',properties:{},geometry} as any});current.addLayer({id:'ugo-active-route',type:'line',source:'ugo-active-route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#079455','line-width':5,'line-opacity':.92}});const b=new maplibregl.LngLatBounds();(geometry as any).coordinates.forEach((c:[number,number])=>b.extend(c));if(!b.isEmpty())current.fitBounds(b,{padding:{top:120,bottom:340,left:65,right:65},maxZoom:15,duration:650})};if(current.isStyleLoaded())render();else current.once('load',render)}).catch(()=>{});return()=>{alive=false}},[provider,user])
+ return <div className="ugo-active-map-wrap"><div ref={el} className="ugo-active-map"/>{eta&&<div className="ugo-active-eta"><small>Llegando en</small><strong>{eta} min</strong></div>}</div>
+}
