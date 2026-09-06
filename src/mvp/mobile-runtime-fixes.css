@@ -1,0 +1,28 @@
+/* Runtime/mobile hardening for Android WebView and narrow screens */
+html,body,#root{width:100%!important;max-width:none!important;min-height:100%!important;height:auto!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch;touch-action:pan-y;overscroll-behavior-y:auto!important}
+#root{margin:0!important;border:0!important;display:block!important;text-align:initial!important}
+.mvp-shell{position:relative!important;width:100%!important;height:auto!important;min-height:100dvh!important;overflow:visible!important;touch-action:pan-y!important}
+.mvp-layout{height:auto!important;min-height:0!important;overflow:visible!important;touch-action:pan-y!important}
+.mvp-card,.mvp-review{overflow:visible!important}
+.ugo-request-backdrop,.ugo-drawer-backdrop{touch-action:pan-y}
+.ugo-request-sheet,.ugo-provider-drawer,.mvp-hugo-panel{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior:contain}
+@media(max-width:760px){
+ body{position:static!important;overflow-y:auto!important;overscroll-behavior-y:auto!important}
+ .mvp-shell{padding-bottom:calc(28px + env(safe-area-inset-bottom))!important}
+ .mvp-layout{width:100%!important;padding:12px 10px calc(150px + env(safe-area-inset-bottom))!important}
+ .mvp-card{width:100%!important;max-width:100%!important}
+ .mvp-card-title{align-items:flex-start!important}
+ .mvp-operation-grid,.mvp-mission-detail{grid-template-columns:1fr!important}
+ .mvp-review{padding-bottom:calc(40px + env(safe-area-inset-bottom))!important}
+ .mvp-stars{max-width:none!important;width:100%!important}
+ .mvp-hugo-panel{max-height:70dvh!important;bottom:calc(92px + env(safe-area-inset-bottom))!important}
+ .ugo-request-sheet,.ugo-provider-drawer{max-height:calc(100dvh - 28px)!important}
+ .ugo-location-control{top:calc(70px + env(safe-area-inset-top))!important;right:10px!important;bottom:auto!important;z-index:80!important}
+ .ugo-location-control>button{min-height:38px!important;padding:7px 10px!important;font-size:11px!important;opacity:.94}
+}
+@media(max-width:420px){
+ .mvp-layout{padding-left:8px!important;padding-right:8px!important}
+ .mvp-card{padding:14px!important;border-radius:18px!important}
+ .mvp-card-title h2{font-size:20px!important;line-height:1.1!important}
+ .mvp-status{font-size:9px!important}
+}
