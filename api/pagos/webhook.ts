@@ -21,8 +21,51 @@ function hintedServiceId(req: VercelRequest) {
   return String(raw || '')
 }
 
+function openPixEventFrom(req: VercelRequest) {
+  return String(req.body?.event || req.body?.type || req.body?.charge?.event || '')
+}
+
+function openPixStatus(event: string) {
+  const value = event.toUpperCase()
+  if (value.includes('CHARGE_COMPLETED') || value.includes('TRANSACTION_RECEIVED')) return 'held'
+  if (value.includes('CHARGE_EXPIRED')) return 'cancelled'
+  if (value.includes('REFUND') && value.includes('CONFIRMED')) return 'refunded'
+  return 'pending'
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET' && req.method !== 'POST') return res.status(200).json({ received: true })
+
+  const openPixEvent = openPixEventFrom(req)
+  if (process.env.PAYMENTS_OPENPIX_ENABLED === 'true' && openPixEvent.toUpperCase().startsWith('OPENPIX:')) {
+    const expected = process.env.OPENPIX_WEBHOOK_AUTHORIZATION
+    if (expected && String(req.headers.authorization || '') !== expected) {
+      return res.status(401).json({ received: false, error: 'Webhook OpenPix no autorizado.' })
+    }
+    const charge = req.body?.charge || req.body?.transaction || req.body?.pix || {}
+    const correlationID = String(charge?.correlationID || req.body?.correlationID || '')
+    const externalPaymentId = String(charge?.identifier || charge?.id || correlationID || '')
+    const endToEndId = charge?.endToEndId || charge?.transaction?.endToEndId || req.body?.endToEndId || null
+    console.info('[openpix-webhook:sandbox]', {
+      event: openPixEvent,
+      correlationID,
+      externalPaymentId,
+      endToEndId,
+      status: openPixStatus(openPixEvent),
+    })
+    // Sandbox: se acepta y normaliza el evento, pero no se muta la bóveda ni se libera dinero.
+    return res.status(200).json({
+      received: true,
+      processor: 'openpix',
+      sandbox: true,
+      event: openPixEvent,
+      externalPaymentId,
+      serviceId: correlationID.startsWith('ugo-openpix-') ? correlationID.slice('ugo-openpix-'.length) : null,
+      status: openPixStatus(openPixEvent),
+      endToEndId,
+    })
+  }
+
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     console.error('Mercado Pago webhook missing Supabase server configuration')
     return res.status(200).json({ received: true })
