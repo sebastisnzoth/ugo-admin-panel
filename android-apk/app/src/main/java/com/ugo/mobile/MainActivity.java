@@ -7,7 +7,6 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.view.View;
 import android.webkit.GeolocationPermissions;
 import android.webkit.ValueCallback;
@@ -53,12 +52,34 @@ public class MainActivity extends Activity {
         settings.setAllowContentAccess(true);
         settings.setAllowFileAccess(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
-        settings.setUserAgentString(settings.getUserAgentString() + " UGO-Android/1.0");
+        settings.setUseWideViewPort(true);
+        settings.setLoadWithOverviewMode(false);
+        settings.setSupportZoom(false);
+        settings.setBuiltInZoomControls(false);
+        settings.setDisplayZoomControls(false);
+        settings.setTextZoom(100);
+        settings.setUserAgentString(settings.getUserAgentString() + " UGO-Android/1.1");
+
+        webView.setVerticalScrollBarEnabled(true);
+        webView.setHorizontalScrollBarEnabled(false);
+        webView.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        webView.setNestedScrollingEnabled(true);
+        webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
 
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
                 progress.setVisibility(View.GONE);
+                view.evaluateJavascript(
+                    "(function(){" +
+                    "var m=document.querySelector('meta[name=viewport]');" +
+                    "if(!m){m=document.createElement('meta');m.name='viewport';document.head.appendChild(m);}" +
+                    "m.content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover';" +
+                    "document.documentElement.style.width='100%';" +
+                    "document.body.style.width='100%';" +
+                    "})();",
+                    null
+                );
             }
         });
 
