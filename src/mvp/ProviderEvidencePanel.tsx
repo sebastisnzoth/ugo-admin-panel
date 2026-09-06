@@ -1,5 +1,5 @@
-import React,{useCallback,useEffect,useState}from'react'
-import{supabase}from'../lib/supabase'
+import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
 type EvidenceType='antes'|'durante'|'despues'
@@ -10,6 +10,7 @@ const BUCKET='service-evidence'
 const VISIBLE_STATES=new Set(['llegado','en_progreso','esperando_aprobacion'])
 
 export function ProviderEvidencePanel({service}:Props){
+ const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[open,setOpen]=useState(false),[busy,setBusy]=useState(false),[kind,setKind]=useState<EvidenceType>('antes'),[rows,setRows]=useState<EvidenceRow[]>([]),[error,setError]=useState('')
  const load=useCallback(async()=>{
   if(!service)return setRows([])
@@ -18,7 +19,7 @@ export function ProviderEvidencePanel({service}:Props){
   const base=(data||[]) as EvidenceRow[]
   const withUrls=await Promise.all(base.map(async row=>{const{data:signed}=await supabase.storage.from(BUCKET).createSignedUrl(row.storage_path,900);return{...row,url:signed?.signedUrl}}))
   setRows(withUrls)
- },[service])
+ },[service,supabase])
  useEffect(()=>{load().catch(()=>{})},[load])
  useEffect(()=>{if(service?.estado==='en_progreso')setKind('durante');if(service?.estado==='esperando_aprobacion')setKind('despues')},[service?.estado])
  if(!service||!VISIBLE_STATES.has(service.estado))return null
@@ -28,13 +29,14 @@ export function ProviderEvidencePanel({service}:Props){
   if(file.size>10*1024*1024)return setError('La foto supera el límite de 10 MB.')
   setBusy(true)
   try{
-   const{data:userData}=await supabase.auth.getUser();const user=userData.user
-   if(!user)throw new Error('Sesión no disponible.')
-   const ext=(file.name.split('.').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'
+   const{data:{session}}=await supabase.auth.getSession()
+   const user=session?.user
+   if(!user)throw new Error('Tu sesión de proveedor venció. Volvé a iniciar sesión.')
+   const ext=(file.name.split('.').pop()||file.type.split('/').pop()||'jpg').toLowerCase().replace(/[^a-z0-9]/g,'')||'jpg'
    const path=`${service.id}/${user.id}/${crypto.randomUUID()}.${ext}`
-   const{error:uploadError}=await supabase.storage.from(BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg'})
+   const{error:uploadError}=await supabase.storage.from(BUCKET).upload(path,file,{upsert:false,contentType:file.type||'image/jpeg',cacheControl:'3600'})
    if(uploadError)throw uploadError
-   const{error:insertError}=await (supabase as any).from('evidencias_servicio').insert({servicio_id:service.id,usuario_id:user.id,tipo:kind,storage_path:path,descripcion:kind==='despues'?'Evidencia final del trabajo':kind==='antes'?'Evidencia al llegar':null,metadata:{mime:file.type||null,size:file.size}})
+   const{error:insertError}=await (supabase as any).from('evidencias_servicio').insert({servicio_id:service.id,usuario_id:user.id,tipo:kind,storage_path:path,descripcion:kind==='despues'?'Evidencia final del trabajo':kind==='antes'?'Evidencia al llegar':'Evidencia durante el trabajo',metadata:{mime:file.type||null,size:file.size,source:'provider-app'}})
    if(insertError){await supabase.storage.from(BUCKET).remove([path]);throw insertError}
    await load()
   }catch(e){setError(e instanceof Error?e.message:'No se pudo subir la evidencia.')}
