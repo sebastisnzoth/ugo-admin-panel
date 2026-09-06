@@ -8,6 +8,7 @@ on:
       - 'android-apk/**'
       - '.github/workflows/build-ugo-apks.yml'
 
+# Rebuild marker: native Hugo voice for Cliente + Proveedor
 jobs:
   build-apks:
     runs-on: ubuntu-latest
