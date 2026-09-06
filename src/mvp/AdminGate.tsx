@@ -1,20 +1,9 @@
-import React,{Component,useEffect,useState}from'react'
-import type{FormEvent,ReactNode}from'react'
-import{AdminPanelBridge}from'./AdminPanelBridge'
+import React,{useEffect,useState}from'react'
+import type{FormEvent}from'react'
 import{supabase}from'../lib/supabase'
-import{PixReconciliationPanel}from'./PixReconciliationPanel'
-import{WhatsAppAdminInbox}from'./WhatsAppAdminInbox'
-import{AdminUsersPanel}from'./AdminUsersPanel'
-import{AdminProviderVerificationPanel}from'./AdminProviderVerificationPanel'
+import{AdminPhase2}from'./AdminPhase2'
 
 type AdminProfile={tipo:string;activo:boolean}
-
-class AdminLegacyBoundary extends Component<{children:ReactNode},{failed:boolean,message:string}>{
- state={failed:false,message:''}
- static getDerivedStateFromError(error:unknown){return{failed:true,message:error instanceof Error?error.message:'Error inesperado del panel anterior.'}}
- componentDidCatch(error:unknown){console.error('[UGO Admin legacy]',error)}
- render(){if(this.state.failed)return <div style={{position:'fixed',inset:0,zIndex:10,background:'#f5f7f8',display:'grid',placeItems:'center',padding:24,color:'#111'}}><div style={{maxWidth:540,background:'#fff',border:'1px solid #e5e7eb',borderRadius:20,padding:22,boxShadow:'0 16px 50px rgba(0,0,0,.12)'}}><h2 style={{marginTop:0}}>Panel principal en recuperación</h2><p style={{color:'#667085'}}>Una sección antigua del Admin falló, pero UGO sigue activo. Usá los botones flotantes <b>✅ Proveedores</b> y <b>👥 Usuarios</b> para administrar cuentas sin perder la pantalla.</p><details style={{fontSize:11,color:'#667085'}}><summary>Detalle técnico</summary><pre style={{whiteSpace:'pre-wrap'}}>{this.state.message}</pre></details><button onClick={()=>this.setState({failed:false,message:''})} style={{marginTop:12,border:0,borderRadius:10,padding:'10px 14px',background:'#111820',color:'#fff',fontWeight:800,cursor:'pointer'}}>Reintentar panel</button></div></div>;return this.props.children}
-}
 
 export function AdminGate(){
  const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[email,setEmail]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[recovery,setRecovery]=useState(false),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false)
@@ -31,7 +20,7 @@ export function AdminGate(){
  async function sendRecovery(){const cleanEmail=email.trim();if(!cleanEmail)return setError('Ingresá el email de tu cuenta Admin.');setBusy(true);setError('');setNotice('');try{const redirectTo=`${window.location.origin}/?app=admin`;const{error}=await supabase.auth.resetPasswordForEmail(cleanEmail,{redirectTo});if(error)throw error;setNotice('Si ese email corresponde a una cuenta UGO, vas a recibir un enlace para crear una nueva contraseña.')}catch(x){setError(x instanceof Error?x.message:'No se pudo enviar el enlace de recuperación.')}finally{setBusy(false)}}
  async function saveNewPassword(e:FormEvent){e.preventDefault();if(newPassword.length<8)return setError('La nueva contraseña debe tener al menos 8 caracteres.');setBusy(true);setError('');setNotice('');try{const{error}=await supabase.auth.updateUser({password:newPassword});if(error)throw error;const{data:{session}}=await supabase.auth.getSession();if(!session)throw new Error('No se pudo validar la sesión recuperada.');if(!(await authorizeSession(session))){await supabase.auth.signOut();throw new Error('La cuenta recuperada no tiene rol de administrador.')}setRecovery(false);setAllowed(true);setNotice('Contraseña actualizada.')}catch(x){setError(x instanceof Error?x.message:'No se pudo actualizar la contraseña.')}finally{setBusy(false)}}
  if(checking)return <div className="mvp-loading"><p>Validando acceso U.G.O.…</p></div>
- if(allowed)return <><AdminLegacyBoundary><AdminPanelBridge/></AdminLegacyBoundary><PixReconciliationPanel/><WhatsAppAdminInbox/><AdminUsersPanel/><AdminProviderVerificationPanel/></>
+ if(allowed)return <AdminPhase2/>
  if(recovery)return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Nueva contraseña</h1><p>Definí una contraseña nueva para tu cuenta de administrador.</p><form onSubmit={saveNewPassword}><label>Nueva contraseña<input type="password" value={newPassword} onChange={e=>setNewPassword(e.target.value)} autoComplete="new-password" minLength={8} required/></label>{notice&&<div className="mvp-notice ok">{notice}</div>}{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Guardando…':'Guardar contraseña →'}</button></form></div></div>
  return <div className="mvp-auth-page"><div className="mvp-auth-card"><div className="mvp-kicker">U.G.O. · ADMIN</div><h1>Panel de control</h1><p>Solo administradores autorizados.</p><form onSubmit={login}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" placeholder="tu-email@dominio.com" required/></label><label>Contraseña<input type="password" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="current-password" required/></label>{notice&&<div className="mvp-notice ok">{notice}</div>}{error&&<div className="mvp-form-error">{error}</div>}<button type="submit" className="mvp-primary" disabled={busy}>{busy?'Validando…':'Ingresar →'}</button><button type="button" className="mvp-secondary" onClick={sendRecovery} disabled={busy}>Olvidé mi contraseña</button></form></div></div>
 }
