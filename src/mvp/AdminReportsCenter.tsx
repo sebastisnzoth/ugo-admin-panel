@@ -25,8 +25,9 @@ function rangeFor(period:Period,from:string,to:string){
 function csvCell(v:any){const s=String(v??'');return `"${s.replace(/"/g,'""')}"`}
 function downloadCsv(name:string,rows:any[]){
  if(!rows.length)return
- const keys=Array.from(rows.reduce((s:Set<string>,r:any)=>{Object.keys(r||{}).forEach(k=>s.add(k));return s},new Set<string>()))
- const csv=[keys.map(csvCell).join(','),...rows.map(r=>keys.map(k=>csvCell(typeof r[k]==='object'?JSON.stringify(r[k]):r[k])).join(','))].join('\n')
+ const keys:string[]=[]
+ rows.forEach((r:any)=>Object.keys(r||{}).forEach((k:string)=>{if(!keys.includes(k))keys.push(k)}))
+ const csv=[keys.map(csvCell).join(','),...rows.map((r:any)=>keys.map((k:string)=>csvCell(typeof r[k]==='object'?JSON.stringify(r[k]):r[k])).join(','))].join('\n')
  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url)
 }
 
