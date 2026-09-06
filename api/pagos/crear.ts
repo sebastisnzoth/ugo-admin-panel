@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { createClient } from '@supabase/supabase-js'
+import { getServerPaymentProvider } from '../../src/server/payments/router.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -14,9 +15,10 @@ function getBaseUrl(req: VercelRequest) {
   return host ? `${proto}://${host}` : ''
 }
 
-function paymentMethod(req: VercelRequest): 'pix'|'pix_direto'|'mercadopago' {
+function paymentMethod(req: VercelRequest): 'pix'|'pix_direto'|'mercadopago'|'openpix' {
   if (req.body?.metodo === 'pix') return 'pix'
   if (req.body?.metodo === 'pix_direto') return 'pix_direto'
+  if (req.body?.metodo === 'openpix') return 'openpix'
   return 'mercadopago'
 }
 
@@ -93,7 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     )
 
     const { data: existing } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).limit(1).maybeSingle()
-    const confirmed = existing?.estado === 'liberado' || (existing?.estado === 'retenido' && Boolean(existing?.mp_payment_id || existing?.pix_e2e_id))
+    const confirmed = existing?.estado === 'liberado' || (existing?.estado === 'retenido' && Boolean(existing?.mp_payment_id || existing?.pix_e2e_id || existing?.pago_externo_id))
     if (confirmed) return res.status(200).json({ success: true, alreadyPaid: true, demo: existing?.procesador === 'demo', pagoId: existing.id, estado: existing.estado, metodo: existing.metodo || metodo, montoTotal: Number(existing.monto_bruto ?? montoTotal), comisionUgo: Number(existing.comision_ugo ?? comisionUgo), gananciaProveedor: Number(existing.ganancia_proveedor ?? gananciaProveedor) })
 
     if (demoSebastian) {
@@ -141,7 +143,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, alreadyPaid: true, demo: true, pagoId: pago.id, estado: 'retenido', metodo: 'demo_sebastian', montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
 
-    if ((metodo === 'pix' || metodo === 'pix_direto') && moneda !== 'BRL') return res.status(409).json({ error: 'Pix está disponible únicamente para pagos en BRL.' })
+    if ((metodo === 'pix' || metodo === 'pix_direto' || metodo === 'openpix') && moneda !== 'BRL') return res.status(409).json({ error: 'Pix está disponible únicamente para pagos en BRL.' })
+
+    const baseUrl = getBaseUrl(req)
+
+    if (metodo === 'openpix') {
+      if (process.env.PAYMENTS_OPENPIX_ENABLED !== 'true') return res.status(404).json({ error: 'OpenPix sandbox deshabilitado.' })
+      if (!String(user.email || '').toLowerCase().endsWith('@ugo.test')) return res.status(403).json({ error: 'OpenPix sandbox disponible solo para cuentas @ugo.test.' })
+      if (existing?.procesador === 'openpix' && existing?.estado === 'pendiente' && existing?.pix_copia_cola) {
+        return res.status(200).json({ success: true, sandbox: true, pagoId: existing.id, metodo: 'openpix', paymentId: existing.pago_externo_id, pixTxid: existing.pix_txid, pixCopiaCola: existing.pix_copia_cola, pixQrCode: existing.pix_qr_code, pixExpiraAt: existing.pix_expira_at, montoTotal, comisionUgo, gananciaProveedor, moneda })
+      }
+      const provider = getServerPaymentProvider({ country: 'BR', processor: 'openpix' })
+      const created = await provider.createPayment({
+        serviceId: servicioId,
+        amount: montoTotal,
+        currency: 'BRL',
+        description: `U.G.O. sandbox · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`,
+        payerEmail: user.email || null,
+        customerName: 'UGO Test',
+        idempotencyKey: `ugo-openpix-${servicioId}`,
+        expiresInSeconds: 1800,
+      })
+      const paymentRow = {
+        servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'openpix', metodo: 'openpix', modelo_pago: 'custodia_ugo', pago_externo_id: created.externalPaymentId, monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: created.status === 'held' ? 'retenido' : 'pendiente', mp_payment_id: null, mp_preference_id: null, mp_init_point: created.paymentLink || null, mp_status: created.status, pix_txid: created.externalPaymentId, pix_copia_cola: created.copyPasteCode || null, pix_qr_code: created.qrCodeBase64 || null, pix_expira_at: created.expiresAt || null, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: 'OPENPIX SANDBOX - NO LIBERAR FONDOS REALES', updated_at: new Date().toISOString(),
+      }
+      const { data: pago, error } = existing?.id ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single() : await sb.from('pagos').insert(paymentRow).select().single()
+      if (error) throw error
+      return res.status(200).json({ success: true, sandbox: true, pagoId: pago.id, metodo: 'openpix', paymentId: created.externalPaymentId, pixTxid: created.externalPaymentId, pixCopiaCola: created.copyPasteCode || null, pixQrCode: created.qrCodeBase64 || null, pixTicketUrl: created.paymentLink || null, pixExpiraAt: created.expiresAt || null, estado: paymentRow.estado, montoTotal, comisionUgo, gananciaProveedor, moneda })
+    }
 
     if (metodo === 'pix_direto') {
       if (!UGO_PIX_KEY) return res.status(503).json({ error: 'Pix direto de UGO todavía no tiene UGO_PIX_KEY configurada en el servidor.' })
@@ -158,26 +187,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'pix_direto', pixTxid: txid, pixCopiaCola: copiaCola, pixChave: UGO_PIX_KEY, montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
 
-    if (!MP_ACCESS_TOKEN) return res.status(503).json({ error: 'Mercado Pago no está configurado en el servidor.' })
-    const baseUrl = getBaseUrl(req)
-
     if (metodo === 'pix' && existing?.metodo === 'pix' && existing?.estado === 'pendiente' && existing?.pix_copia_cola) {
       return res.status(200).json({ success: true, pagoId: existing.id, metodo: 'pix', paymentId: existing.mp_payment_id, pixTxid: existing.pix_txid, pixCopiaCola: existing.pix_copia_cola, pixQrCode: existing.pix_qr_code, pixExpiraAt: existing.pix_expira_at, montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
 
     if (metodo === 'pix') {
       if (!user.email) return res.status(409).json({ error: 'Tu cuenta necesita un email válido para generar el cobro Pix.' })
-      const expiration = new Date(Date.now() + 30 * 60 * 1000).toISOString()
-      const pixPayload = { transaction_amount: montoTotal, description: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`, payment_method_id: 'pix', payer: { email: user.email }, external_reference: servicioId, notification_url: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined, date_of_expiration: expiration, metadata: { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, metodo: 'pix' } }
-      const mpResponse = await fetch('https://api.mercadopago.com/v1/payments', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MP_ACCESS_TOKEN}`, 'X-Idempotency-Key': `ugo-pix-${servicioId}` }, body: JSON.stringify(pixPayload) })
-      if (!mpResponse.ok) return res.status(502).json({ error: 'Mercado Pago no pudo generar el Pix.', details: await mpResponse.json().catch(() => null) })
-      const mpData = await mpResponse.json()
-      const tx = mpData.point_of_interaction?.transaction_data || {}
-      const paymentRow = { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'mercadopago', metodo: 'pix', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: mpData.status === 'approved' ? 'retenido' : 'pendiente', mp_payment_id: String(mpData.id || ''), mp_status: String(mpData.status || 'pending'), pix_txid: String(mpData.id || ''), pix_copia_cola: tx.qr_code || null, pix_qr_code: tx.qr_code_base64 || null, pix_expira_at: expiration, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString() }
+      const provider = getServerPaymentProvider({ country: 'BR', processor: 'mercadopago_br' })
+      const created = await provider.createPayment({
+        serviceId: servicioId,
+        amount: montoTotal,
+        currency: 'BRL',
+        description: `U.G.O. · Servicio #${servicio.numero || servicio.id.slice(0, 8)}`,
+        payerEmail: user.email,
+        idempotencyKey: `ugo-pix-${servicioId}`,
+        notificationUrl: baseUrl ? `${baseUrl}/api/pagos/webhook` : undefined,
+        expiresInSeconds: 1800,
+      })
+      const paymentRow = { servicio_id: servicioId, cliente_id: user.id, proveedor_id: servicio.proveedor_id, procesador: 'mercadopago', metodo: 'pix', monto_bruto: montoTotal, comision_ugo: comisionUgo, ganancia_proveedor: gananciaProveedor, moneda, estado: created.status === 'held' ? 'retenido' : 'pendiente', pago_externo_id: created.externalPaymentId, mp_payment_id: created.externalPaymentId, mp_status: created.status, pix_txid: created.externalPaymentId, pix_copia_cola: created.copyPasteCode || null, pix_qr_code: created.qrCodeBase64 || null, pix_expira_at: created.expiresAt || null, pix_e2e_id: null, pix_informado_at: null, pix_conciliado_at: null, pix_conciliado_por: null, pix_conciliacion_nota: null, updated_at: new Date().toISOString() }
       const { data: pago, error } = existing?.id ? await sb.from('pagos').update(paymentRow).eq('id', existing.id).select().single() : await sb.from('pagos').insert(paymentRow).select().single()
       if (error) throw error
-      return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'pix', paymentId: mpData.id, pixTxid: String(mpData.id || ''), pixCopiaCola: tx.qr_code || null, pixQrCode: tx.qr_code_base64 || null, pixTicketUrl: tx.ticket_url || null, pixExpiraAt: expiration, estado: paymentRow.estado, montoTotal, comisionUgo, gananciaProveedor, moneda })
+      return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'pix', paymentId: created.externalPaymentId, pixTxid: created.externalPaymentId, pixCopiaCola: created.copyPasteCode || null, pixQrCode: created.qrCodeBase64 || null, pixTicketUrl: created.paymentLink || null, pixExpiraAt: created.expiresAt || null, estado: paymentRow.estado, montoTotal, comisionUgo, gananciaProveedor, moneda })
     }
+
+    if (!MP_ACCESS_TOKEN) return res.status(503).json({ error: 'Mercado Pago no está configurado en el servidor.' })
 
     if (existing?.mp_preference_id && existing?.mp_init_point && existing?.estado === 'pendiente' && existing?.metodo === 'mercadopago') return res.status(200).json({ success: true, pagoId: existing.id, metodo: 'mercadopago', preferenceId: existing.mp_preference_id, initPoint: existing.mp_init_point, montoTotal, comisionUgo, gananciaProveedor })
 
