@@ -6,6 +6,7 @@ import{Launcher}from'./Launcher'
 import{AppLocationButton}from'./AppLocationButton'
 import{DemoSebastianPaymentBridge}from'./DemoSebastianPaymentBridge'
 import'./mvp.css'
+import'./ugo-uiux.css'
 
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
