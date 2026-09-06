@@ -6,22 +6,29 @@ html,body,#root{width:100%!important;max-width:none!important;min-height:100%!im
 .mvp-card,.mvp-review{overflow:visible!important}
 .ugo-request-backdrop,.ugo-drawer-backdrop{touch-action:pan-y}
 .ugo-request-sheet,.ugo-provider-drawer,.mvp-hugo-panel{overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior:contain}
+
 @media(max-width:760px){
- body{position:static!important;overflow-y:auto!important;overscroll-behavior-y:auto!important}
- .mvp-shell{padding-bottom:calc(28px + env(safe-area-inset-bottom))!important}
- .mvp-layout{width:100%!important;padding:12px 10px calc(150px + env(safe-area-inset-bottom))!important}
+ html,body,#root{height:100%!important;min-height:100%!important;overflow:hidden!important}
+ body{position:static!important;overscroll-behavior-y:none!important}
+ /* The operational shell itself owns scrolling in Android WebView. This is more reliable than body scrolling. */
+ .mvp-shell{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior-y:contain!important;padding-bottom:0!important}
+ .mvp-header{position:sticky!important;top:0!important;z-index:50!important}
+ .mvp-layout{width:100%!important;height:auto!important;min-height:max-content!important;overflow:visible!important;padding:12px 10px calc(190px + env(safe-area-inset-bottom))!important}
+ .mvp-layout>*{flex-shrink:0}
  .mvp-card{width:100%!important;max-width:100%!important}
  .mvp-card-title{align-items:flex-start!important}
  .mvp-operation-grid,.mvp-mission-detail{grid-template-columns:1fr!important}
- .mvp-review{padding-bottom:calc(40px + env(safe-area-inset-bottom))!important}
+ .mvp-review{padding-bottom:calc(60px + env(safe-area-inset-bottom))!important;margin-bottom:24px!important}
+ .mvp-review textarea{min-height:120px!important}
  .mvp-stars{max-width:none!important;width:100%!important}
- .mvp-hugo-panel{max-height:70dvh!important;bottom:calc(92px + env(safe-area-inset-bottom))!important}
- .ugo-request-sheet,.ugo-provider-drawer{max-height:calc(100dvh - 28px)!important}
- .ugo-location-control{top:calc(70px + env(safe-area-inset-top))!important;right:10px!important;bottom:auto!important;z-index:80!important}
+ .mvp-hugo-panel{max-height:60dvh!important;overflow-y:auto!important;bottom:calc(96px + env(safe-area-inset-bottom))!important}
+ .ugo-request-sheet,.ugo-provider-drawer{max-height:calc(100dvh - 28px)!important;overflow-y:auto!important}
+ .ugo-location-control{top:calc(72px + env(safe-area-inset-top))!important;right:10px!important;bottom:auto!important;z-index:80!important}
  .ugo-location-control>button{min-height:38px!important;padding:7px 10px!important;font-size:11px!important;opacity:.94}
 }
+
 @media(max-width:420px){
- .mvp-layout{padding-left:8px!important;padding-right:8px!important}
+ .mvp-layout{padding-left:8px!important;padding-right:8px!important;padding-bottom:calc(210px + env(safe-area-inset-bottom))!important}
  .mvp-card{padding:14px!important;border-radius:18px!important}
  .mvp-card-title h2{font-size:20px!important;line-height:1.1!important}
  .mvp-status{font-size:9px!important}
