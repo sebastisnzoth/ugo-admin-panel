@@ -2,7 +2,10 @@ import React,{useEffect,useState}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
-export function AdminPanelBridge(){
+type LegacySection='dashboard'|'mapa_ops'|'servicios'|'alertas'|'disputas'
+const SECTION_LABEL:Record<LegacySection,string>={dashboard:'Panel',mapa_ops:'Mapa Live',servicios:'Servs',alertas:'Alertas',disputas:'Disput'}
+
+export function AdminPanelBridge({section='dashboard',embedded=false}:{section?:LegacySection;embedded?:boolean}){
  const[ready,setReady]=useState(false)
  useEffect(()=>{
   const auth:any=(supabase as any).auth
@@ -60,15 +63,27 @@ export function AdminPanelBridge(){
     return new Response(body,{status:r.status,statusText:r.statusText,headers:{'Content-Type':'application/json'}})
    }
 
-   if(url.pathname.startsWith('/rest/v1/rpc/import_proveedores_csv')){
-    return nativeFetch(`${officialOrigin}${url.pathname}${url.search}`,{...init,headers})
-   }
+   if(url.pathname.startsWith('/rest/v1/rpc/import_proveedores_csv'))return nativeFetch(`${officialOrigin}${url.pathname}${url.search}`,{...init,headers})
    return nativeFetch(input,init)
   }) as typeof window.fetch
 
   setReady(true)
   return()=>{auth.onAuthStateChange=originalAuth;storage.from=originalStorageFrom;window.fetch=nativeFetch}
  },[])
+ useEffect(()=>{
+  if(!ready)return
+  let tries=0
+  const select=()=>{
+   const label=SECTION_LABEL[section]
+   const button=[...document.querySelectorAll('.ugo-admin-embedded .nav-item')].find(el=>el.querySelector('.nav-label')?.textContent?.trim()===label) as HTMLButtonElement|undefined
+   if(button){button.click();return}
+   if(tries++<12)window.setTimeout(select,80)
+  }
+  window.setTimeout(select,0)
+ },[ready,section])
  if(!ready)return <div className="mvp-loading"><p>Abriendo panel U.G.O.…</p></div>
- return <AdminPanel/>
+ return <div className={embedded?'ugo-admin-embedded':''}>
+  {embedded&&<style>{`.ugo-admin-embedded{height:100%;min-height:0}.ugo-admin-embedded .ua{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)!important;height:100%!important}.ugo-admin-embedded .ua-tb,.ugo-admin-embedded .ua-nav,.ugo-admin-embedded .ua-hugo{display:none!important}.ugo-admin-embedded .ua-main{grid-column:1!important;grid-row:1!important;min-width:0!important}.ugo-admin-embedded .pad{height:100%!important}.ugo-admin-embedded .map-wrap{height:100%!important}`}</style>}
+  <AdminPanel/>
+ </div>
 }
