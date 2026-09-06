@@ -2,8 +2,8 @@ import React,{useEffect,useState}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
-type LegacySection='dashboard'|'mapa_ops'|'servicios'|'alertas'|'disputas'
-const SECTION_LABEL:Record<LegacySection,string>={dashboard:'Panel',mapa_ops:'Mapa Live',servicios:'Servs',alertas:'Alertas',disputas:'Disput'}
+type LegacySection='dashboard'|'mapa_ops'|'servicios'|'alertas'|'disputas'|'scout'
+const SECTION_LABEL:Record<LegacySection,string>={dashboard:'Panel',mapa_ops:'Mapa Live',servicios:'Servs',alertas:'Alertas',disputas:'Disput',scout:'Scout'}
 
 export function AdminPanelBridge({section='dashboard',embedded=false}:{section?:LegacySection;embedded?:boolean}){
  const[ready,setReady]=useState(false)
