@@ -2,8 +2,12 @@ import React,{useEffect,useState}from'react'
 import{AdminPanel}from'../components/AdminPanel'
 import{supabase}from'../lib/supabase'
 
-type LegacySection='dashboard'|'mapa_ops'|'servicios'|'alertas'|'disputas'|'scout'
-const SECTION_LABEL:Record<LegacySection,string>={dashboard:'Panel',mapa_ops:'Mapa Live',servicios:'Servs',alertas:'Alertas',disputas:'Disput',scout:'Scout'}
+type LegacySection='dashboard'|'mapa_ops'|'servicios'|'alertas'|'disputas'|'scout'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'analytics'|'notificaciones'|'reportes'|'config'|'validacion_paises'|'import_provs'
+const SECTION_LABEL:Record<LegacySection,string>={
+ dashboard:'Panel',mapa_ops:'Mapa Live',servicios:'Servs',alertas:'Alertas',disputas:'Disput',scout:'Scout',
+ usuarios:'Usrs',documentos:'Docs',finanzas:'Finanzas',categorias:'Cats',tarifas:'Tarifas',analytics:'Analytics',
+ notificaciones:'Notifs',reportes:'Reports',config:'Config',validacion_paises:'KYC',import_provs:'Import'
+}
 
 export function AdminPanelBridge({section='dashboard',embedded=false}:{section?:LegacySection;embedded?:boolean}){
  const[ready,setReady]=useState(false)
@@ -77,7 +81,7 @@ export function AdminPanelBridge({section='dashboard',embedded=false}:{section?:
    const label=SECTION_LABEL[section]
    const button=[...document.querySelectorAll('.ugo-admin-embedded .nav-item')].find(el=>el.querySelector('.nav-label')?.textContent?.trim()===label) as HTMLButtonElement|undefined
    if(button){button.click();return}
-   if(tries++<12)window.setTimeout(select,80)
+   if(tries++<16)window.setTimeout(select,90)
   }
   window.setTimeout(select,0)
  },[ready,section])
