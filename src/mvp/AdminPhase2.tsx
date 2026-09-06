@@ -31,6 +31,7 @@ export function AdminPhase2(){
  },[])
  useEffect(()=>{load().catch(()=>setLoading(false));const ch=supabase.channel('ugo-admin-phase2').on('postgres_changes',{event:'*',schema:'public',table:'servicios'},load).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},load).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},load).subscribe();return()=>{supabase.removeChannel(ch)}},[load])
  const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración'}[section]),[section])
+ const critical=metrics.pendingProviders+metrics.pendingPix
  return <div className="ugo-admin2">
   <aside className="ugo-admin2-sidebar">
    <div className="ugo-admin2-brand"><span>U.GO</span><small>CONTROL CENTER</small></div>
@@ -46,6 +47,7 @@ export function AdminPhase2(){
   <main className="ugo-admin2-main">
    <header><div><small>UGO · ADMIN</small><h1>{title}</h1></div><button className="ugo-admin2-refresh" onClick={()=>load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></header>
    {section==='home'&&<div className="ugo-admin2-home">
+    <section className={`ugo-admin2-health ${critical?'attention':'ok'}`}><div><small>ESTADO OPERATIVO</small><strong>{critical?'Hay tareas pendientes':'UGO está operativo'}</strong><p>{critical?`${critical} control${critical===1?'':'es'} requieren atención administrativa.`:'Sin alertas administrativas pendientes.'}</p></div><span>{critical?critical:'✓'}</span></section>
     <section className="ugo-admin2-kpis">
      <article><small>SERVICIOS ACTIVOS</small><strong>{metrics.active}</strong><span>En curso ahora</span></article>
      <article><small>PROVEEDORES ONLINE</small><strong>{metrics.online}</strong><span>Disponibles para matching</span></article>
@@ -58,9 +60,9 @@ export function AdminPhase2(){
      <button onClick={()=>setSection('finance')}><span>Conciliaciones PIX</span><strong>{metrics.pendingPix}</strong><small>Pagos esperando control</small></button>
      <button onClick={()=>setSection('operations')}><span>Operación en vivo</span><strong>{metrics.active}</strong><small>Servicios activos ahora</small></button>
     </section>
-    <section className="ugo-admin2-flow"><small>FLUJO UGO</small><h2>Cliente → Matching → Proveedor → Pago → Servicio → Cierre</h2><p>El panel está organizado alrededor de este flujo. Cada alerta y cada métrica debe corresponder a una etapa operativa real.</p></section>
+    <section className="ugo-admin2-flow"><small>FLUJO UGO</small><h2>Cliente → Matching → Proveedor → Pago → Servicio → Cierre</h2><p>El panel está organizado alrededor de este flujo. Cada alerta y cada métrica corresponde a una etapa operativa real.</p></section>
    </div>}
-   {section==='operations'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>OPERACIÓN EN VIVO</small><h2>Servicios, mapa y estados</h2></div><span>{metrics.active} activos</span></div><div className="ugo-admin2-legacy"><AdminPanelBridge/></div><div className="ugo-admin2-inline-tool"><ServiceHistoryPanel role="admin"/><WhatsAppAdminInbox/></div></section>}
+   {section==='operations'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>OPERACIÓN EN VIVO</small><h2>Servicios, mapa y estados</h2></div><span>{metrics.active} activos</span></div><div className="ugo-admin2-legacy"><AdminPanelBridge/></div><div className="ugo-admin2-history"><ServiceHistoryPanel role="admin" embedded/></div><div className="ugo-admin2-inline-tool"><WhatsAppAdminInbox/></div></section>}
    {section==='people'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>PERSONAS</small><h2>Clientes y proveedores</h2></div><span>{metrics.pendingProviders} verificaciones pendientes</span></div><p className="ugo-admin2-help">Gestioná altas, actividad, reputación y verificación desde una sola sección.</p><div className="ugo-admin2-inline-tool"><AdminProviderVerificationPanel/><AdminUsersPanel/></div></section>}
    {section==='finance'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>FINANZAS</small><h2>Pagos y conciliación</h2></div><span>{metrics.pendingPix} PIX pendientes</span></div><p className="ugo-admin2-help">Controlá pagos protegidos, conciliaciones y liberaciones relacionadas con servicios reales.</p><div className="ugo-admin2-inline-tool"><PixReconciliationPanel/></div></section>}
    {section==='settings'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>CONFIGURACIÓN</small><h2>Sistema UGO</h2></div></div><div className="ugo-admin2-settings-grid"><article><small>MODELO OPERATIVO</small><strong>Cliente / Proveedor / Admin</strong><p>Tres experiencias conectadas a la misma operación y fuente de datos.</p></article><article><small>ASISTENTE</small><strong>Hugo</strong><p>Asistencia contextual para Cliente y Proveedor, basada en información real de UGO.</p></article><article><small>ESTADO</small><strong>Producción</strong><p>Configuración sensible y herramientas técnicas permanecen fuera del flujo diario.</p></article></div></section>}
