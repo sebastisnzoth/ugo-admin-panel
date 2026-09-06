@@ -19,6 +19,7 @@ export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='
  const context=useMemo(()=>[`Rol: ${role==='client'?'cliente':'proveedor'}`,service?`Servicio #${service.numero}`:'Sin servicio activo',service?`Estado: ${STATUS_LABELS[service.estado]||service.estado}`:'',service?.descripcion?`Descripción: ${service.descripcion}`:'',service?.direccion_cliente?`Dirección: ${service.direccion_cliente}`:'',service?.tarifa!=null?`Tarifa: ${service.moneda||'BRL'} ${service.tarifa}`:'',service?.proveedor?.nombre?`Proveedor: ${service.proveedor.nombre}`:'',availableOffers?`Ofertas pendientes: ${availableOffers}`:'',draftContext?`MEMORIA DEL PEDIDO: ${draftContext}`:'',`Mensaje operativo actual: ${text}`].filter(Boolean).join(' | '),[availableOffers,role,service,text,draftContext])
  const voice=useHugoVoice({role,accessToken,context})
  useEffect(()=>{if(role!=='client'||!voice.userTranscript)return;window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:voice.userTranscript}}))},[role,voice.userTranscript])
+ useEffect(()=>{const openHugo=()=>setOpen(true);window.addEventListener('ugo:open-hugo',openHugo);return()=>window.removeEventListener('ugo:open-hugo',openHugo)},[])
 
  if(mode==='quantum'&&role==='client'){
   const visual=voice.state==='speaking'?'speaking':voice.state==='connecting'?'thinking':voice.state==='hearing'?'listening':voice.active?'ready':voice.state==='error'?'error':'idle'
