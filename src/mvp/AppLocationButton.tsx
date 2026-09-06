@@ -30,5 +30,5 @@ export function AppLocationButton({role}:{role:AppRole}){
    }catch(e:any){setMsg(e?.message||'No se pudo guardar la ubicación')}finally{setBusy(false)}
   },()=>{setBusy(false);setMsg('Permití acceso a ubicación en el navegador')},{enableHighAccuracy:true,timeout:12000,maximumAge:30000})
  }
- return <div className="ugo-location-control">{msg&&<div className="ugo-location-message">{msg}</div>}<button type="button" onClick={capture} disabled={busy} title="Guardar mi ubicación actual en UGO" style={{border:0,borderRadius:999,padding:'11px 14px',fontWeight:900,background:ok?'#067647':'#fff',color:ok?'#fff':'#111',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>{busy?'📍 Buscando…':ok?'✓ Ubicación guardada':'📍 Mi ubicación'}</button></div>
+ return <div className={`ugo-location-control role-${role}`}>{msg&&<div className="ugo-location-message">{msg}</div>}<button type="button" onClick={capture} disabled={busy} title="Guardar mi ubicación actual en UGO" style={{border:0,borderRadius:999,padding:'11px 14px',fontWeight:900,background:ok?'#067647':'#fff',color:ok?'#fff':'#111',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>{busy?'📍 Buscando…':ok?'✓ Ubicación guardada':'📍 Mi ubicación'}</button></div>
 }
