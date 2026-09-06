@@ -1,8 +1,9 @@
 import React,{useMemo,useState}from'react'
 import{useConfigSistema}from'../hooks/useAdminData'
+import{AdminPaymentCredentials}from'./AdminPaymentCredentials'
 import'./admin-system-settings.css'
 
-type Group='general'|'rules'|'technical'
+type Group='general'|'rules'|'credentials'|'technical'
 
 const human=(key:string)=>key.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())
 const isSecret=(key:string)=>/api_|secret|token|password|senha|key$/i.test(key)
@@ -25,10 +26,11 @@ export function AdminSystemSettings(){
  }
  if(loading)return <div className="ugo-system-state">Cargando configuración del sistema…</div>
  return <div className="ugo-system-panel">
-  <section className="ugo-system-hero"><div><small>CONFIGURACIÓN GLOBAL</small><h3>Sistema UGO</h3><p>Parámetros globales y estado técnico. No se muestran claves API, tokens ni secretos.</p></div><button onClick={()=>{void refetch()}}>↻ Actualizar</button></section>
-  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
+  <section className="ugo-system-hero"><div><small>CONFIGURACIÓN GLOBAL</small><h3>Sistema UGO</h3><p>Parámetros globales, credenciales privadas y estado técnico. Las claves sensibles nunca se muestran desde config_sistema.</p></div><button onClick={()=>{void refetch()}}>↻ Actualizar</button></section>
+  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='credentials'?'active':''} onClick={()=>setTab('credentials')}>Credenciales de pago</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
   {tab==='general'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>GENERAL</small><h4>Operación global</h4></div><span>{groups.general.length} parámetros</span></div>{renderEditor(groups.general)}</section>}
   {tab==='rules'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>REGLAS DE NEGOCIO</small><h4>Matching, servicios, pagos y políticas</h4></div><span>{groups.rules.length} parámetros</span></div>{renderEditor(groups.rules)}</section>}
-  {tab==='technical'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>ESTADO TÉCNICO</small><h4>Salud del panel y conexión</h4></div></div><div className="ugo-system-health"><article><small>ENTORNO</small><strong>{import.meta.env.MODE}</strong><span>Build web actual</span></article><article><small>NAVEGADOR</small><strong>{navigator.onLine?'Online':'Offline'}</strong><span>Conectividad del dispositivo</span></article><article><small>CONFIG SISTEMA</small><strong>{entries.length}</strong><span>Parámetros visibles cargados</span></article><article><small>ORIGEN</small><strong>Supabase</strong><span>config_sistema</span></article></div></section>}
+  {tab==='credentials'&&<AdminPaymentCredentials/>}
+  {tab==='technical'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>ESTADO TÉCNICO</small><h4>Salud del panel y conexión</h4></div></div><div className="ugo-system-health"><article><small>ENTORNO</small><strong>{import.meta.env.MODE}</strong><span>Build web actual</span></article><article><small>NAVEGADOR</small><strong>{navigator.onLine?'Online':'Offline'}</strong><span>Conectividad del dispositivo</span></article><article><small>CONFIG SISTEMA</small><strong>{entries.length}</strong><span>Parámetros visibles cargados</span></article><article><small>ORIGEN</small><strong>Supabase</strong><span>config_sistema + almacén privado</span></article></div></section>}
  </div>
 }
