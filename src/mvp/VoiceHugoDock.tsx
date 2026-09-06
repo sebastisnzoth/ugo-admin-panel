@@ -20,6 +20,15 @@ export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='
  const voice=useHugoVoice({role,accessToken,context})
  useEffect(()=>{if(role!=='client'||!voice.userTranscript)return;window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:voice.userTranscript}}))},[role,voice.userTranscript])
  useEffect(()=>{const openHugo=()=>setOpen(true);window.addEventListener('ugo:open-hugo',openHugo);return()=>window.removeEventListener('ugo:open-hugo',openHugo)},[])
+ useEffect(()=>{
+  if(role!=='provider')return
+  const handler=(event:Event)=>{event.preventDefault();setOpen(true)}
+  const bind=()=>{const button=document.querySelector('.ugo-provider-hugo-button');button?.addEventListener('click',handler);return button}
+  let button=bind()
+  const observer=new MutationObserver(()=>{if(!button){button=bind()}})
+  observer.observe(document.body,{childList:true,subtree:true})
+  return()=>{observer.disconnect();button?.removeEventListener('click',handler)}
+ },[role])
 
  if(mode==='quantum'&&role==='client'){
   const visual=voice.state==='speaking'?'speaking':voice.state==='connecting'?'thinking':voice.state==='hearing'?'listening':voice.active?'ready':voice.state==='error'?'error':'idle'
