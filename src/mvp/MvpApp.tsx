@@ -14,6 +14,7 @@ import'./ugo-uiux.css'
 import'./mobile-runtime-fixes.css'
 import'./service-history.css'
 
+// UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
  if(app==='client')return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview/><ServiceHistoryPanel role="client"/><DisputeDock role="client"/><AppLocationButton role="client"/></div>
