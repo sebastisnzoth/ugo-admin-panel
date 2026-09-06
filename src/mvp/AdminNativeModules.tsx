@@ -19,11 +19,7 @@ const td:React.CSSProperties={padding:'10px 8px',borderBottom:'1px solid #f2f4f7
 export function AdminOverviewNative(){
  const{metrics,loading}=useDashboardMetrics();const k=useConversionKPIs()
  if(loading&&!metrics)return <div style={box}>Cargando operación…</div>
- const cards=[
-  ['Servicios activos',metrics?.servicios_activos],['Proveedores online',metrics?.proveedores_online],['Clientes',metrics?.clientes_total],
-  ['Disputas abiertas',metrics?.disputas_abiertas],['Ingresos hoy',money(metrics?.ingresos_hoy)],['Bóveda',money(metrics?.boveda_total)],
-  ['Conversión',k?.conversion_pct!=null?`${Number(k.conversion_pct).toFixed(1)}%`:'—'],['Comisión 30d',money(k?.comision_total)],
- ]
+ const cards=[['Servicios activos',metrics?.servicios_activos],['Proveedores online',metrics?.proveedores_online],['Clientes',metrics?.clientes_total],['Disputas abiertas',metrics?.disputas_abiertas],['Ingresos hoy',money(metrics?.ingresos_hoy)],['Bóveda',money(metrics?.boveda_total)],['Conversión',k?.conversion_pct!=null?`${Number(k.conversion_pct).toFixed(1)}%`:'—'],['Comisión 30d',money(k?.comision_total)]]
  return <div style={grid}>{cards.map(([a,b])=><article key={String(a)} style={box}><small style={{fontWeight:800,color:'#667085'}}>{a}</small><strong style={{display:'block',fontSize:28,marginTop:7}}>{b??0}</strong></article>)}</div>
 }
 
@@ -55,8 +51,7 @@ export function AdminDocumentsNative(){
 }
 
 export function AdminVaultNative(){
- const{escrows,liberarEscrow}=useVault();const withdrawals=usePendingWithdrawals();
- const total=useMemo(()=>escrows.reduce((a:any,e:any)=>a+Number(e.monto_total||0),0),[escrows])
+ const{escrows,liberarEscrow}=useVault();const withdrawals=usePendingWithdrawals();const total=useMemo(()=>escrows.reduce((a:any,e:any)=>a+Number(e.monto_total||0),0),[escrows])
  return <div><div style={{...grid,marginBottom:10}}><article style={box}><small>Retenido</small><strong style={{display:'block',fontSize:27}}>{money(total)}</strong></article><article style={box}><small>Escrows</small><strong style={{display:'block',fontSize:27}}>{escrows.length}</strong></article><article style={box}><small>Retiros pendientes</small><strong style={{display:'block',fontSize:27}}>{withdrawals.length}</strong></article></div><div style={box}><table style={table}><thead><tr><th style={th}>Cliente</th><th style={th}>Proveedor</th><th style={th}>Total</th><th style={th}>Comisión</th><th style={th}>Neto</th><th style={th}></th></tr></thead><tbody>{escrows.map((e:any)=><tr key={e.id}><td style={td}>{e.clientes?.nombre||'—'}</td><td style={td}>{e.proveedores?.nombre||'—'}</td><td style={td}>{money(e.monto_total)}</td><td style={td}>{money(e.comision_ugo)}</td><td style={td}>{money(e.monto_proveedor)}</td><td style={td}><button onClick={()=>liberarEscrow(e.id)}>Liberar</button></td></tr>)}</tbody></table>{!escrows.length&&<p>Bóveda vacía.</p>}</div></div>
 }
 
@@ -74,10 +69,10 @@ export function AdminSystemNative(){
 
 export function AdminNotificationsNative(){
  const{hist,enviar}=useNotificaciones();const[titulo,setTitulo]=useState('');const[cuerpo,setCuerpo]=useState('');
- const send=async()=>{if(!titulo.trim()||!cuerpo.trim())return;await enviar({titulo,cuerpo,target:'todos',zona:''});setTitulo('');setCuerpo('')}
+ const send=async()=>{if(!titulo.trim()||!cuerpo.trim())return;await enviar(titulo,cuerpo,'todos');setTitulo('');setCuerpo('')}
  return <div><div style={{...box,marginBottom:10}}><strong>Enviar notificación</strong><input value={titulo} onChange={e=>setTitulo(e.target.value)} placeholder="Título" style={{width:'100%',marginTop:10,padding:9}}/><textarea value={cuerpo} onChange={e=>setCuerpo(e.target.value)} placeholder="Mensaje" style={{width:'100%',minHeight:90,marginTop:8,padding:9}}/><button onClick={send} disabled={!titulo.trim()||!cuerpo.trim()}>Enviar a todos</button></div><div style={box}><strong>Historial</strong>{(hist||[]).slice(0,30).map((n:any)=><div key={n.id} style={{padding:'8px 0',borderBottom:'1px solid #f2f4f7'}}><b>{n.titulo}</b><small style={{display:'block',color:'#667085'}}>{n.cuerpo} · {when(n.created_at)}</small></div>)}</div></div>
 }
 
 export function AdminReportsNative(){
- const{exportServicios,exportUsuarios}=useExport();return <div style={grid}><button style={box} onClick={exportServicios}><strong>Exportar servicios</strong><span style={{display:'block',color:'#667085',marginTop:5}}>CSV de operación</span></button><button style={box} onClick={exportUsuarios}><strong>Exportar usuarios</strong><span style={{display:'block',color:'#667085',marginTop:5}}>CSV de personas</span></button></div>
+ const{exportServicios,exportUsuarios}=useExport();return <div style={grid}><button style={box} onClick={()=>{void exportServicios()}}><strong>Exportar servicios</strong><span style={{display:'block',color:'#667085',marginTop:5}}>Preparar datos de operación</span></button><button style={box} onClick={()=>{void exportUsuarios()}}><strong>Exportar usuarios</strong><span style={{display:'block',color:'#667085',marginTop:5}}>Preparar datos de personas</span></button></div>
 }
