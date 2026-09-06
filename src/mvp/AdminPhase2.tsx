@@ -7,6 +7,7 @@ import{PixReconciliationPanel}from'./PixReconciliationPanel'
 import{WhatsAppAdminInbox}from'./WhatsAppAdminInbox'
 import{ServiceHistoryPanel}from'./ServiceHistoryPanel'
 import'./admin-phase2.css'
+import'./admin-operations-menu.css'
 
 type Section='home'|'operations'|'people'|'finance'|'settings'
 type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'history'|'messages'
