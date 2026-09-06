@@ -1,5 +1,10 @@
-import { supabase } from '../supabase'
+import { getRoleSupabase } from '../roleSupabase'
 import type { Coordinates, DispatchProvider, DispatchRequest, DispatchResult } from './types'
+
+// Dispatch must use the same authenticated Supabase client as UGO Cliente.
+// Using the legacy/global client here leaves matching RPCs without the client's JWT,
+// so the service is created but no offer reaches the provider.
+const supabase = getRoleSupabase('client')
 
 function storedPickup(): Coordinates | null {
   try {
