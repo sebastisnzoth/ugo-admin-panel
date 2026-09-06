@@ -10,7 +10,7 @@ import'./admin-phase2.css'
 import'./admin-operations-menu.css'
 
 type Section='home'|'operations'|'people'|'finance'|'settings'
-type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'history'|'messages'
+type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'scout'|'history'|'messages'
 type Metrics={active:number;online:number;users:number;pendingProviders:number;pendingPix:number;completedToday:number}
 const empty:Metrics={active:0,online:0,users:0,pendingProviders:0,pendingPix:0,completedToday:0}
 
@@ -40,6 +40,7 @@ export function AdminPhase2(){
   services:{eyebrow:'SERVICIOS',title:'Pedidos y trabajos activos'},
   alerts:{eyebrow:'ALERTAS',title:'Eventos que requieren atención'},
   disputes:{eyebrow:'DISPUTAS',title:'Conflictos y resoluciones'},
+  scout:{eyebrow:'SCOUT UGO',title:'Prospección y detección de oportunidades'},
   history:{eyebrow:'HISTORIAL',title:'Trazabilidad completa de UGO'},
   messages:{eyebrow:'MENSAJES',title:'WhatsApp y atención operativa'},
  }
@@ -81,6 +82,7 @@ export function AdminPhase2(){
      <button role="tab" aria-selected={operationView==='services'} className={operationView==='services'?'active':''} onClick={()=>setOperationView('services')}><b>⊞</b><span>Servicios</span><small>Pedidos activos</small>{metrics.active>0&&<em>{metrics.active}</em>}</button>
      <button role="tab" aria-selected={operationView==='alerts'} className={operationView==='alerts'?'active':''} onClick={()=>setOperationView('alerts')}><b>△</b><span>Alertas</span><small>Atención operativa</small></button>
      <button role="tab" aria-selected={operationView==='disputes'} className={operationView==='disputes'?'active':''} onClick={()=>setOperationView('disputes')}><b>⊘</b><span>Disputas</span><small>Casos abiertos</small></button>
+     <button role="tab" aria-selected={operationView==='scout'} className={operationView==='scout'?'active':''} onClick={()=>setOperationView('scout')}><b>📡</b><span>Scout</span><small>Oportunidades y cobertura</small></button>
      <button role="tab" aria-selected={operationView==='history'} className={operationView==='history'?'active':''} onClick={()=>setOperationView('history')}><b>▤</b><span>Historial</span><small>Trazabilidad</small></button>
      <button role="tab" aria-selected={operationView==='messages'} className={operationView==='messages'?'active':''} onClick={()=>setOperationView('messages')}><b>◌</b><span>Mensajes</span><small>WhatsApp</small></button>
     </div>
@@ -90,6 +92,7 @@ export function AdminPhase2(){
     {operationView==='services'&&<div className="ugo-admin2-operation-module"><AdminPanelBridge section="servicios" embedded/></div>}
     {operationView==='alerts'&&<div className="ugo-admin2-operation-module"><AdminPanelBridge section="alertas" embedded/></div>}
     {operationView==='disputes'&&<div className="ugo-admin2-operation-module"><AdminPanelBridge section="disputas" embedded/></div>}
+    {operationView==='scout'&&<div className="ugo-admin2-operation-module"><AdminPanelBridge section="scout" embedded/></div>}
     {operationView==='history'&&<div className="ugo-admin2-history"><ServiceHistoryPanel role="admin" embedded/></div>}
     {operationView==='messages'&&<div className="ugo-admin2-inline-tool ugo-admin2-messages"><WhatsAppAdminInbox/></div>}
    </section>}
