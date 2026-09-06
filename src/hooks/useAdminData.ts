@@ -88,7 +88,6 @@ export function useMapProviders() {
   const [providers, setProviders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
-    // Todos los proveedores con coordenadas (importados, online, offline)
     const { data } = await (supabase as any)
       .from('vista_todos_proveedores')
       .select('id,nombre,apellido,karma,lat,lng,zona,pais,telefono,categoria,cat_emoji,pin_color,estado_mapa,activo,online,servicios_completados');
@@ -124,13 +123,10 @@ export function useOpenDisputes() {
   }, []);
   const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {
     const sb = supabase as any;
-    // Vía RPC: setea el estado correcto del enum (resuelta_cliente/resuelta_proveedor)
-    // y registra en audit_log. Un update directo con estado 'resuelta' falla: no existe en el enum.
     const { error } = await sb.rpc('admin_resolver_disputa', {
       p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe,
     });
     if (error) { console.error('resolverDisputa:', error.message); return; }
-    // Update escrow
     const { data: d } = await sb.from('disputas').select('servicio_id').eq('id', id).single();
     if (d?.servicio_id) {
       await sb.from('escrow').update({
@@ -186,7 +182,7 @@ export function useActivityFeed() {
   return feed;
 }
 
-// ─── Métricas semanales ───────────────────────────────────────
+// ─── Métricas semanales ────────────────────────────────────────
 export function useWeekMetrics() {
   const [data, setData] = useState<MetricasDia[]>([]);
   useEffect(() => {
@@ -239,7 +235,6 @@ export function useUsuarios() {
       lat:         data.lat        ? parseFloat(data.lat) : null,
       lng:         data.lng        ? parseFloat(data.lng) : null,
     };
-    // Remove undefined keys
     Object.keys(payload).forEach(k => payload[k] === undefined && delete payload[k]);
     await (supabase as any).from('usuarios').update(payload).eq('id', id);
     await fetch();
@@ -268,32 +263,24 @@ export function useCategorias() {
   const [loading, setLoading] = useState(true);
 
   const fetch = useCallback(async () => {
-    // Categorías con subcategorías anidadas
     const { data } = await (supabase as any)
       .from('categorias')
       .select('*, subcategorias(id,nombre,slug,activa)')
       .order('nombre');
     if (data) setCategorias(data);
 
-    // Conteo de proveedores por categoría
     const { data: counts } = await (supabase as any)
       .from('usuarios')
       .select('categoria')
-      .eq('tipo', 'proveedor')
-      .not('categoria', 'is', null);
-    if (counts) {
-      const map: Record<string,number> = {};
-      counts.forEach((u: any) => { map[u.categoria] = (map[u.categoria]||0)+1; });
-      setProvCounts(map);
-    }
+      .eq('tipo','proveedor');
+    const grouped: Record<string,number> = {};
+    (counts || []).forEach((r:any)=>{ if(r.categoria) grouped[r.categoria]=(grouped[r.categoria]||0)+1; });
+    setProvCounts(grouped);
     setLoading(false);
   }, []);
 
   const crear = useCallback(async (nombre: string, emoji: string) => {
-    const slug = nombre.toLowerCase()
-      .normalize('NFD').replace(/[̀-ͯ]/g,'')
-      .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
-    await (supabase as any).from('categorias').insert({ nombre, emoji, slug, activa: true });
+    await (supabase as any).from('categorias').insert({ nombre, emoji, activa: true });
     await fetch();
   }, [fetch]);
 
@@ -307,7 +294,6 @@ export function useCategorias() {
     await fetch();
   }, [fetch]);
 
-  // Subcategorías CRUD
   const crearSub = useCallback(async (categoria_id: string, nombre: string) => {
     const slug = nombre.toLowerCase()
       .normalize('NFD').replace(/[̀-ͯ]/g,'')
@@ -359,21 +345,32 @@ export function useTarifas() {
 export function useConfigSistema() {
   const [config, setConfig] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const fetch = useCallback(async () => {
-    const { data } = await (supabase as any).from('config_sistema').select('*');
-    if (data) {
-      const m: Record<string, string> = {};
-      data.forEach((r: any) => { m[r.clave] = r.valor; });
-      setConfig(m);
+    setLoading(true);
+    setError(null);
+    const { data, error } = await (supabase as any).from('config_sistema').select('*');
+    if (error) {
+      setError(error.message || 'No se pudo cargar la configuración del sistema.');
+      setLoading(false);
+      return;
     }
+    const m: Record<string, string> = {};
+    (data || []).forEach((r: any) => { if (r?.clave) m[r.clave] = String(r.valor ?? ''); });
+    setConfig(m);
     setLoading(false);
   }, []);
   const update = useCallback(async (clave: string, valor: string) => {
-    await (supabase as any).rpc('admin_update_config', { p_clave: clave, p_valor: valor });
+    const { error } = await (supabase as any).rpc('admin_update_config', { p_clave: clave, p_valor: valor });
+    if (error) {
+      setError(error.message || 'No se pudo guardar el parámetro.');
+      throw error;
+    }
+    setError(null);
     setConfig(prev => ({ ...prev, [clave]: valor }));
   }, []);
   useEffect(() => { fetch(); }, [fetch]);
-  return { config, loading, update, refetch: fetch };
+  return { config, loading, error, update, refetch: fetch };
 }
 
 // ─── Notificaciones masivas ───────────────────────────────────
@@ -430,59 +427,17 @@ export function useVault() {
   const [loading, setLoading] = useState(true);
   const fetch = useCallback(async () => {
     const { data } = await (supabase as any).from('escrow')
-      .select('id,monto_total,comision_ugo,monto_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
-      .eq('estado','retenido').order('created_at', { ascending: true });
-    if (data) setEscrows(data); setLoading(false);
-  }, []);
-  const liberarEscrow = useCallback(async (id: string) => {
-    // RPC admin_liberar_escrow: mismo efecto que el update directo pero con audit_log
-    const { error } = await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id, p_notas: 'Liberado desde panel admin' });
-    if (!error) await fetch(); else console.error('liberarEscrow:', error.message);
-  }, [fetch]);
-  useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
-  return { escrows, loading, liberarEscrow };
+      .select('id,estado,monto_total,comision_ugo,monto_proveedor,created_at,servicio_id,clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
+      .in('estado',['retenido','pendiente_liberacion']).order('created_at',{ascending:true});
+    if(data) setEscrows(data);setLoading(false);
+  },[]);
+  const liberarEscrow=useCallback(async(id:string)=>{await (supabase as any).rpc('admin_liberar_escrow',{p_escrow_id:id});await fetch()},[fetch]);
+  useEffect(()=>{fetch();const u=subscribe('escrow',fetch);return u},[fetch]);
+  return{escrows,loading,liberarEscrow,refetch:fetch}
 }
 
-export function usePendingWithdrawals() {
-  const [items, setItems] = useState<any[]>([]);
-  useEffect(() => {
-    // Retiro pendiente = escrow liberado que aún no tiene transferencia ejecutada.
-    // (liberado_at siempre se setea al liberar, filtrar por él dejaba la lista vacía)
-    (supabase as any).from('escrow')
-      .select('id,monto_proveedor,created_at,proveedores:proveedor_id(nombre,stripe_account_id)')
-      .eq('estado','liberado').is('stripe_transfer_id', null).order('created_at', { ascending: true }).limit(20)
-      .then(({ data }: any) => { if (data) setItems(data); });
-  }, []);
-  return items;
-}
-
-// ─── Tiendas & Insumos ───────────────────────────────────────
-export function useTiendas() {
-  const [tiendas, setTiendas] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetch = useCallback(async () => {
-    const { data } = await (supabase as any)
-      .from('tiendas').select('*').order('nombre');
-    if (data) setTiendas(data);
-    setLoading(false);
-  }, []);
-
-  const crear = useCallback(async (data: any) => {
-    await (supabase as any).from('tiendas').insert(data);
-    await fetch();
-  }, [fetch]);
-
-  const actualizar = useCallback(async (id: string, data: any) => {
-    await (supabase as any).from('tiendas').update(data).eq('id', id);
-    await fetch();
-  }, [fetch]);
-
-  const eliminar = useCallback(async (id: string) => {
-    await (supabase as any).from('tiendas').delete().eq('id', id);
-    await fetch();
-  }, [fetch]);
-
-  useEffect(() => { fetch(); }, [fetch]);
-  return { tiendas, loading, crear, actualizar, eliminar, refetch: fetch };
+export function usePendingWithdrawals(){
+ const[rows,setRows]=useState<any[]>([]);
+ const fetch=useCallback(async()=>{const{data}=await(supabase as any).from('retiros').select('*').in('estado',['pendiente','procesando']).order('created_at',{ascending:true});if(data)setRows(data)},[])
+ useEffect(()=>{fetch()},[fetch]);return rows
 }
