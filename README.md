@@ -1,74 +1,132 @@
-# React + TypeScript + Vite
+# UGO — Marketplace de servicios por hora
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+UGO conecta clientes con proveedores de servicios locales y permite operar todo el ciclo desde una única plataforma: solicitud, matching, seguimiento, evidencias, pagos, cierre, reputación y control administrativo.
 
-Currently, two official plugins are available:
+## Aplicaciones
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **UGO Cliente** — solicita servicios, busca proveedores, conversa con Hugo, sigue el trabajo y realiza el cierre.
+- **UGO Proveedor** — recibe oportunidades, gestiona servicios activos, ubicación, evidencias, ganancias y perfil.
+- **UGO Admin** — consola de control operativo, personas, finanzas, configuración y supervisión en tiempo real.
 
-## React Compiler
+## Panel de control UGO — Fase 2
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+La consola Admin está organizada en cinco áreas principales:
 
-## Expanding the ESLint configuration
+### Inicio
+- Estado operativo general
+- Servicios activos
+- Proveedores online
+- Usuarios activos
+- Servicios completados hoy
+- Prioridades administrativas
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Operaciones
+- Resumen
+- Mapa en vivo
+- Servicios
+- Alertas
+- Disputas
+- Scout
+- Historial
+- Mensajes
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### Personas
+- Usuarios
+- Verificación de proveedores
+- Documentos
+- KYC
+- Importación
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### Finanzas
+- Conciliación PIX
+- Bóveda y retiros
+- Tarifas
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### Configuración
+- Categorías
+- Analytics
+- Notificaciones
+- Reportes
+- Sistema
+
+## Arquitectura actual
+
+- **Frontend:** React + TypeScript + Vite
+- **Backend / datos:** Supabase
+- **Deploy:** Vercel
+- **Android:** WebView nativo con flavors separados para Cliente y Proveedor
+- **Realtime:** Supabase Realtime
+- **IA / voz:** Hugo integrado en Cliente y Proveedor
+
+La Fase 2 del Admin utiliza módulos nativos conectados directamente a hooks y datos de UGO. El bridge legacy fue eliminado para evitar dependencias de navegación oculta o clicks simulados.
+
+## Flujo operativo
+
+```text
+Cliente
+  ↓
+Solicitud de servicio
+  ↓
+Matching
+  ↓
+Proveedor
+  ↓
+Pago / retención
+  ↓
+Servicio en curso
+  ↓
+Evidencias
+  ↓
+Aprobación / cierre
+  ↓
+Reputación e historial
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Estructura principal
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+src/
+  mvp/            Cliente, Proveedor y Admin Fase 2
+  components/     módulos operativos y herramientas
+  hooks/          acceso a datos y realtime
+  lib/            Supabase, matching y lógica compartida
+api/               endpoints backend
+android-apk/       proyecto Android Cliente/Proveedor
+supabase/          migraciones y configuración de datos
+.github/workflows/ CI y builds Android
 ```
-# Hugo Admin v2
+
+## Desarrollo local
+
+```bash
+npm install
+npm run dev
+```
+
+Build de producción:
+
+```bash
+npm run build
+```
+
+## Producción
+
+Panel desplegado en Vercel:
+
+`https://ugo-admin-panel.vercel.app`
+
+Rutas principales:
+
+```text
+?app=client
+?app=provider
+?app=admin
+```
+
+## Estado del proyecto
+
+UGO está actualmente en fase de integración, pruebas de flujo completo y pulido de producto. Las prioridades actuales son estabilidad entre Cliente/Proveedor/Admin, experiencia móvil, evidencias, voz con Hugo y control operativo del Admin.
+
+---
+
+UGO · Control Center
