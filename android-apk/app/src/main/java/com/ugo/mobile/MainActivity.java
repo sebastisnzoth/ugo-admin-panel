@@ -70,7 +70,7 @@ public class MainActivity extends Activity {
         settings.setBuiltInZoomControls(false);
         settings.setDisplayZoomControls(false);
         settings.setTextZoom(100);
-        settings.setUserAgentString(settings.getUserAgentString() + " UGO-Android/1.3");
+        settings.setUserAgentString(settings.getUserAgentString() + " UGO-Android/1.4");
 
         webView.setVerticalScrollBarEnabled(true);
         webView.setHorizontalScrollBarEnabled(false);
@@ -97,6 +97,7 @@ public class MainActivity extends Activity {
                     "})();",
                     null
                 );
+                injectClientApkPatch(view);
             }
         });
 
@@ -150,6 +151,36 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState == null) webView.loadUrl(BuildConfig.UGO_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    private void injectClientApkPatch(WebView view) {
+        if (!"client".equals(BuildConfig.FLAVOR)) return;
+        String script = "(function(){" +
+                "if(window.__UGO_CLIENT_APK_PATCH__)return;window.__UGO_CLIENT_APK_PATCH__=true;" +
+                "var css='" +
+                ".ugo-client-menu-backdrop:not(.ugo-client-global-backdrop){display:none!important;}" +
+                ".ugo-client-global-backdrop{z-index:520!important;}" +
+                ".ugo-ref-client{background:#eef2f0!important;color:#111!important;}" +
+                ".ugo-ref-topbar{top:max(12px,env(safe-area-inset-top))!important;left:14px!important;right:14px!important;}" +
+                ".ugo-ref-circle,.ugo-ref-location{background:#fff!important;color:#111!important;box-shadow:0 8px 24px rgba(15,23,42,.14)!important;}" +
+                ".ugo-ref-location b{color:#111!important}.ugo-ref-location small{color:#667085!important;}" +
+                ".ugo-ref-sheet{left:14px!important;right:14px!important;bottom:82px!important;width:auto!important;max-height:36vh!important;background:#fff!important;color:#101828!important;border-radius:28px!important;padding:12px 14px 14px!important;box-shadow:0 14px 48px rgba(15,23,42,.18)!important;backdrop-filter:none!important;}" +
+                ".ugo-ref-search{background:#f4f5f6!important;border-radius:18px!important}.ugo-ref-search input{color:#111!important;background:transparent!important}.ugo-ref-search input::placeholder{color:#98a2b3!important;}" +
+                ".ugo-ref-categories button span{color:#344054!important;font-weight:700!important}.ugo-ref-categories button b{background:#f3f4f5!important;color:#111!important;border-radius:50%!important}.ugo-ref-categories button.active b{background:#eaf8f0!important;color:#079455!important;}" +
+                ".ugo-ref-feature-title,.ugo-ref-featured{display:none!important;}" +
+                ".ugo-ref-nav{height:68px!important;background:#fff!important;border-top:1px solid #eaecf0!important;box-shadow:0 -8px 24px rgba(15,23,42,.06)!important;z-index:90!important}.ugo-ref-nav button{color:#98a2b3!important}.ugo-ref-nav button.active{color:#111!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"]{bottom:86px!important;width:calc(100vw - 28px)!important;max-width:430px!important;background:#fff!important;color:#101828!important;border-radius:28px!important;padding:16px!important;box-shadow:0 20px 60px rgba(15,23,42,.22)!important;backdrop-filter:none!important;z-index:160!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] h2,.ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] p,.ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] span,.ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] b,.ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] div{color:#101828!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] small{color:#667085!important;opacity:1!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] input,.ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] textarea{background:#fff!important;color:#101828!important;border:1px solid #d0d5dd!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] button{color:#101828!important;}" +
+                ".ugo-client-root div[style*=\\\"position: fixed\\\"][style*=\\\"bottom: 132px\\\"] button[style*=\\\"font-size: 16px\\\"]{background:#079455!important;color:#fff!important;border-radius:16px!important;box-shadow:0 10px 22px rgba(7,148,85,.22)!important;}" +
+                "';" +
+                "var st=document.createElement('style');st.id='ugo-client-apk-patch';st.textContent=css;document.head.appendChild(st);" +
+                "window.addEventListener('ugo:client-home',function(){var b=document.querySelector('.ugo-ref-nav button:nth-child(1)');if(b)b.click();});" +
+                "window.addEventListener('ugo:client-search',function(){var b=document.querySelector('.ugo-ref-nav button:nth-child(2)');if(b)b.click();});" +
+                "})();";
+        view.evaluateJavascript(script, null);
     }
 
     private void emitVoiceEvent(String name, String detailJson) {
