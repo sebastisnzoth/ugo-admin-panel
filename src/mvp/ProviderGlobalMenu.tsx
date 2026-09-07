@@ -22,6 +22,7 @@ export function ProviderGlobalMenu(){
  useEffect(()=>{if(!open)return;const prev=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=prev}},[open])
  function go(label:ProviderTabLabel){clickTab(label);setOpen(false)}
  function hugo(){setOpen(false);window.setTimeout(()=>window.dispatchEvent(new Event('ugo:open-hugo')),60)}
+ function demand(){setOpen(false);window.setTimeout(()=>window.dispatchEvent(new Event('ugo:open-provider-demand')),60)}
  return <>
   <button type="button" className="ugo-provider-menu-trigger" onClick={()=>setOpen(true)} aria-label="Abrir menú">☰</button>
   {open&&<div className="ugo-provider-menu-backdrop" onClick={()=>setOpen(false)} role="presentation">
@@ -32,6 +33,7 @@ export function ProviderGlobalMenu(){
     <nav>
      <button type="button" onClick={()=>go('RADAR')}><span>⌖</span><div><b>Inicio</b><small>Radar y misión activa</small></div><em>›</em></button>
      <button type="button" onClick={()=>go('TRABAJOS')}><span>▣</span><div><b>Trabajos</b><small>Activos y oportunidades</small></div><em>›</em></button>
+     <button type="button" onClick={demand}><span>◉</span><div><b>Mapa de demanda</b><small>Zonas con más trabajo real</small></div><em>›</em></button>
      <button type="button" onClick={()=>go('GANANCIAS')}><span>R$</span><div><b>Ganancias</b><small>Pagos y retiros</small></div><em>›</em></button>
     </nav>
     <small className="ugo-provider-menu-section">Cuenta</small>
