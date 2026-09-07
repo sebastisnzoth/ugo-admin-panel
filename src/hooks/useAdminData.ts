@@ -116,10 +116,6 @@ export function useOpenDisputes() {
     const sb = supabase as any;
     const { error } = await sb.rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });
     if (error) { console.error('resolverDisputa:', error.message); return; }
-    const { data: d } = await sb.from('disputas').select('servicio_id').eq('id', id).single();
-    if (d?.servicio_id) {
-      await sb.from('escrow').update({ estado: favorDe === 'proveedor' ? 'liberado' : 'reembolsado', liberado_at: new Date().toISOString() }).eq('servicio_id', d.servicio_id);
-    }
     await fetch();
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('disputas', fetch); return u; }, [fetch]);

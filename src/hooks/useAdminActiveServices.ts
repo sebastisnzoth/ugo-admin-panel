@@ -28,6 +28,7 @@ export function useAdminActiveServices() {
         'cliente:usuarios!servicios_cliente_id_fkey(nombre,apellido),' +
         'proveedor:usuarios!servicios_proveedor_id_fkey(nombre,apellido,karma)'
       )
+      .eq('ambiente', 'real')
       .in('estado', ACTIVE_STATES)
       .order('created_at', { ascending: false })
       .limit(100)
