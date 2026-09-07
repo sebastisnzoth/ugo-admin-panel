@@ -1,7 +1,7 @@
 import React from'react'
 import{AdminGate}from'./AdminGate'
-import{ClientOnboardingGate}from'./ClientOnboardingGate'
-import{ProviderOnboardingGate}from'./ProviderOnboardingGate'
+import{ClientFirstRunOnboarding}from'./ClientFirstRunOnboarding'
+import{ProviderFirstRunOnboarding}from'./ProviderFirstRunOnboarding'
 import{Launcher}from'./Launcher'
 import{AppLocationButton}from'./AppLocationButton'
 import{DemoSebastianPaymentBridge}from'./DemoSebastianPaymentBridge'
@@ -15,11 +15,10 @@ import'./ugo-uiux.css'
 import'./mobile-runtime-fixes.css'
 import'./service-history.css'
 
-// UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
- if(app==='client')return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview/><ServiceHistoryPanel role="client"/><DisputeDock role="client"/><AppLocationButton role="client"/></div>
- if(app==='provider')return<><ProviderOnboardingGate/><ProviderDemandMap/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></>
+ if(app==='client')return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientFirstRunOnboarding/><ClientGlobalMenu/><ClientCompletionReview/><ServiceHistoryPanel role="client"/><DisputeDock role="client"/><AppLocationButton role="client"/></div>
+ if(app==='provider')return<><ProviderFirstRunOnboarding/><ProviderDemandMap/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></>
  if(app==='admin')return<AdminGate/>
  return<Launcher/>
 }
