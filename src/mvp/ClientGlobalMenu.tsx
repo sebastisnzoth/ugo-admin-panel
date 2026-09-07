@@ -1,6 +1,7 @@
 import React,{useEffect,useState}from'react'
 import'./client-reference.css'
 import'./client-global-menu.css'
+import'./client-apk-reference.css'
 
 function click(selector:string){(document.querySelector(selector) as HTMLButtonElement|null)?.click()}
 
