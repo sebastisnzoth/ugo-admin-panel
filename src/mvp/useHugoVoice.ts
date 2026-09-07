@@ -6,6 +6,8 @@ type ChatTurn = { role: 'user' | 'assistant'; content: string }
 type GeminiReply = { reply: string; action?: 'none'|'search_provider'|'prepare_request'; category_hint?: string|null; urgent?: boolean; description?: string|null; model?: string }
 type NativeVoiceBridge={startListening:()=>void;stopListening:()=>void;isAvailable?:()=>boolean}
 type VisibleCardReply={reply:string;categoryHint:string|null;selectedText?:string|null}
+type ClientVoiceAction='hire_provider'|'create_request'|'pay'|'cancel'|'approve'|'dispute'
+type PendingAction={action:ClientVoiceAction;prompt:string;success:string}
 
 const CLIENT_BEHAVIOR=[
  'Sos Hugo, asistente operativo de UGO Cliente, no un chatbot genérico.',
@@ -17,7 +19,7 @@ const CLIENT_BEHAVIOR=[
  'Nunca inventes proveedor, precio, reputación, ETA, pago, evidencia ni estado.',
  'La app y sus datos reales son la fuente de verdad.',
  'Buscar, filtrar, leer perfiles y mostrar estado no requieren confirmación.',
- 'Contratar, pagar, cancelar, liberar pago o abrir disputa requieren confirmación explícita antes de ejecutar.',
+ 'Contratar, crear definitivamente un pedido, pagar, cancelar, liberar pago o abrir disputa requieren confirmación explícita antes de ejecutar.',
  'No uses lenguaje técnico de backend, APIs, RPC, RLS, webhooks, sandbox o infraestructura.',
  'No termines con una pregunta si el siguiente paso ya está claro.',
 ].join(' ')
@@ -32,7 +34,9 @@ function requestedCategory(text:string){const m=normalizeText(text);if(/\b(jardi
 function ordinalIndex(text:string){const m=normalizeText(text);if(/\b(primero|primera|1|uno)\b/.test(m))return 0;if(/\b(segundo|segunda|2|dos)\b/.test(m))return 1;if(/\b(tercero|tercera|3|tres)\b/.test(m))return 2;return null}
 function isShortReference(text:string){const m=normalizeText(text);return /^(ese|esa|ese mismo|esa misma|el primero|la primera|el segundo|la segunda|el tercero|la tercera|primero|segundo|tercero)$/.test(m)}
 function compactSpeech(text:string,max=320){const cleaned=String(text||'').replace(/[*_#`]/g,'').replace(/\s+/g,' ').trim();if(cleaned.length<=max)return cleaned;const cut=cleaned.slice(0,max);const end=Math.max(cut.lastIndexOf('. '),cut.lastIndexOf('? '),cut.lastIndexOf('! '));return (end>120?cut.slice(0,end+1):cut).trim()}
-function providerCards(){const nodes=Array.from(document.querySelectorAll<HTMLElement>('.ugo-feature-card,.ugo-provider-card'));const seen=new Set<string>();return nodes.map(node=>String(node.innerText||node.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean).filter(text=>{const key=normalizeText(text);if(seen.has(key))return false;seen.add(key);return true})}
+function providerCardNodes(){return Array.from(document.querySelectorAll<HTMLElement>('.ugo-feature-card,.ugo-provider-card'))}
+function providerCards(){const nodes=providerCardNodes(),seen=new Set<string>();return nodes.map(node=>String(node.innerText||node.textContent||'').replace(/\s+/g,' ').trim()).filter(Boolean).filter(text=>{const key=normalizeText(text);if(seen.has(key))return false;seen.add(key);return true})}
+function selectProviderReference(userText:string){const nodes=providerCardNodes(),ordinal=ordinalIndex(userText),m=normalizeText(userText);if(ordinal!=null&&nodes[ordinal]){nodes[ordinal].click();return true}const named=nodes.find(node=>{const text=normalizeText(String(node.innerText||node.textContent||''));const first=text.split(' ')[0];return first.length>2&&m.includes(first)});if(named){named.click();return true}return false}
 function visibleProviderCardReply(userText:string):VisibleCardReply|null{
  const m=normalizeText(userText),category=requestedCategory(userText),ordinal=ordinalIndex(userText),lookup=/\b(busca|buscame|buscar|hay|encontra|encontrame|cerca|disponible|quien|quienes|perfil|contame|hablame|mostrame|lee|leeme)\b/.test(m)||isShortReference(userText)
  if(!category&&!lookup&&ordinal==null)return null
@@ -46,21 +50,50 @@ function visibleProviderCardReply(userText:string):VisibleCardReply|null{
  if(matches.length===1)return{reply:`Encontré este profesional: ${matches[0]}.`,categoryHint:category,selectedText:matches[0]}
  return{reply:`Encontré ${matches.length} opciones. Te muestro las mejores.`,categoryHint:category}
 }
+function isVisible(el:HTMLElement){const style=window.getComputedStyle(el);return style.display!=='none'&&style.visibility!=='hidden'&&style.opacity!=='0'&&!el.hasAttribute('disabled')}
+function clickByText(patterns:RegExp[],allowHidden=false){const buttons=Array.from(document.querySelectorAll<HTMLButtonElement>('button'));const target=buttons.find(button=>{const text=normalizeText(button.innerText||button.textContent||'');return (allowHidden||isVisible(button))&&patterns.some(p=>p.test(text))});if(!target)return false;target.click();return true}
+function executeClientAction(action:ClientVoiceAction){
+ if(action==='hire_provider'){const btn=document.querySelector<HTMLButtonElement>('.ugo-hire-button');if(btn&&isVisible(btn)){btn.click();return true}return false}
+ if(action==='create_request')return clickByText([/enviar pedido/,/crear pedido/,/pedir servicio/,/confirmar pedido/,/solicitar servicio/])
+ if(action==='pay')return clickByText([/pagar con pix/,/pagar servicio/,/^pagar r\$/,/^pagar$/])
+ if(action==='cancel')return clickByText([/cancelar pedido/,/cancelar servicio/])
+ if(action==='approve')return clickByText([/estoy conforme/,/aprobar y liberar pago/,/liberar pago/])
+ if(action==='dispute'){const btn=document.querySelector<HTMLButtonElement>('.ugo-dispute-launch');if(btn){btn.click();return true}return clickByText([/abrir disputa/,/tengo un problema/],true)}
+ return false
+}
+function affirmative(text:string){return /^(si|sí|dale|confirmo|confirmar|hacelo|hacele|adelante|okey|okay|de acuerdo|correcto)$/.test(normalizeText(text))}
+function negative(text:string){return /^(no|no gracias|cancelalo|cancela eso|dejalo|deja|mejor no)$/.test(normalizeText(text))}
+function requestedAction(text:string):PendingAction|null{const m=normalizeText(text)
+ if(/\b(contratalo|contratala|contratarlo|contratarla|contrata este|contrata esta|elegi este|elegi esta)\b/.test(m))return{action:'hire_provider',prompt:'¿Confirmás que querés contratar a este profesional?',success:'Listo. Abrí el pedido con este profesional seleccionado.'}
+ if(/\b(enviar pedido|manda el pedido|mandalo|crear pedido|confirmar pedido|pedir el servicio)\b/.test(m))return{action:'create_request',prompt:'¿Confirmás que querés enviar este pedido?',success:'Listo. Envié el pedido.'}
+ if(/\b(pagar|paga|pagalo|pagar con pix|hacer el pago)\b/.test(m))return{action:'pay',prompt:'¿Confirmás que querés iniciar el pago de este servicio?',success:'Listo. Abrí el pago.'}
+ if(/\b(cancelar pedido|cancelar servicio|cancela el pedido|cancela el servicio)\b/.test(m))return{action:'cancel',prompt:'¿Confirmás que querés cancelar este servicio?',success:'Listo. Cancelé el servicio.'}
+ if(/\b(estoy conforme|libera el pago|liberar el pago|aproba el trabajo|aprobar el trabajo|todo quedo bien)\b/.test(m))return{action:'approve',prompt:'¿Confirmás que estás conforme y querés liberar el pago?',success:'Listo. Aprobé el trabajo y liberé el pago.'}
+ if(/\b(abrir disputa|quiero una disputa|tengo un problema|no quedo bien|no estoy conforme)\b/.test(m))return{action:'dispute',prompt:'¿Confirmás que querés abrir una disputa por este servicio?',success:'Listo. Abrí la disputa para que puedas informar el problema.'}
+ return null}
 
 export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
  const[state,setState]=useState<HugoVoiceState>('idle'),[error,setError]=useState(''),[userTranscript,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState('')
- const recognitionRef=useRef<any>(null),nativeModeRef=useRef(false),runningRef=useRef(false),busyRef=useRef(false),historyRef=useRef<ChatTurn[]>([]),roleRef=useRef(role),contextRef=useRef(context),tokenRef=useRef(accessToken),historyKeyRef=useRef(sessionKey(role,accessToken)),lastCategoryRef=useRef<string|null>(null),lastUserTextRef=useRef('')
+ const recognitionRef=useRef<any>(null),nativeModeRef=useRef(false),runningRef=useRef(false),busyRef=useRef(false),historyRef=useRef<ChatTurn[]>([]),roleRef=useRef(role),contextRef=useRef(context),tokenRef=useRef(accessToken),historyKeyRef=useRef(sessionKey(role,accessToken)),lastCategoryRef=useRef<string|null>(null),pendingActionRef=useRef<PendingAction|null>(null)
  useEffect(()=>{roleRef.current=role},[role]);useEffect(()=>{contextRef.current=context},[context]);useEffect(()=>{tokenRef.current=accessToken},[accessToken]);useEffect(()=>{historyKeyRef.current=sessionKey(role,accessToken);historyRef.current=readHistory(historyKeyRef.current)},[role,accessToken])
 
  const startRecognition=useCallback(()=>{if(!runningRef.current||busyRef.current)return;if(nativeModeRef.current){try{getNativeBridge()?.startListening();setState('ready')}catch{}return}if(!recognitionRef.current)return;try{recognitionRef.current.start();setState('ready')}catch{}},[])
  const speak=useCallback((text:string)=>new Promise<void>(resolve=>{const spoken=compactSpeech(text);if(!window.speechSynthesis){busyRef.current=false;if(runningRef.current)window.setTimeout(startRecognition,80);resolve();return}window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(spoken);u.lang='es-AR';u.rate=1.1;u.pitch=1;u.onstart=()=>setState('speaking');u.onend=()=>{busyRef.current=false;if(runningRef.current){setState('ready');window.setTimeout(startRecognition,80)}resolve()};u.onerror=()=>{busyRef.current=false;if(runningRef.current)window.setTimeout(startRecognition,100);resolve()};window.speechSynthesis.speak(u)}),[startRecognition])
-
  const remember=useCallback((userText:string,reply:string)=>{const next=[...historyRef.current,{role:'user',content:userText},{role:'assistant',content:reply}] as ChatTurn[];historyRef.current=next.slice(-20);writeHistory(historyKeyRef.current,historyRef.current)},[])
 
- const askHugo=useCallback(async(userText:string)=>{const token=tokenRef.current;if(!token)throw new Error('SESION_REQUERIDA');busyRef.current=true;setState('connecting');setError('');lastUserTextRef.current=userText;if(roleRef.current==='client')window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:userText}}));
+ const askHugo=useCallback(async(userText:string)=>{const token=tokenRef.current;if(!token)throw new Error('SESION_REQUERIDA');busyRef.current=true;setState('connecting');setError('');if(roleRef.current==='client')window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:userText}}));
   if(roleRef.current==='client'){
+   const pending=pendingActionRef.current
+   if(pending){
+    if(affirmative(userText)){pendingActionRef.current=null;const ok=executeClientAction(pending.action);const reply=ok?pending.success:'Esa acción no está disponible en este momento.';remember(userText,reply);setAssistantTranscript(reply);await speak(reply);return}
+    if(negative(userText)){pendingActionRef.current=null;const reply='Perfecto, no hago ningún cambio.';remember(userText,reply);setAssistantTranscript(reply);await speak(reply);return}
+    const reply=`Necesito una confirmación clara. ${pending.prompt}`;remember(userText,reply);setAssistantTranscript(reply);await speak(reply);return
+   }
+   const action=requestedAction(userText)
+   if(action){pendingActionRef.current=action;remember(userText,action.prompt);setAssistantTranscript(action.prompt);await speak(action.prompt);return}
    await new Promise(resolve=>window.setTimeout(resolve,80))
    const category=requestedCategory(userText);if(category)lastCategoryRef.current=category
+   if(isShortReference(userText)||ordinalIndex(userText)!=null)selectProviderReference(userText)
    const visible=visibleProviderCardReply(userText)
    if(visible){const reply=compactSpeech(visible.reply);remember(userText,reply);window.dispatchEvent(new CustomEvent('ugo:hugo-ai-intent',{detail:{text:userText,action:'search_provider',categoryHint:visible.categoryHint||lastCategoryRef.current,urgent:false,description:null,selectedText:visible.selectedText||null}}));setAssistantTranscript(reply);await speak(reply);return}
   }
@@ -69,10 +102,10 @@ export function useHugoVoice({ role, accessToken, context }: VoiceOptions) {
 
  useEffect(()=>{const onState=(event:Event)=>{if(!runningRef.current)return;const s=String((event as CustomEvent<any>).detail?.state||'');if(s==='hearing'){try{window.speechSynthesis?.cancel()}catch{};busyRef.current=false;setState('hearing')}else if(s==='ready')setState('ready')};const onResult=async(event:Event)=>{if(!runningRef.current)return;const d=(event as CustomEvent<any>).detail||{},text=String(d.text||'').trim();if(!text)return;setUserTranscript(text.slice(-900));if(!d.final)return;try{await askHugo(text)}catch{busyRef.current=false;const fallback='No pude responder ahora, pero tu pedido sigue intacto.';setAssistantTranscript(fallback);if(runningRef.current)window.setTimeout(startRecognition,160)}};const onError=(event:Event)=>{if(!runningRef.current)return;const code=String((event as CustomEvent<any>).detail?.code||'');if(code==='no-speech'){window.setTimeout(startRecognition,160);return}runningRef.current=false;setError(code==='not-allowed'?'Habilitá el micrófono para hablar con Hugo.':code==='unavailable'?'El reconocimiento de voz no está disponible en este dispositivo.':'No pude iniciar el reconocimiento de voz.');setState('error')};window.addEventListener('ugo:native-voice-state',onState);window.addEventListener('ugo:native-voice-result',onResult);window.addEventListener('ugo:native-voice-error',onError);return()=>{window.removeEventListener('ugo:native-voice-state',onState);window.removeEventListener('ugo:native-voice-result',onResult);window.removeEventListener('ugo:native-voice-error',onError)}},[askHugo,startRecognition])
 
- const disconnect=useCallback(()=>{runningRef.current=false;busyRef.current=false;try{recognitionRef.current?.abort?.()}catch{}try{getNativeBridge()?.stopListening()}catch{}try{window.speechSynthesis?.cancel()}catch{}recognitionRef.current=null;nativeModeRef.current=false;setState('idle');setError('');setUserTranscript('');setAssistantTranscript('')},[])
+ const disconnect=useCallback(()=>{runningRef.current=false;busyRef.current=false;pendingActionRef.current=null;try{recognitionRef.current?.abort?.()}catch{}try{getNativeBridge()?.stopListening()}catch{}try{window.speechSynthesis?.cancel()}catch{}recognitionRef.current=null;nativeModeRef.current=false;setState('idle');setError('');setUserTranscript('');setAssistantTranscript('')},[])
  useEffect(()=>disconnect,[disconnect])
 
- const connect=useCallback(async()=>{if(state!=='idle'&&state!=='error')return;if(!accessToken){setError('Iniciá sesión para hablar con Hugo.');setState('error');return}setState('connecting');setError('');setUserTranscript('');setAssistantTranscript('');historyRef.current=readHistory(historyKeyRef.current)
+ const connect=useCallback(async()=>{if(state!=='idle'&&state!=='error')return;if(!accessToken){setError('Iniciá sesión para hablar con Hugo.');setState('error');return}setState('connecting');setError('');setUserTranscript('');setAssistantTranscript('');historyRef.current=readHistory(historyKeyRef.current);pendingActionRef.current=null
    const welcome=historyRef.current.length?'Seguimos donde quedamos. Te escucho.':'Te escucho.'
    const native=getNativeBridge();if(native){nativeModeRef.current=true;runningRef.current=true;setAssistantTranscript(welcome);try{native.startListening();return}catch{runningRef.current=false;nativeModeRef.current=false;setState('error');setError('No pude abrir el reconocimiento de voz nativo.');return}}
    nativeModeRef.current=false;const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){setError('Este dispositivo no ofrece reconocimiento de voz compatible.');setState('error');return}
