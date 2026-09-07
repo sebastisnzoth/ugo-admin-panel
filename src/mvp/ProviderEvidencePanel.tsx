@@ -22,6 +22,7 @@ export function ProviderEvidencePanel({service}:Props){
  },[service,supabase])
  useEffect(()=>{load().catch(()=>{})},[load])
  useEffect(()=>{if(service?.estado==='en_progreso')setKind('durante');if(service?.estado==='esperando_aprobacion')setKind('despues')},[service?.estado])
+ useEffect(()=>{const handler=(event:Event)=>{if(!service||!VISIBLE_STATES.has(service.estado))return;const requested=(event as CustomEvent<{kind?:EvidenceType}>).detail?.kind;if(requested==='antes'||requested==='durante'||requested==='despues')setKind(requested);setOpen(true)};window.addEventListener('ugo:provider-evidence-open',handler);return()=>window.removeEventListener('ugo:provider-evidence-open',handler)},[service])
  if(!service||!VISIBLE_STATES.has(service.estado))return null
  async function upload(file:File|null){
   if(!file)return
