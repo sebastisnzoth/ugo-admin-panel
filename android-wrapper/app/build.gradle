@@ -1,0 +1,40 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ugo.wrapper'
+    compileSdk 35
+
+    defaultConfig {
+        minSdk 24
+        targetSdk 35
+        versionCode 1
+        versionName '1.0.0'
+    }
+
+    flavorDimensions 'role'
+    productFlavors {
+        client {
+            dimension 'role'
+            applicationId 'com.ugo.cliente'
+            manifestPlaceholders = [appLabel: 'UGO Cliente']
+            buildConfigField 'String', 'START_URL', '"https://ugo-admin-panel.vercel.app/?app=client"'
+        }
+        provider {
+            dimension 'role'
+            applicationId 'com.ugo.proveedor'
+            manifestPlaceholders = [appLabel: 'UGO Proveedor']
+            buildConfigField 'String', 'START_URL', '"https://ugo-admin-panel.vercel.app/?app=provider"'
+        }
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
