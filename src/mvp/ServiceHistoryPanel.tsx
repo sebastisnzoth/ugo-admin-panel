@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
+import'./provider-history.css'
 
 type Role='client'|'provider'|'admin'
 type Person={nombre?:string|null}
@@ -25,7 +26,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false}:Prop
  const activeStates=new Set(['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
  const visible=rows.filter(r=>filter==='todos'?true:filter==='completado'?r.estado==='completado':activeStates.has(r.estado))
  const title=role==='client'?'Mis servicios':role==='provider'?'Mis trabajos':'Historial global'
- const panel=<section className={`ugo-history-panel${embedded?' embedded':''}${role==='client'?' ugo-client-history':''}`} onClick={e=>e.stopPropagation()}>
+ const panel=<section className={`ugo-history-panel${embedded?' embedded':''}${role==='client'?' ugo-client-history':''}${role==='provider'?' ugo-provider-history':''}`} onClick={e=>e.stopPropagation()}>
    <header><div><small>{role==='admin'?'CONTROL UGO':role==='provider'?'PROVEEDOR':'CLIENTE'}</small><h2>{title}</h2><p>{role==='admin'?'Todos los pedidos y trabajos de UGO.':role==='provider'?'Trabajos aceptados y realizados por vos.':'Pedidos activos y servicios ya realizados.'}</p></div>{role==='client'&&<span className="ugo-client-history-total">{rows.length}</span>}{!embedded&&<button type="button" onClick={()=>setOpen(false)} aria-label="Cerrar">×</button>}</header>
    <div className="ugo-history-filters"><button className={filter==='todos'?'active':''} onClick={()=>setFilter('todos')}>Todos <b>{rows.length}</b></button><button className={filter==='activo'?'active':''} onClick={()=>setFilter('activo')}>Activos <b>{rows.filter(r=>activeStates.has(r.estado)).length}</b></button><button className={filter==='completado'?'active':''} onClick={()=>setFilter('completado')}>Completados <b>{rows.filter(r=>r.estado==='completado').length}</b></button><button className={role==='client'?'ugo-history-refresh':undefined} onClick={load} disabled={loading} aria-label="Actualizar historial">↻</button></div>
    <div className="ugo-history-list">{loading&&<div className="ugo-history-empty">Cargando historial…</div>}{error&&<div className="ugo-history-error">{error}</div>}{!loading&&!error&&visible.length===0&&<div className="ugo-history-empty">Todavía no hay servicios en esta sección.</div>}{!loading&&!error&&visible.map(r=><article key={r.id} className={role==='client'?`ugo-history-item state-${r.estado}`:undefined}>
@@ -36,5 +37,5 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false}:Prop
    </article>)}</div>
   </section>
  if(embedded)return panel
- return <><button type="button" className={`ugo-history-launch ugo-history-${role}`} onClick={()=>setOpen(true)}>📚 <span>{role==='provider'?'Trabajos':'Historial'}</span></button>{open&&<div className="ugo-history-backdrop" onClick={()=>setOpen(false)}>{panel}</div>}</>
+ return <><button type="button" className={`ugo-history-launch ugo-history-${role}`} onClick={()=>setOpen(true)}>📚 <span>{role==='provider'?'Trabajos':'Historial'}</span></button>{open&&<div className={`ugo-history-backdrop ugo-history-backdrop-${role}`} onClick={()=>setOpen(false)}>{panel}</div>}</>
 }
