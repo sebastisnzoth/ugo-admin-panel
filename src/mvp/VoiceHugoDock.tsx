@@ -8,18 +8,17 @@ import { ClientEvidenceGallery } from './ClientEvidenceGallery'
 import { ClientPixPaymentPanel } from './ClientPixPaymentPanel'
 import { ClientQuickOrder } from './ClientQuickOrder'
 import { NotificationCenter } from './NotificationCenter'
+import type { ClientActionHandlers, ClientHugoIntent } from './client/clientTypes'
 import './voice.css'
 
-type Props = { role:'client'|'provider'; accessToken?:string; service?:Service|null; availableOffers?:number; mode?:'dock'|'quantum'; draftContext?:string }
+type Props = { role:'client'|'provider'; accessToken?:string; service?:Service|null; availableOffers?:number; mode?:'dock'|'quantum'; draftContext?:string; clientActions?:ClientActionHandlers; onIntent?:(intent:Omit<ClientHugoIntent,'id'>)=>void }
 const VOICE_LABELS:Record<string,string>={idle:'Toca para hablar',connecting:'Pensando...',ready:'Toca para hablar',hearing:'Escuchando...',speaking:'Hablando...',error:'Voz no disponible'}
 
-export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='dock',draftContext=''}:Props){
+export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='dock',draftContext='',clientActions,onIntent}:Props){
  const[open,setOpen]=useState(false)
  const text=useMemo(()=>{if(role==='client'){if(!service)return'Decime qué necesitás. Yo completo el pedido y vos solo confirmás.';if(service.estado==='buscando')return'Estoy buscando profesionales disponibles.';if(service.estado==='ofrecido')return`Envié ${availableOffers||'las'} ofertas. Te aviso cuando acepten.`;if(service.estado==='asignado')return'Ya hay profesional. Podés proteger el pago con Pix o Mercado Pago.';if(service.estado==='en_camino')return'El profesional está en camino.';if(service.estado==='llegado')return'El profesional ya llegó. El servicio todavía no comenzó.';if(service.estado==='en_progreso')return'El trabajo está en curso.';if(service.estado==='esperando_aprobacion')return'Revisá las evidencias. Al aprobarlo libero el pago.';return'Servicio cerrado. Tu reseña actualiza el Karma.'}if(!service)return'Ponete disponible para recibir oportunidades.';if(service.estado==='asignado')return'Aceptaste la misión. Salí hacia el cliente.';if(service.estado==='en_camino')return'Confirmá “Llegué” cuando estés en el lugar.';if(service.estado==='llegado')return'Ya estás en el lugar. Podés registrar una foto inicial y después iniciar el servicio.';if(service.estado==='en_progreso')return'Agregá una foto final y pedí aprobación.';if(service.estado==='esperando_aprobacion')return'El cliente está revisando el trabajo. Te aviso cuando libere el pago.';return'El pago sigue retenido hasta la aprobación.'},[availableOffers,role,service])
  const context=useMemo(()=>[`Rol: ${role==='client'?'cliente':'proveedor'}`,service?`Servicio #${service.numero}`:'Sin servicio activo',service?`Estado: ${STATUS_LABELS[service.estado]||service.estado}`:'',service?.descripcion?`Descripción: ${service.descripcion}`:'',service?.direccion_cliente?`Dirección: ${service.direccion_cliente}`:'',service?.tarifa!=null?`Tarifa: ${service.moneda||'BRL'} ${service.tarifa}`:'',service?.proveedor?.nombre?`Proveedor: ${service.proveedor.nombre}`:'',availableOffers?`Ofertas pendientes: ${availableOffers}`:'',draftContext?`MEMORIA DEL PEDIDO: ${draftContext}`:'',`Mensaje operativo actual: ${text}`].filter(Boolean).join(' | '),[availableOffers,role,service,text,draftContext])
- const voice=useHugoVoice({role,accessToken,context})
- useEffect(()=>{if(role!=='client'||!voice.userTranscript)return;window.dispatchEvent(new CustomEvent('ugo:hugo-user-text',{detail:{text:voice.userTranscript}}))},[role,voice.userTranscript])
- useEffect(()=>{const openHugo=()=>setOpen(true);window.addEventListener('ugo:open-hugo',openHugo);return()=>window.removeEventListener('ugo:open-hugo',openHugo)},[])
+ const voice=useHugoVoice({role,accessToken,context,clientActions,onIntent})
  useEffect(()=>{
   if(role!=='provider')return
   const handler=(event:Event)=>{event.preventDefault();setOpen(true)}

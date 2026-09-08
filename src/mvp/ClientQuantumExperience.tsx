@@ -6,11 +6,12 @@ import'./client-quantum.css'
 import'./client-reference.css'
 import type{Category}from'./shared'
 import{parseClientIntent}from'./hugoIntent'
+import type{ClientHugoIntent,ClientScreen}from'./client/clientTypes'
 import{getRoutingProvider}from'../lib/routing/provider'
 
 export type ProviderMapRow={id:string;nombre:string|null;foto_url:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;online:boolean|null;disponible:boolean|null;estado_verificacion:string|null;categoria_principal_id:string|null;categoria_nombre:string|null;categoria_emoji:string|null;lat:number|null;lng:number|null;pais?:string|null;zona?:string|null;bio?:string|null;experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
 type IntentPayload={categoryId?:string;categoryName?:string;urgency:boolean;description:string}
-type Props={supabase:SupabaseClient;categories:Category[];selectedCategoryId:string;onCategorySelect:(id:string)=>void;onProviderPick:(provider:ProviderMapRow)=>void;onIntent?:(intent:IntentPayload)=>void}
+type Props={supabase:SupabaseClient;categories:Category[];selectedCategoryId:string;requestedScreen?:ClientScreen;requestedProviderId?:string|null;hugoIntent?:ClientHugoIntent|null;onCategorySelect:(id:string)=>void;onProviderPick:(provider:ProviderMapRow)=>void;onIntent?:(intent:IntentPayload)=>void}
 type EtaMeta={etaSeconds:number;distanceMeters:number}
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const ROUTE_SOURCE='ugo-selected-route-source',ROUTE_LAYER='ugo-selected-route-layer'
@@ -21,7 +22,7 @@ function categoryByHint(categories:Category[],hint:string|null|undefined){if(!hi
 function etaLabel(meta:EtaMeta|undefined){if(!meta)return'';return`${Math.max(1,Math.round(meta.etaSeconds/60))} min`}
 function clearRoute(map:maplibregl.Map){if(map.getLayer(ROUTE_LAYER))map.removeLayer(ROUTE_LAYER);if(map.getSource(ROUTE_SOURCE))map.removeSource(ROUTE_SOURCE)}
 
-export function ClientQuantumExperience({supabase,categories,selectedCategoryId,onCategorySelect,onProviderPick,onIntent}:Props){
+export function ClientQuantumExperience({supabase,categories,selectedCategoryId,requestedScreen,requestedProviderId,hugoIntent,onCategorySelect,onProviderPick,onIntent}:Props){
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markers=useRef<maplibregl.Marker[]>([]),searchInput=useRef<HTMLInputElement|null>(null)
  const[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[providers,setProviders]=useState<ProviderMapRow[]>([]),[selected,setSelected]=useState<string|null>(null),[drawer,setDrawer]=useState(false),[menuOpen,setMenuOpen]=useState(false),[etaByProvider,setEtaByProvider]=useState<Record<string,EtaMeta>>({}),[search,setSearch]=useState('')
  const categoryFiltered=useMemo(()=>providers.filter(p=>!selectedCategoryId||!p.categoria_principal_id||p.categoria_principal_id===selectedCategoryId),[providers,selectedCategoryId])
@@ -29,7 +30,8 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
  const selectedProvider=useMemo(()=>filtered.find(p=>p.id===selected)||providers.find(p=>p.id===selected)||null,[filtered,providers,selected])
  const featured=filtered.slice(0,3)
  useEffect(()=>{let alive=true;async function load(){const{data,error}=await supabase.from('proveedores_mapa').select('*').order('online',{ascending:false}).order('disponible',{ascending:false}).limit(50);if(alive&&!error)setProviders((data||[])as ProviderMapRow[])}load().catch(()=>{});const ch=supabase.channel('client-provider-map').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>load()).subscribe();return()=>{alive=false;supabase.removeChannel(ch)}},[supabase])
- useEffect(()=>{function local(event:Event){const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(!text)return;const intent=parseClientIntent(text,categories);if(intent.categoryId){onCategorySelect(intent.categoryId);setDrawer(true);onIntent?.({categoryId:intent.categoryId,categoryName:intent.categoryName||'',urgency:intent.urgency,description:text})}}function ai(event:Event){const d=(event as CustomEvent<{text?:string;categoryHint?:string|null;urgent?:boolean;description?:string|null}>).detail||{};const matched=categoryByHint(categories,d.categoryHint);if(!matched)return;onCategorySelect(matched.id);setDrawer(true);onIntent?.({categoryId:matched.id,categoryName:matched.nombre,urgency:Boolean(d.urgent),description:String(d.description||d.text||'').trim()})}window.addEventListener('ugo:hugo-user-text',local as EventListener);window.addEventListener('ugo:hugo-ai-intent',ai as EventListener);return()=>{window.removeEventListener('ugo:hugo-user-text',local as EventListener);window.removeEventListener('ugo:hugo-ai-intent',ai as EventListener)}},[categories,onCategorySelect,onIntent])
+ useEffect(()=>{if(!hugoIntent)return;const matched=categoryByHint(categories,hugoIntent.categoryHint);if(matched)onCategorySelect(matched.id);setDrawer(true);onIntent?.({categoryId:matched?.id,categoryName:matched?.nombre||'',urgency:Boolean(hugoIntent.urgent),description:String(hugoIntent.description||hugoIntent.text||'').trim()})},[categories,hugoIntent,onCategorySelect,onIntent])
+ useEffect(()=>{if(requestedScreen==='search'){setSelected(null);setDrawer(true)}if(requestedScreen==='provider'&&requestedProviderId){setSelected(requestedProviderId);setDrawer(true)}},[requestedProviderId,requestedScreen])
  useEffect(()=>{navigator.geolocation?.getCurrentPosition(pos=>{const next:[number,number]=[pos.coords.longitude,pos.coords.latitude];setUserPos(next);try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:pos.coords.latitude,longitude:pos.coords.longitude,accuracy:pos.coords.accuracy,at:Date.now()}))}catch{}},()=>{},{enableHighAccuracy:true,timeout:8000,maximumAge:60000})},[])
  useEffect(()=>{let alive=true;const candidates=categoryFiltered.filter(p=>p.lat!=null&&p.lng!=null&&Number.isFinite(Number(p.lat))&&Number.isFinite(Number(p.lng))).map(p=>({providerId:p.id,location:{latitude:Number(p.lat),longitude:Number(p.lng)},available:Boolean(p.online&&p.disponible)}));if(!candidates.length){setEtaByProvider({});return()=>{alive=false}};getRoutingProvider().rankByEta({latitude:userPos[1],longitude:userPos[0]},candidates).then(rows=>{if(!alive)return;const next:Record<string,EtaMeta>={};rows.forEach(row=>{next[row.providerId]={etaSeconds:row.etaSeconds,distanceMeters:row.distanceMeters}});setEtaByProvider(next)}).catch(()=>{if(alive)setEtaByProvider({})});return()=>{alive=false}},[categoryFiltered,userPos])
  useEffect(()=>{if(!mapEl.current||mapRef.current)return;const map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:userPos,zoom:14,attributionControl:false});map.addControl(new maplibregl.NavigationControl({showCompass:false}),'top-left');mapRef.current=map;return()=>{markers.current.forEach(m=>m.remove());markers.current=[];if(map.isStyleLoaded())clearRoute(map);map.remove();mapRef.current=null}},[])
@@ -39,7 +41,7 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
  function pickProvider(p:ProviderMapRow){setSelected(p.id);setDrawer(true)}
  function goHome(){setMenuOpen(false);setSearch('');onCategorySelect('');setSelected(null);setDrawer(false);mapRef.current?.easeTo({center:userPos,zoom:14,duration:500})}
  function focusSearch(){setMenuOpen(false);window.setTimeout(()=>searchInput.current?.focus(),120)}
- function openHugo(){setMenuOpen(false);window.dispatchEvent(new Event('ugo:open-hugo'))}
+ function openHugo(){setMenuOpen(false)}
  return <section className="ugo-quantum-shell ugo-responsive-home ugo-ref-client">
   <div className="ugo-map-stage"><div ref={mapEl} className="ugo-map-canvas"/></div>
   <header className="ugo-ref-topbar">
