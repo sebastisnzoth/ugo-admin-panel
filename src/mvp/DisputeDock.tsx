@@ -5,10 +5,10 @@ import'./dispute-dock.css'
 
 const label=(s:string)=>s==='abierta'?'Abierta':s==='en_revision'?'En revisión':s==='resuelta_cliente'?'Resuelta a favor del cliente':s==='resuelta_proveedor'?'Resuelta a favor del proveedor':s==='cerrada'?'Cerrada':s
 
-export function DisputeDock({role}:{role:UgoRole}){
+export function DisputeDock({role,openRequest=false}:{role:UgoRole;openRequest?:boolean}){
  const{service,dispute,messages,loading,error,open,reply}=useParticipantDispute(role)
  const[visible,setVisible]=useState(false),[text,setText]=useState(''),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null)
- useEffect(()=>{const show=()=>setVisible(true);window.addEventListener('ugo:open-dispute',show);return()=>window.removeEventListener('ugo:open-dispute',show)},[])
+ useEffect(()=>{if(openRequest)setVisible(true)},[openRequest])
  if(!service&&!dispute)return null
  const unresolved=Boolean(dispute&&['abierta','en_revision'].includes(dispute.estado))
  const submit=async()=>{if(text.trim().length<8)return setNotice('Contá un poco más qué pasó.');setBusy(true);setNotice(null);try{if(dispute)await reply(text.trim());else await open(text.trim());setText('');setNotice(dispute?'Respuesta enviada al caso.':'Disputa abierta. UGO detuvo el flujo normal del servicio para revisión.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo registrar la disputa.')}finally{setBusy(false)}}
