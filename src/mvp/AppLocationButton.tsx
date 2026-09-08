@@ -1,6 +1,7 @@
 import React,{useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
+import'./provider-special-states.css'
 
 type AppRole='client'|'provider'|'admin'
 
