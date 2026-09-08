@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
+import'./provider-evidence.css'
 
 type EvidenceType='antes'|'durante'|'despues'
 type EvidenceRow={id:string;tipo:EvidenceType;storage_path:string;descripcion:string|null;created_at:string;url?:string}
@@ -43,14 +44,14 @@ export function ProviderEvidencePanel({service}:Props){
   finally{setBusy(false)}
  }
  const hasInitial=rows.some(r=>r.tipo==='antes'),hasFinal=rows.some(r=>r.tipo==='despues')
- return <div style={{position:'fixed',left:12,top:'max(78px, calc(env(safe-area-inset-top) + 68px))',zIndex:79}}>
-  <button type="button" onClick={()=>setOpen(v=>!v)} style={{minHeight:44,border:0,borderRadius:16,padding:'10px 13px',background:'#fff',boxShadow:'0 8px 28px rgba(0,0,0,.16)',fontWeight:800}}>📷 Evidencias {hasFinal?'✓':hasInitial?'•':''}</button>
-  {open&&<div style={{position:'absolute',left:0,top:52,width:320,maxWidth:'calc(100vw - 24px)',maxHeight:'calc(100dvh - 150px)',overflowY:'auto',background:'#fff',borderRadius:20,padding:14,boxShadow:'0 14px 40px rgba(0,0,0,.2)'}}>
+ return <div className="ugo-provider-evidence">
+  <button type="button" className="ugo-evidence-trigger" onClick={()=>setOpen(v=>!v)}>Evidencias {hasFinal?'✓':hasInitial?'•':''}</button>
+  {open&&<div className="ugo-evidence-panel">
    <strong>Evidencias del trabajo</strong><p style={{margin:'6px 0 10px',fontSize:12}}>{service.estado==='llegado'?'Podés registrar el estado inicial antes de comenzar.':'Antes de finalizar, UGO exige al menos una foto “Después”.'}</p>
-   <select value={kind} onChange={e=>setKind(e.target.value as EvidenceType)} style={{width:'100%',minHeight:44,marginBottom:8,padding:8,fontSize:16}}><option value="antes">Antes</option><option value="durante">Durante</option><option value="despues">Después</option></select>
-   <label style={{display:'block',minHeight:48,padding:12,border:'1px dashed #bbb',borderRadius:12,textAlign:'center',cursor:'pointer',fontWeight:700}}>{busy?'Subiendo…':'Tomar o elegir foto'}<input type="file" accept="image/*" capture="environment" disabled={busy} onChange={e=>{upload(e.target.files?.[0]||null);e.currentTarget.value=''}} style={{display:'none'}}/></label>
-   {error&&<p style={{fontSize:12,color:'#b42318'}}>{error}</p>}
-   <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:6,marginTop:10}}>{rows.slice(0,6).map(r=><div key={r.id} title={r.tipo} style={{aspectRatio:'1',borderRadius:10,overflow:'hidden',background:'#eee',position:'relative'}}>{r.url?<img src={r.url} alt={r.tipo} style={{width:'100%',height:'100%',objectFit:'cover'}}/>:<span/>}<small style={{position:'absolute',left:4,bottom:4,background:'rgba(0,0,0,.65)',color:'#fff',borderRadius:6,padding:'2px 4px'}}>{r.tipo}</small></div>)}</div>
+   <select className="ugo-evidence-kind" value={kind} onChange={e=>setKind(e.target.value as EvidenceType)}><option value="antes">Antes</option><option value="durante">Durante</option><option value="despues">Después</option></select>
+   <label className={`ugo-evidence-upload${busy?' busy':''}`}>{busy?'Subiendo…':'Tomar o elegir foto'}<input type="file" accept="image/*" capture="environment" disabled={busy} onChange={e=>{upload(e.target.files?.[0]||null);e.currentTarget.value=''}} style={{display:'none'}}/></label>
+   {error&&<p className="ugo-evidence-error">{error}</p>}
+   <div className="ugo-evidence-gallery">{rows.slice(0,6).map(r=><div key={r.id} title={r.tipo} className="ugo-evidence-image">{r.url?<img src={r.url} alt={r.tipo}/>:<span/>}<small>{r.tipo}</small></div>)}</div>
   </div>}
  </div>
 }
