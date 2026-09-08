@@ -24,10 +24,11 @@ export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void})
  if(!service)return null
  async function approve(){if(!hasFinalEvidence)return;setBusy(true);setNotice('');const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:service.id});setBusy(false);if(error){setNotice(error.message);return}setNotice('Trabajo aprobado. El pago protegido fue liberado.');await load()}
  return <section aria-live="polite" className="ugo-completion-review">
-  <header><div><h2>Revisá el trabajo</h2><p>Servicio #{service.numero} · Mirá las evidencias antes de decidir.</p></div><span>✓</span></header>
+  <header><div><h2>¿Cómo quedó el trabajo?</h2><p>Servicio #{service.numero} · Revisá el registro final antes de liberar el pago.</p></div><span aria-hidden="true">✓</span></header>
   <ClientEvidenceGallery serviceId={service.id}/>
   {!hasFinalEvidence&&<div className="ugo-completion-warning">Todavía no hay una foto final “Después” visible. UGO no habilita la liberación hasta poder revisarla.</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-  <div className="ugo-completion-actions"><button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema · Abrir disputa</button><button type="button" onClick={approve} disabled={busy||!hasFinalEvidence}>{busy?'Procesando…':'Estoy conforme · Liberar pago'}</button></div>
+  <div className="ugo-completion-decision"><span>Al confirmar, el pago protegido se libera según el flujo actual.</span></div>
+  <div className="ugo-completion-actions"><button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button><button type="button" onClick={approve} disabled={busy||!hasFinalEvidence}>{busy?'Procesando…':'Aprobar y liberar pago'}</button></div>
  </section>
 }
