@@ -8,6 +8,7 @@ import'./provider-prototype.css'
 import'./provider-responsive.css'
 import'./provider-opportunities.css'
 import'./provider-navigation.css'
+import'./provider-active-service.css'
 
 type MercadoPagoPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null}
 type Tab='radar'|'jobs'|'earnings'|'profile'
