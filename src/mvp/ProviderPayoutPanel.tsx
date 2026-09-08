@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{money}from'./shared'
 import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
+import'./provider-payout.css'
 
 type Props={accessToken:string}
 type Balance={total_liberado:number;total_retirado:number;saldo_disponible:number;saldo_procesando:number}
@@ -34,7 +35,7 @@ export function ProviderPayoutPanel({accessToken}:Props){
  async function requestWithdrawal(){const value=Number(amount);if(!Number.isFinite(value)||value<50)return setMessage('El retiro mínimo es R$ 50.');if(value>balance.saldo_disponible)return setMessage('El monto supera tu saldo disponible.');if(!account.trim())return setMessage('Guardá primero tu cuenta de cobro.');setBusy(true);setMessage('');try{const r=await fetch('/api/retiros/solicitar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({monto:value})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'No se pudo solicitar el retiro.');setAmount('');setMessage('Retiro solicitado. Queda pendiente hasta que exista confirmación real del pago externo.');await load()}catch(e){setMessage(e instanceof Error?e.message:'No se pudo solicitar el retiro.')}finally{setBusy(false)}}
  const statusLabel=(s:string)=>s==='pendiente'?'Pendiente':s==='procesando'?'Procesando':s==='pagado'?'Pagado':s==='fallido'?'Fallido':s
 
- return <div style={{marginTop:14}}><strong>💰 Ganancias y retiros</strong>
+ return <div className="ugo-provider-payout"><strong className="ugo-payout-title">Ganancias y retiros</strong>
   <div style={{marginTop:8,fontSize:13}}>Disponible: <b>{money(balance.saldo_disponible)}</b> · En proceso: {money(balance.saldo_procesando)}</div>
   <div style={{marginTop:4,fontSize:11,opacity:.7}}>Liberado histórico: {money(balance.total_liberado)} · Retirado/comprometido: {money(balance.total_retirado)}</div>
   <ProviderMercadoPagoConnect accessToken={accessToken}/>
