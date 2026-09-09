@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react'
+import type { StyleSpecification } from 'maplibre-gl'
 import maplibregl from 'maplibre-gl'
 
 type Props = {
@@ -11,7 +12,7 @@ export function ProviderActiveMap({ userPos }: Props) {
   const mapRef = useRef<maplibregl.Map | null>(null)
   const markerRef = useRef<maplibregl.Marker | null>(null)
 
-  const mapStyle = {
+  const mapStyle: StyleSpecification = {
     version: 8,
     sources: {
       osm: {
