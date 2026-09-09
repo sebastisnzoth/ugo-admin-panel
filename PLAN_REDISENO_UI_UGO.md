@@ -1,635 +1,1012 @@
-# Plan de rediseño profesional de UGO
+# UGO — Especificación técnica UI/UX
 
-## Objetivo
+## Dirección de producto
 
-Aplicar una capa visual profesional a UGO **sin rehacer la aplicación y sin alterar la lógica funcional existente**.
+UGO debe sentirse como una aplicación móvil **minimalista, inmediata, fácil y amigable**, inspirada en la simplicidad operativa de Uber, pero aplicada a servicios.
 
-El trabajo se hará directamente sobre el repositorio:
-
-`sebastisnzoth/ugo-admin-panel`
-
-La aplicación ya está construida con **React + TypeScript + Vite** y utiliza, entre otras dependencias, Supabase, TomTom/MapLibre y React 19.
-
-La prioridad es transformar la experiencia visual de las apps de **Cliente** y **Proveedor** para que UGO se perciba como un producto móvil moderno, claro y confiable, con una experiencia inspirada en la simplicidad operativa de apps como Uber, pero adaptada a contratación de servicios.
-
----
-
-# 1. Regla principal de trabajo
-
-Antes de cambiar cualquier pantalla:
-
-- No modificar lógica de negocio salvo que sea imprescindible para conectar una mejora visual.
-- No romper flujos existentes.
-- No eliminar integraciones con Supabase, mapas, pagos ni servicios existentes.
-- No cambiar contratos de datos innecesariamente.
-- Separar los cambios visuales de los cambios funcionales.
-- Trabajar pantalla por pantalla.
-- Validar cada etapa antes de continuar.
-- Mantener el proyecto compilando durante todo el rediseño.
-
-El rediseño debe ser una **evolución del producto existente**, no una reconstrucción desde cero.
-
----
-
-# 2. Flujo de trabajo que seguirá ChatGPT/Codex
-
-## Paso 1 — Auditoría del frontend actual
-
-Revisar:
-
-- `src/mvp/ClientApp.tsx`
-- componentes de Cliente existentes
-- componentes de Proveedor existentes
-- componentes compartidos
-- `src/App.css`
-- `src/index.css`
-- estructura de navegación
-- mapas actuales
-- estados de servicio
-- formularios
-- botones
-- tarjetas
-- modales
-- mensajes de error y estados vacíos
-
-Objetivo: entender qué ya existe y **reutilizarlo**.
-
-No empezar cambiando código hasta haber identificado el flujo actual.
-
----
-
-# 3. Crear una rama exclusiva de diseño
-
-Todos los cambios visuales deben hacerse en una rama específica.
-
-Nombre recomendado:
+La referencia no es copiar Uber visualmente. La referencia es su lógica de uso:
 
 ```text
-feat/ugo-ui-professional
+abrir app
+→ entender qué hacer en segundos
+→ elegir una acción
+→ confirmar
+→ seguir el estado
+→ terminar
 ```
 
-No trabajar directamente sobre `main` para el rediseño.
+UGO ya funciona. Este trabajo rediseña la experiencia sin rehacer backend, pagos, Supabase, mapas ni lógica de negocio.
 
-Antes de comenzar:
-
-```bash
-git checkout main
-git pull
-git checkout -b feat/ugo-ui-professional
-```
-
----
-
-# 4. Crear el Design System de UGO dentro del propio código
-
-No depender de Figma, Penpot ni herramientas externas para poder avanzar.
-
-El sistema visual debe vivir en el repositorio y ser reutilizable.
-
-Crear una estructura similar a:
+Repositorio:
 
 ```text
-src/
-  design-system/
-    tokens.css
-    typography.css
-    components/
-      UgoButton.tsx
-      UgoCard.tsx
-      UgoInput.tsx
-      UgoIconButton.tsx
-      UgoBottomNav.tsx
-      UgoBadge.tsx
-      UgoAvatar.tsx
-      UgoBottomSheet.tsx
+sebastisnzoth/ugo-admin-panel
 ```
 
-La estructura exacta puede adaptarse a la arquitectura real después de la auditoría.
+Stack actual:
+
+```text
+React 19
+TypeScript
+Vite
+Supabase
+TomTom / MapLibre
+Mercado Pago
+```
 
 ---
 
-# 5. Tokens visuales base
+# 1. Principios de diseño no negociables
 
-Definir variables CSS para que toda la aplicación use la misma identidad.
+## 1.1 Minimalismo funcional
 
-Ejemplo conceptual:
+Cada pantalla debe mostrar únicamente lo necesario para tomar la próxima decisión.
+
+Regla:
+
+```text
+1 objetivo principal por pantalla
+1 CTA principal
+máximo 2 acciones secundarias visibles
+```
+
+Eliminar:
+
+- bloques decorativos innecesarios;
+- textos explicativos largos;
+- múltiples cajas compitiendo entre sí;
+- dashboards densos en mobile;
+- exceso de badges;
+- sombras pesadas;
+- gradientes innecesarios;
+- bordes por todos lados;
+- múltiples colores de acción.
+
+## 1.2 Fácil de entender
+
+Un usuario nuevo debe comprender una pantalla principal en menos de 3 segundos.
+
+La jerarquía debe responder siempre:
+
+```text
+¿Dónde estoy?
+¿Qué está pasando?
+¿Qué puedo hacer ahora?
+```
+
+## 1.3 Amigable
+
+UGO debe sentirse humano, claro y cercano sin ser infantil.
+
+Tono:
+
+```text
+breve
+directo
+tranquilo
+útil
+```
+
+Evitar lenguaje técnico o burocrático.
+
+## 1.4 Confianza
+
+Precio, profesional, ubicación, estado y siguiente paso deben estar siempre claros cuando sean relevantes.
+
+Nunca esconder información crítica detrás de decoración.
+
+---
+
+# 2. Arquitectura visual
+
+La estructura principal de UGO será:
+
+```text
+MAPA / CONTEXTO
++
+BOTTOM SHEET / ACCIÓN
++
+BOTTOM NAVIGATION
+```
+
+Esto debe ser especialmente fuerte en Home Cliente y Home Proveedor.
+
+## Capas
+
+```text
+0  mapa
+10 controles mapa
+20 bottom sheet
+30 bottom navigation
+40 snackbar/toast
+50 modal
+```
+
+No utilizar z-index arbitrarios.
+
+---
+
+# 3. Sistema visual
+
+## 3.1 Paleta
+
+La UI debe ser mayormente neutra.
 
 ```css
 :root {
-  --ugo-cyan: #16C7D9;
-  --ugo-green: #20C56A;
-  --ugo-ink: #111827;
-  --ugo-muted: #667085;
-  --ugo-background: #F7F9FC;
+  --ugo-bg: #F7F7F7;
   --ugo-surface: #FFFFFF;
-  --ugo-border: #E7EAF0;
+  --ugo-text: #111111;
+  --ugo-text-secondary: #6B6B6B;
+  --ugo-border: #E8E8E8;
 
-  --ugo-radius-sm: 10px;
-  --ugo-radius-md: 16px;
-  --ugo-radius-lg: 24px;
-
-  --ugo-shadow-card: 0 8px 30px rgba(16, 24, 40, 0.08);
+  --ugo-brand: #16C7D9;
+  --ugo-brand-dark: #0FA8B8;
+  --ugo-success: #16A15D;
+  --ugo-warning: #D98B00;
+  --ugo-danger: #D93025;
 }
 ```
 
-Los valores definitivos se ajustarán visualmente durante la implementación.
+Uso:
+
+```text
+Negro → acciones principales y texto fuerte
+Blanco → superficies
+Gris → estructura y texto secundario
+Cyan UGO → identidad, selección, Hugo
+Verde → éxito solamente
+Rojo → error / destructivo solamente
+```
+
+No convertir toda la app en cyan.
+
+## 3.2 Tipografía
+
+Usar una sans-serif limpia y legible.
+
+Escala:
+
+```text
+28 px / 700 → título principal
+22 px / 700 → título sección
+18 px / 600 → título card
+16 px / 400–600 → body / CTA
+14 px / 400–600 → labels
+12 px / 500 → metadatos
+```
+
+No usar textos importantes debajo de 12 px.
+
+## 3.3 Espaciado
+
+Base 4 px.
+
+```text
+4
+8
+12
+16
+20
+24
+32
+```
+
+Margen mobile estándar:
+
+```text
+16 px
+```
+
+## 3.4 Radios
+
+```text
+input/button: 12–14 px
+card: 16 px
+bottom sheet: 24 px arriba
+pill: 999 px
+```
+
+## 3.5 Sombras
+
+Muy suaves.
+
+Solo usar en:
+
+- bottom sheet;
+- cards flotantes;
+- controles encima del mapa.
 
 ---
 
-# 6. Principios de diseño UGO
+# 4. Tamaño y responsive
 
-UGO debe transmitir:
-
-- confianza
-- rapidez
-- cercanía
-- seguridad
-- simplicidad
-- claridad de precio y estado
-- sensación de plataforma profesional
-
-## Dirección visual
-
-- Mobile first.
-- Interfaces limpias.
-- Fondo claro.
-- Cyan como identidad UGO.
-- Verde para acciones positivas/confirmación.
-- Tipografía moderna y legible.
-- Mucho espacio visual.
-- Jerarquía clara.
-- Tarjetas con radios suaves.
-- Sombras discretas.
-- Iconografía consistente.
-- Botones grandes y evidentes.
-- Áreas táctiles mínimas de aproximadamente 44–48 px.
-
-No copiar visualmente a Uber. Tomar solamente referencias de **simplicidad, jerarquía y velocidad del flujo**.
-
----
-
-# 7. Resolución móvil de referencia
-
-Diseñar primero sobre un viewport de referencia:
+Diseño de referencia:
 
 ```text
 390 × 844 px
 ```
 
-La interfaz debe seguir siendo responsive y adaptarse a otros tamaños.
-
----
-
-# 8. Rediseño de UGO Cliente
-
-El primer flujo a cerrar será **Cliente**.
-
-## Pantalla 1 — Home / Radar
-
-Prioridad máxima.
-
-Debe incluir:
-
-- mapa como elemento principal
-- ubicación actual
-- menú
-- notificaciones
-- avatar/perfil
-- presencia visual de Hugo/UGO
-- buscador principal:
-  - `¿Qué servicio necesitás?`
-- categorías rápidas:
-  - Limpieza
-  - Reparación
-  - Electricidad
-  - Plomería
-- CTA principal:
-  - `Encontrar profesionales`
-- navegación inferior:
-  - Inicio
-  - Servicios
-  - Actividad
-  - Perfil
-
-La pantalla debe permitir entender qué hacer en menos de 3 segundos.
-
-## Pantalla 2 — Selección del servicio
-
-- categoría
-- descripción
-- dirección
-- fecha/hora
-- urgencia
-- fotos cuando corresponda
-- estimación inicial si existe
-
-## Pantalla 3 — Profesionales disponibles
-
-- foto/avatar
-- nombre
-- categoría
-- rating
-- cantidad de trabajos
-- distancia
-- tiempo estimado de llegada
-- rango de precio/cotización cuando corresponda
-
-## Pantalla 4 — Proveedor seleccionado
-
-- ficha clara del profesional
-- reputación
-- trabajos realizados
-- precio/cotización
-- condiciones
-- CTA de confirmación
-
-## Pantalla 5 — Servicio solicitado / búsqueda
-
-- estado visible
-- mapa
-- animación o feedback de búsqueda
-- posibilidad de cancelar según reglas existentes
-
-## Pantalla 6 — Profesional en camino
-
-- mapa
-- posición
-- ETA
-- datos del proveedor
-- contacto/chat
-- información de seguridad
-
-## Pantalla 7 — Servicio en curso
-
-- estado
-- hora de inicio
-- datos del trabajo
-- contacto
-- acciones permitidas
-
-## Pantalla 8 — Agregar trabajo / Ampliar servicio
-
-Permitir que Cliente y Proveedor puedan registrar un trabajo adicional dentro del mismo servicio.
-
-Debe contemplar:
-
-- descripción del adicional
-- nueva cotización
-- tiempo extra
-- aprobación del Cliente
-- actualización del total
-- trazabilidad
-
-Objetivo: evitar acuerdos fuera de la plataforma y mantener el historial completo del servicio.
-
-## Pantalla 9 — Finalización / Pago
-
-- resumen del servicio
-- precio original
-- adicionales
-- total
-- método de pago
-- comprobante/estado
-
-## Pantalla 10 — Valoración
-
-- estrellas
-- comentario
-- etiquetas rápidas
-- feedback final
-
----
-
-# 9. Rediseño de UGO Proveedor
-
-Una vez aprobado el lenguaje visual de Cliente, reutilizar los mismos componentes y tokens.
-
-## Pantalla 1 — Home / Demanda / Oportunidades
-
-Debe mostrar rápidamente:
-
-- estado del proveedor: disponible/no disponible
-- mapa
-- oportunidades cercanas
-- demanda por zona
-- distancia
-- tipo de servicio
-- precio o rango cuando corresponda
-- urgencia
-- CTA para ver/aceptar oportunidad
-
-## Pantalla 2 — Detalle de oportunidad
-
-- servicio solicitado
-- ubicación aproximada según reglas de privacidad
-- distancia
-- tiempo estimado
-- descripción
-- fotos
-- precio/cotización
-- aceptar/rechazar
-
-## Pantalla 3 — Trabajo aceptado
-
-- navegación
-- cliente
-- dirección permitida
-- acciones previas
-- checklist
-
-## Pantalla 4 — Servicio activo
-
-- iniciar/finalizar trabajo
-- estado
-- cronómetro cuando aplique
-- información del servicio
-- contacto con cliente
-
-## Pantalla 5 — Asistente de Trabajo UGO
-
-Integrar un copiloto contextual para el proveedor.
-
-Debe poder asistir:
-
-### Antes del servicio
-- checklist
-- herramientas necesarias
-- recomendaciones
-- información del trabajo
-
-### Durante el servicio
-- ayuda técnica contextual
-- pasos sugeridos
-- recordatorios
-- seguridad
-- detección de posibles adicionales
-
-### Después del servicio
-- checklist de cierre
-- fotos/evidencias
-- resumen
-- recomendaciones de seguimiento
-
-El asistente debe **ayudar a ejecutar**, no ser solamente un chat genérico.
-
-## Pantalla 6 — Agregar trabajo / Ampliar servicio
-
-El proveedor puede proponer un adicional sin salir de UGO:
-
-- descripción
-- costo
-- tiempo extra
-- enviar al cliente
-- esperar aprobación
-- incorporar automáticamente al servicio si es aprobado
-
-## Pantalla 7 — Ganancias
-
-- ingresos del día
-- semana
-- mes
-- trabajos terminados
-- pendientes
-- pagos
-- comisiones
-
-## Pantalla 8 — Reputación / Perfil
-
-- rating
-- trabajos realizados
-- especialidades
-- documentación/verificación
-- estadísticas básicas
-
----
-
-# 10. Estados que deben diseñarse, no solamente el "estado ideal"
-
-Cada pantalla importante debe contemplar:
-
-- loading
-- vacío
-- éxito
-- error
-- sin conexión
-- permiso de ubicación denegado
-- sin profesionales disponibles
-- servicio cancelado
-- pago pendiente
-- pago rechazado
-- proveedor desconectado
-- cotización vencida
-
-Una interfaz profesional necesita contratos UX para todos estos estados.
-
----
-
-# 11. Mapas
-
-El repositorio ya incluye dependencias relacionadas con mapas.
-
-El rediseño debe mantener la integración existente y mejorar solamente su presentación cuando sea posible.
-
-Sobre el mapa pueden existir:
-
-- ubicación del usuario
-- proveedores
-- oportunidades
-- radios de búsqueda
-- rutas
-- ETA
-- bottom sheets
-- botones flotantes de ubicación
-
-No reemplazar la integración cartográfica sin una razón técnica comprobada.
-
----
-
-# 12. Componentes reutilizables prioritarios
-
-Crear/reutilizar componentes en lugar de repetir estilos por pantalla.
-
-Prioridad:
-
-1. Button
-2. IconButton
-3. Search/Input
-4. ServiceCategory
-5. ProviderCard
-6. OpportunityCard
-7. BottomSheet
-8. BottomNavigation
-9. TopBar
-10. Avatar
-11. Badge/Status
-12. Rating
-13. PriceSummary
-14. EmptyState
-15. LoadingState
-16. Modal/ConfirmDialog
-17. Map controls
-18. Hugo assistant card
-
----
-
-# 13. Accesibilidad
-
-Como mínimo:
-
-- buen contraste
-- fuente legible
-- no depender exclusivamente del color
-- estados de foco
-- botones con tamaño táctil suficiente
-- labels para iconos interactivos
-- formularios con errores comprensibles
-- soporte razonable para tamaños de texto mayores
-
----
-
-# 14. Qué NO se hará durante la primera etapa
-
-Para no volver a perder tiempo mezclando tareas:
-
-- no migrar framework
-- no rehacer backend
-- no reemplazar Supabase
-- no cambiar pagos
-- no reestructurar base de datos
-- no cambiar APIs sin necesidad
-- no rehacer mapas desde cero
-- no incorporar features nuevas que no sean necesarias para el diseño actual
-
-Primero: **hacer que UGO se vea y se sienta profesional**.
-
-Después se continúa con nuevas funcionalidades.
-
----
-
-# 15. Secuencia real de ejecución
-
-La implementación debe seguir este orden:
+Validar mínimo:
 
 ```text
-1. Auditar código actual
-2. Crear rama de UI
-3. Crear tokens globales
-4. Crear componentes base
-5. Rediseñar Cliente / Home Radar
-6. Ejecutar build y validar
-7. Revisar visualmente
-8. Corregir Home hasta aprobarla
-9. Extender diseño al resto del flujo Cliente
-10. Validar flujo Cliente completo
-11. Rediseñar Proveedor / Home Oportunidades
-12. Extender diseño al flujo Proveedor
-13. Integrar visualmente Asistente de Trabajo
-14. Revisar responsive y accesibilidad
-15. Build final
-16. Abrir Pull Request
+360 × 800
+375 × 812
+390 × 844
+412 × 915
+430 × 932
+```
+
+Áreas táctiles:
+
+```text
+mínimo 44 × 44
+preferido 48 × 48
+```
+
+Usar safe areas cuando corresponda.
+
+---
+
+# 5. UGO Cliente — Home / Radar
+
+Esta pantalla define la experiencia del producto.
+
+## Objetivo
+
+El usuario abre UGO y debe entender inmediatamente:
+
+```text
+Estoy acá
+Puedo pedir un servicio
+Tengo que tocar acá
+```
+
+## Layout
+
+```text
+┌──────────────────────────────┐
+│ ubicación       🔔     avatar│
+│                              │
+│                              │
+│             MAPA             │
+│                              │
+│                         ◎    │
+│                              │
+├──────────────────────────────┤
+│ ¿Qué servicio necesitás?     │
+│                              │
+│ 🧹      🔧      ⚡      🚿    │
+│ Limp.   Rep.    Elec.  Plom. │
+│                              │
+│ [ Encontrar profesionales ]  │
+├──────────────────────────────┤
+│ Inicio  Servicios Activ. Perfil│
+└──────────────────────────────┘
+```
+
+## Top bar
+
+Debe ser compacta.
+
+Mostrar:
+
+- ubicación actual;
+- notificaciones;
+- avatar.
+
+Evitar header tradicional alto.
+
+## Mapa
+
+Debe ocupar visualmente la mayor parte de la pantalla.
+
+Mostrar solo:
+
+- ubicación actual;
+- providers relevantes si existen;
+- botón centrar ubicación.
+
+No llenar el mapa de pins.
+
+## Bottom sheet
+
+Debe ser blanco, limpio y simple.
+
+Orden:
+
+```text
+buscador
+categorías
+CTA
+```
+
+Texto buscador:
+
+```text
+¿Qué servicio necesitás?
+```
+
+Categorías iniciales:
+
+```text
+Limpieza
+Reparación
+Electricidad
+Plomería
+```
+
+CTA:
+
+```text
+Encontrar profesionales
+```
+
+Botón principal oscuro o cyan sólido según validación visual, pero uno solo debe dominar.
+
+---
+
+# 6. Flujo Cliente
+
+## 6.1 Crear solicitud
+
+No mostrar un formulario largo.
+
+Usar flujo progresivo:
+
+```text
+Qué necesitás
+→ Dónde
+→ Cuándo
+→ Presupuesto
+→ Confirmar
+```
+
+Cada paso debe tener una pregunta principal.
+
+### Descripción
+
+Prompt:
+
+```text
+¿Qué necesitás resolver?
+```
+
+Helper:
+
+```text
+Contanos brevemente qué pasa.
+```
+
+### Dirección
+
+Prellenar desde perfil si existe.
+
+### Urgencia
+
+No usar checkbox pequeño.
+
+Usar selector:
+
+```text
+Normal
+Urgente
+```
+
+### Presupuesto
+
+Mostrar moneda claramente:
+
+```text
+R$ 120
 ```
 
 ---
 
-# 16. Regla de aprobación pantalla por pantalla
+# 7. Profesionales disponibles
 
-No rediseñar veinte pantallas de una vez.
+No convertir la pantalla en un marketplace lleno de tarjetas.
 
-Proceso:
+Mostrar cards simples.
+
+Cada card responde:
 
 ```text
-Implementar → mostrar → revisar → corregir → aprobar → continuar
+Quién es
+Rating
+Cantidad de trabajos
+Distancia / ETA
+Precio
 ```
 
-La primera pantalla que define el lenguaje visual será:
+Ejemplo:
 
-**UGO Cliente / Home · Radar**
+```text
+[foto] Marcos Silva        ★ 4.9
+       Electricista · 184 trabajos
+       2,4 km · 8 min
 
-Luego ese mismo sistema se propagará a las demás pantallas.
+       R$ 135
+
+       [Elegir]
+```
+
+Proveedor seleccionado:
+
+- borde cyan fino;
+- check claro;
+- sin efectos exagerados.
 
 ---
 
-# 17. Validación técnica después de cada bloque
+# 8. Servicio solicitado / matching
 
-Ejecutar:
+La prioridad no es una timeline compleja.
+
+Mostrar un estado grande y claro.
+
+Ejemplo:
+
+```text
+Buscando profesional…
+
+Estamos buscando alguien disponible cerca tuyo.
+
+[ animación simple ]
+
+Cancelar búsqueda
+```
+
+Si hay oferta:
+
+```text
+Encontramos un profesional
+```
+
+No mostrar cinco etapas con texto diminuto simultáneamente.
+
+---
+
+# 9. Profesional en camino
+
+Layout:
+
+```text
+MAPA
+
+bottom sheet:
+Marcos está en camino
+Llega en ~8 min
+
+[foto] Marcos Silva · ★4.9
+
+[Mensaje]   [Llamar]
+```
+
+Estado y ETA son prioridad.
+
+---
+
+# 10. Servicio en curso
+
+Mostrar solo lo operativo:
+
+```text
+Trabajo en curso
+Electricidad
+Marcos Silva
+Inicio 14:32
+
+R$ 135
+
+[Ver detalle]
+```
+
+Si aparece adicional:
+
+```text
+Trabajo adicional solicitado
++ R$ 45
++ 30 min
+
+[Rechazar] [Aceptar]
+```
+
+---
+
+# 11. Agregar trabajo / Ampliar servicio
+
+Categoría interna:
+
+```text
+Mejoras de flujo de trabajo
+```
+
+Objetivo:
+
+```text
+mantener el adicional dentro de UGO
+```
+
+Proveedor propone:
+
+```text
+Qué hay que hacer
+Costo extra
+Tiempo extra
+Enviar
+```
+
+Cliente recibe:
+
+```text
+Trabajo adicional
+Cambio de toma eléctrica
+
++ R$ 45
++ 30 min
+
+Nuevo total: R$ 180
+
+[No, gracias] [Aceptar]
+```
+
+Debe ser imposible confundir el precio viejo con el nuevo.
+
+---
+
+# 12. Pago
+
+Pantalla simple.
+
+```text
+Servicio terminado
+
+Servicio             R$ 135
+Adicional              R$ 45
+────────────────────────────
+Total                 R$ 180
+
+[ Pagar R$ 180 ]
+```
+
+Estados:
+
+```text
+Procesando
+Pendiente
+Confirmado
+Fallido
+Reembolsado
+```
+
+Cada estado debe decir qué pasa después.
+
+---
+
+# 13. Valoración
+
+Muy breve.
+
+```text
+¿Cómo estuvo el servicio?
+
+☆ ☆ ☆ ☆ ☆
+
+Puntual
+Profesional
+Buena comunicación
+Trabajo prolijo
+
+Comentario opcional
+
+[Enviar]
+```
+
+---
+
+# 14. UGO Proveedor — Home / Oportunidades
+
+Debe sentirse igual de simple que Cliente.
+
+Pregunta principal:
+
+```text
+¿Hay trabajo para mí ahora?
+```
+
+## Layout
+
+```text
+Estado: ● Disponible
+
+MAPA
+
+bottom sheet:
+3 oportunidades cerca
+
+Electricidad
+1,8 km · R$ 145
+[Ver]
+
+Plomería
+3,2 km · R$ 110
+[Ver]
+```
+
+No usar dashboard complejo como home.
+
+---
+
+# 15. Detalle de oportunidad
+
+Debe permitir decidir rápido.
+
+```text
+Electricidad
+Canasvieiras
+2,1 km · ~7 min
+
+Cambiar una toma que no funciona.
+
+Ganás aprox.
+R$ 120
+
+[Rechazar] [Aceptar trabajo]
+```
+
+La tarifa es una de las piezas visuales más importantes.
+
+---
+
+# 16. Trabajo aceptado
+
+```text
+Trabajo aceptado
+
+Electricidad
+Marcos / Cliente
+2,1 km
+
+Checklist
+✓ herramientas
+✓ ubicación
+✓ detalles del pedido
+
+[Ir al cliente]
+```
+
+---
+
+# 17. Hugo — asistente de trabajo
+
+Hugo debe ser útil, discreto y contextual.
+
+No convertirlo en un chatbot que ocupa toda la pantalla.
+
+Usar:
+
+```text
+tarjetas de sugerencia
+checklists
+quick actions
+alertas
+resúmenes
+```
+
+Ejemplo:
+
+```text
+Hugo
+Para este trabajo llevá:
+• tester
+• destornillador
+• cinta aisladora
+
+[Ver checklist]
+```
+
+Durante trabajo:
+
+```text
+Hugo sugiere
+¿El cliente pidió algo adicional?
+
+[Agregar trabajo]
+```
+
+---
+
+# 18. Navegación inferior
+
+Cliente:
+
+```text
+Inicio
+Servicios
+Actividad
+Perfil
+```
+
+Proveedor:
+
+```text
+Inicio
+Trabajos
+Ganancias
+Perfil
+```
+
+Reglas:
+
+- máximo 4 tabs en primera versión;
+- icono + label;
+- tab activa clara;
+- navegación fija;
+- no usar menús redundantes.
+
+---
+
+# 19. Componentes UI mínimos
+
+No crear un sistema gigante antes de necesitarlo.
+
+Primera tanda:
+
+```text
+Button
+IconButton
+Input
+SearchBar
+Card
+Avatar
+Badge
+BottomSheet
+BottomNav
+TopBar
+ServiceCategory
+ProviderCard
+OpportunityCard
+StatusBanner
+EmptyState
+HugoCard
+```
+
+Agregar nuevos componentes solo cuando aparezca una necesidad real.
+
+---
+
+# 20. Estados UX obligatorios
+
+Cada flujo debe contemplar:
+
+```text
+loading
+empty
+error
+offline
+success
+disabled
+```
+
+Casos específicos:
+
+```text
+ubicación denegada
+sin proveedores
+sin oportunidades
+matching sin resultado
+servicio cancelado
+proveedor desconectado
+pago pendiente
+pago fallido
+servicio en disputa
+```
+
+Ejemplo empty state:
+
+```text
+No hay profesionales cerca ahora
+
+Podemos seguir buscando o cambiar el horario.
+
+[Intentar de nuevo]
+```
+
+---
+
+# 21. Accesibilidad
+
+Requisitos mínimos:
+
+```text
+44×44 px mínimo por target
+48×48 recomendado
+contraste AA
+focus visible
+aria-label en icon buttons
+labels reales en formularios
+no depender solo del color
+texto mínimo relevante 12 px
+reduced motion
+```
+
+---
+
+# 22. Arquitectura CSS
+
+Reducir progresivamente estilos inline.
+
+No hacer una migración masiva en un solo commit.
+
+Estructura sugerida:
+
+```text
+src/design-system/
+  tokens.css
+  primitives.css
+  patterns.css
+```
+
+O CSS Modules si la arquitectura actual demuestra que conviene.
+
+Regla:
+
+```text
+si un valor se repite → token
+si un patrón se repite → componente
+si una pantalla es única → estilo local
+```
+
+---
+
+# 23. Fases de implementación
+
+## Fase 1 — Auditoría
+
+- mapa de pantallas;
+- mapa de componentes;
+- mapa de estados;
+- deuda visual;
+- dependencias funcionales.
+
+## Fase 2 — Base visual
+
+- tokens;
+- Button;
+- IconButton;
+- Input;
+- Card;
+- BottomSheet;
+- BottomNav.
+
+## Fase 3 — Cliente Home
+
+Rediseñar solamente:
+
+```text
+UGO Cliente / Home · Radar
+```
+
+Validar visualmente antes de avanzar.
+
+## Fase 4 — Cliente completo
+
+```text
+solicitud
+providers
+matching
+tracking
+servicio
+adicionales
+pago
+rating
+```
+
+## Fase 5 — Proveedor Home
+
+```text
+UGO Proveedor / Home · Oportunidades
+```
+
+## Fase 6 — Proveedor completo
+
+```text
+oportunidad
+aceptado
+trayecto
+servicio
+Hugo
+adicionales
+ganancias
+perfil
+```
+
+---
+
+# 24. Criterios de aceptación por pantalla
+
+Una pantalla no está terminada hasta cumplir:
+
+```text
+[ ] objetivo claro
+[ ] CTA principal evidente
+[ ] jerarquía correcta
+[ ] no hay contenido innecesario
+[ ] funciona a 360 px
+[ ] funciona a 430 px
+[ ] no hay overflow horizontal
+[ ] targets táctiles correctos
+[ ] loading contemplado
+[ ] error contemplado
+[ ] vacío contemplado
+[ ] no rompe lógica existente
+[ ] build pasa
+```
+
+---
+
+# 25. Validación técnica
+
+Después de cada bloque:
 
 ```bash
-npm install
 npm run build
 ```
 
-Y cuando corresponda:
+Luego:
 
 ```bash
 npm run lint
 ```
 
-No dar por terminado un bloque si el proyecto no compila.
+Si el repo requiere instalación:
 
----
-
-# 18. Git y commits
-
-Usar commits pequeños y descriptivos.
-
-Ejemplos:
-
-```text
-feat(ui): add UGO design tokens
-feat(ui): add shared mobile components
-feat(client-ui): redesign home radar
-feat(client-ui): redesign provider selection
-feat(provider-ui): redesign opportunities home
-feat(provider-ui): add work assistant interface
-fix(ui): improve mobile spacing and safe areas
+```bash
+npm install
 ```
 
+No avanzar si build queda roto.
+
 ---
 
-# 19. Pull Request final
+# 26. Definición de terminado
 
-Al finalizar, abrir PR desde:
+El rediseño se considera aprobado cuando:
+
+- UGO se entiende sin explicación;
+- Cliente puede pedir un servicio con pocos pasos;
+- Proveedor puede detectar y aceptar trabajo rápidamente;
+- cada pantalla tiene una acción principal clara;
+- mapa y sheets se sienten naturales;
+- no hay saturación visual;
+- el lenguaje visual Cliente/Proveedor es consistente;
+- Hugo ayuda sin molestar;
+- todos los estados críticos tienen UI;
+- el proyecto mantiene su lógica actual;
+- el build pasa;
+- el resultado se siente como producto comercial, no como panel técnico.
+
+---
+
+# 27. Regla final de diseño
+
+Ante cualquier duda entre agregar y quitar:
 
 ```text
-feat/ugo-ui-professional
+quitar
 ```
 
-hacia:
+Ante cualquier duda entre explicar y simplificar:
 
 ```text
-main
+simplificar
 ```
 
-El PR debe indicar:
+Ante cualquier duda entre mostrar cinco acciones o una:
 
-- pantallas modificadas
-- componentes nuevos
-- cambios visuales globales
-- comprobación del build
-- funcionalidades preservadas
-- pendientes visuales, si existen
+```text
+mostrar la acción que corresponde ahora
+```
 
----
-
-# 20. Definición de terminado
-
-El rediseño se considera terminado cuando:
-
-- Cliente tiene lenguaje visual consistente.
-- Proveedor comparte el mismo sistema visual.
-- Los flujos existentes siguen funcionando.
-- Los mapas siguen funcionando.
-- Los componentes se reutilizan.
-- La experiencia mobile es clara.
-- No hay desbordes importantes en 390 × 844.
-- Loading/error/empty states principales están diseñados.
-- El proyecto compila sin errores.
-- Los cambios están aislados en una rama y PR revisable.
-
----
-
-# Resultado buscado
-
-UGO debe dejar de sentirse como un MVP técnicamente armado y empezar a sentirse como un **producto comercial listo para mostrar a clientes, proveedores, socios e inversores**.
-
-La prioridad no es agregar más complejidad. La prioridad es que lo que UGO ya hace se presente con una experiencia visual profesional, consistente y confiable.
+UGO debe sentirse **rápido, obvio, limpio y confiable**.
