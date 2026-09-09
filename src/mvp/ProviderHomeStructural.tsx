@@ -1,0 +1,31 @@
+import React from'react'
+import type{Category,Offer,Payment,ProviderProfile,Service}from'./shared'
+import'./provider-home-structural.css'
+import{ProviderActiveMap}from'./ProviderActiveMap'
+
+type FullProviderProfile=ProviderProfile&{experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
+type Props={profile:ProviderProfile;provider:FullProviderProfile;offers:Offer[];service:Service|null;payments:Payment[];busy:boolean;categories:Category[];onToggleOnline:()=>void;onCenterMap:()=>void;onOffer:(id:string,accept:boolean)=>void;onAdvance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>void;onTab:(tab:'radar'|'jobs'|'earnings'|'profile')=>void;userPos:[number,number]|null}
+
+const money=(v:unknown,currency?:string|null)=>`${currency==='ARS'?'$':'R$'} ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
+
+export function ProviderHomeStructural({profile,provider,offers,service,payments,busy,categories,onToggleOnline,onCenterMap,onOffer,onAdvance,onTab,userPos}:Props){
+ const currentPayment=service?payments.find(p=>p.servicio_id===service.id):null
+ const funded=currentPayment?.estado==='retenido'&&Boolean((currentPayment as any).mp_payment_id)
+ const released=payments.filter(p=>p.estado==='liberado').reduce((sum,p)=>sum+Number(p.ganancia_proveedor||0),0)
+ const retained=payments.filter(p=>p.estado==='retenido'&&Boolean((p as any).mp_payment_id)).reduce((sum,p)=>sum+Number(p.ganancia_proveedor||0),0)
+ const action=service?.estado==='asignado'&&funded?{label:'Navegar al cliente',state:'en_camino' as const}:service?.estado==='en_camino'?{label:'Llegué al cliente',state:'llegado' as const}:service?.estado==='llegado'?{label:'Iniciar servicio',state:'en_progreso' as const}:service?.estado==='en_progreso'?{label:'Finalizar y pedir aprobación',state:'esperando_aprobacion' as const}:null
+ const step=service?.estado==='asignado'?1:service?.estado==='en_camino'?2:service?.estado==='llegado'?3:service?.estado==='en_progreso'?4:service?.estado==='esperando_aprobacion'?5:0
+ const topOffer=offers[0]||null
+ return <main className="ugo-provider-structural-home">
+  <section className="ugo-provider-structural-map"><ProviderActiveMap userPos={userPos} /></section>
+  <header className="ugo-provider-structural-header"><div className="ugo-provider-structural-brand">U.GO <span>PRO</span></div><div className="ugo-provider-structural-greeting"><b>{profile.nombre||'Proveedor'}</b><small>★ {Number(profile.karma||5).toFixed(1)} · {provider.ciudad_base||'Tu zona'}</small></div><button type="button" className={`ugo-provider-structural-presence ${provider.disponible?'on':''}`} onClick={onToggleOnline} disabled={busy}><i/>{provider.disponible?'Online':'Offline'}</button></header>
+  <section className="ugo-provider-structural-sheet">
+   <div className="ugo-provider-structural-sheet-head"><div><small>{service?'MISIÓN ACTIVA':offers.length?'DEMANDA CERCANA':'RADAR UGO'}</small><h1>{service?service.categoria?.nombre||'Servicio activo':offers.length?`${offers.length} oportunidad${offers.length===1?'':'es'} cerca`:'Tu radar está listo'}</h1><p>{service?service.cliente?.nombre||'Cliente UGO':provider.disponible?(offers.length?'Revisá las oportunidades disponibles en tu zona.':'Estamos buscando trabajos para vos.'):'Activá Online para recibir oportunidades.'}</p></div><span className="ugo-provider-structural-kpi">{provider.disponible?'ACTIVO':'PAUSADO'}</span></div>
+   <div className="ugo-provider-structural-metrics"><div><small>LIBERADO</small><b>{money(released)}</b></div><div><small>RETENIDO</small><b>{money(retained)}</b></div></div>
+   {service?<article className="ugo-provider-structural-service"><div className="ugo-provider-structural-service-top"><strong>{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||'Servicio'}</strong><span>{service.estado.replaceAll('_',' ')}</span></div><p>{service.descripcion||'Servicio asignado por UGO.'}</p><div className="ugo-provider-structural-progress">{[1,2,3,4,5].map(n=><i key={n} className={n<=step?'done':''}/>)}</div>{action&&<button type="button" className="ugo-provider-structural-cta" onClick={()=>onAdvance(action.state)} disabled={busy}>{busy?'Actualizando…':action.label}</button>}</article>:<div className="ugo-provider-structural-opportunities">{offers.length===0&&<div className="ugo-provider-structural-empty"><span>⌁</span><b>{provider.disponible?'Sin oportunidades por ahora':'Estás offline'}</b><p>{provider.disponible?'Te avisaremos cuando aparezca una demanda cercana.':'Activá tu disponibilidad para empezar a recibir trabajos.'}</p></div>}{offers.slice(0,3).map(o=><article className="ugo-provider-structural-opportunity" key={o.id}><div><small>OPORTUNIDAD</small><strong>{o.servicio?.categoria?.emoji||'🧰'} {o.servicio?.categoria?.nombre||'Servicio'}</strong><p>{o.servicio?.cliente?.nombre||'Cliente UGO'} · {o.servicio?.descripcion||'Solicitud cercana'}</p></div><b>{money(o.tarifa_ofrecida,o.servicio?.moneda)}</b><div className="ugo-provider-structural-actions"><button type="button" onClick={()=>onOffer(o.id,false)} disabled={busy}>Ignorar</button><button type="button" onClick={()=>onOffer(o.id,true)} disabled={busy}>Aceptar</button></div></article>)}</div>}
+  </section>
+  <button type="button" className="ugo-provider-structural-map-cta" onClick={onCenterMap}>⌖ <span>Centrar mapa</span></button>
+  {topOffer&&!service&&<div className="ugo-provider-structural-offer"><small>OPORTUNIDAD DESTACADA</small><strong>{topOffer.servicio?.categoria?.emoji||'🧰'} {topOffer.servicio?.categoria?.nombre||'Servicio'}</strong><span>{topOffer.servicio?.cliente?.nombre||'Cliente UGO'} · {money(topOffer.tarifa_ofrecida,topOffer.servicio?.moneda)}</span></div>}
+  <nav className="ugo-provider-structural-nav"><button className="active" type="button" onClick={()=>onTab('radar')}>⌁<span>RADAR</span></button><button type="button" onClick={()=>onTab('jobs')}>▤<span>TRABAJOS</span></button><div className="ugo-provider-structural-hugo">◉</div><button type="button" onClick={()=>onTab('earnings')}>◌<span>GANANCIAS</span></button><button type="button" onClick={()=>onTab('profile')}>◯<span>PERFIL</span></button></nav>
+ </main>
+}
