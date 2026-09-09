@@ -1,0 +1,151 @@
+/* UGO Senior UI — minimal, friendly, map-first */
+:root{
+  --ugo-black:#111111;
+  --ugo-ink:#1c1c1c;
+  --ugo-muted:#6b7280;
+  --ugo-soft:#f5f5f5;
+  --ugo-border:#e8e8e8;
+  --ugo-white:#ffffff;
+  --ugo-green:#16a34a;
+  --ugo-cyan:#19c6d8;
+  --ugo-radius-sm:12px;
+  --ugo-radius-md:16px;
+  --ugo-radius-lg:24px;
+  --ugo-shadow-sm:0 2px 10px rgba(0,0,0,.08);
+  --ugo-shadow-md:0 10px 30px rgba(0,0,0,.12);
+}
+
+html,body,#root{min-height:100%;background:#fff;color:var(--ugo-ink)}
+body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+
+/* CLIENT / HOME RADAR */
+.ugo-ref-client{background:#eef1ef!important;color:var(--ugo-ink)!important}
+.ugo-ref-client .maplibregl-canvas{filter:saturate(.68) brightness(1.07) contrast(.94)!important}
+.ugo-ref-client .maplibregl-ctrl-top-left{display:none!important}
+
+.ugo-ref-topbar{top:16px!important;left:16px!important;right:16px!important;gap:8px!important}
+.ugo-ref-circle{
+  width:44px!important;height:44px!important;border-radius:50%!important;
+  background:#fff!important;color:#111!important;border:1px solid rgba(0,0,0,.04)!important;
+  box-shadow:var(--ugo-shadow-sm)!important;font-size:18px!important
+}
+.ugo-ref-location{
+  height:44px!important;min-width:0!important;max-width:220px!important;padding:0 12px!important;
+  border-radius:22px!important;background:#fff!important;border:1px solid rgba(0,0,0,.04)!important;
+  box-shadow:var(--ugo-shadow-sm)!important
+}
+.ugo-ref-location>span{color:var(--ugo-green)!important}
+.ugo-ref-location b{font-size:12px!important;font-weight:700!important;color:#111!important}
+.ugo-ref-location small{font-size:10px!important;color:var(--ugo-muted)!important}
+
+.ugo-ref-hugo{bottom:39vh!important;gap:7px!important}
+.ugo-ref-hugo>span{
+  width:68px!important;height:68px!important;border:2px solid var(--ugo-cyan)!important;
+  background:#111!important;color:#b9f8ff!important;box-shadow:0 0 0 7px rgba(25,198,216,.12),0 10px 25px rgba(0,0,0,.18)!important
+}
+.ugo-ref-hugo small{
+  padding:7px 11px!important;border-radius:999px!important;background:rgba(255,255,255,.97)!important;
+  color:#111!important;font-size:10px!important;font-weight:700!important;box-shadow:var(--ugo-shadow-sm)!important
+}
+
+.ugo-ref-sheet{
+  left:12px!important;right:12px!important;bottom:74px!important;width:auto!important;
+  max-height:34vh!important;padding:8px 14px 14px!important;border-radius:24px!important;
+  background:rgba(255,255,255,.985)!important;box-shadow:0 -8px 26px rgba(0,0,0,.10)!important;
+  backdrop-filter:blur(18px)!important;gap:12px!important
+}
+.ugo-ref-sheet>.ugo-drawer-handle{width:36px!important;height:4px!important;border-radius:999px!important;background:#d5d5d5!important}
+
+.ugo-ref-search{
+  min-height:52px!important;padding:0 14px!important;border-radius:16px!important;background:#f4f4f4!important;
+  border:1px solid #ededed!important;box-shadow:none!important
+}
+.ugo-ref-search:focus-within{background:#fff!important;border-color:#bdbdbd!important;box-shadow:0 0 0 3px rgba(0,0,0,.04)!important}
+.ugo-ref-search span{color:#111!important;font-size:18px!important}
+.ugo-ref-search input{font-size:15px!important;font-weight:500!important;color:#111!important}
+.ugo-ref-search input::placeholder{color:#737373!important;opacity:1}
+
+.ugo-ref-categories{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:8px!important;overflow:visible!important}
+.ugo-ref-categories button{min-width:0!important;padding:2px 0!important;background:transparent!important;border:0!important}
+.ugo-ref-categories button:nth-child(n+5){display:none!important}
+.ugo-ref-categories button b{
+  width:50px!important;height:50px!important;margin:auto!important;border-radius:15px!important;
+  background:#f3f3f3!important;color:#111!important;font-size:22px!important;border:1px solid #ececec!important;
+  box-shadow:none!important;transition:transform .16s ease,background .16s ease,border-color .16s ease!important
+}
+.ugo-ref-categories button:hover b{transform:translateY(-1px)}
+.ugo-ref-categories button.active b{background:#111!important;color:#fff!important;border-color:#111!important}
+.ugo-ref-categories button span{display:block!important;margin-top:6px!important;font-size:10px!important;font-weight:650!important;color:#333!important;white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+
+.ugo-ref-feature-title,.ugo-ref-featured{display:none!important}
+
+.ugo-ref-nav{
+  height:68px!important;padding:5px 10px calc(5px + env(safe-area-inset-bottom))!important;
+  background:rgba(255,255,255,.98)!important;border-top:1px solid #ececec!important;
+  box-shadow:0 -5px 20px rgba(0,0,0,.04)!important
+}
+.ugo-ref-nav button{min-height:52px!important;color:#8a8a8a!important;border-radius:12px!important}
+.ugo-ref-nav button b{font-size:20px!important}
+.ugo-ref-nav button span{font-size:10px!important;font-weight:650!important}
+.ugo-ref-nav button.active{color:#111!important}
+
+/* map markers: less visual noise */
+.ugo-ref-client .ugo-provider-marker{
+  min-width:0!important;padding:4px!important;border-radius:999px!important;background:#fff!important;border:2px solid #fff!important;
+  box-shadow:0 5px 15px rgba(0,0,0,.16)!important
+}
+.ugo-ref-client .ugo-provider-copy{display:none!important}
+.ugo-ref-client .ugo-provider-avatar{width:42px!important;height:42px!important}
+.ugo-ref-client .ugo-provider-marker.active{border-color:#111!important;transform:scale(1.06)}
+.ugo-user-marker{width:20px!important;height:20px!important;border:4px solid #fff!important;box-shadow:0 2px 10px rgba(0,0,0,.2)!important}
+.ugo-user-marker span{background:#2563eb!important}
+
+/* Provider detail bottom sheet */
+.ugo-ref-backdrop{background:rgba(0,0,0,.28)!important;backdrop-filter:blur(3px)!important}
+.ugo-ref-provider-sheet{
+  padding:10px 18px calc(18px + env(safe-area-inset-bottom))!important;border-radius:24px 24px 0 0!important;
+  background:#fff!important;box-shadow:0 -16px 40px rgba(0,0,0,.16)!important
+}
+.ugo-ref-profile-head h3{font-size:21px!important;letter-spacing:-.02em!important;color:#111!important}
+.ugo-ref-profile-head p,.ugo-ref-bio{color:var(--ugo-muted)!important}
+.ugo-ref-badges span{background:#f4f4f4!important;color:#333!important;border-radius:999px!important}
+.ugo-ref-badges span:first-child{background:#111!important;color:#fff!important}
+.ugo-ref-profile .ugo-provider-facts{background:#f7f7f7!important;border-radius:16px!important}
+.ugo-ref-profile .ugo-hire-button{
+  min-height:52px!important;border-radius:15px!important;background:#111!important;color:#fff!important;
+  box-shadow:none!important;font-size:15px!important;font-weight:800!important
+}
+
+/* Slide menu */
+.ugo-client-menu-backdrop{background:rgba(0,0,0,.28)!important;backdrop-filter:blur(4px)!important}
+.ugo-client-menu{background:#fff!important;box-shadow:22px 0 55px rgba(0,0,0,.16)!important;color:#111!important}
+.ugo-client-menu-head>button{background:#f4f4f4!important;color:#111!important}
+.ugo-client-menu-account{background:#f7f7f7!important;border:1px solid #ececec!important}
+.ugo-client-menu-account>span{background:#111!important;color:#fff!important}
+.ugo-client-menu-list button{background:#fff!important;color:#111!important}
+.ugo-client-menu-list button.active{background:#f3f3f3!important}
+
+/* Active service cards */
+.mvp-shell{background:#f5f5f5!important;color:#111!important}
+.mvp-shell .mvp-layout>.mvp-card{border:1px solid #e9e9e9!important;border-radius:24px!important;box-shadow:0 10px 28px rgba(0,0,0,.08)!important}
+.mvp-shell .mvp-card-title h2{color:#111!important;letter-spacing:-.025em!important}
+.mvp-shell .mvp-status{background:#efefef!important;color:#111!important}
+.mvp-shell .mvp-operation-grid>div{background:#f7f7f7!important;border-color:#ededed!important}
+.mvp-shell .mvp-actions .mvp-primary{background:#111!important;color:#fff!important;border-radius:15px!important;box-shadow:none!important}
+.mvp-shell .mvp-actions .mvp-danger{border-color:#e5e5e5!important;color:#b42318!important;background:#fff!important}
+
+@media(min-width:900px){
+  .ugo-ref-sheet{left:24px!important;right:auto!important;bottom:24px!important;width:390px!important;max-height:56vh!important}
+  .ugo-ref-feature-title,.ugo-ref-featured{display:block!important}
+  .ugo-ref-featured{display:grid!important}
+  .ugo-ref-hugo{left:auto!important;right:8vw!important;bottom:12vh!important;transform:none!important}
+}
+
+@media(max-width:640px){
+  .ugo-ref-client,.ugo-ref-client .ugo-map-stage{height:100dvh!important}
+  .ugo-ref-topbar{top:max(12px,env(safe-area-inset-top))!important;left:12px!important;right:12px!important}
+  .ugo-ref-location{height:42px!important}.ugo-ref-circle{width:42px!important;height:42px!important}
+  .ugo-ref-sheet{bottom:68px!important}
+}
