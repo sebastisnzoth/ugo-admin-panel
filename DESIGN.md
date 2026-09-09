@@ -1,30 +1,18 @@
 ---
 version: alpha
 colors:
-  ink:
-    value: "#172421"
-  inkSoft:
-    value: "#52665c"
-  muted:
-    value: "#64706b"
-  canvas:
-    value: "#f3f5f3"
-  surface:
-    value: "#ffffff"
-  line:
-    value: "#dbe5de"
-  brand:
-    value: "#087f5b"
-  brandStrong:
-    value: "#056348"
-  brandSoft:
-    value: "#e3f3e9"
-  warning:
-    value: "#a85f00"
-  danger:
-    value: "#b3261e"
-  focus:
-    value: "#165dff"
+  ink: "#172421"
+  inkSoft: "#52665c"
+  muted: "#64706b"
+  canvas: "#f3f5f3"
+  surface: "#ffffff"
+  line: "#dbe5de"
+  brand: "#087f5b"
+  brandStrong: "#056348"
+  brandSoft: "#e3f3e9"
+  warning: "#a85f00"
+  danger: "#b3261e"
+  focus: "#165dff"
 typography:
   display:
     fontFamily: '"Inter Tight", Inter, ui-sans-serif, system-ui, sans-serif'
