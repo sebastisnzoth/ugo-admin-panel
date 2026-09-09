@@ -19,7 +19,7 @@ import'./service-history.css'
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
  if(app==='client')return <ClientFlowProvider><ClientRoot/></ClientFlowProvider>
- if(app==='provider')return<><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></>
+ if(app==='provider')return <div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div>
  if(app==='admin')return<AdminGate/>
  return<Launcher/>
 }
