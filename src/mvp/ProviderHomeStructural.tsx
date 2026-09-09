@@ -1,10 +1,10 @@
 import React from'react'
-import type{Category,Offer,Payment,ProviderProfile,Service}from'./shared'
+import type{Category,Offer,Payment,ProviderProfile,Service,UgoUser}from'./shared'
 import'./provider-home-structural.css'
 import{ProviderActiveMap}from'./ProviderActiveMap'
 
 type FullProviderProfile=ProviderProfile&{experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
-type Props={profile:ProviderProfile;provider:FullProviderProfile;offers:Offer[];service:Service|null;payments:Payment[];busy:boolean;categories:Category[];onToggleOnline:()=>void;onCenterMap:()=>void;onOffer:(id:string,accept:boolean)=>void;onAdvance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>void;onTab:(tab:'radar'|'jobs'|'earnings'|'profile')=>void;userPos:[number,number]|null}
+type Props={profile:UgoUser;provider:FullProviderProfile;offers:Offer[];service:Service|null;payments:Payment[];busy:boolean;categories:Category[];onToggleOnline:()=>void;onCenterMap:()=>void;onOffer:(id:string,accept:boolean)=>void;onAdvance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>void;onTab:(tab:'radar'|'jobs'|'earnings'|'profile')=>void;userPos:[number,number]|null}
 
 const money=(v:unknown,currency?:string|null)=>`${currency==='ARS'?'$':'R$'} ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 
