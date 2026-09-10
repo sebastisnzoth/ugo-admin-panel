@@ -16,8 +16,10 @@ import'./service-history.css'
 
 // UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
- const app=new URLSearchParams(window.location.search).get('app')
- if(app==='client')return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview/><ServiceHistoryPanel role="client"/><DisputeDock role="client"/><AppLocationButton role="client"/></div>
+ const params=new URLSearchParams(window.location.search)
+ const app=params.get('app')
+ const demo=params.get('demo')==='1'
+ if(app==='client')return <div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview/><ServiceHistoryPanel role="client"/><DisputeDock role="client"/><AppLocationButton role="client"/></div>
  if(app==='provider')return<><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></>
  if(app==='admin')return<AdminGate/>
  return<Launcher/>
