@@ -1,0 +1,249 @@
+/* UGO Cliente — Stitch integration layer
+   Source reference: Google Stitch export (UGO Services Mobile App)
+   Loaded after the existing MVP styles so we can align the current React UI
+   without replacing product logic, routing, Supabase, Hugo or maps. */
+
+.ugo-client-root,
+.ugo-quantum-shell.ugo-ref-client {
+  --stitch-primary: #006948;
+  --stitch-primary-container: #00855d;
+  --stitch-primary-fixed: #85f8c4;
+  --stitch-secondary: #00687a;
+  --stitch-secondary-container: #57dffe;
+  --stitch-tertiary: #0058be;
+  --stitch-surface: #faf8ff;
+  --stitch-surface-low: #f2f3ff;
+  --stitch-surface-container: #eaedff;
+  --stitch-surface-high: #e2e7ff;
+  --stitch-surface-highest: #dae2fd;
+  --stitch-white: #ffffff;
+  --stitch-text: #131b2e;
+  --stitch-text-muted: #3d4a42;
+  --stitch-outline: #6d7a72;
+  --stitch-outline-soft: #bccac0;
+  --stitch-error: #ba1a1a;
+  --stitch-radius-sm: 10px;
+  --stitch-radius-md: 14px;
+  --stitch-radius-lg: 20px;
+  --stitch-radius-xl: 28px;
+  --stitch-shadow-sm: 0 4px 14px rgba(19,27,46,.07);
+  --stitch-shadow-md: 0 12px 32px rgba(19,27,46,.12);
+  --stitch-touch: 48px;
+  --stitch-edge: 16px;
+  color: var(--stitch-text);
+  background: var(--stitch-surface);
+  font-family: "Plus Jakarta Sans", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.ugo-client-root button,
+.ugo-quantum-shell.ugo-ref-client button,
+.ugo-client-root input,
+.ugo-client-root textarea,
+.ugo-client-root select,
+.ugo-quantum-shell.ugo-ref-client input,
+.ugo-quantum-shell.ugo-ref-client textarea,
+.ugo-quantum-shell.ugo-ref-client select {
+  font: inherit;
+}
+
+.ugo-client-root button,
+.ugo-quantum-shell.ugo-ref-client button {
+  min-height: var(--stitch-touch);
+}
+
+/* Stitch Home/Radar visual contract */
+.ugo-quantum-shell.ugo-ref-client {
+  min-height: 100dvh;
+  background: var(--stitch-surface);
+  overflow: hidden;
+}
+
+.ugo-quantum-shell.ugo-ref-client .ugo-map,
+.ugo-quantum-shell.ugo-ref-client [class*="map-stage"],
+.ugo-quantum-shell.ugo-ref-client [class*="map-canvas"] {
+  background: linear-gradient(180deg, #eaf4ff 0%, #f7fbff 36%, #faf8ff 100%);
+}
+
+.ugo-provider-marker {
+  border: 1px solid rgba(188,202,192,.8) !important;
+  border-radius: 999px !important;
+  background: rgba(255,255,255,.96) !important;
+  color: var(--stitch-text) !important;
+  box-shadow: var(--stitch-shadow-sm) !important;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease !important;
+}
+
+.ugo-provider-marker:hover,
+.ugo-provider-marker:focus-visible,
+.ugo-provider-marker.active {
+  transform: translateY(-2px);
+  border-color: var(--stitch-primary-container) !important;
+  box-shadow: var(--stitch-shadow-md) !important;
+  outline: none;
+}
+
+.ugo-provider-marker .online {
+  background: var(--stitch-primary-container) !important;
+}
+
+.ugo-user-marker > span {
+  background: var(--stitch-primary-container) !important;
+  box-shadow: 0 0 0 6px rgba(0,133,93,.14), 0 0 0 12px rgba(0,133,93,.07) !important;
+}
+
+/* Shared client surfaces */
+.ugo-client-root section,
+.ugo-client-root article,
+.ugo-client-root .panel,
+.ugo-client-root [class*="card"],
+.ugo-client-root [class*="sheet"] {
+  border-color: rgba(188,202,192,.62);
+}
+
+.ugo-client-root input,
+.ugo-client-root textarea,
+.ugo-client-root select {
+  border-radius: var(--stitch-radius-md);
+  border-color: var(--stitch-outline-soft);
+  background: var(--stitch-white);
+  color: var(--stitch-text);
+}
+
+.ugo-client-root input:focus,
+.ugo-client-root textarea:focus,
+.ugo-client-root select:focus,
+.ugo-quantum-shell.ugo-ref-client input:focus,
+.ugo-quantum-shell.ugo-ref-client textarea:focus,
+.ugo-quantum-shell.ugo-ref-client select:focus {
+  outline: 3px solid rgba(87,223,254,.28);
+  border-color: var(--stitch-secondary);
+}
+
+.ugo-client-root a:focus-visible,
+.ugo-client-root button:focus-visible,
+.ugo-quantum-shell.ugo-ref-client a:focus-visible,
+.ugo-quantum-shell.ugo-ref-client button:focus-visible {
+  outline: 3px solid rgba(87,223,254,.34);
+  outline-offset: 2px;
+}
+
+/* Existing live service flow aligned with Stitch status hierarchy */
+.ugo-client-flow {
+  border-radius: var(--stitch-radius-lg) !important;
+  background: var(--stitch-white) !important;
+  border: 1px solid rgba(188,202,192,.58) !important;
+  box-shadow: var(--stitch-shadow-sm) !important;
+  overflow: hidden;
+}
+
+.ugo-flow-hero {
+  background: linear-gradient(135deg, rgba(0,133,93,.10), rgba(87,223,254,.12)) !important;
+  border-bottom: 1px solid rgba(188,202,192,.42);
+}
+
+.ugo-flow-hero p {
+  color: var(--stitch-secondary) !important;
+  font-weight: 700;
+  letter-spacing: .02em;
+}
+
+.ugo-flow-hero h3 {
+  color: var(--stitch-text) !important;
+  letter-spacing: -.02em;
+}
+
+.ugo-flow-signal i {
+  background: var(--stitch-primary-container) !important;
+}
+
+.ugo-active-service-summary {
+  background: var(--stitch-surface-low) !important;
+  border-radius: var(--stitch-radius-md) !important;
+}
+
+.ugo-active-provider-initial {
+  background: var(--stitch-primary-container) !important;
+  color: #fff !important;
+}
+
+.ugo-flow-steps li.current > span {
+  background: var(--stitch-primary-container) !important;
+  color: #fff !important;
+}
+
+.ugo-flow-steps li.done > span {
+  background: var(--stitch-primary-fixed) !important;
+  color: #005137 !important;
+}
+
+/* Hugo = cyan/secondary, never confused with the green transactional CTA. */
+.ugo-client-root [class*="hugo"],
+.ugo-quantum-shell.ugo-ref-client [class*="hugo"] {
+  --hugo-accent: var(--stitch-secondary);
+}
+
+.ugo-client-root [class*="hugo"] button:not([class*="primary"]),
+.ugo-quantum-shell.ugo-ref-client [class*="hugo"] button:not([class*="primary"]) {
+  border-color: rgba(0,104,122,.22);
+}
+
+/* CTA semantics: green for commitment/action, cyan for AI/context. */
+.ugo-client-root button[class*="primary"],
+.ugo-client-root .primary-button,
+.ugo-client-root .ugo-primary-action,
+.ugo-quantum-shell.ugo-ref-client .ugo-primary-action {
+  background: var(--stitch-primary-container) !important;
+  color: #fff !important;
+  border-color: var(--stitch-primary-container) !important;
+  border-radius: 999px !important;
+  font-weight: 700;
+  box-shadow: 0 8px 22px rgba(0,133,93,.18);
+}
+
+.ugo-client-root button[class*="primary"]:hover,
+.ugo-client-root .primary-button:hover,
+.ugo-client-root .ugo-primary-action:hover,
+.ugo-quantum-shell.ugo-ref-client .ugo-primary-action:hover {
+  background: #006f4e !important;
+}
+
+/* Dense information is de-emphasized; legal/technical detail stays available below primary content. */
+.ugo-client-root small,
+.ugo-client-root .muted,
+.ugo-client-root [class*="meta"] {
+  color: var(--stitch-outline);
+}
+
+/* Mobile-first contract from Stitch: 390 × 844 reference, safe bottom, 16px edge. */
+@media (max-width: 767px) {
+  .ugo-client-root,
+  .ugo-quantum-shell.ugo-ref-client {
+    --stitch-edge: 16px;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
+
+  .ugo-client-flow {
+    margin-inline: var(--stitch-edge);
+  }
+
+  .ugo-flow-hero {
+    padding: 16px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .ugo-client-root,
+  .ugo-quantum-shell.ugo-ref-client {
+    --stitch-edge: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ugo-client-root *,
+  .ugo-quantum-shell.ugo-ref-client * {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
