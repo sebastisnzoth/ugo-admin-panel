@@ -1,0 +1,143 @@
+/* UGO Cliente · Stitch Web / Kinetic Trust
+   Responsive enhancement layer. Keeps existing React/Supabase behavior intact. */
+
+.ugo-client-root{
+  --web-cyan:#00b4d8;
+  --web-cyan-strong:#00677d;
+  --web-navy:#0f172a;
+  --web-emerald:#10b981;
+  --web-bg:#f8fafc;
+  --web-surface:#fff;
+  --web-border:#e2e8f0;
+  --web-muted:#64748b;
+  --web-text:#0f172a;
+  --web-shadow:0 20px 32px -4px rgba(15,23,42,.12),0 8px 16px -2px rgba(15,23,42,.06);
+  background:var(--web-bg);
+  color:var(--web-text);
+}
+
+/* Desktop shell: stop presenting the client app as a centered phone card. */
+@media (min-width:1024px){
+  .ugo-client-root .mvp-layout{
+    width:min(1480px,calc(100% - 48px));
+    max-width:none;
+    margin:0 auto;
+    padding:24px 0 72px;
+    gap:20px;
+  }
+
+  .ugo-client-root .mvp-hero-card,
+  .ugo-client-root .mvp-provider-top{
+    grid-template-columns:minmax(0,1.6fr) minmax(320px,.7fr);
+    gap:20px;
+  }
+
+  .ugo-client-root .mvp-card,
+  .ugo-client-root .ugo-client-flow{
+    border:1px solid var(--web-border);
+    border-radius:20px;
+    background:var(--web-surface);
+    box-shadow:0 4px 20px -2px rgba(15,23,42,.06),0 2px 6px -1px rgba(15,23,42,.04);
+  }
+
+  .ugo-client-root .ugo-client-flow{
+    max-width:none;
+  }
+
+  /* Active service: use real web width and keep key information above the fold. */
+  .ugo-client-root .ugo-client-flow .ugo-flow-steps{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:12px;
+    padding:4px 18px 18px;
+  }
+
+  .ugo-client-root .ugo-client-flow .ugo-flow-steps li{
+    min-height:78px;
+    padding:12px;
+    border:1px solid var(--web-border);
+    border-radius:14px;
+    background:#fff;
+  }
+
+  .ugo-client-root .ugo-active-service-summary{
+    margin:18px;
+    max-width:720px;
+  }
+
+  /* Hugo behaves as a contextual right rail instead of overlapping the service card. */
+  .ugo-client-root .mvp-hugo-panel{
+    right:28px;
+    bottom:28px;
+    width:min(390px,32vw);
+    max-height:min(620px,calc(100vh - 110px));
+    overflow:auto;
+    border-radius:20px;
+    box-shadow:var(--web-shadow);
+  }
+
+  .ugo-client-root .mvp-orb{
+    right:28px;
+    bottom:28px;
+  }
+
+  /* Map/radar should be a desktop canvas, not a mobile viewport replica. */
+  .ugo-client-root .ugo-quantum-shell,
+  .ugo-client-root .ugo-responsive-home{
+    width:100%;
+    max-width:none;
+    min-height:calc(100vh - 68px);
+  }
+
+  .ugo-client-root .ugo-ref-client{
+    border-radius:0;
+  }
+}
+
+/* Stitch/Kinetic Trust component treatment */
+.ugo-client-root button,
+.ugo-client-root input,
+.ugo-client-root textarea,
+.ugo-client-root select{
+  font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;
+}
+
+.ugo-client-root button{
+  min-height:46px;
+}
+
+.ugo-client-root button:focus-visible,
+.ugo-client-root input:focus-visible,
+.ugo-client-root textarea:focus-visible,
+.ugo-client-root select:focus-visible,
+.ugo-client-root a:focus-visible{
+  outline:3px solid rgba(0,180,216,.28);
+  outline-offset:2px;
+}
+
+.ugo-client-root .mvp-status,
+.ugo-client-root [class*='verified'],
+.ugo-client-root [class*='shield']{
+  border-radius:999px;
+}
+
+/* Payment panels belong to the workflow and must remain readable on desktop. */
+.ugo-client-root [class*='payment'],
+.ugo-client-root [class*='pix']{
+  font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif;
+}
+
+@media (min-width:900px){
+  .ugo-client-root .ugo-completion-review{
+    width:min(760px,calc(100vw - 64px));
+    left:50%;
+    transform:translateX(-50%);
+  }
+}
+
+/* Mobile retains the existing UGO mobile behavior. */
+@media (max-width:767px){
+  .ugo-client-root .mvp-layout{width:calc(100% - 24px);padding-top:14px}
+  .ugo-client-root .mvp-hugo-panel{right:12px;bottom:90px;width:calc(100vw - 24px)}
+  .ugo-client-root .mvp-orb{right:14px;bottom:14px}
+}
