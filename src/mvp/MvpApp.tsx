@@ -19,14 +19,15 @@ import'./stitch-client-v2.css'
 
 // UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
- const app=new URLSearchParams(window.location.search).get('app')
- if(app==='client')return <ClientFlowProvider><ClientRoot/></ClientFlowProvider>
+ const params=new URLSearchParams(window.location.search)
+ const app=params.get('app')
+ if(app==='client')return <ClientFlowProvider><ClientRoot demoPayment={params.get('demo')==='1'}/></ClientFlowProvider>
  if(app==='provider')return <div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div>
  if(app==='admin')return<AdminGate/>
  return<Launcher/>
 }
 
-function ClientRoot(){
+function ClientRoot({demoPayment=false}:{demoPayment?:boolean}){
  const flow=useClientFlow()
- return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
+ return <div className="ugo-client-root">{demoPayment&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
 }
