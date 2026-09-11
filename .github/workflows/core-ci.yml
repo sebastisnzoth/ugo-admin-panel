@@ -45,6 +45,8 @@ jobs:
       - name: Lint critical operational surfaces
         run: >-
           npx eslint
+          api/pagos/ajuste-ampliacion.ts
+          api/pagos/webhook.ts
           src/mvp/MvpApp.tsx
           src/mvp/client/ClientRoot.tsx
           src/mvp/client/ClientGuidedRequest.tsx
