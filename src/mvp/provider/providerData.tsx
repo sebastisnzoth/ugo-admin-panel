@@ -5,7 +5,7 @@ import{acceptProviderOpportunity,advanceProviderService,loadProviderSnapshot,rej
 import{useProviderRealtime}from'./useProviderRealtime'
 import type{DemandSignal,ProviderOpportunity}from'./providerTypes'
 
-type ProviderData={name:string;karma:number;provider:ProviderProfileFull;offers:Offer[];opportunities:ProviderOpportunity[];demand:DemandSignal[];service:Service|null;payments:ProviderPayment[];online:boolean;released:number;retained:number;busy:boolean;notice:Notice;reload:()=>Promise<void>;toggleOnline:()=>Promise<void>;acceptOpportunity:(id:string)=>Promise<boolean>;rejectOpportunity:(id:string)=>Promise<boolean>;advance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>Promise<boolean>;funded:boolean;cashSelected:boolean;cashConfirmed:boolean;confirmCash:()=>Promise<boolean>}
+type ProviderData={name:string;karma:number;provider:ProviderProfileFull;offers:Offer[];opportunities:ProviderOpportunity[];demand:DemandSignal[];service:Service|null;payments:ProviderPayment[];online:boolean;released:number;retained:number;busy:boolean;notice:Notice;reload:()=>Promise<void>;toggleOnline:()=>Promise<boolean>;acceptOpportunity:(id:string)=>Promise<boolean>;rejectOpportunity:(id:string)=>Promise<boolean>;advance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>Promise<boolean>;funded:boolean;cashSelected:boolean;cashConfirmed:boolean;confirmCash:()=>Promise<boolean>}
 const C=createContext<ProviderData|null>(null)
 
 export function ProviderDataProvider({children}:{children:React.ReactNode}){
