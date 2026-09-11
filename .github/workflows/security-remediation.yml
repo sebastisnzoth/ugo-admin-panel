@@ -157,7 +157,6 @@ jobs:
           src/mvp/ProviderLocationTracker.tsx
           src/mvp/provider/ProviderRoot.tsx
           src/mvp/provider/ProviderActiveJob.tsx
-          src/components/AdvancedSections.tsx
 
       - name: Verify audit after remediation
         run: npm audit --audit-level=high
