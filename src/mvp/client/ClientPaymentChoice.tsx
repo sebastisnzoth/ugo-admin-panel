@@ -13,7 +13,7 @@ export function ClientPaymentChoice(){
  const selected=payment?.metodo||''
  const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
  const cashSelected=selected==='efectivo'
- const retryable=payment?.estado==='fallido'||payment?.estado==='reembolsado'
+ const retryable=payment?.estado==='fallido'
  const pixLocked=Boolean(selected==='pix'&&!retryable)
  const qr=useMemo(()=>payment?.pix_qr_code?`data:image/png;base64,${payment.pix_qr_code}`:'',[payment?.pix_qr_code])
  if(auth.loading||!session||!service||protectedPayment||cashSelected)return null
