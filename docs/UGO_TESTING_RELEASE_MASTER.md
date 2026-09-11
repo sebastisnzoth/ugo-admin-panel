@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.2 · 11 de septiembre de 2026  
+**Versión:** 2.3 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
@@ -12,7 +12,7 @@
 
 ```text
 L0 TypeScript/Lint
-→ L1 Component/UX states
+→ L1 Contract tests / Component / UX states
 → L2 Domain/RPC/API
 → L3 RLS/roles/Storage
 → L4 Integration/Realtime/Pagos/Mapas
@@ -24,22 +24,43 @@ No declarar `OK` sin evidencia de ejecución.
 
 ---
 
-# 2. Scripts mínimos objetivo
+# 2. Scripts mínimos
 
-El repositorio debe converger a:
+Estado actual:
 
 ```text
-npm run build
-npm run lint
-npm run test
-npm run test:e2e
+npm run build      ✅ disponible
+npm run lint       ✅ disponible
+npm run test       ✅ disponible · Node test runner sin dependencia adicional
+npm run test:e2e   ⬜ pendiente
 ```
 
-Mientras `test`/`test:e2e` no existan, el estado de validación automática es incompleto y debe figurar como tal en Roadmap.
+`npm test` ejecuta `tests/**/*.test.mjs`. El primer paquete cubre contratos críticos del lifecycle, pero **no reemplaza tests de RPC/RLS ni E2E real**.
 
 ---
 
-# 3. E2E ecosistémico principal
+# 3. Contract tests ejecutables
+
+Archivo inicial:
+
+`tests/contracts/core-lifecycle.test.mjs`
+
+Cobertura inicial:
+
+```text
+radio llegada UI/backend = 200 m
+evidencia Antes/Durante/Después respeta lifecycle
+guards de inicio/finalización por evidencia
+efectivo sigue modelo presencial
+ampliación electrónica con costo no se aprueba sin ajuste
+ClientCompletionReview respeta ownership + proveedor asignado
+```
+
+Estos tests son una red de regresión de contrato sobre código/migraciones versionadas. Próximo nivel: tests que ejecuten RPC/RLS contra una base aislada.
+
+---
+
+# 4. E2E ecosistémico principal
 
 ```text
 Cliente registro/login
@@ -66,7 +87,7 @@ Cliente registro/login
 
 ---
 
-# 4. E2E electrónico
+# 5. E2E electrónico
 
 Probar:
 
@@ -86,7 +107,7 @@ Aserción: servicio no debe avanzar por una condición financiera inexistente cu
 
 ---
 
-# 5. E2E efectivo
+# 6. E2E efectivo
 
 Probar:
 
@@ -106,7 +127,7 @@ Aserción obligatoria: **ningún estado o UI describe efectivo como electrónica
 
 ---
 
-# 6. Cliente
+# 7. Cliente
 
 Validar:
 
@@ -130,7 +151,7 @@ offline/retry
 
 ---
 
-# 7. Proveedor
+# 8. Proveedor
 
 Validar:
 
@@ -156,7 +177,7 @@ sin dependencia operacional legacy
 
 ---
 
-# 8. Llegada + evidencia operacional
+# 9. Llegada + evidencia operacional
 
 Casos obligatorios del tramo `en_camino → llegado → en_progreso`:
 
@@ -177,7 +198,7 @@ La UI debe reflejar el mismo radio de 200 m y los mismos tipos de evidencia admi
 
 ---
 
-# 9. Ampliaciones + dinero
+# 10. Ampliaciones + dinero
 
 Casos obligatorios:
 
@@ -199,7 +220,7 @@ El futuro checkout de delta electrónico deberá agregar pruebas de creación, i
 
 ---
 
-# 10. Admin / Super Admin
+# 11. Admin / Super Admin
 
 Pruebas positivas y negativas sobre:
 
@@ -218,7 +239,7 @@ Query params o UI nunca escalan privilegios.
 
 ---
 
-# 11. RLS
+# 12. RLS
 
 Para cada tabla/bucket sensible:
 
@@ -233,7 +254,7 @@ Incluir upload/read/delete y signed URLs cuando aplique.
 
 ---
 
-# 12. Concurrencia e idempotencia
+# 13. Concurrencia e idempotencia
 
 Obligatorio probar:
 
@@ -252,7 +273,7 @@ Resultado debe ser determinista y auditable.
 
 ---
 
-# 13. Realtime
+# 14. Realtime
 
 ```text
 evento correcto
@@ -268,7 +289,7 @@ Cliente y Proveedor deben converger al mismo estado persistido.
 
 ---
 
-# 14. Responsive
+# 15. Responsive
 
 Validar:
 
@@ -285,7 +306,7 @@ Safe area, teclado, scroll, nav, mapa, sheet, modal y formularios.
 
 ---
 
-# 15. Accesibilidad
+# 16. Accesibilidad
 
 Objetivo WCAG AA:
 
@@ -303,7 +324,7 @@ errores accionables
 
 ---
 
-# 16. Recuperación
+# 17. Recuperación
 
 Todo E2E crítico debe cubrir:
 
@@ -323,9 +344,21 @@ No basta probar happy path.
 
 ---
 
-# 17. CI / Deploy
+# 18. CI / Deploy
 
-Release requiere evidencia del estado CI/deploy.
+`UGO Core CI` ejecuta actualmente:
+
+```text
+npm ci
+npm audit --audit-level=high
+npm run build
+npm test
+lint crítico operacional
+lint ClientApp con deuda registrada aislada
+lint general como reporte de deuda
+```
+
+Release requiere además evidencia de deploy/smoke.
 
 Smoke mínimo:
 
@@ -344,7 +377,7 @@ Si no hay check verificable: estado `DESCONOCIDO`, nunca asumir `OK`.
 
 ---
 
-# 18. Severidad
+# 19. Severidad
 
 ```text
 P0 seguridad · datos · auth · dinero · core roto
@@ -357,7 +390,7 @@ No release con P0 conocido.
 
 ---
 
-# 19. Definition of Done
+# 20. Definition of Done
 
 ```text
 contrato funcional definido
@@ -368,7 +401,8 @@ método de pago correcto
 happy/error/offline
 responsive/accesibilidad
 build/lint
-tests del tramo
+contract tests
+tests RPC/RLS cuando apliquen
 E2E cuando aplique
 CI/deploy/smoke
 rollback evaluado
@@ -378,13 +412,14 @@ Roadmap actualizado
 
 ---
 
-# 20. Release checklist
+# 21. Release checklist
 
 ```text
 [ ] main contiene cambios esperados
 [ ] build
 [ ] lint
-[ ] tests disponibles ejecutados
+[ ] npm test
+[ ] E2E aplicable
 [ ] flujo afectado
 [ ] mismo serviceId entre roles
 [ ] permisos/RLS
@@ -405,6 +440,6 @@ Roadmap actualizado
 
 ---
 
-# 21. Regla final
+# 22. Regla final
 
 **UGO está listo cuando el circuito real funciona, resiste errores, preserva integridad y puede demostrarse; no porque exista código o se vea bien.**
