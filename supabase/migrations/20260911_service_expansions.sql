@@ -32,6 +32,18 @@ for select using (auth.uid() = cliente_id or auth.uid() = proveedor_id);
 revoke all on public.ampliaciones_servicio from anon;
 grant select on public.ampliaciones_servicio to authenticated;
 
+-- Realtime para que Cliente y Proveedor vean propuestas y decisiones sin recargar.
+do $$
+begin
+  if exists (select 1 from pg_publication where pubname='supabase_realtime')
+     and not exists (
+       select 1 from pg_publication_tables
+       where pubname='supabase_realtime' and schemaname='public' and tablename='ampliaciones_servicio'
+     ) then
+    alter publication supabase_realtime add table public.ampliaciones_servicio;
+  end if;
+end $$;
+
 create or replace function public.proponer_ampliacion_servicio(
   p_servicio_id uuid,
   p_descripcion text,
