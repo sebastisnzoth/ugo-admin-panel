@@ -61,4 +61,4 @@
 - Severidad: MEDIA
 - Descripción: Cuando `ProviderApp` está en la pestaña Radar retorna directamente `ProviderHomeStructural`, dejando fuera `VoiceHugoDock`, `ProviderEvidencePanel` y `ProviderCompletionReceipt`, que sólo se montan en el retorno alternativo. Con un servicio activo desde Radar, el proveedor no tiene acceso directo a Hugo, evidencias ni comprobante de cobro.
 - Archivo probable: `src/mvp/ProviderApp.tsx`, `src/mvp/ProviderHomeStructural.tsx`
-- Estado: OPEN
+- Estado: FIXED
