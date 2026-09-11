@@ -1,11 +1,9 @@
 import React from'react'
 import{useProviderFlow}from'./providerFlow'
+import{useProviderData,money}from'./providerData'
 
 export function ProviderHome(){
- const flow=useProviderFlow()
- return <section className="provider-screen provider-home" aria-labelledby="provider-home-title">
-  <header className="provider-top"><div><span className="provider-kicker">UGO PRO · HOY</span><h1 id="provider-home-title">Hola, profesional</h1></div><button className="provider-status is-online" type="button" aria-label="Cambiar disponibilidad">● Online</button></header>
-  <article className="provider-hero"><span>Tu próxima acción</span><h2>Buscá oportunidades cerca tuyo</h2><p>Revisá la demanda activa y elegí el trabajo que mejor encaje con vos.</p><button className="provider-primary" onClick={flow.actions.openDemand}>Ver demanda</button></article>
-  <div className="provider-grid"><button className="provider-card" onClick={flow.actions.openOpportunities}><strong>Oportunidades</strong><span>Ver trabajos compatibles →</span></button><button className="provider-card" onClick={flow.actions.openEarnings}><strong>Hoy</strong><span>Ganancias y pagos →</span></button></div>
- </section>
+ const flow=useProviderFlow(),d=useProviderData()
+ const next=d.service?{title:'Continuá tu misión activa',text:d.funded?'El servicio está listo para avanzar.':'Esperá la confirmación del pago protegido.',action:flow.actions.openActiveJob,label:'Ver trabajo'}:d.opportunities.length?{title:`Tenés ${d.opportunities.length} oportunidad${d.opportunities.length===1?'':'es'}`,text:'Revisá los trabajos compatibles cerca tuyo.',action:flow.actions.openOpportunities,label:'Ver oportunidades'}:{title:d.online?'Estamos buscando trabajos para vos':'Ponete Online para recibir trabajos',text:d.online?'Te avisaremos cuando aparezca una oportunidad compatible.':'UGO sólo te enviará oportunidades cuando estés disponible.',action:d.toggleOnline,label:d.online?'Actualizar':'Ponerme Online'}
+ return <section className="provider-screen provider-home" aria-labelledby="provider-home-title"><header className="provider-top"><div><span className="provider-kicker">UGO PRO · HOY</span><h1 id="provider-home-title">Hola, {d.name}</h1><p>⭐ {d.karma.toFixed(1)}</p></div><button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy} aria-pressed={d.online}>● {d.online?'Online':'Offline'}</button></header><article className="provider-hero"><span>Tu próxima acción</span><h2>{next.title}</h2><p>{next.text}</p><button className="provider-primary" onClick={next.action} disabled={d.busy}>{next.label}</button></article><div className="provider-grid"><button className="provider-card" onClick={flow.actions.openOpportunities}><strong>{d.opportunities.length} oportunidades</strong><span>Ver trabajos compatibles →</span></button><button className="provider-card" onClick={flow.actions.openEarnings}><strong>{money(d.retained)}</strong><span>Protegido · {money(d.released)} liberado →</span></button></div></section>
 }
