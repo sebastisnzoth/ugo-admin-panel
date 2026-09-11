@@ -1,0 +1,48 @@
+name: UGO Core CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches:
+      - main
+      - 'fix/**'
+      - 'feat/**'
+
+concurrency:
+  group: ugo-core-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: TypeScript · Build · Core Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript and production build
+        run: npm run build
+
+      - name: Lint new P0 surfaces
+        run: npx eslint src/mvp/MvpApp.tsx src/mvp/PaymentTimeline.tsx src/mvp/provider/ProviderActiveJob.tsx
+
+      - name: Lint ClientApp excluding registered legacy effect debt
+        run: >-
+          npx eslint src/mvp/ClientApp.tsx
+          --rule 'react-hooks/set-state-in-effect: off'
+          --rule 'no-empty: off'
+
+      - name: Full repository lint debt report
+        continue-on-error: true
+        run: npm run lint
