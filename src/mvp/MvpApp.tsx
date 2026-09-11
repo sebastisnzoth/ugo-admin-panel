@@ -25,6 +25,7 @@ import'./ugo-uiux.css'
 import'./mobile-runtime-fixes.css'
 import'./service-history.css'
 import'./stitch-client-provider-alignment.css'
+import'./request-evidence.css'
 
 // UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
