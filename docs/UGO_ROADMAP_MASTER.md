@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -66,6 +66,7 @@ P3 expansión/polish
 [x] aceptación de oportunidad atómica endurecida backend
 [ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones completamente validada
 [x] guards backend evidencia inicial/final implementados
+[x] guard temporal de tipo de evidencia implementado en backend
 [ ] pagos electrónico/efectivo method-aware extremo a extremo validado E2E
 [ ] idempotencia efectivo/webhooks/retiros cerrada completa
 [ ] autorización Admin/Super server-side cerrada completa
@@ -79,7 +80,7 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 
 # 4. Snapshot de conciencia · 11/09/2026
 
-Estado real del bloque Cliente → matching → asignación → pago:
+## Bloque A — solicitud → asignación → método de pago
 
 ```text
 Solicitud guiada por Hugo
@@ -94,49 +95,59 @@ Solicitud guiada por Hugo
 → Proveedor habilitado para avanzar sólo con forma de pago válida
 ```
 
-Últimos cierres relevantes en `main`:
+Cierres relevantes:
 
 - `20260911213500_payment_ready_offer_tariff.sql`: garantiza que una oferta/asignación operable tenga tarifa real; no inventa precio.
 - `20260911214500_payment_method_lock.sql`: impide cambiar arbitrariamente el método después de elegirlo; sólo un pago fallido vuelve a ser elegible para cambio.
 - `ClientPaymentChoice.tsx`: UI alineada con el lock backend.
-- `ClientGuidedRequest.tsx`: wizard guiado sin fallback de precio inventado, evidencia previa, horario y persistencia de borrador.
-- Aceptación de oportunidades serializada/atómica por servicio.
-- Cash first-class: selección cliente + confirmación proveedor, sin presentar efectivo como custodia electrónica.
-- Guards de evidencia antes/después en backend.
+- aceptación de oportunidades serializada/atómica por servicio.
+- cash first-class: selección cliente + confirmación proveedor, sin presentar efectivo como custodia electrónica.
 
-Validación actual:
-
-```text
-UGO Core CI #190 = SUCCESS
-- npm audit: OK
-- TypeScript/build producción: OK
-- lint superficies críticas: OK
-- lint ClientApp: OK
-- lint general: OK
-```
-
-Dato de integridad verificado en producción después del hardening de tarifa:
+Integridad verificada en producción después del hardening de tarifa:
 
 ```text
 servicios asignados sin tarifa válida = 0
 ofertas pendientes sin tarifa válida = 0
 ```
 
+## Bloque B — en camino → llegada → inicio
+
+Estado implementado en `main`:
+
+```text
+asignado + forma de pago válida
+→ en_camino
+→ tracking proveedor
+→ proximidad de llegada cuando existe ubicación cliente
+→ llegado
+→ foto Antes obligatoria
+→ en_progreso
+```
+
+Cierres del bloque:
+
+- radio de llegada UI/backend alineado en **200 m**;
+- `ProviderActiveJob` explica que UGO valida la llegada cuando hay coordenada de cliente;
+- `ProviderEvidencePanel` sólo ofrece tipos de evidencia compatibles con el estado real;
+- `20260911215500_service_evidence_state_guard.sql` impide usar una foto `Después` tomada antes de iniciar como evidencia final futura;
+- backend permite `Antes` sólo en `llegado`, `Durante` en `en_progreso`, y `Después` desde `en_progreso` (o `esperando_aprobacion` sólo para recuperación histórica);
+- producción verificada sin servicios actuales `llegado`/`esperando_aprobacion` faltantes de la evidencia exigida para su estado.
+
+La migración de integridad temporal ya está aplicada en Supabase producción.
+
+Validación automática del código de este bloque queda sujeta al último UGO Core CI de `main`; no marcar E2E como cerrado hasta ejecutar recorrido real Cliente↔Proveedor.
+
 Próximo riesgo principal visible:
 
 ```text
-cerrar y validar E2E real:
-asignado
-→ método de pago
-→ en_camino
-→ llegado
-→ evidencia Antes
-→ en_progreso
+en_progreso
+→ ampliación opcional
 → evidencia Después
-→ efectivo recibido o pago protegido
+→ efectivo recibido o pago electrónico protegido
 → esperando_aprobacion
 → aprobación/disputa
 → completado
+→ reputación/historial
 ```
 
 ---
@@ -156,7 +167,8 @@ asignado
 | Pago electrónico | 🟡 | P0 | reconciliación + E2E |
 | Efectivo | 🟡 | P0 | ledger + E2E |
 | Lock de método de pago | ✅ | P0 | monitorear regresiones |
-| Tracking/ETA | 🟡 | P1 | realtime/fallback |
+| Tracking/ETA | 🟡 | P1 | E2E/reconexión/fallback |
+| Llegada proveedor | 🟡 | P1 | validar E2E radio/ubicación |
 | Servicio activo | 🟡 | P0 | narrativa única |
 | Ampliar servicio | 🟡 | P0 | reconciliación method-aware |
 | Aprobación/Disputa | 🟡 | P0 | E2E por método |
@@ -179,7 +191,8 @@ asignado
 | Tarifa al asignar | ✅ | P0 | backend + datos producción consistentes |
 | Trabajo activo | 🟡 | P0 | E2E lifecycle completo |
 | Tracking | 🟡 | P1 | ETA/reconexión |
-| Evidencia operacional | 🟡 | P0 | E2E Antes/Después |
+| Radio de llegada 200 m | ✅ | P1 | contrato UI/backend alineado; falta E2E GPS |
+| Evidencia operacional por estado | ✅ | P0 | guard backend + UI alineada; falta E2E negativo/positivo |
 | Ampliar servicio | 🟡 | P0 | E2E |
 | Efectivo recibido | 🟡 | P0 | ledger + E2E |
 | Ganancias | 🟡 | P1 | timeline financiero claro |
@@ -216,9 +229,21 @@ Orden recomendado:
 4 E2E solicitud→oportunidad→asignación
 5 E2E electrónico
 6 E2E efectivo
-7 E2E evidencia/ampliación/cierre
-8 responsive/accessibility smoke
-9 CI/Vercel smoke
+7 E2E llegada/evidencia Antes/inicio
+8 E2E evidencia Después/ampliación/cierre
+9 responsive/accessibility smoke
+10 CI/Vercel smoke
+```
+
+Casos P0/P1 inmediatos del Bloque B:
+
+```text
+>200 m con ubicación cliente → llegada rechazada
+<=200 m → llegada permitida
+llegado sin Antes → inicio rechazado
+Antes fuera de llegado → insert rechazado
+Después antes de en_progreso → insert rechazado
+llegado + Antes → inicio permitido
 ```
 
 Scripts objetivo:
@@ -233,8 +258,8 @@ npm run test:e2e
 Estado actual:
 
 ```text
-build = disponible y validado en CI
-lint = disponible y validado en CI
+build = disponible; último baseline verde confirmado CI #190
+lint = disponible; último baseline verde confirmado CI #190
 test = pendiente
 test:e2e = pendiente
 ```
