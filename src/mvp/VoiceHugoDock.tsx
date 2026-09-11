@@ -6,7 +6,6 @@ import { ProviderEvidencePanel } from './ProviderEvidencePanel'
 import { ProviderCompletionReceipt } from './ProviderCompletionReceipt'
 import { ClientEvidenceGallery } from './ClientEvidenceGallery'
 import { ClientPixPaymentPanel } from './ClientPixPaymentPanel'
-import { ClientQuickOrder } from './ClientQuickOrder'
 import { UGO_UI_EVENTS } from './uiEvents'
 import type { ClientActionHandlers, ClientHugoIntent } from './client/clientTypes'
 import './voice.css'
@@ -44,11 +43,11 @@ export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='
  if(mode==='quantum'&&role==='client'){
   const visual=voice.state==='speaking'?'speaking':voice.state==='connecting'?'thinking':voice.state==='hearing'?'listening':voice.active?'ready':voice.state==='error'?'error':'idle'
   const bubble=voice.error||voice.assistantTranscript||voice.userTranscript
-  return <>{!service&&<ClientQuickOrder/>}<div className={`ugo-real-hugo prototype-hugo state-${visual}`}>
+  return <div className={`ugo-real-hugo prototype-hugo state-${visual}`}>
    {bubble&&<div className={`ugo-real-transcript${voice.error?' error':''}`}>{bubble}</div>}
    <button type="button" className="ugo-real-orb" onClick={voice.active?voice.disconnect:voice.connect} disabled={voice.state==='connecting'} aria-label={voice.active?'Cortar conversación con Hugo':'Hablar con Hugo'}><span className="ugo-orb-glass"/><span className="ugo-orb-ring ring-1"/><span className="ugo-orb-ring ring-2"/><span className="ugo-orb-icon">{voice.state==='connecting'?'✦':voice.state==='hearing'?'●':'⌁'}</span></button>
    <div className="ugo-real-state"><i/><span>{VOICE_LABELS[voice.state]}</span></div>
-  </div></>
+  </div>
  }
 
  return <>{role==='provider'&&<><ProviderLocationTracker service={service}/><ProviderEvidencePanel service={service}/><ProviderCompletionReceipt/></>}{role==='client'&&service?.estado==='asignado'&&<div className="ugo-client-payment-experience"><ClientPixPaymentPanel service={service} accessToken={accessToken}/></div>} {role==='client'&&service?.estado==='esperando_aprobacion'&&<ClientEvidenceGallery serviceId={service.id}/>}<button className={`mvp-orb ${voice.active?'voice-live':''}`} onClick={()=>setOpen(v=>!v)} aria-label="Abrir Hugo"><span/></button>{open&&<aside className="mvp-hugo-panel"><div><div className="mvp-mini-orb"/><strong>Hugo</strong><button onClick={()=>setOpen(false)}>×</button></div><p>{text}</p><small>Contexto: {role} · {service?STATUS_LABELS[service.estado]:'sin servicio'}</small><div className="mvp-voice-controls"><div className="mvp-voice-row"><button className={`mvp-voice-btn ${voice.active?'stop':''}`} onClick={voice.active?voice.disconnect:voice.connect} disabled={voice.state==='connecting'}>{voice.active?'■ Cortar conversación':'🎙 Hablar con Hugo'}</button><span className={`mvp-voice-state ${voice.state}`}><i/>{VOICE_LABELS[voice.state]}</span></div>{voice.error&&<div className="mvp-voice-error">{voice.error}</div>}{voice.userTranscript&&<p className="mvp-voice-transcript"><strong>Vos:</strong> {voice.userTranscript}</p>}{voice.assistantTranscript&&<p className="mvp-voice-transcript"><strong>Hugo:</strong> {voice.assistantTranscript}</p>}</div></aside>}</>
