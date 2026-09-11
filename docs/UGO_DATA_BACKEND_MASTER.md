@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -50,9 +50,10 @@ Auditoría
 
 # 3. Estado de servicio
 
+Estado persistido canónico observado hoy en `main`:
+
 ```text
-solicitado → buscando → ofertado → asignado
-→ pago_pendiente / pago_habilitado
+borrador → buscando → ofrecido → asignado
 → en_camino → llegado → en_progreso
 → esperando_aprobacion → completado
 ```
@@ -60,12 +61,20 @@ solicitado → buscando → ofertado → asignado
 Excepciones:
 
 ```text
-cancelado · disputado · reembolsado
+cancelado · disputado
 ```
 
-`pago_protegido` es condición/estado financiero específico de custodia electrónica y no estado universal del servicio.
+La preparación financiera **no agrega estados artificiales al servicio**. Entre `asignado` y `en_camino` existe una condición de habilitación derivada de `pagos`:
 
-Las transiciones sensibles deben vivir en RPC/backend.
+```text
+electrónico: pago realmente retenido/protegido + referencia verificable
+O
+efectivo: método presencial explícitamente seleccionado
+```
+
+`pago_pendiente`, `pago_habilitado` y `pago_protegido` son conceptos/condiciones financieras y no deben inventarse como estado persistido de `servicios` salvo una futura migración explícita del dominio.
+
+Las transiciones sensibles viven en RPC/backend.
 
 ---
 
@@ -92,11 +101,18 @@ serviceId
 → proveedor autorizado analiza
 → aceptación atómica
 → asignación única
+→ tarifa real fijada
+→ comisión/neto consistentes
 → invalidación/expiración de competidoras
 → ambos roles observan el mismo servicio
 ```
 
-P0: constraints/RPC contra doble aceptación y race conditions.
+Estado actual endurecido:
+
+- aceptación serializada por servicio;
+- una sola asignación ganadora;
+- oferta sin tarifa operable no debe producir servicio asignado cobrable con importe cero;
+- producción verificada sin servicios `asignado` con tarifa inválida al cierre del bloque del 11/09/2026.
 
 ---
 
@@ -116,7 +132,7 @@ Requisitos:
 - webhook idempotente;
 - duplicados seguros;
 - reembolso/liberación auditables;
-- ampliaciones pueden generar `pendiente_ajuste`.
+- ampliaciones pueden generar ajuste según contrato.
 
 ## Efectivo
 
@@ -136,6 +152,10 @@ Reglas:
 - importe y ampliaciones quedan auditados;
 - comisión UGO debe registrarse en ledger/cuenta corriente cuando aplique;
 - disputa en efectivo no promete reembolso automático desde fondos no custodiados.
+
+## Lock de método
+
+Una vez elegido un método válido, no se reemplaza arbitrariamente por otro mientras el pago siga activo. Un cambio sólo puede habilitarse para un intento realmente fallido o mediante un contrato backend explícito de recuperación.
 
 ---
 
@@ -183,19 +203,52 @@ Validar MIME, tamaño, ownership, acceso y expiración de signed URLs.
 
 # 9. Evidencia operacional
 
+Tipos:
+
 ```text
 antes · durante · despues · documento
 ```
 
-Cuando el contrato lo requiera:
+Contrato temporal endurecido:
 
-- iniciar exige evidencia inicial;
-- solicitar finalización exige evidencia final;
-- guard definitivo backend/RPC.
+```text
+llegado              → permite Antes
+en_progreso          → permite Durante / Después
+esperando_aprobacion → permite Después sólo como recuperación histórica
+```
+
+Reglas:
+
+- una foto `Antes` cargada fuera de `llegado` se rechaza;
+- una foto `Durante` fuera de `en_progreso` se rechaza;
+- una foto `Después` antes de `en_progreso` se rechaza;
+- iniciar exige evidencia inicial real del proveedor asignado;
+- solicitar finalización exige evidencia final real;
+- `storage_path` debe ser no vacío;
+- backend/RPC es el guard definitivo; la UI sólo acompaña.
+
+Migración vigente del cierre 11/09/2026: `20260911215500_service_evidence_state_guard.sql`.
 
 ---
 
-# 10. Ampliaciones
+# 10. Tracking y llegada
+
+Durante `en_camino`, la ubicación del proveedor puede actualizarse por RPC y el Cliente consulta tracking autorizado del mismo `serviceId`.
+
+Contrato de llegada:
+
+```text
+asignado + pago habilitado
+→ en_camino
+→ ubicación proveedor actualizada
+→ llegado
+```
+
+Cuando el servicio posee coordenada de cliente y no es excepción DEMO/Admin, la confirmación `en_camino → llegado` exige proximidad backend. El radio operativo vigente es **200 m**. La UI debe comunicar el mismo radio; nunca usar un umbral distinto como autoridad paralela.
+
+---
+
+# 11. Ampliaciones
 
 ```text
 propuesta pendiente
@@ -220,7 +273,7 @@ Cliente es autoridad de aprobación del alcance adicional.
 
 ---
 
-# 11. Disputas
+# 12. Disputas
 
 Toda disputa debe conservar:
 
@@ -240,7 +293,7 @@ La resolución financiera depende del método y de fondos realmente custodiados.
 
 ---
 
-# 12. Realtime
+# 13. Realtime
 
 Dominios principales:
 
@@ -264,7 +317,7 @@ Reglas:
 
 ---
 
-# 13. RLS objetivo
+# 14. RLS objetivo
 
 ```text
                      Cliente      Proveedor       Admin/Super
@@ -273,7 +326,7 @@ servicio propio        RW            R/RW*           RW
 oferta                 R*            RW propia       RW
 pago                   R             R propia        RW
 evidencia solicitud    RW            R autoriz.      R
-evidencia servicio     R/RW*         RW autoriz.     RW
+evidencia servicio     R             RW autoriz.     RW
 disputa propia         RW            RW propia       RW
 KYC sensible           limitado      limitado        autorizado
 config global          -             -               RW privilegiado
@@ -283,7 +336,7 @@ config global          -             -               RW privilegiado
 
 ---
 
-# 14. Admin / Super Admin
+# 15. Admin / Super Admin
 
 La UI puede ocultar acciones, pero la autorización real debe existir server-side/RLS/RPC.
 
@@ -301,7 +354,7 @@ timestamp
 
 ---
 
-# 15. Privacidad y geolocalización
+# 16. Privacidad y geolocalización
 
 Minimización:
 
@@ -316,7 +369,7 @@ Scout usa preferentemente agregados geográficos.
 
 ---
 
-# 16. Atomicidad obligatoria
+# 17. Atomicidad obligatoria
 
 Requieren transacción/RPC/constraint:
 
@@ -336,7 +389,7 @@ Bloquear doble click en frontend es sólo una defensa UX.
 
 ---
 
-# 17. Eventos conceptuales
+# 18. Eventos conceptuales
 
 ```text
 service.requested
@@ -363,7 +416,7 @@ Sirven como nomenclatura común para notificaciones, analytics, Scout y auditor�
 
 ---
 
-# 18. Definition of Done backend
+# 19. Definition of Done backend
 
 ```text
 migración versionada
@@ -381,6 +434,6 @@ maestros actualizados
 
 ---
 
-# 19. Regla final
+# 20. Regla final
 
 **Si frontend y backend difieren, se corrige el contrato completo; nunca se maquilla una inconsistencia sólo en la UI.**
