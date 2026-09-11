@@ -1,816 +1,347 @@
 # UGO — Documento Maestro de Usabilidad del Ecosistema
 
-**Versión:** 1.0  
-**Fecha:** 11/09/2026  
-**Estado:** Norma obligatoria de UX/UI para Cliente, Proveedor y Administración  
-**Objetivo:** que cualquier persona pueda entender qué está pasando, qué puede hacer y cuál es el próximo paso sin instrucciones externas.
+**Versión:** 2.0 · 11 de septiembre de 2026  
+**Estado:** norma obligatoria de usabilidad  
+**Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
+
+> UGO debe sentirse simple aunque por detrás sea complejo. La usabilidad no es decoración: es parte de la seguridad, conversión y confianza del producto.
 
 ---
 
-## 1. Principio rector
+# 1. Regla de 3 segundos
 
-UGO debe sentirse simple aunque por detrás sea complejo.
+En cada pantalla la persona debe poder responder rápidamente:
 
-En cada pantalla el usuario debe poder responder en menos de 3 segundos:
+1. ¿Dónde estoy?
+2. ¿Qué está pasando?
+3. ¿Qué tengo que hacer ahora?
 
-1. **¿Dónde estoy?**
-2. **¿Qué está pasando?**
-3. **¿Qué tengo que hacer ahora?**
-
-Toda decisión de interfaz debe priorizar **claridad, continuidad del flujo, prevención de errores y accesibilidad** sobre decoración.
-
-### Regla de oro
-
-> **Una pantalla = un objetivo principal = una acción primaria claramente visible.**
-
-Nunca deben competir dos acciones principales, ni aparecer elementos flotantes que oculten información o controles necesarios para completar el flujo.
+Si una pantalla falla en una de esas tres preguntas, debe simplificarse.
 
 ---
 
-## 2. Alcance del ecosistema
+# 2. Principios obligatorios
 
-Este documento aplica a:
-
-- **UGO Cliente**
-- **UGO Proveedor**
-- **UGO Admin**
-- **UGO Super Admin**
-- Landing/web institucional cuando conduzca a un flujo operativo
-- Componentes compartidos: autenticación, mapas, chat, notificaciones, pagos, fotos, soporte y estados de servicio
-
-Los tres entornos deben compartir lenguaje visual, reglas de interacción y significado de estados.
-
----
-
-# 3. Hallazgos críticos observados en la pantalla actual
-
-La captura de **Seguimiento del pedido / Servicio #58** muestra problemas que este documento declara como bloqueantes antes de considerar una pantalla terminada.
-
-### UX-01 — Elementos superpuestos
-
-El bloque inferior **“Pago seguro / Pagar con Pix”** tapa contenido de la pantalla. El usuario no puede leer ni operar cómodamente lo que queda detrás.
-
-**Norma:** ningún panel fijo puede ocultar contenido necesario. El contenido desplazable debe reservar un `padding-bottom` equivalente a la altura real del panel fijo + safe area.
-
-### UX-02 — Botón “Fotos del trabajo” flotando sobre otros controles
-
-El botón aparece por encima del área de pago y cambia visualmente de posición respecto del contenido.
-
-**Norma:** una acción secundaria nunca debe invadir la zona de una acción primaria. “Fotos del trabajo” debe vivir dentro de una sección estable del servicio o en una barra de acciones definida.
-
-### UX-03 — Contradicción en forma de pago
-
-La pantalla muestra **“Forma de pago: Efectivo”** y simultáneamente exige **“Pagá con Pix para confirmar el servicio”** / **“Pagar con Pix”**.
-
-**Norma:** el sistema debe tener una sola fuente de verdad para `paymentMethod` y `paymentStatus`. La interfaz nunca puede mostrar métodos incompatibles simultáneamente.
-
-### UX-04 — Jerarquía de capas confusa
-
-Campana, fotos, tarjeta de forma de pago y panel de pago compiten en distintas capas.
-
-**Norma:** usar un contrato global de capas (`z-index`) y no valores arbitrarios por componente.
-
-### UX-05 — Acción primaria ocupa demasiado espacio
-
-El bloque de pago fijo domina gran parte de la pantalla y reduce la visibilidad del seguimiento, que es el objetivo principal de esta vista.
-
-**Norma:** la acción fija debe usar la mínima altura necesaria. Información ampliada debe mostrarse bajo demanda.
-
-### UX-06 — Estado y acción no están totalmente sincronizados
-
-La pantalla indica **Etapa 3 de 5 / Proveedor asignado**, pero el panel inferior introduce una nueva obligación de pago sin integrarla claramente en el timeline.
-
-**Norma:** si el pago es requisito para avanzar, debe representarse explícitamente como estado o subestado del servicio.
+1. Una acción primaria clara.
+2. Lenguaje cotidiano.
+3. Mostrar estado real, no estado optimista falso.
+4. Explicar consecuencias antes de acciones críticas.
+5. Prevenir errores mejor que mostrar mensajes después.
+6. Permitir recuperación.
+7. Mantener contexto al volver atrás.
+8. No exigir memoria del usuario entre pantallas.
+9. No esconder información esencial de precio, método o estado.
+10. Accesibilidad desde el diseño inicial.
 
 ---
 
-# 4. Arquitectura mental única de UGO
+# 3. Continuidad de flujo
 
-El ecosistema debe usar siempre este modelo:
-
-**Descubrir → Solicitar → Asignar → Confirmar → Ejecutar → Revisar → Cerrar**
-
-Cada rol ve la misma operación desde su perspectiva.
-
-| Etapa | Cliente | Proveedor | Sistema/Admin |
-|---|---|---|---|
-| Descubrir | Busca servicio | Define disponibilidad | Gestiona oferta/categorías |
-| Solicitar | Crea pedido | Recibe oportunidad | Valida pedido |
-| Asignar | Espera profesional | Acepta/rechaza | Hace matching |
-| Confirmar | Confirma condiciones/pago | Confirma llegada | Registra acuerdo |
-| Ejecutar | Sigue trabajo | Realiza servicio | Monitorea |
-| Revisar | Revisa resultado | Entrega evidencia | Gestiona incidencias |
-| Cerrar | Aprueba/califica | Finaliza | Liquida/registra |
-
-No se deben inventar nombres diferentes para el mismo estado en distintas aplicaciones.
-
----
-
-# 5. Contrato maestro de navegación
-
-## 5.1 Navegación principal
-
-La navegación persistente debe contener únicamente destinos de primer nivel.
-
-### Cliente
-
-**Inicio · Servicios · Actividad · Perfil**
-
-### Proveedor
-
-**Inicio · Oportunidades · Actividad · Perfil**
-
-### Admin
-
-Navegación orientada a operación:
-
-**Dashboard · Servicios · Usuarios · Proveedores · Pagos · Incidencias**
-
-### Regla
-
-La barra inferior móvil:
-
-- no puede quedar tapada;
-- no puede superponerse con CTA flotantes;
-- debe respetar safe area;
-- debe indicar claramente la sección activa;
-- no debe cambiar de orden entre pantallas.
-
----
-
-# 6. Contrato de pantalla
-
-Toda pantalla operativa debe respetar, en este orden:
-
-1. **Contexto:** título, servicio, ubicación o sección.
-2. **Estado:** qué está ocurriendo.
-3. **Información esencial:** quién, cuándo, dónde, cuánto.
-4. **Acciones secundarias:** chat, fotos, ayuda, detalles.
-5. **Acción primaria:** siguiente paso.
-6. **Navegación global**, cuando corresponda.
-
-La interfaz no debe obligar al usuario a interpretar elementos dispersos para descubrir el próximo paso.
-
----
-
-# 7. Sistema de acciones
-
-## Acción primaria
-
-Solo una por contexto.
-
-Ejemplos:
-
-- **Encontrar profesionales**
-- **Confirmar pedido**
-- **Aceptar oportunidad**
-- **Estoy en camino**
-- **Iniciar trabajo**
-- **Finalizar trabajo**
-- **Pagar con Pix**
-- **Aprobar trabajo**
-
-Debe:
-
-- tener texto con verbo;
-- ocupar una posición predecible;
-- ser visualmente dominante;
-- permanecer habilitada únicamente cuando la acción sea válida.
-
-## Acción secundaria
-
-Ejemplos:
-
-- Ver fotos
-- Ver detalles
-- Contactar
-- Reprogramar
-- Reportar problema
-
-No debe competir visualmente con la acción primaria.
-
-## Acción destructiva
-
-Cancelar, rechazar, eliminar o bloquear requiere diferenciación visual y, cuando tenga consecuencias relevantes, confirmación.
-
----
-
-# 8. Regla absoluta de superposiciones
-
-UGO no acepta superposiciones accidentales.
-
-### Capas oficiales
-
-```css
---z-content: 0;
---z-sticky: 10;
---z-bottom-nav: 20;
---z-floating-action: 30;
---z-backdrop: 80;
---z-modal: 90;
---z-toast: 100;
-```
-
-Ningún componente puede introducir un `z-index` fuera de esta escala sin documentarlo.
-
-### Bottom sheets y barras fijas
-
-Si existe un elemento fijo inferior:
-
-```css
-.page-scroll {
-  padding-bottom: calc(var(--fixed-action-height) + env(safe-area-inset-bottom) + 16px);
-}
-```
-
-El último elemento de contenido debe poder desplazarse completamente por encima de la barra fija.
-
-### Prohibido
-
-- CTA sobre CTA.
-- Botón flotante sobre texto.
-- Modal sin backdrop cuando bloquea interacción.
-- Campana o avatar invadiendo contenido.
-- Dos bottom sheets abiertos simultáneamente.
-- Elementos `position: fixed` sin reservar espacio.
-- Contenido importante detrás de barras del navegador o safe areas.
-
----
-
-# 9. Safe areas y responsive
-
-La aplicación debe funcionar primero en móvil real, no solo en viewport de escritorio.
-
-Usar:
-
-```css
-padding-top: env(safe-area-inset-top);
-padding-bottom: env(safe-area-inset-bottom);
-```
-
-### Viewports mínimos de QA
-
-- 320 × 568
-- 360 × 800
-- 390 × 844
-- 412 × 915
-- tablet
-- desktop para Admin
-
-No debe existir scroll horizontal.
-
-Los componentes no deben depender de una altura fija de pantalla.
-
----
-
-# 10. Seguimiento del servicio
-
-El seguimiento debe ser una **máquina de estados**, no una colección de textos independientes.
-
-Estados maestros sugeridos:
+UGO debe preservar:
 
 ```text
-REQUESTED
-MATCHING
-ASSIGNED
-CONFIRMATION_REQUIRED
-PROVIDER_ON_THE_WAY
-IN_PROGRESS
-REVIEW_REQUIRED
-COMPLETED
-CANCELLED
-DISPUTED
+quién soy
+qué servicio estoy viendo
+serviceId/contexto
+estado actual
+acción pendiente
 ```
 
-Cada estado define:
-
-- título visible;
-- explicación;
-- actor responsable;
-- CTA permitido;
-- acciones secundarias;
-- notificación asociada;
-- siguiente estado válido.
-
-### Ejemplo
-
-**ASSIGNED**
-
-Título: **Proveedor asignado**  
-Mensaje: **Sebastian aceptó tu pedido.**  
-Información: profesional + calificación + categoría.  
-CTA: depende del contrato de pago.  
-Siguiente estado: `CONFIRMATION_REQUIRED` o `PROVIDER_ON_THE_WAY`.
-
-La UI nunca debe inferir el estado usando múltiples booleanos contradictorios.
+Cambiar de pantalla no puede borrar silenciosamente datos importantes ni reiniciar un proceso sin aviso.
 
 ---
 
-# 11. Contrato de pagos
+# 4. Cliente
 
-Pagos debe tener una fuente de verdad única:
+## Home
 
-```ts
-paymentMethod:
-  | "pix"
-  | "cash"
-  | "card"
-  | "mercado_pago";
+La persona debe poder iniciar una solicitud sin aprender UGO.
 
-paymentStatus:
-  | "not_required"
-  | "pending"
-  | "processing"
-  | "paid"
-  | "failed"
-  | "refunded";
+Prioridad:
+
+```text
+¿Qué servicio necesitás?
+Categorías
+Ubicación
+Encontrar profesionales
+Servicio activo si existe
 ```
 
-### Reglas
+## Solicitud
 
-Si `paymentMethod === "cash"`:
+Reglas:
 
-- no mostrar **Pagar con Pix** como CTA obligatorio.
+- dividir sólo cuando reduce carga cognitiva;
+- explicar por qué se pide una foto o dato;
+- autocompletar lo conocido;
+- permitir corregir antes de confirmar;
+- conservar borrador razonablemente;
+- mostrar resumen final.
 
-Si `paymentMethod === "pix"` y `paymentStatus === "pending"`:
+## Matching
 
-- mostrar **Pagar con Pix**;
-- explicar por qué se necesita;
-- no mostrar “Efectivo” como método activo.
+La espera debe tener sentido.
 
-Si el usuario puede cambiar el método:
+Mostrar:
 
-- mostrar **Cambiar forma de pago** como acción secundaria;
-- actualizar todos los componentes desde el mismo estado.
+```text
+qué está haciendo UGO
+qué puede tardar
+qué opciones hay si no aparece proveedor
+cómo cancelar o cambiar condiciones
+```
 
-El pago debe indicar siempre **importe, método, estado y consecuencia de la acción** antes de confirmar.
+## Pago
+
+El usuario debe distinguir sin conocimientos financieros:
+
+```text
+Pagar online
+vs
+Pagar en efectivo al profesional
+```
+
+Nunca usar `protegido` para efectivo.
+
+## Servicio activo
+
+No saturar con todas las acciones posibles. Mostrar sólo lo pertinente al estado.
 
 ---
 
-# 12. Fotos y evidencia del trabajo
+# 5. Proveedor
 
-“Fotos del trabajo” forma parte del servicio, no debe ser un elemento flotante arbitrario.
+## Disponibilidad
 
-Ubicación recomendada:
+Online/Offline debe ser inequívoco y tener feedback inmediato.
 
-**Servicio → Evidencias → Fotos del trabajo**
+## Demanda
 
-Puede mostrarse como tarjeta:
+Debe entenderse como mapa/señal del mercado, no como promesa de trabajo disponible.
 
-> **Fotos del trabajo · 1**  
-> Ver evidencia enviada por el profesional.
+## Oportunidad
 
-Durante la ejecución, Proveedor debe poder:
+Antes de aceptar debe haber información suficiente para decidir sin revelar datos privados innecesarios.
 
-- tomar/subir fotos;
-- indicar antes/después;
-- confirmar carga;
-- asociarlas al ID del servicio.
+Orden de lectura:
 
-Cliente debe poder verlas sin abandonar el contexto del pedido.
+```text
+qué
+cuánto
+cuándo
+qué distancia/zona
+condiciones
+contexto/evidencia
+aceptar/rechazar
+```
+
+## Trabajo activo
+
+La interfaz debe funcionar como checklist progresivo:
+
+```text
+En camino
+Llegué
+Evidencia inicial
+Iniciar
+Ejecutar
+Ampliar si hace falta
+Evidencia final
+Finalizar
+```
+
+No mostrar acciones futuras como si ya fueran válidas.
+
+---
+
+# 6. Admin
+
+Admin trabaja por excepción y prioridad.
+
+Debe poder identificar rápidamente:
+
+```text
+qué necesita atención
+riesgo
+importe/impacto
+usuarios involucrados
+cronología
+acción disponible
+```
+
+Evitar dashboards con muchas métricas sin siguiente acción.
+
+---
+
+# 7. Formularios
+
+- label siempre visible o inequívoco;
+- formato y ejemplo cuando ayuda;
+- validación cercana al campo;
+- no borrar inputs por error de red;
+- autofocus sólo cuando beneficia;
+- teclado mobile adecuado por tipo de campo;
+- botón submit refleja submitting;
+- doble envío prevenido.
+
+---
+
+# 8. Botones
+
+Primario: acción principal.  
+Secundario: alternativa segura.  
+Destructivo: cancelar/eliminar/rechazar cuando el impacto es real.
+
+No usar varios botones visualmente primarios en el mismo contexto.
+
+Labels deben describir acción:
+
+```text
+Encontrar profesionales
+Aceptar trabajo
+Marcar que llegué
+Confirmar pago en efectivo
+Aprobar servicio
+```
+
+Evitar `Continuar` cuando una etiqueta más específica sea posible.
+
+---
+
+# 9. Mensajes y errores
+
+Fórmula:
+
+```text
+qué pasó
++ qué significa
++ qué puede hacer ahora
+```
+
+Ejemplo:
+
+`No pudimos actualizar el servicio. Tu estado anterior se conserva. Reintentá cuando tengas conexión.`
+
+Nunca culpabilizar al usuario por fallas técnicas.
+
+---
+
+# 10. Offline y degradación
+
+La app debe distinguir:
+
+```text
+sin conexión
+dato desactualizado
+acción pendiente
+error de servidor
+permiso denegado
+```
+
+No presentar datos cacheados como actuales sin señalización cuando sea relevante.
+
+---
+
+# 11. Confirmaciones
+
+Confirmar sólo cuando:
+
+- hay impacto financiero;
+- acción difícil de revertir;
+- cancela trabajo;
+- resuelve disputa;
+- cambia alcance/precio;
+- borra evidencia/documentación importante.
+
+Evitar confirmaciones para acciones triviales.
+
+---
+
+# 12. Mapas
+
+El mapa complementa, nunca reemplaza información esencial.
+
+Debe existir fallback textual para:
+
+```text
+ubicación
+ETA
+zona
+dirección autorizada
+```
+
+Permiso de geolocalización denegado debe tener salida clara.
 
 ---
 
 # 13. Notificaciones
 
-La campana es navegación global, no decoración.
-
-Debe:
-
-- tener área táctil mínima de 44 × 44 px;
-- mostrar badge solo cuando haya elementos nuevos;
-- permanecer dentro del header;
-- nunca flotar sobre tarjetas;
-- abrir un centro de notificaciones coherente.
-
-Una notificación debe llevar directamente al contexto que la generó.
-
----
-
-# 14. Cliente — contrato de experiencia
-
-El Cliente debe poder completar el ciclo sin aprender UGO previamente.
-
-Flujo principal:
-
-**Inicio/Radar → Buscar categoría → Definir necesidad → Ver/recibir profesional → Confirmar → Seguimiento → Trabajo → Revisión → Pago/cierre → Calificación**
-
-En cada etapa debe verse:
-
-- estado actual;
-- profesional, cuando exista;
-- precio/estimación;
-- ubicación;
-- método de pago;
-- próxima acción.
-
----
-
-# 15. Proveedor — contrato de experiencia
-
-Flujo principal:
-
-**Inicio → Demanda/Oportunidades → Detalle → Aceptar → Preparación → En camino → Llegada → Trabajo → Evidencias → Finalizar → Cobro**
-
-La Home del proveedor debe priorizar:
-
-1. estado online/offline;
-2. trabajo activo;
-3. oportunidades relevantes;
-4. agenda;
-5. ingresos/resumen.
-
-Nunca mostrar una nueva oportunidad con mayor jerarquía que un servicio activo que requiere acción inmediata.
-
----
-
-# 16. “Agregar trabajo / Ampliar servicio”
-
-Debe existir dentro de **Mejoras de flujo de trabajo**.
-
-Permite que Cliente y Proveedor incorporen una tarea adicional sin salir de UGO.
-
-Flujo:
-
-**Proponer adicional → Describir → Cotizar tiempo/costo → Cliente aprueba → Actualizar servicio → Ejecutar → Registrar**
-
-Debe conservar:
-
-- descripción;
-- quién lo propuso;
-- fecha/hora;
-- costo anterior;
-- costo adicional;
-- nuevo total;
-- tiempo adicional;
-- aceptación explícita.
-
-Nunca modificar silenciosamente el precio original.
-
----
-
-# 17. Asistente de Trabajo UGO
-
-El Proveedor debe disponer de ayuda contextual antes, durante y después del servicio.
-
-El asistente puede ofrecer:
-
-- checklist;
-- preparación;
-- recomendaciones;
-- recordatorios;
-- soporte técnico;
-- pasos de cierre.
-
-No debe bloquear la operación ni competir con el CTA principal.
-
----
-
-# 18. Formularios
-
-Cada campo debe tener:
-
-- etiqueta persistente;
-- ejemplo cuando sea útil;
-- validación cercana al error;
-- teclado/tipo de entrada adecuado;
-- estado disabled claro;
-- conservación de datos ante errores recuperables.
-
-Evitar depender exclusivamente de placeholders.
-
-Mensajes de error deben explicar **qué pasó y cómo corregirlo**.
-
-Incorrecto:
-
-> Error 422.
-
-Correcto:
-
-> No pudimos guardar el teléfono. Revisá el código de área e intentá nuevamente.
-
----
-
-# 19. Lenguaje UGO
-
-El lenguaje debe ser humano, breve y consistente.
-
-Preferir:
-
-- **Proveedor asignado**
-- **Sebastian está en camino**
-- **Trabajo iniciado**
-- **Revisá el trabajo**
-- **Confirmar y pagar**
-
-Evitar tecnicismos internos:
-
-- `job_id`
-- `status_pending`
-- `matching`
-- códigos de backend
-
-El ID del servicio puede mostrarse como referencia: **Servicio #58**.
-
----
-
-# 20. Accesibilidad
-
-Objetivo mínimo: **WCAG 2.2 AA**.
-
-Requisitos:
-
-- contraste suficiente;
-- tamaño táctil mínimo 44 × 44 px;
-- foco visible;
-- navegación por teclado en web;
-- labels accesibles para iconos;
-- no comunicar estado solo mediante color;
-- texto ampliable sin romper layout;
-- mensajes compatibles con lectores de pantalla;
-- animaciones respetando `prefers-reduced-motion`.
-
----
-
-# 21. Estados obligatorios de componentes
-
-Todo componente con datos debe diseñarse para:
-
-- loading;
-- empty;
-- success;
-- error;
-- offline;
-- disabled;
-- permission denied, cuando corresponda.
-
-No se considera terminado un componente diseñado únicamente para el “caso feliz”.
-
----
-
-# 22. Feedback inmediato
-
-Toda acción debe responder visualmente.
+Cada notificación debe llevar a un contexto accionable.
 
 Ejemplos:
 
-**Aceptar oportunidad →** loading → confirmación → nuevo estado.  
-**Subir foto →** progreso → miniatura → éxito/error.  
-**Pagar →** procesando → aprobado/rechazado.  
-**Finalizar →** confirmación → revisión.
+```text
+Nueva oportunidad → detalle
+Proveedor en camino → tracking
+Ampliación propuesta → resolución
+Servicio finalizado → revisión
+Disputa actualizada → disputa
+Pago liberado → ganancias
+```
 
-Evitar botones que parecen no hacer nada.
-
----
-
-# 23. Prevención de acciones duplicadas
-
-Mientras una operación crítica se procesa:
-
-- deshabilitar el CTA;
-- mostrar estado de procesamiento;
-- usar idempotencia en backend cuando corresponda;
-- evitar doble pago, doble aceptación o doble finalización.
+Evitar notificaciones sin propósito.
 
 ---
 
-# 24. Consistencia visual
+# 14. Inclusión y accesibilidad
 
-Usar tokens compartidos para:
-
-- tipografía;
-- espaciado;
-- radios;
-- sombras;
-- colores;
-- alturas de controles;
-- iconografía;
-- estados.
-
-No crear estilos específicos por pantalla cuando existe un componente del Design System.
-
-### Escala de espaciado recomendada
-
-`4 / 8 / 12 / 16 / 24 / 32 / 48`
+- lenguaje simple;
+- PT/ES preparados sin textos embebidos rígidos;
+- tamaños legibles;
+- contraste AA;
+- targets ≥48px;
+- lector de pantalla;
+- teclado;
+- reduced motion;
+- no depender sólo de color/iconos.
 
 ---
 
-# 25. Componentes maestros
-
-El ecosistema debe tender a componentes reutilizables:
+# 15. Checklist de usabilidad antes de release
 
 ```text
-AppHeader
-BottomNavigation
-PageContainer
-ServiceStatusCard
-ServiceTimeline
-ProviderCard
-PaymentCard
-PaymentActionBar
-EvidenceCard
-PrimaryButton
-SecondaryButton
-IconButton
-BottomSheet
-Modal
-Toast
-EmptyState
-ErrorState
-LoadingState
-ConfirmationDialog
+[ ] sé dónde estoy
+[ ] entiendo el estado
+[ ] veo la próxima acción
+[ ] precio/método claros si aplican
+[ ] error tiene recuperación
+[ ] no pierdo datos al fallar
+[ ] no hay dos CTA compitiendo
+[ ] touch/foco accesibles
+[ ] mobile sin cortes
+[ ] desktop usable
+[ ] mapa tiene fallback
+[ ] copy no promete algo que UGO no controla
 ```
 
-Cada uno debe tener contrato de propiedades y estados.
-
 ---
 
-# 26. Prioridad visual
+# 16. Métrica de éxito
 
-Orden de atención esperado:
+Usabilidad debe traducirse en:
 
-**Estado actual → Acción siguiente → Información esencial → Detalles → Navegación secundaria**
-
-Una promoción, notificación o función auxiliar nunca debe desplazar el estado de un servicio activo.
-
----
-
-# 27. Modales y bottom sheets
-
-Usarlos únicamente cuando la decisión pertenece al contexto actual.
-
-Un modal debe:
-
-- tener título;
-- explicar la decisión;
-- tener cierre visible cuando pueda cancelarse;
-- mantener foco;
-- bloquear correctamente el fondo;
-- devolver el foco al elemento que lo abrió.
-
-Un bottom sheet no puede abrir otro bottom sheet encima.
-
----
-
-# 28. Scroll
-
-Debe existir **un contenedor principal de scroll** por pantalla móvil siempre que sea posible.
-
-Evitar:
-
-- scroll dentro de tarjetas;
-- scroll dentro de modal + página simultáneamente;
-- cuerpos con `overflow: hidden` persistente;
-- elementos fijos que hagan inaccesible el final.
-
-Prueba obligatoria: llegar al último elemento y verlo completamente por encima de cualquier navegación/CTA fijo.
-
----
-
-# 29. Contrato de datos visible
-
-La UI debe renderizar una misma entidad de servicio desde un modelo coherente.
-
-Ejemplo conceptual:
-
-```ts
-type Service = {
-  id: string;
-  category: ServiceCategory;
-  status: ServiceStatus;
-  client: ClientSummary;
-  provider?: ProviderSummary;
-  location: ServiceLocation;
-  price: Money;
-  paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
-  evidence: Evidence[];
-  timeline: TimelineEvent[];
-  additionalWork: AdditionalWork[];
-};
+```text
+menos abandono
+menos errores
+menos soporte necesario
+más solicitudes terminadas
+más oportunidades decididas
+más servicios completados
+más repetición
 ```
 
-No duplicar manualmente nombre, categoría, precio o forma de pago en estados locales independientes.
-
 ---
 
-# 30. Manejo de errores y conectividad
+# 17. Regla final
 
-UGO debe asumir conexiones móviles imperfectas.
-
-Ante pérdida de conexión:
-
-- conservar información ingresada cuando sea seguro;
-- explicar que no hay conexión;
-- permitir reintentar;
-- no confirmar una operación que el servidor no confirmó;
-- diferenciar “enviando” de “completado”.
-
----
-
-# 31. Checklist obligatorio antes de merge
-
-Una pantalla **NO está terminada** hasta aprobar:
-
-- [ ] Se entiende el objetivo en 3 segundos.
-- [ ] Hay una sola acción primaria.
-- [ ] No hay controles superpuestos.
-- [ ] El último contenido es completamente visible.
-- [ ] Safe areas correctas.
-- [ ] No hay scroll horizontal.
-- [ ] Funciona en 320, 360, 390 y 412 px.
-- [ ] Estados loading/empty/error definidos.
-- [ ] Botones tienen feedback.
-- [ ] Acciones críticas evitan doble ejecución.
-- [ ] Textos son consistentes con el estado real.
-- [ ] Precio y pago vienen de una única fuente de verdad.
-- [ ] Navegación mantiene posición y orden.
-- [ ] Áreas táctiles ≥ 44 × 44.
-- [ ] Contraste y foco accesibles.
-- [ ] Back/volver no destruye datos inesperadamente.
-- [ ] Modal/bottom sheet no genera capas incompatibles.
-- [ ] Cliente y Proveedor ven estados equivalentes.
-- [ ] Build y TypeScript pasan.
-- [ ] QA móvil real aprobado.
-
----
-
-# 32. Criterios específicos para corregir Servicio #58
-
-La pantalla mostrada se considera corregida únicamente cuando:
-
-- [ ] **Pago seguro** no tapa la forma de pago, timeline ni tarjetas.
-- [ ] **Fotos del trabajo** deja de flotar sobre el pago.
-- [ ] La campana queda contenida en el header.
-- [ ] “Efectivo” y “Pagar con Pix” nunca aparecen como decisiones activas contradictorias.
-- [ ] El timeline indica con claridad si el pago es requisito de la etapa 3.
-- [ ] La CTA fija ocupa solo la altura necesaria.
-- [ ] Todo el contenido puede desplazarse por encima de la CTA.
-- [ ] La pantalla sigue siendo usable con navegador móvil y safe area.
-- [ ] El estado visible coincide con el estado del backend.
-- [ ] La acción siguiente es inequívoca.
-
----
-
-# 33. Severidad de bugs UX
-
-### P0 — Bloqueante
-
-Impide completar un servicio, pago, aceptación o cierre.
-
-Ejemplos: CTA inaccesible, pago imposible, pantalla bloqueada.
-
-### P1 — Crítico
-
-Puede provocar una decisión incorrecta o pérdida de confianza.
-
-Ejemplos: método de pago contradictorio, precio incorrecto, estado incorrecto.
-
-### P2 — Importante
-
-Dificulta significativamente la operación.
-
-Ejemplos: botones superpuestos, scroll defectuoso, navegación confusa.
-
-### P3 — Mejora
-
-No impide la tarea pero reduce calidad o consistencia.
-
----
-
-# 34. Definition of Done UX de UGO
-
-Una funcionalidad está terminada cuando cumple simultáneamente:
-
-**Funciona + se entiende + responde + no se superpone + es accesible + mantiene consistencia entre roles + refleja el estado real.**
-
-Que el build compile no significa que la experiencia esté terminada.
-
----
-
-# 35. Regla para desarrollo futuro
-
-Antes de crear una pantalla nueva:
-
-1. identificar rol;
-2. identificar estado del servicio;
-3. definir objetivo único;
-4. definir CTA primaria;
-5. definir datos requeridos;
-6. reutilizar componentes;
-7. definir loading/error/empty;
-8. validar responsive y safe area;
-9. probar continuidad con pantalla anterior y siguiente;
-10. ejecutar checklist maestro.
-
----
-
-# 36. Norma final
-
-**UGO nunca debe obligar al usuario a pensar cómo usar UGO.**
-
-La interfaz debe guiar naturalmente el servicio completo, mantener al Cliente y al Proveedor sincronizados y hacer visible en todo momento:
-
-> **qué pasó → qué está pasando → qué sigue.**
-
-Este documento debe utilizarse como **fuente maestra de criterios de usabilidad** para diseño, implementación, revisión de PRs y QA de todo el ecosistema UGO.
+**Si el usuario necesita que alguien le explique cómo completar el flujo principal, el flujo todavía no está suficientemente bien diseñado.**
