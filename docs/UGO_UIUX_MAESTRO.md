@@ -1,426 +1,312 @@
 # UGO — UI/UX Maestro del Ecosistema
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
-**Estado:** contrato vivo de experiencia y diseño  
-**Alcance:** Landing · Cliente · Proveedor · Admin · Super Admin · Hugo · Scout · Academia
+**Versión:** 2.1 · 11 de septiembre de 2026  
+**Estado:** contrato vivo de experiencia y diseño
 
-> El flujo maestro define qué debe ocurrir. Este documento define cómo debe entenderse, verse y operarse sin crear una segunda lógica de producto.
+> El flujo maestro define qué ocurre. Este documento define cómo UGO hace que una operación compleja se sienta simple, guiada y confiable.
 
 ---
 
 # 1. Principio rector
 
-Toda pantalla debe responder en pocos segundos:
+**Pedir un servicio debe tener la simplicidad mental de pedir un viaje.**
+
+Toda pantalla responde:
 
 ```text
 ¿Dónde estoy?
 ¿Qué está pasando?
-¿Qué puedo hacer ahora?
+¿Qué hago ahora?
 ```
 
-Regla transversal:
+Patrón: **Estado → contexto → próxima acción**.
 
-**Estado → contexto → próxima acción**
+La UI no expone arquitectura, estados financieros técnicos ni campos de base de datos.
 
 ---
 
-# 2. Lenguaje de producto
+# 2. Cliente · patrón principal
 
-UGO debe sentirse:
-
-```text
-simple
-confiable
-claro
-activo
-humano
-profesional
-```
-
-Evitar:
+Home tiene una intención dominante:
 
 ```text
-jerga técnica
-promesas financieras falsas
-pantallas sobrecargadas
-acciones ambiguas
-estados sin explicación
-modales encadenados
+¿Qué necesitás?
 ```
+
+Entradas equivalentes:
+
+- hablar con Hugo desde el Orbe;
+- escribir;
+- tocar categoría/búsqueda.
+
+Todas abren **el mismo draft y el mismo wizard**.
+
+El Orbe de Hugo permanece accesible durante el recorrido, respetando safe areas y sin competir con el CTA primario.
 
 ---
 
-# 3. Design language
+# 3. Wizard conversacional
 
-Nombre: **Kinetic Trust**.
+No usar formulario largo para el flujo principal.
 
-Debe combinar:
+Patrón visual obligatorio:
 
-- claridad operacional;
-- sensación de movimiento/progreso;
-- señales de confianza;
-- jerarquía visual fuerte;
-- consistencia entre roles.
+```text
+encabezado: volver + progreso breve
+pregunta principal
+contenido/respuesta del paso
+Hugo/Orbe voz-texto
+CTA primario grande
+alternativa secundaria discreta
+```
 
-Tokens canónicos viven en `src/mvp/ugo-design-system.css` y capas asociadas.
+Referencia mobile: `390×844`.
+
+Objetivo normal: **3–5 confirmaciones antes de buscar**, sólo las necesarias.
+
+## Pantalla 1 · Necesidad
+
+Título: `¿Qué necesitás?`
+
+- campo conversacional grande;
+- micrófono/Orbe como entrada de primera clase;
+- ejemplos cortos, no catálogo obligatorio;
+- Hugo interpreta mientras el cliente habla/escribe.
+
+Respuesta de Hugo debe ser concreta, por ejemplo:
+
+`Entendí: necesitás colocar azulejos en un baño. Voy a buscar un profesional para ese trabajo.`
+
+Acciones: `Sí, es eso` / `Corregir`.
+
+## Pantalla 2 · Evidencia, sólo cuando aporta valor
+
+Título contextual: `Mostrame el problema`.
+
+- cámara;
+- galería;
+- preview clara;
+- explicación corta de para qué sirve;
+- `Omitir` cuando no sea obligatoria.
+
+No pedir una foto por rutina si no mejora matching, presupuesto, seguridad o ejecución.
+
+## Pantalla 3 · Cuándo
+
+Título: `¿Cuándo lo necesitás?`
+
+Opciones simples:
+
+```text
+Ahora
+Hoy
+Elegir día y hora
+```
+
+Ubicación conocida se reutiliza. Sólo pedirla si falta, cambió o requiere confirmación.
+
+## Pantalla 4 · Confirmación
+
+Título: `Revisá lo que entendí`.
+
+Card/resumen legible:
+
+```text
+Trabajo
+Profesional/categoría propuesta
+Dónde
+Cuándo
+Fotos
+precio/condiciones si ya existen
+```
+
+CTA: `Encontrar profesionales`.
+
+Cada bloque puede editarse sin reiniciar el wizard.
+
+## Pantalla 5 · Matching
+
+Transición inmediata a estado de servicio:
+
+```text
+Buscando profesionales…
+→ Proveedor encontrado
+→ Proveedor en camino
+```
+
+No volver a mostrar el formulario salvo edición explícita o recuperación.
 
 ---
 
-# 4. Jerarquía visual
+# 4. Voz + texto
 
-Orden recomendado:
+Voz no es una pantalla separada ni un modo alternativo que pierda contexto.
+
+Contrato:
 
 ```text
-1 estado actual
-2 próxima acción
-3 contexto esencial
-4 alternativas/secundarias
-5 ayuda
+voz ─┐
+     ├→ mismo draft → Hugo interpreta → UI refleja → cliente confirma
+texto┘
 ```
 
-Un CTA primario por contexto siempre que sea posible.
+Mientras escucha:
+
+- indicar claramente `Escuchando…`;
+- permitir detener/cancelar;
+- mostrar transcripción editable;
+- no enviar decisiones críticas sin confirmación;
+- si falla voz, conservar lo capturado y ofrecer texto.
+
+El cliente puede hablar y ver cómo se completa la solicitud; no tiene que dictar nombres de campos.
 
 ---
 
-# 5. Cliente
+# 5. Hugo / Orbe
 
-## Home / Radar
+Hugo es el **mejor amigo operativo de UGO**: reduce carga mental y acerca la solución.
 
-Objetivo: transformar una necesidad en una solicitud con mínima fricción.
+El Orbe:
 
-Elementos prioritarios:
+- siempre reconocible y accesible en Home, wizard y servicio activo;
+- tiene área táctil ≥48px;
+- muestra estados visuales: disponible, escuchando, procesando, necesita confirmación;
+- nunca tapa navegación, precio o CTA;
+- puede minimizarse durante tareas críticas;
+- mantiene contexto del servicio/draft.
 
-```text
-ubicación
-búsqueda ¿Qué servicio necesitás?
-categorías
-mapa/radar cuando aporte valor
-servicio activo
-CTA Encontrar profesionales
-notificaciones
-perfil
-Hugo
-```
-
-Mapa no debe ser single point of failure: siempre ofrecer alternativa textual/lista.
-
-## Solicitud
-
-Debe sentirse como una conversación guiada, no un formulario administrativo.
-
-Orden sugerido:
-
-```text
-qué necesitás
-qué pasa / descripción
-dónde
-cuándo
-urgencia
-fotos/evidencia
-resumen
-confirmar
-```
-
-## Matching
-
-Mostrar progreso real y recuperación:
-
-```text
-buscando
-proveedores contactados cuando sea seguro mostrarlo
-sin match todavía
-alternativas
-reintentar/cambiar condiciones
-cancelar
-```
-
-No simular proveedor asignado antes de persistencia real.
-
-## Pago
-
-La UI debe mostrar claramente el método.
-
-Electrónico:
-
-```text
-importe
-procesamiento
-protección/custodia cuando exista
-liberación
-```
-
-Efectivo:
-
-```text
-pago presencial
-importe acordado
-quién confirma recepción
-sin etiqueta protegido/retenido
-```
-
-## Servicio activo
-
-Prioridad:
-
-```text
-estado
-ETA/ubicación cuando disponible
-próxima acción
-proveedor
-precio/método
-evidencia/ampliaciones
-soporte
-```
+Hugo debe decir lo que entendió antes de hacer matching cuando haya ambigüedad relevante.
 
 ---
 
-# 6. Proveedor
+# 6. Pagos · experiencia de elección
 
-## Home
+La UI presenta métodos, no modelos financieros internos.
 
-Debe responder: **¿qué tengo que hacer ahora?**
-
-Orden:
+Selector esperado:
 
 ```text
-Online/Offline
-trabajo activo o próxima oportunidad
-demanda cercana
-alertas
-ganancias
-Hugo
+Método guardado
++ Agregar tarjeta
++ Mercado Pago/billetera disponible
++ Pix u otro electrónico disponible
++ Efectivo
 ```
 
-## Demanda
+Cambiar/agregar método no debe sacar al usuario del servicio ni borrar progreso.
 
-Es inteligencia de mercado, no lista de trabajos concretos.
+Efectivo se presenta como `Pagar en efectivo al profesional`; nunca como protegido/retenido.
 
-Mostrar:
+Electrónico muestra protección/custodia sólo cuando realmente existe.
+
+---
+
+# 7. Servicio activo
+
+Después de confirmar solicitud, la interfaz cambia de **crear** a **seguir**.
+
+Cliente ve una timeline humana:
 
 ```text
-zonas
-volumen
-urgencia
-categoría
-tendencia
-valor estimado
+Buscando
+Proveedor encontrado
+En camino
+Llegó
+Trabajo en curso
+Terminado
+Revisar
 ```
 
-## Oportunidades
+Prioridad visual:
 
-Cada tarjeta debe permitir decidir rápido:
+1. estado;
+2. próxima acción;
+3. proveedor/ETA;
+4. precio y método;
+5. evidencia/ampliaciones;
+6. soporte/Hugo.
 
-```text
-qué trabajo
-zona/distancia
-cuándo
-valor
-compatibilidad
-contexto suficiente
-evidencia autorizada
-Aceptar / Rechazar
-```
+---
 
-No revelar datos sensibles innecesarios antes de asignación.
+# 8. Proveedor
 
-## Trabajo activo
+Home responde: `¿Qué tengo que hacer ahora?`
 
-Mostrar sólo acciones válidas para el estado actual.
+Oportunidades permiten decidir rápido: trabajo, zona, cuándo, valor, contexto, evidencia autorizada, aceptar/rechazar.
+
+Trabajo activo funciona como checklist progresivo y sólo muestra acciones válidas:
 
 ```text
 En camino
 Llegué
-Agregar evidencia
+Foto inicial
 Iniciar
-Ampliar
-Finalizar
+Trabajar
+Ampliar si hace falta
+Foto final
 Confirmar efectivo cuando corresponda
+Finalizar/revisión
 ```
 
 ---
 
-# 7. Admin / Super Admin
+# 9. Reglas visuales obligatorias
 
-Admin no debe ser un mosaico de métricas sin decisiones.
-
-Priorizar:
-
-```text
-alertas
-excepciones
-servicios trabados
-pagos/retiros pendientes
-disputas
-KYC
-acciones recomendadas
-```
-
-Super Admin debe distinguir claramente configuración de operación cotidiana.
-
-Acciones irreversibles o de alto impacto requieren confirmación y contexto.
+- una pregunta principal por pantalla;
+- un CTA primario por contexto;
+- máximo de decisiones simultáneas reducido;
+- progreso corto (`2 de 4`) cuando ayude, nunca una burocracia de 10 pasos;
+- lenguaje cotidiano;
+- targets ≥48px;
+- contraste WCAG AA;
+- safe area inferior ≥24px en referencia mobile;
+- teclado no tapa CTA/campo activo;
+- estado loading/error/empty/retry diseñado;
+- mapa tiene fallback textual;
+- volver conserva respuestas;
+- no usar modales encadenados para crear solicitud.
 
 ---
 
-# 8. Navegación
+# 10. Confianza
 
-Cliente y Proveedor deben tener navegación estable y predecible.
-
-Reglas:
-
-- máximo 4–5 destinos principales;
-- estado activo claro;
-- no ocultar la acción principal detrás del menú;
-- overlays no deben competir entre sí;
-- deep link/notificación debe llevar al contexto correcto.
-
----
-
-# 9. Estados de datos
-
-Toda pantalla dinámica debe diseñar:
+La confianza se construye con verdad y continuidad:
 
 ```text
-loading
-loaded
-empty
-error + retry
-offline/degraded
-```
-
-Toda mutación:
-
-```text
-idle
-submitting
-success
-error + recuperación
-```
-
-Nunca dejar al usuario sin saber si una acción se ejecutó.
-
----
-
-# 10. Feedback
-
-Feedback debe ser:
-
-- inmediato;
-- específico;
-- accionable;
-- no intrusivo;
-- persistente cuando el riesgo lo exige.
-
-Ejemplo bueno: `No pudimos confirmar el pago. Reintentá o elegí otro método.`
-
-Ejemplo malo: `Algo salió mal.`
-
----
-
-# 11. Confianza
-
-Señales útiles:
-
-```text
-identidad/verificación
-reputación
-estado trazable
-importe visible
-evidencias
+qué entendió Hugo
+qué se está buscando
+quién aceptó
+estado real
+precio/método
+identidad/reputación
+evidencia
 historial
 soporte/disputa
 ```
 
-No usar badges o escudos para insinuar garantías inexistentes.
+No simular asignaciones, garantías ni pagos protegidos inexistentes.
 
 ---
 
-# 12. Hugo
-
-Hugo debe aparecer donde aporta decisión o reduce fricción.
-
-Cliente:
+# 11. Métricas UX prioritarias
 
 ```text
-entender necesidad
-crear mejor solicitud
-prepararse
-resolver dudas del servicio
-```
-
-Proveedor:
-
-```text
-checklist
-seguridad
-diagnóstico
-ampliación
-evidencia
-cierre
-aprendizaje
-```
-
-Hugo no debe competir visualmente con CTA críticos ni ejecutar acciones fuera del permiso/estado.
-
----
-
-# 13. Accesibilidad
-
-Objetivo WCAG AA.
-
-- targets ≥48px mobile;
-- foco visible web;
-- labels/aria;
-- contraste suficiente;
-- estados no sólo por color;
-- reduced motion;
-- orden lógico;
-- teclado en desktop;
-- errores asociados al campo/acción.
-
----
-
-# 14. Responsive
-
-Referencia mobile: `390×844`.
-
-Validar:
-
-```text
-360×800
-390×844
-430×932
-768 tablet
-1280 desktop
-1440 desktop
-```
-
-Safe areas, teclado, scroll, sheets, mapas y nav fija deben funcionar.
-
-Desktop no es mobile estirado.
-
----
-
-# 15. Métricas UX
-
-Medir donde sea posible:
-
-```text
-tiempo hasta solicitud
+tiempo Home → solicitud confirmada
+cantidad de confirmaciones
 abandono por paso
+correcciones a interpretación de Hugo
+uso voz vs texto
 time-to-match
-aceptación de oportunidades
-tiempo hasta próxima acción
 errores/reintentos
-cancelación
-disputa
+servicios completados
 repetición
-CSAT/NPS
+CSAT
 ```
 
-El diseño debe mejorar resultados, no sólo estética.
+Objetivo: que una solicitud común pueda confirmarse en **menos de un minuto** cuando el contexto y la conectividad lo permitan, sin sacrificar datos críticos.
 
 ---
 
-# 16. Regla final
+# 12. Regla final
 
-**La mejor interfaz UGO es la que hace evidente el estado real, reduce la ansiedad, previene errores y lleva al usuario a la próxima acción correcta con la menor fricción posible.**
+**El cliente no llena UGO: UGO se va completando mientras el cliente cuenta lo que necesita. Hugo entiende, propone y acompaña; el cliente corrige o confirma. La UI convierte esa conversación en pocos pasos claros hasta que el problema queda resuelto.**
