@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full pb-safe">
+<!-- 1. BARRA SUPERIOR DEL VISOR PDF -->
+<div class="sticky top-20 z-40 bg-surface-container-lowest shadow-sm px-space-md py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<button aria-label="Volver atrás" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-error text-[18px]">picture_as_pdf</span>
+<span class="font-title-md text-title-md text-on-surface truncate">Certificado_REC-9824.pdf</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+          Pág 1 de 2 · Modo Seguro Verificado
+        </span>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button aria-label="Ajustar escala" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">fit_screen</span>
+</button>
+<button aria-label="Imprimir documento" class="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[20px]">print</span>
+</button>
+</div>
+</div>
+<!-- 2. BANNER DE VALIDACIÓN CRIPTOGRÁFICA EN VIVO -->
+<div class="px-space-md pt-space-sm pb-space-xs">
+<div class="bg-primary/10 rounded-xl p-space-sm shadow-sm flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span class="font-label-md text-label-md text-primary tracking-wide">Documento Criptográficamente Válido</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-primary-container bg-primary-container px-2 py-0.5 rounded-full">
+          Firma Notarial Verificada
+        </span>
+</div>
+<div class="flex flex-col gap-0.5 pl-6">
+<p class="font-label-sm text-label-sm text-on-surface-variant font-mono truncate">
+          SHA-256: 8f4e2b0a99c43d81b7e21a8d052c93b6e8a1074f3c19
+        </p>
+<p class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">schedule</span>
+          Timestamp ICP-Brasil: 25/11/2024 · 12:24:18 UTC-3 (Id: #BR-84920)
+        </p>
+</div>
+</div>
+</div>
+<!-- 3. HOJA DE DOCUMENTO DIGITAL (A4 RATIO EMBEDDED CON TEXTURA Y MARCAS LEGALES) -->
+<div class="px-space-md py-space-sm">
+<div class="relative bg-surface-container-lowest rounded-2xl shadow-xl p-space-md flex flex-col gap-space-md overflow-hidden">
+<!-- Fondo de marca de agua sutil de custodia oficial -->
+<div class="absolute inset-0 pointer-events-none flex items-center justify-center opacity-[0.03] select-none">
+<span class="material-symbols-outlined text-[320px]">verified</span>
+</div>
+<!-- Encabezado oficial -->
+<div class="flex items-start justify-between gap-space-sm pb-space-sm bg-surface-container-low/60 p-space-sm rounded-xl">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[24px]">shield</span>
+<span class="font-label-sm text-label-sm tracking-wider text-primary uppercase">UGO Shield · Fiduciario &amp; Arbitraje</span>
+</div>
+<h2 class="font-title-md text-title-md text-on-surface font-bold leading-tight">
+            CERTIFICADO DE CONFORMIDAD TÉCNICA Y LIBERACIÓN FIDUCIARIA
+          </h2>
+<div class="flex flex-wrap items-center gap-2 pt-1 font-label-sm text-label-sm text-on-surface-variant">
+<span class="bg-surface-container px-2 py-0.5 rounded font-mono text-on-surface">ACTA #CT-849201-REC</span>
+<span class="text-outline">·</span>
+<span>Orden: #UG-88412</span>
+<span class="text-outline">·</span>
+<span class="text-error font-medium">Reclamo: #REC-9824</span>
+</div>
+</div>
+<!-- QR Code Oficial de Cotejo Público -->
+<div class="flex flex-col items-center shrink-0">
+<div class="w-16 h-16 bg-surface-container-lowest p-1 rounded-lg shadow-sm flex items-center justify-center">
+<svg class="w-full h-full text-on-surface" fill="currentColor" viewbox="0 0 100 100">
+<!-- Mock SVG de QR Code de alta precisión -->
+<path d="M0 0h30v30H0zm6 6h18v18H6zM70 0h30v30H70zm6 6h18v18H76zM0 70h30v30H0zm6 6h18v18H6zm10-56h6v6h-6zm70 0h6v6h-6zM16 86h6v6h-6zm24-86h6v30h-6zm14 0h12v10H54zm-14 40h10v10H40zm20 0h10v20H60zm20-10h20v6H80zm-40 20h6v30h-6zm16 10h14v10H56zm24 0h10v20H80zm-10 10h6v10h-6z"></path>
+</svg>
+</div>
+<span class="font-label-sm text-[9px] text-center text-outline mt-1 leading-tight max-w-[70px]">
+            Cotejo QR Público
+          </span>
+</div>
+</div>
+<!-- SECCIÓN 1: PARTES INTERVINIENTES -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary">1. Sujetos y Partes Intervinientes</h3>
+</div>
+<div class="grid grid-cols-1 gap-2 bg-surface-container-low p-space-sm rounded-xl">
+<div class="flex items-start justify-between gap-2 pb-1.5">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Cliente Beneficiario</span>
+<span class="font-title-md text-body-md text-on-surface font-semibold">Martín Benítez</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-mono">CPF: ***.902.418-** · Depto 3B, Florianópolis</span>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+</div>
+<div class="flex items-start justify-between gap-2 pt-1.5 bg-surface-container-lowest/60 p-2 rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Perito Inspector Certificador</span>
+<span class="font-title-md text-body-md text-on-surface font-semibold">Ing. Ricardo Valenzuela</span>
+<span class="font-label-sm text-label-sm text-primary font-mono">CREA-SC #12804 · Reg. Pericial Nal. #04912</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-[18px]">engineering</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant px-1 pt-1">
+<span class="font-label-sm text-label-sm text-outline">Técnico Previo Evaluado:</span>
+<span class="font-label-sm text-label-sm font-medium">Carlos Méndez (Reg. CREA #7419)</span>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 2: DICTAMEN PERICIAL Y NORMATIVA -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[16px]">gavel</span>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-primary">2. Dictamen Pericial Conclusivo</h3>
+</div>
+<div class="bg-primary/5 p-space-sm rounded-xl flex flex-col gap-2">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-lg text-label-lg text-primary font-bold">APROBADO: CONFORMIDAD TOTAL SIN OBSERVACIONES</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Certificación pericial emitida bajo homologación de la norma técnica <strong class="text-on-surface">ABNT NBR 5410</strong> (Instalaciones Eléctricas de Baja Tensión) y marco legal fiduciario <strong class="text-on-surface">SUSEP #04912</strong>. Se constató en sede física el desmontaje íntegro de la sección recalentada y el montaje precintado del disyuntor termomagnético Schneider Acti9 40A curva C con torque calibrado a 2.5 N·m.
+          </p>
+</div>
+</div>
+<!-- SECCIÓN 3: TABLA DE TELEMETRÍA FORENSE -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">speed</span>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary">3. Mediciones Forenses Certificadas</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-mono">Calibrador Fluke 1664 FC</span>
+</div>
+<div class="overflow-x-auto rounded-xl bg-surface-container-low p-1">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="text-outline font-label-sm text-label-sm">
+<th class="py-2 px-2.5">Parámetro</th>
+<th class="py-2 px-2">Lectura</th>
+<th class="py-2 px-2">Norma NBR</th>
+<th class="py-2 px-2 text-right">Veredicto</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container">
+<tr class="bg-surface-container-lowest/70">
+<td class="py-2 px-2.5 font-medium text-on-surface">Tensión F-N</td>
+<td class="py-2 px-2 font-mono text-on-surface">220.4 VAC</td>
+<td class="py-2 px-2 text-outline font-mono text-xs">220 V ± 5%</td>
+<td class="py-2 px-2 text-right">
+<span class="font-label-sm text-label-sm text-primary font-bold">✓ CUMPLE</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest/30">
+<td class="py-2 px-2.5 font-medium text-on-surface">Resistencia Tierra</td>
+<td class="py-2 px-2 font-mono text-on-surface">8.2 Ω</td>
+<td class="py-2 px-2 text-outline font-mono text-xs">&lt; 10.0 Ω</td>
+<td class="py-2 px-2 text-right">
+<span class="font-label-sm text-label-sm text-primary font-bold">✓ CUMPLE</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest/70">
+<td class="py-2 px-2.5 font-medium text-on-surface">Aislamiento L/N</td>
+<td class="py-2 px-2 font-mono text-on-surface">&gt; 50 MΩ</td>
+<td class="py-2 px-2 text-outline font-mono text-xs">&gt; 1.0 MΩ</td>
+<td class="py-2 px-2 text-right">
+<span class="font-label-sm text-label-sm text-primary font-bold">✓ CUMPLE</span>
+</td>
+</tr>
+<tr class="bg-surface-container-lowest/30">
+<td class="py-2 px-2.5 font-medium text-on-surface">Disparo RCD</td>
+<td class="py-2 px-2 font-mono text-on-surface">18 ms</td>
+<td class="py-2 px-2 text-outline font-mono text-xs">&lt; 40 ms</td>
+<td class="py-2 px-2 text-right">
+<span class="font-label-sm text-label-sm text-primary font-bold">✓ CUMPLE</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- SECCIÓN 4: LIBERACIÓN DE FONDOS Y LIQUIDACIÓN -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-secondary">4. Resolución de Custodia Fiduciaria</h3>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low flex flex-col gap-2">
+<div class="flex items-center justify-between pb-1 bg-surface-container-lowest/80 p-2.5 rounded-lg">
+<span class="font-body-md text-body-md text-on-surface">Monto en custodia liberado al Perito:</span>
+<span class="font-title-md text-title-md font-bold text-primary font-mono">R$ 175,00</span>
+</div>
+<div class="flex items-center justify-between px-2 text-on-surface-variant">
+<span class="font-body-sm text-body-sm">Costo imputado a Martín Benítez:</span>
+<span class="font-label-lg text-label-lg text-primary font-bold">R$ 0,00 <span class="text-xs font-normal text-outline">(100% Bonificado UGO)</span></span>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 5: CUADRO DE FIRMAS, SELLOS NOTARIALES Y LACRE -->
+<div class="flex flex-col gap-3 pt-space-xs">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">draw</span>
+<h3 class="font-label-md text-label-md uppercase tracking-wider text-outline">5. Firmas y Validez Cartorial</h3>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<!-- Firma Perito Inspector -->
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col items-center text-center justify-between min-h-[110px]">
+<span class="font-label-sm text-label-sm text-outline">Perito Inspector</span>
+<div class="py-1">
+<!-- Simulación caligráfica SVG -->
+<svg class="w-24 h-8 text-primary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.8" viewbox="0 0 120 40">
+<path d="M10 28 C 30 10, 25 35, 50 15 C 65 5, 55 35, 80 20 C 95 10, 105 30, 115 15"></path>
+</svg>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] text-on-surface font-semibold leading-tight">Ing. Ricardo Valenzuela</span>
+<span class="font-label-sm text-[8px] text-outline font-mono">CREA-SC 12804 · SHA-256 Valid</span>
+</div>
+</div>
+<!-- Firma Cliente (Biométrica) -->
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col items-center text-center justify-between min-h-[110px]">
+<span class="font-label-sm text-label-sm text-outline">Cliente Titular</span>
+<div class="py-1 flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[26px]">fingerprint</span>
+<span class="font-label-sm text-[8px] text-secondary font-mono tracking-tighter">FACE-ID TOKENIZED</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-[10px] text-on-surface font-semibold leading-tight">Martín Benítez</span>
+<span class="font-label-sm text-[8px] text-outline font-mono">IP: 189.28.*** / Lat:-27.59</span>
+</div>
+</div>
+</div>
+<!-- Sello Cartorial Digital ICP-Brasil -->
+<div class="bg-surface-container-low/70 p-space-sm rounded-xl flex items-center gap-3">
+<!-- Sello Notarial Gráfico Circular -->
+<div class="relative w-14 h-14 rounded-full bg-surface-container-lowest flex items-center justify-center shrink-0 shadow-sm text-secondary">
+<svg class="w-full h-full p-1 animate-spin-slow" viewbox="0 0 100 100">
+<path d="M 50, 50 m -37, 0 a 37,37 0 1,1 74,0 a 37,37 0 1,1 -74,0" fill="transparent" id="circlePath"></path>
+<text class="text-[7.5px] font-bold uppercase fill-current tracking-widest">
+<textpath startoffset="0%" xlink:href="#circlePath">
+                  CARTÓRIO DE TÍTULOS E DOCUMENTOS · VALIDADE JURÍDICA BRASIL ·
+                </textpath>
+</text>
+</svg>
+<span class="absolute material-symbols-outlined text-secondary text-[18px]">verified</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-primary text-[14px]">lock</span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Homologación en Red Notarial</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline leading-tight mt-0.5">
+              Protocolo #849-BR2024 · Registro Público Fiduciario y Arbitraje Técnico Inmediato UGO.
+            </p>
+</div>
+</div>
+</div>
+<!-- Pie de página de la hoja -->
+<div class="pt-space-xs flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Página 1 de 2 (Anexo Técnico en Pág 2)</span>
+<span class="font-mono text-[9px]">DOC-ID: UGO-2024-REC-9824-V3</span>
+</div>
+</div>
+</div>
+<!-- 4. BARRA FLOTANTE INFERIOR CON PAGINADOR Y ACCIONES RÁPIDAS -->
+<div class="px-space-md pt-space-xs pb-space-md flex flex-col gap-space-sm">
+<!-- Paginador sutil -->
+<div class="flex items-center justify-center gap-space-md text-on-surface-variant">
+<button aria-label="Página anterior" class="opacity-40 p-1 rounded-full flex items-center justify-center" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<span class="font-label-md text-label-md font-mono bg-surface-container px-3 py-1 rounded-full text-on-surface">
+        Página 1 / 2
+      </span>
+<button aria-label="Página siguiente" class="p-1 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Botones de Acción -->
+<div class="grid grid-cols-12 gap-2">
+<button aria-label="Compartir PDF oficial" class="col-span-4 h-[52px] rounded-2xl bg-surface-container-lowest hover:bg-surface-container transition-all flex items-center justify-center gap-1.5 shadow-sm active:scale-[0.98]">
+<span class="material-symbols-outlined text-on-surface text-[20px]">share</span>
+<span class="font-label-lg text-label-lg text-on-surface">Compartir</span>
+</button>
+<button aria-label="Descargar PDF Oficial" class="col-span-8 h-[52px] rounded-2xl bg-primary hover:bg-primary-container text-on-primary transition-all flex items-center justify-center gap-2 shadow-md active:scale-[0.98]" id="btn-download">
+<span class="material-symbols-outlined text-[22px]">download</span>
+<span class="font-label-lg text-label-lg font-bold">Descargar PDF (2.4 MB)</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const downloadBtn = document.getElementById('btn-download');
+    if (downloadBtn) {
+      downloadBtn.addEventListener('click', function() {
+        const originalText = downloadBtn.innerHTML;
+        downloadBtn.innerHTML = '<span class="material-symbols-outlined text-[22px] animate-spin">progress_activity</span><span class="font-label-lg text-label-lg font-bold">Generando copia segura...</span>';
+        downloadBtn.classList.add('opacity-90');
+        setTimeout(() => {
+          downloadBtn.innerHTML = '<span class="material-symbols-outlined text-[22px]">check_circle</span><span class="font-label-lg text-label-lg font-bold">¡Guardado en Descargas!</span>';
+          downloadBtn.classList.remove('bg-primary');
+          downloadBtn.classList.add('bg-primary-container');
+          setTimeout(() => {
+            downloadBtn.innerHTML = originalText;
+            downloadBtn.classList.remove('bg-primary-container', 'opacity-90');
+            downloadBtn.classList.add('bg-primary');
+          }, 2400);
+        }, 1200);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

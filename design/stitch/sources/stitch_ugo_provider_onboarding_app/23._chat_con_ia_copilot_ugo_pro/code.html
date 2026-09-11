@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-screen-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="UGO Pro Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WetKv_07c95F-GkNCZq6Nazapa6YyKZfSPGpY9l2H-1MNh-4BEnqJ4lzBOdHGQ2QqpgvouZgtiewneX-cRaevcd1aRAnDigjlztVGAsGWQASKM6Fl7u6PMwjE0E0WzSs2uW1ucDiybpTZ-B_8-PzjJTeXO3Wx0FTJxXiUoW2EwKki7pMwQCay6bOV_XOB8ISdSLwH0ibqk56pDGwB5VBzgjZ-Q-nukifupJFcTKqXAmXKpxAc75kHst-e0"/><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold flex items-center gap-space-2xs"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>PROVEEDOR</span><h1 class="font-title-md text-title-md text-on-surface truncate">Oportunidades</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Estado de Disponibilidad" class="min-h-[44px] px-space-sm rounded-full bg-secondary/10 flex items-center gap-space-2xs" type="button"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Online</span></button><button aria-label="Notificaciones" class="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-on-surface-variant relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface"><div class="flex flex-col w-full">
+<!-- Sub-Header Contextual de Navegación & Estado IA -->
+<div class="sticky top-0 z-40 bg-surface/95 backdrop-blur-md px-screen-margin-mobile py-space-xs shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs min-w-0">
+<button aria-label="Volver a Trabajos" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-2xs">
+<span class="font-title-md text-title-md text-on-surface truncate">UGO Copilot</span>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-label-sm text-label-sm font-bold animate-pulse">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              IA Activa • v2.4
+            </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">assignment</span>
+            Orden activa #8492 (Camila Duarte)
+          </span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs shrink-0">
+<button aria-label="Modo Manos Libres" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95" id="btn-audio-guide" type="button">
+<span class="material-symbols-outlined text-[18px]">volume_up</span>
+</button>
+<button aria-label="Historial y Opciones" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95" id="btn-chat-options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Active Job Context Pill / Banner -->
+<div class="flex items-center justify-between px-space-sm py-space-2xs bg-surface-container-high rounded-lg text-on-surface">
+<div class="flex items-center gap-space-2xs min-w-0">
+<div class="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center shrink-0 text-primary">
+<span class="material-symbols-outlined text-[15px]">plumbing</span>
+</div>
+<div class="truncate">
+<p class="font-label-sm text-label-sm text-primary font-bold uppercase tracking-wider">Modo Contextual en Obra</p>
+<p class="font-body-sm text-body-sm text-on-surface truncate">Pinheiros, SP • Reemplazo flexible inox</p>
+</div>
+</div>
+<button class="shrink-0 px-2 py-1 rounded bg-surface-container-lowest text-primary font-label-sm text-label-sm font-semibold active:scale-95 shadow-sm" type="button">
+        Cambiar
+      </button>
+</div>
+</div>
+<!-- Chat Stream Container -->
+<div class="flex flex-col px-screen-margin-mobile py-space-md gap-space-md">
+<!-- Mensaje 1: UGO AI Bienvenida Contextual -->
+<div class="flex items-start gap-space-xs max-w-[92%]">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm text-on-primary mt-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="bg-surface-container-lowest p-space-md rounded-2xl rounded-tl-sm shadow-sm text-on-surface flex flex-col gap-space-xs">
+<div class="flex items-center justify-between gap-space-sm pb-space-2xs">
+<span class="font-label-sm text-label-sm text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+              UGO COPILOT
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">14:22</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+            ¡Hola Carlos! Estoy conectado a tu orden activa <strong class="font-semibold text-primary">#8492</strong>. Analicé las 2 fotos de la avería en la canilla monocomando. ¿Necesitás calcular repuestos en ferreterías de <strong class="font-semibold">Pinheiros</strong> o redactar una adenda extra para Camila?
+          </p>
+</div>
+<!-- Quick Action Chips -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 -mx-1 px-1">
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 active:bg-primary active:text-on-primary transition-all shadow-sm" onclick="insertPrompt('Precios de ferreterías en Pinheiros')" type="button">
+<span class="material-symbols-outlined text-[15px] text-secondary">storefront</span>
+            Ferreterías Pinheiros
+          </button>
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 active:bg-primary active:text-on-primary transition-all shadow-sm" onclick="insertPrompt('Redactar adenda extra R$')" type="button">
+<span class="material-symbols-outlined text-[15px] text-primary">receipt_long</span>
+            Adenda de Presupuesto
+          </button>
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 active:bg-primary active:text-on-primary transition-all shadow-sm" onclick="insertPrompt('Test hidrostático bar')" type="button">
+<span class="material-symbols-outlined text-[15px] text-secondary">speed</span>
+            Test presión bar
+          </button>
+<button class="shrink-0 px-space-sm py-1.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center gap-1.5 active:bg-primary active:text-on-primary transition-all shadow-sm" onclick="insertPrompt('Norma NBR 5626 plomería')" type="button">
+<span class="material-symbols-outlined text-[15px] text-tertiary-container">verified_user</span>
+            ABNT NBR 5626
+          </button>
+</div>
+</div>
+</div>
+<!-- Mensaje 2: Carlos (Usuario - Audio / Pregunta) -->
+<div class="flex items-end justify-end gap-space-xs self-end max-w-[88%]">
+<div class="flex flex-col items-end gap-1">
+<div class="bg-primary text-on-primary p-space-md rounded-2xl rounded-br-sm shadow-sm flex flex-col gap-space-2xs">
+<!-- Audio player preview inside bubble -->
+<div class="flex items-center gap-space-sm bg-primary-container/80 px-space-sm py-1.5 rounded-xl mb-1">
+<button aria-label="Reproducir consulta de voz" class="w-7 h-7 rounded-full bg-surface-container-lowest text-primary flex items-center justify-center shrink-0" type="button">
+<span class="material-symbols-outlined text-[18px]">play_arrow</span>
+</button>
+<div class="flex flex-col flex-1">
+<div class="h-1.5 w-28 bg-on-primary/20 rounded-full overflow-hidden flex items-center">
+<div class="h-full bg-secondary-fixed w-3/5 rounded-full"></div>
+</div>
+<span class="font-label-sm text-label-sm text-primary-fixed-dim text-[10px] mt-0.5">Nota de voz 0:14</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-primary">
+            "¿A cuánto cotizo el niple de bronce de 1/2 y el flexible trenzado de 40cm para no quedar fuera de mercado?"
+          </p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 mr-1">
+          14:24 <span class="material-symbols-outlined text-[14px] text-secondary">done_all</span>
+</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface font-label-md text-label-md font-bold mt-1">
+        CM
+      </div>
+</div>
+<!-- Mensaje 3: UGO AI - Sugerencia de Precios en tiempo real con tarjeta de costos -->
+<div class="flex items-start gap-space-xs max-w-[96%]">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm text-on-primary mt-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex flex-col gap-space-xs w-full">
+<div class="bg-surface-container-lowest p-space-md rounded-2xl rounded-tl-sm shadow-sm text-on-surface flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-space-2xs">
+<span class="font-label-sm text-label-sm text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">insights</span>
+              RELEVAMIENTO PINHEIROS (HOY)
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">14:24</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface">
+            Revisé las 3 ferreterías más próximas a <strong class="font-semibold">Rua dos Pinheiros</strong> (incluyendo C&amp;C y ferretería de barrio a 450m). Este es el rango recomendado para mantener tu margen y aprobación rápida:
+          </p>
+<!-- Componente Comparativo de Costos -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex flex-col gap-space-xs">
+<!-- Item 1 -->
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface">Flexible inox mallado 40cm (1/2")</span>
+</div>
+<div class="text-right">
+<span class="font-title-md text-title-md text-on-surface font-bold">R$ 42,00</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Rango: R$ 38 - R$ 45</p>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-highest"></div>
+<!-- Item 2 -->
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-secondary">check_circle</span>
+<span class="font-body-sm text-body-sm text-on-surface">Niple bronce hexagonal 1/2"</span>
+</div>
+<div class="text-right">
+<span class="font-title-md text-title-md text-on-surface font-bold">R$ 14,50</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Rango: R$ 12 - R$ 16</p>
+</div>
+</div>
+<div class="w-full h-px bg-surface-container-highest"></div>
+<!-- Item 3: Mano de Obra adicional -->
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary">engineering</span>
+<span class="font-body-sm text-body-sm text-on-surface">Mano de obra ensamble y purga</span>
+</div>
+<div class="text-right">
+<span class="font-title-md text-title-md text-primary font-bold">+R$ 60,00</span>
+<p class="font-label-sm text-label-sm text-secondary font-semibold">Tarifa media SP</p>
+</div>
+</div>
+<!-- Total Banner with Escrow Net -->
+<div class="mt-1 p-space-xs bg-surface-container-highest rounded-lg flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-bold">Total a cobrar al cliente</span>
+<p class="font-headline-sm text-headline-sm text-on-surface font-bold">R$ 116,50</p>
+</div>
+<div class="text-right">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-bold">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+                  PIX Escrow Neto
+                </span>
+<p class="font-title-md text-title-md text-secondary font-bold">R$ 99,00</p>
+<span class="font-label-sm text-label-sm text-on-surface-variant">(15% UGO fee deducido)</span>
+</div>
+</div>
+</div>
+<!-- Acciones Rápidas del Presupuesto -->
+<div class="flex flex-col sm:flex-row gap-space-xs pt-space-2xs">
+<button class="flex-1 py-2.5 px-space-sm bg-primary text-on-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 active:scale-95 shadow-sm transition-transform" id="btn-apply-quote" type="button">
+<span class="material-symbols-outlined text-[18px]">add_circle</span>
+              Cargar a Orden #8492
+            </button>
+<button class="py-2.5 px-space-sm bg-surface-container text-primary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-1.5 active:scale-95" id="btn-copy-quote" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+              Copiar detalle
+            </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Mensaje 4: Carlos pidiendo mensaje para la clienta -->
+<div class="flex items-end justify-end gap-space-xs self-end max-w-[88%]">
+<div class="flex flex-col items-end gap-1">
+<div class="bg-primary text-on-primary p-space-md rounded-2xl rounded-br-sm shadow-sm flex flex-col">
+<p class="font-body-md text-body-md text-on-primary">
+            Genial. Redactame un mensaje formal para Camila avisándole que voy a tardar 10 min más probando la presión sin fugas.
+          </p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1 mr-1">
+          14:26 <span class="material-symbols-outlined text-[14px] text-secondary">done_all</span>
+</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center shrink-0 text-on-surface font-label-md text-label-md font-bold mt-1">
+        CM
+      </div>
+</div>
+<!-- Mensaje 5: UGO AI Redacción Formal para Cliente -->
+<div class="flex items-start gap-space-xs max-w-[96%]">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 shadow-sm text-on-primary mt-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="flex flex-col gap-space-xs w-full">
+<div class="bg-surface-container-lowest p-space-md rounded-2xl rounded-tl-sm shadow-sm text-on-surface flex flex-col gap-space-sm">
+<div class="flex items-center justify-between pb-space-2xs">
+<span class="font-label-sm text-label-sm text-secondary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">edit_note</span>
+              BORRADOR PROFESIONAL GENERADO
+            </span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">14:26</span>
+</div>
+<!-- Preview Card del mensaje al cliente -->
+<div class="bg-surface-container-low p-space-md rounded-xl text-on-surface flex flex-col gap-space-xs">
+<div class="flex items-center gap-2">
+<img class="w-6 h-6 rounded-full object-cover" data-alt="Avatar de clienta Camila Duarte, mujer joven sonriente con fondo urbano desenfocado estilo São Paulo" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCJxpoE1CP-VeUidp4unHpWkBmlAeSjewGtDjSW_C7cKeRggjuWtfkxRptECYtYM2-ONarAIRz6qNnlBSrIH67nNyqvpkPPUApO2EKCmxza4pbl4UMhJxvbaf05AkrCN1fvg7mBIe5YucTJGnCTy_622Lwap3mh_TsWcF-0fNhQ_mBpzpLUx357STtwL9Y4JlfgU_n_KrV83KK2g9KALPGYsXQE6LDY7TBx01H42g0lB2bEHVcMS2KdOg"/>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Destinatario: <strong class="text-on-surface font-semibold">Camila Duarte</strong></span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed italic bg-surface-container-lowest p-space-sm rounded-lg" id="generated-client-message">
+              "Hola Camila, ya finalizamos la instalación del flexible inox reforzado. Ahora mismo estoy realizando la prueba hidrostática a 3.2 bar durante 10 minutos para certificar bajo la garantía UGO Escrow que la instalación queda 100% libre de microfugas. Enseguida te solicito la conformidad final en la app."
+            </p>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant">
+<span class="font-label-sm text-label-sm flex items-center gap-1 text-secondary">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+                Tono: Profesional y técnico empático
+              </span>
+<span class="font-label-sm text-label-sm">294 caracteres</span>
+</div>
+</div>
+<!-- CTAs de Envío de Mensaje al Cliente -->
+<div class="flex items-center gap-space-xs pt-space-2xs">
+<button class="flex-1 py-2.5 px-space-sm bg-secondary text-on-secondary rounded-xl font-label-md text-label-md font-bold flex items-center justify-center gap-2 active:scale-95 shadow-sm transition-transform" id="btn-send-to-client" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+              Enviar al Chat de Camila
+            </button>
+<button aria-label="Editar texto propuesto" class="w-11 h-11 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 shrink-0" onclick="editGeneratedMessage()" type="button">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+</div>
+</div>
+<!-- Feedback & Safety Tag -->
+<div class="flex items-center gap-2 px-space-xs text-on-surface-variant">
+<span class="font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary">verified</span>
+            Cumple protocolo ABNT NBR 5626 (Instalação Predial de Água Fria)
+          </span>
+</div>
+</div>
+</div>
+<!-- Indicador de Escritura / Asistente Disponible (Discreto) -->
+<div class="hidden items-center gap-2 px-space-xs py-1 text-on-surface-variant" id="ai-typing">
+<div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[14px] animate-spin">sync</span>
+</div>
+<span class="font-label-sm text-label-sm">UGO AI analizando consulta...</span>
+</div>
+</div>
+<!-- Barra Flotante Inferior de Entrada (Input Bar) -->
+<div class="sticky bottom-0 z-30 bg-surface/95 backdrop-blur-xl px-screen-margin-mobile py-space-sm shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex flex-col gap-space-xs">
+<!-- Mini toolbar de asistencia en obra -->
+<div class="flex items-center justify-between px-space-2xs">
+<div class="flex items-center gap-space-xs">
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-semibold active:scale-95" id="btn-camera-ai" type="button">
+<span class="material-symbols-outlined text-[15px]">photo_camera</span>
+          Escanear Pieza
+        </button>
+<button class="flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm active:scale-95" id="btn-measure-calc" type="button">
+<span class="material-symbols-outlined text-[15px] text-tertiary">square_foot</span>
+          Cálculo Caudal/Bar
+        </button>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+        GPS Pinheiros
+      </span>
+</div>
+<!-- Main Input Box with Actions -->
+<div class="flex items-center gap-space-xs">
+<button aria-label="Adjuntar archivo o foto técnica" class="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-on-surface-variant active:scale-95 shrink-0" type="button">
+<span class="material-symbols-outlined text-[22px]">add_a_photo</span>
+</button>
+<div class="flex-1 min-w-0 bg-surface-container-lowest rounded-2xl shadow-sm px-space-sm py-1.5 flex items-center gap-space-xs focus-within:ring-2 focus-within:ring-primary/40 transition-all">
+<input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none min-w-0 py-1" id="chat-input-field" placeholder="Preguntale a UGO Copilot o dictá una avería..." type="text"/>
+<button aria-label="Grabar audio técnico" class="w-8 h-8 rounded-full bg-surface-container text-secondary flex items-center justify-center shrink-0 active:scale-95" id="btn-mic" type="button">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+</div>
+<button aria-label="Enviar consulta" class="w-11 h-11 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md active:scale-95 shrink-0 transition-transform" id="btn-send-message" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_upward</span>
+</button>
+</div>
+</div>
+<!-- Toast Notificación de Acción Rápida (Oculto por defecto) -->
+<div class="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 px-space-md py-space-xs rounded-full bg-inverse-surface text-inverse-on-surface font-label-md text-label-md shadow-xl flex items-center gap-2 transition-all opacity-0 pointer-events-none transform translate-y-4" id="toast-copilot">
+<span class="material-symbols-outlined text-[18px] text-secondary-fixed">check_circle</span>
+<span id="toast-copilot-text">Presupuesto cargado a la orden</span>
+</div>
+</div>
+<script>
+  // Micro-interacciones de la pantalla Copilot
+  function showToast(message) {
+    const toast = document.getElementById('toast-copilot');
+    const toastText = document.getElementById('toast-copilot-text');
+    if (!toast || !toastText) return;
+    
+    toastText.textContent = message;
+    toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+    toast.classList.add('opacity-100', 'translate-y-0');
+    
+    setTimeout(() => {
+      toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+      toast.classList.remove('opacity-100', 'translate-y-0');
+    }, 2800);
+  }
+
+  function insertPrompt(text) {
+    const input = document.getElementById('chat-input-field');
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  }
+
+  function editGeneratedMessage() {
+    const messageEl = document.getElementById('generated-client-message');
+    const input = document.getElementById('chat-input-field');
+    if (messageEl && input) {
+      input.value = messageEl.textContent.trim().replace(/^"|"$/g, '');
+      input.focus();
+      showToast('Borrador cargado en el campo de texto');
+    }
+  }
+
+  // Interacción Botón Aplicar a Cotizador
+  document.getElementById('btn-apply-quote')?.addEventListener('click', () => {
+    showToast('¡R$ 116,50 añadidos como anexo en la Orden #8492!');
+  });
+
+  // Interacción Botón Copiar Detalle
+  document.getElementById('btn-copy-quote')?.addEventListener('click', () => {
+    showToast('Presupuesto de materiales copiado al portapapeles');
+  });
+
+  // Interacción Enviar directo a Camila
+  document.getElementById('btn-send-to-client')?.addEventListener('click', () => {
+    showToast('Mensaje enviado al chat con Camila Duarte');
+  });
+
+  // Interacción Escaneo de Cámara
+  document.getElementById('btn-camera-ai')?.addEventListener('click', () => {
+    showToast('Abriendo escáner IA de repuestos...');
+  });
+
+  // Interacción Dictado por Voz
+  const micBtn = document.getElementById('btn-mic');
+  let isRecording = false;
+  micBtn?.addEventListener('click', () => {
+    isRecording = !isRecording;
+    if (isRecording) {
+      micBtn.classList.add('bg-error', 'text-on-error');
+      micBtn.classList.remove('bg-surface-container', 'text-secondary');
+      showToast('Escuchando diagnóstico por voz...');
+    } else {
+      micBtn.classList.remove('bg-error', 'text-on-error');
+      micBtn.classList.add('bg-surface-container', 'text-secondary');
+      showToast('Audio procesado por UGO Copilot');
+    }
+  });
+
+  // Simulación de envío de mensaje con animación de respuesta
+  document.getElementById('btn-send-message')?.addEventListener('click', () => {
+    const input = document.getElementById('chat-input-field');
+    if (!input || !input.value.trim()) return;
+
+    const userText = input.value.trim();
+    input.value = '';
+
+    const typing = document.getElementById('ai-typing');
+    if (typing) {
+      typing.classList.remove('hidden');
+      typing.classList.add('flex');
+      
+      setTimeout(() => {
+        typing.classList.add('hidden');
+        typing.classList.remove('flex');
+        showToast('Respuesta técnica generada con datos de Pinheiros');
+      }, 1400);
+    }
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 transition-colors gap-space-2xs text-primary font-bold" data-path="oportunidades" href="#"><span class="material-symbols-outlined text-[24px]">radar</span><span class="font-label-sm text-label-sm">Radar</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mis-trabajos" href="#"><span class="material-symbols-outlined text-[24px]">assignment</span><span class="font-label-sm text-label-sm">Trabajos</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[24px]">chat_bubble</span><span class="font-label-sm text-label-sm">Mensajes</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="perfil-pro" href="#"><span class="material-symbols-outlined text-[24px]">badge</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav></body></html>

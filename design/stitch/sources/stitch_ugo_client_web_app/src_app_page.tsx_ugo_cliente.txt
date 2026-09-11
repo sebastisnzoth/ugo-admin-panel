@@ -1,0 +1,179 @@
+/**
+ * =======================================================================
+ * UGO Cliente · Web App
+ * Archivo: src/app/page.tsx
+ * Home Interactiva & Radar en Vivo de Prestadores Homologados
+ * =======================================================================
+ */
+
+import React from 'react';
+import Link from 'next/link';
+
+export default function HomePage() {
+  return (
+    <div className="max-w-7xl mx-auto space-y-8">
+      {/* ------------------------------------------------------------- */}
+      {/* HERO & PROTOCOLO DE CONFIANZA FIDUCIARIA                       */}
+      {/* ------------------------------------------------------------- */}
+      <section className="bg-gradient-to-r from-[#003554] via-[#006494] to-[#0077B6] rounded-3xl p-8 text-white shadow-xl relative overflow-hidden">
+        <div className="absolute -right-12 -top-12 w-80 h-80 rounded-full bg-white/5 blur-2xl pointer-events-none" />
+        <div className="relative z-10 max-w-2xl space-y-4">
+          <div className="inline-flex items-center gap-2 bg-[#00875A]/30 border border-[#00875A] px-3 py-1 rounded-full text-xs font-semibold text-[#86EFAC]">
+            <span className="material-symbols-outlined text-[15px]">verified_user</span>
+            Protocolo UGO Shield · Póliza Tokio Marine hasta R$ 50.000
+          </div>
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
+            Servicios del hogar con custodia bancaria y pago liberado por PIN
+          </h1>
+          <p className="text-sm sm:text-base text-[#E0F2FE] font-normal leading-relaxed">
+            Ningún prestador cobra por adelantado. Los fondos permanecen protegidos en **Itaú Escrow** hasta que confirmás el trabajo terminado con tu clave de 4 dígitos.
+          </p>
+
+          <div className="pt-2 flex flex-wrap items-center gap-3">
+            <Link
+              href="/nueva-solicitud"
+              className="bg-[#00B4D8] hover:bg-[#0096B7] text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">bolt</span>
+              Diagnóstico con Hugo IA
+            </Link>
+            <Link
+              href="/buscar"
+              className="bg-white/10 hover:bg-white/20 text-white border border-white/20 px-5 py-3 rounded-xl font-semibold text-sm transition-all flex items-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[18px]">engineering</span>
+              Explorar 71 Técnicos Matriculados
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ------------------------------------------------------------- */}
+      {/* RADAR EN VIVO & CATEGORÍAS RÁPIDAS                             */}
+      {/* ------------------------------------------------------------- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Columna Izquierda: Radar y Servicios Activos (2 columnas) */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Radar Status Card */}
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-sm">
+            <div className="flex items-center justify-between pb-4 border-b border-[#F1F5F9]">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#E0F2FE] text-[#0077B6] flex items-center justify-center">
+                  <span className="material-symbols-outlined text-[24px]">radar</span>
+                </div>
+                <div>
+                  <h2 className="text-base font-bold text-[#0F172A]">Radar Geocercado · Canasvieiras</h2>
+                  <p className="text-xs text-[#64748B]">Monitoreo de disponibilidad y matriculados CREA / CFT</p>
+                </div>
+              </div>
+              <span className="text-xs bg-[#DCFCE7] text-[#166534] font-bold px-2.5 py-1 rounded-full flex items-center gap-1">
+                <span className="w-2 h-2 rounded-full bg-[#166534] animate-ping"></span>
+                En línea 24/7
+              </span>
+            </div>
+
+            {/* Simulación Gráfica de Radar */}
+            <div className="mt-5 h-48 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl flex items-center justify-center relative overflow-hidden">
+              <div className="absolute w-36 h-36 rounded-full border border-[#00B4D8]/30 animate-ping"></div>
+              <div className="absolute w-56 h-56 rounded-full border border-[#00B4D8]/20"></div>
+              <div className="w-12 h-12 rounded-full bg-[#0077B6] text-white flex items-center justify-center font-bold text-xs shadow-lg z-10">
+                TÚ
+              </div>
+              <div className="absolute top-8 left-20 bg-white shadow-md border border-[#E2E8F0] px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-[#0F172A]">
+                <span className="w-2 h-2 rounded-full bg-[#00875A]"></span>
+                Carlos M. (400m · HVAC)
+              </div>
+              <div className="absolute bottom-6 right-24 bg-white shadow-md border border-[#E2E8F0] px-2.5 py-1 rounded-full flex items-center gap-1.5 text-[11px] font-semibold text-[#0F172A]">
+                <span className="w-2 h-2 rounded-full bg-[#00875A]"></span>
+                Roberto S. (1.2km · Gas)
+              </div>
+            </div>
+          </div>
+
+          {/* Categorías Principales */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-base font-bold text-[#0F172A]">Especialidades con Arancel Homologado</h3>
+              <Link href="/buscar" className="text-xs font-semibold text-[#0077B6] hover:underline">
+                Ver aranceles completos →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              {[
+                { name: 'Electricidad', icon: 'bolt', tag: 'Desde R$ 120', count: '18 pros' },
+                { name: 'Plomería & Gas', icon: 'plumbing', tag: 'Desde R$ 140', count: '24 pros' },
+                { name: 'Climatización', icon: 'ac_unit', tag: 'Desde R$ 180', count: '15 pros' },
+                { name: 'Cerrajería 24h', icon: 'lock', tag: 'Llegada <25m', count: '14 pros' },
+              ].map((c) => (
+                <Link
+                  key={c.name}
+                  href={`/buscar?cat=${c.name}`}
+                  className="bg-white p-4 rounded-xl border border-[#E2E8F0] hover:border-[#00B4D8] hover:shadow-md transition-all group"
+                >
+                  <span className="material-symbols-outlined text-[26px] text-[#0077B6] group-hover:scale-110 transition-transform">
+                    {c.icon}
+                  </span>
+                  <h4 className="text-sm font-bold text-[#0F172A] mt-2">{c.name}</h4>
+                  <p className="text-xs text-[#00875A] font-semibold">{c.tag}</p>
+                  <p className="text-[11px] text-[#64748B] mt-0.5">{c.count}</p>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Columna Derecha: Billetera & Custodia Activa */}
+        <div className="space-y-6">
+          {/* Billetera UGO Card */}
+          <div className="bg-white rounded-2xl border border-[#E2E8F0] p-6 shadow-sm space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">Billetera UGO</span>
+              <span className="text-xs font-semibold text-[#00875A] bg-[#DCFCE7] px-2 py-0.5 rounded">
+                102% CDI Diario
+              </span>
+            </div>
+            <div>
+              <p className="text-2xl font-extrabold text-[#0F172A]">R$ 505,00</p>
+              <p className="text-xs text-[#64748B] mt-0.5">Saldo disponible para contratación inmediata</p>
+            </div>
+            <div className="p-3 bg-[#F8FAFC] border border-[#F1F5F9] rounded-xl flex items-center justify-between text-xs">
+              <span className="text-[#64748B]">En Custodia Itaú (Orden #UG-8501)</span>
+              <span className="font-bold text-[#0077B6]">R$ 140,00</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <Link
+                href="/pagos/recargar"
+                className="bg-[#0077B6] hover:bg-[#005B8C] text-white py-2 rounded-xl text-xs font-semibold text-center transition-colors"
+              >
+                Recargar PIX
+              </Link>
+              <Link
+                href="/pagos"
+                className="bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] py-2 rounded-xl text-xs font-semibold text-center transition-colors"
+              >
+                Comprobantes NF-e
+              </Link>
+            </div>
+          </div>
+
+          {/* Hugo IA Widget Contextual */}
+          <div className="bg-gradient-to-br from-[#EFF6FF] to-[#E0F2FE] border border-[#BFDBFE] rounded-2xl p-5 space-y-3">
+            <div className="flex items-center gap-2 text-[#0077B6]">
+              <span className="material-symbols-outlined text-[20px]">smart_toy</span>
+              <span className="text-xs font-bold uppercase tracking-wider">Hugo IA Copiloto</span>
+            </div>
+            <p className="text-xs text-[#1E3A8A] leading-relaxed">
+              ¿Tenés un error en el tablero o display de aire? Sacale una foto y el modelo analizará el código de falla antes de llamar al técnico.
+            </p>
+            <Link
+              href="/nueva-solicitud"
+              className="inline-flex items-center gap-1 text-xs font-bold text-[#0077B6] hover:underline"
+            >
+              Iniciar diagnóstico multimodal →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

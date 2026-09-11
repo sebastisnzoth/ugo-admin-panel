@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full">
+<!-- Header de Tesorería & Acciones Globales -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mb-space-lg">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Tesorería &amp; Conciliación Bancaria</span>
+<span class="text-text-muted">•</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-ping"></span>
+          Gateway SPI Bacen Activo
+        </span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-text-primary tracking-tight">Finanzas · Retiros de Proveedores &amp; Liquidación PIX</h1>
+<p class="font-body-md text-body-md text-text-secondary mt-1">Aprobación, control antifraude en 3 capas y dispersión instantánea conectada al Sistema de Pagos Instantáneos (SPI) del Banco Central de Brasil.</p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap">
+<button class="h-9 px-space-md rounded-lg bg-surface-panel hover:bg-surface-muted text-text-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px] text-text-secondary">download</span>
+<span>Descargar Remesa</span>
+</button>
+<button class="h-9 px-space-md rounded-lg bg-surface-panel hover:bg-surface-muted text-text-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[18px] text-text-secondary">tune</span>
+<span>Reglas de Retiro Automático</span>
+</button>
+<button class="h-9 px-space-md rounded-lg bg-primary hover:bg-brand-green-hover text-on-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Procesar Lote PIX (14 aprobados)</span>
+</button>
+</div>
+</div>
+<!-- Fila de 4 KPIs Financieros de Tesorería -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md mb-space-lg">
+<!-- KPI 1: Escrow -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary"></div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider block">Saldo en Bóveda Escrow</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 block">R$ 148.920,00</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-secondary-fixed flex items-center justify-center text-on-secondary-container">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2 text-text-secondary">
+<span class="font-body-sm text-body-sm flex items-center gap-1 text-primary font-medium">
+<span class="material-symbols-outlined text-[15px]">verified_user</span> 100% Auditado
+        </span>
+<span class="font-label-sm text-label-sm text-text-muted">Custodia activa en Banco Central</span>
+</div>
+</div>
+<!-- KPI 2: Pendientes -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-warning-amber"></div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider block">Solicitudes Pendientes</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 block">R$ 18.450,00</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-warning-amber-subtle flex items-center justify-center text-warning-amber">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2 text-text-secondary">
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold">23 en espera</span>
+<span class="font-body-sm text-body-sm text-text-muted">3 retenciones forenses</span>
+</div>
+</div>
+<!-- KPI 3: Dispersado Hoy -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider block">Dispersado Hoy vía PIX</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 block">R$ 42.680,00</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-brand-green-subtle flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">send_money</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2">
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">speed</span> Avg. 4.2s
+        </span>
+<span class="font-body-sm text-body-sm text-text-muted">58 transferencias exitosas</span>
+</div>
+</div>
+<!-- KPI 4: Tasa de Éxito SPI -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-1 bg-copilot-cyan"></div>
+<div class="flex items-start justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider block">Tasa de Éxito SPI (Bacen)</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 block">99.94%</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-copilot-cyan-subtle flex items-center justify-center text-copilot-cyan">
+<span class="material-symbols-outlined text-[20px]">hub</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2">
+<span class="font-data-mono text-data-mono text-text-secondary">Latencia: 120ms</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Nodo SP1 Normal</span>
+</div>
+</div>
+</div>
+<!-- Layout Principal Dividido: Data Table (68%) + Auditoría Forense & Telemetría (32%) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg items-start">
+<!-- Columna Izquierda: Tabla y Filtros -->
+<div class="xl:col-span-8 flex flex-col gap-space-md">
+<!-- Barra de Filtros y Búsqueda -->
+<div class="bg-surface-panel rounded-xl p-space-sm shadow-sm flex flex-col gap-space-sm">
+<!-- Pestañas de Estado -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 text-nowrap">
+<button class="px-3 py-1.5 rounded-lg bg-surface-muted text-text-primary font-label-md text-label-md font-semibold">
+            Todas <span class="ml-1 text-text-muted">142</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary hover:bg-surface-muted hover:text-text-primary font-label-md text-label-md transition-colors flex items-center gap-1.5">
+            Pendientes de Revisión 
+            <span class="px-1.5 py-0.2 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm">23</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary hover:bg-surface-muted hover:text-text-primary font-label-md text-label-md transition-colors flex items-center gap-1.5">
+            Aprobadas / En Cola 
+            <span class="px-1.5 py-0.2 rounded-full bg-copilot-cyan-subtle text-copilot-cyan hover:text-copilot-cyan-hover font-label-sm text-label-sm">14</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary hover:bg-surface-muted hover:text-text-primary font-label-md text-label-md transition-colors">
+            Liquidadas Hoy <span class="ml-1 text-text-muted">58</span>
+</button>
+<button class="px-3 py-1.5 rounded-lg text-text-secondary hover:bg-surface-muted hover:text-text-primary font-label-md text-label-md transition-colors flex items-center gap-1.5">
+            Rechazadas / Retenidas 
+            <span class="px-1.5 py-0.2 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm">3</span>
+</button>
+</div>
+<!-- Inputs de Búsqueda y Filtros Rápidos -->
+<div class="flex flex-col md:flex-row items-center gap-space-sm pt-space-xs">
+<div class="relative flex-1 w-full">
+<span class="material-symbols-outlined absolute left-3 top-2 text-text-muted text-[18px]">search</span>
+<input class="w-full h-8 pl-9 pr-3 rounded-lg bg-surface-muted text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel shadow-inner" placeholder="Buscar proveedor, CPF, Llave PIX o ID (#RET-...)" type="text"/>
+</div>
+<div class="flex items-center gap-space-xs w-full md:w-auto">
+<select class="h-8 px-2 rounded-lg bg-surface-muted text-text-secondary font-body-sm text-body-sm focus:outline-none cursor-pointer">
+<option>Todos los Bancos (12)</option>
+<option>Nubank (0260)</option>
+<option>Banco Itaú (0341)</option>
+<option>Banco Inter (0077)</option>
+<option>Santander (0033)</option>
+<option>Banco do Brasil (0001)</option>
+</select>
+<select class="h-8 px-2 rounded-lg bg-surface-muted text-text-secondary font-body-sm text-body-sm focus:outline-none cursor-pointer">
+<option>Monto: Cualquier valor</option>
+<option>R$ 0 - R$ 1.000</option>
+<option>R$ 1.000 - R$ 3.000</option>
+<option>&gt; R$ 3.000 (Crítico)</option>
+</select>
+<button class="h-8 w-8 rounded-lg bg-surface-muted text-text-secondary hover:bg-surface-container-high flex items-center justify-center" title="Recargar lista">
+<span class="material-symbols-outlined text-[18px]">refresh</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Tabla Principal de Retiros de Alta Densidad -->
+<div class="bg-surface-panel rounded-xl shadow-sm overflow-hidden flex flex-col">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="h-table-header-height bg-surface-muted/60 text-text-muted font-label-sm text-label-sm uppercase tracking-wider">
+<th class="px-space-sm w-10 text-center">
+<input class="rounded accent-primary cursor-pointer" type="checkbox"/>
+</th>
+<th class="px-space-sm font-semibold">ID / Solicitud</th>
+<th class="px-space-sm font-semibold">Proveedor</th>
+<th class="px-space-sm font-semibold text-right">Saldo Total</th>
+<th class="px-space-sm font-semibold text-right">Monto Retiro</th>
+<th class="px-space-sm font-semibold">Destino PIX &amp; Banco</th>
+<th class="px-space-sm font-semibold text-center">Score Riesgo</th>
+<th class="px-space-sm font-semibold">Estado</th>
+<th class="px-space-sm font-semibold text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-muted font-body-sm text-body-sm">
+<!-- Fila 1: Carlos Silveira -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-sm text-center">
+<input checked="" class="rounded accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono font-bold text-text-primary">#RET-8421</span>
+<span class="font-label-sm text-[10px] text-text-muted">18 min atrás</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-sm text-primary font-bold">CS</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-text-primary truncate">Carlos Silveira</span>
+<span class="text-[11px] text-text-secondary">Climatización</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono text-text-secondary">R$ 1.840,00</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono font-bold text-text-primary">R$ 1.200,00</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-[11px] text-text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-text-muted">badge</span> ***.628.910-**
+                    </span>
+<span class="text-[11px] text-text-muted">Banco Itaú (0341)</span>
+</div>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-brand-green-hover font-data-mono text-label-sm font-semibold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-green-hover"></span> 99/100
+                  </span>
+</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold whitespace-nowrap">
+                    Pendiente
+                  </span>
+</td>
+<td class="px-space-sm text-right">
+<button class="h-7 px-2.5 rounded bg-primary hover:bg-brand-green-hover text-on-primary font-label-sm text-label-sm font-semibold transition-all">
+                    Aprobar PIX
+                  </button>
+</td>
+</tr>
+<!-- Fila 2: Rodrigo Mendonça -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-sm text-center">
+<input checked="" class="rounded accent-primary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono font-bold text-text-primary">#RET-8420</span>
+<span class="font-label-sm text-[10px] text-text-muted">34 min atrás</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-sm text-secondary font-bold">RM</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-text-primary truncate">Rodrigo Mendonça</span>
+<span class="text-[11px] text-text-secondary">Electricista</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono text-text-secondary">R$ 3.450,00</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono font-bold text-text-primary">R$ 2.800,00</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-[11px] text-text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-text-muted">phone_iphone</span> +55 48 98411-****
+                    </span>
+<span class="text-[11px] text-text-muted">Nubank (0260)</span>
+</div>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-brand-green-hover font-data-mono text-label-sm font-semibold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-green-hover"></span> 98/100
+                  </span>
+</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold whitespace-nowrap">
+                    Pendiente
+                  </span>
+</td>
+<td class="px-space-sm text-right">
+<button class="h-7 px-2.5 rounded bg-primary hover:bg-brand-green-hover text-on-primary font-label-sm text-label-sm font-semibold transition-all">
+                    Aprobar PIX
+                  </button>
+</td>
+</tr>
+<!-- Fila 3: Marcos Souza -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-sm text-center">
+<input class="rounded accent-primary cursor-pointer" disabled="" type="checkbox"/>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono font-bold text-text-primary">#RET-8419</span>
+<span class="font-label-sm text-[10px] text-text-muted">1h 12m atrás</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-sm text-text-secondary font-bold">MS</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-text-primary truncate">Marcos Souza</span>
+<span class="text-[11px] text-text-secondary">Plomería</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono text-text-secondary">R$ 920,00</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono font-bold text-text-primary">R$ 920,00</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-[11px] text-text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-text-muted">vpn_key</span> uuid-491f-82...
+                    </span>
+<span class="text-[11px] text-text-muted">Banco Inter (0077)</span>
+</div>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-brand-green-hover font-data-mono text-label-sm font-semibold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-green-hover"></span> 94/100
+                  </span>
+</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded bg-copilot-cyan-subtle text-copilot-cyan font-label-sm text-label-sm font-semibold whitespace-nowrap flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] animate-spin">sync</span> En Cola SPI
+                  </span>
+</td>
+<td class="px-space-sm text-right">
+<span class="font-label-sm text-label-sm text-text-muted italic">Despachando...</span>
+</td>
+</tr>
+<!-- Fila 4: Diego Tavares (ALERTA DE SEGURIDAD - SELECCIONADO) -->
+<tr class="h-table-row-height bg-risk-red-subtle/40 hover:bg-risk-red-subtle/60 transition-colors">
+<td class="px-space-sm text-center">
+<input class="rounded accent-tertiary cursor-pointer" type="checkbox"/>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<span class="font-data-mono text-data-mono font-bold text-tertiary">#RET-8418</span>
+<span class="material-symbols-outlined text-[14px] text-tertiary">error</span>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary">2h 05m atrás</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-risk-red-subtle flex items-center justify-center font-label-sm text-tertiary font-bold">DT</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-text-primary truncate">Diego Tavares</span>
+<span class="text-[11px] text-text-secondary">Pintura &amp; Acabados</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono text-text-secondary">R$ 4.200,00</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono font-bold text-tertiary">R$ 3.500,00</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-[11px] text-text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-text-muted">mail</span> diego@tavares.br
+                    </span>
+<span class="text-[11px] text-text-muted">Santander (0033)</span>
+</div>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-data-mono text-label-sm font-semibold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> 42/100
+                  </span>
+</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold whitespace-nowrap">
+                    Retenido Auditoría
+                  </span>
+</td>
+<td class="px-space-sm text-right">
+<button class="h-7 px-2.5 rounded bg-tertiary hover:bg-risk-red-hover text-on-tertiary font-label-sm text-label-sm font-semibold transition-all">
+                    Investigar
+                  </button>
+</td>
+</tr>
+<!-- Fila 5: Luciano Pereira -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-sm text-center">
+<input class="rounded accent-primary cursor-pointer" disabled="" type="checkbox"/>
+</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-data-mono font-bold text-text-secondary">#RET-8415</span>
+<span class="font-label-sm text-[10px] text-text-muted">Hoy, 10:14</span>
+</div>
+</td>
+<td class="px-space-sm">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center font-label-sm text-text-muted font-bold">LP</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-text-primary truncate">Luciano Pereira</span>
+<span class="text-[11px] text-text-secondary">Plomería</span>
+</div>
+</div>
+</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono text-text-secondary">R$ 1.400,00</td>
+<td class="px-space-sm text-right font-data-mono text-data-mono font-bold text-text-secondary">R$ 1.400,00</td>
+<td class="px-space-sm">
+<div class="flex flex-col">
+<span class="font-data-mono text-[11px] text-text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px] text-text-muted">badge</span> ***.102.449-**
+                    </span>
+<span class="text-[11px] text-text-muted">Banco do Brasil (0001)</span>
+</div>
+</td>
+<td class="px-space-sm text-center">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-brand-green-hover font-data-mono text-label-sm font-semibold inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-brand-green-hover"></span> 99/100
+                  </span>
+</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded bg-brand-green-subtle text-brand-green-hover font-label-sm text-label-sm font-semibold whitespace-nowrap flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">check_circle</span> Liquidado PIX
+                  </span>
+</td>
+<td class="px-space-sm text-right">
+<button class="text-text-muted hover:text-text-primary" title="Ver Comprobante Bacen E2E">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Paginador y Resumen de Lote -->
+<div class="px-space-base py-space-sm bg-surface-muted/40 flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-text-secondary font-body-sm text-body-sm">
+<span>Mostrando 5 de 142 transferencias</span>
+<span class="text-text-muted">•</span>
+<span class="font-data-mono text-data-mono font-semibold text-text-primary">2 seleccionados (R$ 4.000,00)</span>
+</div>
+<div class="flex items-center gap-1">
+<button class="w-7 h-7 rounded flex items-center justify-center text-text-muted hover:bg-surface-panel disabled:opacity-30" disabled="">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<span class="px-2 font-data-mono text-data-mono text-text-primary">Pág 1 de 29</span>
+<button class="w-7 h-7 rounded flex items-center justify-center text-text-secondary hover:bg-surface-panel">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Columna Derecha: Panel de Auditoría Forense & Telemetría en Vivo -->
+<div class="xl:col-span-4 flex flex-col gap-space-md">
+<!-- Panel de Auditoría Forense Activo: #RET-8418 -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-tertiary"></div>
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[20px]">shield_with_heart</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary">Auditoría Forense de Retiro</h2>
+</div>
+<span class="font-data-mono text-data-mono font-bold text-tertiary">#RET-8418</span>
+</div>
+<!-- Alerta Antifraude Resaltada -->
+<div class="p-space-sm bg-risk-red-subtle rounded-lg my-space-xs">
+<div class="flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-tertiary text-[18px] shrink-0 mt-0.5">warning</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-tertiary font-bold">Disparador L2 Activado</span>
+<p class="font-body-sm text-body-sm text-tertiary mt-0.5">
+                El usuario modificó su llave PIX hace menos de 48 horas e intentó retirar el <strong class="font-bold">83.3%</strong> de su saldo acumulado.
+              </p>
+</div>
+</div>
+</div>
+<!-- Perfil y Métricas del Proveedor -->
+<div class="flex items-center gap-space-sm p-space-sm bg-surface-canvas rounded-lg my-space-xs">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Close up professional portrait of Diego Tavares, Brazilian technical contractor in Florianopolis wearing uniform polo shirt, neutral studio lighting, sharp operational ID style photograph." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9_JE4CCOARhiLEgOfFJGgwR_yM-vsITj3nbAROLko3d5v0pcyjUdHSLfHcbJ9u8u2N8SaszQWeUP_JYBlVd8XdeL6tNVYDfR7uTwwK8zvHXxDX0QfNCT8i_Dpv9U8drfsfphtNEpI4ZApB7-L35hZ00-LQ6iLMJG9Js7wd6ZV5lcdhDXU389Gork2jPrhE6GmZoBzK1dtQ8_nv8-axG-tW_GaVMqwipw1pL9ENwcRAXej9P_7mZY7"/>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-md text-label-md font-bold text-text-primary truncate">Diego Tavares</span>
+<span class="font-body-sm text-body-sm text-text-muted">CPF 189.442.909-02 • Nivel Pro</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-text-muted">Reputación</span>
+<span class="font-data-mono text-data-mono font-bold text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[13px] fill-current">star</span> 4.92
+            </span>
+</div>
+</div>
+<!-- Desglose de Servicios & Validación -->
+<div class="flex flex-col gap-space-xs py-space-xs text-text-secondary font-body-sm text-body-sm">
+<div class="flex items-center justify-between py-1">
+<span class="text-text-muted">Historial de Servicios:</span>
+<span class="font-semibold text-text-primary">12 completados sin reclamos</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-text-muted">Saldo Escrow Retenido:</span>
+<span class="font-data-mono font-semibold text-text-primary">R$ 4.200,00</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-text-muted">Monto en Disputa Activa:</span>
+<span class="font-data-mono text-primary font-semibold">R$ 0,00</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-text-muted">IP de Solicitud:</span>
+<span class="font-data-mono text-text-primary">177.136.24.18 (Vivo Florianópolis)</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<span class="text-text-muted">Dispositivo Reconocido:</span>
+<span class="font-semibold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">smartphone</span> iPhone 13 Pro (Conocido)
+            </span>
+</div>
+</div>
+<!-- Opciones de Resolución -->
+<div class="flex flex-col gap-space-xs mt-space-sm pt-space-sm">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider font-semibold">Resolución Forense Requerida</span>
+<button class="w-full h-8 px-3 rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[16px]">face</span>
+<span>Liberar con Selfie Biométrica App</span>
+</button>
+<button class="w-full h-8 px-3 rounded-lg bg-surface-muted hover:bg-surface-container text-text-primary font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">contact_page</span>
+<span>Solicitar Comprobante Titularidad</span>
+</button>
+<button class="w-full h-8 px-3 rounded-lg bg-risk-red-subtle hover:bg-risk-red-hover hover:text-on-tertiary text-tertiary font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[16px]">block</span>
+<span>Rechazar Retiro y Notificar</span>
+</button>
+</div>
+</div>
+<!-- Telemetría en Vivo de Nodo SPI / Bacen -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col">
+<div class="flex items-center justify-between pb-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px]">terminal</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Telemetría SPI en Vivo</h3>
+</div>
+<span class="font-data-mono text-[10px] text-text-muted">ID: GW-FLN-04</span>
+</div>
+<!-- Terminal Log Micro-component -->
+<div class="bg-surface-canvas rounded-lg p-space-sm font-data-mono text-[11px] leading-relaxed flex flex-col gap-1 overflow-x-auto text-text-secondary">
+<div class="flex items-center gap-1 text-primary">
+<span>[11:04:12]</span>
+<span class="font-bold">SPI_ACK:</span>
+<span>E00416994202501121104 DISPERSADO</span>
+</div>
+<div class="flex items-center gap-1 text-text-muted">
+<span>[11:03:55]</span>
+<span>DICT_QUERY:</span>
+<span>CPF ***.628.910-** VÁLIDO (ITAÚ)</span>
+</div>
+<div class="flex items-center gap-1 text-warning-amber">
+<span>[11:01:20]</span>
+<span>RISK_SCORE:</span>
+<span>#RET-8418 FLAG_L2 (PIX_KEY_RECENT)</span>
+</div>
+<div class="flex items-center gap-1 text-text-muted">
+<span>[10:59:44]</span>
+<span>HEARTBEAT:</span>
+<span>BACEN SPI Ping 122ms OK</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-sm text-text-muted font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Criptografía HSM RSASSA-PSS OK</span>
+</div>
+<span>v2.12 BACEN</span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

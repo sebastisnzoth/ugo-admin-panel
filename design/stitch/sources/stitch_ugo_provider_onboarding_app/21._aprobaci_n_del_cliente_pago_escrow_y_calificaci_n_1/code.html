@@ -1,0 +1,321 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-screen-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="UGO Pro Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WetKv_07c95F-GkNCZq6Nazapa6YyKZfSPGpY9l2H-1MNh-4BEnqJ4lzBOdHGQ2QqpgvouZgtiewneX-cRaevcd1aRAnDigjlztVGAsGWQASKM6Fl7u6PMwjE0E0WzSs2uW1ucDiybpTZ-B_8-PzjJTeXO3Wx0FTJxXiUoW2EwKki7pMwQCay6bOV_XOB8ISdSLwH0ibqk56pDGwB5VBzgjZ-Q-nukifupJFcTKqXAmXKpxAc75kHst-e0"><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold flex items-center gap-space-2xs"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>PROVEEDOR</span><h1 class="font-title-md text-title-md text-on-surface truncate">Oportunidades</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Estado de Disponibilidad" class="min-h-[44px] px-space-sm rounded-full bg-secondary/10 flex items-center gap-space-2xs" type="button"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Online</span></button><button aria-label="Notificaciones" class="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-on-surface-variant relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface"><div class="flex flex-col w-full pb-8">
+<!-- Top Context Header -->
+<div class="px-space-md pt-space-xs pb-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<button aria-label="Cerrar y volver al radar" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-2xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">Finalización</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">#8492</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Inspección final de plomería</span>
+</div>
+</div>
+<div class="flex items-center gap-space-2xs px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[16px]">verified</span>
+<span class="font-label-sm text-label-sm">Servicio Concluido</span>
+</div>
+</div>
+<div class="px-space-md flex flex-col gap-space-md">
+<!-- Escrow Release Celebration Banner -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-card-padding shadow-[0_4px_24px_-4px_rgba(0,40,142,0.08)]">
+<!-- Decorative background glow -->
+<div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-secondary/10 blur-2xl pointer-events-none"></div>
+<div class="relative flex flex-col gap-space-sm">
+<div class="flex items-start justify-between">
+<div class="w-12 h-12 rounded-xl bg-secondary/15 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div class="flex items-center gap-space-2xs px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="material-symbols-outlined text-[14px]">bolt</span>
+<span class="font-label-sm text-label-sm">Servicio Concluido</span>
+</div>
+</div>
+<div class="flex flex-col">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">¡Servicio Aprobado y Fondos Liberados!</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Camila Duarte inspeccionó y confirmó la total conformidad del trabajo en cocina.</p>
+</div>
+<!-- Highlighting Amount -->
+<div class="p-space-sm rounded-lg bg-surface-container-low flex items-center justify-between mt-1">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Acreditación Inmediata</span>
+<span class="font-display-lg-mobile text-display-lg-mobile text-primary font-extrabold">R$ 250,00</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-label-md text-label-md text-secondary font-bold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+              En tu cuenta Itaú
+            </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Liquidación por PIX</span>
+</div>
+</div>
+<!-- Escrow Details Row -->
+<div class="flex flex-col gap-1 pt-1">
+<div class="flex items-center justify-between text-on-surface-variant font-label-md text-label-md">
+<span class="">Comprobante UGO:</span>
+<span class="font-semibold text-on-surface font-mono">#TX-984291</span>
+</div>
+<button class="text-left text-primary font-label-md text-label-md font-bold flex items-center gap-1 hover:underline py-1" type="button">
+<span class="">Ver comprobante de transferencia PIX</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Evidence & Checklist Final Comparison -->
+<div class="rounded-xl bg-surface-container-lowest p-card-padding shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-primary text-[20px]">photo_library</span>
+<span class="font-title-md text-title-md text-on-surface">Evidencia Final Entregada</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-bold">4/4 tareas OK</span>
+</div>
+<!-- Before & After Comparison Grid -->
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Before -->
+<div class="flex flex-col gap-1.5">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Close up photo of an old corroded dripping PVC pipe underneath a dark domestic sink with water stains and a bucket catching leaks" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwCSvLXPfXApoebPiz3b34x78JSfTyZsIsGHeQCIwFUald7bnRBbKaSd4E61eXCGOOf5DM0lmoeh9199Q5Szq6_aqi9sHy6rhmVkVY0BGdzs2ZRObhiSna21fSE3uUNe1MgKjeFVtNKCFCIiVgxhOSpefowPicozqqPwGTW8QiYl-xV8rb1SuNnfZsRSTEmdEkW4C0PlS6bqFsCTn607jbQVadHpsOyi3rVuK1d3qVJVvwHkjTcie2lQ">
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface font-label-sm text-label-sm font-semibold">Antes</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant line-clamp-1">Fuga en codo flexible</span>
+</div>
+<!-- After -->
+<div class="flex flex-col gap-1.5">
+<div class="relative w-full aspect-[4/3] rounded-lg overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Pristine close up photo of brand new stainless steel braided hose and chrome angle valve installed clean and dry inside bright white under-sink cabinet" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBRLwFIQ1TUVnCgjwoj06M1Hlo0lh52HBPMUp7YOPHd5nWTp7CYEtOzyEFPSSMw-KyqHPPmfSPfsB4bZ8BanrkPfQ_wQb6MSPA6VbDibojmhTNwK4wW9yZBACouGf8j_PAtvifxvrfkb3AbM7fggw_wrPlxz1Ejyvaygu3chobwSxKdL_CUR1CA3QvydslKbeu-ha5DMChndHYpy-0jbac02LnB4ag_GmRl8zN9o5Fq8oGbP_eJZr0ERQ">
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm font-bold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">done_all</span>
+              Después
+            </span>
+<span class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-surface-container-lowest/90 backdrop-blur-sm font-label-sm text-label-sm text-secondary font-bold">Aprobado</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface font-medium line-clamp-1">Acero trenzado nuevo</span>
+</div>
+</div>
+<!-- Completion telemetry chip -->
+<div class="flex items-center gap-space-xs p-space-xs rounded-lg bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-secondary text-[18px]">Comprobante UGO:</span>
+<span class="">Tiempo de ejecución: <strong class="text-on-surface">48 min</strong> (Estimado 1h)</span>
+</div>
+</div>
+<!-- Mutual Rating Section (Rate Camila Duarte) -->
+<div class="rounded-xl bg-surface-container-lowest p-card-padding shadow-sm flex flex-col gap-space-md">
+<div class="flex flex-col gap-0.5">
+<h3 class="font-title-md text-title-md text-on-surface">¿Cómo fue tu experiencia con Camila?</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tu valoración fortalece la seguridad y transparencia de la red UGO Pro.</p>
+</div>
+<!-- Client Profile Summary Tile -->
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<div class="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of a smiling professional Latin American woman Camila Duarte with warm natural lighting and neutral background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCVr_VwOB3oCN-FFcS4ciYdJeAyeI_eL_SHSKkhEx3r_EWgtzgK_mi9HOsugBcJIYGgY5NMjbgnMO1zaHE0d20OtjN9tiLDve62kxnh-GIZwZ1JSpTYm4BS745qca67pRkYN41LamCtWBiez93tA9g46kKj_HzVAlSyGO0DrZS9LQM2Y7xHTxWdkAouTcZVoCjufMvXF100IItuBpQ4lK8mCocJU_QaP-R-i7Efy-v_7Sa25noRP-pjvQ">
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-surface">Camila Duarte</span>
+<span class="material-symbols-outlined text-secondary text-[16px]" title="Identidad Verificada">verified_user</span>
+</div>
+<div class="flex items-center gap-1 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-tertiary-fixed-dim text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-bold text-on-surface">4.9</span>
+<span class="">• 18 contrataciones</span>
+</div>
+</div>
+</div>
+<div class="px-space-xs py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+          CPF Verificado
+        </div>
+</div>
+<!-- Interactive Star Rating -->
+<div class="flex flex-col items-center justify-center py-space-xs gap-1">
+<div class="flex items-center gap-space-xs" id="star-container">
+<button class="star-btn text-tertiary-fixed-dim hover:scale-110 active:scale-95 transition-transform p-1" data-star="1" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-tertiary-fixed-dim hover:scale-110 active:scale-95 transition-transform p-1" data-star="2" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-tertiary-fixed-dim hover:scale-110 active:scale-95 transition-transform p-1" data-star="3" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-tertiary-fixed-dim hover:scale-110 active:scale-95 transition-transform p-1" data-star="4" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-tertiary-fixed-dim hover:scale-110 active:scale-95 transition-transform p-1" data-star="5" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+</div>
+<span class="font-label-lg text-label-lg text-secondary font-bold mt-1" id="star-label">¡Excelente cliente! (5/5)</span>
+</div>
+<!-- Quick Feedback Pills -->
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Aspectos destacados</span>
+<div class="flex flex-wrap gap-2">
+<button class="feedback-pill px-3 py-1.5 rounded-full font-label-md text-label-md bg-secondary text-on-secondary font-semibold transition-all" type="button">
+            ✓ Puntual en recibirme
+          </button>
+<button class="feedback-pill px-3 py-1.5 rounded-full font-label-md text-label-md bg-secondary text-on-secondary font-semibold transition-all" type="button">
+            ✓ Espacio despejado
+          </button>
+<button class="feedback-pill px-3 py-1.5 rounded-full font-label-md text-label-md bg-secondary text-on-secondary font-semibold transition-all" type="button">
+            ✓ Trato muy amable
+          </button>
+<button class="feedback-pill px-3 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant font-medium hover:bg-surface-container-high transition-all" type="button">
+            Instrucciones claras
+          </button>
+<button class="feedback-pill px-3 py-1.5 rounded-full font-label-md text-label-md bg-surface-container text-on-surface-variant font-medium hover:bg-surface-container-high transition-all" type="button">
+            Pago sin demoras
+          </button>
+</div>
+</div>
+<!-- Optional Comment Area -->
+<div class="flex flex-col gap-1">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="review-notes">Nota adicional (opcional)</label>
+<textarea class="w-full p-3 rounded-lg bg-surface-container-low text-on-surface font-body-sm text-body-sm focus:outline-none focus:bg-surface-container-lowest placeholder:text-outline transition-colors resize-none" id="review-notes" placeholder="Dejá un comentario público o privado para UGO sobre Camila... (Ej: Excelente predisposición y acceso rápido al departamento)" rows="2"></textarea>
+</div>
+<!-- Tip Notice Banner -->
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-tertiary-fixed/30 text-on-surface">
+<div class="w-9 h-9 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary shrink-0">
+<span class="material-symbols-outlined text-[20px]">loyalty</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-title-md text-title-md text-on-surface">¡Recibiste R$ 20,00 de propina!</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Camila premió tu puntualidad y prolijidad (100% directa a vos).</span>
+</div>
+</div>
+</div>
+<!-- Daily Financial Summary & Accumulated Earnings -->
+<div class="rounded-xl bg-surface-container-lowest p-card-padding shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-2xs">
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+<span class="font-title-md text-title-md text-on-surface">Liquidación y Saldo de Hoy</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Nivel Oro</span>
+</div>
+<div class="flex flex-col divide-y divide-surface-container-low">
+<div class="flex items-center justify-between py-2 text-on-surface font-body-md text-body-md">
+<span class="text-on-surface-variant">Mano de obra (orden #8492)</span>
+<span class="font-semibold">R$ 250,00</span>
+</div>
+<div class="flex items-center justify-between py-2 text-on-surface font-body-md text-body-md">
+<span class="text-on-surface-variant">Propina voluntaria</span>
+<span class="font-semibold text-secondary">+ R$ 20,00</span>
+</div>
+<div class="flex items-center justify-between py-2 text-on-surface font-body-md text-body-md">
+<div class="flex items-center gap-1.5">
+<span class="text-on-surface-variant">Comisión UGO (0%)</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold">Bono Activo</span>
+</div>
+<span class="font-medium text-secondary">R$ 0,00</span>
+</div>
+<div class="flex items-center justify-between pt-2.5 pb-1 font-title-md text-title-md text-on-surface">
+<span class="font-bold">Total este servicio:</span>
+<span class="font-extrabold text-primary">R$ 270,00</span>
+</div>
+</div>
+<!-- Quick Metrics Ribbon -->
+<div class="grid grid-cols-2 gap-space-xs pt-1">
+<div class="p-space-xs rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Total generado hoy</span>
+<span class="font-title-md text-title-md text-on-surface font-bold">R$ 750,00</span>
+<span class="font-body-sm text-body-sm text-secondary font-semibold mt-0.5">3 servicios listos</span>
+</div>
+<div class="p-space-xs rounded-lg bg-surface-container-low flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Reputación sumada</span>
+<span class="font-title-md text-title-md text-primary font-bold">+25 Puntos Pro</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Top 5% São Paulo</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<!-- Main Primary CTA -->
+<button class="w-full h-[52px] rounded-xl bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-space-xs shadow-[0_4px_14px_rgba(0,40,142,0.28)] active:translate-y-0.5 transition-all" id="submit-review-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">radar</span>
+<span class="">Enviar Calificación y Volver al Radar</span>
+</button>
+<!-- Secondary Outline Button -->
+<button class="w-full h-[48px] rounded-xl bg-surface-container-lowest text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center gap-space-xs hover:bg-surface-container-low active:bg-surface-container transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span class="">Descargar Resumen y Garantía (PDF)</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Interactive Star Rating
+    const starButtons = document.querySelectorAll('.star-btn');
+    const starLabel = document.getElementById('star-label');
+    const labels = [
+      'Por debajo de lo esperado (1/5)',
+      'Aceptable (2/5)',
+      'Buena experiencia (3/5)',
+      'Muy buen cliente (4/5)',
+      '¡Excelente cliente! (5/5)'
+    ];
+
+    starButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        const rating = parseInt(this.getAttribute('data-star'));
+        starButtons.forEach((sBtn, idx) => {
+          const icon = sBtn.querySelector('.material-symbols-outlined');
+          if (idx < rating) {
+            sBtn.classList.remove('text-outline-variant');
+            sBtn.classList.add('text-tertiary-fixed-dim');
+            icon.style.fontVariationSettings = "'FILL' 1";
+          } else {
+            sBtn.classList.remove('text-tertiary-fixed-dim');
+            sBtn.classList.add('text-outline-variant');
+            icon.style.fontVariationSettings = "'FILL' 0";
+          }
+        });
+        if (starLabel) {
+          starLabel.textContent = labels[rating - 1];
+        }
+      });
+    });
+
+    // Toggleable Feedback Pills
+    const feedbackPills = document.querySelectorAll('.feedback-pill');
+    feedbackPills.forEach(pill => {
+      pill.addEventListener('click', function() {
+        const isSelected = this.classList.contains('bg-secondary');
+        if (isSelected) {
+          this.classList.remove('bg-secondary', 'text-on-secondary', 'font-semibold');
+          this.classList.add('bg-surface-container', 'text-on-surface-variant', 'font-medium');
+          this.textContent = this.textContent.replace('✓ ', '');
+        } else {
+          this.classList.remove('bg-surface-container', 'text-on-surface-variant', 'font-medium');
+          this.classList.add('bg-secondary', 'text-on-secondary', 'font-semibold');
+          this.textContent = '✓ ' + this.textContent.trim();
+        }
+      });
+    });
+
+    // Primary CTA micro-interaction
+    const submitBtn = document.getElementById('submit-review-btn');
+    if (submitBtn) {
+      submitBtn.addEventListener('click', function() {
+        const originalText = this.innerHTML;
+        this.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">sync</span><span>Guardando y conectando radar...</span>';
+        setTimeout(() => {
+          this.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>¡Listo! Redirigiendo...</span>';
+        }, 800);
+      });
+    }
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 transition-colors gap-space-2xs text-primary font-bold" data-path="oportunidades" href="#"><span class="material-symbols-outlined text-[24px]">radar</span><span class="font-label-sm text-label-sm">Radar</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mis-trabajos" href="#"><span class="material-symbols-outlined text-[24px]">assignment</span><span class="font-label-sm text-label-sm">Trabajos</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[24px]">chat_bubble</span><span class="font-label-sm text-label-sm">Mensajes</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="perfil-pro" href="#"><span class="material-symbols-outlined text-[24px]">badge</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav>
+
+</body></html>

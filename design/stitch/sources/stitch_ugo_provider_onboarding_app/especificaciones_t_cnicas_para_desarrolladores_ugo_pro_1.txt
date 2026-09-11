@@ -1,0 +1,276 @@
+# UGO Pro — Especificaciones Técnicas de Ingeniería y Guía de Implementación (Handoff)
+**Versión:** 1.0 (Ready for Dev) • **Destinatarios:** Equipos de Frontend (Mobile / React Native / Flutter), Backend (APIs / Microservicios) & DevOps  
+**Ecosistema:** UGO Pro Specialist Application • **Plataformas Objetivo:** iOS / Android • **Arquitectura:** Event-Driven / RESTful + WebSockets / Escrow Ledger
+
+---
+
+## 1. Arquitectura General y Stack Tecnológico Recomendado
+
+```
+[ Cliente Mobile (React Native / Flutter) ]
+       │              ▲
+       ▼ REST (TLS)   │ WebSockets (WSS - Telemetría, Chat & Radar)
+┌────────────────────────────────────────────────────────┐
+│               API Gateway (Reverse Proxy / Auth)       │
+└───────────┬───────────────────┬────────────────────┬───┘
+            │                   │                    │
+            ▼                   ▼                    ▼
+   [ Auth & Identity ]  [ Job & Escrow Engine ]  [ AI / Lens Vision ]
+   • JWT + Biometrics   • Event Ledger           • Embedding & OCR
+   • OTP (SMS Gateway)  • PIX / Bacen Direct     • Vector DB (Catalog)
+```
+
+- **Frontend Mobile:** React Native (TypeScript) o Flutter.
+- **Backend Core:** Node.js / Go / Kotlin microservicios.
+- **Bases de Datos:** PostgreSQL (transaccional ACID para órdenes y billetera), Redis (caché de radar y sockets), S3 Compatible Object Storage (evidencias fotográficas cifradas).
+- **Seguridad & Hash:** Hashing SHA-256 de imágenes en cliente y servidor para inmutabilidad legal de pruebas.
+
+---
+
+## 2. Sistema de Diseño (Design Tokens & UI Guidelines)
+
+Basado en el Design System oficial implementado en el Canvas:
+
+```json
+{
+  "theme": {
+    "typography": {
+      "fontFamily": "Plus Jakarta Sans, sans-serif",
+      "scale": {
+        "display": "28px / 34px - Bold (700)",
+        "heading1": "22px / 28px - SemiBold (600)",
+        "heading2": "18px / 24px - SemiBold (600)",
+        "bodyLarge": "15px / 22px - Regular (400)",
+        "bodyMedium": "13px / 18px - Regular (400)",
+        "caption": "11px / 16px - Medium (500)"
+      }
+    },
+    "colors": {
+      "brandPrimary": "#1e40af",
+      "brandPrimaryDark": "#1e3a8a",
+      "brandPrimaryLight": "#eff6ff",
+      "successEmerald": "#10b981",
+      "successEmeraldContainer": "#ecfdf5",
+      "surfaceBackground": "#faf8ff",
+      "surfaceContainer": "#ffffff",
+      "surfaceContainerLow": "#f2f3ff",
+      "textPrimary": "#0f172a",
+      "textSecondary": "#64748b",
+      "borderDefault": "#e2e8f0",
+      "error": "#ef4444"
+    },
+    "radii": {
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "full": "9999px"
+    }
+  }
+}
+```
+
+---
+
+## 3. Modelo de Entidades y Estados de Orden (Lifecycle)
+
+```
+[ DRAFT ] ──> [ QUOTED ] ──> [ ESCROW_LOCKED ] ──> [ IN_ROUTE ] ──> [ CHECKED_IN (OTP) ]
+                                                                             │
+[ COMPLETED ] <── [ CLIENT_APPROVED ] <── [ REVIEW_PENDING ] <── [ IN_PROGRESS ]
+      │                                                                      │
+      ▼                                                                      ▼
+[ PIX_DISBURSED ]                                                      [ IN_DISPUTE ]
+```
+
+### Tabla `JobOrder` (Esquema SQL)
+
+```sql
+CREATE TABLE job_orders (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    order_number VARCHAR(16) UNIQUE NOT NULL, -- e.g. #8492
+    specialist_id UUID NOT NULL REFERENCES specialists(id),
+    client_id UUID NOT NULL REFERENCES clients(id),
+    status VARCHAR(32) NOT NULL, -- DRAFT, QUOTED, ESCROW_LOCKED, IN_PROGRESS, COMPLETED, DISPUTED
+    category VARCHAR(64) NOT NULL, -- "Plomería", "Electricidad"
+    initial_amount DECIMAL(10, 2) NOT NULL,
+    addon_amount DECIMAL(10, 2) DEFAULT 0.00,
+    platform_fee_percent DECIMAL(5, 2) DEFAULT 15.00,
+    escrow_status VARCHAR(32) NOT NULL, -- PENDING_DEPOSIT, HELD_IN_ESCROW, RELEASED, REFUNDED
+    otp_start_code VARCHAR(6),
+    otp_validated_at TIMESTAMP WITH TIME ZONE,
+    sha256_before_photo VARCHAR(64),
+    sha256_after_photo VARCHAR(64),
+    pressure_bar_test DECIMAL(4, 2),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+```
+
+---
+
+## 4. Contratos de API REST & Endpoints Clave
+
+### 4.1. Radar de Trabajos en Tiempo Real
+- **Endpoint:** `GET /api/v1/jobs/radar`
+- **Headers:** `Authorization: Bearer <JWT_TOKEN>`
+- **Query Params:** `lat=-23.56168&lng=-46.68953&radius_km=15&category=plumber`
+- **Respuesta `200 OK`:**
+```json
+{
+  "status": "success",
+  "data": {
+    "specialist_status": "ONLINE",
+    "active_orders_nearby": [
+      {
+        "id": "ord_8492_pinheiros",
+        "order_number": "#8492",
+        "client_name": "Camila Duarte",
+        "category": "Plomería de Precisión",
+        "title": "Fuga de agua bajo mesada",
+        "description": "Flexible corroído con goteo constante. Requiere sustitución urgente.",
+        "location": {
+          "neighborhood": "Pinheiros, São Paulo",
+          "distance_km": 1.4,
+          "latitude": -23.5615,
+          "longitude": -46.6892
+        },
+        "estimated_budget": 250.00,
+        "urgency": "HIGH",
+        "created_at": "2024-10-24T14:02:10Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 4.2. Validación de Check-In Presencial con OTP
+- **Endpoint:** `POST /api/v1/jobs/{order_id}/check-in`
+- **Payload:**
+```json
+{
+  "otp_code": "9421",
+  "device_telemetry": {
+    "latitude": -23.56149,
+    "longitude": -46.68918,
+    "accuracy_meters": 4.2,
+    "timestamp": "2024-10-24T14:15:02Z"
+  }
+}
+```
+- **Respuesta `200 OK`:**
+```json
+{
+  "status": "success",
+  "message": "Check-in presencial verificado. Póliza de cobertura activa.",
+  "data": {
+    "order_status": "IN_PROGRESS",
+    "service_started_at": "2024-10-24T14:15:02Z",
+    "escrow_locked_amount": 250.00,
+    "insurance_policy_id": "UGO-INS-94102-BR"
+  }
+}
+```
+
+---
+
+### 4.3. Escáner de Repuestos IA (UGO Lens / Computer Vision)
+- **Endpoint:** `POST /api/v1/ai/lens/identify-part`
+- **Multipart Form:** `image` (JPEG/PNG, max 10MB) + `geo_lat`, `geo_lng`
+- **Respuesta `200 OK`:**
+```json
+{
+  "status": "success",
+  "detections": [
+    {
+      "part_name": "Flexible Acero Inoxidable DN15 40cm",
+      "confidence": 0.984,
+      "detected_damage": "Fisura por fatiga mecánica y oxidación en virola",
+      "replacement_suggested": "Flexible Inox Macho-Hembra 1/2\" x 40cm NBR 14878",
+      "nearest_hardware_store": {
+        "store_name": "Ferretería Central Pinheiros",
+        "distance_meters": 350,
+        "unit_price_brl": 38.50,
+        "stock_status": "IN_STOCK",
+        "sku": "TIGRE-FLEX-40-INX"
+      }
+    }
+  ]
+}
+```
+
+---
+
+### 4.4. Bóveda de Evidencias Criptográficas (Antes / Después)
+- **Endpoint:** `POST /api/v1/jobs/{order_id}/evidences`
+- **Payload:**
+```json
+{
+  "stage": "AFTER_REPAIR",
+  "image_url": "https://storage.ugopro.com/evidences/8492_after.jpg",
+  "sha256_hash": "e42d9b2e88a14b92c81ad89e24f707f",
+  "pressure_test": {
+    "applied_bar": 3.2,
+    "duration_minutes": 15,
+    "result": "PASSED_LEAK_FREE"
+  },
+  "compliance_standards": ["ABNT NBR 5626"]
+}
+```
+
+---
+
+### 4.5. Retiro y Liquidación Bancaria Inmediata PIX (Bacen API)
+- **Endpoint:** `POST /api/v1/wallet/withdraw/pix`
+- **Payload:**
+```json
+{
+  "amount": 1480.50,
+  "pix_key_type": "PHONE",
+  "pix_key": "+5511999993312",
+  "destination_bank_ispb": "18236120", -- Nu Pagamentos S.A.
+  "biometric_token": "bio_auth_sec_9941a8"
+}
+```
+- **Respuesta `200 OK`:**
+```json
+{
+  "status": "success",
+  "transaction_id": "TR-94218",
+  "e2e_pix_bacen_id": "E18236120202410241542A98C71B420F",
+  "amount_liquidated": 1480.50,
+  "execution_time_seconds": 1.8,
+  "currency": "BRL",
+  "beneficiary": {
+    "name": "Carlos Méndez",
+    "cpf_masked": "***.842.109-**",
+    "bank": "Nu Pagamentos S.A. (Nubank)"
+  },
+  "timestamp": "2024-10-24T15:42:18Z",
+  "receipt_url": "https://api.ugopro.com/v1/receipts/TR-94218.pdf"
+}
+```
+
+---
+
+## 5. WebSockets & Protocolo de Eventos en Tiempo Real
+
+Para el Radar de trabajos, Telemetría en Ruta (GPS) y Chat de soporte tripartito, se establece conexión a:  
+`wss://stream.ugopro.com/v1/ws?token=<JWT>`
+
+| Evento WS | Dirección | Descripción / Payload |
+| :--- | :--- | :--- |
+| `order:job_alert` | Server ➔ Client | Notificación push de nuevo trabajo en radar con timer de 120s. |
+| `specialist:geo_tick` | Client ➔ Server | Emisión periódica cada 10s de lat/lng durante navegación en ruta. |
+| `escrow:funded` | Server ➔ Client | Alerta de depósito en garantía confirmado (R$ 250,00 retenido). |
+| `chat:message` | Bidireccional | Mensaje de texto/audio con flag `is_adendum_proposal`. |
+| `dispute:mediator_note` | Server ➔ Client | Actualización de dictamen técnico por el perito asignado. |
+
+---
+
+## 6. Consideraciones de Seguridad y Cumplimiento
+
+1. **LGPD & CPF Hashing:** Los números de CPF y cuentas bancarias siempre deben almacenarse cifrados en base de datos (`AES-256-GCM`) y transmitirse mascarados en interfaces públicas.
+2. **Firmas de Evidencias:** Cada fotografía capturada por el módulo nativo calcula su hash SHA-256 antes de la subida para garantizar que no fue manipulada externamente.
+3. **Idempotencia en Pagos:** Todas las peticiones al motor Escrow y retiro PIX deben requerir un encabezado `Idempotency-Key: <UUID>` único para prevenir cobros o transferencias duplicadas en caso de inestabilidad de red 4G/5G.

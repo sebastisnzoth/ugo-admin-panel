@@ -1,0 +1,319 @@
+/**
+ * =======================================================================
+ * UGO Cliente · Shared Domain Contracts & TypeScript Definitions (v5.x)
+ * Form Factors: UGO Cliente Web (Desktop/Tablet) & UGO Cliente Mobile
+ * Backend: Supabase (Auth, Realtime, Storage, Postgres)
+ * Design System: Urban Kinetic (#006948, #00687A, #57DFFE)
+ * =======================================================================
+ * NOTA DE ARQUITECTURA:
+ * Contratos 100% neutrales y desacoplados de marcas comerciales de terceros
+ * (Tokio Marine, Itaú Escrow, CREA/CFT, Blockchain). Diseñados para calzar
+ * 1:1 con las tablas reales de Supabase:
+ * - profiles
+ * - service_requests
+ * - providers
+ * - escrow_deposits
+ * - disputes
+ * - messages
+ */
+
+// -----------------------------------------------------------------------
+// 1. Tipos Primitivos & Geográficos
+// -----------------------------------------------------------------------
+
+export type UUID = string;
+export type ISODateString = string;
+export type CurrencyBRL = number; // Ej: 140.00, 505.00
+export type PinCode = string; // PIN numérico de 4 dígitos para liberación de custodia de pago
+
+export interface LatLng {
+  lat: number;
+  lng: number;
+}
+
+export type ServiceCategory =
+  | 'ELECTRICITY'
+  | 'PLUMBING'
+  | 'HVAC_AIR_CONDITIONING'
+  | 'LOCKSMITH'
+  | 'APPLIANCES'
+  | 'PAINTING';
+
+export type ServiceUrgency =
+  | 'EMERGENCY_UNDER_2H' // Atención inmediata
+  | 'PRIORITY_TODAY'     // En el día (ventana 4h)
+  | 'SCHEDULED';         // Cita programada
+
+// -----------------------------------------------------------------------
+// 2. Perfil del Cliente (Supabase: profiles)
+// -----------------------------------------------------------------------
+
+export interface ClientProfile {
+  id: string; // "CUST-9042-BR"
+  fullName: string;
+  email: string;
+  phone: string; // WhatsApp autenticado OTP
+  nationalIdMasked: string; // ej: "***.492.810-**" (Documento de identidad verificado)
+  avatarUrl: string;
+  identityVerified: boolean;
+  memberSince: ISODateString;
+  tier: 'STANDARD' | 'UGO_SHIELD_PRO' | 'UGO_SHIELD_VIP';
+  reputation: {
+    averageRating: number;
+    totalCompletedServices: number;
+    activeGuarantees: number;
+    disputeRatio: number;
+  };
+  addresses: SavedAddress[];
+  trustedContacts: TrustedContact[];
+  homeRulesPreferences: HomeRules;
+}
+
+export interface SavedAddress {
+  id: UUID;
+  label: string; // "Domicilio Principal", "Casa de Playa"
+  addressLine: string; // "Av. das Nações 410, Depto 402"
+  neighborhood: string; // "Canasvieiras"
+  city: string; // "Florianópolis"
+  state: string; // "SC"
+  zipCode: string; // "88054-010"
+  isDefault: boolean;
+  coordinates: LatLng;
+  conciergeNotes?: string;
+}
+
+export interface TrustedContact {
+  id: UUID;
+  fullName: string;
+  relationship: string;
+  phone: string;
+  permissions: 'FULL_PIN_AUTHORIZATION' | 'ACCESS_ONLY';
+}
+
+export interface HomeRules {
+  petsPresent: boolean;
+  petDescription?: string;
+  courtesyParkingAvailable: boolean;
+  parkingSpotNumber?: string;
+  quietHours: {
+    start: string;
+    end: string;
+    drillRestricted: boolean;
+  };
+}
+
+// -----------------------------------------------------------------------
+// 3. Prestador Técnico Verificado (Supabase: providers)
+// -----------------------------------------------------------------------
+
+export interface Professional {
+  id: string; // "PRO-51842"
+  fullName: string; // "Carlos Méndez"
+  avatarUrl: string;
+  tradeTitle: string; // "Profesional Técnico Electricista"
+  verificationBadge: string; // "Identidad y antecedentes validados por UGO"
+  isBiometricVerified: boolean;
+  isBackgroundChecked: boolean;
+  ugoShieldCertified: boolean;
+  rating: number; // 4.9
+  reviewCount: number;
+  completedJobsCount: number;
+  satisfactionRate: number; // 99.2%
+  currentLocation?: LatLng;
+  vehiclePlateMasked?: string;
+}
+
+// -----------------------------------------------------------------------
+// 4. Custodia de Pago & Garantía UGO Shield (Supabase: escrow_deposits)
+// -----------------------------------------------------------------------
+
+export type EscrowStatus =
+  | 'RESERVED_PENDING_DISPATCH' // Fondos retenidos en cuenta de custodia UGO
+  | 'LOCKED_IN_SERVICE'         // Prestador en sitio, PIN no revelado
+  | 'RELEASE_AUTHORIZED_BY_PIN' // Cliente validó PIN de 4 dígitos
+  | 'DISPUTE_FROZEN'            // Fondos congelados bajo mediación UGO Shield
+  | 'REFUNDED_TO_CLIENT';
+
+export interface EscrowTransaction {
+  escrowId: string; // "ESC-9082-UGO"
+  serviceOrderId: string; // "#UG-8501"
+  custodyMechanism: 'UGO_ESCROW_PROTECTION';
+  totalAmount: CurrencyBRL;
+  breakdown: {
+    baseLaborFee: CurrencyBRL;
+    complementaryTasksFee: CurrencyBRL;
+    materialsBudgetApproved: CurrencyBRL;
+    platformFeePercentage: number;
+  };
+  pinSha256Hash?: string;
+  status: EscrowStatus;
+  lockedAt: ISODateString;
+  releasedAt?: ISODateString;
+  shieldCoverageCertificate: string; // "#SHIELD-8501-SC"
+  maxCoverageLimitBRL: CurrencyBRL; // ej: 15000.00
+  warrantyDurationDays: 30 | 60 | 90;
+}
+
+// -----------------------------------------------------------------------
+// 5. Ciclo de Vida del Servicio (Supabase: service_requests)
+// -----------------------------------------------------------------------
+
+export type ServiceStatus =
+  | 'DRAFT'
+  | 'MATCHING_RADAR'
+  | 'PROFESSIONAL_ASSIGNED'
+  | 'EN_ROUTE_GPS'
+  | 'ARRIVED_AT_DOOR'
+  | 'IN_PROGRESS_ACTIVE'
+  | 'COMPLEMENTARY_TASK_PENDING_APPROVAL'
+  | 'COMPLETED_AWAITING_PIN'
+  | 'SETTLED_AND_REVIEWED'
+  | 'DISPUTE_UNDER_MEDIATION';
+
+export interface ServiceOrder {
+  id: string; // "#UG-8501"
+  client: ClientProfile;
+  professional?: Professional;
+  category: ServiceCategory;
+  title: string;
+  problemDescription: string;
+  audioRecordingUrl?: string;
+  aiDiagnosis: {
+    detectedIssue: string;
+    aiConfidence: number;
+    suggestedMaterials: string[];
+    estimatedDurationMinutes: number;
+    benchmarkedPriceRange: {
+      min: CurrencyBRL;
+      max: CurrencyBRL;
+    };
+    proactiveTip: string;
+  };
+  urgency: ServiceUrgency;
+  attachments: {
+    id: UUID;
+    url: string;
+    caption?: string;
+    aiTags?: string[];
+  }[];
+  address: SavedAddress;
+  scheduledTime: ISODateString;
+  status: ServiceStatus;
+  escrow: EscrowTransaction;
+  telemetry?: {
+    estimatedArrivalMinutes: number;
+    distanceKm: number;
+    trafficCondition: 'FLUID' | 'MODERATE' | 'CONGESTED';
+    lastProLocation: LatLng;
+  };
+  liveMilestones: OperationalMilestone[];
+  complementaryExtensions?: ComplementaryTaskProposal[];
+  review?: ServiceReview;
+}
+
+export interface OperationalMilestone {
+  index: number;
+  title: string;
+  description: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  completedAt?: ISODateString;
+  evidencePhotoUrl?: string;
+}
+
+export interface ComplementaryTaskProposal {
+  id: UUID;
+  title: string; // "Instalación de aplique LED exterior estanco IP65"
+  description: string;
+  additionalCost: CurrencyBRL; // 55.00
+  additionalEstimatedMinutes: number; // 30
+  hugoAiValidation: {
+    fairPriceCheck: boolean;
+    savingPercentageAgainstStandard: number; // 18%
+    technicalFeasibilityConfirmed: boolean;
+  };
+  status: 'PROPOSED' | 'ACCEPTED_BY_CLIENT' | 'REJECTED';
+}
+
+export interface ServiceReview {
+  rating: 1 | 2 | 3 | 4 | 5;
+  positiveTags: string[];
+  comment?: string;
+  optionalTipBRL?: CurrencyBRL;
+  ugoShieldPointsEarned: number;
+  submittedAt: ISODateString;
+}
+
+// -----------------------------------------------------------------------
+// 6. Billetera & Finanzas (Supabase: wallet_transactions)
+// -----------------------------------------------------------------------
+
+export interface WalletState {
+  availableBalanceBRL: CurrencyBRL;
+  fundsInEscrowCustodyBRL: CurrencyBRL;
+  currentMonthSpentBRL: CurrencyBRL;
+  savedPaymentMethods: PaymentMethod[];
+}
+
+export interface PaymentMethod {
+  id: UUID;
+  type: 'UGO_WALLET_BALANCE' | 'PIX_DIRECT' | 'CREDIT_CARD';
+  title: string;
+  isDefault: boolean;
+  cardExpiry?: string;
+}
+
+export interface FiscalTransactionRecord {
+  id: string; // "#TRX-9410"
+  relatedOrderId?: string;
+  title: string;
+  professionalName?: string;
+  categoryTag: string;
+  timestamp: ISODateString;
+  amount: CurrencyBRL;
+  type: 'DEBIT_SERVICE' | 'CREDIT_RECHARGE' | 'REFUND_DISPUTE';
+  escrowStatus: 'LIQUIDATED' | 'IN_CUSTODY' | 'REFUNDED';
+  receiptPdfUrl: string;
+}
+
+// -----------------------------------------------------------------------
+// 7. Mediación, Chat & Hugo IA (Supabase: messages & disputes)
+// -----------------------------------------------------------------------
+
+export interface ChatMessage {
+  id: UUID;
+  senderType: 'CLIENT' | 'PROFESSIONAL' | 'HUGO_AI' | 'UGO_MEDIATOR';
+  senderName: string;
+  timestamp: string;
+  text: string;
+  attachments?: {
+    type: 'IMAGE' | 'AUDIO' | 'PDF';
+    url: string;
+    fileName?: string;
+  }[];
+  quickSuggestions?: string[];
+}
+
+export interface DisputeTicket {
+  disputeId: string; // "#UGO-DSP-44192"
+  serviceOrderId: string; // "#UG-88412"
+  frozenEscrowAmount: CurrencyBRL;
+  reason:
+    | 'INCOMPLETE_OR_UNFINISHED'
+    | 'TECHNICAL_FAULT_AFTER_SERVICE'
+    | 'PRO_LEFT_EARLY'
+    | 'ACCIDENTAL_DAMAGE'
+    | 'UNAGREED_TARIFF_DIFFERENCE';
+  description: string;
+  clientEvidenceUrls: string[];
+  mediatorAssigned?: {
+    name: string;
+    role: 'MEDIADOR_OFICIAL_UGO_SHIELD';
+    resolutionEtaHours: string;
+  };
+  timelineEvents: {
+    time: string;
+    title: string;
+    description: string;
+  }[];
+  resolutionStatus: 'OPEN_INVESTIGATION' | 'MUTUAL_AGREEMENT' | 'REFUND_ISSUED';
+}

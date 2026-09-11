@@ -6,6 +6,13 @@
 .ugo-client-root .ugo-ref-hugo{display:none!important}
 .ugo-client-global-trigger{display:none!important}
 
+/* Journey 10: profile, settings, preferences and account shell. */
+.ugo-client-root .ugo-client-global-drawer{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;color:var(--ugo-color-on-surface)!important;box-shadow:var(--ugo-shadow-sheet)!important}
+.ugo-client-root .ugo-client-account-card{background:var(--ugo-color-surface-low)!important;border:1px solid var(--ugo-color-outline-variant)!important}
+.ugo-client-root .ugo-client-account-avatar{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+.ugo-client-root .ugo-client-global-drawer button,.ugo-client-root .ugo-client-global-drawer a{font-family:var(--ugo-font)}
+.ugo-client-root .ugo-client-menu-close{min-width:var(--ugo-touch-target);min-height:var(--ugo-touch-target);background:var(--ugo-color-surface-container)!important;color:var(--ugo-color-on-surface)!important}
+
 .ugo-client-global-backdrop{z-index:220!important;background:rgba(17,24,39,.28)!important;backdrop-filter:blur(6px)!important;-webkit-backdrop-filter:blur(6px)!important}
 .ugo-client-global-drawer{width:min(344px,90vw)!important;height:100dvh!important;background:#fff!important;border-radius:0 28px 28px 0!important;box-shadow:28px 0 80px rgba(15,23,42,.22)!important;padding:18px 16px max(20px,env(safe-area-inset-bottom))!important;display:flex!important;flex-direction:column!important;overflow-y:auto!important}
 .ugo-client-global-head{padding:2px 2px 15px!important;border-bottom:0!important;align-items:center!important}

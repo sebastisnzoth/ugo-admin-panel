@@ -1,0 +1,155 @@
+<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UGO Cliente / Recuperar Contraseña</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            ugo: {
+              50: '#ecfdf5',
+              100: '#d1fae5',
+              200: '#a7f3d0',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+              800: '#065f46',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="bg-[#faf8ff] text-slate-900 font-sans antialiased min-h-screen flex flex-col">
+  <!-- Mobile Device Container 390px -->
+  <div class="w-full max-w-lg mx-auto min-h-screen flex flex-col justify-between px-4 sm:px-8 py-4 sm:py-8">
+    
+    <!-- Top System Status Bar -->
+    
+
+    <!-- Header Navigation bar -->
+    <header class="w-full py-2 flex items-center justify-between z-10">
+      <button type="button" class="w-10 h-10 -ml-1 flex items-center justify-center rounded-full text-slate-600 hover:bg-slate-200/60 active:scale-95 transition-all" aria-label="Volver al Login">
+        <span class="material-symbols-outlined text-2xl">arrow_back</span>
+      </button>
+      <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/70 text-slate-700 text-[11px] font-semibold">
+        <span class="material-symbols-outlined text-sm text-emerald-600">lock_reset</span>
+        <span class="">Recuperación Segura</span>
+      </div>
+      <button type="button" class="w-10 h-10 -mr-1 flex items-center justify-center rounded-full text-slate-500 hover:bg-slate-200/60" aria-label="Ayuda">
+        <span class="material-symbols-outlined text-xl">help_outline</span>
+      </button>
+    </header>
+
+    <!-- Main Content Area (Scrollable) -->
+    <main class="flex-1 w-full py-6 space-y-6">
+      
+      <!-- Icon & Titles -->
+      <div class="flex flex-col items-center text-center pt-2">
+        <div class="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shadow-sm mb-3">
+          <span class="material-symbols-outlined text-3xl">key</span>
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">¿Problemas para entrar?</h1>
+        <p class="text-sm text-slate-500 mt-2 max-w-sm leading-relaxed">
+          Elegí cómo querés recibir tu código seguro de recuperación para restablecer tu contraseña.
+        </p>
+      </div>
+
+      <!-- Recovery Method Selector (Tabs / Cards) -->
+      <div class="space-y-2.5">
+        
+        <!-- Option 1: WhatsApp / SMS (Recommended) -->
+        <label class="p-3.5 rounded-2xl bg-white border-2 border-emerald-600 shadow-sm flex items-start gap-3 cursor-pointer relative transition-all">
+          <input type="radio" name="recovery_method" checked="" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                <span class="">WhatsApp / SMS</span>
+                <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Más Rápido</span>
+              </span>
+              <span class="material-symbols-outlined text-emerald-600 text-lg">chat</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Enviaremos un código OTP de 6 dígitos al teléfono vinculado terminado en <strong class="text-slate-800 font-mono font-bold">••• 8831</strong>.</p>
+          </div>
+        </label>
+
+        <!-- Option 2: Email -->
+        <label class="p-3.5 rounded-2xl bg-white border border-slate-200 hover:border-slate-300 shadow-sm flex items-start gap-3 cursor-pointer relative transition-all">
+          <input type="radio" name="recovery_method" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-800">Correo Electrónico</span>
+              <span class="material-symbols-outlined text-slate-400 text-lg">mail</span>
+            </div>
+            <p class="text-[11px] text-slate-500 mt-0.5">Recibirás un enlace seguro de restablecimiento en <strong class="text-slate-800 font-medium">m•••@gmail.com</strong>.</p>
+          </div>
+        </label>
+
+      </div>
+
+      <!-- Code Verification Box (Preview Estado Interactivo) -->
+      <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 space-y-3">
+        <div class="flex items-center justify-between">
+          <span class="text-xs font-bold text-slate-800">Código de Seguridad (OTP)</span>
+          <span class="text-[11px] font-semibold text-emerald-700">Expira en: <span class="font-mono">04:59</span></span>
+        </div>
+
+        <!-- 6-digit Code Inputs -->
+        <div class="flex items-center justify-between gap-2 sm:gap-3"><input type="text" maxlength="1" value="7" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-emerald-500 text-center font-mono text-xl font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"><input type="text" maxlength="1" value="4" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-emerald-500 text-center font-mono text-xl font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"><input type="text" maxlength="1" value="9" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-emerald-500 text-center font-mono text-xl font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"><input type="text" maxlength="1" value="2" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-emerald-500 text-center font-mono text-xl font-bold text-slate-900 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all"><input type="text" maxlength="1" placeholder="•" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-slate-300 text-center font-mono text-xl font-bold text-slate-400 shadow-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition-all"><input type="text" maxlength="1" placeholder="•" class="flex-1 max-w-[56px] h-12 sm:h-14 rounded-xl bg-white border border-slate-300 text-center font-mono text-xl font-bold text-slate-400 shadow-sm focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition-all"></div>
+
+        <div class="flex items-center justify-between pt-1 text-[11px]">
+          <span class="text-slate-500">¿No recibiste el código?</span>
+          <button type="button" class="font-bold text-emerald-700 hover:text-emerald-800 hover:underline">Reenviar por SMS (45s)</button>
+        </div>
+      </div>
+
+      <!-- Hugo Copiloto Support Badge -->
+      <div class="p-3 rounded-xl bg-cyan-50/70 border border-cyan-200/70 flex items-center gap-2.5">
+        <span class="material-symbols-outlined text-cyan-700 text-lg">smart_toy</span>
+        <p class="text-[11px] text-cyan-900 leading-tight">
+          <strong>Hugo Copiloto:</strong> Si cambiaste de número o no tenés acceso a tu correo, podés validar tu identidad con DNI/Biometría facial.
+        </p>
+      </div>
+
+      <!-- Primary Action CTA (56px) -->
+      <div class="pt-1">
+        <button type="button" class="w-full h-14 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-sm shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2 transition-all active:scale-[0.98]">
+          <span class="">Validar Código y Crear Nueva Clave</span>
+          <span class="material-symbols-outlined text-lg">check_circle</span>
+        </button>
+      </div>
+
+    </main>
+
+    <!-- Bottom Footer -->
+    <footer class="py-6 text-center">
+      <p class="text-xs text-slate-600">
+        ¿Recordaste tu contraseña? 
+        <a href="#" class="font-bold text-emerald-700 hover:text-emerald-800 hover:underline ml-0.5">Volver a Iniciar Sesión</a>
+      </p>
+    </footer>
+
+  </div>
+
+
+
+</body></html>

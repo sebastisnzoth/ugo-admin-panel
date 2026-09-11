@@ -1,0 +1,219 @@
+<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style></head><body class="bg-surface font-body-md text-body-md text-on-surface pt-safe pb-safe flex flex-col min-h-screen"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full pb-10">
+<!-- Top Contextual Status Header -->
+<header class="w-full px-4 pt-3 pb-2 flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<span class="inline-flex items-center px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md shadow-sm">
+        ¡Llegaste a destino!
+      </span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">
+        14:16 hs • <strong class="text-secondary font-label-sm">A tiempo</strong>
+</span>
+</div>
+<div class="flex items-center gap-1.5">
+<button aria-label="Botón de emergencia SOS" class="flex items-center justify-center h-8 px-2.5 rounded-full bg-error-container text-on-error-container font-label-md text-label-md shadow-sm active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px] mr-1" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+        SOS
+      </button>
+<button aria-label="Centro de ayuda" class="flex items-center justify-center w-8 h-8 rounded-full bg-surface-container-high text-on-surface active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[18px]">help_outline</span>
+</button>
+</div>
+</header>
+<div class="px-4 space-y-3.5 mt-1">
+<!-- Card 1: Geocerca y Datos de Domicilio -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-4 shadow-sm space-y-3">
+<!-- Geocerca Validada Badge -->
+<div class="flex items-center justify-between bg-surface-container-low px-3 py-2 rounded-lg">
+<div class="flex items-center gap-2">
+<span class="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-on-secondary shadow-sm">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</span>
+<p class="font-label-md text-label-md text-secondary">
+            Geocerca validada por GPS a 15m
+          </p>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Preciso</span>
+</div>
+<!-- Preview Fachada + Dirección Detallada -->
+<div class="flex gap-3">
+<div class="relative w-20 h-20 rounded-xl overflow-hidden shadow-inner flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Modern upscale residential building facade in Pinheiros Sao Paulo, sunny warm daylight, architectural exterior entrance with glass canopy and manicured planters, realistic photo with deep contrast" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAoSrU1A4o43KFX53Us8Tl6ndECOHdxrGnyel2bMWCothlxno4-mPTB1FTFPxzc974Kyr0f1RI8FNQfpnmkBArtARbj1LMbcVNk8wdmGndPtv0kdevhQDN3qWtHy69e0peKtx_J7DkZjhUjHP_QUORZQMka7kDwHJ4nrDfWrVWUfI_bT0CyTjeRllJLgdCP7fF6vr54ZLMEwsEAo_KdBJRAl04yNt189TYA2i7eRoJr1O66LrcetDYxbw">
+<div class="absolute bottom-1 right-1 bg-surface-container-lowest/90 px-1.5 py-0.5 rounded-full shadow-sm flex items-center gap-0.5">
+<span class="material-symbols-outlined text-secondary text-[12px]" style="font-variation-settings: 'FILL' 1;">apartment</span>
+</div>
+</div>
+<div class="flex-1 min-w-0 flex flex-col justify-center">
+<div class="flex items-start justify-between gap-1">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">
+              Rua dos Pinheiros 480
+            </h2>
+<button class="text-primary-container p-1 rounded-lg hover:bg-surface-container active:scale-95 transition-all" id="copy-address-btn" onclick="navigator.clipboard.writeText('Rua dos Pinheiros 480 - Apto 42B'); const t=document.getElementById('copied-tooltip'); t.classList.remove('opacity-0'); setTimeout(()=&gt;t.classList.add('opacity-0'), 1600);" title="Copiar dirección" type="button">
+<span class="material-symbols-outlined text-[18px]">content_copy</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Apto 42B • Torre Sul • Pinheiros
+          </p>
+<div class="mt-1 flex items-center gap-1.5">
+<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-label-md text-label-md">
+<span class="material-symbols-outlined text-[14px] mr-1 text-primary-container">doorbell</span>
+              Interfono: 42B
+            </span>
+<span class="opacity-0 transition-opacity font-label-sm text-label-sm text-secondary font-semibold" id="copied-tooltip">¡Copiado!</span>
+</div>
+</div>
+</div>
+<!-- Notas operativas de acceso -->
+<div class="bg-surface-container px-3 py-2.5 rounded-lg flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary-container text-[18px] mt-0.5">sticky_note_2</span>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight">
+<strong class="font-label-md">Nota de Camila:</strong> "El ascensor de servicio está habilitado en portería y el perro está guardado en el patio trasero."
+        </p>
+</div>
+</section>
+<!-- Card 2: Cliente y Comunicación Inmediata -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-3.5 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3 min-w-0">
+<div class="relative w-12 h-12 flex-shrink-0">
+<img class="w-full h-full object-cover rounded-full" data-alt="Portrait of a smiling young Brazilian woman client named Camila Duarte outdoors against soft daylight, natural look, friendly expression, high resolution photography with crisp details" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBAlaMT8scvhvFg1hcHz2YRow9vbTo8Wqk9p0qYw8CHZQDMXN0AmE-4EmlLIopHIdRsxYxvPN_1iiNvA33_fRFfEiWj3wzDz85dtPqVxNuBf-PGKi3M3BV7SBdr1nxhd3W8oQVFXNESFA9tZuz3EaFDT7qXcBydRIe-hNOkNrKZS229ZkgUn675VeuZqrPXSjlvtab4clsKEAsPgRvjIRrlAISGI7r75uSidB7LYNtOTp-9D0HrlA6HyQ">
+<span class="absolute -bottom-0.5 -right-0.5 bg-secondary text-on-secondary rounded-full p-0.5 shadow-sm flex items-center justify-center">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-1.5">
+<h3 class="font-title-md text-title-md text-on-surface truncate">Camila Duarte</h3>
+<span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px] text-tertiary-container" style="font-variation-settings: 'FILL' 1;">star</span>
+                4.9
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">
+              Reparación de fuga en caño bajo mesada
+            </p>
+</div>
+</div>
+<!-- Botones directos de llamada y chat -->
+<div class="flex items-center gap-2 flex-shrink-0">
+<a aria-label="Llamar a Camila" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container active:scale-95 transition-transform" href="tel:+551199999999">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">call</span>
+</a>
+<button aria-label="Abrir chat en app" class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center text-primary-container active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">chat</span>
+</button>
+</div>
+</div>
+<!-- Quick Action: Notificar llegada -->
+<div class="pt-1">
+<button class="w-full py-2 px-3 rounded-lg bg-surface-container-low text-primary-container font-label-md text-label-md flex items-center justify-center transition-all active:scale-[0.99]" id="notify-arrival-btn" onclick="this.innerHTML = '&lt;span class=\'material-symbols-outlined text-[16px] mr-1\'&gt;done_all&lt;/span&gt; Notificación enviada a Camila'; this.disabled=true; this.classList.add('bg-secondary-container','text-on-secondary-container');" type="button">
+<span class="material-symbols-outlined text-[18px] mr-1.5 text-primary-container">notifications_active</span>
+          Avisar que estoy en la puerta / recepción
+        </button>
+</div>
+</section>
+<!-- Card 3: MÓDULO CENTRAL - OTP Check-in de Inicio -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-4 shadow-md space-y-4">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">pin</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Código de Seguridad de Inicio</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+            Pedile a Camila el código de 4 dígitos de su app UGO para habilitar el inicio oficial y activar las coberturas.
+          </p>
+</div>
+</div>
+<!-- Custodia Escrow Badge Integrada -->
+<div class="flex items-center justify-between px-3.5 py-2.5 rounded-lg bg-surface-container border border-outline-variant/30"><div class="flex items-center gap-2"><span class="flex items-center justify-center w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container"><span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">lock</span></span><span class="font-label-md text-label-md text-on-surface font-semibold">Fondos en Custodia PIX:</span></div><span class="font-headline-sm text-headline-sm text-secondary font-bold">R$ 250,00</span></div>
+<!-- OTP Inputs Interactivos -->
+<div class="flex justify-center items-center gap-3 py-1">
+<input aria-label="Dígito OTP 1" class="otp-box w-14 h-14 rounded-xl bg-surface-container-high text-center font-display-lg-mobile text-display-lg-mobile text-primary-container shadow-inner focus:bg-surface-container-lowest focus:outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text" value="8">
+<input aria-label="Dígito OTP 2" class="otp-box w-14 h-14 rounded-xl bg-surface-container-high text-center font-display-lg-mobile text-display-lg-mobile text-primary-container shadow-inner focus:bg-surface-container-lowest focus:outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text" value="4">
+<input aria-label="Dígito OTP 3" class="otp-box w-14 h-14 rounded-xl bg-surface-container-high text-center font-display-lg-mobile text-display-lg-mobile text-primary-container shadow-inner focus:bg-surface-container-lowest focus:outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" type="text" value="2">
+<input aria-label="Dígito OTP 4" class="otp-box w-14 h-14 rounded-xl bg-surface-container text-center font-display-lg-mobile text-display-lg-mobile text-primary-container shadow-inner focus:bg-surface-container-lowest focus:outline-none transition-all" inputmode="numeric" maxlength="1" pattern="[0-9]*" placeholder="•" type="text">
+</div>
+<!-- Garantía y Seguro UGO -->
+<div class="flex items-center gap-2.5 text-on-surface bg-surface-container-high px-3.5 py-2.5 rounded-lg"><span class="material-symbols-outlined text-secondary text-[20px] flex-shrink-0" style="font-variation-settings: 'FILL' 1;">verified_user</span><p class="font-body-sm text-body-sm text-on-surface leading-tight"><strong class="font-label-sm text-secondary uppercase tracking-wider block mb-0.5">Cobertura Garantizada</strong>Seguro de responsabilidad civil y garantía UGO activos automáticamente al validar el código.</p></div>
+<!-- Fallback / Ayuda OTP -->
+<div class="space-y-3 pt-1"><button type="button" class="w-full py-2.5 px-3 rounded-lg bg-surface-container-high text-primary font-label-md text-label-md flex items-center justify-center gap-2 border border-outline-variant/40 hover:bg-surface-container active:scale-[0.99] transition-all shadow-sm"><span class="material-symbols-outlined text-[20px] text-primary" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span><span class="">Escanear QR de seguridad del cliente</span></button><div class="pt-1 pb-0.5"><p class="text-center font-label-sm text-label-sm text-on-surface-variant mb-2">Teclado rápido de una sola mano</p><div class="grid grid-cols-5 gap-1.5 max-w-[280px] mx-auto"><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='1'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">1</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='2'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">2</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='3'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">3</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='4'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">4</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='5'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">5</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='6'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">6</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='7'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">7</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='8'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">8</button><button type="button" onclick="const empty=[...document.querySelectorAll('.otp-box')].find(i=&gt;!i.value); if(empty){empty.value='9'; empty.dispatchEvent(new Event('input'));}" class="h-10 rounded-lg bg-surface-container font-label-lg text-on-surface font-semibold flex items-center justify-center active:scale-95 active:bg-primary-container active:text-on-primary transition-all shadow-sm">9</button><button type="button" onclick="const filled=[...document.querySelectorAll('.otp-box')].reverse().find(i=&gt;i.value); if(filled){filled.value=''; filled.focus();}" class="h-10 rounded-lg bg-surface-container-high text-on-surface-variant font-label-lg flex items-center justify-center active:scale-95 transition-all shadow-sm" title="Borrar dígito"><span class="material-symbols-outlined text-[18px]">backspace</span></button></div></div><div class="text-center pt-1"><button class="text-primary-container font-label-md text-label-md hover:underline active:opacity-80 inline-flex items-center gap-1" type="button"><span class="material-symbols-outlined text-[16px]">contact_support</span><span class="">¿El cliente no encuentra su código o no responde?</span></button></div></div>
+</section>
+<!-- Card 4: Protocolo de Inspección Previa -->
+<section class="w-full bg-surface-container-lowest rounded-xl p-4 shadow-sm space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]">checklist</span>
+<h3 class="font-title-md text-title-md text-on-surface">Antes de comenzar a trabajar:</h3>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container px-2 py-0.5 rounded-full">3 pasos clave</span>
+</div>
+<div class="space-y-2.5 pt-1">
+<!-- Item 1 -->
+<label class="flex items-center gap-3 p-2.5 rounded-lg bg-surface-container-low cursor-pointer active:bg-surface-container transition-colors">
+<input checked="" class="w-5 h-5 rounded text-primary-container bg-surface-container-lowest focus:ring-0 focus:outline-none" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Ubicación de llave de paso general identificada</span>
+</label>
+<!-- Item 2 -->
+<label class="flex items-center gap-3 p-2.5 rounded-lg bg-surface-container-low cursor-pointer active:bg-surface-container transition-colors">
+<input checked="" class="w-5 h-5 rounded text-primary-container bg-surface-container-lowest focus:ring-0 focus:outline-none" type="checkbox">
+<span class="font-body-md text-body-md text-on-surface">Área de trabajo despejada y seca para maniobras</span>
+</label>
+<!-- Item 3: Foto del Estado Inicial -->
+<div class="p-3 rounded-lg bg-surface-container-low space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-body-md text-on-surface">Tomar foto del estado inicial (Antes de reparar)</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">1/1 Tomada</span>
+</div>
+<!-- Preview de Foto + Botón Cámara -->
+<div class="flex items-center gap-3">
+<div class="relative w-16 h-16 rounded-lg overflow-hidden shadow-sm flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Plumbing work site inside kitchen cabinet, macro photo of flexible water supply hose leak beneath stainless sink with water droplets, sharp focus, professional documentation shot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7ZyR9ehDTBmk3lxrfBVbXoLDJN00k1kqq2Ds1uqIAfXXOkOLsXcp62_IGbPvK5W7JZBDA27QBOst6vngk3j5HE9Ucd0FMUL93ju5P-pgbf37TsBdd7dfV2sz4oSlfhHsGn75fRISaqQfSkWgw6-Q23FwuJJ_1JfRF4Sgz3XLT1N1zP3lRRADsc9vpxmSCOMY0-tPd5BJRML9U9eXJIyFuDf7ZEEyfKvcE0DlDaTatSugTz1RxE9nm2g">
+<button class="absolute inset-0 bg-inverse-surface/30 flex items-center justify-center text-on-primary" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+<button class="flex-1 py-2.5 px-3 rounded-lg bg-surface-container text-primary-container font-label-md text-label-md flex items-center justify-center gap-1.5 active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[18px]">photo_camera</span>
+              Reemplazar o agregar foto
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Bottom Actions & Security Notice -->
+<section class="pt-2 space-y-2">
+<button class="w-full h-[52px] rounded-xl bg-primary-container text-on-primary font-title-md text-title-md shadow-md flex items-center justify-center gap-2 active:translate-y-0.5 transition-all" id="start-job-btn" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">play_arrow</span>
+        Validar Código e Iniciar Trabajo
+      </button>
+<p class="text-center font-body-sm text-body-sm text-on-surface-variant flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[15px] text-secondary">encrypted</span> El pago protegido por UGO de <strong>R$ 250,00</strong> continúa activo hasta la conformidad final.</p>
+</section>
+</div>
+</div>
+<script>
+  (function() {
+    // Quick auto-focus logic between OTP fields
+    const inputs = document.querySelectorAll('.otp-box');
+    inputs.forEach((input, index) => {
+      input.addEventListener('keyup', (e) => {
+        if (e.key >= '0' && e.key <= '9') {
+          if (index < inputs.length - 1) {
+            inputs[index + 1].focus();
+          }
+        } else if (e.key === 'Backspace' && index > 0 && !input.value) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+  })();
+</script></main>
+
+
+
+</body></html>

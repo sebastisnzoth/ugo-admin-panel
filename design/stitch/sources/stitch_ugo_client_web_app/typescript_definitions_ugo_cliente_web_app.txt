@@ -1,0 +1,317 @@
+/**
+ * =======================================================================
+ * UGO Cliente · Web App
+ * Type Definitions & Domain Data Contracts (TypeScript v5.x)
+ * =======================================================================
+ * Basado en la arquitectura visual, flujos fiduciarios y Design System 'Kinetic Trust'
+ */
+
+// -----------------------------------------------------------------------
+// 1. Tipos Fundamentales & Identificadores de Marca
+// -----------------------------------------------------------------------
+
+export type UUID = string;
+export type ISODateString = string;
+export type CurrencyBRL = number; // Ej: 140.00, 505.00
+export type PinCode = string; // PIN numérico de 4 dígitos para liberación de custodia fiduciaria
+
+export type LatLng = {
+  lat: number;
+  lng: number;
+};
+
+export type ServiceCategory =
+  | 'ELECTRICITY'
+  | 'PLUMBING'
+  | 'HVAC_AIR_CONDITIONING'
+  | 'LOCKSMITH'
+  | 'APPLIANCES'
+  | 'PAINTING';
+
+export type ServiceUrgency =
+  | 'EMERGENCY_UNDER_2H' // Inundación, cortocircuito, peligro inminente
+  | 'PRIORITY_TODAY'     // Atención prioritaria en el día
+  | 'SCHEDULED';         // Mantenimiento preventivo con fecha/hora
+
+// -----------------------------------------------------------------------
+// 2. Entidades de Usuario & Seguridad Criptográfica
+// -----------------------------------------------------------------------
+
+export interface ClientProfile {
+  id: string; // ej: "CUST-9042-BR"
+  fullName: string;
+  email: string;
+  phone: string; // WhatsApp verificado 2FA
+  cpfMasked: string; // ej: "***.492.810-**" (Validado Receita Federal)
+  avatarUrl: string;
+  livenessScore: number; // Ej: 99.8% (Verificación biométrica UGO Guardian)
+  memberSince: ISODateString;
+  tier: 'STANDARD' | 'SHIELD_PRO' | 'SHIELD_VIP';
+  reputation: {
+    averageRating: number; // 5.0
+    totalCompletedServices: number;
+    activeGuarantees: number;
+    disputeRatio: number; // 0.0%
+  };
+  addresses: SavedAddress[];
+  trustedContacts: TrustedContact[]; // Contactos delegados con autorización de recepción y PIN
+  homeRulesPreferences: HomeRules;
+}
+
+export interface SavedAddress {
+  id: UUID;
+  label: string; // "Domicilio Principal", "Casa de Playa"
+  addressLine: string; // "Av. das Nações 410, Depto 402"
+  neighborhood: string; // "Canasvieiras"
+  city: string; // "Florianópolis"
+  state: 'SC' | 'SP' | 'RJ' | 'PR';
+  zipCode: string; // "88054-010"
+  isDefault: boolean;
+  coordinates: LatLng;
+  conciergeNotes?: string; // "Conserje Edmilson en garita. Habilitar ascensor de servicio"
+}
+
+export interface TrustedContact {
+  id: UUID;
+  fullName: string;
+  relationship: string; // "Hermano", "Conserje", "Administrador"
+  phone: string;
+  permissions: 'FULL_PIN_AUTHORIZATION' | 'ACCESS_ONLY';
+}
+
+export interface HomeRules {
+  petsPresent: boolean;
+  petDescription?: string; // "Perro Golden Retriever dócil"
+  courtesyParkingAvailable: boolean;
+  parkingSpotNumber?: string;
+  quietHours: {
+    start: string; // "13:00"
+    end: string;   // "14:30"
+    drillRestricted: boolean;
+  };
+}
+
+// -----------------------------------------------------------------------
+// 3. Prestador Técnico Homologado (Profesional)
+// -----------------------------------------------------------------------
+
+export interface Professional {
+  id: string; // "PRO-51842"
+  fullName: string; // "Carlos Méndez", "Roberto Silva"
+  avatarUrl: string;
+  tradeTitle: string; // "Electricista Matriculado Especialista HVAC"
+  licenseNumber: string; // "CREA/SC #51842"
+  biometricVerified: boolean;
+  backgroundCheckPassed: boolean;
+  ugoShieldCertified: boolean;
+  rating: number; // 4.9
+  reviewCount: number;
+  completedJobsCount: number;
+  satisfactionRate: number; // 99.2%
+  currentLocation?: LatLng;
+  vehiclePlateMasked?: string;
+}
+
+// -----------------------------------------------------------------------
+// 4. Protocolo Fiduciario & Garantía UGO Shield
+// -----------------------------------------------------------------------
+
+export type EscrowStatus =
+  | 'RESERVED_PENDING_DISPATCH' // Fondos retenidos en Itaú Escrow
+  | 'LOCKED_IN_SERVICE'         // Profesional en sitio, PIN no revelado
+  | 'RELEASE_AUTHORIZED_BY_PIN' // Cliente validó PIN de 4 dígitos
+  | 'DISPUTE_FROZEN'            // Fondos congelados bajo arbitraje
+  | 'REFUNDED_TO_CLIENT';
+
+export interface EscrowTransaction {
+  escrowId: string; // "ESC-9082-ITAU-BR"
+  serviceOrderId: string; // "#UG-8501"
+  custodyBank: 'ITAU_UNIBANCO_ESCROW_API' | 'BACEN_SPI';
+  totalAmount: CurrencyBRL;
+  breakdown: {
+    baseLaborFee: CurrencyBRL;
+    complementaryTasksFee: CurrencyBRL;
+    materialsBudgetApproved: CurrencyBRL;
+    ugoPlatformFeePercentage: number;
+  };
+  pinSha256Hash: string;
+  status: EscrowStatus;
+  lockedAt: ISODateString;
+  releasedAt?: ISODateString;
+  tokioMarinePolicyNumber: string; // "TM-8501-SC"
+  maxCoverageLimitBRL: CurrencyBRL; // ej: 15000.00 o 50000.00
+  warrantyDurationDays: 60 | 90;
+}
+
+// -----------------------------------------------------------------------
+// 5. Ciclo de Vida del Servicio (Service Order)
+// -----------------------------------------------------------------------
+
+export type ServiceStatus =
+  | 'DRAFT'
+  | 'MATCHING_RADAR'
+  | 'PROFESSIONAL_ASSIGNED'
+  | 'EN_ROUTE_GPS'
+  | 'ARRIVED_AT_DOOR'
+  | 'IN_PROGRESS_ACTIVE'
+  | 'COMPLEMENTARY_TASK_PENDING_APPROVAL'
+  | 'COMPLETED_AWAITING_PIN'
+  | 'SETTLED_AND_REVIEWED'
+  | 'DISPUTE_UNDER_MEDIATION';
+
+export interface ServiceOrder {
+  id: string; // "#UG-8501"
+  client: ClientProfile;
+  professional?: Professional;
+  category: ServiceCategory;
+  title: string; // "Instalación y revisión de disyuntor bipolar y térmicas"
+  problemDescription: string;
+  audioRecordingUrl?: string;
+  aiDiagnosis: {
+    detectedIssue: string; // "Plomería hidráulica menor" / "Fuga de corriente en tablero"
+    aiConfidence: number; // 0.96
+    suggestedMaterials: string[];
+    estimatedDurationMinutes: number; // 45 - 60
+    benchmarkedPriceRange: {
+      min: CurrencyBRL;
+      max: CurrencyBRL;
+    };
+    proactiveTip: string;
+  };
+  urgency: ServiceUrgency;
+  attachments: {
+    id: UUID;
+    url: string;
+    caption?: string;
+    aiTags?: string[]; // ["IA: Pérdida en flexible 1/2", "display_error_e4.jpg"]
+  }[];
+  address: SavedAddress;
+  scheduledTime: ISODateString;
+  status: ServiceStatus;
+  escrow: EscrowTransaction;
+  telemetry?: {
+    estimatedArrivalMinutes: number;
+    distanceKm: number;
+    trafficCondition: 'FLUID' | 'MODERATE' | 'CONGESTED';
+    lastProLocation: LatLng;
+  };
+  liveMilestones: OperationalMilestone[];
+  complementaryExtensions?: ComplementaryTaskProposal[];
+  review?: ServiceReview;
+}
+
+export interface OperationalMilestone {
+  index: number;
+  title: string; // "1. Diagnóstico y desenergizado seguro"
+  description: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED';
+  completedAt?: ISODateString;
+  notarizedProofUrl?: string; // Foto con timestamp y hash
+}
+
+export interface ComplementaryTaskProposal {
+  id: UUID;
+  title: string; // "Instalación de aplique LED exterior"
+  description: string;
+  additionalCost: CurrencyBRL; // 55.00
+  additionalEstimatedMinutes: number; // 30
+  hugoAiValidation: {
+    fairPriceCheck: boolean;
+    savingPercentageAgainstStandard: number; // 18%
+    technicalFeasibilityConfirmed: boolean;
+  };
+  status: 'PROPOSED' | 'ACCEPTED_BY_CLIENT' | 'REJECTED';
+}
+
+export interface ServiceReview {
+  rating: 1 | 2 | 3 | 4 | 5;
+  positiveTags: string[]; // ["Puntualidad exacta", "Limpieza del área", "Herramientas homologadas"]
+  comment?: string;
+  optionalTipBRL?: CurrencyBRL; // 10, 15, 25
+  ugoShieldPointsEarned: number; // +50 Puntos
+  submittedAt: ISODateString;
+}
+
+// -----------------------------------------------------------------------
+// 6. Billetera UGO, Pagos & Conciliación Fiscal
+// -----------------------------------------------------------------------
+
+export interface WalletState {
+  availableBalanceBRL: CurrencyBRL; // R$ 505,00
+  remuneratedRateCDI: number; // 102% CDI
+  dailyYieldBRL: CurrencyBRL; // +R$ 0,18/día
+  monthlyAccumulatedYieldBRL: CurrencyBRL; // +R$ 4,82
+  accumulatedCashbackBRL: CurrencyBRL; // R$ 68,50
+  cashbackActiveMultiplier: string; // "+3.5% en fontanería y electricidad"
+  fundsInEscrowCustodyBRL: CurrencyBRL; // R$ 140,00
+  currentMonthSpentBRL: CurrencyBRL; // R$ 1.050,00
+  sefazTaxInvoicesReconciledPercentage: number; // 100%
+  savedPaymentMethods: PaymentMethod[];
+}
+
+export interface PaymentMethod {
+  id: UUID;
+  type: 'UGO_WALLET_BALANCE' | 'PIX_DIRECT' | 'CREDIT_CARD';
+  title: string; // "Mastercard Black •••• 4291", "PIX mariana.costa@email.com"
+  isDefault: boolean;
+  cardExpiry?: string;
+  badge?: string; // "102% CDI", "5% OFF Mano de Obra"
+}
+
+export interface FiscalTransactionRecord {
+  id: string; // "#TRX-9410"
+  relatedOrderId?: string; // "#UG-8492"
+  title: string;
+  professionalName?: string;
+  categoryTag: string;
+  timestamp: ISODateString;
+  amount: CurrencyBRL;
+  type: 'DEBIT_SERVICE' | 'CREDIT_RECHARGE' | 'REFUND_DISPUTE' | 'YIELD_CDI';
+  escrowStatus: 'LIQUIDATED' | 'IN_CUSTODY' | 'REFUNDED';
+  voucherPdfUrl: string;
+  sefazNfeNumber?: string; // "#002.849"
+}
+
+// -----------------------------------------------------------------------
+// 7. Mediación, Chat & Hugo IA Copiloto
+// -----------------------------------------------------------------------
+
+export interface ChatMessage {
+  id: UUID;
+  senderType: 'CLIENT' | 'PROFESSIONAL' | 'HUGO_AI' | 'UGO_MEDIATOR';
+  senderName: string;
+  timestamp: string; // "15:42 hs"
+  text: string;
+  attachments?: {
+    type: 'IMAGE' | 'AUDIO' | 'PDF_NFE';
+    url: string;
+    fileName?: string;
+  }[];
+  quickSuggestions?: string[]; // Sugerencias automáticas para respuesta en un clic
+}
+
+export interface DisputeTicket {
+  disputeId: string; // "#UGO-DSP-44192"
+  serviceOrderId: string; // "#UG-88412"
+  frozenEscrowAmount: CurrencyBRL; // 175.00
+  escrowHash: string; // "#ESC-9082-ITAU-BR"
+  reason:
+    | 'INCOMPLETE_OR_UNFINISHED'
+    | 'TECHNICAL_FAULT_AFTER_SERVICE'
+    | 'PRO_LEFT_EARLY'
+    | 'ACCIDENTAL_DAMAGE'
+    | 'UNAGREED_TARIFF_DIFFERENCE';
+  description: string;
+  clientEvidenceUrls: string[];
+  mediatorAssigned?: {
+    name: string; // "Lic. Diego Valenzuela"
+    role: 'PERITO_OFICIAL_UGO_SHIELD';
+    resolutionEtaHours: string; // "24 - 48 hs hábiles"
+  };
+  timelineEvents: {
+    time: string;
+    title: string;
+    description: string;
+  }[];
+  resolutionStatus: 'OPEN_INVESTIGATION' | 'MUTUAL_AGREEMENT' | 'REFUND_ISSUED';
+}

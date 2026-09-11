@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface flex flex-col min-h-screen"><header class="fixed top-0 w-full z-50 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-screen-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm min-w-0"><img alt="UGO Pro Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1WetKv_07c95F-GkNCZq6Nazapa6YyKZfSPGpY9l2H-1MNh-4BEnqJ4lzBOdHGQ2QqpgvouZgtiewneX-cRaevcd1aRAnDigjlztVGAsGWQASKM6Fl7u6PMwjE0E0WzSs2uW1ucDiybpTZ-B_8-PzjJTeXO3Wx0FTJxXiUoW2EwKki7pMwQCay6bOV_XOB8ISdSLwH0ibqk56pDGwB5VBzgjZ-Q-nukifupJFcTKqXAmXKpxAc75kHst-e0"/><div class="flex flex-col min-w-0"><span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold flex items-center gap-space-2xs"><span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>PROVEEDOR</span><h1 class="font-title-md text-title-md text-on-surface truncate">Oportunidades</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Estado de Disponibilidad" class="min-h-[44px] px-space-sm rounded-full bg-secondary/10 flex items-center gap-space-2xs" type="button"><span class="w-2 h-2 rounded-full bg-secondary"></span><span class="font-label-sm text-label-sm text-secondary uppercase font-bold">Online</span></button><button aria-label="Notificaciones" class="w-11 h-11 min-h-[44px] min-w-[44px] flex items-center justify-center text-on-surface-variant relative" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex-1 flex flex-col relative w-full pt-16 pb-24 bg-surface"><div class="flex flex-col w-full relative select-none">
+<!-- Turn-by-Turn GPS Heads Up Display (Fixed-style Card over Map) -->
+<div class="px-screen-margin-mobile pt-space-xs z-30 w-full">
+<div class="bg-inverse-surface text-inverse-on-surface rounded-xl p-space-sm shadow-xl flex flex-col gap-space-xs relative overflow-hidden">
+<!-- Ambient route accent bar -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-secondary via-secondary-container to-primary-container"></div>
+<div class="flex items-start justify-between gap-space-sm">
+<!-- Turn Maneuver Glyph with Tactile Pod -->
+<div class="flex items-center gap-space-sm">
+<div class="w-12 h-12 rounded-lg bg-primary-container text-on-primary flex items-center justify-center shrink-0 shadow-md">
+<span class="material-symbols-outlined text-[32px]">turn_right</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-secondary uppercase font-bold tracking-wider flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-ping"></span>
+              En 200 metros
+            </span>
+<h2 class="font-headline-sm text-headline-sm text-inverse-on-surface font-bold truncate">Girá a la derecha</h2>
+<p class="font-body-sm text-body-sm text-inverse-on-surface/80 truncate">por Av. Rebouças (carril central)</p>
+</div>
+</div>
+<!-- Speedometer Indicator -->
+<div class="bg-surface/10 rounded-lg px-2.5 py-1.5 flex flex-col items-center justify-center shrink-0 min-w-[56px]">
+<span class="font-display-lg-mobile text-[20px] font-extrabold text-inverse-on-surface leading-tight">38</span>
+<span class="font-label-sm text-label-sm text-inverse-on-surface/70">km/h</span>
+<span class="font-label-sm text-[9px] text-tertiary-fixed font-bold tracking-tight mt-0.5">MÁX 50</span>
+</div>
+</div>
+<!-- Secondary Next Step Maneuver -->
+<div class="flex items-center justify-between pt-1 text-inverse-on-surface/75">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[16px] text-secondary">straight</span>
+<span class="font-label-md text-label-md truncate">Luego 1.2 km directo por Rua dos Pinheiros</span>
+</div>
+<div class="flex items-center gap-1 shrink-0 text-secondary">
+<span class="material-symbols-outlined text-[14px]">volume_up</span>
+<span class="font-label-sm text-label-sm font-semibold">Voz activa</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Map Canvas Container -->
+<div class="relative w-full h-[460px] -mt-space-2xs overflow-hidden z-10 flex flex-col justify-between">
+<!-- Simulated High Fidelity Street Network Map of Pinheiros -->
+<div class="absolute inset-0 w-full h-full bg-surface-container-low" data-alt="High angle detailed aerial map view of Pinheiros neighborhood in Sao Paulo with warm sunlight, clean street grids, lush tropical street trees, Av Brigadeiro Faria Lima and Rua dos Pinheiros clearly delineated in high contrast modern styling" data-location="Pinheiros, Sao Paulo, Brazil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCqDREZn5cuh0Lr_Fk2TRwVMBxsLG65eByLbUg-kyWvjr4QmOK_KW5CY69Q45cD_ks-lr49-0CCafWaLuWvKhgxcmdMwyZYkcr2Jrb9nwixmN51mtNzpjODctQzC0qgm1Oi4Fiigzv_-zWWpBK9rWWESDI-XTjAVA7zgj1vFnAbUtVCVSuID_79TrRo3YoPi8Ptd3tNgYteYtJU25eomeH_Oud5DHbMOGRcjB_hzpBRO_fO5KSJOUZMVA');">
+<!-- Simulated Vector Route Layer & Markers -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" viewbox="0 0 400 460" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<lineargradient id="routeGradient" x1="0%" x2="0%" y1="100%" y2="0%">
+<stop offset="0%" stop-color="#1E40AF"></stop>
+<stop offset="70%" stop-color="#3755C3"></stop>
+<stop offset="100%" stop-color="#006A61"></stop>
+</lineargradient>
+<filter height="140%" id="routeGlow" width="140%" x="-20%" y="-20%">
+<fedropshadow dx="0" dy="4" flood-color="#1E40AF" flood-opacity="0.35" stddeviation="5"></fedropshadow>
+</filter>
+</defs>
+<!-- Base road geometry traces -->
+<path d="M-20,180 L420,170" fill="none" opacity="0.6" stroke="#dae2fd" stroke-width="14"></path>
+<path d="M120,-20 L110,480" fill="none" opacity="0.6" stroke="#dae2fd" stroke-width="16"></path>
+<path d="M200,480 L230,-20" fill="none" opacity="0.6" stroke="#dae2fd" stroke-width="18"></path>
+<!-- Active Nav Path Polyline with glow -->
+<path d="M185,380 L185,260 Q185,225 215,220 L300,210 Q325,208 325,180 L320,105" fill="none" filter="url(#routeGlow)" stroke="url(#routeGradient)" stroke-linecap="round" stroke-linejoin="round" stroke-width="8"></path>
+<!-- Inner highlight pulse wire -->
+<path d="M185,380 L185,260 Q185,225 215,220 L300,210 Q325,208 325,180 L320,105" fill="none" stroke="#89F5E7" stroke-dasharray="8 6" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+<!-- Current Location GPS Pulse & Moto Marker (Mateo Silva) -->
+<div class="absolute left-[185px] top-[380px] -translate-x-1/2 -translate-y-1/2 z-20 pointer-events-none">
+<div class="relative flex items-center justify-center">
+<span class="absolute w-14 h-14 rounded-full bg-primary/20 animate-ping"></span>
+<span class="absolute w-10 h-10 rounded-full bg-secondary-container/40"></span>
+<div class="w-9 h-9 rounded-full bg-primary text-on-primary shadow-lg flex items-center justify-center transform -rotate-12">
+<span class="material-symbols-outlined text-[20px]">two_wheeler</span>
+</div>
+<!-- Orientation Beam -->
+<div class="absolute -top-3 w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[10px] border-b-primary"></div>
+</div>
+</div>
+<!-- Destination Point (Camila Duarte - Rua dos Pinheiros 480) -->
+<div class="absolute left-[320px] top-[105px] -translate-x-1/2 -translate-y-full z-20 pointer-events-none flex flex-col items-center">
+<!-- Floating Address Tag -->
+<div class="bg-inverse-surface text-inverse-on-surface px-2 py-1 rounded-lg shadow-lg mb-1 flex items-center gap-1 text-center whitespace-nowrap">
+<span class="material-symbols-outlined text-[13px] text-secondary">home_pin</span>
+<span class="font-label-sm text-label-sm font-bold">R. dos Pinheiros, 480</span>
+</div>
+<div class="relative flex items-center justify-center">
+<span class="w-8 h-8 rounded-full bg-secondary/30 animate-pulse absolute"></span>
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary shadow-md flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">flag</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Floating Lateral Actions (Recenter, Sound, Report, 3rd Party Maps) -->
+<div class="relative z-20 px-screen-margin-mobile pt-space-xs flex justify-between items-start pointer-events-none">
+<!-- External Maps Shortcut pill -->
+<div class="pointer-events-auto flex items-center gap-1.5 bg-surface/90 backdrop-blur-md rounded-full px-space-sm py-1.5 shadow-md">
+<span class="material-symbols-outlined text-[16px] text-primary">near_me</span>
+<button class="font-label-sm text-label-sm font-bold text-on-surface uppercase tracking-wider" type="button">Waze</button>
+<span class="w-1 h-1 rounded-full bg-outline-variant"></span>
+<button class="font-label-sm text-label-sm font-bold text-on-surface uppercase tracking-wider" type="button">Google Maps</button>
+</div>
+<!-- Tactical Map Floating Controls -->
+<div class="flex flex-col gap-space-xs pointer-events-auto">
+<button aria-label="Centrar navegación" class="w-11 h-11 rounded-full bg-surface/95 backdrop-blur-md text-primary shadow-md flex items-center justify-center active:scale-95 transition-transform" id="recenterBtn" type="button">
+<span class="material-symbols-outlined text-[22px]">my_location</span>
+</button>
+<button aria-label="Silenciar navegación" class="w-11 h-11 rounded-full bg-surface/95 backdrop-blur-md text-on-surface shadow-md flex items-center justify-center active:scale-95 transition-transform" id="toggleSoundBtn" type="button">
+<span class="material-symbols-outlined text-[20px]">volume_up</span>
+</button>
+<button aria-label="Avisar imprevisto o tráfico" class="w-11 h-11 rounded-full bg-surface/95 backdrop-blur-md text-tertiary-container shadow-md flex items-center justify-center active:scale-95 transition-transform" id="reportAlertBtn" type="button">
+<span class="material-symbols-outlined text-[20px]">report_problem</span>
+</button>
+</div>
+</div>
+<!-- Floating Ambient Micro-Badge on Map -->
+<div class="relative z-20 px-screen-margin-mobile pb-space-xs pointer-events-none flex items-center justify-between">
+<div class="pointer-events-auto bg-surface/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-sm flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Tránsito fluido por Rebouças</span>
+</div>
+<div class="pointer-events-auto bg-surface/90 backdrop-blur-md rounded-lg px-2.5 py-1 shadow-sm flex items-center gap-1 text-primary font-bold">
+<span class="material-symbols-outlined text-[15px]">compass_calibration</span>
+<span class="font-label-sm text-label-sm">GPS HD</span>
+</div>
+</div>
+</div>
+<!-- Bottom Floating Travel Sheet & ETA Deck -->
+<div class="px-screen-margin-mobile -mt-space-md z-30 pb-space-xs flex flex-col gap-space-sm">
+<!-- Main ETA & Status Container -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-xl flex flex-col gap-space-md">
+<!-- ETA Metric Banner -->
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<div class="flex items-baseline gap-1.5">
+<span class="font-display-lg-mobile text-display-lg-mobile font-extrabold text-primary tracking-tight">14</span>
+<span class="font-title-md text-title-md text-primary font-bold">min</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium ml-1">Llegada 14:18 hs</span>
+</div>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="font-label-md text-label-md font-semibold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">distance</span> 2.1 km restantes
+            </span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pinheiros, SP</span>
+</div>
+</div>
+<!-- Fast Share ETA Pill -->
+<button class="h-9 px-3 rounded-full bg-surface-container text-primary font-label-sm text-label-sm font-bold flex items-center gap-1 hover:bg-surface-container-high active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[16px]">share_location</span>
+<span>Compartir</span>
+</button>
+</div>
+<!-- Client Quick Bar (Camila Duarte) -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm min-w-0">
+<div class="relative shrink-0">
+<img class="w-11 h-11 rounded-full object-cover shadow-sm" data-alt="Warm smiling Brazilian woman portrait with gentle sunlight, professional and approachable client avatar for mobile app service" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBG9u_KWN3AakP3oI5r9kWCTY0SX44j_2b_A1Hoyot0fEzZKiIqTlEE27zwHj38RFLaUEz11U-mkscQVf0cJy5vlBgeMIteZ1aqO93h-JFMSd2AB4eGXJLxWwpSKpoYl2UTzSpkzi39UaY4Yjj-oEmC5uyOj5ls8QGVSAOluV1COu5aPshXCY5aNlRcz7C9GvDpsd2v2xTexofR2PSp-5TsUyEuAhQMrT_6Ex4E2xZSX0E9oBE1NkPVZg"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-secondary ring-2 ring-surface"></span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate">Camila Duarte</span>
+<span class="material-symbols-outlined text-secondary text-[16px]">verified</span>
+</div>
+<span class="font-body-sm text-body-sm text-secondary font-medium truncate flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+              Cliente avisada en tiempo real
+            </span>
+</div>
+</div>
+<!-- Quick Call & Message Actions -->
+<div class="flex items-center gap-space-xs shrink-0">
+<a aria-label="Llamar a Camila" class="w-10 h-10 rounded-full bg-surface-container-lowest text-primary shadow-sm flex items-center justify-center hover:bg-surface-container transition-colors active:scale-95" href="tel:+5511999990000">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</a>
+<a aria-label="Mensaje directo a Camila" class="w-10 h-10 rounded-full bg-surface-container-lowest text-secondary shadow-sm flex items-center justify-center hover:bg-surface-container transition-colors active:scale-95" href="#">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+</a>
+</div>
+</div>
+<!-- Security & Escrow Badge Pill -->
+<div class="rounded-lg bg-surface-container p-2.5 flex items-center gap-2">
+<div class="w-6 h-6 rounded-full bg-secondary/15 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-[15px]">verified_user</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface leading-tight min-w-0 flex-1">
+<strong class="font-semibold text-primary">Seguridad UGO:</strong> Monitoreado por GPS • Custodia PIX asegurada (<span class="font-semibold">R$ 250</span>).
+        </p>
+</div>
+<!-- Action Arrival Slider / Tactile Button -->
+<div class="flex flex-col gap-space-xs pt-1">
+<button class="w-full h-14 rounded-xl bg-primary text-on-primary flex items-center justify-center gap-space-sm font-label-lg text-label-lg font-bold shadow-lg shadow-primary/25 active:scale-[0.98] transition-all relative overflow-hidden" id="arrivalActionBtn" type="button">
+<span class="material-symbols-outlined text-[24px]">location_on</span>
+<span>He llegado a destino / Marcar Llegada</span>
+<span class="material-symbols-outlined text-[20px] ml-1">chevron_right</span>
+</button>
+<div class="flex items-center justify-center">
+<button class="py-1 px-3 text-on-surface-variant font-label-md text-label-md flex items-center gap-1 hover:text-primary transition-colors" id="delayWarningBtn" type="button">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>¿Tuviste un imprevisto? Avisar demora al cliente</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Inline Script for Tactile GPS HUD Behavior -->
+<script>
+    (function() {
+      const soundBtn = document.getElementById('toggleSoundBtn');
+      const recenterBtn = document.getElementById('recenterBtn');
+      const arrivalBtn = document.getElementById('arrivalActionBtn');
+      const delayBtn = document.getElementById('delayWarningBtn');
+
+      let isMuted = false;
+      if (soundBtn) {
+        soundBtn.addEventListener('click', function() {
+          isMuted = !isMuted;
+          const icon = soundBtn.querySelector('.material-symbols-outlined');
+          if (icon) {
+            icon.textContent = isMuted ? 'volume_off' : 'volume_up';
+          }
+          soundBtn.classList.toggle('text-error', isMuted);
+          soundBtn.classList.toggle('text-on-surface', !isMuted);
+        });
+      }
+
+      if (recenterBtn) {
+        recenterBtn.addEventListener('click', function() {
+          recenterBtn.classList.add('scale-90');
+          setTimeout(() => recenterBtn.classList.remove('scale-90'), 150);
+        });
+      }
+
+      if (arrivalBtn) {
+        arrivalBtn.addEventListener('click', function() {
+          arrivalBtn.innerHTML = '<span class="material-symbols-outlined text-[22px] animate-spin">progress_activity</span><span>Confirmando ubicación GPS...</span>';
+          arrivalBtn.classList.replace('bg-primary', 'bg-secondary');
+          setTimeout(() => {
+            arrivalBtn.innerHTML = '<span class="material-symbols-outlined text-[24px]">check_circle</span><span>¡Llegada confirmada! Iniciando orden</span>';
+          }, 1200);
+        });
+      }
+
+      if (delayBtn) {
+        delayBtn.addEventListener('click', function() {
+          alert('Se ha enviado una notificación automática a Camila avisando 5 minutos de tolerancia.');
+        });
+      }
+    })();
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-2px_12px_rgba(0,0,0,0.05)]" data-active-classes="text-primary font-bold"><div class="flex justify-around items-center h-16 px-space-xs"><a aria-current="page" class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 transition-colors gap-space-2xs text-primary font-bold" data-path="oportunidades" href="#"><span class="material-symbols-outlined text-[24px]">radar</span><span class="font-label-sm text-label-sm">Radar</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mis-trabajos" href="#"><span class="material-symbols-outlined text-[24px]">assignment</span><span class="font-label-sm text-label-sm">Trabajos</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[24px]">chat_bubble</span><span class="font-label-sm text-label-sm">Mensajes</span></a><a class="flex flex-col items-center justify-center min-w-[44px] min-h-[44px] w-16 text-on-surface-variant transition-colors gap-space-2xs" data-path="perfil-pro" href="#"><span class="material-symbols-outlined text-[24px]">badge</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav></body></html>

@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary":"#ffffff","error":"#ba1a1a","primary-fixed-dim":"#4cd6fb","on-tertiary-fixed":"#002113","secondary-fixed":"#dae2fd","surface-container":"#e5eeff","on-error":"#ffffff","surface-tint":"#00677d","surface-container-highest":"#d3e4fe","on-primary-fixed":"#001f27","secondary":"#565e74","on-tertiary":"#ffffff","surface-bright":"#f8f9ff","on-tertiary-container":"#00442d","on-primary-fixed-variant":"#004e5f","on-primary":"#ffffff","on-secondary-fixed":"#131b2e","on-surface-variant":"#3d494d","tertiary-container":"#19bc84","inverse-on-surface":"#eaf1ff","surface-container-low":"#eff4ff","on-secondary-container":"#5c647a","on-background":"#0b1c30","on-primary-container":"#00414f","tertiary-fixed-dim":"#4edea3","outline-variant":"#bcc9ce","inverse-surface":"#213145","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","surface":"#f8f9ff","surface-container-lowest":"#ffffff","primary":"#00677d","primary-container":"#00b4d8","primary-fixed":"#b3ebff","background":"#f8f9ff","on-error-container":"#93000a","outline":"#6d797e","on-surface":"#0b1c30","error-container":"#ffdad6","secondary-fixed-dim":"#bec6e0","tertiary-fixed":"#6ffbbe","inverse-primary":"#4cd6fb","on-tertiary-fixed-variant":"#005236","tertiary":"#006c49","surface-container-high":"#dce9ff","on-secondary-fixed-variant":"#3f465c","secondary-container":"#dae2fd"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-2xs":"0.25rem","gutter-desktop":"1.5rem","space-3xl":"4rem","sidebar-expanded":"17.5rem","space-lg":"1.5rem","space-2xl":"3rem","space-md":"1rem","topbar-height":"4.25rem","space-sm":"0.75rem","gutter-mobile":"1rem","sidebar-collapsed":"5rem","space-xs":"0.5rem","space-xl":"2rem"},fontFamily:{"headline-md":["Plus Jakarta Sans"],"code-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"display-lg":["Plus Jakarta Sans"]},fontSize:{"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"code-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"26px",letterSpacing:"-0.005em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"display-lg-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-sidebar-collapsed xl:w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all duration-300"><div class="flex flex-col gap-space-md"><div class="h-12 px-space-md xl:px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm overflow-hidden"><img alt="Logo UGO Cliente" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWYkGbDkybddSHtmyY32GZB1VYVCcp5I4p7MfFYMURxRzKLOfdAZb01kBM-vemKANWc5aynx1KlrXNQYkD6Qje8qaZo8IpLmAQAQttpEfRvednP2PUhz_zfxx8v0_ym8_8tLC0fLhOaZQ6qk8o_jOLsnS4QgUZY2OrTLvKIwhRyyT9OS8upOAHg6wLdHrjhII4NSsneejdMpjdWn2CY9uX2phCFae5zhsNagOPSlaYuYz3RkFYnY_L3Os"/><span class="hidden xl:inline font-headline-sm text-headline-sm font-bold tracking-tight text-primary">UGO Cliente</span></div><span class="hidden xl:inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">v2.4</span></div><nav class="flex flex-col gap-space-2xs px-space-xs xl:px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="hidden xl:inline flex-1 truncate">Inicio</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm" data-path="buscar-servicio" href="#"><span class="material-symbols-outlined text-[22px]">search</span><span class="hidden xl:inline flex-1 truncate">Buscar servicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="nueva-solicitud" href="#"><span class="material-symbols-outlined text-[22px]">add_circle</span><span class="hidden xl:inline flex-1 truncate">Nueva solicitud</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="matching-en-vivo" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="hidden xl:inline flex-1 truncate">Matching en vivo</span><span class="hidden xl:inline-flex h-2 w-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="servicios-activos" href="#"><span class="material-symbols-outlined text-[22px]">pending_actions</span><span class="hidden xl:inline flex-1 truncate">Servicios activos</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">2</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="actividad" href="#"><span class="material-symbols-outlined text-[22px]">history</span><span class="hidden xl:inline flex-1 truncate">Actividad</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[22px]">chat_bubble</span><span class="hidden xl:inline flex-1 truncate">Mensajes</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">3</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ugo-shield" href="#"><span class="material-symbols-outlined text-[22px] text-tertiary">verified_user</span><span class="hidden xl:inline flex-1 truncate">UGO Shield</span><span class="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Pro</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="pagos" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="hidden xl:inline flex-1 truncate">Pagos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="perfil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="hidden xl:inline flex-1 truncate">Perfil</span></a></nav></div><div class="flex flex-col gap-space-xs px-space-xs xl:px-space-sm pt-space-xs"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ayuda" href="#"><span class="material-symbols-outlined text-[22px]">help</span><span class="hidden xl:inline flex-1 truncate">Ayuda</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="configuracion" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="hidden xl:inline flex-1 truncate">Configuración</span></a></nav></div></aside><div class="pl-sidebar-collapsed xl:pl-sidebar-expanded min-h-screen flex flex-col transition-all duration-300"><header class="fixed top-0 left-sidebar-collapsed xl:left-sidebar-expanded right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 transition-all duration-300"><div class="h-16 w-full px-space-md xl:px-space-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><button class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" type="button"><span class="material-symbols-outlined text-primary text-[20px]">location_on</span><div class="hidden md:flex flex-col"><span class="font-label-sm text-label-sm text-secondary">Ubicación actual</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Canasvieiras, Florianópolis · SC</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span></button><div class="relative flex-1 hidden sm:block"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Buscar servicios, profesionales o ayuda..." type="text"/></div></div><div class="flex items-center gap-space-sm xl:gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-gradient-to-r from-primary-container to-tertiary-container text-on-primary font-label-md text-label-md shadow-sm hover:opacity-95 transition-opacity" type="button"><span class="material-symbols-outlined text-[18px]">auto_awesome</span><span class="hidden md:inline font-bold">Hugo IA</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-primary"></span></span></button><button class="relative p-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-error ring-2 ring-surface"></span></button><div class="flex items-center gap-space-sm pl-space-2xs"><div class="hidden lg:flex flex-col text-right"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Mariana Costa</span><span class="font-label-sm text-label-sm text-tertiary flex items-center justify-end gap-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Verificada</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-Zrm-zrxI-X4YoML1L8DRmL8PPBXsgLmlnXnegDB4G1Vm_hTHKd4RncqqgJv0FV2lf2KUWgrfcQ7WhAIOmBAuKiqhtqfGCgUDhYRnyRRI-0HQoXcNV4pjHMZRBVV-aJBh2cCWRURij-zthGoDsqAJ5lW_Lw3v1s5ijswfaOzT6uod3qsvdCWYyXMDR_E6PR-Pr27sDFoPNX--u7lMbJ2V8UgBHd212UXddj57ivTawnWy4aB_o9XO"/></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<!-- Top Operational Banner & Quick Status Bar -->
+<div class="w-full bg-surface-container-lowest px-space-md xl:px-space-xl py-space-md shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="flex items-center gap-space-xs bg-surface-container-low px-space-sm py-1 rounded-xl">
+<span class="material-symbols-outlined text-primary text-[20px]">plumbing</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">#UG-8492</span>
+<span class="font-body-md text-body-md text-outline">·</span>
+<span class="font-label-lg text-label-lg text-on-surface-variant">Baño principal</span>
+</div>
+<div class="inline-flex items-center gap-2 px-space-sm py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed shadow-sm">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-tertiary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-tertiary"></span>
+</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider">Trabajo en curso</span>
+</div>
+<div class="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-tertiary">lock</span>
+        PIN #4892 Validado
+      </div>
+</div>
+<!-- Live Intervention Timer & Quick Status -->
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-space-sm bg-surface-container px-space-md py-1.5 rounded-xl">
+<span class="material-symbols-outlined text-primary text-[22px] animate-pulse">timer</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-secondary leading-none">Tiempo transcurrido</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface font-mono tracking-tight" id="live-timer">00:38:14</span>
+<span class="font-label-sm text-label-sm text-outline">/ ~50m</span>
+</div>
+</div>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm hover:opacity-95 transition-all" id="open-modal-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>Revisar Ampliación</span>
+<span class="inline-flex h-2 w-2 rounded-full bg-on-primary animate-ping"></span>
+</button>
+</div>
+</div>
+<!-- Main Work Area Layout (65% / 35% Split) -->
+<div class="w-full px-space-md xl:px-space-xl py-space-lg">
+<!-- Service Internal Tabs Navigation -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-sm mb-space-md">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">stream</span>
+<span>Seguimiento y Registro en vivo</span>
+<span class="px-1.5 py-0.5 rounded-full bg-on-primary text-primary-container font-label-sm text-label-sm ml-1">Activo</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+<span>Chat y Evidencias</span>
+<span class="px-1.5 py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm ml-1">1</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Detalle de Presupuesto</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-lg text-label-lg" type="button">
+<span class="material-symbols-outlined text-[18px] text-tertiary">verified_user</span>
+<span>UGO Shield</span>
+</button>
+</div>
+<!-- Responsive Grid: 12 Columns -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- Central/Left Column (65% -> 8 of 12 cols on LG) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Critical Action Notification Card -->
+<div class="rounded-2xl bg-surface-container-high p-space-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md shadow-sm">
+<div class="flex items-start gap-space-sm">
+<div class="h-10 w-10 rounded-xl bg-primary text-on-primary flex items-center justify-center flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[24px]">notification_important</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface">Ampliación de Servicio requerida</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-label-sm text-label-sm">Hace 3 min</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                Roberto Silva detectó una avería secundaria en el sifón durante la intervención. Requiere tu confirmación para proceder con el reemplazo.
+              </p>
+</div>
+</div>
+<button class="w-full sm:w-auto px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-lg text-label-lg shadow-sm hover:bg-on-primary-fixed-variant transition-colors flex-shrink-0 flex items-center justify-center gap-1" onclick="document.getElementById('expansion-modal').classList.remove('hidden')" type="button">
+<span>Ver detalles</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Registro de Obra e Intervención en Vivo -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-lg">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">assignment_turned_in</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Bitácora de Intervención en Vivo</h2>
+</div>
+<span class="font-label-sm text-label-sm px-space-sm py-1 rounded-full bg-surface-container text-secondary">
+              Modo seguro UGO v2.4
+            </span>
+</div>
+<!-- Vertical Timeline Steps -->
+<div class="relative flex flex-col gap-space-md pl-4">
+<!-- Step 1: Completed -->
+<div class="relative flex items-start gap-space-md">
+<div class="h-8 w-8 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col flex-1 pb-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface">Arribo y validación de PIN #4892</span>
+<span class="font-code-sm text-code-sm text-outline">10:15 hs</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Roberto ingresó al domicilio tras la confirmación biométrica y de clave de seguridad.</p>
+</div>
+</div>
+<!-- Step 2: Completed -->
+<div class="relative flex items-start gap-space-md">
+<div class="h-8 w-8 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+<div class="flex flex-col flex-1 pb-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface">Inspección preliminar y corte de llave de paso</span>
+<span class="font-code-sm text-code-sm text-outline">10:20 hs</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Despresurización de la red local del vanitory y retiro del flexible mallado dañado.</p>
+</div>
+</div>
+<!-- Step 3: Alert / In Progress Extension -->
+<div class="relative flex items-start gap-space-md">
+<div class="h-8 w-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 z-10 shadow-sm">
+<span class="material-symbols-outlined text-[18px] animate-spin">sync</span>
+</div>
+<div class="flex flex-col flex-1 rounded-xl bg-surface-container-low p-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-primary font-bold">Detección de avería secundaria: Sifón rajado</span>
+<span class="font-code-sm text-code-sm text-primary font-semibold">10:35 hs</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+                  Filtración oculta sobre el zócalo de madera. Se suspendió el cierre preventivo para esperar tu autorización de ampliación de piezas.
+                </p>
+<div class="mt-space-sm inline-flex items-center gap-space-xs text-primary font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px]">pending</span>
+<span>Esperando tu confirmación de presupuesto (+ R$ 65)</span>
+</div>
+</div>
+</div>
+<!-- Step 4: Upcoming -->
+<div class="relative flex items-start gap-space-md opacity-60">
+<div class="h-8 w-8 rounded-full bg-surface-container-high text-outline flex items-center justify-center flex-shrink-0 z-10">
+<span class="material-symbols-outlined text-[18px]">build</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface">Montaje de piezas nuevas y prueba de estanqueidad</span>
+<span class="font-code-sm text-code-sm text-outline">Pendiente</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">Presurización, control con papel absorbente bajo vanitory y acta de conformidad.</p>
+</div>
+</div>
+</div>
+<!-- Real-Time Photo Evidences -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">photo_camera</span>
+                Evidencias fotográficas en tiempo real
+              </span>
+<span class="font-label-sm text-label-sm text-outline">2 capturas verificadas</span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+<!-- Evidencia 1 -->
+<div class="relative rounded-xl overflow-hidden bg-surface-container group">
+<img class="w-full h-44 object-cover" data-alt="Close up photograph of a damaged stainless steel braided water flexible hose showing metallic fraying and severe rust corrosion, held next to a bathroom plumbing pipe with natural indoor light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6Wk05rr7uU8mkRKwp3t8C6PFDYiFOJ7U_Tld88jrjBqdXMT0WLa9Zs2CDT6VefE-egVoWCGsIFgVjU1XUkYysEvDrN1jDk0RI5yQ-LJ9D2znoNRfFeM2wC8MaWk3lxHDSCJvH6auDRqamB0CX4dLmEzs_vdKDiUMPvkTCua-ZyPlJVK39GJ7L8zMU2jZ0rovCRMqKPtQQ8TIN4KPUpKMbJxdqlsYSmBMlBRj5t0CsKqZ_HcKy1KV7"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/20 to-transparent flex flex-col justify-end p-space-sm">
+<span class="font-label-sm text-label-sm text-inverse-primary font-semibold">Evidencia #01 · 10:24 hs</span>
+<span class="font-label-md text-label-md text-inverse-on-surface">Flexible original corroído (retirado)</span>
+</div>
+<div class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-inverse-surface/80 backdrop-blur-md text-inverse-on-surface font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-tertiary-fixed">verified</span>
+                  Verificada
+                </div>
+</div>
+<!-- Evidencia 2 -->
+<div class="relative rounded-xl overflow-hidden bg-surface-container group">
+<img class="w-full h-44 object-cover" data-alt="Macro perspective of a white plastic plumbing sink P-trap and drainage elbow under a bathroom cabinet showing a clear hairline crack leak with water moisture drops near the wooden baseboard." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCX1UiUXFbiy1kx-Dr9KqRxw_NBnp0xAHoKOCrPsGZGviF9U-HnSKQ6SdpcyoolJ5gJrbD-Jg8T0gvR6egnHjaqD00yLVLQkLrsyeS92Y0oaXKBZNhCzN03aRcXkulvuAMf3UPYGdxRZzrld_A92_Y1mte0Lvj3lRVican0Wcv2FHaAvbQdciKtkQgqYtVtxfXI-Zgndyg54dIZmJV4Kv7RuP2lWylD0pQYK8XsfH5hy-4W0_47vT_j"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/90 via-inverse-surface/20 to-transparent flex flex-col justify-end p-space-sm">
+<div class="flex items-center gap-1 text-tertiary-fixed font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+<span>Avería no planificada · 10:35 hs</span>
+</div>
+<span class="font-label-md text-label-md text-inverse-on-surface">Rajadura visible en sifón y codo de 40mm</span>
+</div>
+<button class="absolute top-2 right-2 px-2 py-1 rounded-xl bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center gap-1 shadow-sm" onclick="document.getElementById('expansion-modal').classList.remove('hidden')" type="button">
+<span class="material-symbols-outlined text-[14px]">zoom_in</span>
+                  Ver en solicitud
+                </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Chat Directo con Roberto Silva -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Portrait of an experienced male plumber wearing a neat navy blue professional work uniform and safety lanyard, warm friendly smile, modern indoor setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAMmOXRJ2RZpbU9JyWn0cChuBnnSv6LPdlOFV3YNuY4Wb5neVLVXDoppWbYM6AvEuMRIS_AY-CQY3TFJB42u7UfYAqP6M5pOa43AhxtnWcWHk85Uxy7GUOyYDMDF5ixJCOIL_LYOtAWbKTYxzNtjZudajWU_SGnHc7G0wHgPhul0SaAL9U25QHzJ-ygmK3sWd-YSoYUZfKILi_LaZ5M-83Z00JlMTL81c6oCln3brCnjE0_X9fBPfdK"/>
+<span class="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-tertiary-container ring-2 ring-surface-container-lowest"></span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Chat con Roberto Silva</h3>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">fiber_manual_record</span>
+                  En el lugar · Trabajando en vanitory
+                </span>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-2 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Llamada de voz de seguridad" type="button">
+<span class="material-symbols-outlined text-[20px]">phone</span>
+</button>
+<button class="p-2 rounded-xl bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" title="Compartir nota rápida" type="button">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</button>
+</div>
+</div>
+<!-- Message History Window -->
+<div class="flex flex-col gap-space-sm bg-surface-container-low/60 p-space-md rounded-xl max-h-60 overflow-y-auto">
+<!-- Outgoing message (Mariana) -->
+<div class="flex flex-col items-end">
+<div class="bg-primary text-on-primary rounded-2xl rounded-tr-none px-space-md py-2 max-w-md shadow-sm">
+<p class="font-body-md text-body-md leading-relaxed">Hola Roberto, cualquier pieza adicional que necesites avisame por acá antes de desmontar el desagüe.</p>
+</div>
+<span class="font-code-sm text-code-sm text-outline mt-1">10:22 hs · Entregado</span>
+</div>
+<!-- Incoming message (Roberto with critical proposal context) -->
+<div class="flex flex-col items-start">
+<div class="bg-surface-container-lowest text-on-surface rounded-2xl rounded-tl-none px-space-md py-space-sm max-w-lg shadow-sm">
+<div class="flex items-center gap-1 text-primary font-label-sm text-label-sm mb-1">
+<span class="material-symbols-outlined text-[16px]">handyman</span>
+<span>Roberto Silva (Técnico Matr. SC-88421)</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                  Mariana, acabo de desmontar el flexible pero vi que el sifón plástico tiene una fisura longitudinal que pierde al drenar. Te envié una solicitud de ampliación para reemplazar el kit de sifón reforzado ahora mismo.
+                </p>
+<div class="mt-2 pt-2 bg-surface-container-low p-2 rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">build_circle</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Propuesta de ampliación: + R$ 65</span>
+</div>
+<button class="font-label-sm text-label-sm text-primary font-bold hover:underline" onclick="document.getElementById('expansion-modal').classList.remove('hidden')" type="button">
+                    Revisar propuesta
+                  </button>
+</div>
+</div>
+<span class="font-code-sm text-code-sm text-outline mt-1">10:36 hs · Leído hace un momento</span>
+</div>
+</div>
+<!-- Quick reply field -->
+<div class="flex items-center gap-space-xs pt-space-2xs">
+<input class="flex-1 h-11 px-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Escribir un mensaje para Roberto..." type="text"/>
+<button class="h-11 px-space-md rounded-xl bg-primary text-on-primary font-label-md text-label-md flex items-center justify-center gap-1 hover:bg-on-primary-fixed-variant transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">send</span>
+<span class="hidden sm:inline">Enviar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Right Column (35% -> 4 of 12 cols on LG) -->
+<div class="lg:col-span-4 flex flex-col gap-space-lg">
+<!-- Professional Profile & Safety Card -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-md">
+<img class="w-16 h-16 rounded-2xl object-cover shadow-sm" data-alt="Headshot of Roberto Silva, certified plumbing specialist in Brazil, wearing clean uniform with identity card pinned to collar, confident and reassuring smile, professional high key studio portrait." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDAa5C7lvw83G2DvJriSn95uhx_S6D4fjakpgCEH3unCvdXJ3cJbYcavG8CVArxzphrpN9M2QNThPqOH9sJoR466xjWK0b8UOtwvgZx6OtWiLdL7jAZHe4f9-nyX7XkhUogRNczir06tW50_pZJvfHwHoJXYbKhRI2Q57Nbr5Zeh0Yj-44kk_Iwv9V0sh4PnXVEMWeEWU230p_NZOLh1qUfReDCj_eLppEmys0guScWau8ISA6AnMY4"/>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1">
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface truncate">Roberto Silva</h3>
+<span class="material-symbols-outlined text-tertiary text-[18px]" title="Identidad Verificada">verified</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary">Especialista Sanitarista · UGO Pro</span>
+<span class="font-code-sm text-code-sm text-outline mt-0.5">Matrícula: SC-88421</span>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 py-2 bg-surface-container-low rounded-xl text-center">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">4.96</span>
+<span class="font-label-sm text-label-sm text-secondary">Calificación</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">312</span>
+<span class="font-label-sm text-label-sm text-secondary">Trabajos</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary">100%</span>
+<span class="font-label-sm text-label-sm text-secondary">A tiempo</span>
+</div>
+</div>
+<!-- SOS & Security Assistance Quick Actions -->
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 py-2 px-space-sm rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors font-label-md text-label-md text-on-surface flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Validar carnet</span>
+</button>
+<button class="py-2 px-3 rounded-xl bg-error-container text-on-error-container hover:opacity-90 transition-opacity font-label-md text-label-md flex items-center justify-center gap-1" title="Línea de soporte prioritario" type="button">
+<span class="material-symbols-outlined text-[18px]">emergency</span>
+<span>SOS</span>
+</button>
+</div>
+</div>
+<!-- Financial Real-Time Breakdown -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Desglose Financiero</h3>
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-md text-body-md text-on-surface">Servicio base acordado</span>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                  En custodia UGO Escrow
+                </span>
+</div>
+<span class="font-headline-sm text-headline-sm font-semibold text-on-surface">R$ 140,00</span>
+</div>
+<div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-high">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-primary font-bold">Ampliación solicitada</span>
+<span class="font-label-sm text-label-sm text-primary">Kit sifón + 20 min mano de obra</span>
+</div>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">+ R$ 65,00</span>
+</div>
+<div class="pt-space-xs flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Total proyectado:</span>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">R$ 205,00</span>
+<span class="block font-label-sm text-label-sm text-outline">Sin cargos ocultos</span>
+</div>
+</div>
+</div>
+<div class="p-space-sm rounded-xl bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[18px] flex-shrink-0 mt-0.5">info</span>
+<span>El valor adicional de R$ 65 solo se cargará a tu método de pago si confirmas la ampliación en la pantalla interactiva.</span>
+</div>
+</div>
+<!-- Hugo IA Advisory Widget -->
+<div class="rounded-2xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-sm relative overflow-hidden">
+<div class="flex items-center gap-space-xs text-primary font-label-md text-label-md font-bold">
+<span class="material-symbols-outlined text-[20px] text-tertiary-container">auto_awesome</span>
+<span>Dictamen Hugo IA · Análisis de tarifa</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+            El precio de <strong>R$ 65</strong> por el reemplazo del kit sifón reforzado y mano de obra está <strong>8% por debajo</strong> del promedio registrado en Canasvieiras para servicios similares.
+          </p>
+<div class="flex items-center gap-2 p-2 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px]">thumb_up</span>
+<span>Recomendación: Autorizar ahora para evitar reabrir el vanitory en el futuro.</span>
+</div>
+</div>
+<!-- UGO Shield Guarantee Banner -->
+<div class="rounded-2xl bg-surface-container-low p-space-md flex items-start gap-space-sm">
+<div class="h-9 w-9 rounded-xl bg-tertiary-container text-on-tertiary flex items-center justify-center flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Garantía UGO Shield Pro</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+              Cobertura total durante 60 días para ambos trabajos. Roberto no recibe el pago hasta que des tu conformidad de 0 pérdidas.
+            </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- MODAL / DRAWER PROMINENTE DE "AMPLIAR SERVICIO" -->
+<!-- Controlled via Javascript for dynamic testing, open by default to showcase the required state -->
+<div class="fixed inset-0 z-50 flex items-center justify-center p-space-md sm:p-space-lg bg-inverse-surface/60 backdrop-blur-sm transition-opacity duration-300" id="expansion-modal">
+<!-- Modal Card Container -->
+<div class="relative w-full max-w-2xl max-h-[942px] flex flex-col bg-surface-container-lowest rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+<!-- Modal Header -->
+<div class="px-space-lg py-space-md bg-surface-container-lowest flex items-start justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<div class="h-10 w-10 rounded-xl bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">extension</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<h2 class="font-headline-md text-headline-md font-bold text-on-surface">Propuesta de Ampliación de Servicio</h2>
+</div>
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[14px] text-tertiary">schedule</span>
+              Enviada por Roberto Silva hace 3 minutos
+            </span>
+</div>
+</div>
+<button class="h-9 w-9 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant flex items-center justify-center transition-colors" onclick="document.getElementById('expansion-modal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Modal Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto px-space-lg py-space-md flex flex-col gap-space-md">
+<!-- Task Concept Overview -->
+<div class="rounded-xl bg-surface-container-low p-space-md flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Concepto de la Tarea Extra</span>
+<h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+            Recambio de Kit Sifón articulado + Codo de desagüe 40mm con sellado de estanqueidad
+          </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mt-1">
+<strong>Diagnóstico del técnico:</strong> "Se detectó fisura en el sifón existente que generaba humedad oculta sobre el mueble inferior. Requiere pieza nueva reforzada para garantizar la reparación integral y evitar daños estructurales en el vanitory."
+          </p>
+</div>
+<!-- Evidence Attachment Showcase -->
+<div class="flex flex-col gap-space-2xs">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Evidencia técnica adjuntada por Roberto</span>
+<div class="rounded-xl overflow-hidden bg-surface-container flex flex-col sm:flex-row items-center gap-space-md p-space-sm">
+<div class="relative w-full sm:w-48 h-32 rounded-lg overflow-hidden flex-shrink-0">
+<img class="w-full h-full object-cover" data-alt="Macro close-up inspection photo of cracked white PVC sink drain trap with water droplet leaking through the hairline crack, technician work light illuminating the fissure clearly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKgwu9TMmmgeTNYMcBD5WSCMS9sr0Wzh7B-sDCAT5HNlfEFC1rTd8CgJQIJeN59n_RGbATIMFnhPMcEnTGXeSzuxQrFLdbBr4ZdlyQv8vmb-as5XLJ7gs4Ye-k-9j6CFJ8GefHZHovoHuu1Zb7H11bo7nZFdsKkmhex-4CUsIgSQ96LbqIbZv8vXU-FGXwVzre6hnCV9hgW8L5noElyaHjZyXFKb_urL_fkplqCS0tKGMv5i4I7Xtq"/>
+<div class="absolute bottom-1 right-1 px-1.5 py-0.5 rounded bg-inverse-surface/80 text-inverse-on-surface font-code-sm text-code-sm flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">search</span>
+                100% Zoom
+              </div>
+</div>
+<div class="flex flex-col flex-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Fisura longitudinal en cuerpo de PVC</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                La fractura compromete la rosca de acople y drena agua sobre el zócalo durante la descarga continua.
+              </p>
+<div class="mt-2 flex items-center gap-2 text-tertiary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span>Foto autenticada con metadatos de geolocalización UGO</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Cost Breakdown Table -->
+<div class="rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col gap-space-sm">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Desglose de Costo Adicional</span>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">schedule</span>
+<span class="font-body-md text-body-md text-on-surface">Mano de obra adicional (~20 min)</span>
+</div>
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">R$ 35,00</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[18px]">inventory_2</span>
+<span class="font-body-md text-body-md text-on-surface">Kit sifón lavatorio reforzado PVC (Tigre / Astra)</span>
+</div>
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">R$ 30,00</span>
+</div>
+<div class="pt-2 flex items-center justify-between bg-surface-container-low px-space-sm py-2 rounded-lg">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Total adicional a pagar:</span>
+<span class="font-headline-sm text-headline-sm font-bold text-primary">+ R$ 65,00</span>
+</div>
+</div>
+</div>
+<!-- Extra Parameters / Benefits Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm">
+<div class="flex items-start gap-space-xs p-space-sm rounded-xl bg-surface-container-low">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5">more_time</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">+ 20 Minutos Estimados</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Nueva hora de finalización prevista: 11:15 hs</span>
+</div>
+</div>
+<div class="flex items-start gap-space-xs p-space-sm rounded-xl bg-surface-container-low">
+<span class="material-symbols-outlined text-tertiary text-[20px] mt-0.5">verified_user</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Garantía Extendida</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">60 días UGO Shield para la nueva tubería y sifón</span>
+</div>
+</div>
+</div>
+<!-- Payment Method Note -->
+<div class="p-space-sm rounded-xl bg-surface-container-high flex items-center justify-between text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">credit_card</span>
+<span class="font-label-sm text-label-sm text-secondary">
+              Se cobrará a: <strong class="text-on-surface font-semibold">Mastercard terminada en •••• 4291</strong>
+</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+            Solo tras tu conformidad
+          </span>
+</div>
+<!-- Security Badge -->
+<div class="flex items-center justify-center gap-2 text-center py-1">
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified</span>
+<span class="font-label-sm text-label-sm text-secondary">
+            Tu pago queda en custodia UGO hasta que compruebes que no hay pérdidas.
+          </span>
+</div>
+</div>
+<!-- Modal Actions Footer -->
+<div class="px-space-lg py-space-md bg-surface-container-lowest flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+<button class="w-full sm:w-auto px-space-md py-2.5 rounded-xl text-on-surface-variant hover:bg-surface-container transition-colors font-label-md text-label-md flex items-center justify-center gap-1.5" onclick="document.getElementById('expansion-modal').classList.add('hidden')" type="button">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+<span>Consultar a Roberto por chat</span>
+</button>
+<div class="flex items-center gap-space-sm w-full sm:w-auto">
+<button class="w-full sm:w-auto px-space-md py-2.5 rounded-xl bg-surface-container-low hover:bg-error-container hover:text-on-error-container text-on-surface-variant transition-colors font-label-md text-label-md flex items-center justify-center" onclick="rejectProposal()" type="button">
+            Rechazar ampliación
+          </button>
+<button class="w-full sm:w-auto px-space-lg py-2.5 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg shadow-sm hover:opacity-95 transition-all flex items-center justify-center gap-2" onclick="approveProposal()" type="button">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Aprobar ampliación (+ R$ 65)</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Live timer ticking simulation
+    let seconds = 14;
+    let minutes = 38;
+    let hours = 0;
+    const timerElem = document.getElementById('live-timer');
+
+    setInterval(() => {
+      seconds++;
+      if (seconds >= 60) {
+        seconds = 0;
+        minutes++;
+      }
+      if (minutes >= 60) {
+        minutes = 0;
+        hours++;
+      }
+      const fH = String(hours).padStart(2, '0');
+      const fM = String(minutes).padStart(2, '0');
+      const fS = String(seconds).padStart(2, '0');
+      if (timerElem) {
+        timerElem.textContent = `${fH}:${fM}:${fS}`;
+      }
+    }, 1000);
+
+    // Modal interaction helpers
+    const modal = document.getElementById('expansion-modal');
+    const openBtn = document.getElementById('open-modal-btn');
+
+    if (openBtn && modal) {
+      openBtn.addEventListener('click', () => {
+        modal.classList.remove('hidden');
+      });
+    }
+
+    function approveProposal() {
+      alert('¡Ampliación de servicio aprobada! Roberto Silva ha sido notificado para instalar el nuevo Kit de Sifón reforzado.');
+      modal.classList.add('hidden');
+    }
+
+    function rejectProposal() {
+      if (confirm('¿Confirmas mantener solo el servicio base acordado (R$ 140)?')) {
+        alert('Se notificó a Roberto para culminar únicamente la reparación del flexible.');
+        modal.classList.add('hidden');
+      }
+    }
+  </script>
+</div></main></div></body></html>

@@ -1,0 +1,155 @@
+# AUDITORÍA INTEGRAL, MATRIZ DE NORMALIZACIÓN & HANDOFF · UGO CLIENTE WEB
+
+**Destino de Implementación:** React 18/19 + TypeScript 5.x + Vite + Tailwind CSS + Supabase  
+**Design System Canónico Objetivo:** Urban Kinetic (`#006948` primario, `#00687A` secundario, `#57DFFE` Hugo IA, Plus Jakarta Sans)  
+**Resoluciones Objetivo:** Responsive Web real (Mobile/Tablet 768px, Laptop 1024px, Desktop 1280–1440px, Ultrawide 1920px+)  
+**Estado:** **AUDITADO, CORREGIDO Y LISTO PARA HANDOFF (READY FOR WEB HANDOFF: YES)**
+
+---
+
+## 1. INVENTARIO COMPLETO Y CLASIFICACIÓN DE PANTALLAS WEB
+
+Las pantallas Desktop existentes **NO son legacy**, son la versión oficial **UGO Cliente Web**. A continuación se establece el inventario canónico, el análisis de variantes y el destino de cada pantalla:
+
+| ID de Pantalla | Nomenclatura Canónica Web | Tipo / Rol | Estado | Justificación y Decisión |
+|---|---|---|---|---|
+| **`SCREEN_54`** | `UGO Cliente Web / Home · Radar` | **CANÓNICA** | Activa / Optimizada | Versión Home limpia tras cleanup UX. Header con geocerca, radar interactivo y Hugo IA. (Sustituye la versión sobrecargada `SCREEN_65`). |
+| **`SCREEN_64`** | `UGO Cliente Web / Buscar servicio` | **CANÓNICA** | Activa | Directorio de prestadores matriculados, filtros por oficio, aranceles transparentes y mapa de cobertura. |
+| **`SCREEN_63`** | `UGO Cliente Web / Solicitud · Descripción & Diagnóstico` | **CANÓNICA** | Activa | Wizard multipaso con diagnóstico asistido Hugo IA, carga de fotos y selección de urgencia. |
+| **`SCREEN_62`** | `UGO Cliente Web / Matching · Buscando` | **CANÓNICA** | Activa | Radar algorítmico de asignación en vivo con tiempo de espera estimado y cancelación. |
+| **`SCREEN_46`** | `UGO Cliente Web / Profesional · Perfil & Contratar` | **CANÓNICA** | Activa | Vista optimizada con ficha del profesional verificado, valor hora, reviews y botón contratar con custodia. (Consolida `SCREEN_41`). |
+| **`SCREEN_48`** | `UGO Cliente Web / Contratación · PIN de Conformidad` | **CANÓNICA** | Activa | Confirmación fiduciaria con asignación de PIN de 4 dígitos y seguimiento de orden. |
+| **`SCREEN_61`** | `UGO Cliente Web / Tracking · En camino` | **CANÓNICA** | Activa | Telemetría GPS en tiempo real sobre mapa amplio de dos columnas, ETA y canales de contacto seguro. |
+| **`SCREEN_44`** | `UGO Cliente Web / Profesional · Llegó a Puerta` | **CANÓNICA** | Activa | Notificación de arribo presencial, foto del técnico y habilitación de acceso seguro. |
+| **`SCREEN_45`** | `UGO Cliente Web / Chat en vivo · Prestador` | **CANÓNICA** | Activa | Mensajería cifrada contextual durante el servicio con soporte de Hugo IA. |
+| **`SCREEN_42`** | `UGO Cliente Web / Servicio · En curso & Cronómetro` | **CANÓNICA** | Activa | Panel multipanel de ejecución: cronómetro en vivo, bitácora de 4 fases, widget de custodia y copiloto Hugo. |
+| **`SCREEN_40`** | `UGO Cliente Web / Servicio · Ampliación Solicitada` | **CANÓNICA** | Activa | Modal de propuesta de trabajo complementario en sitio: desglose de costo, tiempo y aprobación en 1 clic. |
+| **`SCREEN_28`** | `UGO Cliente Web / Finalización · Calificar servicio` | **CANÓNICA** | Activa | Cierre de orden, 5 estrellas, tags de calidad, propina opcional y activación de garantía UGO Shield. |
+| **`SCREEN_27`** | `UGO Cliente Web / Finalización · Confirmación enviada` | **CANÓNICA** | Activa | Estado de éxito tras calificar con comprobante de servicio emitido. |
+| **`SCREEN_29`** | `UGO Cliente Web / Servicio · Detalle de Servicio Finalizado` | **CANÓNICA** | Activa | Bitácora cronológica completa, detalle de liquidación y descarga de comprobante digital. |
+| **`SCREEN_58`** | `UGO Cliente Web / Actividad · Historial de Servicios` | **CANÓNICA** | Activa | Historial de órdenes con pestañas Activos / Concluidos y estados visuales. |
+| **`SCREEN_56`** | `UGO Cliente Web / UGO Shield · Garantía & Mediación` | **CANÓNICA** | Activa | Centro de protección, pólizas activas y apertura de mediaciones técnicas. |
+| **`SCREEN_34`** | `UGO Cliente Web / UGO Shield · Abrir Disputa` | **CANÓNICA** | Activa | Formulario para congelar fondos en custodia, cargar evidencias fotográficas y solicitar peritaje. |
+| **`SCREEN_33`** | `UGO Cliente Web / UGO Shield · Disputa en Mediación` | **CANÓNICA** | Activa | Sala de mediación tripartita (Cliente - Prestador - Perito UGO Shield) con canal auditado. |
+| **`SCREEN_55`** | `UGO Cliente Web / Pagos · Billetera UGO` | **CANÓNICA** | Activa | Saldo disponible, fondos retenidos en custodia y métodos guardados. |
+| **`SCREEN_53`** | `UGO Cliente Web / Pagos · Modal Recargar Billetera` | **CANÓNICA** | Activa | Modal con opciones de recarga instantánea vía PIX y tarjeta. |
+| **`SCREEN_52`** | `UGO Cliente Web / Pagos · Recarga Exitosa` | **CANÓNICA** | Activa | Comprobante digital de acreditación de fondos. |
+| **`SCREEN_51`** | `UGO Cliente Web / Pagos · Contratar con Saldo` | **CANÓNICA** | Activa | Flujo directo de autorización fiduciaria usando saldo en billetera. |
+| **`SCREEN_23`** | `UGO Cliente Web / Perfil · Principal & Domicilios` | **CANÓNICA** | Activa | Datos de identidad, validación de teléfono, domicilios guardados y contactos delegados. |
+| **`SCREEN_20`** | `UGO Cliente Web / Ayuda · Centro de Asistencia` | **CANÓNICA** | Activa | Base de conocimiento, protocolos de seguridad y contacto prioritario 24/7. |
+| **`SCREEN_35`** | `UGO Cliente Web / Configuración` | **CANÓNICA** | Activa | Preferencias de cuenta, notificaciones y privacidad. |
+| **`SCREEN_18`** | `UGO Cliente Web / Mensajes · Centro de Notificaciones` | **CANÓNICA** | Activa | Bandeja unificada de conversaciones activas y alertas operativas. |
+| **`SCREEN_49`** | `UGO Cliente Web / Sandbox QA · Consola de Pruebas` | **UTILIDAD QA** | Herramienta | Consola técnica para QA y testeo de eventos sintéticos (PIX, telemetría, matching). |
+
+---
+
+## 2. ANÁLISIS DE PANTALLAS DESCARTADAS / CONSOLIDADAS
+
+| ID Pantalla | Motivo Técnico de Descarte o Fusión |
+|---|---|
+| **`SCREEN_65`** | **Descartada:** Versión Home previa al cleanup UX. Contenía densidad visual no optimizada; fue superada canónicamente por `SCREEN_54`. |
+| **`SCREEN_22`** | **Consolidada en `SCREEN_63`:** Versión preliminar del wizard de nueva solicitud. |
+| **`SCREEN_25`** | **Consolidada en `SCREEN_54`:** Variante post-servicio del Home sin diferencias de layout. |
+| **`SCREEN_26`** | **Consolidada en `SCREEN_58`:** Variante con un solo ítem finalizado en Actividad. |
+| **`SCREEN_31`** | **Consolidada en `SCREEN_40`:** Modal preliminar de ampliación de servicio. |
+| **`SCREEN_32`** | **Consolidada en `SCREEN_42`:** Versión temprana del servicio en ejecución sin desglose fiduciario completo. |
+| **`SCREEN_39`** | **Consolidada en `SCREEN_23`:** Perfil básico superado por la versión completa con contactos delegados y reglas del hogar. |
+| **`SCREEN_36`** | **Consolidada en `SCREEN_20`:** Vista de ayuda simplificada unificada en el Centro de Asistencia UGO Shield. |
+| **`SCREEN_37`** | **Consolidada en `AppHeader`:** Widget flotante de perfil ahora integrado directamente en el shell de navegación. |
+| **`SCREEN_12` (Three.js Container)** | **Saneado y Desacoplado:** Contenía el componente `PinReleaseModal.tsx` envuelto erróneamente en Three.js. Se extrajo como componente React puro (`src/components/fiduciario/PinReleaseModal.tsx`). |
+
+---
+
+## 3. MATRIZ DE NORMALIZACIÓN DE CLAIMS E INTEGRACIONES FICTICIAS
+
+Se neutralizaron todas las afirmaciones comerciales y alianzas legales en las pantallas Web, reemplazándolas por terminología oficial de UGO:
+
+| Claim Previo en Diseños Web | Riesgo Legal / Producto | Terminología Oficial Canónica UGO |
+|---|---|---|
+| "Póliza Tokio Marine Seguradora hasta R$ 50.000 / Póliza #TM-8942" | Afirma convenio asegurador no confirmado. | **"Garantía UGO Shield de Satisfacción y Cobertura Técnica (hasta 60 días)"** |
+| "Custodia Fiduciaria Itaú Escrow / Banco Itaú SPI / BACEN" | Afirma integración bancaria propietaria. | **"Fondos en Custodia de Pago UGO · Liberación condicionada al PIN del cliente"** |
+| "Técnico Matriculado CREA / CFT #51842" | Afirma validación con entidades profesionales sin convenio. | **"Profesional Técnico Verificado · Identidad y antecedentes validados por UGO"** |
+| "Notariado con Hash SHA-256 en Blockchain Proof" | Simula infraestructura criptográfica innecesaria. | **"Registro de Bitácora Digital Trazable con sello de tiempo"** |
+| "Sincronización SEFAZ / Facturación NF-e automática" | Simula conexión fiscal tributaria de Brasil. | **"Comprobante Digital de Servicio y Detalle de Liquidación"** |
+
+---
+
+## 4. SISTEMA RESPONSIVE REAL PARA UGO CLIENTE WEB
+
+UGO Cliente Web no es un escalado de mobile, sino una aplicación web desktop modular organizada en un sistema de rejilla adaptable:
+
+- **Desktop Ultrawide & Estándar (1440px – 1920px+):**
+  - Layout de **Sidebar persistente expandido (w-64)** + Área de trabajo fluida (max-w-7xl).
+  - En servicio activo: Distribución en **3 columnas** (Col 1: Mapa y Telemetría; Col 2: Bitácora e Hitos en tiempo real; Col 3: Custodia fiduciaria, chat directo y copiloto contextual Hugo IA).
+- **Laptop & Desktop Compacto (1024px – 1280px):**
+  - **Sidebar colapsable a Side-Rail de iconos (w-20)** para maximizar el área de datos.
+  - En servicio activo: Distribución en **2 columnas** (Columna principal de mapa y bitácora, columna lateral para finanzas, soporte y Hugo).
+- **Tablet Horizontal (1024px) y Tablet Vertical (768px):**
+  - Barra superior (*TopNavBar*) con menú tipo Drawer deslizable.
+  - Paneles apilables con acordeones y tarjetas elevadas con touch targets de 48px.
+
+---
+
+## 5. DESIGN SYSTEM CANÓNICO: URBAN KINETIC (WEB TOKENS)
+
+Se unifican todos los componentes Web bajo la paleta oficial de UGO:
+
+```css
+:root {
+  /* Marca Primaria y Secundaria */
+  --ugo-primary: #006948;        /* Verde Esmeralda Urbano */
+  --ugo-primary-hover: #005238;
+  --ugo-secondary: #00687A;      /* Azul Petróleo / Teal */
+  --ugo-secondary-hover: #005362;
+
+  /* Copiloto Hugo IA */
+  --ugo-hugo-cyan: #57DFFE;      /* Cyan Eléctrico Copiloto */
+  --ugo-hugo-surface: #E6FAFF;   /* Fondo tenue para intervenciones */
+  --ugo-hugo-border: #99EEFD;
+
+  /* Superficies y Neutros */
+  --ugo-bg: #F8FBF9;             /* Fondo aplicación */
+  --ugo-card: #FFFFFF;           /* Paneles y tarjetas */
+  --ugo-border: #E2E8F0;
+  --ugo-text-main: #0F172A;
+  --ugo-text-muted: #64748B;
+
+  /* Estados Semánticos */
+  --ugo-success: #16A34A;
+  --ugo-warning: #D97706;
+  --ugo-error: #DC2626;
+  --ugo-info: #0284C7;
+
+  /* Tipografía */
+  --font-display: 'Plus Jakarta Sans', sans-serif;
+}
+```
+
+---
+
+## 6. COMPONENTES COMPARTIDOS (MOBILE & WEB CONCEPTUAL API)
+
+| Componente | API / Props Compartidas | Adaptación Visual en Web | Adaptación Visual en Mobile |
+|---|---|---|---|
+| **`ProviderCard`** | `name, trade, rating, fee, badges, eta` | Tarjeta horizontal de ancho completo con métricas en línea y acciones directas. | Tarjeta vertical compacta adaptada a listados estrechos. |
+| **`CategoryCard`** | `icon, name, startingFee, proCount` | Grid de 4 a 6 columnas con elevación hover sutil. | Grid de 2 columnas o carrusel horizontal. |
+| **`HugoAssistant`** | `contextType, suggestionText, actions` | Panel lateral persistente de 320px o drawer contextual. | Burbuja compacta o banner superior dismissable. |
+| **`ServiceTimeline`**| `milestones, activeIndex, timestamps` | Vista expandida con fotos de evidencia en miniatura y sellos. | Acordeón vertical simplificado. |
+| **`PaymentSummary`** | `baseAmount, extras, totalInEscrow` | Widget financiero lateral fijo (*sticky*) con botón de descarga. | Tarjeta al pie de pantalla o sheet deslizable. |
+| **`UGOShield`** | `coverageStatus, certificateId, daysLeft` | Banner ancho con acceso a sala de mediación y peritaje. | Badge semántico con modal de detalle. |
+
+---
+
+## 7. RESOLUCIÓN DE BLOQUEADORES Y VEREDICTO FINAL
+
+1. **[RESUELTO] Dualidad de identidades:** El proyecto Web adopta formalmente los tokens canónicos de **Urban Kinetic** (`#006948`), eliminando la divergencia con *Kinetic Trust*.
+2. **[RESUELTO] Claims ficticios:** Todos los textos de bancos, aseguradoras y colegios matriculares fueron convertidos a la terminología oficial de UGO Shield y custodia de pago.
+3. **[RESUELTO] Saneamiento de `SCREEN_11`:** El código React del modal de PIN fue extraído y reestructurado de manera modular y limpia en `src/components/fiduciario/PinReleaseModal.tsx`.
+4. **[RESUELTO] Contratos TypeScript:** Se generó el archivo `src/types/domain.ts` 100% compatible con las tablas y enums reales de **Supabase**.
+
+---
+
+## VEREDICTO FINAL:
+### **READY FOR WEB HANDOFF: YES**
+
+La versión **UGO Cliente Web** cuenta con arquitectura modular, navegación sin fisuras, responsive design multipanel y contratos de datos directos para su integración inmediata en el repositorio de GitHub con **React 18/19, Vite, Tailwind CSS y Supabase**.

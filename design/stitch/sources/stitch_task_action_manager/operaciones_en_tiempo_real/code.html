@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full gap-space-md">
+<!-- Top Live Header & Control Bar -->
+<div class="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-space-base bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-sm">
+<span class="inline-flex items-center justify-center w-2.5 h-2.5 rounded-full bg-primary animate-ping"></span>
+<span class="font-headline-lg text-headline-lg text-text-primary tracking-tight">Operaciones en Tiempo Real · Florianópolis</span>
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-data-mono text-label-sm font-semibold">LIVE STREAM</span>
+</div>
+<p class="font-body-md text-body-md text-text-secondary mt-0.5">Supervisión geoespacial de cuadrillas, solicitudes entrantes y flujo logístico activo</p>
+</div>
+<!-- Live Controls Bar -->
+<div class="flex flex-wrap items-center gap-space-sm w-full xl:w-auto">
+<div class="flex items-center gap-1.5 bg-surface-muted px-space-sm py-1 rounded-lg text-text-secondary font-data-mono text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary animate-spin" style="animation-duration: 4s;">sync</span>
+<span>Refresh:</span>
+<span class="text-text-primary font-bold">3s</span>
+</div>
+<div class="flex items-center bg-surface-muted p-0.5 rounded-lg shadow-sm">
+<button class="px-space-sm py-1 rounded-md text-label-sm font-label-sm bg-surface-panel text-text-primary shadow-sm font-semibold transition-all" id="btn-mode-standard" onclick="toggleHeatmap(false)">Puntos</button>
+<button class="px-space-sm py-1 rounded-md text-label-sm font-label-sm text-text-secondary hover:text-text-primary transition-all flex items-center gap-1" id="btn-mode-heat" onclick="toggleHeatmap(true)">
+<span class="material-symbols-outlined text-[14px] text-warning-amber">local_fire_department</span>
+<span>Demanda/Oferta</span>
+</button>
+</div>
+<div class="relative">
+<select class="bg-surface-muted text-text-primary font-body-sm text-body-sm px-space-sm py-1.5 rounded-lg outline-none cursor-pointer pr-7 shadow-sm">
+<option value="all">Todas las zonas (Ilha + Continente)</option>
+<option value="norte">Norte da Ilha (Canasvieiras, Ingleses, Jurerê)</option>
+<option value="centro">Centro &amp; Bacia do Itacorubi</option>
+<option value="leste">Leste (Lagoa da Conceição, Barra)</option>
+<option value="sul">Sul da Ilha (Campeche, Tapera)</option>
+<option value="continente">Continente (Estreito, Coqueiros)</option>
+</select>
+<span class="material-symbols-outlined text-[16px] text-text-muted absolute right-2 top-2 pointer-events-none">expand_more</span>
+</div>
+<div class="relative">
+<select class="bg-surface-muted text-text-primary font-body-sm text-body-sm px-space-sm py-1.5 rounded-lg outline-none cursor-pointer pr-7 shadow-sm">
+<option value="all">Todas las Categorías</option>
+<option value="elec">⚡ Electricidad</option>
+<option value="plomb">💧 Plomería &amp; Gas</option>
+<option value="clean">🧹 Limpieza &amp; Sanitización</option>
+<option value="ac">❄️ Climatización (HVAC)</option>
+<option value="lock">🔑 Cerrajería Express</option>
+</select>
+<span class="material-symbols-outlined text-[16px] text-text-muted absolute right-2 top-2 pointer-events-none">expand_more</span>
+</div>
+<button class="flex items-center gap-1 px-space-sm py-1.5 rounded-lg bg-text-primary text-on-primary hover:bg-black font-label-md text-label-md transition-all shadow-sm" onclick="toggleCommandFullscreen()">
+<span class="material-symbols-outlined text-[16px]">fullscreen</span>
+<span class="hidden sm:inline">Modo Command Center</span>
+</button>
+</div>
+</div>
+<!-- Operational Status Bar (Telemetry KPI Strip) -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-space-sm">
+<div class="bg-surface-panel p-space-sm rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-medium">Servicios en Curso</span>
+<span class="font-data-metric text-data-metric text-primary leading-tight font-bold">48</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-brand-green-subtle flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">engineering</span>
+</div>
+</div>
+<div class="bg-surface-panel p-space-sm rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-medium">En Trayecto Activo</span>
+<span class="font-data-metric text-data-metric text-secondary leading-tight font-bold">32</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">near_me</span>
+</div>
+</div>
+<div class="bg-surface-panel p-space-sm rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-medium">Buscando Cuadrilla</span>
+<span class="font-data-metric text-data-metric text-warning-amber leading-tight font-bold">14</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-warning-amber-subtle flex items-center justify-center text-warning-amber">
+<span class="material-symbols-outlined text-[20px]">radar</span>
+</div>
+</div>
+<div class="bg-surface-panel p-space-sm rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-medium">Riesgo Retraso (SLA)</span>
+<span class="font-data-metric text-data-metric text-tertiary leading-tight font-bold">3</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-risk-red-subtle flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+</div>
+<div class="col-span-2 md:col-span-1 lg:col-span-1 bg-surface-panel p-space-sm rounded-xl shadow-sm flex items-center justify-between">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-medium">Tiempo Promedio Llegada</span>
+<div class="flex items-baseline gap-1">
+<span class="font-data-metric text-data-metric text-text-primary leading-tight font-bold">18</span>
+<span class="font-label-md text-label-md text-text-secondary">min</span>
+</div>
+</div>
+<div class="w-9 h-9 rounded-lg bg-surface-muted flex items-center justify-center text-text-secondary">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+</div>
+</div>
+<!-- Central Operational Workspace (70% Map & 30% Streaming Log) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md items-start">
+<!-- Geo Operational Map Area (8 cols = ~67%) -->
+<div class="lg:col-span-8 bg-surface-panel rounded-xl shadow-sm p-space-sm flex flex-col relative overflow-hidden h-[760px]">
+<!-- Mini Filter Dock Overlaid On Map -->
+<div class="absolute top-4 left-4 z-20 flex flex-wrap items-center gap-1.5 bg-surface-panel/90 backdrop-blur-md p-1.5 rounded-xl shadow-md">
+<button class="filter-pill active px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-semibold bg-primary text-on-primary transition-all" onclick="filterPins('all')">Todos (94)</button>
+<button class="filter-pill px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-surface-muted text-text-secondary hover:text-text-primary transition-all flex items-center gap-1" onclick="filterPins('transit')">
+<span class="w-2 h-2 rounded-full bg-secondary"></span> En camino (32)
+        </button>
+<button class="filter-pill px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-surface-muted text-text-secondary hover:text-text-primary transition-all flex items-center gap-1" onclick="filterPins('working')">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Trabajando (48)
+        </button>
+<button class="filter-pill px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-surface-muted text-text-secondary hover:text-text-primary transition-all flex items-center gap-1" onclick="filterPins('delays')">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span> Demoras (3)
+        </button>
+<button class="filter-pill px-2.5 py-1 rounded-lg text-label-sm font-label-sm font-medium bg-surface-muted text-text-secondary hover:text-text-primary transition-all" onclick="filterPins('free')">Libres (45)</button>
+</div>
+<!-- Map Controller Widgets (Zoom & Layers) -->
+<div class="absolute top-4 right-4 z-20 flex flex-col gap-1.5 bg-surface-panel/90 backdrop-blur-md p-1 rounded-xl shadow-md">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary transition-all" title="Zoom in">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary transition-all" title="Zoom out">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+<div class="w-6 h-px bg-surface-muted self-center"></div>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-text-primary transition-all" title="Centrar Isla">
+<span class="material-symbols-outlined text-[18px]">my_location</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center text-primary hover:bg-surface-muted transition-all" title="Capa de Tráfico SC-401">
+<span class="material-symbols-outlined text-[18px]">traffic</span>
+</button>
+</div>
+<!-- Custom Vector Interactive Canvas for Florianópolis -->
+<div class="relative w-full h-full rounded-lg bg-surface-container-low overflow-hidden select-none" id="map-container">
+<!-- Floripa Island Stylized Geo Vector Overlay -->
+<svg class="absolute inset-0 w-full h-full pointer-events-none" fill="none" preserveaspectratio="xMidYMid slice" viewbox="0 0 1000 800">
+<defs>
+<!-- Water Pattern -->
+<pattern height="40" id="grid" patternunits="userSpaceOnUse" width="40">
+<path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e7ff" stroke-width="0.75"></path>
+</pattern>
+<!-- Heatmap Gradient Gradients -->
+<radialgradient cx="50%" cy="50%" id="heat-north" r="50%">
+<stop offset="0%" stop-color="#bb0112" stop-opacity="0.45"></stop>
+<stop offset="60%" stop-color="#D97706" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#D97706" stop-opacity="0"></stop>
+</radialgradient>
+<radialgradient cx="50%" cy="50%" id="heat-central" r="50%">
+<stop offset="0%" stop-color="#006948" stop-opacity="0.4"></stop>
+<stop offset="70%" stop-color="#68dba9" stop-opacity="0.15"></stop>
+<stop offset="100%" stop-color="#006948" stop-opacity="0"></stop>
+</radialgradient>
+</defs>
+<!-- Water Background Grid -->
+<rect fill="url(#grid)" height="800" width="1000"></rect>
+<!-- Mainland Silhouette (Continente - Florianópolis West) -->
+<path d="M 0 180 C 120 180, 160 250, 170 340 C 180 430, 150 520, 110 620 L 0 650 Z" fill="#eaedff"></path>
+<text fill="#64748B" font-size="12" font-weight="600" letter-spacing="2" x="50" y="380">CONTINENTE</text>
+<!-- Florianópolis Island (Ilha de Santa Catarina) High Fidelity Morphology -->
+<path class="drop-shadow-sm" d="M 520 70 
+                   C 660 70, 740 130, 710 210 
+                   C 690 260, 680 320, 630 380 
+                   C 600 420, 560 450, 550 510 
+                   C 540 570, 520 640, 480 730 
+                   C 420 750, 390 710, 410 640 
+                   C 430 580, 420 520, 390 470 
+                   C 360 430, 310 400, 320 340 
+                   C 330 280, 380 230, 390 170 
+                   C 400 110, 440 70, 520 70 Z" fill="#ffffff" stroke="#CBD5E1" stroke-width="2"></path>
+<!-- Lagoa da Conceição (Inner Saltwater Lagoon) -->
+<path d="M 480 360 C 530 350, 560 400, 530 450 C 500 500, 470 450, 480 360 Z" fill="#eaedff"></path>
+<text fill="#64748B" font-size="9" font-weight="600" x="495" y="415">Lagoa da Conceição</text>
+<!-- Main Express Arteries (Rodovias SC-401, SC-405, SC-406) -->
+<!-- SC-401 North Highway (Hub Florianópolis vital artery) -->
+<path d="M 370 330 C 430 270, 490 190, 550 140 C 580 120, 630 115, 650 118" stroke="#CBD5E1" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+<!-- Active Transit Pulse Route (Rodrigo M. to #UGO-1842) -->
+<path class="animate-pulse" d="M 450 240 C 480 200, 530 160, 590 135" id="route-rodrigo" stroke="#006398" stroke-dasharray="6,6" stroke-width="3"></path>
+<!-- Regional Zone Labels -->
+<g fill="#475569" font-size="11" font-weight="700" letter-spacing="0.5">
+<text x="560" y="110">CANASVIEIRAS</text>
+<text x="650" y="150">INGLESES</text>
+<text x="460" y="130">JURERÊ INTERNACIONAL</text>
+<text x="350" y="320">CENTRO · BEIRA-MAR</text>
+<text x="430" y="600">CAMPECHE</text>
+<text x="380" y="680">TAPERA / AEROPORTO</text>
+</g>
+<!-- Heatmap Layer (Toggleable Demand/Supply Surges) -->
+<g class="transition-opacity duration-500 opacity-0 pointer-events-none" id="heatmap-layer">
+<circle cx="630" cy="150" fill="url(#heat-north)" r="95"></circle>
+<circle cx="560" cy="120" fill="url(#heat-north)" r="75"></circle>
+<circle cx="370" cy="330" fill="url(#heat-central)" r="110"></circle>
+<circle cx="450" cy="590" fill="url(#heat-central)" r="80"></circle>
+</g>
+</svg>
+<!-- Dynamic Map Pins Layer -->
+<!-- PIN 1 (SELECTED): Green Pin #UGO-1842 Canasvieiras -->
+<div class="absolute pin-working" style="top: 17%; left: 59%;">
+<div class="relative cursor-pointer group" onclick="togglePinPopover(true)">
+<span class="absolute -inset-2 rounded-full bg-primary/20 animate-ping"></span>
+<div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-primary text-on-primary shadow-md transform transition-transform hover:scale-110">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+<!-- Pin Badge Tooltip -->
+<div class="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-text-primary text-on-primary font-data-mono text-[10px] px-2 py-0.5 rounded shadow-md pointer-events-none">
+              #UGO-1842 ● 38m
+            </div>
+</div>
+</div>
+<!-- PIN 2: Transit Cyan Pin SC-401 northbound -->
+<div class="absolute pin-transit" style="top: 29%; left: 45%;">
+<div class="relative cursor-pointer group">
+<span class="absolute -inset-1.5 rounded-full bg-secondary/30 animate-pulse"></span>
+<div class="relative flex items-center justify-center w-7 h-7 rounded-full bg-secondary text-on-secondary shadow-md transform transition-transform hover:scale-110">
+<span class="material-symbols-outlined text-[16px]">navigation</span>
+</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-surface-panel text-secondary font-label-sm text-[10px] px-1.5 py-0.5 rounded shadow-sm border border-border-subtle font-semibold">
+              Marcos T. (7 min)
+            </div>
+</div>
+</div>
+<!-- PIN 3: Red Pin SLA Delay Alert on SC-401 near Ratones -->
+<div class="absolute pin-delays" style="top: 25%; left: 49%;">
+<div class="relative cursor-pointer group">
+<span class="absolute -inset-3 rounded-full bg-tertiary/25 animate-ping"></span>
+<div class="relative flex items-center justify-center w-8 h-8 rounded-full bg-tertiary text-on-tertiary shadow-lg animate-bounce">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</div>
+<div class="absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap bg-risk-red-subtle text-tertiary font-data-mono text-[10px] px-2 py-0.5 rounded border border-risk-red-border font-bold">
+              ! DELAY +12m #UGO-1834
+            </div>
+</div>
+</div>
+<!-- PIN 4: Orange Pin Matching Ingleses Express -->
+<div class="absolute pin-matching" style="top: 18%; left: 66%;">
+<div class="relative cursor-pointer group">
+<span class="absolute -inset-2 rounded-full bg-warning-amber/20 animate-pulse"></span>
+<div class="relative flex items-center justify-center w-7 h-7 rounded-full bg-warning-amber text-on-primary shadow-md">
+<span class="material-symbols-outlined text-[16px]">hourglass_top</span>
+</div>
+<div class="absolute -bottom-6 left-1/2 -translate-x-1/2 whitespace-nowrap bg-warning-amber-subtle text-warning-amber font-data-mono text-[10px] px-1.5 py-0.5 rounded border border-warning-amber-border font-semibold">
+              Buscando Match #UGO-1845
+            </div>
+</div>
+</div>
+<!-- PIN 5: Green Pin Working in Jurerê -->
+<div class="absolute pin-working" style="top: 16%; left: 47%;">
+<div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-on-primary shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-[14px]">cleaning_services</span>
+</div>
+</div>
+<!-- PIN 6: Green Pin Working in Centro Beira-Mar -->
+<div class="absolute pin-working" style="top: 42%; left: 36%;">
+<div class="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-on-primary shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-[14px]">plumbing</span>
+</div>
+</div>
+<!-- PIN 7: Cyan Pin Transit near Lagoa -->
+<div class="absolute pin-transit" style="top: 48%; left: 52%;">
+<div class="flex items-center justify-center w-6 h-6 rounded-full bg-secondary text-on-secondary shadow-sm hover:scale-110 transition-transform cursor-pointer">
+<span class="material-symbols-outlined text-[14px]">directions_bike</span>
+</div>
+</div>
+<!-- PIN 8: Red Pin Dispute Centro -->
+<div class="absolute pin-delays" style="top: 45%; left: 34%;">
+<div class="flex items-center justify-center w-7 h-7 rounded-full bg-tertiary text-on-tertiary shadow-md animate-pulse cursor-pointer">
+<span class="material-symbols-outlined text-[15px]">report</span>
+</div>
+</div>
+<!-- PIN 9: Free Provider available in Campeche -->
+<div class="absolute pin-free" style="top: 74%; left: 43%;">
+<div class="flex items-center justify-center w-5 h-5 rounded-full bg-surface-panel text-text-muted border border-border-strong hover:scale-110 transition-transform cursor-pointer" title="Gabriel S. (Disponible)">
+<span class="material-symbols-outlined text-[12px] text-text-muted">person</span>
+</div>
+</div>
+<!-- SELECTED PIN POPOVER CARD (Pinned to #UGO-1842 Canasvieiras) -->
+<div class="absolute z-30 w-84 bg-surface-panel rounded-xl shadow-xl border border-border-subtle p-space-md" id="selected-service-popover" style="top: 22%; left: 51%;">
+<div class="flex items-start justify-between pb-space-xs border-b border-border-subtle">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-label-sm font-bold">#UGO-1842</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">En Progreso</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted mt-0.5">Minuto 38 transcurrido de 60m estimados</span>
+</div>
+<button class="text-text-muted hover:text-text-primary" onclick="togglePinPopover(false)">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Popover Content Split -->
+<div class="py-space-sm space-y-space-xs">
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-text-muted">person</span> Cliente:
+              </span>
+<span class="font-semibold text-text-primary flex items-center gap-1">
+                Camila Rossi
+                <span class="text-warning-amber flex items-center text-[12px]">★ 4.9</span>
+</span>
+</div>
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-text-muted">verified</span> Proveedor:
+              </span>
+<span class="font-semibold text-text-primary flex items-center gap-1">
+                Rodrigo M. (Técnico Cert.)
+                <span class="text-primary flex items-center text-[12px]">★ 4.95</span>
+</span>
+</div>
+<div class="flex items-start justify-between text-body-sm font-body-sm">
+<span class="text-text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-text-muted">pin_drop</span> Zona:
+              </span>
+<span class="text-right text-text-primary font-medium truncate max-w-[160px]">
+                Av. das Nações 412, Canasvieiras
+              </span>
+</div>
+<div class="pt-space-xs bg-surface-muted/70 p-2 rounded-lg flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-text-secondary">Valor Operativo Total:</span>
+<div class="text-right">
+<span class="font-data-mono text-body-md font-bold text-primary">R$ 240,00</span>
+<span class="block text-[10px] text-text-muted font-data-mono leading-none">(R$ 180 base + R$ 60 adicional)</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions CTAs -->
+<div class="pt-space-xs flex items-center gap-space-xs">
+<button class="flex-1 py-1.5 px-2 bg-primary text-on-primary rounded-lg font-label-sm text-label-sm font-semibold hover:bg-brand-green-hover transition-colors text-center shadow-sm">
+              Abrir Detalle
+            </button>
+<button class="p-1.5 bg-surface-muted text-text-primary rounded-lg hover:bg-surface-container-high transition-colors" title="Llamar Proveedor">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button class="p-1.5 bg-surface-muted text-text-primary rounded-lg hover:bg-surface-container-high transition-colors" title="Contactar Cliente">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Map Footer Legend Bar -->
+<div class="pt-space-sm flex flex-wrap items-center justify-between gap-space-sm text-label-sm font-label-sm text-text-secondary border-t border-border-subtle mt-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+<span>En Servicio Activo</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span>Cuadrilla en Trayecto</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-warning-amber"></span>
+<span>Emparejando Solicitud</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary animate-pulse"></span>
+<span>Incidente / Demora Crítica</span>
+</div>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted">Centro Operativo: Lat -27.5954° S, Long -48.5480° W</span>
+</div>
+</div>
+<!-- Live Chronological Activity Stream (4 cols = ~33%) -->
+<div class="lg:col-span-4 flex flex-col bg-surface-panel rounded-xl shadow-sm h-[760px] overflow-hidden">
+<!-- Activity Feed Sticky Header -->
+<div class="p-space-base border-b border-border-subtle flex items-center justify-between bg-surface-panel z-10">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">stream</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">Feed en Vivo</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-data-mono text-label-sm text-text-muted">Streaming</span>
+</div>
+</div>
+<!-- Chronological Interactive Stream Items -->
+<div class="flex-1 overflow-y-auto p-space-base space-y-space-sm">
+<!-- EVENT 1: Milestone completed -->
+<div class="p-space-sm rounded-xl bg-surface-canvas border border-border-subtle hover:bg-surface-muted/50 transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-data-mono text-label-sm font-semibold text-primary">18:42</span>
+<span class="font-label-sm text-label-sm text-text-muted">· Llegada al sitio</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-secondary bg-surface-panel px-1.5 py-0.5 rounded shadow-2xs">#UGO-1842</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Proveedor <strong class="font-semibold">Rodrigo M.</strong> completó hito: Llegada confirmada al domicilio del cliente en <span class="text-text-secondary">Canasvieiras</span>.
+          </p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-[11px] text-text-muted">Técnico Certificado Electricidad</span>
+<button class="text-primary hover:text-brand-green-hover font-label-sm text-label-sm font-semibold flex items-center gap-0.5">
+<span>Monitorear</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- EVENT 2: Urgent Match Created -->
+<div class="p-space-sm rounded-xl bg-warning-amber-subtle/40 border border-warning-amber-border hover:bg-warning-amber-subtle transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-warning-amber text-[16px]">bolt</span>
+<span class="font-data-mono text-label-sm font-bold text-warning-amber">18:40</span>
+<span class="font-label-sm text-label-sm text-warning-amber font-semibold">· Urgencia Express</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-primary bg-surface-panel px-1.5 py-0.5 rounded shadow-2xs">#UGO-1845</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Nueva solicitud express creada: <strong class="font-semibold">Fuga mayor de agua en cocina</strong> en Ingleses Centro. Algoritmo despachando 3 cuadrillas cercanas.
+          </p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-data-mono text-[11px] text-text-muted">SLA despacho: &lt; 4m</span>
+<button class="px-2.5 py-1 bg-warning-amber text-on-primary rounded-lg font-label-sm text-label-sm font-semibold hover:bg-warning-amber-hover transition-colors shadow-sm">
+              Ver match
+            </button>
+</div>
+</div>
+<!-- EVENT 3: Payment Authorized -->
+<div class="p-space-sm rounded-xl bg-surface-canvas border border-border-subtle hover:bg-surface-muted/50 transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[16px]">credit_card</span>
+<span class="font-data-mono text-label-sm font-semibold text-secondary">18:38</span>
+<span class="font-label-sm text-label-sm text-text-muted">· Mercado Pago Escrow</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-secondary bg-surface-panel px-1.5 py-0.5 rounded shadow-2xs">#UGO-1839</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Pago <strong class="font-data-mono font-semibold text-text-primary">R$ 320,00</strong> autorizado con éxito vía Mercado Pago. Custodia en escrow asegurada.
+          </p>
+<div class="flex items-center justify-between pt-1 text-label-sm text-[11px] text-text-muted">
+<span>TX: #MP-98412910</span>
+<span class="text-primary font-medium">Split 85/15 retención</span>
+</div>
+</div>
+<!-- EVENT 4: SLA Critical Warning Delay -->
+<div class="p-space-sm rounded-xl bg-risk-red-subtle/50 border border-risk-red-border hover:bg-risk-red-subtle transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary text-[16px] animate-pulse">warning</span>
+<span class="font-data-mono text-label-sm font-bold text-tertiary">18:35</span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold">· Alerta SLA</span>
+</div>
+<span class="font-data-mono text-[11px] text-tertiary bg-surface-panel px-1.5 py-0.5 rounded font-bold shadow-2xs">#UGO-1834</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Posible retraso crítico de <strong class="text-tertiary">12 min</strong> reportado por tráfico intenso en cuello de botella SC-401 (Sentido Norte).
+          </p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-[11px] text-text-muted">Proveedor: Luciano P.</span>
+<button class="px-2.5 py-1 bg-tertiary text-on-tertiary rounded-lg font-label-sm text-label-sm font-semibold hover:bg-risk-red-hover transition-colors shadow-sm">
+              Intervenir
+            </button>
+</div>
+</div>
+<!-- EVENT 5: Dispute Opened -->
+<div class="p-space-sm rounded-xl bg-risk-red-subtle/30 border border-risk-red-border hover:bg-risk-red-subtle transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-tertiary text-[16px]">report_problem</span>
+<span class="font-data-mono text-label-sm font-bold text-tertiary">18:32</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">· Disputa Activa</span>
+</div>
+<span class="font-data-mono text-[11px] text-tertiary bg-surface-panel px-1.5 py-0.5 rounded font-bold shadow-2xs">#D-1042</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Disputa abierta por cliente <strong class="font-semibold">Mariana F.</strong>: Disconformidad en presupuesto adicional de materiales (R$ 140 solicitados en sitio).
+          </p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-[11px] text-text-muted">Retención en pausa preventiva</span>
+<button class="px-2.5 py-1 bg-surface-panel border border-border-strong text-text-primary rounded-lg font-label-sm text-label-sm font-semibold hover:bg-surface-muted transition-colors">
+              Tomar caso
+            </button>
+</div>
+</div>
+<!-- EVENT 6: Service Completed Successfully -->
+<div class="p-space-sm rounded-xl bg-brand-green-subtle/40 border border-brand-green-border hover:bg-brand-green-subtle transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+<span class="font-data-mono text-label-sm font-semibold text-primary">18:28</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">· Finalizado</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-secondary bg-surface-panel px-1.5 py-0.5 rounded shadow-2xs">#UGO-1829</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary">
+            Servicio finalizado con éxito: <strong class="font-semibold">Limpieza profunda de mudanza</strong>. Cliente calificó con 5 estrellas ★★★★★.
+          </p>
+<div class="flex items-center justify-between pt-1 text-label-sm text-[11px] text-text-muted">
+<span>Liberación programada: +24h</span>
+<span class="font-data-mono font-bold text-text-primary">R$ 380,00</span>
+</div>
+</div>
+</div>
+<!-- Feed Action Footer -->
+<div class="p-space-sm border-t border-border-subtle bg-surface-panel flex items-center justify-between text-label-sm font-label-sm">
+<span class="text-text-muted">Mostrando últimos 6 eventos de 142 hoy</span>
+<button class="text-primary hover:underline font-semibold">Ver Histórico Completo</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Interactive Client-side Scripting for Operational Toggles -->
+<script>
+  function toggleHeatmap(showHeat) {
+    const heatLayer = document.getElementById('heatmap-layer');
+    const btnHeat = document.getElementById('btn-mode-heat');
+    const btnStd = document.getElementById('btn-mode-standard');
+    
+    if (showHeat) {
+      heatLayer.classList.remove('opacity-0');
+      heatLayer.classList.add('opacity-100');
+      btnHeat.classList.add('bg-surface-panel', 'text-text-primary', 'font-semibold');
+      btnHeat.classList.remove('text-text-secondary');
+      btnStd.classList.remove('bg-surface-panel', 'text-text-primary', 'font-semibold');
+      btnStd.classList.add('text-text-secondary');
+    } else {
+      heatLayer.classList.add('opacity-0');
+      heatLayer.classList.remove('opacity-100');
+      btnStd.classList.add('bg-surface-panel', 'text-text-primary', 'font-semibold');
+      btnStd.classList.remove('text-text-secondary');
+      btnHeat.classList.remove('bg-surface-panel', 'text-text-primary', 'font-semibold');
+      btnHeat.classList.add('text-text-secondary');
+    }
+  }
+
+  function togglePinPopover(show) {
+    const popover = document.getElementById('selected-service-popover');
+    if (popover) {
+      if (show) {
+        popover.classList.remove('hidden');
+      } else {
+        popover.classList.add('hidden');
+      }
+    }
+  }
+
+  function filterPins(type) {
+    const pills = document.querySelectorAll('.filter-pill');
+    pills.forEach(p => {
+      p.classList.remove('bg-primary', 'text-on-primary', 'font-semibold');
+      p.classList.add('bg-surface-muted', 'text-text-secondary');
+    });
+    
+    // Set clicked as active
+    event.currentTarget.classList.add('bg-primary', 'text-on-primary', 'font-semibold');
+    event.currentTarget.classList.remove('bg-surface-muted', 'text-text-secondary');
+
+    const pinWorking = document.querySelectorAll('.pin-working');
+    const pinTransit = document.querySelectorAll('.pin-transit');
+    const pinDelays = document.querySelectorAll('.pin-delays');
+    const pinFree = document.querySelectorAll('.pin-free');
+    const pinMatching = document.querySelectorAll('.pin-matching');
+
+    const allPins = [...pinWorking, ...pinTransit, ...pinDelays, ...pinFree, ...pinMatching];
+
+    if (type === 'all') {
+      allPins.forEach(pin => pin.style.display = 'block');
+    } else if (type === 'working') {
+      allPins.forEach(pin => pin.style.display = 'none');
+      pinWorking.forEach(pin => pin.style.display = 'block');
+    } else if (type === 'transit') {
+      allPins.forEach(pin => pin.style.display = 'none');
+      pinTransit.forEach(pin => pin.style.display = 'block');
+    } else if (type === 'delays') {
+      allPins.forEach(pin => pin.style.display = 'none');
+      pinDelays.forEach(pin => pin.style.display = 'block');
+    } else if (type === 'free') {
+      allPins.forEach(pin => pin.style.display = 'none');
+      pinFree.forEach(pin => pin.style.display = 'block');
+    }
+  }
+
+  function toggleCommandFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.log(`Error fullscreen: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  }
+</script></main></div></body></html>

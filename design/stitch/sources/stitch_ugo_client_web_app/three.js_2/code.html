@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_69 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_69" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_69');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  /**
+ * =======================================================================
+ * UGO Cliente Web & Mobile · Componente Modal Reutilizable
+ * Archivo: src/components/fiduciario/PinReleaseModal.tsx
+ * Modal y Widget de Liberación de Fondos bajo Protocolo UGO Custodia
+ * =======================================================================
+ * Refactorizado: Saneado de envoltorio Three.js experimental (anteriormente SCREEN_11).
+ * Código React 18/19 limpio, accesible (WAI-ARIA) y tipado con TypeScript 5.x.
+ */
+
+'use client';
+
+import React, { useState } from 'react';
+
+export interface PinReleaseModalProps {
+  orderId: string;
+  professionalName: string;
+  tradeTitle: string;
+  escrowAmountBRL: number;
+  shieldCertificateId: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccessRelease: (pin: string) => void;
+}
+
+export function PinReleaseModal({
+  orderId,
+  professionalName,
+  tradeTitle,
+  escrowAmountBRL,
+  shieldCertificateId,
+  isOpen,
+  onClose,
+  onSuccessRelease,
+}: PinReleaseModalProps) {
+  const [pin, setPin] = useState(['', '', '', '']);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmedCheck, setConfirmedCheck] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleDigitChange = (value: string, index: number) => {
+    if (!/^\d*$/.test(value)) return;
+    const nextPin = [...pin];
+    nextPin[index] = value.slice(-1);
+    setPin(nextPin);
+
+    // Auto-foco en la casilla siguiente
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`pin-digit-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace' && !pin[index] && index > 0) {
+      const prevInput = document.getElementById(`pin-digit-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
+  const isComplete = pin.every((d) => d.length === 1) && confirmedCheck;
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true);
+    // Simula invocación segura a Supabase RPC ('release_escrow_by_pin')
+    setTimeout(() => {
+      setIsSubmitting(false);
+      onSuccessRelease(pin.join(''));
+    }, 1000);
+  };
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-pin-title"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/60 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+    >
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E2E8F0] space-y-5">
+        {/* Encabezado Fiduciario UGO */}
+        <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#E6F4EA] text-[#006948] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[22px]">lock_open</span>
+            </div>
+            <div>
+              <h3 id="modal-pin-title" className="text-sm font-bold text-[#0F172A]">
+                Liberación de Custodia de Pago
+              </h3>
+              <p className="text-[11px] text-[#64748B]">
+                Protocolo UGO Shield · Orden {orderId}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Cerrar modal"
+            className="text-[#94A3B8] hover:text-[#0F172A] p-1.5 rounded-lg hover:bg-[#F8FAFC] transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">close</span>
+          </button>
+        </div>
+
+        {/* Resumen de Fondos a Liberar */}
+        <div className="bg-[#F8FBF9] border border-[#D1E7DD] rounded-2xl p-4 text-center space-y-1">
+          <p className="text-xs text-[#64748B] font-medium">
+            Monto protegido a liquidar al profesional
+          </p>
+          <p className="text-3xl font-black text-[#006948]">
+            R$ {escrowAmountBRL.toFixed(2).replace('.', ',')}
+          </p>
+          <p className="text-xs text-[#1E293B] font-semibold mt-1">{professionalName}</p>
+          <p className="text-[11px] text-[#64748B]">{tradeTitle}</p>
+        </div>
+
+        {/* Ingreso de Clave PIN */}
+        <div className="space-y-2 text-center">
+          <label className="text-xs font-bold text-[#334155] block">
+            Ingresá tu PIN de conformidad (4 dígitos)
+          </label>
+          <p className="text-[11px] text-[#64748B]">
+            Al ingresar el PIN confirmás que el trabajo fue concluido a tu total satisfacción.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            {pin.map((digit, idx) => (
+              <input
+                key={idx}
+                id={`pin-digit-${idx}`}
+                type="password"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleDigitChange(e.target.value, idx)}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
+                className="w-12 h-14 text-center text-xl font-bold bg-[#F1F5F9] border-2 border-[#CBD5E1] focus:border-[#006948] focus:bg-white rounded-xl focus:outline-none transition-all shadow-inner"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Confirmación y Cobertura UGO Shield */}
+        <div className="bg-[#E6FAFF] border border-[#99EEFD] p-3.5 rounded-xl space-y-2">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={confirmedCheck}
+              onChange={(e) => setConfirmedCheck(e.target.checked)}
+              className="mt-0.5 rounded border-[#94A3B8] text-[#006948] focus:ring-[#006948]"
+            />
+            <span className="text-[11px] text-[#00687A] leading-tight font-medium">
+              He revisado la instalación/reparación y autorizo la liberación de los fondos en custodia.
+            </span>
+          </label>
+          <div className="text-[10px] text-[#00687A] flex items-center gap-1.5 font-semibold pt-1 border-t border-[#CCF4FD]">
+            <span className="material-symbols-outlined text-[14px] text-[#006948]">verified_user</span>
+            Activa automáticamente la Cobertura UGO Shield {shieldCertificateId} (hasta 60 días).
+          </div>
+        </div>
+
+        {/* Botones de Acción */}
+        <div className="space-y-2 pt-1">
+          <button
+            disabled={!isComplete || isSubmitting}
+            onClick={handleConfirm}
+            className="w-full bg-[#006948] hover:bg-[#005238] disabled:bg-[#CBD5E1] disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 min-h-[48px]"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Procesando liquidación en custodia...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                <span>Liberar Pago & Activar Garantía</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full text-xs font-semibold text-[#64748B] hover:text-[#0F172A] py-2 min-h-[40px]"
+          >
+            Volver a la bitácora del servicio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_69 -->
+</body>
+</html>

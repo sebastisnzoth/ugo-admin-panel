@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full gap-space-lg">
+<!-- Operational Header Area -->
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-xl text-headline-xl text-text-primary">Centro de Control Operacional</span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          Sincronizado hace 4s
+        </span>
+</div>
+<p class="font-body-md text-body-md text-text-secondary">
+        Monitoreo en tiempo real de servicios, transacciones y balance de oferta/demanda en Florianópolis
+      </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Date Picker -->
+<button class="flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-muted text-text-primary hover:bg-surface-container-high transition-colors font-body-sm text-body-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-text-muted">calendar_today</span>
+<span class="font-semibold">Hoy (En vivo)</span>
+<span class="material-symbols-outlined text-[16px] text-text-muted">arrow_drop_down</span>
+</button>
+<!-- Zone Dropdown -->
+<button class="flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-muted text-text-primary hover:bg-surface-container-high transition-colors font-body-sm text-body-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-primary">near_me</span>
+<span>Todas las zonas</span>
+<span class="material-symbols-outlined text-[16px] text-text-muted">arrow_drop_down</span>
+</button>
+<!-- Export Action -->
+<button class="flex items-center gap-2 px-space-sm py-1.5 rounded-lg bg-surface-panel text-text-primary hover:bg-surface-muted shadow-sm transition-all font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px] text-text-muted">download</span>
+<span>Exportar reporte</span>
+</button>
+</div>
+</div>
+<!-- Primary Operational KPIs Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+<!-- Metric 1 -->
+<div class="relative flex flex-col justify-between p-space-base bg-surface-panel rounded-xl shadow-sm overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-primary"></div>
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Servicios Activos Ahora</span>
+<span class="material-symbols-outlined text-primary text-[20px]">bolt</span>
+</div>
+<div class="flex items-baseline gap-2 my-2">
+<span class="font-data-metric text-data-metric text-text-primary">48</span>
+<span class="font-label-sm text-label-sm text-brand-green-hover font-semibold">+14% vs ayer</span>
+</div>
+<!-- Inline Sparkline SVG -->
+<div class="w-full h-8 flex items-end">
+<svg class="w-full h-7 overflow-visible" fill="none" preserveaspectratio="none" viewbox="0 0 100 28">
+<path class="text-primary" d="M0 24 Q 15 22, 25 18 T 50 12 T 75 16 T 100 4" fill="none" stroke="currentColor" stroke-width="2.5"></path>
+<path class="text-primary/10" d="M0 24 Q 15 22, 25 18 T 50 12 T 75 16 T 100 4 L 100 28 L 0 28 Z" fill="currentColor"></path>
+<circle class="fill-primary" cx="100" cy="4" r="3"></circle>
+</svg>
+</div>
+<span class="font-body-sm text-body-sm text-text-muted mt-1">42 con proveedor asignado</span>
+</div>
+<!-- Metric 2 -->
+<div class="relative flex flex-col justify-between p-space-base bg-surface-panel rounded-xl shadow-sm overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-secondary"></div>
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">GMV Hoy</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">payments</span>
+</div>
+<div class="flex items-baseline gap-2 my-2">
+<span class="font-data-metric text-data-metric text-text-primary">R$ 42.850</span>
+<span class="font-label-sm text-label-sm text-brand-green-hover font-semibold">+8.2%</span>
+</div>
+<div class="w-full h-8 flex items-center">
+<div class="w-full bg-surface-muted rounded-full h-2 overflow-hidden">
+<div class="bg-secondary h-2 rounded-full" style="width: 74%"></div>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-text-muted mt-1">Meta diaria R$ 58.000</span>
+</div>
+<!-- Metric 3 -->
+<div class="relative flex flex-col justify-between p-space-base bg-surface-panel rounded-xl shadow-sm overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-primary-container"></div>
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Ingresos UGO (Take Rate)</span>
+<span class="material-symbols-outlined text-primary-container text-[20px]">account_balance_wallet</span>
+</div>
+<div class="flex items-baseline gap-2 my-2">
+<span class="font-data-metric text-data-metric text-text-primary">R$ 6.427</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-brand-green-subtle text-brand-green-hover">15.0%</span>
+</div>
+<div class="flex items-center justify-between text-text-muted font-data-mono text-[11px] h-8">
+<span>Comisión neta</span>
+<span class="text-text-primary font-semibold">99.4% cobrado</span>
+</div>
+<span class="font-body-sm text-body-sm text-text-muted mt-1">R$ 380 en liquidación PIX</span>
+</div>
+<!-- Metric 4 -->
+<div class="relative flex flex-col justify-between p-space-base bg-surface-panel rounded-xl shadow-sm overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-warning-amber"></div>
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Proveedores Online</span>
+<span class="material-symbols-outlined text-warning-amber text-[20px]">engineering</span>
+</div>
+<div class="flex items-baseline gap-2 my-2">
+<span class="font-data-metric text-data-metric text-text-primary">134</span>
+<span class="font-label-sm text-label-sm text-text-muted">activos</span>
+</div>
+<div class="flex items-center gap-1.5 h-8">
+<div class="flex-1 bg-risk-red-subtle rounded-md p-1 flex flex-col items-center">
+<span class="font-data-mono text-[10px] text-tertiary font-bold">89 OCUPADOS</span>
+</div>
+<div class="flex-1 bg-brand-green-subtle rounded-md p-1 flex flex-col items-center">
+<span class="font-data-mono text-[10px] text-brand-green-hover font-bold">45 LIBRES</span>
+</div>
+</div>
+<span class="font-body-sm text-body-sm text-text-muted mt-1">Ocupación 66.4%</span>
+</div>
+<!-- Metric 5 -->
+<div class="relative flex flex-col justify-between p-space-base bg-surface-panel rounded-xl shadow-sm overflow-hidden group">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-tertiary"></div>
+<div class="flex items-start justify-between">
+<span class="font-label-sm text-label-sm text-text-muted uppercase tracking-wider">Demanda Sin Asignar</span>
+<span class="material-symbols-outlined text-tertiary text-[20px]">hourglass_top</span>
+</div>
+<div class="flex items-baseline gap-2 my-2">
+<span class="font-data-metric text-data-metric text-tertiary">7</span>
+<span class="font-label-sm text-label-sm text-tertiary font-medium">solicitudes</span>
+</div>
+<div class="flex items-center gap-2 h-8">
+<span class="material-symbols-outlined text-[16px] text-text-muted">timer</span>
+<span class="font-data-mono text-data-mono text-text-primary">2.4 min</span>
+<span class="font-body-sm text-body-sm text-text-muted">promedio match</span>
+</div>
+<span class="font-body-sm text-body-sm text-tertiary mt-1">2 con SLA en riesgo</span>
+</div>
+</div>
+<!-- Centro de Decisiones: Requiere Atención Inmediata -->
+<div class="flex flex-col gap-space-sm bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[22px]">gavel</span>
+<h2 class="font-headline-md text-headline-md text-text-primary">Centro de Decisiones · Atención Inmediata</h2>
+<span class="px-2 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4 requerimientos</span>
+</div>
+<a class="font-label-md text-label-md text-primary hover:underline flex items-center gap-1" href="#">
+        Ir al panel centralizado
+        <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+<!-- 4 Decision Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md mt-1">
+<!-- Card 1: Critical / Red -->
+<div class="flex flex-col justify-between p-space-md bg-risk-red-subtle rounded-lg shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded bg-surface-panel text-tertiary font-label-sm text-label-sm font-bold">ALTA PRIORIDAD</span>
+<span class="font-data-mono text-[11px] text-tertiary">SLA: 18m</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary mt-1">4 Disputas de clientes activas</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">
+            Cobro indebido de trabajos adicionales no acordados en Ingleses y Jurerê.
+          </p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<button class="w-full h-8 px-space-sm bg-tertiary hover:bg-risk-red-hover text-on-tertiary rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span>Revisar disputas #D-1042</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Amber Alert -->
+<div class="flex flex-col justify-between p-space-md bg-warning-amber-subtle rounded-lg shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded bg-surface-panel text-warning-amber font-label-sm text-label-sm font-bold">KYC BACKLOG</span>
+<span class="font-data-mono text-[11px] text-warning-amber">Cola: 12</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary mt-1">12 Proveedores esperando KYC</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">
+            Documentos CPF, antecedentes policiales y selfie pendientes de validación cruzada.
+          </p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<button class="w-full h-8 px-space-sm bg-warning-amber hover:bg-warning-amber-hover text-on-secondary rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span>Iniciar revisión</span>
+<span class="material-symbols-outlined text-[16px]">verified</span>
+</button>
+</div>
+</div>
+<!-- Card 3: Amber Supply Deficit -->
+<div class="flex flex-col justify-between p-space-md bg-warning-amber-subtle rounded-lg shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded bg-surface-panel text-warning-amber font-label-sm text-label-sm font-bold">DESBALANCE</span>
+<span class="font-data-mono text-[11px] text-warning-amber">Norte Isla</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary mt-1">Ingleses: Déficit de electricistas</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">
+            Demanda creció +140%, únicamente 2 técnicos activos en un radio de 5km.
+          </p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<button class="w-full h-8 px-space-sm bg-surface-panel hover:bg-surface-muted text-text-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors shadow-sm">
+<span>Activar incentivo Scout</span>
+<span class="material-symbols-outlined text-[16px] text-warning-amber">radar</span>
+</button>
+</div>
+</div>
+<!-- Card 4: Info / Payouts Batch -->
+<div class="flex flex-col justify-between p-space-md bg-copilot-cyan-subtle rounded-lg shadow-sm">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded bg-surface-panel text-copilot-cyan font-label-sm text-label-sm font-bold">PAGOS PIX</span>
+<span class="font-data-mono text-[11px] text-copilot-cyan">R$ 8.920</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary mt-1">5 Retiros masivos pendientes</h3>
+<p class="font-body-sm text-body-sm text-text-secondary">
+            Lotes bancarios verificados listos para dispersión automática a proveedores certificados.
+          </p>
+</div>
+<div class="mt-space-md pt-space-xs">
+<button class="w-full h-8 px-space-sm bg-copilot-cyan hover:bg-copilot-cyan-hover text-on-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors">
+<span>Autorizar lotes</span>
+<span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Operational Grid: 60% Left / 40% Right -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left Column (60% ~ col-span-7) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Interactive Hourly Volume & Billing Chart -->
+<div class="flex flex-col bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-sm gap-2">
+<div class="flex flex-col">
+<h3 class="font-headline-md text-headline-md text-text-primary">Volumen de Servicios y Facturación por Hora</h3>
+<span class="font-body-sm text-body-sm text-text-muted">Horas pico registradas hoy entre 08:00 y 20:00</span>
+</div>
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-text-secondary">
+<span class="w-3 h-3 rounded-sm bg-primary"></span>
+<span>Servicios</span>
+</div>
+<div class="flex items-center gap-1.5 font-label-sm text-label-sm text-text-secondary">
+<span class="w-3 h-1 bg-secondary rounded-full"></span>
+<span>Facturación (R$)</span>
+</div>
+</div>
+</div>
+<!-- Inline SVG Chart Display -->
+<div class="w-full mt-3">
+<div class="relative w-full h-56 bg-surface-canvas rounded-lg p-3 flex flex-col justify-between">
+<!-- Grid Lines -->
+<div class="absolute inset-x-3 top-6 h-px bg-surface-muted"></div>
+<div class="absolute inset-x-3 top-20 h-px bg-surface-muted"></div>
+<div class="absolute inset-x-3 top-36 h-px bg-surface-muted"></div>
+<div class="absolute inset-x-3 bottom-8 h-px bg-surface-container-high"></div>
+<!-- SVG Bar & Line Chart -->
+<svg class="w-full h-44 overflow-visible" preserveaspectratio="none" viewbox="0 0 540 160">
+<defs>
+<lineargradient id="primaryGradient" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#006948" stop-opacity="0.9"></stop>
+<stop offset="100%" stop-color="#006948" stop-opacity="0.25"></stop>
+</lineargradient>
+</defs>
+<!-- Hourly Bars: 08:00 to 20:00 (13 slots) -->
+<!-- x slots: 20, 60, 100, 140, 180, 220, 260, 300, 340, 380, 420, 460, 500 -->
+<rect fill="url(#primaryGradient)" height="60" rx="3" width="18" x="12" y="90"></rect>
+<rect fill="url(#primaryGradient)" height="80" rx="3" width="18" x="52" y="70"></rect>
+<rect fill="url(#primaryGradient)" height="105" rx="3" width="18" x="92" y="45"></rect>
+<rect fill="url(#primaryGradient)" height="120" rx="3" width="18" x="132" y="30"></rect>
+<rect fill="url(#primaryGradient)" height="110" rx="3" width="18" x="172" y="40"></rect>
+<rect fill="url(#primaryGradient)" height="75" rx="3" width="18" x="212" y="75"></rect>
+<rect fill="url(#primaryGradient)" height="90" rx="3" width="18" x="252" y="60"></rect>
+<rect fill="url(#primaryGradient)" height="125" rx="3" width="18" x="292" y="25"></rect>
+<rect fill="url(#primaryGradient)" height="135" rx="3" width="18" x="332" y="15"></rect>
+<rect fill="url(#primaryGradient)" height="115" rx="3" width="18" x="372" y="35"></rect>
+<rect fill="url(#primaryGradient)" height="95" rx="3" width="18" x="412" y="55"></rect>
+<rect fill="url(#primaryGradient)" height="70" rx="3" width="18" x="452" y="80"></rect>
+<rect fill="url(#primaryGradient)" height="45" rx="3" width="18" x="492" y="105"></rect>
+<!-- Line Chart Overlaid (GMV Trend) -->
+<path d="M 21 95 L 61 75 L 101 48 L 141 34 L 181 42 L 221 82 L 261 65 L 301 28 L 341 18 L 381 38 L 421 62 L 461 88 L 501 112" fill="none" stroke="#006398" stroke-linecap="round" stroke-width="3"></path>
+<!-- Spark Dots -->
+<circle class="fill-surface-panel stroke-secondary" cx="341" cy="18" r="4" stroke-width="2.5"></circle>
+<circle class="fill-surface-panel stroke-secondary" cx="141" cy="34" r="4" stroke-width="2.5"></circle>
+</svg>
+<!-- X-Axis Labels -->
+<div class="flex justify-between items-center text-text-muted font-data-mono text-[10px] pt-1">
+<span>08:00</span>
+<span>09:00</span>
+<span>10:00</span>
+<span>11:00</span>
+<span>12:00</span>
+<span>13:00</span>
+<span>14:00</span>
+<span>15:00</span>
+<span>16:00</span>
+<span>17:00</span>
+<span>18:00</span>
+<span>19:00</span>
+<span>20:00</span>
+</div>
+</div>
+</div>
+<!-- Metric micro-summary under chart -->
+<div class="grid grid-cols-3 gap-2 mt-space-md pt-space-xs text-center">
+<div class="p-space-xs bg-surface-muted rounded-lg">
+<span class="font-label-sm text-label-sm text-text-muted uppercase">Pico Matutino</span>
+<div class="font-data-mono text-body-md text-text-primary font-bold">11:00 • 28 Serv.</div>
+</div>
+<div class="p-space-xs bg-surface-muted rounded-lg">
+<span class="font-label-sm text-label-sm text-text-muted uppercase">Pico Vespertino</span>
+<div class="font-data-mono text-body-md text-text-primary font-bold">16:30 • 35 Serv.</div>
+</div>
+<div class="p-space-xs bg-surface-muted rounded-lg">
+<span class="font-label-sm text-label-sm text-text-muted uppercase">Ticket Promedio</span>
+<div class="font-data-mono text-body-md text-text-primary font-bold">R$ 215,80</div>
+</div>
+</div>
+</div>
+<!-- Live Operations Table: Servicios Críticos y Actividad en Vivo -->
+<div class="flex flex-col bg-surface-panel rounded-xl shadow-sm overflow-hidden">
+<div class="flex items-center justify-between p-space-base">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">stream</span>
+<h3 class="font-headline-md text-headline-md text-text-primary">Servicios Críticos y Actividad en Vivo</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm text-text-muted">Tiempo real</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="bg-surface-muted text-text-muted font-label-sm text-label-sm uppercase tracking-wider h-table-header-height">
+<th class="px-space-md">ID</th>
+<th class="px-space-sm">Categoría</th>
+<th class="px-space-sm">Cliente</th>
+<th class="px-space-sm">Proveedor</th>
+<th class="px-space-sm">Zona</th>
+<th class="px-space-sm text-right">Monto</th>
+<th class="px-space-sm">Estado</th>
+<th class="px-space-md text-right">Acción</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-text-primary font-body-sm text-body-sm">
+<!-- Row 1 -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-md font-data-mono font-bold text-secondary">#UGO-1842</td>
+<td class="px-space-sm font-medium flex items-center gap-1.5 pt-3">
+<span class="material-symbols-outlined text-[16px] text-warning-amber">bolt</span>
+                  Electricidad
+                </td>
+<td class="px-space-sm">Ana Guimarães</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Claudio Mendes
+                  </span>
+</td>
+<td class="px-space-sm text-text-secondary">Ingleses</td>
+<td class="px-space-sm text-right font-data-mono font-semibold">R$ 340,00</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">
+                    En camino
+                  </span>
+</td>
+<td class="px-space-md text-right">
+<button class="px-2 py-1 bg-surface-muted hover:bg-surface-container-high rounded text-text-primary font-label-sm text-label-sm transition-colors">
+                    Detalle
+                  </button>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors bg-risk-red-subtle/30">
+<td class="px-space-md font-data-mono font-bold text-tertiary">#UGO-1841</td>
+<td class="px-space-sm font-medium flex items-center gap-1.5 pt-3">
+<span class="material-symbols-outlined text-[16px] text-secondary">plumbing</span>
+                  Plomería
+                </td>
+<td class="px-space-sm">Lucas Rossi</td>
+<td class="px-space-sm text-tertiary font-medium">No asignado (4m)</td>
+<td class="px-space-sm text-text-secondary">Jurerê Int.</td>
+<td class="px-space-sm text-right font-data-mono font-semibold">R$ 210,00</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">
+                    Esperando match
+                  </span>
+</td>
+<td class="px-space-md text-right">
+<button class="px-2 py-1 bg-primary text-on-primary hover:bg-brand-green-hover rounded font-label-sm text-label-sm transition-colors">
+                    Forzar match
+                  </button>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-md font-data-mono font-bold text-secondary">#UGO-1840</td>
+<td class="px-space-sm font-medium flex items-center gap-1.5 pt-3">
+<span class="material-symbols-outlined text-[16px] text-copilot-cyan">ac_unit</span>
+                  Climatización
+                </td>
+<td class="px-space-sm">Fernanda Lima</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Rodrigo Pires
+                  </span>
+</td>
+<td class="px-space-sm text-text-secondary">Canasvieiras</td>
+<td class="px-space-sm text-right font-data-mono font-semibold">R$ 490,00</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold">
+                    En progreso
+                  </span>
+</td>
+<td class="px-space-md text-right">
+<button class="px-2 py-1 bg-surface-muted hover:bg-surface-container-high rounded text-text-primary font-label-sm text-label-sm transition-colors">
+                    Detalle
+                  </button>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-md font-data-mono font-bold text-secondary">#UGO-1839</td>
+<td class="px-space-sm font-medium flex items-center gap-1.5 pt-3">
+<span class="material-symbols-outlined text-[16px] text-primary">cleaning_services</span>
+                  Limpieza Pro
+                </td>
+<td class="px-space-sm">Thiago Batista</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                    Maria de Souza
+                  </span>
+</td>
+<td class="px-space-sm text-text-secondary">Centro</td>
+<td class="px-space-sm text-right font-data-mono font-semibold">R$ 180,00</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold">
+                    En progreso
+                  </span>
+</td>
+<td class="px-space-md text-right">
+<button class="px-2 py-1 bg-surface-muted hover:bg-surface-container-high rounded text-text-primary font-label-sm text-label-sm transition-colors">
+                    Detalle
+                  </button>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="h-table-row-height hover:bg-surface-canvas transition-colors">
+<td class="px-space-md font-data-mono font-bold text-secondary">#UGO-1838</td>
+<td class="px-space-sm font-medium flex items-center gap-1.5 pt-3">
+<span class="material-symbols-outlined text-[16px] text-warning-amber">lock</span>
+                  Cerrajería
+                </td>
+<td class="px-space-sm">Marcos Silva</td>
+<td class="px-space-sm">
+<span class="inline-flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-warning-amber"></span>
+                    Edison Costa
+                  </span>
+</td>
+<td class="px-space-sm text-text-secondary">Lagoa</td>
+<td class="px-space-sm text-right font-data-mono font-semibold">R$ 150,00</td>
+<td class="px-space-sm">
+<span class="px-2 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">
+                    Esperando confirmación
+                  </span>
+</td>
+<td class="px-space-md text-right">
+<button class="px-2 py-1 bg-surface-muted hover:bg-surface-container-high rounded text-text-primary font-label-sm text-label-sm transition-colors">
+                    Detalle
+                  </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex items-center justify-between p-space-sm bg-surface-muted">
+<span class="font-label-sm text-label-sm text-text-muted">Mostrando 5 de 48 servicios en tiempo real</span>
+<a class="font-label-sm text-label-sm text-primary font-semibold hover:underline flex items-center gap-1" href="#">
+            Ver los 48 servicios en curso
+            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Right Column (40% ~ col-span-5) -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Map & Balance Operativo por Zona -->
+<div class="flex flex-col bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex flex-col">
+<h3 class="font-headline-md text-headline-md text-text-primary">Balance Operativo por Zona</h3>
+<span class="font-body-sm text-body-sm text-text-muted">Florianópolis • Cobertura en tiempo real</span>
+</div>
+<button class="p-1 rounded-lg bg-surface-muted text-text-secondary hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">map</span>
+</button>
+</div>
+<!-- Geographic Location Canvas Representation -->
+<div class="w-full h-36 bg-cover bg-center rounded-lg relative overflow-hidden shadow-inner flex flex-col justify-end p-space-sm mb-space-md" data-location="Florianopolis, Santa Catarina, Brazil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBmE18VzcBiU2zf4N7l7bdgl1Clie6w9u6uIUScyC4jZOMW9pHmYGiPzGUfEut1L-j54NHsyOPnzfSQdgsPO45bLbz7ZymR8t0HM_XxZzg2QC4CZ5ajg8bAX0JN8gdIA6WFkra2YKHWOUZfWqmKI-5zAhBXJTeh3mBiNUuNyzoB899bg6JR_ELzpD4ZK7lj2ipF5JpAs4nLp6-aF9rHk9mfbtKQMfi-IXywEIZgDdSftPx3sOf2gn5W')">
+<div class="absolute inset-0 bg-gradient-to-t from-text-primary/70 via-transparent to-transparent"></div>
+<div class="relative z-10 flex items-center justify-between text-on-primary">
+<div class="flex items-center gap-1 font-headline-sm text-headline-sm font-semibold">
+<span class="material-symbols-outlined text-[18px] text-copilot-cyan">location_searching</span>
+<span>Florianópolis Radar</span>
+</div>
+<span class="font-data-mono text-[11px] bg-primary/80 px-2 py-0.5 rounded backdrop-blur-sm">5 Zonas Activas</span>
+</div>
+</div>
+<!-- Zones Breakdown List -->
+<div class="flex flex-col gap-space-sm">
+<!-- Canasvieiras -->
+<div class="flex flex-col p-space-xs rounded-lg hover:bg-surface-canvas transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-md text-body-md font-semibold text-text-primary">Canasvieiras</span>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-[11px] text-text-muted">18 servicios</span>
+<span class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-[11px] font-bold">92%</span>
+</div>
+</div>
+<div class="w-full bg-surface-muted rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<span class="font-label-sm text-[10px] text-text-muted mt-1">Saludable • Oferta suficiente</span>
+</div>
+<!-- Ingleses (Critical) -->
+<div class="flex flex-col p-space-xs rounded-lg bg-risk-red-subtle/50 transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-md text-body-md font-semibold text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+                Ingleses
+              </span>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-[11px] text-tertiary font-bold">24 servicios (3 espera)</span>
+<span class="px-1.5 py-0.5 rounded bg-risk-red-subtle text-tertiary font-data-mono text-[11px] font-bold">58%</span>
+</div>
+</div>
+<div class="w-full bg-surface-panel rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary h-1.5 rounded-full" style="width: 58%"></div>
+</div>
+<span class="font-label-sm text-[10px] text-tertiary font-medium mt-1">Crítico • Desfase de electricistas y plomeros</span>
+</div>
+<!-- Jurerê Internacional -->
+<div class="flex flex-col p-space-xs rounded-lg hover:bg-surface-canvas transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-md text-body-md font-semibold text-text-primary">Jurerê Internacional</span>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-[11px] text-text-muted">14 servicios</span>
+<span class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-[11px] font-bold">85%</span>
+</div>
+</div>
+<div class="w-full bg-surface-muted rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+<span class="font-label-sm text-[10px] text-text-muted mt-1">Saludable • Ticket promedio más alto</span>
+</div>
+<!-- Lagoa da Conceição -->
+<div class="flex flex-col p-space-xs rounded-lg hover:bg-surface-canvas transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-md text-body-md font-semibold text-text-primary">Lagoa da Conceição</span>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-[11px] text-text-muted">11 servicios</span>
+<span class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-[11px] font-bold">95%</span>
+</div>
+</div>
+<div class="w-full bg-surface-muted rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 95%"></div>
+</div>
+<span class="font-label-sm text-[10px] text-text-muted mt-1">Óptimo • 100% matched &lt;2 min</span>
+</div>
+<!-- Centro -->
+<div class="flex flex-col p-space-xs rounded-lg hover:bg-surface-canvas transition-colors">
+<div class="flex items-center justify-between mb-1">
+<span class="font-body-md text-body-md font-semibold text-text-primary">Centro</span>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-[11px] text-text-muted">22 servicios</span>
+<span class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-[11px] font-bold">90%</span>
+</div>
+</div>
+<div class="w-full bg-surface-muted rounded-full h-1.5 overflow-hidden">
+<div class="bg-primary h-1.5 rounded-full" style="width: 90%"></div>
+</div>
+<span class="font-label-sm text-[10px] text-text-muted mt-1">Estable • Alta densidad de proveedores</span>
+</div>
+</div>
+</div>
+<!-- Hugo AI Operational Insights Widget -->
+<div class="relative flex flex-col bg-surface-panel p-space-base rounded-xl shadow-sm overflow-hidden">
+<!-- Top accent for AI intelligence -->
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-copilot-cyan"></div>
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-lg bg-copilot-cyan-subtle text-copilot-cyan flex items-center justify-center">
+<span class="material-symbols-outlined text-[18px]">psychology</span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Hugo AI · Insights Operativos</h3>
+<span class="font-label-sm text-label-sm text-copilot-cyan font-semibold">Análisis en vivo de red</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[18px] text-text-muted">auto_awesome</span>
+</div>
+<div class="bg-copilot-cyan-subtle p-space-md rounded-lg flex flex-col gap-2 my-1">
+<p class="font-body-md text-body-md text-text-primary leading-relaxed">
+            Se detecta un <strong>incremento del 35%</strong> en solicitudes de climatización tras la alerta meteorológica de calor en Florianópolis Norte. Se proyecta cuello de botella en los próximos 45 minutos.
+          </p>
+<div class="flex items-center gap-2 mt-1 p-2 rounded bg-surface-panel text-text-secondary font-body-sm text-body-sm shadow-sm">
+<span class="material-symbols-outlined text-warning-amber text-[18px]">lightbulb</span>
+<span>Recomendación: Liberar bonificación de <strong>R$ 25 por servicio</strong> a 14 técnicos en stand-by.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-sm mt-space-sm pt-space-xs">
+<button class="flex-1 h-9 px-space-md bg-copilot-cyan hover:bg-copilot-cyan-hover text-on-primary rounded-lg font-label-md text-label-md flex items-center justify-center gap-2 transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check_circle</span>
+<span>Aplicar sugerencia</span>
+</button>
+<button class="h-9 px-space-sm bg-surface-muted hover:bg-surface-container-high text-text-secondary rounded-lg font-label-md text-label-md transition-colors" title="Descartar sugerencia">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

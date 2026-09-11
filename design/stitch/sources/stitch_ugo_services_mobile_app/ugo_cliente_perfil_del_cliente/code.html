@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full">
+<!-- Interactive script to sync tab active state with bottom navigation -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const navLinks = document.querySelectorAll('nav a');
+      navLinks.forEach((link) => {
+        if (link.getAttribute('data-path') === 'perfil') {
+          link.classList.remove('text-on-surface-variant');
+          link.classList.add('text-primary', 'font-bold');
+          const iconDiv = link.querySelector('div');
+          if (iconDiv) {
+            iconDiv.classList.add('bg-primary-fixed', 'text-on-primary-fixed');
+          }
+        } else {
+          link.classList.remove('text-primary', 'font-bold');
+          link.classList.add('text-on-surface-variant');
+        }
+      });
+    });
+  </script>
+<!-- Top Hero & Profile Identity Card Container -->
+<div class="px-space-md pt-space-xs pb-space-md flex flex-col gap-space-md">
+<!-- Header Quick Bar -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-primary">Cuenta Protegida</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Notificaciones" class="w-10 h-10 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button aria-label="Ajustes de cuenta" class="w-10 h-10 rounded-full bg-surface-container-low hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors active:scale-95">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+</div>
+</div>
+<!-- Main Profile Card -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-md">
+<!-- Avatar with verified badge -->
+<div class="relative w-16 h-16 shrink-0">
+<img class="w-16 h-16 rounded-full object-cover shadow-sm" data-alt="Close-up professional portrait of a friendly Hispanic man named Martin in his thirties, wearing a clean charcoal polo, natural warm morning sunlight, confident smile, clean aesthetic photography with soft neutral background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCCRn34JhRLRv1JPcHWBIAFYTuZy-wS-8cZtLyQM0sLeDcRXfQlXrH6watiP-DHD1G6m2hwYvotcnPRCqD55owkt_5VxnQ_gXqExJ6PfEWgORUvD7oq_vUFA54VOsL1VN1HZ5lpzNyjP_7fi8z41EKGafxDa2pa_OucN4pu8c8xGJijJhktUwlCdfvryNXK0fJodingUggUWGIz2wPqGjGV1XoZGvGSwYQBKm66UFykeGpI8jn97fM_kQ"/>
+<span class="absolute bottom-0 right-0 w-5 h-5 bg-primary rounded-full flex items-center justify-center text-on-primary shadow-sm" title="Cliente Verificado">
+<span class="material-symbols-outlined text-[13px] font-bold">check</span>
+</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5 flex-wrap">
+<h2 class="font-headline-md text-headline-md text-on-surface leading-snug truncate">Martín Benítez</h2>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">martin.benitez@ugo.app</p>
+<div class="inline-flex items-center gap-1.5 mt-1.5 px-2.5 py-0.5 rounded-full bg-secondary-fixed/50 w-fit">
+<span class="material-symbols-outlined text-secondary text-[14px]">shield</span>
+<span class="font-label-sm text-label-sm text-on-secondary-fixed-variant">UGO Shield Plus · Nivel 3</span>
+</div>
+</div>
+</div>
+<!-- Trust Metrics (3 Chip Row) -->
+<div class="grid grid-cols-3 gap-space-xs pt-space-xs">
+<div class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-surface-container-low text-center">
+<div class="flex items-center gap-1 text-[#b45309]">
+<span class="font-headline-sm text-headline-sm font-bold leading-none">4.98</span>
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Calificación</span>
+</div>
+<div class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-surface-container-low text-center">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface leading-none">14</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Servicios</span>
+</div>
+<div class="flex flex-col items-center justify-center p-2.5 rounded-xl bg-surface-container-low text-center">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface leading-none">Oct 23</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant mt-1">Miembro</span>
+</div>
+</div>
+</div>
+<!-- Gamification & Loyalty: UGO Shield Points Banner -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-primary-container via-primary to-[#004e35] p-space-md text-on-primary shadow-md">
+<div class="absolute -right-6 -bottom-6 w-32 h-32 rounded-full bg-primary-fixed/10 pointer-events-none blur-xl"></div>
+<div class="flex items-start justify-between relative z-10">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">token</span>
+<span class="font-label-md text-label-md uppercase tracking-wider text-primary-fixed">Puntos UGO Shield</span>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-headline-lg-mobile text-headline-lg-mobile font-bold tracking-tight">650</span>
+<span class="font-label-md text-label-md opacity-90">pts acumulados</span>
+</div>
+</div>
+<div class="px-2.5 py-1 rounded-lg bg-surface-container-lowest/15 backdrop-blur-md text-right">
+<span class="font-label-sm text-label-sm block opacity-80">Ahorro disp.</span>
+<span class="font-title-md text-title-md font-bold text-primary-fixed leading-tight">R$ 32,50</span>
+</div>
+</div>
+<!-- Gamification Progress Bar -->
+<div class="mt-3 relative z-10">
+<div class="flex justify-between items-center text-on-primary text-label-sm font-label-sm mb-1.5 opacity-90">
+<span>Progreso Nivel Platino</span>
+<span class="font-bold">650 / 800 pts</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-lowest/20 overflow-hidden">
+<div class="h-full bg-primary-fixed rounded-full transition-all duration-700" style="width: 81.25%;"></div>
+</div>
+</div>
+<div class="mt-3.5 pt-3 flex items-center justify-between relative z-10">
+<p class="font-body-sm text-body-sm text-primary-fixed-dim text-xs">Faltan 150 pts para soporte prioritario 24/7</p>
+<button class="inline-flex items-center gap-1 font-label-md text-label-md text-on-primary font-bold hover:underline active:scale-95 transition-transform">
+          Canjear beneficios
+          <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Hugo Asistente IA · Asesor Personal del Hogar -->
+<div class="rounded-2xl bg-secondary-fixed/25 p-space-md relative overflow-hidden shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Hugo Asistente</h3>
+<span class="font-label-sm text-label-sm text-secondary">Diagnóstico preventivo del hogar</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-lowest font-label-sm text-label-sm text-secondary font-semibold">
+          1 Alerta
+        </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+        Tu última instalación eléctrica tiene <strong class="text-on-surface">5 meses de garantía UGO Shield</strong> vigente. Te sugerimos revisar los equipos de aire acondicionado antes del inicio del verano en Diciembre.
+      </p>
+<div class="flex items-center gap-2 pt-1">
+<button class="flex-1 h-10 px-3 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md flex items-center justify-center gap-1.5 shadow-sm active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">checklist</span>
+<span>Ver chequeo sugerido</span>
+</button>
+<button class="h-10 px-3 rounded-xl bg-surface-container-lowest text-secondary font-label-md text-label-md flex items-center justify-center gap-1 active:scale-98 transition-all">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+<span>Consultar</span>
+</button>
+</div>
+</div>
+<!-- Section: Lugares y domicilios -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">location_on</span>
+<h3 class="font-title-md text-title-md text-on-surface">Lugares y domicilios</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">2 guardados</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+<!-- Address Item 1 -->
+<div class="p-space-md flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed/40 text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">home</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Casa Principal</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm">Predeterminada</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">Av. das Nações 1420, Depto 3B</p>
+<span class="font-label-sm text-label-sm text-outline">Canasvieiras · Florianópolis</span>
+</div>
+</div>
+<button aria-label="Editar dirección Casa" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Address Item 2 -->
+<div class="p-space-md flex items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-sm min-w-0">
+<div class="w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">business_center</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Oficina / Estudio</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate mt-0.5">Rua das Gaivotas 450</p>
+<span class="font-label-sm text-label-sm text-outline">Ingleses · Florianópolis</span>
+</div>
+</div>
+<button aria-label="Editar dirección Oficina" class="w-8 h-8 rounded-full flex items-center justify-center text-outline hover:text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_vert</span>
+</button>
+</div>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Add Address Button -->
+<button class="w-full py-3 px-space-md flex items-center justify-center gap-2 text-primary font-label-md text-label-md hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[18px]">add_location_alt</span>
+<span>Agregar nueva dirección</span>
+</button>
+</div>
+</div>
+<!-- Section: Pagos y Billetera Segura -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-outline text-[20px]">account_balance_wallet</span>
+<h3 class="font-title-md text-title-md text-on-surface">Pagos y Billetera Segura</h3>
+</div>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">lock</span> UGO Custody
+        </span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md flex flex-col gap-space-sm">
+<!-- Active Custody Banner -->
+<div class="p-space-sm rounded-xl bg-primary-fixed/25 flex items-center justify-between gap-space-xs">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary text-[22px]">verified</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-primary-fixed-variant uppercase font-bold">Fondo en custodia activa</span>
+<span class="font-title-md text-title-md font-bold text-on-surface">R$ 135,00 <span class="font-body-sm text-body-sm text-outline font-normal">en #UG-88412</span></span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">info</span>
+</div>
+<!-- Payment Method Card -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-3">
+<div class="w-10 h-7 rounded bg-[#131b2e] text-surface-container-lowest flex items-center justify-center font-bold text-[10px] tracking-widest shadow-xs">
+              MC
+            </div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">•••• 4821</span>
+<span class="px-2 py-0.2 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">Principal</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Vence 09/27 · Débito automático</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</div>
+<!-- Tax ID Info -->
+<div class="flex items-center justify-between px-1 pt-1 text-on-surface-variant">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-outline">badge</span>
+<span class="font-body-sm text-body-sm">CPF de Facturación:</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">348.***.***-20</span>
+</div>
+<button class="text-primary font-label-sm text-label-sm hover:underline">Editar</button>
+</div>
+<button class="w-full py-2.5 mt-1 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]">credit_card</span>
+<span>Gestionar métodos de pago</span>
+</button>
+</div>
+</div>
+<!-- Section: Garantías y UGO Shield -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">security</span>
+<h3 class="font-title-md text-title-md text-on-surface">Garantías Activas</h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-bold">2 Pólizas</span>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-md flex flex-col gap-space-sm">
+<!-- Warranty Item 1 -->
+<div class="flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary mt-1.5 shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Reparación de Tablero Eléctrico</span>
+<span class="font-body-sm text-body-sm text-outline">Garantía por Mano de Obra UGO Shield</span>
+<span class="font-label-sm text-label-sm text-primary mt-0.5">Vigente hasta 25 Abr 2025</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+<div class="h-px bg-surface-container-high"></div>
+<!-- Warranty Item 2 -->
+<div class="flex items-start justify-between">
+<div class="flex items-start gap-2.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary mt-1.5 shrink-0"></span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Sellado e Instalación Grifería</span>
+<span class="font-body-sm text-body-sm text-outline">Garantía Antigoteo UGO Shield</span>
+<span class="font-label-sm text-label-sm text-primary mt-0.5">Vigente hasta 12 Mar 2025</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+<div class="pt-2">
+<a class="w-full py-2.5 rounded-xl bg-surface-container-low text-on-surface-variant hover:text-on-surface font-label-md text-label-md flex items-center justify-center gap-1.5 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+<span>Centro de Mediación y Reclamos</span>
+</a>
+</div>
+</div>
+</div>
+<!-- Section: Seguridad y Preferencias -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<div class="flex items-center px-1">
+<h3 class="font-title-md text-title-md text-on-surface">Seguridad y Preferencias</h3>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+<!-- Safety PIN Switch row -->
+<div class="p-space-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">pin</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">PIN de Seguridad para Visitas</span>
+<span class="font-body-sm text-body-sm text-outline">Código de 4 dígitos antes de ingresar</span>
+</div>
+</div>
+<button aria-checked="true" class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors relative flex items-center" role="switch">
+<span class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Biometrics Switch row -->
+<div class="p-space-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">fingerprint</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Biometría / Face ID</span>
+<span class="font-body-sm text-body-sm text-outline">Requerido para autorizar pagos</span>
+</div>
+</div>
+<button aria-checked="true" class="w-12 h-6 rounded-full bg-primary p-0.5 transition-colors relative flex items-center" role="switch">
+<span class="w-5 h-5 rounded-full bg-surface-container-lowest shadow-sm transform translate-x-6 transition-transform"></span>
+</button>
+</div>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Tracking Notifications -->
+<div class="p-space-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">notifications_active</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Tracking en Tiempo Real</span>
+<span class="font-body-sm text-body-sm text-outline">Alertas de técnico en camino (Push y WA)</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed-variant font-label-sm text-label-sm font-bold">Activo</span>
+</div>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Language Selector -->
+<div class="p-space-md flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[22px]">language</span>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Idioma de la App</span>
+<span class="font-body-sm text-body-sm text-outline">Configuración regional</span>
+</div>
+</div>
+<div class="flex items-center gap-1.5 bg-surface-container-low px-2.5 py-1.5 rounded-xl text-on-surface font-label-md text-label-md">
+<span>Español (UY/AR)</span>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Soporte, Legal y Cierre de Sesión -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+<!-- 24/7 Help Center Item -->
+<a class="p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-xl bg-secondary-fixed/40 text-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">support_agent</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Soporte UGO 24/7</span>
+<span class="inline-flex items-center gap-1 text-[11px] font-semibold text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span> &lt; 2 min
+                </span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">Chat directo y resolución de incidentes</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</a>
+<div class="h-px bg-surface-container-high mx-space-md"></div>
+<!-- Terms and Conditions -->
+<a class="p-space-md flex items-center justify-between hover:bg-surface-container-low transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-xl bg-surface-container-low text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">policy</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface font-semibold">Términos y Protección al Usuario</span>
+<span class="font-body-sm text-body-sm text-outline">Políticas de garantía legal UGO</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</a>
+</div>
+<!-- Logout Action Button -->
+<div class="pt-space-xs pb-space-sm flex flex-col items-center gap-space-xs">
+<button class="w-full py-3.5 rounded-2xl bg-surface-container-low hover:bg-error-container/40 text-on-surface-variant hover:text-error font-label-lg text-label-lg flex items-center justify-center gap-2 transition-all active:scale-98">
+<span class="material-symbols-outlined text-[20px]">logout</span>
+<span>Cerrar sesión</span>
+</button>
+<div class="flex flex-col items-center mt-2">
+<span class="font-label-sm text-label-sm text-outline">UGO Cliente App · v2.4.1 (Build 412)</span>
+<span class="font-label-sm text-label-sm text-outline/75 mt-0.5">Florianópolis &amp; Montevideo · Todos los derechos reservados</span>
+</div>
+</div>
+</div>
+</div>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

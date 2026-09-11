@@ -1,0 +1,251 @@
+/**
+ * =======================================================================
+ * UGO Cliente · Web App
+ * Archivo: src/components/shell/AppShell.tsx
+ * Navegación persistente (TopNavBar + Collapsible SideRail + User Context)
+ * Design System: Kinetic Trust
+ * =======================================================================
+ */
+
+'use client';
+
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
+interface AppShellProps {
+  children: React.ReactNode;
+}
+
+const NAV_ITEMS = [
+  { href: '/', label: 'Inicio', icon: 'home' },
+  { href: '/buscar', label: 'Buscar servicio', icon: 'search' },
+  { href: '/nueva-solicitud', label: 'Nueva solicitud', icon: 'add_circle' },
+  { href: '/matching', label: 'Matching en vivo', icon: 'radar', badge: 'En vivo' },
+  { href: '/servicios', label: 'Servicios activos', icon: 'pending_actions', count: 2 },
+  { href: '/actividad', label: 'Actividad', icon: 'history' },
+  { href: '/mensajes', label: 'Mensajes', icon: 'chat_bubble', count: 3 },
+  { href: '/ugo-shield', label: 'UGO Shield', icon: 'verified_user', tag: 'Pro' },
+];
+
+const FOOTER_ITEMS = [
+  { href: '/pagos', label: 'Pagos & Billetera', icon: 'payments' },
+  { href: '/perfil', label: 'Perfil KYC', icon: 'person' },
+  { href: '/ayuda', label: 'Ayuda & Mediación', icon: 'help' },
+  { href: '/configuracion', label: 'Configuración', icon: 'settings' },
+  { href: '/sandbox', label: 'Consola Sandbox', icon: 'science' },
+];
+
+export function AppShell({ children }: AppShellProps) {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+
+  return (
+    <div className="min-h-screen bg-[#F8F9FF] text-[#1E293B] flex font-sans antialiased">
+      {/* ------------------------------------------------------------- */}
+      {/* 1. SIDEBAR / SIDE-RAIL                                        */}
+      {/* ------------------------------------------------------------- */}
+      <aside
+        className={`fixed top-0 bottom-0 left-0 z-40 bg-white border-r border-[#E2E8F0] flex flex-col justify-between transition-all duration-300 ${
+          collapsed ? 'w-20' : 'w-64'
+        }`}
+      >
+        {/* Header de Sidebar & Brand Logo */}
+        <div className="p-5 border-b border-[#F1F5F9]">
+          <div className="flex items-center justify-between">
+            <Link href="/" className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#0077B6] to-[#00B4D8] flex items-center justify-center text-white font-black text-xl shadow-sm">
+                U
+              </div>
+              {!collapsed && (
+                <div className="flex flex-col">
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-extrabold text-xl tracking-tight text-[#0F172A]">ugo</span>
+                    <span className="text-[10px] uppercase font-bold bg-[#E0F2FE] text-[#0077B6] px-1.5 py-0.5 rounded">
+                      Cliente
+                    </span>
+                  </div>
+                  <span className="text-[11px] text-[#64748B] font-medium">Confianza Fiduciaria</span>
+                </div>
+              )}
+            </Link>
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="text-[#94A3B8] hover:text-[#1E293B] p-1 rounded-lg hover:bg-[#F8FAFC] transition-colors"
+              title={collapsed ? 'Expandir barra lateral' : 'Colapsar barra lateral'}
+            >
+              <span className="material-symbols-outlined text-[20px]">
+                {collapsed ? 'menu_open' : 'menu'}
+              </span>
+            </button>
+          </div>
+
+          {/* Quick CTA */}
+          {!collapsed && (
+            <Link
+              href="/nueva-solicitud"
+              className="mt-4 w-full bg-[#00875A] hover:bg-[#00704A] text-white py-2.5 px-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 shadow-sm transition-all"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              Nueva Solicitud
+            </Link>
+          )}
+        </div>
+
+        {/* Links de Navegación Principal */}
+        <div className="flex-1 overflow-y-auto px-3 py-4 space-y-1">
+          <div className={`px-2 pb-2 text-[10px] font-bold tracking-wider text-[#94A3B8] uppercase ${collapsed ? 'text-center' : ''}`}>
+            {collapsed ? '•••' : 'Operaciones'}
+          </div>
+          {NAV_ITEMS.map((item) => {
+            const isActive = pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href));
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors relative ${
+                  isActive
+                    ? 'bg-[#E0F2FE] text-[#0077B6] font-semibold'
+                    : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
+                }`}
+                title={item.label}
+              >
+                <span className="material-symbols-outlined text-[22px]">{item.icon}</span>
+                {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+                {!collapsed && item.count && (
+                  <span className="bg-[#EF4444] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-full min-w-5 text-center">
+                    {item.count}
+                  </span>
+                )}
+                {!collapsed && item.tag && (
+                  <span className="bg-[#00875A] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                    {item.tag}
+                  </span>
+                )}
+                {!collapsed && item.badge && (
+                  <span className="bg-[#00B4D8] text-white text-[10px] font-bold px-1.5 py-0.5 rounded animate-pulse">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+
+          <div className={`pt-4 px-2 pb-2 text-[10px] font-bold tracking-wider text-[#94A3B8] uppercase ${collapsed ? 'text-center' : ''}`}>
+            {collapsed ? '•••' : 'Cuenta & Soporte'}
+          </div>
+          {FOOTER_ITEMS.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#E0F2FE] text-[#0077B6] font-semibold'
+                    : 'text-[#64748B] hover:bg-[#F1F5F9] hover:text-[#0F172A]'
+                }`}
+                title={item.label}
+              >
+                <span className="material-symbols-outlined text-[20px]">{item.icon}</span>
+                {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Footer con Protocolo Fiduciario & Perfil */}
+        <div className="p-3 border-t border-[#F1F5F9] bg-[#F8FAFC]">
+          {!collapsed ? (
+            <div className="flex items-center gap-3 p-1">
+              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-[#00875A] relative">
+                <img
+                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150"
+                  alt="Mariana Costa"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute bottom-0 right-0 w-3 h-3 bg-[#00875A] border-2 border-white rounded-full"></div>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-[#0F172A] truncate">Mariana Costa</p>
+                <div className="flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[12px] text-[#00875A]">verified</span>
+                  <span className="text-[10px] text-[#00875A] font-semibold">Liveness 99.8%</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center">
+              <div className="w-8 h-8 rounded-full ring-2 ring-[#00875A] overflow-hidden">
+                <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150" alt="MC" />
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* ------------------------------------------------------------- */}
+      {/* 2. ÁREA PRINCIPAL + TOPBAR STICKY                             */}
+      {/* ------------------------------------------------------------- */}
+      <div className={`flex-1 flex flex-col min-w-0 transition-all duration-300 ${collapsed ? 'pl-20' : 'pl-64'}`}>
+        {/* TopNavBar */}
+        <header className="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-[#E2E8F0] px-8 py-3.5 flex items-center justify-between gap-4 shadow-sm">
+          {/* Ubicación y Geo-radar */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#334155] px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-colors">
+              <span className="material-symbols-outlined text-[16px] text-[#0077B6]">location_on</span>
+              <span>Canasvieiras, Florianópolis · SC</span>
+              <span className="material-symbols-outlined text-[14px]">expand_more</span>
+            </div>
+
+            <div className="hidden lg:flex items-center gap-2 text-xs text-[#64748B] pl-2 border-l border-[#CBD5E1]">
+              <span className="w-2 h-2 rounded-full bg-[#00875A] animate-pulse"></span>
+              <span>71 Técnicos CREA activos en radio 4.5 km</span>
+            </div>
+          </div>
+
+          {/* Search Bar Central */}
+          <div className="flex-1 max-w-xl">
+            <div className="relative">
+              <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] text-[18px]">
+                search
+              </span>
+              <input
+                type="text"
+                placeholder="Buscar matriculados, fallas (ej: split no enfría, disyuntor salta) o servicios..."
+                className="w-full pl-10 pr-4 py-2 bg-[#F8FAFC] border border-[#E2E8F0] rounded-xl text-xs text-[#1E293B] focus:outline-none focus:border-[#00B4D8] focus:bg-white transition-all shadow-inner"
+              />
+            </div>
+          </div>
+
+          {/* Acciones de Cabecera: Copiloto Hugo IA & Escrow Status */}
+          <div className="flex items-center gap-3">
+            <Link
+              href="/nueva-solicitud"
+              className="flex items-center gap-1.5 bg-gradient-to-r from-[#0077B6] to-[#00B4D8] text-white px-3.5 py-1.5 rounded-xl text-xs font-bold shadow-sm hover:opacity-95 transition-opacity"
+            >
+              <span className="material-symbols-outlined text-[16px]">smart_toy</span>
+              <span>Hugo IA</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]"></span>
+            </Link>
+
+            {/* Custodia Escrow Badge */}
+            <div className="hidden sm:flex items-center gap-1.5 bg-[#EFF6FF] border border-[#BFDBFE] text-[#1E40AF] px-2.5 py-1.5 rounded-xl text-xs font-semibold">
+              <span className="material-symbols-outlined text-[15px] text-[#0077B6]">lock</span>
+              <span>Itaú Escrow: R$ 140,00</span>
+            </div>
+
+            {/* Notificaciones */}
+            <button className="relative p-2 text-[#64748B] hover:text-[#0F172A] rounded-xl hover:bg-[#F1F5F9] transition-colors">
+              <span className="material-symbols-outlined text-[20px]">notifications</span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#EF4444] rounded-full ring-2 ring-white"></span>
+            </button>
+          </div>
+        </header>
+
+        {/* Contenido Dinámico de la Página */}
+        <main className="flex-1 p-8">{children}</main>
+      </div>
+    </div>
+  );
+}

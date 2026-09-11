@@ -1,0 +1,220 @@
+// ==============================================================================
+// UGO ADMIN & SUPER ADMIN — AGNOSTIC TYPESCRIPT INTERFACE CONTRACTS
+// Alineado con el UGO Real: React + Vite + TypeScript + Supabase
+// No genera migraciones SQL ni asume APIs no verificadas.
+// ==============================================================================
+
+export type RoleType = 'CLIENT' | 'PROVIDER' | 'ADMIN' | 'SUPER_ADMIN';
+
+export type OperationalStatus = 
+  | 'SEARCHING' 
+  | 'PROPOSAL' 
+  | 'HIRED' 
+  | 'EN_ROUTE' 
+  | 'ARRIVED' 
+  | 'IN_PROGRESS' 
+  | 'EXTENSION_PENDING' 
+  | 'COMPLETION_PENDING' 
+  | 'COMPLETED' 
+  | 'CANCELLED' 
+  | 'DISPUTE';
+
+export type ProviderVerificationStatus = 
+  | 'PENDING_REVIEW' 
+  | 'VERIFIED' 
+  | 'CORRECTION_REQUIRED' 
+  | 'REJECTED' 
+  | 'SUSPENDED';
+
+export type PaymentStatusType = 
+  | 'PENDING' 
+  | 'PROCESSING' 
+  | 'APPROVED' 
+  | 'FAILED' 
+  | 'REFUNDED' 
+  | 'REVIEW_REQUIRED';
+
+export type ExtensionStatusType = 
+  | 'DRAFT' 
+  | 'SENT_TO_CLIENT' 
+  | 'APPROVED' 
+  | 'REJECTED';
+
+export type DisputeStatusType = 
+  | 'OPEN' 
+  | 'UNDER_REVIEW' 
+  | 'WAITING_CLIENT' 
+  | 'WAITING_PROVIDER' 
+  | 'IN_MEDIATION' 
+  | 'RESOLVED' 
+  | 'CLOSED';
+
+export type FeatureFlagState = 'OFF' | 'INTERNAL' | 'PILOT' | 'ON';
+
+export type IntegrationStateType = 'CONNECTED' | 'NOT_CONFIGURED' | 'ERROR' | 'DISABLED';
+
+// ------------------------------------------------------------------------------
+// Modelos de Dominio UI
+// ------------------------------------------------------------------------------
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  fullName: string;
+  avatarUrl?: string;
+  role: 'ADMIN' | 'SUPER_ADMIN';
+  isActive: boolean;
+  lastLoginAt?: string;
+  assignedAreas?: string[];
+}
+
+export interface CustomerSummary {
+  id: string;
+  fullName: string;
+  phone: string;
+  email: string;
+  ratingAverage: number;
+  totalServicesBooked: number;
+  accountStatus: 'ACTIVE' | 'FLAGGED' | 'SUSPENDED';
+  joinedAt: string;
+  lastActiveAt: string;
+}
+
+export interface ProviderSummary {
+  id: string;
+  fullName: string;
+  tradeName?: string;
+  phone: string;
+  categories: string[];
+  zone: string;
+  ratingAverage: number;
+  completedJobsCount: number;
+  isOnline: boolean;
+  verificationStatus: ProviderVerificationStatus;
+  documentsCount: {
+    submitted: number;
+    verified: number;
+  };
+}
+
+export interface ServiceSummary {
+  id: string;
+  code: string; // e.g. "UGO-9482"
+  customerId: string;
+  customerName: string;
+  providerId?: string;
+  providerName?: string;
+  category: string;
+  subCategory: string;
+  status: OperationalStatus;
+  zone: string;
+  totalAmountEstimated: number;
+  createdAt: string;
+  updatedAt: string;
+  hasIncident: boolean;
+  hasExtension: boolean;
+}
+
+export interface ServiceExtension {
+  id: string;
+  serviceId: string;
+  requestedByProviderId: string;
+  additionalTaskDescription: string;
+  additionalPartsAndMaterials?: string;
+  additionalAmount: number;
+  additionalEstimatedMinutes: number;
+  evidencePhotoUrls: string[];
+  reason: string;
+  status: ExtensionStatusType;
+  clientDecisionAt?: string;
+}
+
+export interface PaymentSummary {
+  id: string;
+  serviceCode: string;
+  customerName: string;
+  providerName: string;
+  baseAmount: number;
+  extensionsAmount: number;
+  totalAmount: number;
+  ugoCommissionAmount: number;
+  paymentMethod: 'PIX' | 'CREDIT_CARD' | 'IN_APP_BALANCE';
+  status: PaymentStatusType;
+  createdAt: string;
+  internalReference: string;
+}
+
+export interface DisputeCase {
+  id: string;
+  serviceCode: string;
+  openedBy: 'CLIENT' | 'PROVIDER';
+  customerName: string;
+  providerName: string;
+  reasonCategory: 'DELAY' | 'QUALITY' | 'BILLING' | 'BEHAVIOR' | 'INCOMPLETE';
+  status: DisputeStatusType;
+  mediatorNotes?: string;
+  lastActivityAt: string;
+  evidenceCount: number;
+}
+
+export interface ScoutInsight {
+  id: string;
+  type: 'HIGH_DEMAND_LOW_SUPPLY' | 'UNUSUAL_CANCEL_RATE' | 'DELAYED_DISPATCH' | 'EXPANSION_OPPORTUNITY';
+  zone: string;
+  category: string;
+  whatHappened: string;
+  whyItMatters: string;
+  impactLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  recommendedActions: {
+    label: string;
+    actionEvent: string;
+  }[];
+  isDemoData?: boolean;
+}
+
+export interface FeatureFlag {
+  key: string;
+  name: string;
+  description: string;
+  status: FeatureFlagState;
+  targetAudience: string;
+  ownerAdminName: string;
+  updatedAt: string;
+}
+
+export interface AuditEvent {
+  id: string;
+  actorId: string;
+  actorName: string;
+  actorRole: 'ADMIN' | 'SUPER_ADMIN';
+  action: string;
+  targetEntity: string;
+  entityId: string;
+  timestamp: string;
+  result: 'SUCCESS' | 'DENIED' | 'FAILED';
+  reason?: string;
+}
+
+// ------------------------------------------------------------------------------
+// Catálogo de Eventos UI Declarativos
+// ------------------------------------------------------------------------------
+export type UIActionEvents = 
+  | 'onOpenCustomer'
+  | 'onOpenProvider'
+  | 'onReviewProvider'
+  | 'onApproveProvider'
+  | 'onRequestProviderCorrection'
+  | 'onOpenService'
+  | 'onOpenPayment'
+  | 'onOpenDispute'
+  | 'onResolveSupportCase'
+  | 'onOpenScoutInsight'
+  | 'onApplyFilter'
+  | 'onChangeRole'
+  | 'onUpdatePermission'
+  | 'onUpdateBusinessRule'
+  | 'onUpdateCommission'
+  | 'onToggleFeatureFlag'
+  | 'onOpenIntegration'
+  | 'onUpdateGlobalSetting'
+  | 'onViewAuditEvent';

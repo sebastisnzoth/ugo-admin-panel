@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"tertiary":"#545c72","on-error-container":"#93000a","on-error":"#ffffff","primary-fixed-dim":"#6bd8cb","surface-container-high":"#dce9ff","primary":"#00685f","on-tertiary-fixed-variant":"#3f465c","on-primary-container":"#f4fffc","on-background":"#0b1c30","secondary-fixed-dim":"#d2bbff","on-surface":"#0b1c30","surface-container-lowest":"#ffffff","tertiary-fixed":"#dae2fd","tertiary-fixed-dim":"#bec6e0","inverse-surface":"#213145","on-primary-fixed-variant":"#005049","primary-container":"#008378","on-secondary":"#ffffff","surface-container":"#e5eeff","surface-dim":"#cbdbf5","on-secondary-fixed-variant":"#5a00c6","outline-variant":"#bcc9c6","surface-variant":"#d3e4fe","on-secondary-container":"#fffbff","secondary-fixed":"#eaddff","on-primary-fixed":"#00201d","outline":"#6d7a77","surface-container-highest":"#d3e4fe","on-surface-variant":"#3d4947","surface-tint":"#006a61","secondary-container":"#8a4cfc","on-primary":"#ffffff","inverse-primary":"#6bd8cb","tertiary-container":"#6c748b","surface":"#f8f9ff","on-tertiary-fixed":"#131b2e","error-container":"#ffdad6","primary-fixed":"#89f5e7","surface-bright":"#f8f9ff","inverse-on-surface":"#eaf1ff","on-secondary-fixed":"#25005a","secondary":"#712ae2","on-tertiary-container":"#fefcff","error":"#ba1a1a","on-tertiary":"#ffffff","background":"#f8f9ff","surface-container-low":"#eff4ff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.75rem","margin":"1.5rem","space-sm":"0.5rem","space-lg":"1.25rem","gutter":"1rem"},"fontFamily":{"label-md":["Inter"],"body-lg":["Inter"],"label-sm":["Inter"],"body-sm":["Inter"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"metric-mono-lg":["Inter"],"headline-sm":["Plus Jakarta Sans"],"metric-mono":["Inter"],"headline-lg":["Plus Jakarta Sans"]},"fontSize":{"label-md":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"500"}],"body-lg":["0.9375rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"400"}],"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-xl":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.025em","fontWeight":"700"}],"metric-mono-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.015em","fontWeight":"600"}],"metric-mono":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}],"headline-lg":["1.375rem",{"lineHeight":"1.875rem","letterSpacing":"-0.02em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto"><div class="p-space-lg"><div class="flex items-center gap-space-sm mb-space-lg pb-space-md border-b border-surface-container-high"><img alt="UGO Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VA_16Eb7Kbzqy1PSzEY1FMWSFZ3-SfyITTyOG6pFkWHKE3ti_eU08v5uslC7voj0uZfeKBYPAn_mRLVdFO5upusunJmyX4ejFHsx3RbK5IbpFdGqojURR6UqG0IcXHw0tHdaGGYIvXFyKUUREPGX-0XZL15Arr1zjTlquXVByDIx0FKLvY_fxIJGfp-524nR_Vwf2yHXiR_EoCqtm-jN2X8WtC4qrfTaWtyfU7GX5BF3GoqAhq_RaEoQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">UGO OPS</span><span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">Master Console</span></div></div><div class="mb-space-lg"><div class="flex items-center justify-between px-space-sm mb-space-xs"><span class="font-label-sm text-label-sm text-primary font-bold uppercase tracking-wider">Operaciones</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 bg-primary-fixed text-on-primary-fixed rounded-lg">Live</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="dashboard-operativo" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="clientes" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span>Clientes</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="proveedores-onboarding" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span>Proveedores & Onboarding</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="servicios-en-vivo" href="#"><span class="material-symbols-outlined text-[20px]">sensors</span><span>Servicios en Vivo</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="ampliaciones" href="#"><span class="material-symbols-outlined text-[20px]">add_task</span><span>Ampliaciones</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="pagos-conciliacion" href="#"><span class="material-symbols-outlined text-[20px]">payments</span><span>Pagos & Conciliación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reclamos-mediacion" href="#"><span class="material-symbols-outlined text-[20px]">gavel</span><span>Reclamos & Mediación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="categorias" href="#"><span class="material-symbols-outlined text-[20px]">category</span><span>Categorías</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reputacion" href="#"><span class="material-symbols-outlined text-[20px]">star_half</span><span>Reputación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="scout-operativo" href="#"><span class="material-symbols-outlined text-[20px]">radar</span><span>Scout Operativo</span></a></nav></div><div class="pt-space-xs"><div class="flex items-center justify-between px-space-sm mb-space-xs"><span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Gobernanza Super Admin</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 bg-secondary-fixed text-on-secondary-fixed rounded-lg">Privilegiado</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]"><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl transition-all bg-secondary-container text-on-secondary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]" data-path="command-center" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span>Command Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="administradores-roles" href="#"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span>Administradores & Roles</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reglas-de-negocio" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span>Reglas de Negocio</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="feature-flags" href="#"><span class="material-symbols-outlined text-[20px]">toggle_on</span><span>Feature Flags</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="integraciones" href="#"><span class="material-symbols-outlined text-[20px]">hub</span><span>Integraciones</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="auditoria-seguridad" href="#"><span class="material-symbols-outlined text-[20px]">security</span><span>Auditoría & Seguridad</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="scout-estrategico" href="#"><span class="material-symbols-outlined text-[20px]">query_stats</span><span>Scout Estratégico</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="configuracion-global" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Configuración Global</span></a></nav></div></div><div class="p-space-md m-space-sm bg-surface-container-low rounded-xl flex items-center justify-between"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">SLA de Plataforma</span><span class="font-metric-mono text-metric-mono text-primary font-bold">99.98% OK</span></div><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-space-md"><img alt="UGO Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VA_16Eb7Kbzqy1PSzEY1FMWSFZ3-SfyITTyOG6pFkWHKE3ti_eU08v5uslC7voj0uZfeKBYPAn_mRLVdFO5upusunJmyX4ejFHsx3RbK5IbpFdGqojURR6UqG0IcXHw0tHdaGGYIvXFyKUUREPGX-0XZL15Arr1zjTlquXVByDIx0FKLvY_fxIJGfp-524nR_Vwf2yHXiR_EoCqtm-jN2X8WtC4qrfTaWtyfU7GX5BF3GoqAhq_RaEoQ"/><div class="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-high rounded-full"><span class="h-2 w-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold tracking-wide">PROD - AMÉRICA LATINA</span></div><div class="hidden md:flex items-center bg-surface-container-low px-space-md py-1.5 rounded-full w-80 gap-space-xs"><span class="material-symbols-outlined text-outline text-[18px]">search</span><input class="bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline w-full" placeholder="Buscar servicio, proveedor, orden o ID..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container p-1 rounded-full"><button class="px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold bg-primary text-on-primary transition-all" type="button">ADMIN · OPERACIONES</button><button class="px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold text-on-surface-variant hover:text-secondary transition-all" type="button">SUPER ADMIN · GOBERNANZA</button></div><button class="relative p-space-xs text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 h-4 w-4 bg-error text-on-error font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold leading-none">7</span></button><div class="flex items-center gap-space-sm pl-space-sm border-l border-surface-container-high"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden lg:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-bold leading-none">Santiago Vega</span><span class="font-label-sm text-label-sm text-outline leading-tight">Lead Director Ops</span></div></div></div></header><main class="relative pt-16 w-full bg-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Command Center Header & Scope Strip -->
+<div class="w-full bg-surface-container-low px-gutter py-space-md shadow-sm">
+<div class="max-w-[1520px] mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md flex-wrap">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-secondary-container text-on-secondary-container shadow-sm">
+<span class="material-symbols-outlined text-[16px] animate-pulse" style="font-variation-settings: 'FILL' 1;">shield_person</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-bold">SUPER ADMIN · GOBERNANZA GLOBAL</span>
+</div>
+<div class="h-4 w-px bg-outline-variant/60 hidden sm:block"></div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Consola Maestra de Comando</span>
+<span class="px-space-xs py-0.5 rounded-lg bg-surface-container-high text-tertiary font-metric-mono text-metric-mono font-bold">CLUSTER-PROD-01</span>
+</div>
+<!-- Scope Switcher & Quick Audit Timestamp -->
+<div class="flex items-center gap-space-sm w-full md:w-auto justify-between md:justify-end">
+<div class="flex items-center bg-surface-container-lowest rounded-xl shadow-sm p-1">
+<span class="material-symbols-outlined text-outline text-[18px] ml-space-xs">public</span>
+<select class="bg-transparent border-none outline-none font-label-md text-label-md text-on-surface font-semibold py-1 px-space-xs cursor-pointer" id="region-scope-select">
+<option selected="" value="latam">Consolidado LatAm (Omni-Macro)</option>
+<option value="br-sul">Brasil Sur (PR, SC, RS)</option>
+<option value="sp-capital">São Paulo · Macro Metropolitana</option>
+</select>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-md py-1.5 rounded-xl bg-surface-container-highest text-on-surface-variant hover:text-on-surface font-label-md text-label-md shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]">sync</span>
+<span class="font-metric-mono text-metric-mono font-medium">Sync 14s</span>
+</button>
+</div>
+</div>
+</div>
+<div class="max-w-[1520px] mx-auto w-full px-gutter py-space-lg flex flex-col gap-space-xl">
+<!-- Executive KPI Grid (5 Core Marketplace Drivers) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-space-md">
+<!-- KPI 1: GMV -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+<div>
+<div class="flex items-center justify-between text-tertiary mb-space-xs">
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">GMV Acumulado Mes</span>
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">R$ 1.482.900</div>
+</div>
+<div class="flex items-center justify-between mt-space-md pt-space-xs bg-surface-container-low px-space-xs py-1 rounded-lg">
+<div class="inline-flex items-center gap-0.5 text-primary font-metric-mono text-metric-mono font-bold">
+<span class="material-symbols-outlined text-[16px]">trending_up</span>
+<span>+18.4%</span>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary">vs. mes anterior</span>
+</div>
+</div>
+<!-- KPI 2: Take-Rate -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-secondary"></div>
+<div>
+<div class="flex items-center justify-between text-tertiary mb-space-xs">
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Ingresos Comisión UGO</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">receipt_long</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">R$ 222.435</div>
+</div>
+<div class="flex items-center justify-between mt-space-md pt-space-xs bg-surface-container-low px-space-xs py-1 rounded-lg">
+<span class="font-label-sm text-label-sm text-secondary font-bold">Take-Rate Efectivo</span>
+<span class="font-metric-mono text-metric-mono text-on-surface font-bold">15.0% flat</span>
+</div>
+</div>
+<!-- KPI 3: Matching Success -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-primary-container"></div>
+<div>
+<div class="flex items-center justify-between text-tertiary mb-space-xs">
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Éxito de Matching</span>
+<span class="material-symbols-outlined text-primary-container text-[20px]">bolt</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">94.2%</div>
+</div>
+<div class="flex items-center justify-between mt-space-md pt-space-xs bg-surface-container-low px-space-xs py-1 rounded-lg">
+<span class="font-label-sm text-label-sm text-tertiary">Tiempo medio</span>
+<span class="font-metric-mono text-metric-mono text-primary font-bold">2m 14s</span>
+</div>
+</div>
+<!-- KPI 4: Global Disputes -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-primary"></div>
+<div>
+<div class="flex items-center justify-between text-tertiary mb-space-xs">
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Tasa de Disputas</span>
+<span class="material-symbols-outlined text-primary text-[20px]">balance</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">0.8%</div>
+</div>
+<div class="flex items-center justify-between mt-space-md pt-space-xs bg-surface-container-low px-space-xs py-1 rounded-lg">
+<span class="font-label-sm text-label-sm text-primary font-bold">Óptimo <1.2%</span>
+<span class="font-metric-mono text-metric-mono text-tertiary">38 arbitrajes</span>
+</div>
+</div>
+<!-- KPI 5: Retention Cohorts -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-1.5 h-full bg-secondary"></div>
+<div>
+<div class="flex items-center justify-between text-tertiary mb-space-xs">
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Retención Proveedores</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">workspace_premium</span>
+</div>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold tracking-tight">84.0%</div>
+</div>
+<div class="flex items-center justify-between mt-space-md pt-space-xs bg-surface-container-low px-space-xs py-1 rounded-lg">
+<span class="font-label-sm text-label-sm text-tertiary">Cohorte activa</span>
+<span class="font-metric-mono text-metric-mono text-secondary font-bold">90 Días</span>
+</div>
+</div>
+</section>
+<!-- Super Admin Command Execution Action Bar -->
+<section class="bg-surface-container rounded-xl p-space-md shadow-sm">
+<div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-xl bg-secondary flex items-center justify-center text-on-secondary shadow-sm">
+<span class="material-symbols-outlined text-[20px]">tune</span>
+</div>
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">Acciones Ejecutivas de Gobernanza</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Modificaciones con impacto instantáneo sobre políticas monetarias y feature toggles</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs w-full lg:w-auto">
+<!-- Action 1: Fee Sim -->
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container shadow-sm transition-all" id="btn-modal-fees" type="button">
+<span class="material-symbols-outlined text-[18px]">percent</span>
+<span>Simular Ajuste de Comisiones</span>
+</button>
+<!-- Action 2: Feature Flags -->
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md hover:bg-secondary-container shadow-sm transition-all" id="btn-modal-flags" type="button">
+<span class="material-symbols-outlined text-[18px]">toggle_on</span>
+<span>Gestionar Feature Flags</span>
+</button>
+<!-- Action 3: Audit Log -->
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-surface-container-high font-label-md text-label-md shadow-sm transition-all" id="btn-toggle-audit" type="button">
+<span class="material-symbols-outlined text-[18px]">history_edu</span>
+<span>Ver Auditoría de Permisos</span>
+</button>
+<!-- Action 4: Export -->
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container-highest text-on-surface hover:bg-surface-dim font-label-md text-label-md shadow-sm transition-all" id="btn-export-rep" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Exportar Reporte Ejecutivo</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Operational Health & Transaction Volume Center -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg">
+<!-- 7 Cols: Real-Time Transaction Curve & Velocity -->
+<section class="lg:col-span-7 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Salud Operacional en Tiempo Real</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Curva de Volumen Horario de Transacciones</h2>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low p-1 rounded-xl">
+<button class="px-space-xs py-0.5 rounded-lg bg-surface-container-lowest font-label-sm text-label-sm font-semibold text-on-surface shadow-sm">Hoy (UTC-3)</button>
+<button class="px-space-xs py-0.5 rounded-lg font-label-sm text-label-sm text-outline hover:text-on-surface">Ayer</button>
+<button class="px-space-xs py-0.5 rounded-lg font-label-sm text-label-sm text-outline hover:text-on-surface">7 Días</button>
+</div>
+</div>
+<!-- Metric Inline Badges -->
+<div class="grid grid-cols-3 gap-space-sm mb-space-md">
+<div class="bg-surface-container-low rounded-xl p-space-sm">
+<div class="font-label-sm text-label-sm text-outline">Pico Registrado</div>
+<div class="font-metric-mono-lg text-metric-mono-lg text-primary font-bold">142 tx/h</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">11:45 AM BRT</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-space-sm">
+<div class="font-label-sm text-label-sm text-outline">En Proceso Ahora</div>
+<div class="font-metric-mono-lg text-metric-mono-lg text-secondary font-bold">89 ops</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Latencia dispatch 180ms</div>
+</div>
+<div class="bg-surface-container-low rounded-xl p-space-sm">
+<div class="font-label-sm text-label-sm text-outline">Liquidación Exitosa</div>
+<div class="font-metric-mono-lg text-metric-mono-lg text-on-surface font-bold">99.4%</div>
+<div class="font-label-sm text-label-sm text-primary">Gateway Pix / Card OK</div>
+</div>
+</div>
+<!-- Inline SVG Area Chart: Hourly Transactions -->
+<div class="w-full h-64 bg-surface-container-low rounded-xl p-space-md relative overflow-hidden flex flex-col justify-end">
+<svg class="w-full h-44 overflow-visible" preserveaspectratio="none" viewbox="0 0 600 160">
+<defs>
+<lineargradient id="curveFill" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#00685f" stop-opacity="0.32"></stop>
+<stop offset="100%" stop-color="#00685f" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid Lines -->
+<line stroke="#bcc9c6" stroke-dasharray="4 4" stroke-opacity="0.3" x1="0" x2="600" y1="40" y2="40"></line>
+<line stroke="#bcc9c6" stroke-dasharray="4 4" stroke-opacity="0.3" x1="0" x2="600" y1="80" y2="80"></line>
+<line stroke="#bcc9c6" stroke-dasharray="4 4" stroke-opacity="0.3" x1="0" x2="600" y1="120" y2="120"></line>
+<!-- Area Path -->
+<path d="M 0 145 C 50 140, 80 130, 120 110 C 160 90, 200 120, 240 70 C 280 20, 320 15, 360 45 C 400 75, 440 30, 480 35 C 520 40, 560 20, 600 15 L 600 160 L 0 160 Z" fill="url(#curveFill)"></path>
+<!-- Stroke Path -->
+<path d="M 0 145 C 50 140, 80 130, 120 110 C 160 90, 200 120, 240 70 C 280 20, 320 15, 360 45 C 400 75, 440 30, 480 35 C 520 40, 560 20, 600 15" fill="none" stroke="#00685f" stroke-linecap="round" stroke-width="3"></path>
+<!-- Data Points -->
+<circle cx="240" cy="70" fill="#ffffff" r="4" stroke="#00685f" stroke-width="3"></circle>
+<circle cx="360" cy="45" fill="#ffffff" r="4" stroke="#00685f" stroke-width="3"></circle>
+<circle cx="480" cy="35" fill="#ffffff" r="4" stroke="#00685f" stroke-width="3"></circle>
+<circle cx="600" cy="15" fill="#712ae2" r="5" stroke="#ffffff" stroke-width="2"></circle>
+</svg>
+<div class="flex justify-between items-center text-outline font-metric-mono text-label-sm pt-space-xs mt-space-xs">
+<span>00:00</span>
+<span>04:00</span>
+<span>08:00</span>
+<span>12:00 (Pico)</span>
+<span>16:00</span>
+<span>20:00</span>
+<span class="text-secondary font-bold">23:59 Live</span>
+</div>
+</div>
+</section>
+<!-- 5 Cols: Demand Distribution by Category -->
+<section class="lg:col-span-5 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Mix de Transaccionalidad</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Distribución por Categoría</h2>
+</div>
+<span class="px-space-xs py-1 rounded-lg bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">Consolidado 30D</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<!-- Category 1: Climatización -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                Climatización & Refrigeración
+              </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">34% <span class="text-outline font-normal">(R$ 504.186)</span></span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 34%;"></div>
+</div>
+</div>
+<!-- Category 2: Plomería -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+                Plomería & Redes Sanitarias
+              </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">26% <span class="text-outline font-normal">(R$ 385.554)</span></span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-secondary h-full rounded-full" style="width: 26%;"></div>
+</div>
+</div>
+<!-- Category 3: Electricidad -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-primary-container"></span>
+                Electricidad & Media Tensión
+              </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">18% <span class="text-outline font-normal">(R$ 266.922)</span></span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 18%;"></div>
+</div>
+</div>
+<!-- Category 4: Reformas Generales -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-tertiary"></span>
+                Reformas Integrales & Drywall
+              </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">14% <span class="text-outline font-normal">(R$ 207.606)</span></span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 14%;"></div>
+</div>
+</div>
+<!-- Category 5: Pintura -->
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between font-label-md text-label-md">
+<span class="font-semibold text-on-surface flex items-center gap-1.5">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary-container"></span>
+                Pintura & Tratamiento Superficies
+              </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">8% <span class="text-outline font-normal">(R$ 118.632)</span></span>
+</div>
+<div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+<div class="bg-secondary-container h-full rounded-full" style="width: 8%;"></div>
+</div>
+</div>
+</div>
+<div class="mt-space-md p-space-xs bg-surface-container-low rounded-xl flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+            Concentración de riesgo: Nivel Equilibrado
+          </span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">HHI: 0.22</span>
+</div>
+</section>
+</div>
+<!-- Strategic Expansion Scout & Supply Deficit Module -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-sm mb-space-md gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shadow-sm">
+<span class="material-symbols-outlined text-[24px]">radar</span>
+</div>
+<div>
+<div class="inline-flex items-center gap-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Módulo Predictivo Autónomo</span>
+<span class="px-space-xs py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold leading-none">Scout IA</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Scout Estratégico & Expansión de Capacidad</h2>
+</div>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline">Algoritmo de Demanda Insatisfecha v4.2</span>
+</div>
+</div>
+<!-- Bento Grid Inside Scout -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Visual Hotspot Map Panel (5 cols) -->
+<div class="lg:col-span-5 flex flex-col gap-space-sm">
+<div class="w-full h-64 bg-cover bg-center rounded-xl relative overflow-hidden shadow-sm flex flex-col justify-between p-space-md" data-location="Florianopolis, Santa Catarina, Brazil" style="">
+<div class="flex justify-between items-start">
+<span class="px-space-sm py-1 bg-surface/90 backdrop-blur-md rounded-full font-label-sm text-label-sm font-bold text-error flex items-center gap-1 shadow-sm">
+<span class="h-2 w-2 rounded-full bg-error animate-ping"></span>
+                Déficit Crítico de Oferta: -42%
+              </span>
+<span class="px-space-sm py-1 bg-surface/90 backdrop-blur-md rounded-full font-metric-mono text-metric-mono font-bold text-on-surface shadow-sm">FLN-CONTINENTE</span>
+</div>
+<div class="bg-surface/95 backdrop-blur-md p-space-sm rounded-xl text-on-surface shadow-md">
+<div class="font-label-md text-label-md font-bold">Florianópolis Continente (Estreito / Coqueiros)</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant">Radio prioritario: 12 km² · Población activa 215.000 hab.</div>
+</div>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm px-space-xs">
+<span>Demanda proyectada próx. 30d: <strong>R$ 380.000</strong></span>
+<span class="text-primary font-bold">Pérdida por rechazos: R$ 64.200/mes</span>
+</div>
+</div>
+<!-- Diagnostic & Automated Playbooks (7 cols) -->
+<div class="lg:col-span-7 flex flex-col justify-between bg-surface-container-low rounded-xl p-space-md">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md font-bold text-on-surface">Diagnóstico Operacional de Cuello de Botella</span>
+<span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">ACCIONABLE SUPER ADMIN</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-space-md">
+              Se detecta una tasa de rechazo por indisponibilidad de técnicos de <strong>42% en instalaciones de gas domiciliario y plomería pesada</strong> durante los fines de semana y franja vespertina. El SLA de aceptación se degradó de 2m a 24m.
+            </p>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-sm mb-space-md">
+<div class="bg-surface-container-lowest p-space-sm rounded-xl">
+<div class="font-label-sm text-label-sm text-outline">Técnicos Certificados Activos</div>
+<div class="font-metric-mono-lg text-metric-mono-lg font-bold text-error">9 prestadores</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Capacidad requerida estimada: 24</div>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-xl">
+<div class="font-label-sm text-label-sm text-outline">Incentivo de Activación Sugerido</div>
+<div class="font-metric-mono-lg text-metric-mono-lg font-bold text-secondary">R$ 150 bono</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Por primeras 5 órdenes completadas</div>
+</div>
+</div>
+</div>
+<div class="flex flex-wrap items-center justify-end gap-space-sm pt-space-xs">
+<button class="px-space-md py-2 rounded-xl bg-surface-container-highest text-on-surface font-label-md text-label-md font-semibold hover:bg-surface-dim transition-all" type="button">
+              Ver Proveedores en Pipeline de Verificación (8 pendientes)
+            </button>
+<button class="px-space-md py-2 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md font-bold hover:bg-secondary-container shadow-sm transition-all flex items-center gap-space-xs" type="button">
+<span class="material-symbols-outlined text-[18px]">campaign</span>
+              Lanzar Campaña Flash de Onboarding en Florianópolis
+            </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Governance Critical Alerts & Live Audit Ledger -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-sm mb-space-md gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Supervisión en Tiempo Real</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-bold">Alertas Críticas de Gobernanza & Auditoría</h2>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Consumo de logs streaming activado</span>
+</div>
+</div>
+<!-- High-Density Super Admin Event Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-high text-outline uppercase font-label-sm text-label-sm tracking-wider">
+<th class="py-space-sm px-space-md">Timestamp (UTC)</th>
+<th class="py-space-sm px-space-md">Nivel</th>
+<th class="py-space-sm px-space-md">Actor / Rol</th>
+<th class="py-space-sm px-space-md">Evento & Contexto Operativo</th>
+<th class="py-space-sm px-space-md">Recurso / ID</th>
+<th class="py-space-sm px-space-md text-right">Acción Requerida</th>
+</tr>
+</thead>
+<tbody class="divide-none">
+<!-- Row 1: High Priority Flag -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-on-surface font-medium">17:42:10 UTC</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">CRÍTICO</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">verified_user</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Santiago Vega</span>
+<span class="px-1.5 py-0.2 rounded bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[10px] font-bold">SUPER_ADMIN</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-label-md text-label-md text-on-surface font-semibold">Activación de Dynamic Pricing Surge (SP Macro)</div>
+<div class="font-body-sm text-body-sm text-tertiary">Ajuste de multiplicador a 1.25x por lluvia torrencial en zona sur</div>
+</td>
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-tertiary">POL-DYN-8891</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-highest hover:bg-surface-dim text-on-surface font-label-sm text-label-sm font-bold" type="button">
+                  Inspeccionar Diff
+                </button>
+</td>
+</tr>
+<!-- Row 2: Medium Priority -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-on-surface font-medium">17:38:52 UTC</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-highest text-tertiary font-label-sm text-label-sm font-bold">ALERTA</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">account_circle</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Auto-Dispatch Engine</span>
+<span class="px-1.5 py-0.2 rounded bg-primary-fixed text-on-primary-fixed font-label-sm text-[10px] font-bold">SYS_DAEMON</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-label-md text-label-md text-on-surface font-semibold">Tasa de Timeout en Ofertas Flash excede umbral</div>
+<div class="font-body-sm text-body-sm text-tertiary">Florianópolis Continente: 6 asignaciones consecutivas sin respuesta</div>
+</td>
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-tertiary">QUEUE-FLN-04</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="px-space-sm py-1 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm font-bold" type="button">
+                  Aumentar Radio
+                </button>
+</td>
+</tr>
+<!-- Row 3: Security & Permissions -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-on-surface font-medium">17:15:04 UTC</td>
+<td class="py-space-sm px-space-md">
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-bold">AUDIT</span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-[18px]">lock_reset</span>
+<span class="font-label-md text-label-md font-semibold text-on-surface">Mariana Duarte</span>
+<span class="px-1.5 py-0.2 rounded bg-surface-container-high text-on-surface font-label-sm text-[10px] font-bold">SEC_OFFICER</span>
+</div>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-label-md text-label-md text-on-surface font-semibold">Revocación de Credencial de Conciliación Manual</div>
+<div class="font-body-sm text-body-sm text-tertiary">Modificación de rol en agente 'ops_operator_12' tras cierre de turno</div>
+</td>
+<td class="py-space-sm px-space-md font-metric-mono text-metric-mono text-tertiary">USR-94821</td>
+<td class="py-space-sm px-space-md text-right">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-highest hover:bg-surface-dim text-on-surface font-label-sm text-label-sm font-bold" type="button">
+                  Ver Log SHA256
+                </button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Interactive Slide-over / Modal for Commission Simulator (Hidden by default, triggered via JS) -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-space-md" id="modal-commission-simulator">
+<div class="bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col">
+<div class="p-space-lg bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[24px]">percent</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Simulador de Take-rate & Comisión UGO</h3>
+<p class="font-body-sm text-body-sm text-tertiary">Calcula el impacto en volumen y margen bruto para toda la plataforma</p>
+</div>
+</div>
+<button class="p-1 rounded-lg hover:bg-surface-container-high text-outline hover:text-on-surface" id="btn-close-sim" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-space-lg flex flex-col gap-space-lg">
+<div class="flex flex-col gap-space-xs">
+<div class="flex justify-between items-center">
+<span class="font-label-md text-label-md font-bold text-on-surface">Comisión Base Transaccional:</span>
+<span class="font-metric-mono-lg text-metric-mono-lg font-bold text-secondary" id="slider-fee-val">15.0%</span>
+</div>
+<input class="w-full h-2 bg-surface-container rounded-lg appearance-none cursor-pointer accent-secondary" id="range-fee-input" max="22" min="10" step="0.5" type="range" value="15.0"/>
+<div class="flex justify-between text-outline font-metric-mono text-label-sm">
+<span>10.0% (Defensivo)</span>
+<span>15.0% (Actual)</span>
+<span>22.0% (Agresivo)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-space-md bg-surface-container-low p-space-md rounded-xl">
+<div>
+<span class="font-label-sm text-label-sm text-tertiary">Ingresos UGO Proyectados</span>
+<div class="font-headline-lg text-headline-lg text-secondary font-bold" id="sim-projected-rev">R$ 222.435</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sobre GMV R$ 1.482.900</span>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-tertiary">Elasticidad de Oferta Estimada</span>
+<div class="font-headline-lg text-headline-lg text-primary font-bold" id="sim-supply-elasticity">Neutro (0.0%)</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sin fuga de proveedores prevista</span>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-container-highest text-on-surface-variant font-body-sm text-body-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-secondary">info</span>
+<span>Cualquier cambio a la comisión base entra en vigor 48 horas después de su publicación formal a la red de proveedores verificados según Términos de Servicio.</span>
+</div>
+</div>
+<div class="p-space-md bg-surface-container-low flex justify-end gap-space-sm">
+<button class="px-space-md py-2 rounded-xl bg-surface-container-lowest font-label-md text-label-md font-semibold text-on-surface hover:bg-surface-container-high" id="btn-cancel-sim" type="button">
+          Cerrar
+        </button>
+<button class="px-space-md py-2 rounded-xl bg-secondary text-on-secondary font-label-md text-label-md font-bold hover:bg-secondary-container shadow-sm" id="btn-apply-sim" type="button">
+          Guardar Escenario de Proyección
+        </button>
+</div>
+</div>
+</div>
+<!-- Interactive Modal for Global Feature Flags -->
+<div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-space-md" id="modal-feature-flags">
+<div class="bg-surface-container-lowest w-full max-w-2xl rounded-xl shadow-xl overflow-hidden flex flex-col">
+<div class="p-space-lg bg-surface-container flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[24px]">toggle_on</span>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">Feature Flags Globales del Core UGO</h3>
+<p class="font-body-sm text-body-sm text-tertiary">Activación y desactivación instantánea en tiempo de ejecución (Run-time kill switches)</p>
+</div>
+</div>
+<button class="p-1 rounded-lg hover:bg-surface-container-high text-outline hover:text-on-surface" id="btn-close-flags" type="button">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<div class="p-space-lg flex flex-col gap-space-md">
+<!-- Flag 1 -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">AUTO_DISPATCH_FALLBACK_RADIUS</span>
+<span class="font-body-sm text-body-sm text-tertiary">Expande automáticamente el radio de búsqueda de 10km a 25km si no hay aceptación en 3min.</span>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors" type="button">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+</button>
+</div>
+<!-- Flag 2 -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">STRICT_KYC_FACIAL_VERIFICATION</span>
+<span class="font-body-sm text-body-sm text-tertiary">Requiere prueba biométrica de vida al inicio de cada servicio de alta envergadura.</span>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-primary transition-colors" type="button">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+</button>
+</div>
+<!-- Flag 3 -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">INSTANT_ESCROW_RELEASE_VIP</span>
+<span class="font-body-sm text-body-sm text-tertiary">Liberación de fondos sin retención de 24h para técnicos con score 4.95+ y >100 trabajos.</span>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-secondary transition-colors" type="button">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-6"></span>
+</button>
+</div>
+<!-- Flag 4 (Disabled killswitch) -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-error">EMERGENCY_GLOBAL_NEW_BOOKINGS_PAUSE</span>
+<span class="font-body-sm text-body-sm text-tertiary">Kill-switch que congela nuevas contrataciones en toda la red regional.</span>
+</div>
+<button class="relative inline-flex h-6 w-11 items-center rounded-full bg-surface-container-highest transition-colors" type="button">
+<span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform translate-x-1"></span>
+</button>
+</div>
+</div>
+<div class="p-space-md bg-surface-container-low flex justify-end">
+<button class="px-space-md py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container shadow-sm" id="btn-save-flags" type="button">
+          Aplicar y Propagar a Edge Clúster
+        </button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple UI Micro-interactions & State Modals
+  const feeModal = document.getElementById('modal-commission-simulator');
+  const flagsModal = document.getElementById('modal-feature-flags');
+  const btnFee = document.getElementById('btn-modal-fees');
+  const btnFlags = document.getElementById('btn-modal-flags');
+  const btnCloseSim = document.getElementById('btn-close-sim');
+  const btnCancelSim = document.getElementById('btn-cancel-sim');
+  const btnCloseFlags = document.getElementById('btn-close-flags');
+  const btnSaveFlags = document.getElementById('btn-save-flags');
+
+  const rangeFee = document.getElementById('range-fee-input');
+  const feeValDisplay = document.getElementById('slider-fee-val');
+  const projRevDisplay = document.getElementById('sim-projected-rev');
+  const elasticityDisplay = document.getElementById('sim-supply-elasticity');
+
+  btnFee.addEventListener('click', () => feeModal.classList.remove('hidden'));
+  btnCloseSim.addEventListener('click', () => feeModal.classList.add('hidden'));
+  btnCancelSim.addEventListener('click', () => feeModal.classList.add('hidden'));
+
+  btnFlags.addEventListener('click', () => flagsModal.classList.remove('hidden'));
+  btnCloseFlags.addEventListener('click', () => flagsModal.classList.add('hidden'));
+  btnSaveFlags.addEventListener('click', () => {
+    flagsModal.classList.add('hidden');
+    alert('Feature flags actualizados correctamente en los clústeres de São Paulo y Sur.');
+  });
+
+  // Commission Slider Calculations
+  rangeFee.addEventListener('input', (e) => {
+    const fee = parseFloat(e.target.value);
+    feeValDisplay.innerText = fee.toFixed(1) + '%';
+    const gmv = 1482900;
+    const projected = Math.round(gmv * (fee / 100));
+    projRevDisplay.innerText = 'R$ ' + projected.toLocaleString('pt-BR');
+
+    if (fee > 18) {
+      elasticityDisplay.innerText = 'Riesgo Alto (-8.4% retención)';
+      elasticityDisplay.className = 'font-headline-lg text-headline-lg text-error font-bold';
+    } else if (fee > 15) {
+      elasticityDisplay.innerText = 'Moderado (-2.1% retención)';
+      elasticityDisplay.className = 'font-headline-lg text-headline-lg text-secondary font-bold';
+    } else {
+      elasticityDisplay.innerText = 'Neutro (0.0% churn)';
+      elasticityDisplay.className = 'font-headline-lg text-headline-lg text-primary font-bold';
+    }
+  });
+
+  // Export report dummy trigger
+  document.getElementById('btn-export-rep').addEventListener('click', () => {
+    alert('Generando archivo C-Level Report (PDF / XLSX) firmado digitalmente...');
+  });
+
+  document.getElementById('btn-toggle-audit').addEventListener('click', () => {
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  });
+</script></main></div></body></html>

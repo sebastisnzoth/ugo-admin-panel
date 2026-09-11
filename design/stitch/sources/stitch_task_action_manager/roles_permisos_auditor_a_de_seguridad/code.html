@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full">
+<!-- Breadcrumbs & Status Flag -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-sm">
+<nav aria-label="Breadcrumb" class="flex items-center gap-space-xs text-text-muted font-body-sm text-body-sm">
+<span>Gobernanza &amp; Sistema</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Administradores &amp; Permisos</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-text-primary font-semibold">Matriz de Control RBAC</span>
+</nav>
+<div class="flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-data-mono text-data-mono">SHA-256 LEDGER ONLINE · SYNC UTC-3</span>
+</div>
+</div>
+<!-- Header Section -->
+<div class="flex flex-col xl:flex-row xl:items-start justify-between gap-space-lg mb-space-xl">
+<div class="max-w-4xl min-w-0">
+<h1 class="font-headline-xl text-headline-xl text-text-primary tracking-tight mb-1 flex items-center gap-space-xs">
+<span>Gobernanza, Roles y Auditoría de Seguridad</span>
+<span class="material-symbols-outlined text-primary text-[24px]">verified</span>
+</h1>
+<p class="font-body-md text-body-md text-text-secondary leading-relaxed">
+        Control de accesos granulares basados en roles (RBAC), gestión de autenticación MFA y registro criptográfico de auditoría forense para Florianópolis Hub.
+      </p>
+</div>
+<!-- Actions -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="h-9 px-space-sm rounded-lg bg-surface-panel text-text-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm hover:bg-surface-muted transition-colors">
+<span class="material-symbols-outlined text-[18px] text-text-muted">download_for_offline</span>
+<span>Exportar Log Criptográfico</span>
+</button>
+<button class="h-9 px-space-md rounded-lg bg-primary hover:bg-brand-green-hover text-on-primary font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-transform active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+<span>Crear Nuevo Rol / Usuario</span>
+</button>
+</div>
+</div>
+<!-- Main View Tabs Navigation -->
+<div class="flex items-center gap-space-xs border-b-0 p-1 bg-surface-muted rounded-xl w-fit max-w-full overflow-x-auto mb-space-lg shadow-sm">
+<button class="px-space-md py-1.5 rounded-lg bg-surface-panel text-primary font-label-md text-label-md font-semibold shadow-sm flex items-center gap-space-xs transition-all">
+<span class="material-symbols-outlined text-[16px]">admin_panel_settings</span>
+<span>Matriz de Roles &amp; Permisos</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-panel/50 font-label-md text-label-md flex items-center gap-space-xs transition-all">
+<span class="material-symbols-outlined text-[16px]">group</span>
+<span>Equipo Administrativo</span>
+<span class="px-1.5 py-0.2 rounded-full bg-surface-canvas text-text-muted font-data-mono text-[11px]">8</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-panel/50 font-label-md text-label-md flex items-center gap-space-xs transition-all">
+<span class="material-symbols-outlined text-[16px]">history_edu</span>
+<span>Registro de Auditoría (Audit Log)</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-panel/50 font-label-md text-label-md flex items-center gap-space-xs transition-all">
+<span class="material-symbols-outlined text-[16px]">dns</span>
+<span>Logs Técnicos del Sistema</span>
+</button>
+</div>
+<!-- Governance Statistics Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md mb-space-xl">
+<!-- Stat 1 -->
+<div class="p-space-md rounded-xl bg-surface-panel shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Usuarios Activos</span>
+<span class="material-symbols-outlined text-[20px] text-text-muted">shield_person</span>
+</div>
+<div class="flex items-baseline gap-space-xs mb-1">
+<span class="font-data-metric text-data-metric text-text-primary">8</span>
+<span class="font-body-sm text-body-sm text-text-secondary">operadores</span>
+</div>
+<div class="flex flex-wrap gap-1 mt-space-xs">
+<span class="px-1.5 py-0.5 rounded bg-surface-muted font-data-mono text-[10px] text-text-primary">3 SUPER</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-muted font-data-mono text-[10px] text-text-secondary">3 OPS</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-muted font-data-mono text-[10px] text-text-secondary">2 FIN</span>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="p-space-md rounded-xl bg-surface-panel shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Cumplimiento MFA (2FA)</span>
+<span class="material-symbols-outlined text-[20px] text-primary">verified_user</span>
+</div>
+<div class="flex items-baseline gap-space-xs mb-1">
+<span class="font-data-metric text-data-metric text-primary">100%</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold uppercase">Estricto</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">Cuentas aseguradas con llaves FIDO2/Hardware y Authenticator.</p>
+</div>
+<!-- Stat 3 -->
+<div class="p-space-md rounded-xl bg-surface-panel shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-secondary"></div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Eventos Auditados Hoy</span>
+<span class="material-symbols-outlined text-[20px] text-secondary">fact_check</span>
+</div>
+<div class="flex items-baseline gap-space-xs mb-1">
+<span class="font-data-metric text-data-metric text-text-primary font-data-mono">2.842</span>
+<span class="font-body-sm text-body-sm text-text-muted">eventos</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">Transacciones y acciones de control sin anomalías de firma.</p>
+</div>
+<!-- Stat 4 -->
+<div class="p-space-md rounded-xl bg-surface-panel shadow-sm flex flex-col justify-between relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-warning-amber"></div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Doble Firma Requerida</span>
+<span class="material-symbols-outlined text-[20px] text-warning-amber">pin</span>
+</div>
+<div class="flex items-baseline gap-space-xs mb-1">
+<span class="font-data-metric text-data-metric text-warning-amber">4</span>
+<span class="font-body-sm text-body-sm text-text-secondary">políticas críticas</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary truncate" title="Escrow &gt; R$ 5k, Proveedores, Mercado Pago, Reembolsos">
+        Escrow &gt; R$5k, Mercado Pago API, Reembolsos.
+      </p>
+</div>
+</div>
+<!-- Cryptographic Integrity Banner -->
+<div class="bg-inverse-surface rounded-xl p-space-md text-inverse-on-surface shadow-md mb-space-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-md relative overflow-hidden">
+<div class="flex items-center gap-space-md relative z-10">
+<div class="w-10 h-10 rounded-lg bg-inverse-primary/10 flex items-center justify-center shrink-0 text-inverse-primary">
+<span class="material-symbols-outlined text-[24px]">enhanced_encryption</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs mb-0.5">
+<span class="font-headline-sm text-headline-sm text-inverse-on-surface font-semibold">Políticas de Doble Autorización y Registro Inmutable</span>
+<span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-data-mono text-[10px] font-bold">FIPS 140-2</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-muted">
+          Toda modificación de transacciones de custodia, modificación de tarifas y revocación de operadores queda sellada con hash SHA-256 en el clúster inmutable de Florianópolis.
+        </p>
+</div>
+</div>
+<div class="flex items-center gap-space-xs shrink-0 self-end lg:self-center font-data-mono text-data-mono text-inverse-primary text-body-sm bg-surface-dim/20 px-space-sm py-1.5 rounded-lg">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span>BLOCK #92019-FLN · SHA-256 INTEGRITY OK</span>
+</div>
+</div>
+<!-- SECTION A: RBAC Matrix Grid -->
+<div class="bg-surface-panel rounded-xl shadow-sm mb-space-2xl overflow-hidden">
+<div class="p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm bg-surface-panel">
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-headline-md text-headline-md text-text-primary font-semibold">Matriz de Roles &amp; Capacidades (RBAC)</span>
+<span class="px-2 py-0.5 rounded-full bg-surface-muted text-text-secondary font-data-mono text-[11px] font-semibold">v2.4.0 Engine</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">
+          Definición de privilegios operativos para Florianópolis Hub. Cada celda especifica el nivel efectivo de intervención.
+        </p>
+</div>
+<!-- Legend -->
+<div class="flex flex-wrap items-center gap-space-sm text-body-sm font-body-sm bg-surface-muted px-space-sm py-1.5 rounded-lg">
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-brand-green-subtle flex items-center justify-center text-primary text-[12px]">
+<span class="material-symbols-outlined text-[12px]">check</span>
+</span>
+<span class="text-text-primary font-medium">Control Total</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-warning-amber-subtle flex items-center justify-center text-warning-amber text-[12px]">
+<span class="material-symbols-outlined text-[12px]">visibility</span>
+</span>
+<span class="text-text-secondary">Solo Lectura / Condicional</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-surface-canvas flex items-center justify-center text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[12px]">lock</span>
+</span>
+<span class="text-text-muted">Denegado</span>
+</div>
+</div>
+</div>
+<!-- Interactive RBAC Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-muted text-text-secondary font-label-md text-label-md uppercase tracking-wider h-table-header-height">
+<th class="px-space-md py-2 font-semibold">Módulo Operativo</th>
+<th class="px-space-md py-2 font-semibold text-primary">SUPER_ADMIN</th>
+<th class="px-space-md py-2 font-semibold">ADMIN_OPERATIONS</th>
+<th class="px-space-md py-2 font-semibold">ADMIN_FINANCE</th>
+<th class="px-space-md py-2 font-semibold">ADMIN_SUPPORT</th>
+<th class="px-space-md py-2 font-semibold">ADMIN_VERIFICATION</th>
+</tr>
+</thead>
+<tbody class="text-text-primary">
+<!-- Row 1: Dashboard & Métricas -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">dashboard</span>
+<span>Dashboard &amp; Métricas</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Lectura analítica y KPIs macro</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+</tr>
+<!-- Row 2: Operaciones en Vivo -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">explore</span>
+<span>Operaciones en Tiempo Real &amp; Asignación</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Reasignación forzada y tracking en vivo</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Ejecutor
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Solo Lectura
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Solo Lectura
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+</tr>
+<!-- Row 3: Proveedores -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">badge</span>
+<span>Directorio &amp; Expedientes Proveedores</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Edición de perfiles y categorías</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Edición
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Solo Datos Bancarios
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Solo Lectura
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Edición
+              </span>
+</td>
+</tr>
+<!-- Row 4: Verificación KYC -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">verified_user</span>
+<span>Verificación KYC de Documentos</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Aprobación de CPF, selfie y antecedentes penales</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Auditor/Revocador
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Solo Lectura
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">task_alt</span> Aprobador Clave
+              </span>
+</td>
+</tr>
+<!-- Row 5: Finanzas, Tesorería & Retiros PIX -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">account_balance</span>
+<span>Finanzas, Tesorería &amp; Retiros PIX</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Aprobación de payouts, liberación escrow y saldos</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">pin</span> Firma Crítica
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">payments</span> Autorizar Lotes
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+</tr>
+<!-- Row 6: Disputas & Arbitraje -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">gavel</span>
+<span>Centro de Disputas &amp; Arbitraje</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Resolución de reclamos y fallos vinculantes</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Decisión Final
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Consulta
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Vista de Escrow
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Mediación Inicial
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+</tr>
+<!-- Row 7: Scout & Campañas Territoriales -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[18px]">radar</span>
+<span>Scout &amp; Campañas Territoriales</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Lanzamiento de bonos de oferta en Florianópolis</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Total
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Activar Bonos
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-warning-amber-subtle text-warning-amber font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">visibility</span> Límite Presupuesto
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+</tr>
+<!-- Row 8: Configuración Sensible & API Mercado Pago -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-medium">
+<div class="flex items-center gap-space-xs text-tertiary">
+<span class="material-symbols-outlined text-[18px]">key</span>
+<span>Configuración Sensible &amp; API Mercado Pago</span>
+</div>
+<span class="block font-label-sm text-label-sm text-text-muted">Rotación de credenciales productivas y webhooks</span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-semibold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">token</span> Hardware Token
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-muted text-text-muted text-[12px]">
+<span class="material-symbols-outlined text-[14px]">lock</span> Bloqueado
+              </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- SECTION B: Real-Time Audit Log -->
+<div class="bg-surface-panel rounded-xl shadow-sm overflow-hidden mb-space-xl">
+<div class="p-space-lg flex flex-col md:flex-row md:items-center justify-between gap-space-sm bg-surface-panel">
+<div>
+<div class="flex items-center gap-space-xs mb-1">
+<span class="font-headline-md text-headline-md text-text-primary font-semibold">Registro de Auditoría en Tiempo Real (Audit Trail)</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-data-mono text-[11px] text-text-muted uppercase">Live Feed · UTC-3</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary">
+          Trazabilidad absoluta e inalterable de cada evento de control en el sistema UGO.
+        </p>
+</div>
+<!-- Quick Filter -->
+<div class="flex items-center gap-space-xs">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2 text-text-muted text-[16px]">filter_alt</span>
+<input class="h-8 pl-8 pr-3 bg-surface-muted rounded-lg text-text-primary text-body-sm focus:outline-none focus:bg-surface-canvas font-body-sm" placeholder="Filtrar por hash, ID o actor..." type="text"/>
+</div>
+<button class="h-8 px-space-sm rounded-lg bg-surface-muted text-text-secondary hover:text-text-primary font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span>Actualizar</span>
+</button>
+</div>
+</div>
+<!-- Audit Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-muted text-text-secondary font-label-md text-label-md uppercase tracking-wider h-table-header-height">
+<th class="px-space-md py-2 font-semibold font-data-mono">Timestamp (UTC-3)</th>
+<th class="px-space-md py-2 font-semibold">Operador</th>
+<th class="px-space-md py-2 font-semibold">Rol</th>
+<th class="px-space-md py-2 font-semibold">Acción Ejecutada</th>
+<th class="px-space-md py-2 font-semibold">Entidad Afectada</th>
+<th class="px-space-md py-2 font-semibold">Detalle Técnico / Hash</th>
+<th class="px-space-md py-2 font-semibold text-right">Nivel Riesgo</th>
+</tr>
+</thead>
+<tbody class="text-text-primary">
+<!-- Audit Row 1 -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-data-mono text-data-mono text-text-secondary whitespace-nowrap">
+              17:48:12
+            </td>
+<td class="px-space-md py-space-sm font-medium whitespace-nowrap">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-brand-green-subtle text-primary flex items-center justify-center font-bold text-[10px]">MS</span>
+<span>Mateo Silva</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-[10px] font-bold">SUPER_ADMIN</span>
+</td>
+<td class="px-space-md py-space-sm font-medium text-text-primary">
+              Aprobación de Lote PIX
+            </td>
+<td class="px-space-md py-space-sm font-data-mono text-secondary">
+              #LOT-9821
+            </td>
+<td class="px-space-md py-space-sm text-text-secondary">
+<div class="flex flex-col">
+<span>R$ 8.920,00 transferido a 5 proveedores validados</span>
+<span class="font-data-mono text-[10px] text-text-muted truncate max-w-[280px]">hash: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold">
+                Bajo Riesgo
+              </span>
+</td>
+</tr>
+<!-- Audit Row 2 -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-data-mono text-data-mono text-text-secondary whitespace-nowrap">
+              17:35:04
+            </td>
+<td class="px-space-md py-space-sm font-medium whitespace-nowrap">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[10px]">CN</span>
+<span>Camila Nogueira</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary font-label-sm text-[10px] font-bold">ADMIN_OPERATIONS</span>
+</td>
+<td class="px-space-md py-space-sm font-medium text-text-primary">
+              Activación Boost Scout Ingleses
+            </td>
+<td class="px-space-md py-space-sm font-data-mono text-text-primary">
+              #Z-02 (Ingleses)
+            </td>
+<td class="px-space-md py-space-sm text-text-secondary">
+<div class="flex flex-col">
+<span>Bono +R$ 35 para 19 electricistas activos</span>
+<span class="font-data-mono text-[10px] text-text-muted truncate max-w-[280px]">hash: 8f4e246995b0fe169f10a26ef7f98d5c4149025e11df</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant font-label-sm text-label-sm font-semibold">
+                Operativo
+              </span>
+</td>
+</tr>
+<!-- Audit Row 3 -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-data-mono text-data-mono text-text-secondary whitespace-nowrap">
+              16:50:22
+            </td>
+<td class="px-space-md py-space-sm font-medium whitespace-nowrap">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-muted text-text-primary flex items-center justify-center font-bold text-[10px]">LP</span>
+<span>Lucas Prates</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary font-label-sm text-[10px] font-bold">ADMIN_VERIFICATION</span>
+</td>
+<td class="px-space-md py-space-sm font-medium text-text-primary">
+              Aprobación KYC Proveedor
+            </td>
+<td class="px-space-md py-space-sm font-data-mono text-text-primary">
+              #PR0V-88194
+            </td>
+<td class="px-space-md py-space-sm text-text-secondary">
+<div class="flex flex-col">
+<span>Carlos Silveira · Biometría 98.7% conforme ante SSP</span>
+<span class="font-data-mono text-[10px] text-text-muted truncate max-w-[280px]">hash: 7d25e01b3b5585d852cc5bc66c9869a2fdfe59c4a761</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold">
+                Verificado
+              </span>
+</td>
+</tr>
+<!-- Audit Row 4 -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-data-mono text-data-mono text-text-secondary whitespace-nowrap">
+              16:15:30
+            </td>
+<td class="px-space-md py-space-sm font-medium whitespace-nowrap">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-brand-green-subtle text-primary flex items-center justify-center font-bold text-[10px]">MS</span>
+<span>Mateo Silva</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-label-sm text-[10px] font-bold">SUPER_ADMIN</span>
+</td>
+<td class="px-space-md py-space-sm font-medium text-warning-amber">
+              Intervención Cautelar de Escrow
+            </td>
+<td class="px-space-md py-space-sm font-data-mono text-tertiary">
+              #D-1042
+            </td>
+<td class="px-space-md py-space-sm text-text-secondary">
+<div class="flex flex-col">
+<span>Retención preventiva de R$ 320,00 ante sospecha de sobreprecio</span>
+<span class="font-data-mono text-[10px] text-text-muted truncate max-w-[280px]">hash: b94d27b9934d3e08a52e52d7da7dabfac484efe37a53</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">
+                Alerta
+              </span>
+</td>
+</tr>
+<!-- Audit Row 5 -->
+<tr class="hover:bg-surface-canvas transition-colors h-table-row-height bg-surface-panel">
+<td class="px-space-md py-space-sm font-data-mono text-data-mono text-text-secondary whitespace-nowrap">
+              14:02:11
+            </td>
+<td class="px-space-md py-space-sm font-medium whitespace-nowrap">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-dim text-text-secondary flex items-center justify-center font-bold text-[10px]">
+<span class="material-symbols-outlined text-[14px]">smart_toy</span>
+</span>
+<span>Sistema UGO Core</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm">
+<span class="px-1.5 py-0.5 rounded bg-surface-muted text-text-muted font-label-sm text-[10px] font-bold">SERVICE_BOT</span>
+</td>
+<td class="px-space-md py-space-sm font-medium text-text-secondary">
+              Detección Anomalía Webhook
+            </td>
+<td class="px-space-md py-space-sm font-data-mono text-text-secondary">
+              Mercado Pago API
+            </td>
+<td class="px-space-md py-space-sm text-text-secondary">
+<div class="flex flex-col">
+<span>Reintento exitoso en 120ms sin pérdida de eventos de cobro</span>
+<span class="font-data-mono text-[10px] text-text-muted truncate max-w-[280px]">hash: 5e884898da28047151d0e56f8dc6292773603d0d6aabb</span>
+</div>
+</td>
+<td class="px-space-md py-space-sm text-right">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">
+                Técnico
+              </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Footer / Pagination -->
+<div class="p-space-sm bg-surface-canvas flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-text-muted">
+        Mostrando últimos 5 de 2.842 eventos de seguridad auditados hoy
+      </span>
+<div class="flex items-center gap-space-xs">
+<button class="px-2 py-1 rounded bg-surface-panel text-text-secondary hover:bg-surface-muted font-body-sm text-body-sm shadow-sm transition-colors" disabled="">
+          Anterior
+        </button>
+<button class="px-2 py-1 rounded bg-surface-panel text-text-primary hover:bg-surface-muted font-body-sm text-body-sm shadow-sm transition-colors">
+          Siguiente
+        </button>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary":"#ffffff","error":"#ba1a1a","primary-fixed-dim":"#4cd6fb","on-tertiary-fixed":"#002113","secondary-fixed":"#dae2fd","surface-container":"#e5eeff","on-error":"#ffffff","surface-tint":"#00677d","surface-container-highest":"#d3e4fe","on-primary-fixed":"#001f27","secondary":"#565e74","on-tertiary":"#ffffff","surface-bright":"#f8f9ff","on-tertiary-container":"#00442d","on-primary-fixed-variant":"#004e5f","on-primary":"#ffffff","on-secondary-fixed":"#131b2e","on-surface-variant":"#3d494d","tertiary-container":"#19bc84","inverse-on-surface":"#eaf1ff","surface-container-low":"#eff4ff","on-secondary-container":"#5c647a","on-background":"#0b1c30","on-primary-container":"#00414f","tertiary-fixed-dim":"#4edea3","outline-variant":"#bcc9ce","inverse-surface":"#213145","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","surface":"#f8f9ff","surface-container-lowest":"#ffffff","primary":"#00677d","primary-container":"#00b4d8","primary-fixed":"#b3ebff","background":"#f8f9ff","on-error-container":"#93000a","outline":"#6d797e","on-surface":"#0b1c30","error-container":"#ffdad6","secondary-fixed-dim":"#bec6e0","tertiary-fixed":"#6ffbbe","inverse-primary":"#4cd6fb","on-tertiary-fixed-variant":"#005236","tertiary":"#006c49","surface-container-high":"#dce9ff","on-secondary-fixed-variant":"#3f465c","secondary-container":"#dae2fd"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-2xs":"0.25rem","gutter-desktop":"1.5rem","space-3xl":"4rem","sidebar-expanded":"17.5rem","space-lg":"1.5rem","space-2xl":"3rem","space-md":"1rem","topbar-height":"4.25rem","space-sm":"0.75rem","gutter-mobile":"1rem","sidebar-collapsed":"5rem","space-xs":"0.5rem","space-xl":"2rem"},fontFamily:{"headline-md":["Plus Jakarta Sans"],"code-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"display-lg":["Plus Jakarta Sans"]},fontSize:{"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"code-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"26px",letterSpacing:"-0.005em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"display-lg-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-sidebar-collapsed xl:w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all duration-300"><div class="flex flex-col gap-space-md"><div class="h-12 px-space-md xl:px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm overflow-hidden"><img alt="Logo UGO Cliente" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWYkGbDkybddSHtmyY32GZB1VYVCcp5I4p7MfFYMURxRzKLOfdAZb01kBM-vemKANWc5aynx1KlrXNQYkD6Qje8qaZo8IpLmAQAQttpEfRvednP2PUhz_zfxx8v0_ym8_8tLC0fLhOaZQ6qk8o_jOLsnS4QgUZY2OrTLvKIwhRyyT9OS8upOAHg6wLdHrjhII4NSsneejdMpjdWn2CY9uX2phCFae5zhsNagOPSlaYuYz3RkFYnY_L3Os"/><span class="hidden xl:inline font-headline-sm text-headline-sm font-bold tracking-tight text-primary">UGO Cliente</span></div><span class="hidden xl:inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">v2.4</span></div><nav class="flex flex-col gap-space-2xs px-space-xs xl:px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="hidden xl:inline flex-1 truncate">Inicio</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm" data-path="buscar-servicio" href="#"><span class="material-symbols-outlined text-[22px]">search</span><span class="hidden xl:inline flex-1 truncate">Buscar servicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="nueva-solicitud" href="#"><span class="material-symbols-outlined text-[22px]">add_circle</span><span class="hidden xl:inline flex-1 truncate">Nueva solicitud</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="matching-en-vivo" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="hidden xl:inline flex-1 truncate">Matching en vivo</span><span class="hidden xl:inline-flex h-2 w-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="servicios-activos" href="#"><span class="material-symbols-outlined text-[22px]">pending_actions</span><span class="hidden xl:inline flex-1 truncate">Servicios activos</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">2</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="actividad" href="#"><span class="material-symbols-outlined text-[22px]">history</span><span class="hidden xl:inline flex-1 truncate">Actividad</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[22px]">chat_bubble</span><span class="hidden xl:inline flex-1 truncate">Mensajes</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">3</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ugo-shield" href="#"><span class="material-symbols-outlined text-[22px] text-tertiary">verified_user</span><span class="hidden xl:inline flex-1 truncate">UGO Shield</span><span class="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Pro</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="pagos" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="hidden xl:inline flex-1 truncate">Pagos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="perfil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="hidden xl:inline flex-1 truncate">Perfil</span></a></nav></div><div class="flex flex-col gap-space-xs px-space-xs xl:px-space-sm pt-space-xs"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ayuda" href="#"><span class="material-symbols-outlined text-[22px]">help</span><span class="hidden xl:inline flex-1 truncate">Ayuda</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="configuracion" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="hidden xl:inline flex-1 truncate">Configuración</span></a></nav></div></aside><div class="pl-sidebar-collapsed xl:pl-sidebar-expanded min-h-screen flex flex-col transition-all duration-300"><header class="fixed top-0 left-sidebar-collapsed xl:left-sidebar-expanded right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 transition-all duration-300"><div class="h-16 w-full px-space-md xl:px-space-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><button class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" type="button"><span class="material-symbols-outlined text-primary text-[20px]">location_on</span><div class="hidden md:flex flex-col"><span class="font-label-sm text-label-sm text-secondary">Ubicación actual</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Canasvieiras, Florianópolis · SC</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span></button><div class="relative flex-1 hidden sm:block"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Buscar servicios, profesionales o ayuda..." type="text"/></div></div><div class="flex items-center gap-space-sm xl:gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-gradient-to-r from-primary-container to-tertiary-container text-on-primary font-label-md text-label-md shadow-sm hover:opacity-95 transition-opacity" type="button"><span class="material-symbols-outlined text-[18px]">auto_awesome</span><span class="hidden md:inline font-bold">Hugo IA</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-primary"></span></span></button><button class="relative p-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-error ring-2 ring-surface"></span></button><div class="flex items-center gap-space-sm pl-space-2xs"><div class="hidden lg:flex flex-col text-right"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Mariana Costa</span><span class="font-label-sm text-label-sm text-tertiary flex items-center justify-end gap-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Verificada</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-Zrm-zrxI-X4YoML1L8DRmL8PPBXsgLmlnXnegDB4G1Vm_hTHKd4RncqqgJv0FV2lf2KUWgrfcQ7WhAIOmBAuKiqhtqfGCgUDhYRnyRRI-0HQoXcNV4pjHMZRBVV-aJBh2cCWRURij-zthGoDsqAJ5lW_Lw3v1s5ijswfaOzT6uod3qsvdCWYyXMDR_E6PR-Pr27sDFoPNX--u7lMbJ2V8UgBHd212UXddj57ivTawnWy4aB_o9XO"/></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<div class="w-full max-w-7xl mx-auto px-space-md xl:px-space-lg py-space-md flex flex-col gap-space-lg">
+<!-- Top Breadcrumb & Header Unit -->
+<div class="flex flex-col gap-space-xs">
+<nav class="flex items-center gap-space-xs text-on-surface-variant font-label-sm text-label-sm">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]">history</span>
+<span>Actividad</span>
+</a>
+<span class="text-outline-variant">/</span>
+<a class="hover:text-primary transition-colors" href="#">Servicios completados</a>
+<span class="text-outline-variant">/</span>
+<span class="text-on-surface font-semibold">Solicitud #UG-8492</span>
+</nav>
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md pt-space-2xs">
+<div class="flex flex-col gap-space-2xs">
+<div class="flex items-center gap-space-sm flex-wrap">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-md text-label-md">
+<span class="material-symbols-outlined text-[16px] text-tertiary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              Servicio Finalizado con Éxito
+            </span>
+<span class="inline-flex items-center gap-1 text-on-surface-variant font-code-sm text-code-sm px-2.5 py-1 rounded-md bg-surface-container">
+<span class="material-symbols-outlined text-[14px]">pin</span>
+              PIN de Cierre: Validado
+            </span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+            Reparación y Ampliación de Vanitory
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant">
+            #UG-8492 • Finalizado hoy a las 11:18 hs • Baño Principal • Florianópolis, SC
+          </p>
+</div>
+<div class="flex items-center gap-space-sm flex-wrap self-start lg:self-auto">
+<button class="inline-flex items-center gap-2 px-space-md py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span>Factura PDF</span>
+</button>
+<button class="inline-flex items-center gap-2 px-space-md py-2.5 rounded-xl bg-surface-container hover:bg-error-container text-on-surface hover:text-on-error-container font-label-md text-label-md transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+<span>Reportar Incidencia</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Two-Column Layout (60% / 40%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- LEFT COLUMN: Service LifeCycle, Photographic Proof & Guarantee Certificate (7 cols -> ~58.3%) -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<!-- Executive Summary Banner -->
+<div class="relative overflow-hidden rounded-2xl bg-surface-container-lowest p-space-md sm:p-space-lg shadow-sm">
+<div class="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-primary-fixed/40 via-tertiary-fixed/20 to-transparent rounded-bl-full pointer-events-none"></div>
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container/15 text-tertiary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[28px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div class="flex flex-col gap-1 flex-1">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">
+                  Trabajo completado a entera conformidad
+                </span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+                  Garantía 60 días
+                </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                El técnico <span class="font-semibold text-on-surface">Roberto Silva</span> resolvió la fuga primaria y efectuó el reemplazo integral del conjunto de desagüe en <span class="font-semibold text-on-surface">1h 03m</span>. La custodia de fondos fue liberada con tu aprobación biométrica.
+              </p>
+<!-- Mini Status Metrics Strip -->
+<div class="grid grid-cols-3 gap-space-xs mt-space-sm pt-space-xs border-t-0 bg-surface-container-low p-space-sm rounded-xl">
+<div>
+<span class="block font-label-sm text-label-sm text-secondary">Duración total</span>
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">63 minutos</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-secondary">Estanqueidad</span>
+<span class="font-label-lg text-label-lg text-tertiary font-semibold">0 fugas (OK)</span>
+</div>
+<div>
+<span class="block font-label-sm text-label-sm text-secondary">Vigencia UGO</span>
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">24 Abr 2025</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Comprehensive Chronological Stepper (Audit Trail) -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md sm:p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">route</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Trazabilidad Técnica &amp; Auditoría</h2>
+</div>
+<span class="font-code-sm text-code-sm text-secondary px-2 py-1 rounded bg-surface-container">7 hitos certificados</span>
+</div>
+<!-- Stepper Timeline -->
+<div class="relative pl-6 flex flex-col gap-space-md before:content-[''] before:absolute before:left-[11px] before:top-3 before:bottom-3 before:w-[2px] before:bg-surface-container-highest">
+<!-- Item 1 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Solicitud creada</span>
+<span class="font-code-sm text-code-sm text-secondary">09:50 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Mariana solicitó auxilio técnico inmediato por filtración activa bajo bacha principal.</p>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Profesional asignado por Smart Matching</span>
+<span class="font-code-sm text-code-sm text-secondary">10:02 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Roberto Silva (Mat. SC-88421) aceptó el despacho a 2.4 km en Canasvieiras.</p>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Llegada al domicilio y validación de PIN</span>
+<span class="font-code-sm text-code-sm text-secondary">10:15 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Ingreso autenticado de forma unívoca mediante código de seguridad de una sola vez #4892.</p>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Inicio de obra y diagnóstico presencial</span>
+<span class="font-code-sm text-code-sm text-secondary">10:20 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cierre de llave de corte general del baño, despresurización de grifería mono-comando e inspección de roscas.</p>
+</div>
+</div>
+<!-- Item 5: Highlight Expansion -->
+<div class="relative flex items-start gap-space-sm p-space-xs rounded-xl bg-surface-container-low">
+<div class="absolute -left-6 top-2 w-5 h-5 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">add_shopping_cart</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-primary font-bold">Ampliación técnica aprobada in situ</span>
+<span class="font-code-sm text-code-sm text-secondary">10:38 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Se detectó fisura por fatiga en sifón original. Mariana aprobó en vivo la orden de repuesto: Kit Sifón Doble articulado Tigre 40mm (+R$ 65,00).</p>
+</div>
+</div>
+<!-- Item 6 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">check</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Pruebas de estanqueidad y presurización</span>
+<span class="font-code-sm text-code-sm text-secondary">11:05 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">3 ciclos continuos de llenado y vaciado a bacha completa. Control de juntas teflonadas sin microgotas.</p>
+</div>
+</div>
+<!-- Item 7 -->
+<div class="relative flex items-start gap-space-sm">
+<div class="absolute -left-6 top-1 w-5 h-5 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center ring-4 ring-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+</div>
+<div class="flex flex-col flex-1">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Cierre formal, firma digital y garantía activa</span>
+<span class="font-code-sm text-code-sm text-secondary">11:18 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Conformidad digital certificada por el cliente. Liberación de custodia a cuenta fiduciaria.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Photographic Register & Proof of Work (Before / During / After) -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md sm:p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">photo_library</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Registro Fotográfico del Servicio</h2>
+</div>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+              Imágenes cifradas con metadatos EXIF
+            </span>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md">
+<!-- Photo 1: Before -->
+<div class="group relative flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm hover:shadow-md transition-all">
+<div class="relative h-44 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Close-up photograph of a leaking corroded brass flexible pipe under a white bathroom vanity cabinet with water stains on the wood base, natural daylight, photorealistic documentary style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuChX4qZB8uBhwQRXRmlLF8SobQXyIxKmf9cFEFetG3b1Hz-n6xyamVaASCn_IpWH0cjAyB6Ygh3IsY5fSC5z3_bc0hCbDt6GxR4MBOwXKdIYeaeUby0weLkujRcUz6szxs-axDlNLEte2F5OwDLAuWieynzhAM0TUx-llmKxyEvu6SvkqJLNYfbTFYSOpuee6vH2JBu2Y1firRqFUoiLyLg8WRLXqG-tMnDoXhJc5Pd6wsu9EqRAIB8"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-inverse-surface/80 backdrop-blur-sm text-inverse-on-surface font-label-sm text-label-sm font-bold">
+                  1. Antes
+                </div>
+<div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-inverse-surface/75 text-inverse-on-surface font-code-sm text-code-sm">
+                  10:22 hs
+                </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Flexible y junta rota</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Fisura longitudinal en cuerpo flexible de latón y óxido acumulado en la boca roscada.</p>
+<span class="font-code-sm text-code-sm text-secondary flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary">check_circle</span>
+                  GPS: -27.4278, -48.4552
+                </span>
+</div>
+</div>
+<!-- Photo 2: During -->
+<div class="group relative flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm hover:shadow-md transition-all">
+<div class="relative h-44 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Professional plumber hands wearing nitrile gloves fitting a clean white PVC articulated siphon kit under a modern bathroom sink, clean tools laid on protective cloth, professional plumbing repair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDc5zOVD34EnMMFlCkzosU22r90JA9FGI8kq9nzdhUyUnhx5PcZ42VBy29CjXdANMABm6IbHyryv3R19n3n5bFwIFvVE1LWDPzSPtb_nLQtMC8LxDkmneo6CKIB3lnTmSXIfPvce-WYeeW_ObJ3Ayt11LFBUPx_rlQtLEkuOwFrNRLS5Ez-81H8G4hOMNtQWW0gublbQ4SMZqvKNhMwRYAIj-A1Aqg7r8sKvVymsTji71oiHChKQvQ9"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-bold">
+                  2. Durante
+                </div>
+<div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-inverse-surface/75 text-inverse-on-surface font-code-sm text-code-sm">
+                  10:44 hs
+                </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Montaje Sifón Tigre 40mm</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Instalación del kit reforzado con anillo cónico de sellado y ajuste micrométrico de caída.</p>
+<span class="font-code-sm text-code-sm text-secondary flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary">check_circle</span>
+                  GPS: -27.4278, -48.4552
+                </span>
+</div>
+</div>
+<!-- Photo 3: Finished -->
+<div class="group relative flex flex-col rounded-xl overflow-hidden bg-surface-container-low shadow-sm hover:shadow-md transition-all">
+<div class="relative h-44 w-full overflow-hidden">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Pristine completed plumbing under modern vanity, gleaming white dry surfaces, perfect alignment of white flexible articulated pipes and chrome supply valve, completely clean and inspected" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB0YmtXaPkStNZpENc8g1zvoGrCPhYRbLUVZ4GiZaIS7z6erkYYYAQXAeftBQ1Xc12PJwfHU9CtR7FrL9QIEviEj1ffOnsMBsKIqUnEimYlTgTvv_16WAvrqLr72pjhOvCIceRGsA6iy7kf9UkOooHO4zffVYvreyWRXLwojDYW4nWxbU1pUABcc7qeTVRarEwDBOTbNHI0cZOlyCjWFTfK3Fueq-pm_v4zzwOm5S8Rjuc2KtBsLM1b"/>
+<div class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-sm text-label-sm font-bold">
+                  3. Finalizado
+                </div>
+<div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-inverse-surface/75 text-inverse-on-surface font-code-sm text-code-sm">
+                  11:15 hs
+                </div>
+</div>
+<div class="p-space-sm flex flex-col gap-1">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Entrega estanca y seca</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Espacio higienizado, verificación con papel absorbente 100% seco y válvula calibrada.</p>
+<span class="font-code-sm text-code-sm text-secondary flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-[13px] text-tertiary">check_circle</span>
+                  GPS: -27.4278, -48.4552
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Digital Guarantee Certificate Card -->
+<div class="rounded-2xl bg-gradient-to-r from-surface-container-high to-surface-container p-space-md sm:p-space-lg shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-lowest text-tertiary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[30px]" style="font-variation-settings: 'FILL' 1;">security</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Póliza UGO Shield Platinum</span>
+<span class="px-2 py-0.5 rounded bg-tertiary-fixed text-on-tertiary-fixed font-code-sm text-code-sm">SHIELD-BR-8492-9021</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                Cobertura activa contra rebrotes de filtración hasta el 24 de Abril de 2025. Incluye mano de obra y reposición directa de piezas con respuesta express en menos de 2 horas.
+              </p>
+</div>
+</div>
+<button class="shrink-0 inline-flex items-center gap-1.5 px-space-md py-2 rounded-xl bg-surface-container-lowest hover:bg-surface-bright text-primary font-label-md text-label-md transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span>Ver Certificado</span>
+</button>
+</div>
+</div>
+<!-- RIGHT COLUMN: Financial Ledger & Interactive Multi-dimensional Rating (5 cols -> ~41.7%) -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Card 1: Detailed Financial Ledger & Escrow Release -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md sm:p-space-lg shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">receipt_long</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Desglose de Facturación</h2>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+              Cobro Liquidado
+            </span>
+</div>
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between font-body-md text-body-md">
+<span class="text-on-surface">Servicio Base (Diagnóstico + Mano de obra fuga)</span>
+<span class="font-semibold text-on-surface">R$ 140,00</span>
+</div>
+<div class="flex items-center justify-between font-body-md text-body-md">
+<div class="flex flex-col">
+<span class="text-on-surface">Ampliación aprobada in situ</span>
+<span class="font-body-sm text-body-sm text-secondary">Kit Sifón articulado Tigre 40mm + recambio</span>
+</div>
+<span class="font-semibold text-on-surface">R$ 65,00</span>
+</div>
+<div class="flex items-center justify-between font-body-md text-body-md">
+<div class="flex items-center gap-1 text-on-surface">
+<span>Protección UGO Shield (60 días)</span>
+<span class="material-symbols-outlined text-[16px] text-tertiary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<span class="font-semibold text-tertiary">Incluido (R$ 0,00)</span>
+</div>
+<div class="w-full h-px bg-surface-container-high my-space-2xs"></div>
+<div class="flex items-baseline justify-between">
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Total Abonado</span>
+<span class="font-body-sm text-body-sm text-secondary">Mastercard **** 4291 • 1 pago</span>
+</div>
+<span class="font-display-lg-mobile text-display-lg-mobile font-bold text-primary">
+                R$ 205,00
+              </span>
+</div>
+<div class="mt-space-2xs p-space-sm rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary text-[20px]">enhanced_encryption</span>
+<span class="font-label-sm text-label-sm text-on-surface">Custodia liberada al técnico</span>
+</div>
+<a class="font-label-sm text-label-sm text-primary hover:underline font-semibold" href="#">Ver Recibo Fiscal</a>
+</div>
+</div>
+</div>
+<!-- Card 2: Interactive Rating & Review Panel (Protagonic Interaction) -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-md sm:p-space-lg shadow-md flex flex-col gap-space-md" id="rating-panel">
+<!-- Professional Mini Profile -->
+<div class="flex items-center justify-between p-space-sm rounded-xl bg-surface-container-low">
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<img class="w-13 h-13 w-12 h-12 rounded-xl object-cover" data-alt="Portrait of professional Hispanic certified plumber Roberto Silva in work uniform smiling warmly outdoors with safe tools background, reliable craftsman" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCas4HaBxIDwARoQ52ZdRW9qxpOuEt9O8g5_Zyl0WV20t-2kb-VI0MlfsX2oijC6Kn5Zdj2Fke707OhtUfklInI3ezum2-lv6A8ej4R5PBSZYAjkr1j2ECtb-VRjIfa3wNJQGDT4JRHnCSro-7VyRrT7DYHgAkFcTE9XAYefOYiZTzChh9vcn9Xt7Da3JwDdPIyirKfetcFCsNiyAFlrZ_2XtK6isMCxUS_7ozNk4zsnpnjG6Rs4E-r"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-tertiary flex items-center justify-center text-on-tertiary ring-2 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[10px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-lg text-label-lg font-bold text-on-surface">Roberto Silva</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Mat. SC-88421</span>
+</div>
+<div class="flex items-center gap-1 font-body-sm text-body-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary-container text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-semibold text-on-surface">4.96</span>
+<span>(312 servicios)</span>
+</div>
+</div>
+</div>
+<!-- Favorite toggle -->
+<button class="w-9 h-9 rounded-xl bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" id="favorite-btn" onclick="toggleFavorite()" title="Guardar técnico favorito" type="button">
+<span class="material-symbols-outlined text-[20px]" id="fav-icon">bookmark</span>
+</button>
+</div>
+<!-- Rating Form Header -->
+<div class="flex flex-col gap-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+              Calificá tu experiencia con Roberto
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Tu evaluación impacta directamente en el ranking de Roberto y ayuda a otros vecinos en Florianópolis.
+            </p>
+</div>
+<!-- Interactive 5-Star Module -->
+<div class="flex flex-col items-center justify-center p-space-md rounded-xl bg-surface-container-low gap-2">
+<div class="flex items-center gap-2" id="star-container">
+<button class="star-btn text-primary-container focus:outline-none transition-transform hover:scale-125" onclick="setRating(1)" onmouseenter="previewRating(1)" onmouseleave="restoreRating()" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-primary-container focus:outline-none transition-transform hover:scale-125" onclick="setRating(2)" onmouseenter="previewRating(2)" onmouseleave="restoreRating()" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-primary-container focus:outline-none transition-transform hover:scale-125" onclick="setRating(3)" onmouseenter="previewRating(3)" onmouseleave="restoreRating()" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-primary-container focus:outline-none transition-transform hover:scale-125" onclick="setRating(4)" onmouseenter="previewRating(4)" onmouseleave="restoreRating()" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+<button class="star-btn text-primary-container focus:outline-none transition-transform hover:scale-125" onclick="setRating(5)" onmouseenter="previewRating(5)" onmouseleave="restoreRating()" type="button">
+<span class="material-symbols-outlined text-[34px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</button>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold" id="rating-label">
+              5 de 5 • ¡Excelente servicio y predisposición!
+            </span>
+</div>
+<!-- Quick Feedback Tags (Chips) -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-secondary">¿Qué puntos destacás del servicio?</label>
+<div class="flex flex-wrap gap-1.5" id="tags-container">
+<button class="tag-chip active px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary font-medium transition-all shadow-sm" onclick="toggleTag(this)" type="button">
+                ✓ Puntualidad impecable
+              </button>
+<button class="tag-chip active px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary font-medium transition-all shadow-sm" onclick="toggleTag(this)" type="button">
+                ✓ Trabajo limpio y prolijo
+              </button>
+<button class="tag-chip active px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary font-medium transition-all shadow-sm" onclick="toggleTag(this)" type="button">
+                ✓ Explicación clara de la avería
+              </button>
+<button class="tag-chip active px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-primary-container text-on-primary font-medium transition-all shadow-sm" onclick="toggleTag(this)" type="button">
+                ✓ Presupuesto transparente
+              </button>
+<button class="tag-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container hover:bg-surface-container-high text-on-surface transition-all" onclick="toggleTag(this)" type="button">
+                Cuidado del vanitory
+              </button>
+<button class="tag-chip px-3 py-1.5 rounded-full font-label-sm text-label-sm bg-surface-container hover:bg-surface-container-high text-on-surface transition-all" onclick="toggleTag(this)" type="button">
+                Respuesta veloz
+              </button>
+</div>
+</div>
+<!-- Written Review Textarea -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-secondary" for="review-text">Tu comentario público</label>
+<span class="font-code-sm text-code-sm text-secondary" id="char-count">112 / 500</span>
+</div>
+<textarea class="w-full p-space-sm rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none shadow-sm transition-all resize-none" id="review-text" oninput="updateCharCount(this)" rows="3">Roberto llegó en tiempo récord, identificó de inmediato que el sifón estaba rajado y dejó todo impecable sin una gota de agua. Muy recomendable!</textarea>
+</div>
+<!-- Optional Tip Module -->
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-secondary">¿Deseás añadir una propina a Roberto? (100% va al profesional)</label>
+<div class="grid grid-cols-4 gap-2" id="tip-container">
+<button class="tip-chip py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all text-center" onclick="setTip(this, 10)" type="button">
+                + R$ 10
+              </button>
+<button class="tip-chip active py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold transition-all text-center shadow-sm" onclick="setTip(this, 15)" type="button">
+                + R$ 15
+              </button>
+<button class="tip-chip py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all text-center" onclick="setTip(this, 20)" type="button">
+                + R$ 20
+              </button>
+<button class="tip-chip py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold transition-all text-center" onclick="setTip(this, 0)" type="button">
+                Otro
+              </button>
+</div>
+</div>
+<!-- Primary CTA & Retain Toggle -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<button class="w-full h-12 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg font-bold flex items-center justify-center gap-2 shadow-md transition-all hover:shadow-lg active:scale-[0.99]" id="submit-rating-btn" onclick="publishReview()" type="button">
+<span class="material-symbols-outlined text-[20px]">send</span>
+<span>Publicar Calificación y Reseña</span>
+</button>
+<button class="w-full py-2.5 px-space-sm rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-medium flex items-center justify-center gap-2 transition-colors" id="direct-hire-toggle" onclick="toggleDirectHire()" type="button">
+<span class="material-symbols-outlined text-primary text-[18px]">person_check</span>
+<span>Agregar a Roberto a mi red de profesionales de confianza</span>
+</button>
+</div>
+<!-- Success Alert Card (Hidden by default) -->
+<div class="hidden p-space-md rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center gap-space-sm animate-fade-in" id="success-banner">
+<span class="material-symbols-outlined text-[24px] text-tertiary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold">¡Calificación publicada!</span>
+<span class="font-body-sm text-body-sm">Muchas gracias Mariana. Tu valoración ya está visible en el perfil de Roberto.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Micro-Interactions Script -->
+<script>
+    let currentRating = 5;
+    const ratingTexts = {
+      1: "1 de 5 · Muy insatisfactorio",
+      2: "2 de 5 · Regular",
+      3: "3 de 5 · Bueno pero con detalles",
+      4: "4 de 5 · Muy buen trabajo",
+      5: "5 de 5 · ¡Excelente servicio y predisposición!"
+    };
+
+    function setRating(val) {
+      currentRating = val;
+      renderStars(val);
+      document.getElementById('rating-label').innerText = ratingTexts[val];
+    }
+
+    function previewRating(val) {
+      renderStars(val);
+      document.getElementById('rating-label').innerText = ratingTexts[val];
+    }
+
+    function restoreRating() {
+      renderStars(currentRating);
+      document.getElementById('rating-label').innerText = ratingTexts[currentRating];
+    }
+
+    function renderStars(val) {
+      const container = document.getElementById('star-container');
+      const buttons = container.querySelectorAll('.star-btn');
+      buttons.forEach((btn, index) => {
+        const star = btn.querySelector('span');
+        if (index < val) {
+          star.style.fontVariationSettings = "'FILL' 1";
+          btn.className = "star-btn text-primary-container focus:outline-none transition-transform hover:scale-125";
+        } else {
+          star.style.fontVariationSettings = "'FILL' 0";
+          btn.className = "star-btn text-outline-variant focus:outline-none transition-transform hover:scale-125";
+        }
+      });
+    }
+
+    function toggleTag(btn) {
+      const isSelected = btn.classList.contains('active');
+      if (isSelected) {
+        btn.classList.remove('active', 'bg-primary-container', 'text-on-primary');
+        btn.classList.add('bg-surface-container', 'hover:bg-surface-container-high', 'text-on-surface');
+        if (btn.innerText.startsWith('✓ ')) {
+          btn.innerText = btn.innerText.substring(2);
+        }
+      } else {
+        btn.classList.add('active', 'bg-primary-container', 'text-on-primary');
+        btn.classList.remove('bg-surface-container', 'hover:bg-surface-container-high', 'text-on-surface');
+        if (!btn.innerText.startsWith('✓ ')) {
+          btn.innerText = '✓ ' + btn.innerText;
+        }
+      }
+    }
+
+    function setTip(btn, amount) {
+      const container = document.getElementById('tip-container');
+      container.querySelectorAll('.tip-chip').forEach(b => {
+        b.classList.remove('active', 'bg-primary', 'text-on-primary');
+        b.classList.add('bg-surface-container', 'text-on-surface');
+      });
+      btn.classList.remove('bg-surface-container', 'text-on-surface');
+      btn.classList.add('active', 'bg-primary', 'text-on-primary');
+    }
+
+    function toggleFavorite() {
+      const icon = document.getElementById('fav-icon');
+      const btn = document.getElementById('favorite-btn');
+      const isFav = icon.style.fontVariationSettings && icon.style.fontVariationSettings.includes("'FILL' 1");
+      if (isFav) {
+        icon.style.fontVariationSettings = "'FILL' 0";
+        btn.classList.remove('text-primary');
+        btn.classList.add('text-on-surface-variant');
+      } else {
+        icon.style.fontVariationSettings = "'FILL' 1";
+        btn.classList.remove('text-on-surface-variant');
+        btn.classList.add('text-primary');
+      }
+    }
+
+    function updateCharCount(el) {
+      document.getElementById('char-count').innerText = el.value.length + ' / 500';
+    }
+
+    function toggleDirectHire() {
+      const btn = document.getElementById('direct-hire-toggle');
+      btn.classList.toggle('bg-tertiary-fixed');
+      btn.classList.toggle('text-on-tertiary-fixed');
+      if (btn.innerText.includes('Roberto guardado')) {
+        btn.innerHTML = '<span class="material-symbols-outlined text-primary text-[18px]">person_check</span><span>Agregar a Roberto a mi red de profesionales de confianza</span>';
+      } else {
+        btn.innerHTML = '<span class="material-symbols-outlined text-tertiary text-[18px]" style="font-variation-settings: \'FILL\' 1;">favorite</span><span>Roberto guardado en tus técnicos favoritos</span>';
+      }
+    }
+
+    function publishReview() {
+      const submitBtn = document.getElementById('submit-rating-btn');
+      const successBanner = document.getElementById('success-banner');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="material-symbols-outlined animate-spin text-[20px]">progress_activity</span><span>Guardando valoración...</span>';
+      
+      setTimeout(() => {
+        submitBtn.innerHTML = '<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: \'FILL\' 1;">check</span><span>Reseña Registrada</span>';
+        submitBtn.classList.remove('bg-primary-container', 'hover:bg-primary');
+        submitBtn.classList.add('bg-tertiary', 'text-on-tertiary');
+        successBanner.classList.remove('hidden');
+      }, 700);
+    }
+  </script>
+</div></main></div></body></html>

@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface pt-safe pb-safe flex flex-col min-h-screen"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full pb-10">
+<!-- Top Ambient Banner -->
+<div class="px-screen-margin-mobile pt-4 pb-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container font-label-md text-label-md">
+<span class="material-symbols-outlined text-[18px]">engineering</span>
+</span>
+<span class="font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">Alta Profesional</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+        En progreso
+      </span>
+</div>
+</div>
+<!-- STEP 2 CONTAINER -->
+<section class="px-screen-margin-mobile mt-3 transition-all duration-300" id="step-2-section">
+<!-- Progress Indicator Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-sm mb-4">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-primary font-semibold">Paso 2 de 5 • Especialidades</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">40% completado</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 40%"></div>
+</div>
+</div>
+<!-- Title & Subtitle -->
+<div class="mb-5">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">¿Qué trabajos realizás?</h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Seleccioná tus categorías de servicio. Podés elegir más de una opción.</p>
+</div>
+<!-- Category Grid -->
+<div class="grid grid-cols-2 gap-2.5 mb-4" id="category-grid">
+<!-- Limpieza -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">cleaning_services</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Limpieza</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Electricidad (Selected) -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all active:scale-95" data-selected="true" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-on-primary/20 flex items-center justify-center text-on-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-primary truncate">Electricidad</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-primary check-icon shrink-0" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Plomería (Selected) -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all active:scale-95" data-selected="true" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-on-primary/20 flex items-center justify-center text-on-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">plumbing</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-primary truncate">Plomería</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-primary check-icon shrink-0" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Reparaciones (Selected) -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-primary-container text-on-primary shadow-sm text-left transition-all active:scale-95" data-selected="true" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-on-primary/20 flex items-center justify-center text-on-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">handyman</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-primary truncate">Reparaciones</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-primary check-icon shrink-0" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<!-- Montaje -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">shelves</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Montaje</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Pintura -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">format_paint</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Pintura</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Aire acondicionado -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">mode_fan</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Aire acond.</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Tecnología -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">devices</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Tecnología</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Jardinería -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">yard</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Jardinería</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+<!-- Otros -->
+<button class="service-chip flex items-center justify-between p-3.5 rounded-xl bg-surface-container-lowest shadow-sm text-left transition-all active:scale-95" data-selected="false" onclick="toggleService(this)" type="button">
+<div class="flex items-center gap-2.5 min-w-0">
+<span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary chip-icon shrink-0">
+<span class="material-symbols-outlined text-[20px]">more_horiz</span>
+</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Otros</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-surface-container-highest check-icon shrink-0">check_circle</span>
+</button>
+</div>
+<!-- Active Count Counter Badge -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-secondary-container text-on-secondary-container shadow-sm mb-6">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px]">verified</span>
+<span class="font-label-lg text-label-lg font-semibold" id="selected-badge">3 categorías seleccionadas</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-on-secondary-container/10">Perfil visible</span>
+</div>
+</section>
+<!-- SEPARATOR WITH REASSURANCE BANNER -->
+<div class="px-screen-margin-mobile my-3">
+<div class="flex items-center gap-3 p-3.5 bg-surface-container-low rounded-xl">
+<span class="w-9 h-9 rounded-full bg-primary-fixed flex items-center justify-center text-on-primary-fixed shrink-0">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</span>
+<div class="flex-1 min-w-0">
+<p class="font-title-md text-title-md text-on-surface font-semibold">Garantía de cobro seguro</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-tight">Cobros protegidos por escrow y liquidación al instante mediante PIX.</p>
+</div>
+</div>
+</div>
+<!-- STEP 3 CONTAINER -->
+<section class="px-screen-margin-mobile mt-4" id="step-3-section">
+<!-- Step 3 Progress Bar -->
+<div class="bg-surface-container-lowest rounded-xl p-card-padding shadow-sm mb-4">
+<div class="flex justify-between items-center mb-2">
+<span class="font-label-md text-label-md text-primary font-semibold">Paso 3 de 5 • Experiencia y Cobertura</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">60% completado</span>
+</div>
+<div class="w-full h-2 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 60%"></div>
+</div>
+</div>
+<!-- Step Title -->
+<div class="mb-5">
+<h2 class="font-headline-md text-headline-md text-on-surface tracking-tight">Experiencia y Cobertura</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Definí cómo trabajás, tus tarifas base y el alcance territorial de tus servicios.</p>
+</div>
+<form class="space-y-5" onsubmit="event.preventDefault();">
+<!-- Años de experiencia -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-sm">
+<label class="block font-label-lg text-label-lg text-on-surface mb-2">Años de experiencia comprobable</label>
+<div class="grid grid-cols-4 gap-2">
+<button class="exp-btn py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md text-center transition-all hover:bg-surface-container" onclick="selectExp(this, '1-2')" type="button">1-2 años</button>
+<button class="exp-btn py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md text-center transition-all hover:bg-surface-container" onclick="selectExp(this, '3-4')" type="button">3-4 años</button>
+<button class="exp-btn py-2.5 rounded-lg bg-primary text-on-primary font-label-md text-label-md text-center transition-all shadow-sm" onclick="selectExp(this, '5')" type="button">5 años</button>
+<button class="exp-btn py-2.5 rounded-lg bg-surface-container-low text-on-surface font-label-md text-label-md text-center transition-all hover:bg-surface-container" onclick="selectExp(this, '10+')" type="button">+8 años</button>
+</div>
+</div>
+<!-- Descripción Profesional -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-sm">
+<div class="flex justify-between items-baseline mb-2">
+<label class="font-label-lg text-label-lg text-on-surface" for="bio-desc">Descripción profesional</label>
+<span class="font-label-sm text-label-sm text-on-surface-variant">87 / 300 car.</span>
+</div>
+<div class="relative">
+<textarea class="w-full bg-surface-container-low text-on-surface font-body-md text-body-md p-3 rounded-lg focus:outline-none focus:bg-surface-container transition-colors resize-none leading-relaxed" id="bio-desc" rows="3">Técnico matriculado en instalaciones eléctricas y reparaciones hidráulicas con 5 años de trayectoria en CABA y SP.</textarea>
+<div class="absolute bottom-2.5 right-2.5 text-secondary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1.5 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">info</span>
+          Los perfiles detallados reciben hasta 3.5x más consultas.
+        </p>
+</div>
+<!-- Precio por hora -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-sm">
+<label class="block font-label-lg text-label-lg text-on-surface mb-2" for="price-input">Tarifa base sugerida por hora</label>
+<div class="relative flex items-center bg-surface-container-low rounded-lg px-3.5 h-[52px]">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold mr-2">R$</span>
+<input class="w-full bg-transparent font-headline-sm text-headline-sm text-on-surface font-bold focus:outline-none" id="price-input" placeholder="0" type="number" value="120"/>
+<span class="font-label-md text-label-md text-on-surface-variant shrink-0">/ hora</span>
+</div>
+<div class="flex items-center gap-2 mt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-tertiary">trending_up</span>
+<span>Promedio en tu zona: R$ 90 - R$ 140 / hr</span>
+</div>
+</div>
+<!-- Switch Presupuesto por trabajo -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-sm flex items-center justify-between gap-3">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface">¿Acepta precio cerrado?</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Presupuesto por proyecto / trabajo puntual</span>
+</div>
+<button aria-pressed="true" class="w-14 h-8 bg-secondary rounded-full p-1 transition-colors flex items-center justify-end" id="fixed-price-toggle" onclick="toggleBudgetSwitch()" type="button">
+<div class="w-6 h-6 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center" id="toggle-thumb">
+<span class="material-symbols-outlined text-[14px] text-secondary" id="toggle-icon">check</span>
+</div>
+</button>
+</div>
+<!-- Radio Máximo de Cobertura -->
+<div class="bg-surface-container-lowest p-card-padding rounded-xl shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<label class="font-label-lg text-label-lg text-on-surface">Radio máximo de trabajo</label>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+            Centro operativo actual
+          </span>
+</div>
+<div class="grid grid-cols-2 gap-2.5 mb-3">
+<!-- 5 km -->
+<button class="radius-card p-3 rounded-lg bg-surface-container-low text-left transition-all active:scale-95" onclick="selectRadius(this, '5')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-bold">5 km</span>
+<span class="material-symbols-outlined text-[16px] text-surface-container-highest check-pin">radio_button_unchecked</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">Barrio y alrededores</span>
+</button>
+<!-- 10 km -->
+<button class="radius-card p-3 rounded-lg bg-surface-container-low text-left transition-all active:scale-95" onclick="selectRadius(this, '10')" type="button">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-bold">10 km</span>
+<span class="material-symbols-outlined text-[16px] text-surface-container-highest check-pin">radio_button_unchecked</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">Comunas cercanas</span>
+</button>
+<!-- 20 km (Recomendado / Selected) -->
+<button class="radius-card p-3 rounded-lg bg-primary-container text-on-primary text-left transition-all active:scale-95 shadow-sm col-span-2" onclick="selectRadius(this, '20')" type="button">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-primary font-bold">20 km</span>
+<span class="font-label-sm text-label-sm bg-on-primary/20 text-on-primary px-2 py-0.5 rounded-full font-semibold">Recomendado</span>
+</div>
+<span class="material-symbols-outlined text-[18px] text-on-primary check-pin" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-primary/90 block mt-1">Gran área metropolitana. Permite hasta un 85% más de oportunidades de contratación directa.</span>
+</button>
+<!-- Toda la ciudad -->
+<button class="radius-card p-3 rounded-lg bg-surface-container-low text-left transition-all active:scale-95 col-span-2" onclick="selectRadius(this, 'full')" type="button">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface font-bold">Toda la ciudad</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2 py-0.5 rounded-full">Sin límites</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-surface-container-highest check-pin">radio_button_unchecked</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant block mt-0.5">Desplazamientos largos con viáticos calculados</span>
+</button>
+</div>
+<!-- Location static map reference preview -->
+<div class="w-full h-28 rounded-lg bg-cover bg-center relative overflow-hidden shadow-inner flex items-end p-2.5" data-location="Av. Paulista, Sao Paulo, Brazil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDr_Bh0OarGiGxigZs2V1QxYkwmoqO9KVGYFjtXK9fq3D2Bgh16lyVVarCmyF7_butnLsHBjwswTv8mFT8Aj8veXAGkAEcyIJADPuH3IWsmBDWFyCR50XYnp5s0d-WqkXP8bA4IYkNWdfo0xK4AZ6tk8YYrkEDU2cfaQqMEJpDHXChsDwNpGTvsgv0SWHqC4oqs2WwP7mIzF_i2250wEpyNdrwpXUTJ4zEEnIRT8bRADPrD3hDLpsZ6ZQ')">
+<div class="bg-surface-container-lowest/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg flex items-center gap-1.5 text-on-surface shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[16px]">radar</span>
+<span class="font-label-sm text-label-sm font-semibold">Radio activo: 20 km (~35 min promedio)</span>
+</div>
+</div>
+</div>
+<!-- Trust & Verification Info Callout -->
+<div class="p-3.5 bg-surface-container-high rounded-xl flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[20px] shrink-0 mt-0.5">verified_user</span>
+<div>
+<p class="font-label-md text-label-md text-primary font-semibold">Próximo paso: Verificación de Identidad</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Para comenzar a presupuestar y cobrar con PIX de forma inmediata, validaremos tu CPF/DNI en tiempo real.</p>
+</div>
+</div>
+<!-- CTA Button Floating Action Anchored -->
+<div class="pt-2">
+<button class="w-full h-[52px] rounded-xl bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:opacity-95 active:scale-[0.99] transition-all" type="button">
+<span>Continuar a Verificación</span>
+<span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+</button>
+<p class="text-center font-label-sm text-label-sm text-on-surface-variant mt-2">
+          Paso 3 de 5 finalizado • Modificable en cualquier momento desde tu perfil
+        </p>
+</div>
+</form>
+</section>
+</div>
+<script>
+  // Service toggle micro-interaction
+  function toggleService(btn) {
+    const isSelected = btn.getAttribute('data-selected') === 'true';
+    const checkIcon = btn.querySelector('.check-icon');
+    const chipIcon = btn.querySelector('.chip-icon');
+    const label = btn.querySelector('span.truncate');
+
+    if (isSelected) {
+      btn.setAttribute('data-selected', 'false');
+      btn.classList.remove('bg-primary-container', 'text-on-primary');
+      btn.classList.add('bg-surface-container-lowest', 'text-on-surface');
+      chipIcon.classList.remove('bg-on-primary/20', 'text-on-primary');
+      chipIcon.classList.add('bg-surface-container', 'text-primary');
+      label.classList.remove('text-on-primary');
+      label.classList.add('text-on-surface');
+      checkIcon.classList.remove('text-on-primary');
+      checkIcon.classList.add('text-surface-container-highest');
+      checkIcon.style.fontVariationSettings = "'FILL' 0";
+    } else {
+      btn.setAttribute('data-selected', 'true');
+      btn.classList.remove('bg-surface-container-lowest', 'text-on-surface');
+      btn.classList.add('bg-primary-container', 'text-on-primary');
+      chipIcon.classList.remove('bg-surface-container', 'text-primary');
+      chipIcon.classList.add('bg-on-primary/20', 'text-on-primary');
+      label.classList.remove('text-on-surface');
+      label.classList.add('text-on-primary');
+      checkIcon.classList.remove('text-surface-container-highest');
+      checkIcon.classList.add('text-on-primary');
+      checkIcon.style.fontVariationSettings = "'FILL' 1";
+    }
+
+    // Update count badge
+    const totalSelected = document.querySelectorAll('.service-chip[data-selected="true"]').length;
+    const badge = document.getElementById('selected-badge');
+    if (badge) {
+      badge.textContent = totalSelected === 1 ? '1 categoría seleccionada' : totalSelected + ' categorías seleccionadas';
+    }
+  }
+
+  // Years of Experience Selector
+  function selectExp(btn, val) {
+    const allBtns = document.querySelectorAll('.exp-btn');
+    allBtns.forEach(b => {
+      b.classList.remove('bg-primary', 'text-on-primary', 'shadow-sm');
+      b.classList.add('bg-surface-container-low', 'text-on-surface');
+    });
+    btn.classList.remove('bg-surface-container-low', 'text-on-surface');
+    btn.classList.add('bg-primary', 'text-on-primary', 'shadow-sm');
+  }
+
+  // Budget switch
+  let budgetActive = true;
+  function toggleBudgetSwitch() {
+    budgetActive = !budgetActive;
+    const toggle = document.getElementById('fixed-price-toggle');
+    const thumb = document.getElementById('toggle-thumb');
+    const icon = document.getElementById('toggle-icon');
+
+    if (budgetActive) {
+      toggle.classList.remove('bg-surface-container-highest', 'justify-start');
+      toggle.classList.add('bg-secondary', 'justify-end');
+      toggle.setAttribute('aria-pressed', 'true');
+      icon.textContent = 'check';
+      icon.classList.remove('text-on-surface-variant');
+      icon.classList.add('text-secondary');
+    } else {
+      toggle.classList.remove('bg-secondary', 'justify-end');
+      toggle.classList.add('bg-surface-container-highest', 'justify-start');
+      toggle.setAttribute('aria-pressed', 'false');
+      icon.textContent = 'close';
+      icon.classList.remove('text-secondary');
+      icon.classList.add('text-on-surface-variant');
+    }
+  }
+
+  // Coverage radius selector
+  function selectRadius(card, radius) {
+    const cards = document.querySelectorAll('.radius-card');
+    cards.forEach(c => {
+      c.classList.remove('bg-primary-container', 'text-on-primary', 'shadow-sm');
+      c.classList.add('bg-surface-container-low');
+      const pin = c.querySelector('.check-pin');
+      if (pin) {
+        pin.textContent = 'radio_button_unchecked';
+        pin.classList.remove('text-on-primary');
+        pin.classList.add('text-surface-container-highest');
+        pin.style.fontVariationSettings = "'FILL' 0";
+      }
+      const title = c.querySelector('span.font-title-md');
+      if (title) {
+        title.classList.remove('text-on-primary');
+        title.classList.add('text-on-surface');
+      }
+      const desc = c.querySelector('span.font-body-sm');
+      if (desc) {
+        desc.classList.remove('text-on-primary/90');
+        desc.classList.add('text-on-surface-variant');
+      }
+    });
+
+    card.classList.remove('bg-surface-container-low');
+    card.classList.add('bg-primary-container', 'text-on-primary', 'shadow-sm');
+    const pin = card.querySelector('.check-pin');
+    if (pin) {
+      pin.textContent = 'check_circle';
+      pin.classList.remove('text-surface-container-highest');
+      pin.classList.add('text-on-primary');
+      pin.style.fontVariationSettings = "'FILL' 1";
+    }
+    const title = card.querySelector('span.font-title-md');
+    if (title) {
+      title.classList.remove('text-on-surface');
+      title.classList.add('text-on-primary');
+    }
+    const desc = card.querySelector('span.font-body-sm');
+    if (desc) {
+      desc.classList.remove('text-on-surface-variant');
+      desc.classList.add('text-on-primary/90');
+    }
+  }
+</script></main></body></html>

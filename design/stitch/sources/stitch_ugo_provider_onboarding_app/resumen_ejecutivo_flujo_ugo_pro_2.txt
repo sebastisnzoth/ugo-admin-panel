@@ -1,0 +1,70 @@
+# Resumen Ejecutivo de Producto & Arquitectura: UGO Pro
+**Plataforma Confiable de Especialistas y Servicios Técnicos On-Demand**  
+*Documento de Especificación Funcional, Mapeo de Flujo y Arquitectura UX/UI*  
+**Versión:** 3.0 (Sanity Checked) • **Mercado Target:** LATAM / Brasil • **Modelo Financiero:** Pago protegido por UGO & Retiro por PIX
+
+---
+
+## 1. Visión del Producto y Propuesta de Valor
+
+**UGO Pro** es la aplicación móvil de campo diseñada para técnicos, plomeros, electricistas y especialistas de servicios en el hogar y comercio. Resuelve los tres puntos de dolor históricos del sector de reparaciones independientes:
+1. **Seguridad en el Cobro:** Eliminación de la incertidumbre financiera mediante el sistema de **Pago protegido por UGO**, donde el valor del servicio queda resguardado al confirmarse la propuesta y se acredita al saldo disponible del especialista cuando el cliente da su conformidad final.
+2. **Confianza y Respaldo Técnico:** Bóveda digital de evidencias fotográficas (Antes vs. Después) con registro digital del servicio y cobertura de **Protección UGO Shield**.
+3. **Eficiencia en Cotización y Repuestos:** Asistencia contextual de obra con **Hugo Copilot** (asistente de preparación, diagnóstico y cierre) y el concepto de escaneo visual asistido **UGO Lens** con confirmación manual obligatoria por el especialista.
+
+---
+
+## 2. Mapa Completo del Flujo del Especialista (26 Pantallas Canónicas)
+
+El ecosistema diseñado y publicado en el Canvas abarca cinco fases operativas continuas:
+
+```
+[ ACCESO & SETUP ] ──> [ RADAR & COTIZACIÓN ] ──> [ EN RUTA & LLEGADA ] ──> [ EJECUCIÓN & EVIDENCIAS ] ──> [ CIERRE & RETIRO PIX ]
+```
+
+### Fase 1: Onboarding, Registro y Verificación
+- **Splash Screen (`SCREEN_43`):** Introducción de marca UGO Pro y propuesta de valor.
+- **Login (`SCREEN_42`):** Acceso multicanal con credenciales y soporte biométrico.
+- **Teléfono y OTP (`SCREEN_40`):** Validación telefónica de dos factores mediante código SMS de 6 dígitos.
+- **Recuperación de Acceso & Selector de Rol (`SCREEN_41`):** Selección de perfil del especialista.
+- **Registro y Perfil Personal (`SCREEN_39`):** Identificación civil, nombre, CPF enmascarado y radio operativo en km.
+- **Servicios, Oficios y Tarifas (`SCREEN_38`):** Especialidades técnicas, tarifario sugerido de mano de obra y certificaciones.
+- **Verificación Documental y Disponibilidad (`SCREEN_37`):** Documentación técnica, turnos de disponibilidad y perfil aprobado.
+
+### Fase 2: Demanda en Vivo, Radar y Presupuesto Interactivo
+- **Home Radar y Oportunidades en Vivo (`SCREEN_36`):** Mapa interactivo de oportunidades geolocalizadas, filtros de urgencia y switch Online/Offline.
+- **Detalle de Solicitud de Trabajo (`SCREEN_35`):** Caso real: Avería de Camila Duarte en Pinheiros (*Fuga de agua bajo mesada*), fotos preliminares y descripción.
+- **Envío de Presupuesto Interactivo (`SCREEN_34`):** Desglose transparente de mano de obra, repuestos y aviso de Pago protegido por UGO.
+
+### Fase 3: Desplazamiento y Validación Presencial
+- **Propuesta Aceptada y Preparación de Viaje (`SCREEN_33`):** Confirmación de pago protegido por UGO y checklist interactivo de herramientas requeridas.
+- **Navegación GPS y En Ruta al Cliente (`SCREEN_32`):** Seguimiento en ruta con tiempo de llegada (ETA 14 min) y botón de 1-toque *"Avisar demora al cliente"*.
+- **Llegada al Domicilio y Validación PIN (`SCREEN_31`):** Check-in presencial con validación de código PIN de 4 dígitos provisto por el cliente en puerta.
+
+### Fase 4: Ejecución en Obra, Asistencia y Evidencias
+- **Servicio en Curso y Cronómetro de Trabajo (`SCREEN_29`):** Temporizador activo de mano de obra, bitácora de tareas y opción de agregar repuesto o trabajo adicional.
+- **Visor de Evidencias HD Antes vs. Después (`SCREEN_24` / `SCREEN_25`):** Comparativa fotográfica de calidad técnica con registro digital del servicio y prueba estanca a 3.2 bar de presión.
+- **Escáner Visual de Repuestos por Cámara `[UGO Lens - Concept]` (`SCREEN_18`):** Identificación asistida de repuestos con porcentaje de coincidencia y confirmación manual obligatoria.
+- **Hugo Copilot - Asistente Contextual de Obra (`SCREEN_20`):** Asistente de campo con recomendaciones técnicas, preparación y normativas de consulta.
+- **Chat en Tiempo Real con Camila Duarte (`SCREEN_16`):** Mensajería directa con banner de orden #8492 fijado y aprobación de adendas de repuestos en vivo.
+
+### Fase 5: Resolución, Cierre, Billetera y Centro del Sistema
+- **Centro de Mediación UGO (`SCREEN_15`):** Módulo de mediación tripartita con mediador asignado para resolución de controversias sobre órdenes activas.
+- **Aprobación del Cliente, Pago Protegido y Calificación (`SCREEN_28`):** Aprobación de fin de obra, acreditación de saldo, calificación de 5 estrellas y garantía UGO.
+- **Billetera, Saldo UGO y Retiro Inmediato PIX (`SCREEN_22`):** Saldo total disponible (R$ 1.480,50), saldo pendiente de órdenes activas y botón de retiro por PIX.
+- **Comprobante UGO de Retiro por PIX (`SCREEN_13`):** Recibo digital oficial con identificador de transacción UGO, código QR y descarga en PDF.
+- **Centro de Notificaciones (`SCREEN_7`):** Panel dedicado de avisos de servicio, oportunidades, aprobaciones de adendas y confirmaciones de pago.
+- **Actividad e Historial de Servicios (`SCREEN_3`):** Listado cronológico de servicios activos, finalizados y cancelaciones con detalle de cliente e importes.
+- **Centro de Ayuda y Soporte General (`SCREEN_5`):** Base de conocimiento con preguntas frecuentes, guías de servicio, saldo y canales de atención 24/7.
+
+---
+
+## 3. Tabla de Resumen de Componentes
+
+| Componente | Nomenclatura Canónica UGO | Finalidad en UGO Pro |
+| :--- | :--- | :--- |
+| **Protección Financiera** | Pago protegido por UGO / Saldo pendiente | Asegura el cobro del especialista sin riesgos de impago. |
+| **Retiros de Saldo** | Retiro por PIX / Comprobante UGO de retiro | Transferencia transparente a la cuenta bancaria del profesional. |
+| **Visión Asistida** | UGO Lens `[Concept / AI]` | Orientación visual de repuestos con confirmación del profesional. |
+| **Copiloto de Obra** | Hugo Copilot | Asistente contextual que sugiere checklists y mejores prácticas. |
+| **Garantía y Cobertura** | Protección UGO Shield | Respaldo institucional en cada trabajo realizado a través de UGO. |

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary":"#ffffff","error":"#ba1a1a","primary-fixed-dim":"#4cd6fb","on-tertiary-fixed":"#002113","secondary-fixed":"#dae2fd","surface-container":"#e5eeff","on-error":"#ffffff","surface-tint":"#00677d","surface-container-highest":"#d3e4fe","on-primary-fixed":"#001f27","secondary":"#565e74","on-tertiary":"#ffffff","surface-bright":"#f8f9ff","on-tertiary-container":"#00442d","on-primary-fixed-variant":"#004e5f","on-primary":"#ffffff","on-secondary-fixed":"#131b2e","on-surface-variant":"#3d494d","tertiary-container":"#19bc84","inverse-on-surface":"#eaf1ff","surface-container-low":"#eff4ff","on-secondary-container":"#5c647a","on-background":"#0b1c30","on-primary-container":"#00414f","tertiary-fixed-dim":"#4edea3","outline-variant":"#bcc9ce","inverse-surface":"#213145","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","surface":"#f8f9ff","surface-container-lowest":"#ffffff","primary":"#00677d","primary-container":"#00b4d8","primary-fixed":"#b3ebff","background":"#f8f9ff","on-error-container":"#93000a","outline":"#6d797e","on-surface":"#0b1c30","error-container":"#ffdad6","secondary-fixed-dim":"#bec6e0","tertiary-fixed":"#6ffbbe","inverse-primary":"#4cd6fb","on-tertiary-fixed-variant":"#005236","tertiary":"#006c49","surface-container-high":"#dce9ff","on-secondary-fixed-variant":"#3f465c","secondary-container":"#dae2fd"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-2xs":"0.25rem","gutter-desktop":"1.5rem","space-3xl":"4rem","sidebar-expanded":"17.5rem","space-lg":"1.5rem","space-2xl":"3rem","space-md":"1rem","topbar-height":"4.25rem","space-sm":"0.75rem","gutter-mobile":"1rem","sidebar-collapsed":"5rem","space-xs":"0.5rem","space-xl":"2rem"},fontFamily:{"headline-md":["Plus Jakarta Sans"],"code-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"display-lg":["Plus Jakarta Sans"]},fontSize:{"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"code-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"26px",letterSpacing:"-0.005em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"display-lg-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-sidebar-collapsed xl:w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all duration-300"><div class="flex flex-col gap-space-md"><div class="h-12 px-space-md xl:px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm overflow-hidden"><img alt="Logo UGO Cliente" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWYkGbDkybddSHtmyY32GZB1VYVCcp5I4p7MfFYMURxRzKLOfdAZb01kBM-vemKANWc5aynx1KlrXNQYkD6Qje8qaZo8IpLmAQAQttpEfRvednP2PUhz_zfxx8v0_ym8_8tLC0fLhOaZQ6qk8o_jOLsnS4QgUZY2OrTLvKIwhRyyT9OS8upOAHg6wLdHrjhII4NSsneejdMpjdWn2CY9uX2phCFae5zhsNagOPSlaYuYz3RkFYnY_L3Os"/><span class="hidden xl:inline font-headline-sm text-headline-sm font-bold tracking-tight text-primary">UGO Cliente</span></div><span class="hidden xl:inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">v2.4</span></div><nav class="flex flex-col gap-space-2xs px-space-xs xl:px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="hidden xl:inline flex-1 truncate">Inicio</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm" data-path="buscar-servicio" href="#"><span class="material-symbols-outlined text-[22px]">search</span><span class="hidden xl:inline flex-1 truncate">Buscar servicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="nueva-solicitud" href="#"><span class="material-symbols-outlined text-[22px]">add_circle</span><span class="hidden xl:inline flex-1 truncate">Nueva solicitud</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="matching-en-vivo" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="hidden xl:inline flex-1 truncate">Matching en vivo</span><span class="hidden xl:inline-flex h-2 w-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="servicios-activos" href="#"><span class="material-symbols-outlined text-[22px]">pending_actions</span><span class="hidden xl:inline flex-1 truncate">Servicios activos</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">2</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="actividad" href="#"><span class="material-symbols-outlined text-[22px]">history</span><span class="hidden xl:inline flex-1 truncate">Actividad</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[22px]">chat_bubble</span><span class="hidden xl:inline flex-1 truncate">Mensajes</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">3</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ugo-shield" href="#"><span class="material-symbols-outlined text-[22px] text-tertiary">verified_user</span><span class="hidden xl:inline flex-1 truncate">UGO Shield</span><span class="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Pro</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="pagos" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="hidden xl:inline flex-1 truncate">Pagos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="perfil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="hidden xl:inline flex-1 truncate">Perfil</span></a></nav></div><div class="flex flex-col gap-space-xs px-space-xs xl:px-space-sm pt-space-xs"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ayuda" href="#"><span class="material-symbols-outlined text-[22px]">help</span><span class="hidden xl:inline flex-1 truncate">Ayuda</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="configuracion" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="hidden xl:inline flex-1 truncate">Configuración</span></a></nav></div></aside><div class="pl-sidebar-collapsed xl:pl-sidebar-expanded min-h-screen flex flex-col transition-all duration-300"><header class="fixed top-0 left-sidebar-collapsed xl:left-sidebar-expanded right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 transition-all duration-300"><div class="h-16 w-full px-space-md xl:px-space-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><button class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" type="button"><span class="material-symbols-outlined text-primary text-[20px]">location_on</span><div class="hidden md:flex flex-col"><span class="font-label-sm text-label-sm text-secondary">Ubicación actual</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Canasvieiras, Florianópolis · SC</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span></button><div class="relative flex-1 hidden sm:block"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Buscar servicios, profesionales o ayuda..." type="text"/></div></div><div class="flex items-center gap-space-sm xl:gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-gradient-to-r from-primary-container to-tertiary-container text-on-primary font-label-md text-label-md shadow-sm hover:opacity-95 transition-opacity" type="button"><span class="material-symbols-outlined text-[18px]">auto_awesome</span><span class="hidden md:inline font-bold">Hugo IA</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-primary"></span></span></button><button class="relative p-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-error ring-2 ring-surface"></span></button><div class="flex items-center gap-space-sm pl-space-2xs"><div class="hidden lg:flex flex-col text-right"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Mariana Costa</span><span class="font-label-sm text-label-sm text-tertiary flex items-center justify-end gap-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Verificada</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-Zrm-zrxI-X4YoML1L8DRmL8PPBXsgLmlnXnegDB4G1Vm_hTHKd4RncqqgJv0FV2lf2KUWgrfcQ7WhAIOmBAuKiqhtqfGCgUDhYRnyRRI-0HQoXcNV4pjHMZRBVV-aJBh2cCWRURij-zthGoDsqAJ5lW_Lw3v1s5ijswfaOzT6uod3qsvdCWYyXMDR_E6PR-Pr27sDFoPNX--u7lMbJ2V8UgBHd212UXddj57ivTawnWy4aB_o9XO"/></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<!-- Active Sidebar Highlighting Script & Tab Switching -->
+<script>
+    (function () {
+      const shieldLink = document.querySelector('aside nav a[data-path="ugo-shield"]');
+      if (shieldLink) {
+        shieldLink.className = "flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg bg-primary-container text-on-primary-container shadow-sm transition-all";
+      }
+    })();
+
+    function switchGuaranteeTab(tab) {
+      const activeBtn = document.getElementById('tab-btn-' + tab);
+      const allBtns = document.querySelectorAll('.guarantee-tab-btn');
+      allBtns.forEach(btn => {
+        btn.className = "guarantee-tab-btn px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container transition-all";
+      });
+      if (activeBtn) {
+        activeBtn.className = "guarantee-tab-btn px-space-md py-space-xs rounded-xl font-label-md text-label-md bg-inverse-surface text-inverse-on-surface shadow-sm transition-all";
+      }
+    }
+  </script>
+<!-- Content Container -->
+<div class="p-space-md md:p-space-lg xl:p-space-xl flex flex-col gap-space-xl max-w-7xl mx-auto w-full">
+<!-- Top Headline Section -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-2xs">
+<div class="inline-flex items-center gap-space-xs text-tertiary font-label-sm text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+<span>Centro Fiduciario • Seguridad Patrimonial UGO</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg md:font-display-lg md:text-display-lg text-on-surface tracking-tight">
+          UGO Shield · Centro de Protección y Garantías
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          Tu tranquilidad respaldada en cada intervención con fondo de garantía patrimonial, mediación técnica imparcial y cobertura de hasta <span class="text-on-surface font-semibold">R$ 50.000</span> por servicio.
+        </p>
+</div>
+<!-- Quick SOS / Policy Actions -->
+<div class="flex items-center gap-space-xs shrink-0">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span>Póliza Marco (.PDF)</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2.5 rounded-xl bg-error-container hover:opacity-90 text-on-error-container font-label-md text-label-md transition-opacity shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">emergency</span>
+<span>SOS Guardia 24/7</span>
+</button>
+</div>
+</div>
+<!-- 1. Hero Trust Banner (Modern Kinetic AirCover/Stripe Trust Aesthetic) -->
+<div class="relative overflow-hidden rounded-2xl bg-inverse-surface text-inverse-on-surface shadow-xl p-space-lg md:p-space-xl">
+<!-- Ambient Glow Shapes -->
+<div class="absolute -right-20 -top-20 w-96 h-96 rounded-full bg-primary-container/20 blur-3xl pointer-events-none"></div>
+<div class="absolute right-1/3 -bottom-24 w-80 h-80 rounded-full bg-tertiary-container/20 blur-3xl pointer-events-none"></div>
+<div class="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-space-xl">
+<div class="flex flex-col gap-space-sm max-w-2xl">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container-lowest/10 backdrop-blur-md text-tertiary-fixed font-label-sm text-label-sm w-fit">
+<span class="material-symbols-outlined text-[16px] text-tertiary-fixed-dim">verified</span>
+<span class="font-bold">PROTECCIÓN ACTIVA · NIVEL PLATINUM</span>
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary-container animate-pulse ml-1"></span>
+</div>
+<h2 class="font-headline-md text-headline-md md:font-headline-lg md:text-headline-lg text-inverse-on-surface tracking-tight">
+            Cobertura Patrimonial Integral &amp; Escrow Fiduciario
+          </h2>
+<p class="font-body-md text-body-md text-surface-dim leading-relaxed">
+            Cada servicio contratado en UGO ingresa en custodia bajo nuestro protocolo Shield. El profesional no percibe los fondos hasta tu conformidad definitiva, con respuesta técnica in situ garantizada ante cualquier desperfecto.
+          </p>
+<!-- 3 Primary Pillars -->
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md pt-space-xs">
+<div class="flex items-center gap-space-xs text-inverse-on-surface">
+<span class="material-symbols-outlined text-primary-fixed text-[20px]">account_balance</span>
+<span class="font-label-sm text-label-sm text-surface-container-low font-medium">Custodia fiduciaria 100%</span>
+</div>
+<div class="flex items-center gap-space-xs text-inverse-on-surface">
+<span class="material-symbols-outlined text-tertiary-fixed text-[20px]">badge</span>
+<span class="font-label-sm text-label-sm text-surface-container-low font-medium">Antecedentes verificados</span>
+</div>
+<div class="flex items-center gap-space-xs text-inverse-on-surface">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[20px]">handshake</span>
+<span class="font-label-sm text-label-sm text-surface-container-low font-medium">Mediación forense &lt; 2h</span>
+</div>
+</div>
+</div>
+<!-- Metric Capsule Highlight -->
+<div class="w-full lg:w-auto flex flex-col items-center justify-center p-space-lg rounded-xl bg-surface-container-lowest/10 backdrop-blur-xl shrink-0 min-w-[280px]">
+<span class="font-label-sm text-label-sm text-primary-fixed uppercase tracking-widest">Fondo Disponible</span>
+<div class="flex items-baseline gap-space-2xs mt-1">
+<span class="font-body-lg text-body-lg text-surface-dim">R$</span>
+<span class="font-display-lg text-display-lg font-bold text-inverse-on-surface">50.000</span>
+</div>
+<span class="font-body-sm text-body-sm text-surface-dim mt-1 text-center">Por intervención en Gran Florianópolis</span>
+<div class="w-full mt-space-md pt-space-sm flex items-center justify-between text-surface-dim font-code-sm text-code-sm">
+<span>Certificado: #SHIELD-2025-BR</span>
+<span class="flex items-center text-tertiary-fixed">
+<span class="material-symbols-outlined text-[14px] mr-1">lock</span> Auditado
+            </span>
+</div>
+</div>
+</div>
+</div>
+<!-- 4 Key Status Metric Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Card 1 -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">Garantías Vigentes</span>
+<div class="w-9 h-9 rounded-xl bg-tertiary-container/15 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">shield_with_heart</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">03</span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold">Activas</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">60 días de cobertura continua post-cierre</p>
+</div>
+<!-- Progress Bar -->
+<div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
+<div class="bg-tertiary h-full rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">Casos &amp; Mediaciones</span>
+<div class="w-9 h-9 rounded-xl bg-primary-container/15 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">gavel</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">0</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">en curso</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">1 caso resuelto con 100% de indemnización</p>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-tertiary">
+<span class="material-symbols-outlined text-[16px]">task_alt</span>
+<span>100% resuelto a favor</span>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">Reclamos &amp; Revisitas</span>
+<div class="w-9 h-9 rounded-xl bg-secondary-container/30 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">rule</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">0</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">pendientes</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">SLA respuesta técnica &lt; 2 horas</p>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-primary">timer</span>
+<span>Promedio actual: 42 min</span>
+</div>
+</div>
+<!-- Card 4 -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between gap-space-md transition-all hover:shadow-md">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface-variant font-semibold">Fondo Asignado</span>
+<div class="w-9 h-9 rounded-xl bg-tertiary-container/15 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">security</span>
+</div>
+</div>
+<div>
+<div class="flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">R$ 50k</span>
+<span class="font-label-sm text-label-sm text-tertiary font-bold">Activo</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Válido en Florianópolis, SC</p>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-primary">
+<span class="material-symbols-outlined text-[16px]">domain</span>
+<span>Banco Custodio: Itaú Seguros</span>
+</div>
+</div>
+</div>
+<!-- Main 2-Column Split: Active Policies (Left 7 Cols) & Dispute Resolution Flow (Right 5 Cols) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-xl">
+<!-- LEFT SECTION (7 COLS): ACTIVE POLICIES -->
+<div class="lg:col-span-7 flex flex-col gap-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">
+              Pólizas &amp; Garantías Activas
+            </h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Tus últimos servicios con cobertura legal y técnica vigente.
+            </p>
+</div>
+<!-- Tab Selector -->
+<div class="flex items-center gap-1 bg-surface-container p-1 rounded-xl">
+<button class="guarantee-tab-btn px-space-md py-space-xs rounded-xl font-label-md text-label-md bg-inverse-surface text-inverse-on-surface shadow-sm transition-all" id="tab-btn-activas" onclick="switchGuaranteeTab('activas')" type="button">
+              Vigentes (3)
+            </button>
+<button class="guarantee-tab-btn px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high transition-all" id="tab-btn-historial" onclick="switchGuaranteeTab('historial')" type="button">
+              Historial
+            </button>
+</div>
+</div>
+<!-- Policy Cards List -->
+<div class="flex flex-col gap-space-md">
+<!-- Policy 1: High Coverage -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container/15 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">plumbing</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-code-sm text-code-sm font-semibold text-primary">#SHIELD-8492-BR</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+                      Certificado Emitido
+                    </span>
+<span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">fingerprint</span> Cifrado EXIF
+                    </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mt-1">
+                    Reparación y Ampliación de Vanitory
+                  </h4>
+<div class="flex items-center gap-space-xs mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Especialista:</span>
+<span class="font-semibold text-on-surface">Roberto Silva</span>
+<span>•</span>
+<span class="text-tertiary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[15px]">verified</span> Matrícula #9812-SC
+                    </span>
+</div>
+</div>
+</div>
+<!-- Days Remaining Badge -->
+<div class="flex sm:flex-col items-end justify-between gap-1 shrink-0 bg-surface-container-low sm:bg-transparent p-2 sm:p-0 rounded-xl">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary">58 días</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">restantes</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Vence: 24 Abr 2025</span>
+</div>
+</div>
+<!-- Scope Details -->
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-sm text-on-surface font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">verified</span>
+<span>Cobertura contra pérdidas ocultas, estanqueidad de sellos y roturas.</span>
+</div>
+<div class="font-semibold text-primary shrink-0">
+                Tope indemnizatorio: R$ 15.000
+              </div>
+</div>
+<!-- Action Toolbar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-2xs">
+<div class="flex items-center gap-space-xs">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+<span>Ver Certificado PDF</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">photo_library</span>
+<span>Evidencias (12)</span>
+</button>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-primary hover:bg-primary/90 text-on-primary font-label-md text-label-md transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">build_circle</span>
+<span>Reportar incidencia / Revisita</span>
+</button>
+</div>
+</div>
+<!-- Policy 2: Electrical -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container/15 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">bolt</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-code-sm text-code-sm font-semibold text-primary">#SHIELD-8310-BR</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+                      Inspección Aprobada
+                    </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mt-1">
+                    Detección de Cortocircuito y Recambio de Térmicas
+                  </h4>
+<div class="flex items-center gap-space-xs mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Especialista:</span>
+<span class="font-semibold text-on-surface">Carlos Méndez</span>
+<span>•</span>
+<span class="text-tertiary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[15px]">verified</span> Electrotécnico CREA-SC
+                    </span>
+</div>
+</div>
+</div>
+<div class="flex sm:flex-col items-end justify-between gap-1 shrink-0 bg-surface-container-low sm:bg-transparent p-2 sm:p-0 rounded-xl">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-tertiary">45 días</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">restantes</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Vence: 11 Abr 2025</span>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-sm text-on-surface font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">local_fire_department</span>
+<span>Garantía contra sobretensión, arco eléctrico y riesgo ígneo.</span>
+</div>
+<div class="font-semibold text-primary shrink-0">
+                Tope indemnizatorio: R$ 25.000
+              </div>
+</div>
+<div class="flex flex-wrap items-center justify-between gap-space-sm pt-space-2xs">
+<div class="flex items-center gap-space-xs">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+<span>Ver Póliza</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">history</span>
+<span>Histórico de Pruebas Térmicas</span>
+</button>
+</div>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">flag</span>
+<span>Notificar anomalia</span>
+</button>
+</div>
+</div>
+<!-- Policy 3: Locksmith -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md transition-all hover:shadow-md">
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container/15 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">key</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<span class="font-code-sm text-code-sm font-semibold text-primary">#SHIELD-8199-BR</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                      Garantía Estándar
+                    </span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface mt-1">
+                    Cerrajería Urgente Cilindro de Seguridad Yale
+                  </h4>
+<div class="flex items-center gap-space-xs mt-1 text-on-surface-variant font-body-sm text-body-sm">
+<span>Taller:</span>
+<span class="font-semibold text-on-surface">Marcos Cerrajería</span>
+<span>•</span>
+<span class="text-on-surface-variant">Canasvieiras Centro</span>
+</div>
+</div>
+</div>
+<div class="flex sm:flex-col items-end justify-between gap-1 shrink-0 bg-surface-container-low sm:bg-transparent p-2 sm:p-0 rounded-xl">
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">28 días</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">restantes</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Vence: 25 Mar 2025</span>
+</div>
+</div>
+<div class="p-space-md rounded-xl bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-sm text-on-surface font-body-sm text-body-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-tertiary text-[20px]">lock_reset</span>
+<span>Cobertura contra bloqueo mecánico, copias defectuosas o descalce.</span>
+</div>
+<div class="font-semibold text-primary shrink-0">
+                Tope indemnizatorio: R$ 5.000
+              </div>
+</div>
+<div class="flex items-center justify-between pt-space-2xs">
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+<span>Certificado Yale Original</span>
+</button>
+<button class="inline-flex items-center gap-space-xs px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">help</span>
+<span>Pedir asistencia</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT SECTION (5 COLS): DISPUTE RESOLUTION HUB & HUGO IA -->
+<div class="lg:col-span-5 flex flex-col gap-space-lg">
+<!-- Dispute Resolution Hub Card -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[24px]">balance</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                Protocolo de Mediación Shield
+              </h3>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">
+              Garantía Fiduciaria
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Si un trabajo no cumple el estándar contratado, este flujo protege tus derechos sin discusiones con el técnico:
+          </p>
+<!-- 4 Steps Interactive Pipeline -->
+<div class="flex flex-col gap-space-sm pt-space-xs">
+<!-- Step 1 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-xl bg-surface-container-low transition-colors hover:bg-surface-container">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-sm shrink-0 mt-0.5">
+                1
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Reporte con Evidencia Forense</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Cargas foto o video. Hugo IA analiza metadatos y daño visible de inmediato.</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-xl bg-surface-container-low transition-colors hover:bg-surface-container">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-sm shrink-0 mt-0.5">
+                2
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Congelamiento en Custodia (Escrow)</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">El saldo del profesional queda retenido de inmediato en el banco fiduciario.</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-xl bg-surface-container-low transition-colors hover:bg-surface-container">
+<div class="w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-label-sm shrink-0 mt-0.5">
+                3
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Peritaje o Revisita Bonificada &lt; 24h</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Un perito o un profesional Master categoría Oro asiste sin costo extra.</span>
+</div>
+</div>
+<!-- Step 4 -->
+<div class="flex items-start gap-space-sm p-space-sm rounded-xl bg-surface-container-low transition-colors hover:bg-surface-container">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center font-bold text-label-sm shrink-0 mt-0.5">
+                4
+              </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Reembolso 100% o Reparación Shield</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Resolución garantizada respaldada por el Fondo de R$ 50.000.</span>
+</div>
+</div>
+</div>
+<!-- New Dispute Trigger Button -->
+<button class="w-full mt-space-xs py-3 rounded-xl bg-inverse-surface hover:bg-inverse-surface/90 text-inverse-on-surface font-label-md text-label-md flex items-center justify-center gap-space-xs transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">add_moderator</span>
+<span>Iniciar Nuevo Reclamo o Mediación</span>
+</button>
+</div>
+<!-- Recent Resolved Case / Case Log -->
+<div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-semibold uppercase tracking-wider">Última Mediación Resuelta</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Resuelto con éxito
+            </span>
+</div>
+<div class="flex flex-col gap-space-2xs mt-1">
+<div class="flex items-center justify-between">
+<span class="font-code-sm text-code-sm font-semibold text-primary">#MED-2024-098</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">14 Ene 2025</span>
+</div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">
+              Filtración residual en unión de codo termofusión
+            </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Dictamen emitido en 3h por <span class="font-semibold text-on-surface">Ing. Claudio F.</span>: Revisita bonificada completada con sellado definitivo y reembolso compensatorio directo de R$ 85,00.
+            </p>
+</div>
+<div class="pt-space-xs">
+<button class="inline-flex items-center gap-space-xs text-primary font-label-md text-label-md hover:underline" type="button">
+<span>Ver dictamen pericial completo</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Hugo AI Mediation Assistant Card -->
+<div class="relative overflow-hidden p-space-lg rounded-2xl bg-gradient-to-br from-primary-fixed-dim/20 via-surface-container-low to-tertiary-fixed/20 shadow-sm flex flex-col gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-container to-tertiary-container flex items-center justify-center text-on-primary shadow-sm shrink-0">
+<span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<h4 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+                Hugo Shield AI
+              </h4>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold">Asistente de Prevención &amp; Calidad</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            ¿Tenés dudas sobre la terminación de una reparación o detectaste un goteo posterior? Escribí o subí una foto para que Hugo evalúe al instante si califica para revisita gratuita sin costo.
+          </p>
+<!-- Rapid Query Input Box -->
+<div class="flex flex-col gap-space-xs">
+<div class="relative w-full">
+<input class="w-full h-11 pl-space-md pr-12 rounded-xl bg-surface-container-lowest text-on-surface placeholder:text-outline font-body-sm text-body-sm shadow-sm focus:outline-none focus:bg-surface-container-lowest" placeholder="Ej: Quedó un sonido en la caja eléctrica..." type="text"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg bg-primary-container text-on-primary flex items-center justify-center hover:opacity-90 transition-opacity" type="button">
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+</div>
+<!-- Suggestion Chips -->
+<div class="flex flex-wrap gap-space-2xs mt-1">
+<button class="px-2.5 py-1 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
+                Subir foto pericial
+              </button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
+                ¿Qué cubre la estanqueidad?
+              </button>
+<button class="px-2.5 py-1 rounded-full bg-surface-container-lowest text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm shadow-sm transition-colors" type="button">
+                SLA de revisita urgente
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Verification Badges Footer Strip -->
+<div class="p-space-lg rounded-2xl bg-surface-container-low flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center text-tertiary shrink-0">
+<span class="material-symbols-outlined text-[24px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">UGO Compliance &amp; Verificación Continua</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Todos los prestadores son auditados quincenalmente en antecedentes, matrícula y seguro civil.</span>
+</div>
+</div>
+<div class="flex items-center gap-space-lg shrink-0 text-on-surface-variant font-label-sm text-label-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-tertiary">lock</span>
+<span>Cifrado TLS 1.3</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-primary">policy</span>
+<span>Marco Legal Lei 8.078 CDC</span>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

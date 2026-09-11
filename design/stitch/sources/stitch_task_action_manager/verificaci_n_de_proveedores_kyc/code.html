@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full gap-space-lg">
+<!-- Top Operational Banner & Stats Header -->
+<div class="flex flex-col gap-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-base bg-surface-panel p-space-base rounded-xl shadow-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs text-text-muted font-data-mono text-label-sm uppercase tracking-wider">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<span>Seguridad Operativa • Compliance Brasil</span>
+<span class="text-text-muted/40">•</span>
+<span class="text-primary font-bold">Lote de Decisión #FLN-KYC-08</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-text-primary mt-1">Centro de Verificación de Proveedores (KYC &amp; Seguridad)</h1>
+<p class="font-body-md text-text-secondary">Validación de identidad, CPF ante Receita Federal, antecedentes criminales y matrículas técnicas CFT/CREA.</p>
+</div>
+<div class="flex items-center gap-space-sm self-start lg:self-center">
+<div class="flex items-center gap-2 bg-brand-green-subtle text-primary px-space-sm py-1 rounded-lg">
+<span class="material-symbols-outlined text-[16px]">sync_saved_locally</span>
+<span class="font-label-md text-label-md">Receita Federal API: OK</span>
+</div>
+<div class="flex items-center gap-2 bg-surface-muted text-text-secondary px-space-sm py-1 rounded-lg">
+<span class="font-data-mono text-label-sm">SLA Promedio: 24m</span>
+</div>
+</div>
+</div>
+<!-- TABS + SEARCH & SMART FILTERS -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-sm flex flex-col xl:flex-row xl:items-center justify-between gap-space-base">
+<!-- Tabs Switcher -->
+<div class="flex items-center gap-1 overflow-x-auto pb-1 xl:pb-0">
+<button class="flex items-center gap-2 px-space-sm py-2 rounded-lg bg-surface-canvas text-primary font-headline-sm text-headline-sm shadow-sm transition-colors">
+<span>Pendientes</span>
+<span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm">12</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2 rounded-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span>En revisión</span>
+<span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">4</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2 rounded-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span>Aprobados hoy</span>
+<span class="px-1.5 py-0.5 rounded-full bg-brand-green-subtle text-brand-green-hover font-label-sm text-label-sm font-semibold">19</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2 rounded-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span>Rechazados</span>
+<span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">2</span>
+</button>
+</div>
+<!-- Filters & Search Toolbar -->
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="relative min-w-[220px] flex-1 sm:flex-initial">
+<span class="material-symbols-outlined absolute left-3 top-2.5 text-text-muted text-[18px]">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded-lg bg-surface-canvas text-text-primary font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel shadow-sm" type="text" value="Carlos Alberto Silveira"/>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="h-9 px-space-sm bg-surface-canvas hover:bg-surface-muted rounded-lg text-text-secondary font-label-md text-label-md flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-text-muted">category</span>
+<span>Electricidad</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+<button class="h-9 px-space-sm bg-surface-canvas hover:bg-surface-muted rounded-lg text-text-secondary font-label-md text-label-md flex items-center gap-1 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Riesgo Bajo</span>
+<span class="material-symbols-outlined text-[14px]">expand_more</span>
+</button>
+<button class="h-9 px-space-sm bg-surface-canvas hover:bg-surface-muted rounded-lg text-text-secondary font-label-md text-label-md flex items-center gap-1 shadow-sm" title="Actualizar cola">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- SPLIT REVIEW MAIN INTERFACE (45% LEFT / 55% RIGHT) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-base items-start">
+<!-- LEFT PANE: 45% EXPEDIENTE DEL PROVEEDOR (5 Cols in 12-grid on large) -->
+<div class="lg:col-span-5 flex flex-col gap-space-base">
+<!-- Profile Identification Header Card -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col gap-space-base relative overflow-hidden">
+<div class="absolute top-0 left-0 right-0 h-1 bg-primary"></div>
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<img class="w-16 h-16 rounded-xl object-cover shadow-sm" data-alt="Portrait photograph of Carlos Alberto Silveira, a 38 year old Brazilian professional electrician in Florianopolis with a confident and trustworthy expression, wearing a navy collared work shirt against a bright neutral workshop backdrop. Crisp studio lighting, high resolution documentary style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBXV_uvH99beu-C3ZorsG69FLEMtqGjghwtwdUiYMt-kbiENvtiLApwU-c-cZU0qQ-thmxFsCVN0Bnti37kxZXMCmKu9866bcZ4qwCmOdUQouEIpq6_cAyH6zU--2cqs0GBHBupeo8h1GkZRRJygCE5M5L9PF3MJEmQ9y3l0m_s076Z-ss7u3BDJNgOYsDdla0KPhwVj0qpALzYCZOkxTvqvlFp3toERhVO40idHmQaNlfQjKaL0dvL"/>
+<span class="absolute -bottom-1 -right-1 bg-primary text-on-primary rounded-full p-0.5 text-[12px] material-symbols-outlined shadow">check_circle</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h2 class="font-headline-md text-headline-md text-text-primary">Carlos Alberto Silveira</h2>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Electricidad &amp; Climatización
+              </span>
+<span class="font-data-mono text-label-sm text-text-muted mt-0.5">ID: #PROV-BR-88194</span>
+</div>
+</div>
+<!-- Trust Score Pill -->
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-[10px] uppercase font-bold text-text-muted tracking-wider">Score UGO</span>
+<div class="flex items-baseline gap-1 bg-brand-green-subtle px-2 py-1 rounded-lg">
+<span class="font-data-metric text-data-metric text-primary leading-none">94</span>
+<span class="font-label-sm text-label-sm text-brand-green-hover font-bold">/100</span>
+</div>
+<span class="font-label-sm text-[10px] text-brand-green-hover font-semibold mt-0.5">Riesgo Bajo</span>
+</div>
+</div>
+<!-- Contact Quick Data Grid -->
+<div class="grid grid-cols-2 gap-space-sm p-space-sm bg-surface-canvas rounded-lg">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">call</span> WhatsApp / Móvil
+            </span>
+<span class="font-data-mono text-body-sm text-text-primary font-semibold">+55 48 98842-1011</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">mail</span> Correo Electrónico
+            </span>
+<span class="font-body-sm text-text-primary truncate font-medium">carlos.silveira@tech.com</span>
+</div>
+<div class="flex flex-col col-span-2 pt-1">
+<span class="font-label-sm text-label-sm text-text-muted flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">distance</span> Cobertura Declarada
+            </span>
+<span class="font-body-sm text-text-primary font-medium">Norte de Florianópolis (Ingleses, Canasvieiras, Jurerê)</span>
+</div>
+</div>
+</div>
+<!-- Cross-Validation Verification Table -->
+<div class="bg-surface-panel rounded-xl shadow-sm overflow-hidden">
+<div class="p-space-base bg-surface-panel flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-primary text-[20px]">fact_check</span>
+<h3 class="font-headline-sm text-headline-sm text-text-primary">Validación Automática vs Registro</h3>
+</div>
+<span class="font-data-mono text-label-sm text-primary font-semibold">4/4 Validaciones</span>
+</div>
+<div class="flex flex-col">
+<!-- Item 1: CPF Receita Federal -->
+<div class="p-space-base bg-surface-panel hover:bg-surface-canvas transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">CPF &amp; Situación Fiscal</span>
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span> Válido &amp; Regular
+              </span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-data-mono text-body-md text-text-primary font-bold">042.891.739-14</span>
+<span class="font-data-mono text-label-sm text-text-muted">Receita Federal do Brasil (vía Serpro)</span>
+</div>
+<p class="font-body-sm text-text-secondary">Titular verificado al 100%: CARLOS ALBERTO SILVEIRA. Sin bloqueos tributarios.</p>
+</div>
+<!-- Item 2: Fecha de Nacimiento -->
+<div class="p-space-base bg-surface-canvas hover:bg-surface-muted/50 transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Fecha de Nacimiento &amp; Edad</span>
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check</span> Coincidencia CNH
+              </span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-md text-text-primary font-medium">14/08/1986 <strong class="text-text-secondary font-normal">(38 años)</strong></span>
+<span class="font-data-mono text-label-sm text-text-muted">CNH Categoría B</span>
+</div>
+</div>
+<!-- Item 3: Antecedentes Penales -->
+<div class="p-space-base bg-surface-panel hover:bg-surface-canvas transition-colors flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-text-muted">Antecedentes Criminales</span>
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">shield</span> Sin antecedentes
+              </span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-body-md text-text-primary font-medium">Certidão Negativa Polícia Federal &amp; TJSC</span>
+<span class="font-data-mono text-label-sm text-text-muted">Emitida hace 3 días</span>
+</div>
+<span class="font-data-mono text-label-sm text-text-muted">Hash Autenticidad: #SC-PF-2024-9981-A81F</span>
+</div>
+<!-- Item 4: Matrícula Técnica (CRT / CFT) -->
+<div class="p-space-base bg-warning-amber-subtle/40 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-semibold text-warning-amber">Matrícula Profesional Habilitante</span>
+<span class="px-2 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">priority_high</span> Requiere validación manual
+              </span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-data-mono text-body-md text-text-primary font-bold">CFT/CRT-SC #892144</span>
+<span class="font-data-mono text-label-sm text-warning-amber font-semibold">Vencimiento: 30/11/2026</span>
+</div>
+<p class="font-body-sm text-text-secondary">Especialidad: Técnico en Electrotécnica e Instalaciones de Alta Carga. Registro activo en el consejo de Santa Catarina.</p>
+</div>
+</div>
+</div>
+<!-- Admin Internal Audit Notes -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-text-primary text-[18px]">edit_note</span>
+<h4 class="font-headline-sm text-headline-sm text-text-primary">Notas Internas de Auditoría</h4>
+</div>
+<span class="font-data-mono text-label-sm text-text-muted">Solo lectura interna</span>
+</div>
+<div class="relative">
+<textarea class="w-full p-space-sm rounded-lg bg-surface-canvas text-body-md font-body-md text-text-primary focus:outline-none focus:bg-surface-panel shadow-sm resize-none" rows="3">Documentación nítida y fidedigna. La selfie biométrica arrojó 98.7% de afinidad con la fotografía de la CNH. Se verificó domicilio en Celesc con fecha de vencimiento al corriente.</textarea>
+</div>
+<div class="flex items-center justify-between text-text-muted font-label-sm text-label-sm">
+<span>Última edición por: Mateo Silva (SUPER_ADMIN)</span>
+<span class="font-data-mono">Hoy 10:42 AM</span>
+</div>
+</div>
+</div>
+<!-- RIGHT PANE: 55% VISOR DE DOCUMENTOS Y EVIDENCIAS BIOMÉTRICAS (7 Cols in 12-grid on large) -->
+<div class="lg:col-span-7 flex flex-col gap-space-base">
+<!-- Document Viewer Master Box -->
+<div class="bg-surface-panel rounded-xl shadow-sm flex flex-col overflow-hidden">
+<!-- Viewer Tab Navigation -->
+<div class="px-space-base pt-space-base pb-0 bg-surface-panel flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex items-center gap-1 overflow-x-auto">
+<button class="flex items-center gap-2 px-space-sm py-2.5 rounded-t-lg bg-surface-canvas text-primary font-headline-sm text-headline-sm shadow-sm">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+<span>CNH Oficial (Frente &amp; Dorso)</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2.5 rounded-t-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">face</span>
+<span>Biometría Facial (98.7%)</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2.5 rounded-t-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">card_membership</span>
+<span>Carnet CRT-SC</span>
+</button>
+<button class="flex items-center gap-2 px-space-sm py-2.5 rounded-t-lg text-text-secondary hover:bg-surface-muted font-body-md text-body-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Factura Celesc</span>
+</button>
+</div>
+<!-- Document Inspection Tools -->
+<div class="flex items-center gap-1 mb-2">
+<button class="w-8 h-8 rounded-lg bg-surface-muted hover:bg-surface-container-high flex items-center justify-center text-text-secondary" title="Zoom In">
+<span class="material-symbols-outlined text-[16px]">zoom_in</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-muted hover:bg-surface-container-high flex items-center justify-center text-text-secondary" title="Zoom Out">
+<span class="material-symbols-outlined text-[16px]">zoom_out</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-muted hover:bg-surface-container-high flex items-center justify-center text-text-secondary" title="Rotar documento">
+<span class="material-symbols-outlined text-[16px]">rotate_right</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-muted hover:bg-surface-container-high flex items-center justify-center text-text-secondary" title="Pantalla completa">
+<span class="material-symbols-outlined text-[16px]">fullscreen</span>
+</button>
+</div>
+</div>
+<!-- Document Active Canvas (CNH Card Preview) -->
+<div class="p-space-base bg-surface-canvas flex flex-col items-center justify-center min-h-[340px] relative">
+<div class="w-full max-w-2xl bg-surface-panel rounded-xl shadow-md p-space-base flex flex-col md:flex-row gap-space-base relative overflow-hidden">
+<!-- Simulated Official Watermark Background -->
+<div class="absolute -right-8 -bottom-8 w-44 h-44 rounded-full bg-surface-muted/40 pointer-events-none"></div>
+<!-- Left ID Photo + QR Mock -->
+<div class="flex flex-col items-center gap-space-sm w-full md:w-44 shrink-0">
+<div class="w-36 h-44 rounded-lg bg-surface-muted overflow-hidden relative shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Official Brazilian CNH driving license portrait photograph of Carlos Alberto Silveira, neutral expression, crisp focus on face, government issued identification document styling with microprint security textures." src="https://lh3.googleusercontent.com/aida-public/AB6AXuACdgcQ0TftpzR8N21l9YTD3_X_SejrwnEic0XMxiTpobya0tm40uNrCtnU6pv13yDz6vVHSpIpXtqVgUirvuEBf6ma9i-NdcSXbcThjd8UubrHC2xmVe9F2oNMTNbVGGOKmFvgotFErTpypjy5MOSX0TVKYPLHcwv5bgf_Wz6dnD02AVeUqWEP753hsHfOvBMqTLTSuMReQ_89M98FwSnFnC3EdkxvTtFI0EdiNfNogrNABRFPbKEU"/>
+<div class="absolute top-1 left-1 bg-surface-panel/90 px-1 py-0.5 rounded text-[9px] font-data-mono text-text-muted">REPUBLICA FEDERATIVA DO BRASIL</div>
+</div>
+<div class="w-36 p-1.5 bg-surface-panel rounded-md shadow-sm flex items-center justify-between">
+<span class="material-symbols-outlined text-[20px] text-text-primary">qr_code_2</span>
+<span class="font-data-mono text-[9px] text-text-muted">QR-Vio Validado</span>
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span>
+</div>
+</div>
+<!-- Right Official Fields Mock -->
+<div class="flex-1 flex flex-col justify-between gap-space-sm">
+<div class="flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-[10px] text-text-muted uppercase font-bold tracking-wider">CARTEIRA NACIONAL DE HABILITAÇÃO</span>
+<span class="font-data-mono text-[10px] text-primary font-bold bg-brand-green-subtle px-1.5 py-0.5 rounded">AUTÊNTICA • DETRAN-SC</span>
+</div>
+<div class="h-0.5 bg-surface-muted w-full my-0.5"></div>
+<div class="grid grid-cols-2 gap-y-2 gap-x-3 mt-1">
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">Nome do Condutor</span>
+<p class="font-headline-sm text-[13px] text-text-primary font-bold uppercase leading-snug">Carlos Alberto Silveira</p>
+</div>
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">Nº Registro CNH</span>
+<p class="font-data-mono text-body-sm text-text-primary font-bold">09842187721</p>
+</div>
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">CPF</span>
+<p class="font-data-mono text-body-sm text-text-primary">042.891.739-14</p>
+</div>
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">Data Nascimento</span>
+<p class="font-data-mono text-body-sm text-text-primary">14/08/1986</p>
+</div>
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">Validade do Documento</span>
+<p class="font-data-mono text-body-sm text-brand-green-hover font-bold">22/10/2029</p>
+</div>
+<div>
+<span class="font-label-sm text-[10px] text-text-muted uppercase">Filiação</span>
+<p class="font-body-sm text-[11px] text-text-secondary truncate">Maria Aparecida Silveira</p>
+</div>
+</div>
+</div>
+<!-- Security Scan Confirmation Tag -->
+<div class="p-space-xs bg-brand-green-subtle rounded-lg flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">document_scanner</span>
+                  OCR Engine &amp; Holograma 3D verificados sin adulteraciones
+                </span>
+<span class="font-data-mono text-[11px] text-primary font-bold">Score OCR: 99.8%</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Biometric Facial Comparison & Residency Side-by-Side Proofs -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-base">
+<!-- BIOMETRIC FACE MATCH CARD (7 Cols) -->
+<div class="md:col-span-7 bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">center_focus_strong</span>
+<h4 class="font-headline-sm text-headline-sm text-text-primary">Validación Biométrica Facial</h4>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-bold">98.7% Match</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm mt-1">
+<!-- Document Crop -->
+<div class="flex flex-col gap-1.5 items-center">
+<div class="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-surface-muted shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Close up crop of official identification photo of Brazilian male adult Carlos Alberto Silveira, extracted from state database with high clarity and neutral backdrop." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAebwAZOnh9YkQmtgcKsExmyHGQaTXAM0ibwxg3I4VIoCDJ7qRtdgy1zJwlQBVbvXXe1K1BG0cP43YHc29yUor3au2L_L4oB4qNA5HO8ccoy_7sBhlSDaOCrBd-gROUPIkw0_GVb97UlbClrC7_SLzQuMsJiMWVtJcP6_eOav3Dec5WZ5lHXXN4bTBPnvVccTk2M1bA08z_XUjbdZkfLOdJjpJ98qS7SdWCxS64E4wvS2GHeB1XxEYX"/>
+<span class="absolute bottom-1 left-1 bg-surface-panel/90 text-text-primary px-1.5 py-0.5 rounded text-[10px] font-data-mono">Foto CNH</span>
+</div>
+<span class="font-label-sm text-label-sm text-text-muted">Registro CNH Base</span>
+</div>
+<!-- Live Liveness Selfie -->
+<div class="flex flex-col gap-1.5 items-center">
+<div class="relative w-full aspect-[4/5] rounded-lg overflow-hidden bg-surface-muted shadow-sm">
+<img class="w-full h-full object-cover" data-alt="High resolution front-facing real-time live selfie capture of Carlos Alberto Silveira holding a handwritten verification date note, bright daylight illumination, smiling slightly, high sharpness face features." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqQWMA__VIaAFlIhGDBn1cqBgrt4K1kFy1UpwmS3ALOZEEU_x1Q7UZeck9uP4ogn0ZYaLOd-kDZUnY53LGbA7xkvYj6LQ974Xnol14Tj81RE2rCOQIVB7Y_AAA4tLT_i9H5iHpmGL5p6-yDbRBeIav9qHvO03mxUee_0vVKQYjffTOxvAHS_nU95n53JDRu9IoLhjic1vAAIkg4bR5403PWeWqzQYGppFDkNlgqZe4mr_ZtSchbZNm"/>
+<!-- AI Face Mesh / Bounding Overlay -->
+<div class="absolute inset-3 rounded-lg shadow-[0_0_0_2px_#006948] flex items-start justify-end p-1 pointer-events-none">
+<span class="material-symbols-outlined text-primary text-[16px]">check</span>
+</div>
+<span class="absolute bottom-1 left-1 bg-primary text-on-primary px-1.5 py-0.5 rounded text-[10px] font-data-mono">Selfie en Vivo</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Prueba de Vida Aprobada</span>
+</div>
+</div>
+<div class="p-space-xs bg-surface-canvas rounded-lg flex items-center justify-between text-text-secondary font-label-sm text-label-sm">
+<span>Detección de spoofing / Deepfake: <strong>Negativo (0.01%)</strong></span>
+<span class="font-data-mono text-text-muted">AWS Rekognition</span>
+</div>
+</div>
+<!-- PROOF OF ADDRESS CARD (5 Cols) -->
+<div class="md:col-span-5 bg-surface-panel rounded-xl shadow-sm p-space-base flex flex-col justify-between gap-space-sm">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-text-primary text-[18px]">home_pin</span>
+<h4 class="font-headline-sm text-headline-sm text-text-primary">Comprobante Domicilio</h4>
+</div>
+<span class="material-symbols-outlined text-primary text-[18px]">check_circle</span>
+</div>
+<!-- Mini Preview of Electric Utility Bill -->
+<div class="p-space-sm bg-surface-canvas rounded-lg flex items-center gap-space-sm mt-1">
+<div class="w-12 h-14 bg-surface-panel rounded shadow-sm shrink-0 flex items-center justify-center text-text-muted">
+<span class="material-symbols-outlined text-[24px]">description</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-text-primary truncate">CELESC Distribuição S.A.</span>
+<span class="font-data-mono text-label-sm text-text-muted">Factura Luz #789012</span>
+<span class="font-label-sm text-[11px] text-brand-green-hover font-semibold">Venc: 12/03/2025 (Reciente)</span>
+</div>
+</div>
+<div class="text-body-sm text-text-secondary mt-1">
+<p class="font-semibold text-text-primary">Dirección Validada:</p>
+<p class="truncate">Rua das Gaivotas 1420, Apto 302</p>
+<p class="font-data-mono text-label-sm text-text-muted">Ingleses do Rio Vermelho, Florianópolis - SC</p>
+</div>
+</div>
+<button class="w-full h-8 px-space-sm bg-surface-canvas hover:bg-surface-muted rounded-lg text-text-primary font-label-md text-label-md flex items-center justify-center gap-1 shadow-sm transition-colors">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Inspeccionar PDF Celesc</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- STICKY BOTTOM ACTION BAR FOR COMPLIANCE OPERATORS -->
+<div class="sticky bottom-4 z-30 w-full mt-space-sm">
+<div class="bg-surface-panel/95 backdrop-blur-md rounded-xl shadow-xl p-space-base flex flex-col md:flex-row items-center justify-between gap-space-base">
+<!-- Operator Session Badge & Case Meta -->
+<div class="flex items-center gap-space-sm w-full md:w-auto justify-between md:justify-start">
+<div class="flex items-center gap-space-xs">
+<div class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-text-muted uppercase">Revisor Asignado Activo</span>
+<span class="font-headline-sm text-headline-sm text-text-primary leading-tight">Mateo Silva <span class="font-data-mono text-label-sm text-primary font-bold">(SUPER_ADMIN)</span></span>
+</div>
+</div>
+<div class="h-6 w-px bg-surface-muted hidden sm:block mx-space-xs"></div>
+<div class="flex items-center gap-2">
+<span class="font-data-mono text-label-sm bg-surface-canvas text-text-secondary px-2.5 py-1 rounded-md font-bold">Caso #KYC-9402</span>
+<span class="font-data-mono text-label-sm text-text-muted hidden xl:inline">Entrada: 08:31 AM</span>
+</div>
+</div>
+<!-- Action CTAs: Reject, Request Fixes, Approve -->
+<div class="flex items-center gap-space-sm w-full md:w-auto justify-end flex-wrap">
+<!-- Button: Reject (Opens modal trigger) -->
+<button class="h-10 px-space-base rounded-lg bg-risk-red-subtle hover:bg-risk-red-hover text-tertiary hover:text-on-tertiary font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-all shadow-sm" onclick="document.getElementById('reject-modal').classList.remove('hidden')">
+<span class="material-symbols-outlined text-[18px]">block</span>
+<span>Rechazar Solicitud</span>
+</button>
+<!-- Button: Request Extra Document / Cure -->
+<button class="h-10 px-space-base rounded-lg bg-warning-amber-subtle hover:bg-warning-amber text-warning-amber hover:text-on-primary font-label-md text-label-md font-semibold flex items-center gap-1.5 transition-all shadow-sm" onclick="alert('Se enviará una solicitud de corrección vía WhatsApp y notificación push al proveedor.')">
+<span class="material-symbols-outlined text-[18px]">outgoing_mail</span>
+<span>Solicitar Subsanación</span>
+</button>
+<!-- Button: Primary Green Approve -->
+<button class="h-10 px-space-xl rounded-lg bg-primary hover:bg-brand-green-hover text-on-primary font-headline-sm text-headline-sm flex items-center gap-2 shadow-md transition-all" onclick="alert('¡Proveedor Carlos Alberto Silveira aprobado con éxito! Habilitado para recibir servicios en Florianópolis.')">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Aprobar Proveedor y Habilitar</span>
+</button>
+</div>
+</div>
+</div>
+<!-- REJECTION REASON MODAL DIALOG (HIDDEN BY DEFAULT) -->
+<div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-on-surface/50 backdrop-blur-sm" id="reject-modal">
+<div class="bg-surface-panel rounded-2xl shadow-2xl max-w-lg w-full p-space-xl flex flex-col gap-space-base">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2 text-tertiary">
+<span class="material-symbols-outlined text-[24px]">gavel</span>
+<h3 class="font-headline-md text-headline-md text-text-primary">Rechazar Verificación #KYC-9402</h3>
+</div>
+<button class="text-text-muted hover:text-text-primary" onclick="document.getElementById('reject-modal').classList.add('hidden')">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<p class="font-body-md text-text-secondary">
+        Indique el motivo vinculante del rechazo para Carlos Alberto Silveira. Esta notificación será archivada en el Log de Auditoría y enviada por correo oficial.
+      </p>
+<div class="flex flex-col gap-space-sm">
+<label class="font-label-sm text-label-sm uppercase font-bold text-text-muted">Causa Principal de Rechazo</label>
+<select class="w-full h-10 px-3 rounded-lg bg-surface-canvas text-body-md text-text-primary focus:outline-none shadow-sm">
+<option>Inconsistencia en CNH / Falsedad documental presunta</option>
+<option>CPF en situación no regular o cancelado en Receita</option>
+<option>Antecedentes penales incompatibles con la política de seguridad</option>
+<option>Fallo en prueba biométrica de vida / Discrepancia facial</option>
+<option>Matrícula técnica vencida o no coincidente</option>
+<option>Zona operativa no cubierta / Comprobante de domicilio inválido</option>
+</select>
+<label class="font-label-sm text-label-sm uppercase font-bold text-text-muted mt-2">Detalle adicional de rechazo</label>
+<textarea class="w-full p-space-sm rounded-lg bg-surface-canvas text-body-md text-text-primary focus:outline-none shadow-sm resize-none" placeholder="Escriba aquí los detalles que el postulante o el área legal deben conocer..." rows="3"></textarea>
+</div>
+<div class="flex items-center justify-end gap-space-sm pt-space-xs">
+<button class="h-10 px-space-base rounded-lg bg-surface-muted hover:bg-surface-container-high text-text-primary font-label-md text-label-md" onclick="document.getElementById('reject-modal').classList.add('hidden')">
+          Cancelar
+        </button>
+<button class="h-10 px-space-base rounded-lg bg-tertiary hover:bg-risk-red-hover text-on-primary font-label-md text-label-md font-semibold flex items-center gap-1.5" onclick="document.getElementById('reject-modal').classList.add('hidden'); alert('Solicitud rechazada formalmente.');">
+<span class="material-symbols-outlined text-[18px]">block</span>
+<span>Confirmar Rechazo Definitivo</span>
+</button>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

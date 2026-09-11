@@ -56,3 +56,53 @@
 @media(max-width:389px){.ugo-provider-root{width:100vw}.ugo-provider-root .ugo-evidence-panel{max-width:calc(100vw - 24px)!important}.ugo-provider-root .ugo-provider-structural-home,.ugo-provider-root .ugo-provider-prototype{max-width:100vw!important}}
 .ugo-provider-root button[aria-label="Notificaciones UGO"]{position:absolute!important;right:12px!important;top:18px!important;z-index:80!important}
 .ugo-provider-root button[aria-label="Notificaciones UGO"]+aside{position:absolute!important;right:12px!important;top:70px!important;width:calc(100% - 24px)!important;max-height:calc(100% - 90px)!important;z-index:79!important}
+
+/* Provider Journey 1: auth and onboarding consume shared UGO primitives. */
+.mvp-auth-page.role-provider,.ugo-provider-onboarding{font-family:var(--ugo-font);color:var(--ugo-color-on-surface);background:var(--ugo-color-surface)!important}
+.mvp-auth-page.role-provider .mvp-primary,.ugo-provider-onboarding .mvp-primary{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+.mvp-auth-page.role-provider input,.ugo-provider-onboarding input,.ugo-provider-onboarding select,.ugo-provider-onboarding textarea{border-color:var(--ugo-color-outline-variant);border-radius:var(--ugo-radius-sm);font-family:var(--ugo-font)}
+
+/* Provider Journey 2: home, demand, radar, map and opportunities. */
+.ugo-provider-root .ugo-provider-structural-home,.ugo-provider-root .ugo-provider-prototype{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-structural-sheet,.ugo-provider-root .ugo-provider-panel,.ugo-provider-root .ugo-provider-panel-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;box-shadow:var(--ugo-shadow-card)!important;border-radius:var(--ugo-radius-lg)!important}
+.ugo-provider-root .ugo-provider-structural-cta,.ugo-provider-root .ugo-provider-primary{min-height:var(--ugo-touch-target);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-radius:var(--ugo-radius-md)!important}
+.ugo-provider-root .ugo-provider-structural-presence.on{background:var(--ugo-color-primary-container)!important;color:var(--ugo-color-on-primary-container)!important}
+.ugo-provider-root .ugo-provider-structural-empty{background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface-variant)!important;border-color:var(--ugo-color-outline-variant)!important}
+
+/* Provider Journey 3: professional profile, availability and agenda. */
+.ugo-provider-root .ugo-provider-profile,.ugo-provider-root .ugo-provider-agenda,.ugo-provider-root .ugo-provider-schedule{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-profile-card,.ugo-provider-root .ugo-provider-agenda-card,.ugo-provider-root .ugo-provider-schedule-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-provider-profile button,.ugo-provider-root .ugo-provider-agenda button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
+
+/* Provider Journey 4: request review, acceptance and navigation. */
+.ugo-provider-root .ugo-provider-mission-sheet,.ugo-provider-root .ugo-provider-sheet{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-xl)!important;box-shadow:var(--ugo-shadow-sheet)!important}
+.ugo-provider-root .ugo-provider-mission-sheet .ugo-provider-primary,.ugo-provider-root .ugo-provider-sheet .accept{min-height:var(--ugo-touch-target);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-radius:var(--ugo-radius-md)!important}
+.ugo-provider-root .ugo-provider-sheet .reject{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
+
+/* Provider Journey 5: active service, checklist, evidence and extensions. */
+.ugo-provider-root .ugo-provider-active-service,.ugo-provider-root .ugo-provider-evidence,.ugo-provider-root .ugo-provider-checklist{font-family:var(--ugo-font)}
+.ugo-provider-root .ugo-provider-active-service-card,.ugo-provider-root .ugo-provider-evidence-panel,.ugo-provider-root .ugo-provider-checklist{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-evidence-upload,.ugo-provider-root .ugo-provider-primary{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
+
+/* Provider Journey 6: payouts, PIX and Mercado Pago. */
+.ugo-provider-root .ugo-provider-payout,.ugo-provider-root .ugo-provider-finance,.ugo-provider-root .ugo-provider-payment{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-payout .ugo-payout-card,.ugo-provider-root .ugo-provider-finance .uwp-card,.ugo-provider-root .ugo-provider-payment .uwp-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-provider-payout button,.ugo-provider-root .ugo-provider-finance button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
+
+/* Provider Journey 7: service completion and receipt. */
+.ugo-provider-root .ugo-provider-completion-receipt,.ugo-provider-root .ugo-provider-receipt{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-xl)!important;box-shadow:var(--ugo-shadow-sheet)!important}
+.ugo-provider-root .ugo-provider-completion-receipt button,.ugo-provider-root .ugo-provider-receipt button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+
+/* Provider Journey 8: ratings and reputation. */
+.ugo-provider-root .ugo-provider-rating,.ugo-provider-root .ugo-profile-score,.ugo-provider-root .uwp-profile-score{font-family:var(--ugo-font);background:var(--ugo-color-secondary-container)!important;color:var(--ugo-color-on-secondary-container)!important;border-radius:var(--ugo-radius-lg)!important;border:1px solid var(--ugo-color-outline-variant)}
+
+/* Provider Journey 9: service history and activity. */
+.ugo-provider-root .ugo-history-panel,.ugo-provider-root .ugo-provider-history,.ugo-provider-root .uwp-history-provider{font-family:var(--ugo-font);background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important}
+.ugo-provider-root .ugo-history-panel article,.ugo-provider-root .ugo-provider-history article,.ugo-provider-root .uwp-history-item{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-history-launch{min-height:var(--ugo-touch-target);background:var(--ugo-color-surface-lowest);border-color:var(--ugo-color-outline-variant);font-family:var(--ugo-font)}
+
+/* Provider Journey 10: profile and account configuration. */
+.ugo-provider-root .ugo-provider-profile,.ugo-provider-root .ugo-profile-settings,.ugo-provider-root .uwp-profile-provider{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-profile input,.ugo-provider-root .ugo-provider-profile select,.ugo-provider-root .ugo-provider-profile textarea,.ugo-provider-root .ugo-profile-settings input{border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-sm)!important;background:var(--ugo-color-surface-lowest)!important;color:var(--ugo-color-on-surface)!important;font-family:var(--ugo-font)}
+.ugo-provider-root .ugo-provider-profile-card,.ugo-provider-root .uwp-profile-provider .uwp-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-provider-profile button,.ugo-provider-root .uwp-profile-provider button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface pt-safe pb-safe flex flex-col min-h-screen"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full px-screen-margin-mobile pb-space-2xl space-y-space-lg max-w-md mx-auto">
+<!-- Interactive Step Controller / Prototype Switcher -->
+<div class="bg-surface-container-high rounded-full p-1 flex items-center justify-between shadow-sm">
+<button class="flex-1 py-2 rounded-full font-label-md text-label-md text-on-primary bg-primary transition-all duration-200 flex items-center justify-center space-x-1 shadow-sm" id="btn-step-a" type="button">
+<span class="material-symbols-outlined text-sm leading-none">smartphone</span>
+<span>1. Teléfono</span>
+</button>
+<button class="flex-1 py-2 rounded-full font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all duration-200 flex items-center justify-center space-x-1" id="btn-step-b" type="button">
+<span class="material-symbols-outlined text-sm leading-none">lock</span>
+<span>2. Código OTP</span>
+</button>
+</div>
+<!-- Security & Trust Hero Badge -->
+<div class="flex items-center space-x-space-xs px-space-sm py-2 rounded-xl bg-surface-container text-primary font-label-md text-label-md self-start">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span>Verificación protegida vía Escrow &amp; PIX</span>
+</div>
+<!-- STEP A: Phone Input Flow -->
+<div class="flex flex-col space-y-space-lg transition-all duration-300" id="flow-step-a">
+<div class="flex flex-col space-y-1">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Entrá con tu teléfono</h1>
+<p class="font-body-md text-body-md text-on-surface-variant">Te enviaremos un código de seguridad por SMS o WhatsApp.</p>
+</div>
+<!-- Verified Escrow Pill Preview with Provider/User Avatar -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex items-center space-x-space-sm">
+<div class="relative w-12 h-12 rounded-full overflow-hidden shrink-0 bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Warm and authentic street portrait of a modern Brazilian freelance logistics driver in Sao Paulo, natural morning light, vibrant deep blue colors, genuine friendly smile, looking at the camera" src="https://lh3.googleusercontent.com/aida-public/AB6AXuADF4TZKeUV09aHW13MKgk4wcoTE2lmT2pVnAdupil_tiNQVRjf5o2OE1hVAQoalaZf2x7kmUZoIx3LEogvhodfiA8JmnyvI5aLWm_EyrGk96J5mudbjjhF8C8BL7FWB3CdNKGUEpRrxvuMnuXzZszYvfd9qkiHbkq8xUb7byf7h8HNOct3CEpvJHylOcwtxDgkoWXcnwY9ustaWqX85ucU3jQnyzYt9FC4ygBheOeVhZfWAMCyK8ywIA"/>
+<div class="absolute bottom-0 right-0 w-3.5 h-3.5 bg-secondary rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[9px] text-on-secondary" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface truncate">Autenticación Segura</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Validación instantánea CPF/WhatsApp</span>
+</div>
+</div>
+<!-- Interactive Phone Form Block -->
+<div class="flex flex-col space-y-space-md">
+<div class="flex flex-col space-y-space-xs">
+<label class="font-label-md text-label-md text-on-surface-variant" for="phone-input">Número móvil</label>
+<div class="flex items-center space-x-2">
+<!-- Country Selector Dropdown Trigger -->
+<div class="relative">
+<button class="h-[52px] px-space-sm bg-surface-container-lowest rounded-xl shadow-sm flex items-center space-x-2 text-on-surface active:scale-[0.98] transition-transform" id="country-dropdown-btn" type="button">
+<span class="text-lg leading-none" id="selected-flag">🇧🇷</span>
+<span class="font-title-md text-title-md text-on-surface" id="selected-code">+55</span>
+<span class="material-symbols-outlined text-sm text-on-surface-variant">keyboard_arrow_down</span>
+</button>
+<!-- Country Options Menu -->
+<div class="hidden absolute top-full left-0 mt-1 w-44 bg-surface-container-lowest rounded-xl shadow-xl p-1 z-20 space-y-1" id="country-menu">
+<button class="country-option w-full px-space-sm py-2 rounded-lg flex items-center space-x-2 hover:bg-surface-container text-left transition-colors" data-code="+55" data-flag="🇧🇷" data-mask="+55 (11) 98765-4321" type="button">
+<span class="text-base">🇧🇷</span>
+<span class="font-label-md text-label-md text-on-surface">Brasil (+55)</span>
+</button>
+<button class="country-option w-full px-space-sm py-2 rounded-lg flex items-center space-x-2 hover:bg-surface-container text-left transition-colors" data-code="+54" data-flag="🇦🇷" data-mask="+54 (9 11) 3456-7890" type="button">
+<span class="text-base">🇦🇷</span>
+<span class="font-label-md text-label-md text-on-surface">Argentina (+54)</span>
+</button>
+<button class="country-option w-full px-space-sm py-2 rounded-lg flex items-center space-x-2 hover:bg-surface-container text-left transition-colors" data-code="+52" data-flag="🇲🇽" data-mask="+52 (55) 1234-5678" type="button">
+<span class="text-base">🇲🇽</span>
+<span class="font-label-md text-label-md text-on-surface">México (+52)</span>
+</button>
+</div>
+</div>
+<!-- Formatted Input -->
+<div class="relative flex-1">
+<input class="w-full h-[52px] bg-surface-container-lowest rounded-xl px-space-md font-title-md text-title-md text-on-surface placeholder:text-outline shadow-sm focus:outline-none focus:bg-surface-container-low transition-colors" id="phone-input" placeholder="+55 (00) 00000-0000" type="tel" value="+55 (11) 98765-4321"/>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-secondary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Quick Method Selector -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex items-center justify-between">
+<div class="flex items-center space-x-2">
+<div class="w-8 h-8 rounded-full bg-secondary/15 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-base">chat</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface">Enviar prioritariamente por WhatsApp</span>
+</div>
+<input checked="" class="w-5 h-5 rounded-full accent-primary cursor-pointer" type="checkbox"/>
+</div>
+<!-- Primary Action CTA -->
+<button class="w-full h-[52px] bg-primary text-on-primary rounded-xl font-label-lg text-label-lg shadow-md hover:bg-primary-container active:translate-y-[1px] transition-all flex items-center justify-center space-x-2" id="btn-submit-step-a" type="button">
+<span>Continuar</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+<!-- Trust Seals Banner -->
+<div class="grid grid-cols-2 gap-space-sm pt-space-xs">
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center space-x-2">
+<div class="w-7 h-7 rounded-full bg-secondary/10 flex items-center justify-center text-secondary shrink-0">
+<span class="material-symbols-outlined text-sm">bolt</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">PIX Instantáneo</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">Liquidación directa</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-sm shadow-sm flex items-center space-x-2">
+<div class="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-sm">shield</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">100% Blindado</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant truncate">Criptografía bancaria</span>
+</div>
+</div>
+</div>
+</div>
+<!-- STEP B: OTP Verification Flow -->
+<div class="hidden flex flex-col space-y-space-lg transition-all duration-300" id="flow-step-b">
+<div class="flex flex-col space-y-1">
+<div class="flex items-center justify-between">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Verificá tu número</h1>
+<button class="text-primary font-label-md text-label-md flex items-center space-x-1" id="btn-edit-number" type="button">
+<span class="material-symbols-outlined text-sm">edit</span>
+<span>Editar</span>
+</button>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Te enviamos un código de 6 dígitos a <span class="font-semibold text-on-surface">+55 (11) 98765-4321</span>
+</p>
+</div>
+<!-- OTP Input 6-Digit Matrix -->
+<div class="flex flex-col space-y-space-sm">
+<div class="grid grid-cols-6 gap-2">
+<!-- Digit 1 -->
+<div class="h-14 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-sm text-center font-headline-md text-headline-md text-on-surface">
+          4
+        </div>
+<!-- Digit 2 -->
+<div class="h-14 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-sm text-center font-headline-md text-headline-md text-on-surface">
+          8
+        </div>
+<!-- Digit 3 -->
+<div class="h-14 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-sm text-center font-headline-md text-headline-md text-on-surface">
+          2
+        </div>
+<!-- Digit 4 -->
+<div class="h-14 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-sm text-center font-headline-md text-headline-md text-on-surface">
+          9
+        </div>
+<!-- Digit 5 -->
+<div class="h-14 bg-surface-container-lowest rounded-xl flex items-center justify-center shadow-sm text-center font-headline-md text-headline-md text-on-surface">
+          1
+        </div>
+<!-- Digit 6: Focused with Pulse Cursor Dot -->
+<div class="h-14 bg-surface-container rounded-xl flex items-center justify-center shadow-inner text-center font-headline-md text-headline-md text-primary relative">
+<span class="w-2.5 h-2.5 bg-primary rounded-full animate-ping absolute"></span>
+<span class="w-2.5 h-2.5 bg-primary rounded-full"></span>
+</div>
+</div>
+<!-- Validation Error Prompt -->
+<div class="bg-error-container rounded-xl p-space-sm flex items-center space-x-2 text-on-error-container" id="otp-error-banner">
+<span class="material-symbols-outlined text-base shrink-0">error</span>
+<span class="font-body-sm text-body-sm">Código incorrecto. Intentá nuevamente.</span>
+</div>
+</div>
+<!-- Primary Action CTA -->
+<button class="w-full h-[52px] bg-primary text-on-primary rounded-xl font-label-lg text-label-lg shadow-md hover:bg-primary-container active:translate-y-[1px] transition-all flex items-center justify-center space-x-2" id="btn-confirm-otp" type="button">
+<span class="material-symbols-outlined text-lg">check_circle</span>
+<span>Confirmar código</span>
+</button>
+<!-- Resend Countdown & Troubleshooting Links -->
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col space-y-3 text-center">
+<div class="flex items-center justify-center space-x-2 text-on-surface-variant font-label-md text-label-md">
+<span class="material-symbols-outlined text-base">timer</span>
+<span>Reenviar código en <span class="font-semibold text-primary" id="otp-countdown">00:42</span></span>
+</div>
+<button class="font-label-lg text-label-lg text-primary hover:underline transition-all" id="btn-resend-toggle" type="button">
+        ¿No recibiste el código?
+      </button>
+<!-- Alternative Channels Tray -->
+<div class="hidden flex flex-col space-y-2 pt-2" id="alt-channels">
+<button class="w-full py-2.5 px-3 bg-surface-container rounded-lg flex items-center justify-center space-x-2 text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-base text-secondary">chat</span>
+<span>Enviar código por WhatsApp</span>
+</button>
+<button class="w-full py-2.5 px-3 bg-surface-container rounded-lg flex items-center justify-center space-x-2 text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-base text-primary">call</span>
+<span>Llamada de voz con el código</span>
+</button>
+</div>
+</div>
+<!-- Verified Provider Security Footer Guarantee -->
+<div class="flex items-center justify-center space-x-2 py-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm text-secondary" style="font-variation-settings: 'FILL' 1;">shield_with_heart</span>
+<span class="font-label-sm text-label-sm">Certificado de seguridad por Banco Central &amp; PIX</span>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const stepABtn = document.getElementById('btn-step-a');
+    const stepBBtn = document.getElementById('btn-step-b');
+    const stepAFlow = document.getElementById('flow-step-a');
+    const stepBFlow = document.getElementById('flow-step-b');
+    const submitStepA = document.getElementById('btn-submit-step-a');
+    const editNumber = document.getElementById('btn-edit-number');
+
+    function showStepA() {
+      stepAFlow.classList.remove('hidden');
+      stepBFlow.classList.add('hidden');
+      stepABtn.classList.add('bg-primary', 'text-on-primary');
+      stepABtn.classList.remove('text-on-surface-variant');
+      stepBBtn.classList.remove('bg-primary', 'text-on-primary');
+      stepBBtn.classList.add('text-on-surface-variant');
+    }
+
+    function showStepB() {
+      stepAFlow.classList.add('hidden');
+      stepBFlow.classList.remove('hidden');
+      stepBBtn.classList.add('bg-primary', 'text-on-primary');
+      stepBBtn.classList.remove('text-on-surface-variant');
+      stepABtn.classList.remove('bg-primary', 'text-on-primary');
+      stepABtn.classList.add('text-on-surface-variant');
+    }
+
+    stepABtn?.addEventListener('click', showStepA);
+    stepBBtn?.addEventListener('click', showStepB);
+    submitStepA?.addEventListener('click', showStepB);
+    editNumber?.addEventListener('click', showStepA);
+
+    // Country Selector Toggle
+    const countryBtn = document.getElementById('country-dropdown-btn');
+    const countryMenu = document.getElementById('country-menu');
+    const flagEl = document.getElementById('selected-flag');
+    const codeEl = document.getElementById('selected-code');
+    const phoneInput = document.getElementById('phone-input');
+
+    countryBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      countryMenu.classList.toggle('hidden');
+    });
+
+    document.querySelectorAll('.country-option').forEach(item => {
+      item.addEventListener('click', () => {
+        const flag = item.getAttribute('data-flag');
+        const code = item.getAttribute('data-code');
+        const mask = item.getAttribute('data-mask');
+        if (flagEl) flagEl.textContent = flag;
+        if (codeEl) codeEl.textContent = code;
+        if (phoneInput) phoneInput.value = mask;
+        countryMenu.classList.add('hidden');
+      });
+    });
+
+    document.addEventListener('click', () => {
+      if (countryMenu) countryMenu.classList.add('hidden');
+    });
+
+    // Countdown Logic
+    let secondsLeft = 42;
+    const timerDisplay = document.getElementById('otp-countdown');
+    if (timerDisplay) {
+      const interval = setInterval(() => {
+        if (secondsLeft > 0) {
+          secondsLeft--;
+          const secStr = secondsLeft < 10 ? '0' + secondsLeft : secondsLeft;
+          timerDisplay.textContent = '00:' + secStr;
+        } else {
+          clearInterval(interval);
+          timerDisplay.textContent = '00:00';
+        }
+      }, 1000);
+    }
+
+    // Toggle Alternative Resend Channels
+    const resendBtn = document.getElementById('btn-resend-toggle');
+    const altChannels = document.getElementById('alt-channels');
+    resendBtn?.addEventListener('click', () => {
+      altChannels.classList.toggle('hidden');
+    });
+  })();
+</script></main></body></html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGO Cliente / Web / Ampliar servicio</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-container": "#e5eeff",
+            "on-surface": "#0b1c30",
+            "outline-variant": "#bcc9ce",
+            "on-secondary-fixed": "#131b2e",
+            "secondary-fixed-dim": "#bec6e0",
+            "error-container": "#ffdad6",
+            "secondary-fixed": "#dae2fd",
+            "on-background": "#0b1c30",
+            "on-tertiary-container": "#00442d",
+            "inverse-primary": "#4cd6fb",
+            "error": "#ba1a1a",
+            "secondary-container": "#dae2fd",
+            "primary": "#00677d",
+            "surface-dim": "#cbdbf5",
+            "background": "#f8f9ff",
+            "secondary": "#565e74",
+            "on-primary-container": "#00414f",
+            "tertiary": "#006c49",
+            "surface-container-high": "#dce9ff",
+            "surface-tint": "#00677d",
+            "surface-container-lowest": "#ffffff",
+            "on-primary": "#ffffff",
+            "tertiary-fixed": "#6ffbbe",
+            "primary-fixed": "#b3ebff",
+            "surface-variant": "#d3e4fe",
+            "on-primary-fixed-variant": "#004e5f",
+            "on-secondary-container": "#5c647a",
+            "surface-container-low": "#eff4ff",
+            "tertiary-container": "#19bc84",
+            "on-primary-fixed": "#001f27",
+            "inverse-surface": "#213145",
+            "inverse-on-surface": "#eaf1ff",
+            "tertiary-fixed-dim": "#4edea3",
+            "surface": "#f8f9ff",
+            "on-error-container": "#93000a",
+            "on-surface-variant": "#3d494d",
+            "on-tertiary": "#ffffff",
+            "on-secondary": "#ffffff",
+            "primary-fixed-dim": "#4cd6fb",
+            "primary-container": "#00b4d8",
+            "surface-container-highest": "#d3e4fe",
+            "outline": "#6d797e",
+            "on-error": "#ffffff",
+            "on-tertiary-fixed": "#002113",
+            "surface-bright": "#f8f9ff",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-tertiary-fixed-variant": "#005236"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "gutter-mobile": "1rem",
+            "space-md": "1rem",
+            "sidebar-expanded": "17.5rem",
+            "topbar-height": "4.25rem",
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.5rem",
+            "gutter-desktop": "1.5rem",
+            "sidebar-collapsed": "5rem",
+            "space-2xs": "0.25rem",
+            "space-2xl": "3rem",
+            "space-sm": "0.75rem",
+            "space-3xl": "4rem"
+          },
+          "fontFamily": {
+            "display-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "code-sm": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "display-lg": ["40px", { lineHeight: "48px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-md": ["22px", { lineHeight: "30px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "code-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "500" }],
+            "label-lg": ["14px", { lineHeight: "20px", letterSpacing: "0.005em", fontWeight: "600" }],
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "700" }],
+            "label-md": ["12px", { lineHeight: "16px", letterSpacing: "0.02em", fontWeight: "600" }],
+            "headline-lg": ["28px", { lineHeight: "36px", letterSpacing: "-0.015em", fontWeight: "700" }],
+            "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "0em", fontWeight: "400" }],
+            "display-lg-mobile": ["30px", { lineHeight: "38px", letterSpacing: "-0.015em", fontWeight: "700" }],
+            "headline-sm": ["18px", { lineHeight: "26px", letterSpacing: "-0.005em", fontWeight: "600" }],
+            "body-md": ["14px", { lineHeight: "20px", letterSpacing: "0em", fontWeight: "400" }],
+            "body-sm": ["12px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "400" }]
+          }
+        }
+      }
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #bcc9ce;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased h-full overflow-hidden">
+<!-- APP SHELL CONTAINER -->
+<div class="flex h-screen w-screen overflow-hidden relative">
+<!-- ======================================================== -->
+<!-- BACKGROUND SERVICE APPLICATION (Visible behind overlay) -->
+<!-- ======================================================== -->
+<!-- Persistent Collapsible SideNavBar (Shared Component) -->
+<aside class="fixed left-0 top-0 bottom-0 h-screen w-sidebar-expanded flex flex-col justify-between p-space-md z-20 bg-surface-container-lowest border-r border-outline-variant/30 select-none">
+<div class="flex flex-col gap-space-md">
+<!-- Logo & User Mini Anchor -->
+<div class="flex items-center justify-between px-space-xs py-space-2xs">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-xl bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-primary-fixed" data-icon="electric_bolt">electric_bolt</span>
+</div>
+<span class="font-headline-lg text-headline-lg font-bold text-primary tracking-tight">UGO</span>
+</div>
+<span class="text-label-sm font-label-sm px-space-2xs py-0.5 rounded bg-surface-container text-primary">CLIENTE</span>
+</div>
+<!-- User Verified Pill -->
+<div class="p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-space-sm">
+<img alt="Mariana Costa perfil verificado" class="w-10 h-10 rounded-full object-cover ring-2 ring-tertiary-container/50" src="https://lh3.googleusercontent.com/aida/AEtjO1Wmc5HDlp5kZ9ryFXa0vu62QW1c-yGmR5pXNhDKQ0yT_SgTymGIBvufFNvg3WopHfn_0Hg_asEbt6ssPbIP9rdocI4WvsXvQrnoMvKbHTk06nXor_ELq-tL9lG7GsLJvhe5A21GAKl4GhtVKgagt6WikUs-F5mFkc9cRhWHBFWzvnKl5Q5qI6aJc0n2eA7mRWIr6G9Hblz25y87Np9bCXawL_Vq8U-pqKd4d8TPi-8Yi8ZQZVKjPwgCIw"/>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm truncate text-on-surface">Mariana Costa</span>
+<span class="font-label-sm text-label-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-base" data-icon="verified" style="font-variation-settings: 'FILL' 1;">verified</span>
+              Verificada
+            </span>
+</div>
+</div>
+<!-- CTA Nueva Solicitud -->
+<button class="w-full flex items-center justify-center gap-space-xs py-space-xs px-space-md rounded-xl bg-primary-container text-on-primary font-label-lg shadow-sm hover:brightness-105 transition-all">
+<span class="material-symbols-outlined text-xl" data-icon="add_circle">add_circle</span>
+          Nueva Solicitud
+        </button>
+<!-- Primary Navigation Links -->
+<nav class="flex flex-col gap-1 mt-space-2xs">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+            Inicio
+          </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="search">search</span>
+            Buscar servicio
+          </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+            Nueva solicitud
+          </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="radar">radar</span>
+            Matching en vivo
+          </a>
+<!-- Active State: Servicios activos -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl bg-secondary-container/60 text-primary font-label-lg" href="#">
+<span class="material-symbols-outlined text-primary" data-icon="pending_actions" style="font-variation-settings: 'FILL' 1;">pending_actions</span>
+            Servicios activos
+            <span class="ml-auto w-2 h-2 rounded-full bg-primary-container animate-ping"></span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+            Actividad
+          </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+            Mensajes
+          </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
+            UGO Shield
+          </a>
+</nav>
+</div>
+<!-- Footer navigation -->
+<div class="flex flex-col gap-1 pt-space-xs border-t border-outline-variant/30">
+<a class="flex items-center gap-space-sm px-space-md py-space-2xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 font-label-md" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="payments">payments</span>
+          Pagos
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-2xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 font-label-md" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="person">person</span>
+          Perfil
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-2xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 font-label-md" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="help">help</span>
+          Ayuda
+        </a>
+<a class="flex items-center gap-space-sm px-space-md py-space-2xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 font-label-md" href="#">
+<span class="material-symbols-outlined text-xl" data-icon="settings">settings</span>
+          Configuración
+        </a>
+</div>
+</aside>
+<!-- Main Content Area with TopNavBar -->
+<div class="flex-1 ml-sidebar-expanded flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar (Shared Component) -->
+<header class="h-topbar-height w-full px-gutter-desktop flex items-center justify-between sticky top-0 z-30 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/30">
+<div class="flex items-center gap-space-lg">
+<div class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-primary" data-icon="location_on">location_on</span>
+<span class="font-headline-sm text-headline-sm">Canasvieiras, Florianópolis</span>
+<span class="text-outline text-body-sm">• Rua das Flores 412, Apt 3B</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<!-- Hugo IA Button -->
+<button class="flex items-center gap-2 px-space-md py-1.5 rounded-full bg-surface-container-high text-primary font-label-lg hover:bg-surface-variant transition-all">
+<span class="w-2 h-2 rounded-full bg-primary-container animate-pulse"></span>
+<span class="material-symbols-outlined text-lg" data-icon="smart_toy">smart_toy</span>
+            Hugo IA
+          </button>
+<!-- Notifications -->
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high/60 transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-surface-container-lowest"></span>
+</button>
+<!-- Profile -->
+<div class="flex items-center gap-space-xs pl-space-xs border-l border-outline-variant/30">
+<img alt="Mariana Costa avatar verificada" class="w-9 h-9 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1Wmc5HDlp5kZ9ryFXa0vu62QW1c-yGmR5pXNhDKQ0yT_SgTymGIBvufFNvg3WopHfn_0Hg_asEbt6ssPbIP9rdocI4WvsXvQrnoMvKbHTk06nXor_ELq-tL9lG7GsLJvhe5A21GAKl4GhtVKgagt6WikUs-F5mFkc9cRhWHBFWzvnKl5Q5qI6aJc0n2eA7mRWIr6G9Hblz25y87Np9bCXawL_Vq8U-pqKd4d8TPi-8Yi8ZQZVKjPwgCIw"/>
+<span class="font-label-lg text-label-lg text-on-surface">Mariana C.</span>
+</div>
+</div>
+</header>
+<!-- Main Background Work Canvas (Dimmed & Blurred by modal) -->
+<main class="flex-1 p-space-xl overflow-y-auto bg-surface-container-low space-y-space-xl">
+<!-- Service Active Banner -->
+<div class="bg-surface-container-lowest rounded-2xl p-space-lg border border-outline-variant/30 shadow-sm flex items-center justify-between">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-0.5 rounded-full text-label-sm font-label-sm bg-tertiary-container/20 text-tertiary border border-tertiary-container/40 flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+                EN EJECUCIÓN EN DOMICILIO
+              </span>
+<span class="text-body-sm text-outline">Servicio #UG-8942</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">Instalación y revisión de tablero eléctrico bifásico con disyuntor bipolar y térmicas</h1>
+<p class="text-body-md text-on-surface-variant">Ejecutando ajuste de peines de distribución y pruebas de fuga de corriente diferencial (30mA).</p>
+</div>
+<div class="flex items-center gap-space-lg">
+<div class="text-right">
+<span class="text-label-sm text-outline">Cronómetro activo</span>
+<p class="font-headline-md text-headline-md text-primary font-bold">01h 14m</p>
+</div>
+<div class="w-px h-10 bg-outline-variant/30"></div>
+<div class="text-right">
+<span class="text-label-sm text-outline">Custodia Itaú Escrow</span>
+<p class="font-headline-md text-headline-md text-on-surface font-bold">R$ 175,00</p>
+</div>
+</div>
+</div>
+<!-- 2 Column View Mockup -->
+<div class="grid grid-cols-12 gap-space-lg">
+<!-- Left Service Stepper -->
+<div class="col-span-8 bg-surface-container-lowest rounded-2xl p-space-lg border border-outline-variant/30 space-y-space-md">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Estado técnico de la visita</h2>
+<div class="space-y-4">
+<div class="flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary flex items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-sm" data-icon="check">check</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg">Inspección inicial y desenergización de línea</h4>
+<p class="text-body-sm text-outline">Completado a las 14:10 hs</p>
+</div>
+</div>
+<div class="flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold text-xs animate-pulse">
+                  2
+                </div>
+<div>
+<h4 class="font-label-lg text-label-lg text-primary">Montaje de disyuntor bipolar 40A y llaves térmicas DIN</h4>
+<p class="text-body-sm text-outline">En curso • Calibración de torque en bornes</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Card: Professional Details -->
+<div class="col-span-4 bg-surface-container-lowest rounded-2xl p-space-lg border border-outline-variant/30 space-y-space-md">
+<h3 class="font-label-lg text-label-lg text-outline">PROFESIONAL ASIGNADO</h3>
+<div class="flex items-center gap-3">
+<img class="w-14 h-14 rounded-2xl object-cover ring-1 ring-outline-variant" data-alt="Close up professional portrait of Carlos Mendez, an authorized certified electrician wearing a navy blue service polo with name embroidery, smiling outdoors in Florianopolis next to a professional utility van." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2vNmzOjkkR-co6VGq9igbu3CbNSNTouhacQWC6nqDhdLrJb3NmKEPD9ti0quLMySSpF3-oQ_7FgZyBtxeVTrIeemKVonRq0lUxdEmdXW0u7nBwvauyo9QGcSgbqwBE1jOAqH51qZ-4zuAxZ9SJlie7n2KzjJHsR81MmBlkfejfM-WmVY8hqgvh4bdgAySv7pMDPck8Iqg_pPPD-yqjT_cdkbk4rj_SOoqBGOB5vaSOUd6XCuezXjBePSBpU-OtFmfJiM6ROkqPX8"/>
+<div>
+<h4 class="font-headline-sm text-headline-sm">Carlos Méndez</h4>
+<p class="text-label-sm text-outline">CREA/SC #51842 • 4.97 ★ (284)</p>
+</div>
+</div>
+<div class="p-space-xs rounded-xl bg-surface-container-low border border-outline-variant/20 flex items-center justify-between">
+<span class="text-body-sm">PIN de Conformidad</span>
+<span class="font-code-sm font-bold tracking-widest text-primary">•••• 4821</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- ======================================================== -->
+<!-- FROSTED BACKDROP BLUR OVERLAY (Context Preservation)    -->
+<!-- ======================================================== -->
+<div class="fixed inset-0 bg-inverse-surface/40 backdrop-blur-md z-40 flex items-center justify-center p-space-md sm:p-space-xl transition-all">
+<!-- ======================================================== -->
+<!-- PROMINENT FLOATING MODAL PANEL: AMPLIAR SERVICIO         -->
+<!-- ======================================================== -->
+<section aria-labelledby="modal-title" aria-modal="true" class="bg-surface-container-lowest w-full max-w-2xl rounded-3xl border border-outline-variant/50 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden animate-in fade-in zoom-in-95 duration-200" role="dialog">
+<!-- Modal Top Bar -->
+<header class="px-space-xl py-space-lg border-b border-outline-variant/30 bg-surface-container-lowest flex items-center justify-between sticky top-0 z-10">
+<div class="space-y-1">
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed/40 text-on-primary-fixed-variant text-label-sm font-label-sm border border-primary-container/30">
+<span class="material-symbols-outlined text-sm text-primary" data-icon="verified_user" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<span>Propuesta de ampliación técnica en sitio</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface" id="modal-title">Ampliación de Servicio Solicitada</h2>
+</div>
+<button aria-label="Cerrar modal" class="w-10 h-10 rounded-full flex items-center justify-center text-outline hover:text-on-surface hover:bg-surface-container-high/60 transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="close">close</span>
+</button>
+</header>
+<!-- Scrollable Modal Body -->
+<div class="p-space-xl overflow-y-auto custom-scrollbar space-y-space-lg">
+<!-- Professional Proposal Origin Card -->
+<div class="p-space-md rounded-2xl bg-surface-container-low border border-outline-variant/40 flex items-center gap-space-md">
+<img class="w-14 h-14 rounded-2xl object-cover shadow-sm ring-2 ring-primary-container/30 flex-shrink-0" data-alt="Close up professional portrait of Carlos Mendez, an authorized certified electrician wearing a navy blue service polo with name embroidery, smiling outdoors in Florianopolis next to a professional utility van." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCbCElwN7Al9dKySyFxl0PHhT9b7SnkUApQV6Ap894nAdmxD3npt4LecG19R0xuCDPoJieoG-FnZlIcmQUnYT4Eb2vjrwKjSx0h3Pih6HV6RhlFaFKOSbT3sJ7MgA0E5pVf96Ww8YJnqVP8zuKGiqPC4xc7JxbqQs6jWA9uxviV7KS-XEvCsEQOd13jExmA-KOpHtBnEblSqn4cNPqZUsg8jic6r_405FkEhA-l0bsrqqMC2BjN74JLrxL_ahH80Xt14ZcNkFmiADA"/>
+<div class="space-y-0.5 min-w-0">
+<div class="flex items-center gap-2">
+<span class="font-headline-sm text-headline-sm text-on-surface truncate">Carlos Méndez</span>
+<span class="px-2 py-0.5 rounded text-label-sm bg-tertiary/10 text-tertiary font-medium">En sitio</span>
+</div>
+<p class="text-body-sm text-outline">Electricista Matriculado CREA/SC #51842</p>
+<p class="text-body-sm text-on-surface-variant pt-0.5">Envió una propuesta de tarea complementaria mientras realiza la intervención en tu domicilio.</p>
+</div>
+</div>
+<!-- Highlighted Card: Proposed Additional Work -->
+<div class="rounded-2xl border-2 border-primary-container/60 bg-gradient-to-br from-surface-container-lowest to-surface-container-low/60 p-space-lg shadow-sm relative overflow-hidden">
+<!-- Decorative Accent -->
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-space-md pb-space-md border-b border-outline-variant/30">
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="p-1.5 rounded-lg bg-primary-container text-on-primary">
+<span class="material-symbols-outlined text-lg" data-icon="light">light</span>
+</span>
+<span class="text-label-sm font-label-sm uppercase tracking-wider text-primary">Tarea solicitada</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Instalación de aplique LED exterior</h3>
+<p class="text-body-md text-on-surface-variant max-w-lg">
+                  Fijación, conexión estanca IP65 y conexionado a la línea de circuito de iluminación exterior desde la térmica secundaria probada en el tablero.
+                </p>
+</div>
+<!-- Price & Time Highlight Badges -->
+<div class="flex sm:flex-col items-end justify-between sm:justify-start gap-2 flex-shrink-0">
+<div class="text-right">
+<span class="text-label-sm text-outline block">Precio adicional</span>
+<span class="font-display-lg-mobile sm:font-display-lg text-display-lg-mobile sm:text-display-lg text-primary font-bold leading-none">+R$ 55,00</span>
+</div>
+<div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container text-on-surface text-label-sm font-label-sm border border-outline-variant/40">
+<span class="material-symbols-outlined text-sm text-secondary" data-icon="schedule">schedule</span>
+                  +30 min estimación
+                </div>
+</div>
+</div>
+<!-- Materials & Technical Specifications -->
+<div class="pt-space-md flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl mt-0.5 flex-shrink-0" data-icon="build_circle">build_circle</span>
+<div class="text-body-sm text-on-surface-variant">
+<strong class="text-on-surface font-label-md">Materiales y seguridad incluidos:</strong> Incluye bornes de derivación protegidos y sellado con silicona neutra de intemperie. Garantía técnica de estanqueidad bajo norma NBR-5410.
+              </div>
+</div>
+</div>
+<!-- Hugo IA Copilot Smart Banner -->
+<div class="rounded-2xl bg-gradient-to-r from-primary-fixed/30 via-surface-container to-surface-container-low border border-primary-container/40 p-space-md flex items-start gap-space-md">
+<div class="w-9 h-9 rounded-xl bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-xl" data-icon="smart_toy">smart_toy</span>
+</div>
+<div class="space-y-1">
+<div class="flex items-center gap-2">
+<span class="font-label-lg text-label-lg text-on-primary-container font-bold">Hugo IA Copilot</span>
+<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-primary-container text-on-primary uppercase">Validación inteligente</span>
+</div>
+<p class="text-body-sm text-on-surface-variant leading-relaxed">
+                El precio propuesto de <strong class="text-on-surface font-semibold">R$ 55,00</strong> está un <strong class="text-tertiary font-semibold">18% por debajo</strong> del arancel estándar en Florianópolis gracias a la bonificación de desplazamiento por estar en sitio. La carga eléctrica adicional (12W LED) es 100% compatible con la térmica de 16A recién instalada.
+              </p>
+</div>
+</div>
+<!-- Escrow Breakdown & Impact on Custody -->
+<div class="rounded-2xl bg-surface-container-low/70 border border-outline-variant/40 p-space-lg space-y-space-md">
+<div class="flex items-center justify-between">
+<span class="font-label-lg text-label-lg text-on-surface flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-lg" data-icon="account_balance">account_balance</span>
+                Desglose financiero en custodia (Itaú Escrow)
+              </span>
+<span class="text-label-sm font-label-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="lock" style="font-variation-settings: 'FILL' 1;">lock</span>
+                Protegido hasta tu conformidad
+              </span>
+</div>
+<div class="space-y-2 pt-1">
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span>Servicio original (Tablero eléctrico y térmicas)</span>
+<span class="font-medium text-on-surface">R$ 175,00</span>
+</div>
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span class="flex items-center gap-1">
+                  Ampliación (Instalación de aplique LED)
+                  <span class="text-xs text-primary font-medium">(Nueva solicitud)</span>
+</span>
+<span class="font-medium text-primary">+R$ 55,00</span>
+</div>
+<div class="flex justify-between text-body-md text-on-surface-variant">
+<span>Desplazamiento adicional</span>
+<span class="font-medium text-tertiary">R$ 0,00 <span class="text-xs bg-tertiary/10 px-1.5 py-0.5 rounded">100% bonificado en sitio</span></span>
+</div>
+<div class="h-px bg-outline-variant/40 my-2"></div>
+<div class="flex justify-between items-baseline pt-1">
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">Nuevo total bajo custodia Escrow</span>
+<span class="block text-body-sm text-outline">Sólo se liberará al ingresar tu PIN final</span>
+</div>
+<span class="font-headline-lg text-headline-lg text-on-surface font-bold">R$ 230,00</span>
+</div>
+</div>
+<!-- Wallet Deduction Detail -->
+<div class="pt-space-xs">
+<div class="p-space-sm rounded-xl bg-surface-container-lowest border border-outline-variant/30 flex items-center justify-between text-body-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-on-surface-variant">Forma de débito: <strong class="text-on-surface">Billetera UGO</strong></span>
+</div>
+<div class="text-right">
+<span class="text-outline">Saldo disponible: R$ 570,00</span>
+<span class="text-primary font-medium block">Saldo restante: R$ 515,00</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Legal & Guarantee Notice -->
+<div class="p-space-md rounded-2xl bg-surface-container/50 border border-outline-variant/30 space-y-1.5 text-body-sm text-on-surface-variant">
+<div class="flex items-center gap-2 text-on-surface font-label-md">
+<span class="material-symbols-outlined text-tertiary text-base" data-icon="shield">shield</span>
+              Cobertura Unificada UGO Shield 60 Días
+            </div>
+<p>
+              Todo queda registrado dentro del servicio activo <strong class="text-on-surface">#UG-8942</strong> con cobertura extendida UGO Shield de 60 días y comprobante técnico único con validez fiscal y de aseguradora.
+            </p>
+<p class="text-outline text-xs">
+              El PIN de conformidad seguirá siendo uno solo y se requerirá exclusivamente al finalizar la totalidad de los trabajos.
+            </p>
+</div>
+</div>
+<!-- Sticky Modal Footer Actions -->
+<footer class="p-space-lg bg-surface-container-lowest border-t border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<button aria-label="Rechazar ampliación de servicio" class="w-full sm:w-auto px-space-lg py-3 rounded-xl border border-outline-variant/60 text-secondary hover:bg-surface-container-low transition-colors font-label-lg text-center" type="button">
+            Rechazar ampliación
+          </button>
+<div class="flex items-center gap-space-md w-full sm:w-auto">
+<button class="w-full sm:w-auto flex-1 sm:flex-initial flex items-center justify-center gap-2 px-space-xl py-3.5 rounded-xl bg-tertiary hover:bg-tertiary-container hover:text-on-tertiary-container text-on-tertiary font-label-lg shadow-md hover:shadow-lg transition-all active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+              Aceptar ampliación (+R$ 55,00)
+            </button>
+</div>
+</footer>
+</section>
+</div>
+</div>
+</body></html>

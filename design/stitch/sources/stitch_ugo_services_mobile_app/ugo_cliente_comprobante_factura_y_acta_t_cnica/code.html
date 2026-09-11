@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full">
+<!-- Top Navigation & Context Actions -->
+<div class="px-space-md py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<button aria-label="Volver a actividad" class="w-touch-target h-touch-target flex items-center justify-center rounded-full bg-surface-container-low hover:bg-surface-container transition-all active:scale-95 text-on-surface">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col">
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Comprobante y Acta</h2>
+<div class="flex items-center gap-1.5 mt-0.5">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-primary font-bold">#UG-88412 · Certificado Oficial</span>
+</div>
+</div>
+</div>
+<!-- Quick Tool Actions -->
+<div class="flex items-center gap-1.5">
+<button aria-label="Compartir Comprobante" class="w-10 h-10 flex items-center justify-center rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container transition-all active:scale-95 text-on-surface" id="btn-share">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button aria-label="Descargar PDF" class="w-10 h-10 flex items-center justify-center rounded-xl bg-primary text-on-primary shadow-sm hover:bg-primary-container transition-all active:scale-95" id="btn-quick-download">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+</div>
+</div>
+<!-- Trust Badges & Guarantee Status -->
+<div class="px-space-md pt-space-xs pb-space-sm">
+<div class="p-space-sm rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-2">
+<!-- Legal Verification Badge -->
+<div class="flex items-center gap-space-sm bg-primary/10 px-space-sm py-2 rounded-xl">
+<div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-on-primary shrink-0">
+<span class="material-symbols-outlined text-[16px]">verified_user</span>
+</div>
+<p class="font-label-md text-label-md text-primary font-bold truncate">
+          Firma Digital &amp; Hash Criptográfico Válido
+        </p>
+</div>
+<!-- Shield Policy Badge -->
+<div class="flex items-center justify-between px-space-xxs text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">security</span>
+<span class="font-body-sm text-body-sm text-on-surface">Póliza UGO Shield Activa</span>
+</div>
+<span class="font-label-sm text-label-sm bg-secondary-fixed text-on-secondary-fixed px-2 py-0.5 rounded-full">
+          Cobertura 6 Meses
+        </span>
+</div>
+</div>
+</div>
+<!-- Document Tabs Selector -->
+<div class="px-space-md pb-space-md">
+<div class="bg-surface-container p-1 rounded-xl flex items-center justify-between text-center gap-1">
+<button class="flex-1 py-2 px-1 rounded-lg font-label-md text-label-md transition-all bg-surface-container-lowest text-primary shadow-sm" id="tab-acta">
+        Acta Técnica
+      </button>
+<button class="flex-1 py-2 px-1 rounded-lg font-label-md text-label-md transition-all text-on-surface-variant hover:text-on-surface" id="tab-factura">
+        Factura Fiscal
+      </button>
+<button class="flex-1 py-2 px-1 rounded-lg font-label-md text-label-md transition-all text-on-surface-variant hover:text-on-surface" id="tab-garantia">
+        Póliza Shield
+      </button>
+</div>
+</div>
+<!-- Document Viewer: Sheet Style -->
+<div class="px-space-md pb-space-lg">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-md flex flex-col relative overflow-hidden">
+<!-- Watermark Background Security Accent -->
+<div class="absolute right-[-20px] top-12 opacity-[0.03] select-none pointer-events-none text-on-surface">
+<span class="material-symbols-outlined text-[180px]">gavel</span>
+</div>
+<!-- Header: Official Stamp & Registry Info -->
+<div class="flex items-start justify-between pb-space-sm">
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[22px]">verified</span>
+<span class="font-label-lg text-label-lg text-on-surface font-extrabold tracking-tight">UGO CERTIFIED</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Protocolo CREA/ABNT N-442</span>
+</div>
+<div class="bg-surface-container-high px-2.5 py-1 rounded-lg text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">FOLIO OFICIAL</span>
+<span class="font-label-md text-label-md text-primary font-mono font-bold">ACT-88412-BR</span>
+</div>
+</div>
+<div class="py-1 px-2.5 bg-surface-container-low rounded-lg mb-space-md flex items-center justify-between text-outline">
+<span class="font-label-sm text-label-sm">EMISIÓN: 25 OCT 2024 · 17:30 HS</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">VALIDADO ONLINE</span>
+</div>
+<!-- Parties Involved: Provider & Client -->
+<div class="space-y-space-xs pb-space-md">
+<!-- Professional Data -->
+<div class="p-space-sm rounded-2xl bg-surface-container-low flex items-center gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-primary/15 flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[24px]">engineering</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate">Carlos Méndez</span>
+<span class="font-label-sm text-label-sm text-primary bg-primary/10 px-1.5 py-0.5 rounded">Nivel 3</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant truncate">CREA #7419 · Especialista Eléctrico</span>
+</div>
+</div>
+<!-- Client & Property Data -->
+<div class="p-space-sm rounded-2xl bg-surface-container-low flex items-start gap-space-sm">
+<div class="w-11 h-11 rounded-full bg-secondary-fixed flex items-center justify-center text-on-secondary-fixed shrink-0">
+<span class="material-symbols-outlined text-[24px]">home_pin</span>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<div class="flex items-center justify-between">
+<span class="font-title-md text-title-md text-on-surface font-bold truncate">Martín Benítez</span>
+<span class="font-label-sm text-label-sm text-outline">CPF 348.***.***-20</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant leading-snug">Av. das Nações 1420, Depto 3B · Canasvieiras, Florianópolis</span>
+</div>
+</div>
+</div>
+<!-- Technical Report Summary -->
+<div class="pb-space-md flex flex-col gap-space-xs">
+<div class="flex items-center gap-1 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">bolt</span>
+<h3 class="font-label-lg text-label-lg uppercase tracking-wider text-outline">Intervención Técnica Realizada</h3>
+</div>
+<div class="p-space-sm rounded-2xl bg-surface-container-low space-y-2">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Electricidad de Potencia &amp; Cuadro</span>
+<span class="font-label-sm text-label-sm bg-primary/10 text-primary px-2 py-0.5 rounded-full font-bold">Resuelto</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+            Reemplazo de disyuntor bipolar 40A Schneider, recalibración de cargas térmicas, ajuste de borneras y prueba de fuga a tierra con telurómetro.
+          </p>
+<!-- Measured Technical Parameters -->
+<div class="pt-2 grid grid-cols-3 gap-1 text-center">
+<div class="bg-surface-container-lowest p-2 rounded-xl">
+<span class="font-label-sm text-label-sm text-outline block">Tensión</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">220V Nom</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded-xl">
+<span class="font-label-sm text-label-sm text-outline block">Disparo</span>
+<span class="font-label-md text-label-md text-primary font-bold">21 ms</span>
+</div>
+<div class="bg-surface-container-lowest p-2 rounded-xl">
+<span class="font-label-sm text-label-sm text-outline block">Aislación</span>
+<span class="font-label-md text-label-md text-secondary font-bold">&gt; 50 MΩ</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Before / After Certified Evidence Gallery -->
+<div class="pb-space-md flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-primary">photo_camera</span>
+<h3 class="font-label-lg text-label-lg uppercase tracking-wider text-outline">Evidencia Fotográfica</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Metadatos GPS Auditados</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Before Item -->
+<div class="flex flex-col gap-1">
+<div class="relative w-full h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of a chaotic electrical switchboard with charred overheated copper wiring and tripped discolored fuses before professional repair, realistic lighting, indoor residential setting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9z4_qJjvRceDJMFffKB3Y6M0PUrkAMbpCqCnL_SgZWv_2kWBIuVZtOkhHHVPUqmzes3hiyltUOqo7FVvlKGKRvOsZT6TiYTyw0NC24d1Zvdl9OQhvDh3qIdL6625T0u4VhF2JONxz3in1BYsq5RvNBd8KV1bLjzVpTjFcWAXdHUhYNZInwDAOXy4IKlpvQQslFX9gPpqUWP32X8g8xDgDgpNCiGCM1pBHh9XxqALehG0kwgt1SKRGBw"/>
+<span class="absolute top-2 left-2 bg-error/90 text-on-error font-label-sm text-label-sm px-1.5 py-0.5 rounded backdrop-blur-sm">Antes</span>
+<span class="absolute bottom-1 right-1 bg-inverse-surface/80 text-inverse-on-surface font-label-sm text-[10px] px-1 rounded">16:10 HS</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">Tablero saturado y recalentado</span>
+</div>
+<!-- After Item -->
+<div class="flex flex-col gap-1">
+<div class="relative w-full h-28 rounded-xl overflow-hidden bg-surface-container-high shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Pristine and clean modern electrical box with neatly organized labeled cables, brand new white Schneider circuit breaker switch sealed with security lead tag, certified neat repair" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAFt82es_7b9qP7ZDBWlwox1JnRAEC0N_OG-sXDBqNWInfwKOvDuZDZKWjg2_c8zyhk6F83C-rtiYGQW7lJ-jZjGZqHipkQjaPQ0n9rvnUHOfSrlU5l5P_ehsVkyQAfZVDNnmK0nLWkuPVyptjDdtyH6Sob4j5wZsmIktruEe4zIxAZ6den3JySSlJoS762iZYPKpcQyIQcZQu2vSqFo5VBzT273Cqamtglm8XAZU7xH7sA3nAtxwIHxg"/>
+<span class="absolute top-2 left-2 bg-primary/95 text-on-primary font-label-sm text-label-sm px-1.5 py-0.5 rounded backdrop-blur-sm">Después</span>
+<span class="absolute bottom-1 right-1 bg-inverse-surface/80 text-inverse-on-surface font-label-sm text-[10px] px-1 rounded">17:22 HS</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">Gabinete sellado y precintado</span>
+</div>
+</div>
+</div>
+<!-- Financial & Fiscal Breakdown -->
+<div class="pb-space-md flex flex-col gap-space-xs">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-primary">receipt</span>
+<h3 class="font-label-lg text-label-lg uppercase tracking-wider text-outline">Liquidación Fiscal &amp; Facturación</h3>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-2xl space-y-2">
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-sm text-body-sm">Mano de obra especializada (2.5 hs)</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">R$ 110,00</span>
+</div>
+<div class="flex justify-between items-center text-on-surface-variant">
+<span class="font-body-sm text-body-sm">Disyuntor bipolar 40A Schneider + peines</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">R$ 65,00</span>
+</div>
+<div class="flex justify-between items-center text-outline">
+<span class="font-body-sm text-body-sm">Retención legal ISS / Tributos (5%)</span>
+<span class="font-label-sm text-label-sm">R$ 8,75</span>
+</div>
+<div class="pt-2 flex justify-between items-end">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Total Liquidado</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[18px]">credit_card</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mastercard •••• 4821</span>
+</div>
+</div>
+<span class="font-headline-md text-headline-md text-primary font-extrabold">R$ 175,00</span>
+</div>
+</div>
+</div>
+<!-- Dual Digital Signature Block & QR Integrity -->
+<div class="pt-space-xs flex flex-col gap-space-sm">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px] text-primary">draw</span>
+<h3 class="font-label-lg text-label-lg uppercase tracking-wider text-outline">Conformidad Digital de Partes</h3>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Specialist Signature -->
+<div class="p-2.5 rounded-xl bg-surface-container-low flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Técnico Matriculado</span>
+<span class="material-symbols-outlined text-primary text-[16px]">check_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-[13px] italic font-semibold text-on-surface text-center font-mono py-1">C. Mendez #7419</span>
+<span class="font-label-sm text-[9px] text-outline truncate font-mono">SHA256: 7f83b1...e49a</span>
+</div>
+</div>
+<!-- Customer Signature -->
+<div class="p-2.5 rounded-xl bg-surface-container-low flex flex-col justify-between h-24">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Firma Cliente</span>
+<span class="material-symbols-outlined text-primary text-[16px]">fingerprint</span>
+</div>
+<div class="flex flex-col">
+<span class="font-title-md text-[13px] italic font-semibold text-on-surface text-center font-mono py-1">M. Benítez OK</span>
+<span class="font-label-sm text-[9px] text-outline truncate font-mono">Biométrica: 17:30:14</span>
+</div>
+</div>
+</div>
+<!-- QR Code & Public Validation URL -->
+<div class="p-space-sm rounded-2xl bg-surface-container-high flex items-center justify-between gap-space-sm">
+<div class="w-16 h-16 bg-surface-container-lowest p-1 rounded-xl shadow-sm flex items-center justify-center shrink-0">
+<!-- Simulated Crisp SVG QR Code -->
+<svg class="w-full h-full text-on-surface" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewbox="0 0 24 24">
+<rect height="6" rx="1" width="6" x="3" y="3"></rect>
+<rect height="6" rx="1" width="6" x="15" y="3"></rect>
+<rect height="6" rx="1" width="6" x="3" y="15"></rect>
+<path d="M15 15h2v2h-2z"></path>
+<path d="M19 19h2v2h-2z"></path>
+<path d="M15 19h2v2h-2z"></path>
+<path d="M19 15h2v2h-2z"></path>
+<path d="M10 7h4"></path>
+<path d="M7 10v4"></path>
+</svg>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-md text-label-md text-on-surface font-bold">Validación Pública UGO</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant truncate">ugo.app/val/88412-br-sha</p>
+<span class="font-label-sm text-label-sm text-secondary font-medium">Inmutable en ledger descentralizado</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Primary Management Actions -->
+<div class="px-space-md pb-space-lg flex flex-col gap-space-sm">
+<!-- Main PDF Download Button -->
+<button class="w-full h-[52px] rounded-2xl bg-primary text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:bg-primary-container transition-all active:scale-[0.98]" id="btn-main-download">
+<span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+<span>Descargar Factura &amp; Acta en PDF (3.2 MB)</span>
+</button>
+<!-- Secondary Email Action Button -->
+<button class="w-full h-[50px] rounded-2xl bg-surface-container-lowest text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-sm hover:bg-surface-container transition-all active:scale-[0.98]" id="btn-email-doc">
+<span class="material-symbols-outlined text-[20px] text-secondary">mail</span>
+<span>Enviar por Correo Electrónico</span>
+</button>
+<!-- Mediation Link -->
+<div class="pt-space-xs text-center">
+<a class="inline-flex items-center gap-1 font-label-md text-label-md text-outline hover:text-error transition-colors" href="#" id="link-dispute">
+<span class="material-symbols-outlined text-[16px]">flag</span>
+<span>¿Dudas con el trabajo? Reportar mediación UGO Shield</span>
+</a>
+</div>
+</div>
+<!-- Microinteraction Feedback Snackbar (Hidden by default) -->
+<div class="fixed bottom-20 left-1/2 -translate-x-1/2 px-4 py-2.5 rounded-full bg-inverse-surface text-inverse-on-surface text-body-sm font-medium shadow-xl flex items-center gap-2 transition-all opacity-0 pointer-events-none z-50" id="toast-feedback">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed">check_circle</span>
+<span id="toast-text">Acción completada</span>
+</div>
+</div>
+<script>
+  (function() {
+    const toast = document.getElementById('toast-feedback');
+    const toastText = document.getElementById('toast-text');
+
+    function showToast(msg) {
+      if (!toast || !toastText) return;
+      toastText.textContent = msg;
+      toast.classList.remove('opacity-0', 'pointer-events-none');
+      toast.classList.add('opacity-100');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none');
+        toast.classList.remove('opacity-100');
+      }, 2600);
+    }
+
+    const downloadBtn = document.getElementById('btn-main-download');
+    const quickDownload = document.getElementById('btn-quick-download');
+    const shareBtn = document.getElementById('btn-share');
+    const emailBtn = document.getElementById('btn-email-doc');
+    const tabs = ['tab-acta', 'tab-factura', 'tab-garantia'];
+
+    if (downloadBtn) downloadBtn.addEventListener('click', () => showToast('Descargando Acta ACT-88412.pdf...'));
+    if (quickDownload) quickDownload.addEventListener('click', () => showToast('Generando PDF optimizado...'));
+    if (shareBtn) shareBtn.addEventListener('click', () => showToast('Enlace seguro copiado al portapapeles'));
+    if (emailBtn) emailBtn.addEventListener('click', () => showToast('Enviado a martin.benitez@email.com'));
+
+    tabs.forEach(tabId => {
+      const btn = document.getElementById(tabId);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          tabs.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+              el.className = 'flex-1 py-2 px-1 rounded-lg font-label-md text-label-md transition-all text-on-surface-variant hover:text-on-surface';
+            }
+          });
+          btn.className = 'flex-1 py-2 px-1 rounded-lg font-label-md text-label-md transition-all bg-surface-container-lowest text-primary shadow-sm';
+          showToast('Cargando vista: ' + btn.innerText);
+        });
+      }
+    });
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

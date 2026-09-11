@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Plus+Jakarta+Sans:wght@100..900&display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={"darkMode":"class","theme":{"extend":{"colors":{"tertiary":"#545c72","on-error-container":"#93000a","on-error":"#ffffff","primary-fixed-dim":"#6bd8cb","surface-container-high":"#dce9ff","primary":"#00685f","on-tertiary-fixed-variant":"#3f465c","on-primary-container":"#f4fffc","on-background":"#0b1c30","secondary-fixed-dim":"#d2bbff","on-surface":"#0b1c30","surface-container-lowest":"#ffffff","tertiary-fixed":"#dae2fd","tertiary-fixed-dim":"#bec6e0","inverse-surface":"#213145","on-primary-fixed-variant":"#005049","primary-container":"#008378","on-secondary":"#ffffff","surface-container":"#e5eeff","surface-dim":"#cbdbf5","on-secondary-fixed-variant":"#5a00c6","outline-variant":"#bcc9c6","surface-variant":"#d3e4fe","on-secondary-container":"#fffbff","secondary-fixed":"#eaddff","on-primary-fixed":"#00201d","outline":"#6d7a77","surface-container-highest":"#d3e4fe","on-surface-variant":"#3d4947","surface-tint":"#006a61","secondary-container":"#8a4cfc","on-primary":"#ffffff","inverse-primary":"#6bd8cb","tertiary-container":"#6c748b","surface":"#f8f9ff","on-tertiary-fixed":"#131b2e","error-container":"#ffdad6","primary-fixed":"#89f5e7","surface-bright":"#f8f9ff","inverse-on-surface":"#eaf1ff","on-secondary-fixed":"#25005a","secondary":"#712ae2","on-tertiary-container":"#fefcff","error":"#ba1a1a","on-tertiary":"#ffffff","background":"#f8f9ff","surface-container-low":"#eff4ff"},"borderRadius":{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},"spacing":{"space-xs":"0.25rem","space-md":"0.75rem","space-xl":"1.75rem","margin":"1.5rem","space-sm":"0.5rem","space-lg":"1.25rem","gutter":"1rem"},"fontFamily":{"label-md":["Inter"],"body-lg":["Inter"],"label-sm":["Inter"],"body-sm":["Inter"],"body-md":["Inter"],"headline-xl":["Plus Jakarta Sans"],"metric-mono-lg":["Inter"],"headline-sm":["Plus Jakarta Sans"],"metric-mono":["Inter"],"headline-lg":["Plus Jakarta Sans"]},"fontSize":{"label-md":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0.005em","fontWeight":"500"}],"body-lg":["0.9375rem",{"lineHeight":"1.5rem","letterSpacing":"-0.01em","fontWeight":"400"}],"label-sm":["0.75rem",{"lineHeight":"1rem","letterSpacing":"0.02em","fontWeight":"600"}],"body-sm":["0.8125rem",{"lineHeight":"1.125rem","letterSpacing":"0em","fontWeight":"400"}],"body-md":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-xl":["1.75rem",{"lineHeight":"2.25rem","letterSpacing":"-0.025em","fontWeight":"700"}],"metric-mono-lg":["1.5rem",{"lineHeight":"2rem","letterSpacing":"-0.02em","fontWeight":"600"}],"headline-sm":["1.125rem",{"lineHeight":"1.5rem","letterSpacing":"-0.015em","fontWeight":"600"}],"metric-mono":["0.875rem",{"lineHeight":"1.25rem","letterSpacing":"0em","fontWeight":"500"}],"headline-lg":["1.375rem",{"lineHeight":"1.875rem","letterSpacing":"-0.02em","fontWeight":"600"}]}}}}</script></head><body class="bg-background font-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-50 flex flex-col justify-between overflow-y-auto"><div class="p-space-lg"><div class="flex items-center gap-space-sm mb-space-lg pb-space-md border-b border-surface-container-high"><img alt="UGO Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VA_16Eb7Kbzqy1PSzEY1FMWSFZ3-SfyITTyOG6pFkWHKE3ti_eU08v5uslC7voj0uZfeKBYPAn_mRLVdFO5upusunJmyX4ejFHsx3RbK5IbpFdGqojURR6UqG0IcXHw0tHdaGGYIvXFyKUUREPGX-0XZL15Arr1zjTlquXVByDIx0FKLvY_fxIJGfp-524nR_Vwf2yHXiR_EoCqtm-jN2X8WtC4qrfTaWtyfU7GX5BF3GoqAhq_RaEoQ"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">UGO OPS</span><span class="font-label-sm text-label-sm text-outline tracking-wider uppercase">Master Console</span></div></div><div class="mb-space-lg"><div class="flex items-center justify-between px-space-sm mb-space-xs"><span class="font-label-sm text-label-sm text-primary font-bold uppercase tracking-wider">Operaciones</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 bg-primary-fixed text-on-primary-fixed rounded-lg">Live</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-primary-container text-on-primary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="dashboard-operativo" href="#"><span class="material-symbols-outlined text-[20px]">space_dashboard</span><span>Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="clientes" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span>Clientes</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="proveedores-onboarding" href="#"><span class="material-symbols-outlined text-[20px]">badge</span><span>Proveedores & Onboarding</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl transition-all bg-primary-container text-on-primary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]" data-path="servicios-en-vivo" href="#"><span class="material-symbols-outlined text-[20px]">sensors</span><span>Servicios en Vivo</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="ampliaciones" href="#"><span class="material-symbols-outlined text-[20px]">add_task</span><span>Ampliaciones</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="pagos-conciliacion" href="#"><span class="material-symbols-outlined text-[20px]">payments</span><span>Pagos & Conciliación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reclamos-mediacion" href="#"><span class="material-symbols-outlined text-[20px]">gavel</span><span>Reclamos & Mediación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="categorias" href="#"><span class="material-symbols-outlined text-[20px]">category</span><span>Categorías</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reputacion" href="#"><span class="material-symbols-outlined text-[20px]">star_half</span><span>Reputación</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="scout-operativo" href="#"><span class="material-symbols-outlined text-[20px]">radar</span><span>Scout Operativo</span></a></nav></div><div class="pt-space-xs"><div class="flex items-center justify-between px-space-sm mb-space-xs"><span class="font-label-sm text-label-sm text-secondary font-bold uppercase tracking-wider">Gobernanza Super Admin</span><span class="font-label-sm text-label-sm px-space-xs py-0.5 bg-secondary-fixed text-on-secondary-fixed rounded-lg">Privilegiado</span></div><nav class="flex flex-col gap-1" data-active-classes="bg-secondary-container text-on-secondary-container font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.08)]"><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="command-center" href="#"><span class="material-symbols-outlined text-[20px]">terminal</span><span>Command Center</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="administradores-roles" href="#"><span class="material-symbols-outlined text-[20px]">admin_panel_settings</span><span>Administradores & Roles</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="reglas-de-negocio" href="#"><span class="material-symbols-outlined text-[20px]">rule</span><span>Reglas de Negocio</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="feature-flags" href="#"><span class="material-symbols-outlined text-[20px]">toggle_on</span><span>Feature Flags</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="integraciones" href="#"><span class="material-symbols-outlined text-[20px]">hub</span><span>Integraciones</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="auditoria-seguridad" href="#"><span class="material-symbols-outlined text-[20px]">security</span><span>Auditoría & Seguridad</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="scout-estrategico" href="#"><span class="material-symbols-outlined text-[20px]">query_stats</span><span>Scout Estratégico</span></a><a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-all" data-path="configuracion-global" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Configuración Global</span></a></nav></div></div><div class="p-space-md m-space-sm bg-surface-container-low rounded-xl flex items-center justify-between"><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface-variant">SLA de Plataforma</span><span class="font-metric-mono text-metric-mono text-primary font-bold">99.98% OK</span></div><span class="h-2 w-2 rounded-full bg-primary animate-pulse"></span></div></aside><div class="pl-72"><header class="fixed top-0 left-72 right-0 h-16 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-gutter"><div class="flex items-center gap-space-md"><img alt="UGO Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VA_16Eb7Kbzqy1PSzEY1FMWSFZ3-SfyITTyOG6pFkWHKE3ti_eU08v5uslC7voj0uZfeKBYPAn_mRLVdFO5upusunJmyX4ejFHsx3RbK5IbpFdGqojURR6UqG0IcXHw0tHdaGGYIvXFyKUUREPGX-0XZL15Arr1zjTlquXVByDIx0FKLvY_fxIJGfp-524nR_Vwf2yHXiR_EoCqtm-jN2X8WtC4qrfTaWtyfU7GX5BF3GoqAhq_RaEoQ"/><div class="flex items-center gap-space-xs px-space-sm py-1 bg-surface-container-high rounded-full"><span class="h-2 w-2 rounded-full bg-primary"></span><span class="font-label-sm text-label-sm text-on-surface font-semibold tracking-wide">PROD - AMÉRICA LATINA</span></div><div class="hidden md:flex items-center bg-surface-container-low px-space-md py-1.5 rounded-full w-80 gap-space-xs"><span class="material-symbols-outlined text-outline text-[18px]">search</span><input class="bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline w-full" placeholder="Buscar servicio, proveedor, orden o ID..." type="text"/></div></div><div class="flex items-center gap-space-md"><div class="flex items-center bg-surface-container p-1 rounded-full"><button class="px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold bg-primary text-on-primary transition-all" type="button">ADMIN · OPERACIONES</button><button class="px-space-sm py-1 rounded-full font-label-sm text-label-sm font-semibold text-on-surface-variant hover:text-secondary transition-all" type="button">SUPER ADMIN · GOBERNANZA</button></div><button class="relative p-space-xs text-on-surface-variant hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1 right-1 h-4 w-4 bg-error text-on-error font-label-sm text-[10px] rounded-full flex items-center justify-center font-bold leading-none">7</span></button><div class="flex items-center gap-space-sm pl-space-sm border-l border-surface-container-high"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden lg:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-bold leading-none">Santiago Vega</span><span class="font-label-sm text-label-sm text-outline leading-tight">Lead Director Ops</span></div></div></div></header><main class="relative pt-16 w-full bg-background min-h-screen"><div class="flex flex-col w-full">
+<!-- Sub-Header & Live Metric Stream -->
+<section class="px-gutter pt-space-lg pb-space-md">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="p-space-xs rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">sensors</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold tracking-tight text-on-surface">Servicios en Vivo & Telemetría</span>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">184 Activos</span>
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline">Despacho en tiempo real, validación satelital y arbitraje de órdenes en curso (LATAM - Nodo São Paulo / CDMX).</p>
+</div>
+</div>
+<!-- Quick KPI Counters Micro-Bar -->
+<div class="flex items-center gap-space-sm overflow-x-auto">
+<div class="bg-surface-container-lowest px-space-md py-space-xs rounded-xl shadow-sm flex items-center gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">SLA Despacho</span>
+<span class="font-metric-mono text-metric-mono text-primary font-bold">4.2 min</span>
+</div>
+<svg class="w-10 h-6 text-primary" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 40 24">
+<path d="M1 18 L10 14 L18 17 L28 6 L39 10" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<div class="bg-surface-container-lowest px-space-md py-space-xs rounded-xl shadow-sm flex items-center gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Custodia Escrow</span>
+<span class="font-metric-mono text-metric-mono text-on-surface font-bold">R$ 58.920</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[20px]">lock_clock</span>
+</div>
+<div class="bg-surface-container-lowest px-space-md py-space-xs rounded-xl shadow-sm flex items-center gap-space-sm">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Tasa Desvío</span>
+<span class="font-metric-mono text-metric-mono text-secondary font-bold">1.8%</span>
+</div>
+<span class="material-symbols-outlined text-secondary text-[20px]">troubleshoot</span>
+</div>
+</div>
+</div>
+<!-- Status Tabs Strip -->
+<div class="mt-space-lg flex items-center gap-space-xs overflow-x-auto pb-space-xs scrollbar-none">
+<button class="group flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold shadow-sm transition-all whitespace-nowrap" type="button">
+<span>Todos</span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-lowest/20 text-on-primary-container font-metric-mono text-label-sm">184</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="w-2 h-2 rounded-full bg-tertiary-container"></span>
+<span>Buscando</span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-metric-mono text-label-sm">42</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span>En Camino</span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-metric-mono text-label-sm">28</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>En Curso</span>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-metric-mono text-label-sm font-semibold">86</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-secondary hover:bg-secondary-fixed/20 font-label-md text-label-md font-semibold transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px] text-secondary">add_alert</span>
+<span>Ampliación Pendiente</span>
+<span class="px-space-xs py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-metric-mono text-label-sm font-bold">9</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container font-label-md text-label-md transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px] text-primary">task_alt</span>
+<span>Finalización</span>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface font-metric-mono text-label-sm">14</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-space-xs rounded-xl bg-surface-container-lowest text-error hover:bg-error-container/30 font-label-md text-label-md font-semibold transition-all whitespace-nowrap shadow-sm" type="button">
+<span class="material-symbols-outlined text-[16px] text-error">gavel</span>
+<span>Disputa</span>
+<span class="px-space-xs py-0.5 rounded-full bg-error-container text-on-error-container font-metric-mono text-label-sm font-bold">5</span>
+</button>
+</div>
+</section>
+<!-- Control Workbench Toolbar -->
+<section class="px-gutter pb-space-md">
+<div class="bg-surface-container-lowest p-space-sm rounded-full shadow-sm flex flex-col xl:flex-row items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm w-full xl:w-auto flex-1">
+<div class="flex items-center bg-surface-container-low px-space-md py-space-xs rounded-full flex-1 max-w-xl gap-space-xs">
+<span class="material-symbols-outlined text-outline text-[20px]">search</span>
+<input class="bg-transparent border-none outline-none font-body-sm text-body-sm text-on-surface placeholder:text-outline w-full" placeholder="Buscar por código UGO-XXXX, cliente, proveedor, barrio..." type="text" value="UGO-9482"/>
+<button class="text-outline hover:text-on-surface" type="button"><span class="material-symbols-outlined text-[18px]">cancel</span></button>
+</div>
+<div class="hidden sm:flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-full">
+<span class="material-symbols-outlined text-outline text-[18px]">calendar_today</span>
+<select class="bg-transparent border-none outline-none font-label-md text-label-md text-on-surface cursor-pointer">
+<option>Hoy (Tiempo Real)</option>
+<option>Últimas 6 Horas</option>
+<option>Ayer - Cierre Nocturno</option>
+<option>Rango Personalizado...</option>
+</select>
+</div>
+<div class="hidden md:flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-full">
+<span class="material-symbols-outlined text-outline text-[18px]">tune</span>
+<span class="font-label-md text-label-md text-on-surface">Zona: Jardins / Pinheiros (SP)</span>
+</div>
+</div>
+<!-- Right Toggle & Actions -->
+<div class="flex items-center gap-space-xs w-full xl:w-auto justify-end">
+<div class="flex items-center bg-surface-container p-0.5 rounded-full">
+<button class="flex items-center gap-space-xs px-space-md py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-semibold shadow-sm transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">view_agenda</span>
+<span>Split Interactivo</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-1 rounded-full text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm font-semibold transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">map</span>
+<span>Mapa Operativo</span>
+</button>
+</div>
+<button class="p-space-xs rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" title="Exportar Log Operativo" type="button">
+<span class="material-symbols-outlined text-[20px]">download</span>
+</button>
+<button class="p-space-xs rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" title="Refrescar Feed" type="button">
+<span class="material-symbols-outlined text-[20px]">sync</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Main Workstation Layout: 55% Master Stream / 45% High-Detail Inspector Pane -->
+<section class="px-gutter pb-space-xl">
+<div class="grid grid-cols-12 gap-space-lg items-start">
+<!-- LEFT MASTER COLUMN: Live Services Table & Alerts (7 cols) -->
+<div class="col-span-12 lg:col-span-6 xl:col-span-7 flex flex-col gap-space-md">
+<!-- Live Alert Banner -->
+<div class="bg-secondary-fixed/30 p-space-md rounded-2xl flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-sm">
+<div class="p-space-xs rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">electric_meter</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Ampliación de Presupuesto en espera de Cliente</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">UGO-9482 requiere confirmación de R$ 180,00 por parte de Mariana R.</span>
+</div>
+</div>
+<span class="px-space-sm py-1 rounded-full bg-secondary text-on-secondary font-label-sm text-label-sm font-bold tracking-wide animate-pulse">ACCIONABLE</span>
+</div>
+<!-- Master Data Panel -->
+<div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+<!-- Table Header -->
+<div class="bg-surface-container-low px-space-md py-space-sm flex items-center justify-between text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<div class="w-28">Código & Fecha</div>
+<div class="flex-1">Servicio & Cliente</div>
+<div class="w-40">Técnico / Proveedor</div>
+<div class="w-32 text-right">Estado Actual</div>
+<div class="w-24 text-right">Monto (Escrow)</div>
+</div>
+<!-- Service List Rows -->
+<div class="flex flex-col">
+<!-- Row 1: SELECTED ACTIVE ITEM (UGO-9482) -->
+<div class="px-space-md py-space-sm bg-primary/5 shadow-inner flex items-center justify-between cursor-pointer transition-colors relative">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
+<div class="w-28 flex flex-col">
+<div class="flex items-center gap-1">
+<span class="font-metric-mono text-metric-mono font-bold text-primary">UGO-9482</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Hoy · 14:23 BRT</span>
+</div>
+<div class="flex-1 pr-space-sm flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Reparación Tablero Principal & Térmica</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span class="truncate">Mariana Rossi</span>
+<span class="text-outline">·</span>
+<span class="truncate text-outline text-[12px]">Pinheiros, SP</span>
+</div>
+</div>
+<div class="w-40 flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-label-sm">
+                  CR
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Carlos Ribas</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[12px]">star</span> 4.96 (Pro Elite)
+                  </span>
+</div>
+</div>
+<div class="w-32 flex justify-end">
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-secondary"></span>
+                  AMPLIACIÓN
+                </span>
+</div>
+<div class="w-24 text-right flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 500,00</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">+R$ 180 Pend.</span>
+</div>
+</div>
+<!-- Row 2: In Progress -->
+<div class="px-space-md py-space-sm hover:bg-surface-container-low/60 flex items-center justify-between cursor-pointer transition-colors">
+<div class="w-28 flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">UGO-9481</span>
+<span class="font-label-sm text-label-sm text-outline">Hoy · 14:15 BRT</span>
+</div>
+<div class="flex-1 pr-space-sm flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Instalación Smart Lock Yale YMC</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span class="truncate">Henrique Faria</span>
+<span class="text-outline">·</span>
+<span class="truncate text-outline text-[12px]">Itaim Bibi, SP</span>
+</div>
+</div>
+<div class="w-40 flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-label-sm">
+                  LS
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Lucas Souza</span>
+<span class="font-label-sm text-label-sm text-outline">Cerrajero Cert.</span>
+</div>
+</div>
+<div class="w-32 flex justify-end">
+<span class="px-space-sm py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+                  EN CURSO
+                </span>
+</div>
+<div class="w-24 text-right flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 240,00</span>
+<span class="font-label-sm text-label-sm text-outline">PIX Escrow</span>
+</div>
+</div>
+<!-- Row 3: En Camino -->
+<div class="px-space-md py-space-sm hover:bg-surface-container-low/60 flex items-center justify-between cursor-pointer transition-colors">
+<div class="w-28 flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">UGO-9480</span>
+<span class="font-label-sm text-label-sm text-outline">Hoy · 14:02 BRT</span>
+</div>
+<div class="flex-1 pr-space-sm flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Detección de Fuga no invasiva</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span class="truncate">Camila Duarte</span>
+<span class="text-outline">·</span>
+<span class="truncate text-outline text-[12px]">Moema, SP</span>
+</div>
+</div>
+<div class="w-40 flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-label-sm">
+                  AM
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">André Mello</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">En ruta (ETA 6m)</span>
+</div>
+</div>
+<div class="w-32 flex justify-end">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-primary"></span>
+                  EN CAMINO
+                </span>
+</div>
+<div class="w-24 text-right flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 195,00</span>
+<span class="font-label-sm text-label-sm text-outline">Tarjeta Preaut.</span>
+</div>
+</div>
+<!-- Row 4: Disputa Flagged -->
+<div class="px-space-md py-space-sm hover:bg-surface-container-low/60 flex items-center justify-between cursor-pointer transition-colors bg-error/5">
+<div class="w-28 flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-error">UGO-9475</span>
+<span class="font-label-sm text-label-sm text-outline">Hoy · 13:40 BRT</span>
+</div>
+<div class="flex-1 pr-space-sm flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Mantenimiento Climatización Inverter</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span class="truncate">Gabriel Torres</span>
+<span class="text-outline">·</span>
+<span class="truncate text-error text-[12px]">Discrepancia gas R410</span>
+</div>
+</div>
+<div class="w-40 flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-error-container text-on-error-container flex items-center justify-center font-bold text-label-sm">
+                  FL
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-on-surface truncate">Fabio Lima</span>
+<span class="font-label-sm text-label-sm text-error">Arbitraje Nvl 1</span>
+</div>
+</div>
+<div class="w-32 flex justify-end">
+<span class="px-space-sm py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-error"></span>
+                  DISPUTA
+                </span>
+</div>
+<div class="w-24 text-right flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-error">R$ 410,00</span>
+<span class="font-label-sm text-label-sm text-error font-medium">Bloqueado</span>
+</div>
+</div>
+<!-- Row 5: Buscando Match -->
+<div class="px-space-md py-space-sm hover:bg-surface-container-low/60 flex items-center justify-between cursor-pointer transition-colors">
+<div class="w-28 flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">UGO-9479</span>
+<span class="font-label-sm text-label-sm text-outline">Hoy · 14:28 BRT</span>
+</div>
+<div class="flex-1 pr-space-sm flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Desatasco Emergencial Cocina</span>
+<div class="flex items-center gap-space-xs text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span class="truncate">Beatriz Mendes</span>
+<span class="text-outline">·</span>
+<span class="truncate text-outline text-[12px]">Vila Mariana, SP</span>
+</div>
+</div>
+<div class="w-40 flex items-center gap-space-xs">
+<div class="w-7 h-7 rounded-full bg-surface-container text-outline flex items-center justify-center font-bold text-label-sm">
+                  --
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-semibold text-outline truncate">Buscando Radio 5km</span>
+<span class="font-label-sm text-label-sm text-primary">3 candidatos pinged</span>
+</div>
+</div>
+<div class="w-32 flex justify-end">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold flex items-center gap-1">
+<span class="h-1.5 w-1.5 rounded-full bg-tertiary animate-pulse"></span>
+                  BUSCANDO
+                </span>
+</div>
+<div class="w-24 text-right flex flex-col">
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 180,00</span>
+<span class="font-label-sm text-label-sm text-outline">PIX Listo</span>
+</div>
+</div>
+</div>
+<!-- Bottom Pagination / Meta Filter Status -->
+<div class="bg-surface-container-low px-space-md py-space-xs flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="font-metric-mono text-metric-mono text-[12px]">Mostrando 5 de 184 operaciones activas</span>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-sm py-0.5 rounded-full bg-surface-container hover:bg-surface-container-high transition-colors" type="button">Prev</button>
+<span class="font-bold text-on-surface">1</span>
+<button class="px-space-sm py-0.5 rounded-full bg-surface-container hover:bg-surface-container-high transition-colors" type="button">Next</button>
+</div>
+</div>
+</div>
+<!-- Telemetry Scout Card: Instant Dispatch Radar Map Preview -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">radar</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Vigilancia Espacial - Proveedor UGO-9482</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">GPS Conectado ±3m</span>
+</div>
+<!-- Map Widget Container -->
+<div class="w-full h-44 bg-cover bg-center rounded-xl relative overflow-hidden flex items-end p-space-sm shadow-inner" data-location="Pinheiros, São Paulo, Brazil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDWloDDdIHHadodf9lzi5rpNVXwCwKGmLij7e1r8kYXNHt8OHl_RIzeaXKM-zS64ATlReiJTsL7BL7pbo6ZxVDZrazIa1CspcLiOFr1Egjr93JH-a_uAULMSFADc9cqa1HuHct4esk8LKuDcJXkSXKu849xBToamksGHFYzxzb92jbCd6hlMxfjjurMsCkbmDjP8P--SE4zcBpMKCyas9fdJ-d7GVuPKPeQNv9nfLlzCPqjDnUJH_ml')">
+<div class="bg-surface/90 backdrop-blur-md px-space-md py-space-xs rounded-xl shadow-sm flex items-center gap-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Posición Técnico</span>
+<span class="font-metric-mono text-metric-mono text-on-surface font-bold text-[12px]">Rua dos Pinheiros, 840</span>
+</div>
+<div class="h-6 w-px bg-surface-container-high"></div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Velocidad / Status</span>
+<span class="font-label-md text-label-md text-primary font-bold">En Sitio (41 min estacionario)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT INSPECTOR COLUMN: Deep Inspection & Control Pane for UGO-9482 (5 cols) -->
+<div class="col-span-12 lg:col-span-6 xl:col-span-5 flex flex-col gap-space-md">
+<!-- Inspector Header Box -->
+<div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-md flex flex-col gap-space-md relative overflow-hidden">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-xs py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm font-bold tracking-wide">ID MAESTRO</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface tracking-tight">UGO-9482</span>
+<span class="material-symbols-outlined text-outline cursor-pointer hover:text-on-surface text-[18px]">content_copy</span>
+</div>
+<span class="font-body-md text-body-md font-semibold text-on-surface mt-0.5">Reparación Eléctrica General y Cuadro de Mando</span>
+</div>
+<!-- Urgent Badge -->
+<div class="flex flex-col items-end">
+<span class="px-space-sm py-1 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">notification_important</span>
+                AMPLIACIÓN PENDIENTE
+              </span>
+<span class="font-label-sm text-label-sm text-outline mt-1 font-metric-mono">Creado: 13:50 BRT</span>
+</div>
+</div>
+<!-- Parties Cards: Client vs Provider Horizontal Bento -->
+<div class="grid grid-cols-2 gap-space-sm">
+<!-- Client Card -->
+<div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Cliente</span>
+<span class="material-symbols-outlined text-outline text-[16px]">verified_user</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm" data-alt="Close-up professional studio portrait of a Latina woman in her 30s with friendly approachable expression, clean corporate lighting, neutral soft grey background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCly9Co7_vQhvewWpdA_sl-EBSv5r_CYn-WtzkS6z5rPAzJf6HfGMoNkRD_b9UEkMEA0jwvVh7vo25k4CVNqFHomFakZ_H2cFgpNmpk-lKozyxFjindHViYR0ZuKVKBa7PU7UUlRkUFm94_FRAAZs3e6u1UCCSuFjdnoElbPSVtEt2XJ6jKoOPL68d4PJdY7LoPH9D5bxgjlTFLFljUL81TU6zgCQKDM_5JsXcY1pQM3x5Mr7cqtVEu"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Mariana Rossi</span>
+<span class="font-body-sm text-body-sm text-outline text-[11px] truncate">+55 11 98842-1920</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-metric-mono mt-1">14 órdenes completadas (4.98 ★)</span>
+</div>
+<!-- Provider Card -->
+<div class="bg-surface-container-low p-space-sm rounded-xl flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Técnico Asignado</span>
+<span class="px-space-xs py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-[10px] font-bold">UGO PRO</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<img class="w-9 h-9 rounded-full object-cover shadow-sm" data-alt="Portrait photo of a certified electrician contractor wearing an emerald green technical polo shirt with ID lanyard badge, smiling confidently in industrial environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfTTaVkhARmKgMZKCXYZWD9LPzD_HRvb_zQQmmrxtbZFHp-7ogprzD8wjnItFJcBntaSTNa848eapm1Do_zwXpw4-Nc73JENmLCbG7Sp3WX3QtLIwdQvT03zS9qOZ-v6JEBLytBfVFNEdcCdQ6Z2fAQK-LxTIxYyJgJFe1qe-nPE6_HQdHbAffqXEP6Q0rH05AUNAPKG7deY87kzgD6YHevZnmkWTsCWWb-cjAND014nJcvgL2WPPg"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Carlos Ribas</span>
+<span class="font-body-sm text-body-sm text-outline text-[11px] truncate">Eletrotécnica Ribas Ltda.</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-metric-mono mt-1 font-semibold">CRTEA SP: #99281-B (Activo)</span>
+</div>
+</div>
+<!-- FULL HORIZONTAL INTERACTIVE TIMELINE (UGO Standard State Machine) -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-bold tracking-wider">Ciclo de Vida del Servicio</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold font-metric-mono">Etapa 8 de 11: AMPLIACIÓN</span>
+</div>
+<!-- Scrollable Step Pipeline Strip -->
+<div class="bg-surface-container p-space-sm rounded-xl overflow-x-auto scrollbar-none">
+<div class="flex items-center gap-1 min-w-[720px] justify-between relative py-2">
+<!-- 1. SOLICITUD -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">Solicitud</span>
+<span class="font-metric-mono text-[9px] text-outline">13:50</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 2. MATCHING -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">Matching</span>
+<span class="font-metric-mono text-[9px] text-outline">13:52</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 3. PROPUESTA -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">Propuesta</span>
+<span class="font-metric-mono text-[9px] text-outline">13:55</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 4. CONTRATACIÓN -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">Contratación</span>
+<span class="font-metric-mono text-[9px] text-outline">13:58</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 5. EN CAMINO -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">En Camino</span>
+<span class="font-metric-mono text-[9px] text-outline">14:02</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 6. LLEGADA -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">Llegada</span>
+<span class="font-metric-mono text-[9px] text-outline">14:18</span>
+</div>
+<div class="h-0.5 flex-1 bg-primary"></div>
+<!-- 7. EN CURSO -->
+<div class="flex flex-col items-center gap-1 group cursor-pointer">
+<div class="w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-[11px]">✓</div>
+<span class="font-label-sm text-[10px] text-on-surface font-semibold uppercase tracking-tight">En Curso</span>
+<span class="font-metric-mono text-[9px] text-outline">14:23</span>
+</div>
+<div class="h-0.5 flex-1 bg-secondary"></div>
+<!-- 8. AMPLIACIÓN (ACTIVE ATTENTION) -->
+<div class="flex flex-col items-center gap-1 relative cursor-pointer">
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center font-bold text-[12px] ring-4 ring-secondary-fixed animate-bounce">
+                    !
+                  </div>
+<span class="font-label-sm text-[10px] text-secondary font-bold uppercase tracking-tight">Ampliación</span>
+<span class="font-metric-mono text-[9px] text-secondary font-bold">14:45</span>
+</div>
+<div class="h-0.5 flex-1 bg-surface-container-high"></div>
+<!-- 9. FINALIZACIÓN -->
+<div class="flex flex-col items-center gap-1 opacity-45 cursor-not-allowed">
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-[10px]">9</div>
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-tight">Finalización</span>
+<span class="font-metric-mono text-[9px] text-outline">--:--</span>
+</div>
+<div class="h-0.5 flex-1 bg-surface-container-high"></div>
+<!-- 10. CONFIRMACIÓN -->
+<div class="flex flex-col items-center gap-1 opacity-45 cursor-not-allowed">
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-[10px]">10</div>
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-tight">Confirmación</span>
+<span class="font-metric-mono text-[9px] text-outline">--:--</span>
+</div>
+<div class="h-0.5 flex-1 bg-surface-container-high"></div>
+<!-- 11. CALIFICACIÓN -->
+<div class="flex flex-col items-center gap-1 opacity-45 cursor-not-allowed">
+<div class="w-6 h-6 rounded-full bg-surface-container-high text-outline flex items-center justify-center font-bold text-[10px]">11</div>
+<span class="font-label-sm text-[10px] text-outline uppercase tracking-tight">Calificación</span>
+<span class="font-metric-mono text-[9px] text-outline">--:--</span>
+</div>
+</div>
+</div>
+</div>
+<!-- DETALLE ESPECÍFICO: AMPLIACIÓN DE SERVICIO SOLICITADA -->
+<div class="bg-surface-container-low p-space-md rounded-2xl flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">extension</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">Ampliación de Servicio Solicitada</span>
+</div>
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-metric-mono text-label-sm font-bold">
+                SENT_TO_CLIENT
+              </span>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-xl shadow-sm flex flex-col gap-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Tarea Adicional Declarada por Proveedor</span>
+<span class="font-body-md text-body-md font-bold text-on-surface">
+                  Sustitución de disyuntor bipolar 32A y recableado de tramo quemado
+                </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+                  Durante la inspección de la caja de distribución se detectó recalentamiento crítico en fase B con aislamiento derretido sobre el contactor principal. Riesgo inminente de cortocircuito.
+                </p>
+</div>
+<!-- Cost Breakdown Grid -->
+<div class="mt-space-xs grid grid-cols-3 gap-space-xs pt-space-xs bg-surface-container-low p-space-sm rounded-xl">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Piezas & Material</span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 85,00</span>
+<span class="font-label-sm text-[10px] text-outline">Disyuntor Schneider + 4m 6mm</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Mano de Obra Extra</span>
+<span class="font-metric-mono text-metric-mono font-bold text-on-surface">R$ 95,00</span>
+<span class="font-label-sm text-[10px] text-outline">+45 min adicionales</span>
+</div>
+<div class="flex flex-col bg-secondary-fixed/50 p-space-xs rounded-lg">
+<span class="font-label-sm text-label-sm text-on-secondary-fixed font-bold uppercase">Total Ampliación</span>
+<span class="font-metric-mono text-metric-mono font-bold text-secondary">R$ 180,00</span>
+<span class="font-label-sm text-[10px] text-secondary font-medium">Sujeto a Escrow</span>
+</div>
+</div>
+<!-- Photographic Evidence Thumbnails -->
+<div class="flex flex-col gap-1 mt-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase font-semibold">Evidencia Fotográfica In-Situ (2 Archivos)</span>
+<span class="font-label-sm text-label-sm text-primary font-metric-mono cursor-pointer hover:underline">Ver Originales RAW</span>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="relative group rounded-xl overflow-hidden shadow-sm aspect-video cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Close up photographic macro shot of a burnt electrical circuit breaker panel with melted black wire insulation and scorch marks, high resolution forensic style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0TEOquoSgpfy8rAOTomeuF3kmW1YFXuU_inihlCU6fpWYMFMn3Smh8rgB70EiajfSlOq7maLocA7-CoGkem-0UB_dmvhNEQHdKACxZL26YSw7UmPjF92MDbEVOTYqMvDz_k1eLE8mq31pd7qjNO-JCEAqZ7quYGs2YVIu-_eK23LG1XHhavpls4HLmyPo0xjSOi2QOguFKLmvzHW9hySmMve9GXUs9xlBMoniTPFoG807bjwScgRh"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex items-end p-space-xs">
+<span class="font-label-sm text-[10px] text-inverse-on-surface font-metric-mono">EVID-1: Daño Fase B (14:41)</span>
+</div>
+</div>
+<div class="relative group rounded-xl overflow-hidden shadow-sm aspect-video cursor-pointer">
+<img class="w-full h-full object-cover transition-transform group-hover:scale-105" data-alt="Macro photo of brand new Schneider Electric 32A dual-pole miniature circuit breaker with sealed packaging and receipt showing serial number clearly." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD42ehkfmqiMWb0p41jsMeQ3WyrF-9R8T0_O4m45JOQ15Gv8wA_cq7OGx6obJ2SbqG4FbH1rCFZNd0eLTY3KIQoZXkJ2LR9mEYjL5fSHM5gGPWKO-4C6b5dlpallLCw_saWw-YsQIwo6bvBlTOTRNT-vpGACpmfag3EgL90TQfMrCoZmPaARzMI4WEkFuPaC-ErESP_RRgS6FKv_VatQeVhDs2T7awXsBLTT7h7tl75mHdvQnFY2xP6"/>
+<div class="absolute inset-0 bg-gradient-to-t from-inverse-surface/80 via-transparent to-transparent flex items-end p-space-xs">
+<span class="font-label-sm text-[10px] text-inverse-on-surface font-metric-mono">EVID-2: Repuesto Nuevo (14:43)</span>
+</div>
+</div>
+</div>
+</div>
+<!-- UGO Audit Note & Protocol Warning -->
+<div class="mt-space-xs p-space-xs rounded-xl bg-surface-container flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-outline text-[18px] mt-0.5">verified</span>
+<p class="font-body-sm text-[12px] text-on-surface-variant leading-tight">
+<strong class="font-semibold text-on-surface">Nota de Auditoría UGO Ops:</strong> El administrador de operaciones <span class="text-error font-medium">NO fuerza ni autoriza</span> la aprobación del presupuesto suplementario sin previo consentimiento expreso en app por parte del cliente. Estado actual: <span class="font-metric-mono font-bold text-secondary">Aguardando confirmación Mariana Rossi</span>.
+                </p>
+</div>
+</div>
+</div>
+<!-- Financial Escrow & Commission Breakdown -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">shield_with_heart</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">Liquidación & Bóveda Escrow UGO</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+                Pago Protegido UGO
+              </span>
+</div>
+<div class="grid grid-cols-3 gap-space-sm pt-space-xs">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Monto Retenido Preventivo</span>
+<span class="font-metric-mono-lg text-metric-mono-lg font-bold text-primary">R$ 320,00</span>
+<span class="font-label-sm text-[11px] text-outline">Vía PIX BACEN (Instant)</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Comisión UGO (15%)</span>
+<span class="font-metric-mono-lg text-metric-mono-lg font-bold text-on-surface">R$ 48,00</span>
+<span class="font-label-sm text-[11px] text-outline">Retención automática</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Pago Neto al Técnico</span>
+<span class="font-metric-mono-lg text-metric-mono-lg font-bold text-on-surface">R$ 272,00</span>
+<span class="font-label-sm text-[11px] text-outline">Al completar checklist</span>
+</div>
+</div>
+</div>
+<!-- Bottom Action Buttons Toolbar -->
+<div class="flex flex-col sm:flex-row items-center gap-space-sm pt-space-xs">
+<button class="w-full sm:flex-1 py-space-xs px-space-md rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold flex items-center justify-center gap-space-xs transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">support_agent</span>
+<span>Llamada Asistencia UGO</span>
+</button>
+<button class="w-full sm:flex-1 py-space-xs px-space-md rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md font-semibold flex items-center justify-center gap-space-xs transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px]">note_add</span>
+<span>Abrir Ficha Incidencia</span>
+</button>
+<button class="w-full sm:w-auto py-space-xs px-space-md rounded-xl bg-error/10 hover:bg-error/20 text-error font-label-md text-label-md font-bold flex items-center justify-center gap-space-xs transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">emergency_home</span>
+<span>Reasignar Técnico</span>
+</button>
+</div>
+</div>
+<!-- Quick Activity Logs Feed -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase font-bold tracking-wider">Historial Crítico de Eventos (Telemetría UGO-9482)</span>
+<div class="flex flex-col gap-space-xs pt-space-xs font-body-sm text-[12px]">
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>Técnico Carlos Ribas generó solicitud de ampliación R$ 180,00</span>
+</div>
+<span class="font-metric-mono text-outline">14:45:12</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Notificación Push 'AMPLIACION_AUTORIZAR' despachada a Mariana Rossi</span>
+</div>
+<span class="font-metric-mono text-outline">14:45:14</span>
+</div>
+<div class="flex items-center justify-between text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+<span>Check-in biométrico y geocerca confirmada en destino</span>
+</div>
+<span class="font-metric-mono text-outline">14:18:03</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div></main></div></body></html>

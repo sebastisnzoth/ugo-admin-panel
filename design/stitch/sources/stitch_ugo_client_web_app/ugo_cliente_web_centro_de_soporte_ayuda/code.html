@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"secondary":"#565e74","surface-tint":"#00677d","primary-fixed-dim":"#4cd6fb","on-tertiary-fixed-variant":"#005236","secondary-fixed-dim":"#bec6e0","surface-bright":"#f8f9ff","primary-fixed":"#b3ebff","surface-container-high":"#dce9ff","primary":"#00677d","inverse-on-surface":"#eaf1ff","on-secondary-fixed-variant":"#3f465c","on-surface-variant":"#3d494d","error-container":"#ffdad6","secondary-fixed":"#dae2fd","on-primary-fixed":"#001f27","on-secondary-container":"#5c647a","surface-dim":"#cbdbf5","surface-container-lowest":"#ffffff","tertiary-fixed":"#6ffbbe","tertiary-container":"#19bc84","on-tertiary":"#ffffff","background":"#f8f9ff","error":"#ba1a1a","on-primary-fixed-variant":"#004e5f","surface-container-low":"#eff4ff","on-background":"#0b1c30","outline-variant":"#bcc9ce","surface-container":"#e5eeff","on-primary":"#ffffff","tertiary-fixed-dim":"#4edea3","tertiary":"#006c49","secondary-container":"#dae2fd","on-tertiary-container":"#00442d","on-error":"#ffffff","on-primary-container":"#00414f","on-surface":"#0b1c30","on-secondary-fixed":"#131b2e","on-error-container":"#93000a","inverse-primary":"#4cd6fb","on-tertiary-fixed":"#002113","on-secondary":"#ffffff","surface-variant":"#d3e4fe","inverse-surface":"#213145","surface-container-highest":"#d3e4fe","surface":"#f8f9ff","primary-container":"#00b4d8","outline":"#6d797e"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"gutter-desktop":"1.5rem","space-2xs":"0.25rem","space-xs":"0.5rem","sidebar-expanded":"17.5rem","space-xl":"2rem","topbar-height":"4.25rem","gutter-mobile":"1rem","space-md":"1rem","space-3xl":"4rem","space-sm":"0.75rem","sidebar-collapsed":"5rem","space-2xl":"3rem","space-lg":"1.5rem"},fontFamily:{"headline-sm":["Plus Jakarta Sans"],"display-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"code-sm":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"]},fontSize:{"headline-sm":["18px",{lineHeight:"26px",letterSpacing:"-0.005em",fontWeight:"600"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"700"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}],"display-lg-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"code-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-sidebar-collapsed xl:w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all duration-300"><div class="flex flex-col gap-space-md"><div class="h-12 px-space-md xl:px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm overflow-hidden"><img alt="Logo UGO Cliente" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWYkGbDkybddSHtmyY32GZB1VYVCcp5I4p7MfFYMURxRzKLOfdAZb01kBM-vemKANWc5aynx1KlrXNQYkD6Qje8qaZo8IpLmAQAQttpEfRvednP2PUhz_zfxx8v0_ym8_8tLC0fLhOaZQ6qk8o_jOLsnS4QgUZY2OrTLvKIwhRyyT9OS8upOAHg6wLdHrjhII4NSsneejdMpjdWn2CY9uX2phCFae5zhsNagOPSlaYuYz3RkFYnY_L3Os"/><span class="hidden xl:inline font-headline-sm text-headline-sm font-bold tracking-tight text-primary">UGO Cliente</span></div><span class="hidden xl:inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">v2.4</span></div><nav class="flex flex-col gap-space-2xs px-space-xs xl:px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="hidden xl:inline flex-1 truncate">Inicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="buscar-servicio" href="#"><span class="material-symbols-outlined text-[22px]">search</span><span class="hidden xl:inline flex-1 truncate">Buscar servicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="nueva-solicitud" href="#"><span class="material-symbols-outlined text-[22px]">add_circle</span><span class="hidden xl:inline flex-1 truncate">Nueva solicitud</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="matching-en-vivo" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="hidden xl:inline flex-1 truncate">Matching en vivo</span><span class="hidden xl:inline-flex h-2 w-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="servicios-activos" href="#"><span class="material-symbols-outlined text-[22px]">pending_actions</span><span class="hidden xl:inline flex-1 truncate">Servicios activos</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">2</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="actividad" href="#"><span class="material-symbols-outlined text-[22px]">history</span><span class="hidden xl:inline flex-1 truncate">Actividad</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[22px]">chat_bubble</span><span class="hidden xl:inline flex-1 truncate">Mensajes</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">3</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ugo-shield" href="#"><span class="material-symbols-outlined text-[22px] text-tertiary">verified_user</span><span class="hidden xl:inline flex-1 truncate">UGO Shield</span><span class="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Pro</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm" data-path="pagos" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="hidden xl:inline flex-1 truncate">Pagos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="perfil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="hidden xl:inline flex-1 truncate">Perfil</span></a></nav></div><div class="flex flex-col gap-space-xs px-space-xs xl:px-space-sm pt-space-xs"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ayuda" href="#"><span class="material-symbols-outlined text-[22px]">help</span><span class="hidden xl:inline flex-1 truncate">Ayuda</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="configuracion" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="hidden xl:inline flex-1 truncate">Configuración</span></a></nav></div></aside><div class="pl-sidebar-collapsed xl:pl-sidebar-expanded min-h-screen flex flex-col transition-all duration-300"><header class="fixed top-0 left-sidebar-collapsed xl:left-sidebar-expanded right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 transition-all duration-300"><div class="h-16 w-full px-space-md xl:px-space-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><button class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" type="button"><span class="material-symbols-outlined text-primary text-[20px]">location_on</span><div class="hidden md:flex flex-col"><span class="font-label-sm text-label-sm text-secondary">Ubicación actual</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Canasvieiras, Florianópolis · SC</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span></button><div class="relative flex-1 hidden sm:block"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Buscar servicios, profesionales o ayuda..." type="text"/></div></div><div class="flex items-center gap-space-sm xl:gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-gradient-to-r from-primary-container to-tertiary-container text-on-primary font-label-md text-label-md shadow-sm hover:opacity-95 transition-opacity" type="button"><span class="material-symbols-outlined text-[18px]">auto_awesome</span><span class="hidden md:inline font-bold">Hugo IA</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-primary"></span></span></button><button class="relative p-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-error ring-2 ring-surface"></span></button><div class="flex items-center gap-space-sm pl-space-2xs"><div class="hidden lg:flex flex-col text-right"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Mariana Costa</span><span class="font-label-sm text-label-sm text-tertiary flex items-center justify-end gap-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Verificada</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-Zrm-zrxI-X4YoML1L8DRmL8PPBXsgLmlnXnegDB4G1Vm_hTHKd4RncqqgJv0FV2lf2KUWgrfcQ7WhAIOmBAuKiqhtqfGCgUDhYRnyRRI-0HQoXcNV4pjHMZRBVV-aJBh2cCWRURij-zthGoDsqAJ5lW_Lw3v1s5ijswfaOzT6uod3qsvdCWYyXMDR_E6PR-Pr27sDFoPNX--u7lMbJ2V8UgBHd212UXddj57ivTawnWy4aB_o9XO"/></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<section class="relative w-full overflow-hidden bg-gradient-to-b from-surface-container to-surface px-space-md lg:px-space-xl pt-space-xl pb-space-2xl">
+<div class="absolute -top-32 -right-32 w-96 h-96 rounded-full bg-primary-container/10 blur-3xl pointer-events-none"></div>
+<div class="absolute top-1/2 -left-20 w-80 h-80 rounded-full bg-tertiary-container/10 blur-3xl pointer-events-none"></div>
+<div class="max-w-5xl mx-auto flex flex-col items-center text-center relative z-10">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-surface-container-lowest shadow-sm mb-space-md">
+<span class="material-symbols-outlined text-tertiary text-[18px]">verified_user</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Centro de Asistencia &amp; Resolución Fiduciaria UGO Shield</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-on-surface tracking-tight max-w-3xl">
+        ¿Cómo podemos ayudarte hoy, <span class="text-primary">Mariana</span>?
+      </h1>
+<p class="font-body-lg text-body-lg text-secondary mt-space-xs max-w-2xl">
+        Resolución inmediata, mediación con garantía Tokio Marine y asistencia operativa 24/7 para tus servicios en Florianópolis.
+      </p>
+<div class="w-full max-w-3xl mt-space-lg">
+<div class="relative flex items-center bg-surface-container-lowest rounded-2xl shadow-xl p-2 transition-all focus-within:shadow-2xl">
+<div class="flex items-center justify-center pl-space-sm pr-space-xs text-primary">
+<span class="material-symbols-outlined text-[26px]">search</span>
+</div>
+<input class="w-full h-12 bg-transparent text-on-surface font-body-lg text-body-lg placeholder:text-outline focus:outline-none" id="faq-search-input" placeholder="Describí tu consulta (ej. retención de pago, retraso del técnico, cobertura de garantía Tokio Marine...)" type="text"/>
+<button class="hidden sm:inline-flex items-center gap-space-xs px-space-lg h-11 bg-primary text-on-primary rounded-xl font-label-lg text-label-lg hover:bg-primary/90 transition-colors shadow-sm" type="button">
+<span>Buscar</span>
+</button>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-space-xs mt-space-sm text-left">
+<span class="font-label-sm text-label-sm text-secondary mr-1">Sugerencias rápidas:</span>
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shadow-sm transition-colors" onclick="filterFaq('PIN de liberación')" type="button">
+            PIN de liberación
+          </button>
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shadow-sm transition-colors" onclick="filterFaq('Disputas Itaú Escrow')" type="button">
+            Disputas Itaú Escrow
+          </button>
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shadow-sm transition-colors" onclick="filterFaq('Garantía 60 días')" type="button">
+            Garantía 60 días
+          </button>
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shadow-sm transition-colors" onclick="filterFaq('Cancelación de servicio')" type="button">
+            Cancelación de servicio
+          </button>
+<button class="px-space-sm py-1 rounded-lg bg-surface-container-lowest hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm shadow-sm transition-colors" onclick="filterFaq('Facturación NF-e')" type="button">
+            Facturación NF-e
+          </button>
+</div>
+</div>
+</div>
+</section>
+<div class="max-w-7xl w-full mx-auto px-space-md lg:px-space-xl py-space-xl flex flex-col gap-space-2xl">
+<section>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-xs mb-space-lg">
+<div>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Resolución Exprés</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Acciones Rápidas con 1 Clic</h2>
+</div>
+<p class="font-body-sm text-body-sm text-secondary">Intervenciones directas para tus órdenes en curso o completadas recientemente.</p>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<div class="flex flex-col justify-between bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-xl bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">timer_off</span>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-pulse"></span>
+                Activo #UG-8501
+              </span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Reportar retraso</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                Técnico Rodrigo S. (Climatización). Tiempo estimado excedido en 14 min.
+              </p>
+</div>
+</div>
+<button class="mt-space-md w-full inline-flex items-center justify-center gap-space-xs py-2 px-space-sm bg-surface-container hover:bg-surface-container-high rounded-xl text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-error">notification_important</span>
+<span>Alertar al Hub Operativo</span>
+</button>
+</div>
+<div class="flex flex-col justify-between bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-xl bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">pin</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-fixed/50 text-on-primary-fixed-variant font-label-sm text-label-sm">
+                Seguridad Escrow
+              </span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">PIN de conformidad</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                Visualizá o regenerá tu clave dinámica para autorizar la liberación del pago tras la inspección.
+              </p>
+</div>
+</div>
+<button class="mt-space-md w-full inline-flex items-center justify-center gap-space-xs py-2 px-space-sm bg-primary text-on-primary rounded-xl font-label-md text-label-md hover:bg-primary/90 transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">key</span>
+<span>Ver mi PIN Único</span>
+</button>
+</div>
+<div class="flex flex-col justify-between bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-xl bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">policy</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm">
+                Tokio Marine
+              </span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Visita por garantía</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                ¿Problemas luego de la entrega? Activá la cobertura de 60 días sin costo de mano de obra.
+              </p>
+</div>
+</div>
+<button class="mt-space-md w-full inline-flex items-center justify-center gap-space-xs py-2 px-space-sm bg-surface-container hover:bg-surface-container-high rounded-xl text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-tertiary">history_toggle_off</span>
+<span>Solicitar Reinspección</span>
+</button>
+</div>
+<div class="flex flex-col justify-between bg-surface-container-lowest rounded-2xl p-space-md shadow-sm hover:shadow-md transition-shadow">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<div class="w-10 h-10 rounded-xl bg-secondary-fixed text-on-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[22px]">balance</span>
+</div>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                Mediación Itaú
+              </span>
+</div>
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Reembolso o mediación</h3>
+<p class="font-body-sm text-body-sm text-secondary mt-1">
+                Abrí un caso fiduciario si el trabajo no cumple las condiciones técnicas acordadas.
+              </p>
+</div>
+</div>
+<button class="mt-space-md w-full inline-flex items-center justify-center gap-space-xs py-2 px-space-sm bg-surface-container hover:bg-surface-container-high rounded-xl text-on-surface font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+<span>Iniciar Mediación</span>
+</button>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<div class="lg:col-span-8 flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-xs">
+<div>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider">Base de Conocimiento</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Preguntas Frecuentes &amp; Protocolos</h2>
+</div>
+<span class="font-code-sm text-code-sm text-secondary">Documentación v2.4 (Actualizada hoy)</span>
+</div>
+<div class="flex items-center gap-space-2xs overflow-x-auto pb-space-xs scrollbar-none">
+<button class="category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-primary text-on-primary shadow-sm flex items-center gap-1.5 shrink-0" id="tab-escrow" onclick="switchCategory('escrow')" type="button">
+<span class="material-symbols-outlined text-[18px]">account_balance</span>
+<span>Pagos &amp; Custodia Escrow</span>
+</button>
+<button class="category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high flex items-center gap-1.5 shrink-0" id="tab-seguridad" onclick="switchCategory('seguridad')" type="button">
+<span class="material-symbols-outlined text-[18px]">security</span>
+<span>En el Domicilio &amp; Seguridad</span>
+</button>
+<button class="category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high flex items-center gap-1.5 shrink-0" id="tab-garantia" onclick="switchCategory('garantia')" type="button">
+<span class="material-symbols-outlined text-[18px]">shield_with_heart</span>
+<span>Garantía Tokio Marine</span>
+</button>
+<button class="category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high flex items-center gap-1.5 shrink-0" id="tab-billetera" onclick="switchCategory('billetera')" type="button">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+<span>Billetera &amp; Facturación NF-e</span>
+</button>
+</div>
+<div class="flex flex-col gap-space-sm" id="faq-container">
+<div class="faq-item escrow bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Cómo funciona la retención de pago hasta ingresar el PIN de conformidad?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Cuando confirmás una solicitud, tu dinero no viaja a la cuenta del prestador: queda resguardado en una cuenta fiduciaria segregada en Banco Itaú Brasil mediante contrato automatizado de escrow.
+                </p>
+<p>
+                  El monto solo es desembolsado al profesional en el momento en que vos, como cliente, dictás o ingresás el <strong class="text-on-surface font-semibold">PIN de 4 dígitos</strong> generado exclusivamente en tu app. Si el trabajo no se concluye satisfactoriamente, el fondo permanece inmovilizado y a salvo.
+                </p>
+<div class="flex items-center gap-space-xs p-space-sm rounded-xl bg-surface-container-low text-primary text-label-sm font-label-sm">
+<span class="material-symbols-outlined text-[18px]">lock</span>
+<span>Protección certificada bajo el marco fiduciario del Banco Central de Brasil.</span>
+</div>
+</div>
+</div>
+</div>
+<div class="faq-item escrow bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Cuándo se debita formalmente mi saldo o tarjeta?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Al momento de aceptar la cotización, se efectúa una reserva (autorización de cobro) en tu tarjeta o una retención preventiva de tu Billetera UGO (vía saldo o PIX). Si la orden se cancela antes de la llegada del técnico, la liberación de fondos es inmediata sin penalización.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item seguridad hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Cómo valido la identidad biométrica y antecedentes del técnico en mi puerta?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Cada profesional habilitado en UGO supera una verificación cruzada de antecedentes penales (SERPRO y Policía Federal) y validación facial biométrica al iniciar su turno.
+                </p>
+<p>
+                  En tu pantalla de seguimiento en vivo contás con un lector de QR: pedile al técnico que te muestre su credencial digital en la app UGO Pro para contrastar su identidad al instante.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item seguridad hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Qué hago si el prestador no se presenta en el rango pactado?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Si pasaron más de 15 minutos de la ventana programada, utilizá la tarjeta rápida de arriba: "Reportar retraso". El sistema UGO Dispatcher reubica automáticamente a otro técnico cercano con certificación oro o te reembolsa un crédito compensatorio del 10% en tu billetera.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item garantia hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Qué cubre el fondo de garantía Tokio Marine hasta R$ 50.000?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  La póliza fiduciaria número #TM-BR-89210 cubre eventuales daños materiales accidentales a instalaciones de tu propiedad, fallas técnicas derivadas de mano de obra defectuosa durante 60 días corridos y roturas de repuestos homologados provistos por el profesional.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item garantia hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Cuáles son los plazos de respuesta ante una disputa abierta?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Un perito mediador de UGO Shield toma el expediente en menos de 4 horas hábiles. La resolución técnica y/o reintegro monetario a tu cuenta se ejecuta en un plazo máximo de 24 a 48 horas.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item billetera hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Dónde descargo mis comprobantes fiscales NF-e?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Todas las Notas Fiscais de Serviços (NFS-e) emitidas por la Prefeitura Municipal de Florianópolis se generan automáticamente una vez completado el servicio y quedan archivadas en tu panel de <a class="text-primary font-semibold underline" href="#">Pagos</a> con descarga XML y PDF con un clic.
+                </p>
+</div>
+</div>
+</div>
+<div class="faq-item billetera hidden bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden transition-all">
+<button class="w-full px-space-lg py-space-md flex items-center justify-between text-left gap-space-md" onclick="toggleFaq(this)" type="button">
+<span class="font-headline-sm text-headline-sm text-on-surface">¿Cómo rinde el saldo en Billetera UGO al 102% CDI?</span>
+<span class="material-symbols-outlined text-primary text-[24px] transform transition-transform duration-200">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-lg pb-space-md text-secondary font-body-md text-body-md">
+<div class="pt-space-xs border-t border-surface-container-high/60 flex flex-col gap-space-xs">
+<p>
+                  Los fondos que mantenés en tu cuenta para futuros servicios están invertidos en títulos públicos de liquidez diaria a través de Banco Itaú, devengando rendimientos automáticos acreditados el primer día hábil de cada mes sin comisiones de custodia.
+                </p>
+</div>
+</div>
+</div>
+</div>
+<div class="p-space-lg bg-surface-container-low rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-space-md mt-space-sm">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-full bg-primary-container/20 text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[28px]">live_help</span>
+</div>
+<div>
+<h4 class="font-headline-sm text-headline-sm text-on-surface">¿No encontraste lo que buscabas?</h4>
+<p class="font-body-sm text-body-sm text-secondary">Nuestro equipo humano y Hugo IA analizan tu caso con acceso a tus recibos y coordenadas.</p>
+</div>
+</div>
+<button class="whitespace-nowrap px-space-lg py-2.5 bg-primary text-on-primary font-label-md text-label-md rounded-xl hover:bg-primary/90 transition-colors shadow-sm" onclick="openLiveChat()" type="button">
+            Consultar a un Agente
+          </button>
+</div>
+</div>
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<div class="bg-gradient-to-br from-primary-container via-primary to-surface-tint text-on-primary rounded-3xl p-space-lg shadow-xl relative overflow-hidden">
+<div class="absolute -bottom-10 -right-10 w-44 h-44 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+<div class="flex items-center justify-between mb-space-md relative z-10">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-white/20 backdrop-blur-md font-label-sm text-label-sm font-semibold tracking-wide text-on-primary">
+<span class="w-2 h-2 rounded-full bg-tertiary-fixed animate-ping"></span>
+              En Línea 24/7
+            </span>
+<span class="font-label-sm text-label-sm text-on-primary/80">Florianópolis Ops</span>
+</div>
+<div class="relative z-10">
+<h3 class="font-headline-lg text-headline-lg font-bold leading-snug">
+              Atención Prioritaria Inmediata
+            </h3>
+<p class="font-body-md text-body-md text-on-primary/90 mt-space-xs">
+              Resolución con respuesta promedio de <strong class="underline font-semibold">1 min 45 seg</strong> y supervisión directa de UGO Shield.
+            </p>
+</div>
+<div class="mt-space-lg flex flex-col gap-space-xs relative z-10">
+<button class="w-full py-3 px-space-md bg-surface-container-lowest text-primary hover:bg-surface-bright rounded-2xl font-label-lg text-label-lg font-bold flex items-center justify-center gap-space-xs shadow-md transition-transform active:scale-[0.98]" onclick="openLiveChat()" type="button">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+<span>Abrir Chat con Soporte Humano</span>
+</button>
+<button class="w-full py-2.5 px-space-md bg-white/15 hover:bg-white/25 text-on-primary rounded-2xl font-label-md text-label-md flex items-center justify-center gap-space-xs backdrop-blur-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span>Diagnóstico Guiado Hugo IA</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-3xl p-space-lg shadow-sm flex flex-col gap-space-md">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Canales de Guardia Activos</h4>
+<div class="flex flex-col gap-space-sm">
+<a class="flex items-center justify-between p-space-sm rounded-2xl bg-surface-container hover:bg-surface-container-high transition-colors" href="tel:08008464357">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-primary flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[20px]">phone_in_talk</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">Línea de Emergencia</span>
+<span class="font-body-sm text-body-sm text-secondary">+55 0800 UGO-HELP (0800 846 4357)</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
+</a>
+<a class="flex items-center justify-between p-space-sm rounded-2xl bg-surface-container hover:bg-surface-container-high transition-colors" href="https://wa.me" target="_blank">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-tertiary flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[20px]">forum</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-bold">WhatsApp Concierge Shield</span>
+<span class="font-body-sm text-body-sm text-secondary">Atención directa para usuarios Pro</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">arrow_forward</span>
+</a>
+<div class="flex items-center justify-between p-space-sm rounded-2xl bg-surface-container">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-xl bg-surface-container-lowest text-secondary flex items-center justify-center shadow-xs">
+<span class="material-symbols-outlined text-[20px]">schedule</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Guardia Operativa SC</span>
+<span class="font-body-sm text-body-sm text-secondary">Florianópolis &amp; Costa Norte</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">
+                Activa
+              </span>
+</div>
+</div>
+<div class="p-space-sm rounded-2xl bg-surface-container-low flex flex-col gap-space-2xs">
+<span class="font-label-sm text-label-sm text-primary uppercase font-bold">Tu Asesora Dedicada</span>
+<div class="flex items-center gap-space-sm mt-1">
+<img class="w-10 h-10 rounded-full object-cover shadow-sm" data-alt="Close up photographic portrait of an empathetic corporate support concierge specialist smiling in a modern bright glass office space, wearing a neat navy blazer with a subtle cyan collar detail, natural soft daylight illumination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAf7UqCLsqu9drVeb3t770zYg5C28bXuwEWW7_h7PIt8p8yGfTqNpDWa-jgjmdKSuMHoQt1CTCx2I1LkEThujO6BMo5c5bbl_q4IaYL-O_5Zua80Ssk8tVrswN-GnEAjahwdhHrUkxZpx3xS6ntcgl6S8rkhHl8eBigg-zw811A5fX9cwayU2xWUCtVq91oytgdhu9o5wyRdl9aTb63sgcJ2GhXg1vAd8x_o2s9JZKzfXbtEWXsT5GC"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Camila Valenzuela</span>
+<span class="font-body-sm text-body-sm text-secondary">Concierge de Zona Canasvieiras</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<footer class="w-full bg-surface-container-lowest rounded-3xl p-space-lg shadow-sm flex flex-col md:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-2xl bg-surface-container text-tertiary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[28px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold">Protocolo de Confianza Fiduciaria UGO Shield v2.4</span>
+<p class="font-body-sm text-body-sm text-secondary">
+            Todas las consultas, reportes técnicos y solicitudes de arbitraje quedan respaldadas y auditadas bajo cuenta fiduciaria en Banco Itaú y póliza de responsabilidad civil Tokio Marine.
+          </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0">
+<div class="px-space-sm py-1.5 rounded-xl bg-surface-container text-on-surface font-code-sm text-code-sm">
+          Audit ID: #UGO-9942-FLN
+        </div>
+<button class="px-space-md py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm transition-colors" type="button">
+          Ver Certificado Fiduciario
+        </button>
+</div>
+</footer>
+</div>
+<div class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm hidden items-center justify-center p-space-md" id="live-chat-modal">
+<div class="bg-surface-container-lowest w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
+<div class="bg-primary px-space-lg py-space-md text-on-primary flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover border-2 border-white/30" data-alt="Headshot of a friendly professional customer support specialist wearing a comfortable dark teal uniform with warm studio lighting and neutral clean background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsTsqiykiyJbcxkQRhpmLZssvYMHbD84jVlFvtkBJaXyTmxfO_QO9o8eeKzs4q70PN2r9DrGuXeGfXLjXPfHS1XlTTgHvKwrzaUy9ImZYq7fnH1dsGjjHcVGZ3eXp6tAVoNgCpJCGEyEbg3tL2iFto5-4o6q2Ccv6D_3IikCDXbdAoA4d3wj-SdRwaS4MUPlognOVlBQgjdKeagL11cLjSI3FLrBQuQExgPWklmYrTLQye62HOhPAi"/>
+<span class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-tertiary-fixed border-2 border-primary"></span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold leading-tight">Mesa de Ayuda UGO Humana</span>
+<span class="font-label-sm text-label-sm text-on-primary/80">Conectada · Mariana Costa (Canasvieiras)</span>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center transition-colors" onclick="closeLiveChat()" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<div class="p-space-lg flex flex-col gap-space-md h-80 overflow-y-auto bg-surface">
+<div class="flex items-start gap-space-xs max-w-[85%]">
+<div class="w-8 h-8 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[16px]">support_agent</span>
+</div>
+<div class="p-space-sm rounded-2xl rounded-tl-none bg-surface-container-lowest shadow-xs text-on-surface font-body-md text-body-md">
+            ¡Hola Mariana! Vemos que tenés el servicio de <strong class="font-semibold text-primary">Climatización #UG-8501</strong> asignado con Rodrigo. ¿Tu consulta está relacionada con este trabajo o con tu Billetera Itaú?
+          </div>
+</div>
+<div class="flex items-start gap-space-xs max-w-[85%] self-end flex-row-reverse">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 font-bold font-label-sm text-label-sm">
+            MC
+          </div>
+<div class="p-space-sm rounded-2xl rounded-tr-none bg-primary text-on-primary shadow-xs font-body-md text-body-md">
+            Hola, quería verificar el tiempo exacto de arribo y validar el código PIN seguro.
+          </div>
+</div>
+<div class="flex items-center justify-center my-space-2xs">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container text-secondary font-code-sm text-code-sm">
+            Escribiendo respuesta de soporte...
+          </span>
+</div>
+</div>
+<div class="p-space-md bg-surface-container-lowest flex items-center gap-space-sm">
+<input class="flex-1 h-11 px-space-md rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:outline-none focus:bg-surface-container" placeholder="Escribí un mensaje o adjuntá fotos..." type="text"/>
+<button class="w-11 h-11 rounded-xl bg-primary text-on-primary flex items-center justify-center hover:bg-primary/90 transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    // Resaltar item de navegación activo en App Shell
+    const sidebarNav = document.querySelectorAll('aside nav a');
+    sidebarNav.forEach(link => {
+      if (link.getAttribute('data-path') === 'ayuda') {
+        link.className = "flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg bg-primary text-on-primary shadow-sm transition-all";
+        const icon = link.querySelector('.material-symbols-outlined');
+        if (icon) icon.className = "material-symbols-outlined text-[22px] text-on-primary";
+      }
+    });
+
+    // Filtro de categorías
+    window.switchCategory = function(catName) {
+      const tabs = document.querySelectorAll('.category-tab');
+      tabs.forEach(t => {
+        t.className = "category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-surface-container text-on-surface-variant hover:bg-surface-container-high flex items-center gap-1.5 shrink-0";
+      });
+      const activeTab = document.getElementById('tab-' + catName);
+      if (activeTab) {
+        activeTab.className = "category-tab px-space-md py-2 rounded-xl font-label-md text-label-md transition-all bg-primary text-on-primary shadow-sm flex items-center gap-1.5 shrink-0";
+      }
+
+      const allItems = document.querySelectorAll('.faq-item');
+      allItems.forEach(item => {
+        if (item.classList.contains(catName)) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    };
+
+    // Toggle FAQ
+    window.toggleFaq = function(button) {
+      const content = button.nextElementSibling;
+      const icon = button.querySelector('.material-symbols-outlined');
+      if (content.classList.contains('hidden')) {
+        content.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        content.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    };
+
+    // Filtro buscador
+    window.filterFaq = function(term) {
+      const input = document.getElementById('faq-search-input');
+      if (input) {
+        input.value = term;
+        input.focus();
+      }
+      const allItems = document.querySelectorAll('.faq-item');
+      allItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(term.toLowerCase())) {
+          item.classList.remove('hidden');
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+    };
+
+    const searchInput = document.getElementById('faq-search-input');
+    if (searchInput) {
+      searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase().trim();
+        const allItems = document.querySelectorAll('.faq-item');
+        if (!query) {
+          switchCategory('escrow');
+          return;
+        }
+        allItems.forEach(item => {
+          const text = item.textContent.toLowerCase();
+          if (text.includes(query)) {
+            item.classList.remove('hidden');
+          } else {
+            item.classList.add('hidden');
+          }
+        });
+      });
+    }
+
+    // Modal Live Chat
+    window.openLiveChat = function() {
+      const modal = document.getElementById('live-chat-modal');
+      if (modal) modal.classList.remove('hidden'), modal.classList.add('flex');
+    };
+
+    window.closeLiveChat = function() {
+      const modal = document.getElementById('live-chat-modal');
+      if (modal) modal.classList.add('hidden'), modal.classList.remove('flex');
+    };
+  })();
+</script></main></div></body></html>

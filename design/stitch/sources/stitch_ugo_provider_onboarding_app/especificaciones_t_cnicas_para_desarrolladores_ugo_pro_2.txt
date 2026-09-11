@@ -1,0 +1,138 @@
+# UGO Pro — Especificaciones Técnicas de Ingeniería y Guía de Implementación (Handoff)
+**Versión:** 3.0 (Sanity Checked) • **Destinatarios:** Equipos de Frontend Mobile (React Native / Flutter) y Backend  
+**Ecosistema:** UGO Pro Specialist Application • **Plataformas Objetivo:** iOS / Android • **Arquitectura Base:** Supabase (Auth, Realtime, Storage, PostgREST) / Contratos Agnósticos TypeScript
+
+---
+
+## 1. Arquitectura General y Principios de Integración
+
+- **Backend Base:** UGO Pro Mobile opera sobre los servicios existentes de **Supabase**:
+  - `Supabase Auth`: Gestión de sesiones de especialistas y clientes.
+  - `Supabase Database (PostgREST)`: Consultas y persistencia mediante contratos agnósticos.
+  - `Supabase Realtime`: Sincronización en streaming de oportunidades en radar, ubicación en ruta y chat.
+  - `Supabase Storage`: Almacenamiento seguro de fotografías de evidencias del servicio.
+- **Frontend Mobile:** React Native (TypeScript) o Flutter.
+- **Contratos Agnósticos:** La comunicación entre la interfaz de usuario y la capa de datos se estructura mediante contratos de dominio en TypeScript, sin prescribir esquemas de base de datos rígidos ni migraciones obligatorias.
+
+---
+
+## 2. Sistema de Diseño (Design Tokens & UI Guidelines)
+
+Basado en el Design System oficial `Modern Dynamic Marketplace`:
+
+```json
+{
+  "theme": {
+    "typography": {
+      "fontFamily": "Plus Jakarta Sans, sans-serif",
+      "scale": {
+        "display": "28px / 34px - Bold (700)",
+        "heading1": "22px / 28px - SemiBold (600)",
+        "heading2": "18px / 24px - SemiBold (600)",
+        "bodyLarge": "15px / 22px - Regular (400)",
+        "bodyMedium": "13px / 18px - Regular (400)",
+        "caption": "11px / 16px - Medium (500)"
+      }
+    },
+    "colors": {
+      "brandPrimary": "#1e40af",
+      "brandPrimaryDark": "#1e3a8a",
+      "brandPrimaryLight": "#eff6ff",
+      "successEmerald": "#10b981",
+      "successEmeraldContainer": "#ecfdf5",
+      "surfaceBackground": "#faf8ff",
+      "surfaceContainer": "#ffffff",
+      "surfaceContainerLow": "#f2f3ff",
+      "textPrimary": "#0f172a",
+      "textSecondary": "#64748b",
+      "borderDefault": "#e2e8f0",
+      "error": "#ef4444"
+    },
+    "radii": {
+      "sm": "8px",
+      "md": "12px",
+      "lg": "16px",
+      "full": "9999px"
+    },
+    "accessibility": {
+      "minTouchTarget": "48x48px",
+      "wcagContrast": "AAA"
+    }
+  }
+}
+```
+
+---
+
+## 3. Ciclo de Vida del Servicio (Service Lifecycle)
+
+```
+[ RADAR / OPORTUNIDAD ] ──> [ COTIZACIÓN ENVIADA ] ──> [ PAGO PROTEGIDO POR UGO ]
+                                                              │
+[ SERVICIO COMPLETADO ] <── [ CONFORMIDAD CLIENTE ] <── [ REVISIÓN FINAL / EVIDENCIAS ] <── [ SERVICIO EN CURSO ]
+      │                                                                                           │
+      ▼                                                                                           ▼
+[ SALDO DISPONIBLE ACREDITADO ]                                                           [ CENTRO DE MEDIACIÓN UGO ]
+```
+
+---
+
+## 4. Contratos de Datos y Endpoints Clave
+
+### 4.1. Oportunidades en Radar Georreferenciado
+- **Función:** Obtención de solicitudes cercanas filtradas por radio operativo y especialidad del técnico.
+- **Modelo de Datos de Respuesta:**
+```json
+{
+  "status": "success",
+  "data": {
+    "provider_status": "ONLINE",
+    "active_opportunities": [
+      {
+        "id": "ord_8492_pinheiros",
+        "order_number": "#8492",
+        "client_name": "Camila Duarte",
+        "category": "Plomería de Precisión",
+        "title": "Fuga de agua bajo mesada",
+        "description": "Flexible corroído con goteo constante. Requiere sustitución urgente.",
+        "location": {
+          "neighborhood": "Pinheiros, São Paulo",
+          "distance_km": 1.4,
+          "latitude": -23.5615,
+          "longitude": -46.6892
+        },
+        "estimated_budget": 250.00,
+        "urgency": "HIGH",
+        "created_at": "2024-10-24T14:02:10Z"
+      }
+    ]
+  }
+}
+```
+
+### 4.2. Validación de Check-In Presencial con PIN de Seguridad
+- **Función:** El técnico introduce el PIN de 4 dígitos proporcionado por el cliente en el domicilio para iniciar el cómputo del servicio y activar la cobertura de Protección UGO Shield.
+- **Modelo de Envío:**
+```json
+{
+  "pin_code": "8421",
+  "service_id": "ord_8492_pinheiros",
+  "location_telemetry": {
+    "latitude": -23.56149,
+    "longitude": -46.68918,
+    "accuracy_meters": 4.2
+  }
+}
+```
+
+### 4.3. Retiro de Saldo por PIX
+- **Función:** Solicitud de transferencia de saldo disponible a la cuenta bancaria del profesional vía PIX.
+- **Comportamiento:** Registro del retiro con identificador de transacción UGO (`#TR-94218`), actualización de saldo disponible y generación del comprobante UGO de retiro.
+
+---
+
+## 5. Resiliencia Offline y Sincronización en Tiempo Real
+
+1. **Conservación Temporal de Estado Local:** El estado de la orden activa, fotos tomadas y tiempo transcurrido de mano de obra se retienen localmente ante pérdidas de señal de red.
+2. **Cola de Acciones Pendientes:** Las acciones realizadas offline (captura de fotos, checklists, notas técnicas) se encolan con `client_event_id` único.
+3. **Reconexión y Deduplicación:** Al restaurarse la conectividad, la aplicación sincroniza la cola en segundo plano evitando registros duplicados.

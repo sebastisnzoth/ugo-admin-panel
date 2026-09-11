@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+
+<html lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/>
+<title>UGO Cliente / Ampliar servicio</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-error": "#ffffff",
+            "secondary-fixed": "#abedff",
+            "surface-container": "#eaedff",
+            "outline": "#6d7a72",
+            "surface-variant": "#dae2fc",
+            "on-primary-fixed": "#002114",
+            "on-secondary-fixed": "#001f26",
+            "on-tertiary": "#ffffff",
+            "surface-container-low": "#f2f3ff",
+            "on-surface": "#131b2e",
+            "surface-container-lowest": "#ffffff",
+            "on-secondary-container": "#076a7c",
+            "surface-bright": "#faf8ff",
+            "on-primary": "#ffffff",
+            "secondary-container": "#9ce8fd",
+            "primary-fixed": "#9ff4ca",
+            "surface-container-high": "#e2e7ff",
+            "primary-fixed-dim": "#83d7ae",
+            "tertiary": "#0058be",
+            "error-container": "#ffdad6",
+            "primary-container": "#006948",
+            "surface-dim": "#d2d9f4",
+            "on-primary-fixed-variant": "#005237",
+            "inverse-on-surface": "#eef0ff",
+            "on-surface-variant": "#3d4a42",
+            "tertiary-fixed": "#d8e2ff",
+            "on-background": "#131b2e",
+            "inverse-surface": "#283044",
+            "on-tertiary-fixed-variant": "#004395",
+            "on-secondary": "#ffffff",
+            "surface-container-highest": "#dae2fc",
+            "outline-variant": "#bec9c1",
+            "secondary-fixed-dim": "#86d2e6",
+            "background": "#faf8ff",
+            "error": "#ba1a1a",
+            "surface": "#faf8ff",
+            "on-secondary-fixed-variant": "#004e5c",
+            "on-primary-container": "#91e5bc",
+            "tertiary-container": "#0057bc",
+            "on-tertiary-container": "#c2d3ff",
+            "warning-rating": "#b45309",
+            "secondary": "#00687a",
+            "primary": "#006948",
+            "surface-tint": "#076c4b",
+            "tertiary-fixed-dim": "#adc6ff",
+            "on-error-container": "#93000a",
+            "on-tertiary-fixed": "#001a42",
+            "inverse-primary": "#83d7ae"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xs": "8px",
+            "space-3xl": "40px",
+            "safe-bottom-android": "24px",
+            "space-2xl": "32px",
+            "space-xxs": "4px",
+            "space-md": "16px",
+            "edge-margin-tablet": "24px",
+            "touch-target": "48px",
+            "space-sm": "12px",
+            "edge-margin-mobile": "16px",
+            "space-xl": "24px",
+            "space-lg": "20px"
+          },
+          "fontFamily": {
+            "sans": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "title-md": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "display": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-lg": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.025em", "fontWeight": "700" }],
+            "title-md": ["16px", { "lineHeight": "22px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "600" }],
+            "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "display": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.03em", "fontWeight": "800" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+          }
+        }
+      }
+    };
+  </script>
+<style>
+    @layer base {
+      html, body {
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: #faf8ff;
+      }
+      body {
+        overscroll-behavior-y: none;
+        -webkit-tap-highlight-color: transparent;
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        min-height: max(884px, 100dvh);
+      }
+      .pb-safe {
+        padding-bottom: env(safe-area-inset-bottom, 24px);
+      }
+      .pt-safe {
+        padding-top: env(safe-area-inset-top, 0px);
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased selection:bg-primary/20">
+<!-- Header estándar de UGO Cliente -->
+<header class="fixed top-0 w-full z-50 pt-safe bg-surface/90 backdrop-blur-xl border-b border-surface-variant/40">
+<!-- Status Bar iOS dummy -->
+<div class="flex items-center justify-between px-space-md h-6 select-none">
+<span class="text-on-surface font-label-md text-label-md">09:41</span>
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span>
+<span class="material-symbols-outlined text-[16px]">wifi</span>
+<span class="material-symbols-outlined text-[18px]">battery_full</span>
+</div>
+</div>
+<!-- Navigation Chrome -->
+<div class="h-14 px-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<button aria-label="Volver" class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-transform active:scale-95" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold">UGO Cliente / Ampliar servicio</span>
+<h1 class="font-title-md text-title-md text-on-surface leading-tight flex items-center gap-1.5">
+<span>Solicitud en curso · #UG-88412</span>
+</h1>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button aria-label="Hugo Asistente" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high text-secondary transition-colors" title="Hugo Asistente">
+<span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+</button>
+<div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs">
+          CM
+        </div>
+</div>
+</div>
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex flex-col relative w-full pt-20 pb-safe mb-20 bg-surface">
+<div class="flex flex-col w-full pb-36">
+<!-- 2. Banner de estado: 'Servicio en curso con Carlos Méndez' con cronómetro en pausa y badge 'Inspección técnica in situ' -->
+<section class="px-space-md pt-2 pb-space-sm">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md border border-surface-variant/60 shadow-sm">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img alt="Carlos Méndez" class="w-12 h-12 rounded-full object-cover ring-2 ring-primary/20" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUeyBwdEtphSLmMup6OPfgh42cJfreroHav3nGKLYWsTxzCWDCvdB4OaIc9cdki_evou9feWRyJUCwSQ364uTDTuS_ylb7HtIpMW_rGVMJddR6v-YpZZVFBUqEbetZ8zyWRuqrW6BeDVRH3cl5m1r-d90qqT_6gbSiY36AqYU-Lomj899J9yXXNs0yE1gQI8EKs33D3CWvwn_lKs8gSLZIQhjH624MhbFofbXkouLh3qKetm6JIk7LyQ"/>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-primary ring-2 ring-surface-container-lowest flex items-center justify-center text-white text-[10px]">
+<span class="material-symbols-outlined text-[11px]">verified</span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h2 class="font-title-md text-title-md text-on-surface">Servicio en curso con Carlos Méndez</h2>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[15px] text-primary">electric_bolt</span>
+                  Técnico Electricista Matriculado · ★ 4.98
+                </span>
+</div>
+</div>
+</div>
+<div class="mt-3 pt-3 border-t border-surface-container flex flex-wrap items-center justify-between gap-2">
+<!-- Badge inspección técnica in situ -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-fixed/60 text-on-primary-fixed font-label-sm text-label-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+              Inspección técnica in situ
+            </span>
+<!-- Cronómetro en pausa -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-warning-rating">pause_circle</span>
+<span>Cronómetro en pausa (38 min)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Card interactivo de 'Propuesta de Ampliación de Alcance' -->
+<section class="px-space-md mb-space-md">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md border-2 border-primary/20 shadow-md">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-full bg-primary-fixed text-on-primary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-[17px]">extension</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface">Propuesta de Ampliación de Alcance</h3>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold">
+              +R$ 80,00
+            </span>
+</div>
+<!-- Descripción detallada -->
+<p class="font-body-md text-body-md text-on-surface bg-surface-container-low/70 rounded-2xl p-3 mb-3 border border-surface-variant/40">
+<strong>Instalación de 3er punto de luz y reemplazo de térmica bipolar 20A en tablero seccional</strong>, asegurando distribución de carga adecuada para prevenir sobrecalentamiento.
+          </p>
+<!-- Desglose de adición -->
+<div class="space-y-2.5 text-on-surface-variant font-body-sm text-body-sm">
+<div class="flex items-center justify-between py-1 border-b border-surface-container-low">
+<span class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-secondary">schedule</span>
+                Tiempo adicional estimado
+              </span>
+<span class="font-label-md text-label-md text-secondary font-bold">+35 min</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-surface-container-low">
+<span class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">engineering</span>
+                Mano de obra especializada
+              </span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">+ R$ 45,00</span>
+</div>
+<div class="flex items-center justify-between py-1 border-b border-surface-container-low">
+<div class="flex flex-col pr-2">
+<span class="flex items-center gap-2 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary">inventory_2</span>
+                  Materiales y repuestos homologados
+                </span>
+<span class="text-[12px] text-outline pl-6">Disyuntor bipolar Siemens 20A curva C (en furgón UGO)</span>
+</div>
+<span class="font-label-md text-label-md text-on-surface font-semibold shrink-0">+ R$ 35,00</span>
+</div>
+<!-- Total ampliación destacado -->
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-lg text-label-lg text-primary font-bold">Total adicional de ampliación</span>
+<span class="font-headline-sm text-headline-sm text-primary font-extrabold">+ R$ 80,00</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Adjunto fotográfico pericial enviado por Carlos con badge 'Evidencia validada por Hugo IA' -->
+<section class="px-space-md mb-space-md">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md border border-surface-variant/60 shadow-sm">
+<div class="flex items-center justify-between mb-2.5">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-semibold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-primary">photo_camera</span>
+              Evidencia pericial in situ
+            </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm font-bold shadow-xs">
+<span class="material-symbols-outlined text-[13px]">verified_user</span>
+              Evidencia validada por Hugo IA
+            </span>
+</div>
+<div class="relative rounded-2xl overflow-hidden border border-surface-variant/80 bg-slate-900 group">
+<img alt="Cable recalentado y bornes deteriorados en tablero seccional" class="w-full h-44 object-cover opacity-95 group-hover:scale-102 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjNsAgMDCcq0TE0_SAW5oaLpHBSKSMDv1ae5you7DVBhj3l2JsSWi28eJLBAVbJ0RqxPSFOPuzLAi0glzpMH3-qAStPmnPATJhkJxQdJIcmwLDMXS4BfabBnFY5b-Et10esJeo9SMrm4Erpo6TeLnwH4U-68zc0GGFCYwywahrdRx_upMhn18iKQvp6wiVZHVti1qEeIs3WsE_hvdGEGQ9e3W5fmXZ3PYIMtkhA2NWrJdop7zkiJWa2g"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent flex flex-col justify-end p-3">
+<div class="flex items-center justify-between text-white">
+<span class="font-label-sm text-label-sm flex items-center gap-1 text-red-300 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-md">
+<span class="w-2 h-2 rounded-full bg-red-500"></span>
+                  Punto crítico: Cable recalentado y bornera desajustada
+                </span>
+<span class="text-[11px] text-white/80">Foto técnica #01 · 10:14 hs</span>
+</div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-2.5 italic">
+            "Durante la revisión del circuito detecté fuga térmica y aislamiento degradado en la entrada de la térmica actual. Se aconseja reemplazo inmediato para evitar corte general o principio de incendio." — Carlos Méndez
+          </p>
+</div>
+</section>
+<!-- 4. Comparativa de impacto fiduciario transparente -->
+<section class="px-space-md mb-space-md">
+<div class="bg-surface-container-low rounded-3xl p-space-md border border-surface-variant/50">
+<div class="flex items-center justify-between pb-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Impacto fiduciario transparente</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-secondary font-semibold">
+<span class="material-symbols-outlined text-[14px]">account_balance_wallet</span>
+              Garantía de precio congelado
+            </span>
+</div>
+<div class="space-y-2 mt-1">
+<div class="flex items-center justify-between text-on-surface-variant font-body-md text-body-md">
+<span>Valor original retenido (contrato base)</span>
+<span class="font-label-lg text-label-lg text-on-surface">R$ 175,00</span>
+</div>
+<div class="flex items-center justify-between text-primary font-body-md text-body-md">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+                Ampliación de alcance autorizada
+              </span>
+<span class="font-label-lg text-label-lg font-bold">+ R$ 80,00</span>
+</div>
+<div class="mt-2 pt-2 border-t border-surface-variant/60 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase font-semibold">Nuevo total recalculado</span>
+<div class="font-headline-md text-headline-md text-on-surface font-extrabold leading-tight">R$ 255,00</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-outline block">Cobro retenido</span>
+<span class="font-label-sm text-label-sm text-primary font-bold bg-primary-fixed/50 px-2 py-0.5 rounded-full inline-block">Sin cargos ocultos</span>
+</div>
+</div>
+</div>
+<!-- Respaldo Garantía UGO Shield -->
+<div class="mt-3.5 pt-3 border-t border-surface-variant/60 flex items-start gap-2.5">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">security</span>
+</div>
+<div>
+<span class="font-label-md text-label-md text-on-surface font-bold block">Respaldo Garantía UGO Shield</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+                Cubre los nuevos materiales y mano de obra durante <strong>30 días</strong>. Si algo no queda conforme, otro especialista acude sin costo.
+              </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Selector de método de pago de ampliación -->
+<section class="px-space-md mb-space-sm">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md border border-surface-variant/60 shadow-sm">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold block mb-2">Forma de pago para la ampliación (+R$ 80,00)</span>
+<div class="grid grid-cols-2 gap-2" id="payment-selector">
+<label class="flex items-center gap-2 p-2.5 rounded-2xl border-2 border-primary bg-primary-fixed/15 cursor-pointer text-on-surface">
+<input checked="" class="text-primary focus:ring-primary h-4 w-4 border-outline-variant" name="payment_method" type="radio" value="mercadopago"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Mercado Pago</span>
+<span class="text-[11px] text-outline">Débito / Crédito</span>
+</div>
+</label>
+<label class="flex items-center gap-2 p-2.5 rounded-2xl border border-surface-container-high bg-surface-container-lowest cursor-pointer text-on-surface">
+<input class="text-primary focus:ring-primary h-4 w-4 border-outline-variant" name="payment_method" type="radio" value="saldo"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-on-surface">Saldo retenido</span>
+<span class="text-[11px] text-outline">UGO Wallet</span>
+</div>
+</label>
+</div>
+</div>
+</section>
+</div>
+<!-- 6. Acciones principales con contratos UX claros (Bottom Sheet Flotante) -->
+<div class="fixed bottom-16 inset-x-0 z-40 px-space-md pb-2 bg-gradient-to-t from-surface via-surface/95 to-transparent pt-4">
+<div class="flex flex-col gap-2 max-w-lg mx-auto">
+<!-- Botón primario verde esmeralda (#006948): 'Aprobar ampliación (+R$ 80,00)' -->
+<button class="w-full h-touch-target rounded-2xl bg-[#006948] hover:bg-[#00573c] text-white font-label-lg text-label-lg shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2" id="btn-approve" type="button">
+<span class="material-symbols-outlined text-[20px]">check_circle</span>
+<span>Aprobar ampliación (+R$ 80,00)</span>
+</button>
+<!-- Botón secundario outline/neutro: 'Rechazar y mantener servicio original (R$ 175,00)' -->
+<button class="w-full py-2.5 px-3 rounded-2xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors text-center" id="btn-reject" type="button">
+          Rechazar y mantener servicio original (R$ 175,00)
+        </button>
+<!-- Enlace discreto: 'Consultar a Hugo IA sobre este presupuesto' -->
+<button class="w-full py-1 text-center font-label-sm text-label-sm text-secondary hover:underline flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[15px]">auto_awesome</span>
+<span>Consultar a Hugo IA sobre este presupuesto</span>
+</button>
+</div>
+</div>
+</main>
+<!-- 7. Bottom navigation bar estandarizada fija con pestaña 'Inicio' activa -->
+<nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl border-t border-surface-variant/50 shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold">
+<div class="h-16 px-space-md flex items-center justify-around">
+<a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#">
+<div class="w-10 h-7 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">home</span>
+</div>
+<span class="font-label-sm text-label-sm mt-0.5">Inicio</span>
+</a>
+<a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#">
+<div class="w-10 h-7 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">grid_view</span>
+</div>
+<span class="font-label-sm text-label-sm mt-0.5">Servicios</span>
+</a>
+<a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#">
+<div class="w-10 h-7 rounded-full flex items-center justify-center relative">
+<span class="material-symbols-outlined text-[24px]">receipt_long</span>
+<span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span>
+</div>
+<span class="font-label-sm text-label-sm mt-0.5">Actividad</span>
+</a>
+<a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#">
+<div class="w-10 h-7 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">person</span>
+</div>
+<span class="font-label-sm text-label-sm mt-0.5">Perfil</span>
+</a>
+</div>
+</nav>
+<script>
+    // Radio toggle style helper
+    const radioInputs = document.querySelectorAll('input[name="payment_method"]');
+    radioInputs.forEach(input => {
+      input.addEventListener('change', () => {
+        radioInputs.forEach(r => {
+          const parentLabel = r.closest('label');
+          if (r.checked) {
+            parentLabel.className = "flex items-center gap-2 p-2.5 rounded-2xl border-2 border-primary bg-primary-fixed/15 cursor-pointer text-on-surface";
+          } else {
+            parentLabel.className = "flex items-center gap-2 p-2.5 rounded-2xl border border-surface-container-high bg-surface-container-lowest cursor-pointer text-on-surface";
+          }
+        });
+      });
+    });
+  </script>
+</body></html>

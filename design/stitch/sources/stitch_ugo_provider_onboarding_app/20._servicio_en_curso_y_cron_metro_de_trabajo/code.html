@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface pt-safe pb-safe flex flex-col min-h-screen"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full pb-8">
+<!-- Top Status & Safety Header -->
+<header class="w-full px-4 py-3 bg-surface-container-lowest shadow-sm flex items-center justify-between sticky top-0 z-30">
+<div class="flex items-center gap-2">
+<span class="relative flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-secondary"></span>
+</span>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-surface">Servicio en Curso</span>
+<span class="font-label-sm text-label-sm bg-secondary-container text-on-secondary-container px-1.5 py-0.5 rounded-full">En Vivo</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Iniciado a las 14:20 hs · Apto 42B</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5">
+<!-- SOS Button -->
+<button aria-label="Botón de auxilio SOS" class="w-10 h-10 rounded-xl bg-error-container text-on-error-container flex items-center justify-center active:scale-95 transition-transform shadow-sm" type="button">
+<span class="material-symbols-outlined text-xl" style="font-variation-settings: 'FILL' 1;">emergency</span>
+</button>
+<!-- Quick Technical Support -->
+<button aria-label="Soporte técnico y mediación UGO" class="w-10 h-10 rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-xl">support_agent</span>
+</button>
+</div>
+</header>
+<div class="px-4 flex flex-col gap-4 mt-3">
+<!-- Active Timer Card -->
+<section class="bg-primary-container text-on-primary rounded-2xl p-5 shadow-lg relative overflow-hidden">
+<!-- Background Ambient Blur Overlay -->
+<div class="absolute -right-8 -bottom-8 w-36 h-36 bg-secondary rounded-full filter blur-2xl opacity-20 pointer-events-none"></div>
+<div class="flex items-center justify-between relative z-10 mb-2">
+<span class="font-label-md text-label-md uppercase tracking-wider text-on-primary-container flex items-center gap-1.5">
+<span class="material-symbols-outlined text-base">timer</span>
+          Cronómetro de Labor
+        </span>
+<span class="inline-flex items-center gap-1 text-on-secondary-container bg-secondary-container px-2.5 py-1 rounded-full font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse"></span>
+          Cronometrando
+        </span>
+</div>
+<!-- Main Digits -->
+<div class="flex items-baseline justify-between relative z-10 my-1">
+<div class="flex items-baseline font-display-lg text-display-lg font-extrabold tracking-tight text-on-primary" id="job-stopwatch">
+          00:38:24
+        </div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-primary-container block">Tiempo pautado</span>
+<span class="font-title-md text-title-md font-semibold text-on-primary">1h 00m</span>
+</div>
+</div>
+<!-- Progress Meter -->
+<div class="relative z-10 mt-3">
+<div class="flex justify-between text-label-sm font-label-sm text-on-primary-container mb-1">
+<span>64% de labor completada</span>
+<span>~22m restantes</span>
+</div>
+<div class="w-full h-2.5 bg-primary rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full transition-all duration-500" style="width: 64%;"></div>
+</div>
+</div>
+<!-- Controls -->
+<div class="flex items-center gap-2 mt-4 pt-3 border-t border-primary/40 relative z-10">
+<button class="flex-1 py-2.5 px-3 bg-surface-container-lowest text-primary rounded-xl font-label-md text-label-md flex items-center justify-center gap-2 active:scale-98 transition shadow-sm" id="btn-pause-job" type="button">
+<span class="material-symbols-outlined text-lg" id="pause-icon">pause_circle</span>
+<span id="pause-text">Pausar cronómetro (Espera/Secado)</span>
+</button>
+<button class="w-11 h-11 bg-primary text-on-primary rounded-xl flex items-center justify-center active:scale-95 transition" title="Añadir nota de tiempo" type="button">
+<span class="material-symbols-outlined text-xl">more_time</span>
+</button>
+</div>
+</section>
+<!-- Client & Work Summary Strip -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="relative">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Foto de perfil de Camila Duarte, clienta de São Paulo sonriendo en su departamento moderno con luz natural suave y vestimenta casual elegante." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfeZ24jk36Dkh0ck6_hS-h9X0RiXBb8jTSNLj-qkfGcDr9lHSjBohmlSHBmGEv6ix4a36jkJXTQCfh6JnOaXWdBQMKC-hcxMY4ckq2aHAEsxrBcngUpkR6UbTQ_ES7Ov8rZs5hijE--bQuHfZ1fC_81_ZWY6y8kvBmNiGv314jmhrI2QOabRlneB5OgTcBI2X1eVLumGSdtkJyYCfckXjk4_D6wRM3q5v_06zUaSGOrFn4LLJzqCayhg"/>
+<span class="absolute -bottom-1 -right-1 bg-surface-container-lowest rounded-full p-0.5 shadow">
+<span class="material-symbols-outlined text-xs text-primary" style="font-variation-settings: 'FILL' 1;">verified</span>
+</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<h2 class="font-title-md text-title-md text-on-surface">Camila Duarte</h2>
+<span class="inline-flex items-center text-label-sm font-label-sm text-tertiary-container bg-tertiary-fixed px-1.5 py-0.5 rounded">
+<span class="material-symbols-outlined text-xs mr-0.5" style="font-variation-settings: 'FILL' 1;">star</span> 4.9
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-sm text-secondary">location_on</span>
+              Rua dos Pinheiros 480, Apto 42B
+            </p>
+</div>
+</div>
+<!-- Quick Contacts -->
+<div class="flex items-center gap-2">
+<a class="w-10 h-10 rounded-full bg-surface-container text-primary flex items-center justify-center active:scale-95 transition shadow-sm" href="#chat">
+<span class="material-symbols-outlined text-xl">chat</span>
+</a>
+<a class="w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center active:scale-95 transition shadow-sm" href="tel:+551199999999">
+<span class="material-symbols-outlined text-xl">phone</span>
+</a>
+</div>
+</div>
+<!-- Scope Detail Mini Banner -->
+<div class="bg-surface-container-low rounded-xl p-3 flex items-start gap-2.5">
+<span class="material-symbols-outlined text-primary text-xl mt-0.5">plumbing</span>
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide block">Orden UGO #8492</span>
+<p class="font-label-md text-label-md text-on-surface font-semibold">Reparación de fuga en caño flexible bajo bacha de cocina</p>
+</div>
+</div>
+</section>
+<!-- Interactive Execution Checklist -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface font-bold">Checklist del Trabajo</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tildá cada paso para actualizar a Camila en tiempo real</p>
+</div>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface px-2 py-0.5 rounded-full font-semibold">
+          1 de 4 listos
+        </span>
+</div>
+<div class="flex flex-col gap-2.5" id="checklist-container">
+<!-- Task 1: Completed -->
+<div class="flex items-start gap-3 p-3 bg-secondary-container/30 rounded-xl transition">
+<button class="mt-0.5 text-secondary flex items-center justify-center" type="button">
+<span class="material-symbols-outlined text-2xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</button>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-semibold line-through opacity-80">Desarme y retiro de flexible deteriorado</span>
+<span class="font-label-sm text-label-sm text-secondary font-medium">14:28 hs</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Corte de llave de paso general verificado y retiro de pieza corroída.</p>
+</div>
+</div>
+<!-- Task 2: In Progress -->
+<div class="flex items-start gap-3 p-3 bg-surface-container rounded-xl shadow-xs">
+<button class="mt-0.5 text-primary flex items-center justify-center" onclick="toggleTask(this)" type="button">
+<span class="material-symbols-outlined text-2xl text-primary animate-pulse">radio_button_checked</span>
+</button>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface font-bold">Instalación de flexible de acero inoxidable</span>
+<span class="font-label-sm text-label-sm bg-primary-container text-on-primary px-2 py-0.5 rounded-full">En Proceso</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Conexión mallada de 40cm reforzada y sellado teflón de alta densidad.</p>
+</div>
+</div>
+<!-- Task 3: Pending -->
+<div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-xl opacity-90">
+<button class="mt-0.5 text-outline flex items-center justify-center" onclick="toggleTask(this)" type="button">
+<span class="material-symbols-outlined text-2xl">radio_button_unchecked</span>
+</button>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Prueba de estanqueidad y presión de agua</span>
+<span class="font-label-sm text-label-sm text-outline">Pendiente</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Apertura gradual de válvulas y prueba de 5 minutos sin goteo.</p>
+</div>
+</div>
+<!-- Task 4: Pending -->
+<div class="flex items-start gap-3 p-3 bg-surface-container-low rounded-xl opacity-90">
+<button class="mt-0.5 text-outline flex items-center justify-center" onclick="toggleTask(this)" type="button">
+<span class="material-symbols-outlined text-2xl">radio_button_unchecked</span>
+</button>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface">Limpieza final de bacha y mueble</span>
+<span class="font-label-sm text-label-sm text-outline">Pendiente</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Secado de base interna de mueble y desinfección de la zona intervenida.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- Upselling & Scope Modification Module -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-2">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined text-lg">add_shopping_cart</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface font-bold">Imprevistos y Repuestos Extras</h3>
+<span class="font-body-sm text-body-sm text-on-surface-variant">¿Detectaste otra avería o pieza gastada?</span>
+</div>
+</div>
+</div>
+<!-- Informative Pro-Tip -->
+<div class="p-3 bg-surface-container-low rounded-xl flex items-center gap-2.5 mb-3">
+<span class="material-symbols-outlined text-primary text-xl">lightbulb</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+          Podés sumar un adicional con cotización al instante. Camila recibe la solicitud en su app y abona vía <strong class="text-on-secondary-container">PIX en 1 clic</strong> sin frenar la labor principal.
+        </p>
+</div>
+<!-- Action Button for Scope Upsell -->
+<button class="w-full py-3 px-4 bg-surface-container text-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2 active:scale-98 transition" id="btn-add-upsell" type="button">
+<span class="material-symbols-outlined text-xl">add_circle</span>
+<span>+ Agregar trabajo adicional o repuesto extra</span>
+</button>
+</section>
+<!-- Visual Photographic Proof / Progress Logs -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm">
+<div class="flex items-center justify-between mb-3">
+<div>
+<h3 class="font-title-md text-title-md text-on-surface font-bold">Registro Fotográfico del Trabajo</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Garantía de respaldo UGO Escrow para cobro seguro</p>
+</div>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container/40 px-2 py-0.5 rounded-full font-semibold">
+          1/3 Fotos
+        </span>
+</div>
+<!-- Thumbnails Grid -->
+<div class="grid grid-cols-3 gap-2.5">
+<!-- Slot 1: Initial Evidence (Taken) -->
+<div class="flex flex-col gap-1.5">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden shadow-xs">
+<img class="w-full h-full object-cover" data-alt="Fotografía en primer plano de un caño flexible de agua plateado y oxidado bajo una bacha de cocina con filtración visible y gotas cayendo sobre una bandeja plástica." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA5vLCgrT0bFtTLozEBLb-dVpywUasWy0w72Gl70LCfux_125cJhwbwsBfOHCKwBYYVIvH3nlkAhtzg6k4gc1c62mwomNx9mOuNtlwq3BHNEni_08ZnRmROTRYwlhuNFc9ixrpaFzVpxPgjM9p6pPq-9NjrxRP7Un0haCQiPLPHmcxe2nhBaYI8WSDzq_z3xLMyrap5XTMCPy4iyYP6jig6h7avFYz6WknW5hy5ol_FvAvjCRVz2F-Yg"/>
+<span class="absolute bottom-1 right-1 bg-on-surface/80 text-surface-container-lowest font-label-sm text-label-sm px-1.5 py-0.5 rounded">
+              14:18
+            </span>
+<span class="absolute top-1 left-1 bg-secondary text-on-secondary rounded-full p-0.5">
+<span class="material-symbols-outlined text-xs">done</span>
+</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface font-medium truncate">1. Foto inicial</span>
+</div>
+<!-- Slot 2: In Progress (Actionable) -->
+<div class="flex flex-col gap-1.5">
+<button class="w-full aspect-square rounded-xl bg-surface-container flex flex-col items-center justify-center text-primary active:scale-95 transition" type="button">
+<span class="material-symbols-outlined text-2xl">add_a_photo</span>
+<span class="font-label-sm text-label-sm mt-1">En proceso</span>
+</button>
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate">2. Montaje</span>
+</div>
+<!-- Slot 3: Final Work (Locked/Pending) -->
+<div class="flex flex-col gap-1.5">
+<div class="w-full aspect-square rounded-xl bg-surface-container-low flex flex-col items-center justify-center text-outline">
+<span class="material-symbols-outlined text-2xl">lock</span>
+<span class="font-label-sm text-label-sm mt-1">Final</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline truncate">3. Trabajo listo</span>
+</div>
+</div>
+<!-- Camera Action Trigger -->
+<button class="mt-3.5 w-full py-2.5 px-4 bg-surface-container-high text-on-surface font-label-md text-label-md rounded-xl flex items-center justify-center gap-2 active:scale-98 transition" type="button">
+<span class="material-symbols-outlined text-lg text-primary">photo_camera</span>
+<span>Tomar foto de progreso ahora</span>
+</button>
+</section>
+<!-- Financial Escrow Summary & Primary Completion Action -->
+<section class="bg-surface-container-lowest rounded-2xl p-4 shadow-md flex flex-col gap-3">
+<!-- Escrow PIX Balance Guard -->
+<div class="flex items-center justify-between p-3 bg-secondary-container/20 rounded-xl">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-base">verified_user</span>
+</div>
+<div>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Custodia PIX Garantizada</span>
+<span class="material-symbols-outlined text-xs text-secondary" style="font-variation-settings: 'FILL' 1;">lock</span>
+</div>
+<span class="font-title-md text-title-md font-bold text-on-secondary-container">R$ 250,00</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Liberación inmediata al aprobar</span>
+</div>
+<!-- Main Completion CTA -->
+<button class="w-full h-14 bg-primary-container text-on-primary font-label-lg text-label-lg rounded-xl flex items-center justify-center gap-2.5 shadow-md active:scale-98 transition-transform font-bold" id="btn-finish-service" type="button">
+<span class="material-symbols-outlined text-2xl">task_alt</span>
+<span>Finalizar Tarea y Solicitar Aprobación</span>
+</button>
+<!-- Secondary: Report Problem / Discrepancy -->
+<button class="py-2 text-center text-outline text-label-md font-label-md hover:text-on-surface active:opacity-70 transition" type="button">
+        ¿Tenés algún problema o desacuerdo con el cliente? Reportar aquí
+      </button>
+</section>
+</div>
+</div>
+<script>
+  // Simple Live Interactive Stopwatch Simulation
+  (function() {
+    let seconds = 38 * 60 + 24;
+    let isPaused = false;
+    const display = document.getElementById('job-stopwatch');
+    const pauseBtn = document.getElementById('btn-pause-job');
+    const pauseText = document.getElementById('pause-text');
+    const pauseIcon = document.getElementById('pause-icon');
+
+    function updateTimer() {
+      if (!isPaused) {
+        seconds++;
+        const hrs = Math.floor(seconds / 3600).toString().padStart(2, '0');
+        const mins = Math.floor((seconds % 3600) / 60).toString().padStart(2, '0');
+        const secs = (seconds % 60).toString().padStart(2, '0');
+        if (display) {
+          display.textContent = `${hrs}:${mins}:${secs}`;
+        }
+      }
+    }
+
+    const timerInterval = setInterval(updateTimer, 1000);
+
+    if (pauseBtn) {
+      pauseBtn.addEventListener('click', function() {
+        isPaused = !isPaused;
+        if (isPaused) {
+          pauseText.textContent = 'Reanudar trabajo en vivo';
+          pauseIcon.textContent = 'play_circle';
+          pauseBtn.classList.add('bg-secondary-container', 'text-on-secondary-container');
+          pauseBtn.classList.remove('bg-surface-container-lowest', 'text-primary');
+        } else {
+          pauseText.textContent = 'Pausar cronómetro (Espera/Secado)';
+          pauseIcon.textContent = 'pause_circle';
+          pauseBtn.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+          pauseBtn.classList.add('bg-surface-container-lowest', 'text-primary');
+        }
+      });
+    }
+
+    // Interactive Toggle for Tasks
+    window.toggleTask = function(btn) {
+      const icon = btn.querySelector('.material-symbols-outlined');
+      if (icon) {
+        if (icon.textContent === 'check_circle') {
+          icon.textContent = 'radio_button_unchecked';
+          icon.classList.remove('text-secondary');
+          icon.classList.add('text-outline');
+          icon.removeAttribute('style');
+        } else {
+          icon.textContent = 'check_circle';
+          icon.classList.remove('text-outline', 'text-primary', 'animate-pulse');
+          icon.classList.add('text-secondary');
+          icon.style.fontVariationSettings = "'FILL' 1";
+        }
+      }
+    };
+  })();
+</script></main></body></html>

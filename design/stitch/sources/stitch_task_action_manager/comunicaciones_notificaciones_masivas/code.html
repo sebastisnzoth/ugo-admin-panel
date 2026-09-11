@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full space-y-space-lg">
+<!-- Operational Header & Controls -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold uppercase tracking-wider">Módulo Operativo #37</span>
+<span class="text-text-muted text-label-sm">•</span>
+<span class="font-data-mono text-data-mono text-text-muted">FCM_CLUSTER_SC-01</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-text-primary tracking-tight mt-0.5">Comunicaciones Operativas &amp; Notificaciones Push / In-App</h1>
+<p class="font-body-md text-body-md text-text-secondary">Orquestación omnicanal en tiempo real, alertas de despacho de alta prioridad e incentivos geolocalizados para el Hub Florianópolis.</p>
+</div>
+<div class="flex items-center flex-wrap gap-space-sm self-start lg:self-auto">
+<div class="relative inline-flex items-center">
+<div class="flex items-center gap-space-xs px-3 py-1.5 rounded-lg bg-surface-panel shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">near_me</span>
+<span class="font-label-md text-label-md text-text-primary">Florianópolis: Norte &amp; Centro</span>
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse ml-1"></span>
+</div>
+</div>
+<button class="px-space-md py-1.5 rounded-lg bg-copilot-cyan-subtle text-copilot-cyan-hover hover:bg-copilot-cyan/20 transition-all font-label-md text-label-md flex items-center gap-space-xs shadow-sm" id="btn-copilot-assist">
+<span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+<span>Hugo AI Prompt</span>
+</button>
+<button class="px-space-md py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary transition-all font-label-md text-label-md flex items-center gap-space-xs shadow-sm" id="btn-create-modal">
+<span class="material-symbols-outlined text-[18px]">add_alert</span>
+<span>Crear Nueva Campaña / Alerta</span>
+</button>
+</div>
+</div>
+<!-- Realtime Performance Operational KPIs -->
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- KPI 1 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-panel p-space-md shadow-sm flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-primary"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Mensajes Enviados (Mes)</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 font-bold tracking-tight">142.800</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-brand-green-subtle flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">mark_email_read</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-xs">
+<span class="inline-flex items-center text-primary font-label-sm text-label-sm font-semibold gap-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +14.2% vs mes anterior
+        </span>
+<span class="font-data-mono text-[11px] text-text-muted">Quota: 82%</span>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-panel p-space-md shadow-sm flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-copilot-cyan"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Tasa de Apertura Push</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 font-bold tracking-tight">48.6%</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-copilot-cyan-subtle flex items-center justify-center text-copilot-cyan-hover">
+<span class="material-symbols-outlined text-[20px]">open_in_browser</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-xs">
+<span class="inline-flex items-center text-primary font-label-sm text-label-sm font-semibold gap-0.5">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> +6.1% vs benchmark
+        </span>
+<span class="font-data-mono text-[11px] text-text-muted">Mediana: 3.4 min</span>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-panel p-space-md shadow-sm flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-secondary-container"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Conversión a Servicio</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 font-bold tracking-tight">22.4%</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-xs">
+<span class="inline-flex items-center text-primary font-label-sm text-label-sm font-semibold gap-0.5">
+<span class="material-symbols-outlined text-[14px]">done_all</span> 3.190 Órdenes directas
+        </span>
+<span class="font-data-mono text-[11px] text-text-muted">ROI 5.8x</span>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-panel p-space-md shadow-sm flex flex-col justify-between">
+<div class="absolute top-0 left-0 right-0 h-[3px] bg-warning-amber"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Técnicos Alcanzados (Alertas)</span>
+<span class="font-data-metric text-data-metric text-text-primary mt-1 font-bold tracking-tight">98.2%</span>
+</div>
+<div class="w-9 h-9 rounded-lg bg-warning-amber-subtle flex items-center justify-center text-warning-amber">
+<span class="material-symbols-outlined text-[20px]">cell_tower</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between pt-space-xs">
+<span class="inline-flex items-center text-text-secondary font-label-sm text-label-sm font-semibold gap-0.5">
+<span class="material-symbols-outlined text-[14px]">verified</span> 418 Activos online
+        </span>
+<span class="font-data-mono text-[11px] text-primary font-semibold">Latency &lt; 1.2s</span>
+</div>
+</div>
+</div>
+<!-- Operational Core: 2-Column High-Density Grid -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- LEFT COLUMN: Quick Broadcast Editor & Live Simulator (7 cols) -->
+<div class="xl:col-span-7 flex flex-col space-y-space-md">
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[22px]">send</span>
+<h2 class="font-headline-md text-headline-md text-text-primary font-bold">Editor de Emisión Rápida</h2>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-text-muted">Servidor de Gateway Activo</span>
+</div>
+</div>
+<!-- Audience Selector Tabs / Chips -->
+<div class="space-y-space-xs mb-space-md">
+<label class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold flex items-center justify-between">
+<span>Audiencia Objetivo &amp; Segmentación Dinámica</span>
+<span class="font-data-mono text-[11px] text-primary font-bold bg-brand-green-subtle px-2 py-0.5 rounded" id="target-count-badge">42 destinatarios activos</span>
+</label>
+<div class="flex flex-wrap gap-1.5" id="audience-chips">
+<button class="audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-surface-muted text-text-secondary hover:bg-surface-container transition-all" data-audience="all" data-count="3.840" type="button">
+              Todos
+            </button>
+<button class="audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-surface-muted text-text-secondary hover:bg-surface-container transition-all" data-audience="vip-clients" data-count="610" type="button">
+              Solo Clientes VIP
+            </button>
+<button class="audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-surface-muted text-text-secondary hover:bg-surface-container transition-all" data-audience="active-providers" data-count="488" type="button">
+              Proveedores Activos
+            </button>
+<button class="audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-surface-muted text-text-secondary hover:bg-surface-container transition-all" data-audience="zone-north" data-count="128" type="button">
+              Zona Ingleses / Canasvieiras
+            </button>
+<button class="audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-semibold bg-primary text-on-primary shadow-sm" data-audience="clima-techs" data-count="42" type="button">
+              Técnicos de Climatización
+            </button>
+</div>
+</div>
+<!-- Delivery Channels Matrix -->
+<div class="space-y-space-xs mb-space-md">
+<label class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Canales de Entrega Simultánea</label>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm">
+<label class="relative flex items-center p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-colors cursor-pointer group">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary mr-space-xs" id="channel-push" type="checkbox"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">notifications_active</span> Push Móvil
+                </span>
+<span class="font-body-sm text-[11px] text-text-muted truncate">FCM Priority: High</span>
+</div>
+</label>
+<label class="relative flex items-center p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-colors cursor-pointer group">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary mr-space-xs" id="channel-banner" type="checkbox"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">ad_units</span> Banner In-App
+                </span>
+<span class="font-body-sm text-[11px] text-text-muted truncate">Persistente 3h</span>
+</div>
+</label>
+<label class="relative flex items-center p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-colors cursor-pointer group">
+<input checked="" class="w-4 h-4 rounded text-primary focus:ring-0 accent-primary mr-space-xs" id="channel-whatsapp" type="checkbox"/>
+<div class="flex flex-col min-w-0">
+<span class="font-label-md text-label-md text-text-primary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-[#25D366]">chat</span> WhatsApp API
+                </span>
+<span class="font-body-sm text-[11px] text-tertiary font-medium truncate">Solo Operativo Urgente</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Title and Body Form -->
+<div class="space-y-space-sm mb-space-md">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold" for="input-title">Título del Despacho / Notificación</label>
+<div class="flex items-center gap-1">
+<span class="font-label-sm text-[11px] text-text-muted">Tags Rápidos:</span>
+<button class="px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary font-data-mono text-[10px] hover:bg-surface-container font-semibold transition-colors" onclick="insertTag('{nombre}')" type="button">{nombre}</button>
+<button class="px-1.5 py-0.5 rounded bg-surface-muted text-text-secondary font-data-mono text-[10px] hover:bg-surface-container font-semibold transition-colors" onclick="insertTag('{zona}')" type="button">{zona}</button>
+<button class="px-1.5 py-0.5 rounded bg-brand-green-subtle text-primary font-data-mono text-[10px] hover:bg-brand-green-subtle/80 font-bold transition-colors" onclick="insertTag('{bono_monto}')" type="button">{bono_monto}</button>
+</div>
+</div>
+<input class="w-full h-10 px-3 rounded-lg bg-surface-canvas text-text-primary font-body-md text-body-md focus:bg-surface-panel focus:outline-none transition-all shadow-inner" id="input-title" type="text" value="🚨 Alta Demanda en {zona}: Bono Express {bono_monto}"/>
+<div class="flex items-center justify-between mt-space-sm">
+<label class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold" for="input-body">Cuerpo del Mensaje</label>
+<span class="font-data-mono text-[11px] text-text-muted" id="char-counter">134 / 240 caracteres</span>
+</div>
+<textarea class="w-full p-3 rounded-lg bg-surface-canvas text-text-primary font-body-md text-body-md focus:bg-surface-panel focus:outline-none transition-all shadow-inner resize-none" id="input-body" rows="3">Hola {nombre}, ola de calor extrema en curso. Recibe un adicional directo de {bono_monto} por cada servicio de aire acondicionado completado antes de las 19:00 hs.</textarea>
+</div>
+<!-- Incentive Trigger / Surge Dispatcher -->
+<div class="p-space-sm rounded-xl bg-surface-muted mb-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-warning-amber text-[20px]">monetization_on</span>
+<div>
+<span class="font-headline-sm text-headline-sm text-text-primary">Disparador de Incentivo Financiero UGO Surge</span>
+<p class="font-body-sm text-body-sm text-text-secondary">Liquidación garantizada con fondos del Fondo de Estabilización de Demanda Florianópolis.</p>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" id="toggle-incentive" type="checkbox"/>
+<div class="w-9 h-5 bg-border-strong peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-sm mt-space-sm pt-space-xs" id="incentive-config">
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] text-text-muted uppercase font-medium">Bono por Despacho</span>
+<div class="relative mt-1">
+<span class="absolute left-2.5 top-2 font-data-mono text-[12px] text-text-muted">R$</span>
+<input class="w-full h-8 pl-8 pr-2 rounded bg-surface-panel font-data-mono text-data-mono text-text-primary text-right font-bold focus:outline-none shadow-sm" id="input-bonus-amount" type="number" value="35.00"/>
+</div>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] text-text-muted uppercase font-medium">Ventana de Validez</span>
+<select class="mt-1 h-8 px-2 rounded bg-surface-panel font-body-sm text-body-sm text-text-primary focus:outline-none shadow-sm" id="input-validity-window">
+<option selected="" value="3h">Próximas 3 horas</option>
+<option value="5h">Próximas 5 horas</option>
+<option value="24h">Turno Completo (24h)</option>
+</select>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] text-text-muted uppercase font-medium">Límite de Cupos</span>
+<input class="mt-1 h-8 px-2 rounded bg-surface-panel font-data-mono text-data-mono text-text-primary text-center font-bold focus:outline-none shadow-sm" type="number" value="25"/>
+</div>
+</div>
+</div>
+<!-- Smartphone Interactive Live Mockup -->
+<div class="mb-space-md">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-text-muted">phone_iphone</span> Vista Previa en Dispositivo Real
+            </span>
+<div class="flex items-center gap-1 p-0.5 rounded-lg bg-surface-muted text-[11px]">
+<button class="px-2 py-0.5 rounded bg-surface-panel text-primary font-semibold shadow-xs" id="preview-tab-pro" type="button">UGO Pro (Técnico)</button>
+<button class="px-2 py-0.5 rounded text-text-muted hover:text-text-primary" id="preview-tab-client" type="button">UGO Cliente</button>
+</div>
+</div>
+<!-- Phone Chassis Container -->
+<div class="w-full max-w-[340px] mx-auto rounded-[28px] p-3 shadow-md bg-inverse-surface">
+<!-- Screen Area -->
+<div class="relative w-full h-[220px] rounded-[20px] bg-surface-canvas overflow-hidden flex flex-col justify-between p-3" style="background-image: radial-gradient(circle at 50% 20%, #eef0ff 0%, #f8fafc 100%);">
+<!-- Notch Bar -->
+<div class="flex items-center justify-between w-full px-1 text-[10px] font-data-mono text-text-muted">
+<span class="font-bold">14:32</span>
+<div class="w-16 h-3 rounded-full bg-text-primary/10 mx-auto"></div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">signal_cellular_4_bar</span>
+<span class="material-symbols-outlined text-[12px]">wifi</span>
+<span class="material-symbols-outlined text-[12px]">battery_charging_full</span>
+</div>
+</div>
+<!-- Push Notification Overlay Card -->
+<div class="w-full p-2.5 rounded-xl bg-surface-panel shadow-md flex flex-col space-y-1 transform transition-all duration-300">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<div class="w-4 h-4 rounded bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[10px]">handyman</span>
+</div>
+<span class="font-label-sm text-[10px] font-bold text-text-primary tracking-tight">UGO PRO • Florianópolis</span>
+</div>
+<span class="font-data-mono text-[9px] text-text-muted">ahora</span>
+</div>
+<span class="font-label-md text-[11px] font-bold text-text-primary leading-tight" id="preview-title">🚨 Alta Demanda en Ingleses: Bono Express +R$ 35,00</span>
+<p class="font-body-sm text-[10px] text-text-secondary leading-snug line-clamp-2" id="preview-body">Hola Mateo, ola de calor extrema en curso. Recibe un adicional directo de R$ 35,00 por cada servicio de aire acondicionado completado antes de las 19:00 hs.</p>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-[9px] text-primary font-bold bg-brand-green-subtle px-1.5 py-0.5 rounded">Bono Activo: +R$ 35,00</span>
+<span class="font-label-sm text-[9px] text-secondary font-semibold">Tocar para aceptar</span>
+</div>
+</div>
+<!-- Dummy In-App Nav Bar -->
+<div class="flex items-center justify-around py-1 px-2 rounded-full bg-surface-panel/90 shadow-sm backdrop-blur-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">explore</span>
+<span class="material-symbols-outlined text-[16px] text-text-muted">assignment</span>
+<span class="material-symbols-outlined text-[16px] text-text-muted">account_balance_wallet</span>
+<span class="material-symbols-outlined text-[16px] text-text-muted">person</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action CTAs -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs">
+<div class="flex items-center gap-space-xs text-text-muted font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span>Auditoría de emisor: <span class="font-semibold text-text-primary">Mateo Silva (SUPER_ADMIN)</span></span>
+</div>
+<div class="flex items-center gap-space-sm w-full sm:w-auto">
+<button class="flex-1 sm:flex-initial px-space-md h-9 rounded-lg bg-surface-muted hover:bg-surface-container-high text-text-primary font-label-md text-label-md transition-colors flex items-center justify-center gap-1 shadow-xs" type="button">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+<span>Programar Envío</span>
+</button>
+<button class="flex-1 sm:flex-initial px-space-lg h-9 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm flex items-center justify-center gap-1.5" id="btn-emit-broadcast" type="button">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Emitir Inmediatamente</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Campaign History & Delivery Audit (5 cols) -->
+<div class="xl:col-span-5 flex flex-col space-y-space-md">
+<!-- Recent Campaigns Card -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-md flex flex-col">
+<div class="flex items-center justify-between pb-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-primary text-[20px]">history_toggle_off</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold">Historial de Campañas &amp; Alertas</h2>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted">Últimas 48 horas</span>
+</div>
+<div class="space-y-space-sm">
+<!-- Campaign Item 1 -->
+<div class="p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-all flex flex-col space-y-space-2xs cursor-pointer">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-[10px] font-bold uppercase">Enviado</span>
+<span class="font-headline-sm text-[13px] font-bold text-text-primary leading-tight">Alerta por Ola de Calor: Bono +R$ 35 en Ingleses</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted shrink-0">12:15 hs</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-[12px] text-text-secondary pt-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-text-muted">group</span>
+<span>42 Técnicos Climatización</span>
+</div>
+<div class="flex items-center gap-space-sm font-data-mono text-[11px]">
+<span class="text-primary font-bold">Apertura: 91%</span>
+<span class="text-text-muted">•</span>
+<span class="text-warning-amber font-bold">16 Aceptaciones</span>
+</div>
+</div>
+<!-- Visual mini progress conversion bar -->
+<div class="w-full h-1.5 rounded-full bg-surface-muted overflow-hidden flex mt-1">
+<div class="bg-primary h-full rounded-full" style="width: 91%"></div>
+</div>
+</div>
+<!-- Campaign Item 2 -->
+<div class="p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-all flex flex-col space-y-space-2xs cursor-pointer">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-brand-green-subtle text-primary font-label-sm text-[10px] font-bold uppercase">Enviado</span>
+<span class="font-headline-sm text-[13px] font-bold text-text-primary leading-tight">Recordatorio Temporada Alta: Disponibilidad Fin de Semana</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted shrink-0">Ayer</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-[12px] text-text-secondary pt-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-text-muted">badge</span>
+<span>Proveedores Todos (Florianópolis)</span>
+</div>
+<div class="flex items-center gap-space-sm font-data-mono text-[11px]">
+<span class="text-primary font-bold">Apertura: 74%</span>
+<span class="text-text-muted">•</span>
+<span class="text-text-secondary">389 Confirmados</span>
+</div>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-muted overflow-hidden flex mt-1">
+<div class="bg-secondary h-full rounded-full" style="width: 74%"></div>
+</div>
+</div>
+<!-- Campaign Item 3 -->
+<div class="p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-all flex flex-col space-y-space-2xs cursor-pointer">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-copilot-cyan-subtle text-copilot-cyan-hover font-label-sm text-[10px] font-bold uppercase">En Curso</span>
+<span class="font-headline-sm text-[13px] font-bold text-text-primary leading-tight">Cupón Bienvenida Temporada Floripa - 15% OFF</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted shrink-0">Activa</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-[12px] text-text-secondary pt-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-text-muted">person_add</span>
+<span>Clientes Nuevos (Últimos 14 días)</span>
+</div>
+<div class="flex items-center gap-space-sm font-data-mono text-[11px]">
+<span class="text-copilot-cyan-hover font-bold">320 canjes</span>
+<span class="text-text-muted">•</span>
+<span class="text-primary font-semibold">R$ 14.8k GMV</span>
+</div>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-muted overflow-hidden flex mt-1">
+<div class="bg-copilot-cyan h-full rounded-full" style="width: 58%"></div>
+</div>
+</div>
+<!-- Campaign Item 4 -->
+<div class="p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted transition-all flex flex-col space-y-space-2xs cursor-pointer">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-1.5 flex-wrap">
+<span class="px-2 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-[10px] font-bold uppercase">Programado</span>
+<span class="font-headline-sm text-[13px] font-bold text-text-primary leading-tight">Aviso Mantenimiento Preventivo Servidores</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted shrink-0">Mañana 03:00</span>
+</div>
+<div class="flex items-center justify-between font-body-sm text-[12px] text-text-secondary pt-1">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-text-muted">public</span>
+<span>Todos (Clientes &amp; Técnicos)</span>
+</div>
+<span class="font-data-mono text-[11px] text-text-muted">Disparo automático</span>
+</div>
+<div class="w-full h-1.5 rounded-full bg-surface-muted overflow-hidden flex mt-1">
+<div class="bg-warning-amber h-full rounded-full" style="width: 15%"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Realtime Gateway & Delivery Logs Card -->
+<div class="bg-surface-panel rounded-xl shadow-sm p-space-md flex flex-col">
+<div class="flex items-center justify-between pb-space-xs mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">terminal</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold">Auditoría de Entrega &amp; Webhooks</h2>
+</div>
+<button class="font-label-sm text-[11px] text-primary hover:underline font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">refresh</span> Actualizar
+          </button>
+</div>
+<!-- Telemetry Breakdown Grid -->
+<div class="grid grid-cols-4 gap-2 mb-space-sm text-center">
+<div class="p-2 rounded bg-surface-canvas">
+<span class="font-data-mono text-[10px] uppercase text-text-muted block">Entregados</span>
+<span class="font-data-mono text-data-mono font-bold text-primary">99.1%</span>
+</div>
+<div class="p-2 rounded bg-surface-canvas">
+<span class="font-data-mono text-[10px] uppercase text-text-muted block">Clics</span>
+<span class="font-data-mono text-data-mono font-bold text-secondary">38.4%</span>
+</div>
+<div class="p-2 rounded bg-surface-canvas">
+<span class="font-data-mono text-[10px] uppercase text-text-muted block">Fallidos</span>
+<span class="font-data-mono text-data-mono font-bold text-tertiary">0.7%</span>
+</div>
+<div class="p-2 rounded bg-surface-canvas">
+<span class="font-data-mono text-[10px] uppercase text-text-muted block">Rebotes</span>
+<span class="font-data-mono text-data-mono font-bold text-warning-amber">0.2%</span>
+</div>
+</div>
+<!-- Monospaced Raw Logs -->
+<div class="rounded-lg bg-on-surface p-space-sm font-data-mono text-[11px] text-inverse-on-surface space-y-1 max-h-48 overflow-y-auto">
+<div class="flex items-start gap-2">
+<span class="text-text-muted">14:31:02</span>
+<span class="text-copilot-cyan">[FCM:V1]</span>
+<span class="text-brand-green-subtle">Batch #8920 dispatched (42 tokens). Latency 410ms. 200 OK</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-text-muted">14:31:05</span>
+<span class="text-[#25D366]">[WA_CLOUD]</span>
+<span>Template `surge_incentive_v2` sent to 42 MSISDNs. Cost: $0.038 ea.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-text-muted">14:31:18</span>
+<span class="text-warning-amber">[IN_APP]</span>
+<span>Banner cache purged for geo_polygon: INGLESES_NORTH. Active TTL 180m.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-text-muted">14:32:01</span>
+<span class="text-copilot-cyan">[FCM:V1]</span>
+<span>Delivery ACK received from 39/42 handsets. 3 devices in background power save.</span>
+</div>
+<div class="flex items-start gap-2">
+<span class="text-text-muted">14:32:20</span>
+<span class="text-primary">[DISPATCH]</span>
+<span>Provider #PRV-8492 accepted surge job #SRV-9011 (+R$35 reserved in escrow).</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-sm text-[11px] text-text-muted">
+<span class="flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+            Endpoints: Firebase FCM API v1 &amp; Meta Cloud API SC-Cluster
+          </span>
+<a class="text-primary hover:underline font-semibold" href="#">Ver Log Completo →</a>
+</div>
+</div>
+</div>
+</div>
+<!-- Hugo AI Tactical Assistant Notification Bar -->
+<div class="rounded-xl bg-copilot-cyan-subtle p-space-md shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-copilot-cyan text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[24px]">bolt</span>
+</div>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">Hugo Copilot Sugerencia Proactiva</span>
+<span class="px-2 py-0.2 rounded-full bg-surface-panel text-copilot-cyan-hover font-label-sm text-[10px] font-bold uppercase">Predicción de Demanda</span>
+</div>
+<p class="font-body-md text-body-md text-text-secondary mt-0.5">
+          Se detecta un incremento de demanda del <span class="font-bold text-text-primary">+180% en Jurerê Internacional</span> para las próximas 2 horas por cortes eléctricos imprevistos. ¿Deseas emitir un incentivo de <span class="font-bold text-text-primary">+R$ 40</span> a técnicos electricistas en un radio de 6 km?
+        </p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm shrink-0 self-end md:self-auto">
+<button class="px-3 py-1.5 rounded-lg bg-surface-panel hover:bg-surface-muted font-label-md text-label-md text-text-secondary transition-colors">
+        Descartar
+      </button>
+<button class="px-space-md py-1.5 rounded-lg bg-copilot-cyan hover:bg-copilot-cyan-hover text-on-primary font-label-md text-label-md font-bold transition-all shadow-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+<span>Cargar Campaña Sugerida</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Inline Logic for Realtime Simulator and Tag Insertion -->
+<script>
+  // Dynamic tag insertion
+  function insertTag(tag) {
+    const bodyInput = document.getElementById('input-body');
+    if (!bodyInput) return;
+    const start = bodyInput.selectionStart;
+    const end = bodyInput.selectionEnd;
+    const text = bodyInput.value;
+    bodyInput.value = text.substring(0, start) + tag + text.substring(end);
+    bodyInput.focus();
+    bodyInput.selectionStart = bodyInput.selectionEnd = start + tag.length;
+    updateSimulator();
+  }
+
+  // Update real-time mock preview
+  function updateSimulator() {
+    const titleVal = document.getElementById('input-title').value;
+    const bodyVal = document.getElementById('input-body').value;
+    const bonusVal = document.getElementById('input-bonus-amount').value;
+    const charCounter = document.getElementById('char-counter');
+
+    // Replace dynamic placeholders with sample values
+    const renderedTitle = titleVal
+      .replace(/{zona}/g, 'Ingleses')
+      .replace(/{bono_monto}/g, `+R$ ${bonusVal}`)
+      .replace(/{nombre}/g, 'Mateo');
+
+    const renderedBody = bodyVal
+      .replace(/{zona}/g, 'Ingleses')
+      .replace(/{bono_monto}/g, `R$ ${bonusVal}`)
+      .replace(/{nombre}/g, 'Mateo');
+
+    const previewTitle = document.getElementById('preview-title');
+    const previewBody = document.getElementById('preview-body');
+
+    if (previewTitle) previewTitle.textContent = renderedTitle;
+    if (previewBody) previewBody.textContent = renderedBody;
+    if (charCounter) charCounter.textContent = `${bodyVal.length} / 240 caracteres`;
+  }
+
+  // Audience selector chips interactive behavior
+  const chips = document.querySelectorAll('.audience-chip');
+  const countBadge = document.getElementById('target-count-badge');
+
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => {
+        c.className = 'audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-medium bg-surface-muted text-text-secondary hover:bg-surface-container transition-all';
+      });
+      chip.className = 'audience-chip px-3 py-1.5 rounded-lg font-label-sm text-label-sm font-semibold bg-primary text-on-primary shadow-sm';
+      
+      const count = chip.getAttribute('data-count');
+      if (countBadge) {
+        countBadge.textContent = `${count} destinatarios activos`;
+      }
+    });
+  });
+
+  // Event Listeners for inputs
+  document.getElementById('input-title')?.addEventListener('input', updateSimulator);
+  document.getElementById('input-body')?.addEventListener('input', updateSimulator);
+  document.getElementById('input-bonus-amount')?.addEventListener('input', updateSimulator);
+
+  // Incentive toggle visibility
+  const toggleIncentive = document.getElementById('toggle-incentive');
+  const incentiveConfig = document.getElementById('incentive-config');
+  if (toggleIncentive && incentiveConfig) {
+    toggleIncentive.addEventListener('change', (e) => {
+      incentiveConfig.style.opacity = e.target.checked ? '1' : '0.4';
+      incentiveConfig.style.pointerEvents = e.target.checked ? 'auto' : 'none';
+    });
+  }
+
+  // Mock broadcast emit feedback
+  document.getElementById('btn-emit-broadcast')?.addEventListener('click', () => {
+    const btn = document.getElementById('btn-emit-broadcast');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Emitiendo a 42 nodos...</span>';
+    btn.classList.add('opacity-80', 'pointer-events-none');
+    
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[18px]">check_circle</span><span>¡Enviado con Éxito!</span>';
+      btn.classList.remove('bg-primary', 'hover:bg-primary-container');
+      btn.classList.add('bg-brand-green-hover');
+      
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.classList.remove('opacity-80', 'pointer-events-none', 'bg-brand-green-hover');
+        btn.classList.add('bg-primary', 'hover:bg-primary-container');
+      }, 2500);
+    }, 1200);
+  });
+</script></main></div></body></html>
