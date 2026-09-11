@@ -100,3 +100,9 @@
 .ugo-provider-root .ugo-history-panel,.ugo-provider-root .ugo-provider-history,.ugo-provider-root .uwp-history-provider{font-family:var(--ugo-font);background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important}
 .ugo-provider-root .ugo-history-panel article,.ugo-provider-root .ugo-provider-history article,.ugo-provider-root .uwp-history-item{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
 .ugo-provider-root .ugo-history-launch{min-height:var(--ugo-touch-target);background:var(--ugo-color-surface-lowest);border-color:var(--ugo-color-outline-variant);font-family:var(--ugo-font)}
+
+/* Provider Journey 10: profile and account configuration. */
+.ugo-provider-root .ugo-provider-profile,.ugo-provider-root .ugo-profile-settings,.ugo-provider-root .uwp-profile-provider{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-profile input,.ugo-provider-root .ugo-provider-profile select,.ugo-provider-root .ugo-provider-profile textarea,.ugo-provider-root .ugo-profile-settings input{border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-sm)!important;background:var(--ugo-color-surface-lowest)!important;color:var(--ugo-color-on-surface)!important;font-family:var(--ugo-font)}
+.ugo-provider-root .ugo-provider-profile-card,.ugo-provider-root .uwp-profile-provider .uwp-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-provider-profile button,.ugo-provider-root .uwp-profile-provider button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
