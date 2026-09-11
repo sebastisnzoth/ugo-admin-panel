@@ -16,7 +16,7 @@
 - Severidad: MEDIA
 - Descripción: `AuthScreen` genera enlaces de recuperación con `?app=client` o `?app=provider`, pero sólo `AdminGate` procesa `code` mediante `exchangeCodeForSession`. Cliente y Proveedor no intercambian el código PKCE, por lo que el enlace puede abrir la aplicación sin sesión recuperada ni formulario para definir la nueva contraseña.
 - Archivo probable: `src/mvp/shared.tsx`, `src/mvp/MvpApp.tsx`, `src/mvp/ClientOnboardingGate.tsx`, `src/mvp/ProviderOnboardingGate.tsx`
-- Estado: OPEN
+- Estado: FIXED
 
 ## BUG-003
 
