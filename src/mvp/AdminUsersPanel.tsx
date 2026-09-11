@@ -9,8 +9,8 @@ type Row=UserRow&{email:string|null;email_confirmed:boolean;last_sign_in_at:stri
 type CreateForm={nombre:string;apellido:string;email:string;password:string;confirmPassword:string;role:'cliente'|'proveedor'|'admin';demo:boolean;providerVerified:boolean}
 const emptyCreate:CreateForm={nombre:'',apellido:'',email:'',password:'',confirmPassword:'',role:'cliente',demo:false,providerVerified:false}
 
-export function AdminUsersPanel(){
- const[open,setOpen]=useState(false),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>('todos'),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate)
+export function AdminUsersPanel({initialFilter='todos'}:{initialFilter?:'todos'|'cliente'|'proveedor'|'admin'}){
+ const[open,setOpen]=useState(true),[rows,setRows]=useState<Row[]>([]),[filter,setFilter]=useState<'todos'|'cliente'|'proveedor'|'admin'>(initialFilter),[query,setQuery]=useState(''),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[createOpen,setCreateOpen]=useState(false),[form,setForm]=useState<CreateForm>(emptyCreate)
  const load=useCallback(async()=>{
   const[{data:auth,error:ae},{data:users,error:ue},{data:clients},{data:providers}]=await Promise.all([
    (supabase as any).rpc('admin_get_auth_users'),

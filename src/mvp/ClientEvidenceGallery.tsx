@@ -20,8 +20,8 @@ export function ClientEvidenceGallery({serviceId}:Props){
   setItems(signed);setLoading(false)
  },[serviceId,supabase])
  useEffect(()=>{load().catch(()=>setLoading(false));const ch:RealtimeChannel=supabase.channel(`client-evidence-${serviceId}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},()=>{load().catch(()=>{})}).subscribe();return()=>{supabase.removeChannel(ch)}},[load,serviceId,supabase])
- if(loading)return <div className="mvp-waiting">Cargando evidencias del trabajo…</div>
- if(error)return <div className="mvp-notice error">No se pudieron cargar las evidencias: {error}</div>
- if(!items.length)return <div className="mvp-waiting">El proveedor todavía no subió evidencias visibles.</div>
- return <div className="mvp-card" style={{marginTop:16}}><div className="mvp-card-title"><div><small>EVIDENCIAS</small><h2>Revisá el trabajo</h2></div><span>📷</span></div><div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(140px,1fr))',gap:12}}>{items.map(item=><figure key={item.id} style={{margin:0,borderRadius:14,overflow:'hidden',background:'#f6f7f8'}}>{item.url?<img src={item.url} alt={`Evidencia ${LABELS[item.tipo]}`} style={{display:'block',width:'100%',aspectRatio:'4 / 3',objectFit:'cover'}}/>:<div style={{aspectRatio:'4 / 3',display:'grid',placeItems:'center'}}>Sin vista previa</div>}<figcaption style={{padding:10}}><strong>{LABELS[item.tipo]}</strong>{item.descripcion&&<div style={{fontSize:12,marginTop:4}}>{item.descripcion}</div>}</figcaption></figure>)}</div></div>
+ if(loading)return <div className="ugo-evidence-state loading">Cargando evidencias del trabajo…</div>
+ if(error)return <div className="ugo-evidence-state error">No se pudieron cargar las evidencias: {error}</div>
+ if(!items.length)return <div className="ugo-evidence-state">El proveedor todavía no subió evidencias visibles.</div>
+ return <section className="ugo-client-evidence" aria-label="Evidencias del trabajo"><div className="ugo-client-evidence-head"><div><h3>Revisá las evidencias</h3><p>Compará el registro del servicio antes de confirmarlo.</p></div><span aria-hidden="true">{items.length}</span></div><div className="ugo-client-evidence-grid">{items.map(item=><figure key={item.id}>{item.url?<img src={item.url} alt={`Evidencia ${LABELS[item.tipo]}`}/>:<div className="ugo-evidence-preview-empty">Sin vista previa</div>}<figcaption><strong>{LABELS[item.tipo]}</strong>{item.descripcion&&<span>{item.descripcion}</span>}</figcaption></figure>)}</div></section>
 }
