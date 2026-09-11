@@ -15,6 +15,7 @@ type Props={payment:PaymentLike|null|undefined;serviceState?:string|null;compact
 type Step={key:string;label:string;done:boolean;current:boolean}
 
 const SERVICE_STARTED=['en_camino','llegado','en_progreso','esperando_aprobacion','completado']
+const WORK_FINISHED=['esperando_aprobacion','completado']
 
 export function PaymentTimeline({payment,serviceState,compact=false}:Props){
  const isCash=payment?.metodo==='efectivo'||payment?.modelo_pago==='presencial'
@@ -25,11 +26,12 @@ export function PaymentTimeline({payment,serviceState,compact=false}:Props){
  let steps:Step[]
  if(isCash){
   const started=Boolean(serviceState&&SERVICE_STARTED.includes(serviceState))
+  const finished=Boolean(serviceState&&WORK_FINISHED.includes(serviceState))||cashConfirmed
   steps=[
    {key:'selected',label:'Efectivo elegido',done:true,current:!started&&!cashConfirmed},
-   {key:'service',label:'Servicio',done:started,current:started&&!cashConfirmed},
-   {key:'received',label:'Recepción',done:cashConfirmed,current:cashConfirmed},
-   {key:'registered',label:'Registrado',done:cashConfirmed,current:false},
+   {key:'service',label:'Trabajo realizado',done:finished,current:started&&!cashConfirmed},
+   {key:'received',label:'Efectivo recibido',done:cashConfirmed,current:false},
+   {key:'registered',label:'Cobro registrado',done:cashConfirmed,current:cashConfirmed},
   ]
  }else{
   const hasPayment=Boolean(payment)
@@ -42,7 +44,7 @@ export function PaymentTimeline({payment,serviceState,compact=false}:Props){
   ]
  }
  const summary=isCash
-  ?cashConfirmed?'Efectivo recibido y registrado.':'Efectivo seleccionado. UGO registra el pago, pero no custodia el dinero.'
+  ?cashConfirmed?'El proveedor confirmó la recepción y UGO registró el cobro en efectivo.':'Efectivo seleccionado. UGO registra el cobro cuando el proveedor confirma la recepción; no custodia este dinero.'
   :failed?payment?.estado==='reembolsado'?'Pago reembolsado.':'El pago falló. Podés intentarlo nuevamente.'
   :electronicReleased?'Pago electrónico liberado.':protectedElectronic?'Pago electrónico protegido por UGO.':payment?'Pago electrónico pendiente de confirmación.':'Todavía falta elegir o iniciar la forma de pago.'
  return <section className={`ugo-payment-timeline${compact?' compact':''}`} aria-label="Estado del pago">
