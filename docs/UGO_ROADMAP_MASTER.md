@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.4 · 11 de septiembre de 2026  
+**Versión:** 2.5 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -58,10 +58,11 @@ P3 expansión/polish
 # 3. P0 — cerrar antes de expandir
 
 ```text
-[x] npm run build main tiene baseline verde CI #190; cambios actuales requieren último CI
-[x] npm run lint crítico/general tiene baseline verde CI #190; cambios actuales requieren último CI
-[ ] incorporar runner de tests automatizados
-[ ] incorporar E2E ejecutable
+[x] npm run build integrado en Core CI
+[x] npm run lint crítico/general integrado en Core CI
+[x] runner de tests automatizados incorporado: npm test
+[ ] tests ejecutables de RPC/RLS contra base aislada
+[ ] incorporar E2E ejecutable: npm run test:e2e
 [ ] serviceId único Cliente↔Proveedor completamente validado E2E
 [x] aceptación de oportunidad atómica endurecida backend
 [ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones completamente validada
@@ -142,15 +143,15 @@ Hardening integrado:
 - `ClientCompletionReview` busca sólo `esperando_aprobacion` del cliente autenticado;
 - evidencia final habilitante debe pertenecer al proveedor asignado;
 - sin forma de pago no se habilita aprobación;
-- `20260911222000_service_expansion_payment_guard.sql` ya está aplicada en producción;
-- ampliación con costo y **pago electrónico activo** no puede aprobarse hasta financiar el delta;
+- `20260911222000_service_expansion_payment_guard.sql` aplicada en producción;
+- ampliación con costo y pago electrónico activo no puede aprobarse hasta financiar el delta;
 - sin pago, efectivo pendiente o pago fallido/reembolsado: el total se reajusta según contrato;
-- una ampliación histórica `aprobada + pendiente_ajuste` bloquea `en_progreso → esperando_aprobacion`;
-- producción tenía **0 ampliaciones** al aplicar el guard, por lo que no hubo deuda histórica a reparar;
-- `ServiceExpansionPanel` ahora muestra el bloqueo financiero y deshabilita una aprobación electrónica engañosa;
-- `ServiceExpansionPanel`, `ClientCompletionReview` y `ProviderEvidencePanel` están incorporados al lint crítico del CI.
+- ampliación histórica `aprobada + pendiente_ajuste` bloquea `en_progreso → esperando_aprobacion`;
+- producción tenía 0 ampliaciones al aplicar el guard: no hubo deuda histórica a reparar;
+- `ServiceExpansionPanel` muestra el bloqueo financiero y no ofrece aprobación engañosa;
+- `ServiceExpansionPanel`, `ClientCompletionReview` y `ProviderEvidencePanel` están en lint crítico.
 
-Riesgo P0 que queda visible y NO se oculta:
+Riesgo P0 visible:
 
 ```text
 pago electrónico activo
@@ -160,7 +161,30 @@ pago electrónico activo
 → recién entonces puede aprobarse la ampliación
 ```
 
-Validación CI: el run #206 detectó deuda de lint en las nuevas superficies aunque el build pasó. Los errores fueron corregidos en `ClientCompletionReview` y `ProviderEvidencePanel`; falta confirmar el último run de `main` antes de marcar el bloque verde.
+## Bloque D — primera red automatizada de contratos
+
+Implementado:
+
+```text
+npm test
+→ Node test runner nativo
+→ tests/contracts/core-lifecycle.test.mjs
+```
+
+Cobertura inicial:
+
+```text
+radio llegada UI/backend = 200 m
+evidencia operacional ligada al lifecycle
+guards Antes/Después para iniciar/finalizar
+efectivo presencial no se confunde con custodia electrónica
+ampliación electrónica con costo no se aprueba sin ajuste
+review del cliente respeta ownership y evidencia del proveedor asignado
+```
+
+`UGO Core CI` ya incluye `npm test` entre build y lint crítico. Esto cierra el punto “existencia de test runner”, **no** los P0 de pruebas RPC/RLS ni E2E.
+
+Validación final del último `main` queda condicionada al run de CI disparado por este bloque documental; no declarar release sólo por estos contract tests.
 
 Próximo recorrido principal:
 
@@ -245,11 +269,11 @@ en_progreso
 
 # 8. Testing inmediato
 
-Orden recomendado:
+Orden recomendado actualizado:
 
 ```text
-1 agregar framework de tests
-2 tests dominio/RPC
+1 ✅ test runner base + contract tests
+2 tests RPC/dominio contra entorno aislado
 3 tests RLS positivos/negativos
 4 E2E solicitud→oportunidad→asignación
 5 E2E electrónico
@@ -278,22 +302,13 @@ ampliación histórica pendiente_ajuste → revisión bloqueada
 efectivo pendiente + ampliación → total consistente en servicio y pago
 ```
 
-Scripts objetivo:
+Scripts:
 
 ```text
 npm run build
 npm run lint
-npm run test
-npm run test:e2e
-```
-
-Estado actual:
-
-```text
-build = CI #206 pasó build en cambios recientes
-lint crítico = CI #206 detectó errores; fixes integrados, último CI pendiente de confirmar
-test = pendiente
-test:e2e = pendiente
+npm run test       # ya existe
+npm run test:e2e   # pendiente
 ```
 
 ---
@@ -469,6 +484,7 @@ Proveedor puede aceptar, completar y cobrar. Admin puede resolver excepciones. P
 - duplicar estados en UI;
 - tratar efectivo como protegido;
 - aprobar alcance extra con costo no financiado;
+- confundir contract tests con E2E;
 - mezclar Demanda con Oportunidades;
 - mantener Provider legacy como segunda operación.
 
