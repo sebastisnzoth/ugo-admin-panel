@@ -1,11 +1,12 @@
 import React,{useEffect,useState}from'react'
 import{useClientFlow}from'./client/clientFlow'
+import{UGO_UI_EVENTS,emitUgoUiEvent}from'./uiEvents'
 import'./client-reference.css'
 import'./client-global-menu.css'
 
 export function ClientGlobalMenu(){
  const[open,setOpen]=useState(false)
- const{actions}=useClientFlow()
+ const flow=useClientFlow(),{actions}=flow
  useEffect(()=>{
   const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)}
   document.addEventListener('keydown',onKey)
@@ -20,12 +21,13 @@ export function ClientGlobalMenu(){
   return()=>{document.body.style.overflow=previous}
  },[open])
  function close(){setOpen(false)}
- function home(){close()}
+ function home(){close();flow.navigate('home')}
  function search(){close();actions.openSearch()}
- function hugo(){close()}
+ function profile(){close();actions.openProfile()}
+ function hugo(){close();emitUgoUiEvent(UGO_UI_EVENTS.clientHugo)}
  function history(){close();actions.openHistory()}
  function dispute(){close();actions.openDispute()}
- function location(){close()}
+ function location(){close();emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)}
  return <>
   <button type="button" className="ugo-client-global-trigger" onClick={()=>setOpen(true)} aria-label="Abrir menú">☰</button>
   {open&&<div className="ugo-client-menu-backdrop ugo-client-global-backdrop" onClick={close} role="presentation"><aside className="ugo-client-menu ugo-client-global-drawer" onClick={e=>e.stopPropagation()} aria-label="Menú UGO Cliente">
@@ -34,11 +36,11 @@ export function ClientGlobalMenu(){
     <button type="button" className="ugo-client-menu-close" onClick={close} aria-label="Cerrar menú">×</button>
    </div>
 
-   <div className="ugo-client-account-card">
+   <button type="button" className="ugo-client-account-card" onClick={profile}>
     <span className="ugo-client-account-avatar">C</span>
-    <div><b>Mi cuenta</b><small>UGO Cliente</small></div>
+    <div><b>Mi cuenta</b><small>Perfil y preferencias</small></div>
     <em>›</em>
-   </div>
+   </button>
 
    <button type="button" className="ugo-client-menu-primary" onClick={search}>
     <span>⌕</span><div><b>Buscar profesional</b><small>Encontrá ayuda cerca tuyo</small></div><em>›</em>
