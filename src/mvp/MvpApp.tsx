@@ -11,7 +11,6 @@ import{ServiceHistoryPanel}from'./ServiceHistoryPanel'
 import{DisputeDock}from'./DisputeDock'
 import{ClientGlobalMenu}from'./ClientGlobalMenu'
 import{ClientCompletionReview}from'./ClientCompletionReview'
-import{ClientCashPaymentOption}from'./ClientCashPaymentOption'
 import{ServiceExpansionPanel}from'./ServiceExpansionPanel'
 import{ClientFlowProvider,useClientFlow}from'./client/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
@@ -50,5 +49,5 @@ function RecoveryGate({role,children}:{role:'client'|'provider';children:React.R
 
 function ClientRoot({demo}:{demo:boolean}){
  const flow=useClientFlow()
- return <div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ClientCashPaymentOption/><ServiceExpansionPanel role="client"/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
+ return <div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
 }
