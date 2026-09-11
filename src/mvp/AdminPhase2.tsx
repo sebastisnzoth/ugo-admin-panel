@@ -11,6 +11,7 @@ import{AdminAlertsDecisionCenter,AdminDisputesDecisionCenter}from'./AdminDecisio
 import{AdminSystemSettings}from'./AdminSystemSettings'
 import{AdminReportsCenter}from'./AdminReportsCenter'
 import{AdminFinancePanel}from'./AdminFinancePanel'
+import{SuperAdminCommandCenter}from'./SuperAdminCommandCenter'
 import{
  AdminOverviewNative,AdminMapNative,AdminScoutNative,
  AdminDocumentsNative,AdminKycNative,AdminImportNative,AdminTariffsNative,
@@ -19,7 +20,7 @@ import{
 import'./admin-phase2.css'
 import'./admin-operations-menu.css'
 
-type Section='home'|'operations'|'people'|'finance'|'settings'
+type Section='home'|'operations'|'people'|'finance'|'settings'|'superadmin'
 type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'scout'|'history'|'messages'
 type PeopleView='users'|'verification'|'documents'|'kyc'|'import'
 type FinanceView='pix'|'vault'|'tariffs'
@@ -50,7 +51,7 @@ export function AdminPhase2(){
   setUpdated(new Date());setLoading(false)
  },[])
  useEffect(()=>{load().catch(()=>setLoading(false));const ch=supabase.channel('ugo-admin-phase2').on('postgres_changes',{event:'*',schema:'public',table:'servicios'},load).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},load).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},load).subscribe();return()=>{supabase.removeChannel(ch)}},[load])
- const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración'}[section]),[section])
+ const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración',superadmin:'Super Admin'}[section]),[section])
  const opMeta:Record<OperationView,{eyebrow:string;title:string}>={overview:{eyebrow:'RESUMEN OPERATIVO',title:'Estado general de la operación'},map:{eyebrow:'MAPA EN VIVO',title:'Proveedores y servicios sobre el territorio'},services:{eyebrow:'SERVICIOS',title:'Pedidos y trabajos activos'},alerts:{eyebrow:'ALERTAS',title:'Eventos que requieren atención'},disputes:{eyebrow:'DISPUTAS',title:'Conflictos y resoluciones'},scout:{eyebrow:'SCOUT UGO',title:'Prospección y detección de oportunidades'},history:{eyebrow:'HISTORIAL',title:'Trazabilidad completa de UGO'},messages:{eyebrow:'MENSAJES',title:'WhatsApp y atención operativa'}}
  const openPeople=(view:PeopleView)=>{setSection('people');setPeopleView(view)}
  const openFinance=(view:FinanceView)=>{setSection('finance');setFinanceView(view)}
@@ -62,6 +63,7 @@ export function AdminPhase2(){
    <button className={section==='people'?'active':''} onClick={()=>setSection('people')}><b>♙</b><span>Personas</span>{metrics.pendingProviders>0&&<em>{metrics.pendingProviders}</em>}</button>
    <button className={section==='finance'?'active':''} onClick={()=>setSection('finance')}><b>◫</b><span>Finanzas</span>{metrics.pendingPix>0&&<em>{metrics.pendingPix}</em>}</button>
    <button className={section==='settings'?'active':''} onClick={()=>setSection('settings')}><b>⚙</b><span>Configuración</span></button>
+   <button className={section==='superadmin'?'active':''} onClick={()=>setSection('superadmin')}><b>◉</b><span>Super Admin</span></button>
   </nav><div className="ugo-admin2-status"><i/>Sistema operativo<small>{updated?`Actualizado ${updated.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`:'Sincronizando…'}</small></div></aside>
   <main className="ugo-admin2-main"><header><div><small>UGO · ADMIN</small><h1>{title}</h1></div><button className="ugo-admin2-refresh" onClick={()=>load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></header>
    {section==='home'&&<AdminHomeStitch metrics={metrics} loading={loading} onOpenServices={()=>{setSection('operations');setOperationView('services')}} onOpenVerification={()=>openPeople('verification')} onOpenPix={()=>openFinance('pix')}/>}
@@ -72,6 +74,7 @@ export function AdminPhase2(){
    {section==='people'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>PERSONAS</small><h2>Clientes y proveedores</h2></div><span>{metrics.pendingProviders} verificaciones pendientes</span></div><div className="ugo-admin2-submenu"><button className={peopleView==='users'?'active':''} onClick={()=>setPeopleView('users')}>Usuarios</button><button className={peopleView==='verification'?'active':''} onClick={()=>setPeopleView('verification')}>Verificación{metrics.pendingProviders>0&&<em>{metrics.pendingProviders}</em>}</button><button className={peopleView==='documents'?'active':''} onClick={()=>setPeopleView('documents')}>Documentos</button><button className={peopleView==='kyc'?'active':''} onClick={()=>setPeopleView('kyc')}>KYC</button><button className={peopleView==='import'?'active':''} onClick={()=>setPeopleView('import')}>Importar</button></div>{peopleView==='users'&&<div className="ugo-admin2-module-card"><AdminUsersPanel/></div>}{peopleView==='verification'&&<div className="ugo-admin2-module-card"><AdminProviderVerificationPanel/></div>}{peopleView==='documents'&&nativeWrap(<AdminDocumentsNative/>)}{peopleView==='kyc'&&nativeWrap(<AdminKycNative/>)}{peopleView==='import'&&nativeWrap(<AdminImportNative/>)}</section>}
    {section==='finance'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>FINANZAS · REAL</small><h2>Pagos, bóveda y tarifas</h2></div><span>{metrics.pendingPix} PIX reales pendientes</span></div><div className="ugo-admin2-submenu"><button className={financeView==='pix'?'active':''} onClick={()=>setFinanceView('pix')}>PIX{metrics.pendingPix>0&&<em>{metrics.pendingPix}</em>}</button><button className={financeView==='vault'?'active':''} onClick={()=>setFinanceView('vault')}>Bóveda y retiros</button><button className={financeView==='tariffs'?'active':''} onClick={()=>setFinanceView('tariffs')}>Tarifas</button></div>{financeView==='pix'&&<div className="ugo-admin2-module-card"><PixReconciliationPanel/></div>}{financeView==='vault'&&nativeWrap(<AdminFinancePanel embedded/>)}{financeView==='tariffs'&&nativeWrap(<AdminTariffsNative/>)}</section>}
    {section==='settings'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>CONFIGURACIÓN</small><h2>Sistema UGO</h2></div></div><div className="ugo-admin2-submenu"><button className={settingsView==='categories'?'active':''} onClick={()=>setSettingsView('categories')}>Categorías</button><button className={settingsView==='analytics'?'active':''} onClick={()=>setSettingsView('analytics')}>Analytics</button><button className={settingsView==='notifications'?'active':''} onClick={()=>setSettingsView('notifications')}>Notificaciones</button><button className={settingsView==='reports'?'active':''} onClick={()=>setSettingsView('reports')}>Reportes</button><button className={settingsView==='system'?'active':''} onClick={()=>setSettingsView('system')}>Sistema</button></div>{settingsView==='categories'&&nativeWrap(<AdminCategoriesNative/>)}{settingsView==='analytics'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='notifications'&&nativeWrap(<AdminNotificationsNative/>)}{settingsView==='reports'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='system'&&nativeWrap(<AdminSystemSettings/>)}</section>}
+   {section==='superadmin'&&<section className="ugo-admin2-section"><SuperAdminCommandCenter/></section>}
   </main>
  </div>
 }
