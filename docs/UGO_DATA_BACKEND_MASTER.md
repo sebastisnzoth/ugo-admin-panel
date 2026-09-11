@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.3 · 11 de septiembre de 2026  
+**Versión:** 2.4 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -18,39 +18,25 @@
 - migraciones versionadas;
 - DEMO y REAL explícitos;
 - dinero y estados críticos auditables e idempotentes;
-- toda escritura crítica valida actor + estado anterior + precondiciones.
+- toda escritura crítica valida actor + estado anterior + precondiciones;
+- secretos nunca vuelven al navegador;
+- credencial almacenada, configuración presente, feature habilitada y E2E validado son estados distintos.
 
 ---
 
 # 2. Dominios
 
 ```text
-Auth/Identidad
-Clientes
-Proveedores/KYC
-Categorías
-Servicios
-Matching/Ofertas
-Tracking
-Pagos
-Ledger/Comisiones
-Retiros
-Evidencias
-Ampliaciones
-Disputas
-Calificaciones
-Notificaciones
-Scout/Analytics
-Hugo
-Academia
-Auditoría
+Auth/Identidad · Clientes · Proveedores/KYC · Categorías
+Servicios · Matching/Ofertas · Tracking · Pagos · Ledger/Comisiones
+Retiros · Evidencias · Ampliaciones · Disputas · Calificaciones
+Notificaciones · Scout/Analytics · Hugo · Academia · Auditoría
+Integraciones/credenciales
 ```
 
 ---
 
 # 3. Estado de servicio
-
-Estado persistido canónico observado hoy en `main`:
 
 ```text
 borrador → buscando → ofrecido → asignado
@@ -58,23 +44,15 @@ borrador → buscando → ofrecido → asignado
 → esperando_aprobacion → completado
 ```
 
-Excepciones:
+Excepciones: `cancelado`, `disputado`.
+
+La preparación financiera no agrega estados artificiales al servicio. Para `asignado → en_camino`:
 
 ```text
-cancelado · disputado
-```
-
-La preparación financiera **no agrega estados artificiales al servicio**. Entre `asignado` y `en_camino` existe una condición de habilitación derivada de `pagos`:
-
-```text
-electrónico: pago realmente retenido/protegido + referencia verificable
+electrónico = retenido/protegido + referencia verificable
 O
-efectivo: método presencial explícitamente seleccionado
+efectivo = método presencial explícitamente seleccionado
 ```
-
-`pago_pendiente`, `pago_habilitado` y `pago_protegido` son conceptos/condiciones financieras y no deben inventarse como estado persistido de `servicios` salvo una futura migración explícita del dominio.
-
-Las transiciones sensibles viven en RPC/backend.
 
 ---
 
@@ -85,7 +63,7 @@ offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
 
-No persistir estados de servicio como si fueran estados propios del proveedor salvo campos derivados claramente documentados.
+No mezclar con el lifecycle del servicio.
 
 ---
 
@@ -96,23 +74,13 @@ No persistir estados de servicio como si fueran estados propios del proveedor sa
 Contrato:
 
 ```text
-serviceId
-→ oferta vinculada
-→ proveedor autorizado analiza
-→ aceptación atómica
-→ asignación única
-→ tarifa real fijada
-→ comisión/neto consistentes
-→ invalidación/expiración de competidoras
-→ ambos roles observan el mismo servicio
+serviceId → oferta → proveedor autorizado
+→ aceptación atómica → asignación única
+→ tarifa real + comisión + neto
+→ invalidación de competidoras
 ```
 
-Estado actual endurecido:
-
-- aceptación serializada por servicio;
-- una sola asignación ganadora;
-- oferta sin tarifa operable no debe producir servicio asignado cobrable con importe cero;
-- producción verificada sin servicios `asignado` con tarifa inválida al cierre del bloque del 11/09/2026.
+Producción fue verificada sin servicios asignados ni ofertas pendientes con tarifa inválida al cerrar el hardening del 11/09/2026.
 
 ---
 
@@ -125,107 +93,60 @@ pendiente → autorizado → retenido/protegido
 → liberación pendiente → liberado/pagado
 ```
 
-Requisitos:
-
-- referencia externa persistente;
-- importe reconciliado server-side;
-- webhook idempotente;
-- duplicados seguros;
-- reembolso/liberación auditables;
-- cualquier monto adicional aprobado debe quedar financiado/reconciliado antes del cierre.
+Requiere referencia externa, importe/moneda reconciliados server-side, webhook idempotente, duplicados seguros y reembolso/liberación auditables.
 
 ## Efectivo
 
 ```text
-metodo=efectivo
-→ seleccionado
-→ servicio habilitado según contrato
-→ presencial pendiente
-→ proveedor confirma recepción
-→ registrado/liberado
+seleccionado → presencial pendiente
+→ proveedor confirma recepción → registrado/liberado
 ```
 
-Reglas:
-
-- efectivo nunca se marca electrónicamente protegido;
-- confirmación idempotente;
-- importe y ampliaciones quedan auditados;
-- comisión UGO debe registrarse en ledger/cuenta corriente cuando aplique;
-- disputa en efectivo no promete reembolso automático desde fondos no custodiados.
+Efectivo nunca se representa como custodia electrónica UGO.
 
 ## Lock de método
 
-Una vez elegido un método válido, no se reemplaza arbitrariamente por otro mientras el pago siga activo. Un cambio sólo puede habilitarse para un intento realmente fallido o mediante un contrato backend explícito de recuperación.
+Una vez elegido un método válido no se sustituye silenciosamente mientras siga activo; recuperación sólo para intento fallido o contrato backend explícito.
 
 ---
 
 # 7. Ledger / comisiones
 
-Objetivo: evitar fuga de ingresos y permitir conciliación.
-
-Cada obligación financiera debe poder explicar:
+Cada obligación financiera debe explicar:
 
 ```text
-origen
-serviceId
-método de pago
-importe bruto
-comisión UGO
-neto proveedor
-estado
-fecha
-referencia
+origen · serviceId · método · bruto · comisión UGO · neto proveedor
+estado · fecha · referencia
 ```
 
-El saldo mostrado al proveedor nunca es autoridad suficiente para retiro; backend calcula/valida saldo disponible.
+El saldo UI nunca es autoridad suficiente para retiro.
 
 ---
 
 # 8. Evidencia de solicitud
 
-Tabla/bucket existente según migraciones vigentes.
-
-Contrato:
-
-```text
-Cliente carga
-→ vínculo a draft/request id explícito
-→ solicitud creada
-→ matching
-→ proveedor autorizado consulta
-```
+Cliente carga evidencia vinculada inequívocamente a draft/request; luego solicitud/matching/proveedor autorizado. Validar MIME, tamaño, ownership y signed URLs.
 
 P0: eliminar asociaciones ambiguas de evidencia huérfana.
-
-Validar MIME, tamaño, ownership, acceso y expiración de signed URLs.
 
 ---
 
 # 9. Evidencia operacional
 
-Tipos:
-
 ```text
-antes · durante · despues · documento
+llegado              → Antes
+en_progreso          → Durante / Después
+esperando_aprobacion → Después sólo recuperación histórica
 ```
 
-Contrato temporal endurecido:
+Reglas backend:
 
-```text
-llegado              → permite Antes
-en_progreso          → permite Durante / Después
-esperando_aprobacion → permite Después sólo como recuperación histórica
-```
-
-Reglas:
-
-- una foto `Antes` cargada fuera de `llegado` se rechaza;
-- una foto `Durante` fuera de `en_progreso` se rechaza;
-- una foto `Después` antes de `en_progreso` se rechaza;
-- iniciar exige evidencia inicial real del proveedor asignado;
+- `Antes` fuera de `llegado`: rechazado;
+- `Durante` fuera de `en_progreso`: rechazado;
+- `Después` antes de `en_progreso`: rechazado;
+- iniciar exige evidencia inicial del proveedor asignado;
 - solicitar finalización exige evidencia final real;
-- `storage_path` debe ser no vacío;
-- backend/RPC es el guard definitivo; la UI sólo acompaña.
+- `storage_path` no vacío.
 
 Migración vigente: `20260911215500_service_evidence_state_guard.sql`.
 
@@ -233,127 +154,56 @@ Migración vigente: `20260911215500_service_evidence_state_guard.sql`.
 
 # 10. Tracking y llegada
 
-Durante `en_camino`, la ubicación del proveedor puede actualizarse por RPC y el Cliente consulta tracking autorizado del mismo `serviceId`.
+Durante `en_camino`, proveedor actualiza ubicación por RPC y Cliente consulta tracking autorizado del mismo `serviceId`.
 
-Contrato de llegada:
-
-```text
-asignado + pago habilitado
-→ en_camino
-→ ubicación proveedor actualizada
-→ llegado
-```
-
-Cuando el servicio posee coordenada de cliente y no es excepción DEMO/Admin, la confirmación `en_camino → llegado` exige proximidad backend. El radio operativo vigente es **200 m**. La UI debe comunicar el mismo radio; nunca usar un umbral distinto como autoridad paralela.
+Cuando existe coordenada exacta y no aplica excepción, `en_camino → llegado` exige proximidad backend. Radio vigente: **200 m**.
 
 ---
 
 # 11. Ampliaciones
 
 ```text
-propuesta pendiente
-→ aprobada / rechazada / cancelada
+propuesta pendiente → aprobada / rechazada / cancelada
 ```
 
-Datos mínimos:
+Datos mínimos: `serviceId`, autor, descripción, costo, tiempo, estado, resolución, impacto de pago y timestamps.
+
+Contrato financiero:
 
 ```text
-serviceId
-autor
-descripción
-costo extra
-tiempo extra
-estado
-resolución
-impacto de pago
-created_at / resolved_at
+monto_extra = 0 → puede aprobarse
+sin pago → incorpora monto antes del checkout
+efectivo pendiente → reajusta servicio + pago
+pago fallido/reembolsado → reajusta siguiente intento
+pago electrónico activo + extra > 0
+→ checkout separado del delta
+→ webhook valida monto/moneda
+→ confirmar_pago_ampliacion incorpora delta/comisión/neto
+→ aprobada + incluido
 ```
 
-Cliente es autoridad de aprobación del alcance adicional, pero **aprobar alcance con costo requiere que el impacto financiero sea seguro**.
-
-Contrato actual:
-
-```text
-monto_extra = 0
-→ puede aprobarse sin alterar fondos
-
-sin pago creado
-→ aprobar incorpora monto/comisión/neto al servicio antes del checkout
-
-efectivo presencial pendiente
-→ aprobar reajusta pago + servicio de forma auditable
-
-pago fallido/reembolsado
-→ aprobar reajusta el total; el próximo intento de pago usa el total nuevo
-
-pago electrónico activo/protegido + monto_extra > 0
-→ checkout independiente del delta
-→ preferencia/idempotencia propia
-→ webhook valida monto + moneda
-→ confirmar_pago_ampliacion incorpora monto/comisión/neto
-→ ampliación pasa a aprobada + incluido
-```
-
-El pago electrónico base **no se reescribe** para cobrar el trabajo adicional. La ampliación registra `ajuste_estado`, procesador, preference/init point, referencia externa, monto, moneda y timestamp del ajuste.
-
-`api/pagos/ajuste-ampliacion.ts` sólo permite iniciar el checkout al cliente dueño, con ampliación pendiente, servicio activo y pago base electrónico válido. Un checkout pendiente se reutiliza de forma idempotente.
-
-`api/pagos/webhook.ts` detecta `ampliacion_id`/`exp:<id>`, valida importe/moneda y sólo entonces llama `confirmar_pago_ampliacion`. Un pago fallido deja la ampliación pendiente para reintento. Si un ajuste ya aplicado luego se reembolsa, `pago_estado` vuelve a `pendiente_ajuste` y el cierre normal queda bloqueado hasta conciliación.
-
-Defensa adicional: `en_progreso → esperando_aprobacion` se bloquea si existe una ampliación aprobada con `pago_estado='pendiente_ajuste'`.
+El pago base no se reescribe. La ampliación registra estado/procesador/referencia/monto/moneda del ajuste. Reembolso posterior devuelve `pago_estado` a `pendiente_ajuste` y bloquea cierre hasta conciliación.
 
 Migraciones vigentes:
 
 - `20260911222000_service_expansion_payment_guard.sql`
 - `20260911224500_expansion_electronic_checkout.sql`
 
-La segunda migración está aplicada en Supabase producción.
-
-P0 restante: validar webhook duplicado/reembolso/reintento y el journey Cliente↔Proveedor con E2E real; no confundir implementación con validación completa.
+P0 restante: E2E real de retry/webhook duplicado/reembolso + convergencia Realtime.
 
 ---
 
 # 12. Disputas
 
-Toda disputa debe conservar:
-
-```text
-serviceId
-actor
-motivo
-cronología
-evidencias
-método de pago
-impacto financiero posible
-resolución
-admin responsable
-```
-
-La resolución financiera depende del método y de fondos realmente custodiados.
+Toda disputa conserva `serviceId`, actor, motivo, cronología, evidencia, método de pago, impacto financiero, resolución y admin responsable. La resolución financiera depende de fondos realmente custodiados.
 
 ---
 
 # 13. Realtime
 
-Dominios principales:
+Dominios principales: `servicios`, `ofertas`, `pagos`, `notificaciones`, `ampliaciones`, evidencias cuando aplique.
 
-```text
-servicios
-ofertas
-pagos
-notificaciones
-ampliaciones
-evidencias cuando corresponda
-```
-
-Reglas:
-
-- filtro por usuario/servicio;
-- cleanup;
-- evitar canales duplicados;
-- refetch tras reconexión;
-- autorización nunca derivada sólo de Realtime;
-- persistencia confirmada antes de considerar mutación real.
+Reglas: filtros por usuario/servicio, cleanup, reconexión/refetch, sin autorización implícita y persistencia confirmada antes de considerar mutación real.
 
 ---
 
@@ -372,90 +222,96 @@ KYC sensible           limitado      limitado        autorizado
 config global          -             -               RW privilegiado
 ```
 
-`*` depende de estado/participación. Debe verificarse con pruebas positivas y negativas.
+Debe verificarse con pruebas positivas y negativas.
 
 ---
 
 # 15. Admin / Super Admin
 
-La UI puede ocultar acciones, pero la autorización real debe existir server-side/RLS/RPC.
+La UI puede ocultar acciones, pero autorización real vive server-side/RLS/RPC. Acciones críticas dejan actor, acción, recurso, antes/después, motivo y timestamp.
 
-Acciones críticas de Admin deben dejar audit trail:
+## Integraciones y credenciales
+
+UGO distingue cuatro niveles:
 
 ```text
-actor
-acción
-recurso
-antes
-después
-motivo
-timestamp
+1 credencial almacenada
+2 configuración disponible en runtime
+3 feature habilitada
+4 integración validada E2E
 ```
+
+No son equivalentes.
+
+### Bóveda privada
+
+`private.payment_credentials` almacena credenciales administrables. Los RPC:
+
+```text
+admin_payment_credentials_status
+admin_set_payment_credentials
+admin_clear_payment_credentials
+```
+
+exigen `private.is_admin(auth.uid())`. `admin_payment_credentials_status()` devuelve sólo metadata (`provider`, país, entorno, enabled, configured, updated_at), nunca secretos.
+
+La migración `20260911230000_admin_payment_credentials_status_fix.sql` está aplicada en producción. Reemplaza una dependencia no portable de `jsonb_object_length` por comparación segura con `{}` y mantiene `public/anon` revocados.
+
+Al momento de la auditoría del 11/09/2026, la bóveda privada tenía **0 filas configuradas**. Eso no permite inferir si Vercel posee variables de entorno; son fuentes distintas.
+
+### Runtime real actual
+
+Los adapters server-side consumen actualmente variables de entorno, no la bóveda privada:
+
+```text
+Mercado Pago BR → MERCADO_PAGO_ACCESS_TOKEN
+Pix direto      → UGO_PIX_KEY
+OpenPix         → OPENPIX_SANDBOX_APP_ID + PAYMENTS_OPENPIX_ENABLED
+Hugo Voice      → OPENAI_API_KEY
+WhatsApp        → WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID
+```
+
+Mercado Pago Argentina permanece bloqueado por el router en esta fase aunque exista flag declarada.
+
+`api/admin/integrations-status.ts` verifica Admin/Super Admin y expone únicamente metadata segura del runtime. Nunca devuelve valores secretos.
+
+**Regla:** una credencial guardada en el panel no debe mostrarse como “integración activa” mientras el adapter productivo no la consuma realmente.
+
+P1 arquitectónico: unificar resolución de credenciales server-side (bóveda segura con auditoría/rotación + fallback controlado) antes de depender operacionalmente del editor de credenciales Admin.
 
 ---
 
 # 16. Privacidad y geolocalización
 
-Minimización:
-
-```text
-Cliente     proveedor asignado / ETA necesario
-Proveedor   propia ubicación + destino autorizado
-Admin       según privilegio operacional
-Público     sin coordenadas sensibles innecesarias
-```
-
-Scout usa preferentemente agregados geográficos.
+Minimizar coordenadas por rol. Cliente recibe proveedor/ETA necesarios; Proveedor ve destino autorizado; Admin sólo según privilegio; Scout usa agregados preferentemente.
 
 ---
 
 # 17. Atomicidad obligatoria
 
-Requieren transacción/RPC/constraint:
+RPC/transacción/constraint para:
 
 ```text
-aceptar oportunidad
-asignar proveedor
-cambiar estados críticos
-aprobar ampliación
-confirmar pago/efectivo
-confirmar pago de ampliación
-liberar/reembolsar
-cerrar servicio
-procesar retiro
-resolver disputa financiera
+aceptar oportunidad · asignar proveedor · estados críticos
+aprobar ampliación · confirmar pago/efectivo/ampliación
+liberar/reembolsar · cerrar servicio · retiro · disputa financiera
 ```
 
-Bloquear doble click en frontend es sólo una defensa UX.
+Bloquear doble click sólo es defensa UX.
 
 ---
 
 # 18. Eventos conceptuales
 
 ```text
-service.requested
-match.offered
-match.accepted
-service.assigned
-payment.method_selected
-payment.authorized
-payment.protected
-provider.on_the_way
-provider.arrived
-service.started
-expansion.proposed
-expansion.payment_adjustment_required
-expansion.payment_adjusted
-expansion.resolved
-service.completion_requested
-service.approved
-payment.released
-cash.received
-service.disputed
-service.completed
+service.requested · match.offered · match.accepted · service.assigned
+payment.method_selected · payment.authorized · payment.protected
+provider.on_the_way · provider.arrived · service.started
+expansion.proposed · expansion.payment_adjustment_required
+expansion.payment_adjusted · expansion.resolved
+service.completion_requested · service.approved · payment.released
+cash.received · service.disputed · service.completed
 ```
-
-Sirven como nomenclatura común para notificaciones, analytics, Scout y auditoría.
 
 ---
 
@@ -466,14 +322,16 @@ migración versionada
 schema/constraints
 RLS
 RPC/API
-actor permitido + actor denegado
+actor permitido + denegado
 happy path + error + retry
 idempotencia/concurrencia
 Realtime/Storage si aplica
 auditoría financiera si aplica
 tests ejecutables
-maestros actualizados
+maestros + Roadmap actualizados
 ```
+
+Para integraciones externas: metadata segura, secretos server-side, feature state explícito, observabilidad, retry y evidencia E2E cuando corresponda.
 
 ---
 
