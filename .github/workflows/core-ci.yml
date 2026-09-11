@@ -38,10 +38,12 @@ jobs:
         run: >-
           npx eslint
           src/mvp/MvpApp.tsx
+          src/mvp/NotificationCenter.tsx
           src/mvp/PaymentTimeline.tsx
           src/mvp/ClientLiveTracking.tsx
           src/mvp/ClientActiveMap.tsx
           src/mvp/ProviderLocationTracker.tsx
+          src/mvp/provider/ProviderRoot.tsx
           src/mvp/provider/ProviderActiveJob.tsx
 
       - name: Lint ClientApp excluding registered legacy effect debt
