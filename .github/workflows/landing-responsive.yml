@@ -1,0 +1,61 @@
+name: Harden public landing responsiveness
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/landing-responsive.yml'
+      - 'public/landing/index.html'
+
+permissions:
+  contents: write
+
+jobs:
+  responsive:
+    if: ${{ !contains(github.event.head_commit.message, '[landing-responsive]') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Inject responsive CSS
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('public/landing/index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = '/* UGO RESPONSIVE HARDENING v1 */'
+          if marker in s:
+              print('Responsive CSS already present')
+              raise SystemExit(0)
+          css = r'''
+          /* UGO RESPONSIVE HARDENING v1 */
+          html,body{max-width:100%;overflow-x:hidden}body{min-width:320px}img,svg,video,canvas{max-width:100%;height:auto}section[id]{scroll-margin-top:88px}*{min-width:0}
+          @media(max-width:1100px){.wrap{width:min(100% - 36px,1180px)}.links{gap:14px}.nav{gap:18px}.herogrid{grid-template-columns:.95fr 1.05fr}.hero h1{font-size:clamp(50px,6vw,66px)}.phone{right:15px}}
+          @media(max-width:900px){body{padding-bottom:82px}.nav{height:70px}.brand{font-size:34px}.links,.actions{display:none}.herogrid,.how,.cards2,.servicegrid,.downloadgrid{grid-template-columns:1fr}.herogrid{min-height:auto;padding:50px 0 0}.hero h1{font-size:clamp(46px,10vw,58px)}.lead{font-size:17px}.herocta .btn{min-height:50px}.visual{height:500px;margin-top:10px}.radar{inset:30px 0 20px}.phone{right:50%;transform:translateX(50%) rotate(3deg);bottom:-35px}.label{left:8%;top:50px}.m1{left:8%;top:155px}.m2{left:auto;right:8%;top:230px}.m3{left:14%;top:325px}.metrics{border-left:0;border-top:1px solid rgba(255,255,255,.12);padding:28px 0 0}.trustgrid{grid-template-columns:repeat(2,1fr)}.community .wrap{align-items:flex-start;flex-direction:column;padding-top:48px;padding-bottom:48px}.bigugo{font-size:64px}.footgrid{grid-template-columns:repeat(2,1fr)}.mobilebar{display:flex;position:fixed;z-index:80;bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;padding:8px;gap:8px;border-radius:18px;background:rgba(6,18,21,.94);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 50px rgba(0,0,0,.35)}.mobilebar a{flex:1;min-height:50px;border-radius:12px;display:grid;place-items:center;text-align:center;font-size:12px;font-weight:800;padding:0 10px}.mobilebar .c{background:var(--mint);color:#04110e}.mobilebar .p{border:1px solid rgba(255,255,255,.2)}}
+          @media(max-width:640px){.wrap{width:min(100% - 28px,1180px)}section.block{padding:48px 0}.title h2{font-size:clamp(28px,9vw,36px)}.hero h1{font-size:clamp(42px,13vw,52px);line-height:1}.eyebrow{font-size:10px;letter-spacing:.13em}.lead{font-size:16px}.herocta{display:grid;grid-template-columns:1fr}.herocta .btn{width:100%}.trustline{gap:9px 14px}.visual{height:455px}.phone{width:min(235px,68vw);height:455px}.screen{padding:34px 11px 14px}.cats{gap:6px}.cats span{height:55px}.label{left:0;top:35px;font-size:10px;padding:10px 12px}.marker{width:54px;height:54px;font-size:24px}.m1{left:0;top:140px}.m2{right:0;top:235px}.m3{display:none}.steps{grid-template-columns:1fr;gap:24px}.step{display:grid;grid-template-columns:64px 1fr;gap:0 14px;align-items:start}.step .ico{grid-row:1/3}.step h3{margin:5px 0 5px}.step p{margin:0}.metricgrid{grid-template-columns:1fr;gap:12px}.cards2{gap:14px}.card{min-height:360px;padding:24px}.card h2{font-size:24px;max-width:80%}.ghostperson{width:160px;height:210px;opacity:.42}.trustgrid{grid-template-columns:1fr}.servicegrid h2,.community h2{font-size:clamp(30px,9vw,38px)}.chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.chip{flex:0 0 auto;scroll-snap-align:start}.city{height:230px}.downloadgrid{gap:30px}.phoneMini{width:190px;height:280px}.footgrid{grid-template-columns:1fr 1fr;gap:24px 18px}.footer{padding-bottom:105px}}
+          @media(max-width:390px){.wrap{width:min(100% - 22px,1180px)}.brand{font-size:31px}.brand small{font-size:8px}.hero h1{font-size:clamp(39px,12.8vw,48px)}.visual{height:420px}.phone{width:220px;height:430px}.marker{width:50px;height:50px}.card{padding:20px}.card h2{max-width:100%;font-size:22px}.ghostperson{opacity:.25}.footgrid{grid-template-columns:1fr}.mobilebar{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom))}.mobilebar a{font-size:11px;padding:0 7px}}
+          @media(max-width:340px){.hero h1{font-size:38px}.visual{height:395px}.phone{width:205px;height:405px}.label{display:none}.m2{display:none}.mobilebar{gap:5px;padding:6px}}
+          @media(orientation:landscape) and (max-height:520px) and (max-width:900px){body{padding-bottom:72px}.visual{height:430px}.herogrid{padding-top:30px}section[id]{scroll-margin-top:70px}}
+          @media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+          '''
+          if '</style>' not in s:
+              raise SystemExit('No inline style block found')
+          s = s.replace('</style>', css + '\n</style>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Commit responsive landing
+        shell: bash
+        run: |
+          if git diff --quiet -- public/landing/index.html; then
+            echo 'No changes needed'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add public/landing/index.html
+          git commit -m 'fix(landing): responsive mobile tablet desktop [landing-responsive]'
+          git push
