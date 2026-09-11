@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{ClientActiveMap}from'./ClientActiveMap'
 import'./client-live-tracking.css'
@@ -9,8 +10,8 @@ const TRACKABLE_STATES=['asignado','en_camino','llegado']
 export function ClientLiveTracking(){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[service,setService]=useState<TrackedService|null>(null)
- const load=useCallback(async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user){setService(null);return}const{data,error}=await(supabase as any).from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',user.id).in('estado',TRACKABLE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle();if(error){setService(null);return}setService((data||null)as TrackedService|null)},[supabase])
- useEffect(()=>{let channel:any=null;let alive=true;void load();supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;channel=supabase.channel(`client-live-tracking-${data.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${data.user.id}`},()=>void load()).subscribe()}).catch(()=>{});return()=>{alive=false;if(channel)supabase.removeChannel(channel)}},[load,supabase])
+ const load=useCallback(async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user){setService(null);return}const{data,error}=await supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',user.id).in('estado',TRACKABLE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle();if(error){setService(null);return}setService((data||null)as TrackedService|null)},[supabase])
+ useEffect(()=>{let channel:RealtimeChannel|null=null,alive=true;const initial=window.setTimeout(()=>void load(),0);supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;channel=supabase.channel(`client-live-tracking-${data.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${data.user.id}`},()=>void load()).subscribe()}).catch(()=>{});return()=>{alive=false;window.clearTimeout(initial);if(channel)supabase.removeChannel(channel)}},[load,supabase])
  if(!service||!service.proveedor_id)return null
  if(service.estado==='asignado')return <aside className="ugo-live-tracking is-compact" aria-live="polite"><div className="ugo-live-tracking-status"><span>✓</span><div><strong>Profesional asignado</strong><p>Cuando inicie el viaje vas a ver su ruta y el tiempo estimado de llegada.</p></div></div></aside>
  if(service.estado==='llegado')return <aside className="ugo-live-tracking is-compact is-arrived" aria-live="polite"><div className="ugo-live-tracking-status"><span>📍</span><div><strong>El profesional llegó</strong><p>Ya está en el punto del servicio. El siguiente paso es validar el inicio del trabajo.</p></div></div></aside>
