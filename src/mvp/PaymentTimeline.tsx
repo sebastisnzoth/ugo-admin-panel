@@ -1,4 +1,5 @@
 import React from'react'
+import'./payment-timeline.css'
 
 type PaymentLike={
  metodo?:string|null
