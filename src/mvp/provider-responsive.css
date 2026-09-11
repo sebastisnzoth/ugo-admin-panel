@@ -61,3 +61,10 @@
 .mvp-auth-page.role-provider,.ugo-provider-onboarding{font-family:var(--ugo-font);color:var(--ugo-color-on-surface);background:var(--ugo-color-surface)!important}
 .mvp-auth-page.role-provider .mvp-primary,.ugo-provider-onboarding .mvp-primary{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
 .mvp-auth-page.role-provider input,.ugo-provider-onboarding input,.ugo-provider-onboarding select,.ugo-provider-onboarding textarea{border-color:var(--ugo-color-outline-variant);border-radius:var(--ugo-radius-sm);font-family:var(--ugo-font)}
+
+/* Provider Journey 2: home, demand, radar, map and opportunities. */
+.ugo-provider-root .ugo-provider-structural-home,.ugo-provider-root .ugo-provider-prototype{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
+.ugo-provider-root .ugo-provider-structural-sheet,.ugo-provider-root .ugo-provider-panel,.ugo-provider-root .ugo-provider-panel-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;box-shadow:var(--ugo-shadow-card)!important;border-radius:var(--ugo-radius-lg)!important}
+.ugo-provider-root .ugo-provider-structural-cta,.ugo-provider-root .ugo-provider-primary{min-height:var(--ugo-touch-target);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-radius:var(--ugo-radius-md)!important}
+.ugo-provider-root .ugo-provider-structural-presence.on{background:var(--ugo-color-primary-container)!important;color:var(--ugo-color-on-primary-container)!important}
+.ugo-provider-root .ugo-provider-structural-empty{background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface-variant)!important;border-color:var(--ugo-color-outline-variant)!important}
