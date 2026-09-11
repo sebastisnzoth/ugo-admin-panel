@@ -4,6 +4,7 @@ export type ProviderOperationalState = 'offline' | 'available' | 'opportunity_pe
 
 export type ProviderOpportunity = {
   id: string
+  serviceId: string
   category: string
   title: string
   description: string
