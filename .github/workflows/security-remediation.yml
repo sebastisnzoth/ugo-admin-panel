@@ -43,7 +43,6 @@ jobs:
           from pathlib import Path
           import re
 
-          # MapLibre 6 exposes named/namespace exports instead of a default export.
           for path in Path('src').rglob('*.tsx'):
               text = path.read_text()
               updated = text.replace("import maplibregl from'maplibre-gl'", "import * as maplibregl from'maplibre-gl'")
@@ -51,8 +50,6 @@ jobs:
               if updated != text:
                   path.write_text(updated)
 
-          # SheetJS xlsx has unresolved high-severity advisories and no patched release.
-          # Keep provider import capability as CSV-only using a small local RFC4180-style parser.
           path = Path('src/components/AdvancedSections.tsx')
           text = path.read_text()
           text = text.replace("import * as XLSX from 'xlsx';\n\n", '')
@@ -129,7 +126,7 @@ jobs:
           const toggleAll'''
 
           pattern = r"  const processFile = \(file: File\) => \{.*?\n  \};\n\n  const toggleAll"
-          text, count = re.subn(pattern, replacement, text, count=1, flags=re.S)
+          text, count = re.subn(pattern, lambda _: replacement, text, count=1, flags=re.S)
           if count != 1:
               raise SystemExit('Could not replace legacy xlsx processFile block')
 
