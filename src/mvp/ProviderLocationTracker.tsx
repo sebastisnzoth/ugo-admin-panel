@@ -1,9 +1,11 @@
 import React,{useEffect,useMemo,useState}from'react'
+import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
 type Props={service?:Service|null}
 type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
+type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:unknown}>}
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=10_000
 const MIN_MOVE_M=15
@@ -24,14 +26,14 @@ export function ProviderLocationTracker({service}:Props){
 
  useEffect(()=>{
   let alive=true
-  let channel:any=null
+  let channel:RealtimeChannel|null=null
   supabase.auth.getUser().then(async({data})=>{
    if(!alive||!data.user)return
    const userId=data.user.id
    const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',userId).maybeSingle()
    const trackingProfile=profile as TrackingProfile|null
    if(alive)setAvailable(Boolean(trackingProfile&&(trackingProfile.online||trackingProfile.disponible)))
-   channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},(payload:any)=>{
+   channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},payload=>{
     const row=(payload.new||{}) as TrackingProfile
     if(alive)setAvailable(Boolean(row.online||row.disponible))
    }).subscribe()
@@ -42,18 +44,19 @@ export function ProviderLocationTracker({service}:Props){
  useEffect(()=>{
   if(!navigator.geolocation||(!available&&!serviceActive))return
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false
+  const rpc=supabase as unknown as LocationRpcClient
   const watchId=navigator.geolocation.watchPosition(async pos=>{
    const point:[number,number]=[pos.coords.latitude,pos.coords.longitude]
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
    writing=true
    const serviceId=service?.estado==='en_camino'?service.id:null
-   const{data,error}=await (supabase as any).rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:serviceId})
+   const{data,error}=await rpc.rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:serviceId})
    writing=false
    if(!error){
     lastWrite=Date.now();lastPoint=point
     const meters=data==null?null:Number(data)
-    setDistanceToClient(Number.isFinite(meters as number)?meters:null)
+    setDistanceToClient(Number.isFinite(meters)?meters:null)
    }
   },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
