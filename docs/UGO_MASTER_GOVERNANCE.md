@@ -1,6 +1,6 @@
 # UGO — Master Governance
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** contrato superior de compatibilidad documental  
 **Rama de verdad:** `main`
 
@@ -42,14 +42,23 @@ Cliente, Proveedor y Admin observan el mismo `serviceId` y el mismo estado persi
 ### Asignación única
 Aceptar una oportunidad debe ser atómico y resistente a doble aceptación.
 
-### Estado de servicio
+### Estado persistido de servicio
 ```text
-solicitado → buscando → ofertado → asignado
-→ pago_pendiente / pago_habilitado
+borrador → buscando → ofrecido → asignado
 → en_camino → llegado → en_progreso
 → esperando_aprobacion → completado
 ```
-Excepciones: `cancelado`, `disputado`, `reembolsado`.
+Excepciones: `cancelado`, `disputado`.
+
+La condición financiera entre `asignado` y `en_camino` se deriva de `pagos` y no crea un segundo lifecycle del servicio:
+
+```text
+electrónico retenido/protegido con referencia verificable
+O
+efectivo explícitamente seleccionado
+```
+
+`pago_pendiente`, `pago_habilitado` y `pago_protegido` son condiciones financieras/UX, no estados persistidos de `servicios`, salvo migración futura explícita.
 
 ### Estado operacional del proveedor
 ```text
@@ -57,6 +66,17 @@ offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
 Nunca mezclar la máquina del proveedor con la del servicio.
+
+### Llegada
+Cuando existe ubicación exacta de cliente y aplica validación geográfica, la autoridad es backend. Radio operativo vigente: **200 m** para `en_camino → llegado`.
+
+### Evidencia temporal
+```text
+llegado              → Antes
+en_progreso          → Durante / Después
+esperando_aprobacion → Después sólo para recuperación histórica
+```
+Una evidencia final no puede pre-cargarse antes de iniciar y luego usarse para cerrar el servicio.
 
 ## 4. Pagos
 
@@ -73,6 +93,8 @@ seleccionado → presencial pendiente → servicio habilitado
 ```
 
 **Efectivo no tiene custodia electrónica UGO y nunca se presenta como pago protegido.**
+
+Una vez elegido un método válido, no se sustituye silenciosamente por otro. Cambios requieren estado fallido o contrato backend explícito de recuperación.
 
 Toda ampliación, disputa, cierre y timeline debe ser consciente del método.
 
@@ -150,6 +172,10 @@ Referencia mobile `390×844`, rango `360–430`, targets `≥48px`. Desktop es a
 
 UGO debe proteger monetización sin degradar confianza. En pagos electrónicos la comisión se concilia con el pago real. En efectivo la comisión UGO debe quedar registrada mediante mecanismo auditable cuando corresponda. El producto debe reducir acuerdos fuera de plataforma ofreciendo trazabilidad, evidencia, reputación, ampliaciones y soporte.
 
-## 12. Regla final
+## 12. Conciencia documental
+
+Todo cambio que altere contratos reales de estado, dinero, permisos, evidencia o lifecycle debe actualizar en el mismo bloque los maestros afectados y el Roadmap. `main` y la documentación maestra no deben divergir conscientemente.
+
+## 13. Regla final
 
 **Ante cualquier duda, gana la opción que preserve una sola fuente de verdad, claridad para el usuario, integridad operacional y capacidad de auditar el servicio extremo a extremo.**
