@@ -73,3 +73,8 @@
 .ugo-provider-root .ugo-provider-profile,.ugo-provider-root .ugo-provider-agenda,.ugo-provider-root .ugo-provider-schedule{font-family:var(--ugo-font);color:var(--ugo-color-on-surface)}
 .ugo-provider-root .ugo-provider-profile-card,.ugo-provider-root .ugo-provider-agenda-card,.ugo-provider-root .ugo-provider-schedule-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
 .ugo-provider-root .ugo-provider-profile button,.ugo-provider-root .ugo-provider-agenda button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
+
+/* Provider Journey 4: request review, acceptance and navigation. */
+.ugo-provider-root .ugo-provider-mission-sheet,.ugo-provider-root .ugo-provider-sheet{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-xl)!important;box-shadow:var(--ugo-shadow-sheet)!important}
+.ugo-provider-root .ugo-provider-mission-sheet .ugo-provider-primary,.ugo-provider-root .ugo-provider-sheet .accept{min-height:var(--ugo-touch-target);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-radius:var(--ugo-radius-md)!important}
+.ugo-provider-root .ugo-provider-sheet .reject{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
