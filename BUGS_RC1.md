@@ -52,7 +52,7 @@
 - Severidad: MENOR
 - Descripción: El estado offline se evalúa dentro de un `useEffect` y muestra el aviso sólo después del primer render. En una carga sin conexión el usuario puede ver brevemente una pantalla sin contexto antes de que aparezca el estado offline, y la carga inicial de Supabase falla sin un estado de error específico.
 - Archivo probable: `src/mvp/ClientApp.tsx`
-- Estado: OPEN
+- Estado: FIXED
 
 ## BUG-007
 
