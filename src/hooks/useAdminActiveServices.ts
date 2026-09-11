@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-const ACTIVE_STATES = [
+export const SERVICE_STATES = [
   'buscando',
   'ofrecido',
   'asignado',
@@ -9,7 +9,11 @@ const ACTIVE_STATES = [
   'llegado',
   'en_progreso',
   'esperando_aprobacion',
-]
+  'completado',
+  'cancelado',
+] as const
+
+export type ServiceState = (typeof SERVICE_STATES)[number]
 
 export function useAdminActiveServices() {
   const [services, setServices] = useState<any[]>([])
@@ -28,7 +32,7 @@ export function useAdminActiveServices() {
         'cliente:usuarios!servicios_cliente_id_fkey(nombre,apellido),' +
         'proveedor:usuarios!servicios_proveedor_id_fkey(nombre,apellido,karma)'
       )
-      .in('estado', ACTIVE_STATES)
+      .in('estado', SERVICE_STATES)
       .order('created_at', { ascending: false })
       .limit(100)
 
@@ -41,6 +45,30 @@ export function useAdminActiveServices() {
     }
 
     setLoading(false)
+  }, [])
+
+  const updateServiceStatus = useCallback(async (serviceId: string, estado: ServiceState) => {
+    const { data, error: updateError } = await (supabase as any)
+      .from('servicios')
+      .update({ estado })
+      .eq('id', serviceId)
+      .select('id,estado,updated_at')
+      .single()
+
+    if (updateError) {
+      console.error('[AdminServices] status update failed:', updateError.message)
+      throw new Error(updateError.message)
+    }
+
+    setServices((current) =>
+      current.map((service) =>
+        service.id === serviceId
+          ? { ...service, estado: data?.estado || estado, updated_at: data?.updated_at || service.updated_at }
+          : service
+      )
+    )
+
+    return data
   }, [])
 
   useEffect(() => {
@@ -57,5 +85,5 @@ export function useAdminActiveServices() {
     }
   }, [refetch])
 
-  return { services, loading, error, refetch }
+  return { services, loading, error, refetch, updateServiceStatus }
 }
