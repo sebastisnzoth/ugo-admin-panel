@@ -1,18 +1,24 @@
 # UGO — UI/UX Master · Google Stitch
 
 **Documento maestro de diseño del ecosistema UGO**  
-**Versión:** 1.0 · 11 de septiembre de 2026  
+**Versión:** 1.1 · 11 de septiembre de 2026  
 **Estado:** contrato vivo · fuente de verdad para diseño, prototipado e implementación  
 **Herramienta de diseño asistido:** Google Stitch  
 **Complementa:** `docs/UGO_ECOSISTEMA_FLUJO.md` y `docs/UGO_UIUX_MAESTRO.md`
 
-> Este documento traduce el producto UGO a un contrato UI/UX utilizable tanto por personas como por Google Stitch y por agentes de implementación. El flujo maestro define **qué ocurre**. Este documento define **cómo se organiza, se entiende, se diseña y se implementa visualmente**.
+> Este documento traduce el producto UGO a un contrato UI/UX utilizable por personas, Google Stitch y agentes de implementación. Integra además las características valiosas auditadas de las ramas históricas `feat/client-ui-stitch`, `feat/client-web-stitch`, `feat/client-ui-stitch-sync` y `feat/admin-superadmin-stitch-sync`. Stitch no crea un UGO alternativo: ayuda a diseñar mejor el UGO real.
 
 ---
 
-# 1. Objetivo
+# 1. Principio rector
 
-UGO es un marketplace operativo de servicios que conecta clientes con proveedores y mantiene trazabilidad desde la necesidad hasta el cierre del trabajo.
+## Estado → contexto → próxima acción
+
+Toda pantalla debe responder:
+
+1. ¿Qué está pasando?
+2. ¿Qué significa para este usuario?
+3. ¿Qué debe hacer ahora?
 
 Circuito maestro:
 
@@ -20,281 +26,202 @@ Circuito maestro:
 Necesidad → búsqueda → matching → contratación → pago → ejecución → evidencia → aprobación → cobro → reputación → datos → inteligencia → mejora
 ```
 
-Todo diseño debe sostener la regla:
-
-## Estado → contexto → próxima acción
-
-Cada pantalla debe responder:
-
-1. ¿Qué está pasando?
-2. ¿Qué significa para este usuario?
-3. ¿Qué debe hacer ahora?
-
 ---
 
-# 2. Cómo usar este documento con Google Stitch
-
-Google Stitch se utiliza como **acelerador de exploración y producción visual**, no como nueva fuente de verdad del producto.
-
-Orden obligatorio:
+# 2. Uso obligatorio con Google Stitch
 
 ```text
 Flujo maestro UGO
-→ contrato UI/UX maestro
-→ prompt de pantalla para Stitch
+→ UI/UX Master
+→ prompt de pantalla Stitch
 → propuesta visual
 → revisión contra contratos UGO
 → adaptación al Design System real
-→ implementación React/CSS
-→ prueba responsive, estados y accesibilidad
+→ React/CSS
+→ Supabase/Realtime/RLS reales
+→ prueba responsive + estados + accesibilidad
 ```
 
-## 2.1 Regla Stitch
+Stitch puede proponer composición, jerarquía, responsive, motion y presentación. No puede alterar estados reales, roles, seguridad, pagos, RLS, navegación funcional ni contratos del servicio.
 
-Una pantalla generada por Stitch **no debe implementarse literalmente** si contradice:
-
-- estados reales del servicio;
-- arquitectura Cliente/Proveedor/Admin;
-- seguridad o privacidad;
-- pagos;
-- RLS/roles;
-- componentes canónicos;
-- navegación existente;
-- accesibilidad;
-- responsive;
-- safe areas;
-- lenguaje UGO.
-
-Stitch propone la composición. El repositorio UGO conserva la autoridad funcional.
-
-## 2.2 Contexto mínimo para todo prompt Stitch
-
-Todo prompt debe indicar:
+## 2.1 Contexto mínimo de todo prompt
 
 ```text
 Producto: UGO
-Tipo: marketplace de servicios locales
-Estética: moderna, confiable, tecnológica, humana y operacional
+Marketplace de servicios locales bajo demanda
 Design language: Kinetic Trust
+Estética: moderna, confiable, tecnológica, humana, operacional
 Mobile reference: 390 × 844
+Mobile range: 360–430 px
 Touch targets: mínimo 48 × 48
 Regla UX: Estado → contexto → próxima acción
 Primary: verde UGO
-Hugo/IA: acento cyan/secondary
-Cards: superficies limpias, radios consistentes
-Mobile: safe areas + navegación alcanzable con una mano
-No inventar nuevas funciones ni estados
-No alterar contratos funcionales del flujo maestro
+Hugo/IA: cyan/secondary
+Tipografía: Plus Jakarta Sans
+Grid: 8pt con half-step de 4px
+Safe areas obligatorias
+No inventar funciones ni estados
+No sustituir lógica React/Supabase con HTML generado
 ```
 
 ---
 
-# 3. Ecosistema visual
+# 3. Kinetic Trust · lenguaje visual consolidado
 
-```mermaid
-flowchart TB
-    BRAND[UGO Design System]
-    BRAND --> CLIENT[Cliente]
-    BRAND --> PROVIDER[Proveedor]
-    BRAND --> ADMIN[Admin]
-    BRAND --> SUPER[Super Admin]
-    BRAND --> WEB[Landing / Web]
-    BRAND --> HUGO[Hugo IA]
-    BRAND --> SCOUT[Scout]
-    BRAND --> ACADEMY[Academia]
+Características rescatadas de Stitch y adoptadas como contrato:
 
-    CLIENT --> CORE[Servicio UGO]
-    PROVIDER --> CORE
-    ADMIN --> CORE
-    CORE --> PAY[Pagos]
-    CORE --> EVIDENCE[Evidencias]
-    CORE --> DISPUTE[Disputas]
-    CORE --> DATA[Datos]
-    DATA --> SCOUT
-```
+- marketplace moderno de alta confianza;
+- claridad operacional y tiempo real;
+- mapas como contexto de decisión;
+- seguridad y confianza visibles como producto;
+- superficies limpias y táctiles;
+- profundidad suave, no decoración excesiva;
+- actividad live expresada mediante pulsos/radar cuando exista dato real;
+- diseño hiperl local apropiado para mercados latinoamericanos;
+- interfaz cálida sin perder precisión técnica.
 
-Todas las superficies deben sentirse como partes de un mismo producto, aunque su densidad sea distinta.
+Glass/frosted surfaces pueden usarse de forma **suave y funcional** en mapas, navegación y Hugo. Nunca deben reducir contraste, legibilidad ni convertirse en glassmorphism decorativo generalizado.
 
 ---
 
 # 4. Design System maestro
 
-La implementación debe converger sobre `src/mvp/ugo-design-system.css` y las primitivas compartidas existentes.
+La fuente de implementación es `src/mvp/ugo-design-system.css` y las primitivas compartidas.
 
-## 4.1 Identidad
-
-UGO debe sentirse:
-
-- confiable;
-- local;
-- simple;
-- profesional;
-- rápido;
-- humano;
-- trazable;
-- activo sin ser visualmente agresivo.
-
-Evitar estética de clasificados, exceso de gradientes, glassmorphism decorativo, dashboards genéricos y pantallas llenas de widgets sin prioridad.
-
-## 4.2 Color semántico
+## 4.1 Tokens canónicos
 
 ```text
 Primary / confianza       #006948
 Primary container         #00855d
 Secondary / Hugo          #00687a
+Secondary cyan accent     #57dffe
 Tertiary / información    #0058be
 Error                     #ba1a1a
-Warning                   #b45309
+Warning / rating          #b45309
 Surface                   #faf8ff
 Surface lowest            #ffffff
 On surface                #131b2e
 Outline variant           #bccac0
 ```
 
-No crear un verde diferente para cada módulo.
+Los antiguos cyan-first de Stitch Web son referencias históricas, no reemplazan el verde canónico. Cyan queda reservado principalmente para Hugo, información contextual, actividad live y acentos cartográficos.
 
-## 4.3 Tipografía
+## 4.2 Tipografía
+
+Plus Jakarta Sans como principal.
 
 ```text
-Plus Jakarta Sans → principal
-Inter / system-ui → fallback
+Display        36/44 · 800
+Headline L     30/38 · 700
+Headline L mob 26/32 · 700
+Headline M     22/28 · 700
+Headline S     18/24 · 600
+Title          16/22 · 600
+Body L         16/24
+Body M         14/20
+Body S         13/18
+Label L        14/20 · 600
+Label M        12/16 · 600
+Label S        11/14 · 700
 ```
 
-Jerarquía recomendada:
-
-- Display: 32–40
-- H1: 28–32
-- H2: 22–26
-- H3: 18–20
-- Body: 14–16
-- Metadata: 12–13
-- Eyebrow: 10–12
-
-## 4.4 Espaciado
+## 4.3 Espaciado y geometría
 
 ```text
 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40
-```
-
-## 4.5 Radios
-
-```text
-control 12
-card 16
-sheet 24
+mobile edge margin 16
+mobile/tablet expanded margin 24
+touch target 48
+safe bottom Android 24
+control radius 12
+card radius 16–24
+sheet radius 24
 pill/avatar full
 ```
 
-## 4.6 Interacción
+## 4.4 Componentes Stitch adoptados
 
-- touch target mínimo 48 px;
-- una acción primaria dominante por contexto;
-- feedback inmediato;
-- disabled visible pero legible;
-- no depender sólo del color;
-- confirmar acciones irreversibles;
-- prevenir doble envío;
-- preservar foco y navegación por teclado en web.
+- Primary Hero Button: ancho completo cuando es CTA dominante, altura aproximada 52 px.
+- Icon Button: hit area circular 48 px.
+- Search Bar: icono + input + acción de micrófono/Hugo cuando corresponda.
+- Service Category Tiles: grid compacto de 4 columnas en mobile cuando el ancho lo permita.
+- Map Marker Card: avatar, live state, nombre, rating, ETA y categoría.
+- Hugo Context Banner: superficie ligera/frosted con estado live y preview contextual.
+- Bottom Navigation: superficie fija, targets 48 px y estado activo inequívoco.
 
-## 4.7 Estados obligatorios
-
-Todo componente con datos debe diseñar:
+Componentes canónicos generales:
 
 ```text
-loading
-loaded
-empty
-error
-retry
-offline/degraded
-```
-
-Toda mutación:
-
-```text
-idle → submitting → success
-                  ↘ error → recovery
+Button · IconButton · Input · Search · Card · Badge · Avatar
+TopBar · BottomNavigation · BottomSheet · Drawer · Modal
+FloatingActionButton · EmptyState · ErrorState · RetryState
+SuccessState · OfflineState · StatusCard · ServiceCard
+ProviderCard · PaymentStatus · EvidenceCard · Timeline
+MapPanel · ActionSheet · HugoDock · NotificationItem
+AlertCard · KpiCard · DecisionCard
 ```
 
 ---
 
-# 5. Componentes canónicos
+# 5. Responsive maestro
 
-Antes de crear componentes nuevos, reutilizar o extender las primitivas UGO:
+## Mobile 360–767
 
-```text
-Button
-IconButton
-Input
-Search
-Card
-Badge
-Avatar
-TopBar
-BottomNavigation
-BottomSheet
-Drawer
-Modal
-FloatingActionButton
-EmptyState
-ErrorState
-RetryState
-SuccessState
-OfflineState
-```
+- experiencia primaria;
+- bottom navigation;
+- bottom sheets;
+- CTA alcanzable con una mano;
+- safe areas;
+- mapa + sheet en vez de layouts desktop comprimidos.
 
-Componentes transversales del ecosistema:
+## Tablet 768–1279
 
-```text
-StatusCard
-ServiceCard
-ProviderCard
-PaymentStatus
-EvidenceCard
-Timeline
-MapPanel
-ActionSheet
-HugoDock
-NotificationItem
-AlertCard
-KpiCard
-DecisionCard
-```
+- gutters 24 px;
+- mayor uso de dos columnas;
+- sidebar colapsable cuando corresponda;
+- sheets pueden transformarse en panels.
+
+## Desktop ≥1280
+
+Característica rescatada de Stitch Web: **UGO debe ser una aplicación web real, no un teléfono agrandado**.
+
+- sidebar persistente en superficies complejas;
+- topbar + main canvas;
+- mapa/contenido en split view cuando aporte valor;
+- panels de detalle laterales;
+- densidad superior sin perder jerarquía.
 
 ---
 
-# 6. Cliente · arquitectura UI/UX
+# 6. Cliente · journey Stitch consolidado
 
-Navegación principal:
+Navegación:
 
 ```text
 Inicio · Servicios · Actividad · Perfil
 ```
 
-Journey:
+Journey de referencia auditado:
 
 ```text
-Login/Onboarding
-→ Home/Radar
-→ Buscar/Categoría
-→ Proveedor
-→ Solicitud
-→ Matching
-→ Asignación
-→ Pago
-→ Tracking
-→ Servicio activo
-→ Ampliación si corresponde
-→ Evidencias
-→ Aprobación/Disputa
-→ Pago cerrado
-→ Calificación
-→ Historial
+Home
+→ Buscar servicio
+→ Nueva solicitud
+→ Matching en vivo
+→ Profesional seleccionado
+→ Contratación / pago
+→ Servicio en camino
+→ Chat en vivo
+→ Llegada al domicilio
+→ Servicio en ejecución
+→ Ampliar servicio
+→ Cierre / comprobante
+→ Revisión final
+→ Actividad
+→ Perfil / Configuración / Ayuda
 ```
 
 ## 6.1 Home / Radar
-
-Pregunta: **¿Qué necesitás resolver hoy?**
 
 Jerarquía:
 
@@ -302,41 +229,62 @@ Jerarquía:
 2. búsqueda/Hugo;
 3. categorías;
 4. profesionales/disponibilidad;
-5. servicio activo si existe;
+5. servicio activo;
 6. actividad secundaria.
 
-Stitch debe priorizar una experiencia mobile-first con mapa útil, bottom sheet limpio y CTA claro. El mapa nunca debe impedir contratar si falla.
+Mapa + bottom sheet es el patrón mobile prioritario. Los elementos live deben representar datos reales.
 
 ## 6.2 Solicitud
 
 ```text
 Servicio
-→ Detalles + fotos
-→ Dirección + cuándo
-→ Presupuesto/resumen
-→ Confirmar
+→ detalles + fotos
+→ dirección + cuándo
+→ presupuesto/resumen
+→ confirmar
 ```
 
-Las fotos del problema forman parte del formulario y deben explicar que ayudan al proveedor a evaluar el trabajo.
+Las fotos previas son parte del formulario y permiten al proveedor analizar el trabajo antes de aceptar.
 
-## 6.3 Matching
+## 6.3 Matching en vivo
 
-Nunca mostrar sólo un spinner. Mostrar búsqueda activa, categoría/zona, progreso comprensible y alternativas si no hay proveedores.
+No usar spinner infinito. Mostrar categoría/zona, búsqueda activa, actividad/progreso disponible, alternativas y recuperación.
 
-## 6.4 Servicio activo
+## 6.4 Profesional seleccionado
 
-Debe concentrar:
+Mostrar identidad, verificación, rating, especialidad, ETA/distancia, tarifa/valor y CTA dominante.
 
-- proveedor;
-- estado;
-- ETA/mapa;
-- pago;
-- evidencia;
-- ampliar trabajo;
-- ayuda/disputa;
-- próxima acción.
+## 6.5 Servicio activo
 
-## 6.5 Pago
+Integrar en una misma narrativa:
+
+```text
+estado + proveedor + mapa/ETA + conversación + pago + evidencia
++ ampliar trabajo + ayuda/disputa + próxima acción
+```
+
+## 6.6 Chat en vivo
+
+La conversación es contextual al servicio. Debe conservar identidad de participantes, estado del servicio y acceso a acciones relevantes sin transformarse en una app de mensajería separada.
+
+## 6.7 UGO Shield
+
+Concepto Stitch adoptado para agrupar señales de confianza: verificación, trazabilidad, evidencia, soporte y protección cuando realmente aplique. Nunca prometer protección electrónica en efectivo.
+
+---
+
+# 7. Pagos · características Stitch integradas
+
+Superficies de referencia:
+
+```text
+Contratación con saldo
+Recarga de billetera
+Comprobante fiduciario / comprobante de pago
+Pagos
+```
+
+Estas superficies son patrones UX; sólo se activan cuando el backend real soporte la función correspondiente.
 
 Electrónico:
 
@@ -350,630 +298,260 @@ Efectivo:
 seleccionado → presencial pendiente → proveedor confirma recepción → registrado
 ```
 
-Nunca presentar efectivo como pago electrónicamente protegido.
+Mostrar importe, método, estado, comisión, monto proveedor, protección o ausencia de ella, fecha y próxima acción.
 
 ---
 
-# 7. Proveedor · arquitectura UI/UX
+# 8. Proveedor
 
-Navegación principal:
+Navegación:
 
 ```text
 Inicio · Demanda · Trabajos · Perfil
 ```
 
-## 7.1 Inicio
+Inicio responde **¿Qué tengo que hacer ahora?**
 
-Pregunta: **¿Qué tengo que hacer ahora?**
+Demanda responde **¿Dónde hay trabajo para mí?** y representa panorama, zonas, categorías, volumen, urgencia, distancia, valor y tendencia.
 
-Mostrar:
+Oportunidades son trabajos concretos compatibles y muestran categoría, zona, distancia, antigüedad, descripción, evidencia previa del cliente, valor, compatibilidad y Aceptar/Rechazar.
 
-- Online/Offline;
-- oportunidades;
-- trabajo activo;
-- próxima acción;
-- demanda cercana;
-- dinero protegido;
-- dinero liberado;
-- alertas;
-- Hugo.
-
-## 7.2 Demanda
-
-Pregunta: **¿Dónde hay trabajo para mí?**
-
-Demanda es panorama del mercado, no lista de ofertas. Debe usar mapa, zonas, categorías, volumen, urgencia, distancia, valor estimado y tendencia.
-
-## 7.3 Oportunidades
-
-Oportunidad = trabajo concreto compatible.
-
-Card mínima:
+Misión activa:
 
 ```text
-categoría
-zona
-distancia
-antigüedad
-descripción
-valor
-compatibilidad
-condiciones
-Aceptar / Rechazar
-```
-
-Aceptar debe bloquear doble acción y esperar confirmación real antes de cambiar de pantalla.
-
-## 7.4 Misión activa
-
-```text
-Pago autorizado
+Pago autorizado/efectivo seleccionado
 → En camino
 → Llegué
 → Evidencia antes
 → Iniciar
 → En progreso
-→ Ampliar servicio si hace falta
+→ Ampliar si hace falta
 → Evidencia durante/después
 → Finalizar
 → Aprobación
 → Cobro
 ```
 
-## 7.5 Hugo · Asistente de Trabajo
-
-Hugo acompaña al proveedor:
-
-- antes: checklist, materiales, seguridad, contexto;
-- durante: diagnóstico, pasos, recomendaciones, incidencias, ampliación;
-- después: checklist final, evidencia, resumen y aprendizaje.
-
-Debe sentirse como copiloto contextual, no chatbot flotante desconectado.
+Hugo funciona como Asistente de Trabajo contextual antes, durante y después.
 
 ---
 
-# 8. Ampliar servicio / Agregar trabajo
+# 9. Evidencia y ampliación
 
-Patrón transversal Cliente + Proveedor.
+Evidencia previa del cliente y evidencia operacional son conceptos distintos.
 
 ```text
-Necesidad adicional
-→ propuesta
-→ descripción
-→ costo extra
-→ tiempo extra
-→ cliente aprueba/rechaza
-→ pago se ajusta de forma trazable
-→ servicio continúa
+Solicitud: fotos del trabajo → proveedor analiza antes de aceptar
+Operación: Antes → Durante → Después
 ```
 
-UX obligatoria:
+Agregar trabajo / Ampliar servicio:
 
-- nunca esconder costo/tiempo adicional;
-- indicar quién propuso;
-- estado visible;
-- aprobación explícita;
-- historial permanente;
-- evitar acuerdos fuera de UGO.
+```text
+necesidad adicional → propuesta → descripción → costo/tiempo extra
+→ cliente aprueba/rechaza → ajuste trazable → servicio continúa
+```
+
+Nunca ocultar costo, tiempo, autor ni estado.
 
 ---
 
-# 9. Evidencias
+# 10. Admin / Super Admin
 
-Tres etapas operativas:
+Admin responde **¿Qué requiere atención y qué decisión debo tomar?**
 
 ```text
-Antes · Durante · Después
+Contexto → KPIs esenciales → prioridades/alertas → mapa/lista
+→ detalle → acción → confirmación/auditoría
 ```
 
-Además existe evidencia previa de solicitud enviada por Cliente.
+Super Admin gobierna roles, permisos, feature flags, categorías, zonas, matching, finanzas, Scout, Hugo, integraciones, auditoría y métricas globales.
 
-No mezclar ambos conceptos.
-
-UX:
-
-- preview;
-- tipo;
-- fecha/hora;
-- descripción;
-- autor cuando corresponda;
-- estado de carga;
-- retry;
-- acceso dentro del servicio activo y revisión final.
+Los inventarios Stitch Admin/Super Admin se consideran referencia visual y de cobertura, pero la autoridad funcional sigue siendo el flujo maestro y `main`.
 
 ---
 
-# 10. Admin · Control Center
+# 11. Scout y Academia
 
-Admin no debe ser una colección de dashboards. Debe responder:
-
-**¿Qué requiere atención y qué decisión debo tomar?**
-
-Arquitectura:
-
-```text
-Inicio
-Operaciones
-Personas
-Finanzas
-Seguridad / Disputas
-Scout
-Reportes
-Configuración
-```
-
-Patrón de pantalla:
-
-```text
-Contexto
-→ KPIs esenciales
-→ prioridades/alertas
-→ lista o mapa operacional
-→ detalle
-→ acción
-→ confirmación/auditoría
-```
-
-Densidad mayor que Cliente/Proveedor, pero mismo lenguaje de estados, color y componentes.
-
----
-
-# 11. Super Admin
-
-Super Admin gobierna el sistema.
-
-Debe incluir conceptualmente:
-
-```text
-Command Center
-Roles / permisos
-Feature flags
-Categorías
-Zonas
-Matching
-Finanzas
-Scout
-Hugo
-Integraciones
-Auditoría
-Métricas globales
-```
-
-Toda modificación crítica debe mostrar alcance, impacto, confirmación y registro.
-
----
-
-# 12. Scout
-
-Scout es una **guía de acción**.
+Scout:
 
 ```text
 Dato → interpretación → recomendación → acción → resultado
 ```
 
-No diseñar Scout como un BI pasivo.
+No es BI pasivo. Debe mostrar gaps de oferta/demanda, tendencias, conversión, campañas, alertas y CTA accionable.
 
-Cada insight debe responder:
-
-- qué ocurre;
-- dónde;
-- por qué importa;
-- magnitud/confianza;
-- acción recomendada;
-- CTA para ejecutar o investigar.
-
-Ejemplos:
-
-- alta demanda sin cobertura;
-- gaps de proveedores;
-- baja conversión;
-- servicios demorados;
-- campaña recomendada;
-- proveedores que necesitan capacitación.
-
----
-
-# 13. Academia UGO
-
-Journey:
+Academia:
 
 ```text
-Diagnóstico
-→ ruta de aprendizaje
-→ contenido
-→ evaluación
-→ progreso/certificación
+Diagnóstico → ruta → contenido → evaluación → progreso/certificación
 → impacto en perfil/oportunidades
 ```
 
-La UI debe conectar aprendizaje con beneficio profesional concreto.
-
 ---
 
-# 14. Landing y Web pública
+# 12. Mapas
 
-Objetivo: explicar UGO y convertir.
-
-Jerarquía:
-
-```text
-Promesa
-→ cómo funciona
-→ confianza
-→ Cliente / Proveedor
-→ categorías/cobertura
-→ seguridad
-→ CTA
-```
-
-La landing puede usar una presentación dark/mint más expresiva, pero debe mantener la identidad semántica UGO y no convertirse en un sistema visual separado.
-
-Mobile: CTA Cliente/Proveedor accesibles y persistentes sin tapar contenido.
-
----
-
-# 15. Mapas
-
-Mapas aparecen en Cliente, Proveedor, Admin y Scout, pero con objetivos diferentes.
-
-Cliente:
-- ubicación;
-- proveedores;
-- tracking;
-- ETA.
-
-Proveedor:
-- demanda;
-- oportunidad;
-- ruta al cliente.
-
-Admin:
-- operación;
-- concentración;
-- incidencias;
-- cobertura.
-
-Scout:
-- patrones;
-- gaps;
-- oportunidades.
+Cliente: ubicación, proveedores, tracking, ETA.  
+Proveedor: demanda, oportunidades, ruta.  
+Admin: operación, concentración, incidencias, cobertura.  
+Scout: patrones, gaps, oportunidades.
 
 Reglas:
 
-- mapa siempre tiene contexto textual;
-- no depender sólo de pin/color;
+- contexto textual siempre;
+- no depender sólo de color/pin;
 - selected state inequívoco;
-- fallback de lista;
-- controles táctiles 48 px;
-- atribución cartográfica cuando corresponda.
+- fallback lista;
+- controles 48 px;
+- atribución cartográfica;
+- marker cards pueden mostrar avatar + live + rating + ETA + categoría.
 
 ---
 
-# 16. Pagos y dinero
+# 13. Estados, accesibilidad y motion
 
-Dinero exige máxima claridad.
-
-Mostrar siempre cuando corresponda:
+Todo dato:
 
 ```text
-importe
-método
-estado
-comisión
-monto proveedor
-protección o ausencia de protección
-fecha relevante
-próxima acción
+loading → loaded
+        ↘ empty
+        ↘ error → retry
+        ↘ offline/degraded
 ```
 
-No usar “pagado”, “liberado”, “retenido” y “protegido” como sinónimos.
-
-DEMO y REAL deben ser visualmente distinguibles en Admin.
-
----
-
-# 17. Disputas y seguridad
-
-Journey:
+Toda mutación:
 
 ```text
-Problema
-→ abrir disputa
-→ explicar impacto
-→ evidencia
-→ revisión
-→ resolución
-→ consecuencia financiera
-→ cierre
+idle → submitting → success
+                  ↘ error → recovery
 ```
 
-El diseño debe ser calmado, preciso y auditable. Evitar mensajes acusatorios antes de resolución.
+Motion sólo explica estado, jerarquía o actividad real. Pulsos/radar se permiten para matching, proveedor live y Hugo, respetando `prefers-reduced-motion`.
+
+Contraste WCAG AA, foco visible, teclado en web, labels accesibles, texto no menor a 12 px salvo metadata excepcional y no depender sólo del color.
 
 ---
 
-# 18. Notificaciones
+# 14. Regla de integración de exports Stitch
 
-Notificar cambios que modifican una decisión o próxima acción:
+El HTML generado por Stitch es **material de diseño/referencia**, no código de producción para copiar íntegramente.
+
+Nunca:
+
+- iframear un export como aplicación;
+- sustituir React/Supabase por HTML demo;
+- copiar datos mock como reales;
+- duplicar routing;
+- introducir un segundo Design System.
+
+Sí:
+
+- extraer jerarquía visual;
+- adaptar layouts;
+- rescatar estados UX;
+- convertir patrones a componentes UGO;
+- reutilizar ideas responsive;
+- validar cada pantalla contra backend y flujo real.
+
+---
+
+# 15. Inventario Stitch que debe preservarse como referencia
+
+De las ramas auditadas se preservan conceptualmente:
+
+### Cliente Mobile
+
+- Home / Home UX Cleanup
+- Buscar servicio
+- Nueva solicitud
+- Matching en vivo
+- Profesional seleccionado
+- Servicio en camino
+- Chat en vivo
+- Llegada al domicilio
+- Servicio en ejecución
+- Ampliar servicio
+- Pagos y cierre
+- Actividad
+- Perfil / Configuración / Ayuda
+- UGO Shield
+- revisión final
+
+### Cliente Web
+
+Mismo journey, adaptado a shell responsive real:
 
 ```text
-nueva oportunidad
-proveedor asignado
-pago confirmado
-proveedor en camino
-llegada
-trabajo iniciado
-ampliación propuesta/aprobada/rechazada
-finalización
-aprobación
-pago cerrado
-calificación
-disputa
-alerta Scout
-capacitación recomendada
+desktop: sidebar + topbar + canvas / split map
+mobile: off-canvas + bottom sheets + bottom nav
 ```
 
-Cada notificación debe llevar al contexto correcto, no simplemente a Home.
+### Admin / Super Admin
+
+Inventarios Stitch históricos se usan para comprobar cobertura de pantallas y consistencia, nunca para reemplazar lógica actual.
 
 ---
 
-# 19. Responsive
-
-Breakpoints de validación:
+# 16. Plantilla maestra para prompts Stitch
 
 ```text
-390 mobile base
-480 mobile amplio
-768 tablet
-1024 desktop compacto
-1440 desktop amplio
-```
-
-Reglas:
-
-- diseñar mobile-first Cliente/Proveedor;
-- Admin desktop-first con adaptación mobile;
-- evitar scroll horizontal;
-- no usar alturas fijas que rompan WebView;
-- usar safe areas;
-- teclado no debe tapar CTA/campo activo;
-- sheets deben poder scrollear internamente;
-- tablas densas se convierten en cards/listas en mobile cuando corresponda.
-
----
-
-# 20. Accesibilidad
-
-Objetivo mínimo: WCAG AA en contraste y comportamiento esencial.
-
-- targets 48 px;
-- labels reales;
-- foco visible;
-- orden lógico;
-- `aria-live` para estados asincrónicos importantes;
-- iconos con texto/label cuando sean acciones;
-- no depender sólo de color;
-- `prefers-reduced-motion`;
-- mensajes de error accionables;
-- campos con error asociado.
-
----
-
-# 21. Microcopy UGO
-
-UGO habla como un coordinador confiable.
-
-Preferir:
-
-```text
-“Tu proveedor está en camino”
-“Falta confirmar el pago”
-“No encontramos profesionales disponibles en esta zona”
-“Podés ampliar el radio o intentar nuevamente”
-```
-
-Evitar:
-
-```text
-“Error 500”
-“RPC failed”
-“Status updated”
-“Invalid state transition”
-```
-
-El detalle técnico va a logs/Admin, no al usuario final.
-
----
-
-# 22. Prompt maestro para Google Stitch
-
-Usar esta base y agregar el objetivo específico de cada pantalla:
-
-```text
-Diseñá una pantalla production-ready para UGO, marketplace de servicios locales.
+Diseñá una pantalla de UGO siguiendo el documento UGO_UIUX_STITCH_MASTER.
 
 Rol: [Cliente / Proveedor / Admin / Super Admin]
 Pantalla: [nombre]
+Estado funcional: [estado real]
 Objetivo del usuario: [objetivo]
-Estado actual: [estado real del flujo]
 Próxima acción principal: [CTA]
 
-Usar el lenguaje visual UGO “Kinetic Trust”: confiable, humano, local, tecnológico y profesional.
-Primary verde UGO #006948, secondary/Hugo #00687a, superficies claras, jerarquía fuerte, cards de radio 16 px, controles 12 px, sheets 24 px.
-Tipografía Plus Jakarta Sans con fallback Inter.
+Aplicar Kinetic Trust.
+Usar Plus Jakarta Sans, Design System UGO, touch targets >=48px,
+grid 8pt, safe areas, estados loading/empty/error/success y responsive real.
 
-Para Cliente/Proveedor usar mobile-first 390×844, safe areas, touch targets mínimos 48×48 y navegación alcanzable con una mano.
-Para Admin usar control-center responsive con densidad profesional y decisiones priorizadas.
+Mobile reference 390x844.
+En desktop no agrandar un teléfono: usar shell web real, sidebar/topbar,
+panels y split map cuando corresponda.
 
-Aplicar siempre la regla:
-ESTADO → CONTEXTO → PRÓXIMA ACCIÓN.
+Si hay mapa, incluir contexto textual y fallback.
+Si hay Hugo, usar cyan/secondary y hacerlo contextual.
+Si hay dinero, distinguir estado y protección con precisión.
+Si hay evidencia, diferenciar solicitud previa de Antes/Durante/Después.
 
-Diseñar explícitamente loading, empty, error, success y disabled cuando correspondan.
-No inventar nuevas funciones, estados de servicio, métodos de pago ni navegación.
-No cambiar la arquitectura funcional UGO.
-No duplicar patrones que ya pertenecen al Design System.
-El resultado debe poder traducirse a React + CSS responsive y reutilizable.
+No inventar funciones ni estados.
+No alterar contratos de pagos, seguridad, RLS o navegación.
+No generar un sistema visual alternativo.
+La pantalla debe responder: Estado → contexto → próxima acción.
 ```
 
 ---
 
-# 23. Plantilla Stitch por pantalla
+# 17. Definition of Done Stitch → UGO
 
-Antes de pedir una pantalla completar:
+Una pantalla sólo está lista cuando:
 
-```md
-## [ROL] · [PANTALLA]
-
-### Objetivo
-...
-
-### Estado de entrada
-...
-
-### Información obligatoria
-- ...
-
-### Acción primaria
-...
-
-### Acciones secundarias
-- ...
-
-### Estados
-- loading
-- empty
-- error
-- success
-- offline/degraded
-
-### Navegación
-Entrada: ...
-Salida principal: ...
-Back: ...
-
-### Componentes UGO
-- ...
-
-### Responsive
-390: ...
-768: ...
-1024+: ...
-
-### Restricciones
-- no inventar lógica
-- mantener contratos del flujo maestro
-- respetar design tokens
-```
+- coincide con el flujo maestro;
+- respeta el rol;
+- usa tokens/componentes UGO;
+- mantiene Estado → contexto → próxima acción;
+- funciona 360–430 mobile y responsive web;
+- desktop es una app real, no mobile estirado;
+- touch targets ≥48 px;
+- safe areas correctas;
+- loading/empty/error/retry/offline diseñados;
+- pagos usan términos correctos;
+- efectivo nunca se llama protegido;
+- evidencia previa y operacional están diferenciadas;
+- mapa tiene fallback;
+- Hugo es contextual;
+- accesibilidad AA y reduced motion;
+- no contiene mocks presentados como datos reales;
+- conserva React/Supabase/RLS/Realtime existentes;
+- build/TypeScript pasan antes de merge.
 
 ---
 
-# 24. Contrato de handoff Stitch → GitHub
-
-Una propuesta visual se considera lista para implementación sólo cuando:
-
-- corresponde al rol correcto;
-- respeta el flujo real;
-- tiene CTA principal inequívoco;
-- contempla estados asincrónicos;
-- no introduce navegación paralela;
-- reutiliza tokens/componentes UGO;
-- es responsive;
-- es accesible;
-- no rompe pagos, evidencia, matching o seguridad;
-- puede mapearse a componentes del repo.
-
-Handoff esperado:
-
-```text
-Stitch screen
-→ identificar componentes compartidos
-→ mapear datos/acciones reales
-→ implementar sin duplicar flujo
-→ validar TypeScript/build
-→ validar mobile
-→ validar estados
-→ validar rol/RLS
-→ commit pequeño y trazable
-```
-
----
-
-# 25. Definition of Done UI/UX
-
-Una pantalla UGO está terminada cuando:
-
-- [ ] responde Estado → contexto → próxima acción;
-- [ ] tiene una acción primaria clara;
-- [ ] usa tokens UGO;
-- [ ] usa/reutiliza componentes canónicos;
-- [ ] loading está diseñado;
-- [ ] empty está diseñado;
-- [ ] error + retry están diseñados;
-- [ ] success/feedback está diseñado;
-- [ ] acciones críticas bloquean doble submit;
-- [ ] mobile 390 funciona;
-- [ ] tablet 768 funciona;
-- [ ] desktop cuando aplica funciona;
-- [ ] safe areas funcionan;
-- [ ] teclado mobile no bloquea interacción;
-- [ ] touch targets ≥48 px;
-- [ ] contraste/foco/labels son accesibles;
-- [ ] no depende sólo del color;
-- [ ] microcopy es humano;
-- [ ] estados financieros son inequívocos;
-- [ ] navegación no duplica otro flujo;
-- [ ] comportamiento real está conectado;
-- [ ] TypeScript/build pasan;
-- [ ] se verificó que no rompió Cliente/Proveedor/Admin.
-
----
-
-# 26. Prioridad de convergencia visual
-
-```text
-P0 · contratos críticos y errores de UX
-P1 · Cliente operacional completo
-P2 · Proveedor operacional completo
-P3 · Admin/Super Admin
-P4 · Scout/Hugo/Academia
-P5 · Landing/Web y refinamiento transversal
-```
-
-No realizar una reescritura visual masiva. Migrar journey por journey y validar build entre etapas.
-
----
-
-# 27. Regla para futuras generaciones con Stitch
-
-Cada nueva pantalla debe partir de este documento y del flujo funcional existente.
+# 18. Regla final
 
 **Stitch no crea un UGO alternativo. Stitch ayuda a diseñar mejor el UGO real.**
 
-Cuando Stitch proponga un patrón superior, se incorpora al Design System antes de replicarlo en varias pantallas.
-
-La consistencia se evalúa en el journey completo, no sólo en screenshots individuales.
-
----
-
-# 28. Resultado esperado
-
-Cliente, Proveedor, Admin, Super Admin, Scout, Hugo, Academia y Web deben parecer distintas vistas del mismo sistema.
-
-La experiencia completa debe comunicar:
-
-**UGO sabe qué está pasando, protege el contexto del servicio, registra las decisiones y siempre muestra qué sigue.**
-
----
-
-## Documento vivo
-
-Actualizar este archivo cuando:
-
-- cambie un contrato visual transversal;
-- se adopte un patrón Stitch como patrón UGO;
-- aparezca un nuevo rol o superficie;
-- cambie navegación;
-- cambien estados maestros;
-- cambie el Design System;
-- se incorpore un nuevo patrón de pago, evidencia, seguridad o asistencia.
-
-No actualizarlo por cambios cosméticos aislados.
+Toda propuesta visual debe converger hacia una experiencia única, confiable, trazable y escalable para Cliente, Proveedor, Admin, Super Admin, Scout, Hugo y Academia.
