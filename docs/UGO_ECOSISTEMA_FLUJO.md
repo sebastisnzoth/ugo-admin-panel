@@ -1,6 +1,6 @@
 # UGO — Flujo integral del ecosistema
 
-**Versión:** 2.2 · 11 de septiembre de 2026  
+**Versión:** 2.3 · 11 de septiembre de 2026  
 **Estado:** documento maestro funcional  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
@@ -327,13 +327,27 @@ Reglas obligatorias:
 ```text
 se detecta trabajo adicional
 → propuesta: qué + tiempo + costo
+→ Cliente revisa
+→ impacto financiero se resuelve según método
 → Cliente aprueba/rechaza
 → registro auditable
-→ ajuste según método de pago
 → continuar
 ```
 
 Debe sentirse como parte del servicio actual, no como comenzar otro formulario.
+
+Regla de confianza: **un trabajo adicional con costo no puede quedar aprobado si ese costo no está incorporado o financiado de forma segura**.
+
+Comportamiento actual:
+
+```text
+sin pago todavía → el total se ajusta antes del checkout
+efectivo pendiente → el total presencial se reajusta
+pago fallido/reembolsado → se reajusta para el próximo intento
+pago electrónico activo + costo extra → aprobación bloqueada hasta cobrar el delta
+```
+
+El checkout específico de **delta electrónico** es P0 pendiente. Hasta que exista y sea conciliable/idempotente, UGO muestra el bloqueo en vez de prometer una ampliación no financiada. Una ampliación sin costo sí puede aprobarse sin alterar custodia.
 
 ---
 
@@ -343,6 +357,7 @@ Electrónico:
 
 ```text
 evidencia final
+→ cualquier ampliación con costo ya financiada/reconciliada
 → solicitar revisión
 → cliente aprueba/disputa
 → liberación/reembolso según reglas
@@ -353,6 +368,7 @@ Efectivo:
 
 ```text
 evidencia final
+→ total presencial incluye ampliaciones aprobadas
 → proveedor confirma recepción
 → cliente revisa y aprueba/disputa
 → completado
@@ -402,6 +418,7 @@ Cliente abre UGO
 → llegada
 → evidencia Antes
 → trabajo
+→ ampliación opcional financiada si tiene costo
 → evidencia Después
 → cierre según método
 → cliente conforme/disputa
