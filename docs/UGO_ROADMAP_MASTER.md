@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.5 · 11 de septiembre de 2026  
+**Versión:** 2.6 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -69,7 +69,8 @@ P3 expansión/polish
 [x] guards backend evidencia inicial/final implementados
 [x] guard temporal de tipo de evidencia implementado backend
 [x] guard de ampliación sin financiamiento implementado backend
-[ ] checkout/reconciliación de delta electrónico para ampliaciones con costo
+[x] checkout/reconciliación de delta electrónico implementado
+[ ] validar E2E/idempotencia/reembolso del delta electrónico
 [ ] pagos electrónico/efectivo method-aware extremo a extremo validado E2E
 [ ] idempotencia efectivo/webhooks/retiros cerrada completa
 [ ] autorización Admin/Super server-side cerrada completa
@@ -138,30 +139,32 @@ La migración está aplicada en Supabase producción.
 
 ## Bloque C — ampliación → cierre → aprobación
 
-Hardening integrado:
+Estado implementado:
 
-- `ClientCompletionReview` busca sólo `esperando_aprobacion` del cliente autenticado;
-- evidencia final habilitante debe pertenecer al proveedor asignado;
-- sin forma de pago no se habilita aprobación;
-- `20260911222000_service_expansion_payment_guard.sql` aplicada en producción;
-- ampliación con costo y pago electrónico activo no puede aprobarse hasta financiar el delta;
-- sin pago, efectivo pendiente o pago fallido/reembolsado: el total se reajusta según contrato;
-- ampliación histórica `aprobada + pendiente_ajuste` bloquea `en_progreso → esperando_aprobacion`;
-- producción tenía 0 ampliaciones al aplicar el guard: no hubo deuda histórica a reparar;
-- `ServiceExpansionPanel` muestra el bloqueo financiero y no ofrece aprobación engañosa;
-- `ServiceExpansionPanel`, `ClientCompletionReview` y `ProviderEvidencePanel` están en lint crítico.
+- `ClientCompletionReview` queda limitado al cliente autenticado y a evidencia final del proveedor asignado;
+- `20260911222000_service_expansion_payment_guard.sql` mantiene el bloqueo preventivo ante alcance extra no financiado;
+- `20260911224500_expansion_electronic_checkout.sql` está aplicada en Supabase producción;
+- la ampliación electrónica usa checkout separado: no muta el pago base protegido;
+- `api/pagos/ajuste-ampliacion.ts` valida cliente, servicio, pago base y crea/reutiliza checkout con referencia/idempotencia propia;
+- `api/pagos/webhook.ts` reconoce `ampliacion_id`/`exp:<id>`, valida monto y moneda y llama `confirmar_pago_ampliacion`;
+- `confirmar_pago_ampliacion` incorpora delta/comisión/neto una sola vez y recién entonces deja `aprobada + incluido`;
+- pago adicional fallido mantiene la ampliación pendiente para retry;
+- reembolso posterior marca `pendiente_ajuste` y el guard impide cerrar normalmente hasta conciliación;
+- `ServiceExpansionPanel` cambió de “bloqueo sin salida” a `Pagar y aprobar / Continuar pago`.
+
+Estado de madurez: **IMPLEMENTED, no todavía VALIDATED E2E**.
 
 Riesgo P0 visible:
 
 ```text
-pago electrónico activo
-+ trabajo adicional con costo
-→ falta checkout específico del delta
-→ falta webhook/idempotencia/reconciliación del delta
-→ recién entonces puede aprobarse la ampliación
+checkout delta
+→ webhook real Mercado Pago
+→ retry / webhook duplicado / reembolso
+→ RPC idempotente bajo ejecución real
+→ Cliente y Proveedor convergen por Realtime
 ```
 
-## Bloque D — primera red automatizada de contratos
+## Bloque D — red automatizada de contratos
 
 Implementado:
 
@@ -171,20 +174,21 @@ npm test
 → tests/contracts/core-lifecycle.test.mjs
 ```
 
-Cobertura inicial:
+Cobertura actual:
 
 ```text
 radio llegada UI/backend = 200 m
 evidencia operacional ligada al lifecycle
 guards Antes/Después para iniciar/finalizar
 efectivo presencial no se confunde con custodia electrónica
-ampliación electrónica con costo no se aprueba sin ajuste
-review del cliente respeta ownership y evidencia del proveedor asignado
+checkout electrónico separado para ampliaciones
+idempotency/external_reference del delta
+webhook llama confirmar_pago_ampliacion
+RPC valida monto y sólo entonces incorpora delta
+review del cliente respeta ownership y proveedor asignado
 ```
 
-`UGO Core CI` ya incluye `npm test` entre build y lint crítico. Esto cierra el punto “existencia de test runner”, **no** los P0 de pruebas RPC/RLS ni E2E.
-
-Validación final del último `main` queda condicionada al run de CI disparado por este bloque documental; no declarar release sólo por estos contract tests.
+`UGO Core CI` incluye `npm test` entre build y lint crítico. Esto no reemplaza pruebas RPC/RLS ni E2E.
 
 Próximo recorrido principal:
 
@@ -219,7 +223,7 @@ en_progreso
 | Tracking/ETA | 🟡 | P1 | E2E/reconexión/fallback |
 | Llegada proveedor | 🟡 | P1 | validar E2E radio/ubicación |
 | Servicio activo | 🟡 | P0 | narrativa única |
-| Ampliar servicio | 🟡 | P0 | guard seguro listo; falta checkout delta electrónico + E2E |
+| Ampliar servicio | 🟡 | P0 | checkout delta implementado; falta E2E real/reembolso/retry |
 | Aprobación/Disputa | 🟡 | P0 | ownership endurecido; falta E2E por método |
 | Historial/Reputación | 🟡 | P1 | validación integrada |
 | Notificaciones | 🟡 | P1 | contrato de eventos |
@@ -242,7 +246,7 @@ en_progreso
 | Tracking | 🟡 | P1 | ETA/reconexión |
 | Radio de llegada 200 m | ✅ | P1 | contrato UI/backend alineado; falta E2E GPS |
 | Evidencia operacional por estado | ✅ | P0 | guard backend + UI alineada; falta E2E negativo/positivo |
-| Ampliar servicio | 🟡 | P0 | no permite alcance con costo electrónico no financiado; falta delta checkout |
+| Ampliar servicio | 🟡 | P0 | delta checkout implementado; falta convergencia E2E |
 | Efectivo recibido | 🟡 | P0 | ledger + E2E |
 | Ganancias | 🟡 | P1 | timeline financiero claro |
 | Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
@@ -276,10 +280,10 @@ Orden recomendado actualizado:
 2 tests RPC/dominio contra entorno aislado
 3 tests RLS positivos/negativos
 4 E2E solicitud→oportunidad→asignación
-5 E2E electrónico
-6 E2E efectivo
-7 E2E llegada/evidencia Antes/inicio
-8 E2E ampliación method-aware
+5 E2E electrónico base
+6 E2E ampliación electrónica: checkout→webhook→RPC→Realtime
+7 E2E efectivo
+8 E2E llegada/evidencia Antes/inicio
 9 E2E evidencia Después/cierre
 10 responsive/accessibility smoke
 11 CI/Vercel smoke
@@ -297,7 +301,11 @@ llegado + Antes → inicio permitido
 cliente A no puede aprobar servicio de cliente B
 foto Después de otro usuario no habilita aprobación
 sin pago confirmado → aprobación deshabilitada/rechazada
-pago electrónico activo + ampliación con costo → aprobación rechazada
+pago electrónico activo + ampliación con costo → checkout delta separado
+checkout adicional approved monto correcto → una sola incorporación
+checkout adicional monto/moneda incorrectos → no incorporar
+webhook adicional duplicado → sin doble incremento
+ajuste reembolsado → revisión bloqueada
 ampliación histórica pendiente_ajuste → revisión bloqueada
 efectivo pendiente + ampliación → total consistente en servicio y pago
 ```
