@@ -8,7 +8,7 @@ export function ClientPaymentChoice(){
  const auth=useRoleSession('client'),{supabase,session}=auth
  const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState('')
  const load=useCallback(async()=>{if(!session){setService(null);setPayment(null);return}const{data:rows}=await supabase.from('servicios').select('*').eq('cliente_id',session.user.id).in('estado',PAYMENT_STATES).order('created_at',{ascending:false}).limit(1);const current=((rows||[])[0]as Service|undefined)||null;setService(current);if(!current){setPayment(null);return}const{data:p}=await supabase.from('pagos').select('id,servicio_id,metodo,estado,pix_copia_cola,pix_qr_code,pix_expira_at,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle();setPayment((p as Payment|null)||null)},[session,supabase])
- useEffect(()=>{void load()},[load])
+ useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
  useEffect(()=>{if(!session)return;const ch=supabase.channel(`client-payment-choice-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${session.user.id}`},()=>void load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,session,supabase])
  const selected=payment?.metodo||''
  const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
@@ -26,7 +26,7 @@ export function ClientPaymentChoice(){
   <header><small>SERVICIO #{service.numero}</small><h2>{pixLocked?'Completá el pago':'¿Cómo querés pagar?'}</h2><p>{pixLocked?'Ya generaste un Pix para este servicio. Confirmalo para continuar.':'Elegí una opción sin salir del servicio. UGO mantiene el mismo seguimiento.'}</p></header>
   <div className="ugo-client-payment-options">
    <button type="button" className={selected==='pix'?'selected':''} onClick={choosePix} disabled={Boolean(busy)||pixLocked}><span>⚡</span><div><b>Pix</b><small>{pixLocked?'Pix generado y pendiente de confirmación.':'Pago electrónico confirmado dentro de UGO.'}</small></div><i>{selected==='pix'?'✓':'›'}</i></button>
-   {!pixLocked&&<button type="button" className="" onClick={chooseCash} disabled={Boolean(busy)}><span>💵</span><div><b>Efectivo</b><small>Pagás al profesional al finalizar. UGO registra la confirmación.</small></div><i>›</i></button>}
+   {!pixLocked&&<button type="button" onClick={chooseCash} disabled={Boolean(busy)}><span>💵</span><div><b>Efectivo</b><small>Pagás al profesional al finalizar. UGO registra la confirmación.</small></div><i>›</i></button>}
   </div>
   {busy&&<div className="ugo-client-payment-feedback">{busy==='pix'?'Preparando Pix…':'Guardando forma de pago…'}</div>}
   {selected==='pix'&&payment?.pix_copia_cola&&<div className="ugo-client-pix-box">{qr&&<img src={qr} alt="QR Code Pix"/>}<b>Escaneá o copiá el código Pix</b><textarea readOnly value={payment.pix_copia_cola}/><button type="button" onClick={copyPix}>Copiar código Pix</button>{payment.pix_expira_at&&<small>Válido hasta {new Date(payment.pix_expira_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small>}</div>}
