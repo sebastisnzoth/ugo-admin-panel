@@ -5,6 +5,7 @@ import{ProviderOnboardingGate}from'./ProviderOnboardingGate'
 import{Launcher}from'./Launcher'
 import{UgoLanding}from'./UgoLanding'
 import{UgoWeb}from'./UgoWeb'
+import{UgoClientWeb}from'./UgoClientWeb'
 import{AppLocationButton}from'./AppLocationButton'
 import{DemoSebastianPaymentBridge}from'./DemoSebastianPaymentBridge'
 import{ServiceHistoryPanel}from'./ServiceHistoryPanel'
@@ -25,6 +26,7 @@ import'./stitch-client-provider-alignment.css'
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
  const demo=new URLSearchParams(window.location.search).get('demo')==='1'
+ if(app==='client-web'||app==='web-client'||app==='stitch-client')return <UgoClientWeb/>
  if(app==='client')return <RecoveryGate role="client"><ClientFlowProvider><ClientRoot demo={demo}/></ClientFlowProvider></RecoveryGate>
  if(app==='provider')return <RecoveryGate role="provider"><div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div></RecoveryGate>
  if(app==='admin')return<AdminGate/>
