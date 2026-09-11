@@ -1,6 +1,6 @@
 # UGO — Master Governance
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 11 de septiembre de 2026  
 **Estado:** contrato superior de compatibilidad documental  
 **Rama de verdad:** `main`
 
@@ -78,6 +78,20 @@ esperando_aprobacion → Después sólo para recuperación histórica
 ```
 Una evidencia final no puede pre-cargarse antes de iniciar y luego usarse para cerrar el servicio.
 
+### Alcance adicional financiado
+Un trabajo adicional con costo no puede quedar aprobado si su impacto financiero no está incorporado o financiado según el método de pago.
+
+```text
+sin pago / efectivo pendiente / pago fallido recuperable
+→ backend puede reajustar el total según contrato
+
+pago electrónico activo + costo adicional
+→ cobrar/reconciliar delta primero
+→ recién después aprobar alcance adicional
+```
+
+No se permite usar un estado visual o `pendiente_ajuste` como sustituto de fondos realmente reconciliados.
+
 ## 4. Pagos
 
 Electrónico:
@@ -105,13 +119,14 @@ Solicitud y ejecución deben conservar evidencia asociada inequívocamente al tr
 ```text
 Cliente o Proveedor propone ampliación
 → descripción + costo + tiempo
+→ impacto financiero validado
 → Cliente aprueba/rechaza
 → registro auditable
 → reconciliación según método
 → continuación
 ```
 
-No modificar silenciosamente alcance o dinero.
+No modificar silenciosamente alcance o dinero. Si no existe todavía un mecanismo seguro para financiar un delta electrónico, UGO bloquea la aprobación con costo en vez de ocultar el faltante.
 
 ## 6. Roles
 
