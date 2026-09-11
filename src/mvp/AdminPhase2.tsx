@@ -22,7 +22,7 @@ import'./admin-operations-menu.css'
 
 type Section='home'|'operations'|'people'|'finance'|'settings'|'superadmin'
 type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'scout'|'history'|'messages'
-type PeopleView='users'|'verification'|'documents'|'kyc'|'import'
+type PeopleView='users'|'providers'|'verification'|'documents'|'kyc'|'import'
 type FinanceView='pix'|'vault'|'tariffs'
 type SettingsView='categories'|'analytics'|'notifications'|'reports'|'system'
 type Metrics={active:number;online:number;users:number;pendingProviders:number;pendingPix:number;completedToday:number}
