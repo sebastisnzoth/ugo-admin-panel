@@ -78,3 +78,8 @@
 .ugo-provider-root .ugo-provider-mission-sheet,.ugo-provider-root .ugo-provider-sheet{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-xl)!important;box-shadow:var(--ugo-shadow-sheet)!important}
 .ugo-provider-root .ugo-provider-mission-sheet .ugo-provider-primary,.ugo-provider-root .ugo-provider-sheet .accept{min-height:var(--ugo-touch-target);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-radius:var(--ugo-radius-md)!important}
 .ugo-provider-root .ugo-provider-sheet .reject{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
+
+/* Provider Journey 5: active service, checklist, evidence and extensions. */
+.ugo-provider-root .ugo-provider-active-service,.ugo-provider-root .ugo-provider-evidence,.ugo-provider-root .ugo-provider-checklist{font-family:var(--ugo-font)}
+.ugo-provider-root .ugo-provider-active-service-card,.ugo-provider-root .ugo-provider-evidence-panel,.ugo-provider-root .ugo-provider-checklist{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-evidence-upload,.ugo-provider-root .ugo-provider-primary{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
