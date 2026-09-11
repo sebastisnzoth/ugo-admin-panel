@@ -1,10 +1,10 @@
 # UGO — Flujo integral del ecosistema
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** documento maestro funcional  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
-> Este documento define **qué ocurre en UGO**. Cliente, Proveedor y Admin participan del mismo servicio y del mismo estado persistido.
+> UGO debe permitir pedir y completar un servicio con la simplicidad mental de pedir un viaje: el usuario expresa una necesidad, confirma pocos pasos y UGO resuelve la complejidad por debajo.
 
 ---
 
@@ -12,413 +12,380 @@
 
 ```text
 Necesidad
-→ búsqueda/categoría
-→ solicitud + evidencia
+→ Hugo entiende
+→ solicitud guiada + evidencia
+→ confirmación del cliente
 → matching
 → oportunidad
 → aceptación atómica
 → asignación
-→ método de pago habilitado
+→ método de pago elegido/habilitado
+→ proveedor en camino
 → ejecución
-→ evidencia
-→ aprobación o disputa
-→ cierre/cobro
+→ evidencia final
+→ cierre según método
+→ aprobación/disputa
 → reputación
-→ datos
-→ mejora
+→ nueva necesidad
 ```
 
-North Star: **servicios confiables completados dentro de UGO**.
+North Star: **servicios confiables completados dentro de UGO con mínima fricción**.
+
+Regla: el usuario nunca debe tener que entender estados internos, RPC, procesadores, retenciones o arquitectura para pedir un servicio.
 
 ---
 
 # 2. Actores
 
-- **Cliente:** solicita, aporta contexto, elige/acepta condiciones, sigue, aprueba o disputa y califica.
-- **Proveedor:** configura disponibilidad, recibe oportunidades, acepta/rechaza, ejecuta, evidencia y cobra.
-- **Admin:** resuelve excepciones, operación, personas, finanzas, disputas y calidad.
-- **Super Admin:** reglas, permisos, configuración, integraciones y auditoría.
-- **Hugo:** copiloto contextual autorizado.
-- **Scout:** inteligencia y recomendaciones operativas.
+- **Cliente:** cuenta qué necesita, confirma la solicitud, elige cómo pagar, sigue el servicio, aprueba/disputa y califica.
+- **Proveedor:** recibe oportunidades, acepta/rechaza, ejecuta, evidencia y cobra.
+- **Admin:** opera excepciones, personas, finanzas, disputas y calidad.
+- **Super Admin:** gobierna reglas, permisos, configuración e integraciones.
+- **Hugo:** mejor amigo/copiloto de UGO; entiende la necesidad, propone solución, completa la solicitud y acompaña el servicio.
+- **Scout:** inteligencia operativa.
 - **Academia:** formación y mejora de calidad.
 
 ---
 
-# 3. Cliente
+# 3. Flujo Cliente · pedir un servicio
 
-## 3.1 Acceso
+## 3.1 Principio rector
 
-```text
-Registro/Login → validación → perfil → ubicación → preferencias → Home/Radar
-```
+**Pedir un servicio debe sentirse tan fácil como pedir un Uber, sin copiar su interfaz.**
 
-## 3.2 Home / Radar
+No se presenta un formulario largo. UGO conduce una conversación por pasos cortos. Cada paso tiene una pregunta principal, una confirmación clara y conserva todo lo ya entendido.
 
-Debe permitir entender y actuar rápido:
+El **Orbe de Hugo permanece accesible** durante el flujo. Voz y texto son dos entradas equivalentes al mismo borrador de solicitud.
 
-- ubicación;
-- búsqueda `¿Qué servicio necesitás?`;
-- categorías;
-- mapa/radar;
-- servicio activo;
-- actividad/historial;
-- notificaciones;
-- Hugo;
-- CTA `Encontrar profesionales`.
+## 3.2 Inicio
 
-## 3.3 Solicitud
-
-Datos mínimos:
+Home prioriza una sola intención:
 
 ```text
-categoría
-+ descripción
-+ ubicación
-+ fecha/hora
-+ urgencia/prioridad
-+ evidencia/fotos cuando corresponda
-+ observaciones
-+ condiciones/presupuesto cuando aplique
+¿Qué necesitás?
 ```
 
-La evidencia de solicitud debe quedar vinculada a un draft/request identificable antes del matching.
-
-## 3.4 Matching
-
-UGO pondera:
+El cliente puede:
 
 ```text
-especialidad · zona/distancia · disponibilidad
-reputación · compatibilidad · capacidad operativa
+hablar con Hugo
+O
+escribir
+O
+usar categoría/búsqueda
 ```
 
-Matching produce oportunidades concretas vinculadas al mismo `serviceId`.
+Todas las entradas convergen al mismo flujo.
 
-## 3.5 Asignación
+## 3.3 Hugo entiende antes de preguntar
+
+Ejemplo:
 
 ```text
-solicitado → buscando → ofertado → asignado
+Cliente: “Necesito alguien que me coloque azulejos en el baño.”
+Hugo interpreta:
+- necesidad: colocación/reparación de azulejos
+- profesional probable: azulejista / categoría equivalente
+- contexto conocido
 ```
 
-La aceptación del proveedor debe ser atómica y producir una sola asignación válida.
+Hugo **no vuelve a preguntar lo que ya entendió**. Sólo solicita datos faltantes necesarios para conseguir al profesional correcto.
+
+Si la categoría no es obvia, Hugo propone una solución comprensible y pide confirmación; el cliente no necesita conocer el nombre técnico del oficio.
+
+## 3.4 Wizard conversacional canónico
+
+Objetivo normal: **3–5 confirmaciones humanas antes de buscar**, adaptativas según la necesidad.
+
+```text
+PASO 1 · ¿Qué necesitás?
+voz / texto
+→ Hugo interpreta problema + servicio/profesional probable
+→ cliente confirma o corrige
+
+PASO 2 · Mostrame el problema
+foto/cámara/galería cuando aporte valor
+→ Hugo usa la evidencia como contexto
+→ omitir si no hace falta
+
+PASO 3 · ¿Cuándo lo necesitás?
+ahora / hoy / elegir fecha-hora
+→ ubicación se reutiliza si ya está autorizada
+
+PASO 4 · Revisá lo que entendí
+servicio + profesional/categoría + lugar + cuándo + fotos + condiciones esenciales
+→ Editar o Confirmar solicitud
+
+PASO 5 · Buscar
+→ matching real
+```
+
+Los pasos son adaptativos: si un dato ya existe o no corresponde, se omite. **Nunca se agregan pasos para satisfacer la estructura interna de la base de datos.**
+
+## 3.5 Solicitud viva
+
+Mientras el cliente habla o escribe, Hugo completa un único draft persistente:
+
+```text
+necesidad original
+categoría/profesional inferido
+resumen estructurado
+ubicación
+fecha/hora
+urgencia
+fotos/evidencia
+observaciones relevantes
+```
+
+El cliente puede ver/corregir lo que Hugo entendió. Voz y texto actualizan el mismo draft; cambiar de modalidad no reinicia el proceso.
+
+La evidencia queda vinculada al draft/request antes del matching.
+
+## 3.6 Matching y asignación
+
+```text
+Solicitud confirmada
+→ Buscando profesionales
+→ oportunidad vinculada al mismo serviceId
+→ proveedor acepta atómicamente
+→ Proveedor encontrado
+→ Proveedor en camino
+```
+
+Durante la espera se muestra estado humano, recuperación/cancelación y alternativas si no hay match. Nunca se simula una asignación.
 
 ---
 
-# 4. Contratación y pagos
+# 4. Pago · elección simple del Cliente
 
-Después de asignación, UGO **no obliga a un único modelo de pago**.
-
-## 4.1 Electrónico con custodia
+La complejidad financiera no debe romper el recorrido. El Cliente elige **cómo quiere pagar** con opciones simples y reconocibles, según disponibilidad regional/integraciones:
 
 ```text
-asignado
-→ importe confirmado
-→ pago electrónico
-→ autorizado
-→ retenido/protegido
-→ servicio habilitado
+Tarjeta de crédito/débito
+Mercado Pago / billetera compatible
+Pix u otro método electrónico habilitado
+Efectivo al profesional
 ```
 
-El proveedor no inicia si el contrato exige fondos electrónicos protegidos y la condición aún no se cumplió.
+Métodos guardados pueden reutilizarse. Agregar un método se hace dentro del flujo sin perder el servicio.
+
+## 4.1 Electrónico con custodia cuando aplique
+
+```text
+método elegido
+→ autorización/procesamiento
+→ retenido/protegido cuando el modelo lo permita
+→ servicio habilitado
+```
 
 ## 4.2 Efectivo presencial
 
 ```text
-asignado
-→ cliente selecciona efectivo
-→ método registrado
-→ servicio habilitado según reglas
+cliente elige efectivo
+→ efectivo pendiente
+→ servicio habilitado
 → ejecución
+→ evidencia final
 → proveedor confirma recepción
-→ pago registrado
-```
-
-**Efectivo no está retenido ni protegido electrónicamente por UGO.**
-
-La comisión UGO asociada a operaciones en efectivo debe ser trazable mediante el mecanismo financiero definido por backend/ledger.
-
----
-
-# 5. Servicio activo
-
-Estado conceptual:
-
-```text
-asignado
-→ pago_pendiente / pago_habilitado
-→ en_camino
-→ llegado
-→ en_progreso
-→ esperando_aprobacion
+→ cliente aprueba
 → completado
 ```
 
-Excepciones:
+Efectivo nunca se presenta como dinero protegido o custodiado electrónicamente por UGO.
+
+La UI habla de la elección del usuario; backend mantiene procesador, modelo, estado, comisión e idempotencia.
+
+---
+
+# 5. Servicio activo · experiencia tipo viaje
+
+Después de confirmar, el Cliente deja de completar formularios y pasa a **seguir el servicio**:
 
 ```text
-cancelado · disputado · reembolsado
+Buscando
+→ Proveedor encontrado
+→ Proveedor en camino
+→ Llegó
+→ Trabajo en curso
+→ Trabajo terminado
+→ Revisar
+→ Cerrar/calificar
 ```
 
-Cliente puede ver proveedor, estado, ETA cuando exista, precio, método de pago, evidencia, ampliaciones, comunicación y soporte.
+La pantalla muestra estado actual, proveedor, ETA/ubicación cuando exista, precio/método, evidencia y una próxima acción clara.
 
-Proveedor recibe la próxima acción válida para el estado actual.
+El Proveedor ve el mismo `serviceId` y sólo acciones válidas para el estado real.
 
 ---
 
 # 6. Proveedor
 
-## 6.1 Estado operacional propio
+Estado operacional propio:
 
 ```text
 offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
 
-Estos estados son distintos de los estados del servicio.
+No se mezcla con estados del servicio.
 
-## 6.2 Home
-
+## Home
 Debe responder: **¿qué tengo que hacer ahora?**
 
-- Online/Offline;
-- oportunidad relevante;
-- trabajo activo;
-- próxima acción;
-- demanda cercana;
-- ganancias retenidas/protegidas sólo cuando aplique;
-- ganancias liberadas;
-- alertas;
-- Hugo.
+## Demanda
+Señal agregada de dónde puede existir trabajo; no es una oportunidad concreta.
 
-## 6.3 Demanda
-
-Responde: **¿dónde hay trabajo para mí?**
-
-Demanda es señal de mercado agregada:
+## Oportunidad
 
 ```text
-zona · volumen · categoría · urgencia
-valor estimado · tendencia · cobertura
+serviceId · trabajo · zona/distancia · cuándo · valor
+contexto/evidencia autorizada · match
+→ aceptar/rechazar
+→ asignación atómica
 ```
 
-## 6.4 Oportunidades
-
-Oportunidad es trabajo concreto autorizado para decisión del proveedor:
-
-```text
-serviceId · categoría · zona · distancia · antigüedad
-contexto/evidencia autorizada · valor · condiciones · match
-```
-
-```text
-Nueva oportunidad
-→ detalle
-→ aceptar o rechazar
-→ validación atómica
-→ asignación
-→ esperar método de pago habilitado
-→ misión activa
-```
-
-## 6.5 Misión activa
+## Misión activa
 
 ```text
 método habilitado
 → En camino
 → Llegué
 → evidencia inicial cuando corresponda
-→ iniciar
+→ Iniciar
 → ejecutar
 → ampliación opcional
 → evidencia final
-→ solicitar finalización
+→ cierre según método
 → aprobación/disputa
-→ cobro/cierre según método
 ```
 
 ---
 
-# 7. Ampliar servicio
+# 7. Hugo · mejor amigo de UGO
 
-Categoría: **Mejoras de flujo de trabajo**.
-
-```text
-Cliente o Proveedor detecta trabajo adicional
-→ propuesta: descripción + tiempo + costo
-→ Cliente aprueba/rechaza
-→ registro auditable
-→ reconciliación según método de pago
-→ continúa servicio
-```
-
-Electrónico protegido puede requerir ajuste/reautorización. Efectivo registra el nuevo importe/obligación sin fingir custodia electrónica.
-
----
-
-# 8. Finalización y disputa
-
-Proveedor:
-
-```text
-trabajo terminado
-→ evidencia final
-→ solicitar aprobación
-```
+Hugo no es un chatbot lateral. Es una **capa de interacción transversal**.
 
 Cliente:
 
 ```text
-revisar resultado
-→ aprobar
-  o
-→ abrir disputa
+entiende lenguaje natural
+califica la necesidad
+propone tipo de solución/profesional
+completa el draft mientras conversa
+pide sólo lo faltante
+explica por qué necesita una foto/dato
+resume antes de confirmar
+acompaña matching y servicio
+ayuda ante dudas o problemas
 ```
 
-En electrónico, la resolución puede liberar/reembolsar fondos según reglas. En efectivo, UGO no promete reembolso automático de dinero que no custodia; Admin registra y resuelve la incidencia con las herramientas disponibles.
+Proveedor:
+
+```text
+prepara checklist
+ayuda con diagnóstico y seguridad
+sugiere ampliación cuando corresponda
+ayuda a documentar evidencia
+acompaña cierre y aprendizaje
+```
+
+Reglas obligatorias:
+
+1. Orbe disponible durante los momentos principales sin tapar CTA críticos.
+2. Voz y texto comparten contexto y draft.
+3. Hugo no repregunta información confiablemente entendida.
+4. Hugo propone; el humano confirma decisiones importantes.
+5. Nunca inventa disponibilidad, precio, profesional, pago o estado.
+6. Nunca salta permisos, backend guards o aprobación requerida.
 
 ---
 
-# 9. Reputación
-
-Después del cierre:
+# 8. Ampliar servicio
 
 ```text
-calificación
-+ comentario
-+ calidad
-+ puntualidad
-+ comunicación
-+ cumplimiento
-→ reputación/karma
+se detecta trabajo adicional
+→ propuesta: qué + tiempo + costo
+→ Cliente aprueba/rechaza
+→ registro auditable
+→ ajuste según método de pago
+→ continuar
 ```
 
-La reputación debe provenir de servicios reales elegibles y ser resistente a abuso.
+Debe sentirse como parte del servicio actual, no como comenzar otro formulario.
 
 ---
 
-# 10. Evidencias
+# 9. Finalización
 
-## Solicitud
-Antes del matching: contexto para decidir correctamente.
+Electrónico:
 
-## Operacional
 ```text
-Antes · Durante · Después · Documento
+evidencia final
+→ solicitar revisión
+→ cliente aprueba/disputa
+→ liberación/reembolso según reglas
+→ completado
 ```
 
-Acceso sólo a participantes autorizados y operación/admin según permisos.
+Efectivo:
+
+```text
+evidencia final
+→ proveedor confirma recepción
+→ cliente revisa y aprueba/disputa
+→ completado
+```
+
+Después del cierre: calificación breve, comentario opcional, historial y posibilidad inmediata de pedir otro servicio.
 
 ---
 
-# 11. Hugo
+# 10. Recuperación
 
-Antes: checklist, materiales, seguridad y contexto.  
-Durante: diagnóstico, pasos, incidencias y sugerencia de ampliación.  
-Después: checklist final, evidencia, resumen y aprendizaje.
-
-Hugo nunca salta permisos, pagos, estados ni aprobación humana requerida.
-
----
-
-# 12. Admin / Super Admin
-
-Admin:
+Todo paso crítico contempla:
 
 ```text
-Dashboard operacional
-Clientes
-Proveedores/KYC
-Servicios
-Finanzas/retiros
-Disputas
-Calidad
-Reportes
-Scout
-```
-
-Super Admin:
-
-```text
-roles/permisos
-categorías/zonas
-comisiones
-matching
-integraciones
-feature flags
-configuración global
-auditoría
-```
-
----
-
-# 13. Scout y Academia
-
-Scout:
-
-```text
-Dato → interpretación → recomendación → acción → resultado
-```
-
-Academia:
-
-```text
-gap de calidad
-→ diagnóstico
-→ formación
-→ evaluación/certificación
-→ mejora de perfil/calidad
-→ mejores resultados
-```
-
-Ninguna de las dos capacidades modifica por sí sola estados críticos de servicio.
-
----
-
-# 14. Recuperación
-
-Todo tramo crítico debe contemplar:
-
-```text
-timeout
-rechazo
+sin conexión
+error de voz
+foto fallida
 sin proveedor
-sin pago/método
-error de red
+rechazo
+timeout
+método de pago fallido
 reconexión
 cancelación
-reintento
-reasignación cuando corresponda
+reintento/reasignación
 ```
 
-La recuperación forma parte del flujo, no es un caso secundario.
+La recuperación conserva el draft y el `serviceId` cuando corresponda. Un error técnico nunca obliga a reconstruir la solicitud desde cero sin necesidad.
 
 ---
 
-# 15. E2E de referencia
+# 11. E2E de referencia
 
 ```text
-Cliente login/onboarding
-→ solicitud + evidencia
+Cliente abre UGO
+→ habla/escribe a Hugo
+→ Hugo entiende y estructura
+→ cliente confirma pocos pasos
+→ foto si aporta valor
+→ cuándo/ubicación
+→ resumen y Confirmar solicitud
 → matching
-→ oportunidad mismo serviceId
-→ Proveedor analiza y acepta
-→ asignación única
-→ pago electrónico protegido O efectivo seleccionado
-→ en camino
+→ proveedor acepta
+→ cliente elige/usa método de pago
+→ proveedor en camino
 → llegada
-→ evidencia inicial
-→ ejecución
-→ ampliación opcional aprobada
+→ trabajo
 → evidencia final
-→ solicitud de finalización
-→ Cliente aprueba O disputa
-→ cierre/cobro según método
-→ reputación/historial
-→ datos disponibles para Admin/Scout
+→ cierre según método
+→ cliente conforme/disputa
+→ calificación
+→ listo para otro servicio
 ```
 
 ---
 
-# 16. Regla final
+# 12. Regla final
 
-**UGO debe hacer simple una operación compleja sin ocultar la verdad del estado, del dinero ni de la responsabilidad de cada actor.**
+**El Cliente cuenta el problema; Hugo y UGO convierten ese problema en una solución. La persona confirma, no administra la complejidad. Si pedir un servicio requiere aprender cómo funciona UGO, el flujo está mal diseñado.**
