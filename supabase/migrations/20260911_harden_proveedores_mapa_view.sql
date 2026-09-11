@@ -91,11 +91,37 @@ $$;
 revoke execute on function private.proveedores_mapa_publicos() from public, anon;
 grant execute on function private.proveedores_mapa_publicos() to authenticated, service_role;
 
+-- PostgreSQL no conserva los typmods numeric(n,s)/char(n) a través de una
+-- función RETURNS TABLE. Los casts explícitos mantienen exactamente los tipos
+-- de la vista histórica para que CREATE OR REPLACE VIEW no cambie el contrato.
 create or replace view public.proveedores_mapa
 with (security_invoker = true)
 as
-select *
-from private.proveedores_mapa_publicos();
+select
+  p.id,
+  p.nombre,
+  p.foto_url,
+  p.karma::numeric(3,2) as karma,
+  p.servicios_completados,
+  p.tarifa_base::numeric(12,2) as tarifa_base,
+  p.online,
+  p.disponible,
+  p.estado_verificacion,
+  p.categoria_principal_id,
+  p.categoria_nombre,
+  p.categoria_emoji,
+  p.lat,
+  p.lng,
+  p.pais::character(2) as pais,
+  p.zona,
+  p.bio,
+  p.experiencia_anos,
+  p.especialidades,
+  p.idiomas,
+  p.disponibilidad_horaria,
+  p.telefono_profesional,
+  p.ciudad_base
+from private.proveedores_mapa_publicos() p;
 
 revoke all on table public.proveedores_mapa from public, anon;
 grant select on table public.proveedores_mapa to authenticated, service_role;
