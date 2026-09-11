@@ -38,7 +38,10 @@ jobs:
         run: npx eslint src/mvp/MvpApp.tsx src/mvp/PaymentTimeline.tsx src/mvp/provider/ProviderActiveJob.tsx
 
       - name: Lint ClientApp excluding registered legacy effect debt
-        run: npx eslint src/mvp/ClientApp.tsx --rule 'react-hooks/set-state-in-effect: off' --rule 'no-empty: off'
+        run: >-
+          npx eslint src/mvp/ClientApp.tsx
+          --rule 'react-hooks/set-state-in-effect: off'
+          --rule 'no-empty: off'
 
       - name: Full repository lint debt report
         continue-on-error: true
