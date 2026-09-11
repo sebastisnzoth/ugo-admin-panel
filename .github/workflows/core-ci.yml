@@ -39,6 +39,9 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
+      - name: Core lifecycle contract tests
+        run: npm test
+
       - name: Lint critical operational surfaces
         run: >-
           npx eslint
