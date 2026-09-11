@@ -10,7 +10,7 @@ export function ClientPixPaymentPanel({service,accessToken}:Props){
  const[demoAllowed,setDemoAllowed]=useState(false)
  const[busy,setBusy]=useState(false)
  const[msg,setMsg]=useState('')
- const load=useCallback(async()=>{const{data}=await supabase.from('pagos').select('estado,metodo,pix_copia_cola,pix_qr_code,pix_expira_at,mp_payment_id,pix_informado_at,pix_e2e_id,pix_txid').eq('servicio_id',service.id).limit(1).maybeSingle();setPix((data as PixState|null)||null)},[service.id])
+ const load=useCallback(async()=>{const{data}=await supabase.from('pagos').select('estado,metodo,pix_copia_cola,pix_qr_code,pix_expira_at,mp_payment_id,pix_informado_at,pix_e2e_id,pix_txid,created_at').eq('servicio_id',service.id).order('created_at',{ascending:false}).limit(1).maybeSingle();setPix((data as PixState|null)||null)},[service.id])
  useEffect(()=>{load();supabase.auth.getUser().then(({data})=>setDemoAllowed(Boolean(data.user?.email&&/@ugo\.test$/i.test(data.user.email))));const ch=supabase.channel(`client-pix-${service.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${service.id}`},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,service.id])
  if(!['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'].includes(service.estado))return null
  if(pix?.estado==='retenido'||pix?.estado==='liberado')return null

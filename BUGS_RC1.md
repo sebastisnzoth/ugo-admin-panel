@@ -25,7 +25,7 @@
 - Severidad: MEDIA
 - Descripción: La carga del pago usa `maybeSingle()` con `limit(1)` y sin `order`. Cuando existen varios registros para el mismo servicio, Supabase puede devolver un pago arbitrario o generar un resultado ambiguo; la interfaz puede mostrar un estado PIX desactualizado.
 - Archivo probable: `src/mvp/ClientPixPaymentPanel.tsx`
-- Estado: OPEN
+- Estado: FIXED
 
 ## BUG-004
 
