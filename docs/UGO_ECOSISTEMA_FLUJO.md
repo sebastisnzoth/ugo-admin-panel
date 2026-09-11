@@ -1,6 +1,6 @@
 # UGO — Flujo integral del ecosistema
 
-**Versión:** 2.3 · 11 de septiembre de 2026  
+**Versión:** 2.4 · 11 de septiembre de 2026  
 **Estado:** documento maestro funcional  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
@@ -344,10 +344,16 @@ Comportamiento actual:
 sin pago todavía → el total se ajusta antes del checkout
 efectivo pendiente → el total presencial se reajusta
 pago fallido/reembolsado → se reajusta para el próximo intento
-pago electrónico activo + costo extra → aprobación bloqueada hasta cobrar el delta
+pago electrónico activo + costo extra
+→ checkout electrónico separado por el delta
+→ webhook valida importe/moneda
+→ backend incorpora monto/comisión/neto
+→ ampliación pasa a aprobada + incluida
 ```
 
-El checkout específico de **delta electrónico** es P0 pendiente. Hasta que exista y sea conciliable/idempotente, UGO muestra el bloqueo en vez de prometer una ampliación no financiada. Una ampliación sin costo sí puede aprobarse sin alterar custodia.
+El pago base del servicio no se muta para cobrar el trabajo adicional. El delta tiene referencia/idempotencia propia y sólo después de confirmación real del procesador se incorpora al total del servicio. Si el intento falla, la ampliación sigue pendiente y puede reintentarse. Si un ajuste ya aplicado luego es reembolsado, UGO lo marca como `pendiente_ajuste` y bloquea el cierre normal hasta conciliación.
+
+Una ampliación sin costo puede aprobarse sin alterar custodia.
 
 ---
 
@@ -392,6 +398,7 @@ sin proveedor
 rechazo
 timeout
 método de pago fallido
+ajuste de ampliación fallido/reembolsado
 reconexión
 cancelación
 reintento/reasignación
