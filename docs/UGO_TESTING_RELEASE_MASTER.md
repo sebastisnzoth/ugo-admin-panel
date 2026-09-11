@@ -1,203 +1,152 @@
 # UGO — Testing & Release Master
 
-**Versión:** 1.0 · 11 de septiembre de 2026  
+**Versión:** 1.1 · 11 de septiembre de 2026  
 **Estado:** contrato de calidad y salida a producción  
-**Rama de integración:** `main`
+**Rama de integración:** `main`  
+**Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
-> Un commit no significa que una función esté terminada. UGO sólo considera una entrega lista cuando código, dominio, seguridad, UX y despliegue fueron verificados.
+> `IMPLEMENTADO ≠ VALIDADO ≠ RELEASED`. Un commit no significa que una función esté terminada. Roadmap sólo puede marcar `HECHO` cuando se satisface la validación requerida por este documento.
 
 ---
 
 # 1. Quality Gates
 
-Orden mínimo:
-
 ```text
-TypeScript
-→ Build
-→ Lint
-→ Unit/contract tests disponibles
+TypeScript → Build → Lint
+→ Domain/Security
 → flujo funcional
 → roles/RLS
-→ Realtime
+→ Realtime/Storage
 → responsive/accessibility
 → integración externa
+→ E2E
 → deploy/CI
 → smoke production
 ```
-
-Build canónico:
 
 ```bash
 npm run build
 # tsc -b && vite build
 ```
 
-No declarar “build OK” sin haberlo ejecutado o disponer de CI confirmado.
+No declarar “build OK”, “deploy OK” o “E2E OK” sin evidencia de ejecución/CI.
 
 ---
 
-# 2. Niveles de prueba
+# 2. Niveles
 
 ```text
-L0 Static      TypeScript/lint
-L1 Component   componentes/estados
-L2 Domain      RPC/API/transiciones
-L3 Integration Supabase/Realtime/Storage/pagos/mapas
-L4 E2E         Cliente ↔ Proveedor ↔ Admin
-L5 Release     deploy + smoke + rollback readiness
+L0 Static       TypeScript/lint
+L1 Component    componentes + estados UX
+L2 Domain       RPC/API/transiciones/constraints
+L3 Security     RLS/roles/Storage
+L4 Integration  Supabase/Realtime/pagos/mapas
+L5 E2E          Cliente ↔ Proveedor ↔ Admin
+L6 Release      deploy + smoke + rollback readiness
 ```
 
 ---
 
-# 3. Matriz E2E crítica
-
-## Cliente → Proveedor
+# 3. E2E ecosistémico crítico
 
 ```text
-registro/login
-→ solicitud + fotos
+Cliente registro/login
+→ solicitud + evidencia previa
 → matching
-→ oportunidad proveedor
-→ análisis evidencia
-→ aceptar
-→ asignación
-→ pago/efectivo
+→ oportunidad vinculada al mismo serviceId
+→ Proveedor analiza evidencia
+→ acepta
+→ asignación única
+→ pago electrónico O efectivo seleccionado
 → en camino
 → llegada
 → evidencia antes
 → iniciar
-→ durante
-→ ampliar servicio opcional
+→ evidencia durante
+→ ampliación opcional + aprobación Cliente
 → evidencia final
-→ finalizar
-→ aprobación/disputa
-→ cobro
+→ solicitar finalización
+→ Cliente aprueba O disputa
+→ cierre/cobro según método
 → calificación/historial
+→ datos disponibles para Admin/Scout
 ```
 
-Cada release que toque el core debe probar el tramo afectado y al menos un smoke del circuito completo.
+Este es el smoke funcional de referencia del ecosistema.
 
 ---
 
 # 4. Cliente
 
-Verificar:
-
-- onboarding/auth/recovery;
-- Home/Radar;
-- búsqueda/categoría;
-- formulario solicitud;
-- evidencia previa;
-- matching vacío/lento/error;
-- proveedor seleccionado;
-- pago electrónico y efectivo;
-- tracking/ETA;
-- servicio activo;
-- ampliación;
-- evidencia/revisión final;
-- disputa;
-- historial;
-- offline/retry.
+Verificar auth/recovery, onboarding, Home/Radar, búsqueda, solicitud, evidencia previa integrada, matching, proveedor seleccionado, pago electrónico/efectivo, tracking/ETA, servicio activo, ampliación, evidencia final, aprobación/disputa, historial, notificaciones y offline/retry.
 
 ---
 
 # 5. Proveedor
 
-Verificar:
-
-- onboarding/verificación;
-- online/offline;
-- Home;
-- Demanda;
-- Oportunidades;
-- fotos previas del cliente;
-- aceptar/rechazar y doble click;
-- trabajo activo;
-- lifecycle de llegada;
-- evidencia antes/durante/después;
-- ampliación;
-- confirmación efectivo;
-- cierre/cobro;
-- Realtime y reconexión.
+Verificar onboarding/verificación, online/offline, Home, Demanda, Oportunidades, `serviceId`, evidencia previa, aceptar/rechazar, concurrencia, trabajo activo, llegada, evidencia operacional, ampliación, efectivo, cierre/cobro, Realtime/reconexión y ausencia de dependencia funcional de `ProviderApp` legacy.
 
 ---
 
 # 6. Admin / Super Admin
 
-Verificar permisos positivos y negativos:
-
-- operaciones;
-- personas/verificación;
-- finanzas/retiros;
-- disputas;
-- Scout;
-- configuración;
-- feature flags/roles cuando correspondan;
-- auditoría de acciones críticas.
-
-Un usuario Cliente/Proveedor nunca debe obtener privilegios Admin manipulando UI o query params.
+Pruebas positivas y negativas sobre operaciones, personas/KYC, finanzas/retiros, disputas, Scout, configuración, roles, feature flags y auditoría. Query params o UI nunca deben escalar privilegios.
 
 ---
 
 # 7. RLS / Seguridad
 
-Para cada tabla sensible probar como mínimo:
+Para cada tabla/bucket sensible:
 
 ```text
-actor dueño/autorizado → permitido
-otro cliente           → denegado
-otro proveedor         → denegado
-anónimo                 → denegado salvo dato público explícito
-admin                   → sólo según policy/privilegio
+dueño/participante autorizado → permitido
+otro cliente                  → denegado
+otro proveedor                → denegado
+anónimo                        → denegado salvo público explícito
+admin                          → según privilegio real
 ```
 
-Incluir Storage: upload/read/delete y signed URLs.
+Incluir upload/read/delete, signed URLs y expiración.
 
 ---
 
 # 8. Pagos
 
-Matriz mínima:
+## Electrónico
 
 ```text
-electrónico éxito
+éxito
 fallo
 retry
-webhook/evento duplicado
+webhook duplicado
+protección/retención
 liberación
 reembolso/disputa
-ampliación con pago protegido
-
-efectivo seleccionado
-inicio permitido
-confirmación proveedor
-registro final
-intento de doble confirmación
+ampliación con pendiente_ajuste
 ```
 
-Nunca mezclar DEMO y REAL en validación financiera.
+## Efectivo
+
+```text
+selección
+servicio habilitado
+confirmación proveedor
+registro final
+doble confirmación
+cierre Cliente
+```
+
+Aserción obligatoria: ninguna UI/estado describe efectivo como electrónicamente protegido.
 
 ---
 
 # 9. Realtime
 
-Probar:
-
-- evento recibido una vez;
-- actualización correcta;
-- cleanup de subscription;
-- reconexión;
-- cambio de servicio/usuario;
-- evento duplicado;
-- fallback refetch;
-- múltiples pestañas cuando sea relevante.
+Evento una vez, actualización correcta, cleanup, reconexión, cambio de usuario/servicio, duplicado, fallback refetch y múltiples pestañas cuando aplique. Cliente y Proveedor deben converger al mismo estado persistido.
 
 ---
 
 # 10. Responsive
-
-Viewports mínimos:
 
 ```text
 360×800
@@ -208,73 +157,60 @@ Viewports mínimos:
 1440 desktop
 ```
 
-Validar safe areas, teclado móvil, scroll, bottom sheets, navegación, mapas, modales, formularios y targets ≥48px.
-
-Desktop Web debe ser shell responsive real, no mobile estirado.
+Validar safe areas, teclado, scroll, sheets, navegación, mapas, modales, formularios y targets `≥48px`. Desktop es shell real, no mobile estirado.
 
 ---
 
 # 11. Accesibilidad
 
-- contraste WCAG AA;
-- foco visible;
-- teclado web;
-- labels/aria cuando corresponda;
-- estados no dependientes sólo del color;
-- reduced motion;
-- mensajes de error accionables;
-- orden de lectura lógico.
+WCAG AA, foco visible, teclado web, labels/aria, estados no sólo por color, reduced motion, errores accionables y orden lógico.
 
 ---
 
-# 12. Estados UX obligatorios
-
-Toda superficie de datos:
+# 12. Estados UX
 
 ```text
-loading
-loaded
-empty
-error
-retry
-offline/degraded
+DATA: loading → loaded / empty / error→retry / offline
+MUTATION: idle → submitting → success / error→recovery
 ```
 
-Toda mutación:
-
-```text
-idle → submitting → success
-                  ↘ error → recovery
-```
-
-Probar doble envío y navegación durante submitting.
+Probar doble envío y salida de pantalla durante submitting.
 
 ---
 
-# 13. Mapas y geolocalización
+# 13. Mapas/geolocalización
 
-Probar permiso aceptado/denegado, ubicación no disponible, proveedor sin posición, routing fallido, ETA ausente y fallback textual/lista. El mapa no puede ser single point of failure del servicio.
+Permiso aceptado/denegado, ubicación ausente, proveedor sin posición, routing fallido, ETA ausente y fallback textual/lista. Mapa nunca es single point of failure.
 
 ---
 
 # 14. Evidencias
 
-Solicitud: upload, preview, delete/retry, vínculo al servicio, acceso del proveedor autorizado, bloqueo de terceros.  
-Operacional: antes/durante/después, signed URL, lifecycle, guard de inicio/cierre.
+Solicitud: upload, preview, delete/retry, vínculo inequívoco a draft/servicio, acceso proveedor autorizado y bloqueo de terceros.
+
+Operacional: antes/durante/después, signed URL y guards backend de inicio/cierre.
 
 ---
 
 # 15. Ampliaciones
 
-Probar Cliente y Proveedor como proponentes, aprobación/rechazo, doble resolución, costo/tiempo, cash, sin pago, electrónico protegido y `pendiente_ajuste`.
+Cliente y Proveedor como proponentes, aprobación/rechazo, doble resolución, costo/tiempo, cash, sin pago, electrónico protegido y `pendiente_ajuste`. Cliente es autoridad de aprobación del alcance adicional.
 
 ---
 
-# 16. CI / Vercel
+# 16. Hugo / Scout / Academia
 
-Un release requiere evidencia del estado de CI/deploy. Si GitHub no presenta checks, registrar que el estado es desconocido y hacer verificación por entorno disponible.
+Hugo: comprobar que no pueda ejecutar acciones fuera del permiso/estado del usuario.  
+Scout: recomendaciones basadas en datos autorizados y sin PII innecesaria.  
+Academia: progreso/certificación no debe otorgar privilegios operativos sin reglas de dominio explícitas.
 
-Smoke post-deploy:
+---
+
+# 17. CI / Vercel
+
+Release requiere evidencia del estado CI/deploy. Si no hay checks, estado = `DESCONOCIDO`, no `OK`.
+
+Smoke:
 
 ```text
 landing
@@ -288,74 +224,71 @@ Supabase auth/data
 
 ---
 
-# 17. Rollback
+# 18. Rollback
 
-Antes de cambios de alto riesgo:
-
-- commit anterior identificado;
-- migraciones evaluadas por reversibilidad/forward fix;
-- no depender de borrar datos para rollback;
-- feature flag cuando el riesgo lo justifique;
-- preservar compatibilidad frontend/backend durante despliegues graduales.
+Commit anterior identificado, migraciones evaluadas, evitar rollback destructivo, feature flags para riesgo alto y compatibilidad gradual frontend/backend.
 
 ---
 
-# 18. Severidad
+# 19. Severidad
 
 ```text
-P0 bloquea producción: seguridad, pérdida de datos, dinero, auth, core roto
-P1 alta: flujo principal degradado, Realtime/UX crítico
-P2 media: función secundaria/consistencia
-P3 baja: polish/documentación
+P0 seguridad · pérdida de datos · dinero · auth · core roto
+P1 flujo principal degradado · Realtime/UX crítico
+P2 función secundaria · consistencia · escala
+P3 polish · expansión no crítica
 ```
 
 No lanzar con P0 conocido.
 
 ---
 
-# 19. Definition of Done
-
-Una tarea sólo es DONE cuando:
+# 20. Definition of Done ecosistémica
 
 ```text
-código integrado
-TypeScript/build OK
-contrato funcional respetado
-RLS/API revisados si aplica
-happy/error/offline probados
-responsive probado
-accesibilidad básica
-Realtime probado si aplica
-pagos probados si aplica
-documentación actualizada
-CI/deploy verificado o marcado explícitamente como pendiente
+flujo funcional definido
+UI/UX compatible
+arquitectura correcta
+datos/RLS/RPC correctos
+Realtime/Storage si aplica
+happy/error/offline
+responsive/accesibilidad
+TypeScript/build
+E2E del tramo
+CI/deploy verificado o explícitamente pendiente
+documentos autoridad actualizados
+Roadmap actualizado
 ```
 
 ---
 
-# 20. Release Checklist
+# 21. Release Checklist
 
 ```text
 [ ] main contiene cambios esperados
-[ ] no se arrastraron archivos históricos no deseados
+[ ] no arrastra históricos no deseados
 [ ] npm run build
 [ ] lint
-[ ] flujo afectado probado
+[ ] flujo afectado
+[ ] serviceId/estado compartido entre roles
 [ ] permisos/RLS
 [ ] Realtime
-[ ] pagos
+[ ] pagos y método correcto
 [ ] Storage/evidencia
+[ ] ampliaciones si aplica
 [ ] mobile 390×844
 [ ] desktop
 [ ] accesibilidad
+[ ] Hugo/Scout si aplica
 [ ] CI/Vercel
 [ ] smoke
-[ ] rollback conocido
-[ ] docs maestros actualizados
+[ ] rollback
+[ ] maestros actualizados
+[ ] Roadmap refleja validación real
 ```
 
 ---
 
-# 21. Regla final
+# 22. Regla final
 
-**UGO no está listo porque se ve bien; está listo cuando el circuito real funciona, está protegido y puede recuperarse de errores.**
+**UGO no está listo porque existe código o porque se ve bien; está listo cuando el circuito real funciona, está protegido, es coherente entre roles y puede recuperarse de errores.**
