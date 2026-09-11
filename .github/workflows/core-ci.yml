@@ -44,6 +44,9 @@ jobs:
           npx eslint
           src/mvp/MvpApp.tsx
           src/mvp/client/ClientRoot.tsx
+          src/mvp/client/ClientGuidedRequest.tsx
+          src/mvp/client/ClientPaymentChoice.tsx
+          src/mvp/client/ClientHugoBridge.tsx
           src/mvp/NotificationCenter.tsx
           src/mvp/PaymentTimeline.tsx
           src/mvp/ClientLiveTracking.tsx
