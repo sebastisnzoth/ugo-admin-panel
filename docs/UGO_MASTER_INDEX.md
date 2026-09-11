@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -143,11 +143,10 @@ Testing determina si algo está validado. Development determina cómo cambiarlo.
 
 # 5. Contrato transversal de servicio
 
-Estado conceptual único:
+Estado persistido canónico actual:
 
 ```text
-solicitado → buscando → ofertado → asignado
-→ pago_pendiente / pago_habilitado
+borrador → buscando → ofrecido → asignado
 → en_camino → llegado → en_progreso
 → esperando_aprobacion → completado
 ```
@@ -155,10 +154,18 @@ solicitado → buscando → ofertado → asignado
 Excepciones:
 
 ```text
-cancelado · disputado · reembolsado
+cancelado · disputado
 ```
 
-`pago_protegido` **no es un estado universal del servicio**. Sólo aplica a métodos electrónicos con custodia.
+Entre `asignado` y `en_camino` existe una condición financiera obligatoria, no un estado paralelo de servicio:
+
+```text
+pago electrónico realmente retenido/protegido
+O
+efectivo explícitamente seleccionado
+```
+
+`pago_pendiente`, `pago_habilitado` y `pago_protegido` pueden describir condiciones financieras/UX, pero **no son estados persistidos de `servicios`** salvo migración explícita futura.
 
 Proveedor operacional:
 
@@ -201,9 +208,16 @@ Cliente crea solicitud + evidencia
 → Proveedor autorizado analiza
 → acepta/rechaza
 → aceptación atómica y asignación única
+→ tarifa real fijada
 → ambos observan el mismo servicio persistido
 → método de pago habilita ejecución
-→ evidencia + aprobación cierran
+→ tracking durante traslado
+→ llegada validada cuando corresponde
+→ evidencia Antes
+→ inicio
+→ evidencia Después
+→ aprobación/disputa
+→ cierre
 ```
 
 `serviceId` es la identidad transversal del trabajo.
@@ -235,6 +249,7 @@ Un commit o una pantalla visible **no** significan `HECHO`.
 10. Academia mejora calidad; no entrega privilegios sin reglas de dominio.
 11. Toda expansión debe justificar impacto en conversión, confianza, eficiencia o retención.
 12. Cero lock-in innecesario y costos controlados mientras UGO valida mercado.
+13. Los maestros se actualizan en el mismo bloque que cambia el contrato real de `main`.
 
 ---
 
