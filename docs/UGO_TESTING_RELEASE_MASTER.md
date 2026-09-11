@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.3 · 11 de septiembre de 2026  
+**Versión:** 2.4 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
@@ -45,14 +45,17 @@ Archivo inicial:
 
 `tests/contracts/core-lifecycle.test.mjs`
 
-Cobertura inicial:
+Cobertura actual:
 
 ```text
 radio llegada UI/backend = 200 m
 evidencia Antes/Durante/Después respeta lifecycle
 guards de inicio/finalización por evidencia
 efectivo sigue modelo presencial
-ampliación electrónica con costo no se aprueba sin ajuste
+ampliación electrónica activa usa checkout separado de delta
+checkout de ampliación lleva idempotency key y external_reference propio
+webhook detecta ampliacion_id y llama confirmar_pago_ampliacion
+RPC valida monto antes de incorporar el delta
 ClientCompletionReview respeta ownership + proveedor asignado
 ```
 
@@ -207,16 +210,20 @@ monto extra 0 → cliente puede aprobar sin alterar fondos
 sin pago creado + monto extra → total/comisión/neto se actualizan antes del checkout
 efectivo pendiente + monto extra → servicio y pago se reajustan al mismo total
 pago fallido/reembolsado + monto extra → servicio se reajusta y exige nuevo intento
-pago electrónico activo + monto extra → aprobación rechazada hasta cobrar delta
-UI con pago electrónico activo → no ofrece aprobación engañosa del monto extra
-ampliación histórica aprobada + pendiente_ajuste → servicio no puede pasar a esperando_aprobacion
-doble aprobación → determinista, sin doble incremento
-actor no cliente → resolución denegada
+pago electrónico activo + monto extra → checkout de delta separado
+checkout pendiente → se reutiliza y no duplica preferencia intencionalmente
+webhook approved + monto/moneda válidos → RPC incorpora delta y aprueba ampliación
+webhook approved + monto/moneda inválidos → no incorpora delta
+webhook rechazado/cancelado → ampliación sigue pendiente y permite retry
+webhook duplicado approved → idempotente, sin doble incremento
+ajuste ya aplicado + refunded → pago_estado vuelve a pendiente_ajuste y bloquea cierre
+ampliación aprobada + pendiente_ajuste → servicio no pasa a esperando_aprobacion
+actor no cliente → no puede iniciar checkout/resolver ampliación
 ```
 
 Aserción P0: **ningún trabajo adicional con costo queda aprobado si su impacto financiero no está incorporado o financiado según el método.**
 
-El futuro checkout de delta electrónico deberá agregar pruebas de creación, idempotencia, conciliación, webhook y recuperación antes de retirar este bloqueo preventivo.
+La implementación actual cubre contrato estático y migración en producción. Falta E2E real del procesador, webhook duplicado/reembolso y RPC/RLS ejecutados contra base de prueba antes de considerar este tramo VALIDATED.
 
 ---
 
@@ -263,6 +270,8 @@ dos proveedores aceptando misma oportunidad
 doble click
 doble webhook
 doble confirmación efectivo
+doble checkout ampliación
+doble confirmación pago ampliación
 doble aprobación ampliación
 doble cierre
 doble retiro
@@ -336,6 +345,7 @@ reconexión
 sin proveedor
 rechazo
 sin método de pago
+checkout adicional fallido/reembolsado
 cancelación
 retry
 ```
