@@ -10,24 +10,64 @@ import{useClientFlow}from'./clientFlow'
 type Step='idle'|'need'|'photo'|'when'|'review'|'matching'
 type When='ahora'|'hoy'|'programar'
 type Draft={description:string;categoryId:string;categoryName:string;categorySlug:string;address:string;when:When;scheduleAt:string;urgent:boolean;amount:number|null}
+type RateRow={tarifa_base:number|null}
+
 const emptyDraft:Draft={description:'',categoryId:'',categoryName:'',categorySlug:'',address:'',when:'hoy',scheduleAt:'',urgent:false,amount:null}
-const ACTIVE_SERVICE_STATES=['solicitado','buscando','ofrecido','asignado','pago_pendiente','pago_habilitado','en_camino','llegado','en_progreso','esperando_aprobacion']
+const ACTIVE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
 const MATCHING_STATES=['buscando','ofrecido']
+
 function normalize(v:string){return v.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function categoryByHint(categories:Category[],hint:string){const q=normalize(hint);return categories.find(c=>[c.nombre,c.slug].some(v=>{const n=normalize(String(v||''));return n.includes(q)||q.includes(n)}))||null}
 
 export function ClientGuidedRequest(){
  const flow=useClientFlow()
  const auth=useRoleSession('client'),{supabase,session}=auth
- const[categories,setCategories]=useState<Category[]>([]),[step,setStep]=useState<Step>('idle'),[draft,setDraft]=useState<Draft>(emptyDraft),[draftId,setDraftId]=useState(''),[photoCount,setPhotoCount]=useState(0),[photoBusy,setPhotoBusy]=useState(false),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[hasActive,setHasActive]=useState(false),[activeServiceId,setActiveServiceId]=useState(''),[ready,setReady]=useState(false)
+ const[categories,setCategories]=useState<Category[]>([])
+ const[step,setStep]=useState<Step>('idle')
+ const[draft,setDraft]=useState<Draft>(emptyDraft)
+ const[draftId,setDraftId]=useState('')
+ const[photoCount,setPhotoCount]=useState(0)
+ const[photoBusy,setPhotoBusy]=useState(false)
+ const[busy,setBusy]=useState(false)
+ const[message,setMessage]=useState('')
+ const[hasActive,setHasActive]=useState(false)
+ const[activeServiceId,setActiveServiceId]=useState('')
+ const[ready,setReady]=useState(false)
  const progress=step==='need'?1:step==='photo'?2:step==='when'?3:step==='review'?4:step==='matching'?5:0
  const selectedCategory=useMemo(()=>categories.find(c=>c.id===draft.categoryId)||null,[categories,draft.categoryId])
  const storageKey=session?`ugo:guided-request-draft:${session.user.id}`:''
 
- const estimate=useCallback(async(categoryId:string)=>{const{data}=await supabase.from('proveedores_mapa').select('tarifa_base').eq('categoria_principal_id',categoryId).eq('online',true).eq('disponible',true).limit(8);const values=(data||[]).map((p:any)=>Number(p.tarifa_base)).filter((n:number)=>Number.isFinite(n)&&n>0).sort((a:number,b:number)=>a-b);return values.length?values[Math.floor(values.length/2)]:null},[supabase])
- const load=useCallback(async()=>{if(!session){setReady(false);return}const[{data:cats},{data:profile},{data:active}]=await Promise.all([supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),supabase.from('perfiles_cliente').select('direccion,barrio,ciudad,onboarding_completo_at,termos_aceitos_at').eq('usuario_id',session.user.id).maybeSingle(),supabase.from('servicios').select('id,estado').eq('cliente_id',session.user.id).in('estado',ACTIVE_SERVICE_STATES).order('created_at',{ascending:false}).limit(1)]);const p=profile as{direccion?:string|null;barrio?:string|null;ciudad?:string|null;onboarding_completo_at?:string|null;termos_aceitos_at?:string|null}|null;setReady(Boolean(p?.onboarding_completo_at&&p?.termos_aceitos_at));setCategories((cats||[])as Category[]);const activeRow=(active||[])[0]as{id:string;estado:string}|undefined;setHasActive(Boolean(activeRow));setActiveServiceId(activeRow?.id||'');const address=[p?.direccion,p?.barrio,p?.ciudad].filter(Boolean).join(', ');let restored:Partial<Draft>={};try{restored=JSON.parse(sessionStorage.getItem(`ugo:guided-request-draft:${session.user.id}`)||'{}')}catch{}setDraft(v=>({...v,address:v.address||address,...restored}));let id='';try{id=sessionStorage.getItem(`ugo:guided-request:${session.user.id}`)||''}catch{}if(!id)id=crypto.randomUUID();setDraftId(id);try{sessionStorage.setItem(`ugo:guided-request:${session.user.id}`,id)}catch{}},[session,supabase])
- useEffect(()=>{void load()},[load])
- useEffect(()=>{if(!storageKey)return;try{sessionStorage.setItem(storageKey,JSON.stringify(draft))}catch{}},[draft,storageKey])
+ const estimate=useCallback(async(categoryId:string)=>{
+  const{data}=await supabase.from('proveedores_mapa').select('tarifa_base').eq('categoria_principal_id',categoryId).eq('online',true).eq('disponible',true).limit(8)
+  const values=((data||[])as RateRow[]).map(p=>Number(p.tarifa_base)).filter(n=>Number.isFinite(n)&&n>0).sort((a,b)=>a-b)
+  return values.length?values[Math.floor(values.length/2)]:null
+ },[supabase])
+
+ const load=useCallback(async()=>{
+  if(!session){setReady(false);return}
+  const[{data:cats},{data:profile},{data:active}]=await Promise.all([
+   supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),
+   supabase.from('perfiles_cliente').select('direccion,barrio,ciudad,onboarding_completo_at,termos_aceitos_at').eq('usuario_id',session.user.id).maybeSingle(),
+   supabase.from('servicios').select('id,estado').eq('cliente_id',session.user.id).in('estado',ACTIVE_SERVICE_STATES).order('created_at',{ascending:false}).limit(1),
+  ])
+  const p=profile as{direccion?:string|null;barrio?:string|null;ciudad?:string|null;onboarding_completo_at?:string|null;termos_aceitos_at?:string|null}|null
+  setReady(Boolean(p?.onboarding_completo_at&&p?.termos_aceitos_at))
+  setCategories((cats||[])as Category[])
+  const activeRow=(active||[])[0]as{id:string;estado:string}|undefined
+  setHasActive(Boolean(activeRow));setActiveServiceId(activeRow?.id||'')
+  const address=[p?.direccion,p?.barrio,p?.ciudad].filter(Boolean).join(', ')
+  let restored:Partial<Draft>={}
+  try{restored=JSON.parse(sessionStorage.getItem(`ugo:guided-request-draft:${session.user.id}`)||'{}') as Partial<Draft>}catch{restored={}}
+  setDraft(v=>({...v,address:v.address||address,...restored}))
+  let id=''
+  try{id=sessionStorage.getItem(`ugo:guided-request:${session.user.id}`)||''}catch{id=''}
+  if(!id)id=crypto.randomUUID()
+  setDraftId(id)
+  try{sessionStorage.setItem(`ugo:guided-request:${session.user.id}`,id)}catch{console.warn('No se pudo persistir el identificador del pedido guiado.')}
+ },[session,supabase])
+
+ useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
+ useEffect(()=>{if(!storageKey)return;try{sessionStorage.setItem(storageKey,JSON.stringify(draft))}catch{console.warn('No se pudo persistir el borrador guiado.')}},[draft,storageKey])
 
  const applyCategory=useCallback(async(category:Category,text:string,urgent:boolean)=>{const amount=await estimate(category.id);setDraft(v=>({...v,description:text,categoryId:category.id,categoryName:category.nombre,categorySlug:category.slug,urgent,amount}));return category},[estimate])
  const infer=useCallback(async(text:string,hint?:string|null,urgent=false)=>{let category=hint?categoryByHint(categories,hint):null;if(!category){const intent=parseClientIntent(text,categories);category=categories.find(c=>c.id===intent.categoryId)||null;urgent=urgent||intent.urgency}if(category)return applyCategory(category,text,urgent);setDraft(v=>({...v,description:text,urgent}));return null},[applyCategory,categories])
@@ -43,7 +83,22 @@ export function ClientGuidedRequest(){
  function chooseWhen(value:When){setDraft(v=>({...v,when:value,urgent:value==='ahora',scheduleAt:value==='programar'?v.scheduleAt:''}));setMessage('')}
  function continueFromWhen(){if(!draft.address.trim()){setMessage('Confirmá dónde se hará el trabajo.');return}if(draft.when==='programar'&&!draft.scheduleAt){setMessage('Elegí día y hora para programar el servicio.');return}setMessage('');setStep('review')}
 
- async function submit(){if(!session||!draft.categoryId||draft.description.trim().length<5)return;if(photoCount<1){setMessage('Agregá al menos una foto del trabajo antes de enviar la solicitud.');setStep('photo');return}setBusy(true);setMessage('');try{const{data,error}=await supabase.from('servicios').insert({cliente_id:session.user.id,categoria_id:draft.categoryId,estado:'buscando',descripcion:draft.description.trim(),direccion_cliente:draft.address.trim()||null,tarifa:draft.amount,urgencia:draft.urgent,metadata:{source:'hugo-guided-request',request_draft_id:draftId,requested_when:draft.when,scheduled_at:draft.scheduleAt||null,estimated_tariff:draft.amount,demo:false}}).select('id').single();if(error)throw error;if(!data?.id)throw new Error('No se pudo crear la solicitud.');const serviceId=String(data.id);setActiveServiceId(serviceId);setHasActive(true);setStep('matching');const result=await getDispatchProvider().start({serviceId,category:draft.categorySlug||draft.categoryId});const count=Array.isArray(result.raw)?result.raw.length:result.providerId?1:0;setMessage(count?`Listo. UGO avisó a ${count} profesional${count===1?'':'es'} y espera una aceptación.`:'Solicitud creada. UGO sigue buscando un profesional disponible.');try{sessionStorage.removeItem(storageKey)}catch{}setDraft(emptyDraft)}catch(e){setMessage(e instanceof Error?e.message:'No se pudo enviar la solicitud.')}finally{setBusy(false)}}
+ async function submit(){
+  if(!session||!draft.categoryId||draft.description.trim().length<5)return
+  if(photoCount<1){setMessage('Agregá al menos una foto del trabajo antes de enviar la solicitud.');setStep('photo');return}
+  setBusy(true);setMessage('')
+  try{
+   const{data,error}=await supabase.from('servicios').insert({cliente_id:session.user.id,categoria_id:draft.categoryId,estado:'buscando',descripcion:draft.description.trim(),direccion_cliente:draft.address.trim()||null,tarifa:draft.amount,urgencia:draft.urgent,metadata:{source:'hugo-guided-request',request_draft_id:draftId,requested_when:draft.when,scheduled_at:draft.scheduleAt||null,estimated_tariff:draft.amount,demo:false}}).select('id').single()
+   if(error)throw error
+   if(!data?.id)throw new Error('No se pudo crear la solicitud.')
+   const serviceId=String(data.id);setActiveServiceId(serviceId);setHasActive(true);setStep('matching')
+   const result=await getDispatchProvider().start({serviceId,category:draft.categorySlug||draft.categoryId})
+   const count=Array.isArray(result.raw)?result.raw.length:result.providerId?1:0
+   setMessage(count?`Listo. UGO avisó a ${count} profesional${count===1?'':'es'} y espera una aceptación.`:'Solicitud creada. UGO sigue buscando un profesional disponible.')
+   try{sessionStorage.removeItem(storageKey)}catch{console.warn('No se pudo limpiar el borrador guiado.')}
+   setDraft(emptyDraft)
+  }catch(e){setMessage(e instanceof Error?e.message:'No se pudo enviar la solicitud.')}finally{setBusy(false)}
+ }
 
  if(auth.loading||!session||!ready)return null
  if(hasActive&&step==='idle')return null
