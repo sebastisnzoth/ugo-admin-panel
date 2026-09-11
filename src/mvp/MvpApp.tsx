@@ -3,6 +3,8 @@ import{AdminGate}from'./AdminGate'
 import{ClientOnboardingGate}from'./ClientOnboardingGate'
 import{ProviderOnboardingGate}from'./ProviderOnboardingGate'
 import{Launcher}from'./Launcher'
+import{UgoLanding}from'./UgoLanding'
+import{UgoWeb}from'./UgoWeb'
 import{AppLocationButton}from'./AppLocationButton'
 import{DemoSebastianPaymentBridge}from'./DemoSebastianPaymentBridge'
 import{ServiceHistoryPanel}from'./ServiceHistoryPanel'
@@ -11,6 +13,7 @@ import{ClientGlobalMenu}from'./ClientGlobalMenu'
 import{ClientCompletionReview}from'./ClientCompletionReview'
 import{ClientFlowProvider,useClientFlow}from'./client/clientFlow'
 import'./mvp.css'
+import'./ugo-design-system.css'
 import'./ugo-uiux.css'
 import'./mobile-runtime-fixes.css'
 import'./service-history.css'
@@ -21,7 +24,8 @@ export function MvpApp(){
  if(app==='client')return <ClientFlowProvider><ClientRoot/></ClientFlowProvider>
  if(app==='provider')return <div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div>
  if(app==='admin')return<AdminGate/>
- return<Launcher/>
+ if(app==='web')return<UgoWeb/>
+ return<UgoLanding/>
 }
 
 function ClientRoot(){
