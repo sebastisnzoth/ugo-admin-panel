@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.2 · 11 de septiembre de 2026  
+**Versión:** 2.3 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -287,19 +287,29 @@ pago fallido/reembolsado
 → aprobar reajusta el total; el próximo intento de pago usa el total nuevo
 
 pago electrónico activo/protegido + monto_extra > 0
-→ NO aprobar todavía
-→ requiere checkout/reconciliación específica del delta
+→ checkout independiente del delta
+→ preferencia/idempotencia propia
+→ webhook valida monto + moneda
+→ confirmar_pago_ampliacion incorpora monto/comisión/neto
+→ ampliación pasa a aprobada + incluido
 ```
 
-Hasta implementar el checkout electrónico de ajuste, UGO **no puede convertir una ampliación con costo en trabajo aprobado no financiado**. La UI debe mostrar este bloqueo y el backend debe rechazar la aprobación.
+El pago electrónico base **no se reescribe** para cobrar el trabajo adicional. La ampliación registra `ajuste_estado`, procesador, preference/init point, referencia externa, monto, moneda y timestamp del ajuste.
 
-Defensa adicional: `en_progreso → esperando_aprobacion` se bloquea si existe una ampliación aprobada histórica con `pago_estado='pendiente_ajuste'`.
+`api/pagos/ajuste-ampliacion.ts` sólo permite iniciar el checkout al cliente dueño, con ampliación pendiente, servicio activo y pago base electrónico válido. Un checkout pendiente se reutiliza de forma idempotente.
 
-Migración vigente: `20260911222000_service_expansion_payment_guard.sql`.
+`api/pagos/webhook.ts` detecta `ampliacion_id`/`exp:<id>`, valida importe/moneda y sólo entonces llama `confirmar_pago_ampliacion`. Un pago fallido deja la ampliación pendiente para reintento. Si un ajuste ya aplicado luego se reembolsa, `pago_estado` vuelve a `pendiente_ajuste` y el cierre normal queda bloqueado hasta conciliación.
 
-Producción al aplicar el hardening: `ampliaciones_servicio` tenía 0 registros, por lo que no hubo deuda histórica que reparar.
+Defensa adicional: `en_progreso → esperando_aprobacion` se bloquea si existe una ampliación aprobada con `pago_estado='pendiente_ajuste'`.
 
-P0 abierto: construir un mecanismo real de **pago del delta electrónico** y reconciliarlo antes de permitir aprobación/continuación de alcance con costo.
+Migraciones vigentes:
+
+- `20260911222000_service_expansion_payment_guard.sql`
+- `20260911224500_expansion_electronic_checkout.sql`
+
+La segunda migración está aplicada en Supabase producción.
+
+P0 restante: validar webhook duplicado/reembolso/reintento y el journey Cliente↔Proveedor con E2E real; no confundir implementación con validación completa.
 
 ---
 
@@ -409,6 +419,7 @@ asignar proveedor
 cambiar estados críticos
 aprobar ampliación
 confirmar pago/efectivo
+confirmar pago de ampliación
 liberar/reembolsar
 cerrar servicio
 procesar retiro
@@ -433,9 +444,9 @@ provider.on_the_way
 provider.arrived
 service.started
 expansion.proposed
-expansion.resolved
 expansion.payment_adjustment_required
 expansion.payment_adjusted
+expansion.resolved
 service.completion_requested
 service.approved
 payment.released
