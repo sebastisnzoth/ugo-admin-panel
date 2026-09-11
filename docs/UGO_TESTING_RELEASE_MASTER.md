@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
@@ -156,7 +156,28 @@ sin dependencia operacional legacy
 
 ---
 
-# 8. Admin / Super Admin
+# 8. Llegada + evidencia operacional
+
+Casos obligatorios del tramo `en_camino → llegado → en_progreso`:
+
+```text
+pago no habilitado → no puede pasar asignado→en_camino
+pago habilitado → puede pasar asignado→en_camino
+cliente con coordenada + proveedor >200 m → llegado rechazado
+cliente con coordenada + proveedor <=200 m → llegado permitido
+llegado sin foto Antes → en_progreso rechazado
+llegado + foto Antes → en_progreso permitido
+foto Antes fuera de llegado → insert rechazado
+foto Durante fuera de en_progreso → insert rechazado
+foto Después antes de en_progreso → insert rechazado
+en_progreso + foto Después → cierre elegible según método de pago
+```
+
+La UI debe reflejar el mismo radio de 200 m y los mismos tipos de evidencia admitidos por backend; una discrepancia de copy o controles es una regresión P1/P0 según impacto.
+
+---
+
+# 9. Admin / Super Admin
 
 Pruebas positivas y negativas sobre:
 
@@ -175,7 +196,7 @@ Query params o UI nunca escalan privilegios.
 
 ---
 
-# 9. RLS
+# 10. RLS
 
 Para cada tabla/bucket sensible:
 
@@ -190,7 +211,7 @@ Incluir upload/read/delete y signed URLs cuando aplique.
 
 ---
 
-# 10. Concurrencia e idempotencia
+# 11. Concurrencia e idempotencia
 
 Obligatorio probar:
 
@@ -209,7 +230,7 @@ Resultado debe ser determinista y auditable.
 
 ---
 
-# 11. Realtime
+# 12. Realtime
 
 ```text
 evento correcto
@@ -225,7 +246,7 @@ Cliente y Proveedor deben converger al mismo estado persistido.
 
 ---
 
-# 12. Responsive
+# 13. Responsive
 
 Validar:
 
@@ -242,7 +263,7 @@ Safe area, teclado, scroll, nav, mapa, sheet, modal y formularios.
 
 ---
 
-# 13. Accesibilidad
+# 14. Accesibilidad
 
 Objetivo WCAG AA:
 
@@ -260,7 +281,7 @@ errores accionables
 
 ---
 
-# 14. Recuperación
+# 15. Recuperación
 
 Todo E2E crítico debe cubrir:
 
@@ -280,7 +301,7 @@ No basta probar happy path.
 
 ---
 
-# 15. CI / Deploy
+# 16. CI / Deploy
 
 Release requiere evidencia del estado CI/deploy.
 
@@ -301,7 +322,7 @@ Si no hay check verificable: estado `DESCONOCIDO`, nunca asumir `OK`.
 
 ---
 
-# 16. Severidad
+# 17. Severidad
 
 ```text
 P0 seguridad · datos · auth · dinero · core roto
@@ -314,7 +335,7 @@ No release con P0 conocido.
 
 ---
 
-# 17. Definition of Done
+# 18. Definition of Done
 
 ```text
 contrato funcional definido
@@ -335,7 +356,7 @@ Roadmap actualizado
 
 ---
 
-# 18. Release checklist
+# 19. Release checklist
 
 ```text
 [ ] main contiene cambios esperados
@@ -361,6 +382,6 @@ Roadmap actualizado
 
 ---
 
-# 19. Regla final
+# 20. Regla final
 
 **UGO está listo cuando el circuito real funciona, resiste errores, preserva integridad y puede demostrarse; no porque exista código o se vea bien.**
