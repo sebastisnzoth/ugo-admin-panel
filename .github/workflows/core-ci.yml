@@ -8,6 +8,7 @@ on:
       - main
       - 'fix/**'
       - 'feat/**'
+      - 'perf/**'
 
 concurrency:
   group: ugo-core-ci-${{ github.ref }}
@@ -38,6 +39,7 @@ jobs:
         run: >-
           npx eslint
           src/mvp/MvpApp.tsx
+          src/mvp/client/ClientRoot.tsx
           src/mvp/NotificationCenter.tsx
           src/mvp/PaymentTimeline.tsx
           src/mvp/ClientLiveTracking.tsx
