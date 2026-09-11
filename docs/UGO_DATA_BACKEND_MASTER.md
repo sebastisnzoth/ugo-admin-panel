@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -132,7 +132,7 @@ Requisitos:
 - webhook idempotente;
 - duplicados seguros;
 - reembolso/liberación auditables;
-- ampliaciones pueden generar ajuste según contrato.
+- cualquier monto adicional aprobado debe quedar financiado/reconciliado antes del cierre.
 
 ## Efectivo
 
@@ -227,7 +227,7 @@ Reglas:
 - `storage_path` debe ser no vacío;
 - backend/RPC es el guard definitivo; la UI sólo acompaña.
 
-Migración vigente del cierre 11/09/2026: `20260911215500_service_evidence_state_guard.sql`.
+Migración vigente: `20260911215500_service_evidence_state_guard.sql`.
 
 ---
 
@@ -269,7 +269,37 @@ impacto de pago
 created_at / resolved_at
 ```
 
-Cliente es autoridad de aprobación del alcance adicional.
+Cliente es autoridad de aprobación del alcance adicional, pero **aprobar alcance con costo requiere que el impacto financiero sea seguro**.
+
+Contrato actual:
+
+```text
+monto_extra = 0
+→ puede aprobarse sin alterar fondos
+
+sin pago creado
+→ aprobar incorpora monto/comisión/neto al servicio antes del checkout
+
+efectivo presencial pendiente
+→ aprobar reajusta pago + servicio de forma auditable
+
+pago fallido/reembolsado
+→ aprobar reajusta el total; el próximo intento de pago usa el total nuevo
+
+pago electrónico activo/protegido + monto_extra > 0
+→ NO aprobar todavía
+→ requiere checkout/reconciliación específica del delta
+```
+
+Hasta implementar el checkout electrónico de ajuste, UGO **no puede convertir una ampliación con costo en trabajo aprobado no financiado**. La UI debe mostrar este bloqueo y el backend debe rechazar la aprobación.
+
+Defensa adicional: `en_progreso → esperando_aprobacion` se bloquea si existe una ampliación aprobada histórica con `pago_estado='pendiente_ajuste'`.
+
+Migración vigente: `20260911222000_service_expansion_payment_guard.sql`.
+
+Producción al aplicar el hardening: `ampliaciones_servicio` tenía 0 registros, por lo que no hubo deuda histórica que reparar.
+
+P0 abierto: construir un mecanismo real de **pago del delta electrónico** y reconciliarlo antes de permitir aprobación/continuación de alcance con costo.
 
 ---
 
@@ -404,6 +434,8 @@ provider.arrived
 service.started
 expansion.proposed
 expansion.resolved
+expansion.payment_adjustment_required
+expansion.payment_adjusted
 service.completion_requested
 service.approved
 payment.released
