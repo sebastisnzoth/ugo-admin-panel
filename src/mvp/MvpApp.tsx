@@ -21,14 +21,15 @@ import'./service-history.css'
 // UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
- if(app==='client')return <ClientFlowProvider><ClientRoot/></ClientFlowProvider>
+ const demo=new URLSearchParams(window.location.search).get('demo')==='1'
+ if(app==='client')return <ClientFlowProvider><ClientRoot demo={demo}/></ClientFlowProvider>
  if(app==='provider')return <div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div>
  if(app==='admin')return<AdminGate/>
  if(app==='web')return<UgoWeb/>
  return<UgoLanding/>
 }
 
-function ClientRoot(){
+function ClientRoot({demo}:{demo:boolean}){
  const flow=useClientFlow()
- return <div className="ugo-client-root"><DemoSebastianPaymentBridge/><ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
+ return <div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
 }
