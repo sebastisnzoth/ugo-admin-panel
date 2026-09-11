@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { data: servicio, error: serviceError } = await sb
     .from('servicios')
-    .select('id,numero,cliente_id,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,moneda,estado')
+    .select('id,numero,cliente_id,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,moneda,estado,ambiente')
     .eq('id', servicioId)
     .maybeSingle()
 
@@ -37,8 +37,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const comisionUgo = Number(servicio.comision_ugo ?? Math.round(montoTotal * 0.15 * 100) / 100)
   const gananciaProveedor = Number(servicio.ganancia_proveedor ?? Math.round((montoTotal - comisionUgo) * 100) / 100)
   const moneda = servicio.moneda || 'BRL'
+  const ambiente = servicio.ambiente === 'demo' ? 'demo' : 'real'
 
-  const { data: existing } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).limit(1).maybeSingle()
+  const { data: existing, error: existingError } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).maybeSingle()
+  if (existingError) return res.status(500).json({ error: existingError.message })
   if (existing && existing.metodo !== 'efectivo' && ['retenido','liberado'].includes(existing.estado)) {
     return res.status(409).json({ error: 'El servicio ya tiene un pago electrónico confirmado.' })
   }
@@ -50,6 +52,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     procesador: 'efectivo',
     metodo: 'efectivo',
     modelo_pago: 'presencial',
+    ambiente,
     pago_externo_id: null,
     monto_bruto: montoTotal,
     comision_ugo: comisionUgo,
@@ -74,8 +77,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     tipo: 'pago_efectivo_seleccionado',
     titulo: 'Pago en efectivo',
     cuerpo: `El cliente eligió pagar en efectivo el servicio #${servicio.numero || servicio.id.slice(0,8)}.`,
-    datos: { servicio_id: servicioId, pago_id: pago.id, metodo: 'efectivo' },
+    datos: { servicio_id: servicioId, pago_id: pago.id, metodo: 'efectivo', ambiente },
   })
 
-  return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'efectivo', estado: 'pendiente', montoTotal, comisionUgo, gananciaProveedor, moneda })
+  return res.status(200).json({ success: true, pagoId: pago.id, metodo: 'efectivo', estado: 'pendiente', ambiente, montoTotal, comisionUgo, gananciaProveedor, moneda })
 }
