@@ -1,6 +1,6 @@
 # UGO — Flujo integral del ecosistema
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 11 de septiembre de 2026  
 **Estado:** documento maestro funcional  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
@@ -21,6 +21,8 @@ Necesidad
 → asignación
 → método de pago elegido/habilitado
 → proveedor en camino
+→ llegada validada cuando corresponde
+→ evidencia Antes
 → ejecución
 → evidencia final
 → cierre según método
@@ -149,6 +151,7 @@ Solicitud confirmada
 → oportunidad vinculada al mismo serviceId
 → proveedor acepta atómicamente
 → Proveedor encontrado
+→ forma de pago
 → Proveedor en camino
 ```
 
@@ -216,6 +219,24 @@ La pantalla muestra estado actual, proveedor, ETA/ubicación cuando exista, prec
 
 El Proveedor ve el mismo `serviceId` y sólo acciones válidas para el estado real.
 
+## 5.1 Llegada
+
+Mientras el proveedor está `en_camino`, UGO puede compartir tracking autorizado. Cuando la solicitud tiene ubicación exacta y aplica validación geográfica, `Confirmar llegada` usa backend como autoridad y el radio operativo vigente es **200 m**.
+
+La UI puede anticipar “ya podés confirmar llegada”, pero nunca reemplaza el guard backend.
+
+## 5.2 Evidencia operacional
+
+La evidencia respeta el momento real del trabajo:
+
+```text
+llegado              → Antes
+en_progreso          → Durante / Después
+esperando_aprobacion → Después sólo como recuperación histórica
+```
+
+Una foto `Después` no puede cargarse antes de iniciar y reservarse para cerrar más tarde. El objetivo es que la evidencia represente el trabajo real, no sólo satisfacer un campo.
+
 ---
 
 # 6. Proveedor
@@ -249,12 +270,13 @@ contexto/evidencia autorizada · match
 ```text
 método habilitado
 → En camino
-→ Llegué
-→ evidencia inicial cuando corresponda
+→ Llegué (validación geográfica cuando aplica)
+→ evidencia Antes
 → Iniciar
 → ejecutar
+→ evidencia Durante opcional
 → ampliación opcional
-→ evidencia final
+→ evidencia Después
 → cierre según método
 → aprobación/disputa
 ```
@@ -336,6 +358,8 @@ evidencia final
 → completado
 ```
 
+La revisión del Cliente sólo considera su servicio y la evidencia final del proveedor asignado. Sin evidencia final o sin forma de pago válida, UGO no habilita el cierre.
+
 Después del cierre: calificación breve, comentario opcional, historial y posibilidad inmediata de pedir otro servicio.
 
 ---
@@ -376,8 +400,9 @@ Cliente abre UGO
 → cliente elige/usa método de pago
 → proveedor en camino
 → llegada
+→ evidencia Antes
 → trabajo
-→ evidencia final
+→ evidencia Después
 → cierre según método
 → cliente conforme/disputa
 → calificación
