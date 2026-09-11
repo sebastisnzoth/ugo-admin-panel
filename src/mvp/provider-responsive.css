@@ -92,3 +92,6 @@
 /* Provider Journey 7: service completion and receipt. */
 .ugo-provider-root .ugo-provider-completion-receipt,.ugo-provider-root .ugo-provider-receipt{font-family:var(--ugo-font);background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-xl)!important;box-shadow:var(--ugo-shadow-sheet)!important}
 .ugo-provider-root .ugo-provider-completion-receipt button,.ugo-provider-root .ugo-provider-receipt button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+
+/* Provider Journey 8: ratings and reputation. */
+.ugo-provider-root .ugo-provider-rating,.ugo-provider-root .ugo-profile-score,.ugo-provider-root .uwp-profile-score{font-family:var(--ugo-font);background:var(--ugo-color-secondary-container)!important;color:var(--ugo-color-on-secondary-container)!important;border-radius:var(--ugo-radius-lg)!important;border:1px solid var(--ugo-color-outline-variant)}
