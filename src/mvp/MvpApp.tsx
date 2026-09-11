@@ -1,21 +1,6 @@
-import React,{useEffect,useState}from'react'
-import{AdminGate}from'./AdminGate'
-import{ClientOnboardingGate}from'./ClientOnboardingGate'
-import{UgoLanding}from'./UgoLanding'
-import{UgoWeb}from'./UgoWeb'
-import{UgoClientWeb}from'./UgoClientWeb'
-import{AppLocationButton}from'./AppLocationButton'
-import{DemoSebastianPaymentBridge}from'./DemoSebastianPaymentBridge'
-import{ServiceHistoryPanel}from'./ServiceHistoryPanel'
-import{DisputeDock}from'./DisputeDock'
-import{ClientGlobalMenu}from'./ClientGlobalMenu'
-import{ClientCompletionReview}from'./ClientCompletionReview'
-import{ClientLiveTracking}from'./ClientLiveTracking'
-import{NotificationCenter,type UgoNotification}from'./NotificationCenter'
-import{ServiceExpansionPanel}from'./ServiceExpansionPanel'
-import{ClientFlowProvider,useClientFlow}from'./client/clientFlow'
+import React,{Suspense,lazy,useEffect,useState}from'react'
+import{ClientFlowProvider}from'./client/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
-import{ProviderRoot}from'./provider/ProviderRoot'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{Button,Input}from'./shared'
 import'./mvp.css'
@@ -26,16 +11,25 @@ import'./service-history.css'
 import'./stitch-client-provider-alignment.css'
 import'./request-evidence.css'
 
-// UGO Cliente: la revisión final se monta junto al flujo principal para bloquear la liberación hasta revisar evidencias.
+const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
+const ClientRoot=lazy(()=>import('./client/ClientRoot').then(module=>({default:module.ClientRoot})))
+const ProviderRoot=lazy(()=>import('./provider/ProviderRoot').then(module=>({default:module.ProviderRoot})))
+const UgoLanding=lazy(()=>import('./UgoLanding').then(module=>({default:module.UgoLanding})))
+const UgoWeb=lazy(()=>import('./UgoWeb').then(module=>({default:module.UgoWeb})))
+const UgoClientWeb=lazy(()=>import('./UgoClientWeb').then(module=>({default:module.UgoClientWeb})))
+
+function RouteLoading(){return <main className="mvp-loading" aria-live="polite"><p>Cargando UGO…</p></main>}
+function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
+
 export function MvpApp(){
  const app=new URLSearchParams(window.location.search).get('app')
  const demo=new URLSearchParams(window.location.search).get('demo')==='1'
- if(app==='client-web'||app==='web-client'||app==='stitch-client')return <UgoClientWeb/>
- if(app==='client')return <RecoveryGate role="client"><ClientFlowProvider><ClientRoot demo={demo}/></ClientFlowProvider></RecoveryGate>
- if(app==='provider')return <RecoveryGate role="provider"><ProviderFlowProvider><ProviderRoot/></ProviderFlowProvider></RecoveryGate>
- if(app==='admin')return<AdminGate/>
- if(app==='web')return<UgoWeb/>
- return<UgoLanding/>
+ if(app==='client-web'||app==='web-client'||app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
+ if(app==='client')return <RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={demo}/></Deferred></ClientFlowProvider></RecoveryGate>
+ if(app==='provider')return <RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate>
+ if(app==='admin')return <Deferred><AdminGate/></Deferred>
+ if(app==='web')return <Deferred><UgoWeb/></Deferred>
+ return <Deferred><UgoLanding/></Deferred>
 }
 
 function RecoveryGate({role,children}:{role:'client'|'provider';children:React.ReactNode}){
@@ -46,10 +40,4 @@ function RecoveryGate({role,children}:{role:'client'|'provider';children:React.R
  if(phase==='idle'||phase==='done')return <>{children}</>
  async function save(e:React.FormEvent){e.preventDefault();if(password.length<8)return setMessage('La contraseña debe tener al menos 8 caracteres.');setBusy(true);setMessage('');const{error}=await supabase.auth.updateUser({password});setBusy(false);if(error)return setMessage(error.message);setPhase('done');setMessage('Contraseña actualizada. Ya podés continuar.')}
  return <main className={`mvp-auth-page role-${role}`}><section className="mvp-auth-card"><div className="mvp-mini-orb"/><div className="mvp-kicker">U.G.O. · {role==='client'?'CLIENTE':'PROVEEDOR'}</div><h1>{phase==='checking'?'Validando enlace…':phase==='error'?'Enlace no válido':'Elegí una contraseña nueva'}</h1>{phase==='checking'?<p>Estamos verificando tu enlace seguro.</p>:phase==='error'?<><p>{message}</p><Button className="mvp-primary" onClick={()=>window.location.replace(`${window.location.pathname}?app=${role}`)}>Volver a ingresar</Button></>:<form onSubmit={save}><p>Usá al menos 8 caracteres para proteger tu cuenta.</p><label>Nueva contraseña<Input type="password" minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{message&&<div className="mvp-form-notice">{message}</div>}<Button className="mvp-primary" loading={busy}>Guardar contraseña</Button></form>}</section></main>
-}
-
-function ClientRoot({demo}:{demo:boolean}){
- const flow=useClientFlow()
- const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
- return <div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientOnboardingGate/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div>
 }
