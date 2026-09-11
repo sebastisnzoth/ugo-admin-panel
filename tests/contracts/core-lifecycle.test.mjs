@@ -33,13 +33,30 @@ test('cash remains presencial and is never used as electronic custody',async()=>
  assert.match(sql,/modelo_pago = 'presencial'/)
 })
 
-test('extra-cost scope cannot be silently approved over an active electronic payment',async()=>{
- const sql=await read('supabase/migrations/20260911222000_service_expansion_payment_guard.sql')
- assert.match(sql,/pago electrónico activo\. El ajuste de monto adicional debe cobrarse antes de aprobar la ampliación/)
- assert.match(sql,/a\.estado='aprobada'[\s\S]*a\.pago_estado='pendiente_ajuste'/)
+test('active electronic payments require a separately funded expansion delta',async()=>{
+ const guard=await read('supabase/migrations/20260911222000_service_expansion_payment_guard.sql')
+ assert.match(guard,/ajuste de monto adicional debe cobrarse antes de aprobar la ampliación/)
+ assert.match(guard,/a\.estado='aprobada'[\s\S]*a\.pago_estado='pendiente_ajuste'/)
+
+ const checkout=await read('api/pagos/ajuste-ampliacion.ts')
+ assert.match(checkout,/external_reference:`exp:\$\{expansion\.id\}`/)
+ assert.match(checkout,/X-Idempotency-Key.*ugo-exp-/)
+ assert.match(checkout,/pago_estado:'pendiente_ajuste'/)
+
+ const migration=await read('supabase/migrations/20260911224500_expansion_electronic_checkout.sql')
+ assert.match(migration,/confirmar_pago_ampliacion/)
+ assert.match(migration,/abs\(coalesce\(p_monto,0\)-v_row\.monto_extra\) >= 0\.01/)
+ assert.match(migration,/ajuste_estado='retenido'/)
+ assert.match(migration,/pago_estado='incluido'/)
+
+ const webhook=await read('api/pagos/webhook.ts')
+ assert.match(webhook,/metadata\?\.ampliacion_id/)
+ assert.match(webhook,/sb\.rpc\('confirmar_pago_ampliacion'/)
+
  const ui=await read('src/mvp/ServiceExpansionPanel.tsx')
- assert.match(ui,/Falta cobrar ajuste/)
- assert.match(ui,/disabled=\{busy\|\|adjustmentBlocked\}/)
+ assert.match(ui,/\/api\/pagos\/ajuste-ampliacion/)
+ assert.match(ui,/Pagar y aprobar/)
+ assert.match(ui,/Continuar pago/)
 })
 
 test('completion review is scoped to the authenticated client and assigned-provider final evidence',async()=>{
