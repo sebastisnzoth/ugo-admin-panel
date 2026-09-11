@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
@@ -79,7 +79,7 @@ retry
 webhook duplicado
 liberación
 reembolso/disputa
-ampliación con ajuste
+ampliación con ajuste financiado
 ```
 
 Aserción: servicio no debe avanzar por una condición financiera inexistente cuando el contrato exige custodia.
@@ -177,7 +177,29 @@ La UI debe reflejar el mismo radio de 200 m y los mismos tipos de evidencia admi
 
 ---
 
-# 9. Admin / Super Admin
+# 9. Ampliaciones + dinero
+
+Casos obligatorios:
+
+```text
+monto extra 0 → cliente puede aprobar sin alterar fondos
+sin pago creado + monto extra → total/comisión/neto se actualizan antes del checkout
+efectivo pendiente + monto extra → servicio y pago se reajustan al mismo total
+pago fallido/reembolsado + monto extra → servicio se reajusta y exige nuevo intento
+pago electrónico activo + monto extra → aprobación rechazada hasta cobrar delta
+UI con pago electrónico activo → no ofrece aprobación engañosa del monto extra
+ampliación histórica aprobada + pendiente_ajuste → servicio no puede pasar a esperando_aprobacion
+doble aprobación → determinista, sin doble incremento
+actor no cliente → resolución denegada
+```
+
+Aserción P0: **ningún trabajo adicional con costo queda aprobado si su impacto financiero no está incorporado o financiado según el método.**
+
+El futuro checkout de delta electrónico deberá agregar pruebas de creación, idempotencia, conciliación, webhook y recuperación antes de retirar este bloqueo preventivo.
+
+---
+
+# 10. Admin / Super Admin
 
 Pruebas positivas y negativas sobre:
 
@@ -196,7 +218,7 @@ Query params o UI nunca escalan privilegios.
 
 ---
 
-# 10. RLS
+# 11. RLS
 
 Para cada tabla/bucket sensible:
 
@@ -211,7 +233,7 @@ Incluir upload/read/delete y signed URLs cuando aplique.
 
 ---
 
-# 11. Concurrencia e idempotencia
+# 12. Concurrencia e idempotencia
 
 Obligatorio probar:
 
@@ -230,7 +252,7 @@ Resultado debe ser determinista y auditable.
 
 ---
 
-# 12. Realtime
+# 13. Realtime
 
 ```text
 evento correcto
@@ -246,7 +268,7 @@ Cliente y Proveedor deben converger al mismo estado persistido.
 
 ---
 
-# 13. Responsive
+# 14. Responsive
 
 Validar:
 
@@ -263,7 +285,7 @@ Safe area, teclado, scroll, nav, mapa, sheet, modal y formularios.
 
 ---
 
-# 14. Accesibilidad
+# 15. Accesibilidad
 
 Objetivo WCAG AA:
 
@@ -281,7 +303,7 @@ errores accionables
 
 ---
 
-# 15. Recuperación
+# 16. Recuperación
 
 Todo E2E crítico debe cubrir:
 
@@ -301,7 +323,7 @@ No basta probar happy path.
 
 ---
 
-# 16. CI / Deploy
+# 17. CI / Deploy
 
 Release requiere evidencia del estado CI/deploy.
 
@@ -322,7 +344,7 @@ Si no hay check verificable: estado `DESCONOCIDO`, nunca asumir `OK`.
 
 ---
 
-# 17. Severidad
+# 18. Severidad
 
 ```text
 P0 seguridad · datos · auth · dinero · core roto
@@ -335,7 +357,7 @@ No release con P0 conocido.
 
 ---
 
-# 18. Definition of Done
+# 19. Definition of Done
 
 ```text
 contrato funcional definido
@@ -356,7 +378,7 @@ Roadmap actualizado
 
 ---
 
-# 19. Release checklist
+# 20. Release checklist
 
 ```text
 [ ] main contiene cambios esperados
@@ -368,6 +390,7 @@ Roadmap actualizado
 [ ] permisos/RLS
 [ ] concurrencia/idempotencia
 [ ] pagos method-aware
+[ ] ampliaciones financiadas/reconciliadas
 [ ] Storage/evidencia
 [ ] Realtime/reconexión
 [ ] mobile
@@ -382,6 +405,6 @@ Roadmap actualizado
 
 ---
 
-# 20. Regla final
+# 21. Regla final
 
 **UGO está listo cuando el circuito real funciona, resiste errores, preserva integridad y puede demostrarse; no porque exista código o se vea bien.**
