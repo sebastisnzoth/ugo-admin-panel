@@ -34,7 +34,7 @@
 - Severidad: MEDIA
 - Descripción: Los callbacks de Realtime invocan `loadData()` sin `await` ni `catch`. Una caída de Supabase o una respuesta con error produce promesas rechazadas sin feedback visible y deja el radar, solicitudes o pagos desactualizados.
 - Archivo probable: `src/mvp/ProviderApp.tsx`
-- Estado: OPEN
+- Estado: FIXED
 
 ## BUG-005
 
