@@ -1,10 +1,10 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.6 · 11 de septiembre de 2026  
+**Versión:** 2.7 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
-> El Roadmap registra prioridad y madurez real. `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. UGO primero cierra el circuito principal y después amplía el ecosistema.
+> `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. UGO primero cierra el circuito principal y después amplía el ecosistema.
 
 ---
 
@@ -12,26 +12,13 @@
 
 **Servicios confiables completados dentro de UGO.**
 
-Circuito:
-
 ```text
 Necesidad → solicitud → matching → asignación
 → método de pago → ejecución → evidencia
 → aprobación/disputa → cobro → reputación → repetición
 ```
 
-Métricas:
-
-```text
-time-to-match
-acceptance rate
-completion rate
-cancelación/disputa
-repetición
-GMV/take rate
-liquidez proveedor
-CSAT/NPS
-```
+Métricas: time-to-match, acceptance/completion rate, cancelación/disputa, repetición, GMV/take rate, liquidez proveedor, CSAT/NPS.
 
 ---
 
@@ -44,164 +31,145 @@ CSAT/NPS
 ⛔ BLOQUEADO dependencia externa/decisión
 ```
 
-Prioridad:
-
-```text
-P0 integridad/auth/permisos/dinero/serviceId/core
-P1 operación/conversión/UX crítica
-P2 inteligencia/optimización/automatización
-P3 expansión/polish
-```
+Prioridad: P0 integridad/auth/permisos/dinero/core; P1 operación/UX; P2 inteligencia; P3 expansión/polish.
 
 ---
 
 # 3. P0 — cerrar antes de expandir
 
 ```text
-[x] npm run build integrado en Core CI
-[x] npm run lint crítico/general integrado en Core CI
-[x] runner de tests automatizados incorporado: npm test
-[ ] tests ejecutables de RPC/RLS contra base aislada
-[ ] incorporar E2E ejecutable: npm run test:e2e
-[ ] serviceId único Cliente↔Proveedor completamente validado E2E
-[x] aceptación de oportunidad atómica endurecida backend
-[ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones completamente validada
-[x] guards backend evidencia inicial/final implementados
-[x] guard temporal de tipo de evidencia implementado backend
-[x] guard de ampliación sin financiamiento implementado backend
-[x] checkout/reconciliación de delta electrónico implementado
-[ ] validar E2E/idempotencia/reembolso del delta electrónico
-[ ] pagos electrónico/efectivo method-aware extremo a extremo validado E2E
-[ ] idempotencia efectivo/webhooks/retiros cerrada completa
-[ ] autorización Admin/Super server-side cerrada completa
-[ ] ledger/comisión para efectivo cuando aplique
-[ ] retirar salida operacional Provider legacy
+[x] build integrado en Core CI
+[x] lint crítico/general integrado
+[x] npm test disponible
+[ ] tests RPC/RLS contra base aislada
+[ ] npm run test:e2e
+[ ] serviceId Cliente↔Proveedor validado E2E
+[x] aceptación de oportunidad atómica
+[ ] RLS sensible completamente validada
+[x] guards evidencia inicial/final/temporal
+[x] guard ampliación sin financiación
+[x] checkout/reconciliación delta electrónico implementado
+[ ] E2E/idempotencia/reembolso delta electrónico
+[ ] pagos electrónico/efectivo E2E
+[ ] idempotencia webhooks/efectivo/retiros completa
+[ ] Admin/Super server-side completamente validado
+[ ] ledger/comisión efectivo
+[ ] Provider legacy fuera de operación y smoke cerrado
+[ ] deploy production estable + smoke demostrable
 ```
-
-Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código.
 
 ---
 
 # 4. Snapshot de conciencia · 11/09/2026
 
-## Bloque A — solicitud → asignación → método de pago
+## Bloque A — solicitud → asignación → pago
+
+Cerrado a nivel de implementación:
 
 ```text
-Solicitud guiada por Hugo
-→ evidencia previa obligatoria
-→ matching sólo con proveedores online/disponibles
+solicitud guiada Hugo + evidencia
+→ matching proveedores online/disponibles
 → oferta con tarifa real
 → aceptación atómica
-→ asignación con tarifa/comisión/neto consistentes
-→ Cliente elige método de pago
-→ método queda bloqueado salvo pago fallido
-→ Pix/electrónico o efectivo explícito
-→ Proveedor habilitado para avanzar sólo con forma de pago válida
+→ tarifa/comisión/neto
+→ elección de método
+→ método bloqueado salvo fallo
+→ viaje sólo con forma de pago válida
 ```
 
-Cierres relevantes:
+Producción fue verificada con 0 servicios asignados sin tarifa válida y 0 ofertas pendientes sin tarifa válida al cierre de ese bloque.
 
-- `20260911213500_payment_ready_offer_tariff.sql`: oferta/asignación operable exige tarifa real; no inventa precio.
-- `20260911214500_payment_method_lock.sql`: no cambia arbitrariamente método después de elegirlo; pago fallido permite recuperación.
-- `ClientPaymentChoice.tsx`: UI alineada con lock backend.
-- aceptación serializada/atómica por servicio.
-- cash first-class: selección cliente + confirmación proveedor sin fingir custodia electrónica.
-
-Integridad verificada en producción:
+## Bloque B — viaje → llegada → inicio
 
 ```text
-servicios asignados sin tarifa válida = 0
-ofertas pendientes sin tarifa válida = 0
-```
-
-## Bloque B — en camino → llegada → inicio
-
-```text
-asignado + forma de pago válida
-→ en_camino
-→ tracking proveedor
-→ proximidad de llegada cuando existe ubicación cliente
-→ llegado
-→ foto Antes obligatoria
+asignado + pago listo
+→ en_camino → tracking
+→ proximidad 200 m cuando aplica
+→ llegado → Foto Antes
 → en_progreso
 ```
 
-Cierres:
+UI/backend alineados y guard temporal de evidencia aplicado en producción. Falta E2E GPS real.
 
-- radio de llegada UI/backend alineado en **200 m**;
-- `ProviderActiveJob` explica validación de llegada;
-- `ProviderEvidencePanel` ofrece sólo evidencia compatible con estado;
-- `20260911215500_service_evidence_state_guard.sql` impide pre-cargar una foto `Después` antes de iniciar;
-- backend: `Antes` sólo en `llegado`, `Durante`/`Después` en `en_progreso`, `Después` en `esperando_aprobacion` sólo para recuperación histórica;
-- producción sin servicios actuales `llegado`/`esperando_aprobacion` faltantes de evidencia requerida para su estado al momento del control.
-
-La migración está aplicada en Supabase producción.
-
-## Bloque C — ampliación → cierre → aprobación
-
-Estado implementado:
-
-- `ClientCompletionReview` queda limitado al cliente autenticado y a evidencia final del proveedor asignado;
-- `20260911222000_service_expansion_payment_guard.sql` mantiene el bloqueo preventivo ante alcance extra no financiado;
-- `20260911224500_expansion_electronic_checkout.sql` está aplicada en Supabase producción;
-- la ampliación electrónica usa checkout separado: no muta el pago base protegido;
-- `api/pagos/ajuste-ampliacion.ts` valida cliente, servicio, pago base y crea/reutiliza checkout con referencia/idempotencia propia;
-- `api/pagos/webhook.ts` reconoce `ampliacion_id`/`exp:<id>`, valida monto y moneda y llama `confirmar_pago_ampliacion`;
-- `confirmar_pago_ampliacion` incorpora delta/comisión/neto una sola vez y recién entonces deja `aprobada + incluido`;
-- pago adicional fallido mantiene la ampliación pendiente para retry;
-- reembolso posterior marca `pendiente_ajuste` y el guard impide cerrar normalmente hasta conciliación;
-- `ServiceExpansionPanel` cambió de “bloqueo sin salida” a `Pagar y aprobar / Continuar pago`.
-
-Estado de madurez: **IMPLEMENTED, no todavía VALIDATED E2E**.
-
-Riesgo P0 visible:
-
-```text
-checkout delta
-→ webhook real Mercado Pago
-→ retry / webhook duplicado / reembolso
-→ RPC idempotente bajo ejecución real
-→ Cliente y Proveedor convergen por Realtime
-```
-
-## Bloque D — red automatizada de contratos
+## Bloque C — ampliación → cierre
 
 Implementado:
 
 ```text
-npm test
-→ Node test runner nativo
-→ tests/contracts/core-lifecycle.test.mjs
+ampliación con costo electrónico
+→ checkout de delta separado
+→ webhook monto/moneda
+→ RPC idempotente
+→ incorpora delta/comisión/neto
+→ aprobada + incluido
 ```
 
-Cobertura actual:
+No muta pago base. Retry/reembolso están modelados. Estado: **IMPLEMENTED, falta VALIDATED E2E**.
+
+## Bloque D — red automatizada mínima
+
+`npm test` cubre 6 contratos core: llegada, evidencia, efectivo, delta electrónico y ownership de review. No reemplaza RPC/RLS/E2E.
+
+## Bloque E — Panel de control · Integraciones
+
+Auditoría realizada sobre `main`, Supabase producción y Vercel:
+
+### Panel Admin
+
+`Configuración → Sistema` ahora distingue:
 
 ```text
-radio llegada UI/backend = 200 m
-evidencia operacional ligada al lifecycle
-guards Antes/Después para iniciar/finalizar
-efectivo presencial no se confunde con custodia electrónica
-checkout electrónico separado para ampliaciones
-idempotency/external_reference del delta
-webhook llama confirmar_pago_ampliacion
-RPC valida monto y sólo entonces incorpora delta
-review del cliente respeta ownership y proveedor asignado
+General
+Reglas de negocio
+Medios de pago
+Credenciales de pago
+Integraciones
+Estado técnico
 ```
 
-`UGO Core CI` incluye `npm test` entre build y lint crítico. Esto no reemplaza pruebas RPC/RLS ni E2E.
+La nueva pestaña **Integraciones** consulta `api/admin/integrations-status.ts` con sesión Admin y muestra metadata segura del runtime, sin exponer secretos.
 
-Próximo recorrido principal:
+### Hallazgos
+
+- Supabase es el core persistente real.
+- La bóveda `private.payment_credentials` tenía **0 filas** al control.
+- `AdminPaymentCredentials` podía guardar credenciales privadas, pero los adapters de pago productivos siguen leyendo variables de entorno. Por lo tanto “guardada en panel” no equivale a “usada en runtime”.
+- `admin_payment_credentials_status()` tenía una dependencia no portable (`jsonb_object_length`) detectada durante la auditoría. Fue corregida y aplicada en producción con `20260911230000_admin_payment_credentials_status_fix.sql`.
+- Mercado Pago BR runtime: `MERCADO_PAGO_ACCESS_TOKEN`.
+- Pix direto: `UGO_PIX_KEY`.
+- OpenPix: sandbox + feature flag; no libera fondos reales.
+- Mercado Pago AR: declarado pero bloqueado por router en la fase actual.
+- Hugo Voice: `OPENAI_API_KEY` server-side.
+- WhatsApp Cloud API: token + phone ID server-side; bandeja Admin real.
+- Mapas actuales: MapLibre + OSM; routing Haversine por defecto / OSRM opcional.
+- Vercel production más reciente observado estaba `ERROR` en commit `61872b20`; causa: tipos `@vercel/node` no resolubles para funciones TS.
+- `main` ya contiene el fix local `api/vercel-node.d.ts` (`2bef4d97`). Falta demostrar deployment posterior `READY` + smoke.
+- Había un production deployment anterior `READY` en commit `555daf48`, rollback candidate.
+
+### CI del bloque
+
+Run `#260`, head `efec5f26`:
 
 ```text
-en_progreso
-→ ampliación opcional financiada si tiene costo
-→ evidencia Después
-→ efectivo recibido o electrónico protegido
-→ esperando_aprobacion
-→ aprobación/disputa
-→ completado
-→ reputación/historial
+audit     ✅ 0 vulnerabilidades
+build     ✅
+npm test  ✅ 6/6
+lint      ❌ versiones anteriores de AdminPaymentCredentials/AdminSystemSettings
 ```
+
+Esos errores de lint fueron corregidos posteriormente en `main`. Falta un CI nuevo sobre el HEAD actual; no marcar verde por extrapolación.
+
+### Riesgo visible
+
+```text
+credencial guardada
+≠ runtime configurado
+≠ feature habilitada
+≠ proveedor externo saludable
+≠ E2E validado
+```
+
+Próximo cierre: validar CI actual, deployment Vercel READY, smoke Admin/endpoint y después unificar resolución server-side de credenciales si el panel será fuente operativa de configuración.
 
 ---
 
@@ -211,22 +179,20 @@ en_progreso
 |---|---|---:|---|
 | Auth/Recovery | 🟡 | P0 | smoke + regresión |
 | Onboarding | 🟡 | P1 | validación |
-| Home/Radar | 🟡 | P1 | consolidar + smoke |
+| Home/Radar | 🟡 | P1 | smoke |
 | Categorías/Búsqueda | 🟡 | P1 | regresión |
-| Solicitud guiada por Hugo | 🟡 | P0 | consolidar ruta canónica + E2E |
+| Solicitud guiada Hugo | 🟡 | P0 | E2E |
 | Evidencia previa | 🟡 | P0 | E2E request→service |
-| Matching | 🟡 | P1 | timeout/alternativas/recovery |
-| Proveedor seleccionado | 🟡 | P1 | integrar selección directa al flujo canónico |
-| Pago electrónico | 🟡 | P0 | reconciliación + E2E |
+| Matching | 🟡 | P1 | timeout/recovery |
+| Pago electrónico | 🟡 | P0 | E2E |
 | Efectivo | 🟡 | P0 | ledger + E2E |
-| Lock de método de pago | ✅ | P0 | monitorear regresiones |
-| Tracking/ETA | 🟡 | P1 | E2E/reconexión/fallback |
-| Llegada proveedor | 🟡 | P1 | validar E2E radio/ubicación |
+| Lock método pago | ✅ | P0 | regresiones |
+| Tracking/ETA | 🟡 | P1 | reconexión/fallback |
+| Llegada | 🟡 | P1 | E2E GPS |
 | Servicio activo | 🟡 | P0 | narrativa única |
-| Ampliar servicio | 🟡 | P0 | checkout delta implementado; falta E2E real/reembolso/retry |
-| Aprobación/Disputa | 🟡 | P0 | ownership endurecido; falta E2E por método |
+| Ampliar servicio | 🟡 | P0 | E2E delta/reembolso/retry |
+| Aprobación/Disputa | 🟡 | P0 | E2E por método |
 | Historial/Reputación | 🟡 | P1 | validación integrada |
-| Notificaciones | 🟡 | P1 | contrato de eventos |
 
 ---
 
@@ -234,23 +200,20 @@ en_progreso
 
 | Área | Estado | P | Próximo cierre |
 |---|---|---:|---|
-| Shell nuevo | 🟡 | P0 | smoke + retirar legacy |
+| Shell nuevo | 🟡 | P0 | smoke + legacy fuera |
 | Auth/Onboarding/KYC | 🟡 | P0 | roles/RLS |
-| Home | 🟡 | P1 | validar estado/datos |
-| Demanda | 🟡 | P1 | fuente analítica independiente |
+| Home | 🟡 | P1 | datos/estado |
+| Demanda | 🟡 | P1 | fuente analítica |
 | Oportunidades | 🟡 | P0 | E2E |
-| Evidencia cliente | 🟡 | P0 | RLS/E2E |
-| Aceptar/Rechazar | ✅ | P0 | atomicidad backend cerrada; falta E2E competitivo |
-| Tarifa al asignar | ✅ | P0 | backend + datos producción consistentes |
-| Trabajo activo | 🟡 | P0 | E2E lifecycle completo |
+| Aceptar/Rechazar | ✅ | P0 | E2E competitivo |
+| Tarifa al asignar | ✅ | P0 | monitoreo |
+| Trabajo activo | 🟡 | P0 | E2E lifecycle |
 | Tracking | 🟡 | P1 | ETA/reconexión |
-| Radio de llegada 200 m | ✅ | P1 | contrato UI/backend alineado; falta E2E GPS |
-| Evidencia operacional por estado | ✅ | P0 | guard backend + UI alineada; falta E2E negativo/positivo |
-| Ampliar servicio | 🟡 | P0 | delta checkout implementado; falta convergencia E2E |
+| Radio 200 m | ✅ | P1 | E2E GPS |
+| Evidencia por estado | ✅ | P0 | E2E positivo/negativo |
+| Ampliar servicio | 🟡 | P0 | convergencia E2E |
 | Efectivo recibido | 🟡 | P0 | ledger + E2E |
-| Ganancias | 🟡 | P1 | timeline financiero claro |
-| Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
-| Provider legacy | ⬜ | P0 | retirar operación |
+| Hugo Asistente | 🟡 | P2 | contexto completo |
 
 ---
 
@@ -258,262 +221,127 @@ en_progreso
 
 | Área | Estado | P | Próximo cierre |
 |---|---|---:|---|
-| AdminGate/Auth | 🟡 | P0 | server-side/RLS |
+| AdminGate/Auth | 🟡 | P0 | server-side/RLS E2E |
 | Operaciones | 🟡 | P1 | excepciones accionables |
 | Personas/KYC | 🟡 | P1 | permisos/auditoría |
 | Finanzas/Retiros | 🟡 | P0 | idempotencia/conciliación |
 | Disputas | 🟡 | P0 | resolución method-aware |
 | Roles/feature flags | 🟡 | P0 | enforcement real |
+| Credenciales privadas | 🟡 | P1 | bóveda existe; falta runtime resolver unificado |
+| Integraciones runtime | 🟡 | P0 | endpoint seguro listo; falta CI/deploy/smoke |
+| Estado técnico | 🟡 | P1 | no confundir navegador con backend |
 | Auditoría crítica | 🟡 | P0 | trail consistente |
-| Reportes | 🟡 | P2 | métricas North Star |
-| Scout | 🟡 | P2 | recomendaciones accionables |
+| Reportes/Scout | 🟡 | P2 | métricas/recomendaciones |
 | Super Admin | 🟡 | P1 | separación operación/config |
 
 ---
 
 # 8. Testing inmediato
 
-Orden recomendado actualizado:
+Orden:
 
 ```text
-1 ✅ test runner base + contract tests
-2 tests RPC/dominio contra entorno aislado
-3 tests RLS positivos/negativos
-4 E2E solicitud→oportunidad→asignación
-5 E2E electrónico base
-6 E2E ampliación electrónica: checkout→webhook→RPC→Realtime
-7 E2E efectivo
-8 E2E llegada/evidencia Antes/inicio
-9 E2E evidencia Después/cierre
-10 responsive/accessibility smoke
-11 CI/Vercel smoke
+1 validar CI sobre HEAD actual
+2 Vercel production READY + smoke
+3 test positivo/negativo /api/admin/integrations-status
+4 tests RPC/RLS aislados
+5 E2E solicitud→asignación
+6 E2E pago electrónico base
+7 E2E delta ampliación
+8 E2E efectivo
+9 E2E llegada/evidencia/cierre
+10 responsive/accessibility
 ```
 
-Casos P0/P1 inmediatos:
+Casos Admin/integraciones inmediatos:
 
 ```text
->200 m con ubicación cliente → llegada rechazada
-<=200 m → llegada permitida
-llegado sin Antes → inicio rechazado
-Antes fuera de llegado → insert rechazado
-Después antes de en_progreso → insert rechazado
-llegado + Antes → inicio permitido
-cliente A no puede aprobar servicio de cliente B
-foto Después de otro usuario no habilita aprobación
-sin pago confirmado → aprobación deshabilitada/rechazada
-pago electrónico activo + ampliación con costo → checkout delta separado
-checkout adicional approved monto correcto → una sola incorporación
-checkout adicional monto/moneda incorrectos → no incorporar
-webhook adicional duplicado → sin doble incremento
-ajuste reembolsado → revisión bloqueada
-ampliación histórica pendiente_ajuste → revisión bloqueada
-efectivo pendiente + ampliación → total consistente en servicio y pago
-```
-
-Scripts:
-
-```text
-npm run build
-npm run lint
-npm run test       # ya existe
-npm run test:e2e   # pendiente
+anon → integrations-status 401
+sesión inválida → 401
+cliente/proveedor → 403
+admin activo → metadata sin secretos
+bóveda vacía → UI no inventa credencial
+credencial almacenada ≠ runtime activo
+Mercado Pago AR → no mostrar operativo
+Vercel deployment fallido → no declarar release
 ```
 
 ---
 
 # 9. UI/UX
 
-Prioridad después de integridad P0:
+Después de integridad P0:
 
 ```text
-[ ] Cliente converge a solicitud canónica guiada por Hugo
-[ ] Proveedor converge sin legacy
+[ ] Cliente converge completamente al journey Hugo
+[ ] Proveedor sin salida legacy
 [ ] Admin/Super Admin converge
-[ ] eliminar overlays competitivos
-[ ] estados loading/empty/error/offline consistentes
+[ ] loading/empty/error/offline consistentes
 [ ] mobile 360–430
 [ ] desktop real
 [ ] accesibilidad AA crítica
 ```
 
-No rediseñar flujos ya correctos sólo por estética.
+---
+
+# 10. Growth / Hugo / Scout / Academia
+
+No desplazar P0 abiertos. Cuando el core sea demostrable:
+
+```text
+mejor matching → completion → reputación/datos → confianza
+→ repetición → más proveedores → menor time-to-match
+```
+
+Hugo debe reducir errores y fricción; Scout cerrar `Dato → interpretación → recomendación → acción → resultado`; Academia queda P3 salvo impacto directo en calidad P0/P1.
 
 ---
 
-# 10. Growth loop
+# 11. Monetización
 
-Una vez cerrado el core:
-
-```text
-mejor matching
-→ más servicios completados
-→ más reputación/datos
-→ mejor confianza
-→ más repetición
-→ más proveedores atractivos
-→ menor time-to-match
-```
-
-Priorizar crecimiento que refuerce este loop.
-
----
-
-# 11. Hugo
-
-P1/P2 sólo después de core estable.
-
-Cliente:
-
-```text
-mejor solicitud
-preparación
-soporte contextual
-```
-
-Proveedor:
-
-```text
-checklist
-seguridad
-diagnóstico
-ampliación
-evidencia
-cierre
-aprendizaje
-```
-
-Medir reducción de errores y mejora de completion rate.
-
----
-
-# 12. Scout
-
-P2:
-
-```text
-demanda real
-cobertura
-conversiones
-gaps de proveedor
-cancelación/disputa
-calidad
-liquidez
-alertas accionables
-```
-
-Scout debe cerrar el loop:
-
-`Dato → interpretación → recomendación → acción → resultado`.
-
----
-
-# 13. Academia
-
-P3 por defecto, salvo que resuelva un P0/P1 de calidad.
-
-```text
-gap
-→ formación
-→ evaluación
-→ certificación/progreso
-→ mejores resultados
-→ nueva medición
-```
-
----
-
-# 14. Monetización
-
-Antes de escalar adquisición, demostrar:
+Antes de escalar:
 
 ```text
 comisión electrónica conciliada
 comisión efectivo trazable
-ampliaciones con costo financiadas/reconciliadas
+ampliaciones financiadas
 retiros seguros
 margen conocido
-coste por servicio controlado
+coste por servicio medido
 fuga off-platform medida
 ```
 
-La escala sin unit economics observables no es éxito.
+---
+
+# 12. Fases
+
+- **A Core confiable:** integridad, pagos, permisos, serviceId, evidencia, integraciones, E2E.
+- **B Operación excelente:** tracking, notificaciones, Admin, recuperación.
+- **C Retención/eficiencia:** reputación, repetición, Hugo, matching, métricas.
+- **D Inteligencia/expansión:** Scout avanzado, Academia, ciudades/categorías.
+
+No saltar fase dejando P0 crítico abierto.
 
 ---
 
-# 15. Roadmap por fases
+# 13. Criterio MVP exitoso
 
-## Fase A — Core confiable
-
-P0 de integridad, pagos, permisos, serviceId, evidencia y E2E.
-
-## Fase B — Operación excelente
-
-Tracking, notificaciones, UX consolidada, Admin operacional, recuperación.
-
-## Fase C — Retención y eficiencia
-
-Reputación, repetición, Hugo útil, optimización matching, métricas.
-
-## Fase D — Inteligencia y expansión
-
-Scout avanzado, Academia, nuevas categorías/ciudades, automatización y growth.
-
-No saltar de fase dejando P0 crítico abierto.
+Cliente pide/paga/sigue/amplía/aprueba; Proveedor acepta/ejecuta/evidencia/cobra; Admin resuelve excepciones y observa integraciones reales. Permisos, dinero, evidencia y secretos están protegidos. CI, deploy y smoke son demostrables.
 
 ---
 
-# 16. Criterio MVP exitoso
-
-Cliente puede:
+# 14. Regla de conciencia continua
 
 ```text
-registrarse
-→ pedir servicio con evidencia
-→ recibir proveedor
-→ elegir método/pagar
-→ seguir llegada
-→ ejecutar con trazabilidad
-→ ampliar sin crear deuda financiera oculta
-→ aprobar/disputar
-→ cerrar
-→ calificar
+código/migración
+→ validación
+→ maestros afectados
+→ Roadmap
+→ próximo riesgo visible
 ```
 
-Proveedor puede aceptar, completar y cobrar. Admin puede resolver excepciones. Permisos, dinero y evidencia están protegidos. E2E y release gates son demostrables.
-
 ---
 
-# 17. Qué NO hacer ahora
+# 15. Regla final
 
-- crear otra app paralela;
-- reescribir todo el frontend;
-- sumar features P3 mientras P0 está abierto;
-- declarar release sin tests/smoke;
-- duplicar estados en UI;
-- tratar efectivo como protegido;
-- aprobar alcance extra con costo no financiado;
-- confundir contract tests con E2E;
-- mezclar Demanda con Oportunidades;
-- mantener Provider legacy como segunda operación.
-
----
-
-# 18. Regla de conciencia continua
-
-Después de cada bloque relevante de implementación:
-
-```text
-actualizar código
-→ validar lo que corresponda
-→ actualizar maestros afectados
-→ actualizar este Roadmap
-→ dejar visible el próximo riesgo
-```
-
-El Roadmap debe permitir entender la realidad de UGO sin depender de memoria de conversación ni de reconstruir commits históricos.
-
----
-
-# 19. Regla final
-
-**El próximo gran avance de UGO no es agregar más cosas: es convertir el circuito que ya existe en un sistema confiable, validado, medible, repetible y documentado al mismo ritmo que evoluciona.**
+**El próximo gran avance de UGO es convertir el circuito ya existente —incluidas sus integraciones— en un sistema confiable, validado, medible, repetible y observable.**
