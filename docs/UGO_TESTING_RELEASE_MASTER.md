@@ -1,216 +1,290 @@
 # UGO — Testing & Release Master
 
-**Versión:** 1.1 · 11 de septiembre de 2026  
-**Estado:** contrato de calidad y salida a producción  
-**Rama de integración:** `main`  
-**Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
+**Versión:** 2.0 · 11 de septiembre de 2026  
+**Estado:** contrato maestro de calidad y release  
+**Rama de integración:** `main`
 
-> `IMPLEMENTADO ≠ VALIDADO ≠ RELEASED`. Un commit no significa que una función esté terminada. Roadmap sólo puede marcar `HECHO` cuando se satisface la validación requerida por este documento.
+> `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. UGO sólo puede crecer con confianza si cada tramo crítico demuestra que funciona con estado real, permisos reales y recuperación real.
 
 ---
 
 # 1. Quality Gates
 
 ```text
-TypeScript → Build → Lint
-→ Domain/Security
-→ flujo funcional
-→ roles/RLS
-→ Realtime/Storage
-→ responsive/accessibility
-→ integración externa
-→ E2E
-→ deploy/CI
-→ smoke production
+L0 TypeScript/Lint
+→ L1 Component/UX states
+→ L2 Domain/RPC/API
+→ L3 RLS/roles/Storage
+→ L4 Integration/Realtime/Pagos/Mapas
+→ L5 E2E Cliente↔Proveedor↔Admin
+→ L6 Deploy/Smoke/Rollback readiness
 ```
 
-```bash
-npm run build
-# tsc -b && vite build
-```
-
-No declarar “build OK”, “deploy OK” o “E2E OK” sin evidencia de ejecución/CI.
+No declarar `OK` sin evidencia de ejecución.
 
 ---
 
-# 2. Niveles
+# 2. Scripts mínimos objetivo
+
+El repositorio debe converger a:
 
 ```text
-L0 Static       TypeScript/lint
-L1 Component    componentes + estados UX
-L2 Domain       RPC/API/transiciones/constraints
-L3 Security     RLS/roles/Storage
-L4 Integration  Supabase/Realtime/pagos/mapas
-L5 E2E          Cliente ↔ Proveedor ↔ Admin
-L6 Release      deploy + smoke + rollback readiness
+npm run build
+npm run lint
+npm run test
+npm run test:e2e
 ```
+
+Mientras `test`/`test:e2e` no existan, el estado de validación automática es incompleto y debe figurar como tal en Roadmap.
 
 ---
 
-# 3. E2E ecosistémico crítico
+# 3. E2E ecosistémico principal
 
 ```text
 Cliente registro/login
-→ solicitud + evidencia previa
+→ onboarding
+→ solicitud + evidencia
 → matching
-→ oportunidad vinculada al mismo serviceId
-→ Proveedor analiza evidencia
+→ oportunidad mismo serviceId
+→ Proveedor autorizado ve contexto
 → acepta
 → asignación única
-→ pago electrónico O efectivo seleccionado
+→ pago electrónico protegido O efectivo seleccionado
 → en camino
 → llegada
-→ evidencia antes
+→ evidencia inicial
 → iniciar
-→ evidencia durante
-→ ampliación opcional + aprobación Cliente
+→ ampliación opcional
 → evidencia final
 → solicitar finalización
 → Cliente aprueba O disputa
 → cierre/cobro según método
 → calificación/historial
-→ datos disponibles para Admin/Scout
+→ Admin/Scout reciben datos correctos
 ```
 
-Este es el smoke funcional de referencia del ecosistema.
+---
+
+# 4. E2E electrónico
+
+Probar:
+
+```text
+selección
+creación/autorización
+webhook
+retención/protección
+retry
+webhook duplicado
+liberación
+reembolso/disputa
+ampliación con ajuste
+```
+
+Aserción: servicio no debe avanzar por una condición financiera inexistente cuando el contrato exige custodia.
 
 ---
 
-# 4. Cliente
+# 5. E2E efectivo
 
-Verificar auth/recovery, onboarding, Home/Radar, búsqueda, solicitud, evidencia previa integrada, matching, proveedor seleccionado, pago electrónico/efectivo, tracking/ETA, servicio activo, ampliación, evidencia final, aprobación/disputa, historial, notificaciones y offline/retry.
+Probar:
+
+```text
+selección de efectivo
+servicio habilitado
+copy correcto
+confirmación proveedor
+confirmación duplicada
+registro financiero
+comisión/ledger cuando aplique
+cierre Cliente
+disputa sin promesa de reembolso automático UGO
+```
+
+Aserción obligatoria: **ningún estado o UI describe efectivo como electrónicamente protegido.**
 
 ---
 
-# 5. Proveedor
+# 6. Cliente
 
-Verificar onboarding/verificación, online/offline, Home, Demanda, Oportunidades, `serviceId`, evidencia previa, aceptar/rechazar, concurrencia, trabajo activo, llegada, evidencia operacional, ampliación, efectivo, cierre/cobro, Realtime/reconexión y ausencia de dependencia funcional de `ProviderApp` legacy.
+Validar:
+
+```text
+auth/recovery
+onboarding
+Home/Radar
+búsqueda/categorías
+solicitud
+evidencia previa
+matching
+proveedor seleccionado
+pago method-aware
+tracking
+servicio activo
+ampliación
+aprobación/disputa
+historial/notificaciones
+offline/retry
+```
 
 ---
 
-# 6. Admin / Super Admin
+# 7. Proveedor
 
-Pruebas positivas y negativas sobre operaciones, personas/KYC, finanzas/retiros, disputas, Scout, configuración, roles, feature flags y auditoría. Query params o UI nunca deben escalar privilegios.
+Validar:
+
+```text
+auth/onboarding/KYC
+Online/Offline
+Home
+Demanda
+Oportunidades
+serviceId
+evidencia autorizada
+aceptar/rechazar
+concurrencia
+trabajo activo
+tracking
+evidencia operacional
+ampliación
+efectivo
+ganancias
+Realtime/reconexión
+sin dependencia operacional legacy
+```
 
 ---
 
-# 7. RLS / Seguridad
+# 8. Admin / Super Admin
+
+Pruebas positivas y negativas sobre:
+
+```text
+acceso por rol
+KYC
+servicios
+finanzas/retiros
+disputas
+configuración
+feature flags
+auditoría
+```
+
+Query params o UI nunca escalan privilegios.
+
+---
+
+# 9. RLS
 
 Para cada tabla/bucket sensible:
 
 ```text
-dueño/participante autorizado → permitido
-otro cliente                  → denegado
-otro proveedor                → denegado
-anónimo                        → denegado salvo público explícito
-admin                          → según privilegio real
+actor autorizado → permitido
+actor no participante → denegado
+anónimo → denegado salvo público explícito
+admin → según privilegio real
 ```
 
-Incluir upload/read/delete, signed URLs y expiración.
+Incluir upload/read/delete y signed URLs cuando aplique.
 
 ---
 
-# 8. Pagos
+# 10. Concurrencia e idempotencia
 
-## Electrónico
+Obligatorio probar:
 
 ```text
-éxito
-fallo
-retry
-webhook duplicado
-protección/retención
-liberación
-reembolso/disputa
-ampliación con pendiente_ajuste
+dos proveedores aceptando misma oportunidad
+doble click
+doble webhook
+doble confirmación efectivo
+doble aprobación ampliación
+doble cierre
+doble retiro
+retry después de timeout
 ```
 
-## Efectivo
+Resultado debe ser determinista y auditable.
+
+---
+
+# 11. Realtime
 
 ```text
-selección
-servicio habilitado
-confirmación proveedor
-registro final
-doble confirmación
-cierre Cliente
+evento correcto
+sin duplicado
+cleanup
+reconexión
+refetch
+cambio de usuario/serviceId
+múltiples pestañas cuando aplique
 ```
 
-Aserción obligatoria: ninguna UI/estado describe efectivo como electrónicamente protegido.
+Cliente y Proveedor deben converger al mismo estado persistido.
 
 ---
 
-# 9. Realtime
+# 12. Responsive
 
-Evento una vez, actualización correcta, cleanup, reconexión, cambio de usuario/servicio, duplicado, fallback refetch y múltiples pestañas cuando aplique. Cliente y Proveedor deben converger al mismo estado persistido.
-
----
-
-# 10. Responsive
+Validar:
 
 ```text
 360×800
-390×844 referencia
+390×844
 430×932
 768 tablet
 1280 desktop
 1440 desktop
 ```
 
-Validar safe areas, teclado, scroll, sheets, navegación, mapas, modales, formularios y targets `≥48px`. Desktop es shell real, no mobile estirado.
+Safe area, teclado, scroll, nav, mapa, sheet, modal y formularios.
 
 ---
 
-# 11. Accesibilidad
+# 13. Accesibilidad
 
-WCAG AA, foco visible, teclado web, labels/aria, estados no sólo por color, reduced motion, errores accionables y orden lógico.
-
----
-
-# 12. Estados UX
+Objetivo WCAG AA:
 
 ```text
-DATA: loading → loaded / empty / error→retry / offline
-MUTATION: idle → submitting → success / error→recovery
+foco visible
+teclado
+labels/aria
+contraste
+estado no sólo por color
+targets ≥48px
+reduced motion
+orden lógico
+errores accionables
 ```
 
-Probar doble envío y salida de pantalla durante submitting.
+---
+
+# 14. Recuperación
+
+Todo E2E crítico debe cubrir:
+
+```text
+timeout
+error 4xx/5xx
+sin conexión
+reconexión
+sin proveedor
+rechazo
+sin método de pago
+cancelación
+retry
+```
+
+No basta probar happy path.
 
 ---
 
-# 13. Mapas/geolocalización
+# 15. CI / Deploy
 
-Permiso aceptado/denegado, ubicación ausente, proveedor sin posición, routing fallido, ETA ausente y fallback textual/lista. Mapa nunca es single point of failure.
+Release requiere evidencia del estado CI/deploy.
 
----
-
-# 14. Evidencias
-
-Solicitud: upload, preview, delete/retry, vínculo inequívoco a draft/servicio, acceso proveedor autorizado y bloqueo de terceros.
-
-Operacional: antes/durante/después, signed URL y guards backend de inicio/cierre.
-
----
-
-# 15. Ampliaciones
-
-Cliente y Proveedor como proponentes, aprobación/rechazo, doble resolución, costo/tiempo, cash, sin pago, electrónico protegido y `pendiente_ajuste`. Cliente es autoridad de aprobación del alcance adicional.
-
----
-
-# 16. Hugo / Scout / Academia
-
-Hugo: comprobar que no pueda ejecutar acciones fuera del permiso/estado del usuario.  
-Scout: recomendaciones basadas en datos autorizados y sin PII innecesaria.  
-Academia: progreso/certificación no debe otorgar privilegios operativos sin reglas de dominio explícitas.
-
----
-
-# 17. CI / Vercel
-
-Release requiere evidencia del estado CI/deploy. Si no hay checks, estado = `DESCONOCIDO`, no `OK`.
-
-Smoke:
+Smoke mínimo:
 
 ```text
 landing
@@ -218,77 +292,75 @@ landing
 ?app=provider
 ?app=admin
 ?app=web
+Auth
+Supabase data
 API crítica
-Supabase auth/data
 ```
 
----
-
-# 18. Rollback
-
-Commit anterior identificado, migraciones evaluadas, evitar rollback destructivo, feature flags para riesgo alto y compatibilidad gradual frontend/backend.
+Si no hay check verificable: estado `DESCONOCIDO`, nunca asumir `OK`.
 
 ---
 
-# 19. Severidad
+# 16. Severidad
 
 ```text
-P0 seguridad · pérdida de datos · dinero · auth · core roto
+P0 seguridad · datos · auth · dinero · core roto
 P1 flujo principal degradado · Realtime/UX crítico
-P2 función secundaria · consistencia · escala
-P3 polish · expansión no crítica
+P2 secundaria · consistencia · escala
+P3 polish
 ```
 
-No lanzar con P0 conocido.
+No release con P0 conocido.
 
 ---
 
-# 20. Definition of Done ecosistémica
+# 17. Definition of Done
 
 ```text
-flujo funcional definido
+contrato funcional definido
 UI/UX compatible
-arquitectura correcta
-datos/RLS/RPC correctos
-Realtime/Storage si aplica
+estado persistido correcto
+RLS/RPC correcto
+método de pago correcto
 happy/error/offline
 responsive/accesibilidad
-TypeScript/build
-E2E del tramo
-CI/deploy verificado o explícitamente pendiente
-documentos autoridad actualizados
+build/lint
+tests del tramo
+E2E cuando aplique
+CI/deploy/smoke
+rollback evaluado
+maestros actualizados
 Roadmap actualizado
 ```
 
 ---
 
-# 21. Release Checklist
+# 18. Release checklist
 
 ```text
 [ ] main contiene cambios esperados
-[ ] no arrastra históricos no deseados
-[ ] npm run build
+[ ] build
 [ ] lint
+[ ] tests disponibles ejecutados
 [ ] flujo afectado
-[ ] serviceId/estado compartido entre roles
+[ ] mismo serviceId entre roles
 [ ] permisos/RLS
-[ ] Realtime
-[ ] pagos y método correcto
+[ ] concurrencia/idempotencia
+[ ] pagos method-aware
 [ ] Storage/evidencia
-[ ] ampliaciones si aplica
-[ ] mobile 390×844
+[ ] Realtime/reconexión
+[ ] mobile
 [ ] desktop
 [ ] accesibilidad
-[ ] Hugo/Scout si aplica
-[ ] CI/Vercel
+[ ] CI/deploy
 [ ] smoke
 [ ] rollback
-[ ] maestros actualizados
-[ ] Roadmap refleja validación real
+[ ] maestros
+[ ] Roadmap
 ```
 
 ---
 
-# 22. Regla final
+# 19. Regla final
 
-**UGO no está listo porque existe código o porque se ve bien; está listo cuando el circuito real funciona, está protegido, es coherente entre roles y puede recuperarse de errores.**
+**UGO está listo cuando el circuito real funciona, resiste errores, preserva integridad y puede demostrarse; no porque exista código o se vea bien.**
