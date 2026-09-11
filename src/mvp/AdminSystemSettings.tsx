@@ -1,23 +1,25 @@
 import React,{useMemo,useState}from'react'
 import{useConfigSistema}from'../hooks/useAdminData'
 import{AdminPaymentCredentials}from'./AdminPaymentCredentials'
+import{AdminPaymentMethods}from'./AdminPaymentMethods'
 import'./admin-system-settings.css'
 
-type Group='general'|'rules'|'credentials'|'technical'
+type Group='general'|'rules'|'payments'|'credentials'|'technical'
 
 const human=(key:string)=>key.replace(/_/g,' ').replace(/\b\w/g,c=>c.toUpperCase())
 const isSecret=(key:string)=>/api_|secret|token|password|senha|key$/i.test(key)
+const isPaymentMethod=(key:string)=>/^pago_efectivo_/i.test(key)
 const isRule=(key:string)=>/(matching|radio|timeout|comision|escrow|retiro|moneda|pago|pix|mercado|verific|document|proveedor|cliente|cancel|servicio|hugo|voz|oferta|minimo|maximo|tolerancia)/i.test(key)
 const boolValue=(value:string)=>['true','false','1','0','si','no','sí'].includes(String(value).toLowerCase())
 const toBool=(value:string)=>['true','1','si','sí'].includes(String(value).toLowerCase())
 
 export function AdminSystemSettings(){
- const{config,loading,update,refetch}=useConfigSistema()
+ const{config,loading,error,update,refetch}=useConfigSistema()
  const[tab,setTab]=useState<Group>('general')
  const entries=useMemo(()=>Object.entries(config||{}).filter(([key])=>!isSecret(key)),[config])
  const groups=useMemo(()=>{
   const general:[string,string][]=[];const rules:[string,string][]=[]
-  entries.forEach(([key,value])=>{if(isRule(key))rules.push([key,String(value??'')]);else general.push([key,String(value??'')])})
+  entries.forEach(([key,value])=>{if(isPaymentMethod(key))return;if(isRule(key))rules.push([key,String(value??'')]);else general.push([key,String(value??'')])})
   return{general,rules}
  },[entries])
  const renderEditor=(items:[string,string][])=>{
@@ -26,10 +28,12 @@ export function AdminSystemSettings(){
  }
  if(loading)return <div className="ugo-system-state">Cargando configuración del sistema…</div>
  return <div className="ugo-system-panel">
-  <section className="ugo-system-hero"><div><small>CONFIGURACIÓN GLOBAL</small><h3>Sistema UGO</h3><p>Parámetros globales, credenciales privadas y estado técnico. Las claves sensibles nunca se muestran desde config_sistema.</p></div><button onClick={()=>{void refetch()}}>↻ Actualizar</button></section>
-  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='credentials'?'active':''} onClick={()=>setTab('credentials')}>Credenciales de pago</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
+  <section className="ugo-system-hero"><div><small>CONFIGURACIÓN GLOBAL</small><h3>Sistema UGO</h3><p>Parámetros globales, medios de pago, credenciales privadas y estado técnico. Las claves sensibles nunca se muestran desde config_sistema.</p></div><button onClick={()=>{void refetch()}}>↻ Actualizar</button></section>
+  {error&&<div className="ugo-system-state error"><strong>No se pudo cargar toda la configuración</strong><span>{error}</span></div>}
+  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='payments'?'active':''} onClick={()=>setTab('payments')}>Medios de pago</button><button className={tab==='credentials'?'active':''} onClick={()=>setTab('credentials')}>Credenciales de pago</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
   {tab==='general'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>GENERAL</small><h4>Operación global</h4></div><span>{groups.general.length} parámetros</span></div>{renderEditor(groups.general)}</section>}
   {tab==='rules'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>REGLAS DE NEGOCIO</small><h4>Matching, servicios, pagos y políticas</h4></div><span>{groups.rules.length} parámetros</span></div>{renderEditor(groups.rules)}</section>}
+  {tab==='payments'&&<AdminPaymentMethods config={config} update={update}/>} 
   {tab==='credentials'&&<AdminPaymentCredentials/>}
   {tab==='technical'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>ESTADO TÉCNICO</small><h4>Salud del panel y conexión</h4></div></div><div className="ugo-system-health"><article><small>ENTORNO</small><strong>{import.meta.env.MODE}</strong><span>Build web actual</span></article><article><small>NAVEGADOR</small><strong>{navigator.onLine?'Online':'Offline'}</strong><span>Conectividad del dispositivo</span></article><article><small>CONFIG SISTEMA</small><strong>{entries.length}</strong><span>Parámetros visibles cargados</span></article><article><small>ORIGEN</small><strong>Supabase</strong><span>config_sistema + almacén privado</span></article></div></section>}
  </div>
