@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.3 · 11 de septiembre de 2026  
+**Versión:** 2.4 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -58,15 +58,17 @@ P3 expansión/polish
 # 3. P0 — cerrar antes de expandir
 
 ```text
-[x] npm run build main verificado por baseline CI #190
-[x] npm run lint crítico y general verificado por baseline CI #190
+[x] npm run build main tiene baseline verde CI #190; cambios actuales requieren último CI
+[x] npm run lint crítico/general tiene baseline verde CI #190; cambios actuales requieren último CI
 [ ] incorporar runner de tests automatizados
 [ ] incorporar E2E ejecutable
 [ ] serviceId único Cliente↔Proveedor completamente validado E2E
 [x] aceptación de oportunidad atómica endurecida backend
 [ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones completamente validada
 [x] guards backend evidencia inicial/final implementados
-[x] guard temporal de tipo de evidencia implementado en backend
+[x] guard temporal de tipo de evidencia implementado backend
+[x] guard de ampliación sin financiamiento implementado backend
+[ ] checkout/reconciliación de delta electrónico para ampliaciones con costo
 [ ] pagos electrónico/efectivo method-aware extremo a extremo validado E2E
 [ ] idempotencia efectivo/webhooks/retiros cerrada completa
 [ ] autorización Admin/Super server-side cerrada completa
@@ -97,13 +99,13 @@ Solicitud guiada por Hugo
 
 Cierres relevantes:
 
-- `20260911213500_payment_ready_offer_tariff.sql`: garantiza que una oferta/asignación operable tenga tarifa real; no inventa precio.
-- `20260911214500_payment_method_lock.sql`: impide cambiar arbitrariamente el método después de elegirlo; sólo un pago fallido vuelve a ser elegible para cambio.
-- `ClientPaymentChoice.tsx`: UI alineada con el lock backend.
-- aceptación de oportunidades serializada/atómica por servicio.
-- cash first-class: selección cliente + confirmación proveedor, sin presentar efectivo como custodia electrónica.
+- `20260911213500_payment_ready_offer_tariff.sql`: oferta/asignación operable exige tarifa real; no inventa precio.
+- `20260911214500_payment_method_lock.sql`: no cambia arbitrariamente método después de elegirlo; pago fallido permite recuperación.
+- `ClientPaymentChoice.tsx`: UI alineada con lock backend.
+- aceptación serializada/atómica por servicio.
+- cash first-class: selección cliente + confirmación proveedor sin fingir custodia electrónica.
 
-Integridad verificada en producción después del hardening de tarifa:
+Integridad verificada en producción:
 
 ```text
 servicios asignados sin tarifa válida = 0
@@ -111,8 +113,6 @@ ofertas pendientes sin tarifa válida = 0
 ```
 
 ## Bloque B — en camino → llegada → inicio
-
-Estado implementado en `main`:
 
 ```text
 asignado + forma de pago válida
@@ -124,36 +124,51 @@ asignado + forma de pago válida
 → en_progreso
 ```
 
-Cierres del bloque:
+Cierres:
 
 - radio de llegada UI/backend alineado en **200 m**;
-- `ProviderActiveJob` explica que UGO valida la llegada cuando hay coordenada de cliente;
-- `ProviderEvidencePanel` sólo ofrece tipos de evidencia compatibles con el estado real;
-- `20260911215500_service_evidence_state_guard.sql` impide usar una foto `Después` tomada antes de iniciar como evidencia final futura;
-- backend permite `Antes` sólo en `llegado`, `Durante` en `en_progreso`, y `Después` desde `en_progreso` (o `esperando_aprobacion` sólo para recuperación histórica);
-- producción verificada sin servicios actuales `llegado`/`esperando_aprobacion` faltantes de la evidencia exigida para su estado.
+- `ProviderActiveJob` explica validación de llegada;
+- `ProviderEvidencePanel` ofrece sólo evidencia compatible con estado;
+- `20260911215500_service_evidence_state_guard.sql` impide pre-cargar una foto `Después` antes de iniciar;
+- backend: `Antes` sólo en `llegado`, `Durante`/`Después` en `en_progreso`, `Después` en `esperando_aprobacion` sólo para recuperación histórica;
+- producción sin servicios actuales `llegado`/`esperando_aprobacion` faltantes de evidencia requerida para su estado al momento del control.
 
-La migración de integridad temporal ya está aplicada en Supabase producción.
+La migración está aplicada en Supabase producción.
 
-## Bloque C — cierre y aprobación
+## Bloque C — ampliación → cierre → aprobación
 
-Primer hardening ya integrado:
+Hardening integrado:
 
-- `ClientCompletionReview` busca sólo servicios `esperando_aprobacion` del cliente autenticado;
-- la evidencia final que habilita aprobación debe pertenecer al proveedor asignado;
-- ausencia de forma de pago deja aprobación deshabilitada;
-- CI crítico ahora incluye `ClientCompletionReview` y `ProviderEvidencePanel`.
+- `ClientCompletionReview` busca sólo `esperando_aprobacion` del cliente autenticado;
+- evidencia final habilitante debe pertenecer al proveedor asignado;
+- sin forma de pago no se habilita aprobación;
+- `20260911222000_service_expansion_payment_guard.sql` ya está aplicada en producción;
+- ampliación con costo y **pago electrónico activo** no puede aprobarse hasta financiar el delta;
+- sin pago, efectivo pendiente o pago fallido/reembolsado: el total se reajusta según contrato;
+- una ampliación histórica `aprobada + pendiente_ajuste` bloquea `en_progreso → esperando_aprobacion`;
+- producción tenía **0 ampliaciones** al aplicar el guard, por lo que no hubo deuda histórica a reparar;
+- `ServiceExpansionPanel` ahora muestra el bloqueo financiero y deshabilita una aprobación electrónica engañosa;
+- `ServiceExpansionPanel`, `ClientCompletionReview` y `ProviderEvidencePanel` están incorporados al lint crítico del CI.
 
-Todavía no se declara el bloque VALIDATED porque falta E2E method-aware y conciliación de ampliaciones electrónicas.
+Riesgo P0 que queda visible y NO se oculta:
 
-Próximo riesgo principal visible:
+```text
+pago electrónico activo
++ trabajo adicional con costo
+→ falta checkout específico del delta
+→ falta webhook/idempotencia/reconciliación del delta
+→ recién entonces puede aprobarse la ampliación
+```
+
+Validación CI: el run #206 detectó deuda de lint en las nuevas superficies aunque el build pasó. Los errores fueron corregidos en `ClientCompletionReview` y `ProviderEvidencePanel`; falta confirmar el último run de `main` antes de marcar el bloque verde.
+
+Próximo recorrido principal:
 
 ```text
 en_progreso
-→ ampliación opcional
+→ ampliación opcional financiada si tiene costo
 → evidencia Después
-→ efectivo recibido o pago electrónico protegido
-→ resolver ajuste de ampliación si existe
+→ efectivo recibido o electrónico protegido
 → esperando_aprobacion
 → aprobación/disputa
 → completado
@@ -180,7 +195,7 @@ en_progreso
 | Tracking/ETA | 🟡 | P1 | E2E/reconexión/fallback |
 | Llegada proveedor | 🟡 | P1 | validar E2E radio/ubicación |
 | Servicio activo | 🟡 | P0 | narrativa única |
-| Ampliar servicio | 🟡 | P0 | reconciliación method-aware |
+| Ampliar servicio | 🟡 | P0 | guard seguro listo; falta checkout delta electrónico + E2E |
 | Aprobación/Disputa | 🟡 | P0 | ownership endurecido; falta E2E por método |
 | Historial/Reputación | 🟡 | P1 | validación integrada |
 | Notificaciones | 🟡 | P1 | contrato de eventos |
@@ -203,7 +218,7 @@ en_progreso
 | Tracking | 🟡 | P1 | ETA/reconexión |
 | Radio de llegada 200 m | ✅ | P1 | contrato UI/backend alineado; falta E2E GPS |
 | Evidencia operacional por estado | ✅ | P0 | guard backend + UI alineada; falta E2E negativo/positivo |
-| Ampliar servicio | 🟡 | P0 | E2E + ajuste electrónico |
+| Ampliar servicio | 🟡 | P0 | no permite alcance con costo electrónico no financiado; falta delta checkout |
 | Efectivo recibido | 🟡 | P0 | ledger + E2E |
 | Ganancias | 🟡 | P1 | timeline financiero claro |
 | Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
@@ -240,12 +255,13 @@ Orden recomendado:
 5 E2E electrónico
 6 E2E efectivo
 7 E2E llegada/evidencia Antes/inicio
-8 E2E evidencia Después/ampliación/cierre
-9 responsive/accessibility smoke
-10 CI/Vercel smoke
+8 E2E ampliación method-aware
+9 E2E evidencia Después/cierre
+10 responsive/accessibility smoke
+11 CI/Vercel smoke
 ```
 
-Casos P0/P1 inmediatos del Bloque B/C:
+Casos P0/P1 inmediatos:
 
 ```text
 >200 m con ubicación cliente → llegada rechazada
@@ -257,6 +273,9 @@ llegado + Antes → inicio permitido
 cliente A no puede aprobar servicio de cliente B
 foto Después de otro usuario no habilita aprobación
 sin pago confirmado → aprobación deshabilitada/rechazada
+pago electrónico activo + ampliación con costo → aprobación rechazada
+ampliación histórica pendiente_ajuste → revisión bloqueada
+efectivo pendiente + ampliación → total consistente en servicio y pago
 ```
 
 Scripts objetivo:
@@ -271,8 +290,8 @@ npm run test:e2e
 Estado actual:
 
 ```text
-build = disponible; baseline verde confirmado CI #190
-lint = disponible; baseline verde confirmado CI #190
+build = CI #206 pasó build en cambios recientes
+lint crítico = CI #206 detectó errores; fixes integrados, último CI pendiente de confirmar
 test = pendiente
 test:e2e = pendiente
 ```
@@ -387,6 +406,7 @@ Antes de escalar adquisición, demostrar:
 ```text
 comisión electrónica conciliada
 comisión efectivo trazable
+ampliaciones con costo financiadas/reconciliadas
 retiros seguros
 margen conocido
 coste por servicio controlado
@@ -430,7 +450,7 @@ registrarse
 → elegir método/pagar
 → seguir llegada
 → ejecutar con trazabilidad
-→ ampliar
+→ ampliar sin crear deuda financiera oculta
 → aprobar/disputar
 → cerrar
 → calificar
@@ -448,6 +468,7 @@ Proveedor puede aceptar, completar y cobrar. Admin puede resolver excepciones. P
 - declarar release sin tests/smoke;
 - duplicar estados en UI;
 - tratar efectivo como protegido;
+- aprobar alcance extra con costo no financiado;
 - mezclar Demanda con Oportunidades;
 - mantener Provider legacy como segunda operación.
 
