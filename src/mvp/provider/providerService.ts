@@ -17,6 +17,6 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
 }
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
-export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error)throw error}
+export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error)throw error;if(!data)throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}
 export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error)throw error}
 export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state});if(error)throw error}
