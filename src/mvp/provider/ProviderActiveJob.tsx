@@ -16,11 +16,11 @@ export function ProviderActiveJob(){
  const paymentReady=d.funded||d.cashSelected
  const cashAwaitingReceipt=d.cashSelected&&!d.cashConfirmed
  let action:NextAction|null=null
- if(s.estado==='asignado'&&paymentReady)action={label:'Salir hacia el cliente',state:'en_camino',kind:'state',disabled:false,hint:'Confirmá cuando estés listo para salir.'}
- else if(s.estado==='en_camino')action={label:'Confirmar llegada',state:'llegado',kind:'state',disabled:false,hint:'Usá esta acción cuando estés en la dirección del cliente.'}
- else if(s.estado==='llegado')action={label:'Iniciar servicio',state:'en_progreso',kind:'state',disabled:!evidence.initial,hint:evidence.initial?'La evidencia inicial está lista.':'Primero registrá una evidencia “Antes”.'}
- else if(s.estado==='en_progreso'&&cashAwaitingReceipt)action={label:'Confirmar efectivo recibido',kind:'cash',disabled:!evidence.final,hint:evidence.final?'Confirmá únicamente cuando el cliente ya te haya entregado el efectivo.':'Subí una evidencia “Después” antes de cerrar el trabajo.'}
- else if(s.estado==='en_progreso')action={label:'Finalizar y pedir aprobación',state:'esperando_aprobacion',kind:'state',disabled:!evidence.final,hint:evidence.final?'La evidencia final está lista.':'Subí una evidencia “Después” antes de finalizar.'}
+ if(s.estado==='asignado'&&paymentReady)action={label:'Salir hacia el cliente',state:'en_camino',kind:'state',disabled:false,hint:'Confirmá cuando estés listo para salir. Desde ahí UGO comparte tu ubicación durante el traslado.'}
+ else if(s.estado==='en_camino')action={label:'Confirmar llegada',state:'llegado',kind:'state',disabled:false,hint:'Confirmá al llegar. Si la solicitud tiene ubicación exacta, UGO valida que estés dentro del radio operativo de 200 m.'}
+ else if(s.estado==='llegado')action={label:'Iniciar servicio',state:'en_progreso',kind:'state',disabled:!evidence.initial,hint:evidence.initial?'La evidencia “Antes” está registrada. Ya podés iniciar.':'Primero registrá una foto “Antes” real del estado inicial.'}
+ else if(s.estado==='en_progreso'&&cashAwaitingReceipt)action={label:'Confirmar efectivo recibido',kind:'cash',disabled:!evidence.final,hint:evidence.final?'Confirmá únicamente cuando el cliente ya te haya entregado el efectivo.':'Subí una evidencia “Después” tomada al finalizar antes de cerrar el trabajo.'}
+ else if(s.estado==='en_progreso')action={label:'Finalizar y pedir aprobación',state:'esperando_aprobacion',kind:'state',disabled:!evidence.final,hint:evidence.final?'La evidencia final está lista.':'Subí una evidencia “Después” tomada al finalizar antes de pedir aprobación.'}
  else if(s.estado==='esperando_aprobacion'&&cashAwaitingReceipt)action={label:'Confirmar efectivo recibido',kind:'cash',disabled:!evidence.final,hint:evidence.final?'Este servicio quedó en un estado anterior incompleto. Confirmá el cobro para habilitar la aprobación del cliente.':'Falta la evidencia final antes de confirmar el cobro.'}
  const displayState=s.estado==='esperando_aprobacion'&&cashAwaitingReceipt?'Cobro pendiente':STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
  const runAction=()=>{if(!action)return;if(action.kind==='cash')void d.confirmCash();else if(action.state)void d.advance(action.state)}
