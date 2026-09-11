@@ -1,23 +1,22 @@
 # UGO — Roadmap Master
 
-**Versión:** 1.0 · 11 de septiembre de 2026  
+**Versión:** 1.1 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
-**Rama de verdad:** `main`
+**Rama de verdad:** `main`  
+**Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
-> Este documento ordena qué está HECHO, PARCIAL, PENDIENTE o BLOQUEADO. No sustituye GitHub; establece prioridad y evita desarrollar funciones nuevas antes de cerrar contratos críticos.
+> Este documento registra prioridad y madurez. `IMPLEMENTADO ≠ VALIDADO ≠ RELEASED`: sólo Testing & Release puede habilitar un `✅ HECHO` definitivo.
 
 ---
 
-# 1. Leyenda
+# 1. Estados
 
 ```text
-✅ HECHO      integrado en main
-🟡 PARCIAL   existe pero necesita cierre/validación
-⬜ PENDIENTE todavía no cerrado
+✅ HECHO      integrado + validación requerida satisfecha
+🟡 PARCIAL   implementado total/parcial, falta validación/cierre
+⬜ PENDIENTE no implementado/cerrado
 ⛔ BLOQUEADO depende de tercero/infra/decisión
 ```
-
-Prioridad:
 
 ```text
 P0 integridad/core/seguridad/dinero
@@ -28,312 +27,263 @@ P3 expansión/polish
 
 ---
 
-# 2. Objetivo de producto
-
-Circuito a cerrar:
+# 2. North Star
 
 ```text
-Necesidad → búsqueda → matching → contratación → pago
-→ ejecución → evidencia → aprobación → cobro
-→ reputación → datos → inteligencia → mejora
+Necesidad → búsqueda → solicitud → matching → asignación
+→ contratación/pago → ejecución → evidencia → aprobación
+→ cobro → reputación → datos → inteligencia → mejora
 ```
 
-North Star de ejecución: servicio confiable, trazable y completado dentro de UGO.
+Objetivo: servicio confiable, trazable y completado dentro de UGO.
 
 ---
 
 # 3. Cliente
 
-| Área | Estado | Prioridad | Próximo cierre |
-|---|---|---|---|
-| Auth/Recovery | ✅ | P0 | regresión |
-| Onboarding | ✅ | P1 | polish |
-| Home/Radar | ✅ | P1 | consolidar generación visual |
-| Categorías/Búsqueda | ✅ | P1 | regresión |
-| Solicitud | 🟡 | P0 | integrar fotos dentro del formulario real |
-| Evidencia previa | 🟡 | P0 | draft explícito + validar tipos/build |
+| Área | Estado | P | Próximo cierre |
+|---|---|---:|---|
+| Auth/Recovery | 🟡 | P0 | smoke/regresión |
+| Onboarding | 🟡 | P1 | validación |
+| Home/Radar | 🟡 | P1 | consolidación visual + smoke |
+| Categorías/Búsqueda | 🟡 | P1 | regresión |
+| Solicitud | 🟡 | P0 | fotos dentro del formulario |
+| Evidencia previa | 🟡 | P0 | draft id + RLS + E2E |
 | Matching | 🟡 | P1 | estados/error/alternativas |
-| Proveedor seleccionado | 🟡 | P1 | consolidar UX Stitch |
-| Pago electrónico | 🟡 | P0 | timeline/reconciliación |
-| Efectivo | ✅/🟡 | P0 | copy final + E2E |
-| Tracking/ETA | 🟡 | P1 | cerrar experiencia realtime |
+| Proveedor seleccionado | 🟡 | P1 | UX consolidada |
+| Pago electrónico | 🟡 | P0 | timeline + reconciliación |
+| Efectivo | 🟡 | P0 | copy + idempotencia + E2E |
+| Tracking/ETA | 🟡 | P1 | realtime/fallback |
 | Servicio activo | 🟡 | P0 | narrativa única |
-| Ampliar servicio | ✅/🟡 | P0 | E2E pagos |
-| Evidencia final | ✅/🟡 | P0 | guard backend |
-| Aprobación/Disputa | 🟡 | P0 | wording por método de pago |
-| Historial | ✅/🟡 | P1 | integración visual |
-| Notificaciones | 🟡 | P1 | centro unificado |
+| Ampliar servicio | 🟡 | P0 | E2E pago/estado |
+| Evidencia final | 🟡 | P0 | guard backend |
+| Aprobación/Disputa | 🟡 | P0 | método-aware + E2E |
+| Historial/Reputación | 🟡 | P1 | validación integrada |
+| Notificaciones | 🟡 | P1 | contrato de eventos |
+
+Se eliminan estados `✅` basados únicamente en existencia de código hasta completar el gate de release correspondiente.
 
 ---
 
 # 4. Proveedor
 
-| Área | Estado | Prioridad | Próximo cierre |
-|---|---|---|---|
-| Shell Provider nuevo | ✅ | P0 | eliminar dependencia legacy |
-| Auth/Onboarding | ✅/🟡 | P0 | regresión/KYC |
-| Home | ✅ | P1 | datos/estado final |
-| Demanda | 🟡 | P1 | fuente independiente de mercado |
-| Oportunidades | 🟡 | P0 | verificar `serviceId` + E2E |
-| Evidencia cliente antes de aceptar | ✅/🟡 | P0 | build/RLS |
-| Aceptar/Rechazar | ✅/🟡 | P0 | concurrencia/doble acción |
-| Trabajo activo | ✅/🟡 | P0 | guards backend |
-| Ubicación/Tracking | 🟡 | P1 | ETA/ruta/reconexión |
-| Evidencia operacional | ✅/🟡 | P0 | backend enforcement |
-| Ampliar servicio | ✅/🟡 | P0 | E2E |
-| Efectivo recibido | ✅/🟡 | P0 | idempotencia/E2E |
-| Cobro/ganancias | 🟡 | P1 | timeline financiero |
-| Hugo Asistente de Trabajo | 🟡 | P2 | integración contextual completa |
-| ProviderApp legacy | ⬜ | P0 | retirar como salida operacional |
+| Área | Estado | P | Próximo cierre |
+|---|---|---:|---|
+| Shell nuevo | 🟡 | P0 | smoke + retirar legacy |
+| Auth/Onboarding/KYC | 🟡 | P0 | roles/RLS/regresión |
+| Home | 🟡 | P1 | validación datos/estado |
+| Demanda | 🟡 | P1 | fuente de mercado independiente |
+| Oportunidades | 🟡 | P0 | `serviceId` + E2E |
+| Evidencia cliente | 🟡 | P0 | build/RLS/E2E |
+| Aceptar/Rechazar | 🟡 | P0 | atomicidad/concurrencia |
+| Trabajo activo | 🟡 | P0 | guards backend |
+| Tracking | 🟡 | P1 | ETA/ruta/reconexión |
+| Evidencia operacional | 🟡 | P0 | enforcement backend |
+| Ampliar servicio | 🟡 | P0 | E2E |
+| Efectivo recibido | 🟡 | P0 | idempotencia/E2E |
+| Cobro/Ganancias | 🟡 | P1 | timeline financiero |
+| Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
+| ProviderApp legacy | ⬜ | P0 | retirar salida operacional |
 
 ---
 
 # 5. Admin / Super Admin
 
-| Área | Estado | Prioridad |
-|---|---|---|
-| AdminGate/Auth | ✅/🟡 | P0 |
+| Área | Estado | P |
+|---|---|---:|
+| AdminGate/Auth | 🟡 | P0 |
 | Operaciones | 🟡 | P1 |
-| Personas/Verificación | 🟡 | P1 |
-| Finanzas | 🟡 | P0 |
-| Retiros | 🟡 | P0 |
+| Personas/KYC | 🟡 | P1 |
+| Finanzas/Retiros | 🟡 | P0 |
 | Disputas | 🟡 | P0 |
 | Reportes | 🟡 | P2 |
 | Configuración | 🟡 | P1 |
 | Scout | 🟡 | P2 |
-| Super Admin Command Center | 🟡 | P1 |
-| Roles/permisos/feature flags | 🟡 | P0 |
-| Auditoría crítica | ⬜/🟡 | P0 |
+| Super Admin | 🟡 | P1 |
+| Roles/feature flags | 🟡 | P0 |
+| Auditoría crítica | 🟡 | P0 |
 
-Prioridad Admin: decisiones y excepciones, no sumar dashboards decorativos.
+Admin prioriza decisiones/excepciones; Super Admin gobierna reglas y permisos.
 
 ---
 
-# 6. Data / Backend
-
-P0:
+# 6. Backend / Seguridad P0
 
 ```text
-[ ] auditar RLS de tablas nuevas
-[ ] enforcement backend evidencia antes/final
-[ ] draft/request id para evidencias_solicitud
-[ ] verificar RPC transiciones servicio
+[ ] build/TypeScript main
+[ ] auditar RLS flujos recientes
+[ ] guard backend evidencia inicial/final
+[ ] draft/request id evidencias_solicitud
+[ ] serviceId único Cliente↔Proveedor
+[ ] RPC transiciones servicio
+[ ] atomicidad aceptar oportunidad
 [ ] idempotencia pagos/efectivo/retiros
-[ ] contrato serviceId oportunidades
-```
-
-P1:
-
-```text
-[ ] eventos/notificaciones de dominio unificados
-[ ] Payment Timeline data contract
-[ ] estabilizar Realtime/subscriptions
-[ ] auditoría financiera
-```
-
-P2:
-
-```text
-[ ] vistas agregadas Scout
-[ ] observabilidad
-[ ] políticas de retención/privacidad
-[ ] tests automáticos RLS
+[ ] autorización Admin/Super server-side
+[ ] Storage policies evidencia
 ```
 
 ---
 
-# 7. UI/UX / Stitch
-
-✅ `UGO_UIUX_MAESTRO.md`  
-✅ `UGO_UIUX_STITCH_MASTER.md` v1.1 con características auditadas de ramas Stitch.  
-🟡 Consolidar visualmente Cliente evitando múltiples generaciones CSS.  
-🟡 Migrar Provider al mismo lenguaje Kinetic Trust sin copiar UI histórica.  
-⬜ convergencia Admin/Super Admin.  
-⬜ Landing/Web final responsive.
-
-Regla: Stitch diseña; main y contratos UGO gobiernan.
-
----
-
-# 8. Pagos
-
-P0:
+# 7. Pagos P0
 
 ```text
-[ ] timeline electrónico visible
-[ ] timeline efectivo visible
-[ ] copy cierre según método
+[ ] timeline electrónico desde estado real
+[ ] timeline efectivo desde estado real
+[ ] cierre consciente del método
+[ ] efectivo nunca etiquetado protegido
 [ ] expansión + pago protegido
 [ ] reconciliación de importes
-[ ] E2E pago → servicio → liberación
+[ ] E2E pago → servicio → cierre
 [ ] DEMO/REAL inequívoco
 ```
 
-P1: saldo/wallet sólo si backend real lo soporta; comprobantes; ganancias proveedor; retiros end-to-end.
+---
+
+# 8. UI/UX / Stitch
+
+Documentación de autoridad ya existe. Ejecución pendiente:
+
+```text
+[ ] Cliente converge a un lenguaje Kinetic Trust
+[ ] Provider converge sin copiar legacy
+[ ] Admin/Super Admin converge
+[ ] Landing/Web responsive final
+[ ] eliminar overlays competitivos
+[ ] componentes compartidos antes de duplicados
+```
+
+Stitch diseña; contratos UGO y `main` gobiernan.
 
 ---
 
-# 9. Seguridad
-
-P0:
+# 9. Realtime / Notificaciones P1
 
 ```text
-[ ] RLS matrix Cliente/Proveedor/Admin
-[ ] Storage policies evidencia
-[ ] KYC sensible aislado
-[ ] autorización Admin/Super Admin server-side
-[ ] no service-role en browser
-[ ] acciones monetarias idempotentes
-[ ] pruebas actor autorizado/no autorizado
+[ ] subscriptions estables + cleanup
+[ ] reconexión/refetch
+[ ] eventos de dominio comunes
+[ ] centro de notificaciones
+[ ] push/WhatsApp sólo cuando backend/config lo soporte
 ```
-
-P1: auditoría, alertas operativas y revisión de dependencias.
 
 ---
 
-# 10. Hugo
-
-P1/P2:
+# 10. Hugo P1/P2
 
 ```text
-Cliente: ayuda contextual
-Proveedor: antes/durante/después
-Admin: soporte operacional
+Cliente    ayuda contextual
+Proveedor  checklist → seguridad → diagnóstico → ampliación
+           → evidencia → cierre → aprendizaje
+Admin      soporte operacional autorizado
 ```
 
-Prioridad de Proveedor:
-
-```text
-checklist → materiales → seguridad → diagnóstico
-→ recomendaciones → incidencia/ampliación
-→ cierre/evidencia → aprendizaje
-```
-
-No convertir Hugo en chatbot aislado.
+No chatbot aislado; no bypass de permisos/estado.
 
 ---
 
-# 11. Scout
-
-P2:
+# 11. Scout P2
 
 ```text
 demanda real
 oferta/cobertura
 gaps proveedor
 conversiones
-freshness/tendencias
+tendencias/freshness
 campañas
 calidad
 alertas accionables
 ```
 
-Contrato: `Dato → interpretación → recomendación → acción → resultado`.
+`Dato → interpretación → recomendación → acción → resultado`.
 
 ---
 
-# 12. Academia UGO
-
-P3 después de estabilizar operación core:
+# 12. Academia P3
 
 ```text
-diagnóstico
-ruta de aprendizaje
-contenido
-evaluación
-certificación
-impacto en oportunidades
+Scout/calidad detecta gap
+→ diagnóstico
+→ ruta/contenido
+→ evaluación/certificación
+→ mejora perfil/calidad
+→ mejores oportunidades
+→ Scout vuelve a medir
 ```
 
-Puede priorizarse antes únicamente si una necesidad concreta de calidad/proveedor lo exige.
+Puede subir de prioridad si resuelve un problema P0/P1 de calidad.
 
 ---
 
-# 13. Testing / Release
-
-P0 inmediato:
+# 13. Testing / Release inmediato
 
 ```text
-[ ] npm run build sobre main actual
-[ ] corregir TypeScript si aparece
+[ ] npm run build
+[ ] lint
 [ ] smoke Cliente
 [ ] smoke Proveedor
-[ ] RLS de evidencia/ampliaciones
-[ ] pagos cash/electrónico
-[ ] revisar estado Vercel/CI
+[ ] E2E tramo solicitud→oportunidad
+[ ] RLS evidencia/ampliaciones
+[ ] cash/electrónico
+[ ] mobile 390×844
+[ ] desktop
+[ ] CI/Vercel
 ```
 
-Después: automatizar E2E y policy tests.
+Sólo después actualizar `🟡` a `✅`.
 
 ---
 
 # 14. Ramas
 
-Auditoría en curso. No mergear ramas históricas completas por defecto.
+No mergear ramas históricas completas por defecto.
 
-Candidatas ya integradas/obsoletas detectadas:
+Integradas/obsoletas candidatas: `feat/admin-stitch-ui`, `feat/mvp-operational-flow`, `stage-2-end-to-end`, `feat/client-stitch-ui`.
 
-```text
-feat/admin-stitch-ui
-feat/mvp-operational-flow
-stage-2-end-to-end
-feat/client-stitch-ui
-```
+Preservar/auditar selectivamente: `feat/client-ui-penpot`, `feat/client-ui-stitch`, `feat/client-web-stitch`, `feat/client-ui-stitch-sync`, `feat/admin-superadmin-stitch-sync`, `feat/provider-home-stage-4-1`, `feat/design-system-v1`, `feat/ugo-ui-professional`.
 
-Con material a preservar/auditar:
-
-```text
-feat/client-ui-penpot
-feat/client-ui-stitch
-feat/client-web-stitch
-feat/client-ui-stitch-sync
-feat/admin-superadmin-stitch-sync
-feat/provider-home-stage-4-1
-feat/design-system-v1
-feat/ugo-ui-professional
-```
-
-No borrar hasta finalizar rescate selectivo.
+No borrar hasta rescate verificado.
 
 ---
 
-# 15. Documentación maestra
+# 15. Núcleo documental
 
 ```text
-✅ UGO_ECOSISTEMA_FLUJO.md
-✅ UGO_UIUX_MAESTRO.md
-✅ UGO_UIUX_STITCH_MASTER.md
-✅ UGO_ARQUITECTURA_TECNICA_MASTER.md
-✅ UGO_DATA_BACKEND_MASTER.md
-✅ UGO_TESTING_RELEASE_MASTER.md
-✅ UGO_ROADMAP_MASTER.md
+UGO_MASTER_GOVERNANCE.md               compatibilidad superior
+UGO_ECOSISTEMA_FLUJO.md                producto/flujo
+UGO_UIUX_MAESTRO.md                    experiencia
+UGO_UIUX_STITCH_MASTER.md              Stitch
+UGO_ARQUITECTURA_TECNICA_MASTER.md     arquitectura
+UGO_DATA_BACKEND_MASTER.md             datos/backend
+UGO_TESTING_RELEASE_MASTER.md           calidad/release
+UGO_ROADMAP_MASTER.md                   ejecución
 ```
 
-Estos siete documentos forman el núcleo de gobierno de UGO.
+Governance no agrega un dominio: coordina las siete autoridades.
 
 ---
 
-# 16. Orden recomendado desde hoy
+# 16. Orden de ejecución
 
 ```text
-1 P0 Build/TypeScript main
-2 P0 Backend/RLS/guards recientes
-3 P0 Cliente solicitud + evidencia integrada
-4 P0 Provider oportunidades + serviceId
-5 P0 Pago timeline + cierre método-aware
-6 P1 Tracking/ETA
-7 P1 Notificaciones
-8 P1 Consolidación UI Cliente/Proveedor
-9 P1 Admin financiero/operacional
-10 P2 Scout + Hugo avanzado
-11 P3 Academia/expansión
+1 Build/TypeScript main
+2 RLS/guards/idempotencia
+3 Cliente solicitud + evidencia integrada
+4 Provider oportunidad + serviceId
+5 Pago timeline + cierre method-aware
+6 retirar Provider legacy
+7 Tracking/ETA
+8 Notificaciones
+9 consolidación UI
+10 Admin financiero/operacional
+11 Scout + Hugo avanzado
+12 Academia/expansión
 ```
 
 ---
 
-# 17. Criterio de lanzamiento MVP
+# 17. Criterio MVP
 
-UGO puede considerarse MVP operacional cuando un usuario nuevo puede completar sin intervención manual extraordinaria:
+Un usuario nuevo puede:
 
 ```text
 registrarse
@@ -342,18 +292,16 @@ registrarse
 → contratar/pagar
 → seguir llegada
 → ejecutar con evidencia
-→ ampliar de forma trazable
+→ ampliar trazablemente
 → aprobar/disputar
 → cerrar pago
 → calificar
 ```
 
-Y cuando Admin puede resolver las excepciones críticas con permisos correctos.
+Proveedor puede completar/cobrar; Admin puede resolver excepciones; permisos, dinero y evidencia están protegidos; E2E y release gates pasan.
 
 ---
 
 # 18. Regla final
 
-**Primero cerrar el circuito; después ampliar el ecosistema.**
-
-Cada nueva idea debe demostrar que mejora confianza, calidad, conversión, eficiencia o trazabilidad sin retrasar un P0 pendiente.
+**Primero cerrar y validar el circuito; después ampliar el ecosistema.**
