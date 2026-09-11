@@ -1,48 +1,56 @@
 # UGO — Master Governance
 
-**Versión:** 1.0 · 11 de septiembre de 2026  
+**Versión:** 1.1 · 11 de septiembre de 2026  
 **Estado:** contrato superior de compatibilidad documental  
-**Rama de verdad:** `main`
+**Rama de verdad:** `main`  
+**Entrada al sistema:** `UGO_MASTER_INDEX.md`
 
-> Este documento armoniza los siete documentos maestros de UGO. Cuando dos documentos describan el mismo concepto con distinto nivel de detalle, se aplica la jerarquía y los contratos definidos aquí. No crea un octavo dominio: gobierna la compatibilidad entre los siete.
+> UGO mantiene una sola realidad de producto dividida en documentos por autoridad. Este documento define cómo se resuelven incompatibilidades. `UGO_MASTER_INDEX.md` es la puerta de entrada; Governance es la autoridad de compatibilidad.
 
 ---
 
-# 1. Los siete maestros y su autoridad
+# 1. Sistema maestro
 
 | Documento | Autoridad |
 |---|---|
+| `UGO_MASTER_INDEX.md` | índice, navegación y resumen transversal |
+| `UGO_MASTER_GOVERNANCE.md` | vocabulario, compatibilidad y conflictos |
+| `UGO_DEVELOPMENT_MASTER.md` | proceso de desarrollo, roles, sprints y ejecución |
 | `UGO_ECOSISTEMA_FLUJO.md` | producto, actores, journeys y estados funcionales |
 | `UGO_UIUX_MAESTRO.md` | experiencia, navegación, Design System y contratos UX |
-| `UGO_UIUX_STITCH_MASTER.md` | generación/adaptación visual con Google Stitch |
-| `UGO_ARQUITECTURA_TECNICA_MASTER.md` | estructura de aplicación, fronteras y responsabilidades técnicas |
+| `UGO_UIUX_STITCH_MASTER.md` | generación/adaptación visual con Stitch |
+| `UGO_ARQUITECTURA_TECNICA_MASTER.md` | estructura, fronteras y responsabilidades técnicas |
 | `UGO_DATA_BACKEND_MASTER.md` | datos, RLS, RPC, Realtime, Storage e integridad |
 | `UGO_TESTING_RELEASE_MASTER.md` | calidad, validación, release y Definition of Done |
 | `UGO_ROADMAP_MASTER.md` | estado de ejecución y prioridad P0–P3 |
 
-Ningún documento puede redefinir silenciosamente la autoridad de otro.
+El Index no reemplaza estos contratos: los conecta.
 
 ---
 
-# 2. Jerarquía de resolución de conflictos
+# 2. Jerarquía de resolución
 
 ```text
-Seguridad / integridad real del backend
+Seguridad / integridad ejecutable
 → estado persistido real
-→ flujo funcional maestro
-→ arquitectura técnica
+→ Governance
+→ flujo funcional
+→ arquitectura
 → UI/UX
 → Stitch
-→ roadmap
+→ roadmap/planificación
 ```
 
-Ejemplos:
+Development define **cómo** cambiar el sistema. Testing/Release determina si el cambio quedó VALIDATED/RELEASED.
 
-- Stitch nunca puede inventar un estado que no exista en el flujo/dominio.
-- UI nunca puede llamar “protegido” a un pago en efectivo.
-- Roadmap no puede marcar HECHO algo que Testing/Release todavía no validó.
-- Frontend no puede habilitar una transición que RLS/RPC prohíbe.
-- Un mock visual no se convierte en funcionalidad real por aparecer en Stitch.
+Reglas:
+
+- Stitch nunca inventa estados de dominio.
+- UI nunca llama protegido a un pago en efectivo.
+- Roadmap no marca HECHO un P0 que no superó la validación aplicable.
+- Frontend no habilita una transición prohibida por backend.
+- Un mock no se convierte en función real por aparecer en diseño.
+- Código integrado no equivale automáticamente a producto terminado.
 
 ---
 
@@ -51,13 +59,8 @@ Ejemplos:
 ## Roles
 
 ```text
-Cliente
-Proveedor
-Admin
-Super Admin
-Scout
-Hugo
-Academia UGO
+Cliente · Proveedor · Admin · Super Admin
+Scout · Hugo · Academia UGO
 ```
 
 ## Circuito
@@ -77,7 +80,7 @@ solicitado → buscando → ofertado → asignado
 → esperando_aprobacion → completado
 ```
 
-`pago_protegido` es un estado/condición aplicable a métodos electrónicos con custodia; no es requisito universal para efectivo.
+`pago_protegido` aplica a métodos electrónicos con custodia; no es requisito universal para efectivo.
 
 Excepciones:
 
@@ -92,29 +95,56 @@ offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
 
-## Pagos
-
-Electrónico:
+## Pago electrónico
 
 ```text
 pendiente → autorizado → retenido/protegido
 → liberación pendiente → liberado/pagado
 ```
 
-Efectivo:
+## Efectivo
 
 ```text
 seleccionado → presencial pendiente → servicio habilitado
 → proveedor confirma recepción → registrado
 ```
 
-Regla absoluta: **efectivo no tiene custodia electrónica de UGO**.
+**Efectivo no tiene custodia electrónica UGO.**
 
 ---
 
-# 4. Contrato transversal de confianza
+# 4. Madurez y prioridad
 
-Toda función debe contribuir al menos a uno de estos pilares:
+Madurez profesional:
+
+```text
+IDEA → DEFINED → READY → IN PROGRESS
+→ IMPLEMENTED → VALIDATED → RELEASED → MEASURED
+```
+
+Prioridad:
+
+```text
+P0 integridad/core/seguridad/dinero
+P1 operación necesaria
+P2 inteligencia/optimización/escala
+P3 expansión/polish
+```
+
+Estado Roadmap:
+
+```text
+✅ HECHO      validación aplicable satisfecha
+🟡 PARCIAL   existe pero no está completamente validado/cerrado
+⬜ PENDIENTE no existe o no cierra
+⛔ BLOQUEADO dependencia externa/decisión
+```
+
+---
+
+# 5. Contrato de confianza
+
+Toda función debe contribuir al menos a uno de:
 
 ```text
 Identidad
@@ -127,68 +157,64 @@ Seguridad
 Calidad
 ```
 
-UGO Shield es la representación UX de estas señales, no un producto financiero independiente ni una promesa universal de cobertura.
+UGO Shield representa señales de confianza; no es una promesa financiera universal.
 
 ---
 
-# 5. Contrato transversal de UI/UX
+# 6. UI/UX transversal
 
 ```text
 Estado → contexto → próxima acción
 ```
 
-Toda superficie conectada a datos:
+Datos:
 
 ```text
 loading · loaded · empty · error/retry · offline/degraded
 ```
 
-Toda mutación:
+Mutaciones:
 
 ```text
 idle → submitting → success / error + recovery
 ```
 
-Mobile reference: `390×844`; rango principal `360–430`; targets táctiles `≥48px`; safe areas obligatorias. Desktop debe ser aplicación web real, no teléfono estirado.
+Referencia mobile `390×844`, rango `360–430`, targets `≥48px`, safe areas obligatorias. Desktop es aplicación web real.
 
-Design language: **Kinetic Trust**. Fuente de tokens: `src/mvp/ugo-design-system.css`.
+Design language: **Kinetic Trust**. Tokens canónicos: `src/mvp/ugo-design-system.css`.
 
 ---
 
-# 6. Contrato Cliente ↔ Proveedor
-
-Una solicitud debe producir una oportunidad mediante el mismo servicio/identificador de dominio.
+# 7. Cliente ↔ Proveedor
 
 ```text
-Cliente crea solicitud + evidencia previa
-→ matching genera oferta/oportunidad
-→ Proveedor ve descripción + evidencia autorizada
+Cliente crea solicitud + evidencia
+→ matching genera oportunidad sobre el mismo servicio
+→ Proveedor ve contexto autorizado
 → acepta/rechaza
 → asignación única
-→ ambos observan el mismo servicio
+→ ambos observan el mismo estado persistido
 ```
 
-No crear estados Cliente y Proveedor independientes que puedan divergir.
+`serviceId` es contrato transversal.
 
 ---
 
-# 7. Evidencias
-
-Dos dominios obligatoriamente separados:
+# 8. Evidencias
 
 ```text
 Evidencia de solicitud
-  antes del match, explica el trabajo a realizar
+  antes del matching
 
 Evidencia operacional
-  Antes / Durante / Después de la ejecución
+  Antes / Durante / Después
 ```
 
-Ambos usan Storage privado, RLS y signed URLs. Los guards críticos de inicio/cierre deben terminar en backend/RPC.
+Storage privado, RLS, signed URLs. Los guards críticos terminan en backend/RPC.
 
 ---
 
-# 8. Ampliar servicio
+# 9. Ampliar servicio
 
 Categoría: **Mejoras de flujo de trabajo**.
 
@@ -196,60 +222,35 @@ Categoría: **Mejoras de flujo de trabajo**.
 Cliente o Proveedor propone
 → descripción + tiempo + costo
 → Cliente aprueba/rechaza
-→ registro inmutable/auditable
-→ reconciliación del pago
+→ registro auditable
+→ reconciliación de pago
 → continúa servicio
 ```
 
-Nunca alterar silenciosamente un pago electrónico ya protegido.
+No modificar silenciosamente un pago electrónico protegido.
 
 ---
 
-# 9. Hugo
+# 10. Hugo, Scout y Academia
 
-Hugo es una capacidad contextual transversal, no una aplicación paralela.
+Hugo es capacidad contextual transversal y no salta permisos/estados/pagos.
 
-Cliente: descubrimiento, explicación, ayuda y soporte.  
-Proveedor: Asistente de Trabajo antes/durante/después.  
-Admin: asistencia operacional y de interpretación autorizada.
-
-Hugo no puede saltarse permisos, estados, pagos, RLS ni decisiones humanas críticas.
-
----
-
-# 10. Scout
-
-Scout es una **guía de acción**:
+Scout:
 
 ```text
 Dato → interpretación → recomendación → acción → resultado
 ```
 
-Debe cubrir oportunidades, tendencias, gaps de proveedores, campañas, conversión, calidad y alertas. Debe consumir datos agregados/seguros y minimizar PII.
-
----
-
-# 11. Academia UGO
-
-Academia forma parte del loop de calidad:
+Academia:
 
 ```text
-incidencia/gap Scout/calidad
-→ diagnóstico
-→ formación
-→ evaluación/certificación
-→ mejora del perfil
-→ mejores oportunidades
-→ nueva medición
+gap/calidad → diagnóstico → formación → evaluación/certificación
+→ mejora perfil → mejores oportunidades → nueva medición
 ```
-
-No debe quedar desconectada de reputación, calidad y oportunidades.
 
 ---
 
-# 12. Admin / Super Admin
-
-Admin opera excepciones y decisiones. Super Admin gobierna reglas del sistema.
+# 11. Admin / Super Admin
 
 ```text
 Admin: operación → personas → finanzas → disputas → calidad
@@ -257,11 +258,11 @@ Super Admin: permisos → configuración → matching → integraciones
              → feature flags → auditoría → estrategia
 ```
 
-Toda acción privilegiada requiere autorización backend. La visibilidad de UI no equivale a permiso.
+Acciones privilegiadas requieren autorización backend.
 
 ---
 
-# 13. Contrato técnico
+# 12. Contrato técnico
 
 ```text
 React/TypeScript/Vite
@@ -271,102 +272,87 @@ React/TypeScript/Vite
 → Vercel API para secretos/integraciones
 ```
 
-Reglas:
-
-- `main` es la integración vigente;
-- no crear aplicaciones paralelas por rol;
-- no crear clientes Supabase arbitrarios por componente;
-- no exponer secretos/service role al browser;
+- `main` es integración oficial.
+- no aplicaciones paralelas por rol;
+- no clientes Supabase arbitrarios por componente;
+- no secretos/service role en browser;
 - Realtime refleja DB;
 - mutaciones críticas atómicas/idempotentes;
 - migraciones versionadas;
-- Stitch sólo aporta diseño.
+- Stitch aporta diseño, no arquitectura runtime.
 
 ---
 
-# 14. Contrato de calidad
-
-Estado documental de una función:
+# 13. Contrato de calidad
 
 ```text
-IMPLEMENTADO ≠ VALIDADO ≠ RELEASED
+IMPLEMENTED ≠ VALIDATED ≠ RELEASED
 ```
 
-Roadmap usa:
-
-- `✅ HECHO` únicamente cuando está integrado y su validación requerida está satisfecha;
-- `🟡 PARCIAL` cuando existe pero falta build/E2E/RLS/UX/release;
-- `⬜ PENDIENTE` cuando todavía no existe/cierra;
-- `⛔ BLOQUEADO` cuando depende de un tercero o decisión.
-
-P0 nunca puede cerrarse sólo por existencia de código.
-
----
-
-# 15. Definition of Done ecosistémica
-
-Una función transversal está DONE cuando:
+DONE ecosistémico requiere los gates aplicables de:
 
 ```text
-flujo funcional definido
-+ UI/UX compatible
-+ contrato técnico correcto
-+ datos/RLS/RPC correctos
-+ Realtime/Storage si aplica
-+ happy/error/offline
-+ responsive/accesibilidad
-+ build/TypeScript
-+ E2E del tramo
-+ deploy/CI verificado o estado explícito
-+ roadmap actualizado
+flujo
+UI/UX
+arquitectura
+datos/RLS/RPC
+Realtime/Storage
+happy/error/offline
+responsive/accesibilidad
+build/TypeScript
+E2E
+deploy/smoke
+Roadmap actualizado
 ```
 
 ---
 
-# 16. Ciclo de cambio documental
-
-Todo cambio importante debe seguir:
+# 14. Ciclo único de cambio
 
 ```text
 Idea
-→ UGO_ECOSISTEMA_FLUJO
-→ UI/UX si afecta experiencia
-→ Arquitectura si afecta fronteras
-→ Data/Backend si afecta persistencia/seguridad
-→ Stitch si requiere diseño/prototipo
-→ Testing/Release define aceptación
-→ Roadmap registra estado/prioridad
+→ definición producto
+→ UX
+→ impacto arquitectura/datos/seguridad
+→ READY
+→ vertical slice
+→ implementación
+→ review
+→ Testing
+→ VALIDATED
+→ deploy/smoke
+→ RELEASED
+→ medición
+→ Roadmap
 ```
 
-No es obligatorio editar los siete en cada commit; sí todos los que sean autoridad del cambio.
+No es obligatorio modificar todos los maestros; sólo los que sean autoridad del cambio.
 
 ---
 
-# 17. Contrato de referencias
+# 15. Referencias
 
-Los documentos maestros deben referirse entre sí mediante nombres canónicos y evitar duplicar grandes especificaciones. Cuando un detalle pertenezca a otro maestro, resumir el contrato y enlazar conceptualmente al documento autoridad.
-
-La documentación histórica, Penpot/Stitch inventories y documentos de funciones específicas son **evidencia/referencia**, no autoridad superior a estos maestros.
+Los maestros se referencian mediante nombres canónicos y evitan duplicar grandes especificaciones. Inventarios, ramas históricas, Penpot/Stitch y documentos específicos son evidencia/referencia, no autoridad superior.
 
 ---
 
-# 18. P0 común actual
+# 16. P0 común actual
 
 ```text
-1. Build/TypeScript de main actual
-2. RLS/guards backend de evidencia y ampliaciones
-3. Cliente: evidencia previa integrada en solicitud
-4. Proveedor: contrato serviceId y oportunidad E2E
-5. Pago: timeline + cierre consciente del método
-6. Retirar Provider legacy como salida operacional
+1 Build/TypeScript main
+2 RLS/guards backend recientes
+3 Cliente solicitud + evidencia integrada
+4 Matching + oportunidad Provider + serviceId
+5 Pagos electrónico/efectivo + timeline + cierre method-aware
+6 Retirar Provider legacy como salida operacional
 ```
 
-Todos los maestros deben tratar este orden como baseline hasta que `UGO_ROADMAP_MASTER.md` registre su cierre validado.
+Este baseline cambia únicamente cuando `UGO_ROADMAP_MASTER.md` registra cierre validado y el nuevo orden.
 
 ---
 
-# 19. Regla final
+# 17. Regla final
 
 **UGO es un solo ecosistema con un solo dominio operacional y múltiples experiencias por rol.**
 
-Producto, diseño, código, datos, IA, pagos, pruebas y roadmap deben describir la misma realidad desde perspectivas distintas.
+Producto, diseño, desarrollo, código, datos, IA, pagos, pruebas, operación y roadmap deben describir la misma realidad.
