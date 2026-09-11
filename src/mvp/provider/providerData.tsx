@@ -1,4 +1,4 @@
-import React,{createContext,useCallback,useContext,useEffect,useMemo,useState}from'react'
+import React,{createContext,useCallback,useContext,useEffect,useState}from'react'
 import{AuthScreen,LoadingScreen,timeAgo,money,useRoleSession,type Notice,type Offer,type Service}from'../shared'
 import{ProviderOnboardingGate}from'../ProviderOnboardingGate'
 import{acceptProviderOpportunity,advanceProviderService,loadProviderSnapshot,rejectProviderOpportunity,setProviderAvailability,type ProviderPayment,type ProviderProfileFull}from'./providerService'
@@ -11,8 +11,8 @@ const C=createContext<ProviderData|null>(null)
 export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const auth=useRoleSession('provider'),{supabase,session,profile}=auth
  const[provider,setProvider]=useState<ProviderProfileFull|null>(null),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<ProviderPayment[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState<Notice>(null)
- const reload=useCallback(async()=>{if(!session)return;const snap=await loadProviderSnapshot(supabase,session.user.id);setProvider(snap.provider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setLoading(false)},[session,supabase])
- useEffect(()=>{if(session)reload().catch((e:Error)=>{setNotice({type:'error',text:e.message});setLoading(false)})},[reload,session])
+ const reload=useCallback(async()=>{if(!session){setLoading(false);return}const snap=await loadProviderSnapshot(supabase,session.user.id);setProvider(snap.provider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setLoading(false)},[session,supabase])
+ useEffect(()=>{if(session)reload().catch((e:Error)=>{setNotice({type:'error',text:e.message});setLoading(false)});else setLoading(false)},[reload,session])
  useProviderRealtime(supabase,session?.user.id||null,()=>{reload().catch(()=>{})})
  if(auth.loading||loading)return <LoadingScreen label="Preparando UGO Pro…"/>
  if(!session||!profile)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
@@ -24,8 +24,8 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const currentPayment=service?payments.find(p=>p.servicio_id===service.id):null
  const funded=currentPayment?.estado==='retenido'&&Boolean(currentPayment.mp_payment_id)
  const advance=(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>{if(!service)return Promise.resolve(false);if(service.estado==='asignado'&&!funded){setNotice({type:'info',text:'Todavía falta la confirmación del pago protegido.'});return Promise.resolve(false)}return run(()=>advanceProviderService(supabase,service.id,state),'Estado del servicio actualizado.')}
- const opportunities=useMemo(()=>offers.map(o=>({id:o.id,category:o.servicio?.categoria?.nombre||'Servicio',title:o.servicio?.descripcion||'Nueva oportunidad',description:o.servicio?.descripcion||'',zone:o.servicio?.direccion_cliente||'Zona por confirmar',distanceKm:Number(o.distancia_km||0),estimatedValue:Number(o.tarifa_ofrecida||o.servicio?.tarifa||0),requestedAt:o.servicio?.created_at||new Date().toISOString(),urgency:o.servicio?.urgencia?'urgent':'normal',matchScore:o.ranking==null?undefined:Number(o.ranking)})),[offers])
- const demand=useMemo(()=>opportunities.map((o,i)=>({id:o.id,category:o.category,zone:o.zone,distanceKm:o.distanceKm,estimatedValue:o.estimatedValue,requestedAt:o.requestedAt,urgency:o.urgency==='urgent'?'high':'medium',demandLevel:i<2?'high':'medium'} as DemandSignal)),[opportunities])
+ const opportunities:ProviderOpportunity[]=offers.map(o=>({id:o.id,category:o.servicio?.categoria?.nombre||'Servicio',title:o.servicio?.descripcion||'Nueva oportunidad',description:o.servicio?.descripcion||'',zone:o.servicio?.direccion_cliente||'Zona por confirmar',distanceKm:Number(o.distancia_km||0),estimatedValue:Number(o.tarifa_ofrecida||o.servicio?.tarifa||0),requestedAt:o.servicio?.created_at||new Date().toISOString(),urgency:o.servicio?.urgencia?'urgent':'normal',matchScore:o.ranking==null?undefined:Number(o.ranking)}))
+ const demand:DemandSignal[]=opportunities.map((o,i)=>({id:o.id,category:o.category,zone:o.zone,distanceKm:o.distanceKm,estimatedValue:o.estimatedValue,requestedAt:o.requestedAt,urgency:o.urgency==='urgent'?'high':'medium',demandLevel:i<2?'high':'medium'}))
  const released=payments.filter(p=>p.estado==='liberado').reduce((n,p)=>n+Number(p.ganancia_proveedor||0),0),retained=payments.filter(p=>p.estado==='retenido'&&Boolean(p.mp_payment_id)).reduce((n,p)=>n+Number(p.ganancia_proveedor||0),0)
  const value:ProviderData={name:profile.nombre,karma:Number(profile.karma||5),provider,offers,opportunities,demand,service,payments,online:Boolean(provider.disponible),released,retained,busy,notice,reload,toggleOnline,acceptOpportunity,rejectOpportunity,advance,funded}
  return <C.Provider value={value}>{children}</C.Provider>
