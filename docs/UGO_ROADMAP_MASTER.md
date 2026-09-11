@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -58,17 +58,17 @@ P3 expansión/polish
 # 3. P0 — cerrar antes de expandir
 
 ```text
-[ ] npm run build main verificado
-[ ] npm run lint verificado
+[x] npm run build main verificado por UGO Core CI #190
+[x] npm run lint crítico y general verificado por UGO Core CI #190
 [ ] incorporar runner de tests automatizados
 [ ] incorporar E2E ejecutable
-[ ] serviceId único Cliente↔Proveedor
-[ ] aceptación de oportunidad atómica
-[ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones
-[ ] guards backend evidencia inicial/final
-[ ] pagos electrónico/efectivo method-aware extremo a extremo
-[ ] idempotencia efectivo/webhooks/retiros
-[ ] autorización Admin/Super server-side
+[ ] serviceId único Cliente↔Proveedor completamente validado E2E
+[x] aceptación de oportunidad atómica endurecida backend
+[ ] RLS servicios/ofertas/evidencias/pagos/ampliaciones completamente validada
+[x] guards backend evidencia inicial/final implementados
+[ ] pagos electrónico/efectivo method-aware extremo a extremo validado E2E
+[ ] idempotencia efectivo/webhooks/retiros cerrada completa
+[ ] autorización Admin/Super server-side cerrada completa
 [ ] ledger/comisión para efectivo cuando aplique
 [ ] retirar salida operacional Provider legacy
 ```
@@ -77,7 +77,71 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 
 ---
 
-# 4. Cliente
+# 4. Snapshot de conciencia · 11/09/2026
+
+Estado real del bloque Cliente → matching → asignación → pago:
+
+```text
+Solicitud guiada por Hugo
+→ evidencia previa obligatoria
+→ matching sólo con proveedores online/disponibles
+→ oferta con tarifa real
+→ aceptación atómica
+→ asignación con tarifa/comisión/neto consistentes
+→ Cliente elige método de pago
+→ método queda bloqueado salvo pago fallido
+→ Pix/electrónico o efectivo explícito
+→ Proveedor habilitado para avanzar sólo con forma de pago válida
+```
+
+Últimos cierres relevantes en `main`:
+
+- `20260911213500_payment_ready_offer_tariff.sql`: garantiza que una oferta/asignación operable tenga tarifa real; no inventa precio.
+- `20260911214500_payment_method_lock.sql`: impide cambiar arbitrariamente el método después de elegirlo; sólo un pago fallido vuelve a ser elegible para cambio.
+- `ClientPaymentChoice.tsx`: UI alineada con el lock backend.
+- `ClientGuidedRequest.tsx`: wizard guiado sin fallback de precio inventado, evidencia previa, horario y persistencia de borrador.
+- Aceptación de oportunidades serializada/atómica por servicio.
+- Cash first-class: selección cliente + confirmación proveedor, sin presentar efectivo como custodia electrónica.
+- Guards de evidencia antes/después en backend.
+
+Validación actual:
+
+```text
+UGO Core CI #190 = SUCCESS
+- npm audit: OK
+- TypeScript/build producción: OK
+- lint superficies críticas: OK
+- lint ClientApp: OK
+- lint general: OK
+```
+
+Dato de integridad verificado en producción después del hardening de tarifa:
+
+```text
+servicios asignados sin tarifa válida = 0
+ofertas pendientes sin tarifa válida = 0
+```
+
+Próximo riesgo principal visible:
+
+```text
+cerrar y validar E2E real:
+asignado
+→ método de pago
+→ en_camino
+→ llegado
+→ evidencia Antes
+→ en_progreso
+→ evidencia Después
+→ efectivo recibido o pago protegido
+→ esperando_aprobacion
+→ aprobación/disputa
+→ completado
+```
+
+---
+
+# 5. Cliente
 
 | Área | Estado | P | Próximo cierre |
 |---|---|---:|---|
@@ -85,12 +149,13 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 | Onboarding | 🟡 | P1 | validación |
 | Home/Radar | 🟡 | P1 | consolidar + smoke |
 | Categorías/Búsqueda | 🟡 | P1 | regresión |
-| Solicitud | 🟡 | P0 | evidencia integrada |
-| Evidencia previa | 🟡 | P0 | draft/request id + RLS + E2E |
-| Matching | 🟡 | P1 | error/timeout/alternativas |
-| Proveedor seleccionado | 🟡 | P1 | UX consolidada |
+| Solicitud guiada por Hugo | 🟡 | P0 | consolidar ruta canónica + E2E |
+| Evidencia previa | 🟡 | P0 | E2E request→service |
+| Matching | 🟡 | P1 | timeout/alternativas/recovery |
+| Proveedor seleccionado | 🟡 | P1 | integrar selección directa al flujo canónico |
 | Pago electrónico | 🟡 | P0 | reconciliación + E2E |
-| Efectivo | 🟡 | P0 | idempotencia + ledger + E2E |
+| Efectivo | 🟡 | P0 | ledger + E2E |
+| Lock de método de pago | ✅ | P0 | monitorear regresiones |
 | Tracking/ETA | 🟡 | P1 | realtime/fallback |
 | Servicio activo | 🟡 | P0 | narrativa única |
 | Ampliar servicio | 🟡 | P0 | reconciliación method-aware |
@@ -100,7 +165,7 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 
 ---
 
-# 5. Proveedor
+# 6. Proveedor
 
 | Área | Estado | P | Próximo cierre |
 |---|---|---:|---|
@@ -108,21 +173,22 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 | Auth/Onboarding/KYC | 🟡 | P0 | roles/RLS |
 | Home | 🟡 | P1 | validar estado/datos |
 | Demanda | 🟡 | P1 | fuente analítica independiente |
-| Oportunidades | 🟡 | P0 | serviceId + E2E |
+| Oportunidades | 🟡 | P0 | E2E |
 | Evidencia cliente | 🟡 | P0 | RLS/E2E |
-| Aceptar/Rechazar | 🟡 | P0 | atomicidad/concurrencia |
-| Trabajo activo | 🟡 | P0 | guards backend |
+| Aceptar/Rechazar | ✅ | P0 | atomicidad backend cerrada; falta E2E competitivo |
+| Tarifa al asignar | ✅ | P0 | backend + datos producción consistentes |
+| Trabajo activo | 🟡 | P0 | E2E lifecycle completo |
 | Tracking | 🟡 | P1 | ETA/reconexión |
-| Evidencia operacional | 🟡 | P0 | enforcement backend |
+| Evidencia operacional | 🟡 | P0 | E2E Antes/Después |
 | Ampliar servicio | 🟡 | P0 | E2E |
-| Efectivo recibido | 🟡 | P0 | idempotencia/ledger |
+| Efectivo recibido | 🟡 | P0 | ledger + E2E |
 | Ganancias | 🟡 | P1 | timeline financiero claro |
 | Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
 | Provider legacy | ⬜ | P0 | retirar operación |
 
 ---
 
-# 6. Admin / Super Admin
+# 7. Admin / Super Admin
 
 | Área | Estado | P | Próximo cierre |
 |---|---|---:|---|
@@ -139,7 +205,7 @@ Hasta cerrar estos puntos, no convertir P0 en ✅ por mera existencia de código
 
 ---
 
-# 7. Testing inmediato
+# 8. Testing inmediato
 
 Orden recomendado:
 
@@ -164,14 +230,23 @@ npm run test
 npm run test:e2e
 ```
 
+Estado actual:
+
+```text
+build = disponible y validado en CI
+lint = disponible y validado en CI
+test = pendiente
+test:e2e = pendiente
+```
+
 ---
 
-# 8. UI/UX
+# 9. UI/UX
 
 Prioridad después de integridad P0:
 
 ```text
-[ ] Cliente converge a Kinetic Trust
+[ ] Cliente converge a solicitud canónica guiada por Hugo
 [ ] Proveedor converge sin legacy
 [ ] Admin/Super Admin converge
 [ ] eliminar overlays competitivos
@@ -185,7 +260,7 @@ No rediseñar flujos ya correctos sólo por estética.
 
 ---
 
-# 9. Growth loop
+# 10. Growth loop
 
 Una vez cerrado el core:
 
@@ -203,7 +278,7 @@ Priorizar crecimiento que refuerce este loop.
 
 ---
 
-# 10. Hugo
+# 11. Hugo
 
 P1/P2 sólo después de core estable.
 
@@ -231,7 +306,7 @@ Medir reducción de errores y mejora de completion rate.
 
 ---
 
-# 11. Scout
+# 12. Scout
 
 P2:
 
@@ -252,7 +327,7 @@ Scout debe cerrar el loop:
 
 ---
 
-# 12. Academia
+# 13. Academia
 
 P3 por defecto, salvo que resuelva un P0/P1 de calidad.
 
@@ -267,7 +342,7 @@ gap
 
 ---
 
-# 13. Monetización
+# 14. Monetización
 
 Antes de escalar adquisición, demostrar:
 
@@ -284,7 +359,7 @@ La escala sin unit economics observables no es éxito.
 
 ---
 
-# 14. Roadmap por fases
+# 15. Roadmap por fases
 
 ## Fase A — Core confiable
 
@@ -306,7 +381,7 @@ No saltar de fase dejando P0 crítico abierto.
 
 ---
 
-# 15. Criterio MVP exitoso
+# 16. Criterio MVP exitoso
 
 Cliente puede:
 
@@ -327,7 +402,7 @@ Proveedor puede aceptar, completar y cobrar. Admin puede resolver excepciones. P
 
 ---
 
-# 16. Qué NO hacer ahora
+# 17. Qué NO hacer ahora
 
 - crear otra app paralela;
 - reescribir todo el frontend;
@@ -340,6 +415,22 @@ Proveedor puede aceptar, completar y cobrar. Admin puede resolver excepciones. P
 
 ---
 
-# 17. Regla final
+# 18. Regla de conciencia continua
 
-**El próximo gran avance de UGO no es agregar más cosas: es convertir el circuito que ya existe en un sistema confiable, validado, medible y repetible.**
+Después de cada bloque relevante de implementación:
+
+```text
+actualizar código
+→ validar lo que corresponda
+→ actualizar maestros afectados
+→ actualizar este Roadmap
+→ dejar visible el próximo riesgo
+```
+
+El Roadmap debe permitir entender la realidad de UGO sin depender de memoria de conversación ni de reconstruir commits históricos.
+
+---
+
+# 19. Regla final
+
+**El próximo gran avance de UGO no es agregar más cosas: es convertir el circuito que ya existe en un sistema confiable, validado, medible, repetible y documentado al mismo ritmo que evoluciona.**
