@@ -1,7 +1,6 @@
 import React,{useEffect,useState}from'react'
 import{AdminGate}from'./AdminGate'
 import{ClientOnboardingGate}from'./ClientOnboardingGate'
-import{ProviderOnboardingGate}from'./ProviderOnboardingGate'
 import{Launcher}from'./Launcher'
 import{UgoLanding}from'./UgoLanding'
 import{UgoWeb}from'./UgoWeb'
@@ -13,6 +12,8 @@ import{DisputeDock}from'./DisputeDock'
 import{ClientGlobalMenu}from'./ClientGlobalMenu'
 import{ClientCompletionReview}from'./ClientCompletionReview'
 import{ClientFlowProvider,useClientFlow}from'./client/clientFlow'
+import{ProviderFlowProvider}from'./provider/providerFlow'
+import{ProviderRoot}from'./provider/ProviderRoot'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{Button,Input}from'./shared'
 import'./mvp.css'
@@ -28,7 +29,7 @@ export function MvpApp(){
  const demo=new URLSearchParams(window.location.search).get('demo')==='1'
  if(app==='client-web'||app==='web-client'||app==='stitch-client')return <UgoClientWeb/>
  if(app==='client')return <RecoveryGate role="client"><ClientFlowProvider><ClientRoot demo={demo}/></ClientFlowProvider></RecoveryGate>
- if(app==='provider')return <RecoveryGate role="provider"><div className="ugo-provider-root"><ProviderOnboardingGate/><ServiceHistoryPanel role="provider"/><DisputeDock role="provider"/><AppLocationButton role="provider"/></div></RecoveryGate>
+ if(app==='provider')return <RecoveryGate role="provider"><ProviderFlowProvider><ProviderRoot/></ProviderFlowProvider></RecoveryGate>
  if(app==='admin')return<AdminGate/>
  if(app==='web')return<UgoWeb/>
  return<UgoLanding/>
