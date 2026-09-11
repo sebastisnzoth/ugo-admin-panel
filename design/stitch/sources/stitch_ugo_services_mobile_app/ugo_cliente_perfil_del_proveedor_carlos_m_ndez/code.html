@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full">
+<!-- Sub-header contextual / Navegación interna -->
+<div class="px-space-md py-space-sm flex items-center justify-between bg-surface-container-lowest/80 backdrop-blur-md sticky top-0 z-30 shadow-sm">
+<button aria-label="Volver a propuestas" class="flex items-center gap-space-xs text-on-surface-variant hover:text-on-surface py-2 px-1 min-h-[48px] rounded-xl active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span class="font-label-md text-label-md">Volver a propuestas</span>
+</button>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Compartir perfil" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button aria-label="Reportar perfil" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:text-error hover:bg-error-container transition-colors" type="button">
+<span class="material-symbols-outlined text-[20px]">flag</span>
+</button>
+</div>
+</div>
+<div class="px-space-md pt-space-md space-y-space-lg">
+<!-- Cabecera del Profesional & Tarjeta de Identidad Técnica -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-lg shadow-sm relative overflow-hidden">
+<!-- Glow decorativo de seguridad -->
+<div class="absolute -top-16 -right-16 w-36 h-36 bg-primary/10 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col items-center text-center relative z-10">
+<!-- Avatar y Badge Auditado -->
+<div class="relative mb-space-sm">
+<div class="w-24 h-24 rounded-2xl overflow-hidden shadow-md bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Carlos Méndez, a professional Latin American electrician in his early 40s with a warm, confident smile wearing a crisp dark green polo shirt and certified safety badge, studio quality photography with soft ambient lighting and clean teal and mint green undertones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuByuXkPU2w1C8sZz-shq57BNQZx9NqdsZVIxNaF8cEwsj-s6k9oxRcR5Pgr1g_2wfEDf1GZnLK_NVFE95kseYYAshqlXE2b0x2yAprV9bvIQ_meK9XK3qx3Qxt3Cik4Ea4IRLq64tLQt9m6yIBKf93rLZsNsaiWQt9m9mhrEAupOAsiQKyjfwOyn69Ptx6hb7x9ZLENl_gpS2QfSM_M2XxDQnxGFFStUSc1KxLxg6ulxBt3a6zjbwruNg"/>
+</div>
+<div class="absolute -bottom-2 -right-2 bg-primary text-on-primary rounded-full p-1.5 shadow-md flex items-center justify-center" title="Matrícula y DNI Validados">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 bg-primary-fixed text-on-primary-fixed rounded-full mb-2">
+<span class="material-symbols-outlined text-[14px]">verified_user</span>
+<span class="font-label-sm text-label-sm">Identidad y Matrícula Auditadas</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Carlos Méndez</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-0.5">Electricista Matriculado e Instalador Industrial</p>
+<div class="inline-flex items-center gap-1.5 mt-2 px-space-sm py-1 bg-surface-container-low rounded-xl">
+<span class="material-symbols-outlined text-secondary text-[16px]">badge</span>
+<span class="font-label-md text-label-md text-secondary">Matrícula Oficial: CREA-SP #7419</span>
+</div>
+</div>
+<!-- Métricas destacadas en grilla horizontal -->
+<div class="grid grid-cols-4 gap-2 mt-space-lg pt-space-md bg-surface-container-low/70 rounded-2xl p-space-sm">
+<div class="flex flex-col items-center text-center">
+<div class="flex items-center text-warning-rating">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-lg text-label-lg ml-0.5 text-on-surface">4.9</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">127 revs</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-label-lg text-label-lg text-primary">99%</span>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">Puntual</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-label-lg text-label-lg text-secondary">98%</span>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">Aceptación</span>
+</div>
+<div class="flex flex-col items-center text-center">
+<span class="font-label-lg text-label-lg text-on-surface">9 años</span>
+<span class="font-label-sm text-label-sm text-outline mt-0.5">Experiencia</span>
+</div>
+</div>
+</div>
+<!-- Garantías UGO Shield -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between mb-1">
+<div class="flex items-center gap-2">
+<div class="w-7 h-7 rounded-xl bg-primary-container text-on-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">shield</span>
+</div>
+<span class="font-title-md text-title-md text-on-surface">Garantía UGO Shield</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-md bg-primary-fixed text-on-primary-fixed">Vigente 2024</span>
+</div>
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-2xl">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Antecedentes Penales Limpios</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Revisión federal oficial validada en octubre 2024.</span>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-2xl">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">security</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Seguro de Responsabilidad Civil Activo</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Cobertura patrimonial de hasta R$ 50.000 por siniestro.</span>
+</div>
+</div>
+<div class="flex items-start gap-space-sm p-space-sm bg-surface-container-low rounded-2xl">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">handyman</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Herramientas de Precisión Homologadas</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Multímetros Fluke calibrados y equipo dieléctrico 1000V.</span>
+</div>
+</div>
+</div>
+<!-- Bio / Sobre Carlos -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm">
+<div class="flex items-center gap-2 mb-space-sm">
+<span class="material-symbols-outlined text-secondary text-[20px]">person_pin</span>
+<h3 class="font-title-md text-title-md text-on-surface">Sobre Carlos</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Técnico especialista en redes residenciales, instalación de luminarias, ventiladores y cuadros de disyuntores. Trabajo bajo norma <strong class="text-on-surface font-label-md">NBR 5410</strong> garantizando máxima seguridad en tu hogar sin cortes innecesarios ni cables a la vista.
+      </p>
+<!-- Tags de especialidades -->
+<div class="flex flex-wrap gap-1.5 mt-space-md">
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2.5 py-1 rounded-full">Disyuntores y Térmicas</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2.5 py-1 rounded-full">Iluminación LED</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2.5 py-1 rounded-full">Puesta a Tierra</span>
+<span class="font-label-sm text-label-sm bg-surface-container text-on-surface-variant px-2.5 py-1 rounded-full">Ventiladores</span>
+</div>
+</div>
+<!-- Galería / Portfolio de Trabajos -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">photo_library</span>
+<h3 class="font-title-md text-title-md text-on-surface">Trabajos Realizados</h3>
+</div>
+<span class="font-label-sm text-label-sm text-outline">3 de 48 fotos</span>
+</div>
+<div class="grid grid-cols-1 gap-space-sm">
+<!-- Item 1 -->
+<div class="group bg-surface-container-low rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="h-36 w-full relative overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Modern stylish ceiling fan installed smoothly on a clean white ceiling in an elegant living room, pristine craftsmanship, no exposed wiring, natural daylight illuminating the room" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBooNbvhfVQQbRXZwfS1Q882PP16fD4GirGyvR1AEQMZlvxuURyg0GNhLIZEDYjMvPF9bQ8L2P4Q9pw5_l1KOxXZNESDaAmtgP1FJyS1HhddE5li6D6Xh2T9yojZYReek8nJPAhXsXtUFZSOB37j4MhIMaRo-aWQ2gDsRyhHPRC6PUfxzWKVQIQWkLfqg5O4MFi4Y10kxtHTfGjI9eoM_SBAREtyadGqoOcAZDWcQwHPxKfNDw_RKAhdQ"/>
+<span class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-md px-2 py-0.5 rounded-full font-label-sm text-label-sm text-primary">Verificado</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface truncate">Montaje de ventilador de techo silencioso</span>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="group bg-surface-container-low rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="h-36 w-full relative overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Immaculate residential electrical circuit breaker box panel with neatly organized wires, colorful labeled breakers, and high-precision cable management showing clean industrial standards" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0y-hKdTK_mukB1Pugw4wDzBIIExrmcjAWacm_MsX9cs1S8lDZCoKqQTeJYdN6LORxD5Hc3z7P7ACrFoAH3Uo359LzPPRRnd232WtXYZxtBVuhhYZU0tTwBw2MnofrKHS_ZEfOHuaMZqBPN046K80e3oeZs5rO6iCzOO3VoDq7HQL0Aah1mAMSUpdYq_JzXC8R6An0adMZ2YGW1pHzkYaRQnL9OiY3Qg8TZg1PiWWzZc8coGpuhOHa7w"/>
+<span class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-md px-2 py-0.5 rounded-full font-label-sm text-label-sm text-primary">Norma NBR</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface truncate">Tablero térmico reorganizado</span>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="group bg-surface-container-low rounded-2xl overflow-hidden shadow-sm flex flex-col">
+<div class="h-36 w-full relative overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover" data-alt="Recessed warm LED spotlights installed flush into a drywall false ceiling in an open concept kitchen and dining room, seamless finish, warm ambient lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcDiNWQUIzRpxyDtbtWQnyJ8X7_Lwhux0DMPRabY3_tF09e1leHGGTQzTsQu2JZ4YWKlAyKEONnP8aGwbTGdex6fANRSSE7K-RZOxKgXLZLKAAP_XwziczYX2aMizNb1OMkM4XfGq8luKjTlzTko219Q_IbxSfjPNvvaxBBGoMNICJx_STMx2wSVVnQEhNGiCeUnVb6ud0EThzo2xIMnYDXd4Up5f8RZ-reh3p_uvktiU2oG1SVUk5FA"/>
+<span class="absolute top-2 right-2 bg-surface-container-lowest/90 backdrop-blur-md px-2 py-0.5 rounded-full font-label-sm text-label-sm text-primary">Verificado</span>
+</div>
+<div class="p-space-sm flex items-center justify-between">
+<span class="font-label-md text-label-md text-on-surface truncate">Luminarias LED empotradas</span>
+<span class="material-symbols-outlined text-outline text-[18px]">verified</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Reseñas Recientes -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-warning-rating text-[20px]" style="font-variation-settings: 'FILL' 1;">reviews</span>
+<h3 class="font-title-md text-title-md text-on-surface">Reseñas de Clientes</h3>
+</div>
+<div class="flex items-center gap-1 text-warning-rating font-label-md text-label-md">
+<span>★ 4.9</span>
+<span class="text-outline text-label-sm font-label-sm">(127)</span>
+</div>
+</div>
+<!-- Reseña 1 -->
+<div class="p-space-md bg-surface-container-low rounded-2xl space-y-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-label-md">
+              MG
+            </div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Mariana G.</p>
+<p class="font-label-sm text-label-sm text-outline">Hace 2 días • Servicio Residencial</p>
+</div>
+</div>
+<div class="flex text-warning-rating text-[14px]">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pt-1">
+          "Impecable trabajo de Carlos, muy limpio, trajo lona para no ensuciar el piso y explicó todo el procedimiento con total paciencia."
+        </p>
+</div>
+<!-- Reseña 2 -->
+<div class="p-space-md bg-surface-container-low rounded-2xl space-y-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-8 h-8 rounded-full bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center font-label-md text-label-md">
+              LT
+            </div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Lucas T.</p>
+<p class="font-label-sm text-label-sm text-outline">Hace 5 días • Reparación de Urgencia</p>
+</div>
+</div>
+<div class="flex text-warning-rating text-[14px]">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant pt-1">
+          "Súper rápido y puntual. Reparó el disyuntor en menos de una hora y dejó las pruebas de voltaje documentadas."
+        </p>
+</div>
+</div>
+<!-- Tarifas y Cobertura Operativa -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[20px]">tune</span>
+<h3 class="font-title-md text-title-md text-on-surface">Tarifas y Cobertura</h3>
+</div>
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm bg-surface-container-low rounded-2xl flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-outline">Tarifa de referencia</span>
+<div class="mt-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">R$ 85</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">/hora</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary mt-1">Precio justo regulado</span>
+</div>
+<div class="p-space-sm bg-surface-container-low rounded-2xl flex flex-col justify-between">
+<span class="font-label-sm text-label-sm text-outline">Radio de servicio</span>
+<div class="mt-2">
+<span class="font-headline-sm text-headline-sm text-on-surface">10 km</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">a la redonda</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary mt-1">Zona Oeste y Centro</span>
+</div>
+</div>
+<!-- Ubicación de Cobertura en Mapa -->
+<div class="w-full h-28 bg-cover bg-center rounded-2xl relative overflow-hidden shadow-inner flex items-end p-2.5" data-location="São Paulo Zona Oeste e Centro" style="">
+<div class="bg-surface-container-lowest/90 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-1.5 shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-bold">Base activa: Pinheiros / Cerqueira César</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom CTA / Contratación Inmediata con Custodia Escrow -->
+<div class="sticky bottom-0 z-40 w-full mt-space-xl bg-surface-container-lowest/95 backdrop-blur-xl p-space-md shadow-[0_-8px_30px_rgba(19,27,46,0.08)] rounded-t-3xl space-y-space-sm">
+<!-- Fila de cotización -->
+<div class="flex items-center justify-between px-1">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Presupuesto para tu pedido</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-md text-headline-md text-on-surface">R$ 175,00</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Total final</span>
+</div>
+</div>
+<div class="flex items-center gap-1 bg-primary-fixed text-on-primary-fixed px-2.5 py-1 rounded-full text-right">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="font-label-sm text-label-sm">Custodia UGO Shield</span>
+</div>
+</div>
+<!-- Botón Primario y Botón de Consulta -->
+<div class="flex flex-col gap-2 pt-1">
+<button class="w-full h-[52px] min-h-[48px] bg-primary text-on-primary rounded-2xl font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-transform" id="btn-contratar" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Aceptar y Contratar a Carlos</span>
+</button>
+<button class="w-full h-[48px] min-h-[48px] bg-surface-container text-on-surface rounded-2xl font-label-md text-label-md flex items-center justify-center gap-2 hover:bg-surface-container-high transition-colors active:scale-[0.98]" id="btn-chat" type="button">
+<span class="material-symbols-outlined text-secondary text-[20px]">chat</span>
+<span>Hacer una pregunta por chat</span>
+</button>
+</div>
+</div>
+<script>
+    (function() {
+      const btnContratar = document.getElementById('btn-contratar');
+      const btnChat = document.getElementById('btn-chat');
+
+      if (btnContratar) {
+        btnContratar.addEventListener('click', () => {
+          btnContratar.innerHTML = `
+            <span class="material-symbols-outlined animate-spin text-[20px]">sync</span>
+            <span>Confirmando Reserva...</span>
+          `;
+          btnContratar.classList.add('opacity-90');
+          setTimeout(() => {
+            btnContratar.innerHTML = `
+              <span class="material-symbols-outlined text-[20px]">task_alt</span>
+              <span>¡Carlos fue asignado!</span>
+            `;
+            btnContratar.classList.replace('bg-primary', 'bg-primary-container');
+          }, 900);
+        });
+      }
+
+      if (btnChat) {
+        btnChat.addEventListener('click', () => {
+          const originalText = btnChat.innerHTML;
+          btnChat.innerHTML = `
+            <span class="material-symbols-outlined text-secondary text-[20px] animate-pulse">sms</span>
+            <span>Abriendo canal directo...</span>
+          `;
+          setTimeout(() => {
+            btnChat.innerHTML = originalText;
+          }, 1200);
+        });
+      }
+    })();
+  </script>
+</div></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

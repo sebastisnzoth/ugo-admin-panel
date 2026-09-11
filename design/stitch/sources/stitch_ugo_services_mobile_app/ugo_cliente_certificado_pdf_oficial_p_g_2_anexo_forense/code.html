@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full pb-10">
+<!-- BARRA SUPERIOR DEL VISOR PDF -->
+<div class="sticky top-14 z-30 bg-surface/90 backdrop-blur-md px-space-md py-space-xs shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-sm min-w-0">
+<button aria-label="Volver a página anterior" class="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high transition-transform active:scale-95">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[16px]">picture_as_pdf</span>
+<span class="font-label-lg text-label-lg text-on-surface truncate">Certificado_REC-9824.pdf</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-outline">Pág 2 de 2 · Modo Seguro Verificado</span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button aria-label="Ajustar pantalla" class="w-9 h-9 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">fit_screen</span>
+</button>
+<button aria-label="Imprimir certificado" class="w-9 h-9 rounded-full hover:bg-surface-container flex items-center justify-center text-on-surface-variant transition-colors">
+<span class="material-symbols-outlined text-[20px]">print</span>
+</button>
+</div>
+</div>
+<div class="px-space-md pt-space-sm space-y-space-md">
+<!-- BANNER DE SEGURIDAD CRIPTOGRÁFICA -->
+<div class="bg-primary-container/10 rounded-2xl p-3.5 shadow-sm space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div>
+<h2 class="font-label-lg text-label-lg text-primary font-bold">Anexo Técnico Pericial Homologado</h2>
+<p class="font-label-sm text-label-sm text-outline">Peritaje Inmutable · Sellado Criptográfico</p>
+</div>
+</div>
+<span class="bg-primary/15 text-primary font-label-sm text-label-sm px-2.5 py-1 rounded-full font-bold">
+          ICP-Brasil Nivel 3
+        </span>
+</div>
+<div class="bg-surface-container-lowest/80 rounded-xl px-3 py-2 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="material-symbols-outlined text-[15px] text-secondary">fingerprint</span>
+<span class="font-mono text-label-sm text-outline truncate">SHA-256: e4b7c19a0028f89e21de6204fa991b...</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold shrink-0 ml-2">14:32:09 UTC-3</span>
+</div>
+</div>
+<!-- HOJA DOCUMENTAL A4 DIGITALIZADA (PÁGINA 2) -->
+<div class="bg-surface-container-lowest rounded-3xl p-5 shadow-md space-y-5 text-on-surface">
+<!-- ENCABEZADO DOCUMENTAL -->
+<div class="flex items-start justify-between pb-4 bg-surface-container-low/40 -mx-5 -mt-5 p-5 rounded-t-3xl">
+<div class="space-y-1">
+<div class="flex items-center gap-1.5">
+<div class="w-5 h-5 rounded-md bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+</div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">UGO Shield Forensic</span>
+</div>
+<h3 class="font-title-md text-title-md font-bold text-on-surface leading-snug">ANEXO II · REGISTRO FOTOGRÁFICO Y TERMOGRAFÍA</h3>
+<div class="flex flex-wrap gap-x-3 gap-y-1 font-label-sm text-label-sm text-outline pt-0.5">
+<span>Acta: <strong class="text-on-surface">#CT-849201-REC</strong></span>
+<span>Orden: <strong class="text-on-surface">#UG-88412</strong></span>
+<span>Reclamo: <strong class="text-on-surface">#REC-9824</strong></span>
+</div>
+</div>
+<!-- QR Y SELLO METADATOS -->
+<div class="flex flex-col items-center shrink-0 bg-surface-container-lowest p-2 rounded-xl shadow-sm">
+<svg class="w-14 h-14 text-on-surface" fill="currentColor" viewbox="0 0 100 100">
+<path d="M0 0h36v36H0V0zm8 8v20h20V8H8zm4 4h12v12H12V12zM64 0h36v36H64V0zm8 8v20h20V8H72zm4 4h12v12H76V12zM0 64h36v36H0V64zm8 8v20h20V72H8zm4 4h12v12H12V76zm52-12h12v12H64V64zm24 0h12v12H88V64zm-12 12h12v12H76V76zm12 12h12v12H88V88zm-24 0h12v12H64V88zm-20-40h8v8h-8v-8zm8 8h8v8h-8v-8zm8-8h8v8h-8v-8zm-8-8h8v8h-8V40zm20 8h8v8h-8v-8zm-8 8h8v8h-8v-8zm16 8h8v8h-8v-8zm-36 8h8v8h-8v-8z"></path>
+</svg>
+<span class="font-label-sm text-[9px] tracking-tight text-secondary font-bold mt-1">METADATA EXIF</span>
+</div>
+</div>
+<!-- SECCIÓN 1: TERMOGRAFÍA FORENSE CALIBRADA -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary text-[20px]">thermostat</span>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">1. Termografía Forense Calibrada</h4>
+</div>
+<span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm px-2 py-0.5 rounded-full font-bold">FLIR E8-XT</span>
+</div>
+<!-- TARJETA COMPARATIVA TERMOGRÁFICA -->
+<div class="grid grid-cols-2 gap-2.5">
+<!-- FOTO A: ANTES / FALLA -->
+<div class="bg-surface-container-low rounded-2xl p-2.5 flex flex-col space-y-2 shadow-sm">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-inverse-surface flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="High resolution FLIR infrared thermal camera capture of a residential electrical panel showing an intense bright white and red overheating hotspot at 68.4 degrees Celsius on a circuit breaker terminal, surrounded by cooler purple and deep blue ambient shadows, high technical forensic detail, crisp digital overlay crosshairs." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGk46u0cFRRkkmRoAG3F8vOk0ubUQ3BVvanruJd3NPWUkEnF1-3kL5W_TcZeaaf3DBl92nMf2PRS5F1cgcUqmf7SIkQR7-iuP9urzfYywJm67xgIDf0NM34-TIEkxDgY44mSaabE5cjGRS8vhwoanEHKizD9Enr96GQmpQYsiBhMA8FvUaSj2chUbv_MtcbTzr8C2Bm_oi1my8gDY8Doi8voCug7jJQCoHGtwqWmq__MWx-1mOeUDEaA"/>
+<!-- Overlay térmico / Crosshair -->
+<div class="absolute inset-0 bg-gradient-to-tr from-error/30 via-transparent to-primary/10 pointer-events-none"></div>
+<div class="absolute top-2 left-2 bg-error text-on-error font-label-sm text-label-sm px-2 py-0.5 rounded-md font-bold shadow-sm">
+                FOTO A · EN FALLA
+              </div>
+<div class="absolute bottom-2 left-2 right-2 bg-inverse-surface/85 backdrop-blur-xs text-inverse-on-surface px-2 py-1 rounded-lg flex items-center justify-between">
+<span class="font-label-sm text-[10px] font-semibold text-secondary-container">Hotspot</span>
+<span class="font-title-md text-label-lg text-error font-extrabold">68.4°C</span>
+</div>
+</div>
+<div class="space-y-1 pt-0.5">
+<span class="font-label-sm text-[11px] text-error font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">warning</span> Sobrecarga Crítica
+              </span>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-tight">ΔT +32°C s/ ambiente. Fatiga en borne L1.</p>
+</div>
+</div>
+<!-- FOTO B: DESPUÉS / NORMALIZADO -->
+<div class="bg-surface-container-low rounded-2xl p-2.5 flex flex-col space-y-2 shadow-sm">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-inverse-surface flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Clear post repair calibrated FLIR infrared thermal camera scan of an organized electrical circuit breaker panel showing normalized uniform thermal dissipation in cool blue, teal, and mild green gradients, central terminal operating safely at 28.1 degrees Celsius with clear calibrated crosshair overlay, pristine technical forensic inspection." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6cH3zMLTiulTCoTuj50fHZyFXzEnjxNV3s4BhDCPSLLyxSW4Ws-BHeEudSL8-VN4zwWwCpPeXDV34ffjJfIKEaa9t1qA7qhbR_HQOW4Dxjla8B485VLENAps-GbZ8lLS1ODF4G6RtXjbK7W5gOhiB3jEoqjPrhRIpigGvITUM3dEidewtay7Psbom52loTkx7QoxOIw0C1Sn_8FeDqiPBatwQgYF6n9X6F24QnDqFv7EYqPiK9xVBdg"/>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/20 via-transparent to-secondary/15 pointer-events-none"></div>
+<div class="absolute top-2 left-2 bg-primary text-on-primary font-label-sm text-label-sm px-2 py-0.5 rounded-md font-bold shadow-sm">
+                FOTO B · POST-REPARACIÓN
+              </div>
+<div class="absolute bottom-2 left-2 right-2 bg-inverse-surface/85 backdrop-blur-xs text-inverse-on-surface px-2 py-1 rounded-lg flex items-center justify-between">
+<span class="font-label-sm text-[10px] font-semibold text-primary-fixed">T. Operativa</span>
+<span class="font-title-md text-label-lg text-primary-fixed font-extrabold">28.1°C</span>
+</div>
+</div>
+<div class="space-y-1 pt-0.5">
+<span class="font-label-sm text-[11px] text-primary font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[13px]">check_circle</span> Disipación Óptima
+              </span>
+<p class="font-body-sm text-[11px] text-on-surface-variant leading-tight">Conforme Norma ABNT NBR 5410.</p>
+</div>
+</div>
+</div>
+<!-- FICHA DE CALIBRACIÓN TÉCNICA -->
+<div class="bg-surface-container p-3 rounded-2xl flex items-center justify-between text-on-surface">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">tune</span>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm font-bold">Instrumento: FLIR E8-XT (#FL-90218)</span>
+<span class="font-body-sm text-[11px] text-on-surface-variant">Calibración INMETRO 2025 · Emisividad ε=0.95</span>
+</div>
+</div>
+<span class="bg-surface-container-lowest text-primary font-label-sm text-label-sm px-2 py-1 rounded-lg font-bold shadow-sm">
+            CAL-OK
+          </span>
+</div>
+</div>
+<!-- SECCIÓN 2: REGISTRO FOTOGRÁFICO DE INTERVENCIÓN TÉCNICA -->
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[20px]">photo_camera</span>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">2. Evidencias de Intervención en Obra</h4>
+</div>
+<span class="font-label-sm text-label-sm text-outline">3 Tomas Certificadas</span>
+</div>
+<div class="space-y-2.5">
+<!-- EVIDENCIA 1 -->
+<div class="flex items-center gap-3 bg-surface-container-low p-2.5 rounded-2xl">
+<div class="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Close-up forensic macro photograph of a damaged worn circuit breaker with heat marks and burnt scorched plastic terminal resting on an electrical technician workbench with forensic evidence scale." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCaZBhboQUX2VOS_P__3Kwtvb9-t9X8iFAAqHRa-UvVwJ7CezlaTjGY0aIESh8eksuUlBmwQf8m_5YJHSayg4fjpqzTe4Kz2hlQcYrB_sdT5N5AFtJLnAhffngXFz27bjs2CC_PBRtgsGwxq4nWVNRhaTUlVqzv7LZkfZnN6TXI5nVCe54dm_amXWzGnRgPZPg9Uj4toLs15fckL4WHZOAeXymDSID1fPZ3wJmc7-T-JuiRuZItmBDwpg"/>
+<div class="absolute bottom-1 left-1 bg-error/90 text-on-error font-label-sm text-[9px] px-1 rounded font-bold">#1 Sustituido</div>
+</div>
+<div class="flex flex-col justify-between min-w-0 py-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Retiro de elemento siniestrado</span>
+<p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-1">Disyuntor con degradación por arco y par de apriete insuficiente.</p>
+<div class="flex items-center gap-2 pt-1 font-label-sm text-[10px] text-outline">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">schedule</span> 13:45</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">pin_drop</span> GPS: -27.5954, -48.5480</span>
+</div>
+</div>
+</div>
+<!-- EVIDENCIA 2 -->
+<div class="flex items-center gap-3 bg-surface-container-low p-2.5 rounded-2xl">
+<div class="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Detailed crisp photo of brand new Schneider Acti9 40A miniature circuit breaker neatly wired on DIN rail inside modern consumer electrical box with security forensic numbered seal tag attached." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDaBZAiCZcBMFNPAhEAApC_V2rHcHquX6SyHquLGUMGqhECQYLIS8rMlEf6C1BQlZBFkBK1SXSJNqKbWtl-fSlCMK5TNSwff2BYvZ69_imled-bOhrnaM8Z9eb6zblixDiY7JINxNi4GxgaL6Kmy8SDC0KFuYY-TydZj6ySxTqxzrRwPs_XFaeul0jGNp8a4xviGe3iF0svrh2gMy9qeOESXxUHwcQ-CLAkCxSl7VJJnOyFECOXubgRtw"/>
+<div class="absolute bottom-1 left-1 bg-primary/90 text-on-primary font-label-sm text-[9px] px-1 rounded font-bold">#2 Instalado</div>
+</div>
+<div class="flex flex-col justify-between min-w-0 py-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Módulo Schneider Acti9 40A</span>
+<p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-1">Montaje modular con precinto inviolable #SHD-00492.</p>
+<div class="flex items-center gap-2 pt-1 font-label-sm text-[10px] text-outline">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">schedule</span> 14:10</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">verified</span> OEM Original</span>
+</div>
+</div>
+</div>
+<!-- EVIDENCIA 3 -->
+<div class="flex items-center gap-3 bg-surface-container-low p-2.5 rounded-2xl">
+<div class="relative w-20 h-20 rounded-xl overflow-hidden shrink-0 bg-surface-container-highest">
+<img class="w-full h-full object-cover" data-alt="Certified electrician using a calibrated Wiha TorqueVario torque screwdriver precisely set to 2.5 Newton meters on electrical terminal screw, showing digital torque indicator and clear calibration sticker." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWpm0Q6y-orwQDItEAVByEbb3cGCDrexv5Q3pylN4oNrRzZqyjBVpuZ88HTeRdi9NEBfLaK9yShnjwOIA0nPyRqj_r1uaA9ctOK8GJITQ-TFy3utZatQxhnjON8kvlBw5dRh6Zt6ewGUnEGPf_6nuu0OP9Oi3YDYpWa1V4q-w_uV1HsZxFnr-G5HCabtMHKo1_P6GeQ8tP-lq_phpfl2jamCb8H4AR2MEHq94oTqTeghaP5Lqd3YPCng"/>
+<div class="absolute bottom-1 left-1 bg-secondary/90 text-on-secondary font-label-sm text-[9px] px-1 rounded font-bold">#3 Torque</div>
+</div>
+<div class="flex flex-col justify-between min-w-0 py-0.5">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Apriete Dinamométrico Certificado</span>
+<p class="font-body-sm text-[12px] text-on-surface-variant line-clamp-1">Calibrado a 2.5 N·m mediante Wiha TorqueVario con tolerancia ±6%.</p>
+<div class="flex items-center gap-2 pt-1 font-label-sm text-[10px] text-outline">
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">schedule</span> 14:18</span>
+<span class="flex items-center gap-0.5"><span class="material-symbols-outlined text-[11px]">precision_manufacturing</span> 2.5 N·m</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- SECCIÓN 3: PROTOCOLO DE CONCILIACIÓN Y GARANTÍA EXTENDIDA -->
+<div class="bg-secondary-container/20 rounded-2xl p-4 space-y-2.5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[22px]">verified</span>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">3. Cobertura Fiduciaria y Garantía UGO Shield</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Se certifica la plena conformidad técnica de la sustitución y reingeniería del ramal afectado. Se otorga una ampliación de <strong class="text-on-surface">Garantía Fiduciaria Directa de 180 días corridos</strong> respaldada por la póliza UGO Shield Protect #POL-9931.
+        </p>
+<!-- Sello de Precinto con Código de Barras -->
+<div class="bg-surface-container-lowest p-3 rounded-xl flex items-center justify-between shadow-xs">
+<div class="space-y-1 min-w-0">
+<span class="font-label-sm text-[10px] uppercase text-outline font-bold">Precinto de Lacrado Pericial</span>
+<div class="font-mono text-label-sm font-bold text-on-surface tracking-wider">SEC-SHD-00492-2024</div>
+</div>
+<!-- Código de barras SVG decorativo -->
+<svg class="h-8 w-28 text-on-surface shrink-0" fill="currentColor" viewbox="0 0 120 30">
+<rect height="30" width="3" x="0" y="0"></rect>
+<rect height="30" width="2" x="5" y="0"></rect>
+<rect height="30" width="4" x="10" y="0"></rect>
+<rect height="30" width="1" x="16" y="0"></rect>
+<rect height="30" width="3" x="20" y="0"></rect>
+<rect height="30" width="5" x="26" y="0"></rect>
+<rect height="30" width="2" x="34" y="0"></rect>
+<rect height="30" width="4" x="39" y="0"></rect>
+<rect height="30" width="1" x="46" y="0"></rect>
+<rect height="30" width="3" x="50" y="0"></rect>
+<rect height="30" width="2" x="56" y="0"></rect>
+<rect height="30" width="4" x="61" y="0"></rect>
+<rect height="30" width="2" x="68" y="0"></rect>
+<rect height="30" width="5" x="73" y="0"></rect>
+<rect height="30" width="2" x="81" y="0"></rect>
+<rect height="30" width="3" x="86" y="0"></rect>
+<rect height="30" width="4" x="92" y="0"></rect>
+<rect height="30" width="1" x="99" y="0"></rect>
+<rect height="30" width="3" x="103" y="0"></rect>
+<rect height="30" width="2" x="109" y="0"></rect>
+<rect height="30" width="4" x="114" y="0"></rect>
+</svg>
+</div>
+</div>
+<!-- SECCIÓN 4: RATIFICACIÓN DE FIRMAS Y CIERRE DOCUMENTAL -->
+<div class="space-y-3 pt-2">
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface">4. Ratificación Notarial y Conformidad</h4>
+<div class="grid grid-cols-2 gap-3">
+<!-- FIRMA PERITO -->
+<div class="bg-surface-container-low p-3 rounded-2xl flex flex-col justify-between space-y-2">
+<div>
+<span class="font-label-sm text-[10px] uppercase text-outline font-bold">Perito Certificador</span>
+<p class="font-label-md text-label-md font-bold text-on-surface mt-0.5">Ing. Ricardo Valenzuela</p>
+<p class="font-label-sm text-[11px] text-outline">CREA-SC #12804</p>
+</div>
+<div class="pt-2">
+<!-- SVG Firma trazo estilizado -->
+<svg class="w-full h-8 text-secondary" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2" viewbox="0 0 150 40">
+<path d="M10 28 C 30 5, 45 40, 65 15 C 80 -5, 90 35, 110 20 C 125 10, 140 25, 145 15"></path>
+<path d="M40 32 L 120 32"></path>
+</svg>
+<div class="flex items-center gap-1 mt-1 text-primary">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+<span class="font-label-sm text-[10px] font-bold">Firma Digital ICP</span>
+</div>
+</div>
+</div>
+<!-- BIOMETRÍA CLIENTE -->
+<div class="bg-surface-container-low p-3 rounded-2xl flex flex-col justify-between space-y-2">
+<div>
+<span class="font-label-sm text-[10px] uppercase text-outline font-bold">Titular Reclamante</span>
+<p class="font-label-md text-label-md font-bold text-on-surface mt-0.5">Martín Benítez</p>
+<p class="font-label-sm text-[11px] text-outline">DNI: ***.418.902-*</p>
+</div>
+<div class="pt-2 flex items-center justify-between">
+<div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">fingerprint</span>
+</div>
+<div class="flex flex-col text-right">
+<span class="font-label-sm text-[10px] text-primary font-bold">Biometría OK</span>
+<span class="font-label-sm text-[9px] text-outline">App UGO v4.2.1</span>
+</div>
+</div>
+</div>
+</div>
+<!-- SELLO CIRCULAR NOTARIAL DIGITAL -->
+<div class="bg-surface-container-high/60 rounded-2xl p-3 flex items-center gap-3">
+<div class="relative w-12 h-12 rounded-full bg-surface-container-lowest flex items-center justify-center text-primary shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[26px]">gavel</span>
+<div class="absolute inset-0 rounded-full border-2 border-dashed border-primary/40 animate-spin" style="animation-duration: 20s;"></div>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">Homologación Cartorial Digital Inmutable</span>
+<span class="font-body-sm text-[11px] text-outline truncate">Custodia fiduciaria en Ledger UGO · Libro Notarial #84-B</span>
+</div>
+</div>
+<!-- PIE DE HOJA A4 -->
+<div class="pt-3 border-t border-surface-container flex items-center justify-between text-outline font-label-sm text-[11px]">
+<span>Página 2 de 2 · Fin del Documento Oficial</span>
+<span class="font-mono font-bold text-on-surface-variant">DOC-ID: UGO-2024-REC-9824-V3</span>
+</div>
+</div>
+</div>
+</div>
+<!-- BARRA FLOTANTE DE PAGINACIÓN Y ACCIONES AL PIE -->
+<div class="sticky bottom-0 z-40 bg-surface-container-lowest/95 backdrop-blur-xl p-space-md shadow-[0_-8px_24px_rgba(15,23,42,0.08)] mt-space-lg space-y-space-sm rounded-t-3xl">
+<!-- Paginador táctil -->
+<div class="flex items-center justify-between px-2">
+<button class="flex items-center gap-1 text-on-surface-variant hover:text-on-surface font-label-md text-label-md px-3 py-1.5 rounded-full hover:bg-surface-container transition-colors" id="prevPageBtn">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+<span>Página 1</span>
+</button>
+<div class="flex items-center gap-1.5 bg-surface-container px-3 py-1 rounded-full">
+<span class="w-2 h-2 rounded-full bg-outline-variant"></span>
+<span class="w-2 h-2 rounded-full bg-primary ring-2 ring-primary/30"></span>
+<span class="font-label-sm text-label-sm font-bold text-on-surface ml-1">2 / 2</span>
+</div>
+<button class="flex items-center gap-1 text-outline cursor-not-allowed font-label-md text-label-md px-3 py-1.5 rounded-full opacity-40">
+<span>Fin</span>
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<!-- Botones de Acción -->
+<div class="flex items-center gap-2.5">
+<button class="h-12 px-4 rounded-2xl bg-surface-container-high hover:bg-surface-container text-on-surface font-label-lg text-label-lg flex items-center justify-center gap-1.5 transition-transform active:scale-95 shrink-0" id="shareDocBtn">
+<span class="material-symbols-outlined text-[20px]">share</span>
+<span>Compartir</span>
+</button>
+<button class="flex-1 h-12 rounded-2xl bg-primary hover:bg-primary/95 text-on-primary font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.98]" id="downloadPdfBtn">
+<span class="material-symbols-outlined text-[20px]">download</span>
+<span class="truncate">Descargar PDF (2.8 MB)</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interacción: Feedback de descarga y cambio de página
+  const downloadBtn = document.getElementById('downloadPdfBtn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', () => {
+      const originalHtml = downloadBtn.innerHTML;
+      downloadBtn.innerHTML = `
+        <span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+        <span>Generando PDF Seguro...</span>
+      `;
+      downloadBtn.classList.add('pointer-events-none', 'opacity-90');
+      
+      setTimeout(() => {
+        downloadBtn.innerHTML = `
+          <span class="material-symbols-outlined text-[20px]">check_circle</span>
+          <span>¡Descarga Completada!</span>
+        `;
+        downloadBtn.classList.replace('bg-primary', 'bg-secondary');
+        
+        setTimeout(() => {
+          downloadBtn.innerHTML = originalHtml;
+          downloadBtn.classList.replace('bg-secondary', 'bg-primary');
+          downloadBtn.classList.remove('pointer-events-none', 'opacity-90');
+        }, 2200);
+      }, 1500);
+    });
+  }
+
+  const shareBtn = document.getElementById('shareDocBtn');
+  if (shareBtn) {
+    shareBtn.addEventListener('click', () => {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Certificado Pericial UGO Shield REC-9824',
+          text: 'Anexo II Termografía Forense y Registro de Intervención Certificada.',
+          url: window.location.href,
+        }).catch(() => {});
+      } else {
+        const originalText = shareBtn.innerHTML;
+        shareBtn.innerHTML = `<span class="material-symbols-outlined text-[18px]">done</span><span>Enlace copiado</span>`;
+        setTimeout(() => {
+          shareBtn.innerHTML = originalText;
+        }, 1800);
+      }
+    });
+  }
+
+  const prevBtn = document.getElementById('prevPageBtn');
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

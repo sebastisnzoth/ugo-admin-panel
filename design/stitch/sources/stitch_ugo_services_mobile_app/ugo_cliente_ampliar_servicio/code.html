@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full pb-32">
+<!-- Top Navigation & Context Header -->
+<div class="px-space-md pt-2 pb-space-sm">
+<div class="flex items-center gap-space-sm mb-space-xs">
+<button aria-label="Volver" class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center text-on-surface hover:bg-surface-container-highest transition-transform active:scale-95" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div class="flex flex-col min-w-0">
+<h2 class="font-headline-sm text-headline-sm text-on-surface truncate">Ampliar servicio en curso</h2>
+<span class="font-label-md text-label-md text-on-surface-variant flex items-center gap-1">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+          Servicio #UG-8941 · Carlos Méndez
+        </span>
+</div>
+</div>
+<!-- Savings Badge / Opportunity Banner -->
+<div class="bg-primary-fixed/40 rounded-2xl p-space-sm flex items-start gap-space-sm shadow-sm mt-2">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-primary-fixed leading-tight">Visita técnica 100% bonificada</span>
+<p class="font-body-sm text-body-sm text-on-primary-fixed-variant mt-0.5">Aprovechá al técnico en tu domicilio y resolvelo hoy sin pagar nuevo costo de traslado ni cargo básico.</p>
+</div>
+</div>
+</div>
+<!-- Real-Time Dynamic Budget Summary Card (Sticky Prominence) -->
+<div class="px-space-md mb-space-md">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-md">
+<div class="flex items-center justify-between pb-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Presupuesto en vivo</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+          Sin comisiones sorpresa
+        </span>
+</div>
+<div class="space-y-1.5 pt-1">
+<div class="flex items-center justify-between text-on-surface-variant">
+<span class="font-body-md text-body-md">Servicio base contratado</span>
+<span class="font-label-lg text-label-lg text-on-surface">R$ 135,00</span>
+</div>
+<div class="flex items-center justify-between text-primary">
+<span class="font-body-md text-body-md flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">add_circle</span>
+            Adicionales seleccionados (<span id="count-items">2</span>)
+          </span>
+<span class="font-label-lg text-label-lg font-bold" id="cost-additionals">+ R$ 65,00</span>
+</div>
+</div>
+<div class="mt-3 pt-3 bg-surface-container-low rounded-2xl px-space-sm py-2.5 flex items-center justify-between">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total consolidado</span>
+<div class="font-headline-md text-headline-md text-on-surface leading-tight" id="total-amount">R$ 200,00</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tiempo extra est.</span>
+<div class="font-title-md text-title-md text-secondary flex items-center gap-0.5 justify-end" id="extra-duration">
+<span class="material-symbols-outlined text-[18px]">schedule</span>
+            +35 min
+          </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Hugo AI Contextual Recommendations -->
+<div class="px-space-md mb-space-md">
+<div class="bg-secondary-container/20 rounded-3xl p-space-md shadow-sm relative overflow-hidden">
+<div class="flex items-center gap-2 mb-2">
+<div class="w-7 h-7 rounded-full bg-secondary text-on-secondary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[16px]">auto_awesome</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface flex items-center gap-1">
+          Hugo IA · Recomendación inteligente
+        </span>
+<span class="ml-auto px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">20% OFF</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+        Hugo IA detectó que consultaste días atrás por <strong>dos tomas de cocina</strong> y la <strong>luz exterior</strong>. Carlos tiene los repuestos exactos en su furgón y podés sumarlos ahora con descuento de mano de obra.
+      </p>
+</div>
+</div>
+<!-- Additional Tasks Interactive Checklist -->
+<div class="px-space-md mb-space-md">
+<div class="flex items-center justify-between mb-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Tareas adicionales sugeridas</h3>
+<span class="font-label-sm text-label-sm text-primary font-bold">Toque para sumar</span>
+</div>
+<div class="space-y-space-sm" id="tasks-container">
+<!-- Item 1: Checked -->
+<label class="block relative bg-surface-container-lowest rounded-3xl p-space-md shadow-sm cursor-pointer transition-all active:scale-[0.99]" data-cost="40" data-minutes="20">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Electricidad</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Repuesto incluido</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug">Revisión y cambio de tomacorriente doble en cocina</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Incluye módulo Schuko 16A ignífugo certificado y chequeo de polaridad.</p>
+<div class="flex items-center gap-space-md mt-3 text-on-surface-variant">
+<span class="font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+                +20 min
+              </span>
+<span class="font-label-lg text-label-lg font-bold text-primary">+ R$ 40,00</span>
+</div>
+</div>
+<div class="shrink-0 pt-1">
+<input checked="" class="task-checkbox sr-only" type="checkbox"/>
+<div class="checkbox-visual w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Item 2: Checked -->
+<label class="block relative bg-surface-container-lowest rounded-3xl p-space-md shadow-sm cursor-pointer transition-all active:scale-[0.99]" data-cost="25" data-minutes="15">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Mantenimiento</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug">Reajuste de bornera y térmica de termotanque</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Ajuste de torque preventivo y verificación térmica de seguridad.</p>
+<div class="flex items-center gap-space-md mt-3 text-on-surface-variant">
+<span class="font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+                +15 min
+              </span>
+<span class="font-label-lg text-label-lg font-bold text-primary">+ R$ 25,00</span>
+</div>
+</div>
+<div class="shrink-0 pt-1">
+<input checked="" class="task-checkbox sr-only" type="checkbox"/>
+<div class="checkbox-visual w-7 h-7 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+</div>
+</label>
+<!-- Item 3: Unchecked -->
+<label class="block relative bg-surface-container-lowest rounded-3xl p-space-md shadow-sm cursor-pointer transition-all active:scale-[0.99]" data-cost="55" data-minutes="30">
+<div class="flex items-start justify-between gap-space-sm">
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-2 mb-1">
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">Iluminación</span>
+</div>
+<h4 class="font-title-md text-title-md text-on-surface leading-snug">Instalación de aplique LED exterior en balcón</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Fijación estanca IP65 y empalme sellado contra humedad.</p>
+<div class="flex items-center gap-space-md mt-3 text-on-surface-variant">
+<span class="font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">schedule</span>
+                +30 min
+              </span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">+ R$ 55,00</span>
+</div>
+</div>
+<div class="shrink-0 pt-1">
+<input class="task-checkbox sr-only" type="checkbox"/>
+<div class="checkbox-visual w-7 h-7 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</div>
+</div>
+</div>
+</label>
+</div>
+<!-- Custom Task Input CTA -->
+<button class="w-full mt-3 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-2xl p-space-md flex items-center justify-between text-left transition-colors group" type="button">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-highest flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[20px]">mic</span>
+</div>
+<div>
+<span class="font-label-lg text-label-lg text-on-surface block">Describir otra tarea o repuesto</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Dictar por audio o escribir para cotización inmediata</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">chevron_right</span>
+</button>
+</div>
+<!-- Carlos Technical Validation Card -->
+<div class="px-space-md mb-space-md">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-md mb-3">
+<div class="relative w-12 h-12 shrink-0">
+<img class="w-12 h-12 rounded-full object-cover shadow-sm" data-alt="Close up portrait of a certified friendly electrician professional with safety gear smiling warmly in domestic environment with modern soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUeyBwdEtphSLmMup6OPfgh42cJfreroHav3nGKLYWsTxzCWDCvdB4OaIc9cdki_evou9feWRyJUCwSQ364uTDTuS_ylb7HtIpMW_rGVMJddR6v-YpZZVFBUqEbetZ8zyWRuqrW6BeDVRH3cl5m1r-d90qqT_6gbSiY36AqYU-Lomj899J9yXXNs0yE1gQI8EKs33D3CWvwn_lKs8gSLZIQhjH624MhbFofbXkouLh3qKetm6JIk7LyQ"/>
+<div class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[12px]">verified</span>
+</div>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="font-title-md text-title-md text-on-surface truncate">Carlos Méndez</h4>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full font-bold">
+              ★ 4.98
+            </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px] text-primary">airport_shuttle</span>
+            Furgón UGO Taller Móvil
+          </span>
+</div>
+</div>
+<div class="bg-surface-container-low rounded-2xl p-space-sm space-y-2">
+<div class="flex items-start gap-2">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">inventory_2</span>
+<p class="font-body-sm text-body-sm text-on-surface">
+            Carlos validó stock inmediato de tomas y terminales en su vehículo para completar el trabajo en esta visita.
+          </p>
+</div>
+<div class="flex items-center justify-between pt-1 text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+            Finalización estimada hoy:
+          </span>
+<span class="font-bold text-on-surface text-[13px]" id="completion-time">15:35 hs</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Security & Guarantee Card -->
+<div class="px-space-md mb-space-lg">
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm">
+<div class="flex items-center gap-space-sm mb-2">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">security</span>
+</div>
+<div>
+<span class="font-label-lg text-label-lg text-on-surface block">Garantía UGO Shield de 6 meses</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Protección total y soporte 24/7</span>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+        Todas las ampliaciones se consolidan en tu factura digital con pago seguro. Si algo no queda impecable, un especialista regresa sin costo.
+      </p>
+</div>
+</div>
+<!-- Floating Bottom Decision Sheet -->
+<div class="fixed bottom-16 inset-x-0 z-40 px-space-md pb-2 bg-gradient-to-t from-surface via-surface/95 to-transparent pt-4">
+<div class="flex flex-col gap-2 max-w-lg mx-auto">
+<button class="w-full h- touch-target rounded-2xl bg-primary text-on-primary font-label-lg text-label-lg shadow-xl hover:bg-primary-container transition-all active:scale-[0.98] flex items-center justify-center gap-2" id="btn-confirm" type="button">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+<span id="btn-confirm-text">Confirmar ampliación (+R$ 65,00)</span>
+</button>
+<button class="w-full py-2 text-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-colors" type="button">
+        Continuar solo con el servicio original
+      </button>
+</div>
+</div>
+</div>
+<script>
+  (function() {
+    const baseCost = 135;
+    const baseTimeMinutes = 55;
+    const labels = document.querySelectorAll('#tasks-container > label');
+    const costAdditionalsEl = document.getElementById('cost-additionals');
+    const totalAmountEl = document.getElementById('total-amount');
+    const extraDurationEl = document.getElementById('extra-duration');
+    const countItemsEl = document.getElementById('count-items');
+    const btnConfirmTextEl = document.getElementById('btn-confirm-text');
+    const completionTimeEl = document.getElementById('completion-time');
+
+    function updateCalculations() {
+      let addCost = 0;
+      let addMin = 0;
+      let count = 0;
+
+      labels.forEach(label => {
+        const checkbox = label.querySelector('.task-checkbox');
+        const visual = label.querySelector('.checkbox-visual');
+        const cost = parseFloat(label.getAttribute('data-cost') || '0');
+        const min = parseInt(label.getAttribute('data-minutes') || '0', 10);
+
+        if (checkbox.checked) {
+          addCost += cost;
+          addMin += min;
+          count++;
+          visual.classList.remove('bg-surface-container-high', 'text-on-surface-variant');
+          visual.classList.add('bg-primary', 'text-on-primary');
+          visual.innerHTML = '<span class="material-symbols-outlined text-[18px]">check</span>';
+        } else {
+          visual.classList.remove('bg-primary', 'text-on-primary');
+          visual.classList.add('bg-surface-container-high', 'text-on-surface-variant');
+          visual.innerHTML = '<span class="material-symbols-outlined text-[18px]">add</span>';
+        }
+      });
+
+      const total = baseCost + addCost;
+      costAdditionalsEl.textContent = `+ R$ ${addCost.toFixed(2).replace('.', ',')}`;
+      totalAmountEl.textContent = `R$ ${total.toFixed(2).replace('.', ',')}`;
+      extraDurationEl.innerHTML = `<span class="material-symbols-outlined text-[18px]">schedule</span>+${addMin} min`;
+      countItemsEl.textContent = count;
+      btnConfirmTextEl.textContent = count > 0 
+        ? `Confirmar ampliaci\u00F3n (+R$ ${addCost.toFixed(2).replace('.', ',')})`
+        : 'Mantener servicio base (R$ 135,00)';
+
+      // Calculate new completion time from 15:00 base
+      const nowBaseHour = 15;
+      const nowBaseMin = 0;
+      const totalMinutes = nowBaseMin + addMin;
+      const hours = nowBaseHour + Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      const formattedMin = minutes < 10 ? '0' + minutes : minutes;
+      if (completionTimeEl) {
+        completionTimeEl.textContent = `${hours}:${formattedMin} hs`;
+      }
+    }
+
+    labels.forEach(label => {
+      label.addEventListener('click', (e) => {
+        // Prevent double toggling when clicking directly on custom input
+        if (e.target.tagName.toLowerCase() === 'input') return;
+        const checkbox = label.querySelector('.task-checkbox');
+        checkbox.checked = !checkbox.checked;
+        updateCalculations();
+      });
+
+      const checkbox = label.querySelector('.task-checkbox');
+      checkbox.addEventListener('change', updateCalculations);
+    });
+
+    updateCalculations();
+  })();
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

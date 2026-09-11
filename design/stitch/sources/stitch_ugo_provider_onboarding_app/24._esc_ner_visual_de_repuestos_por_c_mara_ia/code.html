@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "primary-fixed-dim": "#b8c4ff", "inverse-surface": "#283044", "surface-container": "#eaedff", "on-surface": "#131b2e", "on-primary": "#ffffff", "secondary-fixed": "#89f5e7", "on-error-container": "#93000a", "on-secondary": "#ffffff", "on-secondary-fixed": "#00201d", "on-primary-fixed": "#001453", "tertiary": "#4c2e00", "error": "#ba1a1a", "on-tertiary-container": "#ffa929", "surface": "#faf8ff", "surface-container-lowest": "#ffffff", "tertiary-container": "#6b4200", "surface-bright": "#faf8ff", "tertiary-fixed-dim": "#ffb95f", "inverse-primary": "#b8c4ff", "surface-variant": "#dae2fd", "error-container": "#ffdad6", "surface-container-highest": "#dae2fd", "on-tertiary-fixed-variant": "#653e00", "background": "#faf8ff", "secondary": "#006a61", "surface-container-high": "#e2e7ff", "on-secondary-fixed-variant": "#005049", "on-primary-fixed-variant": "#173bab", "on-tertiary": "#ffffff", "surface-dim": "#d2d9f4", "on-surface-variant": "#444653", "surface-tint": "#3755c3", "on-primary-container": "#a8b8ff", "surface-container-low": "#f2f3ff", "secondary-container": "#86f2e4", "outline": "#757684", "on-secondary-container": "#006f66", "primary-fixed": "#dde1ff", "secondary-fixed-dim": "#6bd8cb", "inverse-on-surface": "#eef0ff", "outline-variant": "#c4c5d5", "on-error": "#ffffff", "tertiary-fixed": "#ffddb8", "primary-container": "#1e40af", "on-tertiary-fixed": "#2a1700", "on-background": "#131b2e", "primary": "#00288e" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "header-height-mobile": "3.75rem", "bottom-nav-height": "4.5rem", "space-xl": "1.5rem", "screen-margin-tablet": "1.5rem", "space-lg": "1.25rem", "space-2xs": "0.25rem", "space-3xl": "2.5rem", "card-padding": "1.25rem", "space-xs": "0.5rem", "space-md": "1rem", "space-2xl": "2rem", "space-sm": "0.75rem", "screen-margin-mobile": "1rem" }, "fontFamily": { "label-md": ["Inter"], "title-md": ["Plus Jakarta Sans"], "label-lg": ["Inter"], "body-md": ["Plus Jakarta Sans"], "headline-md": ["Plus Jakarta Sans"], "body-sm": ["Plus Jakarta Sans"], "display-lg": ["Plus Jakarta Sans"], "label-sm": ["Inter"], "headline-lg": ["Plus Jakarta Sans"], "body-lg": ["Plus Jakarta Sans"], "headline-sm": ["Plus Jakarta Sans"], "display-lg-mobile": ["Plus Jakarta Sans"] }, "fontSize": { "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }], "label-lg": ["14px", { "lineHeight": "18px", "letterSpacing": "0.01em", "fontWeight": "600" }], "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }], "headline-md": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.01em", "fontWeight": "700" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.03em", "fontWeight": "800" }], "label-sm": ["10px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }], "headline-lg": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }], "headline-sm": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "display-lg-mobile": ["32px", { "lineHeight": "38px", "letterSpacing": "-0.02em", "fontWeight": "800" }] } } } }</script><style>@layer base{html,body{width:100%;min-height:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface font-body-md text-body-md text-on-surface pt-safe pb-safe flex flex-col min-h-screen"><main class="flex-1 flex flex-col relative w-full bg-surface"><div class="flex flex-col w-full pb-8 select-none">
+<!-- Top AR Navigation & HUD Bar -->
+<div class="relative w-full px-4 pt-2 pb-3 bg-inverse-surface text-inverse-on-surface z-30 flex flex-col gap-3 shadow-md">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<button aria-label="Volver a UGO Copilot" class="w-10 h-10 rounded-full bg-inverse-surface/80 hover:bg-surface-container-highest/20 active:scale-95 flex items-center justify-center transition-all" type="button">
+<span class="material-symbols-outlined text-inverse-on-surface text-[22px]">arrow_back_ios_new</span>
+</button>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-secondary-fixed text-[18px]">view_in_ar</span>
+<span class="font-headline-sm text-headline-sm text-surface-container-lowest tracking-tight">UGO Lens AI</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline-variant">Servicio #8492 • Camila Duarte</p>
+</div>
+</div>
+<!-- Detection Active Live Badge -->
+<div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary/30">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-secondary-fixed opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-secondary-fixed"></span>
+</span>
+<span class="font-label-sm text-label-sm text-secondary-fixed font-semibold tracking-wide uppercase">Detección Activa</span>
+</div>
+</div>
+<!-- Camera Quick Controls (Torch, Macro, Zoom) -->
+<div class="flex items-center justify-between px-1">
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-surface-variant/20 hover:bg-surface-variant/30 text-inverse-on-surface transition-all active:scale-95" id="torch-btn" type="button">
+<span class="material-symbols-outlined text-[18px] text-tertiary-fixed">flashlight_on</span>
+<span class="font-label-md text-label-md">Linterna ON</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary-fixed/20 text-secondary-fixed transition-all active:scale-95" type="button">
+<span class="material-symbols-outlined text-[18px]">macro_auto</span>
+<span class="font-label-md text-label-md">Macro AI</span>
+</button>
+</div>
+<!-- Zoom Segmented Controller -->
+<div class="flex items-center bg-inverse-surface/90 p-0.5 rounded-full shadow-inner">
+<button class="px-2.5 py-1 rounded-full font-label-sm text-label-sm text-inverse-on-surface/70 hover:text-white transition-colors" type="button">0.5x</button>
+<button class="px-2.5 py-1 rounded-full bg-primary-container text-surface-container-lowest font-label-sm text-label-sm shadow-sm font-bold" type="button">1x</button>
+<button class="px-2.5 py-1 rounded-full font-label-sm text-label-sm text-inverse-on-surface/70 hover:text-white transition-colors" type="button">2x</button>
+</div>
+</div>
+</div>
+<!-- Camera Viewport with AR Overlay Box -->
+<div class="relative w-full h-[360px] overflow-hidden bg-black flex items-center justify-center">
+<!-- Camera Stream Background -->
+<img class="w-full h-full object-cover select-none" data-alt="Close up high quality photo of bathroom plumbing underneath a porcelain sink showing chrome braided stainless steel water hose connected to shutoff valve and white PVC drainage pipes" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsgJ83DDzNNpGRv5gpvNSdkhb4Rsb-ENGO49KBCzr6TsrDQOLtFnIxN9CDtolCIk7CbkntrftY3UAycu-k-k_9RYJemehumbSsNj6LkdzN-4gusduRFUsgTK5tA2hu_EHsloJEnZykIyExhMdnyY-JYrPq9rhqgU08ogTCKARuGuhg2QISZX4feqj0i6hz0yN9QH6jO4vigdkTiTDVBLYyEl3TXWkdx2Em0_rC7tOp_wNsI3VAODDpkw"/>
+<!-- Gradient Vignette -->
+<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60 pointer-events-none"></div>
+<!-- AR Grid / Scanning Sweep Animation -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden opacity-35">
+<div class="w-full h-1 bg-gradient-to-r from-transparent via-secondary-fixed to-transparent shadow-[0_0_12px_#89f5e7] animate-[bounce_3s_infinite]"></div>
+</div>
+<!-- AR Reticle Target 1: Flexible Hose & Valve -->
+<div class="absolute top-10 left-[26%] w-[48%] h-[68%] pointer-events-none">
+<!-- High-tech Corner Brackets -->
+<div class="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-secondary-fixed rounded-tl-sm"></div>
+<div class="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-secondary-fixed rounded-tr-sm"></div>
+<div class="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-secondary-fixed rounded-bl-sm"></div>
+<div class="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-secondary-fixed rounded-br-sm"></div>
+<!-- AR Floating Tag: Piece Identified -->
+<div class="absolute -top-3 -right-2 transform translate-x-2 bg-inverse-surface/90 text-surface-container-lowest px-2.5 py-1 rounded-lg backdrop-blur-md shadow-lg pointer-events-auto">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed"></span>
+<span class="font-label-sm text-label-sm font-bold text-secondary-fixed tracking-wide">Flexible Inox 1/2" (40cm)</span>
+</div>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-[12px] text-tertiary-fixed-dim">verified</span>
+<span class="font-label-sm text-label-sm text-outline-variant">Confianza IA: 98.4%</span>
+</div>
+</div>
+<!-- Dimension Laser Lines (AR Measurement) -->
+<div class="absolute top-1/2 left-2 flex items-center gap-1 pointer-events-none">
+<div class="w-1.5 h-1.5 rounded-full bg-secondary-fixed"></div>
+<div class="w-12 h-0.5 bg-secondary-fixed/80"></div>
+<span class="px-1.5 py-0.5 rounded bg-inverse-surface/80 text-secondary-fixed font-label-sm text-label-sm font-bold backdrop-blur-sm">L: 400 mm</span>
+</div>
+</div>
+<!-- AR Pin Point 2: Brass Nipple -->
+<div class="absolute bottom-24 left-[14%] flex items-center gap-1 pointer-events-auto">
+<div class="relative flex items-center justify-center">
+<span class="animate-ping absolute w-4 h-4 rounded-full bg-primary-fixed opacity-75"></span>
+<span class="w-3 h-3 rounded-full bg-primary-fixed flex items-center justify-center text-[8px] font-bold text-on-primary-fixed">1</span>
+</div>
+<div class="bg-surface-container-lowest/95 text-on-surface px-2 py-1 rounded-md shadow-md backdrop-blur-sm">
+<p class="font-label-sm text-label-sm font-bold text-primary">Niple Bronce 1/2"</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Rosca cónica NPT</p>
+</div>
+</div>
+<!-- AR Anomaly Warning Badge -->
+<div class="absolute bottom-4 right-4 bg-tertiary-container/90 text-on-tertiary-container px-3 py-1.5 rounded-xl shadow-lg backdrop-blur-md flex items-center gap-2 pointer-events-auto">
+<span class="material-symbols-outlined text-[20px] text-tertiary-fixed-dim">warning</span>
+<div>
+<p class="font-label-sm text-label-sm font-bold text-tertiary-fixed">Fisura en junta de asiento</p>
+<p class="font-label-sm text-label-sm text-on-tertiary-container opacity-90">Reemplazo crítico sugerido</p>
+</div>
+</div>
+<!-- AR Recenter Tap Trigger -->
+<button aria-label="Recalibrar sensor" class="absolute bottom-4 left-4 w-9 h-9 rounded-full bg-inverse-surface/80 text-surface-container-lowest flex items-center justify-center backdrop-blur-md active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">filter_center_focus</span>
+</button>
+</div>
+<!-- Bottom Sheet / Diagnostic & Repuestos Panel -->
+<div class="flex-1 w-full bg-surface-container-lowest rounded-t-3xl -mt-4 relative z-20 px-4 pt-3 flex flex-col gap-4 shadow-xl">
+<!-- Sheet Drag Handle -->
+<div class="w-12 h-1.5 rounded-full bg-outline-variant/60 self-center mb-1"></div>
+<!-- Diagnostic Header -->
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-1.5 text-secondary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-label-lg text-label-lg font-bold text-secondary">Pieza Identificada con Éxito</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold mt-0.5">Flexible Acero Inox 40cm DN15</h2>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-bold uppercase tracking-wider">
+        Norma ABNT
+      </span>
+</div>
+<!-- Technical Specs & Laser Measurements Bento Chips -->
+<div class="grid grid-cols-3 gap-2">
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">straighten</span> Longitud
+        </span>
+<span class="font-title-md text-title-md font-bold text-on-surface mt-1">400 mm</span>
+<span class="font-label-sm text-label-sm text-outline">Standard mesada</span>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">adjust</span> Rosca
+        </span>
+<span class="font-title-md text-title-md font-bold text-on-surface mt-1">1/2" DN15</span>
+<span class="font-label-sm text-label-sm text-outline">F / M Hembra-Macho</span>
+</div>
+<div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] text-primary">speed</span> Presión Max
+        </span>
+<span class="font-title-md text-title-md font-bold text-on-surface mt-1">10 Bar</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Resistente PN10</span>
+</div>
+</div>
+<!-- Compatibility Assurance Banner -->
+<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-secondary-fixed/15 text-on-secondary-fixed-variant">
+<span class="material-symbols-outlined text-[20px] text-secondary">verified_user</span>
+<p class="font-body-sm text-body-sm leading-tight">
+<strong class="font-bold">100% compatible</strong> con monocomando Deca / Docol instalado bajo mesada.
+      </p>
+</div>
+<!-- Hardware Stores & Stock Near Client (Pinheiros) -->
+<div class="flex flex-col gap-2.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-primary">storefront</span>
+<span class="font-title-md text-title-md font-bold text-on-surface">Stock Inmediato en Zona</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Pinheiros, SP</span>
+</div>
+<!-- Store 1: Best Option / Fastest -->
+<div class="p-3 rounded-2xl bg-surface-container-low hover:bg-surface-container transition-colors flex items-center justify-between gap-3 shadow-sm">
+<div class="flex items-start gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">near_me</span>
+</div>
+<div class="min-w-0">
+<div class="flex items-center gap-2">
+<h4 class="font-title-md text-title-md font-bold text-on-surface truncate">Ferretería Central Pinheiros</h4>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5 mt-0.5">
+<span>a 350m</span>
+<span>•</span>
+<span class="text-secondary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">bolt</span> UGO Flash (18 min)
+              </span>
+</p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-title-md text-title-md font-bold text-primary block">R$ 38,50</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary/15 text-secondary font-bold inline-block">Stock: 8 un</span>
+</div>
+</div>
+<!-- Store 2: Alternative Option -->
+<div class="p-3 rounded-2xl bg-surface-container-lowest hover:bg-surface-container-low transition-colors flex items-center justify-between gap-3 opacity-80">
+<div class="flex items-start gap-2.5 min-w-0">
+<div class="w-9 h-9 rounded-xl bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[20px]">store</span>
+</div>
+<div class="min-w-0">
+<h4 class="font-title-md text-title-md font-bold text-on-surface truncate">C&amp;C Teodoro Sampaio</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">a 700m • Retiro en mostrador</p>
+</div>
+</div>
+<div class="text-right shrink-0">
+<span class="font-title-md text-title-md font-bold text-on-surface block">R$ 42,00</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Stock: +20 un</span>
+</div>
+</div>
+</div>
+<!-- Escrow Breakdown Pill -->
+<div class="flex items-center justify-between px-3 py-2 rounded-xl bg-surface-container text-on-surface-variant font-label-md text-label-md">
+<span class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary">lock</span>
+        Garantía Escrow PIX protegida
+      </span>
+<span class="font-bold text-on-surface">Fondos retenidos en app</span>
+</div>
+<!-- Action Sticky/Touch Pad Controls -->
+<div class="flex flex-col gap-2.5 pt-1">
+<!-- Primary Action Button: Add Part to Escrow Quote -->
+<button class="w-full h-[52px] rounded-xl bg-primary-container hover:bg-primary text-on-primary font-headline-sm text-headline-sm font-bold flex items-center justify-center gap-2 shadow-lg active:scale-[0.98] transition-all" id="add-quote-btn" type="button">
+<span class="material-symbols-outlined text-[22px]">add_shopping_cart</span>
+<span>Añadir al Presupuesto (+R$ 38,50)</span>
+</button>
+<!-- Secondary Split Actions -->
+<div class="grid grid-cols-2 gap-2.5">
+<button class="h-11 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">smart_toy</span>
+<span>Consultar Copilot</span>
+</button>
+<button class="h-11 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-lg text-label-lg font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">photo_camera</span>
+<span>Escanear Otra</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for camera torch toggle
+  const torchBtn = document.getElementById('torch-btn');
+  if (torchBtn) {
+    let isTorchOn = true;
+    torchBtn.addEventListener('click', () => {
+      isTorchOn = !isTorchOn;
+      const icon = torchBtn.querySelector('.material-symbols-outlined');
+      const text = torchBtn.querySelector('span:last-child');
+      if (isTorchOn) {
+        icon.textContent = 'flashlight_on';
+        icon.className = 'material-symbols-outlined text-[18px] text-tertiary-fixed';
+        text.textContent = 'Linterna ON';
+      } else {
+        icon.textContent = 'flashlight_off';
+        icon.className = 'material-symbols-outlined text-[18px] text-outline-variant';
+        text.textContent = 'Linterna OFF';
+      }
+    });
+  }
+
+  // Visual confirmation when adding spare part to budget
+  const addBtn = document.getElementById('add-quote-btn');
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      const originalHTML = addBtn.innerHTML;
+      addBtn.innerHTML = `
+        <span class="material-symbols-outlined text-[22px] text-secondary-fixed">check_circle</span>
+        <span>¡Agregado al Presupuesto #8492!</span>
+      `;
+      addBtn.classList.replace('bg-primary-container', 'bg-secondary');
+      setTimeout(() => {
+        addBtn.innerHTML = originalHTML;
+        addBtn.classList.replace('bg-secondary', 'bg-primary-container');
+      }, 2500);
+    });
+  }
+</script></main></body></html>

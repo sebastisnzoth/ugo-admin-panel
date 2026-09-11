@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-neutral-950" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport"/>
+<title>Visor de Evidencias - Orden #8492 | UGO Pro</title>
+<!-- Google Fonts: Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            ugo: {
+              50: '#eff6ff',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              900: '#1e3a8a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+<!-- Custom Styles: Glassmorphism & Micro-animations -->
+<style data-purpose="custom-layout">
+    /* Hide native scrollbars for horizontal thumbnail carousels */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Safe-area insets for modern mobile devices */
+    .pb-safe {
+      padding-bottom: env(safe-area-inset-bottom, 16px);
+    }
+    .pt-safe {
+      padding-top: env(safe-area-inset-top, 0px);
+    }
+  </style>
+</head>
+<body class="h-full font-sans text-neutral-100 antialiased selection:bg-blue-500 selection:text-white flex justify-center bg-black">
+<!-- BEGIN: MobileDeviceFrame -->
+<main class="w-full max-w-md h-full min-h-screen bg-neutral-950 flex flex-col justify-between relative overflow-hidden shadow-2xl">
+<!-- BEGIN: iOSStatusBarMockup -->
+<header class="w-full pt-safe px-7 pt-3 pb-1 flex items-center justify-between text-white z-40 select-none text-xs font-semibold">
+<span>14:48</span>
+<div class="flex items-center space-x-2">
+<!-- Cellular Signal -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M2 17h3v4H2v-4zm6-5h3v9H8v-9zm6-5h3v14h-3V7zm6-5h3v19h-3V2z"></path>
+</svg>
+<!-- Wifi -->
+<svg class="w-4 h-3.5 fill-current" viewbox="0 0 24 24">
+<path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98C20.93 5.9 16.69 4 12 4zm0 3.84c3.34 0 6.44 1.25 8.78 3.32L12 19.86 3.22 11.16C5.56 9.09 8.66 7.84 12 7.84z"></path>
+</svg>
+<!-- Battery with fill -->
+<div class="flex items-center space-x-0.5">
+<div class="w-5 h-2.5 border border-white/80 rounded-sm p-0.5 flex items-center">
+<div class="bg-white h-full w-4/5 rounded-2xs"></div>
+</div>
+<div class="w-0.5 h-1 bg-white/80 rounded-r-xs"></div>
+</div>
+</div>
+</header>
+<!-- END: iOSStatusBarMockup -->
+<!-- BEGIN: FloatingNavigationBar -->
+<section class="absolute top-9 left-0 right-0 z-30 px-3.5 pt-1" data-purpose="top-navigation">
+<div class="backdrop-blur-xl bg-neutral-900/70 border border-white/10 rounded-full px-3 py-2 flex items-center justify-between shadow-lg">
+<!-- Back action -->
+<button aria-label="Volver al resumen" class="flex items-center space-x-1.5 text-neutral-300 hover:text-white transition-colors pl-1 group" type="button">
+<span class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center group-active:scale-95 transition-transform">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M15.75 19.5L8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</span>
+<span class="text-xs font-medium pr-1 text-neutral-200">Resumen</span>
+</button>
+<!-- Center Metadata Badge -->
+<div class="flex flex-col items-center">
+<span class="text-[11px] font-bold tracking-wide uppercase text-blue-400">Evidencia 2 de 4</span>
+<span class="text-[10px] text-neutral-400 font-mono">Orden #8492</span>
+</div>
+<!-- Right Quick Actions -->
+<div class="flex items-center space-x-1.5">
+<!-- Escrow verification pill -->
+<div class="hidden sm:flex items-center space-x-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-2 py-0.5 rounded-full text-[10px] font-medium">
+<svg class="w-3 h-3 fill-current" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+<span>Escrow</span>
+</div>
+<!-- Zoom / Fullscreen toggle -->
+<button aria-label="Maximizar imagen" class="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-neutral-300 hover:text-white transition-colors active:scale-95" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+</div>
+</section>
+<!-- END: FloatingNavigationBar -->
+<!-- BEGIN: MainPhotoViewer -->
+<section class="relative flex-1 flex items-center justify-center bg-neutral-950 overflow-hidden" data-purpose="evidence-viewer">
+<!-- Subtle background ambient glow based on image tones -->
+<div class="absolute inset-0 bg-gradient-to-b from-blue-950/20 via-neutral-950/40 to-neutral-950 pointer-events-none"></div>
+<!-- Main High-Resolution Photo Container -->
+<div class="relative w-full h-[62%] flex items-center justify-center">
+<!-- Left Peek Preview: Previous Photo (Before) -->
+<div class="absolute -left-20 top-1/2 -translate-y-1/2 w-28 h-44 rounded-2xl overflow-hidden opacity-30 blur-[1px] shadow-2xl pointer-events-none transition-all scale-90 border border-white/10">
+<img alt="Foto previa: fuga anterior" class="w-full h-full object-cover grayscale" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvp0TGqRAyYuYZVNn2Ljm_Yfz3bLuwlhJ2Y0JFgONOUNPzbV1QZCQdQfd14vIMC5SfBle5MPS0dOQe4yP_NB-EO4cvcuPewlnTyMnbh0tqcpM0qpygNrNWQiXwh0g4T5RW8e2Lt0N-IEun2PwrUjXhAX654IuyAumgoPosSFjeRDJIfgsmjmDgDN4-Cwh5jCgQm8BPPrCRBEucJq2vIdC7Hek-sNikvvF315A3WyHZodA-X0VbOuwPTQ"/>
+</div>
+<!-- Active Central Photo Card -->
+<div class="relative w-[92%] h-full rounded-2xl overflow-hidden shadow-2xl border border-white/15 bg-neutral-900 group">
+<img alt="Alta resolución: Flexible acero inoxidable instalado y válvula cromada seca" class="w-full h-full object-cover object-center transform transition-transform duration-300 select-none cursor-zoom-in group-active:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP7-svktJJt0Gck6Zh5FXiGxgIHxrTKDvJVr8cc4n0KVgOBkAzukWj0Wwdc7pcXVicZucCa4z7BHMGhFioJ-Qjs4cIckoyrHItT-ciTy8nYB-Uu9yQePVfFuWIFT5WP26zH7NOvDf49e5pptOH0kgzMyy-iQ41hOoUzB0B979s35iL1W4azcUdQ8YiT-t5bTUVkD60-PA-Ws7r-Dp2HyWF8N8BnypfkW2yDFJSDPXOO80ytk8T-BBegA"/>
+<!-- Double-tap / Zoom Hint Overlay -->
+<div class="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/15 flex items-center space-x-1.5 pointer-events-none">
+<svg class="w-3.5 h-3.5 text-neutral-300" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607zM10.5 7.5v6m3-3h-6" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[10px] font-medium text-neutral-200 uppercase tracking-wider">Doble toque zoom</span>
+</div>
+<!-- Status Pill: DESPUÉS -->
+<div class="absolute bottom-3 left-3 bg-neutral-900/85 backdrop-blur-md border border-emerald-500/40 rounded-xl px-2.5 py-1.5 flex items-center space-x-2 shadow-lg">
+<span class="flex h-2 w-2 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+</span>
+<div class="flex flex-col">
+<span class="text-[10px] font-extrabold text-white tracking-wide leading-none uppercase">DESPUÉS (Finalizado)</span>
+<span class="text-[9px] text-emerald-400 font-medium leading-tight">14:52 hs • Verificado UGO</span>
+</div>
+</div>
+<!-- Watermark / Security Hash Tag -->
+<div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-xs px-2 py-0.5 rounded text-[8px] font-mono text-neutral-400 border border-white/5">
+            SHA256: 9b2e..84a1
+          </div>
+</div>
+<!-- Left Nav Arrow Button -->
+<button aria-label="Foto anterior" class="absolute left-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-neutral-900/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all hover:bg-neutral-800" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M15.75 19.5L8.25 12l7.5-7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<!-- Right Nav Arrow Button -->
+<button aria-label="Foto siguiente" class="absolute right-1 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-neutral-900/80 backdrop-blur-md border border-white/15 text-white flex items-center justify-center shadow-lg active:scale-90 transition-all hover:bg-neutral-800" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewbox="0 0 24 24">
+<path d="M8.25 4.5l7.5 7.5-7.5 7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+</div>
+<!-- Dot Indicators -->
+<div class="absolute bottom-20 left-0 right-0 flex justify-center items-center space-x-1.5" data-purpose="pagination-dots">
+<span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+<span class="w-5 h-1.5 rounded-full bg-blue-500 shadow-sm shadow-blue-500/50"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+<span class="w-1.5 h-1.5 rounded-full bg-white/30"></span>
+</div>
+<!-- Quick Switch Thumbnail Strip -->
+<div class="absolute bottom-2 left-0 right-0 px-4" data-purpose="thumbnail-carousel">
+<div class="flex items-center space-x-2.5 overflow-x-auto no-scrollbar py-1">
+<!-- Thumbnail 1 (Before) -->
+<div class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-white/20 opacity-70 hover:opacity-100 transition-opacity cursor-pointer">
+<img alt="Miniatura: Antes Fuga" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDvp0TGqRAyYuYZVNn2Ljm_Yfz3bLuwlhJ2Y0JFgONOUNPzbV1QZCQdQfd14vIMC5SfBle5MPS0dOQe4yP_NB-EO4cvcuPewlnTyMnbh0tqcpM0qpygNrNWQiXwh0g4T5RW8e2Lt0N-IEun2PwrUjXhAX654IuyAumgoPosSFjeRDJIfgsmjmDgDN4-Cwh5jCgQm8BPPrCRBEucJq2vIdC7Hek-sNikvvF315A3WyHZodA-X0VbOuwPTQ"/>
+<span class="absolute bottom-0 inset-x-0 bg-neutral-950/85 text-[8px] font-bold text-center text-amber-400 py-0.5">ANTES</span>
+</div>
+<!-- Thumbnail 2 (Active - After) -->
+<div class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border-2 border-blue-500 ring-2 ring-blue-500/30 shadow-md cursor-pointer scale-105">
+<img alt="Miniatura: Después Conexión" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDP7-svktJJt0Gck6Zh5FXiGxgIHxrTKDvJVr8cc4n0KVgOBkAzukWj0Wwdc7pcXVicZucCa4z7BHMGhFioJ-Qjs4cIckoyrHItT-ciTy8nYB-Uu9yQePVfFuWIFT5WP26zH7NOvDf49e5pptOH0kgzMyy-iQ41hOoUzB0B979s35iL1W4azcUdQ8YiT-t5bTUVkD60-PA-Ws7r-Dp2HyWF8N8BnypfkW2yDFJSDPXOO80ytk8T-BBegA"/>
+<span class="absolute bottom-0 inset-x-0 bg-blue-600 text-[8px] font-extrabold text-center text-white py-0.5">DESPUÉS</span>
+</div>
+<!-- Thumbnail 3 (Pressure Test) -->
+<div class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-white/20 opacity-60 hover:opacity-100 transition-opacity cursor-pointer bg-neutral-900 flex flex-col items-center justify-center p-1 text-center">
+<svg class="w-4 h-4 text-neutral-400 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[8px] font-semibold text-neutral-300 leading-tight">Prueba 3 bar</span>
+</div>
+<!-- Thumbnail 4 (Sealing & Clean) -->
+<div class="relative shrink-0 w-14 h-14 rounded-xl overflow-hidden border border-white/20 opacity-60 hover:opacity-100 transition-opacity cursor-pointer bg-neutral-900 flex flex-col items-center justify-center p-1 text-center">
+<svg class="w-4 h-4 text-neutral-400 mb-0.5" fill="none" stroke="currentColor" stroke-width="1.75" viewbox="0 0 24 24">
+<path d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="text-[8px] font-semibold text-neutral-300 leading-tight">Sellado final</span>
+</div>
+</div>
+</div>
+</section>
+<!-- END: MainPhotoViewer -->
+<!-- BEGIN: MetadataOverlayCard -->
+<section class="relative z-30 bg-neutral-900/90 backdrop-blur-2xl border-t border-white/10 rounded-t-3xl shadow-[0_-10px_40px_rgba(0,0,0,0.8)] px-5 pt-4 pb-safe flex flex-col space-y-3.5" data-purpose="annotation-panel">
+<!-- Drag handle indicator for sheet feel -->
+<div class="w-10 h-1 bg-white/20 rounded-full mx-auto -mt-1"></div>
+<!-- Card Title & Validation Header -->
+<div class="flex items-start justify-between gap-2">
+<div>
+<div class="flex items-center space-x-2">
+<h1 class="text-base font-bold text-white tracking-tight leading-snug">Instalación de flexible mallado y válvula</h1>
+</div>
+<p class="text-xs text-neutral-400 font-medium mt-0.5">Categoría: Plomería de Precisión &amp; Escrow</p>
+</div>
+<!-- Verified badge -->
+<div class="shrink-0 flex items-center space-x-1 px-2.5 py-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[11px] font-semibold">
+<svg class="w-3.5 h-3.5 fill-current" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" fill-rule="evenodd"></path>
+</svg>
+<span>Aprobado</span>
+</div>
+</div>
+<!-- Technical Description Text -->
+<div class="bg-white/5 border border-white/5 rounded-xl p-3">
+<p class="text-xs text-neutral-200 leading-relaxed font-normal">
+          Se reemplazó flexible deteriorado de 1/2" por caño trenzado inox de 40cm con niple de bronce y doble vuelta de teflón de alta densidad. Sin pérdidas detectadas en prueba a 3 bar de presión activa.
+        </p>
+</div>
+<!-- Metadata Chips -->
+<div class="flex flex-wrap gap-1.5 text-[11px]">
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-neutral-800 border border-white/10 text-neutral-300">
+<svg class="w-3 h-3 text-neutral-400 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M11.42 15.17L17.25 21A2.652 2.652 0 0021 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 11-3.586-3.586l6.837-5.63m5.108-.236l2.122-2.122a2.652 2.652 0 00-3.75-3.75l-2.122 2.122m3.75 3.75l-4.697 4.697" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Llave Stilson 10"
+        </span>
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-neutral-800 border border-white/10 text-neutral-300">
+<svg class="w-3 h-3 text-blue-400 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M9 12.75L11.25 15 15 9.75m-7.5 3.75a9 9 0 1118 0 9 9 0 01-18 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Garantía: 90 días UGO
+        </span>
+<span class="inline-flex items-center px-2 py-1 rounded-md bg-neutral-800 border border-white/10 text-neutral-300">
+<svg class="w-3 h-3 text-rose-400 mr-1.5" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+          Pinheiros, Apto 42B
+        </span>
+</div>
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-2.5 pt-1">
+<!-- Compare Action Button -->
+<button class="w-full py-2.5 px-3 rounded-xl bg-neutral-800 hover:bg-neutral-700/80 active:scale-[0.98] border border-white/15 text-neutral-200 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-all" type="button">
+<svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Ver "Antes"</span>
+</button>
+<!-- Download Original HD / Escrow Certificate Button -->
+<button class="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white text-xs font-bold shadow-lg shadow-blue-600/30 flex items-center justify-center space-x-1.5 transition-all" type="button">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24">
+<path d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span>Descargar HD (3.8 MB)</span>
+</button>
+</div>
+</section>
+<!-- END: MetadataOverlayCard -->
+</main>
+<!-- END: MobileDeviceFrame -->
+</body></html>

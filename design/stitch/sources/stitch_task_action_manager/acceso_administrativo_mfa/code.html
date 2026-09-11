@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full min-h-[calc(100vh-112px)] justify-center items-center py-space-xl relative overflow-hidden">
+<!-- Subtle Technical Grid & Ambient Lighting -->
+<div class="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(#006948_1px,transparent_1px)] [background-size:24px_24px]"></div>
+<div class="absolute -top-32 left-1/2 -translate-x-1/2 w-[720px] h-[360px] bg-brand-green-subtle rounded-full blur-3xl opacity-60 pointer-events-none"></div>
+<!-- Operational Gateway Breadcrumb Tag -->
+<div class="relative z-10 flex items-center gap-space-xs mb-space-base px-space-sm py-1 rounded-full bg-surface-panel shadow-sm">
+<span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-data-mono text-data-mono text-text-muted">GATEWAY_NODE // BR-FLN-AUTH-01</span>
+<span class="text-text-muted font-body-sm">•</span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">ZERO-TRUST PROTOCOL ACTIVE</span>
+</div>
+<!-- Main Administrative Access Card -->
+<div class="relative z-10 w-full max-w-2xl bg-surface-panel rounded-xl shadow-xl overflow-hidden flex flex-col">
+<!-- Top Security Status Bar Accent -->
+<div class="h-1 w-full bg-gradient-to-r from-primary via-copilot-cyan to-secondary"></div>
+<div class="p-space-xl md:p-space-2xl flex flex-col gap-space-lg">
+<!-- Card Header -->
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between flex-wrap gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<img alt="UGO Admin Gateway Logo" class="h-9 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/>
+<div class="flex flex-col">
+<span class="font-headline-sm text-headline-sm text-text-primary tracking-tight font-bold">UGO CONTROL</span>
+<span class="font-label-sm text-[10px] text-text-muted uppercase tracking-wider">Mission Control Florianópolis</span>
+</div>
+</div>
+<span class="px-space-sm py-0.5 rounded-full bg-brand-green-subtle text-primary font-data-mono text-label-sm font-semibold tracking-wide">
+            ADMIN GATEWAY v2.4.0
+          </span>
+</div>
+<div class="pt-space-xs">
+<h1 class="font-headline-lg text-headline-lg text-text-primary tracking-tight">Acceso Administrativo · Mission Control</h1>
+<p class="font-body-md text-body-md text-text-secondary mt-1">
+            Autenticación centralizada para supervisores operativos, directores de plaza y superadministradores de UGO Hub Florianópolis.
+          </p>
+</div>
+<!-- Security Compliance Pill -->
+<div class="flex items-center gap-space-xs px-space-sm py-1 rounded bg-surface-muted text-text-muted font-data-mono text-[11px] mt-space-2xs">
+<span class="material-symbols-outlined text-[14px] text-primary">lock</span>
+<span>ENCLAVE SEGURO · TLS 1.3 · SHA-256 FIPS 140-3 COMPLIANT</span>
+</div>
+</div>
+<!-- Authentication Form -->
+<form class="flex flex-col gap-space-base" id="admin-login-form" onsubmit="event.preventDefault();">
+<!-- Field 1: Corporate Email -->
+<div class="flex flex-col gap-space-2xs">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-text-primary">Correo Corporativo (@ugo.com.br)</label>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+              Dominio Verificado
+            </span>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">account_circle</span>
+<input autocomplete="username" class="w-full h-11 pl-10 pr-10 bg-surface-muted rounded-lg text-text-primary font-body-md text-body-md focus:outline-none focus:bg-surface-panel shadow-sm transition-all" name="corporate_email" required="" type="email" value="mateo.silva@ugo.com.br"/>
+<span class="material-symbols-outlined absolute right-3 text-primary text-[18px]">verified</span>
+</div>
+</div>
+<!-- Field 2: Password -->
+<div class="flex flex-col gap-space-2xs">
+<div class="flex justify-between items-center">
+<label class="font-label-md text-label-md text-text-primary">Contraseña de Acceso</label>
+<span class="font-label-sm text-label-sm text-text-muted">Cifrado HSM Local</span>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">key</span>
+<input autocomplete="current-password" class="w-full h-11 pl-10 pr-10 bg-surface-muted rounded-lg text-text-primary font-body-md text-body-md focus:outline-none focus:bg-surface-panel shadow-sm tracking-widest transition-all" id="password-input" required="" type="password" value="SuperSecretPassword2025#"/>
+<button aria-label="Alternar visibilidad de contraseña" class="absolute right-3 text-text-muted hover:text-text-primary transition-colors flex items-center" onclick="const p = document.getElementById('password-input'); const i = this.querySelector('span'); if(p.type==='password'){p.type='text'; i.textContent='visibility_off';} else {p.type='password'; i.textContent='visibility';}" type="button">
+<span class="material-symbols-outlined text-[18px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- MFA Section -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<div class="flex justify-between items-baseline">
+<label class="font-label-md text-label-md text-text-primary flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-copilot-cyan">security</span>
+              Segundo Factor Requerido (MFA)
+            </label>
+<span class="font-label-sm text-label-sm text-primary font-semibold">Nivel 3: Alta Seguridad</span>
+</div>
+<!-- MFA Method Tabs -->
+<div class="grid grid-cols-3 gap-space-2xs bg-surface-muted p-1 rounded-lg">
+<button class="mfa-tab-btn py-1.5 px-2 rounded font-label-sm text-label-sm flex items-center justify-center gap-1 bg-surface-panel text-primary font-semibold shadow-sm transition-all" id="tab-fido2" onclick="setMfaTab('fido2')" type="button">
+<span class="material-symbols-outlined text-[15px]">usb</span>
+<span class="truncate">Hardware FIDO2</span>
+</button>
+<button class="mfa-tab-btn py-1.5 px-2 rounded font-label-sm text-label-sm flex items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-all" id="tab-totp" onclick="setMfaTab('totp')" type="button">
+<span class="material-symbols-outlined text-[15px]">timer</span>
+<span class="truncate">Authenticator</span>
+</button>
+<button class="mfa-tab-btn py-1.5 px-2 rounded font-label-sm text-label-sm flex items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-all" id="tab-sms" onclick="setMfaTab('sms')" type="button">
+<span class="material-symbols-outlined text-[15px]">sms</span>
+<span class="truncate">SMS Respaldo</span>
+</button>
+</div>
+<!-- MFA Content Area: FIDO2 Primary -->
+<div class="p-space-base bg-surface-muted rounded-lg flex items-center justify-between gap-space-base" id="mfa-fido2-view">
+<div class="flex items-center gap-space-md min-w-0">
+<div class="w-12 h-12 rounded-lg bg-brand-green-subtle text-primary flex items-center justify-center shrink-0 shadow-sm">
+<span class="material-symbols-outlined text-[26px]">memory</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-text-primary truncate">YubiKey 5 NFC Detectada</span>
+<span class="w-2 h-2 rounded-full bg-primary animate-ping shrink-0"></span>
+</div>
+<span class="font-data-mono text-data-mono text-text-muted truncate">ID: YUBI-9941-FLN-08 • Toca el sensor para autorizar</span>
+</div>
+</div>
+<button class="shrink-0 px-space-sm py-1.5 rounded-lg bg-surface-panel text-primary font-label-md text-label-md hover:bg-surface-container-high transition-colors shadow-sm flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]">touch_app</span>
+<span>Probar Sensor</span>
+</button>
+</div>
+<!-- MFA Content Area: TOTP 6-Digit fallback (toggleable via script) -->
+<div class="hidden p-space-base bg-surface-muted rounded-lg flex-col gap-space-sm" id="mfa-totp-view">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-text-secondary">Código temporal TOTP de 6 dígitos</span>
+<span class="font-data-mono text-data-mono text-copilot-cyan font-bold">Expira en 24s</span>
+</div>
+<div class="grid grid-cols-6 gap-space-xs">
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="8"/>
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="4"/>
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="9"/>
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="1"/>
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="2"/>
+<input class="h-12 text-center bg-surface-panel rounded-lg font-data-mono text-headline-md text-text-primary shadow-sm focus:outline-none" maxlength="1" type="text" value="0"/>
+</div>
+</div>
+<!-- MFA Content Area: SMS (toggleable via script) -->
+<div class="hidden p-space-base bg-surface-muted rounded-lg flex items-center justify-between" id="mfa-sms-view">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-warning-amber text-[24px]">phonelink_ring</span>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-text-primary font-semibold">SMS enviado a (+55 48 ••••-9012)</span>
+<span class="font-label-sm text-label-sm text-text-muted">Válido para un único ingreso de emergencia</span>
+</div>
+</div>
+<button class="px-space-sm py-1 rounded bg-surface-panel text-text-primary font-label-sm text-label-sm hover:bg-surface-container-high transition-colors" type="button">Reenviar</button>
+</div>
+</div>
+<!-- Connection Operational Hub Selector -->
+<div class="flex flex-col gap-space-2xs">
+<label class="font-label-md text-label-md text-text-primary">Plaza Operativa de Conexión</label>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-primary text-[18px]">hub</span>
+<select class="w-full h-11 pl-10 pr-10 bg-surface-muted rounded-lg text-text-primary font-body-md text-body-md focus:outline-none focus:bg-surface-panel shadow-sm appearance-none cursor-pointer">
+<option selected="" value="fln-live">Hub Florianópolis (Producción Live - Cluster Sul)</option>
+<option disabled="" value="sp-live">Hub São Paulo (Solo Gateway Central)</option>
+<option disabled="" value="cwb-live">Hub Curitiba (Despliegue Q3)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 text-text-muted text-[18px] pointer-events-none">expand_more</span>
+</div>
+</div>
+<!-- MDM Checkbox Safeguard -->
+<div class="flex items-start gap-space-sm p-space-sm bg-brand-green-subtle rounded-lg">
+<input checked="" class="mt-0.5 h-4 w-4 rounded accent-primary text-primary focus:ring-0 cursor-pointer" id="mdm-verified" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-text-secondary cursor-pointer leading-snug" for="mdm-verified">
+<strong class="text-primary font-semibold">Dispositivo corporativo gestionado (MDM Verificado):</strong> MacStudio-Ops-04 registrado bajo política Intune/Jamf con certificado EDR activo.
+          </label>
+</div>
+<!-- CTA Action Button -->
+<div class="flex flex-col gap-space-sm pt-space-2xs">
+<button class="w-full h-12 rounded-lg bg-primary hover:bg-brand-green-hover text-on-primary font-headline-sm text-headline-sm flex items-center justify-center gap-space-sm shadow-md transition-all active:scale-[0.99] focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="submit">
+<span class="material-symbols-outlined text-[20px]">vpn_key</span>
+<span>Iniciar Sesión en UGO Admin</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</button>
+<div class="flex justify-center">
+<a class="font-label-md text-label-md text-text-muted hover:text-text-primary transition-colors flex items-center gap-1 py-1" href="#">
+<span class="material-symbols-outlined text-[15px]">contact_support</span>
+<span>¿Problemas con tu token FIDO2 o contraseña? Solicitar rescate a Seguridad IT</span>
+</a>
+</div>
+</div>
+</form>
+</div>
+<!-- Live Telemetry & Legal Audit Notice -->
+<div class="bg-surface-canvas p-space-lg flex flex-col gap-space-sm">
+<!-- Infrastructure Cluster Health -->
+<div class="flex items-center justify-between flex-wrap gap-space-xs text-text-muted font-data-mono text-label-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span>Auth Gateway: <strong class="text-text-primary font-semibold">ONLINE</strong></span>
+</div>
+<div class="flex items-center gap-space-sm">
+<span>Latencia: <strong class="text-primary font-semibold">18ms</strong></span>
+<span>•</span>
+<span>Cluster: <strong class="text-text-secondary">sa-east-1 (São Paulo)</strong></span>
+</div>
+</div>
+<!-- Legal Warning -->
+<div class="flex items-start gap-space-xs pt-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[16px] shrink-0 mt-0.5">gavel</span>
+<p class="font-body-sm text-[11px] leading-relaxed text-text-muted">
+          Todo intento de acceso queda registrado criptográficamente en el Audit Trail inmutable con IP, geolocalización y huella de hardware. El acceso no autorizado o desvío de sesión será perseguido judicialmente conforme al Marco Civil da Internet y la Ley LGPD (Lei nº 13.709) de la República Federativa del Brasil.
+        </p>
+</div>
+</div>
+</div>
+<!-- Interactive Client-side Tab Switcher Script -->
+<script>
+    function setMfaTab(tab) {
+      const tabs = ['fido2', 'totp', 'sms'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tab-' + t);
+        const view = document.getElementById('mfa-' + t + '-view');
+        if (t === tab) {
+          btn.className = 'mfa-tab-btn py-1.5 px-2 rounded font-label-sm text-label-sm flex items-center justify-center gap-1 bg-surface-panel text-primary font-semibold shadow-sm transition-all';
+          if (view) view.classList.remove('hidden');
+          if (t === 'totp') view.classList.add('flex');
+          if (t === 'sms') view.classList.add('flex');
+          if (t === 'fido2') view.classList.add('flex');
+        } else {
+          btn.className = 'mfa-tab-btn py-1.5 px-2 rounded font-label-sm text-label-sm flex items-center justify-center gap-1 text-text-secondary hover:text-text-primary transition-all';
+          if (view) {
+            view.classList.add('hidden');
+            view.classList.remove('flex');
+          }
+        }
+      });
+    }
+  </script>
+</div></main></div></body></html>

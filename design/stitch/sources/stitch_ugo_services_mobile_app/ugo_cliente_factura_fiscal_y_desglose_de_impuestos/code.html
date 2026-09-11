@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full px-space-md pb-space-xl">
+<!-- Document Header Bar -->
+<div class="flex flex-col gap-space-xs mb-space-md">
+<div class="flex items-center justify-between">
+<button aria-label="Volver" class="w-10 h-10 -ml-1 rounded-full flex items-center justify-center bg-surface-container hover:bg-surface-container-high transition-colors active:scale-95 text-on-surface" type="button">
+<span class="material-symbols-outlined text-[22px]">arrow_back</span>
+</button>
+<div class="flex items-center gap-space-xs">
+<button aria-label="Compartir Factura" class="w-10 h-10 rounded-full flex items-center justify-center bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors active:scale-95" type="button">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</button>
+<button aria-label="Descargar PDF" class="h-10 px-3.5 rounded-full flex items-center gap-1.5 bg-primary-container text-on-primary-container font-label-md text-label-md transition-all active:scale-95 shadow-sm" id="btn-quick-dl" type="button">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>PDF</span>
+</button>
+</div>
+</div>
+<div class="flex flex-col mt-1">
+<div class="flex items-center gap-2">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Comprobante Oficial</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-outline">NFS-e Sincronizada</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Factura Fiscal Electrónica</h2>
+<p class="font-body-sm text-body-sm text-outline">Orden de Servicio #UG-88412</p>
+</div>
+</div>
+<!-- Status Badges -->
+<div class="flex flex-wrap items-center gap-2 mb-space-md">
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+<span>NF-e Transmitida &amp; Validada Receita</span>
+</div>
+<div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm shadow-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">account_balance_wallet</span>
+<span>Custodia UGO Liquidada</span>
+</div>
+</div>
+<!-- Segmented Tab Navigation -->
+<div class="w-full bg-surface-container-high p-1 rounded-2xl flex items-center mb-space-lg shadow-inner">
+<button class="flex-1 py-2 rounded-xl text-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" type="button">
+      Acta Técnica
+    </button>
+<button class="flex-1 py-2 rounded-xl text-center font-label-md text-label-md bg-surface-container-lowest text-primary shadow-sm font-bold transition-all flex items-center justify-center gap-1" type="button">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+      Factura Fiscal
+    </button>
+<button class="flex-1 py-2 rounded-xl text-center font-label-md text-label-md text-on-surface-variant hover:text-on-surface transition-all" type="button">
+      Póliza Shield
+    </button>
+</div>
+<!-- Main Invoice Card / Nota Fiscal Document -->
+<div class="w-full bg-surface-container-lowest rounded-2xl shadow-md overflow-hidden mb-space-md relative">
+<!-- Top Decorative Guilloche Border Band -->
+<div class="w-full h-2 bg-gradient-to-r from-primary via-secondary to-primary-container"></div>
+<div class="p-space-md flex flex-col gap-space-md">
+<!-- Official Header -->
+<div class="flex items-start justify-between gap-space-xs pb-space-sm bg-surface-container-low/50 -mx-space-md px-space-md pt-2">
+<div class="flex items-center gap-2.5">
+<div class="w-11 h-11 rounded-xl bg-surface-container flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[26px]">account_balance</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Prefeitura de Florianópolis</span>
+<span class="font-title-md text-title-md text-on-surface leading-tight font-bold">NFS-e de Serviços</span>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Secretaria Municipal da Fazenda</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface font-label-sm text-label-sm font-mono font-bold">SERIE E</span>
+<span class="font-label-sm text-label-sm text-outline mt-1 font-mono">Nº 000.084.192</span>
+</div>
+</div>
+<!-- Verification Hash & Timestamp -->
+<div class="bg-surface-container-low rounded-xl p-3 flex flex-col gap-2">
+<div class="flex items-center justify-between text-on-surface">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-outline text-[16px]">fingerprint</span>
+<span class="font-label-sm text-label-sm text-outline uppercase">Código de Verificación Fiscal</span>
+</div>
+<button class="text-primary hover:text-primary-container font-label-sm text-label-sm flex items-center gap-0.5" onclick="navigator.clipboard.writeText('8F92-B4D1-A093-EE41');" type="button">
+<span>Copiar</span>
+<span class="material-symbols-outlined text-[14px]">content_copy</span>
+</button>
+</div>
+<div class="font-mono text-label-lg font-label-lg text-on-surface tracking-wider bg-surface-container-lowest px-3 py-1.5 rounded-lg flex items-center justify-between">
+<span>8F92-B4D1-A093-EE41</span>
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+</div>
+<div class="flex items-center justify-between font-label-sm text-label-sm text-outline pt-0.5">
+<span>Emisión: 25/10/2024 · 17:35:12 BRT</span>
+<span class="text-primary font-semibold">Auténtica en SUTRI</span>
+</div>
+</div>
+<!-- QR Code & Access Key Block -->
+<div class="flex items-center gap-space-md p-3 rounded-xl bg-surface-container-lowest shadow-sm">
+<div class="w-20 h-20 bg-surface-container rounded-lg p-1.5 flex items-center justify-center flex-shrink-0">
+<svg class="w-full h-full text-on-surface" fill="currentColor" viewbox="0 0 100 100">
+<!-- Simulated QR Grid -->
+<rect height="30" rx="3" width="30" x="0" y="0"></rect>
+<rect fill="#ffffff" height="20" rx="1" width="20" x="5" y="5"></rect>
+<rect height="12" width="12" x="9" y="9"></rect>
+<rect height="30" rx="3" width="30" x="70" y="0"></rect>
+<rect fill="#ffffff" height="20" rx="1" width="20" x="75" y="5"></rect>
+<rect height="12" width="12" x="79" y="9"></rect>
+<rect height="30" rx="3" width="30" x="0" y="70"></rect>
+<rect fill="#ffffff" height="20" rx="1" width="20" x="5" y="75"></rect>
+<rect height="12" width="12" x="9" y="79"></rect>
+<rect height="8" width="8" x="36" y="8"></rect>
+<rect height="8" width="14" x="48" y="8"></rect>
+<rect height="6" width="14" x="36" y="22"></rect>
+<rect height="14" width="6" x="56" y="22"></rect>
+<rect height="8" width="14" x="8" y="36"></rect>
+<rect height="14" width="8" x="8" y="48"></rect>
+<rect height="6" width="6" x="22" y="56"></rect>
+<rect height="26" rx="2" width="26" x="36" y="36"></rect>
+<rect fill="#ffffff" height="16" width="16" x="41" y="41"></rect>
+<circle cx="49" cy="49" fill="#006948" r="5"></circle>
+<rect height="8" width="10" x="68" y="36"></rect>
+<rect height="14" width="8" x="84" y="36"></rect>
+<rect height="8" width="14" x="68" y="48"></rect>
+<rect height="6" width="8" x="68" y="60"></rect>
+<rect height="10" width="10" x="82" y="56"></rect>
+<rect height="8" width="14" x="36" y="68"></rect>
+<rect height="14" width="8" x="56" y="68"></rect>
+<rect height="10" width="8" x="36" y="82"></rect>
+<rect height="10" width="14" x="48" y="82"></rect>
+<rect height="6" width="24" x="68" y="72"></rect>
+<rect height="8" width="18" x="74" y="84"></rect>
+</svg>
+</div>
+<div class="flex flex-col min-w-0 flex-1">
+<span class="font-label-sm text-label-sm text-outline uppercase">Chave de Consulta Pública</span>
+<span class="font-mono text-body-sm font-body-sm text-on-surface truncate font-semibold">4224 1028 4918 3200 0194 5500 1000 0841 9218</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant text-[12px] mt-1 leading-snug">Escanea para constatar validación en el Sistema Nacional NFS-e Sped.</p>
+</div>
+</div>
+<!-- Parties: Prestador & Tomador -->
+<div class="grid grid-cols-1 gap-3 pt-1">
+<!-- Prestador Card -->
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-bold text-primary">Prestador / Emisor (Técnico UGO)</span>
+<span class="px-2 py-0.5 rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">Vetted Pro</span>
+</div>
+<div class="flex items-start gap-2.5 mt-0.5">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center flex-shrink-0 font-label-sm font-bold">
+              CM
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Carlos Méndez Servicios Técnicos MEI</span>
+<span class="font-label-sm text-label-sm text-outline font-mono">CNPJ: 28.491.832/0001-94 · Insc. Mun: 492.110-3</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">CREA-SC #7419 · Florianópolis - SC, Brasil</span>
+</div>
+</div>
+</div>
+<!-- Tomador Card -->
+<div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-bold text-secondary">Tomador / Cliente</span>
+<span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed font-label-sm text-label-sm">Particular</span>
+</div>
+<div class="flex items-start gap-2.5 mt-0.5">
+<div class="w-8 h-8 rounded-full bg-secondary text-on-secondary flex items-center justify-center flex-shrink-0 font-label-sm font-bold">
+              MB
+            </div>
+<div class="flex flex-col min-w-0">
+<span class="font-title-md text-title-md text-on-surface font-semibold truncate">Martín Benítez</span>
+<span class="font-label-sm text-label-sm text-outline font-mono">CPF: 348.***.***-20</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-[12px]">Rua dos Ilhéus 142, Centro, Florianópolis - SC</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Service Classification Code -->
+<div class="p-3 rounded-xl bg-surface-container-high/60 flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[22px]">build_circle</span>
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm uppercase text-outline">Código de Actividad LC 116/03</span>
+<span class="font-label-md text-label-md text-on-surface truncate">14.01 - Mantenimiento y reparación de instalaciones eléctricas residenciales</span>
+</div>
+</div>
+<!-- Billed Items Table -->
+<div class="flex flex-col gap-2 pt-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline font-bold">Conceptos Facturados</span>
+<!-- Item 1 -->
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Mano de obra técnica especializada</span>
+<span class="font-body-sm text-body-sm text-outline">2.5 horas de diagnóstico y recableado térmico</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface font-bold whitespace-nowrap">R$ 110,00</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label-sm text-outline pt-1">
+<span>Tarifa horaria: R$ 44,00/h</span>
+<span class="text-primary font-medium">Sujeto a ISS (Florianópolis)</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+<div class="flex items-start justify-between gap-2">
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Materiales y repuestos homologados</span>
+<span class="font-body-sm text-body-sm text-outline">Disyuntor bipolar Schneider Electric 40A curva C + barras peine</span>
+</div>
+<span class="font-label-lg text-label-lg text-on-surface font-bold whitespace-nowrap">R$ 65,00</span>
+</div>
+<div class="flex items-center justify-between text-[11px] font-label-sm text-outline pt-1">
+<span>1 juego con certificación Inmetro</span>
+<span class="text-secondary font-medium">Provisión de partes amparada</span>
+</div>
+</div>
+<!-- Subtotal Strip -->
+<div class="flex items-center justify-between px-3 py-2 rounded-lg bg-surface-container">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Subtotal Bruto Facturado</span>
+<span class="font-title-md text-title-md text-on-surface font-bold">R$ 175,00</span>
+</div>
+</div>
+<!-- Tax Breakdown Accordion / Comprehensive Breakdown -->
+<div class="flex flex-col gap-2 rounded-xl bg-surface-container-low p-3.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">receipt</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">Tributos y Retenciones (Ley 12.741/12)</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-mono font-semibold">Alícuota 5.0%</span>
+</div>
+<div class="grid grid-cols-2 gap-2 pt-2">
+<div class="flex flex-col p-2 rounded-lg bg-surface-container-lowest">
+<span class="font-label-sm text-label-sm text-outline">Base Cálculo Servicios</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">R$ 110,00</span>
+</div>
+<div class="flex flex-col p-2 rounded-lg bg-surface-container-lowest">
+<span class="font-label-sm text-label-sm text-outline">ISS Retenido (3.5%)</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">R$ 3,85</span>
+</div>
+<div class="flex flex-col p-2 rounded-lg bg-surface-container-lowest">
+<span class="font-label-sm text-label-sm text-outline">PIS / COFINS (MEI)</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">R$ 2,20</span>
+</div>
+<div class="flex flex-col p-2 rounded-lg bg-surface-container-lowest">
+<span class="font-label-sm text-label-sm text-outline">INSS Previsional</span>
+<span class="font-label-lg text-label-lg font-bold text-outline">R$ 0,00 <span class="text-[10px] font-normal">(SIMPLES)</span></span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-2 text-on-surface-variant font-label-sm text-label-sm">
+<span>Carga tributaria federal y municipal estimada</span>
+<span class="font-bold text-on-surface">R$ 8,75 (aprox. 5%)</span>
+</div>
+</div>
+<!-- Payment & Escrow Settlement Summary -->
+<div class="p-3.5 rounded-xl bg-surface-container flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase font-bold text-outline">Liquidación Fiduciaria UGO</span>
+<span class="flex items-center gap-1 font-label-sm text-label-sm text-primary font-bold">
+<span class="material-symbols-outlined text-[15px]">lock</span>
+            Custodia Liberada
+          </span>
+</div>
+<div class="flex items-center justify-between py-1">
+<div class="flex items-center gap-2">
+<div class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center shadow-sm">
+<span class="material-symbols-outlined text-secondary text-[18px]">credit_card</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Mastercard terminada en 4821</span>
+<span class="font-label-sm text-label-sm text-outline font-mono">TXN-9941829-BR</span>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">R$ 175,00</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">100% Abonado</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Scalloped Stamp Footer Aesthetic -->
+<div class="p-3 bg-surface-container-low flex items-center justify-center gap-2 text-center">
+<span class="material-symbols-outlined text-primary text-[18px]">security</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Documento auxiliar emitido con validez jurídica según Decreto Municipal 21.082/2021.</span>
+</div>
+</div>
+<!-- Interactive Action CTAs -->
+<div class="flex flex-col gap-space-xs mt-space-xs">
+<!-- Primary Green Emerald Button -->
+<button class="w-full h-[52px] bg-primary hover:bg-primary-container text-on-primary rounded-2xl font-label-lg text-label-lg flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-all" id="btn-download-full" type="button">
+<span class="material-symbols-outlined text-[20px]">sim_card_download</span>
+<span>Descargar Factura XML / PDF (2.1 MB)</span>
+</button>
+<!-- Secondary Ghost / Tonal Button -->
+<button class="w-full h-[48px] bg-surface-container-lowest text-on-surface hover:bg-surface-container rounded-2xl font-label-lg text-label-lg flex items-center justify-center gap-2 transition-all active:scale-[0.98] shadow-sm" id="btn-email-invoice" type="button">
+<span class="material-symbols-outlined text-secondary text-[18px]">outgoing_mail</span>
+<span class="truncate">Enviar copia a martin.benitez@ugo.app</span>
+</button>
+<!-- Bottom Help & Correction Note -->
+<div class="flex items-center justify-center py-2 px-space-xs text-center">
+<button class="font-body-sm text-body-sm text-outline hover:text-primary transition-colors flex items-center gap-1" type="button">
+<span>¿Requieres corrección tributaria (Carta de Corrección)?</span>
+<span class="font-semibold text-secondary underline">Contactar Soporte</span>
+</button>
+</div>
+</div>
+</div>
+<script>
+  // Micro-interaction handlers for delightful feedback
+  document.getElementById('btn-download-full')?.addEventListener('click', function() {
+    const originalContent = this.innerHTML;
+    this.innerHTML = `
+      <span class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+      <span>Generando archivo empaquetado...</span>
+    `;
+    this.classList.add('opacity-90');
+    setTimeout(() => {
+      this.innerHTML = `
+        <span class="material-symbols-outlined text-[20px]">check_circle</span>
+        <span>¡NFS-e y XML descargados con éxito!</span>
+      `;
+      this.classList.remove('opacity-90');
+      setTimeout(() => {
+        this.innerHTML = originalContent;
+      }, 2600);
+    }, 1200);
+  });
+
+  document.getElementById('btn-email-invoice')?.addEventListener('click', function() {
+    const original = this.innerHTML;
+    this.innerHTML = `
+      <span class="material-symbols-outlined text-[18px] text-primary">mark_email_read</span>
+      <span>Factura enviada a tu correo registrado</span>
+    `;
+    setTimeout(() => {
+      this.innerHTML = original;
+    }, 2400);
+  });
+
+  document.getElementById('btn-quick-dl')?.addEventListener('click', function() {
+    document.getElementById('btn-download-full')?.click();
+  });
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGO - Abrir disputa y congelar fondos | #UG-88412</title>
+<!-- Google Fonts & Material Symbols -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS v3 with Plugins -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-dim": "#cbdbf5",
+            "on-tertiary": "#ffffff",
+            "secondary-fixed": "#dae2fd",
+            "surface-tint": "#00677d",
+            "surface-container-low": "#eff4ff",
+            "on-primary": "#ffffff",
+            "tertiary": "#006c49",
+            "surface-container-lowest": "#ffffff",
+            "inverse-primary": "#4cd6fb",
+            "on-surface": "#0b1c30",
+            "surface": "#f8f9ff",
+            "surface-container-highest": "#d3e4fe",
+            "on-tertiary-fixed-variant": "#005236",
+            "primary-container": "#00b4d8",
+            "on-tertiary-fixed": "#002113",
+            "inverse-surface": "#213145",
+            "inverse-on-surface": "#eaf1ff",
+            "surface-bright": "#f8f9ff",
+            "on-secondary-fixed-variant": "#3f465c",
+            "on-surface-variant": "#3d494d",
+            "on-primary-fixed": "#001f27",
+            "on-error": "#ffffff",
+            "error": "#ba1a1a",
+            "background": "#f8f9ff",
+            "surface-container": "#e5eeff",
+            "surface-container-high": "#dce9ff",
+            "on-secondary": "#ffffff",
+            "secondary": "#565e74",
+            "primary-fixed-dim": "#4cd6fb",
+            "outline-variant": "#bcc9ce",
+            "on-tertiary-container": "#00442d",
+            "on-background": "#0b1c30",
+            "primary-fixed": "#b3ebff",
+            "tertiary-fixed-dim": "#4edea3",
+            "surface-variant": "#d3e4fe",
+            "tertiary-container": "#19bc84",
+            "secondary-fixed-dim": "#bec6e0",
+            "primary": "#00677d",
+            "error-container": "#ffdad6",
+            "tertiary-fixed": "#6ffbbe",
+            "on-primary-container": "#00414f",
+            "on-secondary-fixed": "#131b2e",
+            "secondary-container": "#dae2fd",
+            "on-secondary-container": "#5c647a",
+            "on-primary-fixed-variant": "#004e5f",
+            "on-error-container": "#93000a",
+            "outline": "#6d797e"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-sm": "0.75rem",
+            "sidebar-collapsed": "5rem",
+            "space-md": "1rem",
+            "space-3xl": "4rem",
+            "space-2xs": "0.25rem",
+            "space-xs": "0.5rem",
+            "space-2xl": "3rem",
+            "sidebar-expanded": "17.5rem",
+            "space-lg": "1.5rem",
+            "gutter-desktop": "1.5rem",
+            "topbar-height": "4.25rem",
+            "space-xl": "2rem",
+            "gutter-mobile": "1rem"
+          },
+          "fontFamily": {
+            "headline-md": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "code-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "headline-md": ["22px", { "lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+            "display-lg": ["40px", { "lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400" }],
+            "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }],
+            "label-lg": ["14px", { "lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "code-sm": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "700" }],
+            "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700" }],
+            "headline-sm": ["18px", { "lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400" }],
+            "display-lg-mobile": ["30px", { "lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: inline-block;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .material-symbols-outlined.fill-1 {
+      font-variation-settings: 'FILL' 1;
+    }
+  </style>
+</head>
+<body class="h-full bg-surface text-on-surface font-body-md antialiased overflow-x-hidden">
+<!-- ================================================================= -->
+<!-- 1. SHARED COMPONENT: SideNavBar (Rail & Docked Sidebar)            -->
+<!-- ================================================================= -->
+<aside class="fixed left-0 top-0 bottom-0 h-screen w-sidebar-expanded flex flex-col justify-between p-space-md z-50 overflow-y-auto bg-surface-container-lowest dark:bg-inverse-surface border-r border-outline-variant/30 dark:border-outline-variant/10 transition-all duration-200 ease-in-out select-none">
+<!-- Top Section: Brand & User Header Profile -->
+<div class="flex flex-col gap-space-md">
+<!-- Logo Branding -->
+<div class="flex items-center justify-between px-space-xs py-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-lg font-headline-lg font-bold text-primary dark:text-inverse-primary tracking-tight">UGO</span>
+<span class="inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-container/20 text-tertiary font-label-sm text-label-sm border border-tertiary/30">SHIELD</span>
+</div>
+<button class="p-1 rounded-lg text-outline hover:bg-surface-container-high/60 transition-colors" title="Colapsar menú" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_open">menu_open</span>
+</button>
+</div>
+<!-- User Card with Mariana Costa Avatar -->
+<div class="p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-space-sm">
+<div class="relative flex-shrink-0">
+<img alt="Mariana Costa perfil verificado" class="w-10 h-10 rounded-full object-cover border-2 border-surface-container-lowest shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1Wmc5HDlp5kZ9ryFXa0vu62QW1c-yGmR5pXNhDKQ0yT_SgTymGIBvufFNvg3WopHfn_0Hg_asEbt6ssPbIP9rdocI4WvsXvQrnoMvKbHTk06nXor_ELq-tL9lG7GsLJvhe5A21GAKl4GhtVKgagt6WikUs-F5mFkc9cRhWHBFWzvnKl5Q5qI6aJc0n2eA7mRWIr6G9Hblz25y87Np9bCXawL_Vq8U-pqKd4d8TPi-8Yi8ZQZVKjPwgCIw"/>
+<span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-tertiary-container rounded-full border-2 border-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-surface-container-lowest text-[9px] fill-1" data-icon="check">check</span>
+</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-label-lg font-label-lg text-on-surface truncate">Mariana Costa</span>
+<div class="flex items-center gap-1 text-tertiary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px] fill-1" data-icon="verified_user">verified_user</span>
+<span>Verificada</span>
+</div>
+</div>
+</div>
+<!-- Primary Action CTA -->
+<button class="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-primary-container hover:bg-primary-container/90 text-surface-container-lowest font-label-lg text-label-lg shadow-sm transition-all duration-150 active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]" data-icon="add_circle">add_circle</span>
+<span>Nueva Solicitud</span>
+</button>
+<!-- Navigation Tabs (8 items as declared in blueprint) -->
+<nav class="flex flex-col gap-1 mt-2">
+<!-- 1. Inicio -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="home">home</span>
+<span>Inicio</span>
+</a>
+<!-- 2. Buscar servicio -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+<span>Buscar servicio</span>
+</a>
+<!-- 3. Nueva solicitud -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="add_circle">add_circle</span>
+<span>Nueva solicitud</span>
+</a>
+<!-- 4. Matching en vivo -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="radar">radar</span>
+<span>Matching en vivo</span>
+</a>
+<!-- 5. Servicios activos (ACTIVE: contextual dispute flow) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl bg-secondary-container/60 dark:bg-secondary/40 text-primary dark:text-inverse-primary font-label-lg text-label-lg relative group" href="#">
+<span class="material-symbols-outlined text-[20px] text-primary dark:text-inverse-primary fill-1" data-icon="pending_actions">pending_actions</span>
+<span class="flex-1">Servicios activos</span>
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+</a>
+<!-- 6. Actividad -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history">history</span>
+<span>Actividad</span>
+</a>
+<!-- 7. Mensajes -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant dark:text-outline-variant hover:bg-surface-container-high/50 hover:text-on-surface dark:hover:text-inverse-on-surface font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat_bubble">chat_bubble</span>
+<span class="flex-1">Mensajes</span>
+<span class="px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm">1</span>
+</a>
+<!-- 8. UGO Shield -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-tertiary hover:bg-tertiary-container/10 font-label-lg text-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] fill-1 text-tertiary" data-icon="verified_user">verified_user</span>
+<span>UGO Shield</span>
+</a>
+</nav>
+</div>
+<!-- Bottom Section: Footer Actions -->
+<div class="border-t border-outline-variant/30 pt-3 flex flex-col gap-1">
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="payments">payments</span>
+<span>Pagos</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="person">person</span>
+<span>Perfil</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="help">help</span>
+<span>Ayuda</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- ================================================================= -->
+<!-- 2. MAIN VIEWPORT WRAPPER (Offset by Sidebar Width 17.5rem)         -->
+<!-- ================================================================= -->
+<div class="ml-sidebar-expanded min-h-screen flex flex-col bg-surface">
+<!-- ================================================================= -->
+<!-- 3. SHARED COMPONENT: TopNavBar (Web Header)                       -->
+<!-- ================================================================= -->
+<header class="h-topbar-height w-full px-gutter-desktop flex items-center justify-between sticky top-0 z-40 bg-surface-container-lowest/85 dark:bg-inverse-surface/85 backdrop-blur-md border-b border-outline-variant/30 dark:border-outline-variant/10 shadow-sm">
+<!-- Left: Search & Service Quick Context -->
+<div class="flex items-center gap-4 w-1/3">
+<div class="relative w-full max-w-sm">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]" data-icon="search">search</span>
+<input class="w-full h-10 pl-9 pr-3 rounded-xl bg-surface-container-low border border-outline-variant/40 text-body-md font-body-md text-on-surface placeholder:text-outline focus:bg-surface-container-lowest focus:border-primary-container focus:outline-none transition-all" placeholder="Buscar en servicios o soporte..." type="text"/>
+</div>
+</div>
+<!-- Center: Status Pill for active escrow session -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-secondary-container/40 border border-secondary-container">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="text-label-md font-label-md text-on-secondary-container">Servicio #UG-88412 • En revisión</span>
+</div>
+<!-- Right: Hugo IA Button, Notifications, Avatar Profile -->
+<div class="flex items-center gap-3">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container/10 border border-primary-container/30 text-primary font-label-lg text-label-lg hover:bg-primary-container/20 transition-all active:scale-[0.98]" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary-container fill-1" data-icon="auto_awesome">auto_awesome</span>
+<span>Hugo IA</span>
+</button>
+<button class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-high/60 transition-colors" title="Notificaciones" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full ring-2 ring-surface-container-lowest"></span>
+</button>
+<div class="h-6 w-px bg-outline-variant/40"></div>
+<div class="flex items-center gap-2 pl-1 cursor-pointer">
+<img alt="Mariana Costa avatar verificada" class="w-8 h-8 rounded-full object-cover border border-outline-variant/50" src="https://lh3.googleusercontent.com/aida/AEtjO1Wmc5HDlp5kZ9ryFXa0vu62QW1c-yGmR5pXNhDKQ0yT_SgTymGIBvufFNvg3WopHfn_0Hg_asEbt6ssPbIP9rdocI4WvsXvQrnoMvKbHTk06nXor_ELq-tL9lG7GsLJvhe5A21GAKl4GhtVKgagt6WikUs-F5mFkc9cRhWHBFWzvnKl5Q5qI6aJc0n2eA7mRWIr6G9Hblz25y87Np9bCXawL_Vq8U-pqKd4d8TPi-8Yi8ZQZVKjPwgCIw"/>
+<span class="text-label-md font-label-md text-on-surface hidden xl:inline">Mariana C.</span>
+<span class="material-symbols-outlined text-[16px] text-outline" data-icon="expand_more">expand_more</span>
+</div>
+</div>
+</header>
+<!-- ================================================================= -->
+<!-- 4. MAIN DISPUTE RESOLUTION CANVAS                                  -->
+<!-- ================================================================= -->
+<main class="flex-1 px-8 py-8 flex flex-col items-center">
+<!-- Max Width High-Trust Container (Consumer Ride-Hailing / Airbnb Style) -->
+<div class="w-full max-w-3xl flex flex-col gap-6">
+<!-- 4.1 BREADCRUMBS & ESCROW BADGE -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2">
+<!-- Breadcrumb Trail -->
+<nav class="flex items-center gap-1.5 text-body-sm font-body-sm text-outline">
+<a class="hover:text-on-surface transition-colors" href="#">Inicio</a>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-on-surface transition-colors" href="#">Servicios activos</a>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-label-sm">Electricidad e instalaciones #UG-88412</span>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-error font-label-sm">Abrir disputa</span>
+</nav>
+<!-- Status badge: Pago retenido en Escrow -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-lowest border border-outline-variant/50 shadow-sm self-start sm:self-auto">
+<span class="material-symbols-outlined text-[16px] text-tertiary fill-1" data-icon="lock">lock</span>
+<span class="text-label-sm font-label-sm text-on-surface font-semibold">Pago retenido en Escrow</span>
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span>
+</div>
+</div>
+<!-- 4.2 HEADER BLOCK -->
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-2xl bg-error-container/40 flex items-center justify-center text-error">
+<span class="material-symbols-outlined text-[24px]" data-icon="shield_with_heart">shield_with_heart</span>
+</div>
+<div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">Abrir disputa y congelar fondos</h1>
+<p class="text-body-md font-body-md text-on-surface-variant">Si el servicio no se completó como acordaste o hubo un imprevisto técnico, mediamos de inmediato con respaldo fiduciario.</p>
+</div>
+</div>
+</div>
+<!-- 4.3 PROMINENT TRUST REASSURANCE CARD (Level 2 Elevation) -->
+<div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-tertiary-container/10 via-surface-container-lowest to-primary-container/10 border border-tertiary-container/30 p-5 shadow-sm">
+<div class="flex items-start gap-4">
+<div class="p-2.5 rounded-xl bg-tertiary-container/20 text-tertiary flex-shrink-0 mt-0.5">
+<span class="material-symbols-outlined text-[22px] fill-1" data-icon="gavel">gavel</span>
+</div>
+<div class="flex-1 flex flex-col gap-1.5">
+<div class="flex items-center justify-between flex-wrap gap-2">
+<span class="text-label-lg font-label-lg text-tertiary-fixed-variant flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] fill-1" data-icon="verified_user">verified_user</span>
+                  Garantía UGO Escrow 100% Protegida
+                </span>
+<span class="px-2.5 py-0.5 rounded-md bg-tertiary text-on-tertiary font-label-sm text-label-sm tracking-wide">FONDOS EN CUSTODIA</span>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant leading-relaxed">
+                El pago seguirá protegido mientras UGO revisa el caso. Monto en custodia retenido: <strong class="text-on-surface font-semibold">R$ 175,00</strong>. No se liberará ningún valor al profesional hasta que des tu conformidad o intervenga un perito de UGO Shield.
+              </p>
+<div class="flex items-center gap-3 pt-1 text-label-sm font-label-sm text-outline">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="no_accounts">no_accounts</span> Sin aprobación de pago</span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="lock_clock">lock_clock</span> PIN bloqueado</span>
+<span>•</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px]" data-icon="balance">balance</span> Peritaje gratuito</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 4.4 CONTEXT CARD: SERVICIO Y PROFESIONAL -->
+<div class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-5 shadow-sm">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-3 mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="bolt">bolt</span>
+<span class="text-label-lg font-label-lg text-on-surface">Electricidad e instalaciones #UG-88412</span>
+</div>
+<span class="text-label-sm font-label-sm text-primary font-semibold bg-surface-container px-2.5 py-1 rounded-lg">R$ 175,00 en custodia Itaú Escrow</span>
+</div>
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<!-- Professional Profile -->
+<div class="flex items-center gap-3.5">
+<div class="relative">
+<img alt="Carlos Méndez electricista matriculado" class="w-14 h-14 rounded-2xl object-cover border-2 border-surface-container-lowest shadow-sm" src="https://lh3.googleusercontent.com/aida/AEtjO1VZCNdxd3XASJWqg7e5kLmt1-qxbFXH0yu6y7jzjlY03JLiocq91H1KEktKKOG8lHTvtctF72E5TPWvtYzk9oQUA31HvW9nBQE8J6CYv7U7lW3aD5aANUQJGCm647O0XHOox5I9ZuA0F6YtDc0DBbWJXDyLN3n8CoCkegDN-krHC1UBBYlC_gNUzxcdZhb9ycXD-Ma9Y5hqenq0PNy-kKvM03KW5AWmaGGRrXs5QBwSOZCIsKLg_A4YsmQ"/>
+<div class="absolute -bottom-1 -right-1 bg-surface-container-lowest p-0.5 rounded-full shadow-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary fill-1" data-icon="verified">verified</span>
+</div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="text-headline-sm font-headline-sm text-on-surface">Carlos Méndez</h3>
+<span class="text-label-sm font-label-sm px-2 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">Matriculado</span>
+</div>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Electricista Matriculado • <span class="font-code-sm text-code-sm text-outline">CREA/SC #51842</span></span>
+<div class="flex items-center gap-1.5 text-body-sm font-body-sm mt-0.5">
+<span class="material-symbols-outlined text-amber-500 text-[16px] fill-1" data-icon="star">star</span>
+<span class="font-semibold text-on-surface">4.9</span>
+<span class="text-outline">(94 reseñas)</span>
+</div>
+</div>
+</div>
+<!-- Service Details snippet -->
+<div class="bg-surface-container-low rounded-xl p-3 max-w-sm border border-outline-variant/20 flex flex-col gap-1">
+<span class="text-label-sm font-label-sm text-outline">Trabajo contratado</span>
+<p class="text-body-sm font-body-sm text-on-surface line-clamp-2">
+                Instalación y revisión de disyuntor bipolar y térmica en tablero principal.
+              </p>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-primary pt-0.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="schedule">schedule</span>
+<span>Iniciado hoy, 14:15 hs</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 4.5 FORMULARIO DE DISPUTA -->
+<form class="bg-surface-container-lowest rounded-2xl border border-outline-variant/30 p-6 shadow-sm flex flex-col gap-6" onsubmit="event.preventDefault();">
+<!-- Section Title -->
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-3">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary text-label-sm font-label-sm flex items-center justify-center font-bold">1</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Motivo de la disputa</h2>
+</div>
+<span class="text-label-sm font-label-sm text-outline">Selección obligatoria</span>
+</div>
+<!-- Reason Selector (Visual Cards with interactive feel) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="reason-container">
+<!-- Option 1: Selected by default -->
+<label class="flex items-start gap-3 p-3.5 rounded-xl border-2 border-primary bg-surface-container-low/60 cursor-pointer transition-all hover:bg-surface-container-low relative">
+<input checked="" class="mt-1 h-4 w-4 text-primary border-outline focus:ring-primary-container" name="dispute_reason" type="radio" value="incomplete"/>
+<div class="flex flex-col">
+<span class="text-label-lg font-label-lg text-on-surface flex items-center gap-1.5">
+                  Trabajo incompleto o sin terminar
+                  <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">El profesional se fue dejando conexiones o pruebas pendientes sin finalizar.</span>
+</div>
+</label>
+<!-- Option 2 -->
+<label class="flex items-start gap-3 p-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest cursor-pointer transition-all hover:border-outline hover:bg-surface-container-low/30">
+<input class="mt-1 h-4 w-4 text-primary border-outline focus:ring-primary-container" name="dispute_reason" type="radio" value="technical_failure"/>
+<div class="flex flex-col">
+<span class="text-label-lg font-label-lg text-on-surface">Falla técnica posterior</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">El tablero salta, no hay continuidad o hay riesgo de cortocircuito.</span>
+</div>
+</label>
+<!-- Option 3 -->
+<label class="flex items-start gap-3 p-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest cursor-pointer transition-all hover:border-outline hover:bg-surface-container-low/30">
+<input class="mt-1 h-4 w-4 text-primary border-outline focus:ring-primary-container" name="dispute_reason" type="radio" value="no_show_left"/>
+<div class="flex flex-col">
+<span class="text-label-lg font-label-lg text-on-surface">Técnico se retiró antes de tiempo</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Abandonó el domicilio sin verificar la puesta en marcha con el cliente.</span>
+</div>
+</label>
+<!-- Option 4 -->
+<label class="flex items-start gap-3 p-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest cursor-pointer transition-all hover:border-outline hover:bg-surface-container-low/30">
+<input class="mt-1 h-4 w-4 text-primary border-outline focus:ring-primary-container" name="dispute_reason" type="radio" value="damage_materials"/>
+<div class="flex flex-col">
+<span class="text-label-lg font-label-lg text-on-surface">Daño accidental o disconformidad</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Se dañó la tapa del tablero o los materiales utilizados no coinciden.</span>
+</div>
+</label>
+<!-- Option 5: Full width option -->
+<label class="md:col-span-2 flex items-start gap-3 p-3.5 rounded-xl border border-outline-variant/40 bg-surface-container-lowest cursor-pointer transition-all hover:border-outline hover:bg-surface-container-low/30">
+<input class="mt-1 h-4 w-4 text-primary border-outline focus:ring-primary-container" name="dispute_reason" type="radio" value="rate_difference"/>
+<div class="flex flex-col">
+<span class="text-label-lg font-label-lg text-on-surface">Diferencia de tarifa no acordada</span>
+<span class="text-body-sm font-body-sm text-on-surface-variant">Se solicitaron pagos adicionales fuera de la plataforma o cobros indebidos.</span>
+</div>
+</label>
+</div>
+<!-- Section 2: Problem Description -->
+<div class="flex flex-col gap-2 pt-2">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary text-label-sm font-label-sm flex items-center justify-center font-bold">2</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Descripción detallada del problema</h2>
+</div>
+<span class="text-code-sm font-code-sm text-outline" id="char-counter">142 / 1000</span>
+</div>
+<div class="relative">
+<textarea class="w-full p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/40 text-on-surface text-body-md font-body-md placeholder:text-outline focus:bg-surface-container-lowest focus:border-primary-container focus:outline-none transition-all leading-relaxed" maxlength="1000" placeholder="Describí detalladamente qué sucedió con la instalación eléctrica de Carlos Méndez. Esto ayudará al equipo de mediación a evaluar la situación rápidamente..." rows="4">Carlos instaló la térmica pero no conectó el disyuntor diferencial bipolar; la fase quedó sin aislamiento adecuado en la barra distribuidora y se fue diciendo que volvía mañana sin confirmar horario.</textarea>
+</div>
+<p class="text-body-sm font-body-sm text-outline flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="info">info</span>
+              Tu declaración será compartida de forma transparente con el mediador oficial y notificada a Carlos para su descargo.
+            </p>
+</div>
+<!-- Section 3: Evidence Upload (Photos / Videos) -->
+<div class="flex flex-col gap-3 pt-2">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-2">
+<div class="flex items-center gap-2">
+<span class="w-6 h-6 rounded-full bg-primary/10 text-primary text-label-sm font-label-sm flex items-center justify-center font-bold">3</span>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Adjuntar fotos o videos de evidencia</h2>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px] fill-1" data-icon="lock">lock</span>
+                Cifrado SHA-256
+              </span>
+</div>
+<!-- Drag & Drop Zone -->
+<div class="border-2 border-dashed border-outline-variant/60 rounded-2xl p-6 bg-surface-container-low/40 hover:bg-surface-container-low hover:border-primary-container/80 transition-all cursor-pointer flex flex-col items-center justify-center text-center group">
+<div class="w-12 h-12 rounded-full bg-surface-container-lowest shadow-sm flex items-center justify-center text-primary mb-2 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[24px]" data-icon="cloud_upload">cloud_upload</span>
+</div>
+<span class="text-label-lg font-label-lg text-on-surface">Arrastrá acá las fotos del tablero o hacé clic para explorar</span>
+<span class="text-body-sm font-body-sm text-outline mt-0.5">JPG, PNG o MP4 hasta 50MB por archivo</span>
+</div>
+<!-- Attached Files Preview List (2 Pre-attached sample photos) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+<!-- File 1: foto_tablero_termica.jpg -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="photo_camera">photo_camera</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-label-md font-label-lg text-on-surface truncate font-semibold">foto_tablero_termica.jpg</span>
+<span class="text-code-sm font-code-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] fill-1" data-icon="verified">verified</span>
+                      Evidencia SHA-256 (2.4 MB)
+                    </span>
+</div>
+</div>
+<button class="p-1.5 rounded-lg text-outline hover:text-error hover:bg-error-container/30 transition-colors" title="Quitar archivo" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</div>
+<!-- File 2: cables_sueltos_fase.jpg -->
+<div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-surface-container-high flex items-center justify-center text-primary flex-shrink-0">
+<span class="material-symbols-outlined text-[20px]" data-icon="photo_camera">photo_camera</span>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-label-md font-label-lg text-on-surface truncate font-semibold">cables_sueltos_fase.jpg</span>
+<span class="text-code-sm font-code-sm text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px] fill-1" data-icon="verified">verified</span>
+                      Evidencia SHA-256 (3.1 MB)
+                    </span>
+</div>
+</div>
+<button class="p-1.5 rounded-lg text-outline hover:text-error hover:bg-error-container/30 transition-colors" title="Quitar archivo" type="button">
+<span class="material-symbols-outlined text-[18px]" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 4.6 EXPLICIT REQUIREMENTS: REASSURANCE PILL & NO PIN RELEASE -->
+<div class="p-4 rounded-xl bg-amber-50 border border-amber-200/80 flex items-start gap-3">
+<span class="material-symbols-outlined text-amber-700 text-[22px] flex-shrink-0 mt-0.5" data-icon="lock_reset">lock_reset</span>
+<div class="flex flex-col gap-0.5">
+<span class="text-label-lg font-label-lg text-amber-900 font-bold">Sin aprobar pago • Sin finalizar servicio</span>
+<p class="text-body-sm font-body-sm text-amber-800 leading-relaxed">
+                Al abrir la disputa, tu <strong>PIN de conformidad queda inmediatamente bloqueado</strong> y el servicio pasa a revisión pericial sin costo. El temporizador de cobro automático queda en pausa indefinida hasta la resolución bilateral.
+              </p>
+</div>
+</div>
+<!-- 4.7 ACTIONS ROW (Primary Green Emerald CTA + Secondary Link) -->
+<div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-outline-variant/20">
+<!-- Secondary Actions -->
+<div class="flex items-center gap-3 w-full sm:w-auto order-2 sm:order-1">
+<a class="inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl border border-outline-variant/60 text-on-surface-variant hover:bg-surface-container-high/50 font-label-lg text-label-lg transition-all w-full sm:w-auto" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="chat">chat</span>
+<span>Hablar primero con Carlos</span>
+</a>
+<a class="inline-flex items-center justify-center px-4 py-3 text-outline hover:text-on-surface font-label-lg text-label-lg transition-colors" href="#">
+                Volver al servicio
+              </a>
+</div>
+<!-- Primary CTA in Emerald/Green -->
+<button class="w-full sm:w-auto order-1 sm:order-2 inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-tertiary hover:bg-tertiary/90 text-on-tertiary font-label-lg text-label-lg shadow-md hover:shadow-lg transition-all duration-150 active:scale-[0.98]" type="submit">
+<span class="material-symbols-outlined text-[20px] fill-1" data-icon="shield">shield</span>
+<span class="font-bold tracking-wide">Abrir disputa y congelar R$ 175,00</span>
+</button>
+</div>
+</form>
+<!-- 4.8 TRUST BADGE FOOTER BAR -->
+<div class="flex items-center justify-center gap-6 py-4 text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-tertiary fill-1" data-icon="verified_user">verified_user</span>
+<span>UGO Shield Mediation Act #992</span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="account_balance">account_balance</span>
+<span>Fondo Fiduciario Itaú Escrow</span>
+</div>
+<span>•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px]" data-icon="support_agent">support_agent</span>
+<span>Soporte 24/7 en vivo</span>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- ================================================================= -->
+<!-- 5. BOTTOM RIGHT FLOATING WIDGET: Hugo IA Mediación                -->
+<!-- ================================================================= -->
+<aside class="fixed bottom-6 right-6 z-50 max-w-sm w-full select-none">
+<div class="relative overflow-hidden rounded-2xl bg-surface-container-lowest/95 backdrop-blur-xl border border-primary-container/40 shadow-xl p-4 transition-all duration-300 hover:shadow-2xl hover:border-primary-container">
+<!-- Top Highlight Gradient Line -->
+<div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary-container via-tertiary-container to-primary"></div>
+<div class="flex items-start gap-3">
+<!-- AI Avatar Glowing Icon -->
+<div class="relative flex-shrink-0">
+<div class="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-container to-tertiary-container flex items-center justify-center text-surface-container-lowest shadow-sm">
+<span class="material-symbols-outlined text-[20px] fill-1" data-icon="auto_awesome">auto_awesome</span>
+</div>
+<span class="absolute -top-1 -right-1 flex h-3 w-3">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-tertiary"></span>
+</span>
+</div>
+<div class="flex-1 flex flex-col gap-1.5">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="text-label-lg font-label-lg text-on-surface font-bold">Hugo IA Mediación</span>
+<span class="text-[10px] px-1.5 py-0.2 rounded bg-primary-container/15 text-primary font-bold">ASISTENTE ACTIVO</span>
+</div>
+<button class="text-outline hover:text-on-surface text-[18px]" onclick="this.closest('aside').style.display='none'" title="Cerrar sugerencia" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="close">close</span>
+</button>
+</div>
+<p class="text-body-sm font-body-sm text-on-surface-variant leading-relaxed">
+            ¿Querés que revise las fotos del tablero antes de enviar la disputa? Puedo diagnosticar si cumple la norma <strong>NBR 5410</strong> en segundos.
+          </p>
+<div class="flex items-center gap-2 pt-1.5">
+<button class="flex-1 py-1.5 px-3 rounded-lg bg-primary-container hover:bg-primary-container/90 text-surface-container-lowest font-label-sm text-label-sm font-bold shadow-xs transition-colors flex items-center justify-center gap-1" type="button">
+<span class="material-symbols-outlined text-[14px]" data-icon="document_scanner">document_scanner</span>
+<span>Escanear con Hugo IA</span>
+</button>
+<button class="py-1.5 px-2.5 rounded-lg bg-surface-container-high/60 hover:bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm transition-colors" onclick="this.closest('aside').style.display='none'" type="button">
+              Ahora no
+            </button>
+</div>
+</div>
+</div>
+</div>
+</aside>
+<!-- Interactive script for visual radio feedback & char counter -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Radio selection card active styling toggle
+      const radioContainer = document.getElementById('reason-container');
+      if (radioContainer) {
+        const labels = radioContainer.querySelectorAll('label');
+        labels.forEach(label => {
+          const radio = label.querySelector('input[type="radio"]');
+          radio.addEventListener('change', () => {
+            labels.forEach(l => {
+              l.classList.remove('border-2', 'border-primary', 'bg-surface-container-low/60');
+              l.classList.add('border', 'border-outline-variant/40', 'bg-surface-container-lowest');
+            });
+            if (radio.checked) {
+              label.classList.add('border-2', 'border-primary', 'bg-surface-container-low/60');
+              label.classList.remove('border-outline-variant/40', 'bg-surface-container-lowest');
+            }
+          });
+        });
+      }
+
+      // Live textarea character counter
+      const textarea = document.querySelector('textarea');
+      const counter = document.getElementById('char-counter');
+      if (textarea && counter) {
+        textarea.addEventListener('input', () => {
+          counter.textContent = `${textarea.value.length} / 1000`;
+        });
+      }
+    });
+  </script>
+</body></html>

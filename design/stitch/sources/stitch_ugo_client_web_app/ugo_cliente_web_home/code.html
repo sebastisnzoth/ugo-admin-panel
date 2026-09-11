@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"on-secondary":"#ffffff","error":"#ba1a1a","primary-fixed-dim":"#4cd6fb","on-tertiary-fixed":"#002113","secondary-fixed":"#dae2fd","surface-container":"#e5eeff","on-error":"#ffffff","surface-tint":"#00677d","surface-container-highest":"#d3e4fe","on-primary-fixed":"#001f27","secondary":"#565e74","on-tertiary":"#ffffff","surface-bright":"#f8f9ff","on-tertiary-container":"#00442d","on-primary-fixed-variant":"#004e5f","on-primary":"#ffffff","on-secondary-fixed":"#131b2e","on-surface-variant":"#3d494d","tertiary-container":"#19bc84","inverse-on-surface":"#eaf1ff","surface-container-low":"#eff4ff","on-secondary-container":"#5c647a","on-background":"#0b1c30","on-primary-container":"#00414f","tertiary-fixed-dim":"#4edea3","outline-variant":"#bcc9ce","inverse-surface":"#213145","surface-variant":"#d3e4fe","surface-dim":"#cbdbf5","surface":"#f8f9ff","surface-container-lowest":"#ffffff","primary":"#00677d","primary-container":"#00b4d8","primary-fixed":"#b3ebff","background":"#f8f9ff","on-error-container":"#93000a","outline":"#6d797e","on-surface":"#0b1c30","error-container":"#ffdad6","secondary-fixed-dim":"#bec6e0","tertiary-fixed":"#6ffbbe","inverse-primary":"#4cd6fb","on-tertiary-fixed-variant":"#005236","tertiary":"#006c49","surface-container-high":"#dce9ff","on-secondary-fixed-variant":"#3f465c","secondary-container":"#dae2fd"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-2xs":"0.25rem","gutter-desktop":"1.5rem","space-3xl":"4rem","sidebar-expanded":"17.5rem","space-lg":"1.5rem","space-2xl":"3rem","space-md":"1rem","topbar-height":"4.25rem","space-sm":"0.75rem","gutter-mobile":"1rem","sidebar-collapsed":"5rem","space-xs":"0.5rem","space-xl":"2rem"},fontFamily:{"headline-md":["Plus Jakarta Sans"],"code-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"display-lg":["Plus Jakarta Sans"]},fontSize:{"headline-md":["22px",{lineHeight:"30px",letterSpacing:"-0.01em",fontWeight:"600"}],"code-sm":["12px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"500"}],"headline-lg":["28px",{lineHeight:"36px",letterSpacing:"-0.015em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"400"}],"label-lg":["14px",{lineHeight:"20px",letterSpacing:"0.005em",fontWeight:"600"}],"body-lg":["16px",{lineHeight:"24px",letterSpacing:"0em",fontWeight:"400"}],"headline-sm":["18px",{lineHeight:"26px",letterSpacing:"-0.005em",fontWeight:"600"}],"label-md":["12px",{lineHeight:"16px",letterSpacing:"0.02em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"700"}],"body-sm":["12px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"400"}],"display-lg-mobile":["30px",{lineHeight:"38px",letterSpacing:"-0.015em",fontWeight:"700"}],"display-lg":["40px",{lineHeight:"48px",letterSpacing:"-0.02em",fontWeight:"700"}]}}}};</script></head><body class="bg-surface font-body-md text-body-md text-on-surface"><aside class="fixed left-0 top-0 h-full w-sidebar-collapsed xl:w-sidebar-expanded bg-surface-container-lowest z-50 flex flex-col justify-between py-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)] transition-all duration-300"><div class="flex flex-col gap-space-md"><div class="h-12 px-space-md xl:px-space-lg flex items-center justify-between"><div class="flex items-center gap-space-sm overflow-hidden"><img alt="Logo UGO Cliente" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1UWYkGbDkybddSHtmyY32GZB1VYVCcp5I4p7MfFYMURxRzKLOfdAZb01kBM-vemKANWc5aynx1KlrXNQYkD6Qje8qaZo8IpLmAQAQttpEfRvednP2PUhz_zfxx8v0_ym8_8tLC0fLhOaZQ6qk8o_jOLsnS4QgUZY2OrTLvKIwhRyyT9OS8upOAHg6wLdHrjhII4NSsneejdMpjdWn2CY9uX2phCFae5zhsNagOPSlaYuYz3RkFYnY_L3Os"/><span class="hidden xl:inline font-headline-sm text-headline-sm font-bold tracking-tight text-primary">UGO Cliente</span></div><span class="hidden xl:inline-flex items-center px-space-xs py-space-2xs rounded-full bg-primary-fixed text-on-primary-fixed font-label-sm text-label-sm">v2.4</span></div><nav class="flex flex-col gap-space-2xs px-space-xs xl:px-space-sm" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a aria-current="page" class="flex items-center gap-space-sm px-space-sm py-space-xs transition-all bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm" data-path="inicio" href="#"><span class="material-symbols-outlined text-[22px]">home</span><span class="hidden xl:inline flex-1 truncate">Inicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="buscar-servicio" href="#"><span class="material-symbols-outlined text-[22px]">search</span><span class="hidden xl:inline flex-1 truncate">Buscar servicio</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="nueva-solicitud" href="#"><span class="material-symbols-outlined text-[22px]">add_circle</span><span class="hidden xl:inline flex-1 truncate">Nueva solicitud</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="matching-en-vivo" href="#"><span class="material-symbols-outlined text-[22px]">radar</span><span class="hidden xl:inline flex-1 truncate">Matching en vivo</span><span class="hidden xl:inline-flex h-2 w-2 rounded-full bg-primary-container animate-pulse"></span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="servicios-activos" href="#"><span class="material-symbols-outlined text-[22px]">pending_actions</span><span class="hidden xl:inline flex-1 truncate">Servicios activos</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">2</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="actividad" href="#"><span class="material-symbols-outlined text-[22px]">history</span><span class="hidden xl:inline flex-1 truncate">Actividad</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="mensajes" href="#"><span class="material-symbols-outlined text-[22px]">chat_bubble</span><span class="hidden xl:inline flex-1 truncate">Mensajes</span><span class="hidden xl:inline-flex items-center justify-center px-1.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm">3</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ugo-shield" href="#"><span class="material-symbols-outlined text-[22px] text-tertiary">verified_user</span><span class="hidden xl:inline flex-1 truncate">UGO Shield</span><span class="hidden xl:inline-flex items-center px-1.5 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm">Pro</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="pagos" href="#"><span class="material-symbols-outlined text-[22px]">account_balance_wallet</span><span class="hidden xl:inline flex-1 truncate">Pagos</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="perfil" href="#"><span class="material-symbols-outlined text-[22px]">person</span><span class="hidden xl:inline flex-1 truncate">Perfil</span></a></nav></div><div class="flex flex-col gap-space-xs px-space-xs xl:px-space-sm pt-space-xs"><nav class="flex flex-col gap-space-2xs" data-active-classes="bg-primary-container text-on-primary-container font-label-lg rounded-xl shadow-sm"><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="ayuda" href="#"><span class="material-symbols-outlined text-[22px]">help</span><span class="hidden xl:inline flex-1 truncate">Ayuda</span></a><a class="flex items-center gap-space-sm px-space-sm py-space-xs rounded-xl font-label-lg text-label-lg text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-all" data-path="configuracion" href="#"><span class="material-symbols-outlined text-[22px]">settings</span><span class="hidden xl:inline flex-1 truncate">Configuración</span></a></nav></div></aside><div class="pl-sidebar-collapsed xl:pl-sidebar-expanded min-h-screen flex flex-col transition-all duration-300"><header class="fixed top-0 left-sidebar-collapsed xl:left-sidebar-expanded right-0 h-16 bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 transition-all duration-300"><div class="h-16 w-full px-space-md xl:px-space-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><button class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high transition-colors text-left" type="button"><span class="material-symbols-outlined text-primary text-[20px]">location_on</span><div class="hidden md:flex flex-col"><span class="font-label-sm text-label-sm text-secondary">Ubicación actual</span><span class="font-label-md text-label-md text-on-surface font-semibold truncate">Canasvieiras, Florianópolis · SC</span></div><span class="material-symbols-outlined text-on-surface-variant text-[18px]">expand_more</span></button><div class="relative flex-1 hidden sm:block"><span class="material-symbols-outlined absolute left-space-sm top-1/2 -translate-y-1/2 text-outline text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest transition-colors" placeholder="Buscar servicios, profesionales o ayuda..." type="text"/></div></div><div class="flex items-center gap-space-sm xl:gap-space-md"><button class="inline-flex items-center gap-space-xs px-space-sm py-2 rounded-xl bg-gradient-to-r from-primary-container to-tertiary-container text-on-primary font-label-md text-label-md shadow-sm hover:opacity-95 transition-opacity" type="button"><span class="material-symbols-outlined text-[18px]">auto_awesome</span><span class="hidden md:inline font-bold">Hugo IA</span><span class="flex h-2 w-2 relative"><span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-on-primary opacity-75"></span><span class="relative inline-flex rounded-full h-2 w-2 bg-on-primary"></span></span></button><button class="relative p-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2 right-2 h-2 w-2 rounded-full bg-error ring-2 ring-surface"></span></button><div class="flex items-center gap-space-sm pl-space-2xs"><div class="hidden lg:flex flex-col text-right"><span class="font-label-md text-label-md font-semibold text-on-surface leading-tight">Mariana Costa</span><span class="font-label-sm text-label-sm text-tertiary flex items-center justify-end gap-0.5"><span class="material-symbols-outlined text-[14px]">verified</span>Verificada</span></div><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB-Zrm-zrxI-X4YoML1L8DRmL8PPBXsgLmlnXnegDB4G1Vm_hTHKd4RncqqgJv0FV2lf2KUWgrfcQ7WhAIOmBAuKiqhtqfGCgUDhYRnyRRI-0HQoXcNV4pjHMZRBVV-aJBh2cCWRURij-zthGoDsqAJ5lW_Lw3v1s5ijswfaOzT6uod3qsvdCWYyXMDR_E6PR-Pr27sDFoPNX--u7lMbJ2V8UgBHd212UXddj57ivTawnWy4aB_o9XO"/></div></div></div></header><main class="w-full pt-16 bg-surface flex-1"><div class="flex flex-col w-full">
+<div class="w-full px-space-md xl:px-space-lg py-space-md flex flex-col gap-space-lg">
+<!-- Top Micro Bar / Quick Stats & Guarantee -->
+<div class="w-full flex flex-wrap items-center justify-between gap-space-sm bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm">
+<div class="flex items-center gap-space-sm">
+<div class="flex items-center justify-center w-8 h-8 rounded-full bg-tertiary/10 text-tertiary">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="font-label-md text-label-md text-on-surface font-bold">Garantía UGO Shield™ Activa</span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary text-on-tertiary font-label-sm text-label-sm">100% Protegido</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Protección contra daños de hasta $250.000 y técnicos con antecedentes validados</span>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="hidden md:flex items-center gap-space-xs text-secondary font-label-md text-label-md">
+<span class="flex h-2 w-2 rounded-full bg-tertiary-container animate-pulse"></span>
+<span>71 profesionales activos en Canasvieiras</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-surface-container text-primary font-label-md text-label-md hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">call</span>
+<span>Línea SOS 24/7</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main 3-Column Responsive Canvas (Left 340px, Center Flex/Map, Right 320px) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md xl:gap-space-lg items-start">
+<!-- ==============================================
+           COLUMNA IZQUIERDA: Búsqueda, Categorías y Presets (col-span-12 lg:col-span-3)
+           ============================================== -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-space-md">
+<!-- Welcome Card -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Panel Principal</span>
+<span class="inline-flex items-center gap-1 text-tertiary font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">bolt</span> Red express
+            </span>
+</div>
+<h1 class="font-headline-md text-headline-md text-on-surface font-bold leading-tight">
+            ¡Hola Mariana! <br/><span class="text-primary">¿Qué resolvemos hoy?</span>
+</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+            Pedí asistencia profesional al instante o agendá para tu hogar en Canasvieiras.
+          </p>
+<!-- Search Box -->
+<div class="relative mt-space-xs">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">search</span>
+<input class="w-full h-11 pl-10 pr-10 bg-surface-container-low rounded-xl font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:bg-surface-container-lowest focus:ring-2 focus:ring-primary-container transition-all shadow-inner" placeholder="Ej: plomero urgente, aire..." type="text"/>
+<button class="absolute right-2.5 top-1/2 -translate-y-1/2 text-outline hover:text-on-surface">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+</div>
+</div>
+<!-- Categorías Primarias Grid -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<h2 class="font-label-lg text-label-lg text-on-surface font-bold">Servicios Populares</h2>
+<span class="font-label-sm text-label-sm text-primary font-semibold hover:underline cursor-pointer">42 en total</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Item 1 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">cleaning_services</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary-container group-hover:bg-on-primary"></span>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Limpieza &amp; Hogar</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">24 pros cerca</span>
+</div>
+<!-- Item 2 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary-container group-hover:bg-on-primary"></span>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Electricidad</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">12 pros cerca</span>
+</div>
+<!-- Item 3 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">plumbing</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary-container group-hover:bg-on-primary"></span>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Plomería &amp; Gas</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">8 pros cerca</span>
+</div>
+<!-- Item 4 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">mode_fan</span>
+</div>
+<span class="w-2 h-2 rounded-full bg-tertiary-container group-hover:bg-on-primary"></span>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Climatización</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">15 pros cerca</span>
+</div>
+<!-- Item 5 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">format_paint</span>
+</div>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Pintura Express</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">7 pros cerca</span>
+</div>
+<!-- Item 6 -->
+<div class="group flex flex-col p-space-sm rounded-xl bg-surface-container-low hover:bg-primary hover:text-on-primary transition-all duration-200 cursor-pointer shadow-sm" role="button">
+<div class="flex items-center justify-between mb-2">
+<div class="w-9 h-9 rounded-lg bg-surface-container-lowest group-hover:bg-primary-container flex items-center justify-center text-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[20px]">key</span>
+</div>
+<span class="px-1 py-0.2 rounded bg-error/10 text-error font-label-sm text-[10px] font-bold">24H</span>
+</div>
+<span class="font-label-md text-label-md font-bold leading-tight group-hover:text-on-primary">Cerrajería</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant group-hover:text-primary-fixed leading-tight mt-0.5">5 pros activos</span>
+</div>
+</div>
+<button class="w-full mt-space-xs py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md flex items-center justify-center gap-1 transition-colors" type="button">
+<span>Ver todos los 42 servicios</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Presets / Quick Order Fast Pills -->
+<div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col gap-space-xs">
+<span class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Acceso Rápido Frecuente</span>
+<div class="flex flex-col gap-space-2xs mt-1">
+<button class="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-left transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">water_drop</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Reparación rápida de fuga</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</button>
+<button class="w-full flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-left transition-colors">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">sanitizer</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Limpieza profunda estándar</span>
+</div>
+<span class="material-symbols-outlined text-outline text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Guarantee Banner Card -->
+<div class="relative overflow-hidden bg-gradient-to-br from-primary to-surface-tint p-space-md rounded-2xl text-on-primary shadow-md flex flex-col gap-space-xs">
+<div class="absolute -right-6 -bottom-6 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary-fixed text-[24px]">verified</span>
+<span class="font-label-lg text-label-lg font-bold">100% Verificados</span>
+</div>
+<p class="font-body-sm text-body-sm text-surface-container-lowest/90">
+            Todos los prestadores poseen antecedentes penales revisados e identidad biométrica UGO.
+          </p>
+<button class="mt-2 w-full py-2 px-3 rounded-xl bg-surface-container-lowest text-primary font-label-md text-label-md font-bold hover:bg-surface-bright transition-colors text-center shadow-sm">
+            Pedir con UGO Shield
+          </button>
+</div>
+</div>
+<!-- ==============================================
+           ZONA CENTRAL: Radar / Live Map & Pros Activos (col-span-12 lg:col-span-6)
+           ============================================== -->
+<div class="col-span-12 lg:col-span-6 flex flex-col gap-space-md">
+<!-- Map Canvas Container with Overlays -->
+<div class="relative w-full h-[540px] rounded-3xl overflow-hidden shadow-lg bg-surface-container-highest">
+<!-- Google Maps Static Location Canvas -->
+<div class="w-full h-full bg-cover bg-center" data-location="Canasvieiras, Florianopolis, Brazil" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuA8uuSDaFXXPVY3SY1DYXaxgztw0QwpUB7GTHEKeACAv3rxhcMgWO7zVEj6_20wd3iOPmzjZEsqPoRPupDtBEQEetERMfjA06B8tPkwUgIeMGLN6g2Eg1zZTaNP3UGqjY-ArLlrOp7mXr9Rj3UimYjJE2JHw9iTyGvc2iSjTjlpkYyZ4-mqHJ-qtOkxJNveHBj7uDONFotM4r8qBSFBcMUeEYzBOSLXpEHtE1Nt85pGLswRC8aPhMtj');"></div>
+<!-- Radar Grid Overlay Layer (Ambient SVG Radar) -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden">
+<svg class="w-full h-full opacity-30" fill="none" viewbox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+<circle cx="400" cy="270" r="100" stroke="#00B4D8" stroke-dasharray="4 4" stroke-width="1.5"></circle>
+<circle cx="400" cy="270" r="210" stroke="#00B4D8" stroke-width="1"></circle>
+<circle cx="400" cy="270" r="320" stroke="#00B4D8" stroke-dasharray="8 8" stroke-width="0.75"></circle>
+<line opacity="0.6" stroke="#00B4D8" stroke-width="0.5" x1="400" x2="400" y1="0" y2="600"></line>
+<line opacity="0.6" stroke="#00B4D8" stroke-width="0.5" x1="0" x2="800" y1="270" y2="270"></line>
+</svg>
+</div>
+<!-- Top Interactive Map Controls Bar -->
+<div class="absolute top-4 left-4 right-4 flex flex-wrap items-center justify-between gap-2 z-10">
+<!-- Filter Chips Group -->
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-lowest/90 backdrop-blur-md rounded-2xl shadow-sm">
+<button class="px-3 py-1.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold transition-all">
+                Todos (71)
+              </button>
+<button class="px-3 py-1.5 rounded-xl text-on-surface hover:bg-surface-container font-label-md text-label-md font-medium transition-all flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-ping"></span>
+<span>Disponibles ya</span>
+</button>
+<button class="hidden sm:inline-flex px-3 py-1.5 rounded-xl text-on-surface hover:bg-surface-container font-label-md text-label-md font-medium transition-all">
+                Top Rated 4.9+
+              </button>
+<button class="hidden sm:inline-flex px-3 py-1.5 rounded-xl text-on-surface hover:bg-surface-container font-label-md text-label-md font-medium transition-all">
+                &lt; 30 min
+              </button>
+</div>
+<!-- Map View Adjusters -->
+<div class="flex items-center gap-1 bg-surface-container-lowest/90 backdrop-blur-md p-1 rounded-xl shadow-sm">
+<button class="p-2 rounded-lg text-primary hover:bg-surface-container transition-colors" title="Mi ubicación">
+<span class="material-symbols-outlined text-[18px]">my_location</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface hover:bg-surface-container transition-colors" title="Acercar">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+<button class="p-2 rounded-lg text-on-surface hover:bg-surface-container transition-colors" title="Alejar">
+<span class="material-symbols-outlined text-[18px]">remove</span>
+</button>
+</div>
+</div>
+<!-- Central Client Pin (Mariana's Home Pin) -->
+<div class="absolute left-1/2 top-[46%] -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center">
+<!-- Pulsing Rings -->
+<div class="relative flex items-center justify-center">
+<span class="absolute w-12 h-12 rounded-full bg-primary-container/40 animate-ping"></span>
+<span class="absolute w-20 h-20 rounded-full bg-primary-container/20"></span>
+<div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-2 border-surface-container-lowest z-10">
+<span class="material-symbols-outlined text-[20px]">person_pin</span>
+</div>
+</div>
+<div class="mt-1 px-2.5 py-0.5 rounded-full bg-inverse-surface/90 text-inverse-on-surface font-label-sm text-label-sm backdrop-blur-sm shadow">
+              Tu ubicación: Av. das Nações 410
+            </div>
+</div>
+<!-- PIN 1: Carlos Mendez (Electricista) -->
+<div class="absolute left-[28%] top-[24%] z-20 group cursor-pointer">
+<div class="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-surface-container-lowest shadow-md hover:scale-105 transition-transform">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="A clean portrait photo of a mid-forties male technician wearing professional blue workwear and a warm smile with Florianópolis sunshine behind him" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBebt3S2jm1fI4BxBpqvAuSU-70EskpGsVUDsz9SUtV6H3vVyU2f3LOeKmRxImzNOBY_e-uS8ed9MDWf1HvVxhv46Ky7E3_XCMQ626BvppWqJGXQK8xoNFHWCI8-Li0cekiUuWCt4Izx-00ycmxNEIq_ji-7rFCtEXDD5kU9MT6xDtHKGGdVlcL77XyrRH3e9TJEEQbBKuhMI7Kqv4FBqhsNNcydofuvo9oyBzWKw7AnlFcsPm8t042"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] font-bold text-on-surface leading-none">Carlos M.</span>
+<span class="font-label-sm text-[10px] text-tertiary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[11px] mr-0.5">star</span>4.95 · 14m
+                </span>
+</div>
+</div>
+</div>
+<!-- PIN 2: Lucía Benítez (Limpieza) -->
+<div class="absolute right-[22%] top-[30%] z-20 group cursor-pointer">
+<div class="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-surface-container-lowest shadow-md hover:scale-105 transition-transform">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="A portrait photograph of a confident Hispanic woman in her thirties wearing a clean teal polo shirt against bright daylight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD5NSPlWETHYrVxU9aHfyUzqWFLbItnMGKbM2JzHF_r7hBnGV4DkcwqCxbV4zjOTH9r6rrmejgLgWpB-b64LoUIwAV6_y3HOSftAzS5JFJ-J7LWVjOeNf47N48tXYNZkyM48xCXkluw7PiwSUlSb1-e1vR9Ptt8qU95sTyTkHQ6Zex3umvuFceTYm7zSDw00UWvd98jUk0onrudl-Lt4C0EpAgIVBdr3Ed7xoure-DAH1yzS8GK4w6q"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] font-bold text-on-surface leading-none">Lucía B.</span>
+<span class="font-label-sm text-[10px] text-tertiary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[11px] mr-0.5">star</span>4.98 · 10m
+                </span>
+</div>
+</div>
+</div>
+<!-- PIN 3: Roberto Silva (Plomería) -->
+<div class="absolute left-[36%] bottom-[28%] z-20 group cursor-pointer">
+<div class="flex items-center gap-1.5 p-1 pr-2.5 rounded-full bg-surface-container-lowest shadow-md hover:scale-105 transition-transform">
+<img class="w-7 h-7 rounded-full object-cover" data-alt="A portrait shot of an experienced plumber in his forties with safety lanyard and certified uniform" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBd2p0v5WAvPblkxIFnVF15WiUPBKSTEcuXCym_szvFwSCeUlsrwh_IJ-vby03fn_Ve7uZ3Rr0kRy_GGts3EQXZMMwn0_4oHPKOxsLeEPPZ1lZ18bsyfR5UYSL2UVBBLaDxv6WpdeweIiXxfAZg495nXzffdPkGYDSt-617SyvY96W1ZRhckiiuOJmYgRLZ8XVVIjaxSoNYMr_5ZOKoptdNzE3w9jltvdHeHKMUVJ9fSaLD6D6ts9nU"/>
+<div class="flex flex-col">
+<span class="font-label-sm text-[11px] font-bold text-on-surface leading-none">Roberto S.</span>
+<span class="font-label-sm text-[10px] text-tertiary font-semibold flex items-center">
+<span class="material-symbols-outlined text-[11px] mr-0.5">star</span>4.92 · 22m
+                </span>
+</div>
+</div>
+</div>
+<!-- PIN 4: Cerrajería Express (Badge Pin) -->
+<div class="absolute right-[18%] bottom-[32%] z-20 group cursor-pointer">
+<div class="flex items-center gap-1 px-2 py-1 rounded-full bg-surface-container-lowest shadow-md hover:scale-105 transition-transform">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-pulse"></span>
+<span class="font-label-sm text-[11px] font-bold text-on-surface">Marcos Cerrajería</span>
+<span class="px-1 py-0.2 rounded bg-tertiary/10 text-tertiary font-label-sm text-[10px]">8m</span>
+</div>
+</div>
+<!-- Bottom Live Status Strip -->
+<div class="absolute bottom-3 left-4 right-4 flex items-center justify-between p-2 rounded-xl bg-inverse-surface/85 backdrop-blur-md text-inverse-on-surface shadow-md">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">radar</span>
+<span class="font-label-sm text-label-sm font-medium">Escaneando zona norte de la isla en tiempo real</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary-fixed font-semibold">Radio: 3.5 km</span>
+</div>
+</div>
+<!-- Pros Disponibles Ribbon / Horizontal Carousel Header -->
+<div class="flex items-center justify-between">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-bold">Profesionales listos cerca de vos</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Llegan en menos de 25 minutos con equipamiento certificado</p>
+</div>
+<div class="flex items-center gap-1">
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" title="Anterior">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface transition-colors" title="Siguiente">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Pro Cards Grid (3 Rich Cards) -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm">
+<!-- Pro Card 1 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-start justify-between">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="Portrait photo of Carlos Mendez, electrician smiling professionally with clean navy work shirt" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiMn4uJ04auwtb3nXdS6r_H7gWlj0gpDRANdw5k3q4UtmAbpkN0-mVOTzPoh7qFjebn4a9WRiS1ma7x70MFKEyrMFKZ1GGrqez-jKiukn7J_aQ4QRSaWt24i3-QDPeREo4Kq-tygKH_2RtKFSrWhMEFo_Va6hfyatIT6IfOk6-Zd-fO1LVbv32TjYl8safePFsWyV1ywxdRxPXpCejCcMoIqfhnazmiym5PVfp-tlkNh35odYJunIe"/>
+<span class="absolute -bottom-1 -right-1 flex h-4 w-4 rounded-full bg-tertiary items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-primary font-bold">
+                  $1.800/h
+                </span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Carlos Méndez</h3>
+<span class="font-body-sm text-body-sm text-secondary">Electricista Matriculado</span>
+</div>
+<div class="flex items-center gap-2 py-1">
+<span class="inline-flex items-center text-on-surface font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-amber-500 text-[15px] mr-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+                  4.95
+                </span>
+<span class="text-outline text-body-sm">·</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">142 trabajos</span>
+</div>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-md bg-tertiary/10 text-tertiary font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span> 14 min
+                </span>
+<span class="px-2 py-0.5 rounded-md bg-primary-container/10 text-primary font-label-sm text-label-sm">
+                  1.4 km
+                </span>
+</div>
+</div>
+<button class="mt-space-sm w-full py-2 rounded-xl bg-primary hover:bg-surface-tint text-on-primary font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+<span>Solicitar ahora</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Pro Card 2 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-start justify-between">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="Portrait photo of Lucia Benitez, specialist in deep cleaning and home management with bright pleasant demeanor" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOW5gH49O7gfl5f8J5wtCqVt1RM3cerPQIzc8tPkL26uZtqAbSfPOqCOQIUcVWZAImmRRYHKaCZd75pDimUkS2n3hw0mPOYflqyHtPDL8qmU2oVlMA-YGZBWN8XvHEc1nfZTW9KAvGh_gNnIZYuLaXEEyPrk3_9FVFuZtKhHmt0Cw2ANXaWIg8NQC6CdSz2ykTxkdeQcnNK7Zpt6m7CB60NP1UDn8Uh1L2lDzIVJHVgVbtuE6VGEYE"/>
+<span class="absolute -bottom-1 -right-1 flex h-4 w-4 rounded-full bg-tertiary items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-primary font-bold">
+                  $1.500/h
+                </span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Lucía Benítez</h3>
+<span class="font-body-sm text-body-sm text-secondary">Limpieza Integral &amp; Pro</span>
+</div>
+<div class="flex items-center gap-2 py-1">
+<span class="inline-flex items-center text-on-surface font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-amber-500 text-[15px] mr-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+                  4.98
+                </span>
+<span class="text-outline text-body-sm">·</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">210 trabajos</span>
+</div>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-md bg-tertiary/10 text-tertiary font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span> 10 min
+                </span>
+<span class="px-2 py-0.5 rounded-md bg-primary-container/10 text-primary font-label-sm text-label-sm">
+                  0.9 km
+                </span>
+</div>
+</div>
+<button class="mt-space-sm w-full py-2 rounded-xl bg-primary hover:bg-surface-tint text-on-primary font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+<span>Solicitar ahora</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Pro Card 3 -->
+<div class="bg-surface-container-lowest p-space-sm rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-start justify-between">
+<div class="relative">
+<img class="w-12 h-12 rounded-xl object-cover" data-alt="Portrait of Roberto Silva, professional plumber and gas fitter with official verification badge and technical jacket" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDisCQBKat1uVtKOF6awMh_3bOKUScbas-V2GmqXzcG_YJqILwHswchujPl56K_69UyhUFXzovUadc5_BIPzpclk2ateIcR5bkNp_PTN0lChVAA43Lx9nD83KFwBW0HGaymG7d-ylOVYKWMSBgOknxKHtIL2SyYY12H4hHE4J9r82MWsLOIutL3PptrlaZBeAUZqRdD_kESKbAac-tuDih2pc2dHLht_ceEJmQ2b2NuXMmBCoVgCRZo"/>
+<span class="absolute -bottom-1 -right-1 flex h-4 w-4 rounded-full bg-tertiary items-center justify-center text-on-tertiary">
+<span class="material-symbols-outlined text-[10px]">check</span>
+</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high font-label-sm text-label-sm text-primary font-bold">
+                  $2.100/h
+                </span>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Roberto Silva</h3>
+<span class="font-body-sm text-body-sm text-secondary">Plomería &amp; Gasista</span>
+</div>
+<div class="flex items-center gap-2 py-1">
+<span class="inline-flex items-center text-on-surface font-label-sm text-label-sm font-bold">
+<span class="material-symbols-outlined text-amber-500 text-[15px] mr-0.5" style="font-variation-settings: 'FILL' 1;">star</span>
+                  4.92
+                </span>
+<span class="text-outline text-body-sm">·</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">98 trabajos</span>
+</div>
+<div class="flex flex-wrap gap-1">
+<span class="px-2 py-0.5 rounded-md bg-tertiary/10 text-tertiary font-label-sm text-label-sm flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">schedule</span> 22 min
+                </span>
+<span class="px-2 py-0.5 rounded-md bg-primary-container/10 text-primary font-label-sm text-label-sm">
+                  2.1 km
+                </span>
+</div>
+</div>
+<button class="mt-space-sm w-full py-2 rounded-xl bg-primary hover:bg-surface-tint text-on-primary font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1 shadow-sm">
+<span>Solicitar ahora</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- ==============================================
+           PANEL DERECHO: Hugo AI, Servicio Activo y Recientes (col-span-12 lg:col-span-3)
+           ============================================== -->
+<div class="col-span-12 lg:col-span-3 flex flex-col gap-space-md">
+<!-- Hugo AI Assistant Interactive Card -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-md flex flex-col gap-space-sm relative overflow-hidden">
+<!-- Top Accent Glow -->
+<div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-primary-container via-tertiary-container to-primary"></div>
+<div class="flex items-center gap-space-xs mt-1">
+<div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-bold text-on-surface leading-tight">Hugo IA Asistente</span>
+<span class="font-label-sm text-label-sm text-tertiary font-semibold flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-tertiary"></span> Activo para ayudarte
+              </span>
+</div>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-2xl">
+<p class="font-body-sm text-body-sm text-on-surface leading-relaxed">
+              "¡Hola Mariana! Contame qué pasa en tu casa o negocio y preparo la solicitud al instante sin vueltas."
+            </p>
+</div>
+<!-- Prompt Quick Chips -->
+<div class="flex flex-col gap-1.5">
+<span class="font-label-sm text-label-sm text-outline font-semibold">Sugerencias rápidas:</span>
+<button class="text-left px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors flex items-center justify-between group">
+<span>💧 Tengo una fuga en el baño</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[14px]">arrow_forward</span>
+</button>
+<button class="text-left px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors flex items-center justify-between group">
+<span>⚡ Necesito electricista hoy</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[14px]">arrow_forward</span>
+</button>
+<button class="text-left px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm transition-colors flex items-center justify-between group">
+<span>🎨 Presupuesto para pintar living</span>
+<span class="material-symbols-outlined text-outline group-hover:text-primary text-[14px]">arrow_forward</span>
+</button>
+</div>
+<!-- Voice / Text input box -->
+<div class="relative mt-1">
+<input class="w-full h-10 pl-3 pr-16 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary-container" placeholder="Describí tu problema..." type="text"/>
+<div class="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+<button class="p-1 rounded-lg text-primary hover:bg-surface-container transition-colors" title="Nota de voz">
+<span class="material-symbols-outlined text-[18px]">mic</span>
+</button>
+<button class="p-1 rounded-lg bg-primary text-on-primary hover:bg-surface-tint transition-colors" title="Enviar">
+<span class="material-symbols-outlined text-[16px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Servicio en Curso Activo #UG-8492 -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-md flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-full bg-tertiary-container/15 text-tertiary font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-tertiary-container animate-ping"></span>
+              En Progreso
+            </span>
+<span class="font-code-sm text-code-sm text-outline font-semibold">#UG-8492</span>
+</div>
+<h3 class="font-label-lg text-label-lg font-bold text-on-surface mt-1">Limpieza profunda de hogar</h3>
+<div class="flex items-center gap-space-xs mt-1">
+<img class="w-9 h-9 rounded-full object-cover" data-alt="Portrait of Ana Gomez, friendly domestic cleaner with safety verification lanyard" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJTZHuaDQ_ZXWdIg1yuieUS7ctAw-ip5JVVIdMvxQ533zw65P31dEbK8EuWG6VcqKzkQIPKM8HZsdnUKc1YD8Xm3R0e7sbYRtrW59sxlHgwdZVzIeHuwSdiSlI7PCBFPqB3fGx6esrYeotKDt71a9iPhLDEoG6a9yYHD9KqiAVtSp5O1S23izpVQ7YLiE-zkCWEAAID_ZgiDl1-I0LJyIQQpuauty4ZteMbZyQId8oNh22w-j95Tyc"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-semibold text-on-surface">Ana Gómez</span>
+<span class="font-body-sm text-body-sm text-secondary">Llegó a las 09:15 hs</span>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex flex-col gap-1 mt-2">
+<div class="flex items-center justify-between text-body-sm font-body-sm">
+<span class="text-on-surface-variant font-medium">45 min transcurridos</span>
+<span class="font-bold text-primary">Estimado: 2h 30m</span>
+</div>
+<div class="w-full h-2 rounded-full bg-surface-container-high overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 38%;"></div>
+</div>
+</div>
+<button class="mt-space-xs w-full py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-primary font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1">
+<span>Ver seguimiento en vivo</span>
+<span class="material-symbols-outlined text-[16px]">location_searching</span>
+</button>
+</div>
+<!-- Historial Rápido / Pedir de nuevo -->
+<div class="bg-surface-container-lowest rounded-3xl p-space-md shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-on-surface-variant uppercase tracking-wider">Último completado</span>
+<span class="material-symbols-outlined text-outline text-[18px]">history</span>
+</div>
+<div class="p-space-xs rounded-xl bg-surface-container-low flex items-start gap-space-xs">
+<div class="w-8 h-8 rounded-lg bg-surface-container-highest text-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[18px]">mode_fan</span>
+</div>
+<div class="flex flex-col flex-1 min-w-0">
+<span class="font-label-md text-label-md font-bold text-on-surface truncate">Mantenimiento Split 3000F</span>
+<span class="font-body-sm text-body-sm text-secondary">Martes pasado · Jorge Rossi</span>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+</div>
+</div>
+<button class="w-full mt-1 py-1.5 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 transition-colors">
+<span class="material-symbols-outlined text-[16px] text-primary">replay</span>
+<span>Repetir servicio con 1 clic</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Bottom Safety & Quick Reassurance Footer Strip -->
+<div class="w-full py-space-sm px-space-md rounded-2xl bg-surface-container-low flex flex-wrap items-center justify-between gap-space-md text-on-surface-variant">
+<div class="flex items-center gap-space-md flex-wrap font-body-sm text-body-sm">
+<span class="flex items-center gap-1 text-on-surface font-medium">
+<span class="material-symbols-outlined text-tertiary text-[18px]">shield</span> UGO Protection Shield
+        </span>
+<span class="hidden sm:inline">·</span>
+<span>Pagos con custodia hasta conformidad de obra</span>
+<span class="hidden sm:inline">·</span>
+<span>Soporte humano en Canasvieiras &amp; WhatsApp Express</span>
+</div>
+<div class="flex items-center gap-space-xs font-label-sm text-label-sm text-primary font-bold">
+<span>Términos del Seguro UGO</span>
+<span class="material-symbols-outlined text-[16px]">arrow_outward</span>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Dynamic micro-interaction for search focus & fast prompt chips
+  document.querySelectorAll('button[class*="group"]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const input = document.querySelector('input[placeholder*="Describí tu problema"]');
+      if (input) {
+        const text = btn.innerText.replace(/^[^\w\s]+/, '').trim();
+        input.value = text;
+        input.focus();
+      }
+    });
+  });
+</script></main></div></body></html>

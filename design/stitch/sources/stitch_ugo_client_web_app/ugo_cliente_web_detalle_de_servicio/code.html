@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>UGO - Detalle de Servicio #UG-88412</title>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Plus Jakarta Sans Font -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS CDN with forms & container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "outline": "#6d797e",
+            "primary": "#00677d",
+            "surface-tint": "#00677d",
+            "surface-bright": "#f8f9ff",
+            "on-error": "#ffffff",
+            "inverse-surface": "#213145",
+            "inverse-on-surface": "#eaf1ff",
+            "on-primary": "#ffffff",
+            "on-secondary-container": "#5c647a",
+            "surface-container-low": "#eff4ff",
+            "primary-container": "#00b4d8",
+            "secondary-container": "#dae2fd",
+            "primary-fixed-dim": "#4cd6fb",
+            "on-tertiary-fixed-variant": "#005236",
+            "on-background": "#0b1c30",
+            "background": "#f8f9ff",
+            "error": "#ba1a1a",
+            "primary-fixed": "#b3ebff",
+            "inverse-primary": "#4cd6fb",
+            "surface-container": "#e5eeff",
+            "surface-variant": "#d3e4fe",
+            "on-tertiary": "#ffffff",
+            "tertiary-fixed": "#6ffbbe",
+            "on-surface-variant": "#3d494d",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#bec6e0",
+            "on-surface": "#0b1c30",
+            "on-primary-fixed-variant": "#004e5f",
+            "outline-variant": "#bcc9ce",
+            "on-tertiary-container": "#00442d",
+            "on-primary-container": "#00414f",
+            "tertiary": "#006c49",
+            "surface": "#f8f9ff",
+            "on-secondary-fixed": "#131b2e",
+            "on-primary-fixed": "#001f27",
+            "surface-container-highest": "#d3e4fe",
+            "on-secondary": "#ffffff",
+            "surface-dim": "#cbdbf5",
+            "on-tertiary-fixed": "#002113",
+            "tertiary-fixed-dim": "#4edea3",
+            "error-container": "#ffdad6",
+            "on-error-container": "#93000a",
+            "on-secondary-fixed-variant": "#3f465c",
+            "secondary-fixed": "#dae2fd",
+            "secondary": "#565e74",
+            "tertiary-container": "#19bc84",
+            "surface-container-high": "#dce9ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-xl": "2rem",
+            "space-lg": "1.5rem",
+            "space-xs": "0.5rem",
+            "space-3xl": "4rem",
+            "topbar-height": "4.25rem",
+            "sidebar-expanded": "17.5rem",
+            "space-sm": "0.75rem",
+            "gutter-desktop": "1.5rem",
+            "space-2xs": "0.25rem",
+            "space-2xl": "3rem",
+            "space-md": "1rem",
+            "gutter-mobile": "1rem",
+            "sidebar-collapsed": "5rem"
+          },
+          "fontFamily": {
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-lg": ["Plus Jakarta Sans"],
+            "code-sm": ["Plus Jakarta Sans"],
+            "body-md": ["Plus Jakarta Sans"],
+            "headline-sm": ["Plus Jakarta Sans"],
+            "headline-md": ["Plus Jakarta Sans"],
+            "display-lg-mobile": ["Plus Jakarta Sans"],
+            "label-md": ["Plus Jakarta Sans"],
+            "label-sm": ["Plus Jakarta Sans"],
+            "label-lg": ["Plus Jakarta Sans"],
+            "display-lg": ["Plus Jakarta Sans"],
+            "body-lg": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "body-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "400"}],
+            "headline-lg": ["28px", {"lineHeight": "36px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+            "code-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "500"}],
+            "body-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0em", "fontWeight": "400"}],
+            "headline-sm": ["18px", {"lineHeight": "26px", "letterSpacing": "-0.005em", "fontWeight": "600"}],
+            "headline-md": ["22px", {"lineHeight": "30px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+            "display-lg-mobile": ["30px", {"lineHeight": "38px", "letterSpacing": "-0.015em", "fontWeight": "700"}],
+            "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600"}],
+            "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "700"}],
+            "label-lg": ["14px", {"lineHeight": "20px", "letterSpacing": "0.005em", "fontWeight": "600"}],
+            "display-lg": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+            "body-lg": ["16px", {"lineHeight": "24px", "letterSpacing": "0em", "fontWeight": "400"}]
+          }
+        },
+      },
+    }
+  </script>
+</head>
+<body class="h-full bg-surface text-on-surface font-body-md antialiased flex flex-col overflow-x-hidden">
+<!-- SIDEBAR COMPONENT (Exact from Shared Components JSON) -->
+<aside class="fixed left-0 top-0 bottom-0 h-screen w-sidebar-expanded flex flex-col justify-between p-space-md z-50 overflow-y-auto bg-surface-container-lowest border-r border-outline-variant/30 select-none">
+<!-- Top Brand & User Profile -->
+<div class="flex flex-col gap-space-lg">
+<div class="flex items-center justify-between px-space-xs pt-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="text-headline-lg font-headline-lg font-bold text-primary tracking-tight">UGO</span>
+<span class="px-space-2xs py-0.5 rounded text-label-sm font-label-sm bg-primary-fixed text-on-primary-fixed-variant uppercase tracking-wider">Cliente</span>
+</div>
+<button class="w-8 h-8 rounded-xl flex items-center justify-center text-outline hover:bg-surface-container-high/60 transition-colors">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_open">menu_open</span>
+</button>
+</div>
+<!-- Verified User Card in Sidebar -->
+<div class="p-space-sm rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-space-sm">
+<div class="relative">
+<img class="w-10 h-10 rounded-full object-cover ring-2 ring-tertiary/30" data-alt="Close-up portrait of Mariana Costa, a professional Hispanic woman with a friendly, confident expression, soft outdoor lighting, dressed neatly, warm modern tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAz0dAiL9ABSxC6tJHH5d3twTETXvT4By1TuwtqoEM_n9it2TrVCdp3I2k_YZqGnYEokt_cQX2px-9tf8StDYK3EPVtmlEGa36Yyo9veW3hLFp-kE_u5qDvk365uqWdsF8C4Wo3x2wW0VXoHZ3_IjVAPlXLebKrnRS9_XN0SEr3Yu-JvvhbD7OUQzisohs1yreo3WsRkExm3OEysdJa1daLuMML8uz6My9UKRJpYF-1riWwCjpocU3UcfwlFjwHWQd8mJaCtztRmKA"/>
+<div class="absolute -bottom-0.5 -right-0.5 bg-tertiary text-on-tertiary rounded-full p-0.5 flex items-center justify-center">
+<span class="material-symbols-outlined text-[11px]" data-icon="check" data-weight="fill">check</span>
+</div>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="text-label-lg font-label-lg text-on-surface truncate">Mariana Costa</span>
+<span class="text-label-sm font-label-sm text-tertiary flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[13px]" data-icon="verified_user">verified_user</span>
+            Verificada
+          </span>
+</div>
+</div>
+<!-- Quick Action CTA -->
+<button class="w-full py-space-xs px-space-md rounded-xl bg-primary text-on-primary flex items-center justify-center gap-space-xs text-label-lg font-label-lg shadow-sm hover:bg-primary/90 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="add_circle">add_circle</span>
+<span>Nueva Solicitud</span>
+</button>
+<!-- Main Navigation Links -->
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="home">home</span>
+<span>Inicio</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="search">search</span>
+<span>Buscar servicio</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="add_circle">add_circle</span>
+<span>Nueva solicitud</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="radar">radar</span>
+<span>Matching en vivo</span>
+</a>
+<a class="flex items-center justify-between px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="pending_actions">pending_actions</span>
+<span>Servicios activos</span>
+</div>
+<span class="px-2 py-0.5 rounded-full text-label-sm font-label-sm bg-primary-container text-on-primary-container font-bold">1</span>
+</a>
+<!-- Active Tab: Actividad (Exact style from JSON) -->
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl bg-secondary-container/60 text-primary font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="history" data-weight="fill">history</span>
+<span>Actividad</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="chat_bubble">chat_bubble</span>
+<span>Mensajes</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px] text-tertiary" data-icon="verified_user">verified_user</span>
+<span class="text-tertiary font-medium">UGO Shield</span>
+</a>
+</nav>
+</div>
+<!-- Sidebar Footer Navigation -->
+<div class="flex flex-col gap-1 pt-space-md border-t border-outline-variant/30">
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="payments">payments</span>
+<span>Pagos</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+<span>Perfil</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span>Ayuda</span>
+</a>
+<a class="flex items-center gap-space-sm px-space-md py-space-xs rounded-xl text-on-surface-variant hover:bg-surface-container-high/50 hover:text-on-surface text-label-lg font-label-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+<span>Configuración</span>
+</a>
+</div>
+</aside>
+<!-- MAIN WRAPPER (Shifted by Sidebar Width 17.5rem = 280px) -->
+<div class="pl-sidebar-expanded min-h-screen flex flex-col flex-1">
+<!-- TOP NAV BAR (Exact from Shared Components JSON) -->
+<header class="h-topbar-height w-full px-gutter-desktop flex items-center justify-between sticky top-0 z-40 bg-surface-container-lowest/85 backdrop-blur-md border-b border-outline-variant/30 shadow-sm">
+<!-- Search & Geolocation Breadcrumb -->
+<div class="flex items-center gap-space-lg flex-1 max-w-2xl">
+<!-- Location Pill -->
+<div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-low border border-outline-variant/30 text-on-surface">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="location_on">location_on</span>
+<span class="text-label-md font-label-md text-on-surface">Canasvieiras, Florianópolis · SC</span>
+</div>
+<!-- Global Search Input -->
+<div class="relative w-full max-w-md">
+<span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-[18px] text-outline" data-icon="search">search</span>
+<input class="w-full h-10 pl-10 pr-4 rounded-xl bg-surface-container-low border border-outline-variant/40 text-body-md font-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-2 focus:ring-primary-container focus:bg-surface-container-lowest transition-all" placeholder="Buscar por código, servicio o técnico..." type="text"/>
+</div>
+</div>
+<!-- Right Trailing Actions -->
+<div class="flex items-center gap-space-md">
+<!-- Hugo IA CTA in Cyan / Teal -->
+<button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:opacity-95 active:scale-[0.98] transition-all">
+<span class="material-symbols-outlined text-[18px] text-primary-fixed" data-icon="auto_awesome" data-weight="fill">auto_awesome</span>
+<span class="text-label-lg font-label-lg tracking-wide">Hugo IA</span>
+</button>
+<!-- Notifications button with indicator dot -->
+<button class="relative w-10 h-10 rounded-xl flex items-center justify-center text-on-surface-variant hover:bg-surface-container-high/60 transition-colors">
+<span class="material-symbols-outlined text-[22px]" data-icon="notifications">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span>
+</button>
+<div class="h-6 w-[1px] bg-outline-variant/40 mx-1"></div>
+<!-- Verified User Profile Chip -->
+<div class="flex items-center gap-2.5 pl-1 cursor-pointer group">
+<img class="w-9 h-9 rounded-full object-cover ring-2 ring-outline-variant/40 group-hover:ring-primary transition-all" data-alt="Mariana Costa avatar verificada with soft studio portrait, smiling, dark hair, subtle blue tones, clean corporate aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZb_46vlVli5G51U_kgyszLiNRXrIY_pMnhvOoTTnqHb0HAOVoM0MLgRcZbljzaBUswjoXsovNOUozGf27DNBVjhp9EcH2hDRn-dwqdTC3xKRxPR9aOAE8Qv71gy7Y8fxJFQ-ZYlN9k3gXvO_5iqYngIU3_rBr4wF5a4R4EjSv8Iyc29yZ-6DXMdfXrinIdNqxce3AagakJNvxGrw8TphQo7Molm4eLnywF3mVgVlvRyeqv33RyC3ZipBOXUbWyViBpT5KpFefUcY"/>
+<div class="hidden lg:flex flex-col text-left">
+<span class="text-label-md font-label-md text-on-surface">Mariana C.</span>
+<span class="text-code-sm font-code-sm text-tertiary">Verificada</span>
+</div>
+</div>
+</div>
+</header>
+<!-- CONTENT CANVAS (Spanning up to 2560px with generous margins) -->
+<main class="flex-1 px-8 py-8 w-full max-w-[2400px] mx-auto flex flex-col gap-6">
+<!-- Breadcrumbs -->
+<nav class="flex items-center gap-2 text-label-md font-label-md text-outline">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[16px]" data-icon="home">home</span>
+          Inicio
+        </a>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Actividad</a>
+<span class="material-symbols-outlined text-[14px]" data-icon="chevron_right">chevron_right</span>
+<span class="text-on-surface font-semibold">Detalle de servicio #UG-88412</span>
+</nav>
+<!-- 1. Cabecera del servicio (Card Principal de Resumen y Garantía) -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 relative overflow-hidden">
+<div class="absolute top-0 right-0 w-96 h-full bg-gradient-to-l from-surface-container-low/80 to-transparent pointer-events-none"></div>
+<div class="flex flex-col gap-2.5 z-10 max-w-4xl">
+<div class="flex flex-wrap items-center gap-3">
+<span class="px-3 py-1 rounded-lg text-label-sm font-label-sm bg-surface-container text-primary font-bold tracking-wide uppercase">
+              Electricidad e instalaciones
+            </span>
+<span class="text-label-md font-label-md font-mono text-outline">
+              #UG-88412
+            </span>
+<!-- Status Badge: Finalizado con éxito · Fondos liberados -->
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/25 font-bold">
+<span class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></span>
+              Finalizado con éxito · Fondos liberados
+            </span>
+</div>
+<h1 class="text-headline-lg font-headline-lg text-on-surface tracking-tight">
+            Instalación y revisión de disyuntor bipolar y térmicas
+          </h1>
+<div class="flex flex-wrap items-center gap-y-2 gap-x-6 text-body-md font-body-md text-on-surface-variant pt-1">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="event">event</span>
+<span>Jueves 24 de Octubre, 2024</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="schedule">schedule</span>
+<span>Concluido a las 16:42 hs (Duración total: 1h 15m)</span>
+</div>
+<span class="text-outline-variant">•</span>
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="pin_drop">pin_drop</span>
+<span>Canasvieiras, Depto 402</span>
+</div>
+</div>
+<!-- UGO Shield Warranty Callout -->
+<div class="mt-2 inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-surface-container-low border border-tertiary/30 max-w-fit">
+<span class="material-symbols-outlined text-[20px] text-tertiary" data-icon="verified_user" data-weight="fill">verified_user</span>
+<div class="text-label-md font-label-md text-on-surface">
+<span class="font-bold text-tertiary">Garantía UGO Shield de 60 días activa</span> hasta el 23 de Diciembre, 2024 <span class="text-outline">(Póliza Tokio Marine #TM-8942)</span>
+</div>
+</div>
+</div>
+<!-- Quick Header Actions (CTAs) -->
+<div class="flex flex-col sm:flex-row lg:flex-col gap-3 z-10 shrink-0">
+<!-- CTA PRINCIPAL DESTACADO EN VERDE: Ver Comprobante -->
+<button class="px-6 py-3 rounded-xl bg-tertiary hover:bg-tertiary/90 text-on-tertiary text-label-lg font-label-lg font-bold shadow-md shadow-tertiary/20 flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt_long">receipt_long</span>
+<span>Ver comprobante</span>
+</button>
+<div class="flex items-center gap-2">
+<button class="flex-1 px-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface text-label-md font-label-md flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="file_download">file_download</span>
+<span>Nota Fiscal</span>
+</button>
+<button class="flex-1 px-4 py-2.5 rounded-xl border border-outline-variant bg-surface-container-lowest hover:bg-surface-container-low text-on-surface-variant text-label-md font-label-md flex items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="support_agent">support_agent</span>
+<span>Soporte</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 2-COLUMN ASYMMETRIC GRID (Desktop Precision Glass & Structural Bento) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+<!-- LEFT/MAIN COLUMN (8 cols): Ficha Profesional + Timeline Cronológica + Evidencias Notariadas -->
+<div class="xl:col-span-8 flex flex-col gap-8">
+<!-- 2. Ficha del Profesional (Carlos Méndez) -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col md:flex-row items-center md:items-start gap-6 relative">
+<div class="relative shrink-0">
+<img class="w-24 h-24 rounded-2xl object-cover ring-2 ring-primary/20 shadow-sm" data-alt="Portrait of electrician Carlos Mendez in blue collared uniform, smiling warmly, holding equipment, friendly expression, well-lit professional tradesman photograph." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_cp01DX8VXfmImk8TVyTPsZ0qSE8KiR4Xj7oix9lZJ61WlZVkzZQaXTHoR1E3vgHIvSQ6s3_DB5LPyMQSG0TAjpj3AtJ6kSxQf5olH7ey0mee3szaX86gV5Wsq-YiNZDzGPje-Z6ccywsz0iSlkB-zDyDiSh7QRKynjY522xlqUGf7wph9EAeAgJ9o08alYGc6k1ZfSFXEt_s2M82pNzSoUkm8GFAg5Pokz79VorIvhk4Vebn0f80gIcbMveMj2hAJ6fUn-8Mm-g"/>
+<div class="absolute -bottom-2 -right-2 bg-primary text-on-primary rounded-full p-1 shadow">
+<span class="material-symbols-outlined text-[16px]" data-icon="electric_bolt" data-weight="fill">electric_bolt</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2 text-center md:text-left">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-2">
+<div>
+<div class="flex items-center justify-center md:justify-start gap-2">
+<h2 class="text-headline-md font-headline-md text-on-surface">Carlos Méndez</h2>
+<span class="material-symbols-outlined text-[18px] text-tertiary" data-icon="verified" data-weight="fill">verified</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant font-medium">
+                    Electricista Matriculado <span class="font-mono text-outline">CREA/SC #51842</span>
+</p>
+</div>
+<!-- Score Badge -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container border border-outline-variant/30 self-center md:self-auto">
+<span class="material-symbols-outlined text-[16px] text-amber-500" data-icon="star" data-weight="fill">star</span>
+<span class="text-label-md font-label-md font-bold text-on-surface">4.9</span>
+<span class="text-body-sm font-body-sm text-outline">(94 reseñas)</span>
+</div>
+</div>
+<!-- Badges de Certificación y Seguridad -->
+<div class="flex flex-wrap items-center justify-center md:justify-start gap-2 pt-1">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm bg-tertiary/10 text-tertiary border border-tertiary/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="shield">shield</span>
+                  Identidad Verificada Biométricamente
+                </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm bg-primary/10 text-primary border border-primary/20">
+<span class="material-symbols-outlined text-[14px]" data-icon="verified_user">verified_user</span>
+                  UGO Shield Activo
+                </span>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-label-sm font-label-sm bg-surface-container text-on-surface-variant">
+<span class="material-symbols-outlined text-[14px]" data-icon="local_police">local_police</span>
+                  Antecedentes Validados
+                </span>
+</div>
+<!-- Contact & History Actions -->
+<div class="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-3 border-t border-outline-variant/20 mt-2">
+<button class="px-4 py-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-label-md font-label-md flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="badge">badge</span>
+<span>Ver perfil completo</span>
+</button>
+<button class="px-4 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-primary text-label-md font-label-md flex items-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-[18px]" data-icon="forum">forum</span>
+<span>Chat archivado / Bitácora</span>
+</button>
+<button class="px-3 py-2 rounded-xl border border-outline-variant/40 hover:bg-surface-container text-on-surface-variant text-label-md font-label-md flex items-center gap-1.5 transition-colors">
+<span class="material-symbols-outlined text-[18px] text-outline" data-icon="call">call</span>
+<span>Historial de llamadas</span>
+</button>
+</div>
+</div>
+</section>
+<!-- 3. Timeline / Línea de tiempo cronológica completa (8 Hitos Solicitados) -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col gap-6">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="timeline">timeline</span>
+</div>
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Bitácora Cronológica Operativa</h2>
+<p class="text-body-sm font-body-sm text-outline">Trazabilidad en tiempo real registrada y notariada bajo protocolo UGO Escrow</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm px-2.5 py-1 rounded bg-surface-container text-on-surface-variant">8 hitos concluidos</span>
+</div>
+<!-- Stepper Container -->
+<div class="relative pl-6 space-y-6 before:absolute before:left-9 before:top-3 before:bottom-3 before:w-0.5 before:bg-outline-variant/40">
+<!-- Hito 1: Solicitud creada -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">1. Solicitud creada</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">14:15 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Diagnóstico eléctrico solicitado en Canasvieiras.</p>
+</div>
+<span class="text-label-sm font-label-sm text-outline px-2 py-0.5 rounded bg-surface-container">Origen Web</span>
+</div>
+</div>
+<!-- Hito 2: Profesional encontrado -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">2. Profesional encontrado</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">14:18 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Matching algorítmico con técnicos en radio de 2.5 km.</p>
+</div>
+<span class="text-label-sm font-label-sm text-primary font-medium flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="radar">radar</span>
+                    Algoritmo v4.2
+                  </span>
+</div>
+</div>
+<!-- Hito 3: Aceptó solicitud -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">3. Aceptó solicitud</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">14:20 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Carlos Méndez confirmó presupuesto inicial de R$ 140,00 con fondos en custodia fiduciaria Itaú.</p>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary font-bold px-2 py-0.5 rounded bg-tertiary/10">Custodia Retenida</span>
+</div>
+</div>
+<!-- Hito 4: En camino -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">4. En camino</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">15:05 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Trayecto telemétrico monitoreado vía GPS por Av. das Nações.</p>
+</div>
+<span class="text-label-sm font-label-sm text-primary flex items-center gap-1 font-mono">
+<span class="material-symbols-outlined text-[14px]" data-icon="navigation">navigation</span>
+                    Telemetría GPS OK
+                  </span>
+</div>
+</div>
+<!-- Hito 5: Llegó al domicilio -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">5. Llegó al domicilio</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">15:24 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Validación presencial biométrica e ingreso a Depto 402.</p>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]" data-icon="fingerprint">fingerprint</span>
+                    Biometría OK
+                  </span>
+</div>
+</div>
+<!-- Hito 6: Servicio iniciado -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="check" data-weight="fill">check</span>
+</div>
+<div class="flex-1 bg-surface-container-low/50 rounded-xl p-3.5 border border-outline-variant/20 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">6. Servicio iniciado</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">15:27 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Desenergizado preventivo y desmontaje de térmicas antiguas.</p>
+</div>
+<span class="text-label-sm font-label-sm text-outline px-2 py-0.5 rounded bg-surface-container">Protocolo NBR</span>
+</div>
+</div>
+<!-- Hito 7: Trabajo adicional acordado (+R$ 55,00) -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="add" data-weight="fill">add</span>
+</div>
+<div class="flex-1 bg-surface-container-low rounded-xl p-3.5 border border-primary-container/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface">7. Trabajo adicional acordado</span>
+<span class="px-2 py-0.5 rounded text-label-sm font-label-sm bg-primary/10 text-primary font-bold">+R$ 55,00</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">15:58 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Instalación de aplique LED exterior y bornera estanca aprobada por cliente en sitio.</p>
+</div>
+<span class="text-label-sm font-label-sm text-primary font-bold px-2.5 py-1 rounded-full bg-primary-container/20">Aprobado vía OTP</span>
+</div>
+</div>
+<!-- Hito 8: Servicio finalizado -->
+<div class="relative flex items-start gap-4">
+<div class="w-7 h-7 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shrink-0 z-10 shadow-sm ring-4 ring-surface-container-lowest">
+<span class="material-symbols-outlined text-[14px]" data-icon="task_alt" data-weight="fill">task_alt</span>
+</div>
+<div class="flex-1 bg-surface-container-low/70 rounded-xl p-3.5 border border-tertiary/40 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div>
+<div class="flex items-center gap-2">
+<span class="text-label-lg font-label-lg text-on-surface font-bold">8. Servicio finalizado</span>
+<span class="text-label-sm font-label-sm text-outline font-mono">16:40 hs</span>
+</div>
+<p class="text-body-md font-body-md text-on-surface-variant">Prueba de carga con pinza amperimétrica ok, test diferencial ok y conformidad mediante ingreso de PIN #8419.</p>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary font-bold px-2.5 py-1 rounded bg-tertiary/15 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]" data-icon="lock_open">lock_open</span>
+                    PIN #8419 Validado
+                  </span>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Sección de Evidencias Técnicas / Fotos notariadas (3 fotos con Hash SHA-256) -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col gap-5">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+<div class="flex items-center gap-3">
+<div class="w-9 h-9 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]" data-icon="photo_camera">photo_camera</span>
+</div>
+<div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Evidencias Técnicas Notariadas</h2>
+<p class="text-body-sm font-body-sm text-outline">Registros fotográficos periciales con firma de integridad inmutable</p>
+</div>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" data-icon="lock">lock</span>
+                Blockchain SHA-256 Audit
+              </span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<!-- Foto 1 -->
+<div class="flex flex-col bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/30 group hover:shadow-md transition-shadow">
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Close up photograph of an open residential electrical distribution board before maintenance, showing outdated breakers and organized wiring, shot under crisp neutral illumination." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBz06maZZZXvdBfQUDChgcdDMa4JRM-hukUwRxtJsmRaLM-vbio2IxDbyrfL-7YY1vuxHzKTMkIXV_udPqRKYyb9M5I_1VF0FaDopqD9MwLveofBD2Ij-zZ7OpoKgQhTSMiIeDXK-NFq4qhAb9HcgucwB5uxUNpR8zviFJYbfye3kGp0oUQpVhhKc63_vu6g1GXf1mCTdjIWf7lIb4FgetdPHLvOK0YLfwR0ThyZo4PyaZzAs-rZGDVUYnA0yL40jovNHoLEV9g3eQ"/>
+<span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-inverse-surface/80 backdrop-blur-md text-inverse-on-surface text-label-sm font-label-sm font-mono">
+                    15:28:14 BRT
+                  </span>
+</div>
+<div class="p-3.5 flex flex-col gap-1.5 flex-1 justify-between">
+<div>
+<h3 class="text-label-lg font-label-lg text-on-surface">Tablero desarmado previo a intervención</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Diagnóstico y retiro de térmicas bipolares obsoletas.</p>
+</div>
+<div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span class="truncate max-w-[150px]" title="SHA-256: 7f8a92b...e41">Hash: 7f8a92b...e41</span>
+<span class="material-symbols-outlined text-[15px] text-tertiary" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Foto 2 -->
+<div class="flex flex-col bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/30 group hover:shadow-md transition-shadow">
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Technical close-up photograph of a clean, newly installed modern bipolar circuit breaker with color coded wires conforming to electrical safety standards, sharp industrial focus." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzbUwvqRolIlJwVJJz6Ladl6bepmJl4Hm0ru9sBdCqAXG6wc4KoUPO9m_aYVUegPrHEExBfXgMs12FO4Oa1Iux7X7fJNS3dxWR9COEH23GQWSlnpu0WBs5ZtYZvNPvPVIKiKTIksO4mEI7roz0PNrmSmKOB53OGdLXBEWiYrH-4Vpj4Kej4LgiB3fD2vI7iDddfUoANNXSP9ccJ2sYWLe20TszSSJ9r8L-OSzCvVl_E6n_RCdykSR9_Cr2Q8HcGweIGjLsu79jj60"/>
+<span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-inverse-surface/80 backdrop-blur-md text-inverse-on-surface text-label-sm font-label-sm font-mono">
+                    16:15:02 BRT
+                  </span>
+</div>
+<div class="p-3.5 flex flex-col gap-1.5 flex-1 justify-between">
+<div>
+<h3 class="text-label-lg font-label-lg text-on-surface">Conexionado bajo norma NBR-5410</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Peinado de conductores y ajuste dinamométrico.</p>
+</div>
+<div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span class="truncate max-w-[150px]" title="SHA-256: b142c99...9f0">Hash: b142c99...9f0</span>
+<span class="material-symbols-outlined text-[15px] text-tertiary" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+</div>
+</div>
+<!-- Foto 3 -->
+<div class="flex flex-col bg-surface-container-low rounded-xl overflow-hidden border border-outline-variant/30 group hover:shadow-md transition-shadow">
+<div class="relative h-48 w-full overflow-hidden bg-surface-container">
+<img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" data-alt="Electrician using a digital multimeter and clamp meter on an electrical panel showing verified voltage readings, clear digital display, professional technician context." src="https://lh3.googleusercontent.com/aida-public/AB6AXuANCteuA4JIA7OenXId0gryt8w7ZdCErWTLrCrX2-96brOPWmnU2ocBMk0QIVz_vvjcuaQmf0x8H0-pRlNFbTkBjzMX5Ess0QBh6SAwGfOCR9zc-oudYuIM_FTZzzXXubcdLsbTlT9xVtvTMJ20x1JjVC3TZlm5lL0WXY7AFZt16pNImsFHnQEC4TvTCmb8MyWh6BrBmQqY1vewJDP59dOaQB71OiW0CyCIvmJ-WyyTl4XEgGa6AX61SDyllrgnQ94Xl1Blu24Jolk"/>
+<span class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-inverse-surface/80 backdrop-blur-md text-inverse-on-surface text-label-sm font-label-sm font-mono">
+                    16:38:45 BRT
+                  </span>
+</div>
+<div class="p-3.5 flex flex-col gap-1.5 flex-1 justify-between">
+<div>
+<h3 class="text-label-lg font-label-lg text-on-surface">Test de carga y calibración diferencial</h3>
+<p class="text-body-sm font-body-sm text-on-surface-variant">Disparo IDR a 28ms e inducción de 18.4A nominal.</p>
+</div>
+<div class="pt-2 border-t border-outline-variant/20 flex items-center justify-between text-code-sm font-code-sm text-outline">
+<span class="truncate max-w-[150px]" title="SHA-256: 4e91aa7...22c">Hash: 4e91aa7...22c</span>
+<span class="material-symbols-outlined text-[15px] text-tertiary" data-icon="check_circle" data-weight="fill">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+<!-- RIGHT SIDEBAR COLUMN (4 cols): Resumen Financiero + Hugo Copilot IA + Legal/NFS-e -->
+<div class="xl:col-span-4 flex flex-col gap-6 sticky top-24">
+<!-- 5. Resumen Financiero y de Pago (Custodia Itaú Escrow) -->
+<section class="bg-surface-container-lowest rounded-2xl p-6 border border-outline-variant/30 shadow-sm flex flex-col gap-5">
+<div class="flex items-center justify-between border-b border-outline-variant/20 pb-4">
+<div class="flex items-center gap-2.5">
+<div class="w-8 h-8 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]" data-icon="receipt">receipt</span>
+</div>
+<h2 class="text-headline-sm font-headline-sm text-on-surface">Resumen de Liquidación</h2>
+</div>
+<span class="text-label-sm font-label-sm text-tertiary font-bold px-2 py-0.5 rounded bg-tertiary/10">Liquidado</span>
+</div>
+<!-- Breakdown Items -->
+<div class="space-y-3.5 text-body-md font-body-md">
+<div class="flex items-center justify-between text-on-surface">
+<div class="flex flex-col">
+<span>Mano de obra original acordada</span>
+<span class="text-body-sm font-body-sm text-outline">Presupuesto inicial base</span>
+</div>
+<span class="font-mono font-medium">R$ 140,00</span>
+</div>
+<div class="flex items-center justify-between text-on-surface">
+<div class="flex flex-col">
+<span>Tarea complementaria en sitio</span>
+<span class="text-body-sm font-body-sm text-outline">Aplique LED exterior + bornera estanca</span>
+</div>
+<span class="font-mono font-medium text-primary">+R$ 55,00</span>
+</div>
+<div class="flex items-center justify-between text-on-surface">
+<div class="flex flex-col">
+<span>Desplazamiento adicional</span>
+<span class="text-body-sm font-body-sm text-tertiary font-medium">Bonificado 100% (Radio &lt; 3 km)</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-body-sm font-body-sm text-outline line-through font-mono">R$ 35,00</span>
+<span class="font-mono font-bold text-tertiary">R$ 0,00</span>
+</div>
+</div>
+<!-- Total Card -->
+<div class="pt-4 border-t border-outline-variant/30 flex items-end justify-between">
+<div>
+<span class="text-label-sm font-label-sm text-outline uppercase tracking-wider font-bold">Total Facturado</span>
+<p class="text-body-sm font-body-sm text-tertiary flex items-center gap-1 font-semibold mt-0.5">
+<span class="material-symbols-outlined text-[14px]" data-icon="check_circle">check_circle</span>
+                    Fondos liberados al técnico
+                  </p>
+</div>
+<div class="text-right">
+<span class="text-headline-lg font-headline-lg text-on-surface font-extrabold tracking-tight">R$ 195,00</span>
+</div>
+</div>
+</div>
+<!-- Payment Method & Escrow Details -->
+<div class="p-3.5 rounded-xl bg-surface-container-low border border-outline-variant/30 flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="text-label-md font-label-md text-on-surface">Billetera UGO · Custodia Itaú Escrow</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-tertiary" data-icon="shield">shield</span>
+</div>
+<p class="text-body-sm font-body-sm text-outline">
+                Fondos retenidos fiduciariamente y transferidos el 24/10 a las 16:42 hs tras la confirmación de PIN de conformidad.
+              </p>
+</div>
+<!-- Fiscal NFS-e Comprobante -->
+<div class="p-3.5 rounded-xl bg-surface-container/60 border border-outline-variant/30 flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[20px] text-outline" data-icon="description">description</span>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">NFS-e #002941-FLN</span>
+<span class="text-code-sm font-code-sm text-outline">Prefeitura Municipal de Florianópolis</span>
+</div>
+</div>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest border border-outline-variant/40 hover:bg-surface-container text-label-sm font-label-sm text-primary transition-colors flex items-center gap-1 font-semibold">
+<span class="material-symbols-outlined text-[14px]" data-icon="download">download</span>
+                PDF
+              </button>
+</div>
+</section>
+<!-- 6. Asistente Hugo Contextual (Cyan / Teal AI Assistant Card) -->
+<section class="bg-gradient-to-br from-surface-container-lowest via-surface-container-low to-primary-container/10 rounded-2xl p-5 border border-primary-container/30 shadow-sm relative overflow-hidden flex flex-col gap-4">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary to-primary-container flex items-center justify-center text-on-primary shadow-sm">
+<span class="material-symbols-outlined text-[20px]" data-icon="auto_awesome" data-weight="fill">auto_awesome</span>
+</div>
+<div>
+<h3 class="text-label-lg font-label-lg text-on-surface">Hugo Copilot · Asistente Contextual</h3>
+<span class="text-label-sm font-label-sm text-primary font-semibold">Auditoría Técnica Concluida</span>
+</div>
+</div>
+<span class="px-2 py-0.5 rounded text-code-sm font-code-sm bg-primary/10 text-primary font-bold">IA Activa</span>
+</div>
+<div class="p-3.5 rounded-xl bg-surface-container-lowest/80 backdrop-blur-sm border border-outline-variant/20 text-body-md font-body-md text-on-surface leading-relaxed">
+              "Certifico que los parámetros eléctricos reportados por Carlos Méndez cumplen con la norma técnica <strong>ABNT NBR 5410</strong>. La garantía UGO Shield de 60 días cubre cualquier anomalía en este circuito."
+            </div>
+<!-- Hugo Action Buttons -->
+<div class="flex flex-col gap-2">
+<button class="w-full py-2.5 px-4 rounded-xl bg-primary text-on-primary hover:bg-primary/90 text-label-md font-label-md font-semibold flex items-center justify-center gap-2 shadow-sm transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined text-[18px]" data-icon="chat">chat</span>
+<span>Consultar a Hugo sobre esta instalación</span>
+</button>
+<button class="w-full py-2 px-3 rounded-xl border border-outline-variant/40 hover:bg-surface-container-lowest text-outline hover:text-on-surface text-label-sm font-label-sm transition-colors text-center">
+                ¿Necesitas agregar otro circuito similar?
+              </button>
+</div>
+</section>
+<!-- 7. Support & Protection Guarantee Banner -->
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30 flex items-center gap-3">
+<span class="material-symbols-outlined text-[24px] text-tertiary" data-icon="verified_user" data-weight="fill">verified_user</span>
+<div class="flex flex-col">
+<span class="text-label-md font-label-md text-on-surface">Mesa UGO Shield 24/7 Activa</span>
+<span class="text-body-sm font-body-sm text-outline">Protección integral ante cualquier falla o reclamo técnico.</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- FOOTER STATUS BAR (Engineered telemetry line) -->
+<footer class="mt-auto border-t border-outline-variant/30 bg-surface-container-lowest px-8 py-3 flex items-center justify-between text-body-sm font-body-sm text-outline">
+<div class="flex items-center gap-4">
+<span class="flex items-center gap-1.5 text-tertiary font-medium">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+          Nodo Seguro UGO Florianópolis (FLN-01)
+        </span>
+<span>•</span>
+<span>Escrow Custody ID: #FLN-88412-ESCR</span>
+</div>
+<div class="flex items-center gap-6">
+<span>Términos de Garantía UGO Shield</span>
+<span>Privacidad &amp; Notaría Digital</span>
+<span class="text-on-surface-variant font-mono">v2.4.8-stable</span>
+</div>
+</footer>
+</div>
+</body></html>

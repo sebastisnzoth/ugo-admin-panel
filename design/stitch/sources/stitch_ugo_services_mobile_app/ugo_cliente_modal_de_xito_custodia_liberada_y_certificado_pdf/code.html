@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><title>UGO</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100%;margin:0;padding:0;background-color:#faf8ff;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;font-family:'Plus Jakarta Sans',sans-serif;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,24px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"secondary-fixed":"#acedff","on-tertiary-container":"#fefcff","secondary":"#00687a","inverse-primary":"#68dba9","surface-container-lowest":"#ffffff","on-surface":"#131b2e","tertiary-fixed":"#d8e2ff","on-primary-fixed-variant":"#005137","outline-variant":"#bccac0","on-secondary":"#ffffff","tertiary-container":"#2170e4","primary-container":"#00855d","surface-tint":"#006c4a","surface-container-low":"#f2f3ff","surface-container":"#eaedff","background":"#faf8ff","inverse-on-surface":"#eef0ff","error":"#ba1a1a","surface-variant":"#dae2fd","tertiary-fixed-dim":"#adc6ff","surface-bright":"#faf8ff","inverse-surface":"#283044","on-tertiary-fixed-variant":"#004395","on-secondary-fixed":"#001f26","outline":"#6d7a72","surface-container-highest":"#dae2fd","on-tertiary-fixed":"#001a42","on-primary-container":"#f5fff7","on-surface-variant":"#3d4a42","on-secondary-container":"#006172","surface-container-high":"#e2e7ff","error-container":"#ffdad6","secondary-fixed-dim":"#4cd7f6","primary-fixed-dim":"#68dba9","primary-fixed":"#85f8c4","on-error":"#ffffff","on-primary-fixed":"#002114","surface":"#faf8ff","tertiary":"#0058be","on-tertiary":"#ffffff","surface-dim":"#d2d9f4","on-error-container":"#93000a","on-background":"#131b2e","on-primary":"#ffffff","on-secondary-fixed-variant":"#004e5c","secondary-container":"#57dffe","primary":"#006948"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-xs":"8px","space-md":"16px","space-sm":"12px","space-3xl":"40px","touch-target":"48px","space-xxs":"4px","space-xl":"24px","edge-margin-mobile":"16px","space-2xl":"32px","space-lg":"20px","safe-bottom-android":"24px","edge-margin-tablet":"24px"},"fontFamily":{"label-md":["Plus Jakarta Sans"],"display":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-sm":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"]},"fontSize":{"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"display":["36px",{"lineHeight":"44px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["13px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["30px",{"lineHeight":"38px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.01em","fontWeight":"600"}],"headline-lg-mobile":["26px",{"lineHeight":"32px","letterSpacing":"-0.02em","fontWeight":"700"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"700"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","letterSpacing":"-0.01em","fontWeight":"600"}]}}}};</script><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head><body class="bg-surface text-on-surface flex flex-col min-h-screen antialiased"><header class="fixed top-0 w-full z-50 pt-safe bg-surface/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center justify-between px-space-md h-6 select-none"><span class="text-on-surface font-label-md text-label-md">09:41</span><div class="flex items-center gap-1.5 text-on-surface"><span class="material-symbols-outlined text-[16px]">signal_cellular_alt</span><span class="material-symbols-outlined text-[16px]">wifi</span><span class="material-symbols-outlined text-[18px]">battery_full</span></div></div><div class="h-14 px-space-md flex items-center justify-between"><div class="flex items-center gap-space-sm"><img alt="UGO Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VOpYYjDor8otJBe7ePSdHiw_sxV5o66KR6Ux5WDce6Eng1ycE5xd0mPAED0ioubZfL_5G4xk__lOGOQXCgeIzfc7cV7e4Ek935zLtaqHmEiOL5O-WZLRsGJBGeLWu4Ay5Rlkp5O7545kOM-fPvU34dzb9slhBVzllGJMqrjTrQua9d4qYalXgxM0eUPp6qA2U-G1FixxKGOBsQzxqDjIrAl1BfxqSDa1ILGc9_Fo-M-jLBlOCBdnib-4w"/><div class="flex flex-col"><span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">UGO Cliente</span><h1 class="font-title-md text-title-md text-on-surface leading-tight">Inicio</h1></div></div><div class="flex items-center gap-space-xs"><button aria-label="Hugo Asistente" class="w-touch-target h-touch-target flex items-center justify-center rounded-full hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-secondary text-[22px]">auto_awesome</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-20 pb-safe mb-16 bg-surface"><div class="flex flex-col w-full relative">
+<!-- Fondo de Acta Técnica Previa (Simulada en background contextual con desenfoque) -->
+<div aria-hidden="true" class="w-full px-edge-margin-mobile py-space-md opacity-35 filter blur-[3px] select-none pointer-events-none">
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm mb-space-sm">
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Acta Técnica Arbitrada</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">#REC-9824</span>
+</div>
+<p class="font-headline-sm text-headline-sm text-on-surface">Inspección Tablero Eléctrico Residencial</p>
+<div class="h-2 w-3/4 bg-surface-container-high rounded-full my-space-xs"></div>
+<div class="h-2 w-1/2 bg-surface-container-high rounded-full mb-space-sm"></div>
+<div class="grid grid-cols-2 gap-space-xs">
+<div class="p-space-xs bg-surface-container rounded-lg">
+<span class="font-label-sm text-label-sm text-outline">Especialista</span>
+<p class="font-body-sm text-body-sm text-on-surface">Carlos Méndez</p>
+</div>
+<div class="p-space-xs bg-surface-container rounded-lg">
+<span class="font-label-sm text-label-sm text-outline">Perito Inspector</span>
+<p class="font-body-sm text-body-sm text-on-surface">Ing. R. Valenzuela</p>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm">
+<div class="h-3 w-40 bg-surface-container-high rounded mb-space-xs"></div>
+<div class="h-2 w-full bg-surface-container-high rounded mb-space-xxs"></div>
+<div class="h-2 w-5/6 bg-surface-container-high rounded mb-space-xxs"></div>
+</div>
+</div>
+<!-- Capa Overlay Semitransparente con Backdrop Blur -->
+<div class="fixed inset-0 z-40 bg-inverse-surface/60 backdrop-blur-md transition-opacity"></div>
+<!-- Modal Diálogo Flotante de Celebración y Liberación Fiduciaria -->
+<div class="relative z-50 w-full px-edge-margin-mobile py-space-sm">
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-xl overflow-hidden animate-[fadeIn_0.3s_ease-out]">
+<!-- Barra decorativa sutil superior -->
+<div class="h-1.5 w-full bg-gradient-to-r from-primary-fixed via-primary to-secondary"></div>
+<div class="p-space-md flex flex-col gap-space-md">
+<!-- 1. Cabecera Hero y Celebración -->
+<div class="flex flex-col items-center text-center relative pt-space-xs">
+<!-- Halo Fiduciario y Confetti sutil animado con SVG -->
+<div class="relative flex items-center justify-center mb-space-xs">
+<!-- Halo pulsante de fondo -->
+<div class="absolute w-20 h-20 rounded-full bg-primary-fixed/40 animate-ping opacity-60"></div>
+<div class="absolute w-24 h-24 rounded-full bg-secondary-fixed/30 blur-sm"></div>
+<!-- Partículas de celebración / destellos dorados y esmeraldas -->
+<svg class="absolute -top-3 -left-3 w-7 h-7 text-secondary" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 0L14.3 8.7L23 11L14.3 13.3L12 22L9.7 13.3L1 11L9.7 8.7L12 0Z"></path>
+</svg>
+<svg class="absolute -bottom-2 -right-3 w-5 h-5 text-primary" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L13.8 8.2L20 10L13.8 11.8L12 18L10.2 11.8L4 10L10.2 8.2L12 2Z"></path>
+</svg>
+<svg class="absolute top-1 -right-4 w-4 h-4 text-secondary-container" fill="currentColor" viewbox="0 0 20 20">
+<circle cx="10" cy="10" r="3"></circle>
+</svg>
+<!-- Círculo Icono Hero Principal -->
+<div class="relative w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center shadow-md">
+<div class="w-12 h-12 rounded-full bg-primary flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[30px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+</div>
+</div>
+<!-- Título y Subtítulo -->
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm uppercase tracking-wider text-primary px-space-xs py-0.5 rounded-full bg-primary-fixed/30 mb-space-xxs">
+<span class="material-symbols-outlined text-[14px]">lock_open</span> Custodia Fiduciaria Cerrada
+          </span>
+<h2 class="font-headline-md text-headline-md text-on-surface leading-tight">¡Custodia Liberada con Éxito!</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-sm mt-space-xxs">
+            El reclamo <span class="font-bold text-on-surface">#REC-9824</span> ha sido resuelto y cerrado conforme a norma. Tu cuenta está 100% al día sin costos adicionales.
+          </p>
+</div>
+<!-- 2. Badge de Estado Fiduciario & Smart Contract -->
+<div class="bg-surface-container-low rounded-xl p-space-sm flex flex-col gap-space-xs">
+<!-- Encabezado Smart Contract -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+<span class="font-label-md text-label-md">Smart Contract Ejecutado</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline font-mono bg-surface-container px-2 py-0.5 rounded-full">Bloque #849201</span>
+</div>
+<!-- Desglose de Montos y Bonificación -->
+<div class="bg-surface-container-lowest rounded-lg p-space-xs flex flex-col gap-space-xxs">
+<div class="flex items-center justify-between text-on-surface">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Liquidación al Profesional:</span>
+<span class="font-label-md text-label-md font-bold text-on-surface">R$ 175,00</span>
+</div>
+<p class="font-label-sm text-label-sm text-outline">
+              Transferidos a <span class="font-semibold text-on-surface">Carlos Méndez</span> (con penalización bonificada de R$ 45,00).
+            </p>
+<div class="h-px bg-surface-container-high my-space-xxs"></div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1">
+<span class="font-title-md text-title-md text-on-surface font-bold">Costo Total para ti:</span>
+<span class="font-headline-sm text-headline-sm text-primary font-bold">R$ 0,00</span>
+</div>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-primary text-on-primary font-bold shadow-sm">
+                100% Bonificado UGO Shield
+              </span>
+</div>
+</div>
+</div>
+<!-- 3. Tarjeta Preview del Certificado Oficial en PDF -->
+<div class="bg-surface-container rounded-xl p-space-sm flex flex-col gap-space-xs">
+<!-- Barra superior del documento -->
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-error text-[20px]" style="font-variation-settings: 'FILL' 1;">picture_as_pdf</span>
+<span class="font-label-md text-label-md text-on-surface font-bold">PDF Certificado Oficial</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">shield</span> ABNT NBR 5410
+            </span>
+</div>
+<!-- Visualización Miniatura Estilizada del Acta Oficial -->
+<div class="bg-surface-container-lowest rounded-lg p-space-sm shadow-sm flex flex-col gap-space-xs">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="min-w-0">
+<p class="font-label-md text-label-md text-on-surface font-bold truncate">Certificado_Liberacion_REC-9824.pdf</p>
+<p class="font-label-sm text-label-sm text-outline">2.4 MB · Hash SHA-256 Verificado [a8f4…3c19]</p>
+</div>
+<div class="w-7 h-7 rounded-full bg-primary-fixed/40 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary text-[16px]">check</span>
+</div>
+</div>
+<!-- Resumen Técnico Visible en Miniatura -->
+<div class="bg-surface-container-low rounded p-space-xs flex flex-col gap-1">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Dictamen Técnico:</span>
+<span class="font-label-sm text-label-sm text-primary font-bold">Aprobado sin Observaciones</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Perito Certificador:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Ing. Ricardo Valenzuela (CREA 8421)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Firma Digital Cliente:</span>
+<span class="font-label-sm text-label-sm text-on-surface">Martín Benítez · Hoy 12:24 hs</span>
+</div>
+</div>
+<!-- Botones de Acción Directa para el PDF -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xxs">
+<button class="w-full h-10 px-space-xs rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant flex items-center justify-center gap-1.5 transition-colors" onclick="descargarCertificado()" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span class="font-label-sm text-label-sm font-bold">Descargar PDF</span>
+</button>
+<button class="w-full h-10 px-space-xs rounded-lg bg-surface-container-high text-on-surface hover:bg-surface-variant flex items-center justify-center gap-1.5 transition-colors" onclick="compartirCertificado()" type="button">
+<span class="material-symbols-outlined text-[18px] text-secondary">share</span>
+<span class="font-label-sm text-label-sm font-bold">Compartir</span>
+</button>
+</div>
+</div>
+</div>
+<!-- 4. Extensión de Garantía de Regalo / Blindaje -->
+<div class="bg-secondary-fixed/25 rounded-xl p-space-sm flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-secondary text-on-secondary flex items-center justify-center shrink-0 shadow-sm mt-0.5">
+<span class="material-symbols-outlined text-[22px]">workspace_premium</span>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-surface font-bold">Garantía Extendida Activada</span>
+<span class="font-label-sm text-label-sm px-1.5 py-0.5 rounded bg-secondary text-on-secondary font-bold">+6 Meses</span>
+</div>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">
+              Vigencia extendida hasta el <strong class="text-on-surface">25 de Mayo de 2025</strong>.
+            </p>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 leading-tight">
+              Cubre tablero general, disyuntor Schneider 40A y mano de obra sin costo ni franquicia.
+            </p>
+</div>
+</div>
+<!-- 5. Acciones Principales (CTAs) -->
+<div class="flex flex-col gap-space-xs pt-space-xs">
+<!-- Botón Primario Institucional Verde -->
+<button class="w-full h-[52px] rounded-xl bg-primary text-on-primary flex items-center justify-center gap-2 shadow-md active:scale-[0.98] transition-transform" onclick="guardarYContinuar()" type="button">
+<span class="material-symbols-outlined text-[22px]">download_done</span>
+<span class="font-label-lg text-label-lg">Descargar Certificado y Guardar en Actividad</span>
+</button>
+<!-- Botón Secundario Retorno -->
+<a class="w-full h-[48px] rounded-xl bg-surface-container-high text-on-surface flex items-center justify-center gap-2 active:bg-surface-variant transition-colors" data-path="inicio" href="#">
+<span class="material-symbols-outlined text-[20px] text-outline">home</span>
+<span class="font-label-md text-label-md font-bold">Volver a la Pantalla de Inicio</span>
+</a>
+<!-- Botón Terciario Sutil Envío por Correo -->
+<button class="w-full py-space-xs text-center text-secondary hover:underline flex items-center justify-center gap-1 mt-space-xxs" onclick="enviarCopiaEmail(this)" type="button">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+<span class="font-label-sm text-label-sm font-semibold">Enviar copia certificada a martin.benitez@email.com</span>
+</button>
+</div>
+<!-- 6. Sello Legal al Pie -->
+<div class="pt-space-xs pb-space-xxs flex items-center justify-center gap-2 text-center text-outline">
+<span class="material-symbols-outlined text-[18px] shrink-0 text-primary">gavel</span>
+<p class="font-label-sm text-label-sm text-outline leading-tight">
+            Documento homologado bajo estándar ICP-Brasil y marco legal fiduciario SUSEP #04912. Emitido con valor probatorio pleno.
+          </p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  function descargarCertificado() {
+    const notif = document.createElement('div');
+    notif.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-full font-label-md text-label-md flex items-center gap-2 shadow-lg animate-bounce';
+    notif.innerHTML = '<span class="material-symbols-outlined text-primary-fixed text-[18px]">check_circle</span> Descargando Certificado_Liberacion_REC-9824.pdf...';
+    document.body.appendChild(notif);
+    setTimeout(() => notif.remove(), 2500);
+  }
+
+  function compartirCertificado() {
+    if (navigator.share) {
+      navigator.share({
+        title: 'Certificado de Liberación UGO #REC-9824',
+        text: 'Acta técnica fiduciaria aprobada en UGO.',
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      const notif = document.createElement('div');
+      notif.className = 'fixed top-24 left-1/2 -translate-x-1/2 z-[60] bg-inverse-surface text-inverse-on-surface px-4 py-2 rounded-full font-label-md text-label-md flex items-center gap-2 shadow-lg';
+      notif.innerHTML = '<span class="material-symbols-outlined text-secondary-fixed text-[18px]">share</span> Enlace seguro copiado al portapapeles';
+      document.body.appendChild(notif);
+      setTimeout(() => notif.remove(), 2200);
+    }
+  }
+
+  function enviarCopiaEmail(btn) {
+    const textoOriginal = btn.innerHTML;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[16px] text-primary">done_all</span> Copia enviada con acuse legal';
+    btn.classList.add('text-primary');
+    setTimeout(() => {
+      btn.innerHTML = textoOriginal;
+      btn.classList.remove('text-primary');
+    }, 3000);
+  }
+
+  function guardarYContinuar() {
+    descargarCertificado();
+    setTimeout(() => {
+      window.location.href = '#actividad';
+    }, 1200);
+  }
+</script></main><nav class="fixed bottom-0 w-full z-50 pb-safe bg-surface-container-lowest/95 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.06)]" data-active-classes="text-primary font-bold"><div class="h-16 px-space-md flex items-center justify-around"><a aria-current="page" class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs transition-colors text-primary font-bold" data-path="inicio" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">home</span></div><span class="font-label-sm text-label-sm mt-0.5">Inicio</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="servicios" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">grid_view</span></div><span class="font-label-sm text-label-sm mt-0.5">Servicios</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors relative" data-path="actividad" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center relative"><span class="material-symbols-outlined text-[24px]">receipt_long</span><span class="absolute top-1 right-2 w-2 h-2 rounded-full bg-secondary ring-2 ring-surface-container-lowest"></span></div><span class="font-label-sm text-label-sm mt-0.5">Actividad</span></a><a class="flex flex-col items-center justify-center min-w-touch-target h-touch-target px-space-xs text-on-surface-variant hover:text-on-surface transition-colors" data-path="perfil" href="#"><div class="w-10 h-7 rounded-full flex items-center justify-center"><span class="material-symbols-outlined text-[24px]">person</span></div><span class="font-label-sm text-label-sm mt-0.5">Perfil</span></a></div></nav></body></html>

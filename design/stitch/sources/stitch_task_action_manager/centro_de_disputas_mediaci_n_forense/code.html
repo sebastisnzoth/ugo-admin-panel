@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base { html, body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; } body { overscroll-behavior: none; } main > :first-child { margin-top: 0 !important; } main > :last-child { margin-bottom: 0 !important; } } ::-webkit-scrollbar { display: none; } .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 20; }</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = { darkMode: "class", theme: { extend: { "colors": { "on-tertiary-fixed": "#410002", "on-background": "#131b2e", "on-tertiary": "#ffffff", "on-secondary-container": "#00476e", "tertiary": "#bb0112", "inverse-primary": "#68dba9", "surface-container-lowest": "#ffffff", "on-secondary": "#ffffff", "copilot-cyan-border": "#A5F3FC", "secondary-container": "#5bb8fe", "primary": "#006948", "on-primary-fixed-variant": "#005137", "warning-amber-hover": "#B45309", "on-tertiary-fixed-variant": "#93000b", "surface-container-highest": "#dae2fd", "surface-canvas": "#F8FAFC", "brand-green-subtle": "#ECFDF5", "on-secondary-fixed": "#001d31", "border-subtle": "#E2E8F0", "risk-red-subtle": "#FEF2F2", "surface-container": "#eaedff", "surface": "#faf8ff", "primary-fixed": "#85f8c4", "text-muted": "#64748B", "surface-container-low": "#f2f3ff", "on-primary": "#ffffff", "surface-tint": "#006c4a", "inverse-on-surface": "#eef0ff", "on-primary-container": "#f5fff7", "on-surface-variant": "#3d4a42", "warning-amber": "#D97706", "surface-variant": "#dae2fd", "brand-green-border": "#A7F3D0", "on-error-container": "#93000a", "outline": "#6d7a72", "surface-panel": "#FFFFFF", "border-strong": "#CBD5E1", "risk-red-hover": "#B91C1C", "copilot-cyan-hover": "#0891B2", "tertiary-container": "#e02928", "copilot-cyan-subtle": "#ECFEFF", "warning-amber-subtle": "#FFFBEB", "text-primary": "#0F172A", "error": "#ba1a1a", "inverse-surface": "#283044", "on-secondary-fixed-variant": "#004b73", "warning-amber-border": "#FDE68A", "text-secondary": "#475569", "surface-bright": "#faf8ff", "outline-variant": "#bccac0", "risk-red-border": "#FECACA", "secondary": "#006398", "surface-container-high": "#e2e7ff", "tertiary-fixed": "#ffdad6", "secondary-fixed-dim": "#93ccff", "on-surface": "#131b2e", "secondary-fixed": "#cce5ff", "brand-green-hover": "#047857", "on-error": "#ffffff", "on-tertiary-container": "#fffbff", "surface-dim": "#d2d9f4", "surface-muted": "#F1F5F9", "error-container": "#ffdad6", "on-primary-fixed": "#002114", "tertiary-fixed-dim": "#ffb4ab", "primary-container": "#00855d", "background": "#faf8ff", "copilot-cyan": "#06B6D4", "primary-fixed-dim": "#68dba9" }, "borderRadius": { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" }, "spacing": { "sidebar-collapsed-width": "72px", "topbar-height": "56px", "space-lg": "1.25rem", "space-2xl": "2rem", "space-2xs": "0.125rem", "space-base": "1rem", "space-xl": "1.5rem", "table-header-height": "36px", "space-xs": "0.25rem", "table-row-height": "44px", "space-md": "0.75rem", "space-sm": "0.5rem", "sidebar-width": "260px" }, "fontFamily": { "label-sm": ["Inter"], "headline-lg-mobile": ["Inter"], "headline-lg": ["Inter"], "data-metric": ["Inter"], "headline-sm": ["Inter"], "label-md": ["Inter"], "headline-xl": ["Inter"], "data-mono": ["JetBrains Mono"], "body-sm": ["Inter"], "body-md": ["Inter"], "body-lg": ["Inter"], "headline-md": ["Inter"] }, "fontSize": { "label-sm": ["11px", { "lineHeight": "14px", "letterSpacing": "0.04em", "fontWeight": "500" }], "headline-lg-mobile": ["20px", { "lineHeight": "26px", "letterSpacing": "-0.01em", "fontWeight": "600" }], "headline-lg": ["22px", { "lineHeight": "28px", "letterSpacing": "-0.015em", "fontWeight": "600" }], "data-metric": ["26px", { "lineHeight": "32px", "letterSpacing": "-0.03em", "fontWeight": "700" }], "headline-sm": ["15px", { "lineHeight": "20px", "letterSpacing": "-0.005em", "fontWeight": "600" }], "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "600" }], "headline-xl": ["28px", { "lineHeight": "34px", "letterSpacing": "-0.02em", "fontWeight": "700" }], "data-mono": ["12px", { "lineHeight": "16px", "letterSpacing": "-0.01em", "fontWeight": "500" }], "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }], "body-md": ["13px", { "lineHeight": "18px", "fontWeight": "400" }], "body-lg": ["15px", { "lineHeight": "22px", "fontWeight": "400" }], "headline-md": ["18px", { "lineHeight": "24px", "letterSpacing": "-0.01em", "fontWeight": "600" }] } } } }</script></head><body class="bg-surface-canvas text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-sidebar-width bg-surface-panel z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col flex-1 min-h-0"><div class="h-topbar-height px-space-base flex items-center gap-space-sm"><img alt="UGO Admin Brand Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1VEmgdBtc-Haw-FJR5SNU1aZuDh3_1xIPYtjR7wOV8AR_f7l7zOI-Wmi99O_dj3cOnI_Wi-cv4J-h6BjCN5TtnMuE_rjR1MI_ppHn8X53QVYECLhcUgKhEiKKC_kIaVW9gJMFNszDIqKq5fJEc_7EBq_VG1QYRdAGfloN3t8fgAd7ak-FEQTWMFNzdt2on_gtB1Bg4rhA_Dt8JnnPktk-kwjZQaqMPkGFksA7LH_WYir0gtdzyR7_EG01g"/><div class="flex flex-col"><span class="font-headline-sm text-headline-sm text-text-primary leading-tight font-bold tracking-tight">UGO CONTROL</span><span class="font-label-sm text-label-sm text-text-muted">Hub Florianópolis</span></div></div><div class="flex-1 overflow-y-auto px-space-sm py-space-sm space-y-space-md"><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Operaciones Diarias</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="dashboard" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">dashboard</span><span>Dashboard</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="decision-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">gavel</span><span>Centro Decisiones</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">6 urgentes</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="live-ops" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">explore</span><span>Operaciones en Vivo</span></div><span class="w-2 h-2 rounded-full bg-primary"></span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="command-center" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">terminal</span><span>Command Center</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="services" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">handyman</span><span>Servicios</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="clients" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">group</span><span>Clientes</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">badge</span><span>Proveedores</span></div></a><a aria-current="page" class="flex items-center justify-between px-space-sm py-space-xs rounded-lg transition-colors bg-brand-green-subtle text-primary font-semibold" data-path="verifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">verified_user</span><span>Verificaciones</span></div><span class="px-1.5 py-0.5 rounded-full bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-semibold">12</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gestión Financiera</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="finances-overview" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">account_balance</span><span>Finanzas Resumen</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payments-mercado-pago" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">credit_card</span><span>Pagos Mercado Pago</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="payouts-providers" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">payments</span><span>Retiros Proveedores</span></div><span class="px-1.5 py-0.5 rounded-full bg-surface-muted text-text-secondary font-label-sm text-label-sm font-semibold">5</span></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="disputes" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">report_problem</span><span>Disputas &amp; Reclamos</span></div><span class="px-1.5 py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold">4</span></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Estrategia &amp; Crecimiento</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="scout-intelligence" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">radar</span><span>Scout Inteligencia</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="reports-metrics" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">monitoring</span><span>Reportes &amp; Métricas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="categories-zones" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">map</span><span>Categorías &amp; Zonas</span></div></a></nav><nav class="space-y-space-2xs" data-active-classes="bg-brand-green-subtle text-primary font-semibold"><div class="px-space-sm pt-space-xs pb-space-2xs"><span class="font-label-sm text-label-sm uppercase tracking-wider text-text-muted font-semibold">Gobernanza &amp; Sistema</span></div><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="broadcast-notifications" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">campaign</span><span>Notificaciones Masivas</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="admin-roles" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">admin_panel_settings</span><span>Administradores &amp; Roles</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="audit-log" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">history</span><span>Auditoría Log</span></div></a><a class="flex items-center justify-between px-space-sm py-space-xs rounded-lg text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors font-body-md text-body-md" data-path="system-settings" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[18px]">settings</span><span>Configuración General</span></div></a></nav></div></div><div class="p-space-sm bg-surface-canvas"><div class="px-space-sm py-space-xs rounded-md bg-surface-panel flex items-center justify-between"><span class="font-label-sm text-label-sm text-text-muted truncate">UGO v2.4.0 • Florianópolis Hub</span><span class="inline-block w-2 h-2 rounded-full bg-primary"></span></div></div></aside><div class="pl-sidebar-width"><header class="fixed top-0 left-sidebar-width right-0 h-topbar-height bg-surface-panel/95 backdrop-blur-md z-40 px-space-lg flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-space-md flex-1 max-w-2xl"><div class="relative flex items-center"><button class="h-8 px-space-sm bg-surface-muted rounded-lg flex items-center gap-space-xs text-text-primary hover:bg-surface-container-high transition-colors"><span class="material-symbols-outlined text-primary text-[18px]">location_on</span><span class="font-body-sm text-body-sm font-semibold truncate max-w-[150px]">Florianópolis - Todas</span><span class="material-symbols-outlined text-[16px] text-text-muted">expand_more</span></button></div><div class="relative flex-1"><div class="relative flex items-center w-full"><span class="material-symbols-outlined absolute left-3 text-text-muted text-[18px]">search</span><input class="w-full h-9 pl-9 pr-14 bg-surface-muted rounded-lg text-text-primary placeholder:text-text-muted font-body-sm text-body-sm focus:outline-none focus:bg-surface-panel" placeholder="Buscar servicio, cliente, proveedor, pago, disputa #ID..." type="text"/><div class="absolute right-2.5 flex items-center gap-1"><kbd class="px-1.5 py-0.5 rounded bg-surface-panel text-text-muted font-data-mono text-[10px] uppercase shadow-[0_1px_2px_rgba(0,0,0,0.04)]">⌘K</kbd></div></div></div></div><div class="flex items-center gap-space-md"><div class="hidden xl:flex items-center gap-space-xs px-space-sm py-1 rounded-full bg-brand-green-subtle text-primary font-label-sm text-label-sm font-semibold"><span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span><span>Operaciones en Vivo: 100%</span></div><button class="relative h-8 w-8 rounded-lg flex items-center justify-center text-text-secondary hover:bg-surface-muted hover:text-on-surface transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-tertiary text-on-tertiary font-label-sm text-[10px] flex items-center justify-center font-bold">7</span></button><button class="h-8 px-space-sm rounded-lg bg-copilot-cyan text-on-primary hover:bg-copilot-cyan-hover font-label-md text-label-md flex items-center gap-space-xs shadow-[0_1px_4px_rgba(6,182,212,0.3)] transition-all"><span class="material-symbols-outlined text-[16px]">bolt</span><span>Hugo Copilot</span></button><div class="flex items-center gap-space-sm pl-space-xs"><img alt="Profile" class="w-8 h-8 rounded-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1T8iBuP4BoM8bP5vL9Vy0E0qJZ-3ihVI2B-RfEJHESLlnVmHMj10c09HMTeopHIspkZO8fdk5BxwH5LalZ9pJqR_HZara6Q1MeJRsDCCNfApJreW5yoKOPSAY5ZbkqDPFjAsz65qn6TdNn8DAUIvof71maXDSKP7qj7BHDAVNzRFxiLryA6Rer1wFIahtIc3qFLiJOHha8i4zgfItyys-zb8oumc6a_Jg8NCtbMFvrqPVuXQJgte6"/><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md font-semibold text-text-primary leading-none">Mateo Silva</span><span class="font-label-sm text-[10px] text-primary uppercase font-bold tracking-wider mt-0.5">SUPER_ADMIN</span></div></div></div></header><main class="w-full pt-topbar-height px-space-lg py-space-lg bg-surface-canvas min-h-screen"><div class="flex flex-col w-full space-y-space-md">
+<!-- Breadcrumb bar & Quick Telemetry -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm">
+<nav class="flex items-center gap-space-xs font-body-sm text-body-sm text-text-muted">
+<a class="hover:text-primary transition-colors" href="#">Operaciones Diarias</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Centro de Decisiones</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<a class="hover:text-primary transition-colors" href="#">Disputas &amp; Reclamos</a>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="font-semibold text-text-primary">Disputa #D-1042</span>
+<span class="px-space-xs py-0.5 rounded-full bg-risk-red-subtle text-tertiary font-label-sm text-label-sm font-semibold uppercase">Alta Prioridad</span>
+</nav>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs font-data-mono text-data-mono text-text-muted">
+<span class="inline-block w-2 h-2 rounded-full bg-warning-amber animate-ping"></span>
+<span>SISTEMA ESCROW ACTIVO · PROTOCOLO D-AUDIT V3</span>
+</div>
+<span class="font-data-mono text-data-mono text-text-muted">ID Auditoría: <span class="text-text-primary font-semibold">0x7F4A...B91E</span></span>
+</div>
+</div>
+<!-- Header Card: Title, Status Badges, Urgent Countdown & Binding Arbitration Trigger -->
+<section class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-md">
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-base">
+<div class="space-y-space-xs">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-data-mono text-data-mono font-bold text-tertiary bg-risk-red-subtle px-2 py-0.5 rounded">CASE #D-1042</span>
+<span class="font-label-sm text-label-sm text-text-muted uppercase">Servicio Asociado:</span>
+<a class="font-data-mono text-data-mono font-bold text-secondary hover:underline flex items-center gap-0.5" href="#">
+            #UGO-1842
+            <span class="material-symbols-outlined text-[14px]">open_in_new</span>
+</a>
+<span class="text-text-muted">•</span>
+<span class="font-body-sm text-body-sm text-text-secondary font-medium">Limpieza Post-Obra &amp; Entrega de Llaves en Airbnb Lagoa da Conceição</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-text-primary tracking-tight">
+          Arbitraje Operativo Forense &amp; Retención Cautelar de Fondos
+        </h1>
+</div>
+<!-- Action Button with Floating Resolution Trigger -->
+<div class="flex items-center gap-space-sm relative" id="resolution-hub">
+<button class="h-9 px-space-base rounded-lg bg-tertiary hover:bg-risk-red-hover text-on-tertiary font-label-md text-label-md flex items-center gap-space-xs shadow-sm transition-all" id="modal-trigger">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+<span>Emitir Fallo Vinculante</span>
+<span class="material-symbols-outlined text-[16px]">arrow_drop_down</span>
+</button>
+<button class="h-9 w-9 rounded-lg bg-surface-muted hover:bg-surface-container-high text-text-secondary flex items-center justify-center transition-colors" title="Descargar expediente de prueba en PDF">
+<span class="material-symbols-outlined text-[18px]">download</span>
+</button>
+<button class="h-9 w-9 rounded-lg bg-surface-muted hover:bg-surface-container-high text-text-secondary flex items-center justify-center transition-colors" title="Historial del caso">
+<span class="material-symbols-outlined text-[18px]">history</span>
+</button>
+</div>
+</div>
+<!-- Status Strip: Tightly Scoped Semantic Badges -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-sm pt-space-xs">
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-brand-green-subtle text-primary">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+<div>
+<div class="font-label-sm text-label-sm uppercase font-bold text-on-primary-fixed-variant">Custodia Mercado Pago</div>
+<div class="font-headline-sm text-headline-sm font-bold text-primary">R$ 380,00 RETENIDO</div>
+</div>
+</div>
+<span class="font-data-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-panel text-primary font-bold">ESCROW LOCKED</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-warning-amber-subtle text-warning-amber">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-warning-amber animate-pulse">timer</span>
+<div>
+<div class="font-label-sm text-label-sm uppercase font-bold text-warning-amber-hover">SLA de Resolución</div>
+<div class="font-headline-sm text-headline-sm font-bold text-warning-amber-hover">2h 15m RESTANTES</div>
+</div>
+</div>
+<span class="font-data-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-panel text-warning-amber-hover font-bold">TIER 1 URGENT</span>
+</div>
+<div class="flex items-center justify-between p-space-sm rounded-lg bg-copilot-cyan-subtle text-secondary">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-copilot-cyan">policy</span>
+<div>
+<div class="font-label-sm text-label-sm uppercase font-bold text-on-secondary-container">Fase del Litigio</div>
+<div class="font-headline-sm text-headline-sm font-bold text-on-secondary-container">AUDITORÍA FORENSE</div>
+</div>
+</div>
+<span class="font-data-mono text-[10px] px-1.5 py-0.5 rounded bg-surface-panel text-secondary font-bold">STEP 3/4</span>
+</div>
+</div>
+</section>
+<!-- Partes Involucradas: Split Cards (Cliente vs Proveedora) -->
+<section class="grid grid-cols-1 lg:grid-cols-2 gap-space-md">
+<!-- Cliente Card -->
+<article class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Corporate headshot of Felipe Azevedo, a Brazilian man in his late 30s wearing a smart casual linen navy shirt with friendly yet focused expression, natural indoor lighting, clean studio bokeh background matching executive aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKqK9ML3Zz9LmIsmRyQDp_wE1Rti3uV__xLLI8DTLIzDK1Ms-iiKamTLdIC5VKR32AOQXkz1t3KA389LrpNuhqd58-Lr3WYE97RfmV3EWObEH5YwYuGhByL_b6p5kJ4vovNio_kwJsdlpwgwbW4Tm0JFkvLExB3Rejq7CruCqJNrI94af2qiOOfc2U8UJkYrPRW4qy9WlETXFTcV5_h95HNDOnObyo-HocB-TkEkkRYmfxI4K8vhbm"/>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">Felipe Azevedo</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-muted text-secondary font-data-mono text-[11px] font-bold">CLIENTE #CLI-9021</span>
+</div>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-text-muted">
+<span class="material-symbols-outlined text-[14px]">phone</span>
+<span class="font-data-mono">+55 48 99182-9900</span>
+<span>•</span>
+<span class="text-text-secondary font-medium">Host Superhost Airbnb Florianópolis</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-1 rounded bg-warning-amber-subtle text-warning-amber font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">workspace_premium</span>
+          VIP GOLD
+        </span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs py-space-xs bg-surface-canvas rounded-lg p-space-sm text-center">
+<div>
+<div class="font-data-metric text-headline-sm text-text-primary">14</div>
+<div class="font-label-sm text-label-sm text-text-muted">Servicios UGO</div>
+</div>
+<div>
+<div class="font-data-metric text-headline-sm text-primary">0</div>
+<div class="font-label-sm text-label-sm text-text-muted">Reclamos Históricos</div>
+</div>
+<div>
+<div class="font-data-metric text-headline-sm text-text-primary">R$ 5.420</div>
+<div class="font-label-sm text-label-sm text-text-muted">LTV Acumulado</div>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-muted text-text-secondary space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+            Motivo Reclamado:
+          </span>
+<span class="font-data-mono text-text-muted">Hoy, 13:10 BRT</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary italic">
+          "Servicio incompleto: Suciedad en ventanales superiores del balcón y retraso de entrega de llaves al huésped internacional proveniente de Buenos Aires (riesgo inminente de calificación 1 estrella en Airbnb)."
+        </p>
+</div>
+</article>
+<!-- Proveedora Card -->
+<article class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-sm">
+<div class="flex items-start justify-between">
+<div class="flex items-center gap-space-sm">
+<img class="w-12 h-12 rounded-full object-cover" data-alt="Professional portrait of Bruna Lima, an experienced Brazilian facility service team leader wearing a clean emerald green work polo with company badge, smiling confidently outdoors against modern architecture backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDNEF5RlKWCvgm8N1tZH72YDGycFx19-EeFJbx6nDFDRGGdCq2GQb4ZtgbeKiTOO7CfoiI2IQ3Tn8s4FI236ZWqw46Qx2cjXIp_iLIAG2f0LYceb_BC61b0f5daw6AgxiGkpPqX4i1xsoSKBPZ7cNxlUOLwPJypGaopSJJR18WE3tSMtfkrJ7fazU0eYUWqOk9WeXY2Tm3vHv6tnZ3Pg3FTHDkVIKmXqIgbvBa5VBEvHlRW0kJ_3BNm"/>
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">Bruna Lima Cuadrilla</span>
+<span class="px-1.5 py-0.5 rounded bg-surface-muted text-primary font-data-mono text-[11px] font-bold">#PRV-44120</span>
+</div>
+<div class="flex items-center gap-space-xs font-body-sm text-body-sm text-text-muted">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+<span class="text-primary font-semibold">Identidad &amp; Antecedentes Validados</span>
+<span>•</span>
+<span class="font-data-mono">Lagoa da Conceição / Barra</span>
+</div>
+</div>
+</div>
+<span class="px-2 py-1 rounded bg-brand-green-subtle text-primary font-label-sm text-label-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">star</span>
+          4.95 / 5.0
+        </span>
+</div>
+<div class="grid grid-cols-3 gap-space-xs py-space-xs bg-surface-canvas rounded-lg p-space-sm text-center">
+<div>
+<div class="font-data-metric text-headline-sm text-text-primary">182</div>
+<div class="font-label-sm text-label-sm text-text-muted">Limpiezas Listas</div>
+</div>
+<div>
+<div class="font-data-metric text-headline-sm text-primary">99.2%</div>
+<div class="font-label-sm text-label-sm text-text-muted">Tasa Aprobación</div>
+</div>
+<div>
+<div class="font-data-metric text-headline-sm text-secondary">1 Resuelto</div>
+<div class="font-label-sm text-label-sm text-text-muted">Favorablemente</div>
+</div>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-muted text-text-secondary space-y-1">
+<div class="flex items-center justify-between font-label-sm text-label-sm">
+<span class="font-semibold text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">support_agent</span>
+            Posición de la Proveedora:
+          </span>
+<span class="font-data-mono text-text-muted">Hoy, 13:35 BRT</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary italic">
+          "El contrato de servicio #UGO-1842 era de 'Limpieza estándar post-obra interior'. Los ventanales exteriores de doble altura requerían andamio y pértiga especial no solicitada en la orden básica. Las llaves se entregaron a las 12:50 en conserjería según pacto."
+        </p>
+</div>
+</article>
+</section>
+<!-- Main Investigation Grid: Left Panel (Evidence & Timeline) & Right Panel (Financial Audit & Decision Engine) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- LEFT PANEL: Forensic Evidence & Audit Trails (Col-span 6) -->
+<div class="lg:col-span-6 space-y-space-md">
+<!-- Forensic Timeline -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">timeline</span>
+            Timeline Forense del Servicio #UGO-1842
+          </h2>
+<span class="px-2 py-0.5 rounded bg-surface-muted font-data-mono text-[11px] text-text-secondary">GPS GEO-STAMPED</span>
+</div>
+<div class="relative pl-6 space-y-4 before:content-[''] before:absolute before:left-2 before:top-2 before:bottom-2 before:w-[2px] before:bg-surface-container-high">
+<!-- Step 1 -->
+<div class="relative">
+<span class="absolute -left-6 top-0.5 w-3 h-3 rounded-full bg-secondary ring-4 ring-surface-panel"></span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-label-md font-bold text-text-primary">10:00 BRT · Horario de Inicio Programado</span>
+<span class="font-data-mono text-[11px] text-text-muted">Orden en cronograma</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-0.5">Ventana estipulada para ingreso al inmueble en Lagoa da Conceição (Rua das Palmeiras, 142).</p>
+</div>
+<!-- Step 2 -->
+<div class="relative">
+<span class="absolute -left-6 top-0.5 w-3 h-3 rounded-full bg-primary ring-4 ring-surface-panel"></span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-label-md font-bold text-primary">10:14 BRT · Arribo Confirmado por Geocerca GPS</span>
+<span class="font-data-mono text-[11px] text-primary font-semibold">Validado (+14m)</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-0.5">Dispositivo móvil de Bruna Lima detectado a 8 metros de las coordenadas del departamento. Check-in exitoso en App UGO.</p>
+</div>
+<!-- Step 3 -->
+<div class="relative">
+<span class="absolute -left-6 top-0.5 w-3 h-3 rounded-full bg-primary ring-4 ring-surface-panel"></span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-label-md font-bold text-text-primary">12:45 BRT · Entrega de Llaves &amp; Fotos Subidas</span>
+<span class="font-data-mono text-[11px] text-text-muted">Check-out registrado</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-0.5">Cuadrilla completa 2h 31m de labor. Se anexan 3 fotografías de interiores con metadata intacta. Llave depositada en lockbox.</p>
+</div>
+<!-- Step 4 -->
+<div class="relative">
+<span class="absolute -left-6 top-0.5 w-3 h-3 rounded-full bg-warning-amber ring-4 ring-surface-panel"></span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-label-md font-bold text-warning-amber-hover">13:10 BRT · Reporte de Inconformidad del Cliente</span>
+<span class="font-data-mono text-[11px] text-warning-amber-hover font-semibold">Ticket #TK-882</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-0.5">Felipe Azevedo rechaza la entrega formal vía app indicando cristales sucios y falta de coordinación en persona con huésped.</p>
+</div>
+<!-- Step 5 (Alert) -->
+<div class="relative">
+<span class="absolute -left-6 top-0.5 w-3 h-3 rounded-full bg-tertiary ring-4 ring-surface-panel animate-pulse"></span>
+<div class="flex items-baseline justify-between">
+<span class="font-label-md text-label-md font-bold text-tertiary">13:20 BRT · Congelamiento Automático Escrow PIX</span>
+<span class="font-data-mono text-[11px] text-tertiary font-bold">ACTION LOCK</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-secondary mt-0.5">Disparador automático anti-fraude: La dispersión programada por R$ 323,00 queda retenida cautelarmente en Mercado Pago.</p>
+</div>
+</div>
+</div>
+<!-- Photographic Evidence Comparer (Side-by-side) -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-base">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px]">photo_library</span>
+            Visor Comparativo de Evidencias Forenses
+          </h2>
+<span class="font-label-sm text-label-sm text-text-muted">5 Archivos Auditados · EXIF Certificado</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm">
+<!-- Side A: Provider Deliverables -->
+<div class="p-space-sm rounded-lg bg-surface-canvas space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-primary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+                Lado A: Entregables Proveedora (3)
+              </span>
+<span class="font-data-mono text-[10px] text-text-muted">12:44 BRT</span>
+</div>
+<div class="relative group rounded-lg overflow-hidden h-40 bg-surface-muted">
+<img class="w-full h-full object-cover" data-alt="High quality forensic photo uploaded by service provider showing a pristine modern living room with gleaming porcelain tiles, spotless kitchen counter in Lagoa da Conceicao apartment, bright natural daylight, clean finished renovation" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAvHwYqSWK1wCfQ9P_uH6za4v7rNCTJpzcE8RyfYSwbPeXezGqSevyNnYQKUDNuRJbDckhDhkofDGrcMrPpAOsQpZl-G1p59nqEMSkOZSC-ATJnpiXCUiCxL0ScuPdQnEIaCdiHPPkduBl_O3kjWEQc5ZH_MXXs2IDqgv0Bf4XIgJVmfic4QGDoKzFHD4e1b4r3X-16tqMj6oW2vn0zG5C-fBPDoVXk0gvKICDrsvYk3YgvdkmHZhYB"/>
+<div class="absolute bottom-1 left-1 bg-inverse-surface/85 px-2 py-0.5 rounded text-surface-bright font-data-mono text-[10px]">
+                LAT: -27.6031 | LON: -48.4552 | Living Room
+              </div>
+</div>
+<div class="grid grid-cols-2 gap-1">
+<div class="relative rounded overflow-hidden h-16 bg-surface-muted">
+<img class="w-full h-full object-cover" data-alt="Forensic detail photo of polished stainless steel kitchen sink and counter completely wiped down and cleaned after renovation, immaculate reflection" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD4XiAyA_jrxUOwADwfVjdkP-jmroq4qs73OwLg1ITs9aZYC3UzCo1uprlTgz598mwpYK2CojzuQ43di7XCg8Wcuiv8lwKK-etvdhaAdAfIqRbl45uZrCWM0lZe53wLfuyeA9o7b-nt_3coMa5j1jT5wMgev2UGurz9q9RaLd01Cg00DEnx-cDH7ufSGNxQdg_UuTyfUCN62guK8gxIn_lgZeDigm4HBN6-_y6DY-tj2MTKmV6f8Ysm"/>
+<span class="absolute bottom-0.5 right-0.5 bg-inverse-surface/85 text-surface-bright font-data-mono text-[9px] px-1 rounded">Cocina OK</span>
+</div>
+<div class="relative rounded overflow-hidden h-16 bg-surface-muted">
+<img class="w-full h-full object-cover" data-alt="Forensic photo of smart lock keybox mounted on wooden apartment doorway with closed latch and code reset confirmation in Florianopolis" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr5pZeKmYpXDC4AMW4H_Su5H6dlqqp79kVagMJLCTbfe1MCcQquVD7EMoaXSPfhV8u09QmiySQdzUtz4Oq7GDXTbQHcrC-tNlcUjX8PfopB6IjJICWJDHQzxOf9AVbrvNnM_gfyr58XrE_SGS30vZGmdVmYOu21viAch40R1Zhr9JZJKwjhkb73DG-aDu0niQToACOnmIS56gKYD0e5o6QR9tBKDckqqPJwh2tHD5lGh7q8Oe-Yw7P"/>
+<span class="absolute bottom-0.5 right-0.5 bg-inverse-surface/85 text-surface-bright font-data-mono text-[9px] px-1 rounded">Lockbox OK</span>
+</div>
+</div>
+<p class="font-body-sm text-[11px] text-text-secondary leading-snug">
+              Interiores y pisos sin rastros de obra. Evidencia sólida de aseo interior profundo.
+            </p>
+</div>
+<!-- Side B: Client Complaint Evidence -->
+<div class="p-space-sm rounded-lg bg-risk-red-subtle/50 space-y-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm font-bold text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">report</span>
+                Lado B: Evidencias Cliente (2)
+              </span>
+<span class="font-data-mono text-[10px] text-text-muted">13:08 BRT</span>
+</div>
+<div class="relative group rounded-lg overflow-hidden h-40 bg-surface-muted">
+<img class="w-full h-full object-cover" data-alt="Forensic evidence photo uploaded by client showing balcony high glass window with dried white construction paint splatters, builder dust smudges, and direct coastal sunlight highlighting the untouched glass panels" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfS1BMc0r7y_9m7MDdsPw19g1Fs0noxkNGIFE6rq9KIkh79eDHIdg-l3y-EIrqlxrcNx1_wyUm3FYHOb8BrB-MTQLOTt_rjeQ5xvbIvqP-m-M-QLii6odpT7xFSNhv4YTELWa99mtldTyTCYD4fbrRuLZIzfTbafvoXQmBNO9gzS0vpqULtfl2C4SgtIS2UgXrOZ4LeFTot0ujzJq49RVZv_ZDQUZ3EGK_lkbnJrm7j4HGrw2dwVdi"/>
+<div class="absolute bottom-1 left-1 bg-inverse-surface/85 px-2 py-0.5 rounded text-surface-bright font-data-mono text-[10px]">
+                LAT: -27.6033 | Balcón Ventanal Sup.
+              </div>
+<span class="absolute top-1 right-1 bg-tertiary text-on-tertiary font-label-sm text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">Omisión Visible</span>
+</div>
+<div class="relative rounded overflow-hidden h-16 bg-surface-muted">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of sliding balcony glass door frame showing chalky drywall powder accumulating in the lower aluminum track runner" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB3Ch9TtGSOB6RF0F3TxybQdrE0U6MVzIWSVIWmkNk0HJyloxQPrCL2QtHp9Bi-uoY5HrxxCX5whKr0g02OmbkvfpCDi6JAkTGEdQpRaT9iIXGi02ux-wwBh1b27wgidCQXcE4MWDopY7bvpEQ4QVX1hpnqTTt2J6YFKsJP2e_RZrgbOneBAAb7QqFk8Gn9uDnvuHj269SJ2YqWDE0Bp5nGCNahv0GagQFKQFrpHd1AIH4yIo3hiJ8x"/>
+<span class="absolute bottom-0.5 right-0.5 bg-inverse-surface/85 text-surface-bright font-data-mono text-[9px] px-1 rounded">Rieles Balcón</span>
+</div>
+<p class="font-body-sm text-[11px] text-text-secondary leading-snug">
+              Cristales exteriores y rieles superiores con película de polvillo de yeso no limpiados.
+            </p>
+</div>
+</div>
+</div>
+<!-- In-App Messaging Audit Trail -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-sm">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-text-muted text-[20px]">chat</span>
+            Transcripción de Mensajería Certificada In-App
+          </h2>
+<span class="font-data-mono text-[11px] text-text-muted">Canal Encriptado #UGO-MSG-441</span>
+</div>
+<div class="space-y-space-xs p-space-sm rounded-lg bg-surface-canvas font-body-sm text-body-sm max-h-56 overflow-y-auto">
+<!-- Message 1 -->
+<div class="p-2 rounded bg-surface-panel shadow-sm">
+<div class="flex justify-between items-center text-[11px] mb-1">
+<span class="font-bold text-secondary">Felipe Azevedo (Cliente)</span>
+<span class="font-data-mono text-text-muted">09:12 BRT</span>
+</div>
+<p class="text-text-primary">"Hola Bruna, acordate por favor que es clave que los ventanales del balcón queden impecables porque el huésped mira a la laguna."</p>
+</div>
+<!-- Message 2 -->
+<div class="p-2 rounded bg-surface-panel shadow-sm ml-4">
+<div class="flex justify-between items-center text-[11px] mb-1">
+<span class="font-bold text-primary">Bruna Lima (Proveedora)</span>
+<span class="font-data-mono text-text-muted">09:18 BRT</span>
+</div>
+<p class="text-text-primary">"Buen día Felipe! Haremos el interior a fondo. Para los ventanales exteriores de más de 3m el paquete estándar no incluye escaleras telescópicas, pero pasamos microfibra hasta donde alcance el brazo normal."</p>
+</div>
+<!-- Message 3 -->
+<div class="p-2 rounded bg-surface-panel shadow-sm">
+<div class="flex justify-between items-center text-[11px] mb-1">
+<span class="font-bold text-secondary">Felipe Azevedo (Cliente)</span>
+<span class="font-data-mono text-text-muted">12:55 BRT</span>
+</div>
+<p class="text-text-primary">"Fui a revisar y las ventanas altas tienen restos de pintura. Mi huésped llega a las 14:00 y no puedo entregarlo así. Necesito solución inmediata o retención."</p>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT PANEL: Financial Escrow & AI Copilot Decision Engine (Col-span 6) -->
+<div class="lg:col-span-6 space-y-space-md">
+<!-- Financial Breakdown & Escrow Partition -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-base">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+            Auditoría Financiera &amp; Desglose Escrow
+          </h2>
+<span class="font-data-mono text-[11px] px-2 py-0.5 rounded bg-brand-green-subtle text-primary font-bold">MERCADO PAGO RETENTION</span>
+</div>
+<div class="p-space-sm rounded-lg bg-surface-canvas space-y-space-sm">
+<div class="flex justify-between items-center pb-space-xs">
+<span class="font-body-sm text-body-sm text-text-muted">Transacción Mercado Pago</span>
+<span class="font-data-mono text-data-mono text-text-primary font-bold">#MP-9812903-sa</span>
+</div>
+<div class="flex justify-between items-center pb-space-xs">
+<span class="font-body-sm text-body-sm text-text-muted">Método de Captura</span>
+<span class="font-body-sm text-body-sm text-text-primary font-medium">Tarjeta de Crédito (Visa •••• 4118)</span>
+</div>
+<div class="flex justify-between items-center pb-space-xs">
+<span class="font-body-sm text-body-sm text-text-muted">Monto Total Abonado por Cliente</span>
+<span class="font-headline-sm text-headline-sm text-text-primary font-bold">R$ 380,00</span>
+</div>
+<!-- Escrow Pool Breakdown Bar -->
+<div class="space-y-1.5 pt-space-xs">
+<div class="flex justify-between text-[11px] font-data-mono">
+<span class="text-primary font-bold">Proveedor (85%): R$ 323,00</span>
+<span class="text-secondary font-bold">Take Rate UGO (15%): R$ 57,00</span>
+</div>
+<div class="w-full h-2.5 rounded-full bg-surface-container flex overflow-hidden">
+<div class="h-full bg-primary" style="width: 85%"></div>
+<div class="h-full bg-secondary" style="width: 15%"></div>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-sm p-space-sm rounded-lg bg-surface-muted text-text-secondary text-[12px]">
+<span class="material-symbols-outlined text-warning-amber text-[18px]">lock_clock</span>
+<span>Ambos fondos se encuentran aislados en bóveda de liquidación judicial. Ninguna dispersión saldrá sin fallo firmado.</span>
+</div>
+</div>
+<!-- Hugo Copilot AI Forensic Recommendation -->
+<div class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-base relative overflow-hidden">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="w-7 h-7 rounded-lg bg-copilot-cyan flex items-center justify-center text-on-primary">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</span>
+<h2 class="font-headline-sm text-headline-sm text-text-primary font-bold">
+              Dictamen Previo de Hugo Copilot AI
+            </h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-copilot-cyan-subtle text-copilot-cyan font-data-mono text-[11px] font-bold">
+            CONFIDENCIA: 91%
+          </span>
+</div>
+<!-- AI Analysis Body -->
+<div class="p-space-sm rounded-lg bg-copilot-cyan-subtle/40 space-y-space-xs">
+<div class="flex items-center justify-between font-label-sm text-label-sm font-semibold text-secondary">
+<span>Diagnóstico Automatizado de Conformidad</span>
+<span class="font-data-mono">Algoritmo Marketplace v4.2</span>
+</div>
+<p class="font-body-sm text-body-sm text-text-primary leading-relaxed">
+            Se detecta cumplimiento demostrable del <strong>85% del alcance pactado</strong> (cocina, pisos, eliminación de residuos e higienización general con geolocalización coincidente). Los ventanales exteriores altos estaban consignados en el chat complementario, pero no en la tarifa de servicio base post-obra contratada.
+          </p>
+<div class="pt-space-xs">
+<div class="font-label-sm text-label-sm uppercase font-bold text-primary">Arbitraje Recomendado por Modelo:</div>
+<div class="mt-1 p-space-sm rounded bg-surface-panel shadow-sm font-body-sm text-body-sm text-text-primary space-y-1">
+<div class="flex justify-between items-center">
+<span>• Reembolso parcial a Cliente:</span>
+<span class="font-data-mono font-bold text-tertiary">R$ 80,00 (compensación de cristales)</span>
+</div>
+<div class="flex justify-between items-center">
+<span>• Liberación a Proveedora:</span>
+<span class="font-data-mono font-bold text-primary">R$ 300,00 (labor interior certificada)</span>
+</div>
+<div class="flex justify-between items-center">
+<span>• Bonif. de Cortesía UGO Client Care:</span>
+<span class="font-data-mono font-bold text-secondary">Cupón R$ 50,00 en próximo servicio</span>
+</div>
+</div>
+</div>
+</div>
+<button class="w-full h-8 px-space-sm rounded-lg bg-copilot-cyan hover:bg-copilot-cyan-hover text-on-primary font-label-md text-label-md flex items-center justify-center gap-space-xs transition-colors" id="apply-ai-btn">
+<span class="material-symbols-outlined text-[16px]">auto_fix_high</span>
+<span>Aplicar Sugerencia de Copilot al Panel de Decisión</span>
+</button>
+</div>
+<!-- Decision Panel & Binding Administrative Voting -->
+<form class="bg-surface-panel rounded-xl p-space-base shadow-sm space-y-space-base" id="arbitration-form" onsubmit="event.preventDefault(); triggerBindingResolution();">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-text-primary flex items-center gap-space-xs font-bold">
+<span class="material-symbols-outlined text-tertiary text-[20px]">gavel</span>
+            Panel de Decisión &amp; Voto Administrativo
+          </h2>
+<span class="px-2 py-0.5 rounded bg-surface-muted font-label-sm text-[10px] text-text-muted font-bold uppercase">PODER VINCULANTE</span>
+</div>
+<!-- Resolution Selector -->
+<div class="space-y-space-xs">
+<label class="font-label-md text-label-md text-text-primary font-semibold">Seleccionar Fallo Administrativo:</label>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-xs">
+<label class="flex items-center gap-space-xs p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted cursor-pointer transition-colors">
+<input checked="" class="accent-primary h-4 w-4" name="fallo" type="radio" value="partial"/>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-text-primary">Arbitraje Parcial Sugerido</div>
+<div class="font-data-mono text-[11px] text-text-muted">CLI: R$ 80 · PRV: R$ 300</div>
+</div>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted cursor-pointer transition-colors">
+<input class="accent-primary h-4 w-4" name="fallo" type="radio" value="full_refund"/>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-text-primary">Reembolso 100% a Cliente</div>
+<div class="font-data-mono text-[11px] text-text-muted">CLI: R$ 380 · PRV: R$ 0</div>
+</div>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted cursor-pointer transition-colors">
+<input class="accent-primary h-4 w-4" name="fallo" type="radio" value="release_provider"/>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-text-primary">Liberar Pago a Proveedor</div>
+<div class="font-data-mono text-[11px] text-text-muted">CLI: R$ 0 · PRV: R$ 323</div>
+</div>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-lg bg-surface-canvas hover:bg-surface-muted cursor-pointer transition-colors">
+<input class="accent-primary h-4 w-4" name="fallo" type="radio" value="split_fifty"/>
+<div>
+<div class="font-label-sm text-label-sm font-bold text-text-primary">División 50/50 Equitativa</div>
+<div class="font-data-mono text-[11px] text-text-muted">CLI: R$ 190 · PRV: R$ 190</div>
+</div>
+</label>
+</div>
+</div>
+<!-- Mandatory Legal/Operational Justification -->
+<div class="space-y-space-xs">
+<label class="font-label-md text-label-md text-text-primary font-semibold flex items-center justify-between" for="fundamentacion">
+<span>Fundamentación Jurídica y Operativa del Fallo *</span>
+<span class="font-data-mono text-[11px] text-text-muted">Mínimo 50 caracteres</span>
+</label>
+<textarea class="w-full p-space-sm rounded-lg bg-surface-canvas text-text-primary font-body-sm text-body-sm placeholder:text-text-muted focus:outline-none focus:bg-surface-panel shadow-sm" id="fundamentacion" placeholder="Ingrese el fundamento contractual basado en los Términos de Servicio UGO Florianópolis (Cláusula 14: Servicios Extraordinarios y Geocercas)..." required="" rows="3">Se constata entrega efectiva del 85% de las dependencias pactadas en cronograma. Conforme a la cláusula 14 de Términos de Servicio UGO, los cristales de altura que requieran equipo especial no presupuestado se liquidan por ajuste proporcional, emitiendo reembolso de R$ 80,00 al huésped y dispersando R$ 300,00 netos a la proveedora con preservación de rating.</textarea>
+</div>
+<!-- Checkbox Digital Signature Verification -->
+<div class="p-space-sm rounded-lg bg-brand-green-subtle/50 flex items-start gap-space-xs">
+<input checked="" class="mt-0.5 accent-primary h-4 w-4" id="signature-check" required="" type="checkbox"/>
+<label class="font-body-sm text-body-sm text-text-primary select-none" for="signature-check">
+<span class="font-semibold">Requiere firma digital de SUPER_ADMIN (Mateo Silva).</span>
+<span class="block text-[11px] text-text-secondary mt-0.5">
+              Al confirmar, el sistema autoriza la liberación del webhook de Mercado Pago y notifica instantáneamente a ambas partes vía WhatsApp y Push.
+            </span>
+</label>
+</div>
+<!-- Submission Button -->
+<button class="w-full h-10 px-space-base rounded-lg bg-primary hover:bg-brand-green-hover text-on-primary font-label-md text-label-md flex items-center justify-center gap-space-xs shadow-sm transition-all active:scale-[0.99]" id="execute-btn" type="submit">
+<span class="material-symbols-outlined text-[20px]">encrypted</span>
+<span>Firmar y Ejecutar Dispersión Criptográfica</span>
+</button>
+</form>
+</div>
+</div>
+<!-- Notification Toast Simulation -->
+<div class="fixed bottom-6 right-6 hidden bg-inverse-surface text-inverse-on-surface px-space-base py-space-sm rounded-lg shadow-xl z-50 flex items-center gap-space-sm max-w-md animate-bounce" id="toast-success">
+<span class="material-symbols-outlined text-primary-fixed text-[24px]">verified</span>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md font-bold text-surface-bright">Fallo Vinculante Ejecutado con Éxito</span>
+<span class="font-body-sm text-body-sm text-surface-variant">Dispersión PIX procesada en Mercado Pago. Caso #D-1042 cerrado y archivado.</span>
+</div>
+</div>
+</div>
+<script>
+  function triggerBindingResolution() {
+    const btn = document.getElementById('execute-btn');
+    const toast = document.getElementById('toast-success');
+    
+    if (!btn) return;
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="material-symbols-outlined text-[20px] animate-spin">refresh</span><span>Dispersando Fondos en Mercado Pago...</span>';
+    
+    setTimeout(() => {
+      btn.innerHTML = '<span class="material-symbols-outlined text-[20px]">check_circle</span><span>Resolución Vinculante Notificada</span>';
+      btn.classList.remove('bg-primary', 'hover:bg-brand-green-hover');
+      btn.classList.add('bg-surface-muted', 'text-text-muted');
+      
+      if (toast) {
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+          toast.classList.add('hidden');
+        }, 5000);
+      }
+    }, 1200);
+  }
+
+  const aiBtn = document.getElementById('apply-ai-btn');
+  if (aiBtn) {
+    aiBtn.addEventListener('click', () => {
+      const radio = document.querySelector('input[name="fallo"][value="partial"]');
+      if (radio) radio.checked = true;
+      const textarea = document.getElementById('fundamentacion');
+      if (textarea) {
+        textarea.focus();
+        textarea.classList.add('ring-2', 'ring-copilot-cyan');
+        setTimeout(() => textarea.classList.remove('ring-2', 'ring-copilot-cyan'), 1500);
+      }
+    });
+  }
+
+  const modalTrigger = document.getElementById('modal-trigger');
+  if (modalTrigger) {
+    modalTrigger.addEventListener('click', () => {
+      const form = document.getElementById('arbitration-form');
+      if (form) {
+        form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    });
+  }
+</script></main></div></body></html>

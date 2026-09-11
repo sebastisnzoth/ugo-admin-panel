@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+<!-- STITCH_THREEJS_START:ANIMATION_57 class="fixed inset-0 w-full h-full bg-transparent" -->
+<div class="fixed inset-0 w-full h-full bg-transparent" style="display:block;">
+<script src="https://ajax.googleapis.com/ajax/libs/threejs/r125/three.min.js"></script>
+<div id="threejs-container-ANIMATION_57" style="width:100%;height:100%"></div>
+<script>
+(function() {
+  const container = document.getElementById('threejs-container-ANIMATION_57');
+  const devicePixelRatio = window.devicePixelRatio || 1;
+  /**
+ * =======================================================================
+ * UGO Cliente · Web App
+ * Archivo: src/components/fiduciario/PinReleaseModal.tsx
+ * Modal y Widget de Liberación de Fondos bajo Protocolo Itaú Escrow
+ * =======================================================================
+ */
+
+'use client';
+
+import React, { useState } from 'react';
+
+interface PinReleaseModalProps {
+  orderId: string;
+  professionalName: string;
+  tradeTitle: string;
+  escrowAmountBRL: number;
+  tokioMarinePolicyNumber: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccessRelease: (pin: string) => void;
+}
+
+export function PinReleaseModal({
+  orderId,
+  professionalName,
+  tradeTitle,
+  escrowAmountBRL,
+  tokioMarinePolicyNumber,
+  isOpen,
+  onClose,
+  onSuccessRelease,
+}: PinReleaseModalProps) {
+  const [pin, setPin] = useState(['', '', '', '']);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmedCheck, setConfirmedCheck] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleDigitChange = (value: string, index: number) => {
+    if (!/^\d*$/.test(value)) return;
+    const nextPin = [...pin];
+    nextPin[index] = value.slice(-1);
+    setPin(nextPin);
+
+    // Auto-foco en el siguiente input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`pin-input-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === 'Backspace' && !pin[index] && index > 0) {
+      const prevInput = document.getElementById(`pin-input-${index - 1}`);
+      prevInput?.focus();
+    }
+  };
+
+  const isComplete = pin.every((d) => d.length === 1) && confirmedCheck;
+
+  const handleConfirm = async () => {
+    setIsSubmitting(true);
+    // Simula invocación API fiduciaria Itaú Escrow
+    setTimeout(() => {
+      setIsSubmitting(false);
+      onSuccessRelease(pin.join(''));
+    }, 1200);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0F172A]/60 backdrop-blur-sm p-4 animate-fadeIn">
+      <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-[#E2E8F0] space-y-5">
+        {/* Header con Sello Fiduciario */}
+        <div className="flex items-center justify-between pb-3 border-b border-[#F1F5F9]">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-[#E0F2FE] text-[#0077B6] flex items-center justify-center">
+              <span className="material-symbols-outlined text-[20px]">lock_open</span>
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-[#0F172A]">Liberación de Custodia Fiduciaria</h3>
+              <p className="text-[11px] text-[#64748B]">Protocolo Itaú Escrow · Orden {orderId}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="text-[#94A3B8] hover:text-[#0F172A] p-1 rounded-lg"
+          >
+            <span className="material-symbols-outlined text-[18px]">close</span>
+          </button>
+        </div>
+
+        {/* Resumen Financiero a Descongelar */}
+        <div className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-2xl p-4 text-center space-y-1">
+          <p className="text-xs text-[#64748B] font-medium">Monto retenido a transferir al prestador</p>
+          <p className="text-3xl font-black text-[#00875A]">
+            R$ {escrowAmountBRL.toFixed(2).replace('.', ',')}
+          </p>
+          <p className="text-xs text-[#1E293B] font-semibold mt-1">{professionalName}</p>
+          <p className="text-[11px] text-[#64748B]">{tradeTitle}</p>
+        </div>
+
+        {/* Formulario PIN de 4 dígitos */}
+        <div className="space-y-2 text-center">
+          <label className="text-xs font-bold text-[#334155]">
+            Ingresá tu PIN de conformidad (4 dígitos)
+          </label>
+          <p className="text-[11px] text-[#64748B]">
+            Al ingresar el PIN confirmás que el servicio fue ejecutado según lo acordado.
+          </p>
+          <div className="flex justify-center gap-3 pt-2">
+            {pin.map((digit, idx) => (
+              <input
+                key={idx}
+                id={`pin-input-${idx}`}
+                type="password"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleDigitChange(e.target.value, idx)}
+                onKeyDown={(e) => handleKeyDown(e, idx)}
+                className="w-12 h-14 text-center text-xl font-bold bg-[#F1F5F9] border-2 border-[#CBD5E1] focus:border-[#00B4D8] focus:bg-white rounded-xl focus:outline-none transition-all shadow-inner"
+              />
+            ))}
+          </div>
+        </div>
+
+        {/* Check de Conformidad y Activación de Póliza */}
+        <div className="bg-[#EFF6FF] border border-[#BFDBFE] p-3 rounded-xl space-y-2">
+          <label className="flex items-start gap-2.5 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={confirmedCheck}
+              onChange={(e) => setConfirmedCheck(e.target.checked)}
+              className="mt-0.5 rounded border-[#94A3B8] text-[#00875A] focus:ring-[#00875A]"
+            />
+            <span className="text-[11px] text-[#1E3A8A] leading-tight font-medium">
+              He verificado el funcionamiento del equipo/instalación y autorizo la liquidación bancaria irrevocable.
+            </span>
+          </label>
+          <div className="text-[10px] text-[#0077B6] flex items-center gap-1 font-semibold pt-1 border-t border-[#DBEAFE]">
+            <span className="material-symbols-outlined text-[13px]">shield</span>
+            Activa automáticamente la Póliza Tokio Marine {tokioMarinePolicyNumber} (60 días).
+          </div>
+        </div>
+
+        {/* Acciones */}
+        <div className="space-y-2 pt-1">
+          <button
+            disabled={!isComplete || isSubmitting}
+            onClick={handleConfirm}
+            className="w-full bg-[#00875A] hover:bg-[#00704A] disabled:bg-[#CBD5E1] disabled:cursor-not-allowed text-white py-3 rounded-xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2"
+          >
+            {isSubmitting ? (
+              <>
+                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span>Procesando liberación fiduciaria...</span>
+              </>
+            ) : (
+              <>
+                <span className="material-symbols-outlined text-[18px]">verified</span>
+                <span>Autorizar Liquidación & Activar Seguro</span>
+              </>
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-full text-xs font-semibold text-[#64748B] hover:text-[#0F172A] py-1.5"
+          >
+            Volver a la bitácora de servicio
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+})();
+</script>
+</div>
+<!-- STITCH_THREEJS_END:ANIMATION_57 -->
+</body>
+</html>

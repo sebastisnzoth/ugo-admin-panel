@@ -1,0 +1,63 @@
+# Checklist de Despliegue (Go-Live) & Variables de Entorno de UGO Pro
+**UGO Pro — Aplicación del Especialista en Servicios Técnicos**  
+**Versión:** 3.0 (Sanity Checked & Neutralizada) • **Target Platforms:** iOS / Android (Mobile App) • **Backend Baseline:** Supabase (Auth, Realtime, Storage, PostgREST)
+
+---
+
+## 1. Matriz de Variables de Entorno de Referencia (`.env.production`)
+
+> **DECLARACIÓN ARQUITECTURAL:**
+> - UGO Pro Mobile se integra directamente con la infraestructura existente de **Supabase** (Auth, PostgREST, Realtime, Storage).
+> - Las variables asociadas a microservicios dedicados de backend, colas de mensajería o servicios externos se documentan aquí exclusivamente como patrones conceptuales de arquitectura bajo el tag `[CONCEPT / REQUIRES BACKEND INTEGRATION]`.
+
+### 1.1. Configuración Mobile App (React Native / Flutter)
+
+```bash
+# -------------------------------------------------------------
+# CLIENT MOBILE CONFIG (.env.production / xcconfig / gradle)
+# -------------------------------------------------------------
+EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+APP_ENV=production
+SENTRY_DSN=https://sentry-live-public@sentry.io/ugo-pro-mobile
+GOOGLE_MAPS_MOBILE_API_KEY=AIzaSyC_LiveGoogleMapsMobileKeyUGO2024
+ENABLE_BIOMETRICS=true
+MAX_IMAGE_UPLOAD_BYTES=10485760  # 10MB
+IMAGE_COMPRESSION_QUALITY=0.85
+```
+
+### 1.2. Patrones Conceptuales de Backend / Integración Externa `[CONCEPT / REQUIRES BACKEND INTEGRATION]`
+
+```bash
+# NOTA: Los siguientes valores corresponden a contratos conceptuales de backend
+# y NO representan dependencias directas del cliente mobile de UGO Pro:
+# AI_MODEL_ENDPOINT: Endpoint orientativo para inferencia de visión computacional (UGO Lens / Hugo Copilot).
+# STORAGE_BUCKET: Bucket de almacenamiento de evidencias del servicio en Supabase Storage.
+# NOTIFICATIONS_PROVIDER: Servicio de despacho push / SMS para validación OTP.
+```
+
+---
+
+## 2. Checklist Integral de Despliegue (Go-Live)
+
+### Fase A: Seguridad y Protección de Datos
+- [x] **Cifrado y Privacidad de Datos:** Manejo de datos personales (CPF, teléfonos, llaves PIX) transmitidos de forma segura y enmascarados en interfaces de usuario (`***.842.109-**`).
+- [x] **Trazabilidad de Evidencias:** Registro de metadatos (timestamp, orden asociada, etapa antes/después) al almacenar fotografías de respaldo.
+- [x] **Seguridad en Acceso y Sesión:** Autenticación de especialista basada en sesiones seguras de Supabase Auth con soporte biométrico opcional en el dispositivo.
+
+### Fase B: Resiliencia de Red y Operación de Campo
+- [x] **Conservación Temporal de Estado Local:** Retención en memoria y almacenamiento local del dispositivo del estado de la orden activa, fotos tomadas y tiempos de cronómetro ante pérdidas de conectividad en subsuelos.
+- [x] **Cola de Acciones Pendientes:** Encolado de eventos (fotos de evidencia, notas técnicas, propuestas de ampliación) para sincronización automática al recuperar cobertura.
+- [x] **Deduplicación por Evento:** Identificación única de cada acción de UI (`client_event_id`) para evitar duplicación de registros al reconectar.
+
+### Fase C: Mobile Apps (App Store & Google Play)
+- [x] **Permisos de Dispositivo Justificados:**
+  - `NSLocationWhenInUseUsageDescription` (Radar de oportunidades geolocalizado y navegación).
+  - `NSCameraUsageDescription` (Identificación asistida UGO Lens y captura de evidencias del servicio).
+  - `NSFaceIDUsageDescription` (Autenticación rápida del especialista).
+- [x] **Touch Targets y Accesibilidad:**
+  - Botones y controles táctiles con tamaño mínimo `>= 48x48px`.
+  - Contraste tipográfico según directrices de accesibilidad sobre fondos `#faf8ff`.
+- [x] **Manejo de Errores y Estados Vacíos:**
+  - Estados vacíos optimizados para radar sin solicitudes cercanas.
+  - Alertas informativas ante fallas de carga de evidencias con opción de reintento.

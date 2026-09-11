@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+
+<html lang="es"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{width:100vw;margin:0;padding:0;}body{overscroll-behavior:none;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{"colors":{"primary-fixed":"#dde1ff","surface-variant":"#dae2fd","on-secondary-fixed-variant":"#005049","inverse-primary":"#b8c4ff","on-secondary-container":"#006f66","surface-container-lowest":"#ffffff","on-tertiary-fixed-variant":"#653e00","inverse-surface":"#283044","on-tertiary":"#ffffff","tertiary-fixed-dim":"#ffb95f","on-primary-fixed":"#001453","on-tertiary-container":"#ffa929","tertiary-container":"#6b4200","on-primary-container":"#a8b8ff","surface-tint":"#3755c3","on-surface-variant":"#444653","surface-dim":"#d2d9f4","background":"#faf8ff","surface-container-highest":"#dae2fd","error-container":"#ffdad6","primary":"#00288e","on-primary-fixed-variant":"#173bab","on-secondary-fixed":"#00201d","on-error":"#ffffff","on-primary":"#ffffff","surface":"#faf8ff","on-secondary":"#ffffff","secondary":"#006a61","on-tertiary-fixed":"#2a1700","secondary-container":"#86f2e4","secondary-fixed":"#89f5e7","surface-container-low":"#f2f3ff","on-background":"#131b2e","outline-variant":"#c4c5d5","outline":"#757684","primary-container":"#1e40af","on-surface":"#131b2e","secondary-fixed-dim":"#6bd8cb","surface-container":"#eaedff","inverse-on-surface":"#eef0ff","surface-bright":"#faf8ff","on-error-container":"#93000a","error":"#ba1a1a","primary-fixed-dim":"#b8c4ff","tertiary":"#4c2e00","tertiary-fixed":"#ffddb8","surface-container-high":"#e2e7ff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"space-sm":"0.75rem","screen-margin-tablet":"1.5rem","space-lg":"1.25rem","bottom-nav-height":"4.5rem","header-height-mobile":"3.75rem","space-md":"1rem","space-xs":"0.5rem","space-2xs":"0.25rem","space-3xl":"2.5rem","space-xl":"1.5rem","space-2xl":"2rem","card-padding":"1.25rem","screen-margin-mobile":"1rem"},"fontFamily":{"headline-sm":["Plus Jakarta Sans"],"body-md":["Plus Jakarta Sans"],"display-lg-mobile":["Plus Jakarta Sans"],"label-md":["Inter"],"title-md":["Plus Jakarta Sans"],"label-lg":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-sm":["Inter"],"display-lg":["Plus Jakarta Sans"],"body-sm":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"]},"fontSize":{"headline-sm":["18px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"600"}],"body-md":["14px",{"lineHeight":"20px","fontWeight":"400"}],"display-lg-mobile":["32px",{"lineHeight":"38px","letterSpacing":"-0.02em","fontWeight":"800"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.02em","fontWeight":"600"}],"title-md":["16px",{"lineHeight":"22px","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"18px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-md":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"700"}],"label-sm":["10px",{"lineHeight":"14px","letterSpacing":"0.04em","fontWeight":"700"}],"display-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.03em","fontWeight":"800"}],"body-sm":["12px",{"lineHeight":"16px","fontWeight":"400"}],"body-lg":["16px",{"lineHeight":"24px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}]}}}}</script></head><body class="bg-surface text-on-surface font-body-md text-body-md min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-on-primary"><header class="fixed top-0 inset-x-0 z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] pt-safe"><div class="h-16 px-screen-margin-mobile flex items-center justify-between gap-space-sm"><div class="flex items-center gap-space-sm"><div class="flex items-center gap-1.5"><span class="font-headline-md text-headline-md text-primary-container tracking-tight">UGO</span><span class="px-1.5 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm uppercase tracking-wider">PRO</span></div><div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container/30 text-on-secondary-container"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="font-label-sm text-label-sm">Disponible</span></div></div><div class="flex items-center gap-space-xs"><button aria-label="Notificaciones" class="relative w-11 h-11 flex items-center justify-center rounded-full text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-tertiary-container ring-2 ring-surface"></span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="flex flex-col relative w-full pt-16 pb-24 bg-surface min-h-screen"><div class="flex flex-col w-full">
+<!-- Internal Navigation Header -->
+<div class="px-screen-margin-mobile py-space-sm flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<button aria-label="Volver" class="w-11 h-11 flex items-center justify-center rounded-full bg-surface-container text-on-surface-variant active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+</button>
+<div>
+<h1 class="font-headline-sm text-headline-sm text-on-surface tracking-tight">Ayuda y Soporte UGO</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Atención prioritaria para profesionales</p>
+</div>
+</div>
+<div class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container">
+<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+<span class="font-label-sm text-label-sm">Guardia Activa</span>
+</div>
+</div>
+<!-- Search Hero Surface -->
+<div class="px-screen-margin-mobile pt-space-xs pb-space-md">
+<div class="relative bg-surface-container rounded-xl p-space-md shadow-sm">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-primary-container text-[20px]" style="font-variation-settings: 'FILL' 1;">help</span>
+<label class="font-title-md text-title-md text-on-surface" for="faq-search">¿En qué podemos ayudarte hoy?</label>
+</div>
+<div class="relative flex items-center">
+<span class="material-symbols-outlined absolute left-3 text-outline text-[20px]">search</span>
+<input class="w-full h-12 pl-10 pr-10 rounded-lg bg-surface-container-lowest text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none shadow-sm transition-all" id="faq-search" placeholder="Ej. Retiro PIX, cliente ausente, certificado..." type="text"/>
+<button aria-label="Limpiar búsqueda" class="hidden absolute right-3 text-outline hover:text-on-surface" id="clear-search" type="button">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<div class="flex items-center gap-1.5 mt-2.5 overflow-x-auto no-scrollbar">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex-shrink-0">Popular:</span>
+<button class="quick-tag px-2 py-0.5 rounded-full bg-surface text-on-surface-variant font-label-sm text-label-sm hover:text-primary-container transition-colors flex-shrink-0" type="button">Retiro PIX</button>
+<button class="quick-tag px-2 py-0.5 rounded-full bg-surface text-on-surface-variant font-label-sm text-label-sm hover:text-primary-container transition-colors flex-shrink-0" type="button">Cliente ausente</button>
+<button class="quick-tag px-2 py-0.5 rounded-full bg-surface text-on-surface-variant font-label-sm text-label-sm hover:text-primary-container transition-colors flex-shrink-0" type="button">UGO Shield</button>
+</div>
+</div>
+</div>
+<!-- Specialized Mediation Banner (Disputes distinction) -->
+<div class="px-screen-margin-mobile mb-space-md">
+<div class="bg-primary-fixed text-on-primary-fixed p-space-md rounded-xl shadow-sm flex items-start gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-primary-container text-on-primary flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm">
+<span class="material-symbols-outlined text-[22px]">gavel</span>
+</div>
+<div class="flex-1 min-w-0">
+<div class="flex items-center gap-1.5">
+<h2 class="font-title-md text-title-md text-on-primary-fixed leading-tight">¿Conflicto con un trabajo en curso?</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-primary-fixed-variant mt-1 leading-snug">
+          Para reclamos técnicos, disconformidad o arbitraje de una orden activa, recurrí a la mesa de mediación.
+        </p>
+<button class="inline-flex items-center gap-1 mt-2.5 font-label-md text-label-md text-primary-container font-semibold hover:underline" type="button">
+<span>Abrir Centro de Mediación UGO</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Help Categories Bento Grid (4 cards) -->
+<div class="px-screen-margin-mobile mb-space-lg">
+<div class="flex items-center justify-between mb-space-xs">
+<h2 class="font-title-md text-title-md text-on-surface">Explorar por categorías</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">4 guías maestras</span>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<!-- Card 1: Problemas con un servicio -->
+<button class="group text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all active:scale-[0.98] flex flex-col justify-between h-44" type="button">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[24px]">handyman</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface group-hover:text-primary-container transition-colors line-clamp-1">Servicios</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-3">Cancelaciones, demoras de tránsito, cliente ausente y adición de horas extras.</p>
+</div>
+<span class="font-label-sm text-label-sm text-primary-container inline-flex items-center gap-0.5 pt-1">
+          Ver protocolos
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</span>
+</button>
+<!-- Card 2: Pagos y Saldo UGO -->
+<button class="group text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all active:scale-[0.98] flex flex-col justify-between h-44" type="button">
+<div class="w-10 h-10 rounded-lg bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[24px]">account_balance_wallet</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface group-hover:text-primary-container transition-colors line-clamp-1">Pagos y Saldo</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-3">Mecanismo de pago protegido, liberación de fondos y transferencia a llave PIX.</p>
+</div>
+<span class="font-label-sm text-label-sm text-primary-container inline-flex items-center gap-0.5 pt-1">
+          Ver cobros
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</span>
+</button>
+<!-- Card 3: Mi Cuenta y Verificación -->
+<button class="group text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all active:scale-[0.98] flex flex-col justify-between h-44" type="button">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[24px]">verified_user</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface group-hover:text-primary-container transition-colors line-clamp-1">Verificación</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-3">Suba de DNI, constancia impositiva, certificados de oficio y cambio de rubro.</p>
+</div>
+<span class="font-label-sm text-label-sm text-primary-container inline-flex items-center gap-0.5 pt-1">
+          Ver requisitos
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</span>
+</button>
+<!-- Card 4: Seguridad y Protección UGO Shield -->
+<button class="group text-left p-space-md rounded-xl bg-surface-container-lowest shadow-sm hover:bg-surface-container-low transition-all active:scale-[0.98] flex flex-col justify-between h-44" type="button">
+<div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-on-surface">
+<span class="material-symbols-outlined text-[24px]">shield_with_heart</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface group-hover:text-primary-container transition-colors line-clamp-1">UGO Shield</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1 line-clamp-3">Póliza de accidentes personales en obra, línea de urgencia y buenas prácticas de taller.</p>
+</div>
+<span class="font-label-sm text-label-sm text-primary-container inline-flex items-center gap-0.5 pt-1">
+          Ver cobertura
+          <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+</span>
+</button>
+</div>
+</div>
+<!-- FAQs Accordion Section -->
+<div class="px-screen-margin-mobile mb-space-lg">
+<div class="flex items-center justify-between mb-space-xs">
+<h2 class="font-title-md text-title-md text-on-surface">Preguntas Frecuentes</h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Respuestas directas</span>
+</div>
+<div class="space-y-space-xs" id="faq-list">
+<!-- FAQ Item 1 -->
+<div class="faq-item rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all">
+<button aria-expanded="false" class="faq-toggle w-full p-space-md flex items-center justify-between text-left gap-space-xs" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary-container text-[20px]">lock_clock</span>
+<span class="font-title-md text-title-md text-on-surface leading-tight">¿Cómo funciona el Pago protegido por UGO?</span>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-200 text-[20px] faq-icon">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-md pb-space-md pt-0">
+<div class="p-space-sm rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm space-y-2">
+<p>El cliente abona el valor total acordado al momento de confirmar la contratación. Dicho monto queda resguardado bajo el sistema protegido de UGO durante el desarrollo del servicio.</p>
+<p>Una vez que concluís la tarea y el usuario otorga el comprobante de conformidad en la app, los fondos quedan acreditados automáticamente en tu saldo disponible.</p>
+</div>
+</div>
+</div>
+<!-- FAQ Item 2 -->
+<div class="faq-item rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all">
+<button aria-expanded="false" class="faq-toggle w-full p-space-md flex items-center justify-between text-left gap-space-xs" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-primary-container text-[20px]">person_pin_circle</span>
+<span class="font-title-md text-title-md text-on-surface leading-tight">¿Qué hacer si el cliente no está en el domicilio?</span>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-200 text-[20px] faq-icon">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-md pb-space-md pt-0">
+<div class="p-space-sm rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm space-y-2">
+<p>Al llegar al lugar indicado, activá el botón <strong class="text-on-surface">Llegué a destino</strong> para iniciar el cronómetro de espera oficial.</p>
+<p>Esperá 10 minutos con el temporizador activo e intentá comunicarte mediante el chat integrado o llamada telefónica de UGO. Si no responde tras los 10 minutos reglamentarios, podés cancelar con causa justificada sin penalización de métricas y cobrando la compensación por traslado.</p>
+</div>
+</div>
+</div>
+<!-- FAQ Item 3 -->
+<div class="faq-item rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all">
+<button aria-expanded="false" class="faq-toggle w-full p-space-md flex items-center justify-between text-left gap-space-xs" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-secondary text-[20px]">bolt</span>
+<span class="font-title-md text-title-md text-on-surface leading-tight">¿Cómo solicito un retiro por PIX de mi saldo?</span>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-200 text-[20px] faq-icon">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-md pb-space-md pt-0">
+<div class="p-space-sm rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm space-y-2">
+<p>1. Ingresá a la sección <strong class="text-on-surface">Billetera</strong> en la barra inferior de navegación.</p>
+<p>2. Presioná el botón <strong class="text-on-surface">Retirar Saldo</strong> y seleccioná el importe que deseás transferir.</p>
+<p>3. Confirmá el envío hacia tu llave PIX verificada (DNI, Teléfono o E-mail ya autorizados). La transferencia se procesa en el acto sin comisiones de extracción adicionales.</p>
+</div>
+</div>
+</div>
+<!-- FAQ Item 4 (Mediation contextual link) -->
+<div class="faq-item rounded-xl bg-surface-container-lowest shadow-sm overflow-hidden transition-all">
+<button aria-expanded="false" class="faq-toggle w-full p-space-md flex items-center justify-between text-left gap-space-xs" type="button">
+<div class="flex items-center gap-2.5">
+<span class="material-symbols-outlined text-tertiary-container text-[20px]">balance</span>
+<span class="font-title-md text-title-md text-on-surface leading-tight">¿Tengo un desacuerdo específico sobre una orden activa?</span>
+</div>
+<span class="material-symbols-outlined text-outline transition-transform duration-200 text-[20px] faq-icon">expand_more</span>
+</button>
+<div class="faq-content hidden px-space-md pb-space-md pt-0">
+<div class="p-space-sm rounded-lg bg-surface-container-low text-on-surface-variant font-body-sm text-body-sm space-y-2.5">
+<p>El Centro de Ayuda General resuelve dudas operativas e institucionales. Si experimentás diferencias sobre cotizaciones extras, alcance del presupuesto o daño en obra en un trabajo puntual:</p>
+<div class="p-2.5 rounded-lg bg-surface-container text-on-surface flex items-center justify-between gap-2">
+<span class="font-body-sm text-body-sm font-semibold">Ir al Centro de Mediación UGO</span>
+<button class="px-3 py-1.5 rounded-md bg-primary-container text-on-primary font-label-sm text-label-sm shadow-sm active:scale-95 transition-transform" type="button">Abrir caso</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Operational Status Card -->
+<div class="px-screen-margin-mobile mb-space-lg">
+<div class="p-space-md rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[22px]">hub</span>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Estado de la Plataforma</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Sistemas de radar, cobro y chat 100% operativos</p>
+</div>
+</div>
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+</div>
+</div>
+<!-- Direct Contact Channels -->
+<div class="px-screen-margin-mobile mb-space-md">
+<div class="mb-space-xs">
+<h2 class="font-title-md text-title-md text-on-surface">Canales de Atención Directa</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Elegí la vía más conveniente para tu consulta</p>
+</div>
+<div class="space-y-space-xs">
+<!-- Button 1: 24/7 Priority Chat -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-primary-container text-on-primary shadow-sm active:scale-[0.99] transition-transform flex items-center justify-between" type="button">
+<div class="flex items-center gap-space-xs text-left">
+<div class="w-9 h-9 rounded-lg bg-on-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-[20px]">chat</span>
+</div>
+<div>
+<div class="flex items-center gap-1.5">
+<span class="font-title-md text-title-md text-on-primary">Chatear con soporte de guardia 24/7</span>
+</div>
+<span class="font-label-sm text-label-sm text-on-primary-container">Respuesta promedio &lt; 5 min</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-on-primary text-[20px]">arrow_forward</span>
+</button>
+<!-- Button 2: Emergency Line -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-transform flex items-center justify-between" type="button">
+<div class="flex items-center gap-space-xs text-left">
+<div class="w-9 h-9 rounded-lg bg-error-container text-on-error-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">call</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface">Línea telefónica de emergencia UGO</span>
+<p class="font-label-sm text-label-sm text-error">0800-UGO-PRO · Casos urgentes en obra</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">phone_forwarded</span>
+</button>
+<!-- Button 3: Email Ticket -->
+<button class="w-full min-h-[52px] px-space-md py-space-sm rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low active:scale-[0.99] transition-transform flex items-center justify-between" type="button">
+<div class="flex items-center gap-space-xs text-left">
+<div class="w-9 h-9 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+</div>
+<div>
+<span class="font-title-md text-title-md text-on-surface">Enviar consulta por email</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">soporte-pro@ugoapp.com · Trámites y constancias</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline text-[20px]">send</span>
+</button>
+</div>
+</div>
+<!-- Trust Seal & Community Guidance Footnote -->
+<div class="px-screen-margin-mobile pt-space-xs pb-space-lg text-center">
+<div class="inline-flex items-center gap-1 text-outline font-label-sm text-label-sm mb-1">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>Red Segura UGO Pro · Protocolo de Protección Integral</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-xs mx-auto">
+      Cada llamada y mensaje dentro de la app queda registrado para tu protección y transparencia profesional.
+    </p>
+</div>
+</div>
+<script>
+  (function () {
+    // FAQ Accordion Logic
+    const faqToggles = document.querySelectorAll('.faq-toggle');
+    faqToggles.forEach(toggle => {
+      toggle.addEventListener('click', () => {
+        const content = toggle.nextElementSibling;
+        const icon = toggle.querySelector('.faq-icon');
+        const isExpanded = toggle.getAttribute('aria-expanded') === 'true';
+
+        // Close all others
+        faqToggles.forEach(other => {
+          if (other !== toggle) {
+            other.setAttribute('aria-expanded', 'false');
+            other.nextElementSibling.classList.add('hidden');
+            const otherIcon = other.querySelector('.faq-icon');
+            if (otherIcon) otherIcon.style.transform = 'rotate(0deg)';
+          }
+        });
+
+        if (isExpanded) {
+          toggle.setAttribute('aria-expanded', 'false');
+          content.classList.add('hidden');
+          if (icon) icon.style.transform = 'rotate(0deg)';
+        } else {
+          toggle.setAttribute('aria-expanded', 'true');
+          content.classList.remove('hidden');
+          if (icon) icon.style.transform = 'rotate(180deg)';
+        }
+      });
+    });
+
+    // Realtime Search Filter on FAQs
+    const searchInput = document.getElementById('faq-search');
+    const clearBtn = document.getElementById('clear-search');
+    const faqItems = document.querySelectorAll('.faq-item');
+    const quickTags = document.querySelectorAll('.quick-tag');
+
+    function filterFAQs(query) {
+      const term = query.toLowerCase().trim();
+      if (term.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+      }
+
+      faqItems.forEach(item => {
+        const text = item.textContent.toLowerCase();
+        if (text.includes(term)) {
+          item.style.display = 'block';
+        } else {
+          item.style.display = 'none';
+        }
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => filterFAQs(e.target.value));
+    }
+
+    if (clearBtn) {
+      clearBtn.addEventListener('click', () => {
+        searchInput.value = '';
+        filterFAQs('');
+        searchInput.focus();
+      });
+    }
+
+    quickTags.forEach(tag => {
+      tag.addEventListener('click', () => {
+        searchInput.value = tag.textContent;
+        filterFAQs(tag.textContent);
+      });
+    });
+  })();
+</script></main><nav class="fixed bottom-0 inset-x-0 z-50 pb-safe bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(15,23,42,0.05)]" data-active-classes="text-primary-container font-semibold"><div class="flex justify-around items-center h-16 px-space-xs"><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-primary-container transition-all group" data-path="radar" href="#"><span class="material-symbols-outlined text-[24px]">radar</span><span class="font-label-sm text-label-sm">Radar</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-primary-container transition-all group" data-path="actividad" href="#"><span class="material-symbols-outlined text-[24px]">work</span><span class="font-label-sm text-label-sm">Actividad</span></a><a class="flex flex-col items-center justify-center gap-1 w-16 h-12 text-on-surface-variant hover:text-primary-container transition-all group" data-path="billetera" href="#"><span class="material-symbols-outlined text-[24px]">account_balance_wallet</span><span class="font-label-sm text-label-sm">Billetera</span></a><a aria-current="page" class="flex flex-col items-center justify-center gap-1 w-16 h-12 transition-all group text-primary-container font-semibold" data-path="perfil" href="#"><span class="material-symbols-outlined text-[24px]">badge</span><span class="font-label-sm text-label-sm">Perfil</span></a></div></nav></body></html>
