@@ -1,5 +1,5 @@
-import React,{useEffect,useState}from'react'
-import{supabase}from'../lib/supabase'
+import React,{useEffect,useMemo,useState}from'react'
+import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
 type Props={service?:Service|null}
@@ -17,6 +17,7 @@ function distanceMeters(a:[number,number],b:[number,number]){
 }
 
 export function ProviderLocationTracker({service}:Props){
+ const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
  const serviceActive=Boolean(service&&ACTIVE_TRACKING_STATES.has(service.estado))
@@ -36,7 +37,7 @@ export function ProviderLocationTracker({service}:Props){
    }).subscribe()
   }).catch(()=>{})
   return()=>{alive=false;if(channel)supabase.removeChannel(channel)}
- },[])
+ },[supabase])
 
  useEffect(()=>{
   if(!navigator.geolocation||(!available&&!serviceActive))return
@@ -56,7 +57,7 @@ export function ProviderLocationTracker({service}:Props){
    }
   },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
- },[available,serviceActive,service?.id,service?.estado])
+ },[available,serviceActive,service?.id,service?.estado,supabase])
 
  if(service?.estado!=='en_camino'||distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
  return <div style={{position:'fixed',left:'50%',bottom:96,transform:'translateX(-50%)',zIndex:80,background:'#fff',borderRadius:18,padding:'12px 16px',boxShadow:'0 8px 28px rgba(0,0,0,.18)',fontWeight:800,fontSize:14,maxWidth:'calc(100vw - 32px)',textAlign:'center'}}>📍 Estás a {Math.max(1,Math.round(distanceToClient))} m del cliente · Ya podés confirmar “Llegué al cliente”</div>
