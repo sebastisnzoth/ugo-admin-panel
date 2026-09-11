@@ -56,3 +56,8 @@
 @media(max-width:389px){.ugo-provider-root{width:100vw}.ugo-provider-root .ugo-evidence-panel{max-width:calc(100vw - 24px)!important}.ugo-provider-root .ugo-provider-structural-home,.ugo-provider-root .ugo-provider-prototype{max-width:100vw!important}}
 .ugo-provider-root button[aria-label="Notificaciones UGO"]{position:absolute!important;right:12px!important;top:18px!important;z-index:80!important}
 .ugo-provider-root button[aria-label="Notificaciones UGO"]+aside{position:absolute!important;right:12px!important;top:70px!important;width:calc(100% - 24px)!important;max-height:calc(100% - 90px)!important;z-index:79!important}
+
+/* Provider Journey 1: auth and onboarding consume shared UGO primitives. */
+.mvp-auth-page.role-provider,.ugo-provider-onboarding{font-family:var(--ugo-font);color:var(--ugo-color-on-surface);background:var(--ugo-color-surface)!important}
+.mvp-auth-page.role-provider .mvp-primary,.ugo-provider-onboarding .mvp-primary{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
+.mvp-auth-page.role-provider input,.ugo-provider-onboarding input,.ugo-provider-onboarding select,.ugo-provider-onboarding textarea{border-color:var(--ugo-color-outline-variant);border-radius:var(--ugo-radius-sm);font-family:var(--ugo-font)}
