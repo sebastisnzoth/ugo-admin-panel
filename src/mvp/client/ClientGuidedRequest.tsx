@@ -59,7 +59,7 @@ export function ClientGuidedRequest(){
   let restored:Partial<Draft>={}
   try{restored=JSON.parse(sessionStorage.getItem(`ugo:guided-request-draft:${session.user.id}`)||'{}') as Partial<Draft>}catch{restored={}}
   setDraft(v=>({...v,address:v.address||address,...restored}))
-  let id=''
+  let id:string
   try{id=sessionStorage.getItem(`ugo:guided-request:${session.user.id}`)||''}catch{id=''}
   if(!id)id=crypto.randomUUID()
   setDraftId(id)
