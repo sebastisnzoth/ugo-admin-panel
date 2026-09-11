@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import type { FormEvent } from 'react'
+import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { getRoleSupabase, type UgoRole } from '../lib/roleSupabase'
 
@@ -18,6 +18,21 @@ export const STATUS_LABELS:Record<string,string>={borrador:'Borrador',buscando:'
 export const money=(value:number|null|undefined,currency='BRL')=>new Intl.NumberFormat('pt-BR',{style:'currency',currency}).format(Number(value||0))
 export function timeAgo(value:string){const m=Math.max(0,Math.round((Date.now()-new Date(value).getTime())/60000));if(m<1)return'ahora';if(m<60)return`hace ${m} min`;const h=Math.round(m/60);return h<24?`hace ${h} h`:new Date(value).toLocaleDateString('es-AR')}
 export function go(app:'client'|'provider'|'admin'|'home'){window.location.href=app==='home'?window.location.pathname:`${window.location.pathname}?app=${app}`}
+
+/** Shared UGO Design System primitives. Keep screen composition in feature modules. */
+const joinClasses=(...classes:Array<string|false|undefined>)=>classes.filter(Boolean).join(' ')
+export type ButtonProps=ButtonHTMLAttributes<HTMLButtonElement>&{variant?:'primary'|'secondary'|'success'|'danger';loading?:boolean}
+export const Button=React.forwardRef<HTMLButtonElement,ButtonProps>(function Button({variant='primary',loading=false,disabled,children,...props},ref){return <button ref={ref} className={joinClasses('ugo-ds-button',variant)} disabled={disabled||loading} aria-busy={loading||undefined} {...props}>{loading?'Procesando…':children}</button>})
+export type IconButtonProps=ButtonHTMLAttributes<HTMLButtonElement>&{label:string}
+export const IconButton=React.forwardRef<HTMLButtonElement,IconButtonProps>(function IconButton({label,children,...props},ref){return <button ref={ref} type="button" className="ugo-ds-icon-button" aria-label={label} {...props}>{children}</button>})
+export const Input=React.forwardRef<HTMLInputElement,InputHTMLAttributes<HTMLInputElement>>(function Input(props,ref){return <input ref={ref} className={joinClasses('ugo-ds-field',props.className)} {...props}/>} )
+export type SearchProps=Omit<InputHTMLAttributes<HTMLInputElement>,'type'> & {onClear?:()=>void; searchLabel?:string}
+export const Search=React.forwardRef<HTMLInputElement,SearchProps>(function Search({onClear,searchLabel='Buscar',value,defaultValue,className,...props},ref){const hasValue=String(value??defaultValue??'').length>0;return <div className={joinClasses('ugo-ds-search',className)} role="search"><span aria-hidden="true">⌕</span><input ref={ref} type="search" aria-label={searchLabel} value={value} defaultValue={defaultValue} {...props}/>{hasValue&&onClear?<IconButton label="Limpiar búsqueda" onClick={onClear}>×</IconButton>:null}</div>})
+export const Card=React.forwardRef<HTMLDivElement,HTMLAttributes<HTMLDivElement>>(function Card({className,...props},ref){return <div ref={ref} className={joinClasses('ugo-ds-card',className)} {...props}/>})
+export type BadgeProps=HTMLAttributes<HTMLSpanElement>&{variant?:'success'|'warning'|'error'}
+export function Badge({variant='success',className,...props}:BadgeProps){return <span className={joinClasses('ugo-ds-badge',variant&&`ugo-ds-status ${variant}`,className)} {...props}/>}
+export type AvatarProps=HTMLAttributes<HTMLDivElement>&{name?:string;src?:string;alt?:string}
+export function Avatar({name='',src,alt=name,className,...props}:AvatarProps){const initials=name.trim().split(/\s+/).map(part=>part[0]).filter(Boolean).slice(0,2).join('').toUpperCase();return <div className={joinClasses('ugo-ds-avatar',className)} role={src?'img':undefined} aria-label={src?alt:undefined} {...props}>{src?<img src={src} alt={alt}/>:initials||'UG'}</div>}
 
 export function useRoleSession(role:UgoRole){
   const supabase=useMemo(()=>getRoleSupabase(role),[role]);const[session,setSession]=useState<Session|null>(null);const[profile,setProfile]=useState<UgoUser|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('')
