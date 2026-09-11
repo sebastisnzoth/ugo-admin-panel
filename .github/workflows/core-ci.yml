@@ -47,6 +47,7 @@ jobs:
           src/mvp/client/ClientGuidedRequest.tsx
           src/mvp/client/ClientPaymentChoice.tsx
           src/mvp/client/ClientHugoBridge.tsx
+          src/mvp/ClientCompletionReview.tsx
           src/mvp/NotificationCenter.tsx
           src/mvp/PaymentTimeline.tsx
           src/mvp/ClientLiveTracking.tsx
@@ -58,6 +59,7 @@ jobs:
           src/mvp/ProviderLocationTracker.tsx
           src/mvp/provider/ProviderRoot.tsx
           src/mvp/provider/ProviderActiveJob.tsx
+          src/mvp/provider/ProviderEvidencePanel.tsx
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
