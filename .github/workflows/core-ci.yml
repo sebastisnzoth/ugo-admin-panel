@@ -34,8 +34,15 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Lint new P0 surfaces
-        run: npx eslint src/mvp/MvpApp.tsx src/mvp/PaymentTimeline.tsx src/mvp/provider/ProviderActiveJob.tsx
+      - name: Lint critical operational surfaces
+        run: >-
+          npx eslint
+          src/mvp/MvpApp.tsx
+          src/mvp/PaymentTimeline.tsx
+          src/mvp/ClientLiveTracking.tsx
+          src/mvp/ClientActiveMap.tsx
+          src/mvp/ProviderLocationTracker.tsx
+          src/mvp/provider/ProviderActiveJob.tsx
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
