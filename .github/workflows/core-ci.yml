@@ -42,6 +42,10 @@ jobs:
           src/mvp/PaymentTimeline.tsx
           src/mvp/ClientLiveTracking.tsx
           src/mvp/ClientActiveMap.tsx
+          src/mvp/ClientGlobalMenu.tsx
+          src/mvp/AppLocationButton.tsx
+          src/mvp/VoiceHugoDock.tsx
+          src/mvp/uiEvents.ts
           src/mvp/ProviderLocationTracker.tsx
           src/mvp/provider/ProviderRoot.tsx
           src/mvp/provider/ProviderActiveJob.tsx

@@ -7,6 +7,7 @@ import { ProviderCompletionReceipt } from './ProviderCompletionReceipt'
 import { ClientEvidenceGallery } from './ClientEvidenceGallery'
 import { ClientPixPaymentPanel } from './ClientPixPaymentPanel'
 import { ClientQuickOrder } from './ClientQuickOrder'
+import { UGO_UI_EVENTS } from './uiEvents'
 import type { ClientActionHandlers, ClientHugoIntent } from './client/clientTypes'
 import './voice.css'
 
@@ -27,6 +28,18 @@ export function VoiceHugoDock({role,accessToken,service,availableOffers=0,mode='
   observer.observe(document.body,{childList:true,subtree:true})
   return()=>{observer.disconnect();button?.removeEventListener('click',handler)}
  },[role])
+ useEffect(()=>{
+  if(role!=='client')return
+  const handler=()=>{
+   if(mode==='quantum'){
+    if(!voice.active&&voice.state!=='connecting')void voice.connect()
+    return
+   }
+   setOpen(true)
+  }
+  window.addEventListener(UGO_UI_EVENTS.clientHugo,handler)
+  return()=>window.removeEventListener(UGO_UI_EVENTS.clientHugo,handler)
+ },[mode,role,voice.active,voice.connect,voice.state])
 
  if(mode==='quantum'&&role==='client'){
   const visual=voice.state==='speaking'?'speaking':voice.state==='connecting'?'thinking':voice.state==='hearing'?'listening':voice.active?'ready':voice.state==='error'?'error':'idle'

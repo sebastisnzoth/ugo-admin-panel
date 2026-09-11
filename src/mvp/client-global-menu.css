@@ -21,7 +21,9 @@
 .ugo-client-global-drawer .ugo-client-menu-brand span{font-size:12px!important;font-weight:800!important;color:#667085!important;letter-spacing:.02em!important}
 .ugo-client-menu-close{width:40px!important;height:40px!important;border-radius:50%!important;background:#f2f4f3!important;border:0!important;color:#111!important;font-size:26px!important;line-height:1!important;display:grid!important;place-items:center!important;cursor:pointer!important}
 
-.ugo-client-account-card{display:flex;align-items:center;gap:12px;padding:13px 12px;margin:2px 0 14px;border-radius:18px;background:#f6f7f6}
+.ugo-client-account-card{width:100%;display:flex;align-items:center;gap:12px;padding:13px 12px;margin:2px 0 14px;border-radius:18px;background:#f6f7f6;font:inherit;text-align:left;color:inherit;cursor:pointer}
+.ugo-client-account-card:hover{filter:brightness(.985)}
+.ugo-client-account-card:focus-visible{outline:3px solid rgba(0,105,72,.25);outline-offset:2px}
 .ugo-client-account-avatar{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-size:15px;font-weight:900}
 .ugo-client-account-card div{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
 .ugo-client-account-card b{font-size:14px;color:#101828}
