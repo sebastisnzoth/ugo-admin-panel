@@ -4,7 +4,7 @@ import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
 
 type ReviewService={id:string;numero:number|string;estado:string;proveedor_id:string|null}
 
-export function ClientCompletionReview(){
+export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[service,setService]=useState<ReviewService|null>(null)
  const[hasFinalEvidence,setHasFinalEvidence]=useState(false)
@@ -23,12 +23,12 @@ export function ClientCompletionReview(){
  useEffect(()=>{document.body.classList.toggle('ugo-client-awaiting-review',Boolean(service));return()=>document.body.classList.remove('ugo-client-awaiting-review')},[service])
  if(!service)return null
  async function approve(){if(!hasFinalEvidence)return;setBusy(true);setNotice('');const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:service.id});setBusy(false);if(error){setNotice(error.message);return}setNotice('Trabajo aprobado. El pago protegido fue liberado.');await load()}
- function dispute(){window.dispatchEvent(new Event('ugo:open-dispute'))}
- return <section aria-live="polite" style={{position:'fixed',zIndex:118,left:'50%',bottom:'max(18px,env(safe-area-inset-bottom))',transform:'translateX(-50%)',width:'min(680px,calc(100vw - 24px))',maxHeight:'78dvh',overflowY:'auto',background:'#fff',border:'1px solid #e7ece9',borderRadius:24,padding:16,boxShadow:'0 24px 70px rgba(15,23,42,.20)'}}>
-  <div style={{display:'flex',justifyContent:'space-between',gap:12,alignItems:'flex-start'}}><div><small style={{fontWeight:900,color:'#067647',letterSpacing:'.06em'}}>REVISIÓN FINAL</small><h2 style={{margin:'4px 0 2px',fontSize:22}}>Servicio #{service.numero}</h2><p style={{margin:0,fontSize:13,color:'#667085'}}>Revisá las fotos del proveedor antes de decidir.</p></div><span style={{fontSize:24}}>✓</span></div>
+ return <section aria-live="polite" className="ugo-completion-review">
+  <header><div><h2>¿Cómo quedó el trabajo?</h2><p>Servicio #{service.numero} · Revisá el registro final antes de liberar el pago.</p></div><span aria-hidden="true">✓</span></header>
   <ClientEvidenceGallery serviceId={service.id}/>
-  {!hasFinalEvidence&&<div style={{marginTop:12,padding:11,borderRadius:12,background:'#fff7e6',color:'#7a4b00',fontSize:12,fontWeight:700}}>Todavía no hay una foto final “Después” visible. UGO no habilita la liberación hasta poder revisarla.</div>}
-  {notice&&<div style={{marginTop:12,padding:11,borderRadius:12,background:'#f5f7f6',fontSize:12}}>{notice}</div>}
-  <div style={{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(220px,1fr))',gap:10,marginTop:14}}><button type="button" onClick={dispute} disabled={busy} style={{minHeight:48,borderRadius:14,border:'1px solid #d92d20',background:'#fff',color:'#b42318',fontWeight:900,cursor:'pointer'}}>Tengo un problema · Abrir disputa</button><button type="button" onClick={approve} disabled={busy||!hasFinalEvidence} style={{minHeight:48,borderRadius:14,border:0,background:hasFinalEvidence?'#0aa45c':'#d0d5dd',color:'#fff',fontWeight:900,cursor:hasFinalEvidence?'pointer':'not-allowed'}}>{busy?'Procesando…':'Estoy conforme · Liberar pago'}</button></div>
+  {!hasFinalEvidence&&<div className="ugo-completion-warning">Todavía no hay una foto final “Después” visible. UGO no habilita la liberación hasta poder revisarla.</div>}
+  {notice&&<div className="ugo-completion-notice">{notice}</div>}
+  <div className="ugo-completion-decision"><span>Al confirmar, el pago protegido se libera según el flujo actual.</span></div>
+  <div className="ugo-completion-actions"><button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button><button type="button" onClick={approve} disabled={busy||!hasFinalEvidence}>{busy?'Procesando…':'Aprobar y liberar pago'}</button></div>
  </section>
 }

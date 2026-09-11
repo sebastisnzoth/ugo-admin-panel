@@ -5,7 +5,7 @@ type VerificationState='registrado'|'pendiente'|'verificado'|'rechazado'|'suspen
 type ProviderRow={usuario_id:string;estado_verificacion:VerificationState;motivo_rechazo:string|null;bio:string|null;tarifa_base:number|string|null;online:boolean;disponible:boolean;ciudad_base:string|null;telefono_profesional:string|null;experiencia_anos:number|null;especialidades:any;updated_at:string;categoria_principal_id:string|null;usuario?:{nombre:string;apellido:string|null;email:string|null;karma:number;servicios_completados:number;activo:boolean;zona:string|null;pais:string|null}|null;categoria?:{nombre:string;emoji:string}|null}
 
 export function AdminProviderVerificationPanel(){
- const[open,setOpen]=useState(false),[rows,setRows]=useState<ProviderRow[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('pendiente'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState('')
+ const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('pendiente'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState('')
  const load=useCallback(async()=>{
   const[{data:profiles,error:pe},{data:users,error:ue},{data:cats,error:ce}]=await Promise.all([
    supabase.from('perfiles_proveedor').select('usuario_id,estado_verificacion,motivo_rechazo,bio,tarifa_base,online,disponible,ciudad_base,telefono_profesional,experiencia_anos,especialidades,updated_at,categoria_principal_id').order('updated_at',{ascending:false}),
@@ -39,8 +39,8 @@ export function AdminProviderVerificationPanel(){
  const label=(s:VerificationState)=>({registrado:'Registrado',pendiente:'Pendiente',verificado:'Verificado',rechazado:'Rechazado',suspendido:'Suspendido'}[s])
  const specialText=(v:any)=>Array.isArray(v)?v.join(', '):v&&typeof v==='object'?JSON.stringify(v):String(v||'')
  return <>
-  <button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:68,zIndex:14018,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#fff',color:'#111',boxShadow:'0 8px 28px rgba(0,0,0,.22)',cursor:'pointer'}}>✅ Proveedores{pending>0?` (${pending})`:''}</button>
-  {open&&<aside style={{position:'fixed',left:18,bottom:118,zIndex:14017,width:'min(610px,calc(100vw - 36px))',maxHeight:'min(720px,calc(100vh - 140px))',overflow:'auto',background:'#fff',border:'1px solid #ddd',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)',padding:16,color:'#111'}}>
+  <button type="button" onClick={()=>setOpen(v=>!v)} style={{border:0,borderRadius:10,padding:'9px 12px',fontWeight:800,background:'#111820',color:'#fff',cursor:'pointer'}}>✅ {open?'Cerrar':'Abrir'} proveedores{pending>0?` (${pending})`:''}</button>
+  {open&&<aside style={{width:'100%',maxHeight:'720px',overflow:'auto',background:'#fff',border:'1px solid #ddd',borderRadius:22,padding:16,color:'#111',marginTop:10}}>
    <div style={{display:'flex',alignItems:'center',gap:8}}><div style={{flex:1}}><strong>Verificación de Proveedores</strong><div style={{fontSize:11,opacity:.6}}>Estado operativo real de UGO · {rows.length} proveedores</div></div><button onClick={()=>setOpen(false)} style={{border:0,background:'transparent',fontSize:22,cursor:'pointer'}}>×</button></div>
    <div style={{display:'flex',gap:5,overflowX:'auto',padding:'12px 0'}}>{(['todos','registrado','pendiente','verificado','rechazado','suspendido'] as const).map(x=><button key={x} onClick={()=>setFilter(x)} style={{border:'1px solid #ddd',background:filter===x?'#111820':'#fff',color:filter===x?'#fff':'#111',borderRadius:999,padding:'7px 10px',whiteSpace:'nowrap',fontSize:11,fontWeight:700}}>{x==='todos'?'Todos':label(x)}</button>)}</div>
    {visible.length===0&&<div style={{padding:24,textAlign:'center',opacity:.6,fontSize:12}}>No hay proveedores en este estado.</div>}

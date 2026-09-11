@@ -1,28 +1,15 @@
 import React,{useEffect,useState}from'react'
+import{useClientFlow}from'./client/clientFlow'
 import'./client-reference.css'
 import'./client-global-menu.css'
 
-function emit(name:string){window.dispatchEvent(new Event(name))}
-function click(selector:string){(document.querySelector(selector) as HTMLButtonElement|null)?.click()}
-
 export function ClientGlobalMenu(){
  const[open,setOpen]=useState(false)
+ const{actions}=useClientFlow()
  useEffect(()=>{
-  const handler=()=>setOpen(true)
-  const intercept=(event:MouseEvent)=>{
-   const target=event.target as HTMLElement|null
-   if(!target?.closest('.ugo-client-menu-trigger'))return
-   event.preventDefault()
-   event.stopPropagation()
-   setOpen(true)
-  }
   const onKey=(event:KeyboardEvent)=>{if(event.key==='Escape')setOpen(false)}
-  window.addEventListener('ugo:open-client-menu',handler)
-  document.addEventListener('click',intercept,true)
   document.addEventListener('keydown',onKey)
   return()=>{
-   window.removeEventListener('ugo:open-client-menu',handler)
-   document.removeEventListener('click',intercept,true)
    document.removeEventListener('keydown',onKey)
   }
  },[])
@@ -33,12 +20,12 @@ export function ClientGlobalMenu(){
   return()=>{document.body.style.overflow=previous}
  },[open])
  function close(){setOpen(false)}
- function home(){close();window.setTimeout(()=>emit('ugo:client-home'),80)}
- function search(){close();window.setTimeout(()=>emit('ugo:client-search'),80)}
- function hugo(){close();window.setTimeout(()=>emit('ugo:open-hugo'),80)}
- function history(){close();window.setTimeout(()=>click('.ugo-client-root .ugo-history-client'),80)}
- function dispute(){close();window.setTimeout(()=>click('.ugo-client-root .ugo-dispute-launch'),80)}
- function location(){close();window.setTimeout(()=>click('.ugo-client-root .ugo-location-control.role-client button'),80)}
+ function home(){close()}
+ function search(){close();actions.openSearch()}
+ function hugo(){close()}
+ function history(){close();actions.openHistory()}
+ function dispute(){close();actions.openDispute()}
+ function location(){close()}
  return <>
   <button type="button" className="ugo-client-global-trigger" onClick={()=>setOpen(true)} aria-label="Abrir menú">☰</button>
   {open&&<div className="ugo-client-menu-backdrop ugo-client-global-backdrop" onClick={close} role="presentation"><aside className="ugo-client-menu ugo-client-global-drawer" onClick={e=>e.stopPropagation()} aria-label="Menú UGO Cliente">
