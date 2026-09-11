@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useMemo,useState}from'react'
 import{useConfigSistema}from'../hooks/useAdminData'
 import{supabase}from'../lib/supabase'
 import{AdminPaymentCredentials}from'./AdminPaymentCredentials'
@@ -41,13 +41,12 @@ export function AdminSystemSettings(){
  const[saving,setSaving]=useState(false)
  const[savedMessage,setSavedMessage]=useState('')
  const entries=useMemo(()=>Object.entries(config||{}).filter(([key])=>!isSecret(key)).map(([key,value])=>[key,String(value??'')] as [string,string]),[config])
- useEffect(()=>{setDraft(Object.fromEntries(entries))},[config])
  const groups=useMemo(()=>{
   const general:[string,string][]=[];const rules:[string,string][]=[]
   entries.forEach(([key,value])=>{if(isPaymentMethod(key))return;if(isRule(key))rules.push([key,value]);else general.push([key,value])})
   return{general,rules}
  },[entries])
- const dirtyKeys=useMemo(()=>entries.filter(([key,value])=>(draft[key]??value)!==value).map(([key])=>key),[draft,entries])
+ const dirtyKeys=useMemo(()=>entries.filter(([key,value])=>draft[key]!==undefined&&draft[key]!==value).map(([key])=>key),[draft,entries])
  const loadIntegrations=useCallback(async()=>{
   setIntegrationsLoading(true);setIntegrationsError('')
   try{
@@ -60,7 +59,7 @@ export function AdminSystemSettings(){
   }catch(x){setIntegrations(null);setIntegrationsError(x instanceof Error?x.message:'No se pudo verificar el runtime de integraciones.')}
   finally{setIntegrationsLoading(false)}
  },[])
- useEffect(()=>{if(tab==='integrations'&&!integrations&&!integrationsLoading)void loadIntegrations()},[tab,integrations,integrationsLoading,loadIntegrations])
+ const openIntegrations=()=>{setTab('integrations');if(!integrations&&!integrationsLoading)void loadIntegrations()}
  const refreshAll=async()=>{await refetch();if(tab==='integrations')await loadIntegrations()}
  const saveChanges=async()=>{
   if(!dirtyKeys.length)return
@@ -68,10 +67,11 @@ export function AdminSystemSettings(){
   try{
    for(const key of dirtyKeys)await update(key,draft[key])
    setSavedMessage(`${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} guardado${dirtyKeys.length===1?'':'s'}`)
+   setDraft({})
    await refetch()
   }finally{setSaving(false)}
  }
- const restoreDraft=()=>{setDraft(Object.fromEntries(entries));setSavedMessage('')}
+ const restoreDraft=()=>{setDraft({});setSavedMessage('')}
  const renderEditor=(items:[string,string][])=>{
   const filtered=items.filter(([key])=>{const text=`${human(key)} ${key} ${meta[key]?.description||''}`.toLowerCase();return text.includes(query.trim().toLowerCase())})
   if(!items.length)return <div className="ugo-system-empty"><strong>Sin parámetros en este bloque</strong><span>No hay parámetros configurados para esta sección.</span></div>
@@ -91,7 +91,7 @@ export function AdminSystemSettings(){
  return <div className="ugo-system-panel">
   <section className="ugo-system-hero"><div className="ugo-system-hero-copy"><div className="ugo-system-hero-icon">⚙</div><div><small>CONFIGURACIÓN GLOBAL</small><div className="ugo-system-titleline"><h3>Sistema UGO</h3><span>● Activo</span></div><p>Parámetros, medios de pago, integraciones y estado técnico. Las claves sensibles nunca se muestran en el navegador.</p></div></div><button onClick={()=>{void refreshAll()}}>↻ Actualizar</button></section>
   {error&&<div className="ugo-system-state error"><strong>No se pudo cargar toda la configuración</strong><span>{error}</span></div>}
-  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='payments'?'active':''} onClick={()=>setTab('payments')}>Medios de pago</button><button className={tab==='credentials'?'active':''} onClick={()=>setTab('credentials')}>Credenciales de pago</button><button className={tab==='integrations'?'active':''} onClick={()=>setTab('integrations')}>Integraciones</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
+  <nav className="ugo-system-tabs" aria-label="Secciones de sistema"><button className={tab==='general'?'active':''} onClick={()=>setTab('general')}>General</button><button className={tab==='rules'?'active':''} onClick={()=>setTab('rules')}>Reglas de negocio</button><button className={tab==='payments'?'active':''} onClick={()=>setTab('payments')}>Medios de pago</button><button className={tab==='credentials'?'active':''} onClick={()=>setTab('credentials')}>Credenciales de pago</button><button className={tab==='integrations'?'active':''} onClick={openIntegrations}>Integraciones</button><button className={tab==='technical'?'active':''} onClick={()=>setTab('technical')}>Estado técnico</button></nav>
   {(tab==='general'||tab==='rules')&&<section className="ugo-system-card"><div className="ugo-system-cardhead ugo-system-cardhead-actions"><div><small>{tab==='general'?'GENERAL':'REGLAS DE NEGOCIO'}</small><h4>{tab==='general'?'Operación global':'Matching, servicios, pagos y políticas'}</h4></div><div className="ugo-system-actions"><label className="ugo-system-search">⌕<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Buscar parámetro…"/></label><button className="ugo-system-secondary" onClick={restoreDraft} disabled={!dirtyKeys.length}>↶ Restaurar</button><button className="ugo-system-save" onClick={()=>void saveChanges()} disabled={!dirtyKeys.length||saving}>{saving?'Guardando…':`✓ Guardar${dirtyKeys.length?` (${dirtyKeys.length})`:''}`}</button></div></div>{savedMessage&&<div className="ugo-system-success">✓ {savedMessage}</div>}{renderEditor(tab==='general'?groups.general:groups.rules)}<div className="ugo-system-info">ℹ Los cambios se aplican al guardar. Los parámetros críticos pueden requerir reinicio de servicios.</div></section>}
   {tab==='payments'&&<AdminPaymentMethods config={config} update={update}/>} 
   {tab==='credentials'&&<AdminPaymentCredentials/>}
