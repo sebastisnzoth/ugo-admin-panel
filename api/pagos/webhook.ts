@@ -5,6 +5,9 @@ const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 const MP_ACCESS_TOKEN = process.env.MERCADO_PAGO_ACCESS_TOKEN
 
+type ServiceHint={id:string;numero:number|string|null;cliente_id:string;proveedor_id:string|null;tarifa:number|null;moneda:string|null;estado:string}
+type PaymentUpdate={estado:string;mp_status:string;mp_payment_id:string;updated_at:string;autorizado_at?:string;reembolsado_at?:string}
+
 function paymentIdFrom(req: VercelRequest) {
   const queryId = Array.isArray(req.query.id) ? req.query.id[0] : req.query.id
   const bodyId = req.body?.data?.id || req.body?.id
@@ -44,9 +47,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const openPixEvent = openPixEventFrom(req)
   if (process.env.PAYMENTS_OPENPIX_ENABLED === 'true' && openPixEvent.toUpperCase().startsWith('OPENPIX:')) {
     const expected = process.env.OPENPIX_WEBHOOK_AUTHORIZATION
-    if (expected && String(req.headers.authorization || '') !== expected) {
-      return res.status(401).json({ received: false, error: 'Webhook OpenPix no autorizado.' })
-    }
+    if (expected && String(req.headers.authorization || '') !== expected) return res.status(401).json({ received: false, error: 'Webhook OpenPix no autorizado.' })
     const charge = req.body?.charge || req.body?.transaction || req.body?.pix || {}
     const correlationID = String(charge?.correlationID || req.body?.correlationID || '')
     const externalPaymentId = String(charge?.identifier || charge?.id || correlationID || '')
@@ -68,15 +69,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const expansionHint = hintedExpansionId(req)
-    let serviceHint = hintedServiceId(req)
-    let hintedService:any = null
+    const serviceHint = hintedServiceId(req)
+    let hintedService:ServiceHint|null = null
     let token = MP_ACCESS_TOKEN || ''
 
     if (serviceHint) {
       const { data } = await sb.from('servicios').select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado').eq('id', serviceHint).maybeSingle()
-      hintedService = data
-      // Los checkouts de ampliación se crean con el token plataforma, por lo que
-      // no deben consultarse con credenciales OAuth del proveedor.
+      hintedService = (data||null) as ServiceHint|null
       if (!expansionHint && hintedService?.proveedor_id) {
         const { data: oauthRows } = await sb.rpc('mp_oauth_get_private', { p_proveedor_id: hintedService.proveedor_id })
         const seller = oauthRows?.[0]
@@ -143,7 +142,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const servicioId = String(paymentData.external_reference || paymentData.metadata?.servicio_id || serviceHint || '')
     if (!servicioId) return res.status(200).json({ received: true, ignored: true })
 
-    const servicio = hintedService?.id === servicioId ? hintedService : (await sb.from('servicios').select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado').eq('id', servicioId).maybeSingle()).data
+    const servicio = hintedService?.id === servicioId ? hintedService : ((await sb.from('servicios').select('id,numero,cliente_id,proveedor_id,tarifa,moneda,estado').eq('id', servicioId).maybeSingle()).data as ServiceHint|null)
     if (!servicio) {
       console.error('Servicio del webhook no encontrado')
       return res.status(200).json({ received: true })
@@ -167,7 +166,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (paymentData.status === 'refunded') nuevoEstado = 'reembolsado'
     if (['rejected', 'cancelled', 'charged_back'].includes(paymentData.status)) nuevoEstado = 'fallido'
 
-    const update:any = { estado: nuevoEstado, mp_status: paymentData.status, mp_payment_id: String(paymentData.id || paymentId), updated_at: new Date().toISOString() }
+    const update:PaymentUpdate = { estado: nuevoEstado, mp_status: String(paymentData.status||''), mp_payment_id: String(paymentData.id || paymentId), updated_at: new Date().toISOString() }
     if (nuevoEstado === 'retenido') update.autorizado_at = new Date().toISOString()
     if (nuevoEstado === 'reembolsado') update.reembolsado_at = new Date().toISOString()
 
