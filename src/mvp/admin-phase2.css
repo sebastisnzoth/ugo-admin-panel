@@ -20,3 +20,8 @@
 .ugo-admin2 .ugo-users-panel,.ugo-admin2 .ugo-users-list,.ugo-admin2 .ugo-user-card{font-family:var(--ugo-font)}
 .ugo-admin2 .ugo-users-panel,.ugo-admin2 .ugo-user-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
 .ugo-admin2 .ugo-users-panel input,.ugo-admin2 .ugo-users-panel select{min-height:var(--ugo-touch-target);border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-sm)!important}
+
+/* Admin Journey 3: provider verification and profiles. */
+.ugo-admin2 .ugo-provider-verification,.ugo-admin2 .ugo-provider-list,.ugo-admin2 .ugo-provider-detail{font-family:var(--ugo-font)}
+.ugo-admin2 .ugo-provider-verification,.ugo-admin2 .ugo-provider-detail{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-admin2 .ugo-provider-verification button,.ugo-admin2 .ugo-provider-detail button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
