@@ -1,6 +1,6 @@
 # UGO — Development Master
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de desarrollo y ejecución  
 **Rama de integración:** `main`
 
@@ -17,6 +17,7 @@ Problema real
 → impacto técnico/datos
 → vertical slice
 → validación
+→ actualización de maestros
 → release
 → medición
 ```
@@ -117,7 +118,7 @@ sin transición real
 
 ---
 
-# 6. Orden de decisión
+# 6. Orden de decisión y conciencia documental
 
 Para cada cambio:
 
@@ -132,9 +133,39 @@ Para cada cambio:
 8 Roadmap
 9 realidad actual de main
 10 implementar
+11 validar
+12 actualizar maestros afectados
 ```
 
-Después del cambio, actualizar sólo los maestros afectados y el Roadmap con estado real.
+## Regla obligatoria de conciencia
+
+Todo cambio significativo en `main` debe dejar los documentos maestros al mismo nivel de realidad que el código.
+
+No esperar a una auditoría futura para documentar:
+
+- estados nuevos o corregidos;
+- contratos RPC/backend;
+- cambios de pagos, dinero o comisiones;
+- reglas de matching/asignación;
+- cambios de permisos/RLS;
+- guards de evidencia;
+- cambios de UX canónica;
+- validaciones CI/build/lint/test;
+- deuda conocida y siguiente cierre.
+
+Al terminar cada bloque de trabajo:
+
+```text
+Código real en main
+→ validación disponible
+→ maestros afectados actualizados
+→ Roadmap actualizado
+→ próximo riesgo visible
+```
+
+El objetivo es mantener **conciencia continua del proyecto**: cualquier persona o agente debe poder leer los maestros y entender qué está realmente cerrado, qué está parcial y qué sigue abierto sin reconstruir la historia desde los commits.
+
+Nunca marcar `HECHO`, `VALIDATED` o `RELEASED` sólo porque existe código.
 
 ---
 
@@ -182,7 +213,9 @@ Agentes pueden diseñar, implementar y revisar, pero deben:
 - no inventar APIs/tablas/estados;
 - no declarar tests/deploy OK sin evidencia;
 - preservar datos y permisos;
-- producir cambios auditables y reversibles.
+- producir cambios auditables y reversibles;
+- actualizar los maestros afectados en el mismo bloque de trabajo;
+- dejar explícito el próximo riesgo o contrato todavía no cerrado.
 
 ---
 
@@ -212,6 +245,7 @@ prueba negativa
 idempotencia/concurrencia
 rollback o mitigación
 observabilidad
+actualización del maestro correspondiente
 ```
 
 ---
@@ -247,6 +281,7 @@ regresiones P0/P1
 frecuencia de deploy
 tiempo de recuperación
 porcentaje IMPLEMENTED→VALIDATED
+desfase código↔maestros
 ```
 
 El objetivo es velocidad sostenible, no cantidad de commits.
@@ -267,7 +302,7 @@ error/retry
 responsive/accesibilidad
 tests del tramo
 CI/deploy/smoke cuando corresponda
-documentación
+documentación maestra actualizada
 ```
 
 ---
@@ -288,4 +323,4 @@ Si no hay respuesta sólida, vuelve a IDEA.
 
 # 16. Regla final
 
-**UGO gana si entrega un circuito confiable y medible con velocidad disciplinada; no si acumula funcionalidades sin cerrar.**
+**UGO gana si entrega un circuito confiable y medible con velocidad disciplinada y con maestros que reflejan la realidad actual; no si acumula funcionalidades ni documentación desactualizada.**
