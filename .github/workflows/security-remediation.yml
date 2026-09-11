@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  remediate:
+  finalize:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -25,121 +25,24 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Install locked dependencies
+      - name: Install remediated dependencies
         run: npm ci
 
-      - name: Remove vulnerable xlsx dependency
-        run: npm uninstall xlsx
-
-      - name: Upgrade MapLibre to patched major
-        run: npm install maplibre-gl@^6.9.0
-
-      - name: Apply non-breaking transitive audit fixes
-        run: npm audit fix
-
-      - name: Adapt source to secure dependency set
+      - name: Normalize CSV BOM handling
         run: |
           python3 <<'PY'
           from pathlib import Path
-          import re
-
-          for path in Path('src').rglob('*.tsx'):
-              text = path.read_text()
-              updated = text.replace("import maplibregl from'maplibre-gl'", "import * as maplibregl from'maplibre-gl'")
-              updated = updated.replace("import maplibregl from 'maplibre-gl'", "import * as maplibregl from 'maplibre-gl'")
-              if updated != text:
-                  path.write_text(updated)
-
           path = Path('src/components/AdvancedSections.tsx')
           text = path.read_text()
-          text = text.replace("import * as XLSX from 'xlsx';\n\n", '')
-
-          replacement = r'''  const processFile = (file: File) => {
-            setResult(null); setRows([]); setSelected(new Set());
-            if (!file.name.toLowerCase().endsWith('.csv')) {
-              setStatus('❌ Por seguridad, UGO importa proveedores en formato CSV. Podés descargar el template y guardar tu Excel como CSV UTF-8.');
-              return;
-            }
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-              try {
-                const text = String(e.target?.result || '').replace(/^\uFEFF/, '');
-                const firstLine = text.split(/\r?\n/, 1)[0] || '';
-                const delimiter = (firstLine.match(/;/g)?.length || 0) > (firstLine.match(/,/g)?.length || 0) ? ';' : ',';
-                const parseLine = (line: string): string[] => {
-                  const out: string[] = [];
-                  let value = '', quoted = false;
-                  for (let i = 0; i < line.length; i++) {
-                    const ch = line[i];
-                    if (ch === '"') {
-                      if (quoted && line[i + 1] === '"') { value += '"'; i++; }
-                      else quoted = !quoted;
-                    } else if (ch === delimiter && !quoted) { out.push(value); value = ''; }
-                    else value += ch;
-                  }
-                  out.push(value);
-                  return out.map(v => v.trim());
-                };
-                const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-                if (lines.length < 2) { setStatus('❌ Archivo vacío o sin filas de datos'); return; }
-                const headers = parseLine(lines[0]);
-                const json: Record<string,string>[] = lines.slice(1).map(line => {
-                  const values = parseLine(line);
-                  return headers.reduce<Record<string,string>>((row, key, index) => {
-                    row[key] = values[index] || '';
-                    return row;
-                  }, {});
-                });
-                const mapped = parseCSVRows(json);
-
-                const needsGeo = mapped.filter(r => r._needs_geocode === 'true').length;
-                if (needsGeo > 0) {
-                  setStatus(`⏳ Geocodificando ${needsGeo} direcciones sin coordenadas (puede tardar ~${needsGeo}s)...`);
-                  for (let i = 0; i < mapped.length; i++) {
-                    if (mapped[i]._needs_geocode !== 'true') continue;
-                    try {
-                      const addr = encodeURIComponent(`${mapped[i].direccion}, ${mapped[i].ciudad}, Brasil`);
-                      const gr = await fetch(`https://nominatim.openstreetmap.org/search?q=${addr}&format=json&limit=1`, {
-                        headers: { 'User-Agent': 'ugo-scout-import/1.0' }
-                      });
-                      const gd = await gr.json();
-                      if (gd?.[0]) {
-                        mapped[i].latitud = parseFloat(gd[0].lat).toFixed(6);
-                        mapped[i].longitud = parseFloat(gd[0].lon).toFixed(6);
-                      }
-                      await new Promise(res => setTimeout(res, 1100));
-                    } catch { /* skip, sin coordenadas */ }
-                  }
-                }
-
-                setRows(mapped);
-                setSelected(new Set(mapped.map((_,i) => i)));
-                const geoOk = mapped.filter(r => r.latitud && r.longitud).length;
-                setStatus(`✅ ${json.length} filas → ${mapped.length} válidos · ${geoOk} con coordenadas · ${needsGeo} geocodificados`);
-              } catch(err: unknown) {
-                setStatus('❌ Error: ' + (err instanceof Error ? err.message : 'No se pudo leer el CSV'));
-              }
-            };
-            reader.readAsText(file, 'utf-8');
-          };
-
-          const toggleAll'''
-
-          pattern = r"  const processFile = \(file: File\) => \{.*?\n  \};\n\n  const toggleAll"
-          text, count = re.subn(pattern, lambda _: replacement, text, count=1, flags=re.S)
-          if count != 1:
-              raise SystemExit('Could not replace legacy xlsx processFile block')
-
-          text = text.replace('Soporta CSV y Excel. Detecta automáticamente el formato. Compatible con el formato de exportación del Scout Radar.', 'Importación CSV segura con detección automática de columnas. Compatible con el formato de exportación del Scout Radar.')
-          text = text.replace('Arrastrá tu archivo Excel o CSV aquí', 'Arrastrá tu archivo CSV aquí')
-          text = text.replace('.xlsx · .xls · .csv — o clic para seleccionar', '.csv UTF-8 — o clic para seleccionar')
-          text = text.replace('accept=".xlsx,.xls,.csv"', 'accept=".csv,text/csv"')
-          text = text.replace('SecImportProviders — CSV/Excel + inserción Supabase directa', 'SecImportProviders — CSV + inserción Supabase directa')
+          text = text.replace(r"replace(/^\\uFEFF/, '')", r"replace(/^\uFEFF/, '')")
           path.write_text(text)
           PY
 
       - name: Verify production build
         run: npm run build
+
+      - name: Verify dependency audit
+        run: npm audit --audit-level=high
 
       - name: Verify critical lint surfaces
         run: >-
@@ -158,17 +61,14 @@ jobs:
           src/mvp/provider/ProviderRoot.tsx
           src/mvp/provider/ProviderActiveJob.tsx
 
-      - name: Verify audit after remediation
-        run: npm audit --audit-level=high
-
-      - name: Commit dependency and compatibility remediation
+      - name: Commit source normalization
         run: |
-          if git diff --quiet; then
-            echo "No remediation changes to commit."
+          if git diff --quiet -- src/; then
+            echo "No source normalization needed."
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package.json package-lock.json src/
-          git commit -m "security: remediate dependency vulnerabilities"
+          git add src/
+          git commit -m "security: normalize secure CSV import"
           git push origin HEAD:security/p0-dependency-audit-20260911
