@@ -20,7 +20,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  if(auth.loading||loading)return <LoadingScreen label="Preparando UGO Pro…"/>
  if(!session||!profile)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
- if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate/>
+ if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate onVerified={reload}/>
  const run=async(fn:()=>Promise<void>,ok:string)=>{setBusy(true);setNotice(null);try{await fn();setNotice({type:'ok',text:ok});await reload();return true}catch(e){setNotice({type:'error',text:e instanceof Error?e.message:'No se pudo completar la acción.'});return false}finally{setBusy(false)}}
  const toggleOnline=()=>run(()=>setProviderAvailability(supabase,session.user.id,!provider.disponible),provider.disponible?'Quedaste Offline.':'Ya estás Online.')
  const acceptOpportunity=(id:string)=>{if(service){setNotice({type:'info',text:'Ya tenés un trabajo activo. Finalizalo antes de aceptar otro.'});return Promise.resolve(false)}return run(()=>acceptProviderOpportunity(supabase,id),'Misión aceptada. Esperando forma de pago del cliente.')}
