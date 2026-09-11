@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.2 · 11 de septiembre de 2026  
+**Versión:** 2.3 · 11 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -58,8 +58,8 @@ P3 expansión/polish
 # 3. P0 — cerrar antes de expandir
 
 ```text
-[x] npm run build main verificado por UGO Core CI #190
-[x] npm run lint crítico y general verificado por UGO Core CI #190
+[x] npm run build main verificado por baseline CI #190
+[x] npm run lint crítico y general verificado por baseline CI #190
 [ ] incorporar runner de tests automatizados
 [ ] incorporar E2E ejecutable
 [ ] serviceId único Cliente↔Proveedor completamente validado E2E
@@ -135,7 +135,16 @@ Cierres del bloque:
 
 La migración de integridad temporal ya está aplicada en Supabase producción.
 
-Validación automática del código de este bloque queda sujeta al último UGO Core CI de `main`; no marcar E2E como cerrado hasta ejecutar recorrido real Cliente↔Proveedor.
+## Bloque C — cierre y aprobación
+
+Primer hardening ya integrado:
+
+- `ClientCompletionReview` busca sólo servicios `esperando_aprobacion` del cliente autenticado;
+- la evidencia final que habilita aprobación debe pertenecer al proveedor asignado;
+- ausencia de forma de pago deja aprobación deshabilitada;
+- CI crítico ahora incluye `ClientCompletionReview` y `ProviderEvidencePanel`.
+
+Todavía no se declara el bloque VALIDATED porque falta E2E method-aware y conciliación de ampliaciones electrónicas.
 
 Próximo riesgo principal visible:
 
@@ -144,6 +153,7 @@ en_progreso
 → ampliación opcional
 → evidencia Después
 → efectivo recibido o pago electrónico protegido
+→ resolver ajuste de ampliación si existe
 → esperando_aprobacion
 → aprobación/disputa
 → completado
@@ -171,7 +181,7 @@ en_progreso
 | Llegada proveedor | 🟡 | P1 | validar E2E radio/ubicación |
 | Servicio activo | 🟡 | P0 | narrativa única |
 | Ampliar servicio | 🟡 | P0 | reconciliación method-aware |
-| Aprobación/Disputa | 🟡 | P0 | E2E por método |
+| Aprobación/Disputa | 🟡 | P0 | ownership endurecido; falta E2E por método |
 | Historial/Reputación | 🟡 | P1 | validación integrada |
 | Notificaciones | 🟡 | P1 | contrato de eventos |
 
@@ -193,7 +203,7 @@ en_progreso
 | Tracking | 🟡 | P1 | ETA/reconexión |
 | Radio de llegada 200 m | ✅ | P1 | contrato UI/backend alineado; falta E2E GPS |
 | Evidencia operacional por estado | ✅ | P0 | guard backend + UI alineada; falta E2E negativo/positivo |
-| Ampliar servicio | 🟡 | P0 | E2E |
+| Ampliar servicio | 🟡 | P0 | E2E + ajuste electrónico |
 | Efectivo recibido | 🟡 | P0 | ledger + E2E |
 | Ganancias | 🟡 | P1 | timeline financiero claro |
 | Hugo Asistente | 🟡 | P2 | contexto antes/durante/después |
@@ -235,7 +245,7 @@ Orden recomendado:
 10 CI/Vercel smoke
 ```
 
-Casos P0/P1 inmediatos del Bloque B:
+Casos P0/P1 inmediatos del Bloque B/C:
 
 ```text
 >200 m con ubicación cliente → llegada rechazada
@@ -244,6 +254,9 @@ llegado sin Antes → inicio rechazado
 Antes fuera de llegado → insert rechazado
 Después antes de en_progreso → insert rechazado
 llegado + Antes → inicio permitido
+cliente A no puede aprobar servicio de cliente B
+foto Después de otro usuario no habilita aprobación
+sin pago confirmado → aprobación deshabilitada/rechazada
 ```
 
 Scripts objetivo:
@@ -258,8 +271,8 @@ npm run test:e2e
 Estado actual:
 
 ```text
-build = disponible; último baseline verde confirmado CI #190
-lint = disponible; último baseline verde confirmado CI #190
+build = disponible; baseline verde confirmado CI #190
+lint = disponible; baseline verde confirmado CI #190
 test = pendiente
 test:e2e = pendiente
 ```
