@@ -1,41 +1,51 @@
 # UGO — Master Index
 
-**Versión:** 1.0 · 11 de septiembre de 2026  
+**Versión:** 2.0 · 11 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
-> Este archivo es el punto de inicio obligatorio para producto, ingeniería, diseño, QA y operaciones. UGO no mantiene nueve verdades distintas: mantiene **un único sistema documental**, dividido por autoridad para que sea mantenible.
+> UGO mantiene **una sola realidad de producto**. Los documentos maestros se dividen por autoridad, pero nunca pueden crear flujos, estados o reglas paralelas.
 
 ---
 
-# 1. Una sola plataforma
+# 1. North Star de UGO
 
-UGO es:
-
-```text
-un producto
-+ un dominio operacional
-+ una fuente de datos
-+ múltiples experiencias por rol
-+ un proceso de desarrollo
-+ un sistema de validación
-```
-
-Circuito central:
+UGO existe para lograr esto:
 
 ```text
-Necesidad → búsqueda → solicitud → matching → asignación
-→ contratación/pago → ejecución → evidencia → aprobación
-→ cobro → reputación → datos → inteligencia → mejora
+Necesidad real
+→ proveedor adecuado
+→ contratación clara
+→ ejecución trazable
+→ resultado aprobado
+→ cobro correcto
+→ reputación
+→ repetición/recomendación
 ```
 
-Regla de experiencia:
+La métrica principal de producto es:
+
+**servicios confiables completados dentro de UGO.**
+
+Métricas de soporte:
 
 ```text
-Estado → contexto → próxima acción
+time-to-match
+aceptación de oportunidades
+servicios iniciados / solicitudes válidas
+completion rate
+tiempo de llegada
+cancelaciones
+disputas
+repetición
+NPS/CSAT
+GMV
+take rate
+ingreso neto
+liquidez de proveedores
 ```
 
-Regla de ejecución:
+Regla estratégica:
 
 **Primero cerrar el circuito real; después ampliar el ecosistema.**
 
@@ -47,56 +57,55 @@ Regla de ejecución:
 
 `UGO_MASTER_GOVERNANCE.md`
 
-Define vocabulario canónico, autoridad, compatibilidad y resolución de conflictos.
+Vocabulario, autoridad, conflictos, invariantes y reglas no negociables.
 
 ## Nivel 1 — Desarrollo
 
 `UGO_DEVELOPMENT_MASTER.md`
 
-Define cómo trabajamos: roles, sprints, prioridades, Definition of Ready, vertical slices, Git, review, incidentes y paso IDEA→RELEASED.
+Cómo una idea pasa a producción: priorización, vertical slices, Git, review, validación y release.
 
 ## Nivel 2 — Producto
 
 `UGO_ECOSISTEMA_FLUJO.md`
 
-Define qué hace UGO: actores, journeys, estados, reglas funcionales y circuito Cliente↔Proveedor↔Admin.
+Qué hace UGO: actores, journeys, estados y contrato Cliente↔Proveedor↔Admin.
 
 ## Nivel 3 — Experiencia
 
 `UGO_UIUX_MAESTRO.md`  
+`UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`  
 `UGO_UIUX_STITCH_MASTER.md`
 
-El primero gobierna experiencia, navegación, Design System y contratos UX. Stitch es referencia de generación/adaptación visual y nunca reemplaza contratos de producto o runtime.
+UI/UX gobierna experiencia y Design System. Usabilidad gobierna claridad operacional. Stitch es referencia visual y nunca reemplaza contratos de producto/runtime.
 
 ## Nivel 4 — Ingeniería
 
 `UGO_ARQUITECTURA_TECNICA_MASTER.md`
 
-Define fronteras técnicas, módulos, routing, roles, adapters, APIs e integraciones.
+Fronteras técnicas, routing, módulos, integraciones y responsabilidades.
 
 ## Nivel 5 — Datos y seguridad
 
 `UGO_DATA_BACKEND_MASTER.md`
 
-Define persistencia, Supabase, RLS, RPC, Realtime, Storage, concurrencia, pagos e integridad.
+Persistencia, estados ejecutables, RLS, RPC, Realtime, Storage, concurrencia y dinero.
 
 ## Nivel 6 — Calidad
 
 `UGO_TESTING_RELEASE_MASTER.md`
 
-Define cómo demostramos que funciona y cuándo pasa de IMPLEMENTED a VALIDATED y RELEASED.
+Cómo se demuestra que funciona y cuándo puede considerarse VALIDATED/RELEASED.
 
 ## Nivel 7 — Ejecución
 
 `UGO_ROADMAP_MASTER.md`
 
-Define qué hacemos ahora, prioridades P0–P3 y estado real del trabajo.
+Prioridades P0–P3 y madurez real.
 
 ---
 
-# 3. Orden de lectura
-
-Para una persona nueva en UGO:
+# 3. Orden obligatorio de lectura
 
 ```text
 1 UGO_MASTER_INDEX.md
@@ -104,100 +113,37 @@ Para una persona nueva en UGO:
 3 UGO_DEVELOPMENT_MASTER.md
 4 UGO_ECOSISTEMA_FLUJO.md
 5 UGO_UIUX_MAESTRO.md
-6 UGO_ARQUITECTURA_TECNICA_MASTER.md
-7 UGO_DATA_BACKEND_MASTER.md
-8 UGO_TESTING_RELEASE_MASTER.md
-9 UGO_ROADMAP_MASTER.md
+6 UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
+7 UGO_ARQUITECTURA_TECNICA_MASTER.md
+8 UGO_DATA_BACKEND_MASTER.md
+9 UGO_TESTING_RELEASE_MASTER.md
+10 UGO_ROADMAP_MASTER.md
 ```
 
-`UGO_UIUX_STITCH_MASTER.md` se consulta cuando el trabajo incluye diseño/prototipado/migración Stitch.
+Consultar `UGO_UIUX_STITCH_MASTER.md` cuando haya diseño/prototipado/migración desde Stitch.
 
 ---
 
-# 4. Autoridad por pregunta
-
-| Pregunta | Documento autoridad |
-|---|---|
-| ¿Qué significa este concepto en UGO? | Governance |
-| ¿Cómo organizamos el trabajo? | Development |
-| ¿Qué debe hacer el producto? | Ecosistema/Flujo |
-| ¿Cómo debe entenderse y verse? | UI/UX |
-| ¿Qué rescatamos/generamos desde Stitch? | Stitch |
-| ¿Dónde y cómo se implementa? | Arquitectura |
-| ¿Cómo se persiste/protege? | Data/Backend |
-| ¿Cómo demostramos que funciona? | Testing/Release |
-| ¿Qué hacemos primero? | Roadmap |
-
----
-
-# 5. Jerarquía de conflicto
+# 4. Jerarquía de conflicto
 
 ```text
-Seguridad e integridad ejecutable
-→ estado persistido
+Seguridad/integridad ejecutable
+→ estado persistido real
 → Governance
-→ Flujo de producto
+→ Producto/Flujo
 → Arquitectura
-→ UI/UX
+→ UI/UX + Usabilidad
 → Stitch
-→ planificación
+→ Roadmap
 ```
 
-Development define el proceso para modificar esas capas; Testing decide si el resultado está validado.
-
-Ejemplos:
-
-- una pantalla no puede habilitar algo prohibido por RLS;
-- Stitch no inventa estados de dominio;
-- efectivo nunca se presenta como pago electrónicamente protegido;
-- un commit no convierte una función en RELEASED;
-- Roadmap no marca HECHO un P0 sin validación requerida.
+Testing determina si algo está validado. Development determina cómo cambiarlo.
 
 ---
 
-# 6. Vocabulario transversal
+# 5. Contrato transversal de servicio
 
-## Roles
-
-```text
-Cliente · Proveedor · Admin · Super Admin
-Scout · Hugo · Academia UGO
-```
-
-Scout, Hugo y Academia son capacidades del ecosistema; no crean dominios operacionales paralelos.
-
-## Prioridad
-
-```text
-P0 integridad/core/seguridad/dinero
-P1 operación necesaria
-P2 inteligencia/optimización/escala
-P3 expansión/polish
-```
-
-## Madurez
-
-```text
-IDEA → DEFINED → READY → IN PROGRESS
-→ IMPLEMENTED → VALIDATED → RELEASED → MEASURED
-```
-
-## Estado Roadmap
-
-```text
-✅ HECHO
-🟡 PARCIAL
-⬜ PENDIENTE
-⛔ BLOQUEADO
-```
-
-`HECHO` requiere la validación aplicable; no significa simplemente que existe código.
-
----
-
-# 7. Estado maestro de servicio
-
-Baseline conceptual:
+Estado conceptual único:
 
 ```text
 solicitado → buscando → ofertado → asignado
@@ -212,247 +158,86 @@ Excepciones:
 cancelado · disputado · reembolsado
 ```
 
-Los nombres ejecutables concretos pertenecen a Data/Backend y migraciones. Si difieren, no se corrige sólo la UI: se revisa el contrato completo.
+`pago_protegido` **no es un estado universal del servicio**. Sólo aplica a métodos electrónicos con custodia.
 
----
-
-# 8. Contrato Cliente ↔ Proveedor
+Proveedor operacional:
 
 ```text
-Cliente crea solicitud + evidencia previa
-→ mismo servicio de dominio
-→ matching genera oportunidad
-→ Proveedor analiza descripción/evidencia
-→ acepta/rechaza
-→ asignación única
-→ Cliente y Proveedor observan el mismo estado persistido
+offline → available → opportunity_pending → assigned
+→ busy → completion_pending → available
 ```
 
-`serviceId` es un contrato transversal, no un detalle visual.
+Nunca mezclar la máquina de estado del proveedor con la máquina del servicio.
 
 ---
 
-# 9. Contrato de pago
+# 6. Contrato de pagos
 
 Electrónico:
 
 ```text
-pendiente → autorizado → protegido/retenido
+pendiente → autorizado → retenido/protegido
 → liberación pendiente → liberado/pagado
 ```
 
 Efectivo:
 
 ```text
-seleccionado → presencial pendiente
-→ servicio habilitado
-→ proveedor confirma recepción
-→ registrado
+seleccionado → presencial pendiente → servicio habilitado
+→ proveedor confirma recepción → registrado
 ```
 
 **Efectivo no tiene custodia electrónica UGO.**
 
-Toda UI, flujo, backend, test y copy debe respetarlo.
+Toda UI, flujo, disputa, ampliación y cierre debe ser consciente del método de pago.
 
 ---
 
-# 10. Contrato de evidencia
-
-Dos dominios separados:
+# 7. Contrato Cliente ↔ Proveedor
 
 ```text
-Solicitud
-→ evidencia para explicar el trabajo antes del matching
-
-Operación
-→ Antes / Durante / Después de la ejecución
+Cliente crea solicitud + evidencia
+→ matching genera oportunidad para el mismo serviceId
+→ Proveedor autorizado analiza
+→ acepta/rechaza
+→ aceptación atómica y asignación única
+→ ambos observan el mismo servicio persistido
+→ método de pago habilita ejecución
+→ evidencia + aprobación cierran
 ```
 
-Storage privado + RLS + signed URLs. Guards críticos terminan en backend/RPC.
+`serviceId` es la identidad transversal del trabajo.
 
 ---
 
-# 11. Contrato de ampliación
+# 8. Madurez
 
 ```text
-Cliente o Proveedor propone
-→ costo/tiempo/descripcion
-→ Cliente aprueba/rechaza
-→ persistencia auditable
-→ reconciliación pago
-→ servicio continúa
+IDEA → DEFINED → READY → IN PROGRESS
+→ IMPLEMENTED → VALIDATED → RELEASED → MEASURED
 ```
 
-Nunca modificar silenciosamente un importe electrónico protegido.
+Un commit o una pantalla visible **no** significan `HECHO`.
 
 ---
 
-# 12. Contrato de IA e inteligencia
+# 9. Principios de éxito
 
-Hugo:
-
-```text
-contexto → ayuda → acción permitida
-```
-
-No salta permisos, pagos o decisiones críticas.
-
-Scout:
-
-```text
-Dato → interpretación → recomendación → acción → resultado
-```
-
-Academia:
-
-```text
-gap/calidad → aprendizaje → evaluación
-→ mejora perfil → mejores oportunidades → nueva medición
-```
+1. Una sola fuente de verdad.
+2. Confianza antes que crecimiento superficial.
+3. Mobile-first sin degradar desktop.
+4. Estado → contexto → próxima acción.
+5. Dinero, identidad y evidencia siempre auditables.
+6. Cliente y Proveedor comparten el mismo servicio, no copias.
+7. Demanda de mercado y oportunidad concreta son conceptos distintos.
+8. Hugo ayuda; no salta permisos ni estados.
+9. Scout recomienda acciones; no crea otra operación paralela.
+10. Academia mejora calidad; no entrega privilegios sin reglas de dominio.
+11. Toda expansión debe justificar impacto en conversión, confianza, eficiencia o retención.
+12. Cero lock-in innecesario y costos controlados mientras UGO valida mercado.
 
 ---
 
-# 13. Regla de arquitectura
+# 10. Regla final
 
-```text
-React + TypeScript + Vite
-→ flows por rol
-→ servicios/adapters
-→ Supabase RLS/RPC/Realtime/Storage
-→ Vercel API para secretos/integraciones
-```
-
-`main` es integración oficial. No crear aplicaciones paralelas ni usar diseños históricos como segunda arquitectura.
-
----
-
-# 14. Regla de calidad
-
-```text
-IMPLEMENTED ≠ VALIDATED ≠ RELEASED
-```
-
-Una funcionalidad transversal no está DONE hasta satisfacer los gates aplicables de producto, UX, arquitectura, datos/seguridad, error/offline, responsive, build, E2E y release.
-
----
-
-# 15. Proceso único de cambio
-
-Toda idea importante sigue:
-
-```text
-Idea del Founder/Product
-→ análisis del problema
-→ contrato funcional
-→ UX
-→ impacto técnico/datos/seguridad
-→ READY
-→ vertical slice
-→ implementación
-→ review
-→ testing
-→ VALIDATED
-→ deploy/smoke
-→ RELEASED
-→ medición
-→ Roadmap actualizado
-```
-
-No es necesario editar todos los maestros por cada cambio. Se actualizan sólo las autoridades afectadas.
-
----
-
-# 16. P0 unificado actual
-
-Hasta que Roadmap registre cierre validado:
-
-```text
-1 Build/TypeScript de main
-2 RLS + guards backend recientes
-3 Cliente: solicitud + evidencia integrada
-4 Matching + oportunidad Provider + serviceId
-5 Pagos electrónico/efectivo + timeline + cierre method-aware
-6 Retirar Provider legacy como salida operacional
-```
-
-Después:
-
-```text
-Tracking/ETA
-→ Notificaciones
-→ consolidación UI Cliente/Proveedor
-→ Admin operacional/financiero
-→ Scout/Hugo avanzado
-→ Academia/expansión
-```
-
----
-
-# 17. Definition of MVP
-
-Un usuario nuevo debe poder:
-
-```text
-registrarse
-→ solicitar con evidencia
-→ recibir matching
-→ contratar
-→ pagar/seleccionar efectivo
-→ seguir llegada
-→ ejecutar
-→ ampliar de forma trazable
-→ documentar evidencia
-→ aprobar/disputar
-→ cerrar pago
-→ calificar
-```
-
-Proveedor completa el circuito equivalente y Admin resuelve excepciones críticas.
-
----
-
-# 18. Definition de producto fuerte de mercado
-
-Además del MVP:
-
-```text
-seguridad validada
-pagos/retiros confiables
-tracking estable
-notificaciones
-KYC
-Admin operacional
-observabilidad
-soporte/incidentes
-analytics esenciales
-UX consistente
-regresión automatizada del core
-operación real medible
-```
-
-No requiere completar toda la visión futura de Scout o Academia.
-
----
-
-# 19. Rutina al retomar UGO
-
-```text
-1 abrir este índice
-2 leer P0 vigente en Roadmap
-3 comprobar realidad de main
-4 elegir siguiente bloqueo del circuito
-5 consultar maestros autoridad
-6 implementar vertical slice
-7 validar
-8 actualizar Roadmap/docs afectadas
-```
-
-Esto reemplaza la selección improvisada de tareas.
-
----
-
-# 20. Regla final
-
-**Una plataforma. Un dominio. Una realidad persistida. Un proceso de desarrollo. Múltiples experiencias por rol.**
-
-Los maestros no compiten entre sí: cada uno describe una capa de la misma UGO.
+**Si una nueva función no mejora confianza, conversión, ejecución, monetización o retención, no debe desplazar un P0/P1 del circuito principal.**
