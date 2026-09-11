@@ -12,8 +12,9 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  const auth=useRoleSession('provider'),{supabase,session,profile}=auth
  const[provider,setProvider]=useState<ProviderProfileFull|null>(null),[offers,setOffers]=useState<Offer[]>([]),[service,setService]=useState<Service|null>(null),[payments,setPayments]=useState<ProviderPayment[]>([]),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[notice,setNotice]=useState<Notice>(null)
  const reload=useCallback(async()=>{if(!session){setLoading(false);return}const snap=await loadProviderSnapshot(supabase,session.user.id);setProvider(snap.provider);setOffers(snap.offers);setService(snap.service);setPayments(snap.payments);setLoading(false)},[session,supabase])
+ const handleRealtime=useCallback(()=>{reload().catch(()=>{})},[reload])
  useEffect(()=>{if(session)reload().catch((e:Error)=>{setNotice({type:'error',text:e.message});setLoading(false)});else setLoading(false)},[reload,session])
- useProviderRealtime(supabase,session?.user.id||null,()=>{reload().catch(()=>{})})
+ useProviderRealtime(supabase,session?.user.id||null,handleRealtime)
  if(auth.loading||loading)return <LoadingScreen label="Preparando UGO Pro…"/>
  if(!session||!profile)return <AuthScreen role="provider" supabase={supabase} error={auth.error} onError={auth.setError}/>
  if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate/>
