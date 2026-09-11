@@ -15,3 +15,8 @@
 .ugo-admin2-sidebar nav button.active{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
 .ugo-admin2-kpis article,.ugo-admin2-flow,.ugo-admin2-priority,.ugo-admin2-health{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;box-shadow:var(--ugo-shadow-card)!important;border-radius:var(--ugo-radius-lg)!important}
 .ugo-admin2-refresh{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
+
+/* Admin Journey 2: client management. */
+.ugo-admin2 .ugo-users-panel,.ugo-admin2 .ugo-users-list,.ugo-admin2 .ugo-user-card{font-family:var(--ugo-font)}
+.ugo-admin2 .ugo-users-panel,.ugo-admin2 .ugo-user-card{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-admin2 .ugo-users-panel input,.ugo-admin2 .ugo-users-panel select{min-height:var(--ugo-touch-target);border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-sm)!important}
