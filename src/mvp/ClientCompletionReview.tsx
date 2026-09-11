@@ -16,20 +16,20 @@ export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void})
  const load=useCallback(async()=>{
   const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';setUserId(uid)
   if(!uid){setService(null);setPayment(null);setHasFinalEvidence(false);return}
-  const{data,error}=await (supabase as any).from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',uid).eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(1).maybeSingle()
+  const{data,error}=await supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',uid).eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(1).maybeSingle()
   if(error){setService(null);setPayment(null);setHasFinalEvidence(false);return}
   const next=(data||null)as ReviewService|null
   setService(next)
   if(!next){setHasFinalEvidence(false);setPayment(null);return}
   const[{data:evidence,error:evidenceError},{data:paymentRow}]=await Promise.all([
-   (supabase as any).from('evidencias_servicio').select('id').eq('servicio_id',next.id).eq('tipo','despues').eq('usuario_id',next.proveedor_id).limit(1),
-   (supabase as any).from('pagos').select('metodo,estado,modelo_pago').eq('servicio_id',next.id).maybeSingle(),
+   supabase.from('evidencias_servicio').select('id').eq('servicio_id',next.id).eq('tipo','despues').eq('usuario_id',next.proveedor_id).limit(1),
+   supabase.from('pagos').select('metodo,estado,modelo_pago').eq('servicio_id',next.id).maybeSingle(),
   ])
   setHasFinalEvidence(!evidenceError&&Boolean(evidence?.length))
   setPayment((paymentRow||null)as ReviewPayment|null)
  },[supabase])
- useEffect(()=>{load().catch(()=>{})},[load])
- useEffect(()=>{if(!userId)return;const ch=supabase.channel(`client-completion-review-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},()=>load().catch(()=>{})).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio'},()=>load().catch(()=>{})).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>load().catch(()=>{})).subscribe();return()=>{supabase.removeChannel(ch)}},[load,supabase,userId])
+ useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
+ useEffect(()=>{if(!userId)return;const ch=supabase.channel(`client-completion-review-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,supabase,userId])
  useEffect(()=>{document.body.classList.toggle('ugo-client-awaiting-review',Boolean(service));return()=>document.body.classList.remove('ugo-client-awaiting-review')},[service])
  if(!service)return null
  const isCash=payment?.metodo==='efectivo'||payment?.modelo_pago==='presencial'
