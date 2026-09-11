@@ -22,7 +22,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { data: servicio, error: serviceError } = await sb
     .from('servicios')
-    .select('id,numero,cliente_id,proveedor_id,estado')
+    .select('id,numero,cliente_id,proveedor_id,estado,ambiente')
     .eq('id', servicioId)
     .maybeSingle()
   if (serviceError) return res.status(500).json({ error: serviceError.message })
@@ -31,7 +31,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { data: pago, error: pagoError } = await sb.from('pagos').select('*').eq('servicio_id', servicioId).maybeSingle()
   if (pagoError) return res.status(500).json({ error: pagoError.message })
-  if (!pago || pago.metodo !== 'efectivo') return res.status(409).json({ error: 'Este servicio no está configurado para pago en efectivo.' })
+  if (!pago || pago.metodo !== 'efectivo' || pago.procesador !== 'efectivo' || pago.modelo_pago !== 'presencial') {
+    return res.status(409).json({ error: 'Este servicio no está configurado para pago en efectivo.' })
+  }
+  if (pago.ambiente !== servicio.ambiente) return res.status(409).json({ error: 'El pago no pertenece al mismo ambiente del servicio.' })
   if (pago.estado === 'liberado') return res.status(200).json({ success: true, alreadyConfirmed: true, pagoId: pago.id })
   if (!['en_progreso','esperando_aprobacion','completado'].includes(servicio.estado)) return res.status(409).json({ error: 'Confirmá el efectivo al finalizar el trabajo.' })
 
@@ -41,16 +44,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     estado: 'liberado',
     pago_externo_id: ref,
     fecha_confirmacion: now,
+    liberado_at: now,
     updated_at: now,
-  }).eq('id', pago.id).select().single()
+  }).eq('id', pago.id).eq('estado','pendiente').select().maybeSingle()
   if (updateError) return res.status(500).json({ error: updateError.message })
+  if (!updated) {
+    const { data: current } = await sb.from('pagos').select('id,estado').eq('id',pago.id).maybeSingle()
+    if (current?.estado === 'liberado') return res.status(200).json({ success:true, alreadyConfirmed:true, pagoId:pago.id })
+    return res.status(409).json({ error: 'El estado del pago cambió. Actualizá e intentá nuevamente.' })
+  }
 
   await sb.from('notificaciones').insert({
     usuario_id: servicio.cliente_id,
     tipo: 'pago_efectivo_confirmado',
     titulo: 'Efectivo recibido',
     cuerpo: `El proveedor confirmó la recepción del pago en efectivo del servicio #${servicio.numero || servicio.id.slice(0,8)}.`,
-    datos: { servicio_id: servicioId, pago_id: updated.id, metodo: 'efectivo' },
+    datos: { servicio_id: servicioId, pago_id: updated.id, metodo: 'efectivo', ambiente: servicio.ambiente },
   })
 
   return res.status(200).json({ success: true, pagoId: updated.id, estado: updated.estado, metodo: 'efectivo' })
