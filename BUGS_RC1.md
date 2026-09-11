@@ -43,7 +43,7 @@
 - Severidad: MENOR
 - Descripción: El canal Realtime de `ServiceHistoryPanel` escucha todos los cambios de `servicios` y vuelve a consultar el historial completo para cada evento. En una cuenta con actividad concurrente provoca consultas y renders innecesarios, especialmente en móvil o conexiones lentas.
 - Archivo probable: `src/mvp/ServiceHistoryPanel.tsx`
-- Estado: OPEN
+- Estado: FIXED
 
 ## BUG-006
 
