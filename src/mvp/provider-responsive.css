@@ -95,3 +95,8 @@
 
 /* Provider Journey 8: ratings and reputation. */
 .ugo-provider-root .ugo-provider-rating,.ugo-provider-root .ugo-profile-score,.ugo-provider-root .uwp-profile-score{font-family:var(--ugo-font);background:var(--ugo-color-secondary-container)!important;color:var(--ugo-color-on-secondary-container)!important;border-radius:var(--ugo-radius-lg)!important;border:1px solid var(--ugo-color-outline-variant)}
+
+/* Provider Journey 9: service history and activity. */
+.ugo-provider-root .ugo-history-panel,.ugo-provider-root .ugo-provider-history,.ugo-provider-root .uwp-history-provider{font-family:var(--ugo-font);background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important}
+.ugo-provider-root .ugo-history-panel article,.ugo-provider-root .ugo-provider-history article,.ugo-provider-root .uwp-history-item{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
+.ugo-provider-root .ugo-history-launch{min-height:var(--ugo-touch-target);background:var(--ugo-color-surface-lowest);border-color:var(--ugo-color-outline-variant);font-family:var(--ugo-font)}
