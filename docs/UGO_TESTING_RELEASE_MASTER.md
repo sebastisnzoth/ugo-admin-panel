@@ -1,10 +1,10 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.4 · 11 de septiembre de 2026  
+**Versión:** 2.5 · 11 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
-> `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. UGO sólo puede crecer con confianza si cada tramo crítico demuestra que funciona con estado real, permisos reales y recuperación real.
+> `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. Cada tramo crítico debe demostrar estado real, permisos reales y recuperación real.
 
 ---
 
@@ -12,7 +12,7 @@
 
 ```text
 L0 TypeScript/Lint
-→ L1 Contract tests / Component / UX states
+→ L1 Contract tests / UX states
 → L2 Domain/RPC/API
 → L3 RLS/roles/Storage
 → L4 Integration/Realtime/Pagos/Mapas
@@ -24,339 +24,185 @@ No declarar `OK` sin evidencia de ejecución.
 
 ---
 
-# 2. Scripts mínimos
-
-Estado actual:
+# 2. Scripts
 
 ```text
 npm run build      ✅ disponible
 npm run lint       ✅ disponible
-npm run test       ✅ disponible · Node test runner sin dependencia adicional
+npm run test       ✅ disponible
 npm run test:e2e   ⬜ pendiente
 ```
 
-`npm test` ejecuta `tests/**/*.test.mjs`. El primer paquete cubre contratos críticos del lifecycle, pero **no reemplaza tests de RPC/RLS ni E2E real**.
+`npm test` ejecuta contract tests sobre código/migraciones. No reemplaza RPC/RLS ni E2E real.
 
 ---
 
-# 3. Contract tests ejecutables
+# 3. Cobertura contractual actual
 
-Archivo inicial:
-
-`tests/contracts/core-lifecycle.test.mjs`
-
-Cobertura actual:
+`tests/contracts/core-lifecycle.test.mjs` cubre:
 
 ```text
 radio llegada UI/backend = 200 m
-evidencia Antes/Durante/Después respeta lifecycle
-guards de inicio/finalización por evidencia
-efectivo sigue modelo presencial
-ampliación electrónica activa usa checkout separado de delta
-checkout de ampliación lleva idempotency key y external_reference propio
-webhook detecta ampliacion_id y llama confirmar_pago_ampliacion
-RPC valida monto antes de incorporar el delta
-ClientCompletionReview respeta ownership + proveedor asignado
+evidencia Antes/Durante/Después por lifecycle
+guards inicio/finalización
+efectivo presencial
+checkout separado para delta de ampliación
+idempotency/external_reference de ajuste
+webhook de ampliación → confirmar_pago_ampliacion
+validación monto antes de incorporar delta
+review cliente: ownership + proveedor asignado
 ```
 
-Estos tests son una red de regresión de contrato sobre código/migraciones versionadas. Próximo nivel: tests que ejecuten RPC/RLS contra una base aislada.
+Próximo nivel: RPC/RLS ejecutados contra base aislada.
 
 ---
 
-# 4. E2E ecosistémico principal
+# 4. E2E ecosistémico
 
 ```text
-Cliente registro/login
-→ onboarding
+Cliente auth/onboarding
 → solicitud + evidencia
 → matching
 → oportunidad mismo serviceId
-→ Proveedor autorizado ve contexto
-→ acepta
-→ asignación única
+→ aceptación única
 → pago electrónico protegido O efectivo seleccionado
-→ en camino
-→ llegada
-→ evidencia inicial
-→ iniciar
+→ en_camino → llegada → Antes → inicio
 → ampliación opcional
-→ evidencia final
-→ solicitar finalización
-→ Cliente aprueba O disputa
-→ cierre/cobro según método
-→ calificación/historial
-→ Admin/Scout reciben datos correctos
+→ Después → cierre
+→ aprobación/disputa
+→ cobro según método
+→ reputación/historial
+→ Admin observa datos correctos
 ```
 
 ---
 
-# 5. E2E electrónico
+# 5. Pagos electrónicos
 
-Probar:
+Probar selección, creación, autorización, webhook, retención/protección, retry, duplicados, liberación, reembolso/disputa y ampliación financiada.
+
+Aserción: ningún servicio avanza por condición financiera inexistente.
+
+---
+
+# 6. Efectivo
+
+Probar selección, habilitación, copy correcto, confirmación proveedor, duplicado, registro financiero, comisión/ledger, cierre Cliente y disputa sin promesa de reembolso automático.
+
+Aserción: efectivo nunca se describe como electrónicamente protegido.
+
+---
+
+# 7. Llegada + evidencia
 
 ```text
-selección
-creación/autorización
-webhook
-retención/protección
-retry
-webhook duplicado
-liberación
-reembolso/disputa
-ampliación con ajuste financiado
+pago no habilitado → no en_camino
+pago habilitado → en_camino
+>200 m → llegado rechazado
+<=200 m → llegado permitido
+llegado sin Antes → inicio rechazado
+llegado + Antes → inicio permitido
+Antes fuera de llegado → rechazado
+Durante fuera de en_progreso → rechazado
+Después antes de en_progreso → rechazado
+en_progreso + Después → cierre elegible según método
 ```
-
-Aserción: servicio no debe avanzar por una condición financiera inexistente cuando el contrato exige custodia.
 
 ---
 
-# 6. E2E efectivo
-
-Probar:
+# 8. Ampliaciones + dinero
 
 ```text
-selección de efectivo
-servicio habilitado
-copy correcto
-confirmación proveedor
-confirmación duplicada
-registro financiero
-comisión/ledger cuando aplique
-cierre Cliente
-disputa sin promesa de reembolso automático UGO
+extra 0 → aprobable
+sin pago + extra → total antes del checkout
+efectivo pendiente + extra → reajuste consistente
+pago fallido/reembolsado → siguiente intento ajustado
+electrónico activo + extra → checkout separado
+checkout pendiente → reutilizable
+approved monto/moneda válidos → incorpora una vez
+mismatch → no incorpora
+rechazado/cancelado → retry
+webhook duplicado → sin doble incremento
+refunded después de aplicado → pendiente_ajuste + bloqueo cierre
+actor no cliente → denegado
 ```
 
-Aserción obligatoria: **ningún estado o UI describe efectivo como electrónicamente protegido.**
+Implementado no equivale todavía a E2E validado.
 
 ---
 
-# 7. Cliente
+# 9. Admin / Super Admin
 
-Validar:
+Pruebas positivas y negativas sobre acceso por rol, KYC, servicios, finanzas, disputas, configuración, feature flags, integraciones y auditoría.
 
-```text
-auth/recovery
-onboarding
-Home/Radar
-búsqueda/categorías
-solicitud
-evidencia previa
-matching
-proveedor seleccionado
-pago method-aware
-tracking
-servicio activo
-ampliación
-aprobación/disputa
-historial/notificaciones
-offline/retry
-```
+Query params/UI nunca escalan privilegios.
 
----
+## Integraciones Admin
 
-# 8. Proveedor
-
-Validar:
-
-```text
-auth/onboarding/KYC
-Online/Offline
-Home
-Demanda
-Oportunidades
-serviceId
-evidencia autorizada
-aceptar/rechazar
-concurrencia
-trabajo activo
-tracking
-evidencia operacional
-ampliación
-efectivo
-ganancias
-Realtime/reconexión
-sin dependencia operacional legacy
-```
-
----
-
-# 9. Llegada + evidencia operacional
-
-Casos obligatorios del tramo `en_camino → llegado → en_progreso`:
-
-```text
-pago no habilitado → no puede pasar asignado→en_camino
-pago habilitado → puede pasar asignado→en_camino
-cliente con coordenada + proveedor >200 m → llegado rechazado
-cliente con coordenada + proveedor <=200 m → llegado permitido
-llegado sin foto Antes → en_progreso rechazado
-llegado + foto Antes → en_progreso permitido
-foto Antes fuera de llegado → insert rechazado
-foto Durante fuera de en_progreso → insert rechazado
-foto Después antes de en_progreso → insert rechazado
-en_progreso + foto Después → cierre elegible según método de pago
-```
-
-La UI debe reflejar el mismo radio de 200 m y los mismos tipos de evidencia admitidos por backend; una discrepancia de copy o controles es una regresión P1/P0 según impacto.
-
----
-
-# 10. Ampliaciones + dinero
+`api/admin/integrations-status.ts` y `AdminSystemSettings → Integraciones` son superficies críticas.
 
 Casos obligatorios:
 
 ```text
-monto extra 0 → cliente puede aprobar sin alterar fondos
-sin pago creado + monto extra → total/comisión/neto se actualizan antes del checkout
-efectivo pendiente + monto extra → servicio y pago se reajustan al mismo total
-pago fallido/reembolsado + monto extra → servicio se reajusta y exige nuevo intento
-pago electrónico activo + monto extra → checkout de delta separado
-checkout pendiente → se reutiliza y no duplica preferencia intencionalmente
-webhook approved + monto/moneda válidos → RPC incorpora delta y aprueba ampliación
-webhook approved + monto/moneda inválidos → no incorpora delta
-webhook rechazado/cancelado → ampliación sigue pendiente y permite retry
-webhook duplicado approved → idempotente, sin doble incremento
-ajuste ya aplicado + refunded → pago_estado vuelve a pendiente_ajuste y bloquea cierre
-ampliación aprobada + pendiente_ajuste → servicio no pasa a esperando_aprobacion
-actor no cliente → no puede iniciar checkout/resolver ampliación
+sin Bearer → 401
+sesión inválida → 401
+usuario no admin → 403
+admin/super activo → metadata segura
+respuesta nunca contiene valores secretos
+configured != enabled != validated E2E
+credencial de bóveda no implica runtime activo
 ```
 
-Aserción P0: **ningún trabajo adicional con costo queda aprobado si su impacto financiero no está incorporado o financiado según el método.**
+El endpoint puede comprobar presencia/configuración del runtime, pero no debe etiquetarse como prueba de transacción E2E con el proveedor externo.
 
-La implementación actual cubre contrato estático y migración en producción. Falta E2E real del procesador, webhook duplicado/reembolso y RPC/RLS ejecutados contra base de prueba antes de considerar este tramo VALIDATED.
+`admin_payment_credentials_status()` debe ser Admin-only y devolver sólo metadata. Migración de portabilidad: `20260911230000_admin_payment_credentials_status_fix.sql`.
 
 ---
 
-# 11. Admin / Super Admin
+# 10. RLS
 
-Pruebas positivas y negativas sobre:
-
-```text
-acceso por rol
-KYC
-servicios
-finanzas/retiros
-disputas
-configuración
-feature flags
-auditoría
-```
-
-Query params o UI nunca escalan privilegios.
-
----
-
-# 12. RLS
-
-Para cada tabla/bucket sensible:
+Por cada tabla/bucket sensible:
 
 ```text
-actor autorizado → permitido
-actor no participante → denegado
+autorizado → permitido
+no participante → denegado
 anónimo → denegado salvo público explícito
-admin → según privilegio real
+admin → privilegio real
 ```
 
 Incluir upload/read/delete y signed URLs cuando aplique.
 
 ---
 
-# 13. Concurrencia e idempotencia
+# 11. Concurrencia e idempotencia
 
-Obligatorio probar:
-
-```text
-dos proveedores aceptando misma oportunidad
-doble click
-doble webhook
-doble confirmación efectivo
-doble checkout ampliación
-doble confirmación pago ampliación
-doble aprobación ampliación
-doble cierre
-doble retiro
-retry después de timeout
-```
-
-Resultado debe ser determinista y auditable.
+Probar doble aceptación, doble click, doble webhook, doble efectivo, doble checkout/confirmación de ampliación, doble cierre/retiro y retry tras timeout. Resultado determinista y auditable.
 
 ---
 
-# 14. Realtime
+# 12. Realtime
 
-```text
-evento correcto
-sin duplicado
-cleanup
-reconexión
-refetch
-cambio de usuario/serviceId
-múltiples pestañas cuando aplique
-```
-
-Cliente y Proveedor deben converger al mismo estado persistido.
+Evento correcto, sin duplicado, cleanup, reconexión/refetch, cambio usuario/serviceId y convergencia al mismo estado persistido.
 
 ---
 
-# 15. Responsive
+# 13. Responsive + accesibilidad
 
-Validar:
+Breakpoints mínimos: `360×800`, `390×844`, `430×932`, tablet, `1280`, `1440`.
 
-```text
-360×800
-390×844
-430×932
-768 tablet
-1280 desktop
-1440 desktop
-```
-
-Safe area, teclado, scroll, nav, mapa, sheet, modal y formularios.
+Objetivo WCAG AA: foco visible, teclado, labels/aria, contraste, estado no sólo color, targets ≥48 px, errores accionables.
 
 ---
 
-# 16. Accesibilidad
+# 14. Recuperación
 
-Objetivo WCAG AA:
-
-```text
-foco visible
-teclado
-labels/aria
-contraste
-estado no sólo por color
-targets ≥48px
-reduced motion
-orden lógico
-errores accionables
-```
+Todo E2E crítico cubre timeout, 4xx/5xx, sin conexión, reconexión, rechazo, pago fallido/reembolsado, cancelación y retry.
 
 ---
 
-# 17. Recuperación
+# 15. CI / Deploy
 
-Todo E2E crítico debe cubrir:
-
-```text
-timeout
-error 4xx/5xx
-sin conexión
-reconexión
-sin proveedor
-rechazo
-sin método de pago
-checkout adicional fallido/reembolsado
-cancelación
-retry
-```
-
-No basta probar happy path.
-
----
-
-# 18. CI / Deploy
-
-`UGO Core CI` ejecuta actualmente:
+`UGO Core CI` ejecuta:
 
 ```text
 npm ci
@@ -368,7 +214,35 @@ lint ClientApp con deuda registrada aislada
 lint general como reporte de deuda
 ```
 
-Release requiere además evidencia de deploy/smoke.
+Superficies Admin/integraciones incluidas en lint crítico:
+
+```text
+api/admin/integrations-status.ts
+AdminSystemSettings.tsx
+AdminPaymentCredentials.tsx
+AdminPaymentMethods.tsx
+```
+
+## Evidencia reciente
+
+Run `#260` / head `efec5f26`:
+
+```text
+audit           ✅ 0 vulnerabilidades
+build/TS        ✅
+npm test        ✅ 6/6
+lint crítico    ❌
+```
+
+El fallo de lint correspondió a versiones anteriores de `AdminPaymentCredentials.tsx` y `AdminSystemSettings.tsx` (explicit `any` y setState directo en effect). Esos dos archivos fueron corregidos posteriormente en `main`; por lo tanto el run #260 **no valida ni invalida por sí solo el HEAD actual**. Requiere nuevo CI por SHA actual.
+
+## Vercel
+
+La auditoría encontró un deployment production `ERROR` en commit `61872b20`. El log mostró imports TypeScript de `@vercel/node` sin tipos resolubles en serverless. `main` ya contiene `api/vercel-node.d.ts` mediante fix `2bef4d97`, pero la recuperación **no se considera validada hasta observar un deployment posterior READY y hacer smoke**.
+
+Había un deployment production previo `READY` en commit `555daf48`, disponible como rollback candidate.
+
+Release exige deploy/smoke verificable; un build GitHub verde no sustituye Vercel READY.
 
 Smoke mínimo:
 
@@ -380,18 +254,19 @@ landing
 ?app=web
 Auth
 Supabase data
-API crítica
+/api/admin/integrations-status
+API pagos crítica
 ```
 
-Si no hay check verificable: estado `DESCONOCIDO`, nunca asumir `OK`.
+Si no hay check: `DESCONOCIDO`, nunca asumir `OK`.
 
 ---
 
-# 19. Severidad
+# 16. Severidad
 
 ```text
 P0 seguridad · datos · auth · dinero · core roto
-P1 flujo principal degradado · Realtime/UX crítico
+P1 flujo principal degradado · integración/Realtime/UX crítico
 P2 secundaria · consistencia · escala
 P3 polish
 ```
@@ -400,48 +275,43 @@ No release con P0 conocido.
 
 ---
 
-# 20. Definition of Done
+# 17. Definition of Done
 
 ```text
-contrato funcional definido
+contrato definido
 UI/UX compatible
-estado persistido correcto
+persistencia correcta
 RLS/RPC correcto
 método de pago correcto
 happy/error/offline
-responsive/accesibilidad
-build/lint
-contract tests
-tests RPC/RLS cuando apliquen
-E2E cuando aplique
+build/lint/npm test
+RPC/RLS/E2E cuando aplican
+integraciones seguras y observables
 CI/deploy/smoke
 rollback evaluado
-maestros actualizados
-Roadmap actualizado
+maestros + Roadmap actualizados
 ```
 
 ---
 
-# 21. Release checklist
+# 18. Release checklist
 
 ```text
-[ ] main contiene cambios esperados
+[ ] main esperado
 [ ] build
 [ ] lint
 [ ] npm test
 [ ] E2E aplicable
-[ ] flujo afectado
-[ ] mismo serviceId entre roles
 [ ] permisos/RLS
 [ ] concurrencia/idempotencia
 [ ] pagos method-aware
-[ ] ampliaciones financiadas/reconciliadas
+[ ] ampliaciones financiadas
 [ ] Storage/evidencia
 [ ] Realtime/reconexión
-[ ] mobile
-[ ] desktop
-[ ] accesibilidad
-[ ] CI/deploy
+[ ] integraciones Admin sin secretos
+[ ] mobile/desktop/accesibilidad
+[ ] CI
+[ ] Vercel READY
 [ ] smoke
 [ ] rollback
 [ ] maestros
@@ -450,6 +320,6 @@ Roadmap actualizado
 
 ---
 
-# 22. Regla final
+# 19. Regla final
 
-**UGO está listo cuando el circuito real funciona, resiste errores, preserva integridad y puede demostrarse; no porque exista código o se vea bien.**
+**UGO está listo cuando el circuito real y sus integraciones funcionan, resisten errores, preservan integridad y pueden demostrarse; no porque exista código o se vea bien.**
