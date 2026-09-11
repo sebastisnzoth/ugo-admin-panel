@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import type { StyleSpecification } from 'maplibre-gl'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 
 type Props = {
   userPos: [number, number] | null // [lng, lat]

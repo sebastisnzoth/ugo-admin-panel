@@ -617,11 +617,9 @@ export function SecAvanzado() {
 
 
 /* ─────────────────────────────────────────────
-   SecImportProviders — CSV/Excel + inserción Supabase directa
+   SecImportProviders — CSV + inserción Supabase directa
    Formato: prospectos_scouts o genérico con auto-mapeo
 ───────────────────────────────────────────── */
-import * as XLSX from 'xlsx';
-
 const SB_IMP_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_IMP_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
 
@@ -711,48 +709,75 @@ export function SecImportProviders() {
   const [selected, setSelected] = React.useState<Set<number>>(new Set());
 
   const processFile = (file: File) => {
-    setResult(null); setRows([]); setSelected(new Set());
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      try {
-        const data = new Uint8Array(e.target?.result as ArrayBuffer);
-        const wb   = XLSX.read(data, { type: 'array' });
-        const ws   = wb.Sheets[wb.SheetNames[0]];
-        const json = XLSX.utils.sheet_to_json<Record<string,string>>(ws, { defval: '' });
-        if (!json.length) { setStatus('❌ Archivo vacío'); return; }
-        const mapped = parseCSVRows(json);
-
-        // Geocodificar filas sin lat/lng usando Nominatim
-        const needsGeo = mapped.filter(r => r._needs_geocode === 'true').length;
-        if (needsGeo > 0) {
-          setStatus(`⏳ Geocodificando ${needsGeo} direcciones sin coordenadas (puede tardar ~${needsGeo}s)...`);
-          for (let i = 0; i < mapped.length; i++) {
-            if (mapped[i]._needs_geocode !== 'true') continue;
-            try {
-              const addr = encodeURIComponent(`${mapped[i].direccion}, ${mapped[i].ciudad}, Brasil`);
-              const gr = await fetch(`https://nominatim.openstreetmap.org/search?q=${addr}&format=json&limit=1`, {
-                headers: { 'User-Agent': 'ugo-scout-import/1.0' }
-              });
-              const gd = await gr.json();
-              if (gd?.[0]) {
-                mapped[i].latitud  = parseFloat(gd[0].lat).toFixed(6);
-                mapped[i].longitud = parseFloat(gd[0].lon).toFixed(6);
-              }
-              await new Promise(res => setTimeout(res, 1100)); // rate limit Nominatim
-            } catch { /* skip, sin coordenadas */ }
-          }
+  setResult(null); setRows([]); setSelected(new Set());
+  if (!file.name.toLowerCase().endsWith('.csv')) {
+    setStatus('❌ Por seguridad, UGO importa proveedores en formato CSV. Podés descargar el template y guardar tu Excel como CSV UTF-8.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const text = String(e.target?.result || '').replace(/^\uFEFF/, '');
+      const firstLine = text.split(/\r?\n/, 1)[0] || '';
+      const delimiter = (firstLine.match(/;/g)?.length || 0) > (firstLine.match(/,/g)?.length || 0) ? ';' : ',';
+      const parseLine = (line: string): string[] => {
+        const out: string[] = [];
+        let value = '', quoted = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') {
+            if (quoted && line[i + 1] === '"') { value += '"'; i++; }
+            else quoted = !quoted;
+          } else if (ch === delimiter && !quoted) { out.push(value); value = ''; }
+          else value += ch;
         }
+        out.push(value);
+        return out.map(v => v.trim());
+      };
+      const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
+      if (lines.length < 2) { setStatus('❌ Archivo vacío o sin filas de datos'); return; }
+      const headers = parseLine(lines[0]);
+      const json: Record<string,string>[] = lines.slice(1).map(line => {
+        const values = parseLine(line);
+        return headers.reduce<Record<string,string>>((row, key, index) => {
+          row[key] = values[index] || '';
+          return row;
+        }, {});
+      });
+      const mapped = parseCSVRows(json);
 
-        setRows(mapped);
-        setSelected(new Set(mapped.map((_,i) => i)));
-        const geoOk = mapped.filter(r => r.latitud && r.longitud).length;
-        setStatus(`✅ ${json.length} filas → ${mapped.length} válidos · ${geoOk} con coordenadas · ${needsGeo} geocodificados`);
-      } catch(err: any) { setStatus('❌ Error: ' + err.message); }
-    };
-    reader.readAsArrayBuffer(file);
+      const needsGeo = mapped.filter(r => r._needs_geocode === 'true').length;
+      if (needsGeo > 0) {
+        setStatus(`⏳ Geocodificando ${needsGeo} direcciones sin coordenadas (puede tardar ~${needsGeo}s)...`);
+        for (let i = 0; i < mapped.length; i++) {
+          if (mapped[i]._needs_geocode !== 'true') continue;
+          try {
+            const addr = encodeURIComponent(`${mapped[i].direccion}, ${mapped[i].ciudad}, Brasil`);
+            const gr = await fetch(`https://nominatim.openstreetmap.org/search?q=${addr}&format=json&limit=1`, {
+              headers: { 'User-Agent': 'ugo-scout-import/1.0' }
+            });
+            const gd = await gr.json();
+            if (gd?.[0]) {
+              mapped[i].latitud = parseFloat(gd[0].lat).toFixed(6);
+              mapped[i].longitud = parseFloat(gd[0].lon).toFixed(6);
+            }
+            await new Promise(res => setTimeout(res, 1100));
+          } catch { /* skip, sin coordenadas */ }
+        }
+      }
+
+      setRows(mapped);
+      setSelected(new Set(mapped.map((_,i) => i)));
+      const geoOk = mapped.filter(r => r.latitud && r.longitud).length;
+      setStatus(`✅ ${json.length} filas → ${mapped.length} válidos · ${geoOk} con coordenadas · ${needsGeo} geocodificados`);
+    } catch(err: unknown) {
+      setStatus('❌ Error: ' + (err instanceof Error ? err.message : 'No se pudo leer el CSV'));
+    }
   };
+  reader.readAsText(file, 'utf-8');
+};
 
-  const toggleAll = () => {
+const toggleAll = () => {
     if (selected.size === rows.length) setSelected(new Set());
     else setSelected(new Set(rows.map((_,i) => i)));
   };
@@ -880,7 +905,7 @@ export function SecImportProviders() {
     <div className="pad" style={{overflowY:'auto',height:'calc(100% - 40px)'}}>
       <div className="st">📥 Importar Proveedores</div>
       <p style={{fontSize:'12px',color:'var(--muted)',marginBottom:'14px',lineHeight:1.6}}>
-        Soporta CSV y Excel. Detecta automáticamente el formato. Compatible con el formato de exportación del Scout Radar.
+        Importación CSV segura con detección automática de columnas. Compatible con el formato de exportación del Scout Radar.
       </p>
 
       <div style={{display:'flex',gap:'10px',marginBottom:'14px',flexWrap:'wrap',alignItems:'center'}}>
@@ -906,9 +931,9 @@ export function SecImportProviders() {
         onClick={()=>document.getElementById('imp-file')?.click()}
         style={{border:`2.5px dashed ${dragging?'#05944F':'#ddd'}`,borderRadius:'16px',padding:'28px',textAlign:'center',cursor:'pointer',marginBottom:'14px',background:dragging?'rgba(5,148,79,.04)':'#fafafa',transition:'all .2s'}}>
         <div style={{fontSize:'36px',marginBottom:'8px'}}>{dragging?'🎯':'📊'}</div>
-        <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo Excel o CSV aquí</div>
-        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.xlsx · .xls · .csv — o clic para seleccionar</div>
-        <input id="imp-file" type="file" accept=".xlsx,.xls,.csv" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)processFile(f);}}/>
+        <div style={{fontWeight:700,fontSize:'14px',color:'#111'}}>Arrastrá tu archivo CSV aquí</div>
+        <div style={{fontSize:'12px',color:'#888',marginTop:'4px'}}>.csv UTF-8 — o clic para seleccionar</div>
+        <input id="imp-file" type="file" accept=".csv,text/csv" style={{display:'none'}} onChange={e=>{const f=e.target.files?.[0];if(f)processFile(f);}}/>
       </div>
 
       {status && (

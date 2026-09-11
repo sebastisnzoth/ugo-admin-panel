@@ -9,6 +9,7 @@ on:
       - 'fix/**'
       - 'feat/**'
       - 'perf/**'
+      - 'security/**'
 
 concurrency:
   group: ugo-core-ci-${{ github.ref }}
@@ -31,6 +32,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Dependency security gate
+        run: npm audit --audit-level=high
 
       - name: TypeScript and production build
         run: npm run build

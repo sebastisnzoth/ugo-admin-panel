@@ -1,6 +1,6 @@
 import React,{useEffect,useRef,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
-import maplibregl from'maplibre-gl'
+import * as maplibregl from'maplibre-gl'
 import{getRoutingProvider}from'../lib/routing/provider'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
