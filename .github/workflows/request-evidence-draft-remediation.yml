@@ -1,0 +1,116 @@
+name: UGO Request Evidence Draft Remediation
+
+on:
+  push:
+    branches:
+      - fix/p0-request-evidence-draft-id-20260911
+
+permissions:
+  contents: write
+
+jobs:
+  wire-draft:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: fix/p0-request-evidence-draft-id-20260911
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wire explicit request draft id
+        run: |
+          python3 <<'PY'
+          from pathlib import Path
+
+          path = Path('src/mvp/ClientApp.tsx')
+          text = path.read_text()
+
+          def replace_once(old: str, new: str, label: str):
+              global text
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{label}: expected exactly 1 match, got {count}')
+              text = text.replace(old, new, 1)
+
+          replace_once(
+              "[requestEvidenceCount,setRequestEvidenceCount]=useState(0),[requestEvidenceBusy,setRequestEvidenceBusy]=useState(false)",
+              "[requestEvidenceCount,setRequestEvidenceCount]=useState(0),[requestEvidenceBusy,setRequestEvidenceBusy]=useState(false),[requestDraftId,setRequestDraftId]=useState('')",
+              'state'
+          )
+
+          replace_once(
+              " const draftKey=session?`ugo:request-draft:${session.user.id}`:''\n",
+              " const draftKey=session?`ugo:request-draft:${session.user.id}`:''\n const requestDraftKey=session?`ugo:request-evidence-draft:${session.user.id}`:''\n",
+              'draft key'
+          )
+
+          replace_once(
+              " useEffect(()=>{if(!draftKey)return;try{sessionStorage.setItem(draftKey,JSON.stringify(form))}catch{}},[draftKey,form])",
+              " useEffect(()=>{if(!session){setRequestDraftId('');return}let id='';try{id=sessionStorage.getItem(`ugo:request-evidence-draft:${session.user.id}`)||''}catch{}if(!id)id=crypto.randomUUID();setRequestDraftId(id);try{sessionStorage.setItem(`ugo:request-evidence-draft:${session.user.id}`,id)}catch{}},[session])\n useEffect(()=>{if(!draftKey)return;try{sessionStorage.setItem(draftKey,JSON.stringify(form))}catch{}},[draftKey,form])",
+              'draft effect'
+          )
+
+          replace_once(
+              "   if(requestEvidenceBusy)throw new Error('Esperá a que termine de subir la foto.')\n",
+              "   if(!requestDraftId)throw new Error('No se pudo preparar el borrador de la solicitud.')\n   if(requestEvidenceBusy)throw new Error('Esperá a que termine de subir la foto.')\n",
+              'create guard'
+          )
+
+          replace_once(
+              "metadata:{source:'prototype-flow',demo:false,selected_provider_id:selectedProvider?.id||null}}",
+              "metadata:{source:'prototype-flow',demo:false,selected_provider_id:selectedProvider?.id||null,request_draft_id:requestDraftId}}",
+              'service metadata'
+          )
+
+          replace_once(
+              "   setSelectedProvider(null);try{sessionStorage.removeItem(draftKey)}catch{};setForm(initialForm);await loadData();return true",
+              "   setSelectedProvider(null);try{sessionStorage.removeItem(draftKey)}catch{};const nextRequestDraftId=crypto.randomUUID();setRequestDraftId(nextRequestDraftId);try{if(requestDraftKey)sessionStorage.setItem(requestDraftKey,nextRequestDraftId)}catch{};setForm(initialForm);await loadData();return true",
+              'rotate draft'
+          )
+
+          replace_once(
+              "<ClientRequestEvidence inline onBusyChange={setRequestEvidenceBusy} onCountChange={setRequestEvidenceCount}/>",
+              "<ClientRequestEvidence draftId={requestDraftId} inline onBusyChange={setRequestEvidenceBusy} onCountChange={setRequestEvidenceCount}/>",
+              'evidence component'
+          )
+
+          replace_once(
+              "disabled={busy||requestEvidenceBusy||requestEvidenceCount<1}",
+              "disabled={busy||requestEvidenceBusy||requestEvidenceCount<1||!requestDraftId}",
+              'submit guard'
+          )
+
+          path.write_text(text)
+          PY
+
+      - name: Verify production build
+        run: npm run build
+
+      - name: Verify client lint surface
+        run: >-
+          npx eslint src/mvp/ClientApp.tsx src/mvp/ClientRequestEvidence.tsx
+          --rule 'react-hooks/set-state-in-effect: off'
+          --rule 'no-empty: off'
+
+      - name: Commit wiring
+        run: |
+          if git diff --quiet -- src/mvp/ClientApp.tsx; then
+            echo "No ClientApp changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/mvp/ClientApp.tsx
+          git commit -m "fix(client): bind service creation to request evidence draft"
+          git push origin HEAD:fix/p0-request-evidence-draft-id-20260911
