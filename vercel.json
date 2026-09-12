@@ -12,6 +12,18 @@
       "destination": "/api/test"
     },
     {
+      "source": "/api/pagos/efectivo",
+      "destination": "/api/operations?op=cash-select"
+    },
+    {
+      "source": "/api/pagos/confirmar-efectivo",
+      "destination": "/api/operations?op=cash-confirm"
+    },
+    {
+      "source": "/api/kyc/verify",
+      "destination": "/api/operations?op=kyc-verify"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
