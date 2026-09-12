@@ -126,11 +126,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.status(200).json({ received: true, updated: true, tipo: 'ampliacion', estado: 'retenido' })
       }
 
+      if (paymentData.status === 'refunded') {
+        const { error: refundError } = await sb.rpc('reembolsar_pago_ampliacion', {
+          p_ampliacion_id: expansion.id,
+          p_pago_externo_id: externalPaymentId,
+          p_monto: paidAmount || expectedAmount,
+          p_moneda: expectedCurrency,
+        })
+        if (refundError) {
+          console.error('No se pudo revertir el ajuste reembolsado de ampliación:', refundError)
+          return res.status(200).json({ received: true, updated: false, tipo: 'ampliacion', estado: 'reembolso_pendiente' })
+        }
+        return res.status(200).json({ received: true, updated: true, tipo: 'ampliacion', estado: 'reembolsado' })
+      }
+
       let adjustmentState = 'pendiente'
-      if (paymentData.status === 'refunded') adjustmentState = 'reembolsado'
       if (['rejected', 'cancelled', 'charged_back'].includes(paymentData.status)) adjustmentState = 'fallido'
-      const pagoEstado = adjustmentState === 'reembolsado' ? 'pendiente_ajuste' : expansion.pago_estado
-      const { error: updateError } = await sb.from('ampliaciones_servicio').update({ ajuste_estado: adjustmentState, ajuste_pago_externo_id: externalPaymentId, ajuste_monto: paidAmount || expectedAmount, ajuste_moneda: expectedCurrency, ajuste_actualizado_at: new Date().toISOString(), pago_estado: pagoEstado, updated_at: new Date().toISOString() }).eq('id', expansion.id)
+      const { error: updateError } = await sb.from('ampliaciones_servicio').update({ ajuste_estado: adjustmentState, ajuste_pago_externo_id: externalPaymentId, ajuste_monto: paidAmount || expectedAmount, ajuste_moneda: expectedCurrency, ajuste_actualizado_at: new Date().toISOString(), pago_estado: expansion.pago_estado, updated_at: new Date().toISOString() }).eq('id', expansion.id)
       if (updateError) console.error('No se pudo actualizar estado del ajuste:', updateError)
       if (paymentData.status === 'approved' && (!amountMatches || !currencyMatches)) {
         console.error('Ajuste aprobado con monto/moneda inconsistente', { expansionId, expectedAmount, paidAmount, expectedCurrency, paidCurrency })
