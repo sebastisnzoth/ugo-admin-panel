@@ -18,28 +18,16 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
 
-async function hasPersistedActiveAssignment(supabase:SupabaseClient){
- const{data:auth}=await supabase.auth.getUser()
- const userId=auth.user?.id
- if(!userId)return false
- const{data:service}=await supabase.from('servicios').select('id,estado').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle()
- return Boolean(service&&PROVIDER_ACTIVE_STATES.includes(String((service as{estado?:string}).estado||'')))
-}
+async function hasPersistedActiveAssignment(supabase:SupabaseClient){const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)return false;const{data:service}=await supabase.from('servicios').select('id,estado').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle();return Boolean(service&&PROVIDER_ACTIVE_STATES.includes(String((service as{estado?:string}).estado||'')))}
 
-export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
- const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
- if(error){
-  // The accepted offer may disappear from provider-visible offer rows after the
-  // transaction. Reconcile using the provider's persisted active assignment.
-  if(await hasPersistedActiveAssignment(supabase))return
-  throw error
- }
- if(!data){
-  // Retry after a successful acceptance is safe even when the original offer
-  // is no longer visible through RLS.
-  if(await hasPersistedActiveAssignment(supabase))return
-  throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')
- }
-}
+export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error){if(await hasPersistedActiveAssignment(supabase))return;throw error}if(!data){if(await hasPersistedActiveAssignment(supabase))return;throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}}
 export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error)throw error}
-export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state});if(error)throw error}
+
+function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
+async function publishProviderLocation(supabase:SupabaseClient){const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)throw new Error('Sesión no disponible.');const position=await currentPosition();const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude);if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new Error('No pudimos validar tu ubicación actual.');const point=`POINT(${longitude} ${latitude})`;const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:new Date().toISOString()}).eq('usuario_id',userId);if(error)throw error}
+
+export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){
+ if(state==='llegado')await publishProviderLocation(supabase)
+ const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
+ if(error)throw error
+}
