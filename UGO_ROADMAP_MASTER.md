@@ -24,7 +24,7 @@ Excepciones: `cancelado`, `disputado`.
 - Home / Radar / Mapa / Categorías / Búsqueda migrados al design system.
 - Flujo de creación, dispatch, seguimiento, pagos, aprobación, reseñas, historial y disputas existente.
 - Contrato Cliente ↔ Proveedor reforzado por `tests/contracts/client-provider-lifecycle.test.mjs`.
-- Próximo cierre: integración real RPC/RLS/E2E con dos roles sobre entorno aislado.
+- Próximo cierre: ejecución real RPC/RLS/E2E con dos roles sobre entorno aislado.
 
 ### 2. Proveedor · Home / Demanda / Oportunidades — CERRADO
 Implementado y verificado:
@@ -36,6 +36,7 @@ Implementado y verificado:
 - Demanda con actualización automática mientras el proveedor está Online: fallback cada 45 s más refresh al recuperar foco/visibilidad.
 - Oportunidades, servicios y pagos sincronizados por Supabase Realtime sobre tablas efectivamente publicadas.
 - Aceptación de oportunidad verificada como server-authoritative y atómica mediante `aceptar_oferta`; una oferta ya tomada deja de ser aceptable sin asignaciones paralelas.
+- Pre-asignación endurecida: la oportunidad se carga por `obtener_ofertas_proveedor`; el proveedor pendiente no depende de leer la fila completa de `servicios`.
 - Navegación a oportunidades coherente y targets principales del journey de mercado ≥48 px.
 - Contratos de regresión agregados en `tests/contracts/provider-market.test.mjs`.
 - GitHub CI del bloque verde: TypeScript/build, lifecycle + provider market tests y lint crítico.
@@ -47,8 +48,10 @@ Implementado y verificado:
 - `asignado → en_camino → llegado → en_progreso → esperando_aprobacion` implementado.
 - Evidencia y pago efectivo integrados.
 - `Agregar trabajo / Ampliar servicio` presente en trabajo en progreso.
-- QA contractual Cliente ↔ Proveedor ↔ backend agregado y CI #309 verde.
-- Pendiente P0 real: ejecutar RPC/RLS contra base aislada y E2E de concurrencia, dinero, reintentos, ampliaciones y Realtime.
+- QA contractual Cliente ↔ Proveedor ↔ backend agregado.
+- Harness ejecutable agregado en `tests/integration/client-provider-rpc-rls.test.mjs` para dos sesiones reales sobre Supabase aislado.
+- El harness se niega explícitamente a ejecutar contra el project ref de producción y cubre creación, matching dirigido, privacidad pre-asignación, aceptación, gate de pago, lifecycle, evidencia, efectivo y aprobación con ownership.
+- Pendiente P0 real: ejecutar ese harness sobre entorno aislado con credenciales de Cliente/Proveedor y ampliar concurrencia, dinero, reintentos, ampliaciones y Realtime.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -58,16 +61,18 @@ Implementado y verificado:
 
 ### 5. Backend / Supabase — avanzado
 - Auth, PostgreSQL, RPCs, realtime y pagos en operación.
-- Pendiente P0: pruebas ejecutadas de RLS/RPC críticas en base aislada, incluida concurrencia/idempotencia.
+- P0 harness RPC/RLS ya preparado y conectado a CI mediante variables `UGO_TEST_*`.
+- No se usa producción para la prueba destructiva. El proyecto separado `UGO Arena` existe pero está inactivo; no se reactiva automáticamente porque hacerlo puede tener impacto operativo/costo.
+- Pendiente P0: proveer/activar entorno aislado y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
 - Pendiente posterior: security advisors y consistencia final con masters.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
-- Nuevo contrato `client-provider-lifecycle.test.mjs` incorporado.
-- CI #309 del commit `9da65efc` quedó verde: audit de dependencias, build/TypeScript, tests y lint crítico.
+- Contratos `client-provider-lifecycle.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
+- El harness aislado queda en skip seguro cuando faltan credenciales; jamás cae a producción por fallback.
 - Vercel producción del baseline maestro anterior quedó en `success`.
 - Política de cuota/deploy definida en `DEPLOY.md`.
-- Pendiente: integración RPC/RLS, E2E UI, smoke por journey y recuperación/reintentos.
+- Pendiente: ejecución RPC/RLS aislada, E2E UI, smoke por journey y recuperación/reintentos.
 
 ## Auditoría vigente
 `docs/UGO_AUDIT_20260912.md` es la baseline actual para priorizar P0/P1. La auditoría de 10/09 queda como histórica y no debe gobernar decisiones que contradigan el estado actual de `main`.
@@ -79,9 +84,16 @@ HUGO toma el primer bloque `EN CURSO` con dependencia satisfecha y ejecuta:
 No avanzar una pantalla sólo por estética si su contrato de datos/estado no está resuelto. No declarar bloque cerrado con CI pendiente, datos mock no autorizados o producción sin verificar cuando el alcance exige release.
 
 ## Próximo checkpoint
-**P0 · Harness de integración RPC/RLS Cliente ↔ Proveedor sobre entorno aislado.**
+**P0 · Ejecutar el harness RPC/RLS Cliente ↔ Proveedor sobre entorno aislado.**
 
-Orden de cierre:
+Preparación ya hecha:
+1. harness versionado;
+2. protección explícita contra project ref de producción;
+3. variables `UGO_TEST_SUPABASE_URL`, `UGO_TEST_SUPABASE_ANON_KEY`, `UGO_TEST_CLIENT_EMAIL`, `UGO_TEST_CLIENT_PASSWORD`, `UGO_TEST_PROVIDER_EMAIL`, `UGO_TEST_PROVIDER_PASSWORD` cableadas a GitHub Actions secrets;
+4. ejecución automática dentro de `npm test` cuando las seis variables existen;
+5. skip seguro y visible cuando faltan.
+
+Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
 2. gate de pago para `asignado → en_camino`;
 3. llegada + evidencia `Antes`;
