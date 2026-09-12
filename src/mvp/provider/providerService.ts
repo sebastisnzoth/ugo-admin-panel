@@ -8,7 +8,7 @@ export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];s
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
   supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
-  supabase.from('ofertas_servicio').select('*,servicio:servicios(*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre))').eq('proveedor_id',userId).eq('estado','pendiente').order('created_at',{ascending:false}),
+  supabase.rpc('obtener_ofertas_proveedor'),
   supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1),
   supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
  ])
