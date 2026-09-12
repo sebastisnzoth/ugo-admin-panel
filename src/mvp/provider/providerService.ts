@@ -17,6 +17,30 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
 }
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
-export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error)throw error;if(!data)throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}
+
+async function acceptedServiceAfterAmbiguousError(supabase:SupabaseClient,offerId:string){
+ const{data:offer}=await supabase.from('ofertas_servicio').select('servicio_id').eq('id',offerId).maybeSingle()
+ const serviceId=String((offer as{servicio_id?:string}|null)?.servicio_id||'')
+ if(!serviceId)return false
+ const{data:service}=await supabase.from('servicios').select('id,estado').eq('id',serviceId).maybeSingle()
+ const state=String((service as{estado?:string}|null)?.estado||'')
+ return PROVIDER_ACTIVE_STATES.includes(state)
+}
+
+export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
+ const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
+ if(error){
+  // The RPC can commit and the response can still be lost. Reconcile against
+  // persisted state before telling the provider that acceptance failed.
+  if(await acceptedServiceAfterAmbiguousError(supabase,id))return
+  throw error
+ }
+ if(!data){
+  // A retry after a successful acceptance is also safe: persisted assignment
+  // is the source of truth, not the stale offer response.
+  if(await acceptedServiceAfterAmbiguousError(supabase,id))return
+  throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')
+ }
+}
 export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error)throw error}
 export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state});if(error)throw error}
