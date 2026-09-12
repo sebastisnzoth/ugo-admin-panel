@@ -1,13 +1,13 @@
 ---
 name: ugo-design-system
-description: UX/UI, Product Design y Design System transversal de UGO. Usar para diseñar, auditar e implementar visualmente Cliente, Proveedor y paneles administrativos; tokens, componentes, responsive, accesibilidad, consistencia visual, contratos de interacción y preparación frontend.
+description: UX/UI, Product Design y Design System transversal de UGO. Usar para diseñar, auditar, crear mockups/assets e implementar visualmente Cliente, Proveedor y paneles administrativos; tokens, componentes, responsive, accesibilidad, consistencia visual, contratos de interacción y preparación frontend.
 ---
 # UGO UX / UI / Design System
 
 ## Misión
 Diseñar, auditar y evolucionar la interfaz gráfica de todo el ecosistema UGO sin crear una segunda autoridad visual. Esta Skill convierte necesidades funcionales, flujos maestros y estado real del producto en experiencias claras, consistentes, accesibles e implementables.
 
-No diseña pantallas aisladas por estética. Diseña recorridos que acerquen UGO a uso real.
+Puede crear diseño gráfico, wireframes, mockups, especificaciones y assets cuando eso reduzca retrabajo o permita validar una solución antes de implementarla. No diseña pantallas aisladas por estética: diseña recorridos que acerquen UGO a uso real.
 
 ## Pregunta obligatoria
 Antes de priorizar un cambio visual importante y después de cada auditoría relevante, responder internamente:
@@ -26,6 +26,7 @@ Antes de inventar patrones, consultar en este orden proporcional al trabajo:
 - `docs/UGO_UIUX_MAESTRO.md`
 - `docs/UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`
 - maestro funcional afectado
+- `docs/UGO_DESIGN_SYSTEM_INVENTORY.md`
 - código y componentes actuales en `main`
 
 La UI nunca debe contradecir lifecycle, permisos, pagos, disponibilidad, evidencia ni estados persistidos.
@@ -46,7 +47,6 @@ Estado → contexto → próxima acción
 ```
 
 Principios:
-
 - Pedir un servicio debe sentirse tan simple como pedir un viaje.
 - Una persona sin conocimiento técnico debe poder usar UGO sin explicación previa.
 - Simplificar interacción, no falsificar contratos del dominio.
@@ -55,36 +55,36 @@ Principios:
 - Mobile first para Cliente y Proveedor.
 - Cliente, Proveedor y Admin comparten lenguaje visual sin forzar interfaces idénticas.
 - Diseñar el journey completo, no solamente la captura bonita.
+- Código existente es evidencia de implementación; los maestros siguen siendo autoridad.
 
 ## Alcance
 Esta Skill cubre UX/UI transversal de:
-
 - Cliente
 - Proveedor
 - Admin
 - Super Admin
-- superficies públicas/institucionales cuando usen identidad UGO
+- superficies públicas/institucionales que usen identidad UGO
 
 Incluye:
-
-- jerarquía visual
-- layout
-- navegación
-- componentes
-- tokens
-- microcopy UX
-- estados
-- mapas
-- radar
-- bottom sheets
-- formularios/wizards conversacionales
-- responsive
-- accesibilidad
-- feedback
-- empty/error/loading/offline
-- contratos frontend
-- auditoría visual
-- consistencia entre roles
+- jerarquía visual y layout;
+- navegación;
+- componentes y tokens;
+- microcopy UX;
+- estados;
+- mapas/radar;
+- bottom sheets;
+- wizards conversacionales;
+- responsive;
+- accesibilidad;
+- feedback;
+- empty/error/loading/offline;
+- contratos frontend;
+- auditoría visual;
+- consistencia entre roles;
+- wireframes;
+- mockups de alta fidelidad;
+- variantes gráficas;
+- ilustraciones/assets funcionales o institucionales.
 
 No reemplaza las Skills funcionales de Cliente, Proveedor o Admin. Para cambios de producto, trabajar junto a la Skill del dominio afectado y `ugo-qa`.
 
@@ -92,12 +92,14 @@ No reemplaza las Skills funcionales de Cliente, Proveedor o Admin. Para cambios 
 
 ```text
 sólo visual/UI                    → ugo-design-system + ugo-qa
-Cliente                           → ugo-client + ugo-design-system + ugo-qa
-Proveedor                         → ugo-provider + ugo-design-system + ugo-qa
-Admin                             → ugo-admin + ugo-design-system + ugo-qa
-Cliente↔Proveedor                 → ugo-core + ugo-client + ugo-provider + ugo-design-system + ugo-qa
+Cliente con UI/UX                 → ugo-client + ugo-design-system + ugo-qa
+Proveedor con UI/UX               → ugo-provider + ugo-design-system + ugo-qa
+Admin con UI/UX                   → ugo-admin + ugo-design-system + ugo-qa
+Cliente↔Proveedor con UI          → ugo-core + ugo-client + ugo-provider + ugo-design-system + ugo-qa
 transversal grande                → ugo-hugo + ugo-core + especialistas necesarios
 ```
+
+Cambios puramente funcionales que no alteran UI no necesitan activar esta Skill.
 
 ## Flujo Cliente como contrato UX
 Home tiene intención dominante:
@@ -118,7 +120,7 @@ No crear flujos paralelos para voz, texto, categoría o búsqueda.
 
 Objetivo habitual para una solicitud común: 3–5 confirmaciones humanas antes del matching cuando el contexto lo permita.
 
-Secuencia base de referencia:
+Secuencia base:
 
 ```text
 necesidad
@@ -155,7 +157,7 @@ Confirmar efectivo cuando corresponda
 Finalizar / revisión
 ```
 
-No mostrar acciones futuras como si ya estuvieran disponibles.
+No mostrar acciones futuras como disponibles.
 
 ## Contrato de pantalla
 Toda pantalla nueva o rediseñada debe poder responder, proporcionalmente:
@@ -187,8 +189,8 @@ Una pantalla crítica que sólo describe el happy path se considera incompleta.
 
 ### 1. Inspeccionar
 Antes de diseñar:
-
 - leer maestros y Skills relevantes;
+- leer `docs/UGO_DESIGN_SYSTEM_INVENTORY.md`;
 - revisar `main`;
 - inspeccionar pantallas relacionadas;
 - buscar tokens/componentes existentes;
@@ -218,35 +220,44 @@ pantalla anterior
 No resolver una pantalla rompiendo continuidad.
 
 ### 4. Reutilizar
-Buscar primero:
-
-- tokens
-- componentes
-- layouts
-- cards
-- navegación
-- iconografía
-- modales
-- bottom sheets
-- patrones de feedback
+Buscar primero tokens, componentes, layouts, cards, navegación, iconografía, modales, bottom sheets y patrones de feedback.
 
 Crear una pieza nueva sólo cuando lo existente no resuelva correctamente el problema.
 
-### 5. Diseñar
+### 5. Elegir modo de diseño
+
+#### Code-first
+Usar cuando:
+- el patrón ya existe;
+- la modificación es pequeña;
+- tokens/componentes están definidos;
+- el riesgo UX es bajo.
+
+#### Mockup/spec-first
+Usar cuando:
+- la pantalla es nueva o cambia sustancialmente;
+- existen varias jerarquías plausibles;
+- mapa/radar/bottom sheet necesita validación de composición;
+- el journey es crítico;
+- implementar directo probablemente cause retrabajo.
+
+La Skill puede generar el diseño gráfico necesario sin pedir permiso rutinario cuando el pedido ya autoriza diseñar/mejorar la interfaz.
+
+### 6. Diseñar
 Definir:
+- jerarquía;
+- layout;
+- CTA;
+- copy;
+- componentes;
+- interacción;
+- estados;
+- responsive;
+- accesibilidad;
+- assets gráficos sólo cuando aportan valor funcional o de marca.
 
-- jerarquía
-- layout
-- CTA
-- copy
-- componentes
-- interacción
-- estados
-- responsive
-- accesibilidad
-
-### 6. Traducir a contrato frontend
-Cuando corresponda, entregar algo equivalente a:
+### 7. Traducir a contrato frontend
+Cuando corresponda:
 
 ```text
 Component
@@ -260,7 +271,9 @@ Accessibility
 Error/recovery states
 ```
 
-### 7. Validar
+Un mockup no es implementación. Siempre mapearlo a componentes/estados reales antes de declararlo listo para producción.
+
+### 8. Validar
 Preguntarse:
 
 ```text
@@ -269,19 +282,37 @@ Preguntarse:
 ¿Refleja estado real?
 ¿Funciona vacío?
 ¿Funciona con error?
-¿Funciona offline/degradado cuando aplique?
+¿Funciona offline/degradado cuando aplica?
 ¿Funciona con teclado y safe areas?
-¿Respeta Design System?
+¿Respeta el inventario del Design System?
 ¿Duplica algo existente?
 ¿Acerca al usuario a completar una operación real?
 ```
 
+Aplicar `ugo-qa` antes de declarar validada una interfaz crítica.
+
+## Diseño gráfico y assets
+Esta Skill puede crear:
+- wireframes;
+- mockups high-fidelity;
+- variantes de layout;
+- assets de marca;
+- ilustraciones funcionales;
+- imágenes institucionales/promocionales del ecosistema;
+- referencias visuales para implementación.
+
+Reglas:
+- preferir iconografía existente para controles funcionales;
+- no usar una imagen como único control de una acción crítica;
+- evitar texto embebido en raster si debe traducirse o ser accesible;
+- mantener alt/fallback cuando corresponda;
+- no inventar profesionales, disponibilidad, garantías, pagos o confianza inexistente;
+- los assets deben respetar el Design System y no crear una identidad paralela.
+
 ## Design System
-Buscar y reutilizar tokens/componentes existentes antes de crear nuevos.
+`docs/UGO_DESIGN_SYSTEM_INVENTORY.md` es el inventario canónico operativo.
 
-No introducir un segundo sistema visual ni CSS puntual que contradiga la base global.
-
-Mantener una única intención por componente compartido.
+Buscar y reutilizar tokens/componentes existentes antes de crear nuevos. No introducir un segundo sistema visual ni CSS puntual que contradiga la base global.
 
 Tokens deben representar intención semántica, por ejemplo:
 
@@ -304,16 +335,14 @@ shadow-*
 No usar valores arbitrarios cuando exista un token equivalente.
 
 ## Espaciado
-Preferir escalas consistentes ya existentes. Si el sistema requiere referencia, usar múltiplos coherentes como:
+Escala de referencia cuando no exista token consolidado:
 
 ```text
 4 8 12 16 20 24 32 40 48 64
 ```
 
-No introducir márgenes/paddings únicos sin necesidad.
-
 ## Mobile first y responsive
-Referencia principal móvil:
+Referencia móvil:
 
 ```text
 390×844
@@ -325,41 +354,20 @@ Rango prioritario:
 360–430 px
 ```
 
-Considerar siempre:
-
-- safe areas
-- teclado
-- scroll
-- bottom navigation
-- bottom sheets
-- orientation cuando aplique
-- latencia/conexión degradada
-
-Definir comportamiento para mobile, tablet y desktop cuando la superficie lo requiera. No limitarse a escalar proporcionalmente la versión móvil.
+Considerar safe areas, teclado, scroll, bottom navigation, bottom sheets, latencia/conexión degradada y desktop/tablet cuando la superficie lo requiera.
 
 ## Áreas táctiles
-Targets táctiles:
 
 ```text
 mínimo UGO: 48×48 px
 ```
 
-Especial atención a:
-
-- volver
-- menú
-- avatar
-- notificaciones
-- filtros
-- tabs
-- mapa
-- navegación inferior
-- Hugo/Orbe
+Especial atención a volver, menú, avatar, notificaciones, filtros, tabs, mapa, navegación inferior y Hugo/Orbe.
 
 ## CTA
 Cada paso transaccional debe tener una acción primaria inequívoca.
 
-Preferir acciones específicas:
+Preferir acciones específicas como:
 
 ```text
 Encontrar profesionales
@@ -372,12 +380,10 @@ Finalizar servicio
 Calificar
 ```
 
-Evitar `Continuar` cuando pueda explicarse qué ocurrirá.
-
-No hacer competir visualmente varias acciones primarias.
+Evitar `Continuar` cuando pueda decirse qué ocurrirá.
 
 ## Estados obligatorios
-Diseñar como mínimo según corresponda:
+Diseñar según corresponda:
 
 ```text
 idle
@@ -392,20 +398,11 @@ offline/degraded
 disabled
 ```
 
-Y los estados de dominio reales del flujo afectado.
+Y siempre mapear los estados reales del dominio. No inventar estados visuales para ocultar backend inexistente.
 
-No inventar estados visuales para ocultar una capacidad backend inexistente.
+## Empty / error / feedback
+Un vacío debe explicar qué significa y qué puede hacer la persona.
 
-## Empty states
-Un vacío debe explicar:
-
-- qué significa;
-- si es normal;
-- qué puede hacer la persona ahora.
-
-Incluir CTA cuando exista acción útil.
-
-## Errores y recuperación
 Todo error importante debe explicar:
 
 ```text
@@ -414,193 +411,99 @@ qué pasó
 + qué puede hacer ahora
 ```
 
-Nunca obligar a empezar de cero por una falla recuperable.
-
-Evitar mensajes técnicos tipo `Error 500` como experiencia final.
-
-## Feedback
-Toda acción importante debe tener respuesta visible:
-
-- guardado
-- envío
-- aceptación
-- rechazo
-- pago
-- actualización
-- retry
-
-Usar según contexto:
-
-- inline feedback
-- toast
-- banner
-- modal
-- cambio de estado
-
-Evitar modales encadenados.
+Toda acción importante debe tener respuesta visible. Evitar modales encadenados.
 
 ## Copy UX
-Texto:
-
-- breve
-- cotidiano
-- accionable
-- no técnico
-- coherente en ES/PT cuando corresponda
-
-UGO explica lo que el usuario necesita saber, no su arquitectura interna.
+Texto breve, cotidiano, accionable, no técnico y preparado para ES/PT. UGO explica lo que la persona necesita saber, no su arquitectura interna.
 
 ## Mapas, radar y bottom sheets
-Mapa y radar deben apoyar la acción, no funcionar como decoración.
+Mapa/radar apoyan acción o seguimiento, no decoración.
 
-- evitar saturación de marcadores y controles;
-- ofrecer fallback textual cuando corresponda;
-- mantener CTA accesible;
-- respetar safe areas;
-- usar bottom sheet para información contextual sin perder el mapa;
-- animaciones sólo si comunican búsqueda, disponibilidad o estado real.
-
-Nunca simular profesionales disponibles o matching inexistente.
+- fallback textual cuando corresponda;
+- CTA accesible;
+- safe areas;
+- bottom sheet para contexto sin perder mapa;
+- animaciones sólo cuando comuniquen búsqueda/disponibilidad/estado real;
+- nunca simular profesionales disponibles o matching.
 
 ## Hugo / Orbe
-Hugo/Orbe debe:
-
-- mantener contexto;
-- compartir draft entre voz y texto;
-- tener target ≥48 px;
-- mostrar disponible/escuchando/procesando/confirmación cuando corresponda;
-- no tapar CTA, navegación, precio ni información crítica;
-- conservar lo capturado si voz falla;
-- requerir confirmación visible para decisiones críticas.
+Debe mantener contexto, compartir draft voz/texto, tener target ≥48 px, mostrar estados reales de escucha/proceso/confirmación, no tapar información crítica y conservar lo capturado si voz falla.
 
 ## Accesibilidad
-Obligatorio revisar:
-
-- contraste WCAG AA;
-- texto legible;
+Revisar:
+- WCAG AA;
+- legibilidad;
 - foco visible;
-- teclado en web;
+- teclado web;
 - lector de pantalla cuando corresponda;
 - labels;
 - reduced motion;
-- no depender sólo de color o iconos;
+- no depender sólo de color/iconos;
 - voz como alternativa, nunca obligación;
 - texto como alternativa completa.
 
 ## Consistencia entre roles
-Cuando Cliente y Proveedor representan el mismo objeto del negocio, conservar relación visual y semántica.
-
-Ejemplo:
-
-```text
-Cliente solicita servicio
-Proveedor recibe oportunidad
-Admin observa la misma operación
-```
-
-Las tres vistas pueden diferir en acciones, pero deben reflejar la misma realidad persistida y nomenclatura compatible.
+Cliente, Proveedor y Admin pueden mostrar acciones diferentes sobre la misma operación, pero deben reflejar la misma realidad persistida y nomenclatura compatible.
 
 ## Auditoría visual
-Clasificar hallazgos en cuatro ejes:
+Clasificar en:
 
 ### UX
-- comprensión
-- fricción
-- continuidad
-- navegación
-- próxima acción
+comprensión, fricción, continuidad, navegación, próxima acción.
 
 ### UI
-- jerarquía
-- tipografía
-- espaciado
-- contraste
-- componentes
-- estados
+jerarquía, tipografía, espaciado, contraste, componentes, estados.
 
 ### Producto
-- CTA
-- confianza
-- conversión
-- información necesaria
-- distancia al primer uso real
+CTA, confianza, conversión, información necesaria, distancia al primer uso real.
 
 ### Técnica
-- reutilización
-- tokens
-- responsive
-- duplicación
-- contratos frontend
-- coherencia con dominio
+reutilización, tokens, responsive, duplicación, contratos frontend, coherencia con dominio.
 
 ## Severidad
 
-### P0
-Bloquea uso real o induce estado crítico falso.
-
-Ejemplos:
-- no se puede contratar;
-- CTA principal inaccesible;
-- navegación sin salida;
-- pago/estado mostrado de forma incorrecta;
-- flujo crítico roto.
-
-### P1
-Problema serio de journey, operación o conversión.
-
-Ejemplos:
-- jerarquía confusa;
-- responsive roto;
-- falta feedback;
-- recuperación deficiente;
-- acción crítica difícil de encontrar.
-
-### P2
-Consistencia u optimización importante.
-
-### P3
-Polish visual o microinteracción.
-
-Prioridad:
-
 ```text
-P0 → P1 → P2 → P3
+P0 → bloqueo de uso real / estado crítico falso
+P1 → journey, operación, conversión o responsive/accesibilidad crítica
+P2 → consistencia, reutilización, deuda visual
+P3 → polish/microinteracción
 ```
 
+Prioridad: `P0 → P1 → P2 → P3`.
+
 ## Autonomía
-Esta Skill puede decidir sin pedir autorización rutinaria:
+Puede decidir sin autorización rutinaria:
+- layout;
+- spacing;
+- jerarquía;
+- componente existente;
+- microcopy;
+- estados UI;
+- responsive;
+- accesibilidad;
+- refactors visuales reversibles;
+- crear mockups/wireframes/assets necesarios para validar una interfaz ya autorizada.
 
-- layout
-- spacing
-- jerarquía
-- componente existente más adecuado
-- microcopy
-- estados UI
-- responsive
-- orden visual
-- ajustes de accesibilidad
-- refactors visuales reversibles
-
-Debe escalar según `AGENTS.md` si la decisión implica nueva política de producto, cambio comercial, dinero, permisos, seguridad, funcionalidad irreversible o contradicción entre maestros.
+Escalar según `AGENTS.md` ante nueva política de producto, dinero, permisos, seguridad, funcionalidad irreversible o contradicción entre maestros.
 
 ## No hacer
 Nunca:
-
 - diseñar por estética sin objetivo;
 - crear una segunda autoridad visual;
 - inventar APIs, datos o disponibilidad;
 - inventar estados de dominio;
 - romper un flujo maestro para acomodar una pantalla;
-- duplicar componentes sin revisar lo existente;
+- duplicar componentes sin revisar el inventario;
 - esconder problemas backend con UI ficticia;
-- sacrificar usabilidad por efectos visuales;
-- usar inspiración externa como copia literal.
+- sacrificar usabilidad por efectos;
+- copiar literalmente productos externos;
+- declarar un mockup como funcionalidad implementada.
 
 ## Definition of Done UI
-Una interfaz crítica está terminada cuando, según aplique:
 
 ```text
 [ ] respeta maestros UX y flujo funcional
+[ ] respeta UGO_DESIGN_SYSTEM_INVENTORY.md
 [ ] refleja estado real del dominio
 [ ] CTA principal clara
 [ ] jerarquía comprensible
@@ -609,19 +512,30 @@ Una interfaz crítica está terminada cuando, según aplique:
 [ ] error/recovery diseñado
 [ ] disabled/submitting/success cubiertos
 [ ] mobile 390×844 validado
-[ ] teclado y safe areas revisados
+[ ] 360–430 sin ruptura crítica
+[ ] teclado, scroll y safe areas revisados
 [ ] responsive definido
 [ ] targets ≥48 px
 [ ] contraste/accessibility revisados
 [ ] navegación anterior/siguiente coherente
 [ ] reutiliza tokens/componentes
+[ ] assets gráficos son accesibles y no sustituyen controles críticos
 [ ] no crea sistema paralelo
 [ ] contrato frontend implementable
 [ ] puede ser usada por una persona real sin explicación adicional
 ```
 
+## Evidencia
+Distinguir siempre:
+
+```text
+DESIGNED ≠ IMPLEMENTED ≠ VALIDATED ≠ RELEASED
+```
+
+Si no existe tooling de regresión visual configurado, no fingirlo. `ugo-qa` debe dejar explícita la parte visual no automatizada.
+
 ## Output esperado
-Cuando la tarea sea de diseño o auditoría UI/UX, producir de forma proporcional:
+Cuando la tarea sea de diseño o auditoría UI/UX, producir proporcionalmente:
 
 ```text
 objetivo
@@ -633,24 +547,12 @@ componentes reutilizados/nuevos
 estados
 interacciones
 responsive/accesibilidad
+mockup/asset si aporta valor
 contrato frontend
 archivos afectados
-severidad P0/P1/P2/P3
-validación ejecutada o pendiente real
+riesgos P0/P1
+validación realizada
 ```
-
-## Validación
-Comparar con los maestros UX/usabilidad y referencias vigentes; probar breakpoints/journeys afectados y estados de error/disabled.
-
-Ejecutar gates aplicables del repo cuando haya implementación:
-
-```bash
-npm run build
-npm test
-npm run lint
-```
-
-No declarar `VALIDATED` sin evidencia de la ejecución exacta.
 
 ## Regla final
-> **UGO no necesita más pantallas: necesita recorridos más claros. La interfaz debe convertir una necesidad real en una acción obvia, reflejar siempre la verdad del dominio y reducir la distancia entre la persona y la resolución completa del servicio.**
+> **UGO debe verse como un solo producto y comportarse como una sola realidad. Diseñar significa reducir esfuerzo, mostrar estado verdadero y conducir a la próxima acción. El diseño gráfico es una herramienta de producto, no decoración ni sustituto de funcionalidad.**
