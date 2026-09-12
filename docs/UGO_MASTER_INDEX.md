@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 12 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -65,6 +65,12 @@ Vocabulario, autoridad, conflictos, invariantes y reglas no negociables.
 
 Cómo una idea pasa a producción: priorización, vertical slices, Git, review, validación y release.
 
+## Nivel 1.5 — Arquitectura de agentes y aceleración
+
+`UGO_AI_AGENT_SYSTEM_MASTER.md`
+
+Define el rol de Arquitecta de Sistemas de IA, cómo HUGO orquesta Skills, cómo se audita, cómo se escala el sistema y cómo se reduce lead time sin perder integridad.
+
 ## Nivel 2 — Producto
 
 `UGO_ECOSISTEMA_FLUJO.md`
@@ -111,16 +117,19 @@ Prioridades P0–P3 y madurez real.
 1 UGO_MASTER_INDEX.md
 2 UGO_MASTER_GOVERNANCE.md
 3 UGO_DEVELOPMENT_MASTER.md
-4 UGO_ECOSISTEMA_FLUJO.md
-5 UGO_UIUX_MAESTRO.md
-6 UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
-7 UGO_ARQUITECTURA_TECNICA_MASTER.md
-8 UGO_DATA_BACKEND_MASTER.md
-9 UGO_TESTING_RELEASE_MASTER.md
-10 UGO_ROADMAP_MASTER.md
+4 UGO_AI_AGENT_SYSTEM_MASTER.md cuando el trabajo sea transversal, autónomo o de arquitectura de agentes
+5 UGO_ECOSISTEMA_FLUJO.md
+6 UGO_UIUX_MAESTRO.md
+7 UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
+8 UGO_ARQUITECTURA_TECNICA_MASTER.md
+9 UGO_DATA_BACKEND_MASTER.md
+10 UGO_TESTING_RELEASE_MASTER.md
+11 UGO_ROADMAP_MASTER.md
 ```
 
 Consultar `UGO_UIUX_STITCH_MASTER.md` cuando haya diseño/prototipado/migración desde Stitch.
+
+`AGENTS.md` gobierna el comportamiento operativo de los agentes y `.agents/skills/*` define capacidades especializadas; no reemplazan a los maestros.
 
 ---
 
@@ -137,7 +146,7 @@ Seguridad/integridad ejecutable
 → Roadmap
 ```
 
-Testing determina si algo está validado. Development determina cómo cambiarlo.
+Testing determina si algo está validado. Development determina cómo cambiarlo. `UGO_AI_AGENT_SYSTEM_MASTER.md` determina cómo se coordina el trabajo de agentes, pero no puede alterar contratos funcionales por sí solo.
 
 ---
 
@@ -250,9 +259,10 @@ Un commit o una pantalla visible **no** significan `HECHO`.
 11. Toda expansión debe justificar impacto en conversión, confianza, eficiencia o retención.
 12. Cero lock-in innecesario y costos controlados mientras UGO valida mercado.
 13. Los maestros se actualizan en el mismo bloque que cambia el contrato real de `main`.
+14. La arquitectura de agentes existe para reducir lead time, no para multiplicar agentes sin propósito.
 
 ---
 
 # 10. Regla final
 
-**Si una nueva función no mejora confianza, conversión, ejecución, monetización o retención, no debe desplazar un P0/P1 del circuito principal.**
+**Si una nueva función no mejora confianza, conversión, ejecución, monetización o retención, no debe desplazar un P0/P1 del circuito principal. Si una nueva Skill no reduce tiempo, errores o coordinación, no debe agregarse.**
