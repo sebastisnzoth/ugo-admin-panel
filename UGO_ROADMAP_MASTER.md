@@ -17,6 +17,7 @@ Excepciones: `cancelado`, `disputado`.
 - Evidencia `Antes` en `llegado`; `Durante/Después` en `en_progreso`.
 - Ampliación: descripción + costo + tiempo + aprobación + trazabilidad; delta electrónico no financiado no habilita alcance extra.
 - Efectivo permanece auditable dentro de UGO.
+- Ningún mecanismo de pago DEMO puede habilitar dinero/estado sobre cuentas reales: cliente y proveedor deben pertenecer explícitamente al circuito demo cuando corresponda.
 
 ## Estado por bloques
 
@@ -65,12 +66,14 @@ Implementado y verificado:
 - P0 harness RPC/RLS ya preparado y conectado a CI mediante variables `UGO_TEST_*`.
 - No se usa producción para pruebas destructivas.
 - Actualmente no hay un entorno aislado de test configurado con las seis credenciales requeridas en GitHub Actions.
+- Auditoría de seguridad P0 detectó que `crear_pago_demo_sebastian` permitía a un Cliente real generar un pago ficticio si quedaba asignado a un proveedor demo. Se cerró el bypass: ahora exige ownership y `private.is_demo_account(cliente,'cliente')` además del proveedor demo.
+- Migración aplicada y versionada en `supabase/migrations/20260912_guard_demo_payment_to_demo_client.sql`; regresión estática en `tests/contracts/demo-payment-guard.test.mjs`.
 - Pendiente P0: disponer un entorno aislado seguro y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
-- Pendiente posterior: security advisors y consistencia final con masters.
+- Pendiente posterior: continuar clasificación de security advisors sin confundir warnings de `SECURITY DEFINER` intencionales y guardados con vulnerabilidades reales.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
-- Contratos `client-provider-lifecycle.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
+- Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
 - El harness aislado queda en skip seguro cuando faltan credenciales; jamás cae a producción por fallback.
 - Vercel producción del baseline maestro anterior quedó en `success`.
 - Política de cuota/deploy definida en `DEPLOY.md`.
@@ -94,7 +97,8 @@ Preparación ya hecha:
 3. variables `UGO_TEST_SUPABASE_URL`, `UGO_TEST_SUPABASE_ANON_KEY`, `UGO_TEST_CLIENT_EMAIL`, `UGO_TEST_CLIENT_PASSWORD`, `UGO_TEST_PROVIDER_EMAIL`, `UGO_TEST_PROVIDER_PASSWORD` cableadas a GitHub Actions secrets;
 4. ejecución automática dentro de `npm test` cuando las seis variables existen;
 5. skip seguro y visible cuando faltan;
-6. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre.
+6. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
+7. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión.
 
 Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
