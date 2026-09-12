@@ -33,6 +33,19 @@ async function persistPickup(serviceId: string, pickup: Coordinates | null) {
 }
 
 export class SupabaseDispatchProvider implements DispatchProvider {
+  private async recoverAcceptedDispatch(serviceId: string, originalError: unknown): Promise<DispatchResult> {
+    // An RPC response can be lost after the DB already committed the offer/assignment.
+    // Re-read persisted state before surfacing an error so a retry never creates a
+    // second source of truth or leaves Cliente believing matching failed when it did not.
+    try {
+      const persisted = await this.getStatus(serviceId)
+      if (persisted.state === 'offering' || persisted.state === 'matched') return persisted
+    } catch {
+      // Preserve the original matching error; status recovery is best-effort only.
+    }
+    throw originalError
+  }
+
   async start(request: DispatchRequest): Promise<DispatchResult> {
     await persistPickup(request.serviceId, request.pickup || storedPickup())
 
@@ -41,7 +54,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
         p_servicio_id: request.serviceId,
         p_proveedor_id: request.preferredProviderId,
       })
-      if (error) throw error
+      if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
       const first = Array.isArray(data) ? data[0] : data
       return {
         serviceId: request.serviceId,
@@ -54,7 +67,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     const { data, error } = await (supabase as any).rpc('iniciar_matching', {
       p_servicio_id: request.serviceId,
     })
-    if (error) throw error
+    if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
 
     const first = Array.isArray(data) ? data[0] : data
     return {
