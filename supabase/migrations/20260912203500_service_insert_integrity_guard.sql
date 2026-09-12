@@ -3,6 +3,10 @@
 -- A client must be able to create its own request, but it must not be able to
 -- forge assignment/lifecycle/financial settlement fields during INSERT.
 -- Matching, provider assignment and lifecycle progression remain server-authoritative.
+--
+-- This migration intentionally changes only the INSERT RLS contract. Existing
+-- table grants are preserved because Admin operations may legitimately rely on
+-- direct table privileges while still being constrained by Admin-only RLS.
 
 alter policy servicios_insert
 on public.servicios
@@ -27,12 +31,3 @@ with check (
     )
   )
 );
-
--- Keep direct UPDATE authority restricted to Admin. Normal Cliente/Proveedor
--- state changes are performed by guarded RPCs and must not gain table UPDATE.
-revoke update, delete, truncate on table public.servicios from anon, authenticated;
-revoke trigger, references on table public.servicios from anon, authenticated;
-
--- INSERT/SELECT remain available through RLS for the user-facing app.
-grant select, insert on table public.servicios to authenticated;
-revoke all on table public.servicios from anon;
