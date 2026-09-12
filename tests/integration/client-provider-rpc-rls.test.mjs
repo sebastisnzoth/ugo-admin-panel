@@ -37,7 +37,7 @@ async function firstCategory(supabase) {
 }
 
 async function getService(supabase, serviceId) {
-  const { data, error } = await supabase.from('servicios').select('id,estado,cliente_id,proveedor_id').eq('id', serviceId).single()
+  const { data, error } = await supabase.from('servicios').select('id,estado,cliente_id,proveedor_id,tarifa').eq('id', serviceId).single()
   if (error) throw error
   return data
 }
@@ -96,6 +96,10 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
 
     const accepted = await p.rpc('aceptar_oferta', { p_oferta_id: offer.id })
     if (accepted.error) throw accepted.error
+
+    const duplicateAccept = await p.rpc('aceptar_oferta', { p_oferta_id: offer.id })
+    assert.ok(duplicateAccept.error, 'La misma oferta no puede aceptarse dos veces')
+
     let service = await getService(c, serviceId)
     assert.equal(service.proveedor_id, providerId)
     assert.equal(service.estado, 'asignado')
@@ -112,6 +116,34 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     const start = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_progreso' })
     if (start.error) throw start.error
 
+    const expansion = await p.rpc('proponer_ampliacion_servicio', {
+      p_servicio_id: serviceId,
+      p_descripcion: 'Trabajo adicional de integración',
+      p_monto_extra: 10,
+      p_minutos_extra: 15,
+    })
+    if (expansion.error) throw expansion.error
+    assert.ok(expansion.data?.id, 'La ampliación debe conservar vínculo al servicio activo')
+
+    const providerResolve = await p.rpc('resolver_ampliacion_servicio', {
+      p_ampliacion_id: expansion.data.id,
+      p_aprobar: true,
+    })
+    assert.ok(providerResolve.error, 'El proveedor no puede aprobar su propia ampliación')
+
+    const clientResolve = await c.rpc('resolver_ampliacion_servicio', {
+      p_ampliacion_id: expansion.data.id,
+      p_aprobar: true,
+    })
+    if (clientResolve.error) throw clientResolve.error
+    assert.equal(clientResolve.data?.estado, 'aprobada')
+
+    const duplicateResolve = await c.rpc('resolver_ampliacion_servicio', {
+      p_ampliacion_id: expansion.data.id,
+      p_aprobar: true,
+    })
+    assert.ok(duplicateResolve.error, 'Una ampliación resuelta no puede aprobarse dos veces')
+
     await insertEvidence(p, serviceId, providerId, 'despues')
     const review = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'esperando_aprobacion' })
     if (review.error) throw review.error
@@ -119,11 +151,17 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     const cash = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
     if (cash.error) throw cash.error
 
+    const duplicateCash = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
+    assert.ok(duplicateCash.error, 'La confirmación de efectivo no debe duplicar el cierre financiero')
+
     const providerCannotApprove = await p.rpc('aprobar_servicio', { p_servicio_id: serviceId })
     assert.ok(providerCannotApprove.error, 'Proveedor no puede aprobar cierre en nombre del Cliente')
 
     const approve = await c.rpc('aprobar_servicio', { p_servicio_id: serviceId })
     if (approve.error) throw approve.error
+
+    const duplicateApprove = await c.rpc('aprobar_servicio', { p_servicio_id: serviceId })
+    assert.ok(duplicateApprove.error, 'El Cliente no debe cerrar dos veces el mismo servicio')
 
     service = await getService(c, serviceId)
     assert.equal(service.estado, 'completado')
