@@ -1,5 +1,6 @@
 -- P0 privacy/integrity guard: a signed-in user must not be able to take over
--- another user's existing Web Push endpoint through the SECURITY DEFINER RPC.
+-- or rotate the keys of another user's existing Web Push endpoint through the
+-- SECURITY DEFINER RPC, including a concurrent first-registration race.
 
 create or replace function public.guardar_push_suscripcion(
   p_endpoint text,
@@ -48,7 +49,14 @@ begin
     user_agent=excluded.user_agent,
     activa=true,
     updated_at=now()
+  where public.push_suscripciones.usuario_id = v_uid
   returning id into v_id;
+
+  -- The WHERE on ON CONFLICT is the final guard for the race where two
+  -- different users register the same previously unseen endpoint concurrently.
+  if v_id is null then
+    raise exception 'El endpoint push ya pertenece a otra cuenta';
+  end if;
 
   return v_id;
 end;
