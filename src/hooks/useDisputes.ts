@@ -1,4 +1,4 @@
-import{useCallback,useEffect,useState}from'react'
+import{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase as adminSupabase}from'../lib/supabase'
 import{getRoleSupabase,type UgoRole}from'../lib/roleSupabase'
 
@@ -14,15 +14,15 @@ export function useAdminDisputes(){
 }
 
 export function useParticipantDispute(role:UgoRole){
- const sb=getRoleSupabase(role) as any
+ const sb=useMemo(()=>getRoleSupabase(role) as any,[role])
  const[userId,setUserId]=useState<string|null>(null),[service,setService]=useState<any|null>(null),[dispute,setDispute]=useState<DisputeRow|null>(null),[messages,setMessages]=useState<DisputeMessage[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState<string|null>(null)
  const load=useCallback(async()=>{setLoading(true);setError(null);const{data:{session}}=await sb.auth.getSession();const uid=session?.user?.id||null;setUserId(uid);if(!uid){setService(null);setDispute(null);setMessages([]);setLoading(false);return}
   const visibleStates=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado','disputado','cancelado'];let q=sb.from('servicios').select('id,numero,estado,tarifa,cliente_id,proveedor_id,descripcion').in('estado',visibleStates).order('created_at',{ascending:false}).limit(1);q=role==='client'?q.eq('cliente_id',uid):q.eq('proveedor_id',uid);const{data:s,error:se}=await q.maybeSingle();if(se){setError(se.message);setLoading(false);return}if(!s){setService(null);setDispute(null);setMessages([]);setLoading(false);return}
   const{data:d,error:de}=await sb.from('disputas').select('id,numero,servicio_id,cliente_id,proveedor_id,abierta_por,estado,motivo,monto_disputado,resolucion,resolucion_favor,ajuste_financiero_pendiente,created_at,resuelta_at').eq('servicio_id',s.id).maybeSingle();if(de){setError(de.message);setLoading(false);return}
   if(!d&&s.estado==='cancelado'){setService(null);setDispute(null);setMessages([]);setLoading(false);return}
   setService(s);setDispute(d||null);if(d){const{data:m}=await sb.from('disputa_mensajes').select('id,disputa_id,autor_id,autor_rol,mensaje,created_at').eq('disputa_id',d.id).order('created_at');setMessages((m||[])as DisputeMessage[])}else setMessages([]);setLoading(false)},[role,sb])
- const open=useCallback(async(motivo:string)=>{if(!service)throw new Error('No hay servicio elegible');const{error}=await sb.rpc('abrir_disputa',{p_servicio_id:service.id,p_motivo:motivo,p_evidencias:[]});if(error)throw error;await load()},[service,sb,load])
- const reply=useCallback(async(mensaje:string)=>{if(!dispute)throw new Error('No hay disputa abierta');const{error}=await sb.rpc('responder_disputa',{p_disputa_id:dispute.id,p_mensaje:mensaje,p_evidencias:[]});if(error)throw error;await load()},[dispute,sb,load])
- useEffect(()=>{void load();const ch=sb.channel(`ugo-dispute-${role}`).on('postgres_changes',{event:'*',schema:'public',table:'disputas'},load).on('postgres_changes',{event:'*',schema:'public',table:'disputa_mensajes'},load).on('postgres_changes',{event:'*',schema:'public',table:'servicios'},load).subscribe();return()=>{sb.removeChannel(ch)}},[load,role,sb])
+ const open=useCallback(async(motivo:string)=>{if(!service)throw new Error('No hay servicio elegible');const{error}=await sb.rpc('abrir_disputa',{p_servicio_id:service.id,p_motivo:motivo,p_evidencias:[]});if(error){await load();throw error}await load()},[service,sb,load])
+ const reply=useCallback(async(mensaje:string)=>{if(!dispute)throw new Error('No hay disputa abierta');const{error}=await sb.rpc('responder_disputa',{p_disputa_id:dispute.id,p_mensaje:mensaje,p_evidencias:[]});if(error){await load();throw error}await load()},[dispute,sb,load])
+ useEffect(()=>{void load();const refresh=()=>void load().catch(()=>{});const ch=sb.channel(`ugo-dispute-${role}`).on('postgres_changes',{event:'*',schema:'public',table:'disputas'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'disputa_mensajes'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios'},refresh).subscribe((status:string)=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);sb.removeChannel(ch)}},[load,role,sb])
  return{userId,service,dispute,messages,loading,error,refetch:load,open,reply}
 }
