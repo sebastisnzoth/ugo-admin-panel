@@ -33,6 +33,16 @@ test('client cannot forge provider assignment, lifecycle or settlement fields du
  assert.doesNotMatch(sql,/revoke update.*authenticated/i)
 })
 
+test('request evidence access expires with the opportunity unless provider is assigned',async()=>{
+ const sql=await read('supabase/migrations/20260912204500_request_evidence_offer_access_guard.sql')
+ assert.match(sql,/alter policy evidencia_solicitud_participantes_select/)
+ assert.match(sql,/alter policy request_evidence_participant_select/)
+ assert.match(sql,/s\.proveedor_id = \(select auth\.uid\(\)\)/)
+ assert.match(sql,/o\.estado = 'pendiente'/)
+ assert.match(sql,/o\.expira_at is null or o\.expira_at > now\(\)/)
+ assert.match(sql,/private\.is_admin\(\(select auth\.uid\(\)\)\)/)
+})
+
 test('provider cannot leave assigned without a valid payment path',async()=>{
  const [providerData,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
