@@ -55,6 +55,18 @@ test('request evidence access expires with the opportunity unless provider is as
  assert.match(sql,/private\.is_admin\(\(select auth\.uid\(\)\)\)/)
 })
 
+test('request photos are optional but any supplied evidence stays bound to its explicit draft',async()=>{
+ const [client,binding]=await Promise.all([
+  read('src/mvp/client/ClientGuidedRequest.tsx'),
+  read('supabase/migrations/20260911_request_evidence_draft_binding.sql'),
+ ])
+ assert.match(client,/photoCount>0\?\{request_draft_id:draftId\}:\{\}/)
+ assert.match(client,/Continuar sin foto/)
+ assert.doesNotMatch(client,/disabled=\{busy\|\|photoCount<1\}/)
+ assert.match(binding,/draft_id=v_draft_id/)
+ assert.match(binding,/if v_draft_raw is null then[\s\S]*return new/)
+})
+
 test('provider cannot leave assigned without a valid payment path',async()=>{
  const [providerData,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
