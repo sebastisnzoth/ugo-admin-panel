@@ -83,7 +83,6 @@ jobs:
           src/mvp/provider/ProviderEvidencePanel.tsx
           src/mvp/provider/providerService.ts
           src/mvp/provider/useProviderRealtime.ts
-          tests/integration/client-provider-rpc-rls.test.mjs
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
