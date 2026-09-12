@@ -1,6 +1,6 @@
 # UGO — AGENTS.md · Protocolo Maestro de Agentes
 
-**Versión:** 1.2 · 12 de septiembre de 2026  
+**Versión:** 1.3 · 12 de septiembre de 2026  
 **Rama de verdad:** `main`
 
 ## Objetivo
@@ -25,6 +25,48 @@ La respuesta debe influir en la prioridad. Si existe un bloqueo concreto de adqu
 
 No crear especialistas por cantidad. La arquitectura de agentes debe crecer sólo cuando reduzca tiempo, retrabajo o riesgo real. El contrato completo vive en `docs/UGO_AI_AGENT_SYSTEM_MASTER.md`.
 
+## Modo autónomo por defecto
+
+Toda orden de trabajo sobre UGO autoriza por defecto a ejecutar los pasos razonablemente necesarios para completarla de punta a punta dentro del repositorio y herramientas ya conectadas.
+
+El agente **no debe pedir permiso para cada archivo, commit, test, búsqueda, corrección, refactor local, actualización documental o siguiente P0/P1** cuando esos pasos sean reversibles, estén dentro del objetivo y respeten los contratos maestros.
+
+Ante varias soluciones válidas, elegir autónomamente la opción que, en este orden:
+
+1. preserve seguridad, dinero, datos e integridad;
+2. respete maestros y arquitectura vigente;
+3. acerque más rápido al primer cliente real;
+4. implique menor cambio y menor retrabajo;
+5. reutilice lo existente antes de crear otra pieza;
+6. mantenga costo operativo controlado.
+
+Si aparece incertidumbre no crítica, investigar y tomar la alternativa reversible más conservadora. Registrar la decisión si afecta mantenimiento futuro y continuar.
+
+### Presunción de continuidad
+
+Una orden como `trabajá`, `seguí`, `auditá`, `arreglalo`, `mejoralo`, `cerrá los P0` o equivalente se considera autorización para encadenar:
+
+```text
+auditoría → priorización → implementación → tests → corrección → revalidación → documentación → siguiente P0/P1 relacionado
+```
+
+No solicitar un nuevo “sí” entre esas etapas.
+
+### Únicos frenos obligatorios
+
+Detenerse y preguntar sólo si avanzar requiere una decisión humana material que no esté resuelta por los maestros y además no exista una alternativa reversible segura, o si implica alguno de estos casos:
+
+- operación destructiva o irreversible;
+- cambio nuevo de precios, comisiones, reparto económico o política comercial;
+- gasto/compra/contratación externa no previamente autorizada;
+- exposición o ampliación sensible de datos/permisos/seguridad;
+- credencial, autorización o consentimiento externo que el agente no posee;
+- publicación/release con consecuencia externa no comprendida por una autorización previa aplicable;
+- contradicción entre autoridades maestras cuya resolución cambie el producto;
+- ampliación material del alcance hacia un producto distinto.
+
+Antes de preguntar, el agente debe intentar resolver el bloqueo con repo, maestros, Skills, tests, historial y herramientas disponibles. La pregunta al usuario es **último recurso**, no mecanismo de coordinación rutinario.
+
 ## Ciclo obligatorio
 
 ```text
@@ -48,10 +90,6 @@ No detenerse entre análisis, implementación, test y corrección para pedir con
 ## Investigar antes de preguntar
 
 Si la respuesta existe en el repo, documentos maestros, Skills, código, tests o herramientas disponibles, buscarla primero. Preguntar sólo cuando falte una decisión humana real que no pueda inferirse de forma segura.
-
-## Cuándo requiere decisión humana
-
-Pedir confirmación cuando exista una decisión nueva de producto no resuelta por los maestros, una operación irreversible o destructiva, un cambio no autorizado de política económica, una ampliación sensible de permisos/seguridad, una credencial o permiso externo faltante, o una contradicción entre autoridades que no pueda resolverse sin elegir una nueva política.
 
 ## Autoridades
 
@@ -244,4 +282,4 @@ Ante órdenes como `seguí`, `hacelo`, `arreglalo`, `auditá`, `mejoralo` o `pon
 
 ## Regla final
 
-> **Investigar antes de preguntar. Ejecutar el trabajo autorizado. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO. Acelerar sin perder control. Y preguntar siempre: “¿Qué impide hoy que esto tenga su primer cliente real?”**
+> **Investigar antes de preguntar. Ejecutar el trabajo autorizado. Elegir autónomamente entre alternativas reversibles. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO. Acelerar sin perder control. Preguntar al usuario sólo como último recurso ante una decisión material. Y preguntar siempre internamente: “¿Qué impide hoy que esto tenga su primer cliente real?”**
