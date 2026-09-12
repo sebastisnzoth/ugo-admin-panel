@@ -18,6 +18,8 @@ test('expansion refund is server-authoritative and idempotent', async () => {
   assert.match(sql, /ajuste_estado = 'reembolsado'/)
   assert.match(sql, /security definer/i)
   assert.match(sql, /set search_path to 'public', 'private', 'pg_temp'/i)
+  assert.match(sql, /revoke all on function public\.reembolsar_pago_ampliacion\(uuid,text,numeric,text\) from public, anon, authenticated/i)
+  assert.match(sql, /grant execute on function public\.reembolsar_pago_ampliacion\(uuid,text,numeric,text\) to service_role/i)
 })
 
 test('Mercado Pago refund webhook delegates expansion reversal to backend RPC', async () => {
