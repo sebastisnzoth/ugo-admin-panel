@@ -54,7 +54,9 @@ Implementado y verificado:
 - Harness ejecutable agregado en `tests/integration/client-provider-rpc-rls.test.mjs` para dos sesiones reales sobre Supabase aislado.
 - El harness se niega explícitamente a ejecutar contra el project ref de producción y cubre creación, matching dirigido, privacidad pre-asignación, aceptación, gate de pago, lifecycle, evidencia, efectivo y aprobación con ownership.
 - Cobertura P0 ampliada: reaceptación de oferta denegada, ampliación propuesta por proveedor, aprobación exclusiva del Cliente, doble resolución denegada, doble confirmación de efectivo denegada y doble cierre denegado.
-- Pendiente P0 real: ejecutar ese harness sobre un entorno aislado con credenciales de Cliente/Proveedor y ampliar webhook/reembolso y convergencia Realtime.
+- El harness ahora soporta `UGO_REQUIRE_ISOLATED_INTEGRATION=1`: en ese modo, credenciales ausentes hacen fallar el gate en vez de convertirse en un skip verde.
+- Workflow manual obligatorio agregado en `.github/workflows/isolated-rpc-rls.yml` para ejecutar build + harness aislado con protección explícita contra producción.
+- Pendiente P0 real: ejecutar ese workflow sobre un entorno aislado con credenciales de Cliente/Proveedor y ampliar webhook/reembolso y convergencia Realtime.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -67,21 +69,23 @@ Implementado y verificado:
 - Auth, PostgreSQL, RPCs, realtime y pagos en operación.
 - P0 harness RPC/RLS ya preparado y conectado a CI mediante variables `UGO_TEST_*`.
 - No se usa producción para pruebas destructivas.
-- Actualmente no hay un entorno aislado de test configurado con las seis credenciales requeridas en GitHub Actions.
+- El CI regular conserva skip seguro cuando faltan credenciales para no convertir cada push en un falso fallo de infraestructura; el workflow `UGO Isolated RPC RLS` es el gate explícito para el cierre P0 y falla si esas credenciales no existen.
+- Actualmente no existe evidencia de una ejecución exitosa del gate aislado con las seis credenciales requeridas.
 - Auditoría de seguridad P0 detectó que `crear_pago_demo_sebastian` permitía a un Cliente real generar un pago ficticio si quedaba asignado a un proveedor demo. Se cerró el bypass: ahora exige ownership y `private.is_demo_account(cliente,'cliente')` además del proveedor demo.
 - Migración aplicada y versionada en `supabase/migrations/20260912_guard_demo_payment_to_demo_client.sql`; regresión estática en `tests/contracts/demo-payment-guard.test.mjs`.
 - Auditoría de disputas detectó que la política histórica de `disputa_mensajes` validaba participante y `autor_id`, pero no vinculaba `autor_rol` al rol real. El guard quedó versionado en `supabase/migrations/20260912214000_dispute_message_role_integrity_guard.sql` y cubierto por `tests/contracts/dispute-message-role-integrity.test.mjs`; CI #339 verde. Aplicación/verificación en producción queda pendiente mientras el conector Supabase no permita inspección segura.
-- Pendiente P0: disponer un entorno aislado seguro y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
+- Pendiente P0: disponer/confirmar un entorno aislado seguro y las seis credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
 - Pendiente posterior: continuar clasificación de security advisors sin confundir warnings de `SECURITY DEFINER` intencionales y guardados con vulnerabilidades reales.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
 - Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs`, `dispute-message-role-integrity.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
 - CI #339 verde para el hardening de autoría de mensajes de disputa.
-- El harness aislado queda en skip seguro cuando faltan credenciales; jamás cae a producción por fallback.
+- El harness aislado queda en skip seguro en CI regular cuando faltan credenciales; jamás cae a producción por fallback.
+- El workflow manual `UGO Isolated RPC RLS` activa `UGO_REQUIRE_ISOLATED_INTEGRATION=1`, por lo que un intento de cierre P0 sin entorno/credenciales falla de forma explícita y diagnosticable.
 - Vercel producción del baseline maestro anterior quedó en `success`.
 - Política de cuota/deploy definida en `DEPLOY.md`.
-- Pendiente: ejecución RPC/RLS aislada, E2E UI, smoke por journey y recuperación/reintentos.
+- Pendiente: primera ejecución verde del gate RPC/RLS aislado, E2E UI, smoke por journey y recuperación/reintentos.
 
 ## Auditoría vigente
 `docs/UGO_AUDIT_20260912.md` es la baseline actual para priorizar P0/P1. La auditoría de 10/09 queda como histórica y no debe gobernar decisiones que contradigan el estado actual de `main`.
@@ -93,17 +97,19 @@ HUGO toma el primer bloque `EN CURSO` con dependencia satisfecha y ejecuta:
 No avanzar una pantalla sólo por estética si su contrato de datos/estado no está resuelto. No declarar bloque cerrado con CI pendiente, datos mock no autorizados o producción sin verificar cuando el alcance exige release.
 
 ## Próximo checkpoint
-**P0 · Ejecutar el harness RPC/RLS Cliente ↔ Proveedor sobre entorno aislado.**
+**P0 · Ejecutar `UGO Isolated RPC RLS` sobre un Supabase aislado y obtener la primera evidencia verde Cliente ↔ Proveedor.**
 
 Preparación ya hecha:
 1. harness versionado;
 2. protección explícita contra project ref de producción;
 3. variables `UGO_TEST_SUPABASE_URL`, `UGO_TEST_SUPABASE_ANON_KEY`, `UGO_TEST_CLIENT_EMAIL`, `UGO_TEST_CLIENT_PASSWORD`, `UGO_TEST_PROVIDER_EMAIL`, `UGO_TEST_PROVIDER_PASSWORD` cableadas a GitHub Actions secrets;
 4. ejecución automática dentro de `npm test` cuando las seis variables existen;
-5. skip seguro y visible cuando faltan;
-6. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
-7. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;
-8. autoría de mensajes de disputa endurecida y cubierta por regresión, pendiente de verificación/aplicación en producción por acceso Supabase.
+5. skip seguro y visible en CI regular cuando faltan;
+6. modo obligatorio `UGO_REQUIRE_ISOLATED_INTEGRATION=1` que falla ante credenciales ausentes;
+7. workflow manual `.github/workflows/isolated-rpc-rls.yml` dedicado al cierre P0;
+8. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
+9. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;
+10. autoría de mensajes de disputa endurecida y cubierta por regresión, pendiente de verificación/aplicación en producción por acceso Supabase.
 
 Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
