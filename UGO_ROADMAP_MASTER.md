@@ -55,7 +55,8 @@ Implementado y verificado:
 - QA contractual Cliente ↔ Proveedor ↔ backend agregado.
 - Harness ejecutable agregado en `tests/integration/client-provider-rpc-rls.test.mjs` para dos sesiones reales sobre Supabase aislado.
 - El harness se niega explícitamente a ejecutar contra el project ref de producción y cubre creación, matching dirigido, privacidad pre-asignación, aceptación, gate de pago, lifecycle, evidencia, efectivo y aprobación con ownership.
-- Cobertura P0 ampliada: reaceptación de oferta denegada, ampliación propuesta por proveedor, aprobación exclusiva del Cliente, doble resolución denegada, doble confirmación de efectivo denegada y doble cierre denegado.
+- Cobertura P0 corregida contra los RPC vigentes: reaceptar la misma oferta y reconfirmar efectivo son retries idempotentes; se exige el mismo servicio/pago sin duplicar importes ni fechas. La doble resolución de ampliación y el doble cierre sí se rechazan.
+- El harness ahora prueba el gate de pago desde `asignado`, exige evidencia inicial/final, rechaza revisión antes de cobrar y verifica que `confirmar_pago_efectivo` abra `esperando_aprobacion`. Compara importes persistidos de ampliación y el cierre leído por ambos roles; las denegaciones RPC requieren código/motivo de dominio y las consultas RLS no ocultan errores.
 - El harness soporta `UGO_REQUIRE_ISOLATED_INTEGRATION=1`: en ese modo, credenciales ausentes hacen fallar el gate en vez de convertirse en un skip verde.
 - Workflow manual obligatorio agregado en `.github/workflows/isolated-rpc-rls.yml` para ejecutar build + harness aislado con protección explícita contra producción.
 - P0 de reembolso de ampliación detectado: un pago adicional ya retenido aumentaba `tarifa`, `comision_ugo` y `ganancia_proveedor`, pero el webhook de refund sólo marcaba el ajuste como reembolsado. Se versionó `reembolsar_pago_ampliacion` para revertir esos importes bajo lock, validar pago/monto/moneda y ser idempotente ante webhooks duplicados.
@@ -89,6 +90,10 @@ Implementado y verificado:
 - Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs`, `dispute-message-role-integrity.test.mjs`, `expansion-refund-integrity.test.mjs`, `realtime-convergence.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
 - CI #339 verde para el hardening de autoría de mensajes de disputa.
 - El harness aislado queda en skip seguro en CI regular cuando faltan credenciales; jamás cae a producción por fallback.
+- `tests/contracts/isolated-harness.test.mjs` agrega regresiones del orden de pago/cierre e idempotencia y prueba, con red interceptada, el rechazo de producción/UGO Arena y el fallo obligatorio sin credenciales. Son pruebas del harness; el journey RPC/RLS aislado sigue pendiente.
+- Validación local del 12/09 tras `npm ci --include=dev` (audit: 0 vulnerabilidades): `npm test` da 38 aprobados, 1 fallo preexistente en la regex de ownership de push y 1 caso RPC/RLS omitido. Las 7 regresiones nuevas del harness pasan. El fallo general queda visible; no se declara CI verde ni cierre P0.
+- `npm run build` pasa con Vite 8.0.16 del lockfile (warning de tamaño de chunks); lint crítico de las 31 superficies del workflow pasa con 0 errores y 2 warnings. Esta evidencia es local, sin push/deploy.
+- `npm run lint` general continúa fallando con 638 errores y 13 warnings preexistentes (reproducidos antes y después de la instalación por lockfile). El reporte de deuda no invalida por sí solo el lint crítico, pero impide afirmar que todos los gates están verdes.
 - El workflow manual `UGO Isolated RPC RLS` activa `UGO_REQUIRE_ISOLATED_INTEGRATION=1`, por lo que un intento de cierre P0 sin entorno/credenciales falla de forma explícita y diagnosticable.
 - El bloque de pagos hasta `d8782df` alcanzó Vercel producción `READY`.
 - Los commits posteriores de Realtime no obtuvieron release verificable por `build-rate-limit` de Vercel; se mantienen como `IMPLEMENTED`, no `RELEASED`, hasta nuevo build exitoso.
@@ -115,7 +120,7 @@ Preparación ya hecha:
 5. skip seguro y visible en CI regular cuando faltan;
 6. modo obligatorio `UGO_REQUIRE_ISOLATED_INTEGRATION=1` que falla ante credenciales ausentes;
 7. workflow manual `.github/workflows/isolated-rpc-rls.yml` dedicado al cierre P0;
-8. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
+8. aserciones de idempotencia alineadas con los RPC: retries de oferta/efectivo conservan persistencia; doble resolución de ampliación/cierre denegada;
 9. reembolso electrónico de ampliación endurecido en repo con reversión atómica/idempotente de importes;
 10. reconexión Realtime endurecida para rehidratar estado persistido en Cliente y Proveedor;
 11. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;

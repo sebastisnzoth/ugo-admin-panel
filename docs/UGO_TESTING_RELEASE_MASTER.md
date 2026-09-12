@@ -35,6 +35,10 @@ npm run test:e2e   ⬜ pendiente
 
 `npm test` ejecuta contract tests sobre código/migraciones. No reemplaza RPC/RLS ni E2E real.
 
+`npm run test:integration` ejecuta el harness RPC/RLS cuando existen las seis variables `UGO_TEST_*`. Con `UGO_REQUIRE_ISOLATED_INTEGRATION=1`, su ausencia falla el gate; sin ese modo, el caso real queda explícitamente omitido. Producción y UGO Arena están rechazados antes de autenticar.
+
+La base aislada debe tener el esquema UGO vigente, categoría activa y dos identidades distintas: Cliente habilitado y Proveedor verificado, online, disponible y con tarifa válida. El harness actual cubre efectivo con metadata de evidencia; no demuestra upload/Storage, geolocalización, pago electrónico, Admin, competencia entre dos proveedores ni Realtime.
+
 ---
 
 # 3. Cobertura contractual actual
@@ -90,6 +94,8 @@ Aserción: ningún servicio avanza por condición financiera inexistente.
 Probar selección, habilitación, copy correcto, confirmación proveedor, duplicado, registro financiero, comisión/ledger, cierre Cliente y disputa sin promesa de reembolso automático.
 
 Aserción: efectivo nunca se describe como electrónicamente protegido.
+
+Orden ejecutable: `en_progreso → Después → confirmar_pago_efectivo → esperando_aprobacion → aprobar_servicio`. Pedir revisión antes de confirmar efectivo debe fallar. El RPC de confirmación abre la revisión atómicamente; repetirlo devuelve el mismo pago sin nuevos importes, referencias ni fechas de confirmación/liberación.
 
 ---
 
@@ -177,6 +183,10 @@ Incluir upload/read/delete y signed URLs cuando aplique.
 # 11. Concurrencia e idempotencia
 
 Probar doble aceptación, doble click, doble webhook, doble efectivo, doble checkout/confirmación de ampliación, doble cierre/retiro y retry tras timeout. Resultado determinista y auditable.
+
+Reaceptar la misma oferta con el mismo proveedor es un retry idempotente: devuelve el mismo servicio sin reasignarlo ni recalcular tarifa. Esto no sustituye la prueba de competencia entre proveedores distintos. Resolver una ampliación ya resuelta o aprobar un servicio ya cerrado sí debe ser rechazado.
+
+El harness prueba el gate de pago después de asignar y antes de elegir método; los casos negativos RPC exigen SQLSTATE `P0001` y el motivo esperado. Errores de red, Auth, RPC ausente o consultas RLS fallidas no cuentan como denegaciones válidas. Los retries se contrastan con lecturas persistidas de servicio y pago. `tests/contracts/isolated-harness.test.mjs` protege estas precondiciones y ejecuta los guards de entorno con red interceptada; no sustituye una ejecución contra Supabase aislado.
 
 ---
 
