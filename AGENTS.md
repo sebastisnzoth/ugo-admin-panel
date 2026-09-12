@@ -1,6 +1,6 @@
 # UGO — AGENTS.md · Protocolo Maestro de Agentes
 
-**Versión:** 1.3 · 12 de septiembre de 2026  
+**Versión:** 1.4 · 12 de septiembre de 2026  
 **Rama de verdad:** `main`
 
 ## Objetivo
@@ -52,6 +52,48 @@ auditoría → priorización → implementación → tests → corrección → r
 
 No solicitar un nuevo “sí” entre esas etapas.
 
+## Protocolo obligatorio de desbloqueo
+
+**Detectar un bloqueo no autoriza a detener el trabajo.** Si el bloqueo afecta un P0/P1 o impide llegar al primer cliente real, el agente debe intentar resolverlo activamente antes de reportarlo.
+
+Ante un bloqueo, seguir este orden:
+
+```text
+1. identificar la causa exacta
+2. buscar solución en repo, maestros, Skills, historial, CI y herramientas conectadas
+3. intentar alternativas técnicas reversibles y seguras
+4. corregir configuración/código/documentación si está dentro de la autorización existente
+5. reintentar y validar
+6. si sigue bloqueado, determinar exactamente qué acción externa falta
+7. pedir al usuario únicamente esa acción manual mínima
+8. una vez resuelta, retomar automáticamente desde el mismo punto sin exigir un nuevo “seguí”
+```
+
+### Regla de escalamiento al usuario
+
+Si hace falta una acción que sólo puede realizar el usuario —por ejemplo habilitar un servicio externo, autorizar una conexión, crear/proveer una credencial, aprobar un gasto o ejecutar una acción manual no disponible por herramientas— el agente debe pedirla **en cuanto quede demostrado que es necesaria**.
+
+La solicitud debe ser concreta y ejecutable. Debe incluir sólo:
+
+- **qué tiene que hacer**;
+- **dónde hacerlo**;
+- **qué resultado confirmar o dato proporcionar**;
+- **por qué esa acción desbloquea el P0**.
+
+No responder únicamente “estamos bloqueados”, “falta un entorno” o “necesitamos credenciales”. Convertir el bloqueo en una instrucción accionable para el usuario.
+
+Si existe una alternativa segura que el agente puede ejecutar sin intervención humana, debe ejecutarla antes de pedir ayuda.
+
+### Regla de no abandono
+
+Un P0 necesario no se salta permanentemente por estar bloqueado. Puede avanzarse en otros bloques en paralelo sólo si eso no oculta el bloqueo principal. El P0 bloqueado permanece activo hasta:
+
+```text
+resuelto → validado → documentado
+```
+
+Si el usuario completa la acción manual solicitada, el agente debe continuar automáticamente con implementación, prueba, corrección y revalidación sin pedir otra autorización rutinaria.
+
 ### Únicos frenos obligatorios
 
 Detenerse y preguntar sólo si avanzar requiere una decisión humana material que no esté resuelta por los maestros y además no exista una alternativa reversible segura, o si implica alguno de estos casos:
@@ -67,6 +109,8 @@ Detenerse y preguntar sólo si avanzar requiere una decisión humana material qu
 
 Antes de preguntar, el agente debe intentar resolver el bloqueo con repo, maestros, Skills, tests, historial y herramientas disponibles. La pregunta al usuario es **último recurso**, no mecanismo de coordinación rutinario.
 
+Cuando el último recurso sea necesario, **preguntar inmediatamente y de forma accionable** en lugar de detenerse silenciosamente o limitarse a reportar el bloqueo.
+
 ## Ciclo obligatorio
 
 ```text
@@ -80,6 +124,7 @@ entender pedido
 → validar
 → corregir
 → revalidar
+→ si aparece bloqueo: ejecutar protocolo obligatorio de desbloqueo
 → sincronizar maestros/Roadmap si cambió un contrato
 → reportar evidencia y pendientes reales
 → continuar con el siguiente bloque autorizado
@@ -185,7 +230,8 @@ UGO trabaja con criterio de aceleradora:
 8. documentar decisiones que eviten rediscutir lo mismo;
 9. evitar infraestructura innecesaria;
 10. mantener costo controlado sin degradar seguridad/integridad;
-11. en cada checkpoint responder internamente **qué impide hoy conseguir y atender al primer cliente real** y atacar primero el bloqueo más cercano a ingreso/uso real.
+11. en cada checkpoint responder internamente **qué impide hoy conseguir y atender al primer cliente real** y atacar primero el bloqueo más cercano a ingreso/uso real;
+12. **si un bloqueo necesario requiere una acción manual del usuario, convertirlo inmediatamente en una instrucción concreta y retomar automáticamente cuando se complete.**
 
 ## Validación
 
@@ -245,7 +291,8 @@ No optimizar por un número arbitrario de toques. Para casos comunes, 3–5 conf
 - auditoría integrada al desarrollo;
 - menos deriva entre código y maestros;
 - detección temprana de regresiones;
-- vertical slices más completos.
+- vertical slices más completos;
+- bloqueos convertidos en acciones concretas en lugar de finales de trabajo artificiales.
 
 ## Contras y mitigaciones
 
@@ -257,6 +304,7 @@ No optimizar por un número arbitrario de toques. Para casos comunes, 3–5 conf
 - **Falso éxito:** exigir evidencia y separar IMPLEMENTED/VALIDATED/RELEASED.
 - **Riesgo de autonomía excesiva:** reservar decisiones sensibles o irreversibles para confirmación humana.
 - **Demasiados agentes:** usar routing mínimo y crear nuevas Skills sólo cuando haya reutilización y ganancia real.
+- **Bloqueo externo silencioso:** aplicar protocolo de desbloqueo y pedir al usuario la acción mínima exacta cuando sea imprescindible.
 
 ## Patrón adoptado
 
@@ -272,6 +320,7 @@ qué se encontró/corrigió
 qué validaciones se ejecutaron
 commit/PR cuando exista
 qué queda realmente abierto
+si hace falta una acción manual del usuario: pedirla con pasos exactos, no sólo reportar el bloqueo
 ```
 
 No narrar cada comando ni pedir permiso para un siguiente paso que ya forma parte del pedido autorizado.
@@ -280,6 +329,8 @@ No narrar cada comando ni pedir permiso para un siguiente paso que ya forma part
 
 Ante órdenes como `seguí`, `hacelo`, `arreglalo`, `auditá`, `mejoralo` o `ponete a trabajar`, recuperar el bloque activo, verificar el estado actual de `main` y continuar desde el último punto verificable en lugar de reiniciar desde cero.
 
+Si el trabajo se detuvo por una acción manual solicitada al usuario, considerar esa acción como una pausa técnica temporal: cuando el usuario confirme que la realizó, **retomar automáticamente desde ese bloqueo y completar el ciclo restante sin exigir un nuevo comando de continuidad**.
+
 ## Regla final
 
-> **Investigar antes de preguntar. Ejecutar el trabajo autorizado. Elegir autónomamente entre alternativas reversibles. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO. Acelerar sin perder control. Preguntar al usuario sólo como último recurso ante una decisión material. Y preguntar siempre internamente: “¿Qué impide hoy que esto tenga su primer cliente real?”**
+> **Investigar antes de preguntar. Resolver antes de reportar un bloqueo. Ejecutar el trabajo autorizado. Elegir autónomamente entre alternativas reversibles. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO. Acelerar sin perder control. Si sólo el usuario puede destrabar algo necesario, pedirle inmediatamente la acción mínima exacta y continuar en cuanto la complete. Preguntar al usuario sólo como último recurso ante una decisión material. Y preguntar siempre internamente: “¿Qué impide hoy que esto tenga su primer cliente real?”**
