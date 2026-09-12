@@ -18,6 +18,7 @@ Excepciones: `cancelado`, `disputado`.
 - Ampliación: descripción + costo + tiempo + aprobación + trazabilidad; delta electrónico no financiado no habilita alcance extra.
 - Efectivo permanece auditable dentro de UGO.
 - Ningún mecanismo de pago DEMO puede habilitar dinero/estado sobre cuentas reales: cliente y proveedor deben pertenecer explícitamente al circuito demo cuando corresponda.
+- La autoría de mensajes de disputa es server/RLS-authoritative: un participante no puede autodeclararse `admin` ni usar el rol de la contraparte.
 
 ## Estado por bloques
 
@@ -59,6 +60,7 @@ Implementado y verificado:
 - Configuración de sistema y credenciales.
 - Medios de pago: efectivo global + Brasil/BRL + Argentina/ARS.
 - Operaciones/estados, usuarios, finanzas, validación, reportes y decisiones existentes.
+- Disputas: RPCs integradas para apertura, respuesta y resolución Admin; hardening versionado impide falsificar `autor_rol='admin'` en inserts directos de mensajes.
 - Pendiente: auditoría final de permisos, controles operativos y journeys de excepción.
 
 ### 5. Backend / Supabase — avanzado
@@ -68,12 +70,14 @@ Implementado y verificado:
 - Actualmente no hay un entorno aislado de test configurado con las seis credenciales requeridas en GitHub Actions.
 - Auditoría de seguridad P0 detectó que `crear_pago_demo_sebastian` permitía a un Cliente real generar un pago ficticio si quedaba asignado a un proveedor demo. Se cerró el bypass: ahora exige ownership y `private.is_demo_account(cliente,'cliente')` además del proveedor demo.
 - Migración aplicada y versionada en `supabase/migrations/20260912_guard_demo_payment_to_demo_client.sql`; regresión estática en `tests/contracts/demo-payment-guard.test.mjs`.
+- Auditoría de disputas detectó que la política histórica de `disputa_mensajes` validaba participante y `autor_id`, pero no vinculaba `autor_rol` al rol real. El guard quedó versionado en `supabase/migrations/20260912214000_dispute_message_role_integrity_guard.sql` y cubierto por `tests/contracts/dispute-message-role-integrity.test.mjs`; CI #339 verde. Aplicación/verificación en producción queda pendiente mientras el conector Supabase no permita inspección segura.
 - Pendiente P0: disponer un entorno aislado seguro y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
 - Pendiente posterior: continuar clasificación de security advisors sin confundir warnings de `SECURITY DEFINER` intencionales y guardados con vulnerabilidades reales.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
-- Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
+- Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs`, `dispute-message-role-integrity.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
+- CI #339 verde para el hardening de autoría de mensajes de disputa.
 - El harness aislado queda en skip seguro cuando faltan credenciales; jamás cae a producción por fallback.
 - Vercel producción del baseline maestro anterior quedó en `success`.
 - Política de cuota/deploy definida en `DEPLOY.md`.
@@ -98,7 +102,8 @@ Preparación ya hecha:
 4. ejecución automática dentro de `npm test` cuando las seis variables existen;
 5. skip seguro y visible cuando faltan;
 6. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
-7. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión.
+7. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;
+8. autoría de mensajes de disputa endurecida y cubierta por regresión, pendiente de verificación/aplicación en producción por acceso Supabase.
 
 Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
