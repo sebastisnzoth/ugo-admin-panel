@@ -33,6 +33,18 @@ test('client cannot forge provider assignment, lifecycle or settlement fields du
  assert.doesNotMatch(sql,/revoke update.*authenticated/i)
 })
 
+test('pending opportunity providers only get the redacted RPC, not the full service row',async()=>{
+ const [privacy,providerService]=await Promise.all([
+  read('supabase/migrations/20260912205500_service_offer_privacy_guard.sql'),
+  read('src/mvp/provider/providerService.ts'),
+ ])
+ assert.match(privacy,/alter policy servicios_select/)
+ assert.match(privacy,/cliente_id = \(select auth\.uid\(\)\)/)
+ assert.match(privacy,/proveedor_id = \(select auth\.uid\(\)\)/)
+ assert.doesNotMatch(privacy,/proveedor_tiene_oferta/)
+ assert.match(providerService,/rpc\('obtener_ofertas_proveedor'/)
+})
+
 test('request evidence access expires with the opportunity unless provider is assigned',async()=>{
  const sql=await read('supabase/migrations/20260912204500_request_evidence_offer_access_guard.sql')
  assert.match(sql,/alter policy evidencia_solicitud_participantes_select/)
