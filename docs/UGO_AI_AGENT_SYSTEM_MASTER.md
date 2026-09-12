@@ -1,6 +1,6 @@
 # UGO — AI Agent System Master
 
-**Versión:** 1.0 · 12 de septiembre de 2026  
+**Versión:** 1.1 · 12 de septiembre de 2026  
 **Estado:** contrato maestro de arquitectura de agentes y aceleración  
 **Rama de verdad:** `main`
 
@@ -24,9 +24,26 @@ Responsabilidad:
 - convertir órdenes breves en bloques de trabajo verificables;
 - mantener alineados código, maestros, tests y roadmap;
 - reducir preguntas innecesarias al usuario;
-- priorizar el camino más corto hacia un producto confiable, mantenible y escalable.
+- priorizar el camino más corto hacia un producto confiable, mantenible, escalable y usable por una persona real.
 
 La arquitecta no es otra capa burocrática. Su función es **reducir coordinación, evitar retrabajo y acelerar decisiones correctas**.
+
+## 1.1 Función permanente: Orquestador de Producto
+
+El sistema incorpora una función transversal permanente de **Orquestador de Producto**. No se crea una Skill nueva porque esta función debe atravesar a todas las especialidades y actuar como criterio de prioridad, no como silo.
+
+Pregunta obligatoria:
+
+> **¿Qué impide hoy que esto tenga su primer cliente real?**
+
+Esta pregunta debe hacerse:
+- al finalizar una auditoría;
+- antes de elegir el siguiente P0/P1;
+- antes de abrir una nueva feature;
+- después de cerrar un bloque importante;
+- cuando existan varias mejoras posibles y haya que decidir cuál aporta más valor inmediato.
+
+La respuesta debe orientar el backlog hacia el bloqueo más próximo entre UGO y una transacción real completa. Los obstáculos de adquisición, onboarding, solicitud, matching, confianza, disponibilidad del proveedor, pago, ejecución, soporte, cierre o release tienen prioridad sobre polish o infraestructura sin impacto inmediato, salvo que exista antes un P0 de seguridad, dinero o integridad.
 
 ---
 
@@ -42,11 +59,12 @@ velocidad de entrega
 + menor dependencia de instrucciones manuales
 + menor costo operativo
 + capacidad de escalar equipo/agentes
++ menor distancia al primer cliente real
 ```
 
 La métrica de éxito no es cantidad de commits, prompts o agentes. Es:
 
-> **Tiempo desde una necesidad real hasta una capacidad de UGO validada y usable.**
+> **Tiempo desde una necesidad real hasta una capacidad de UGO validada, usable y capaz de atender a una persona real.**
 
 ---
 
@@ -59,6 +77,8 @@ AGENTS.md · reglas de comportamiento
       ↓
 HUGO Orchestrator · interpreta y coordina
       ↓
+Orquestador de Producto · identifica el mayor bloqueo al primer cliente real
+      ↓
 AI Agent System Master · arquitectura y routing
       ↓
 MD maestros · verdad de producto/técnica
@@ -69,6 +89,8 @@ Repo / Supabase / CI / Vercel / MCPs
       ↓
 Validación / auditoría / documentación / siguiente bloque
 ```
+
+El Orquestador de Producto no es un agente separado en runtime ni una Skill aislada: es una responsabilidad obligatoria de HUGO y del sistema superior.
 
 Cada capa tiene una responsabilidad distinta. No duplicar reglas entre capas sin necesidad.
 
@@ -86,7 +108,8 @@ Misión:
 - elegir Skills;
 - dividir trabajo;
 - continuar autónomamente;
-- verificar cierre.
+- verificar cierre;
+- ejercer la función de Orquestador de Producto y mantener visible el bloqueo principal al primer cliente real.
 
 No debe convertirse en especialista de todo. Coordina.
 
@@ -202,6 +225,8 @@ Crear una Skill sólo si cumple al menos dos de estas condiciones:
 5. reduce tiempo de coordinación o retrabajo de forma medible;
 6. puede reutilizarse sin copiar contexto manualmente.
 
+El Orquestador de Producto no se implementa como nueva Skill porque su función es transversal y debe afectar la priorización de todas las Skills.
+
 Si no cumple, se resuelve con Skills actuales y maestros.
 
 ---
@@ -223,6 +248,8 @@ Cambio producción/release                 → deploy + qa
 Cambio transversal grande                 → hugo + core + especialistas necesarios
 ```
 
+Antes de ejecutar el routing, HUGO debe identificar el principal impedimento actual al primer cliente real y comprobar que el bloque elegido reduce ese impedimento o protege un P0 superior.
+
 No activar todas las Skills por defecto. Más agentes no significa más velocidad si agregan coordinación innecesaria.
 
 ---
@@ -231,6 +258,7 @@ No activar todas las Skills por defecto. Más agentes no significa más velocida
 
 ```text
 AUDITAR
+→ PREGUNTAR: ¿QUÉ IMPIDE HOY QUE ESTO TENGA SU PRIMER CLIENTE REAL?
 → PRIORIZAR
 → IMPLEMENTAR
 → VALIDAR
@@ -238,6 +266,7 @@ AUDITAR
 → REVALIDAR
 → DOCUMENTAR
 → RELEASE CUANDO CORRESPONDA
+→ REEVALUAR BLOQUEO AL PRIMER CLIENTE REAL
 → MEDIR / SIGUIENTE BLOQUE
 ```
 
@@ -250,12 +279,15 @@ Comparar:
 - estado de main;
 - integraciones afectadas.
 
+## Pregunta de producto
+Identificar el cuello de botella más cercano a uso real. Si no existe un camino Cliente↔Proveedor↔Admin completo y operativo, esa brecha debe quedar explícita antes de priorizar.
+
 ## Priorizar
 Orden:
 
 ```text
-P0 integridad/auth/dinero/core
-P1 journey principal/operación/UX crítica
+P0 integridad/auth/dinero/core/bloqueo absoluto de primer cliente real
+P1 journey principal/operación/UX crítica/conversión/activación
 P2 optimización/automatización/escala
 P3 polish/experimentos
 ```
@@ -306,6 +338,8 @@ Las auditorías no son una etapa final. Son parte del desarrollo.
 - ¿resuelve el problema correcto?
 - ¿reduce fricción?
 - ¿mejora confianza/conversión/completion?
+- **¿qué impide hoy que esto tenga su primer cliente real?**
+- ¿el bloque actual reduce ese impedimento de forma verificable?
 
 ## Auditoría UX
 - estado/contexto/próxima acción;
@@ -354,7 +388,8 @@ La arquitectura debe operar como una startup en fase de aceleración:
 7. automatizar tareas repetitivas;
 8. documentar decisiones que eviten volver a discutir lo mismo;
 9. no sobrediseñar infraestructura antes de necesidad real;
-10. mantener costo cercano a cero cuando no comprometa integridad/seguridad.
+10. mantener costo cercano a cero cuando no comprometa integridad/seguridad;
+11. reevaluar en cada checkpoint el mayor obstáculo entre UGO y su primer cliente real.
 
 ---
 
@@ -370,7 +405,8 @@ Este sistema reduce tiempo por:
 - menos decisiones rehechas;
 - validación integrada;
 - documentación sincronizada;
-- continuidad automática con `seguí`, `hacelo`, `auditá`, `arreglalo`, `mejoralo`.
+- continuidad automática con `seguí`, `hacelo`, `auditá`, `arreglalo`, `mejoralo`;
+- foco constante en el cuello de botella que separa al producto del primer uso real.
 
 El objetivo es pasar de:
 
@@ -382,6 +418,7 @@ a:
 
 ```text
 usuario define objetivo
+→ sistema identifica bloqueo al primer cliente real
 → sistema coordina ejecución
 → usuario interviene sólo en decisiones reales
 ```
@@ -422,9 +459,11 @@ cantidad de maestros desincronizados
 porcentaje IMPLEMENTED → VALIDATED
 lead time hasta producción
 tiempo de recuperación
+tiempo hasta primer cliente real
+distancia funcional al journey real completo
 ```
 
-Objetivo: disminuir lead time sin aumentar regresiones.
+Objetivo: disminuir lead time sin aumentar regresiones y reducir continuamente la distancia al primer cliente real.
 
 ---
 
@@ -439,7 +478,8 @@ Cada cierto número de bloques o ante señales de deriva:
 - comparar AGENTS/HUGO/Skills con realidad de main;
 - revisar deuda de tests;
 - revisar cuellos de botella recurrentes;
-- actualizar routing.
+- actualizar routing;
+- verificar si la prioridad técnica vigente sigue siendo el mayor bloqueo al primer cliente real.
 
 No conservar arquitectura por tradición si ya no acelera UGO.
 
@@ -465,6 +505,9 @@ Mitigación: AGENTS + Governance + maestros mandan; HUGO arbitra routing.
 ## Falso éxito
 Mitigación: `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`.
 
+## Optimización técnica sin cliente
+Mitigación: la pregunta canónica del Orquestador de Producto se aplica antes de cada prioridad relevante.
+
 ---
 
 # 16. Definición de sistema sano
@@ -479,10 +522,11 @@ El sistema de agentes está sano cuando:
 - las pruebas relevantes se ejecutan;
 - los maestros siguen reflejando main;
 - el usuario no necesita micromanagement;
-- UGO avanza más rápido sin perder control.
+- UGO avanza más rápido sin perder control;
+- el sistema puede responder en todo momento cuál es el mayor impedimento actual para conseguir y atender al primer cliente real.
 
 ---
 
 # 17. Regla final
 
-> **El objetivo no es tener más agentes. El objetivo es reducir el tiempo entre una decisión correcta y un producto UGO validado. La arquitectura de agentes existe únicamente para acelerar ese camino con control, evidencia y capacidad de escala.**
+> **El objetivo no es tener más agentes. El objetivo es reducir el tiempo entre una decisión correcta y un producto UGO validado. La arquitectura de agentes existe únicamente para acelerar ese camino con control, evidencia y capacidad de escala. Y en cada prioridad debe preguntarse: “¿Qué impide hoy que esto tenga su primer cliente real?”**
