@@ -27,7 +27,7 @@ test('provider opportunities refresh in realtime and acceptance stays server-aut
   assert.match(realtime, /table:'pagos'/)
   assert.doesNotMatch(realtime, /table:'perfiles_proveedor'/)
   assert.match(service, /rpc\('aceptar_oferta'/)
-  assert.match(service, /if\(!data\)throw new Error/)
+  assert.match(service, /if\(!data\)[\s\S]*hasPersistedActiveAssignment\(supabase\)[\s\S]*throw new Error/)
 })
 
 test('provider demand has an automatic refresh fallback while online', () => {
