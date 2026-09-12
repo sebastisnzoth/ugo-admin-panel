@@ -25,27 +25,28 @@ Excepciones: `cancelado`, `disputado`.
 - Flujo de creación, dispatch, seguimiento, pagos, aprobación, reseñas, historial y disputas existente.
 - Próximo cierre: QA cruzado con Proveedor y backend en transiciones compartidas.
 
-### 2. Proveedor · Home / Demanda / Oportunidades — EN CURSO
-Ya implementado:
+### 2. Proveedor · Home / Demanda / Oportunidades — CERRADO
+Implementado y verificado:
 - Home operativo con disponibilidad, trabajo activo, oportunidades, demanda e ingresos.
 - Oportunidades reales desde backend, detalle, aceptar/rechazar y priorización por urgencia/compatibilidad/valor/cercanía.
-- Demanda real consumida desde `obtener_demanda_proveedor`.
+- Demanda real consumida desde `obtener_demanda_proveedor`, preservando `zona_lat/zona_lng` como zonas geográficas agregadas del mercado.
+- Radar geográfico con MapLibre + OpenStreetMap, reutilizando la base cartográfica existente y sin posiciones visuales inventadas.
+- Fallback honesto cuando una zona no publica coordenadas; estados vacío/error/Offline accionables y actualización manual disponible.
+- Demanda con actualización automática mientras el proveedor está Online: fallback cada 45 s más refresh al recuperar foco/visibilidad.
+- Oportunidades, servicios y pagos sincronizados por Supabase Realtime sobre tablas efectivamente publicadas.
+- Aceptación de oportunidad verificada como server-authoritative y atómica mediante `aceptar_oferta`; una oferta ya tomada deja de ser aceptable sin asignaciones paralelas.
+- Navegación a oportunidades coherente y targets principales del journey de mercado ≥48 px.
+- Contratos de regresión agregados en `tests/contracts/provider-market.test.mjs`.
+- GitHub CI del bloque verde: TypeScript/build, lifecycle + provider market tests y lint crítico.
 - Hugo · Asistente de Trabajo contextual integrado al servicio activo.
 - Contrato de pago protegido/efectivo antes de `en_camino`.
 - Evidencia Antes/Después y cierre de efectivo.
 
-Siguiente bloque obligatorio:
-1. Hacer **Demanda verdaderamente geográfica y accionable**, preservando coordenadas reales `zona_lat/zona_lng` del backend en lugar de posiciones visuales esquemáticas.
-2. Reutilizar infraestructura de mapas existente; no crear un mapa paralelo si Cliente ya resuelve TomTom/MapLibre.
-3. Mantener estados loading/vacío/error y modo Offline comprensibles.
-4. Verificar realtime Demanda → Oportunidades y aceptación atómica.
-5. QA responsive, targets ≥48 px y continuidad visual con Cliente.
-
-### 3. Proveedor · ejecución del servicio — avanzado / por cerrar
+### 3. Proveedor · ejecución del servicio — EN CURSO
 - `asignado → en_camino → llegado → en_progreso → esperando_aprobacion` implementado.
 - Evidencia y pago efectivo integrados.
 - `Agregar trabajo / Ampliar servicio` presente en trabajo en progreso.
-- Pendiente: QA contractual completo Cliente ↔ Proveedor ↔ backend y recuperación de errores.
+- Pendiente inmediato: QA contractual Cliente ↔ Proveedor ↔ backend sobre transiciones compartidas, gates de pago, evidencia temporal, ampliaciones, recuperación de errores/reintentos y estados de excepción.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -70,13 +71,13 @@ HUGO toma el primer bloque `EN CURSO` con dependencia satisfecha y ejecuta:
 No avanzar una pantalla sólo por estética si su contrato de datos/estado no está resuelto. No declarar bloque cerrado con CI pendiente, datos mock no autorizados o producción sin verificar cuando el alcance exige release.
 
 ## Próximo checkpoint
-**Proveedor · Demanda geográfica real y accionable.**
+**Proveedor · ejecución del servicio — QA contractual Cliente ↔ Proveedor ↔ backend.**
 
 Criterio de cierre:
-- coordenadas reales preservadas desde RPC;
-- visualización no inventa ubicación;
-- fallback sin coordenadas honesto;
-- navegación a oportunidades coherente;
+- transiciones compartidas alineadas con el lifecycle maestro;
+- `asignado → en_camino` bloqueado sin pago protegido o efectivo explícito;
+- llegada y evidencia respetan autoridad y timing definidos;
+- ampliaciones mantienen descripción + costo + tiempo + aprobación + trazabilidad, sin alcance electrónico no financiado;
+- errores, reintentos, realtime y estados de excepción recuperan sin corromper el `serviceId`;
 - TypeScript/build/tests/lint aplicables verdes;
-- documentación sincronizada;
-- un único release del bloque cuando sea razonable.
+- documentación sincronizada antes de avanzar al siguiente bloque.
