@@ -14,9 +14,11 @@ test('completion review rehydrates after subscription reconnect, online and visi
  assert.match(source,/visibilityState==='visible'/)
 })
 
-test('ambiguous final approval reconciles persisted state before surfacing failure',()=>{
- assert.match(source,/aprobar_servicio[\s\S]*if\(error\)\{await load\(\);throw error\}/)
- assert.match(source,/catch\(e\)\{await load\(\)\.catch/)
+test('ambiguous final approval treats persisted completed state as success',()=>{
+ assert.match(source,/closurePersisted=useCallback/)
+ assert.match(source,/\.eq\('id',serviceId\)\.eq\('cliente_id',uid\)\.maybeSingle\(\)/)
+ assert.match(source,/return data\?\.estado==='completado'/)
+ assert.match(source,/aprobar_servicio[\s\S]*if\(error\)\{if\(await closurePersisted\(serviceId\)\)[\s\S]*await load\(\);return/)
 })
 
 test('review load error does not erase a previously known active closure',()=>{
