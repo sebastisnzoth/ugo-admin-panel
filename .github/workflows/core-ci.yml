@@ -39,7 +39,7 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Core lifecycle contract tests
+      - name: Core lifecycle and provider market contract tests
         run: npm test
 
       - name: Lint critical operational surfaces
@@ -68,8 +68,14 @@ jobs:
           src/mvp/uiEvents.ts
           src/mvp/ProviderLocationTracker.tsx
           src/mvp/provider/ProviderRoot.tsx
+          src/mvp/provider/ProviderHome.tsx
+          src/mvp/provider/ProviderDemand.tsx
+          src/mvp/provider/ProviderDemandMap.tsx
+          src/mvp/provider/ProviderOpportunities.tsx
           src/mvp/provider/ProviderActiveJob.tsx
           src/mvp/provider/ProviderEvidencePanel.tsx
+          src/mvp/provider/providerService.ts
+          src/mvp/provider/useProviderRealtime.ts
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
