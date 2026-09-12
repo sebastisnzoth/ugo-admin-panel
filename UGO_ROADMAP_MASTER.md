@@ -51,7 +51,8 @@ Implementado y verificado:
 - QA contractual Cliente ↔ Proveedor ↔ backend agregado.
 - Harness ejecutable agregado en `tests/integration/client-provider-rpc-rls.test.mjs` para dos sesiones reales sobre Supabase aislado.
 - El harness se niega explícitamente a ejecutar contra el project ref de producción y cubre creación, matching dirigido, privacidad pre-asignación, aceptación, gate de pago, lifecycle, evidencia, efectivo y aprobación con ownership.
-- Pendiente P0 real: ejecutar ese harness sobre entorno aislado con credenciales de Cliente/Proveedor y ampliar concurrencia, dinero, reintentos, ampliaciones y Realtime.
+- Cobertura P0 ampliada: reaceptación de oferta denegada, ampliación propuesta por proveedor, aprobación exclusiva del Cliente, doble resolución denegada, doble confirmación de efectivo denegada y doble cierre denegado.
+- Pendiente P0 real: ejecutar ese harness sobre un entorno aislado con credenciales de Cliente/Proveedor y ampliar webhook/reembolso y convergencia Realtime.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -62,8 +63,9 @@ Implementado y verificado:
 ### 5. Backend / Supabase — avanzado
 - Auth, PostgreSQL, RPCs, realtime y pagos en operación.
 - P0 harness RPC/RLS ya preparado y conectado a CI mediante variables `UGO_TEST_*`.
-- No se usa producción para la prueba destructiva. El proyecto separado `UGO Arena` existe pero está inactivo; no se reactiva automáticamente porque hacerlo puede tener impacto operativo/costo.
-- Pendiente P0: proveer/activar entorno aislado y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
+- No se usa producción para pruebas destructivas.
+- Actualmente no hay un entorno aislado de test configurado con las seis credenciales requeridas en GitHub Actions.
+- Pendiente P0: disponer un entorno aislado seguro y credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
 - Pendiente posterior: security advisors y consistencia final con masters.
 
 ### 6. QA / Release — EN CURSO
@@ -91,7 +93,8 @@ Preparación ya hecha:
 2. protección explícita contra project ref de producción;
 3. variables `UGO_TEST_SUPABASE_URL`, `UGO_TEST_SUPABASE_ANON_KEY`, `UGO_TEST_CLIENT_EMAIL`, `UGO_TEST_CLIENT_PASSWORD`, `UGO_TEST_PROVIDER_EMAIL`, `UGO_TEST_PROVIDER_PASSWORD` cableadas a GitHub Actions secrets;
 4. ejecución automática dentro de `npm test` cuando las seis variables existen;
-5. skip seguro y visible cuando faltan.
+5. skip seguro y visible cuando faltan;
+6. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre.
 
 Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
