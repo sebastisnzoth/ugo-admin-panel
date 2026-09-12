@@ -13,6 +13,7 @@ const required = [
 
 const missing = required.filter(name => !process.env[name])
 const enabled = missing.length === 0
+const requireIsolated = process.env.UGO_REQUIRE_ISOLATED_INTEGRATION === '1'
 const url = process.env.UGO_TEST_SUPABASE_URL || ''
 const PROD_REF = 'trfsjuseqjxlhrxuvdsm'
 
@@ -178,5 +179,10 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
 
 test('integration harness documents missing isolated credentials instead of touching production', { skip: enabled }, () => {
   assert.ok(missing.length > 0)
+
+  if (requireIsolated) {
+    assert.fail(`P0 isolated RPC/RLS requerido pero faltan: ${missing.join(', ')}`)
+  }
+
   console.log(`SKIP isolated RPC/RLS: faltan ${missing.join(', ')}`)
 })
