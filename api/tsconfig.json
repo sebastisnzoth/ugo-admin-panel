@@ -4,10 +4,14 @@
     "lib": ["ES2023", "DOM"],
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@vercel/node": ["./vercel-node.d.ts"]
+    },
     "types": ["node"],
     "skipLibCheck": true,
     "strict": false,
     "noEmit": true
   },
-  "include": ["**/*.ts"]
+  "include": ["**/*.ts", "**/*.d.ts"]
 }
