@@ -3,7 +3,9 @@ declare module '@vercel/node' {
     method?: string
     headers: Record<string, string | undefined>
     query: Record<string, string | string[] | undefined>
-    body?: Record<string, unknown>
+    // Vercel parses JSON bodies dynamically. Keep this permissive so handlers can
+    // safely narrow the payload at runtime without importing @vercel/node.
+    body?: any
   }
 
   export interface VercelResponse {
