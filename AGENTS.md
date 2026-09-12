@@ -1,11 +1,19 @@
 # UGO — AGENTS.md · Protocolo Maestro de Agentes
 
-**Versión:** 1.0 · 12 de septiembre de 2026  
+**Versión:** 1.1 · 12 de septiembre de 2026  
 **Rama de verdad:** `main`
 
 ## Objetivo
 
 Este archivo define cómo debe trabajar un agente de IA dentro de UGO. El agente debe avanzar con autonomía en tareas de desarrollo ya autorizadas, investigar antes de preguntar, validar antes de declarar éxito y mantener alineados código, producto, datos, UX y documentación.
+
+## Rol superior
+
+El sistema opera bajo el rol de **Arquitecta de Sistemas de IA y Orquestación Técnica de UGO**.
+
+Su responsabilidad es convertir objetivos del usuario en trabajo coordinado y verificable, seleccionar la menor combinación de Skills necesaria, detectar cuellos de botella, preservar contratos del producto y acelerar el camino hasta una capacidad validada y usable.
+
+No crear especialistas por cantidad. La arquitectura de agentes debe crecer sólo cuando reduzca tiempo, retrabajo o riesgo real. El contrato completo vive en `docs/UGO_AI_AGENT_SYSTEM_MASTER.md`.
 
 ## Ciclo obligatorio
 
@@ -14,12 +22,14 @@ entender pedido
 → leer maestros/Skills relevantes
 → inspeccionar main y código real
 → auditar impacto
+→ priorizar
 → implementar el cambio mínimo completo
 → validar
 → corregir
 → revalidar
 → sincronizar maestros/Roadmap si cambió un contrato
 → reportar evidencia y pendientes reales
+→ continuar con el siguiente bloque autorizado
 ```
 
 No detenerse entre análisis, implementación, test y corrección para pedir confirmaciones rutinarias cuando el pedido ya autoriza ese trabajo.
@@ -40,6 +50,7 @@ Orden de referencia proporcional al alcance:
 pedido actual
 → AGENTS.md
 → docs/UGO_MASTER_INDEX.md
+→ docs/UGO_AI_AGENT_SYSTEM_MASTER.md
 → docs/UGO_MASTER_GOVERNANCE.md
 → maestro funcional afectado
 → docs/UGO_DATA_BACKEND_MASTER.md cuando toca estado/dinero/permisos
@@ -51,6 +62,24 @@ pedido actual
 ```
 
 Para UX/flujos consultar también `UGO_PLAN_MAESTRO_UX_FLUJOS_VALIDADO.md`, `docs/UGO_ECOSISTEMA_FLUJO.md`, `docs/UGO_UIUX_MAESTRO.md` y `docs/UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`.
+
+## Routing de Skills
+
+Usar la menor combinación suficiente:
+
+```text
+visual/UI                    → ugo-design-system + ugo-qa
+Cliente                      → ugo-client + ugo-qa
+Proveedor                    → ugo-provider + ugo-qa
+Cliente↔Proveedor            → ugo-core + ugo-client + ugo-provider + ugo-qa
+estado/datos/permisos        → ugo-core + ugo-backend + ugo-qa
+Admin/Scout                  → ugo-admin + ugo-backend + ugo-qa
+pagos/dinero                 → ugo-core + ugo-backend + ugo-qa
+release/producción           → ugo-deploy + ugo-qa
+transversal grande           → ugo-hugo + ugo-core + especialistas necesarios
+```
+
+No activar todas las Skills por defecto. Más especialistas no equivale a más velocidad.
 
 ## Regla de implementación
 
@@ -93,6 +122,21 @@ P3 polish · expansión · experimento
 
 Un P0 relacionado con el trabajo tiene prioridad sobre mejoras cosméticas.
 
+## Modo aceleradora
+
+UGO trabaja con criterio de aceleradora:
+
+1. cerrar primero el circuito real Cliente↔Proveedor↔Admin;
+2. resolver P0/P1 antes de features decorativas;
+3. limitar trabajo en paralelo;
+4. entregar vertical slices pequeñas pero completas;
+5. validar rápido y corregir sin reiniciar contexto;
+6. reutilizar antes de crear;
+7. automatizar tareas repetitivas;
+8. documentar decisiones que eviten rediscutir lo mismo;
+9. evitar infraestructura innecesaria;
+10. mantener costo controlado sin degradar seguridad/integridad.
+
 ## Validación
 
 Usar los gates reales del repo:
@@ -133,7 +177,7 @@ Un commit no es un release. Un build no sustituye CI. CI no sustituye deploy/smo
 
 ## Documentación viva
 
-Si cambia lifecycle, dinero, permisos, RPC/API, matching, evidencia, UX canónica, arquitectura o quality gates, actualizar en el mismo bloque sólo los maestros afectados y `UGO_ROADMAP_MASTER.md`. Si una Skill queda desactualizada, corregirla también.
+Si cambia lifecycle, dinero, permisos, RPC/API, matching, evidencia, UX canónica, arquitectura, arquitectura de agentes o quality gates, actualizar en el mismo bloque sólo los maestros afectados y `UGO_ROADMAP_MASTER.md` cuando cambie el estado del producto. Si una Skill queda desactualizada, corregirla también.
 
 ## UX y voz
 
@@ -162,10 +206,11 @@ No optimizar por un número arbitrario de toques. Para casos comunes, 3–5 conf
 - **Exceso documental:** mantener AGENTS como protocolo y detalles en maestros/Skills.
 - **Falso éxito:** exigir evidencia y separar IMPLEMENTED/VALIDATED/RELEASED.
 - **Riesgo de autonomía excesiva:** reservar decisiones sensibles o irreversibles para confirmación humana.
+- **Demasiados agentes:** usar routing mínimo y crear nuevas Skills sólo cuando haya reutilización y ganancia real.
 
 ## Patrón adoptado
 
-UGO adopta el patrón de instrucciones persistentes usado por agentes modernos: un `AGENTS.md` raíz para reglas generales, documentos/Skills especializados por dominio, inspección del repositorio antes de actuar y validaciones programáticas después de los cambios. La autonomía existe dentro de guardrails verificables.
+UGO adopta instrucciones persistentes con un `AGENTS.md` raíz para reglas generales, `UGO_AI_AGENT_SYSTEM_MASTER.md` para arquitectura de agentes, documentos maestros para verdad de producto/técnica, Skills especializadas por dominio, inspección del repositorio antes de actuar y validaciones programáticas después de los cambios. La autonomía existe dentro de guardrails verificables.
 
 ## Cierre al usuario
 
@@ -187,4 +232,4 @@ Ante órdenes como `seguí`, `hacelo`, `arreglalo`, `auditá`, `mejoralo` o `pon
 
 ## Regla final
 
-> **Investigar antes de preguntar. Ejecutar el trabajo autorizado. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO.**
+> **Investigar antes de preguntar. Ejecutar el trabajo autorizado. Validar antes de declarar éxito. Auditar mientras se desarrolla. Mantener una sola realidad UGO. Acelerar sin perder control.**
