@@ -26,6 +26,7 @@ Excepciones: `cancelado`, `disputado`.
 - Home / Radar / Mapa / Categorías / Búsqueda migrados al design system.
 - Flujo de creación, dispatch, seguimiento, pagos, aprobación, reseñas, historial y disputas existente.
 - Contrato Cliente ↔ Proveedor reforzado por `tests/contracts/client-provider-lifecycle.test.mjs`.
+- `ClientLiveTracking` ahora re-sincroniza estado persistido al reconectar Realtime, volver online o recuperar visibilidad; los eventos de pagos están filtrados por `cliente_id` en lugar de escuchar toda la tabla.
 - Próximo cierre: ejecución real RPC/RLS/E2E con dos roles sobre entorno aislado.
 
 ### 2. Proveedor · Home / Demanda / Oportunidades — CERRADO
@@ -37,6 +38,7 @@ Implementado y verificado:
 - Fallback honesto cuando una zona no publica coordenadas; estados vacío/error/Offline accionables y actualización manual disponible.
 - Demanda con actualización automática mientras el proveedor está Online: fallback cada 45 s más refresh al recuperar foco/visibilidad.
 - Oportunidades, servicios y pagos sincronizados por Supabase Realtime sobre tablas efectivamente publicadas.
+- El hook transversal de Realtime del Proveedor ahora fuerza re-sincronización al suscribirse/reconectarse, volver online y recuperar visibilidad, evitando tomar el último evento local como segunda verdad.
 - Aceptación de oportunidad verificada como server-authoritative y atómica mediante `aceptar_oferta`; una oferta ya tomada deja de ser aceptable sin asignaciones paralelas.
 - Pre-asignación endurecida: la oportunidad se carga por `obtener_ofertas_proveedor`; el proveedor pendiente no depende de leer la fila completa de `servicios`.
 - Navegación a oportunidades coherente y targets principales del journey de mercado ≥48 px.
@@ -54,9 +56,12 @@ Implementado y verificado:
 - Harness ejecutable agregado en `tests/integration/client-provider-rpc-rls.test.mjs` para dos sesiones reales sobre Supabase aislado.
 - El harness se niega explícitamente a ejecutar contra el project ref de producción y cubre creación, matching dirigido, privacidad pre-asignación, aceptación, gate de pago, lifecycle, evidencia, efectivo y aprobación con ownership.
 - Cobertura P0 ampliada: reaceptación de oferta denegada, ampliación propuesta por proveedor, aprobación exclusiva del Cliente, doble resolución denegada, doble confirmación de efectivo denegada y doble cierre denegado.
-- El harness ahora soporta `UGO_REQUIRE_ISOLATED_INTEGRATION=1`: en ese modo, credenciales ausentes hacen fallar el gate en vez de convertirse en un skip verde.
+- El harness soporta `UGO_REQUIRE_ISOLATED_INTEGRATION=1`: en ese modo, credenciales ausentes hacen fallar el gate en vez de convertirse en un skip verde.
 - Workflow manual obligatorio agregado en `.github/workflows/isolated-rpc-rls.yml` para ejecutar build + harness aislado con protección explícita contra producción.
-- Pendiente P0 real: ejecutar ese workflow sobre un entorno aislado con credenciales de Cliente/Proveedor y ampliar webhook/reembolso y convergencia Realtime.
+- P0 de reembolso de ampliación detectado: un pago adicional ya retenido aumentaba `tarifa`, `comision_ugo` y `ganancia_proveedor`, pero el webhook de refund sólo marcaba el ajuste como reembolsado. Se versionó `reembolsar_pago_ampliacion` para revertir esos importes bajo lock, validar pago/monto/moneda y ser idempotente ante webhooks duplicados.
+- Webhook Mercado Pago actualizado para delegar reembolsos de ampliaciones al RPC server-authoritative; regresión contractual en `tests/contracts/expansion-refund-integrity.test.mjs`.
+- Convergencia/reconexión reforzada en Cliente y Proveedor; regresión contractual en `tests/contracts/realtime-convergence.test.mjs`.
+- Pendiente P0 real: ejecutar el workflow aislado con credenciales de Cliente/Proveedor y probar en DB aislada webhook duplicado/reembolso + convergencia Realtime real.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -71,21 +76,24 @@ Implementado y verificado:
 - No se usa producción para pruebas destructivas.
 - El CI regular conserva skip seguro cuando faltan credenciales para no convertir cada push en un falso fallo de infraestructura; el workflow `UGO Isolated RPC RLS` es el gate explícito para el cierre P0 y falla si esas credenciales no existen.
 - Actualmente no existe evidencia de una ejecución exitosa del gate aislado con las seis credenciales requeridas.
+- Producción `UGO` no tiene branches de desarrollo Supabase disponibles. `UGO Arena` no se usa como entorno de este flujo.
 - Auditoría de seguridad P0 detectó que `crear_pago_demo_sebastian` permitía a un Cliente real generar un pago ficticio si quedaba asignado a un proveedor demo. Se cerró el bypass: ahora exige ownership y `private.is_demo_account(cliente,'cliente')` además del proveedor demo.
 - Migración aplicada y versionada en `supabase/migrations/20260912_guard_demo_payment_to_demo_client.sql`; regresión estática en `tests/contracts/demo-payment-guard.test.mjs`.
 - Auditoría de disputas detectó que la política histórica de `disputa_mensajes` validaba participante y `autor_id`, pero no vinculaba `autor_rol` al rol real. El guard quedó versionado en `supabase/migrations/20260912214000_dispute_message_role_integrity_guard.sql` y cubierto por `tests/contracts/dispute-message-role-integrity.test.mjs`; CI #339 verde. Aplicación/verificación en producción queda pendiente mientras el conector Supabase no permita inspección segura.
+- Nueva migración P0 versionada en `supabase/migrations/20260912222000_expansion_refund_integrity.sql` para reversión atómica/idempotente de ampliaciones electrónicas reembolsadas. **No está declarada aplicada en producción** hasta ejecutar una migración controlada y verificarla.
 - Pendiente P0: disponer/confirmar un entorno aislado seguro y las seis credenciales de test para ejecutar pruebas reales, incluida concurrencia/idempotencia.
 - Pendiente posterior: continuar clasificación de security advisors sin confundir warnings de `SECURITY DEFINER` intencionales y guardados con vulnerabilidades reales.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
-- Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs`, `dispute-message-role-integrity.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
+- Contratos `client-provider-lifecycle.test.mjs`, `demo-payment-guard.test.mjs`, `dispute-message-role-integrity.test.mjs`, `expansion-refund-integrity.test.mjs`, `realtime-convergence.test.mjs` y harness `tests/integration/client-provider-rpc-rls.test.mjs` incorporados.
 - CI #339 verde para el hardening de autoría de mensajes de disputa.
 - El harness aislado queda en skip seguro en CI regular cuando faltan credenciales; jamás cae a producción por fallback.
 - El workflow manual `UGO Isolated RPC RLS` activa `UGO_REQUIRE_ISOLATED_INTEGRATION=1`, por lo que un intento de cierre P0 sin entorno/credenciales falla de forma explícita y diagnosticable.
-- Vercel producción del baseline maestro anterior quedó en `success`.
+- El bloque de pagos hasta `d8782df` alcanzó Vercel producción `READY`.
+- Los commits posteriores de Realtime no obtuvieron release verificable por `build-rate-limit` de Vercel; se mantienen como `IMPLEMENTED`, no `RELEASED`, hasta nuevo build exitoso.
 - Política de cuota/deploy definida en `DEPLOY.md`.
-- Pendiente: primera ejecución verde del gate RPC/RLS aislado, E2E UI, smoke por journey y recuperación/reintentos.
+- Pendiente: primera ejecución verde del gate RPC/RLS aislado, CI/release verificable de los últimos commits, E2E UI y smoke por journey.
 
 ## Auditoría vigente
 `docs/UGO_AUDIT_20260912.md` es la baseline actual para priorizar P0/P1. La auditoría de 10/09 queda como histórica y no debe gobernar decisiones que contradigan el estado actual de `main`.
@@ -108,8 +116,10 @@ Preparación ya hecha:
 6. modo obligatorio `UGO_REQUIRE_ISOLATED_INTEGRATION=1` que falla ante credenciales ausentes;
 7. workflow manual `.github/workflows/isolated-rpc-rls.yml` dedicado al cierre P0;
 8. guards de idempotencia funcional agregados para oferta, ampliación, efectivo y cierre;
-9. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;
-10. autoría de mensajes de disputa endurecida y cubierta por regresión, pendiente de verificación/aplicación en producción por acceso Supabase.
+9. reembolso electrónico de ampliación endurecido en repo con reversión atómica/idempotente de importes;
+10. reconexión Realtime endurecida para rehidratar estado persistido en Cliente y Proveedor;
+11. bypass de pago DEMO hacia clientes reales cerrado y cubierto por regresión;
+12. autoría de mensajes de disputa endurecida y cubierta por regresión, pendiente de verificación/aplicación en producción por acceso Supabase.
 
 Orden de cierre una vez disponible el entorno aislado:
 1. aceptación única de oportunidad;
