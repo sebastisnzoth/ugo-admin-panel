@@ -87,11 +87,15 @@ Antes de declarar terminado ejecutar lo aplicable: TypeScript/compilación, `npm
 
 Nunca declarar `OK`, `build verde`, `deploy exitoso` o `tests pasan` sin evidencia real. CI en progreso no equivale a CI verde.
 
-## Git
+## Git y presupuesto de deploy
 - `main` es la rama de verdad vigente del proyecto salvo instrucción explícita distinta.
+- `main` puede autodesplegar a Vercel: **no hacer un push/commit por cada ajuste mínimo**.
+- Agrupar cambios relacionados en bloques verificables para minimizar deployments sin perder trazabilidad.
+- UGO usa el presupuesto y reglas vigentes de `DEPLOY.md`; conservar reserva para hotfix/rollback y consultar Vercel como autoridad final de cuota.
+- No crear commits `touch`, redeploy-only o artificiales para forzar builds.
 - No mezclar cambios ajenos.
 - Revisar diff antes de commit cuando la herramienta lo permita.
-- Commits pequeños y descriptivos: `feat`, `fix`, `refactor`, `test`, `docs`.
+- Commits descriptivos: `feat`, `fix`, `refactor`, `test`, `docs`; priorizar un commit por bloque funcional cuando sea razonable.
 - No crear ramas/clones paralelos salvo pedido explícito.
 
 ## Definición de terminado
