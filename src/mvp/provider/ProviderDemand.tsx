@@ -1,5 +1,15 @@
 import React from'react'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData,money,timeAgo}from'./providerData'
+import{ProviderDemandMap}from'./ProviderDemandMap'
 
-export function ProviderDemand(){const flow=useProviderFlow(),d=useProviderData();return <section className="provider-screen" aria-labelledby="provider-demand-title"><header className="provider-section-head"><div><span className="provider-kicker">RADAR UGO</span><h1 id="provider-demand-title">Demanda</h1><p>¿Dónde hay trabajo para vos ahora?</p></div></header><div className="provider-map" role="img" aria-label="Mapa esquemático de demanda cercana">{d.demand.slice(0,3).map((item,i)=><span key={item.id} className={`demand-pulse ${i===0?'demand-high':'demand-medium'}`}>{item.demandLevel==='high'?'Alta':'Media'}</span>)}<div className="provider-map-label">{d.online?'Demanda cerca tuyo':'Activá Online para entrar al radar'}</div></div><div className="provider-list">{d.demand.length===0?<article className="provider-card"><strong>Sin demanda compatible ahora</strong><span>UGO actualizará esta pantalla en tiempo real.</span></article>:d.demand.map(item=><article className="provider-card" key={item.id}><strong>{item.demandLevel==='high'?'Alta demanda':'Demanda media'} · {item.category}</strong><span>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</span><span>{timeAgo(item.requestedAt)}{item.estimatedValue?` · ${money(item.estimatedValue)}`:''}</span></article>)}</div><button className="provider-primary provider-wide" onClick={flow.actions.openOpportunities} disabled={d.opportunities.length===0}>Ver {d.opportunities.length||''} oportunidades concretas</button></section>}
+export function ProviderDemand(){
+ const flow=useProviderFlow(),d=useProviderData()
+ return <section className="provider-screen" aria-labelledby="provider-demand-title">
+  <header className="provider-section-head"><div><span className="provider-kicker">RADAR UGO</span><h1 id="provider-demand-title">Demanda</h1><p>¿Dónde hay trabajo para vos ahora?</p></div></header>
+  <ProviderDemandMap signals={d.demand} online={d.online}/>
+  {d.demandError&&<article className="provider-card provider-demand-error" role="alert"><strong>No se pudo actualizar la demanda</strong><span>{d.demandError}</span><button className="provider-secondary" onClick={()=>void d.reload()}>Reintentar</button></article>}
+  <div className="provider-list">{!d.demandError&&d.demand.length===0?<article className="provider-card"><strong>Sin demanda compatible ahora</strong><span>UGO actualizará esta pantalla en tiempo real.</span></article>:d.demand.map(item=><article className="provider-card" key={item.id}><strong>{item.demandLevel==='high'?'Alta demanda':item.demandLevel==='medium'?'Demanda media':'Demanda baja'} · {item.category}</strong><span>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</span><span>{item.latitude!=null&&item.longitude!=null?'Ubicación precisa disponible':'Ubicación precisa pendiente'}</span><span>{timeAgo(item.requestedAt)}{item.estimatedValue?` · ${money(item.estimatedValue)}`:''}</span></article>)}</div>
+  <button className="provider-primary provider-wide" onClick={flow.actions.openOpportunities} disabled={d.opportunities.length===0}>Ver {d.opportunities.length||''} oportunidades concretas</button>
+ </section>
+}

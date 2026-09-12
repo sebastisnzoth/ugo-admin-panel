@@ -20,6 +20,8 @@ export type DemandSignal = {
   id: string
   category: string
   zone: string
+  latitude: number | null
+  longitude: number | null
   distanceKm: number
   estimatedValue?: number
   requestedAt: string
