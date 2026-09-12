@@ -48,10 +48,45 @@ auditar
 → revalidar
 → actualizar handoff/roadmap si corresponde
 → commit
+→ push a origin/main
+→ verificar sincronización local/remota
 → continuar con el siguiente bloque relacionado
 ```
 
-No pedir permiso por archivo, test, refactor local, commit, documentación o corrección reversible dentro del alcance.
+No pedir permiso por archivo, test, refactor local, commit, documentación, corrección reversible o publicación rutinaria de cambios ya validados dentro del alcance.
+
+## Regla permanente de publicación en GitHub
+
+**Todo trabajo terminado y validado por Codex debe quedar publicado en GitHub en `origin/main`.**
+
+El cierre normal de un bloque es:
+
+```text
+IMPLEMENTAR
+→ VALIDAR
+→ COMMIT
+→ PUSH origin/main
+→ VERIFICAR origin/main
+→ ACTUALIZAR HANDOFF/ROADMAP si cambió el estado real
+→ CONTINUAR
+```
+
+Reglas obligatorias:
+
+- no dejar commits terminados y validados sólo en local;
+- después de cada commit validado, publicar en `origin/main` sin esperar una nueva orden del usuario;
+- verificar que `main` local y `origin/main` queden sincronizados después del push;
+- si existe más de un commit local terminado y validado, publicar todos los que pertenezcan al bloque autorizado;
+- no declarar `RELEASED` por el solo hecho de hacer push: `RELEASED` requiere evidencia del deploy correspondiente;
+- si el entorno de Codex exige una confirmación técnica del sandbox para `git add`, `git commit` o `git push`, solicitar únicamente esa aprobación mínima y continuar automáticamente después;
+- una limitación del sandbox no cambia esta política ni convierte el push en una decisión de producto;
+- nunca hacer push de un cambio que no haya alcanzado el gate de validación aplicable;
+- si un gate general falla por deuda preexistente no causada por el cambio, registrar la evidencia exacta, ejecutar los gates focalizados disponibles y no ocultar el fallo;
+- detener la publicación únicamente ante un freno real definido en este documento o en `AGENTS.md`.
+
+La regla por defecto es, por tanto:
+
+> **Trabajo Codex terminado + validado = commit + GitHub `origin/main` + verificación remota.**
 
 ## Frenos reales
 
@@ -80,6 +115,7 @@ qué retomar después
 ## Regla de repositorio
 
 - trabajar sobre `main` salvo instrucción explícita distinta;
+- `origin/main` es el destino normal de todo bloque terminado y validado;
 - no clonar otra copia por rutina;
 - no usar `UGO Arena` para pruebas del flujo principal;
 - no usar Supabase producción como entorno destructivo de test;
@@ -102,7 +138,9 @@ Al terminar un bloque significativo:
 3. registrar `BLOCKED` sólo si es real;
 4. registrar evidencia de validación exacta;
 5. dejar `NEXT` accionable;
-6. incluir commits relevantes.
+6. incluir commits relevantes;
+7. publicar el bloque validado en `origin/main`;
+8. verificar que el SHA remoto corresponda al cierre esperado.
 
 No convertir el handoff en diario largo. Debe ser breve, actual y ejecutable.
 
@@ -189,8 +227,10 @@ NEXT
 - siguiente P0/P1 concreto
 
 COMMITS
-- <sha> <mensaje>
+- <sha> <mensaje> · local/published
 ```
+
+Si un commit validado aparece como `local`, el bloque no está cerrado: Codex debe intentar publicarlo en `origin/main` antes de terminar, salvo freno real documentado.
 
 ## Comando humano recomendado
 
@@ -200,4 +240,4 @@ Desde el repo, el usuario debería poder abrir Codex y decir sólo:
 Seguí con los P0 de UGO según AGENTS.md, CODEX.md y docs/UGO_AGENT_HANDOFF.md. No me preguntes salvo decisión crítica.
 ```
 
-Eso debe ser suficiente para retomar el proyecto.
+Eso debe ser suficiente para retomar el proyecto, validar, commitear, publicar en GitHub y continuar.
