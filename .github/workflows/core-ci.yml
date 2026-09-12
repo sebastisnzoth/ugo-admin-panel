@@ -20,6 +20,13 @@ jobs:
     name: TypeScript · Build · Core Lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      UGO_TEST_SUPABASE_URL: ${{ secrets.UGO_TEST_SUPABASE_URL }}
+      UGO_TEST_SUPABASE_ANON_KEY: ${{ secrets.UGO_TEST_SUPABASE_ANON_KEY }}
+      UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
+      UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+      UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
+      UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -39,7 +46,7 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Core lifecycle and provider market contract tests
+      - name: Core lifecycle, market and isolated RPC/RLS tests
         run: npm test
 
       - name: Lint critical operational surfaces
@@ -76,6 +83,7 @@ jobs:
           src/mvp/provider/ProviderEvidencePanel.tsx
           src/mvp/provider/providerService.ts
           src/mvp/provider/useProviderRealtime.ts
+          tests/integration/client-provider-rpc-rls.test.mjs
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
