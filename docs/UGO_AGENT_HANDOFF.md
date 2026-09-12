@@ -41,7 +41,9 @@ Debe demostrarse además:
 
 ## LAST COMPLETED
 
-Bloque local del 12/09/2026 sobre `78e7cd3` (`main` y `origin/main` iguales tras fetch): corrección del harness aislado contra los RPC versionados. Se corrigieron el gate de pago evaluado antes de asignar, el orden revisión/cobro y las expectativas erróneas de rechazo para retries idempotentes de oferta/efectivo. Se agregaron errores de dominio específicos, comparación de persistencia/dinero, lectura final por ambos roles y rechazo explícito de UGO Arena. Regresión nueva: `tests/contracts/isolated-harness.test.mjs`.
+Bloque del 12/09/2026 sobre `9f77d7c`: push de ese commit a `origin/main` confirmado; fetch posterior verificó `HEAD = origin/main = 9f77d7cb86daa312d97c0201d02744e52520483f` antes de editar. Se recuperó el gate contractual de ownership de push, separando las asignaciones `SET` del filtro `WHERE`. Tres mutaciones controladas verifican que el test siga rechazando cambio de dueño, ausencia de filtro y bypass mediante `OR true`. La migración y el backend no se modificaron.
+
+Bloque anterior (`9f77d7c`): harness aislado corregido para orden de pago/cierre, retries idempotentes, errores de dominio específicos, persistencia/dinero y rechazo de UGO Arena.
 
 Baseline anterior:
 
@@ -61,6 +63,7 @@ Baseline anterior:
 - `.github/workflows/isolated-rpc-rls.yml`
 - `tests/integration/client-provider-rpc-rls.test.mjs`
 - `tests/contracts/isolated-harness.test.mjs`
+- Gate de ownership y mutaciones en `tests/contracts/push-subscription-ownership.test.mjs`
 - `supabase/migrations/20260912222000_expansion_refund_integrity.sql`
 - `tests/contracts/expansion-refund-integrity.test.mjs`
 - `tests/contracts/realtime-convergence.test.mjs`
@@ -73,13 +76,14 @@ Baseline anterior:
 Ejecución local del 12/09/2026:
 
 - `npm ci --include=dev`: instalación reproducible terminada; audit de instalación reportó 0 vulnerabilidades. Vite 8.0.16, TypeScript 6.0.3, ESLint 10.5.0 y Supabase JS 2.108.1 coinciden con el lockfile.
-- `npm test`: 40 casos, 38 pasan, 1 falla y 1 omitido (RPC/RLS sin credenciales). Las 7 regresiones nuevas del harness pasan.
+- `npm test`: 43 casos, 42 pasan, 0 fallos y 1 omitido (RPC/RLS sin credenciales). El gate contractual general vuelve a pasar; el P0 aislado sigue sin ejecución real.
+- `node --test tests/contracts/push-subscription-ownership.test.mjs`: 6/6 pasan. Antes del cambio se reprodujo el fallo de la aserción original; después, la migración vigente pasa y las tres mutaciones inseguras son rechazadas.
 - `npm run build`: pasa TypeScript + Vite 8.0.16; conserva warning de chunks >500 kB.
-- Lint crítico: ejecutada la lista exacta de 31 superficies de `core-ci.yml`; 0 errores, 2 warnings de hooks preexistentes.
+- Lint crítico del bloque anterior (`9f77d7c`): ejecutada la lista exacta de 31 superficies de `core-ci.yml`; 0 errores, 2 warnings de hooks preexistentes. No se volvió a ejecutar ese gate separado en el bloque de ownership.
 - `npm run lint`: falla con 638 errores y 13 warnings de deuda general preexistente; mismo resultado antes y después de reinstalar dependencias. No se modificaron superficies TypeScript en este bloque.
-- Fallo reproducido por separado en el archivo preexistente `tests/contracts/push-subscription-ownership.test.mjs:20`, sin cambios respecto de `HEAD`: su regex prohíbe `usuario_id =` incluso dentro del `WHERE` de ownership que el mismo test exige.
+- Falso positivo de push resuelto: la prohibición de `usuario_id` se aplica sólo al `SET`; el `WHERE` debe conservar el ownership exacto. La evidencia es contractual estática y no prueba RLS/concurrencia contra DB.
 - La regresión ejecuta los rechazos de producción/Arena y la ausencia obligatoria de credenciales con `fetch` interceptado; no contacta esos proyectos ni equivale a un E2E real.
-- Logs locales en `.playwright-mcp/p0-validation/` (ignorados por Git). El disco del sistema dio `ENOSPC`; caché npm y `TMPDIR` se trasladaron sólo para estos comandos a ese directorio del volumen del repo. Reutilizar esos overrides si continúa sin espacio.
+- Logs del bloque actual: `.playwright-mcp/p0-validation/push-tests.log`, `push-build.log` y `push-lint.log` (ignorados por Git). En el bloque anterior el disco del sistema dio `ENOSPC`; se reutilizaron caché npm y `TMPDIR` en el volumen del repo.
 
 Evidencia histórica conservada:
 
@@ -96,6 +100,7 @@ No declarar como validado todavía:
 
 ## RELEASED
 
+- El push de `9f77d7c` está confirmado; no se verificó deploy/smoke ni se usó producción en esta orden. El cambio de ownership de este bloque queda en commit local.
 - Baseline productivo anterior y bloque de pagos hasta `d8782df` llegaron a Vercel `READY`.
 
 ## BLOCKED
@@ -115,7 +120,7 @@ UGO_TEST_PROVIDER_PASSWORD
 
 **Por qué bloquea:** sin ese entorno no se puede demostrar RPC/RLS/concurrencia/realtime real sin arriesgar producción.
 
-**Verificación de esta sesión:** MCP lista únicamente UGO y UGO Arena; UGO no tiene branches. Las seis variables faltan en el entorno local; no hay Docker/Podman/Colima disponible ni configuración Supabase local en el repo.
+**Verificación:** las seis variables siguen ausentes en el entorno local. En el bloque anterior, MCP listó únicamente UGO y UGO Arena, sin branches UGO; tampoco había Docker/Podman/Colima ni configuración Supabase local. Esta orden no consultó producción ni Arena.
 
 **Acción mínima del usuario solicitada:** configurar las seis variables como repository secrets en GitHub → `sebastisnzoth/ugo-admin-panel` → Settings → Secrets and variables → Actions, apuntando a una base aislada con esquema UGO vigente, categoría activa y usuarios Cliente/Proveedor distintos. El proveedor debe estar verificado, online, disponible y con tarifa válida. Confirmar cuando esté listo, sin pegar contraseñas en el chat.
 
@@ -129,9 +134,9 @@ Los últimos commits pueden quedar `IMPLEMENTED` sin `RELEASED` si Vercel rechaz
 
 No confundir rate limit con fallo funcional del código.
 
-### B3 · Gates generales preexistentes
+### B3 · Deuda de lint general
 
-`npm test` no está verde por la aserción de ownership de push descrita en VALIDATED. Es un fallo del test contractual, no evidencia de una reasignación permitida por el SQL. El archivo y su migración no se modificaron en este bloque del harness.
+El fallo contractual de ownership de push quedó resuelto y `npm test` pasa con 42 aprobados y 1 omitido. No requiere acción manual.
 
 El lint general tampoco está verde (638 errores, 13 warnings); el workflow lo trata como reporte de deuda. El lint crítico sí pasó localmente. No declarar todos los gates ni CI verdes.
 
@@ -139,12 +144,11 @@ El lint general tampoco está verde (638 errores, 13 warnings); el workflow lo t
 
 Mientras B1 siga activo, continuar únicamente con P0/P1 que puedan cerrarse de forma segura sin producción destructiva:
 
-1. recuperar el gate contractual de ownership de push: distinguir asignaciones del `SET` del filtro `WHERE` y conservar la regresión contra cambio de dueño;
-2. auditar journey Cliente → matching → Proveedor para errores/retry/dead ends;
-3. endurecer guards contractuales faltantes;
-4. preparar smoke/E2E reproducible para cuando exista entorno aislado;
-5. auditar Admin/Super Admin sólo si no desplaza el P0 principal;
-6. mantener UX canónica: estado → contexto → próxima acción.
+1. auditar journey Cliente → matching → Proveedor para errores/retry/dead ends;
+2. endurecer guards contractuales faltantes;
+3. preparar smoke/E2E reproducible para cuando exista entorno aislado;
+4. auditar Admin/Super Admin sólo si no desplaza el P0 principal;
+5. mantener UX canónica: estado → contexto → próxima acción.
 
 El harness corregido cubre efectivo y metadata de evidencia. Aún faltan escenarios reales de pago electrónico/refund/webhook, competencia entre proveedores distintos, upload/Storage, geolocalización, Admin y reconexión Realtime; su primer verde no cerrará por sí solo todo el CURRENT P0.
 
@@ -160,9 +164,10 @@ Corregir cualquier fallo real y repetir hasta verde.
 
 ## COMMITS RELEVANTES
 
-Bloque actual: `test(p0): align isolated harness with persisted RPC contracts` (consultar SHA en `git log`; commit local, sin push ni release).
+Bloque actual: `test(p0): restore push ownership contract gate` (consultar SHA en `git log`; commit local, sin push ni release).
 
 ```text
+9f77d7c  test(p0): align isolated harness with persisted RPC contracts — push confirmado a origin/main
 1cd24b4  test(p0): enforce isolated integration gate on demand
 c378086  ci(p0): add explicit isolated RPC RLS gate
 670d064  fix(payments): make expansion refunds atomic and idempotent
