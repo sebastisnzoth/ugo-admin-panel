@@ -18,27 +18,26 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
 
-async function acceptedServiceAfterAmbiguousError(supabase:SupabaseClient,offerId:string){
- const{data:offer}=await supabase.from('ofertas_servicio').select('servicio_id').eq('id',offerId).maybeSingle()
- const serviceId=String((offer as{servicio_id?:string}|null)?.servicio_id||'')
- if(!serviceId)return false
- const{data:service}=await supabase.from('servicios').select('id,estado').eq('id',serviceId).maybeSingle()
- const state=String((service as{estado?:string}|null)?.estado||'')
- return PROVIDER_ACTIVE_STATES.includes(state)
+async function hasPersistedActiveAssignment(supabase:SupabaseClient){
+ const{data:auth}=await supabase.auth.getUser()
+ const userId=auth.user?.id
+ if(!userId)return false
+ const{data:service}=await supabase.from('servicios').select('id,estado').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle()
+ return Boolean(service&&PROVIDER_ACTIVE_STATES.includes(String((service as{estado?:string}).estado||'')))
 }
 
 export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
  const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
  if(error){
-  // The RPC can commit and the response can still be lost. Reconcile against
-  // persisted state before telling the provider that acceptance failed.
-  if(await acceptedServiceAfterAmbiguousError(supabase,id))return
+  // The accepted offer may disappear from provider-visible offer rows after the
+  // transaction. Reconcile using the provider's persisted active assignment.
+  if(await hasPersistedActiveAssignment(supabase))return
   throw error
  }
  if(!data){
-  // A retry after a successful acceptance is also safe: persisted assignment
-  // is the source of truth, not the stale offer response.
-  if(await acceptedServiceAfterAmbiguousError(supabase,id))return
+  // Retry after a successful acceptance is safe even when the original offer
+  // is no longer visible through RLS.
+  if(await hasPersistedActiveAssignment(supabase))return
   throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')
  }
 }
