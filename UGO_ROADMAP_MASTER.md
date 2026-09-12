@@ -23,7 +23,8 @@ Excepciones: `cancelado`, `disputado`.
 ### 1. Cliente · journey principal — avanzado
 - Home / Radar / Mapa / Categorías / Búsqueda migrados al design system.
 - Flujo de creación, dispatch, seguimiento, pagos, aprobación, reseñas, historial y disputas existente.
-- Próximo cierre: QA cruzado con Proveedor y backend en transiciones compartidas.
+- Contrato Cliente ↔ Proveedor reforzado por `tests/contracts/client-provider-lifecycle.test.mjs`.
+- Próximo cierre: integración real RPC/RLS/E2E con dos roles sobre entorno aislado.
 
 ### 2. Proveedor · Home / Demanda / Oportunidades — CERRADO
 Implementado y verificado:
@@ -46,7 +47,8 @@ Implementado y verificado:
 - `asignado → en_camino → llegado → en_progreso → esperando_aprobacion` implementado.
 - Evidencia y pago efectivo integrados.
 - `Agregar trabajo / Ampliar servicio` presente en trabajo en progreso.
-- Pendiente inmediato: QA contractual Cliente ↔ Proveedor ↔ backend sobre transiciones compartidas, gates de pago, evidencia temporal, ampliaciones, recuperación de errores/reintentos y estados de excepción.
+- QA contractual Cliente ↔ Proveedor ↔ backend agregado y CI #309 verde.
+- Pendiente P0 real: ejecutar RPC/RLS contra base aislada y E2E de concurrencia, dinero, reintentos, ampliaciones y Realtime.
 
 ### 4. Admin / Super Admin — avanzado
 - Configuración de sistema y credenciales.
@@ -56,13 +58,19 @@ Implementado y verificado:
 
 ### 5. Backend / Supabase — avanzado
 - Auth, PostgreSQL, RPCs, realtime y pagos en operación.
-- Pendiente: auditoría final RLS/security advisors, contratos RPC críticos y consistencia con masters.
+- Pendiente P0: pruebas ejecutadas de RLS/RPC críticas en base aislada, incluida concurrencia/idempotencia.
+- Pendiente posterior: security advisors y consistencia final con masters.
 
 ### 6. QA / Release — EN CURSO
 - GitHub CI: TypeScript, build, tests y lint crítico.
-- Vercel producción con arquitectura ajustada al límite operativo actual de 12 Node functions.
+- Nuevo contrato `client-provider-lifecycle.test.mjs` incorporado.
+- CI #309 del commit `9da65efc` quedó verde: audit de dependencias, build/TypeScript, tests y lint crítico.
+- Vercel producción del baseline maestro anterior quedó en `success`.
 - Política de cuota/deploy definida en `DEPLOY.md`.
-- Pendiente: smoke tests por journey y automatización de regresiones UI donde sea viable.
+- Pendiente: integración RPC/RLS, E2E UI, smoke por journey y recuperación/reintentos.
+
+## Auditoría vigente
+`docs/UGO_AUDIT_20260912.md` es la baseline actual para priorizar P0/P1. La auditoría de 10/09 queda como histórica y no debe gobernar decisiones que contradigan el estado actual de `main`.
 
 ## Política de ejecución del Roadmap
 HUGO toma el primer bloque `EN CURSO` con dependencia satisfecha y ejecuta:
@@ -71,13 +79,24 @@ HUGO toma el primer bloque `EN CURSO` con dependencia satisfecha y ejecuta:
 No avanzar una pantalla sólo por estética si su contrato de datos/estado no está resuelto. No declarar bloque cerrado con CI pendiente, datos mock no autorizados o producción sin verificar cuando el alcance exige release.
 
 ## Próximo checkpoint
-**Proveedor · ejecución del servicio — QA contractual Cliente ↔ Proveedor ↔ backend.**
+**P0 · Harness de integración RPC/RLS Cliente ↔ Proveedor sobre entorno aislado.**
+
+Orden de cierre:
+1. aceptación única de oportunidad;
+2. gate de pago para `asignado → en_camino`;
+3. llegada + evidencia `Antes`;
+4. inicio + evidencia `Después`;
+5. efectivo confirmado;
+6. aprobación Cliente con ownership;
+7. ampliación y delta financiado;
+8. retry/webhook duplicado/reembolso;
+9. convergencia Realtime y reconexión.
 
 Criterio de cierre:
-- transiciones compartidas alineadas con el lifecycle maestro;
-- `asignado → en_camino` bloqueado sin pago protegido o efectivo explícito;
-- llegada y evidencia respetan autoridad y timing definidos;
-- ampliaciones mantienen descripción + costo + tiempo + aprobación + trazabilidad, sin alcance electrónico no financiado;
-- errores, reintentos, realtime y estados de excepción recuperan sin corromper el `serviceId`;
-- TypeScript/build/tests/lint aplicables verdes;
+- pruebas positivas y negativas reproducibles;
+- ningún uso de producción como entorno de test destructivo;
+- mismo `serviceId` en ambos roles;
+- transiciones server-authoritative;
+- idempotencia/concurrencia demostradas;
+- TypeScript/build/tests/lint verdes;
 - documentación sincronizada antes de avanzar al siguiente bloque.
