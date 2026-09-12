@@ -14,12 +14,14 @@ test('push subscription guard locks and checks the existing endpoint owner', () 
   assert.match(sql, /v_owner\s+is\s+not\s+null\s+and\s+v_owner\s*<>\s*v_uid/i)
 })
 
-test('endpoint conflict refreshes keys without reassigning usuario_id', () => {
+test('endpoint conflict refreshes keys only for the same owner', () => {
   const conflict = sql.match(/on\s+conflict\s*\(endpoint\)\s+do\s+update\s+set([\s\S]*?)returning/i)?.[1] || ''
   assert.ok(conflict, 'Debe existir un ON CONFLICT(endpoint) controlado')
   assert.doesNotMatch(conflict, /usuario_id\s*=/i)
   assert.match(conflict, /p256dh\s*=\s*excluded\.p256dh/i)
   assert.match(conflict, /auth\s*=\s*excluded\.auth/i)
+  assert.match(conflict, /where\s+public\.push_suscripciones\.usuario_id\s*=\s*v_uid/i)
+  assert.match(sql, /if\s+v_id\s+is\s+null\s+then[\s\S]*pertenece a otra cuenta/i)
 })
 
 test('push subscription RPC remains authenticated-only', () => {
