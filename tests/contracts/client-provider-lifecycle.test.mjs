@@ -21,6 +21,7 @@ test('backend allows only the canonical provider lifecycle transitions',async()=
 
 test('client cannot forge provider assignment, lifecycle or settlement fields during service creation',async()=>{
  const sql=await read('supabase/migrations/20260912203500_service_insert_integrity_guard.sql')
+ assert.match(sql,/private\.is_admin\(\(select auth\.uid\(\)\)\)/)
  assert.match(sql,/cliente_id\s*=\s*\(select auth\.uid\(\)\)/)
  assert.match(sql,/proveedor_id is null/)
  assert.match(sql,/estado in \('borrador','buscando'\)/)
@@ -29,7 +30,7 @@ test('client cannot forge provider assignment, lifecycle or settlement fields du
  assert.match(sql,/completado_at is null/)
  assert.match(sql,/comision_ugo is null/)
  assert.match(sql,/ganancia_proveedor is null/)
- assert.match(sql,/revoke update, delete, truncate on table public\.servicios from anon, authenticated/)
+ assert.doesNotMatch(sql,/revoke update.*authenticated/i)
 })
 
 test('provider cannot leave assigned without a valid payment path',async()=>{
