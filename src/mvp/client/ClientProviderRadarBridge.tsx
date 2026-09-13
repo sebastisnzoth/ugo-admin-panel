@@ -1,0 +1,92 @@
+import React,{useEffect,useMemo,useState}from'react'
+import{ClientQuantumExperience,type ProviderMapRow}from'../ClientQuantumExperience'
+import{UGO_CLIENT_GUIDED_REQUEST_OPEN}from'../ClientQuickOrder'
+import{useRoleSession,type Category}from'../shared'
+import{useClientFlow}from'./clientFlow'
+
+const normalize=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
+const categoryAliases:Record<string,string[]>={
+ electricidad:['electricista','electricidad','electrico','electrica','eletricista','eletrica'],
+ jardineria:['jardinero','jardineria','jardin','jardineiro','jardinagem'],
+ plomeria:['plomero','plomeria','fontanero','encanador','encanamento'],
+ limpieza:['limpieza','limpiador','limpiadora','limpeza','faxina','diarista'],
+ pintura:['pintor','pintura'],
+ cerrajeria:['cerrajero','cerrajeria','chaveiro'],
+ reparaciones:['reparacion','reparaciones','reparar','arreglar'],
+}
+
+function matchCategory(categories:Category[],hint?:string|null){
+ const target=normalize(String(hint||''))
+ if(!target)return null
+ return categories.find(category=>{
+  const name=normalize(category.nombre),slug=normalize(category.slug)
+  return name.includes(target)||target.includes(name)||slug.includes(target)||target.includes(slug)
+ })||null
+}
+
+function intentNamesCategory(text:string,category:Category|null){
+ if(!category)return false
+ const q=normalize(text)
+ const slug=normalize(category.slug),name=normalize(category.nombre)
+ if(q.includes(slug)||q.includes(name))return true
+ const aliases=Object.entries(categoryAliases).find(([key])=>slug.includes(key)||name.includes(key))?.[1]||[]
+ return aliases.some(alias=>q.includes(normalize(alias)))
+}
+
+export function ClientProviderRadarBridge(){
+ const flow=useClientFlow()
+ const{session,supabase}=useRoleSession('client')
+ const[categories,setCategories]=useState<Category[]>([])
+ const[selectedCategoryId,setSelectedCategoryId]=useState('')
+
+ useEffect(()=>{if(!session)return;let alive=true;supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre').then(({data})=>{if(alive)setCategories((data||[])as Category[])});return()=>{alive=false}},[session,supabase])
+
+ const intentCategory=useMemo(()=>matchCategory(categories,flow.hugoIntent?.categoryHint),[categories,flow.hugoIntent?.categoryHint])
+ useEffect(()=>{
+  if(!flow.hugoIntent||!intentCategory||flow.screen!=='home')return
+  if(!intentNamesCategory(flow.hugoIntent.text,intentCategory))return
+  setSelectedCategoryId(intentCategory.id)
+  flow.navigate('search')
+ },[flow,flow.hugoIntent,intentCategory])
+
+ if(!session||!['search','provider'].includes(flow.screen))return null
+ const requestedScreen=flow.screen==='provider'&&!flow.providerId?'search':flow.screen
+
+ function pickProvider(provider:ProviderMapRow){
+  const category=categories.find(item=>item.id===provider.categoria_principal_id)||intentCategory||null
+  const preferred={id:provider.id,categoryId:provider.categoria_principal_id||category?.id||'',categorySlug:category?.slug||'',at:Date.now()}
+  try{
+   sessionStorage.setItem('ugo:preferred-provider',JSON.stringify(preferred))
+   const key=`ugo:guided-request-draft:${session.user.id}`
+   let current:Record<string,unknown>={}
+   try{current=JSON.parse(sessionStorage.getItem(key)||'{}')as Record<string,unknown>}catch{}
+   sessionStorage.setItem(key,JSON.stringify({
+    ...current,
+    categoryId:provider.categoria_principal_id||category?.id||'',
+    categoryName:provider.categoria_nombre||category?.nombre||'',
+    categorySlug:category?.slug||'',
+    amount:Number(provider.tarifa_base||0)>0?Number(provider.tarifa_base):current.amount??null,
+    urgent:Boolean(flow.hugoIntent?.urgent),
+    description:String(current.description||flow.hugoIntent?.description||''),
+    preferences:`Profesional elegido: ${provider.nombre||'Profesional UGO'}`,
+   }))
+  }catch(error){console.warn('No pudimos guardar el proveedor elegido.',error)}
+  flow.navigate('request',provider.id)
+  window.setTimeout(()=>window.dispatchEvent(new Event(UGO_CLIENT_GUIDED_REQUEST_OPEN)),0)
+ }
+
+ return <div className="ugo-client-screen-overlay"><ClientQuantumExperience
+  supabase={supabase}
+  categories={categories}
+  selectedCategoryId={selectedCategoryId}
+  requestedScreen={requestedScreen}
+  requestedProviderId={flow.providerId}
+  hugoIntent={flow.hugoIntent}
+  onCategorySelect={setSelectedCategoryId}
+  onProviderPick={pickProvider}
+  onSearchClose={()=>flow.navigate('home')}
+  onIntent={intent=>{if(intent.categoryId)setSelectedCategoryId(intent.categoryId)}}
+ /></div>
+}
+
+export default ClientProviderRadarBridge
