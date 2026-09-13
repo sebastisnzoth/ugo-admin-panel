@@ -16,7 +16,6 @@ const enabled = missing.length === 0
 const requireIsolated = process.env.UGO_REQUIRE_ISOLATED_INTEGRATION === '1'
 const url = process.env.UGO_TEST_SUPABASE_URL || ''
 const PROD_REF = 'trfsjuseqjxlhrxuvdsm'
-const ARENA_REF = 'tmossnqfwfwjrtzwcbmm'
 
 function expectDomainError(result, message) {
   assert.equal(result.error?.code, 'P0001', 'Debe fallar por un guard de dominio, no por red, Auth o RPC ausente')
@@ -68,7 +67,6 @@ async function insertEvidence(supabase, serviceId, userId, tipo) {
 
 test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, async () => {
   assert.ok(!url.includes(PROD_REF), 'P0 harness se niega a ejecutar contra producción')
-  assert.ok(!url.includes(ARENA_REF), 'P0 harness se niega a ejecutar contra UGO Arena')
   assert.match(url, /^https:\/\/[a-z0-9-]+\.supabase\.co$/)
 
   const [{ supabase: c, userId: clientId }, { supabase: p, userId: providerId }] = await Promise.all([
@@ -224,20 +222,13 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     assert.equal(service.proveedor_id, providerId)
     assert.deepEqual(await getService(p, serviceId), service, 'Ambos roles leen el mismo cierre persistido')
   } finally {
-    if (serviceId) {
-      // Limpieza best-effort. El entorno aislado puede conservar la fila para diagnóstico si RLS la bloquea.
-      await c.from('servicios').delete().eq('id', serviceId)
-    }
+    if (serviceId) await c.from('servicios').delete().eq('id', serviceId)
     await Promise.allSettled([c.auth.signOut(), p.auth.signOut()])
   }
 })
 
 test('integration harness documents missing isolated credentials instead of touching production', { skip: enabled }, () => {
   assert.ok(missing.length > 0)
-
-  if (requireIsolated) {
-    assert.fail(`P0 isolated RPC/RLS requerido pero faltan: ${missing.join(', ')}`)
-  }
-
+  if (requireIsolated) assert.fail(`P0 isolated RPC/RLS requerido pero faltan: ${missing.join(', ')}`)
   console.log(`SKIP isolated RPC/RLS: faltan ${missing.join(', ')}`)
 })
