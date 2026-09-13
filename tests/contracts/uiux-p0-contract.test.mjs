@@ -14,11 +14,13 @@ test('MvpApp loads UI/UX P0 hardening after base UI styles', async () => {
 
 test('UI/UX P0 preserves touch, safe-area, focus and reduced-motion contracts', async () => {
   const css = await read('src/mvp/ugo-uiux-p0.css')
-  assert.match(css, /min-height:48px/)
+  assert.match(css, /min-height:var\(--ugo-touch-target\)/)
   assert.match(css, /:focus-visible/)
   assert.match(css, /env\(safe-area-inset-bottom\)/)
   assert.match(css, /100dvh/)
   assert.match(css, /prefers-reduced-motion:reduce/)
   assert.match(css, /\.ugo-guided-primary\{[\s\S]*position:sticky/)
   assert.match(css, /\.ugo-provider-structural-cta\{[\s\S]*min-height:58px/)
+  assert.match(css, /var\(--ugo-color-primary\)/)
+  assert.match(css, /var\(--ugo-shadow-card\)/)
 })
