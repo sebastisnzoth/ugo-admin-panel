@@ -4,7 +4,28 @@ import{useProviderData,money}from'./providerData'
 
 export function ProviderHome(){
  const flow=useProviderFlow(),d=useProviderData()
- const activeText=d.cashSelected?'El cliente eligió efectivo. UGO registra el cobro por detrás.':d.funded?'El pago está listo. Andá, resolvé y marcá listo.':'Esperá a que el cliente confirme la forma de pago.'
- const next=d.service?{title:'Tenés un trabajo para resolver',text:activeText,action:flow.actions.openActiveJob,label:'Resolver trabajo'}:d.opportunities.length?{title:`Tenés ${d.opportunities.length} pedido${d.opportunities.length===1?'':'s'} para revisar`,text:'Mirá el problema y decidí si lo podés resolver.',action:flow.actions.openOpportunities,label:'Ver problemas'}:{title:d.online?'Estás disponible para recibir trabajos':'Estás fuera del radar',text:d.online?'UGO te avisa cuando aparece un problema compatible con vos.':'Activá tu disponibilidad para recibir pedidos.',action:d.toggleOnline,label:d.online?'Actualizar':'Ponerme Online'}
- return <section className="provider-screen provider-home" aria-labelledby="provider-home-title"><header className="provider-top"><div><span className="provider-kicker">UGO PRO · HOY</span><h1 id="provider-home-title">Hola, {d.name}</h1><p>⭐ {d.karma.toFixed(1)}</p></div><button style={{minHeight:48}} className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy} aria-pressed={d.online}>● {d.online?'Online':'Offline'}</button></header><article className="provider-hero"><span>Ahora</span><h2>{next.title}</h2><p>{next.text}</p><button className="provider-primary provider-wide" onClick={next.action} disabled={d.busy}>{next.label}</button></article><div className="provider-grid provider-home-grid"><button className="provider-card" onClick={flow.actions.openOpportunities}><small>PEDIDOS PARA VOS</small><strong>{d.opportunities.length} pedidos</strong><span>Ver problemas →</span></button><button className="provider-card" onClick={flow.actions.openAgenda}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver agenda →</span></button><button className="provider-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>{money(d.retained)}</strong><span>{money(d.released)} liberado/registrado →</span></button></div></section>
+ const next=d.service
+  ?{eyebrow:'TRABAJO ACTIVO',title:'Tenés un trabajo en marcha',text:d.cashSelected?'El cliente eligió efectivo. Seguí el trabajo y marcá cada paso.':d.funded?'El pago está confirmado. Andá, resolvé y marcá listo.':'Esperá la confirmación de pago antes de salir.',action:flow.actions.openActiveJob,label:'Continuar trabajo'}
+  :d.opportunities.length
+   ?{eyebrow:'NUEVOS PEDIDOS',title:`Tenés ${d.opportunities.length} pedido${d.opportunities.length===1?'':'s'} para vos`,text:'Mirá qué hay que resolver, dónde y cuándo. Aceptá sólo lo que realmente podés hacer.',action:flow.actions.openOpportunities,label:'Ver pedidos'}
+   :d.online
+    ?{eyebrow:'LISTO PARA TRABAJAR',title:'Estás en el radar de UGO',text:'No tenés pedidos compatibles ahora. Podés dejar la app abierta: UGO te avisa cuando llegue uno.',action:()=>void d.reload(),label:'Actualizar ahora'}
+    :{eyebrow:'FUERA DEL RADAR',title:'Ponete Online para recibir trabajos',text:'Cuando estés disponible, activá tu estado y UGO empezará a buscar pedidos compatibles.',action:d.toggleOnline,label:'Ponerme Online'}
+ return <section className="provider-screen provider-home" aria-labelledby="provider-home-title">
+  <header className="provider-top">
+   <div><span className="provider-kicker">UGO PRO</span><h1 id="provider-home-title">Hola, {d.name}</h1><p>⭐ {d.karma.toFixed(1)} · {d.provider.ciudad_base||'Tu zona'}</p></div>
+   <button className={`provider-status ${d.online?'is-online':'is-offline'}`} type="button" onClick={d.toggleOnline} disabled={d.busy} aria-pressed={d.online}>● {d.online?'Online':'Offline'}</button>
+  </header>
+  <article className="provider-hero provider-focus-card">
+   <span>{next.eyebrow}</span>
+   <h2>{next.title}</h2>
+   <p>{next.text}</p>
+   <button className="provider-primary provider-main-action" onClick={next.action} disabled={d.busy}>{d.busy?'Procesando…':next.label}</button>
+  </article>
+  <div className="provider-quick-grid">
+   <button className="provider-card provider-quick-card" onClick={flow.actions.openAgenda}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver horarios →</span></button>
+   <button className="provider-card provider-quick-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>{money(d.retained)}</strong><span>{money(d.released)} liberado/registrado →</span></button>
+  </div>
+  {d.online&&<button className="provider-quiet-link" type="button" onClick={flow.actions.openDemand}>Ver radar de demanda</button>}
+ </section>
 }
