@@ -12,6 +12,9 @@ export type ProviderOpportunity = {
   distanceKm: number
   estimatedValue: number
   requestedAt: string
+  scheduledAt?: string | null
+  durationMinutes?: number | null
+  preferences?: string | null
   urgency: 'normal' | 'urgent'
   matchScore?: number
 }
