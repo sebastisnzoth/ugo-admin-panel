@@ -1,0 +1,54 @@
+name: Deploy UGO to Netlify
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/netlify-deploy-now.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NETLIFY_SITE_ID: 4632bcb3-b387-42aa-8a02-069300afd951
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Netlify credentials are configured
+        shell: bash
+        run: |
+          test -n "$NETLIFY_AUTH_TOKEN" || { echo 'NETLIFY_AUTH_TOKEN secret is missing'; exit 1; }
+
+      - name: Install dependencies
+        run: npm ci --include=dev
+
+      - name: Build UGO
+        run: npm run build
+
+      - name: Deploy production to Netlify
+        run: npx --yes netlify-cli@latest deploy --prod --dir=dist --functions=netlify/functions --site "$NETLIFY_SITE_ID" --auth "$NETLIFY_AUTH_TOKEN" --message "UGO main $GITHUB_SHA"
+
+      - name: Verify deployed site
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='https://ugo-admin-panel-netlify.netlify.app'
+          for path in '/?app=client' '/?app=provider' '/api/test?health=1'; do
+            code="$(curl -sS -L -o /tmp/ugo-check -w '%{http_code}' "$base$path")"
+            echo "$path -> $code"
+            test "$code" != '404'
+            test "$code" != '500'
+          done
