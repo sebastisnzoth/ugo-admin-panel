@@ -29,7 +29,8 @@ test('home makes Hugo the primary conversational entrypoint while Activity stays
 test('quantum Hugo stage renders real service context and contextual actions', () => {
   assert.match(voice, /ugo-hugo-stage-card/)
   assert.match(voice, /service\.categoria\?\.nombre/)
-  assert.match(voice, /service\.proveedor\?\.nombre/)
+  assert.match(voice, /service\?\.proveedor\?\.nombre/)
+  assert.match(voice, /voice\.sendText\(value\)/)
   assert.match(voice, /Ver Actividad/)
   assert.match(voice, /Cancelar pedido/)
   assert.match(voice, /Revisar trabajo/)
