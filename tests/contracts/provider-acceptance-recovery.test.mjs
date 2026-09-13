@@ -4,18 +4,18 @@ import fs from'node:fs'
 
 const source=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts',import.meta.url),'utf8')
 
-test('provider acceptance reconciles persisted assignment after ambiguous rpc failure',()=>{
- assert.match(source,/hasPersistedActiveAssignment/)
- assert.match(source,/if\(error\)[\s\S]*hasPersistedActiveAssignment\(supabase\)[\s\S]*throw error/)
+test('provider acceptance reconciles the exact persisted opportunity after ambiguous rpc failure',()=>{
+ assert.match(source,/hasPersistedAcceptedOpportunity/)
+ assert.match(source,/if\(error\)[\s\S]*hasPersistedAcceptedOpportunity\(supabase,id\)[\s\S]*throw error/)
 })
 
-test('provider acceptance retry treats persisted assignment as source of truth',()=>{
- assert.match(source,/if\(!data\)[\s\S]*hasPersistedActiveAssignment\(supabase\)[\s\S]*oportunidad ya no está disponible/)
+test('provider acceptance retry treats the exact accepted offer as source of truth',()=>{
+ assert.match(source,/if\(!data\)[\s\S]*hasPersistedAcceptedOpportunity\(supabase,id\)[\s\S]*oportunidad ya no está disponible/)
 })
 
-test('acceptance recovery does not depend on stale offer visibility',()=>{
- assert.doesNotMatch(source,/from\('ofertas_servicio'\)\.select\('servicio_id'\)/)
- assert.match(source,/auth\.getUser\(\)/)
- assert.match(source,/eq\('proveedor_id',userId\)/)
- assert.match(source,/in\('estado',PROVIDER_ACTIVE_STATES\)/)
+test('acceptance recovery cannot confuse another active assignment with the requested offer',()=>{
+ assert.match(source,/from\('ofertas_servicio'\)[\s\S]*eq\('id',opportunityId\)[\s\S]*eq\('proveedor_id',userId\)/)
+ assert.match(source,/persistedOffer\.estado!=='aceptada'/)
+ assert.match(source,/from\('servicios'\)[\s\S]*eq\('id',persistedOffer\.servicio_id\)[\s\S]*eq\('proveedor_id',userId\)/)
+ assert.doesNotMatch(source,/hasPersistedActiveAssignment/)
 })
