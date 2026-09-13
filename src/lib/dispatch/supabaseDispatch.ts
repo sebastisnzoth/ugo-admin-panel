@@ -116,11 +116,24 @@ export class SupabaseDispatchProvider implements DispatchProvider {
   }
 
   async cancel(serviceId: string): Promise<void> {
-    const { error } = await (supabase as any)
-      .from('servicios')
-      .update({ estado: 'cancelado' })
-      .eq('id', serviceId)
-    if (error) throw error
+    try {
+      const { error } = await bounded<RpcResponse>(
+        (supabase as any).rpc('cancelar_servicio', { p_servicio_id: serviceId }),
+        STATUS_TIMEOUT_MS,
+        'La cancelación tardó demasiado. Estamos verificando el estado real del pedido.',
+      )
+      if (error) throw error
+    } catch (error) {
+      // The RPC can commit successfully and the response still be lost. Re-read
+      // the persisted state before showing the user a false cancellation error.
+      try {
+        const persisted = await this.getStatus(serviceId)
+        if (persisted.state === 'cancelled') return
+      } catch {
+        // Keep the original cancellation error below.
+      }
+      throw error
+    }
   }
 
   async getStatus(serviceId: string): Promise<DispatchResult> {
