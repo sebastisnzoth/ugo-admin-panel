@@ -6,8 +6,8 @@ import { createClient } from '@supabase/supabase-js';
 const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
 const SB_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
 const sb = createClient(SB_URL, SB_KEY);
-const OFFICIAL_URL = process.env.SUPABASE_URL || 'https://trfsjuseqjxlhrxuvdsm.supabase.co';
-const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || '';
+const OFFICIAL_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co';
+const SERVICE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_KEY || '';
 const BACKEND_TOKEN = process.env.UGO_BACKEND_TOKEN || '';
 
 async function getConfig(keys) {
@@ -29,7 +29,7 @@ function bearer(req) {
 }
 
 async function adminCreateUser(req, res) {
-  if (!SERVICE_KEY) return res.status(503).json({ error: 'SUPABASE_SERVICE_KEY no configurada.' });
+  if (!SERVICE_KEY) return res.status(503).json({ error: 'UGO TEST service key no configurada.' });
   const token = bearer(req);
   if (!token) return res.status(401).json({ error: 'Sesión Admin requerida.' });
   const admin = createClient(OFFICIAL_URL, SERVICE_KEY, { auth: { persistSession: false, autoRefreshToken: false } });
