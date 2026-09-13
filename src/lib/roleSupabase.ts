@@ -14,7 +14,7 @@ export function getRoleSupabase(role: UgoRole): SupabaseClient {
       storageKey: `ugo-test-${role}-auth`,
       autoRefreshToken: true,
       persistSession: true,
-      detectSessionInUrl: false,
+      detectSessionInUrl: true,
     },
     realtime: { params: { eventsPerSecond: 10 } },
   })
