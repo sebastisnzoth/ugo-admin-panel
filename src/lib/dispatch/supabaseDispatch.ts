@@ -5,6 +5,18 @@ import type { Coordinates, DispatchProvider, DispatchRequest, DispatchResult } f
 // Using the legacy/global client here leaves matching RPCs without the client's JWT,
 // so the service is created but no offer reaches the provider.
 const supabase = getRoleSupabase('client')
+const MATCHING_TIMEOUT_MS = 12000
+const STATUS_TIMEOUT_MS = 5000
+
+function timeoutAfter<T>(ms: number, label: string): Promise<T> {
+  return new Promise((_, reject) => {
+    window.setTimeout(() => reject(new Error(label)), ms)
+  })
+}
+
+async function bounded<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([promise, timeoutAfter<T>(ms, label)])
+}
 
 function storedPickup(): Coordinates | null {
   try {
@@ -24,12 +36,20 @@ function storedPickup(): Coordinates | null {
 
 async function persistPickup(serviceId: string, pickup: Coordinates | null) {
   if (!pickup) return
-  const { error } = await (supabase as any).rpc('guardar_ubicacion_servicio_cliente', {
-    p_servicio_id: serviceId,
-    p_lat: pickup.latitude,
-    p_lng: pickup.longitude,
-  })
-  if (error) console.warn('No se pudo persistir ubicación del servicio', error)
+  try {
+    const { error } = await bounded(
+      (supabase as any).rpc('guardar_ubicacion_servicio_cliente', {
+        p_servicio_id: serviceId,
+        p_lat: pickup.latitude,
+        p_lng: pickup.longitude,
+      }),
+      STATUS_TIMEOUT_MS,
+      'La ubicación tardó demasiado en guardarse.',
+    )
+    if (error) console.warn('No se pudo persistir ubicación del servicio', error)
+  } catch (error) {
+    console.warn('No se pudo persistir ubicación del servicio', error)
+  }
 }
 
 export class SupabaseDispatchProvider implements DispatchProvider {
@@ -38,8 +58,21 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     // Re-read persisted state before surfacing an error so a retry never creates a
     // second source of truth or leaves Cliente believing matching failed when it did not.
     try {
-      const persisted = await this.getStatus(serviceId)
+      const persisted = await bounded(
+        this.getStatus(serviceId),
+        STATUS_TIMEOUT_MS,
+        'La verificación del pedido tardó demasiado.',
+      )
       if (persisted.state === 'offering' || persisted.state === 'matched') return persisted
+      if (persisted.state === 'pending') {
+        return {
+          ...persisted,
+          raw: {
+            ...(typeof persisted.raw === 'object' && persisted.raw ? persisted.raw as Record<string, unknown> : {}),
+            matching_warning: originalError instanceof Error ? originalError.message : String(originalError),
+          },
+        }
+      }
     } catch {
       // Preserve the original matching error; status recovery is best-effort only.
     }
@@ -50,31 +83,47 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     await persistPickup(request.serviceId, request.pickup || storedPickup())
 
     if (request.preferredProviderId) {
-      const { data, error } = await (supabase as any).rpc('iniciar_matching_dirigido', {
-        p_servicio_id: request.serviceId,
-        p_proveedor_id: request.preferredProviderId,
-      })
-      if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
-      const first = Array.isArray(data) ? data[0] : data
-      return {
-        serviceId: request.serviceId,
-        state: first?.proveedor_id ? 'offering' : 'failed',
-        providerId: first?.proveedor_id ?? null,
-        raw: data,
+      try {
+        const { data, error } = await bounded(
+          (supabase as any).rpc('iniciar_matching_dirigido', {
+            p_servicio_id: request.serviceId,
+            p_proveedor_id: request.preferredProviderId,
+          }),
+          MATCHING_TIMEOUT_MS,
+          'La búsqueda de profesionales tardó demasiado. Tu solicitud quedó guardada y podés seguir desde Inicio.',
+        )
+        if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
+        const first = Array.isArray(data) ? data[0] : data
+        return {
+          serviceId: request.serviceId,
+          state: first?.proveedor_id ? 'offering' : 'pending',
+          providerId: first?.proveedor_id ?? null,
+          raw: data,
+        }
+      } catch (error) {
+        return this.recoverAcceptedDispatch(request.serviceId, error)
       }
     }
 
-    const { data, error } = await (supabase as any).rpc('iniciar_matching', {
-      p_servicio_id: request.serviceId,
-    })
-    if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
+    try {
+      const { data, error } = await bounded(
+        (supabase as any).rpc('iniciar_matching', {
+          p_servicio_id: request.serviceId,
+        }),
+        MATCHING_TIMEOUT_MS,
+        'La búsqueda de profesionales tardó demasiado. Tu solicitud quedó guardada y podés seguir desde Inicio.',
+      )
+      if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
 
-    const first = Array.isArray(data) ? data[0] : data
-    return {
-      serviceId: request.serviceId,
-      state: first?.proveedor_id ? 'offering' : 'failed',
-      providerId: first?.proveedor_id ?? null,
-      raw: data,
+      const first = Array.isArray(data) ? data[0] : data
+      return {
+        serviceId: request.serviceId,
+        state: first?.proveedor_id ? 'offering' : 'pending',
+        providerId: first?.proveedor_id ?? null,
+        raw: data,
+      }
+    } catch (error) {
+      return this.recoverAcceptedDispatch(request.serviceId, error)
     }
   }
 
@@ -100,7 +149,6 @@ export class SupabaseDispatchProvider implements DispatchProvider {
       confirmado: 'matched',
       asignado: 'matched',
       cancelado: 'cancelled',
-      sin_proveedor: 'failed',
     }
 
     return {
