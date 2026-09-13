@@ -1,0 +1,156 @@
+/* Desktop conversational composition for canonical UGO Client.
+   Hugo owns the conversation rail; context and map stay visible without turning web into a stretched phone. */
+@media (min-width:900px){
+  .ugo-client-premium-home{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    max-width:none!important;
+    transform:none!important;
+    box-shadow:none!important;
+    grid-template-columns:84px minmax(330px,38vw) minmax(260px,30vw) minmax(0,1fr)!important;
+    grid-template-rows:82px auto auto minmax(180px,1fr)!important;
+    grid-template-areas:
+      "nav header header header"
+      "nav hugo copy map"
+      "nav hugo categories map"
+      "nav hugo sheet map"!important;
+    background:
+      radial-gradient(circle at 23% 38%,rgba(32,242,154,.08),transparent 29%),
+      #07111c!important;
+  }
+  .ugo-client-premium-home>header{
+    grid-area:header!important;
+    z-index:2;
+    padding:18px 28px!important;
+    border-bottom:1px solid #20364a;
+    background:rgba(8,21,34,.94)!important;
+    backdrop-filter:blur(18px);
+  }
+  .ugo-client-premium-home>header strong{font-size:29px!important}
+  .ugo-client-premium-home>header span{font-size:12px!important}
+  .ugo-client-home-copy{
+    grid-area:copy!important;
+    align-self:stretch;
+    padding:28px 24px 18px!important;
+    border-left:1px solid rgba(255,255,255,.04);
+    border-bottom:1px solid rgba(255,255,255,.055);
+    background:linear-gradient(180deg,#0a1927,#081522)!important;
+  }
+  .ugo-client-home-kicker{font-size:10px!important;letter-spacing:.12em;text-transform:uppercase}
+  .ugo-client-home-copy h1{
+    max-width:320px!important;
+    font-size:clamp(29px,2.4vw,38px)!important;
+    line-height:1.02!important;
+  }
+  .ugo-client-home-copy p{max-width:340px!important;font-size:13px!important;line-height:1.55!important;margin:10px 0 18px!important}
+  .ugo-client-home-hugo-actions{grid-template-columns:1fr!important;gap:9px!important}
+  .ugo-client-home-talk,.ugo-client-home-search{min-height:54px!important;border-radius:16px!important}
+  .ugo-client-home-categories{
+    grid-area:categories!important;
+    display:grid!important;
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    align-content:start;
+    gap:9px!important;
+    padding:18px 24px!important;
+    overflow:auto!important;
+    border-left:1px solid rgba(255,255,255,.04);
+    background:#081522!important;
+  }
+  .ugo-client-home-categories button{
+    min-width:0!important;
+    min-height:74px!important;
+    border-radius:16px!important;
+    background:linear-gradient(160deg,#102638,#0c1c2a)!important;
+  }
+  .ugo-client-home-categories button:hover{border-color:rgba(32,242,154,.4);transform:translateY(-1px)}
+  .ugo-client-home-categories span{font-size:22px!important}
+  .ugo-client-home-categories small{font-size:10px!important;white-space:normal!important;text-align:center;line-height:1.2}
+  .ugo-client-home-sheet{
+    grid-area:sheet!important;
+    align-self:stretch!important;
+    display:flex!important;
+    flex-direction:column!important;
+    justify-content:flex-end!important;
+    margin:0!important;
+    padding:22px 24px 26px!important;
+    border:0!important;
+    border-left:1px solid rgba(255,255,255,.04)!important;
+    border-top:1px solid #20364a!important;
+    border-radius:0!important;
+    box-shadow:none!important;
+    background:linear-gradient(180deg,#0c1c2b,#081522)!important;
+  }
+  .ugo-client-home-handle{display:none!important}
+  .ugo-client-home-sheet>strong{font-size:17px!important}
+  .ugo-client-home-sheet p{font-size:12px!important;line-height:1.55!important;margin:8px 0 16px!important}
+  .ugo-client-home-sheet button{min-height:54px!important;border-radius:15px!important}
+  .ugo-client-home-map{
+    grid-area:map!important;
+    min-width:0;
+    min-height:0!important;
+    height:100%!important;
+    border-left:1px solid #20364a;
+    box-shadow:inset 18px 0 38px rgba(0,0,0,.12);
+  }
+  .ugo-client-home-map-label{left:20px!important;top:20px!important;padding:11px 14px!important}
+  .ugo-client-premium-home>nav{
+    grid-area:nav!important;
+    z-index:3;
+    min-height:0!important;
+    padding:14px 8px!important;
+    grid-template-columns:1fr!important;
+    grid-template-rows:repeat(3,minmax(74px,1fr))!important;
+    align-content:center;
+    border:0!important;
+    border-right:1px solid #20364a!important;
+    background:#050d15!important;
+  }
+  .ugo-client-premium-home>nav button{min-height:74px!important;border-radius:16px!important;font-size:22px!important}
+  .ugo-client-premium-home>nav button span{font-size:10px!important}
+  .ugo-client-premium-home>nav button.active{background:rgba(32,242,154,.08)!important}
+
+  .ugo-client-root .prototype-hugo{
+    top:104px!important;
+    bottom:24px!important;
+    left:104px!important;
+    width:clamp(300px,34vw,410px)!important;
+    max-width:calc(38vw - 34px)!important;
+    transform:none!important;
+    align-items:stretch!important;
+    justify-content:flex-end;
+  }
+  .ugo-client-root .ugo-hugo-stage-card{
+    width:100%!important;
+    max-height:calc(100dvh - 310px)!important;
+    overflow:auto!important;
+    margin:0 0 18px!important;
+    padding:20px!important;
+    border-radius:28px!important;
+    border-color:rgba(80,131,158,.42)!important;
+    background:linear-gradient(180deg,rgba(11,31,46,.98),rgba(5,16,25,.98))!important;
+    box-shadow:0 30px 80px rgba(0,0,0,.38),0 0 0 1px rgba(32,242,154,.035) inset!important;
+  }
+  .ugo-client-root .ugo-hugo-stage-head strong{font-size:16px!important;line-height:1.4!important}
+  .ugo-client-root .ugo-hugo-context-card{padding:14px!important;border-radius:18px!important}
+  .ugo-client-root .ugo-hugo-user-line,.ugo-client-root .ugo-hugo-assistant-line{padding:10px 12px!important;font-size:12px!important}
+  .ugo-client-root .ugo-hugo-stage-composer{margin-top:14px!important;padding:7px!important;border-radius:17px!important}
+  .ugo-client-root .ugo-hugo-stage-composer input{min-height:46px!important;font-size:13px!important}
+  .ugo-client-root .ugo-hugo-stage-composer button{min-width:82px!important;border-radius:12px!important}
+  .ugo-client-root .ugo-hugo-stage-actions button{min-height:42px!important}
+  .ugo-client-root .prototype-hugo .ugo-real-orb{align-self:center;width:112px!important;height:112px!important}
+  .ugo-client-root .prototype-hugo .ugo-orb-icon{font-size:36px!important}
+  .ugo-client-root .prototype-hugo .ugo-real-state{align-self:center;margin-top:12px!important}
+}
+
+@media (min-width:1200px){
+  .ugo-client-premium-home{grid-template-columns:92px 420px 330px minmax(0,1fr)!important}
+  .ugo-client-root .prototype-hugo{left:116px!important;width:380px!important;max-width:380px!important}
+  .ugo-client-home-copy,.ugo-client-home-categories,.ugo-client-home-sheet{padding-left:28px!important;padding-right:28px!important}
+}
+
+@media (min-width:1440px){
+  .ugo-client-premium-home{grid-template-columns:96px 470px 360px minmax(0,1fr)!important}
+  .ugo-client-root .prototype-hugo{left:126px!important;width:410px!important;max-width:410px!important}
+  .ugo-client-home-copy h1{font-size:40px!important}
+}
