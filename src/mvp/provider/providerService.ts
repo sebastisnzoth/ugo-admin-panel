@@ -5,6 +5,9 @@ export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zon
 export type ProviderPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null;metodo?:string|null;procesador?:string|null;pago_externo_id?:string|null;fecha_confirmacion?:string|null}
 export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];service:Service|null;payments:ProviderPayment[]}
 
+type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
+type PersistedService={id:string;estado:string;proveedor_id:string|null}
+
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
   supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
@@ -18,9 +21,19 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
 
-async function hasPersistedActiveAssignment(supabase:SupabaseClient){const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)return false;const{data:service}=await supabase.from('servicios').select('id,estado').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle();return Boolean(service&&PROVIDER_ACTIVE_STATES.includes(String((service as{estado?:string}).estado||'')))}
+async function hasPersistedAcceptedOpportunity(supabase:SupabaseClient,opportunityId:string){
+ const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)return false
+ const{data:offer,error:offerError}=await supabase.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado').eq('id',opportunityId).eq('proveedor_id',userId).maybeSingle()
+ if(offerError||!offer)return false
+ const persistedOffer=offer as PersistedOffer
+ if(persistedOffer.estado!=='aceptada'||!persistedOffer.servicio_id)return false
+ const{data:service,error:serviceError}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',persistedOffer.servicio_id).eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).maybeSingle()
+ if(serviceError||!service)return false
+ const persistedService=service as PersistedService
+ return persistedService.id===persistedOffer.servicio_id&&persistedService.proveedor_id===userId&&PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+}
 
-export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error){if(await hasPersistedActiveAssignment(supabase))return;throw error}if(!data){if(await hasPersistedActiveAssignment(supabase))return;throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}}
+export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error){if(await hasPersistedAcceptedOpportunity(supabase,id))return;throw error}if(!data){if(await hasPersistedAcceptedOpportunity(supabase,id))return;throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}}
 export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error)throw error}
 
 function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
