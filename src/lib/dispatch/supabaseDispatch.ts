@@ -56,25 +56,12 @@ async function persistPickup(serviceId: string, pickup: Coordinates | null) {
 
 export class SupabaseDispatchProvider implements DispatchProvider {
   private async recoverAcceptedDispatch(serviceId: string, originalError: unknown): Promise<DispatchResult> {
-    // An RPC response can be lost after the DB already committed the offer/assignment.
-    // Re-read persisted state before surfacing an error so a retry never creates a
-    // second source of truth or leaves Cliente believing matching failed when it did not.
+    // A response can be lost after the DB committed an offer/assignment. Only a
+    // persisted offered/matched state counts as success; "buscando" remains a
+    // retryable matching failure rather than a false positive.
     try {
-      const persisted = await bounded(
-        this.getStatus(serviceId),
-        STATUS_TIMEOUT_MS,
-        'La verificación del pedido tardó demasiado.',
-      )
+      const persisted = await this.getStatus(serviceId)
       if (persisted.state === 'offering' || persisted.state === 'matched') return persisted
-      if (persisted.state === 'pending') {
-        return {
-          ...persisted,
-          raw: {
-            ...(typeof persisted.raw === 'object' && persisted.raw ? persisted.raw as Record<string, unknown> : {}),
-            matching_warning: originalError instanceof Error ? originalError.message : String(originalError),
-          },
-        }
-      }
     } catch {
       // Preserve the original matching error; status recovery is best-effort only.
     }
@@ -94,7 +81,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
           MATCHING_TIMEOUT_MS,
           'La búsqueda de profesionales tardó demasiado. Tu solicitud quedó guardada y podés seguir desde Inicio.',
         )
-        if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
+        if (error) throw error
         const first = Array.isArray(data) ? data[0] : data
         return {
           serviceId: request.serviceId,
@@ -115,8 +102,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
         MATCHING_TIMEOUT_MS,
         'La búsqueda de profesionales tardó demasiado. Tu solicitud quedó guardada y podés seguir desde Inicio.',
       )
-      if (error) return this.recoverAcceptedDispatch(request.serviceId, error)
-
+      if (error) throw error
       const first = Array.isArray(data) ? data[0] : data
       return {
         serviceId: request.serviceId,
@@ -138,11 +124,15 @@ export class SupabaseDispatchProvider implements DispatchProvider {
   }
 
   async getStatus(serviceId: string): Promise<DispatchResult> {
-    const { data, error } = await (supabase as any)
-      .from('servicios')
-      .select('id,estado,proveedor_id')
-      .eq('id', serviceId)
-      .single()
+    const { data, error } = await bounded<any>(
+      (supabase as any)
+        .from('servicios')
+        .select('id,estado,proveedor_id')
+        .eq('id', serviceId)
+        .single(),
+      STATUS_TIMEOUT_MS,
+      'La verificación del pedido tardó demasiado.',
+    )
     if (error) throw error
 
     const stateMap: Record<string, DispatchResult['state']> = {
