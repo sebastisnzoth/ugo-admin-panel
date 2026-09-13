@@ -1,133 +1,111 @@
 # UGO — Agent Handoff
 
-**Estado:** operativo  
+**Estado:** operativo en UGO TEST  
 **Rama:** `main`  
 **Uso:** buzón compartido entre ChatGPT, Codex y otros agentes  
 **Regla:** verificar contra `main` antes de confiar en este archivo.
 
 ## CURRENT P0
 
-Cerrar la primera validación real Cliente ↔ Proveedor ↔ Backend en un entorno Supabase aislado, sin usar producción como banco de pruebas destructivo.
+Cerrar la primera validación real Cliente ↔ Proveedor ↔ Admin sobre UGO TEST, sin tocar producción.
 
-### Criterio de cierre
+UGO TEST designado:
 
 ```text
-Cliente crea solicitud
-→ matching
-→ Proveedor acepta
-→ forma de pago válida
-→ en_camino
-→ llegado
-→ evidencia Antes
-→ en_progreso
-→ ampliación opcional
-→ evidencia Después
-→ esperando_aprobacion
-→ Cliente aprueba o disputa
-→ cierre financiero
+Supabase: tmossnqfwfwjrtzwcbmm
+Web: https://ugo-admin-panel.vercel.app
+Cliente: /?app=client
+Proveedor: /?app=provider
+Admin: /?app=admin
 ```
 
-Debe demostrarse además: mismo `serviceId`; aceptación única; ownership/RLS; doble asignación impedida; retries idempotentes; doble cierre denegado; refund consistente; convergencia Realtime tras reconexión.
+Producción `trfsjuseqjxlhrxuvdsm` está fuera de alcance hasta promoción explícita.
 
-## LAST COMPLETED
+## ESTADO ACTUAL
 
-12/09/2026 · auditoría guiada por maestros del journey Cliente → matching → Proveedor → pago → ejecución → evidencia → aprobación.
+12/09/2026:
 
-Se cerraron dead ends recuperables sin cambiar contratos de negocio:
-
-1. Matching Cliente reconcilia estado persistido cuando el RPC pudo confirmar pero la respuesta se perdió.
-2. Aceptación Proveedor reconcilia asignación persistida ante error ambiguo o retry.
-3. Elección de pago Cliente rehidrata al reconectar, volver online o recuperar visibilidad y relee persistencia antes de mostrar un fallo ambiguo.
-4. Acciones Proveedor y confirmación de efectivo releen snapshot persistido después de errores.
-5. Evidencia Proveedor rehidrata readiness tras reconexión y relee filas después de upload ambiguo.
-6. Aprobación final Cliente rehidrata servicios/pagos al reconectar y reconcilia persistencia antes de reportar error.
-7. Un error temporal al cargar revisión final ya no borra el cierre activo conocido.
-
-Todo lo anterior está publicado directamente en `origin/main`. Los nuevos contract tests están versionados, pero este bloque hecho vía GitHub connector no debe declararse VALIDATED hasta ejecutar los gates reales.
+- `main` apunta Cliente, Proveedor y Admin al mismo UGO TEST.
+- UGO TEST está ACTIVE_HEALTHY.
+- DB auditada: 1 Cliente, 1 Proveedor, 1 Admin; 0 servicios/pagos/evidencias/disputas transaccionales activos.
+- RPCs críticos del lifecycle existen en TEST: matching, aceptación, pago efectivo, avance, ampliación, cierre y disputa.
+- Vercel desplegó correctamente `main` y el alias público sirve el build de TEST.
+- UI muestra insignia visible `UGO TEST` para evitar confundir el entorno con producción.
+- `.env.example` dejó de apuntar a producción.
+- `docs/UGO_TEST_RUNBOOK.md` documenta la prueba desde dos celulares + Admin.
+- CI principal de `2cf7ab3` fue verde antes de los ajustes finales de runbook/gates; volver a verificar el último `main`.
 
 ## IMPLEMENTED
 
-Además del baseline P0 previo:
+Baseline P0 Cliente ↔ Proveedor:
 
-- recovery de matching Cliente;
-- recovery de aceptación Proveedor;
-- recovery/reconnect de ClientPaymentChoice;
-- recovery de ProviderEvidencePanel;
-- reconciliación de acciones ProviderData;
-- recovery/reconnect de ClientCompletionReview;
-- contract tests para matching, aceptación, pago, evidencia, acciones proveedor y cierre cliente.
+- matching con recovery persistido;
+- aceptación con reconciliación de asignación;
+- pago con recovery/reconnect;
+- geolocalización antes de `llegado` y guard backend 200 m;
+- evidencia Antes/Después con recovery de Storage/DB;
+- lifecycle Proveedor con reconciliación de transiciones;
+- cierre Cliente con reconciliación persistida;
+- disputas con recovery;
+- Admin web conectado al mismo Supabase TEST.
 
-Baseline conservado: harness aislado RPC/RLS, refund atómico de ampliaciones, Realtime recovery general, request evidence opcional y ownership de push.
+Entorno TEST:
+
+- target Supabase centralizado;
+- producción rechazada por el gate aislado;
+- URL y publishable key públicas fijas en CI, no tratadas como secretos;
+- gate aislado ampliado a Cliente ↔ Proveedor ↔ Admin;
+- seis GitHub Secrets humanos esperados: email/password de los tres roles.
 
 ## VALIDATED
 
-Última evidencia ejecutada anterior a este bloque:
+Evidencia confirmada:
 
-- `npm test`: 43 casos, 42 pasan, 0 fallos, 1 omitido por falta de entorno RPC/RLS aislado.
-- `npm run build`: verde en el bloque anterior.
-- lint crítico: verde en el bloque anterior; lint general mantiene deuda preexistente.
+- UGO Core CI run `34727990818` sobre `2cf7ab3`: success.
+- Vercel deployment de `2cf7ab3`: READY.
+- Supabase TEST: esquema y RPCs críticos presentes.
 
-**Pendiente de validación exacta:** commits de recovery/retry publicados después de esa ejecución. No confundir contract tests versionados con tests ejecutados.
+Pendiente de declarar VALIDATED:
 
-No declarar todavía como validado: E2E RPC/RLS aislado, refund contra DB aislada, Realtime E2E real, Storage/upload E2E ni los últimos commits de recovery.
-
-## RELEASED
-
-Los cambios recientes están publicados en GitHub `origin/main`. Publicado ≠ RELEASED. No hay evidencia nueva de deploy/smoke para este bloque.
+- último `main` posterior a los cambios de gate/runbook/badge;
+- E2E RPC/RLS con login real de Cliente/Proveedor/Admin;
+- prueba manual real en dos dispositivos + Admin;
+- Storage/cámara/GPS en dispositivo real.
 
 ## BLOCKED
 
-### B1 · Entorno Supabase aislado
+### B1 · Credenciales humanas TEST
 
-Faltan seis repository secrets apuntando a un Supabase aislado con esquema UGO vigente y usuarios Cliente/Proveedor distintos:
+La base ya contiene una identidad de cada rol, pero el conector disponible no permite leer ni resetear contraseñas de Supabase Auth. Tampoco permite administrar GitHub Secrets.
+
+Para ejecutar el gate aislado se requieren exactamente:
 
 ```text
-UGO_TEST_SUPABASE_URL
-UGO_TEST_SUPABASE_ANON_KEY
 UGO_TEST_CLIENT_EMAIL
 UGO_TEST_CLIENT_PASSWORD
 UGO_TEST_PROVIDER_EMAIL
 UGO_TEST_PROVIDER_PASSWORD
+UGO_TEST_ADMIN_EMAIL
+UGO_TEST_ADMIN_PASSWORD
 ```
 
-Sin ese entorno no puede demostrarse RPC/RLS/concurrencia/Realtime real sin arriesgar producción. No usar producción `trfsjuseqjxlhrxuvdsm`, no usar UGO Arena `tmossnqfwfwjrtzwcbmm`, no crear infraestructura paga sin aprobación.
+No guardar esos valores en GitHub, código, commits ni documentos públicos.
 
-### B2 · Release
+### B2 · Seguridad auxiliar antes de producción
 
-Los commits recientes pueden estar IMPLEMENTED/PUBLISHED sin RELEASED. Verificar Vercel sólo cuando corresponda y evitar redeploys innecesarios por rate limit.
+Supabase reportó RLS deshabilitado en 13 tablas auxiliares: `audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos`, `whatsapp_notificaciones`.
 
-### B3 · Lint general
-
-Existe deuda general preexistente; no usarla para ocultar regresiones nuevas. Ejecutar gates focales + build/test y distinguir deuda previa de fallos del bloque.
+No habilitar RLS a ciegas: definir primero políticas coherentes; activar sin políticas puede romper funciones. Este gap no autoriza cambios en producción.
 
 ## NEXT
 
-Mientras B1 siga activo:
-
-1. seguir auditando dead ends de `en_camino → llegado → en_progreso → esperando_aprobacion → completado/disputa`;
-2. revisar recuperación de DisputeDock y cierre alternativo sin borrar estado ante fallos de red;
-3. revisar geolocalización de llegada y Storage/evidencia para retries seguros;
-4. ejecutar gates reales en cuanto haya un runner/local disponible;
-5. preparar el E2E reproducible para B1.
-
-Mantener siempre UX canónica: **estado → contexto → próxima acción** y persistencia como única fuente de verdad.
-
-## COMMITS RECIENTES
-
-```text
-128bf0e  fix(p0): recover matching after ambiguous dispatch errors
-74d60c0  test(p0): guard persisted matching recovery
-6cf7865  fix(p0): recover provider acceptance after ambiguous rpc errors
-561e581  test(p0): guard provider acceptance reconciliation
-0d1e793  fix(p0): recover client payment choice after reconnect
-a087ea7  test(p0): guard payment reconnect recovery
-623addb  fix(p0): recover provider evidence after reconnect
-17eac80  test(p0): guard provider evidence recovery
-229cc8c  fix(p0): reconcile provider actions after ambiguous failures
-b4285aa  test(p0): guard provider action reconciliation
-f9bb2d5  fix(p0): recover client completion review after reconnect
-99d96bc  test(p0): guard client completion recovery
-```
+1. verificar CI y Vercel del último `main`;
+2. en cuanto existan/estén conocidas las seis credenciales TEST, cargarlas como GitHub Secrets;
+3. ejecutar `UGO Isolated RPC RLS` hasta verde;
+4. realizar prueba manual Cliente/Proveedor/Admin según `docs/UGO_TEST_RUNBOOK.md`;
+5. generar PDF privado de accesos y guía de prueba sin secretos de infraestructura;
+6. auditar y diseñar políticas RLS de las 13 tablas auxiliares antes de promoción;
+7. sólo después evaluar promoción a producción.
 
 ## HANDOFF CONTRACT
 
