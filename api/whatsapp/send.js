@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL=process.env.SUPABASE_URL||'https://trfsjuseqjxlhrxuvdsm.supabase.co';
+const SUPABASE_URL=process.env.SUPABASE_URL||'https://tmossnqfwfwjrtzwcbmm.supabase.co';
 const SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY||'';
 const WA_TOKEN=process.env.WHATSAPP_ACCESS_TOKEN||process.env.META_WHATSAPP_ACCESS_TOKEN||'';
 const WA_PHONE_ID=process.env.WHATSAPP_PHONE_NUMBER_ID||process.env.META_WHATSAPP_PHONE_NUMBER_ID||'';

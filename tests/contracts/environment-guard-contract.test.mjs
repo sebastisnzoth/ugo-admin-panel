@@ -20,13 +20,20 @@ test('browser SDK is hard-pinned to TEST and production ref is absent',async()=>
  assert.doesNotMatch(project,new RegExp(PROD_REF))
 })
 
-test('environment guard rejects production Supabase configuration',async()=>{
+test('environment guard rejects production Supabase configuration across all runtime code',async()=>{
  const guard=await read('scripts/assert-test-environment.mjs')
  assert.match(guard,new RegExp(TEST_REF))
  assert.match(guard,new RegExp(PROD_REF))
  assert.match(guard,/includes\('SUPABASE'\)/)
  assert.match(guard,/process\.exitCode=1/)
- assert.match(guard,/api\/proxy\.js/)
- assert.match(guard,/api\/operations\.ts/)
+ assert.match(guard,/runtimeFiles\('api'\)/)
+ assert.match(guard,/runtimeFiles\('src'\)/)
+ assert.match(guard,/source\.includes\(PROD_REF\)/)
  assert.match(guard,/vercel\.json/)
+})
+
+test('WhatsApp serverless fallback is TEST-only',async()=>{
+ const source=await read('api/whatsapp/send.js')
+ assert.match(source,new RegExp(TEST_REF))
+ assert.doesNotMatch(source,new RegExp(PROD_REF))
 })
