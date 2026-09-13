@@ -1,7 +1,12 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
+  "env": {
+    "SUPABASE_URL": "https://tmossnqfwfwjrtzwcbmm.supabase.co",
+    "SUPABASE_ANON_KEY": "sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl"
+  },
   "rewrites": [
     {
       "source": "/api/admin/create-user",
@@ -9,11 +14,7 @@
     },
     {
       "source": "/api/hugo/gemini",
-      "destination": "/api/test-safe"
-    },
-    {
-      "source": "/api/test",
-      "destination": "/api/test-safe"
+      "destination": "/api/test"
     },
     {
       "source": "/api/pagos/efectivo",
@@ -32,14 +33,6 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/api/scout/(.*)",
-      "destination": "/api/scout/$1"
-    },
-    {
-      "source": "/api/whatsapp/(.*)",
-      "destination": "/api/whatsapp/$1"
-    },
-    {
       "source": "/provider.html",
       "destination": "/provider.html"
     },
@@ -50,10 +43,6 @@
     {
       "source": "/scout.html",
       "destination": "/scout.html"
-    },
-    {
-      "source": "/api/cascade",
-      "destination": "/api/cascade"
     },
     {
       "source": "/(.*)",
