@@ -63,7 +63,7 @@ jobs:
             > /tmp/netlify-proxy.txt
           test -s /tmp/netlify-proxy.txt
 
-      - name: Deploy UGO TEST to Netlify
+      - name: Deploy latest UGO TEST to Netlify
         env:
           SITE_ID: 4632bcb3-b387-42aa-8a02-069300afd951
         run: |
