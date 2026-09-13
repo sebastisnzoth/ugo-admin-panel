@@ -8,6 +8,8 @@ const supabase = getRoleSupabase('client')
 const MATCHING_TIMEOUT_MS = 12000
 const STATUS_TIMEOUT_MS = 5000
 
+type RpcResponse = { data: any; error: any }
+
 function timeoutAfter<T>(ms: number, label: string): Promise<T> {
   return new Promise((_, reject) => {
     window.setTimeout(() => reject(new Error(label)), ms)
@@ -37,7 +39,7 @@ function storedPickup(): Coordinates | null {
 async function persistPickup(serviceId: string, pickup: Coordinates | null) {
   if (!pickup) return
   try {
-    const { error } = await bounded(
+    const { error } = await bounded<RpcResponse>(
       (supabase as any).rpc('guardar_ubicacion_servicio_cliente', {
         p_servicio_id: serviceId,
         p_lat: pickup.latitude,
@@ -84,7 +86,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
 
     if (request.preferredProviderId) {
       try {
-        const { data, error } = await bounded(
+        const { data, error } = await bounded<RpcResponse>(
           (supabase as any).rpc('iniciar_matching_dirigido', {
             p_servicio_id: request.serviceId,
             p_proveedor_id: request.preferredProviderId,
@@ -106,7 +108,7 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     }
 
     try {
-      const { data, error } = await bounded(
+      const { data, error } = await bounded<RpcResponse>(
         (supabase as any).rpc('iniciar_matching', {
           p_servicio_id: request.serviceId,
         }),
