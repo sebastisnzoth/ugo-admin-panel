@@ -1,0 +1,34 @@
+name: Netlify MCP package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Netlify MCP client
+        run: |
+          mkdir -p /tmp/netlify-mcp-runner
+          cd /tmp/netlify-mcp-runner
+          npm init -y
+          npm install @netlify/mcp@latest
+
+      - name: Package Netlify MCP client
+        uses: actions/upload-artifact@v4
+        with:
+          name: netlify-mcp-runner
+          path: /tmp/netlify-mcp-runner
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
