@@ -11,11 +11,11 @@ test('client payment never hides a failed state load without recovery',async()=>
  assert.match(src,/Conservamos el último estado conocido/)
 })
 
-test('provider active-job empty state has clear exits and consistent arrival copy',async()=>{
+test('provider active-job empty state keeps one simple exit and arrival has automatic plus manual recovery',async()=>{
  const src=await read('src/mvp/provider/ProviderActiveJob.tsx')
- assert.match(src,/Ver oportunidades/)
- assert.match(src,/Explorar demanda/)
- assert.match(src,/Marcar que llegué/)
+ assert.match(src,/Ver pedidos/)
+ assert.match(src,/UGO detecta tu llegada automáticamente/)
+ assert.match(src,/YA LLEGUÉ/)
  assert.doesNotMatch(src,/Confirmar llegada/)
 })
 
