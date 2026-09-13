@@ -36,11 +36,15 @@ jobs:
       - name: Install dependencies
         run: npm ci --include=dev
 
-      - name: Refuse production and UGO Arena Supabase projects
+      - name: Enforce designated UGO TEST project and refuse production
         shell: bash
         run: |
-          if [[ "$UGO_TEST_SUPABASE_URL" == *"trfsjuseqjxlhrxuvdsm"* || "$UGO_TEST_SUPABASE_URL" == *"tmossnqfwfwjrtzwcbmm"* ]]; then
-            echo "Refusing to run isolated integration against production or UGO Arena."
+          if [[ "$UGO_TEST_SUPABASE_URL" == *"trfsjuseqjxlhrxuvdsm"* ]]; then
+            echo "Refusing to run isolated integration against production."
+            exit 1
+          fi
+          if [[ "$UGO_TEST_SUPABASE_URL" != "https://tmossnqfwfwjrtzwcbmm.supabase.co" ]]; then
+            echo "Isolated integration must run only against the designated UGO TEST project."
             exit 1
           fi
 
