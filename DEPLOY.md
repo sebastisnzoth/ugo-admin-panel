@@ -8,6 +8,14 @@
 - Hosting: Vercel
 - Rama de verdad: `main`
 
+## Netlify TEST / validación móvil
+- Sitio: https://ugo-admin-panel-netlify.netlify.app
+- Rama fuente: `main`
+- Build: `npm run build`
+- Publish: `dist`
+- Functions: `netlify/functions`
+- Regla: usar Netlify para validación controlada del flujo Cliente/Proveedor sin generar deploys innecesarios.
+
 ## Presupuesto operativo de Vercel
 UGO opera con un **techo presupuestario interno de 100 deployments por día** para el plan actual. Este número es una regla operativa del proyecto; el Dashboard de Vercel es la autoridad final si el plan, la cuota o las condiciones del proveedor cambian.
 
@@ -26,7 +34,7 @@ La cuota de deploy es un recurso compartido y debe preservarse para release, hot
 10. Registrar bloqueos de deploy que cambien arquitectura, cuota o contrato operativo en los MD maestros y Roadmap.
 
 ## Secuencia de release
-`bloque de trabajo → validación local/CI → push único a main → Vercel build → READY → smoke checks → cierre documental`
+`bloque de trabajo → validación local/CI → push único a main → build del hosting objetivo → READY → smoke checks → cierre documental`
 
 ## Smoke checks mínimos
 - dominio de producción responde;
