@@ -17,8 +17,10 @@ jobs:
     timeout-minutes: 20
     env:
       UGO_REQUIRE_ISOLATED_INTEGRATION: '1'
-      UGO_TEST_SUPABASE_URL: ${{ secrets.UGO_TEST_SUPABASE_URL }}
-      UGO_TEST_SUPABASE_ANON_KEY: ${{ secrets.UGO_TEST_SUPABASE_ANON_KEY }}
+      # UGO TEST is the only allowed remote integration target. URL and
+      # publishable key are browser-public values, not infrastructure secrets.
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
       UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
       UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
       UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
