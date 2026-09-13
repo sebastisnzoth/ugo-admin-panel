@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://trfsjuseqjxlhrxuvdsm.supabase.co'
-const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || 'sb_publishable_bbCcM7ElzH-iGAQw8Qefzg_ZmO0sKH8'
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || ''
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 const GEMINI_MODELS = Array.from(new Set([
   process.env.GEMINI_MODEL,
@@ -109,6 +109,7 @@ export default async function handler(req:any,res:any){
  res.setHeader('Cache-Control','no-store');if(req.method==='OPTIONS')return res.status(200).end();if(req.method==='GET'&&req.query?.code&&req.query?.state)return mercadoPagoOAuth(req,res);if(String(req.query?.mp_oauth||'')==='1')return mercadoPagoOAuth(req,res);if(req.method==='GET'&&String(req.query?.health||'')==='1')return geminiHealth(res);if(req.method==='POST'&&String(req.query?.routing||'')==='1')return routing(req,res);if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
  try{
   const token=bearer(req);if(!token)return res.status(401).json({error:'Sesión requerida'});const geminiKey=process.env.GEMINI_API_KEY?.trim();if(!geminiKey)return res.status(503).json({error:'GEMINI_API_KEY no está configurada en Vercel'})
+  if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})
   const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:authData,error:authError}=await authClient.auth.getUser(token);if(authError||!authData.user)return res.status(401).json({error:'Sesión inválida'})
   const requestedRole=req.body?.role==='provider'?'provider':'client',expectedRole=requestedRole==='provider'?'proveedor':'cliente';const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:profile}=await userClient.from('usuarios').select('tipo').eq('id',authData.user.id).maybeSingle();if(!profile||profile.tipo!==expectedRole)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'})
   const message=String(req.body?.message||'').trim().slice(0,1200);if(!message)return res.status(400).json({error:'Mensaje requerido'});const context=String(req.body?.context||'').slice(0,2400);const history=Array.isArray(req.body?.history)?req.body.history.slice(-10):[];const roleText=requestedRole==='client'?'Cliente que busca contratar un servicio.':'Proveedor que recibe y ejecuta servicios.'
