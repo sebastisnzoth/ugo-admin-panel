@@ -9,7 +9,11 @@
     },
     {
       "source": "/api/hugo/gemini",
-      "destination": "/api/test"
+      "destination": "/api/test-safe"
+    },
+    {
+      "source": "/api/test",
+      "destination": "/api/test-safe"
     },
     {
       "source": "/api/pagos/efectivo",
