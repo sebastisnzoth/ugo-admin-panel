@@ -12,6 +12,7 @@ import{ProviderOpportunities,ProviderOpportunityDetail}from'./ProviderOpportunit
 import{ProviderActiveJob}from'./ProviderActiveJob'
 import{ProviderAgenda}from'./ProviderAgenda'
 import'./provider-flow.css'
+import'./provider-responsive-layout.css'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 
