@@ -1,6 +1,6 @@
 # UGO — Flujo integral del ecosistema
 
-**Versión:** 2.4 · 11 de septiembre de 2026  
+**Versión:** 2.5 · 13 de septiembre de 2026  
 **Estado:** documento maestro funcional  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
@@ -13,7 +13,7 @@
 ```text
 Necesidad
 → Hugo entiende
-→ solicitud guiada + evidencia
+→ solicitud guiada + evidencia cuando aporta valor
 → confirmación del cliente
 → matching
 → oportunidad
@@ -21,10 +21,9 @@ Necesidad
 → asignación
 → método de pago elegido/habilitado
 → proveedor en camino
-→ llegada validada cuando corresponde
-→ evidencia Antes
+→ llegada validada automática/manual cuando corresponde
 → ejecución
-→ evidencia final
+→ evidencia contextual cuando corresponde
 → cierre según método
 → aprobación/disputa
 → reputación
@@ -33,14 +32,14 @@ Necesidad
 
 North Star: **servicios confiables completados dentro de UGO con mínima fricción**.
 
-Regla: el usuario nunca debe tener que entender estados internos, RPC, procesadores, retenciones o arquitectura para pedir un servicio.
+Regla: el usuario nunca debe tener que entender estados internos, RPC, procesadores, retenciones o arquitectura para pedir o ejecutar un servicio.
 
 ---
 
 # 2. Actores
 
 - **Cliente:** cuenta qué necesita, confirma la solicitud, elige cómo pagar, sigue el servicio, aprueba/disputa y califica.
-- **Proveedor:** recibe oportunidades, acepta/rechaza, ejecuta, evidencia y cobra.
+- **Proveedor:** recibe oportunidades, decide si puede resolver, acepta/rechaza, va, ejecuta, marca listo y aporta evidencia sólo cuando corresponde.
 - **Admin:** opera excepciones, personas, finanzas, disputas y calidad.
 - **Super Admin:** gobierna reglas, permisos, configuración e integraciones.
 - **Hugo:** mejor amigo/copiloto de UGO; entiende la necesidad, propone solución, completa la solicitud y acompaña el servicio.
@@ -141,7 +140,7 @@ observaciones relevantes
 
 El cliente puede ver/corregir lo que Hugo entendió. Voz y texto actualizan el mismo draft; cambiar de modalidad no reinicia el proceso.
 
-La evidencia queda vinculada al draft/request antes del matching.
+La evidencia queda vinculada al draft/request antes del matching cuando existe.
 
 ## 3.6 Matching y asignación
 
@@ -188,8 +187,7 @@ cliente elige efectivo
 → efectivo pendiente
 → servicio habilitado
 → ejecución
-→ evidencia final
-→ proveedor confirma recepción
+→ proveedor confirma recepción cuando corresponda
 → cliente aprueba
 → completado
 ```
@@ -215,27 +213,29 @@ Buscando
 → Cerrar/calificar
 ```
 
-La pantalla muestra estado actual, proveedor, ETA/ubicación cuando exista, precio/método, evidencia y una próxima acción clara.
+La pantalla muestra estado actual, proveedor, ETA/ubicación cuando exista, precio/método, evidencia cuando corresponda y una próxima acción clara.
 
 El Proveedor ve el mismo `serviceId` y sólo acciones válidas para el estado real.
 
 ## 5.1 Llegada
 
-Mientras el proveedor está `en_camino`, UGO puede compartir tracking autorizado. Cuando la solicitud tiene ubicación exacta y aplica validación geográfica, `Confirmar llegada` usa backend como autoridad y el radio operativo vigente es **200 m**.
+Mientras el proveedor está `en_camino`, UGO puede compartir tracking autorizado. Cuando la solicitud tiene ubicación exacta y aplica validación geográfica, backend conserva autoridad y el radio operativo vigente es **200 m**.
 
-La UI puede anticipar “ya podés confirmar llegada”, pero nunca reemplaza el guard backend.
+El happy path intenta confirmar llegada automáticamente cuando ubicación/permisos/red son confiables. Si no puede, la UI ofrece `YA LLEGUÉ` como fallback manual seguro.
 
 ## 5.2 Evidencia operacional
 
-La evidencia respeta el momento real del trabajo:
+La evidencia debe representar el trabajo real, pero **no es un paso universal de UI**.
+
+Cuando la política/categoría/seguridad/pago/disputa la requiera, respeta el momento real:
 
 ```text
-llegado              → Antes
-en_progreso          → Durante / Después
+llegado              → Antes cuando sea requerida
+en_progreso          → Durante / Después cuando corresponda
 esperando_aprobacion → Después sólo como recuperación histórica
 ```
 
-Una foto `Después` no puede cargarse antes de iniciar y reservarse para cerrar más tarde. El objetivo es que la evidencia represente el trabajo real, no sólo satisfacer un campo.
+Una foto `Después` no puede cargarse antes de iniciar y reservarse para cerrar más tarde. Cuando evidencia no agrega valor o no es requerida, no debe convertirse en burocracia para el proveedor.
 
 ---
 
@@ -258,28 +258,48 @@ Señal agregada de dónde puede existir trabajo; no es una oportunidad concreta.
 
 ## Oportunidad
 
+La decisión debe poder tomarse en segundos:
+
 ```text
-serviceId · trabajo · zona/distancia · cuándo · valor
-contexto/evidencia autorizada · match
-→ aceptar/rechazar
-→ asignación atómica
+qué problema hay que resolver
+foto/video/evidencia disponible
+zona/distancia o ubicación útil
+cuándo
+valor/visita si aplica
+→ ACEPTAR / NO PUEDO TOMARLO
 ```
+
+Si necesita diagnóstico presencial, ofrecer `VER EN PERSONA` según reglas vigentes sin abrir un wizard adicional.
+
+La aceptación conserva asignación atómica y el mismo `serviceId`.
 
 ## Misión activa
 
+La UI visible del caso común es:
+
 ```text
-método habilitado
-→ En camino
-→ Llegué (validación geográfica cuando aplica)
-→ evidencia Antes
-→ Iniciar
-→ ejecutar
-→ evidencia Durante opcional
-→ ampliación opcional
-→ evidencia Después
-→ cierre según método
-→ aprobación/disputa
+ACEPTAR
+→ ESTOY YENDO
+→ EMPEZAR TRABAJO
+→ LISTO
 ```
+
+`Llegué` se automatiza cuando sea posible y queda como fallback manual sólo cuando hace falta.
+
+Durante la misión la jerarquía es:
+
+```text
+problema
+→ ubicación/ruta
+→ una sola acción principal
+→ soporte/Hugo/información secundaria
+```
+
+No mostrar acciones futuras ni convertir evidencia, reporte, materiales o estados internos en una lista obligatoria. Ampliaciones, seguridad, evidencia o cobro aparecen sólo cuando la situación real los requiere.
+
+Principio: **simple adelante, trazable atrás**.
+
+Brief ejecutable: `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
 
 ---
 
@@ -304,11 +324,11 @@ ayuda ante dudas o problemas
 Proveedor:
 
 ```text
-prepara checklist
-ayuda con diagnóstico y seguridad
-sugiere ampliación cuando corresponda
-ayuda a documentar evidencia
-acompaña cierre y aprendizaje
+ayuda con diagnóstico y seguridad cuando hace falta
+sugiere ampliación cuando corresponde
+ayuda a documentar evidencia requerida
+puede convertir voz/texto en reporte
+acompaña excepciones sin interrumpir el trabajo normal
 ```
 
 Reglas obligatorias:
@@ -334,7 +354,7 @@ se detecta trabajo adicional
 → continuar
 ```
 
-Debe sentirse como parte del servicio actual, no como comenzar otro formulario.
+Debe sentirse como parte del servicio actual, no como comenzar otro formulario. Para el proveedor esta opción aparece sólo si realmente existe una ampliación.
 
 Regla de confianza: **un trabajo adicional con costo no puede quedar aprobado si ese costo no está incorporado o financiado de forma segura**.
 
@@ -362,7 +382,8 @@ Una ampliación sin costo puede aprobarse sin alterar custodia.
 Electrónico:
 
 ```text
-evidencia final
+proveedor marca LISTO
+→ evidencia final si la política la requiere
 → cualquier ampliación con costo ya financiada/reconciliada
 → solicitar revisión
 → cliente aprueba/disputa
@@ -373,14 +394,15 @@ evidencia final
 Efectivo:
 
 ```text
-evidencia final
+proveedor marca LISTO
+→ evidencia final si corresponde
 → total presencial incluye ampliaciones aprobadas
-→ proveedor confirma recepción
+→ proveedor confirma recepción cuando el contrato lo requiere
 → cliente revisa y aprueba/disputa
 → completado
 ```
 
-La revisión del Cliente sólo considera su servicio y la evidencia final del proveedor asignado. Sin evidencia final o sin forma de pago válida, UGO no habilita el cierre.
+La revisión del Cliente sólo considera su servicio y la evidencia disponible/requerida del proveedor asignado. UGO no debe inventar evidencia inexistente ni bloquear un trabajo común por documentación que la política no exige.
 
 Después del cierre: calificación breve, comentario opcional, historial y posibilidad inmediata de pedir otro servicio.
 
@@ -399,6 +421,7 @@ rechazo
 timeout
 método de pago fallido
 ajuste de ampliación fallido/reembolsado
+GPS/permisos insuficientes
 reconexión
 cancelación
 reintento/reasignación
@@ -419,14 +442,13 @@ Cliente abre UGO
 → cuándo/ubicación
 → resumen y Confirmar solicitud
 → matching
-→ proveedor acepta
+→ proveedor ve problema y acepta
 → cliente elige/usa método de pago
-→ proveedor en camino
-→ llegada
-→ evidencia Antes
-→ trabajo
-→ ampliación opcional financiada si tiene costo
-→ evidencia Después
+→ proveedor ESTOY YENDO
+→ llegada automática o fallback
+→ EMPEZAR TRABAJO
+→ ampliación/evidencia sólo si corresponde
+→ LISTO
 → cierre según método
 → cliente conforme/disputa
 → calificación
@@ -437,4 +459,4 @@ Cliente abre UGO
 
 # 12. Regla final
 
-**El Cliente cuenta el problema; Hugo y UGO convierten ese problema en una solución. La persona confirma, no administra la complejidad. Si pedir un servicio requiere aprender cómo funciona UGO, el flujo está mal diseñado.**
+**El Cliente cuenta el problema; Hugo y UGO convierten ese problema en una solución. El Proveedor ve el problema, acepta, va, resuelve y marca listo. La complejidad necesaria vive por debajo y sólo aparece cuando realmente hace falta.**
