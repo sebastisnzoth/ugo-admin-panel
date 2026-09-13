@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useState}from'react'
 import{VoiceHugoDock}from'../VoiceHugoDock'
 import{useRoleSession,type Service}from'../shared'
+import{useClientFlow}from'./clientFlow'
 
 const HUGO_ACTIVE_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
 type PaymentStatus='none'|'cash'|'pending'|'confirmed'
@@ -8,6 +9,7 @@ type PaymentRow={metodo?:string|null;estado?:string|null;mp_payment_id?:string|n
 
 export function ClientHugoBridge(){
  const auth=useRoleSession('client'),{supabase,session}=auth
+ const flow=useClientFlow()
  const[service,setService]=useState<Service|null>(null)
  const[offersPending,setOffersPending]=useState(0)
  const[paymentStatus,setPaymentStatus]=useState<PaymentStatus>('none')
@@ -15,5 +17,5 @@ export function ClientHugoBridge(){
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
  useEffect(()=>{if(!session)return;const ch=supabase.channel(`client-hugo-context-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${session.user.id}`},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,session,supabase])
  if(auth.loading||!session)return null
- return <VoiceHugoDock role="client" accessToken={session.access_token} service={service} availableOffers={offersPending} paymentStatus={paymentStatus}/>
+ return <VoiceHugoDock role="client" accessToken={session.access_token} service={service} availableOffers={offersPending} paymentStatus={paymentStatus} mode="quantum" clientActions={flow.actions} onIntent={flow.publishHugoIntent}/>
 }
