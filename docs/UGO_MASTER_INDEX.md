@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.2 · 12 de septiembre de 2026  
+**Versión:** 2.3 · 13 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -23,136 +23,109 @@ Necesidad real
 → repetición/recomendación
 ```
 
-La métrica principal de producto es:
+La métrica principal es **servicios confiables completados dentro de UGO**.
 
-**servicios confiables completados dentro de UGO.**
+Regla estratégica: **primero cerrar el circuito real; después ampliar el ecosistema.**
 
-Métricas de soporte:
-
-```text
-time-to-match
-aceptación de oportunidades
-servicios iniciados / solicitudes válidas
-completion rate
-tiempo de llegada
-cancelaciones
-disputas
-repetición
-NPS/CSAT
-GMV
-take rate
-ingreso neto
-liquidez de proveedores
-```
-
-Regla estratégica:
-
-**Primero cerrar el circuito real; después ampliar el ecosistema.**
+Regla de confianza: **UGO es tu mejor amigo. Lo que UGO promete en pantalla debe ocurrir realmente. Lo que el equipo declara listo debe poder probarse.**
 
 ---
 
 # 2. Sistema maestro unificado
 
 ## Nivel 0 — Gobierno
-
 `UGO_MASTER_GOVERNANCE.md`
 
-Vocabulario, autoridad, conflictos, invariantes y reglas no negociables.
-
 ## Nivel 1 — Desarrollo
-
 `UGO_DEVELOPMENT_MASTER.md`
 
-Cómo una idea pasa a producción: priorización, vertical slices, Git, review, validación y release.
-
 ## Nivel 1.5 — Arquitectura de agentes y aceleración
-
 `UGO_AI_AGENT_SYSTEM_MASTER.md`
 
-Define el rol de Arquitecta de Sistemas de IA, cómo HUGO orquesta Skills, cómo se audita, cómo se escala el sistema y cómo se reduce lead time sin perder integridad.
-
 ## Nivel 2 — Producto
-
 `UGO_ECOSISTEMA_FLUJO.md`
 
-Qué hace UGO: actores, journeys, estados y contrato Cliente↔Proveedor↔Admin.
-
 ## Nivel 3 — Experiencia
-
 `UGO_UIUX_MAESTRO.md`  
 `UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`  
 `UGO_UIUX_STITCH_MASTER.md`
 
-UI/UX gobierna experiencia y Design System. Usabilidad gobierna claridad operacional. Stitch es referencia visual y nunca reemplaza contratos de producto/runtime.
-
 ## Nivel 4 — Ingeniería
-
 `UGO_ARQUITECTURA_TECNICA_MASTER.md`
 
-Fronteras técnicas, routing, módulos, integraciones y responsabilidades.
-
 ## Nivel 5 — Datos y seguridad
-
 `UGO_DATA_BACKEND_MASTER.md`
 
-Persistencia, estados ejecutables, RLS, RPC, Realtime, Storage, concurrencia y dinero.
-
 ## Nivel 6 — Calidad
-
 `UGO_TESTING_RELEASE_MASTER.md`
 
-Cómo se demuestra que funciona y cuándo puede considerarse VALIDATED/RELEASED.
-
 ## Nivel 7 — Ejecución
-
 `UGO_ROADMAP_MASTER.md`
 
-Prioridades P0–P3 y madurez real.
+---
+
+# 3. Contrato de confianza y avance real
+
+La unidad real de avance es un **escenario completo verificable**, no una pantalla, componente, commit o porcentaje estimado.
+
+```text
+IMPLEMENTED ≠ VALIDATED ≠ RELEASED ≠ MEASURED
+```
+
+Ninguna pantalla crítica puede dejar a una persona atrapada. Todo estado debe contemplar las salidas aplicables: acción principal, cancelar/salir, volver, retry, alternativa, error, timeout y recuperación.
+
+Caso obligatorio de matching:
+
+```text
+Buscando profesionales
+→ proveedor encontrado
+O → todavía no hay proveedor
+O → timeout/error/offline
+O → cliente cancela
+```
+
+Las ramas deben terminar en un estado coherente, persistido y recuperable. `Buscando profesionales` nunca puede ser un callejón sin salida.
+
+Cancelar es parte del journey principal. Un botón `Cancelar` que sólo cambia UI, no persiste, no sincroniza la contraparte o deja estados huérfanos no está terminado.
+
+La frase **“está listo, probalo”** queda reservada para una capacidad realmente disponible en el entorno indicado y con validación/smoke aplicable ejecutado.
 
 ---
 
-# 3. Orden obligatorio de lectura
+# 4. Matriz mínima Cliente ↔ Proveedor
+
+Antes de considerar cerrado el journey principal deben comprobarse como mínimo:
 
 ```text
-1 UGO_MASTER_INDEX.md
-2 UGO_MASTER_GOVERNANCE.md
-3 UGO_DEVELOPMENT_MASTER.md
-4 UGO_AI_AGENT_SYSTEM_MASTER.md cuando el trabajo sea transversal, autónomo o de arquitectura de agentes
-5 UGO_ECOSISTEMA_FLUJO.md
-6 UGO_UIUX_MAESTRO.md
-7 UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
-8 UGO_ARQUITECTURA_TECNICA_MASTER.md
-9 UGO_DATA_BACKEND_MASTER.md
-10 UGO_TESTING_RELEASE_MASTER.md
-11 UGO_ROADMAP_MASTER.md
+1 Cliente crea solicitud válida
+2 Cliente edita antes de enviar
+3 Cliente cancela durante búsqueda
+4 matching sin proveedores disponibles
+5 matching timeout/error/offline y recuperación
+6 Proveedor recibe oportunidad
+7 Proveedor rechaza
+8 oportunidad expira
+9 Proveedor acepta
+10 competencia/doble aceptación segura
+11 Cliente ve proveedor asignado
+12 cancelaciones permitidas posteriores
+13 pago habilita/bloquea correctamente
+14 en camino / llegada
+15 evidencia / inicio
+16 servicio en progreso
+17 cierre / aprobación o disputa
+18 pago / registro / reputación / historial
+19 Admin converge al mismo serviceId y estado
+20 recorrido mobile desplegado y smokeado
 ```
 
-Consultar `UGO_UIUX_STITCH_MASTER.md` cuando haya diseño/prototipado/migración desde Stitch.
-
-`AGENTS.md` gobierna el comportamiento operativo de los agentes y `.agents/skills/*` define capacidades especializadas; no reemplazan a los maestros.
-
----
-
-# 4. Jerarquía de conflicto
-
-```text
-Seguridad/integridad ejecutable
-→ estado persistido real
-→ Governance
-→ Producto/Flujo
-→ Arquitectura
-→ UI/UX + Usabilidad
-→ Stitch
-→ Roadmap
-```
-
-Testing determina si algo está validado. Development determina cómo cambiarlo. `UGO_AI_AGENT_SYSTEM_MASTER.md` determina cómo se coordina el trabajo de agentes, pero no puede alterar contratos funcionales por sí solo.
+Reportar avance como escenarios validados, implementados pendientes y bloqueados. No usar un porcentaje global sin base medible.
 
 ---
 
 # 5. Contrato transversal de servicio
 
-Estado persistido canónico actual:
+Estado persistido canónico:
 
 ```text
 borrador → buscando → ofrecido → asignado
@@ -166,15 +139,7 @@ Excepciones:
 cancelado · disputado
 ```
 
-Entre `asignado` y `en_camino` existe una condición financiera obligatoria, no un estado paralelo de servicio:
-
-```text
-pago electrónico realmente retenido/protegido
-O
-efectivo explícitamente seleccionado
-```
-
-`pago_pendiente`, `pago_habilitado` y `pago_protegido` pueden describir condiciones financieras/UX, pero **no son estados persistidos de `servicios`** salvo migración explícita futura.
+Entre `asignado` y `en_camino` existe una condición financiera obligatoria: pago electrónico realmente habilitado/protegido o efectivo explícitamente seleccionado.
 
 Proveedor operacional:
 
@@ -187,29 +152,7 @@ Nunca mezclar la máquina de estado del proveedor con la máquina del servicio.
 
 ---
 
-# 6. Contrato de pagos
-
-Electrónico:
-
-```text
-pendiente → autorizado → retenido/protegido
-→ liberación pendiente → liberado/pagado
-```
-
-Efectivo:
-
-```text
-seleccionado → presencial pendiente → servicio habilitado
-→ proveedor confirma recepción → registrado
-```
-
-**Efectivo no tiene custodia electrónica UGO.**
-
-Toda UI, flujo, disputa, ampliación y cierre debe ser consciente del método de pago.
-
----
-
-# 7. Contrato Cliente ↔ Proveedor
+# 6. Contrato Cliente ↔ Proveedor
 
 ```text
 Cliente crea solicitud + evidencia
@@ -221,7 +164,7 @@ Cliente crea solicitud + evidencia
 → ambos observan el mismo servicio persistido
 → método de pago habilita ejecución
 → tracking durante traslado
-→ llegada validada cuando corresponde
+→ llegada validada
 → evidencia Antes
 → inicio
 → evidencia Después
@@ -231,38 +174,43 @@ Cliente crea solicitud + evidencia
 
 `serviceId` es la identidad transversal del trabajo.
 
+Cada transición debe probar también las ramas reales que correspondan: cancelación, ausencia de proveedor, rechazo, expiración, timeout, offline, retry y doble acción.
+
 ---
 
-# 8. Madurez
+# 7. Madurez y Definition of Ready to Test
 
 ```text
 IDEA → DEFINED → READY → IN PROGRESS
 → IMPLEMENTED → VALIDATED → RELEASED → MEASURED
 ```
 
-Un commit o una pantalla visible **no** significan `HECHO`.
+Una capacidad sólo puede entregarse como `LISTA PARA PROBAR` cuando existe en `main`, sus acciones críticas están conectadas a comportamiento real, happy path y recuperaciones aplicables funcionan, persiste correctamente, la contraparte converge cuando corresponde, pasan los gates aplicables y existe un deploy objetivo comprobable.
+
+Un commit, build o pantalla visible no significan `HECHO`.
 
 ---
 
-# 9. Principios de éxito
+# 8. Principios de éxito
 
 1. Una sola fuente de verdad.
 2. Confianza antes que crecimiento superficial.
-3. Mobile-first sin degradar desktop.
-4. Estado → contexto → próxima acción.
-5. Dinero, identidad y evidencia siempre auditables.
-6. Cliente y Proveedor comparten el mismo servicio, no copias.
-7. Demanda de mercado y oportunidad concreta son conceptos distintos.
-8. Hugo ayuda; no salta permisos ni estados.
-9. Scout recomienda acciones; no crea otra operación paralela.
-10. Academia mejora calidad; no entrega privilegios sin reglas de dominio.
-11. Toda expansión debe justificar impacto en conversión, confianza, eficiencia o retención.
-12. Cero lock-in innecesario y costos controlados mientras UGO valida mercado.
-13. Los maestros se actualizan en el mismo bloque que cambia el contrato real de `main`.
-14. La arquitectura de agentes existe para reducir lead time, no para multiplicar agentes sin propósito.
+3. UGO es tu mejor amigo: cumple lo que promete.
+4. Mobile-first sin degradar desktop.
+5. Estado → contexto → próxima acción → salida/recuperación.
+6. Ninguna pantalla crítica queda muerta o atrapada.
+7. Dinero, identidad y evidencia siempre auditables.
+8. Cliente y Proveedor comparten el mismo servicio, no copias.
+9. Cancelación y errores son parte del journey, no casos decorativos.
+10. Todo botón crítico debe producir un resultado verificable.
+11. Hugo ayuda; no salta permisos ni estados.
+12. Los maestros se actualizan con el contrato real de `main`.
+13. La arquitectura de agentes existe para reducir lead time, no para multiplicar actividad.
+14. No declarar éxito sin evidencia exacta.
+15. Proteger el tiempo del founder: no confundir trabajo realizado con producto validado.
 
 ---
 
-# 10. Regla final
+# 9. Regla final
 
-**Si una nueva función no mejora confianza, conversión, ejecución, monetización o retención, no debe desplazar un P0/P1 del circuito principal. Si una nueva Skill no reduce tiempo, errores o coordinación, no debe agregarse.**
+**UGO cuida la confianza cumpliendo. Si una persona puede quedar atrapada, si un botón crítico no hace lo prometido, si cancelar no cierra correctamente el estado o si una rama real no tiene recuperación, el flujo no está terminado. Primero cerrar y probar el circuito Cliente ↔ Proveedor ↔ Admin; después ampliar.**
