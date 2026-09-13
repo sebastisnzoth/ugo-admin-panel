@@ -27,13 +27,12 @@ Producción `trfsjuseqjxlhrxuvdsm` está fuera de alcance hasta promoción expl�
 
 - `main` apunta Cliente, Proveedor y Admin al mismo UGO TEST.
 - UGO TEST está ACTIVE_HEALTHY.
-- DB auditada: 1 Cliente, 1 Proveedor, 1 Admin; 0 servicios/pagos/evidencias/disputas transaccionales activos.
+- DB auditada: 1 Cliente, 1 Proveedor, 1 Admin; sin transacciones residuales relevantes.
 - RPCs críticos del lifecycle existen en TEST: matching, aceptación, pago efectivo, avance, ampliación, cierre y disputa.
-- Vercel desplegó correctamente `main` y el alias público sirve el build de TEST.
-- UI muestra insignia visible `UGO TEST` para evitar confundir el entorno con producción.
-- `.env.example` dejó de apuntar a producción.
+- `.env.example` apunta a UGO TEST y producción queda excluida del flujo de prueba.
 - `docs/UGO_TEST_RUNBOOK.md` documenta la prueba desde dos celulares + Admin.
-- CI principal de `2cf7ab3` fue verde antes de los ajustes finales de runbook/gates; volver a verificar el último `main`.
+- UI incorpora marca visible `UGO TEST` en el último `main`.
+- Vercel sirve un build anterior de TEST, pero el último redeploy quedó bloqueado por límite gratuito diario (>100 deployments). Hay reintento programado después del reset del límite; no gastar ni cambiar plan.
 
 ## IMPLEMENTED
 
@@ -55,28 +54,34 @@ Entorno TEST:
 - producción rechazada por el gate aislado;
 - URL y publishable key públicas fijas en CI, no tratadas como secretos;
 - gate aislado ampliado a Cliente ↔ Proveedor ↔ Admin;
-- seis GitHub Secrets humanos esperados: email/password de los tres roles.
+- seis GitHub Secrets humanos esperados: email/password de los tres roles;
+- migración `20260913005000_auxiliary_tables_rls_hardening.sql` versionada para 13 tablas auxiliares sin RLS;
+- contract test `auxiliary-rls-hardening.test.mjs` protege ownership, finanzas, push, mensajería y superficies WhatsApp.
 
 ## VALIDATED
 
 Evidencia confirmada:
 
 - UGO Core CI run `34727990818` sobre `2cf7ab3`: success.
-- Vercel deployment de `2cf7ab3`: READY.
+- UGO Core CI run `34728566874` sobre `8ed3ac3`: success.
+- UGO Core CI run `34728738562` sobre `7842da4`: success; incluye build, lifecycle/contracts y hardening RLS estático.
+- Vercel deployment de `2cf7ab3`: READY y apuntando a UGO TEST.
 - Supabase TEST: esquema y RPCs críticos presentes.
+- Auditoría de funciones `SECURITY DEFINER`: los RPCs críticos revisados contienen checks explícitos de auth/ownership/rol; no revocar EXECUTE a ciegas.
 
 Pendiente de declarar VALIDATED:
 
-- último `main` posterior a los cambios de gate/runbook/badge;
+- aplicar la nueva migración RLS auxiliar sobre UGO TEST;
 - E2E RPC/RLS con login real de Cliente/Proveedor/Admin;
 - prueba manual real en dos dispositivos + Admin;
-- Storage/cámara/GPS en dispositivo real.
+- Storage/cámara/GPS en dispositivo real;
+- deploy del último `main` cuando se libere el límite gratuito de Vercel.
 
 ## BLOCKED
 
 ### B1 · Credenciales humanas TEST
 
-La base ya contiene una identidad de cada rol, pero el conector disponible no permite leer ni resetear contraseñas de Supabase Auth. Tampoco permite administrar GitHub Secrets.
+La base contiene una identidad de cada rol, pero las herramientas disponibles no permiten leer/resetear contraseñas de Supabase Auth ni administrar GitHub Secrets.
 
 Para ejecutar el gate aislado se requieren exactamente:
 
@@ -91,20 +96,26 @@ UGO_TEST_ADMIN_PASSWORD
 
 No guardar esos valores en GitHub, código, commits ni documentos públicos.
 
-### B2 · Seguridad auxiliar antes de producción
+### B2 · Aplicación de RLS auxiliar
 
-Supabase reportó RLS deshabilitado en 13 tablas auxiliares: `audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos`, `whatsapp_notificaciones`.
+La migración ya está diseñada, versionada y validada por CI, pero la ejecución DDL directa fue bloqueada por los controles de la herramienta. No intentar bypass. Aplicarla primero en UGO TEST por un canal autorizado; producción sigue prohibida.
 
-No habilitar RLS a ciegas: definir primero políticas coherentes; activar sin políticas puede romper funciones. Este gap no autoriza cambios en producción.
+Tablas cubiertas:
+
+`audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos`, `whatsapp_notificaciones`.
+
+### B3 · Vercel free-tier deploy cap
+
+Último `main` no pudo desplegar porque Vercel devolvió `api-deployments-free-per-day` (>100). El build ya está verde en GitHub Actions. Reintentar después del reset, sin upgrade pago.
 
 ## NEXT
 
-1. verificar CI y Vercel del último `main`;
-2. en cuanto existan/estén conocidas las seis credenciales TEST, cargarlas como GitHub Secrets;
+1. aplicar `20260913005000_auxiliary_tables_rls_hardening.sql` en UGO TEST por canal autorizado;
+2. disponer/cargar las seis credenciales humanas TEST como GitHub Secrets;
 3. ejecutar `UGO Isolated RPC RLS` hasta verde;
 4. realizar prueba manual Cliente/Proveedor/Admin según `docs/UGO_TEST_RUNBOOK.md`;
-5. generar PDF privado de accesos y guía de prueba sin secretos de infraestructura;
-6. auditar y diseñar políticas RLS de las 13 tablas auxiliares antes de promoción;
+5. verificar Storage/cámara/GPS y Realtime desde dispositivos reales;
+6. reintentar deploy del último `main` al resetear el límite de Vercel;
 7. sólo después evaluar promoción a producción.
 
 ## HANDOFF CONTRACT
