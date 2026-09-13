@@ -6,6 +6,7 @@ const root = await readFile(new URL('../../src/mvp/client/ClientRoot.tsx', impor
 const bridge = await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx', import.meta.url), 'utf8')
 const home = await readFile(new URL('../../src/mvp/client/ClientPremiumHome.tsx', import.meta.url), 'utf8')
 const voice = await readFile(new URL('../../src/mvp/VoiceHugoDock.tsx', import.meta.url), 'utf8')
+const events = await readFile(new URL('../../src/mvp/uiEvents.ts', import.meta.url), 'utf8')
 
 test('client mounts one canonical Hugo companion instead of the legacy voice-order modal', () => {
   assert.match(root, /ClientHugoBridge/)
@@ -21,18 +22,27 @@ test('Hugo companion is wired to real client actions and intents in quantum mode
 test('home makes Hugo the primary conversational entrypoint while Activity stays unified', () => {
   assert.match(home, /Contame qué necesitás\. Yo te ayudo a resolverlo\./)
   assert.match(home, /Hablar con Hugo/)
-  assert.match(home, /emitUgoUiEvent\(UGO_UI_EVENTS\.clientHugo\)/)
+  assert.match(home, /Escribirle a Hugo/)
+  assert.match(home, /UGO_UI_EVENTS\.clientHugo/)
+  assert.match(home, /UGO_UI_EVENTS\.clientHugoText/)
   assert.match(home, />Actividad</)
   assert.doesNotMatch(home, />Servicios</)
+  assert.doesNotMatch(home, /UGO_CLIENT_GUIDED_REQUEST_OPEN/)
+})
+
+test('voice and text share the same canonical Hugo state', () => {
+  assert.match(events, /clientHugoText/)
+  assert.match(voice, /ugo-hugo-stage-composer/)
+  assert.match(voice, /voice\.sendText/)
+  assert.match(voice, /UGO_UI_EVENTS\.clientHugoText/)
+  assert.match(voice, /textInputRef/)
 })
 
 test('quantum Hugo stage renders real service context and contextual actions', () => {
   assert.match(voice, /ugo-hugo-stage-card/)
   assert.match(voice, /service\.categoria\?\.nombre/)
   assert.match(voice, /service\?\.proveedor\?\.nombre/)
-  assert.match(voice, /voice\.sendText\(value\)/)
   assert.match(voice, /Ver Actividad/)
   assert.match(voice, /Cancelar pedido/)
   assert.match(voice, /Revisar trabajo/)
-  assert.match(voice, /clientActions\?\.openSearch\(\)/)
 })

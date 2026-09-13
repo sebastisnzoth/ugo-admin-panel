@@ -19,6 +19,7 @@ import{useClientFlow}from'./clientFlow'
 import'./client-guided-request.css'
 import'./client-payment-choice.css'
 import'./client-responsive-layout.css'
+import'./client-conversational-stage.css'
 
 type Props={demo:boolean}
 
