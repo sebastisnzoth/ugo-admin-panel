@@ -14,7 +14,8 @@ test('request photos stay optional and upload failures never block the request c
  assert.match(source,/Probá otra vez o enviá la solicitud sin foto/)
  assert.match(guided,/FOTO OPCIONAL/)
  assert.match(guided,/Podés Continuar sin foto/)
- assert.doesNotMatch(guided,/photoCount\s*[<!=]+\s*1/)
+ assert.match(guided,/async function submit\(\)\{if\(!session\|\|!draft\.categoryId\|\|draft\.description\.trim\(\)\.length<8\|\|!draft\.address\.trim\(\)\)return/)
+ assert.match(guided,/photoCount>0\?\{request_draft_id:draftId\}:\{\}/)
 })
 
 test('request evidence repair migration restores draft binding and mobile image formats',async()=>{
