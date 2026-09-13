@@ -1,9 +1,9 @@
-import React,{useEffect,useMemo,useState}from'react'
+import React,{useEffect,useMemo,useRef,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import type{Service}from'./shared'
 
-type Props={service?:Service|null}
+type Props={service?:Service|null;onAutoArrival?:()=>Promise<boolean>|boolean|void}
 type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
 type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:unknown}>}
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
@@ -18,11 +18,14 @@ function distanceMeters(a:[number,number],b:[number,number]){
  return 2*R*Math.asin(Math.sqrt(h))
 }
 
-export function ProviderLocationTracker({service}:Props){
+export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
  const serviceActive=Boolean(service&&ACTIVE_TRACKING_STATES.has(service.estado))
+ const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null)
+ useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
+ useEffect(()=>{if(service?.estado!=='en_camino')attemptedServiceRef.current=null},[service?.estado,service?.id])
 
  useEffect(()=>{
   let alive=true
@@ -55,13 +58,17 @@ export function ProviderLocationTracker({service}:Props){
    writing=false
    if(!error){
     lastWrite=Date.now();lastPoint=point
-    const meters=data==null?null:Number(data)
-    setDistanceToClient(Number.isFinite(meters)?meters:null)
+    const meters=data==null?null:Number(data),validMeters=Number.isFinite(meters)?meters:null
+    setDistanceToClient(validMeters)
+    if(serviceId&&validMeters!=null&&validMeters<=ARRIVAL_RADIUS_M&&autoArrivalRef.current&&attemptedServiceRef.current!==serviceId){
+     attemptedServiceRef.current=serviceId
+     try{const ok=await autoArrivalRef.current();if(ok===false)attemptedServiceRef.current=null}catch{attemptedServiceRef.current=null}
+    }
    }
   },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
  },[available,serviceActive,service?.id,service?.estado,supabase])
 
  if(service?.estado!=='en_camino'||distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
- return <div style={{position:'fixed',left:'50%',bottom:96,transform:'translateX(-50%)',zIndex:80,background:'#fff',borderRadius:18,padding:'12px 16px',boxShadow:'0 8px 28px rgba(0,0,0,.18)',fontWeight:800,fontSize:14,maxWidth:'calc(100vw - 32px)',textAlign:'center'}}>📍 Estás a {Math.max(1,Math.round(distanceToClient))} m del cliente · Ya podés confirmar la llegada</div>
+ return <div className="provider-arrival-toast" role="status">📍 Llegada detectada · UGO está confirmando automáticamente</div>
 }
