@@ -1,0 +1,162 @@
+/* Responsive layout for the canonical UGO Client flow.
+   Mobile remains app-first; tablet and desktop progressively use available space. */
+
+@media (min-width:600px) and (max-width:899px){
+  .ugo-client-premium-home{
+    left:0;
+    right:0;
+    width:100%;
+    transform:none;
+    box-shadow:none;
+  }
+  .ugo-client-premium-home>header,
+  .ugo-client-home-copy,
+  .ugo-client-home-categories,
+  .ugo-client-home-sheet{
+    padding-left:clamp(24px,5vw,48px);
+    padding-right:clamp(24px,5vw,48px);
+  }
+  .ugo-client-home-copy h1{font-size:clamp(32px,5vw,42px)}
+  .ugo-client-home-search{min-height:60px}
+  .ugo-client-home-categories{gap:12px}
+  .ugo-client-home-categories button{
+    flex-basis:calc((100% - 36px)/4);
+    min-height:82px;
+  }
+  .ugo-client-home-map{min-height:240px}
+  .ugo-client-home-sheet{padding-top:14px;padding-bottom:20px}
+  .ugo-client-profile-panel{max-width:720px}
+  .ugo-client-payment-choice{width:min(560px,calc(100vw - 48px))}
+  .ugo-client-history-wrap{max-width:720px;margin:0 auto;padding:20px 24px 36px}
+}
+
+@media (min-width:900px){
+  .ugo-client-root{
+    min-height:100dvh;
+    background:#07111c;
+  }
+  .ugo-client-premium-home{
+    left:0;
+    right:0;
+    width:100%;
+    transform:none;
+    grid-template-columns:88px minmax(340px,430px) minmax(420px,1fr);
+    grid-template-rows:auto auto auto minmax(190px,1fr);
+    grid-template-areas:
+      "nav header header"
+      "nav copy map"
+      "nav categories map"
+      "nav sheet map";
+    min-height:100dvh;
+    box-shadow:none;
+  }
+  .ugo-browser-role-shell .ugo-client-premium-home{
+    position:absolute;
+    inset:0;
+    min-height:100%;
+    height:100%;
+  }
+  .ugo-client-premium-home>header{
+    grid-area:header;
+    padding:22px 30px 18px;
+    border-bottom:1px solid #20364a;
+  }
+  .ugo-client-premium-home>header strong{font-size:27px}
+  .ugo-client-home-copy{
+    grid-area:copy;
+    padding:28px 28px 18px;
+  }
+  .ugo-client-home-copy h1{font-size:38px;max-width:360px}
+  .ugo-client-home-copy p{font-size:14px;margin:9px 0 18px}
+  .ugo-client-home-search{min-height:62px;border-radius:20px}
+  .ugo-client-home-categories{
+    grid-area:categories;
+    padding:10px 28px 22px;
+    display:grid;
+    grid-template-columns:repeat(4,minmax(0,1fr));
+    gap:10px;
+    overflow:visible;
+  }
+  .ugo-client-home-categories button{
+    min-width:0;
+    min-height:88px;
+  }
+  .ugo-client-home-categories small{font-size:10px;white-space:normal;line-height:1.2;text-align:center}
+  .ugo-client-home-map{
+    grid-area:map;
+    min-height:0;
+    height:100%;
+    border-left:1px solid #20364a;
+  }
+  .ugo-client-home-map-label{left:22px!important;top:22px!important;padding:11px 14px}
+  .ugo-client-home-sheet{
+    grid-area:sheet;
+    margin-top:0;
+    padding:24px 28px 28px;
+    border-radius:0;
+    border-top:1px solid #20364a;
+    box-shadow:none;
+    align-self:stretch;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-end;
+  }
+  .ugo-client-home-handle{display:none}
+  .ugo-client-home-sheet>strong{font-size:18px}
+  .ugo-client-home-sheet p{font-size:13px;line-height:1.5;margin:8px 0 18px}
+  .ugo-client-home-sheet button{min-height:58px}
+  .ugo-client-premium-home>nav{
+    grid-area:nav;
+    min-height:0;
+    padding:18px 8px;
+    grid-template-columns:1fr;
+    grid-template-rows:repeat(4,minmax(76px,1fr));
+    align-content:center;
+    border-top:0;
+    border-right:1px solid #20364a;
+    background:#050d15;
+  }
+  .ugo-client-premium-home>nav button{
+    min-height:76px;
+    border-radius:16px;
+    font-size:22px;
+  }
+  .ugo-client-premium-home>nav button span{font-size:10px}
+  .ugo-client-premium-home>nav button.active{background:rgba(32,242,154,.08)}
+  .ugo-guided-request{
+    width:min(720px,calc(100vw - 96px));
+    max-height:calc(100dvh - 64px);
+    inset:32px auto 32px 50%;
+  }
+  .ugo-guided-request>header,.ugo-guided-step,.ugo-guided-message{max-width:640px}
+  .ugo-client-payment-choice{
+    width:min(620px,calc(100vw - 96px));
+    bottom:32px;
+    max-height:calc(100dvh - 64px);
+  }
+  .ugo-client-screen-overlay{
+    padding:32px;
+    background:rgba(3,10,16,.92);
+  }
+  .ugo-client-profile-panel{
+    min-height:calc(100dvh - 64px);
+    max-width:760px;
+    border:1px solid #20364a;
+    border-radius:28px;
+    overflow:hidden;
+    box-shadow:0 28px 80px rgba(0,0,0,.36);
+  }
+  .ugo-client-profile-body{padding:26px 28px 36px}
+  .ugo-client-history-wrap{
+    max-width:860px;
+    margin:0 auto;
+    padding:24px 28px 40px;
+  }
+}
+
+@media (min-width:1280px){
+  .ugo-client-premium-home{
+    grid-template-columns:96px minmax(390px,470px) minmax(560px,1fr);
+  }
+  .ugo-client-home-copy,.ugo-client-home-categories,.ugo-client-home-sheet{padding-left:34px;padding-right:34px}
+}
