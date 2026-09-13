@@ -9,11 +9,41 @@ function scheduleLabel(item:ProviderOpportunity){if(item.urgency==='urgent'&&!it
 
 export function ProviderOpportunities(){
  const flow=useProviderFlow(),d=useProviderData(),items=[...d.opportunities].sort((a,b)=>rankOpportunity(b)-rankOpportunity(a))
- return <section className="provider-screen provider-opportunities-simple" aria-labelledby="provider-opportunities-title"><header className="provider-section-head"><div><span className="provider-kicker">PEDIDOS PARA VOS</span><h1 id="provider-opportunities-title">¿Qué podés resolver?</h1><p>Mirá el problema. Si lo podés solucionar, aceptalo.</p></div></header><div className="provider-list">{items.length===0?<article className="provider-card provider-empty"><strong>No hay pedidos ahora</strong><span>{d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}</span></article>:items.map(item=><article className="provider-card provider-opportunity-simple" key={item.id}><div className="provider-opportunity-meta">{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}<span>{item.category}</span></div><h2>{item.title}</h2><div className="provider-simple-facts"><span>📍 {item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</span><span>🗓 {scheduleLabel(item)}</span><strong>{money(item.estimatedValue)}</strong></div><button className="provider-primary provider-wide" onClick={()=>flow.actions.openOpportunity(item.id)}>VER PROBLEMA</button></article>)}</div></section>
+ return <section className="provider-screen provider-opportunities-simple" aria-labelledby="provider-opportunities-title">
+  <header className="provider-section-head"><div><span className="provider-kicker">PEDIDOS PARA VOS</span><h1 id="provider-opportunities-title">Elegí qué resolver</h1><p>Primero el problema. Después dónde, cuándo y cuánto.</p></div><button className="provider-link" type="button" onClick={flow.actions.openDemand}>Radar</button></header>
+  <div className="provider-list">{items.length===0?<article className="provider-card provider-empty"><strong>No hay pedidos ahora</strong><span>{d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}</span></article>:items.map(item=><article className="provider-card provider-opportunity-simple" key={item.id}>
+   <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
+   <h2>{item.title}</h2>
+   <div className="provider-opportunity-facts">
+    <div><small>DÓNDE</small><strong>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</strong></div>
+    <div><small>CUÁNDO</small><strong>{scheduleLabel(item)}</strong></div>
+    <div><small>VALOR</small><strong>{money(item.estimatedValue)}</strong></div>
+   </div>
+   <button className="provider-primary provider-wide" onClick={()=>flow.actions.openOpportunity(item.id)}>Ver y decidir</button>
+  </article>)}</div>
+ </section>
 }
 
 export function ProviderOpportunityDetail({id}:{id:string|null}){
  const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id)
  if(!item)return <section className="provider-screen"><button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button><h1>Este pedido ya no está disponible</h1><p>Puede haber sido tomado, cancelado o actualizado.</p></section>
- return <section className="provider-screen provider-opportunity-detail provider-opportunity-decision"><button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button><span className="provider-kicker">NUEVO PEDIDO</span><h1>¿Lo podés resolver?</h1><article className="provider-card provider-problem-preview"><small>EL PROBLEMA</small><h2>{item.category}</h2><p>{item.description||item.title}</p><ProviderRequestEvidence serviceId={item.serviceId}/></article><article className="provider-card provider-decision-facts"><div><small>DÓNDE</small><strong>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</strong></div><div><small>CUÁNDO</small><strong>{scheduleLabel(item)}</strong></div><div><small>VALOR</small><strong>{money(item.estimatedValue)}</strong></div>{item.preferences&&<details><summary>Indicaciones del cliente</summary><p>{item.preferences}</p></details>}</article><div className="provider-decision"><button className="provider-primary provider-main-action" disabled={d.busy||Boolean(d.service)} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':d.service?'YA TENÉS UN TRABAJO':'ACEPTAR'}</button><button className="provider-reject provider-wide" disabled={d.busy} onClick={()=>flow.actions.rejectOpportunity(item.id)}>NO PUEDO TOMARLO</button></div></section>
+ return <section className="provider-screen provider-opportunity-detail provider-opportunity-decision">
+  <button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button>
+  <span className="provider-kicker">NUEVO PEDIDO</span><h1>¿Lo podés resolver?</h1>
+  <article className="provider-card provider-offer-sheet">
+   <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
+   <div className="provider-offer-problem"><small>EL PROBLEMA</small><p>{item.description||item.title}</p></div>
+   <div className="provider-decision-facts">
+    <div><small>DÓNDE</small><strong>{item.zone}{item.distanceKm>0?` · ${item.distanceKm.toFixed(1)} km`:''}</strong></div>
+    <div><small>CUÁNDO</small><strong>{scheduleLabel(item)}</strong></div>
+    <div><small>VALOR</small><strong>{money(item.estimatedValue)}</strong></div>
+   </div>
+   {item.preferences&&<details className="provider-secondary-details"><summary>Indicaciones del cliente</summary><p>{item.preferences}</p></details>}
+   <details className="provider-secondary-details"><summary>Fotos o archivos del pedido</summary><ProviderRequestEvidence serviceId={item.serviceId}/></details>
+  </article>
+  <div className="provider-decision provider-decision-bar">
+   <button className="provider-primary provider-main-action" disabled={d.busy||Boolean(d.service)} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':d.service?'YA TENÉS UN TRABAJO':'ACEPTAR TRABAJO'}</button>
+   <button className="provider-reject provider-wide" disabled={d.busy} onClick={()=>flow.actions.rejectOpportunity(item.id)}>No puedo tomarlo</button>
+  </div>
+ </section>
 }
