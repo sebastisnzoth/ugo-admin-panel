@@ -1,0 +1,37 @@
+name: Netlify smoke test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/netlify-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify static surfaces
+        run: |
+          set -euo pipefail
+          base='https://ugo-admin-panel-netlify.netlify.app'
+          for path in / /client.html /provider.html /scout.html; do
+            code="$(curl -sS -L -o /dev/null -w '%{http_code}' "$base$path")"
+            echo "$path -> $code"
+            test "$code" = '200'
+          done
+
+      - name: Verify API adapter routing
+        run: |
+          set -euo pipefail
+          url='https://ugo-admin-panel-netlify.netlify.app/api/admin/integrations-status'
+          code="$(curl -sS -o /tmp/api.json -w '%{http_code}' "$url")"
+          echo "/api/admin/integrations-status -> $code"
+          cat /tmp/api.json
+          test "$code" != '404'
+          test "$code" != '301'
+          test "$code" != '302'
+          grep -Eq '^\{.*\}$' /tmp/api.json
