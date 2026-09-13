@@ -10,9 +10,7 @@ const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 function runGuard(projectRef, required = true) {
   const env = { ...process.env, UGO_REQUIRE_ISOLATED_INTEGRATION: required ? '1' : '0' }
   delete env.NODE_TEST_CONTEXT
-  for (const name of Object.keys(env)) {
-    if (name.startsWith('UGO_TEST_')) delete env[name]
-  }
+  for (const name of Object.keys(env)) if (name.startsWith('UGO_TEST_')) delete env[name]
   if (projectRef) {
     Object.assign(env, {
       UGO_TEST_SUPABASE_URL: `https://${projectRef}.supabase.co`,
@@ -30,20 +28,22 @@ function runGuard(projectRef, required = true) {
   ], { env, encoding: 'utf8', timeout: 10000 })
   assert.ifError(result.error)
   const output = result.stdout + result.stderr
-  assert.doesNotMatch(output, /NETWORK_ATTEMPT_FORBIDDEN/)
   return { status: result.status, output }
 }
 
-for (const [projectRef, label] of [
-  ['trfsjuseqjxlhrxuvdsm', 'producción'],
-  ['tmossnqfwfwjrtzwcbmm', 'UGO Arena'],
-]) {
-  test(`isolated harness rejects ${label} before any network request`, () => {
-    const result = runGuard(projectRef)
-    assert.equal(result.status, 1)
-    assert.ok(result.output.includes(`se niega a ejecutar contra ${label}`))
-  })
-}
+test('isolated harness rejects producción before any network request', () => {
+  const result = runGuard('trfsjuseqjxlhrxuvdsm')
+  assert.equal(result.status, 1)
+  assert.match(result.output, /se niega a ejecutar contra producción/)
+  assert.doesNotMatch(result.output, /NETWORK_ATTEMPT_FORBIDDEN/)
+})
+
+test('designated UGO Test project is no longer rejected as legacy Arena', async () => {
+  const source = await readFile(harnessUrl, 'utf8')
+  assert.doesNotMatch(source, /ARENA_REF/)
+  assert.doesNotMatch(source, /UGO Arena/)
+  assert.match(source, /PROD_REF = 'trfsjuseqjxlhrxuvdsm'/)
+})
 
 test('required isolated gate fails without credentials while regular tests skip safely', () => {
   const required = runGuard(null)
