@@ -1,7 +1,7 @@
 # UGO — Flujo de producto 2026-09-13
 
 ## Objetivo
-Convertir la experiencia Cliente ↔ Hugo ↔ Proveedor en un flujo natural, visible y confiable, y preparar UGO Empresas/Contratistas sin mezclarlo con el pedido doméstico.
+Convertir la experiencia Cliente ↔ Hugo ↔ Proveedor en un flujo natural, visible y confiable, preparar versiones web reales para Cliente y Proveedor, y preparar UGO Empresas/Contratistas sin mezclarlo con el pedido doméstico.
 
 ## P0 Cliente · Hugo
 
@@ -85,6 +85,33 @@ No se intenta impedir que cliente y proveedor hablen. Se reduce el incentivo a s
 
 El objetivo es que coordinar por fuera sea menos conveniente que seguir dentro de UGO.
 
+## P1 Web real · Cliente y Proveedor
+
+Las versiones web no deben ser demos separadas ni usar datos inventados. Deben reutilizar las mismas sesiones, estados, RPC, permisos y serviceId de las apps operativas.
+
+### Cliente Web
+- misma autenticación y onboarding que Cliente;
+- mismo Hugo y mismo borrador voz/texto/formulario;
+- mismas categorías y direcciones;
+- mismo matching, pagos, actividad, perfil, evidencia y disputas;
+- layout adaptado a navegador/desktop sin duplicar dominio.
+
+Rutas previstas:
+- `?app=client-web`
+- `?app=web-client`
+
+### Proveedor Web
+- misma autenticación y onboarding que Proveedor;
+- mismas oportunidades, agenda, trabajo activo, ganancias, perfil y Hugo;
+- misma autoridad backend y realtime;
+- layout adaptado a navegador/desktop sin crear un proveedor paralelo.
+
+Rutas previstas:
+- `?app=provider-web`
+- `?app=web-provider`
+
+La variante `stitch-client` queda sólo como referencia visual/demo y no debe confundirse con Cliente Web operativo.
+
 ## P1 UGO Empresas / Contratistas
 
 Crear un flujo separado para contratistas, obras y empresas. Un pedido empresarial puede requerir varios profesionales o nichos específicos (por ejemplo azulejista, carpintero de obra, electricista, pintor) y no debe modelarse como un pedido doméstico de un único proveedor.
@@ -107,8 +134,9 @@ El pedido empresarial debe admitir:
 4. Push proveedor accionable.
 5. Agenda proveedor y detección de conflictos.
 6. Visita base + ampliación dentro de UGO.
-7. Estrategia de retención y recontratación.
-8. Diseñar UGO Empresas/Contratistas como flujo independiente.
+7. Consolidar Cliente Web y Proveedor Web sobre el dominio real.
+8. Estrategia de retención y recontratación.
+9. Diseñar UGO Empresas/Contratistas como flujo independiente.
 
 ## Regla de validación
-Nada pasa a VALIDATED sólo por compilar o verse bien. Se valida con flujo real Cliente ↔ Proveedor sobre TEST, mismo serviceId, estados persistidos, realtime y acciones positivas/negativas reproducibles.
+Nada pasa a VALIDATED sólo por compilar o verse bien. Se valida con flujo real Cliente ↔ Proveedor sobre TEST, mismo serviceId, estados persistidos, realtime y acciones positivas/negativas reproducibles. Las variantes web deben demostrar que reutilizan ese mismo contrato y no datos demo.
