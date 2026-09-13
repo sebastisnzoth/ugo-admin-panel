@@ -12,6 +12,7 @@ import'./stitch-client-provider-alignment.css'
 import'./request-evidence.css'
 import'./ugo-uiux-p0.css'
 import'./ugo-dark-premium.css'
+import'./browser-role-shell.css'
 
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
 const ClientRoot=lazy(()=>import('./client/ClientRoot').then(module=>({default:module.ClientRoot})))
@@ -23,15 +24,20 @@ const UgoTestDemo=lazy(()=>import('./UgoTestDemo').then(module=>({default:module
 
 function RouteLoading(){return <main className="mvp-loading" aria-live="polite"><p>Cargando UGO…</p></main>}
 function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
+function BrowserShell({children}:{children:React.ReactNode}){return <div className="ugo-browser-role-shell"><div className="ugo-browser-role-app">{children}</div></div>}
+function ClientApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
+function ProviderApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
 
 export function MvpApp(){
  const params=new URLSearchParams(window.location.search)
  const app=params.get('app')
  const demo=params.get('demo')==='1'
  if(demo)return <Deferred><UgoTestDemo/></Deferred>
- if(app==='client-web'||app==='web-client'||app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
- if(app==='client')return <RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate>
- if(app==='provider')return <RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate>
+ if(app==='client-web'||app==='web-client')return <ClientApp web/>
+ if(app==='provider-web'||app==='web-provider')return <ProviderApp web/>
+ if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
+ if(app==='client')return <ClientApp/>
+ if(app==='provider')return <ProviderApp/>
  if(app==='admin')return <Deferred><AdminGate/></Deferred>
  if(app==='web')return <Deferred><UgoWeb/></Deferred>
  return <Deferred><UgoLanding/></Deferred>
