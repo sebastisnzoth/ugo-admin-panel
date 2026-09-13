@@ -17,7 +17,7 @@ const CLIENT_CANCELLABLE_STATES=['buscando','ofrecido','asignado','en_camino','l
 let hugoSpeechPrimed=false
 let hugoSpeechPrimer:SpeechSynthesisUtterance|null=null
 function mobileVoiceBrowser(){if(typeof navigator==='undefined')return false;return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)||Boolean(window.matchMedia?.('(pointer:coarse)').matches)}
-function resumeHugoSpeech(){if(typeof window==='undefined'||!window.speechSynthesis)return;try{window.speechSynthesis.resume()}catch{/* noop */}}
+function resumeHugoSpeech(){if(typeof window==='undefined'||!window.speechSynthesis)return;try{if(hugoSpeechPrimer||window.speechSynthesis.paused)window.speechSynthesis.resume()}catch{/* noop */}}
 function primeHugoSpeech(){
  if(typeof window==='undefined'||!window.speechSynthesis)return
  resumeHugoSpeech()
