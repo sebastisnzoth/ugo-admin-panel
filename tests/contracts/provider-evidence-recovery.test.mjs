@@ -14,8 +14,9 @@ test('provider evidence rehydrates persisted readiness after reconnect',()=>{
  assert.match(source,/visibilityState==='visible'/)
 })
 
-test('ambiguous evidence upload treats the persisted row as success',()=>{
+test('ambiguous evidence upload treats the persisted row as success and continues the simple action',()=>{
  assert.match(source,/\.eq\('servicio_id',service\.id\)\.eq\('storage_path',path\)\.maybeSingle\(\)/)
- assert.match(source,/if\(persisted\)\{await load\(\);return\}/)
+ assert.match(source,/async function finishUpload\(uploadedKind:EvidenceType\)\{await load\(\);await onUploaded\?\.\(uploadedKind\)\}/)
+ assert.match(source,/if\(persisted\)\{await finishUpload\(effectiveKind\);return\}/)
  assert.match(source,/if\(insertError\)[\s\S]*if\(persisted\)[\s\S]*remove\(\[path\]\)/)
 })
