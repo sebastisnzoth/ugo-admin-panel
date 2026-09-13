@@ -5,7 +5,7 @@ import type{Service}from'../shared'
 type EvidenceType='antes'|'durante'|'despues'
 type EvidenceRow={id:string;tipo:EvidenceType;storage_path:string;descripcion:string|null;created_at:string;url?:string|null}
 type Readiness={initial:boolean;final:boolean}
-type Props={service:Service|null;onReadinessChange?:(ready:Readiness)=>void;compact?:boolean;forceKind?:EvidenceType;actionLabel?:string;actionBusyLabel?:string;onUploaded?:(kind:EvidenceType)=>void|Promise<void>;disabled?:boolean}
+type Props={service:Service|null;onReadinessChange?:(ready:Readiness)=>void;compact?:boolean;forceKind?:EvidenceType;actionLabel?:string;actionBusyLabel?:string;onUploaded?:(kind:EvidenceType)=>void|Promise<unknown>;disabled?:boolean}
 const BUCKET='service-evidence'
 const LABELS:Record<EvidenceType,string>={antes:'Antes',durante:'Durante',despues:'Después'}
 
