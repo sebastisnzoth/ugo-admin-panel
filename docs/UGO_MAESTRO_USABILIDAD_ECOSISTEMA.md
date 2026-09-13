@@ -1,6 +1,6 @@
 # UGO — Documento Maestro de Usabilidad del Ecosistema
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 13 de septiembre de 2026  
 **Estado:** norma obligatoria de usabilidad  
 **Gobernado por:** `UGO_MASTER_GOVERNANCE.md`
 
@@ -189,21 +189,45 @@ Efectivo jamás usa lenguaje `protegido` o `retenido`.
 
 # 11. Proveedor
 
-El trabajo activo funciona como checklist progresivo:
+La prueba de usabilidad del proveedor es distinta a la del cliente: **debe poder trabajar sin aprender UGO**.
+
+Regla de oro:
 
 ```text
-En camino
-Llegué
-Foto inicial
-Iniciar
-Ejecutar
-Ampliar si corresponde
-Foto final
-Confirmar efectivo si corresponde
-Revisión/cierre
+veo el problema
+→ acepto
+→ voy
+→ empiezo
+→ lo resuelvo
+→ listo
 ```
 
-No mostrar acciones futuras como activas.
+Acciones visibles del happy path:
+
+```text
+ACEPTAR
+→ ESTOY YENDO
+→ EMPEZAR TRABAJO
+→ LISTO
+```
+
+`Llegué` se automatiza cuando ubicación/permisos son confiables; `YA LLEGUÉ` aparece sólo como fallback.
+
+La oportunidad muestra primero el problema, foto/video disponible, ubicación/zona útil, cuándo y valor/visita cuando aplique.
+
+Durante la misión activa, la pantalla muestra:
+
+```text
+qué resolver
+dónde ir
+una sola acción principal
+```
+
+No convertir evidencia, reportes, materiales, agenda o estados internos en una lista de pasos obligatorios para todos los trabajos. Sólo mostrar controles extra cuando una excepción real, política, seguridad, método de pago o disputa los haga necesarios.
+
+Si necesita diagnóstico presencial, `VER EN PERSONA` debe resolverlo como una visita según reglas vigentes sin crear un wizard adicional.
+
+Brief de desarrollo: `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
 
 ---
 
@@ -217,7 +241,10 @@ Sacar foto
 Usar mi ubicación
 Encontrar profesionales
 Elegir forma de pago
-Marcar que llegué
+Aceptar
+Estoy yendo
+Empezar trabajo
+Listo
 Confirmar efectivo recibido
 Aprobar trabajo
 Pedir otro servicio
@@ -283,6 +310,20 @@ Nunca hacer empezar de cero por una falla recuperable.
 [ ] 390×844 funciona con teclado y safe areas
 ```
 
+Checklist Proveedor:
+
+```text
+[ ] oportunidad se entiende en segundos
+[ ] problema tiene prioridad visual
+[ ] un CTA primario por estado
+[ ] happy path = Aceptar → Estoy yendo → Empezar trabajo → Listo
+[ ] llegada automática con fallback
+[ ] excepciones no contaminan el flujo normal
+[ ] no hay botones muertos
+[ ] retry conserva serviceId y contexto
+[ ] 360–430 y web responsive funcionan
+```
+
 ---
 
 # 16. Métrica de éxito
@@ -301,10 +342,20 @@ servicios completados
 repetición
 ```
 
+Para Proveedor:
+
+```text
+tiempo oportunidad → aceptar/rechazar
+acciones visibles por trabajo
+uso de fallback de llegada
+errores/retry durante misión
+completion rate
+```
+
 La optimización prioriza **menos esfuerzo sin perder precisión, seguridad ni trazabilidad**.
 
 ---
 
 # 17. Regla final
 
-**El cliente explica su problema como se lo explicaría a un amigo. Hugo lo entiende y UGO arma la solicitud. El cliente sólo completa lo imprescindible y confirma. Si una persona necesita aprender UGO para pedir ayuda, hay que rediseñar el flujo.**
+**El cliente explica su problema como se lo explicaría a un amigo. Hugo lo entiende y UGO arma la solicitud. El proveedor ve el problema, acepta, va, lo resuelve y marca listo. Si cualquiera de los dos necesita aprender UGO para completar el servicio, hay que rediseñar el flujo.**
