@@ -16,7 +16,7 @@
   .ugo-provider-root{
     min-height:100dvh;
     padding:0 0 0 112px;
-    background:#f4f7f5;
+    background:var(--ugo-bg,#f4f7f5);
   }
   .ugo-browser-role-shell .ugo-provider-root{min-height:100%}
   .provider-screen{
@@ -62,8 +62,8 @@
     align-content:center;
     gap:8px;
     border-top:0;
-    border-right:1px solid rgba(23,33,27,.1);
-    box-shadow:10px 0 30px rgba(23,33,27,.04);
+    border-right:1px solid color-mix(in srgb,var(--ugo-color-outline-variant,#263b4e) 70%,transparent);
+    box-shadow:10px 0 30px rgba(0,0,0,.12);
   }
   .ugo-browser-role-shell .provider-bottom-nav{
     position:absolute;
@@ -78,7 +78,7 @@
   }
   .provider-bottom-nav button.active,
   .provider-bottom-nav button[aria-current="page"]{
-    background:#e7f5ec;
+    background:color-mix(in srgb,var(--ugo-color-primary,#128c4a) 12%,var(--ugo-surface,#fff));
   }
   .provider-nav-badge{top:8px;right:10px}
 }
