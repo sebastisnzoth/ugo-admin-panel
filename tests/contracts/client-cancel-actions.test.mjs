@@ -25,6 +25,6 @@ test('Services screen offers a real cancellation action for cancellable client r
   const history = await read('src/mvp/ServiceHistoryPanel.tsx')
   assert.match(history, /CLIENT_CANCELLABLE_STATES/)
   assert.match(history, /rpc\('cancelar_servicio',\{p_servicio_id:serviceId\}\)/)
-  assert.match(history, />Cancelar solicitud</)
+  assert.match(history, /'Cancelar solicitud'/)
   assert.match(history, /type="button" className=\{filter==='todos'/)
 })
