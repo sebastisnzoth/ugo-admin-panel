@@ -34,12 +34,81 @@ export function MvpApp(){
  return <Deferred><UgoLanding/></Deferred>
 }
 
+type RecoveryPhase='idle'|'checking'|'ready'|'success'|'error'
+
+function hasImplicitRecoveryToken(){
+ const hash=new URLSearchParams(window.location.hash.replace(/^#/,''))
+ return hash.get('type')==='recovery'&&Boolean(hash.get('access_token'))
+}
+
+function cleanRecoveryUrl(){
+ const clean=new URL(window.location.href)
+ clean.searchParams.delete('code')
+ clean.searchParams.delete('auth')
+ clean.hash=''
+ window.history.replaceState({},'',clean.toString())
+}
+
 function RecoveryGate({role,children}:{role:'client'|'provider';children:React.ReactNode}){
- const[phase,setPhase]=useState<'idle'|'checking'|'ready'|'done'|'error'>(()=>new URLSearchParams(window.location.search).has('code')?'checking':'idle')
- const[password,setPassword]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
+ const hasCode=new URLSearchParams(window.location.search).has('code')
+ const recoveryIntent=hasCode||hasImplicitRecoveryToken()||new URLSearchParams(window.location.search).get('auth')==='recovery'
+ const[phase,setPhase]=useState<RecoveryPhase>(()=>recoveryIntent?'checking':'idle')
+ const[password,setPassword]=useState('')
+ const[confirmPassword,setConfirmPassword]=useState('')
+ const[busy,setBusy]=useState(false)
+ const[message,setMessage]=useState('')
  const supabase=React.useMemo(()=>getRoleSupabase(role),[role])
- useEffect(()=>{const code=new URLSearchParams(window.location.search).get('code');if(!code)return;let alive=true;supabase.auth.exchangeCodeForSession(code).then(({error})=>{if(!alive)return;if(error){setMessage(error.message);setPhase('error')}else{setPhase('ready');const clean=new URL(window.location.href);clean.searchParams.delete('code');window.history.replaceState({},'',clean.toString())}}).catch(e=>{if(alive){setMessage(e instanceof Error?e.message:'No se pudo validar el enlace.');setPhase('error')}});return()=>{alive=false}},[role,supabase])
- if(phase==='idle'||phase==='done')return <>{children}</>
- async function save(e:React.FormEvent){e.preventDefault();if(password.length<8)return setMessage('La contraseña debe tener al menos 8 caracteres.');setBusy(true);setMessage('');const{error}=await supabase.auth.updateUser({password});setBusy(false);if(error)return setMessage(error.message);setPhase('done');setMessage('Contraseña actualizada. Ya podés continuar.')}
- return <main className={`mvp-auth-page role-${role}`}><section className="mvp-auth-card"><div className="mvp-mini-orb"/><div className="mvp-kicker">U.G.O. · {role==='client'?'CLIENTE':'PROVEEDOR'}</div><h1>{phase==='checking'?'Validando enlace…':phase==='error'?'Enlace no válido':'Elegí una contraseña nueva'}</h1>{phase==='checking'?<p>Estamos verificando tu enlace seguro.</p>:phase==='error'?<><p>{message}</p><Button className="mvp-primary" onClick={()=>window.location.replace(`${window.location.pathname}?app=${role}`)}>Volver a ingresar</Button></>:<form onSubmit={save}><p>Usá al menos 8 caracteres para proteger tu cuenta.</p><label>Nueva contraseña<Input type="password" minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label>{message&&<div className="mvp-form-notice">{message}</div>}<Button className="mvp-primary" loading={busy}>Guardar contraseña</Button></form>}</section></main>
+
+ useEffect(()=>{
+  if(!recoveryIntent)return
+  let alive=true
+  let settled=false
+  const ready=()=>{if(!alive||settled)return;settled=true;cleanRecoveryUrl();setMessage('');setPhase('ready')}
+  const fail=(text:string)=>{if(!alive||settled)return;settled=true;setMessage(text);setPhase('error')}
+  const code=new URLSearchParams(window.location.search).get('code')
+  const{data:listener}=supabase.auth.onAuthStateChange((event,session)=>{
+   if(!alive)return
+   if((event==='PASSWORD_RECOVERY'||event==='SIGNED_IN')&&session)ready()
+  })
+  if(code){
+   supabase.auth.exchangeCodeForSession(code).then(({data,error})=>{
+    if(error)return fail(error.message)
+    if(data.session)ready();else fail('El enlace de recuperación no creó una sesión válida.')
+   }).catch(e=>fail(e instanceof Error?e.message:'No se pudo validar el enlace.'))
+  }else{
+   supabase.auth.getSession().then(({data,error})=>{
+    if(error)return fail(error.message)
+    if(data.session)ready();else fail('El enlace venció o ya fue utilizado. Solicitá uno nuevo.')
+   }).catch(e=>fail(e instanceof Error?e.message:'No se pudo validar el enlace.'))
+  }
+  return()=>{alive=false;listener.subscription.unsubscribe()}
+ },[recoveryIntent,supabase])
+
+ if(phase==='idle')return <>{children}</>
+
+ async function save(e:React.FormEvent){
+  e.preventDefault()
+  setMessage('')
+  if(password.length<8)return setMessage('La contraseña debe tener al menos 8 caracteres.')
+  if(password!==confirmPassword)return setMessage('Las contraseñas no coinciden.')
+  setBusy(true)
+  const{error}=await supabase.auth.updateUser({password})
+  if(error){setBusy(false);setMessage(error.message);return}
+  await supabase.auth.signOut()
+  setBusy(false)
+  setPassword('')
+  setConfirmPassword('')
+  setMessage('Contraseña actualizada correctamente. Ya podés ingresar con la nueva contraseña.')
+  setPhase('success')
+ }
+
+ const backToLogin=()=>window.location.replace(`${window.location.pathname}?app=${role}`)
+ return <main className={`mvp-auth-page role-${role}`}>
+  <section className="mvp-auth-card" aria-live="polite">
+   <div className="mvp-mini-orb"/>
+   <div className="mvp-kicker">U.G.O. · {role==='client'?'CLIENTE':'PROVEEDOR'}</div>
+   <h1>{phase==='checking'?'Validando enlace…':phase==='error'?'Enlace no válido':phase==='success'?'Contraseña actualizada':'Creá una contraseña nueva'}</h1>
+   {phase==='checking'?<p>Estamos verificando tu enlace seguro de recuperación.</p>:phase==='error'?<><p role="alert">{message}</p><Button className="mvp-primary" onClick={backToLogin}>Solicitar otro enlace</Button></>:phase==='success'?<><p role="status">{message}</p><Button className="mvp-primary" onClick={backToLogin}>Ingresar a UGO</Button></>:<form onSubmit={save}><p>Usá al menos 8 caracteres. Al guardarla, cerraremos la sesión temporal del enlace.</p><label>Nueva contraseña<Input type="password" minLength={8} autoComplete="new-password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><label>Repetí la contraseña<Input type="password" minLength={8} autoComplete="new-password" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required/></label>{message&&<div className="mvp-form-notice" role="alert">{message}</div>}<Button className="mvp-primary" loading={busy}>Guardar contraseña</Button></form>}
+  </section>
+ </main>
 }
