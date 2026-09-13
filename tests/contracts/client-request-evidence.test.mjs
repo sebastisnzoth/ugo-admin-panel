@@ -1,0 +1,28 @@
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+
+const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
+
+test('request photos stay optional and upload failures never block the request contract',async()=>{
+ const source=await read('src/mvp/ClientRequestEvidence.tsx')
+ const guided=await read('src/mvp/client/ClientGuidedRequest.tsx')
+ assert.match(source,/Son opcionales/)
+ assert.doesNotMatch(source,/Necesitás al menos una foto para enviar la solicitud/)
+ assert.doesNotMatch(source,/Adjuntá al menos una foto clara/)
+ assert.match(source,/storage\.from\(BUCKET\)\.remove\(\[uploadedPath\]\)/)
+ assert.match(source,/Probá otra vez o enviá la solicitud sin foto/)
+ assert.match(guided,/FOTO OPCIONAL/)
+ assert.match(guided,/Podés Continuar sin foto/)
+ assert.doesNotMatch(guided,/photoCount\s*[<!=]+\s*1/)
+})
+
+test('request evidence repair migration restores draft binding and mobile image formats',async()=>{
+ const sql=await read('supabase/migrations/20260913192000_request_evidence_upload_repair.sql')
+ assert.match(sql,/add column if not exists draft_id uuid/)
+ assert.match(sql,/idx_evidencias_solicitud_cliente_draft_pending/)
+ assert.match(sql,/request-evidence/)
+ assert.match(sql,/image\/heic/)
+ assert.match(sql,/image\/heif/)
+ assert.match(sql,/draft_id=v_draft_id/)
+})
