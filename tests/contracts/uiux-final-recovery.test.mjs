@@ -26,5 +26,5 @@ test('admin, client and provider expose final mobile recovery styles',async()=>{
  assert.match(admin,/repeat\(6,minmax\(0,1fr\)\)/)
  assert.match(payment,/--ugo-touch-target/)
  assert.match(payment,/safe-area-inset-bottom/)
- assert.match(provider,/repeat\(5,1fr\)/)
+ assert.match(provider,/repeat\(5,minmax\(0,1fr\)\)/)
 })
