@@ -3,7 +3,7 @@ import type{ProviderActionHandlers,ProviderScreen}from'./providerTypes'
 
 const noop=()=>{}
 const unavailable=async()=>false
-const emptyActions:ProviderActionHandlers={openHome:noop,openDemand:noop,openOpportunities:noop,openOpportunity:noop,acceptOpportunity:unavailable,rejectOpportunity:unavailable,openActiveJob:noop,openEarnings:noop,openProfile:noop,openHistory:noop,openDispute:noop}
+const emptyActions:ProviderActionHandlers={openHome:noop,openDemand:noop,openOpportunities:noop,openOpportunity:noop,acceptOpportunity:unavailable,rejectOpportunity:unavailable,openActiveJob:noop,openAgenda:noop,openEarnings:noop,openProfile:noop,openHistory:noop,openDispute:noop}
 
 type ProviderFlow={screen:ProviderScreen;opportunityId:string|null;actions:ProviderActionHandlers;navigate:(screen:ProviderScreen,id?:string|null)=>void;registerActions:(actions:Partial<ProviderActionHandlers>)=>()=>void}
 const ProviderFlowContext=createContext<ProviderFlow|null>(null)

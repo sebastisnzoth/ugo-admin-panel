@@ -1,4 +1,4 @@
-export type ProviderScreen = 'home' | 'demand' | 'opportunities' | 'opportunity-detail' | 'active-job' | 'earnings' | 'profile' | 'history' | 'dispute'
+export type ProviderScreen = 'home' | 'demand' | 'opportunities' | 'opportunity-detail' | 'active-job' | 'agenda' | 'earnings' | 'profile' | 'history' | 'dispute'
 
 export type ProviderOperationalState = 'offline' | 'available' | 'opportunity_pending' | 'assigned' | 'payment_pending' | 'en_camino' | 'llegado' | 'en_progreso' | 'esperando_aprobacion' | 'completed'
 
@@ -40,6 +40,7 @@ export type ProviderActionHandlers = {
   acceptOpportunity: (id: string) => Promise<boolean>
   rejectOpportunity: (id: string) => Promise<boolean>
   openActiveJob: () => void
+  openAgenda: () => void
   openEarnings: () => void
   openProfile: () => void
   openHistory: () => void
