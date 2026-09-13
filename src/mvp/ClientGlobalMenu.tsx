@@ -49,7 +49,7 @@ export function ClientGlobalMenu(){
    <div className="ugo-client-menu-section-label">Tu actividad</div>
    <nav className="ugo-client-menu-list ugo-client-global-list">
     <button type="button" onClick={home}><span>⌂</span><div><b>Inicio</b><small>Volver al radar</small></div><em>›</em></button>
-    <button type="button" onClick={history}><span>▣</span><div><b>Mis servicios</b><small>Pedidos e historial</small></div><em>›</em></button>
+    <button type="button" onClick={history}><span>◷</span><div><b>Actividad</b><small>Pedidos activos, cancelados e historial</small></div><em>›</em></button>
     <button type="button" onClick={location}><span>⌖</span><div><b>Mi ubicación</b><small>Actualizar dónde estás</small></div><em>›</em></button>
    </nav>
 
