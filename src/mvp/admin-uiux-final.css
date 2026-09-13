@@ -1,0 +1,15 @@
+/* Final Admin UI/UX pass — truthful degraded state, six-destination mobile nav, accessible focus. */
+.ugo-admin2-metrics-error{display:flex;align-items:center;justify-content:space-between;gap:var(--ugo-space-md);margin:0 0 var(--ugo-space-md);padding:var(--ugo-space-md);border:1px solid color-mix(in srgb,var(--ugo-color-warning) 45%,var(--ugo-color-outline-variant));border-radius:var(--ugo-radius-lg);background:color-mix(in srgb,var(--ugo-color-warning) 8%,var(--ugo-color-surface-lowest));color:var(--ugo-color-on-surface)}
+.ugo-admin2-metrics-error>div{display:grid;gap:var(--ugo-space-xxs)}
+.ugo-admin2-metrics-error strong{font-size:14px}.ugo-admin2-metrics-error span{font-size:12px;line-height:1.45;color:var(--ugo-color-on-surface-variant)}
+.ugo-admin2-metrics-error button{min-height:var(--ugo-touch-target);padding:0 var(--ugo-space-md);border:1px solid var(--ugo-color-outline-variant);border-radius:var(--ugo-radius-md);background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font-weight:800}
+.ugo-admin2-status.degraded i{background:var(--ugo-color-warning);box-shadow:0 0 0 4px color-mix(in srgb,var(--ugo-color-warning) 18%,transparent)}
+.ugo-admin2 [role="tab"]:focus-visible,.ugo-admin2-sidebar nav button:focus-visible,.ugo-admin2-refresh:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 35%,transparent);outline-offset:2px}
+@media(max-width:700px){
+ .ugo-admin2-sidebar nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
+ .ugo-admin2-sidebar nav button{min-width:0}
+ .ugo-admin2-sidebar nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .ugo-admin2-metrics-error{align-items:stretch;flex-direction:column}
+ .ugo-admin2-metrics-error button{width:100%}
+}
+@media(max-width:390px){.ugo-admin2-sidebar nav button span{font-size:7px}.ugo-admin2-sidebar nav button b{font-size:16px}}
