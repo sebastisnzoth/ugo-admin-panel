@@ -1,0 +1,95 @@
+/* Responsive layout for the canonical UGO Provider flow.
+   Mobile keeps the bottom navigation; wider screens progressively become an operational web workspace. */
+
+@media (min-width:600px) and (max-width:899px){
+  .provider-screen{
+    width:min(100%,760px);
+    padding:30px 32px;
+  }
+  .provider-bottom-nav{width:min(100%,760px)}
+  .provider-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .provider-map{height:300px}
+  .provider-notice{width:min(calc(100% - 48px),720px)}
+}
+
+@media (min-width:900px){
+  .ugo-provider-root{
+    min-height:100dvh;
+    padding:0 0 0 112px;
+    background:#f4f7f5;
+  }
+  .ugo-browser-role-shell .ugo-provider-root{min-height:100%}
+  .provider-screen{
+    width:min(100%,1120px);
+    max-width:none;
+    margin:0;
+    padding:38px 44px 48px;
+  }
+  .provider-top{align-items:center;margin-bottom:26px}
+  .provider-screen h1{font-size:38px}
+  .provider-screen h2{font-size:23px}
+  .provider-hero{padding:28px;margin-bottom:20px}
+  .provider-hero h2{font-size:28px;max-width:760px}
+  .provider-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .provider-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .provider-home-grid>:last-child{grid-column:auto}
+  .provider-card{padding:22px}
+  .provider-map{height:360px}
+  .provider-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .provider-opportunity{min-height:132px}
+  .provider-detail{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  .provider-facts{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .provider-actions{max-width:620px}
+  .provider-next-step,.provider-hugo-assistant{max-width:860px}
+  .provider-evidence-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .provider-notice{
+    position:fixed;
+    top:30px;
+    right:30px;
+    width:min(420px,calc(100vw - 174px));
+    margin:0;
+  }
+  .provider-bottom-nav{
+    top:0;
+    bottom:0;
+    left:0;
+    transform:none;
+    width:112px;
+    height:100dvh;
+    padding:22px 10px;
+    grid-template-columns:1fr;
+    grid-template-rows:repeat(5,minmax(72px,96px));
+    align-content:center;
+    gap:8px;
+    border-top:0;
+    border-right:1px solid rgba(23,33,27,.1);
+    box-shadow:10px 0 30px rgba(23,33,27,.04);
+  }
+  .ugo-browser-role-shell .provider-bottom-nav{
+    position:absolute;
+    height:100%;
+    border-radius:28px 0 0 28px;
+  }
+  .provider-bottom-nav button{
+    min-height:72px;
+    border-radius:16px;
+    padding:10px 6px;
+    font-size:12px;
+  }
+  .provider-bottom-nav button.active,
+  .provider-bottom-nav button[aria-current="page"]{
+    background:#e7f5ec;
+  }
+  .provider-nav-badge{top:8px;right:10px}
+}
+
+@media (min-width:1200px){
+  .ugo-provider-root{padding-left:128px}
+  .provider-screen{width:min(100%,1240px);padding:44px 56px 56px}
+  .provider-bottom-nav{width:128px;padding-left:14px;padding-right:14px}
+  .provider-home-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .provider-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .provider-map{height:400px}
+  .ugo-browser-role-shell .provider-bottom-nav{width:112px}
+  .ugo-browser-role-shell .ugo-provider-root{padding-left:112px}
+}
