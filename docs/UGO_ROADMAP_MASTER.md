@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.7 · 11 de septiembre de 2026  
+**Versión:** 2.8 · 13 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -60,7 +60,7 @@ Prioridad: P0 integridad/auth/permisos/dinero/core; P1 operación/UX; P2 intelig
 
 ---
 
-# 4. Snapshot de conciencia · 11/09/2026
+# 4. Snapshot de conciencia
 
 ## Bloque A — solicitud → asignación → pago
 
@@ -89,7 +89,7 @@ asignado + pago listo
 → en_progreso
 ```
 
-UI/backend alineados y guard temporal de evidencia aplicado en producción. Falta E2E GPS real.
+UI/backend alineados y guard temporal de evidencia aplicado. Falta E2E GPS real.
 
 ## Bloque C — ampliación → cierre
 
@@ -108,15 +108,15 @@ No muta pago base. Retry/reembolso están modelados. Estado: **IMPLEMENTED, falt
 
 ## Bloque D — red automatizada mínima
 
-`npm test` cubre 6 contratos core: llegada, evidencia, efectivo, delta electrónico y ownership de review. No reemplaza RPC/RLS/E2E.
+`npm test` cubre contratos core de llegada, evidencia, efectivo, delta electrónico, ownership de review y lifecycle Cliente↔Proveedor. No reemplaza RPC/RLS/E2E.
 
 ## Bloque E — Panel de control · Integraciones
 
-Auditoría realizada sobre `main`, Supabase producción y Vercel:
+Auditoría realizada sobre `main`, Supabase producción y Vercel.
 
 ### Panel Admin
 
-`Configuración → Sistema` ahora distingue:
+`Configuración → Sistema` distingue:
 
 ```text
 General
@@ -127,14 +127,14 @@ Integraciones
 Estado técnico
 ```
 
-La nueva pestaña **Integraciones** consulta `api/admin/integrations-status.ts` con sesión Admin y muestra metadata segura del runtime, sin exponer secretos.
+La pestaña **Integraciones** consulta `api/admin/integrations-status.ts` con sesión Admin y muestra metadata segura del runtime, sin exponer secretos.
 
 ### Hallazgos
 
 - Supabase es el core persistente real.
-- La bóveda `private.payment_credentials` tenía **0 filas** al control.
-- `AdminPaymentCredentials` podía guardar credenciales privadas, pero los adapters de pago productivos siguen leyendo variables de entorno. Por lo tanto “guardada en panel” no equivale a “usada en runtime”.
-- `admin_payment_credentials_status()` tenía una dependencia no portable (`jsonb_object_length`) detectada durante la auditoría. Fue corregida y aplicada en producción con `20260911230000_admin_payment_credentials_status_fix.sql`.
+- La bóveda `private.payment_credentials` tenía **0 filas** al control registrado.
+- `AdminPaymentCredentials` puede guardar credenciales privadas, pero los adapters productivos siguen leyendo variables de entorno; “guardada en panel” no equivale a “usada en runtime”.
+- `admin_payment_credentials_status()` tuvo una dependencia no portable corregida con `20260911230000_admin_payment_credentials_status_fix.sql`.
 - Mercado Pago BR runtime: `MERCADO_PAGO_ACCESS_TOKEN`.
 - Pix direto: `UGO_PIX_KEY`.
 - OpenPix: sandbox + feature flag; no libera fondos reales.
@@ -142,22 +142,7 @@ La nueva pestaña **Integraciones** consulta `api/admin/integrations-status.ts` 
 - Hugo Voice: `OPENAI_API_KEY` server-side.
 - WhatsApp Cloud API: token + phone ID server-side; bandeja Admin real.
 - Mapas actuales: MapLibre + OSM; routing Haversine por defecto / OSRM opcional.
-- Vercel production más reciente observado estaba `ERROR` en commit `61872b20`; causa: tipos `@vercel/node` no resolubles para funciones TS.
-- `main` ya contiene el fix local `api/vercel-node.d.ts` (`2bef4d97`). Falta demostrar deployment posterior `READY` + smoke.
-- Había un production deployment anterior `READY` en commit `555daf48`, rollback candidate.
-
-### CI del bloque
-
-Run `#260`, head `efec5f26`:
-
-```text
-audit     ✅ 0 vulnerabilidades
-build     ✅
-npm test  ✅ 6/6
-lint      ❌ versiones anteriores de AdminPaymentCredentials/AdminSystemSettings
-```
-
-Esos errores de lint fueron corregidos posteriormente en `main`. Falta un CI nuevo sobre el HEAD actual; no marcar verde por extrapolación.
+- Falta demostrar deployment de producción estable + smoke sobre HEAD vigente.
 
 ### Riesgo visible
 
@@ -169,7 +154,37 @@ credencial guardada
 ≠ E2E validado
 ```
 
-Próximo cierre: validar CI actual, deployment Vercel READY, smoke Admin/endpoint y después unificar resolución server-side de credenciales si el panel será fuente operativa de configuración.
+## Bloque F — Proveedor · flujo simple P0 · 13/09/2026
+
+Implementado en `main` el contrato definido en `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`:
+
+```text
+VER EL PROBLEMA
+→ ACEPTAR
+→ ESTOY YENDO
+→ llegada automática por ubicación cuando aplica
+   ↳ YA LLEGUÉ como fallback
+→ EMPEZAR TRABAJO
+→ LISTO
+```
+
+La simplificación es de **interfaz**, no de integridad. UGO conserva por detrás:
+
+- mismo `serviceId` y máquina de estados canónica;
+- aceptación atómica;
+- forma de pago válida antes de salir;
+- RPC/backend como autoridad de transiciones;
+- evidencia `Antes` antes de iniciar;
+- evidencia `Después` antes del cierre;
+- confirmación de efectivo cuando corresponda;
+- ampliaciones/precio adicional sólo como excepción explícita y aprobable;
+- Realtime y trazabilidad.
+
+La evidencia obligatoria se captura desde la acción humana (`EMPEZAR TRABAJO` / `LISTO`) sin convertirla en un paso administrativo separado. `LISTO` agrupa el cierre visible, mientras backend mantiene guards de evidencia, dinero y aprobación del cliente.
+
+La llegada automática usa el tracking real y radio operativo de 200 m cuando hay geolocalización autorizada; el botón manual permanece como recuperación.
+
+Estado de madurez: **IMPLEMENTED**. Para pasar a `VALIDATED` faltan E2E real Cliente↔Proveedor en TEST, GPS/cámara/permisos en dispositivo y smoke responsive del recorrido completo.
 
 ---
 
@@ -202,18 +217,18 @@ Próximo cierre: validar CI actual, deployment Vercel READY, smoke Admin/endpoin
 |---|---|---:|---|
 | Shell nuevo | 🟡 | P0 | smoke + legacy fuera |
 | Auth/Onboarding/KYC | 🟡 | P0 | roles/RLS |
-| Home | 🟡 | P1 | datos/estado |
+| Home | 🟡 | P1 | smoke responsive con datos reales |
 | Demanda | 🟡 | P1 | fuente analítica |
-| Oportunidades | 🟡 | P0 | E2E |
+| Oportunidades | 🟡 | P0 | flujo problem-first implementado; falta E2E real |
 | Aceptar/Rechazar | ✅ | P0 | E2E competitivo |
 | Tarifa al asignar | ✅ | P0 | monitoreo |
-| Trabajo activo | 🟡 | P0 | E2E lifecycle |
-| Tracking | 🟡 | P1 | ETA/reconexión |
+| Trabajo activo | 🟡 | P0 | flujo simple implementado; falta E2E lifecycle |
+| Tracking | 🟡 | P1 | llegada automática implementada; falta E2E GPS/reconexión |
 | Radio 200 m | ✅ | P1 | E2E GPS |
-| Evidencia por estado | ✅ | P0 | E2E positivo/negativo |
-| Ampliar servicio | 🟡 | P0 | convergencia E2E |
-| Efectivo recibido | 🟡 | P0 | ledger + E2E |
-| Hugo Asistente | 🟡 | P2 | contexto completo |
+| Evidencia por estado | ✅ | P0 | integrada detrás de CTA; E2E positivo/negativo |
+| Ampliar servicio | 🟡 | P0 | excepción contextual; convergencia E2E |
+| Efectivo recibido | 🟡 | P0 | cierre visible unificado; ledger + E2E |
+| Hugo Asistente | 🟡 | P2 | mantener fuera del happy path salvo ayuda contextual |
 
 ---
 
@@ -242,28 +257,30 @@ Orden:
 
 ```text
 1 validar CI sobre HEAD actual
-2 Vercel production READY + smoke
-3 test positivo/negativo /api/admin/integrations-status
-4 tests RPC/RLS aislados
-5 E2E solicitud→asignación
-6 E2E pago electrónico base
+2 E2E solicitud→asignación→Proveedor problem-first
+3 E2E pago electrónico base
+4 E2E efectivo
+5 E2E ESTOY YENDO→llegada automática/fallback→EMPEZAR→LISTO
+6 E2E evidencia Antes/Después integrada detrás de acciones
 7 E2E delta ampliación
-8 E2E efectivo
-9 E2E llegada/evidencia/cierre
-10 responsive/accessibility
+8 tests RPC/RLS aislados
+9 responsive/accessibility 360–430 + desktop
+10 deploy objetivo + smoke
 ```
 
-Casos Admin/integraciones inmediatos:
+Casos críticos del flujo Proveedor:
 
 ```text
-anon → integrations-status 401
-sesión inválida → 401
-cliente/proveedor → 403
-admin activo → metadata sin secretos
-bóveda vacía → UI no inventa credencial
-credencial almacenada ≠ runtime activo
-Mercado Pago AR → no mostrar operativo
-Vercel deployment fallido → no declarar release
+sin forma de pago válida → ESTOY YENDO bloqueado
+GPS autorizado + <=200 m → llegada automática
+GPS denegado/error → YA LLEGUÉ disponible
+sin evidencia Antes → inicio no persiste
+foto Antes válida → inicio persiste
+sin evidencia Después → cierre no persiste
+foto Después válida → LISTO avanza a revisión
+cash → LISTO registra recepción antes de revisión
+ampliación con costo → no se ejecuta/cierra sin aprobación/financiación aplicable
+retry/realtime → mismo serviceId y estado real
 ```
 
 ---
@@ -274,11 +291,12 @@ Después de integridad P0:
 
 ```text
 [ ] Cliente converge completamente al journey Hugo
-[ ] Proveedor sin salida legacy
+[~] Proveedor happy path simple implementado; falta smoke/E2E real
+[ ] Proveedor legacy fuera de operación
 [ ] Admin/Super Admin converge
 [ ] loading/empty/error/offline consistentes
-[ ] mobile 360–430
-[ ] desktop real
+[ ] mobile 360–430 validado en dispositivo
+[ ] desktop real validado
 [ ] accesibilidad AA crítica
 ```
 
@@ -326,7 +344,7 @@ No saltar fase dejando P0 crítico abierto.
 
 # 13. Criterio MVP exitoso
 
-Cliente pide/paga/sigue/amplía/aprueba; Proveedor acepta/ejecuta/evidencia/cobra; Admin resuelve excepciones y observa integraciones reales. Permisos, dinero, evidencia y secretos están protegidos. CI, deploy y smoke son demostrables.
+Cliente pide/paga/sigue/amplía/aprueba; Proveedor ve el problema, acepta, va, resuelve y marca listo; Admin resuelve excepciones y observa integraciones reales. Permisos, dinero, evidencia y secretos están protegidos. CI, deploy y smoke son demostrables.
 
 ---
 
@@ -344,4 +362,4 @@ código/migración
 
 # 15. Regla final
 
-**El próximo gran avance de UGO es convertir el circuito ya existente —incluidas sus integraciones— en un sistema confiable, validado, medible, repetible y observable.**
+**El próximo gran avance de UGO es convertir el circuito ya existente —incluidas sus integraciones— en un sistema confiable, validado, medible, repetible y observable sin trasladar esa complejidad al proveedor.**
