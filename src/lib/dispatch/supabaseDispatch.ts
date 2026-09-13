@@ -7,8 +7,10 @@ import type { Coordinates, DispatchProvider, DispatchRequest, DispatchResult } f
 const supabase = getRoleSupabase('client')
 const MATCHING_TIMEOUT_MS = 12000
 const STATUS_TIMEOUT_MS = 5000
+const PREFERRED_PROVIDER_MAX_AGE_MS = 20 * 60 * 1000
 
 type RpcResponse = { data: any; error: any }
+type StoredPreferredProvider = { id?: unknown; categoryId?: unknown; categorySlug?: unknown; at?: unknown }
 
 function timeoutAfter<T>(ms: number, label: string): Promise<T> {
   return new Promise((_, reject) => {
@@ -32,6 +34,26 @@ function storedPickup(): Coordinates | null {
     if (Number.isFinite(at) && Date.now() - at > 10 * 60 * 1000) return null
     return { latitude, longitude }
   } catch {
+    return null
+  }
+}
+
+function consumeStoredPreferredProvider(category: string): string | null {
+  try {
+    const raw = sessionStorage.getItem('ugo:preferred-provider')
+    if (!raw) return null
+    sessionStorage.removeItem('ugo:preferred-provider')
+    const value = JSON.parse(raw) as StoredPreferredProvider
+    const id = typeof value.id === 'string' ? value.id.trim() : ''
+    const categoryId = typeof value.categoryId === 'string' ? value.categoryId.trim() : ''
+    const categorySlug = typeof value.categorySlug === 'string' ? value.categorySlug.trim() : ''
+    const at = Number(value.at)
+    if (!id) return null
+    if (Number.isFinite(at) && Date.now() - at > PREFERRED_PROVIDER_MAX_AGE_MS) return null
+    if (category && category !== categoryId && category !== categorySlug) return null
+    return id
+  } catch {
+    try { sessionStorage.removeItem('ugo:preferred-provider') } catch { /* noop */ }
     return null
   }
 }
@@ -70,13 +92,15 @@ export class SupabaseDispatchProvider implements DispatchProvider {
 
   async start(request: DispatchRequest): Promise<DispatchResult> {
     await persistPickup(request.serviceId, request.pickup || storedPickup())
+    const storedPreferredProviderId = consumeStoredPreferredProvider(request.category)
+    const preferredProviderId = request.preferredProviderId || storedPreferredProviderId
 
-    if (request.preferredProviderId) {
+    if (preferredProviderId) {
       try {
         const { data, error } = await bounded<RpcResponse>(
           (supabase as any).rpc('iniciar_matching_dirigido', {
             p_servicio_id: request.serviceId,
-            p_proveedor_id: request.preferredProviderId,
+            p_proveedor_id: preferredProviderId,
           }),
           MATCHING_TIMEOUT_MS,
           'La búsqueda de profesionales tardó demasiado. Tu solicitud quedó guardada y podés seguir desde Inicio.',
