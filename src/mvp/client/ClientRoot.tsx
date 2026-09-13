@@ -12,6 +12,7 @@ import{ClientOnboardingGate}from'../ClientOnboardingGate'
 import{ClientGuidedRequest}from'./ClientGuidedRequest'
 import{ClientHugoBridge}from'./ClientHugoBridge'
 import{ClientPaymentChoice}from'./ClientPaymentChoice'
+import{ClientPremiumHome}from'./ClientPremiumHome'
 import{useClientFlow}from'./clientFlow'
 import'./client-guided-request.css'
 import'./client-payment-choice.css'
@@ -21,5 +22,5 @@ type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow()
  const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
- return <ClientOnboardingGate><div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientGuidedRequest/><ClientPaymentChoice/><ClientHugoBridge/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div></ClientOnboardingGate>
+ return <ClientOnboardingGate><div className="ugo-client-root">{demo&&<DemoSebastianPaymentBridge/>}<ClientPremiumHome/><ClientGuidedRequest/><ClientPaymentChoice/><ClientHugoBridge/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceHistoryPanel role="client" openRequest={flow.screen==='history'}/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/></div></ClientOnboardingGate>
 }
