@@ -3,13 +3,15 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const source=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('client premium home mirrors the approved product hierarchy',async()=>{
+test('client premium home mirrors the approved conversational product hierarchy',async()=>{
  const text=await source('src/mvp/client/ClientPremiumHome.tsx')
- assert.match(text,/¿Qué servicio necesitás\?/)
- assert.match(text,/Contanos qué necesitás/)
- assert.match(text,/Pedir un servicio/)
+ assert.match(text,/Contame qué necesitás\. Yo te ayudo a resolverlo\./)
+ assert.match(text,/Hablar con Hugo/)
+ assert.match(text,/Escribir pedido/)
+ assert.match(text,/Decí “Hola Hugo”/)
  assert.match(text,/ugo-client-home-map/)
  assert.match(text,/UGO_CLIENT_GUIDED_REQUEST_OPEN/)
+ assert.match(text,/UGO_UI_EVENTS\.clientHugo/)
  assert.match(text,/maplibre-gl\/dist\/maplibre-gl\.css/)
 })
 
