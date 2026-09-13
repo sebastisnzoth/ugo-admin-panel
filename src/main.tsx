@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { MvpApp } from './mvp/MvpApp'
+import { UGO_ENVIRONMENT } from './lib/supabaseProject'
 
 class AppErrorBoundary extends React.Component<React.PropsWithChildren, {error: Error | null}> {
   state={error:null as Error|null}
@@ -21,8 +22,10 @@ class AppErrorBoundary extends React.Component<React.PropsWithChildren, {error: 
   }
 }
 
+function TestEnvironmentBadge(){if(UGO_ENVIRONMENT!=='test')return null;return <div aria-label="UGO ambiente de prueba" style={{position:'fixed',top:8,right:8,zIndex:99999,padding:'5px 9px',borderRadius:999,background:'#101828',color:'#fff',font:'700 11px/1.2 Inter,system-ui,sans-serif',letterSpacing:'.08em',boxShadow:'0 4px 14px rgba(16,24,40,.18)',pointerEvents:'none'}}>UGO TEST</div>}
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <AppErrorBoundary><MvpApp /></AppErrorBoundary>
+    <AppErrorBoundary><TestEnvironmentBadge/><MvpApp /></AppErrorBoundary>
   </React.StrictMode>,
 )
