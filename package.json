@@ -6,10 +6,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "verify:test-env": "node scripts/assert-test-environment.mjs",
+    "build": "npm run verify:test-env && tsc -b && vite build",
     "lint": "eslint .",
-    "test": "node --test tests/**/*.test.mjs",
-    "test:integration": "node --test tests/integration/**/*.test.mjs",
+    "test": "npm run verify:test-env && node --test tests/**/*.test.mjs",
+    "test:integration": "npm run verify:test-env && node --test tests/integration/**/*.test.mjs",
     "preview": "vite preview"
   },
   "dependencies": {
