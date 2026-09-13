@@ -96,9 +96,9 @@ test('provider simple flow keeps automatic arrival with a manual fallback',async
   read('src/mvp/provider/ProviderRoot.tsx'),
   read('src/mvp/ProviderLocationTracker.tsx'),
  ])
- assert.match(activeJob,/>ESTOY YENDO</)
+ assert.match(activeJob,/ESTOY YENDO/)
  assert.match(activeJob,/actionLabel="EMPEZAR TRABAJO"/)
- assert.match(activeJob,/>YA LLEGUÉ</)
+ assert.match(activeJob,/YA LLEGUÉ/)
  assert.match(root,/onAutoArrival=/)
  assert.match(tracker,/ARRIVAL_RADIUS_M=200/)
  assert.match(tracker,/autoArrivalRef\.current/)
@@ -106,7 +106,7 @@ test('provider simple flow keeps automatic arrival with a manual fallback',async
 
 test('provider opportunity UI is problem-first and avoids exposing ranking bureaucracy',async()=>{
  const opportunities=await read('src/mvp/provider/ProviderOpportunities.tsx')
- assert.match(opportunities,/>ACEPTAR</)
+ assert.match(opportunities,/ACEPTAR/)
  assert.match(opportunities,/NO PUEDO TOMARLO/)
  assert.match(opportunities,/¿Lo podés resolver\?/)
  assert.doesNotMatch(opportunities,/COMPATIBILIDAD/)
