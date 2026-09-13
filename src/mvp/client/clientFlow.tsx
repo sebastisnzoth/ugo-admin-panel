@@ -39,7 +39,9 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
   const registerActions = useCallback((next: Partial<ClientActionHandlers>) => {
     handlersRef.current = { ...handlersRef.current, ...next }
     return () => {
-      for (const key of Object.keys(next) as Array<keyof ClientActionHandlers>) delete handlersRef.current[key]
+      for (const key of Object.keys(next) as Array<keyof ClientActionHandlers>) {
+        if (handlersRef.current[key] === next[key]) delete handlersRef.current[key]
+      }
     }
   }, [])
   const actions = useMemo(() => Object.fromEntries(
