@@ -77,15 +77,40 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
  assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
 })
 
-test('provider review request requires final evidence and cash receipt when cash is selected',async()=>{
+test('provider closes with one visible LISTO action while backend keeps evidence and cash guards',async()=>{
  const [providerData,activeJob,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
- assert.match(activeJob,/state:'esperando_aprobacion'[\s\S]*disabled:!evidence\.final/)
- assert.match(providerData,/state==='esperando_aprobacion'&&cashSelected&&!cashConfirmed/)
+ assert.match(activeJob,/actionLabel="LISTO"/)
+ assert.match(activeJob,/completeService/)
+ assert.match(providerData,/confirmar_pago_efectivo/)
+ assert.match(providerData,/advanceProviderService\(supabase,serviceId,'esperando_aprobacion'\)/)
  assert.match(backend,/v_servicio\.estado='en_progreso'[\s\S]*e\.tipo='despues'/)
+})
+
+test('provider simple flow keeps automatic arrival with a manual fallback',async()=>{
+ const [activeJob,root,tracker]=await Promise.all([
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
+  read('src/mvp/provider/ProviderRoot.tsx'),
+  read('src/mvp/ProviderLocationTracker.tsx'),
+ ])
+ assert.match(activeJob,/>ESTOY YENDO</)
+ assert.match(activeJob,/actionLabel="EMPEZAR TRABAJO"/)
+ assert.match(activeJob,/>YA LLEGUÉ</)
+ assert.match(root,/onAutoArrival=/)
+ assert.match(tracker,/ARRIVAL_RADIUS_M=200/)
+ assert.match(tracker,/autoArrivalRef\.current/)
+})
+
+test('provider opportunity UI is problem-first and avoids exposing ranking bureaucracy',async()=>{
+ const opportunities=await read('src/mvp/provider/ProviderOpportunities.tsx')
+ assert.match(opportunities,/>ACEPTAR</)
+ assert.match(opportunities,/NO PUEDO TOMARLO/)
+ assert.match(opportunities,/¿Lo podés resolver\?/)
+ assert.doesNotMatch(opportunities,/COMPATIBILIDAD/)
+ assert.doesNotMatch(opportunities,/TU VISITA BASE/)
 })
 
 test('client approval is scoped to its service and backend verifies ownership plus final provider evidence',async()=>{
