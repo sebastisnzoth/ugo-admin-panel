@@ -4,15 +4,20 @@ import {readFile} from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('scheduled client requests converge on servicios.programado_para',async()=>{
- const[client,migration]=await Promise.all([
+test('scheduled client requests converge on servicios.programado_para with initial-market timezone semantics',async()=>{
+ const[client,canonical,timezone]=await Promise.all([
   read('src/mvp/client/ClientGuidedRequest.tsx'),
   read('supabase/migrations/20260913141000_service_schedule_canonicalization.sql'),
+  read('supabase/migrations/20260913143500_service_schedule_timezone_guard.sql'),
  ])
  assert.match(client,/scheduled_at:draft\.when==='programar'\?draft\.scheduleAt\|\|null:null/)
- assert.match(migration,/new\.programado_para := v_scheduled_at::timestamptz/)
- assert.match(migration,/jsonb_set\([\s\S]*'\{scheduled_at\}'[\s\S]*to_jsonb\(new\.programado_para\)/)
- assert.match(migration,/before insert or update of programado_para, metadata on public\.servicios/)
+ assert.match(canonical,/new\.programado_para := v_scheduled_at::timestamptz/)
+ assert.match(canonical,/before insert or update of programado_para, metadata on public\.servicios/)
+ assert.match(timezone,/v_scheduled_at ~ /)
+ assert.match(timezone,/\[zZ\]/)
+ assert.match(timezone,/America\/Sao_Paulo/)
+ assert.match(timezone,/v_scheduled_at::timestamp at time zone 'America\/Sao_Paulo'/)
+ assert.match(timezone,/jsonb_set\([\s\S]*'\{scheduled_at\}'[\s\S]*to_jsonb\(new\.programado_para\)/)
 })
 
 test('provider agenda is scoped to the authenticated provider and canonical schedule',async()=>{
