@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.4 · 13 de septiembre de 2026  
+**Versión:** 2.5 · 13 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -29,6 +29,8 @@ Regla estratégica: **primero cerrar el circuito real; después ampliar el ecosi
 
 Regla de confianza: **UGO es tu mejor amigo. Lo que UGO promete en pantalla debe ocurrir realmente. Lo que el equipo declara listo debe poder probarse.**
 
+Regla de experiencia del Proveedor: **simple adelante, trazable atrás. El proveedor ve el problema, acepta, va, resuelve y marca listo; UGO absorbe la complejidad necesaria.**
+
 ---
 
 # 2. Sistema maestro unificado
@@ -50,6 +52,8 @@ Regla de confianza: **UGO es tu mejor amigo. Lo que UGO promete en pantalla debe
 `UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`  
 `UGO_UIUX_STITCH_MASTER.md`  
 `UGO_CLIENTE_CONVERSACIONAL_INTERACTIVO_MASTER.md`
+
+Brief ejecutable específico del Proveedor: `UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
 
 ## Nivel 4 — Ingeniería
 `UGO_ARQUITECTURA_TECNICA_MASTER.md`
@@ -103,7 +107,7 @@ Antes de considerar cerrado el journey principal deben comprobarse como mínimo:
 3 Cliente cancela durante búsqueda
 4 matching sin proveedores disponibles
 5 matching timeout/error/offline y recuperación
-6 Proveedor recibe oportunidad
+6 Proveedor recibe oportunidad y entiende el problema
 7 Proveedor rechaza
 8 oportunidad expira
 9 Proveedor acepta
@@ -111,13 +115,14 @@ Antes de considerar cerrado el journey principal deben comprobarse como mínimo:
 11 Cliente ve proveedor asignado
 12 cancelaciones permitidas posteriores
 13 pago habilita/bloquea correctamente
-14 en camino / llegada
-15 evidencia / inicio
-16 servicio en progreso
-17 cierre / aprobación o disputa
-18 pago / registro / reputación / historial
-19 Admin converge al mismo serviceId y estado
-20 recorrido mobile desplegado y smokeado
+14 proveedor marca En camino / llegada automática o fallback
+15 proveedor inicia trabajo
+16 evidencia sólo cuando la política la requiere y en el momento correcto
+17 servicio en progreso
+18 proveedor marca Listo / aprobación o disputa
+19 pago / registro / reputación / historial
+20 Admin converge al mismo serviceId y estado
+21 recorrido mobile desplegado y smokeado
 ```
 
 Reportar avance como escenarios validados, implementados pendientes y bloqueados. No usar un porcentaje global sin base medible.
@@ -156,24 +161,26 @@ Nunca mezclar la máquina de estado del proveedor con la máquina del servicio.
 # 6. Contrato Cliente ↔ Proveedor
 
 ```text
-Cliente crea solicitud + evidencia
+Cliente crea solicitud + evidencia cuando aporta valor
 → matching genera oportunidad para el mismo serviceId
-→ Proveedor autorizado analiza
+→ Proveedor autorizado ve el problema
 → acepta/rechaza
 → aceptación atómica y asignación única
 → tarifa real fijada
 → ambos observan el mismo servicio persistido
 → método de pago habilita ejecución
-→ tracking durante traslado
-→ llegada validada
-→ evidencia Antes
-→ inicio
-→ evidencia Después
+→ Proveedor: ESTOY YENDO
+→ llegada automática cuando sea confiable o fallback manual
+→ Proveedor: EMPEZAR TRABAJO
+→ evidencia contextual sólo cuando corresponda
+→ Proveedor: LISTO
 → aprobación/disputa
 → cierre
 ```
 
 `serviceId` es la identidad transversal del trabajo.
+
+La experiencia visible del proveedor no replica toda la máquina de estados. El happy path operativo debe conservar como acciones principales `Aceptar → Estoy yendo → Empezar trabajo → Listo`; UGO registra y sincroniza la trazabilidad por detrás.
 
 Cada transición debe probar también las ramas reales que correspondan: cancelación, ausencia de proveedor, rechazo, expiración, timeout, offline, retry y doble acción.
 
@@ -200,7 +207,7 @@ Un commit, build o pantalla visible no significan `HECHO`.
 4. Mobile-first sin degradar desktop.
 5. Estado → contexto → próxima acción → salida/recuperación.
 6. Ninguna pantalla crítica queda muerta o atrapada.
-7. Dinero, identidad y evidencia siempre auditables.
+7. Dinero, identidad y evidencia requerida siempre auditables.
 8. Cliente y Proveedor comparten el mismo servicio, no copias.
 9. Cancelación y errores son parte del journey, no casos decorativos.
 10. Todo botón crítico debe producir un resultado verificable.
@@ -209,9 +216,10 @@ Un commit, build o pantalla visible no significan `HECHO`.
 13. La arquitectura de agentes existe para reducir lead time, no para multiplicar actividad.
 14. No declarar éxito sin evidencia exacta.
 15. Proteger el tiempo del founder: no confundir trabajo realizado con producto validado.
+16. El proveedor no administra UGO: resuelve el problema. La complejidad adicional sólo aparece cuando existe una razón real.
 
 ---
 
 # 9. Regla final
 
-**UGO cuida la confianza cumpliendo. Si una persona puede quedar atrapada, si un botón crítico no hace lo prometido, si cancelar no cierra correctamente el estado o si una rama real no tiene recuperación, el flujo no está terminado. Primero cerrar y probar el circuito Cliente ↔ Proveedor ↔ Admin; después ampliar.**
+**UGO cuida la confianza cumpliendo. Si una persona puede quedar atrapada, si un botón crítico no hace lo prometido, si cancelar no cierra correctamente el estado o si una rama real no tiene recuperación, el flujo no está terminado. Para el Proveedor, la misma regla se expresa de forma simple: ver problema, aceptar, ir, resolver, listo. Primero cerrar y probar el circuito Cliente ↔ Proveedor ↔ Admin; después ampliar.**
