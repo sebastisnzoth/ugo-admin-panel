@@ -1,6 +1,6 @@
 # UGO — UI/UX Maestro del Ecosistema
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 13 de septiembre de 2026  
 **Estado:** contrato vivo de experiencia y diseño
 
 > El flujo maestro define qué ocurre. Este documento define cómo UGO hace que una operación compleja se sienta simple, guiada y confiable.
@@ -232,21 +232,62 @@ Prioridad visual:
 
 Home responde: `¿Qué tengo que hacer ahora?`
 
-Oportunidades permiten decidir rápido: trabajo, zona, cuándo, valor, contexto, evidencia autorizada, aceptar/rechazar.
-
-Trabajo activo funciona como checklist progresivo y sólo muestra acciones válidas:
+La misión activa responde todavía más simple:
 
 ```text
-En camino
-Llegué
-Foto inicial
-Iniciar
-Trabajar
-Ampliar si hace falta
-Foto final
-Confirmar efectivo cuando corresponda
-Finalizar/revisión
+¿Qué problema tengo que resolver?
+¿Dónde tengo que ir?
+¿Qué hago ahora?
 ```
+
+## Regla de oro
+
+El proveedor no administra el servicio: **lo resuelve**.
+
+Happy path visible:
+
+```text
+VER PROBLEMA
+→ ACEPTAR
+→ ESTOY YENDO
+→ EMPEZAR TRABAJO
+→ LISTO
+```
+
+`Llegué` se automatiza por ubicación cuando sea confiable y autorizada. Si no se puede, aparece `YA LLEGUÉ` como fallback manual discreto.
+
+## Oportunidad
+
+Para decidir rápido, mostrar sólo:
+
+```text
+problema
+foto/video si existe
+zona/ubicación útil
+cuándo
+valor/visita si aplica
+```
+
+CTA principal: `ACEPTAR`. Secundario: `NO PUEDO TOMARLO`.
+
+Si el diagnóstico requiere presencia, ofrecer `VER EN PERSONA` sin abrir un flujo administrativo adicional.
+
+## Trabajo activo
+
+Prioridad visual:
+
+```text
+1 problema
+2 ubicación/ruta
+3 CTA único del estado
+4 información secundaria / Hugo / soporte
+```
+
+No mostrar acciones futuras. No encadenar modales. No obligar a completar checklists porque existan campos internos.
+
+Evidencia, cambios de alcance, precio, cobro o reporte aparecen **sólo cuando realmente corresponden**. Los controles críticos siguen existiendo, pero no contaminan el happy path.
+
+El brief ejecutable de implementación es `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
 
 ---
 
@@ -279,7 +320,7 @@ quién aceptó
 estado real
 precio/método
 identidad/reputación
-evidencia
+evidencia cuando corresponde
 historial
 soporte/disputa
 ```
@@ -303,10 +344,21 @@ repetición
 CSAT
 ```
 
-Objetivo: que una solicitud común pueda confirmarse en **menos de un minuto** cuando el contexto y la conectividad lo permitan, sin sacrificar datos críticos.
+Para Proveedor medir también:
+
+```text
+tiempo oportunidad → decisión
+cantidad de acciones visibles por misión
+tiempo aceptación → salida
+errores de transición
+uso de fallback de llegada
+abandono durante trabajo activo
+```
+
+Objetivo: que una solicitud común pueda confirmarse en **menos de un minuto** cuando el contexto y la conectividad lo permitan, y que un proveedor común pueda ejecutar la misión sin capacitación ni burocracia innecesaria.
 
 ---
 
 # 12. Regla final
 
-**El cliente no llena UGO: UGO se va completando mientras el cliente cuenta lo que necesita. Hugo entiende, propone y acompaña; el cliente corrige o confirma. La UI convierte esa conversación en pocos pasos claros hasta que el problema queda resuelto.**
+**El cliente no llena UGO: UGO se va completando mientras el cliente cuenta lo que necesita. El proveedor no administra UGO: ve el problema, acepta, va, resuelve y marca listo. Hugo y el sistema absorben la complejidad sin ocultar controles críticos.**
