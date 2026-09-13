@@ -7,16 +7,29 @@ export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];s
 
 type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
+type ProviderService=Service&{programado_para?:string|null}
+
+const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
+const LIVE_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
+
+function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
+export function pickActionableProviderService(rows:ProviderService[],now=Date.now()):Service|null{
+ const live=rows.find(service=>LIVE_SERVICE_STATES.has(service.estado));if(live)return live
+ const immediate=rows.find(service=>service.estado==='asignado'&&!scheduleTime(service));if(immediate)return immediate
+ const scheduled=rows.filter(service=>service.estado==='asignado').map(service=>({service,time:scheduleTime(service)})).filter((item):item is{service:ProviderService;time:number}=>item.time!=null&&item.time<=now+ACTIONABLE_SCHEDULE_LEAD_MS).sort((a,b)=>a.time-b.time)
+ return scheduled[0]?.service||null
+}
 
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
   supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
   supabase.rpc('obtener_ofertas_proveedor'),
-  supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(1),
+  supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
   supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
  ])
  if(pe)throw pe;if(oe)throw oe;if(se)throw se;if(pae)throw pae
- return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:((s||[])[0]as Service|undefined)||null,payments:(pay||[])as ProviderPayment[]}
+ const services=(s||[])as ProviderService[]
+ return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[]}
 }
 
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
