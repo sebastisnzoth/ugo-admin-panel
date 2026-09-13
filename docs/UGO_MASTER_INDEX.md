@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.3 · 13 de septiembre de 2026  
+**Versión:** 2.4 · 13 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -48,7 +48,8 @@ Regla de confianza: **UGO es tu mejor amigo. Lo que UGO promete en pantalla debe
 ## Nivel 3 — Experiencia
 `UGO_UIUX_MAESTRO.md`  
 `UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`  
-`UGO_UIUX_STITCH_MASTER.md`
+`UGO_UIUX_STITCH_MASTER.md`  
+`UGO_CLIENTE_CONVERSACIONAL_INTERACTIVO_MASTER.md`
 
 ## Nivel 4 — Ingeniería
 `UGO_ARQUITECTURA_TECNICA_MASTER.md`
