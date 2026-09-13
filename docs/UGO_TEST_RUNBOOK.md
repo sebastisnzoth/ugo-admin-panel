@@ -49,12 +49,14 @@ Usar dos dispositivos/sesiones separadas para Cliente y Proveedor. Admin puede a
 
 ## Gate automático
 
-El workflow `UGO Isolated RPC RLS` usa exclusivamente UGO TEST. La URL y publishable key son públicas y quedan fijas en el workflow. Sólo las identidades de prueba requieren secretos de GitHub:
+El workflow `UGO Isolated RPC RLS` usa exclusivamente UGO TEST. La URL y publishable key son públicas y quedan fijas en el workflow. Sólo las seis credenciales humanas de las tres identidades de prueba quedan como GitHub Secrets:
 
 - `UGO_TEST_CLIENT_EMAIL`
 - `UGO_TEST_CLIENT_PASSWORD`
 - `UGO_TEST_PROVIDER_EMAIL`
 - `UGO_TEST_PROVIDER_PASSWORD`
+- `UGO_TEST_ADMIN_EMAIL`
+- `UGO_TEST_ADMIN_PASSWORD`
 
 Nunca guardar contraseñas en este repositorio.
 
@@ -73,7 +75,7 @@ No se debe habilitar RLS a ciegas: primero deben existir políticas coherentes c
 UGO TEST sólo está listo para promoción cuando:
 
 - CI principal está verde.
-- RPC/RLS aislado pasa con cuentas reales de prueba.
+- RPC/RLS aislado pasa con cuentas reales de Cliente/Proveedor/Admin.
 - Cliente + Proveedor completan el flujo desde dispositivos reales.
 - Admin puede observar/operar el flujo esperado.
 - Realtime y reconexión mantienen estado persistido.
