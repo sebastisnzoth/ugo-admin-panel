@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useState}from'react'
 import{ClientVoiceHugoDock}from'./ClientVoiceHugoDock'
 import{useRoleSession,type Service}from'../shared'
 import{useClientFlow}from'./clientFlow'
+import'../ugo-client-contrast.css'
 
 const HUGO_ACTIVE_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
 type PaymentStatus='none'|'cash'|'pending'|'confirmed'
