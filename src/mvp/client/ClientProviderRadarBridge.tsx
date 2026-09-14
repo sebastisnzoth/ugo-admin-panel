@@ -3,6 +3,7 @@ import{ClientQuantumExperience,type ProviderMapRow}from'../ClientQuantumExperien
 import{UGO_CLIENT_GUIDED_REQUEST_OPEN}from'../ClientQuickOrder'
 import{useRoleSession,type Category}from'../shared'
 import{useClientFlow}from'./clientFlow'
+import{refreshProviderRadar}from'./providerRadarStore'
 
 const normalize=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
 const categoryAliases:Record<string,string[]>={
@@ -40,6 +41,14 @@ export function ClientProviderRadarBridge(){
  const[selectedCategoryId,setSelectedCategoryId]=useState('')
 
  useEffect(()=>{if(!session)return;let alive=true;supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre').then(({data})=>{if(alive)setCategories((data||[])as Category[])});return()=>{alive=false}},[session,supabase])
+ useEffect(()=>{
+  if(!session)return
+  let alive=true
+  const refresh=async()=>{try{await refreshProviderRadar(supabase,true)}catch(error){if(alive)console.warn('No pudimos sincronizar el radar compartido.',error)}}
+  void refresh()
+  const ch=supabase.channel(`client-provider-radar-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void refresh()}).subscribe()
+  return()=>{alive=false;void supabase.removeChannel(ch)}
+ },[session,supabase])
 
  const intentCategory=useMemo(()=>matchCategory(categories,flow.hugoIntent?.categoryHint),[categories,flow.hugoIntent?.categoryHint])
  useEffect(()=>{
