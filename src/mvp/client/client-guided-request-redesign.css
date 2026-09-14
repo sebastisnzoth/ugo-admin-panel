@@ -1,0 +1,534 @@
+/* UGO Client · Guided request redesign
+   Goal: one calm request flow, compact Hugo conversation, clear form hierarchy,
+   consistent dark surfaces and a bottom confirmation action that never covers content. */
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"]{
+  --request-bg:#06110d;
+  --request-surface:#0b1d18;
+  --request-surface-2:#10271f;
+  --request-surface-3:#153127;
+  --request-line:rgba(183,220,198,.14);
+  --request-line-strong:rgba(44,226,137,.34);
+  --request-text:#f5faf7;
+  --request-muted:#94a99d;
+  --request-green:#24e28a;
+  --request-green-strong:#11b96b;
+  --request-danger:#ff9a9a;
+  inset:0!important;
+  width:100%!important;
+  max-width:none!important;
+  max-height:none!important;
+  transform:none!important;
+  box-sizing:border-box!important;
+  padding:max(12px,env(safe-area-inset-top)) 16px calc(92px + env(safe-area-inset-bottom))!important;
+  border:0!important;
+  border-radius:0!important;
+  background:
+    radial-gradient(circle at 50% -18%,rgba(36,226,138,.12),transparent 34%),
+    linear-gradient(180deg,#071511 0,#06110d 58%,#040c09 100%)!important;
+  color:var(--request-text)!important;
+  box-shadow:none!important;
+  overflow:auto!important;
+  scroll-padding-bottom:120px;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"]>header{
+  position:sticky!important;
+  top:0!important;
+  z-index:20!important;
+  grid-template-columns:44px minmax(0,1fr) 44px!important;
+  gap:12px!important;
+  width:min(720px,100%)!important;
+  max-width:none!important;
+  margin:0 auto 14px!important;
+  padding:4px 0 12px!important;
+  background:linear-gradient(180deg,rgba(6,17,13,.985) 0,rgba(6,17,13,.96) 72%,rgba(6,17,13,0) 100%)!important;
+  backdrop-filter:blur(14px);
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"]>header small{
+  margin:0 0 7px!important;
+  color:#afc0b7!important;
+  font-size:10px!important;
+  font-weight:850!important;
+  letter-spacing:.02em!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-progress{
+  height:4px!important;
+  background:#193126!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-progress i{
+  background:linear-gradient(90deg,#1bcf79,#33ef9b)!important;
+  box-shadow:0 0 16px rgba(36,226,138,.25);
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-back,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-orb{
+  width:44px!important;
+  height:44px!important;
+  border:1px solid var(--request-line)!important;
+  background:#0d211a!important;
+  color:#eef8f2!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.2)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-orb{
+  border-color:rgba(36,226,138,.38)!important;
+  background:radial-gradient(circle at 35% 25%,#a7ffe0,#32e99c 45%,#0aa96d)!important;
+  color:#073221!important;
+  box-shadow:0 0 0 6px rgba(36,226,138,.06),0 10px 28px rgba(0,0,0,.24)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-orb.active{
+  box-shadow:0 0 0 8px rgba(36,226,138,.11),0 0 26px rgba(36,226,138,.28)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step{
+  width:min(720px,100%)!important;
+  max-width:none!important;
+  margin:0 auto!important;
+  gap:10px!important;
+  padding-bottom:18px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-kicker{
+  margin:2px 0 0!important;
+  color:#7fe5b1!important;
+  font-size:9px!important;
+  letter-spacing:.13em!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>h2{
+  margin:0 0 4px!important;
+  color:#fff!important;
+  font-size:clamp(27px,5vw,36px)!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+}
+
+/* Hugo prompt card: smaller and more conversational than the old full-width block. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1){
+  margin:4px 0 0!important;
+  padding:14px 15px!important;
+  border:1px solid rgba(36,226,138,.2)!important;
+  border-radius:18px!important;
+  background:
+    linear-gradient(135deg,rgba(36,226,138,.075),transparent 48%),
+    #0b211a!important;
+  box-shadow:0 12px 30px rgba(0,0,0,.13)!important;
+  line-height:1.45;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1)>b{
+  margin-bottom:4px!important;
+  color:var(--request-green)!important;
+  font-size:12px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1)>span{
+  color:#eaf4ee!important;
+  font-size:13px!important;
+}
+
+/* Composer */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  gap:8px!important;
+  margin:0!important;
+  padding:6px!important;
+  border:1px solid var(--request-line)!important;
+  border-radius:18px!important;
+  background:#081812!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>input{
+  min-height:46px!important;
+  padding:0 12px!important;
+  border:0!important;
+  border-radius:13px!important;
+  background:transparent!important;
+  color:#fff!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>input::placeholder{
+  color:#6f8579!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>.ugo-guided-primary{
+  min-width:76px!important;
+  min-height:46px!important;
+  margin:0!important;
+  padding:0 16px!important;
+  border-radius:13px!important;
+  background:linear-gradient(180deg,#31eb94,#1ed47f)!important;
+  color:#052416!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-voice{
+  min-height:46px!important;
+  margin:0!important;
+  border:1px solid var(--request-line)!important;
+  border-radius:15px!important;
+  background:#0b1d18!important;
+  color:#dfece5!important;
+  box-shadow:none!important;
+  font-size:13px!important;
+}
+
+/* The old form was one long stack. Turn every topic into a compact request card. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2){
+  display:grid!important;
+  gap:10px!important;
+  margin-top:4px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>div{
+  box-sizing:border-box;
+  padding:14px!important;
+  border:1px solid var(--request-line)!important;
+  border-radius:19px!important;
+  background:linear-gradient(180deg,#0b1d18,#091813)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,.08)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label>span:first-child,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>div>span:first-child{
+  margin:0 0 10px!important;
+  color:#a9bbb1!important;
+  font-size:9px!important;
+  font-weight:950!important;
+  letter-spacing:.1em!important;
+}
+
+/* Address card */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:8px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child>span,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child>select,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child>input:first-of-type{
+  grid-column:1/-1!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step select,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step input,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step textarea{
+  box-sizing:border-box!important;
+  width:100%!important;
+  border:1px solid rgba(170,206,185,.16)!important;
+  background:#071610!important;
+  color:#f4faf6!important;
+  box-shadow:none!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step select,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step input{
+  min-height:46px!important;
+  border-radius:14px!important;
+  padding:0 12px!important;
+  font-size:12px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step textarea{
+  min-height:90px!important;
+  border-radius:15px!important;
+  padding:13px!important;
+  font-size:13px!important;
+  line-height:1.45!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step textarea::placeholder,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step input::placeholder{
+  color:#6e8378!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step select:focus,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step input:focus,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step textarea:focus{
+  border-color:rgba(36,226,138,.62)!important;
+  box-shadow:0 0 0 3px rgba(36,226,138,.08)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child>.ugo-guided-voice{
+  min-height:42px!important;
+  border-radius:13px!important;
+  border-color:rgba(170,206,185,.15)!important;
+  background:#10271f!important;
+  color:#d8e8df!important;
+  font-size:11px!important;
+  box-shadow:none!important;
+}
+
+/* Categories become fast tap targets instead of a long horizontal rail. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:7px!important;
+  overflow:visible!important;
+  padding:0!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories button{
+  min-width:0!important;
+  min-height:45px!important;
+  padding:8px 9px!important;
+  border:1px solid rgba(170,206,185,.14)!important;
+  border-radius:13px!important;
+  background:#0d231b!important;
+  color:#d9e9df!important;
+  font-size:11px!important;
+  font-weight:850!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories button.selected{
+  border-color:rgba(36,226,138,.62)!important;
+  background:linear-gradient(180deg,#174831,#103a29)!important;
+  color:#effff6!important;
+  box-shadow:0 0 0 2px rgba(36,226,138,.07)!important;
+}
+
+/* Timing is a 3-choice segmented decision. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:8px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button{
+  min-height:64px!important;
+  padding:10px 11px!important;
+  border:1px solid rgba(170,206,185,.14)!important;
+  border-radius:14px!important;
+  background:#0d231b!important;
+  color:#eef8f2!important;
+  box-shadow:none!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button.selected{
+  border-color:rgba(36,226,138,.65)!important;
+  background:linear-gradient(180deg,#174831,#103a29)!important;
+  box-shadow:0 0 0 2px rgba(36,226,138,.07)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options b{
+  font-size:13px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options span{
+  color:#8ea59a!important;
+  font-size:9px!important;
+}
+
+/* Optional instructions should feel optional, not as important as the problem description. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:nth-of-type(3) textarea{
+  min-height:72px!important;
+}
+
+/* Evidence: remove the white card that broke the visual system. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel.is-inline{
+  padding:0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel header strong{
+  color:#eef8f2!important;
+  font-size:12px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel header p{
+  margin:4px 0 9px!important;
+  color:#8fa49a!important;
+  font-size:10px!important;
+  line-height:1.4!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-upload-actions{
+  gap:7px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-upload{
+  padding:11px 8px!important;
+  border:1px dashed rgba(170,206,185,.28)!important;
+  border-radius:13px!important;
+  background:#071610!important;
+  color:#cfe0d7!important;
+  font-size:10px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel small{
+  margin-top:8px!important;
+  color:#80958a!important;
+  font-size:9px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-grid figure{
+  border:1px solid rgba(170,206,185,.14)!important;
+  background:#10271f!important;
+}
+
+/* Hugo understood = compact status strip, not another large box. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood{
+  grid-template-columns:auto 1fr!important;
+  gap:2px 10px!important;
+  align-items:center!important;
+  margin-top:2px!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(36,226,138,.22)!important;
+  border-radius:15px!important;
+  background:rgba(20,74,49,.34)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood>span{
+  grid-row:1/3;
+  align-self:center;
+  color:#6fe0a5!important;
+  font-size:8px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood>b{
+  color:#f2fff7!important;
+  font-size:12px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood>small{
+  color:#94aa9f!important;
+  font-size:9px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>p[role="alert"]{
+  margin:2px 0!important;
+  padding:10px 12px!important;
+  border:1px solid rgba(255,140,140,.24)!important;
+  border-radius:13px!important;
+  background:rgba(120,30,30,.15)!important;
+  color:#ffc1c1!important;
+  font-size:11px!important;
+}
+
+/* Main CTA stays at the bottom of the viewport and never covers the title. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-primary:last-child{
+  position:sticky!important;
+  left:auto!important;
+  right:auto!important;
+  top:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom))!important;
+  z-index:18!important;
+  width:100%!important;
+  min-height:56px!important;
+  margin:8px 0 0!important;
+  border:1px solid rgba(255,255,255,.06)!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,#34ee98,#20d47f)!important;
+  color:#052316!important;
+  box-shadow:0 16px 34px rgba(16,153,88,.26),0 0 0 8px rgba(6,17,13,.82)!important;
+  font-size:14px!important;
+}
+
+/* Review state */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-summary,
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood{
+  color:var(--request-text)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-understood .ugo-guided-voice{
+  min-height:38px!important;
+  margin-top:6px!important;
+  border:1px solid rgba(170,206,185,.14)!important;
+  border-radius:12px!important;
+  background:#0d231b!important;
+  color:#aee9ca!important;
+  font-size:10px!important;
+}
+
+@media(min-width:700px){
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"]{
+    padding-inline:24px!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2){
+    grid-template-columns:1fr 1fr!important;
+    align-items:start!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child,
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:nth-of-type(2){
+    grid-column:1/-1!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>div:nth-of-type(1),
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>div:nth-of-type(2){
+    min-height:100%!important;
+  }
+}
+
+@media(max-width:699px){
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"]{
+    padding-inline:12px!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step{
+    width:100%!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options{
+    grid-template-columns:1fr!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button{
+    min-height:54px!important;
+    grid-template-columns:auto 1fr!important;
+    align-items:center!important;
+    column-gap:8px!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button b,
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button span{
+    grid-column:auto!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child{
+    grid-template-columns:1fr!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2)>label:first-child>*{
+    grid-column:1!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-upload-actions{
+    grid-template-columns:1fr 1fr!important;
+  }
+}
+
+@media(max-width:420px){
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>h2{
+    font-size:27px!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form{
+    grid-template-columns:1fr!important;
+  }
+
+  .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>.ugo-guided-primary{
+    width:100%!important;
+  }
+}
