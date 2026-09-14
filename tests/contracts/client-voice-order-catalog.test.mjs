@@ -15,7 +15,7 @@ test('voice categories come from the live UGO catalog',()=>{
 })
 
 test('voice availability and client cards share one provider radar source of truth',()=>{
- assert.match(catalog,/refreshProviderRadar\(sb\)/)
+ assert.match(catalog,/refreshProviderRadar\(sb,true\)/)
  assert.match(catalog,/providerRadarForCategory\(category\.id,\{onlyAvailable:true\}\)/)
  assert.match(radarStore,/from\('proveedores_mapa'\)/)
  assert.match(radarStore,/provider\.categoria_principal_id!==categoryId/)
