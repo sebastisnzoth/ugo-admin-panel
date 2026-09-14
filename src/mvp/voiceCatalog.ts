@@ -1,4 +1,5 @@
 import{getRoleSupabase}from'../lib/roleSupabase'
+import{providerRadarForCategory,refreshProviderRadar}from'./client/providerRadarStore'
 
 export type VoiceCategory={id:string;slug:string|null;nombre:string|null}
 export type VoiceProvider={id:string;nombre:string|null;karma:number|string|null}
@@ -36,9 +37,12 @@ export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|nu
 }
 
 export async function loadVoiceAvailability(category:VoiceCategory):Promise<VoiceAvailability>{
- const sb=getRoleSupabase('client'),{data,error}=await sb.from('proveedores_mapa').select('id,nombre,karma').eq('categoria_principal_id',category.id).eq('online',true).eq('disponible',true).order('karma',{ascending:false}).limit(50)
- if(error)throw error
- return{category,providers:(data||[])as VoiceProvider[]}
+ const sb=getRoleSupabase('client')
+ await refreshProviderRadar(sb)
+ const providers=providerRadarForCategory(category.id,{onlyAvailable:true})
+  .sort((a,b)=>Number(b.karma||0)-Number(a.karma||0))
+  .map(provider=>({id:provider.id,nombre:provider.nombre,karma:provider.karma}))
+ return{category,providers}
 }
 
 export function voiceAvailabilityText(result:VoiceAvailability,locale:'es-AR'|'pt-BR'){
