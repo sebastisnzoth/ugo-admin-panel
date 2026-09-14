@@ -1,5 +1,5 @@
-import React,{useCallback,useEffect,useState}from'react'
-import{supabase}from'../lib/supabase'
+import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{getRoleSupabase}from'../lib/roleSupabase'
 import{money}from'./shared'
 import{ProviderMercadoPagoConnect}from'./ProviderMercadoPagoConnect'
 import'./provider-payout.css'
@@ -10,6 +10,7 @@ type Withdrawal={id:string;monto:number;moneda:string;estado:string;created_at:s
 type Payment={id:string;servicio_id:string;ganancia_proveedor:number;moneda:string;estado:string;liberado_at?:string|null;created_at:string}
 
 export function ProviderPayoutPanel({accessToken}:Props){
+ const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[userId,setUserId]=useState(''),[account,setAccount]=useState('')
  const[balance,setBalance]=useState<Balance>({total_liberado:0,total_retirado:0,saldo_disponible:0,saldo_procesando:0})
  const[withdrawals,setWithdrawals]=useState<Withdrawal[]>([]),[payments,setPayments]=useState<Payment[]>([])
@@ -26,10 +27,10 @@ export function ProviderPayoutPanel({accessToken}:Props){
   if(be)throw be;const row=Array.isArray(b)?b[0]:b
   if(row)setBalance({total_liberado:Number(row.total_liberado||0),total_retirado:Number(row.total_retirado||0),saldo_disponible:Number(row.saldo_disponible||0),saldo_procesando:Number(row.saldo_procesando||0)})
   setWithdrawals((w||[])as Withdrawal[]);setPayments((p||[])as Payment[]);setAccount(String((profile as any)?.cuenta_pago_externa||''))
- },[])
+ },[supabase])
 
  useEffect(()=>{load().catch(e=>setMessage(e.message||'No se pudo cargar ganancias.'))},[load])
- useEffect(()=>{if(!userId)return;const ch=supabase.channel(`provider-payouts-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'retiros',filter:`proveedor_id=eq.${userId}`},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,userId])
+ useEffect(()=>{if(!userId)return;const ch=supabase.channel(`provider-payouts-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'retiros',filter:`proveedor_id=eq.${userId}`},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},()=>load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,supabase,userId])
 
  async function saveAccount(){if(!userId)return;setBusy(true);const{error}=await (supabase as any).from('perfiles_proveedor').update({cuenta_pago_externa:account.trim()||null}).eq('usuario_id',userId);setBusy(false);setMessage(error?error.message:'Cuenta de cobro guardada.')}
  async function requestWithdrawal(){const value=Number(amount);if(!Number.isFinite(value)||value<50)return setMessage('El retiro mínimo es R$ 50.');if(value>balance.saldo_disponible)return setMessage('El monto supera tu saldo disponible.');if(!account.trim())return setMessage('Guardá primero tu cuenta de cobro.');setBusy(true);setMessage('');try{const r=await fetch('/api/retiros/solicitar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({monto:value})});const body=await r.json().catch(()=>({}));if(!r.ok)throw new Error(body.error||'No se pudo solicitar el retiro.');setAmount('');setMessage('Retiro solicitado. Queda pendiente hasta que exista confirmación real del pago externo.');await load()}catch(e){setMessage(e instanceof Error?e.message:'No se pudo solicitar el retiro.')}finally{setBusy(false)}}
