@@ -58,3 +58,15 @@ test('guided request uses Gemini as primary understanding with a safe local fall
   assert.match(api, /No preguntes presupuesto/)
   assert.match(api, /responseMimeType:'application\/json'/)
 })
+
+test('Firefox and browsers without SpeechRecognition send recorded audio to Gemini', () => {
+  assert.match(guided, /MediaRecorder/)
+  assert.match(guided, /startGeminiRecording/)
+  assert.match(guided, /voice_transcription:true/)
+  assert.match(guided, /audio_base64:audio/)
+  assert.match(guided, /Gemini está entendiendo tu voz/)
+  assert.match(api, /transcribeGeminiAudio/)
+  assert.match(api, /inlineData:\{mimeType,data:audioBase64\}/)
+  assert.match(api, /AUDIO_MIME_TYPES/)
+  assert.match(api, /audioBase64.length>3400000/)
+})

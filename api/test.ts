@@ -73,6 +73,13 @@ async function guidedRequestWithGemini(geminiKey:string,message:string,context:s
  const when=['ahora','hoy','programar'].includes(parsed.when)?parsed.when:null
  return{reply:String(parsed.reply).slice(0,420),category_hint:parsed.category_hint?String(parsed.category_hint).slice(0,80):null,description:parsed.description?String(parsed.description).slice(0,500):null,address:parsed.address?String(parsed.address).slice(0,240):null,when,schedule_at:parsed.schedule_at?String(parsed.schedule_at).slice(0,16):null,urgent:Boolean(parsed.urgent),preferences:parsed.preferences?String(parsed.preferences).slice(0,240):null,ready_to_review:Boolean(parsed.ready_to_review),model}
 }
+const AUDIO_MIME_TYPES=new Set(['audio/webm','audio/ogg','audio/wav','audio/mpeg','audio/mp3','audio/mp4','audio/m4a','audio/aac','audio/opus'])
+async function transcribeGeminiAudio(geminiKey:string,audioBase64:string,mimeType:string){
+ const{payload,model}=await callGemini(geminiKey,{contents:[{role:'user',parts:[{text:'Transcribí literalmente la voz en español o portugués de Brasil. Devolvé sólo JSON válido: {"transcript":"texto"}. No agregues comentarios ni traduzcas.'},{inlineData:{mimeType,data:audioBase64}}]}],generationConfig:{responseMimeType:'application/json',maxOutputTokens:260,temperature:0}})
+ const raw=payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join('')||'',parsed=extractJson(raw),transcript=String(parsed?.transcript||'').trim().slice(0,1200)
+ if(!transcript)throw Object.assign(new Error('Gemini no detectó voz en el audio'),{status:422})
+ return{transcript,model}
+}
 async function geminiHealth(res:any){const geminiKey=process.env.GEMINI_API_KEY?.trim();if(!geminiKey)return res.status(503).json({ok:false,keyConfigured:false,error:'GEMINI_API_KEY missing'});try{const{response,payload,model}=await callGemini(geminiKey,{contents:[{role:'user',parts:[{text:'Respondé únicamente OK.'}]}],generationConfig:{maxOutputTokens:40,temperature:0}});const text=payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join('').trim()||'';return res.status(response.ok&&text?200:502).json({ok:Boolean(response.ok&&text),keyConfigured:true,model,googleStatus:response.status,response:text||null})}catch(error){return res.status(502).json({ok:false,keyConfigured:true,error:error instanceof Error?error.message:'network error'})}}
 
 function safeText(v:any,max=180){return String(v??'').replace(/[\r\n|]+/g,' ').trim().slice(0,max)}
@@ -136,6 +143,13 @@ export default async function handler(req:any,res:any){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})
   const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:authData,error:authError}=await authClient.auth.getUser(token);if(authError||!authData.user)return res.status(401).json({error:'Sesión inválida'})
   const requestedRole=req.body?.role==='provider'?'provider':'client',expectedRole=requestedRole==='provider'?'proveedor':'cliente';const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:profile}=await userClient.from('usuarios').select('tipo').eq('id',authData.user.id).maybeSingle();if(!profile||profile.tipo!==expectedRole)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'})
+  if(requestedRole==='client'&&req.body?.voice_transcription===true){
+   const audioBase64=String(req.body?.audio_base64||''),mimeType=String(req.body?.mime_type||'').split(';')[0].trim().toLowerCase()
+   if(!AUDIO_MIME_TYPES.has(mimeType))return res.status(415).json({error:'Formato de audio no compatible'})
+   if(!audioBase64||audioBase64.length>3400000||!/^[A-Za-z0-9+/=]+$/.test(audioBase64))return res.status(413).json({error:'El audio está vacío o supera el límite permitido'})
+   const transcription=await transcribeGeminiAudio(geminiKey,audioBase64,mimeType)
+   return res.status(200).json(transcription)
+  }
   const message=String(req.body?.message||'').trim().slice(0,1200);if(!message)return res.status(400).json({error:'Mensaje requerido'});const context=String(req.body?.context||'').slice(0,2400);const history=Array.isArray(req.body?.history)?req.body.history.slice(-10):[];const roleText=requestedRole==='client'?'Cliente que busca contratar un servicio.':'Proveedor que recibe y ejecuta servicios.'
   if(requestedRole==='client'&&req.body?.guided_request===true){
    const guided=await guidedRequestWithGemini(geminiKey,message,context)
