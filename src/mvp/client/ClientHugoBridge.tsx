@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useState}from'react'
-import{VoiceHugoDock}from'../VoiceHugoDock'
+import{ClientVoiceHugoDock}from'./ClientVoiceHugoDock'
 import{useRoleSession,type Service}from'../shared'
 import{useClientFlow}from'./clientFlow'
 
@@ -17,5 +17,5 @@ export function ClientHugoBridge(){
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
  useEffect(()=>{if(!session)return;const ch=supabase.channel(`client-hugo-context-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${session.user.id}`},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{supabase.removeChannel(ch)}},[load,session,supabase])
  if(auth.loading||!session)return null
- return <VoiceHugoDock role="client" accessToken={session.access_token} service={service} availableOffers={offersPending} paymentStatus={paymentStatus} mode="quantum" clientActions={flow.actions} onIntent={flow.publishHugoIntent}/>
+ return <ClientVoiceHugoDock accessToken={session.access_token} service={service} availableOffers={offersPending} paymentStatus={paymentStatus} clientActions={flow.actions} onIntent={flow.publishHugoIntent}/>
 }
