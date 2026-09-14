@@ -1,0 +1,603 @@
+/* UGO Client visual polish
+   Improves hierarchy, spacing and provider decision surfaces without changing flow logic. */
+
+:root{
+  --ugo-client-ink:#0b1711;
+  --ugo-client-muted:#66736c;
+  --ugo-client-green:#0b9655;
+  --ugo-client-green-strong:#087a46;
+  --ugo-client-dark:#06100c;
+  --ugo-client-dark-2:#0b1b15;
+  --ugo-client-line:rgba(16,36,25,.12);
+  --ugo-client-soft:#f5f8f6;
+}
+
+/* ---------- Main client workspace ---------- */
+@media (min-width:900px){
+  .ugo-client-root .ugo-client-premium-home{
+    grid-template-columns:88px minmax(320px,360px) minmax(390px,430px) minmax(420px,1fr)!important;
+    grid-template-rows:72px auto auto minmax(170px,1fr)!important;
+    background:
+      radial-gradient(circle at 20% 18%,rgba(13,151,86,.08),transparent 32%),
+      #06100c!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>header{
+    min-height:72px;
+    padding:12px 24px!important;
+    border-bottom:1px solid rgba(255,255,255,.075)!important;
+    box-shadow:0 1px 0 rgba(255,255,255,.015) inset;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>header>div{
+    gap:4px!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>header strong{
+    font-size:27px!important;
+    letter-spacing:-.055em!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>header span{
+    color:#a9bbb1!important;
+    font-size:10px!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>header button{
+    border:1px solid rgba(255,255,255,.13)!important;
+    background:linear-gradient(180deg,#14261d,#0b1b14)!important;
+    box-shadow:0 8px 24px rgba(0,0,0,.2)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-copy,
+  .ugo-client-root .ugo-client-home-categories,
+  .ugo-client-root .ugo-client-home-sheet{
+    background:#f8faf8!important;
+  }
+
+  .ugo-client-root .ugo-client-home-copy{
+    padding:34px 34px 24px!important;
+    border-bottom:1px solid #dde6e0!important;
+  }
+
+  .ugo-client-root .ugo-client-home-kicker{
+    margin-bottom:12px!important;
+    color:var(--ugo-client-green-strong)!important;
+    font-size:10px!important;
+    letter-spacing:.13em!important;
+  }
+
+  .ugo-client-root .ugo-client-home-copy h1{
+    max-width:345px!important;
+    color:var(--ugo-client-ink)!important;
+    font-size:clamp(32px,2.25vw,40px)!important;
+    line-height:.99!important;
+    letter-spacing:-.052em!important;
+  }
+
+  .ugo-client-root .ugo-client-home-copy p{
+    max-width:340px!important;
+    margin:14px 0 24px!important;
+    color:#5f6d65!important;
+    font-size:13px!important;
+    line-height:1.58!important;
+  }
+
+  .ugo-client-root .ugo-client-home-hugo-actions{
+    gap:11px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-talk,
+  .ugo-client-root .ugo-client-home-search{
+    min-height:58px!important;
+    border-radius:17px!important;
+    padding:0 17px!important;
+    font-size:13px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-talk{
+    border-color:#0a8e50!important;
+    background:linear-gradient(180deg,#0ca45d,#0a8d50)!important;
+    box-shadow:0 13px 28px rgba(11,150,85,.22)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-search{
+    border-color:#d5ded8!important;
+    background:#fff!important;
+    box-shadow:0 5px 16px rgba(26,48,36,.045)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-talk:hover{
+    box-shadow:0 17px 34px rgba(11,150,85,.27)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-search:hover{
+    border-color:#9fc9b1!important;
+    box-shadow:0 10px 24px rgba(26,48,36,.08)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-categories{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+    padding:48px 34px 22px!important;
+    border-bottom:1px solid #dde6e0!important;
+  }
+
+  .ugo-client-root .ugo-client-home-categories::before{
+    top:20px!important;
+    left:34px!important;
+    color:#738078!important;
+    font-size:9px!important;
+    letter-spacing:.14em!important;
+  }
+
+  .ugo-client-root .ugo-client-home-categories button{
+    min-height:76px!important;
+    padding:12px 10px!important;
+    border:1px solid #dbe4de!important;
+    border-radius:18px!important;
+    background:#fff!important;
+    box-shadow:0 4px 14px rgba(28,52,39,.045)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-categories button:hover{
+    border-color:#9acdaf!important;
+    background:#fbfdfc!important;
+    box-shadow:0 11px 25px rgba(28,52,39,.09)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-categories small{
+    color:#28372f!important;
+    font-size:10px!important;
+    font-weight:850!important;
+  }
+
+  .ugo-client-root .ugo-client-home-sheet{
+    padding:24px 34px 30px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-sheet>strong{
+    max-width:330px!important;
+    color:#111b16!important;
+    font-size:17px!important;
+    line-height:1.22!important;
+  }
+
+  .ugo-client-root .ugo-client-home-sheet p{
+    max-width:340px!important;
+    margin:9px 0 18px!important;
+    color:#69766f!important;
+    font-size:11px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-sheet button{
+    min-height:54px!important;
+    border-radius:17px!important;
+    background:linear-gradient(180deg,#132019,#0c1711)!important;
+    box-shadow:0 11px 24px rgba(11,23,16,.16)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map{
+    border-left:1px solid rgba(15,35,24,.1)!important;
+    background:#dfe8e2!important;
+    box-shadow:inset 18px 0 38px rgba(9,30,17,.045)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map .maplibregl-canvas{
+    filter:saturate(.78) brightness(.98) contrast(1.02)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map-shade{
+    background:linear-gradient(180deg,rgba(4,15,9,.015),rgba(4,15,9,.03) 72%,rgba(4,15,9,.12))!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map-label{
+    left:24px!important;
+    top:22px!important;
+    min-width:190px;
+    padding:12px 14px!important;
+    border:1px solid rgba(19,43,30,.1)!important;
+    border-radius:17px!important;
+    background:rgba(255,255,255,.94)!important;
+    box-shadow:0 12px 34px rgba(27,48,36,.11)!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map-label b{
+    color:#152119!important;
+    font-size:11px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-map-label small{
+    margin-top:2px;
+    color:#6d7a72!important;
+    font-size:9px!important;
+  }
+
+  .ugo-client-root .ugo-client-home-marker{
+    width:19px!important;
+    height:19px!important;
+    background:#0d9c59!important;
+    box-shadow:0 0 0 8px rgba(13,156,89,.16),0 8px 20px rgba(0,0,0,.2)!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>nav{
+    padding:90px 9px 18px!important;
+    border-right:1px solid rgba(255,255,255,.075)!important;
+    background:#040b08!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>nav::before{
+    top:17px!important;
+    left:19px!important;
+    width:50px!important;
+    height:50px!important;
+    border-radius:16px!important;
+    background:linear-gradient(180deg,#0ca45d,#087c47)!important;
+    box-shadow:0 12px 28px rgba(10,143,80,.24)!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>nav button{
+    min-height:74px!important;
+    border-radius:17px!important;
+  }
+
+  .ugo-client-root .ugo-client-premium-home>nav button.active{
+    background:linear-gradient(180deg,rgba(13,158,89,.15),rgba(13,158,89,.09))!important;
+    color:#76e0aa!important;
+  }
+
+  /* Hugo rail: visually anchors the assistant instead of leaving a dead dark column. */
+  .ugo-client-root .prototype-hugo{
+    top:92px!important;
+    bottom:22px!important;
+    left:108px!important;
+    width:320px!important;
+    max-width:320px!important;
+    padding:0!important;
+  }
+
+  .ugo-client-root .ugo-hugo-stage-card{
+    padding:18px!important;
+    border:1px solid rgba(105,163,133,.22)!important;
+    border-radius:24px!important;
+    background:
+      radial-gradient(circle at 50% 0,rgba(21,155,91,.11),transparent 38%),
+      linear-gradient(180deg,rgba(12,29,21,.985),rgba(5,14,10,.995))!important;
+    box-shadow:0 24px 64px rgba(0,0,0,.32)!important;
+  }
+
+  .ugo-client-root .ugo-hugo-stage-head strong{
+    color:#f5faf7!important;
+    font-size:15px!important;
+  }
+
+  .ugo-client-root .ugo-hugo-stage-composer{
+    border-color:rgba(255,255,255,.11)!important;
+    background:#0d1e16!important;
+  }
+
+  .ugo-client-root .ugo-hugo-stage-composer button{
+    background:linear-gradient(180deg,#24e18a,#15c773)!important;
+    color:#062013!important;
+  }
+}
+
+@media (min-width:1200px){
+  .ugo-client-root .ugo-client-premium-home{
+    grid-template-columns:90px minmax(350px,390px) 430px minmax(460px,1fr)!important;
+  }
+  .ugo-client-root .prototype-hugo{
+    left:114px!important;
+    width:350px!important;
+    max-width:350px!important;
+  }
+}
+
+@media (min-width:1500px){
+  .ugo-client-root .ugo-client-premium-home{
+    grid-template-columns:94px 420px 460px minmax(520px,1fr)!important;
+  }
+  .ugo-client-root .prototype-hugo{
+    left:122px!important;
+    width:374px!important;
+    max-width:374px!important;
+  }
+}
+
+/* ---------- Provider search / decision sheet ---------- */
+.ugo-client-root .ugo-ref-backdrop{
+  background:rgba(4,12,17,.46)!important;
+  backdrop-filter:blur(6px) saturate(.9)!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet{
+  width:min(620px,calc(100vw - 32px))!important;
+  max-height:min(82vh,720px)!important;
+  padding:12px 20px 20px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  border-radius:26px 26px 20px 20px!important;
+  background:linear-gradient(180deg,#0b1b28,#081520)!important;
+  color:#f7fbfd!important;
+  box-shadow:0 30px 90px rgba(1,8,13,.45)!important;
+  overflow:auto;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet>.ugo-drawer-handle{
+  width:52px!important;
+  height:5px!important;
+  margin:0 auto 12px!important;
+  background:#375267!important;
+  opacity:.95;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-drawer-title-row{
+  align-items:center!important;
+  margin-bottom:14px!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-drawer-title-row small{
+  color:#91a7b7!important;
+  font-size:9px!important;
+  font-weight:900!important;
+  letter-spacing:.13em!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-drawer-title-row h2{
+  margin:4px 0 0!important;
+  color:#f8fbfd!important;
+  font-size:21px!important;
+  line-height:1.1!important;
+  letter-spacing:-.025em!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-drawer-title-row>button{
+  width:42px!important;
+  height:42px!important;
+  border:1px solid rgba(255,255,255,.08)!important;
+  border-radius:14px!important;
+  background:#102434!important;
+  color:#eef5f8!important;
+  font-size:24px!important;
+}
+
+.ugo-client-root .ugo-provider-list{
+  display:grid!important;
+  gap:10px!important;
+}
+
+.ugo-client-root .ugo-provider-card{
+  min-height:78px!important;
+  padding:11px 13px!important;
+  border:1px solid #365064!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg,#10263a,#0d2031)!important;
+  color:#f7fbfd!important;
+  box-shadow:0 7px 18px rgba(0,0,0,.11)!important;
+  transition:transform .16s ease,border-color .16s ease,background .16s ease,box-shadow .16s ease;
+}
+
+.ugo-client-root .ugo-provider-card:hover{
+  transform:translateY(-1px);
+  border-color:#22ce83!important;
+  background:linear-gradient(180deg,#123047,#0e2638)!important;
+  box-shadow:0 12px 25px rgba(0,0,0,.16)!important;
+}
+
+.ugo-client-root .ugo-provider-card .ugo-card-avatar{
+  width:50px!important;
+  height:50px!important;
+  border:1px solid rgba(52,222,142,.2)!important;
+  background:#0c6e4b!important;
+  color:#d8ffec!important;
+  font-size:15px!important;
+  font-weight:900!important;
+}
+
+.ugo-client-root .ugo-provider-card .ugo-card-main b{
+  color:#fff!important;
+  font-size:14px!important;
+  font-weight:900!important;
+  letter-spacing:-.01em!important;
+}
+
+.ugo-client-root .ugo-provider-card .ugo-card-main small{
+  margin-top:2px!important;
+  color:#c1d0da!important;
+  font-size:10px!important;
+}
+
+.ugo-client-root .ugo-provider-card .ugo-card-main em{
+  margin-top:5px!important;
+  color:#90a7b6!important;
+  font-size:9px!important;
+}
+
+.ugo-client-root .ugo-provider-card .ugo-card-main .available{
+  color:#2ee994!important;
+  font-weight:900!important;
+}
+
+.ugo-client-root .ugo-provider-card>strong{
+  color:#f7fbfd!important;
+  font-size:12px!important;
+  white-space:nowrap!important;
+}
+
+/* Selected provider: keep the UGO dark shell but make the information card crisp and readable. */
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile{
+  margin:0!important;
+  padding:18px!important;
+  border:1px solid #dfe7e2!important;
+  border-radius:20px!important;
+  background:#fff!important;
+  color:#142019!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.14)!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head{
+  display:grid!important;
+  grid-template-columns:auto minmax(0,1fr) auto!important;
+  gap:14px!important;
+  align-items:center!important;
+  padding-bottom:15px!important;
+  border-bottom:1px solid #edf1ee!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head .ugo-card-avatar{
+  width:64px!important;
+  height:64px!important;
+  border:1px solid #dce7e0!important;
+  background:#eef8f2!important;
+  color:#0a8d50!important;
+  font-size:18px!important;
+  font-weight:950!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head h3{
+  margin:0!important;
+  color:#0b1711!important;
+  font-size:19px!important;
+  font-weight:950!important;
+  line-height:1.15!important;
+  letter-spacing:-.025em!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head p{
+  margin:5px 0 0!important;
+  color:#69766f!important;
+  font-size:10px!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head p b{
+  color:#e99a0b!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head>strong{
+  color:#0f1b14!important;
+  font-size:17px!important;
+  font-weight:950!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head>strong small{
+  color:#728078!important;
+  font-size:9px!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges{
+  margin:14px 0 12px!important;
+  gap:7px!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges span{
+  padding:7px 10px!important;
+  border:1px solid #e1e9e4!important;
+  background:#f4f7f5!important;
+  color:#435148!important;
+  font-size:9px!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-badges span:first-child{
+  border-color:#cceada!important;
+  background:#eaf8f0!important;
+  color:#087747!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-bio{
+  margin:10px 0 13px!important;
+  color:#5f6e65!important;
+  font-size:11px!important;
+  line-height:1.5!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-provider-facts{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:8px!important;
+  margin:12px 0 16px!important;
+  padding:11px!important;
+  border:1px solid #e1e8e4!important;
+  border-radius:16px!important;
+  background:#f7faf8!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-provider-facts span{
+  min-height:34px!important;
+  display:flex!important;
+  align-items:center!important;
+  padding:8px 10px!important;
+  border:1px solid #edf1ee!important;
+  border-radius:11px!important;
+  background:#fff!important;
+  color:#48574e!important;
+  font-size:10px!important;
+  line-height:1.3!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-hire-button{
+  min-height:54px!important;
+  border:0!important;
+  border-radius:15px!important;
+  background:linear-gradient(180deg,#20dc86,#14c876)!important;
+  color:#062014!important;
+  font-size:14px!important;
+  font-weight:950!important;
+  box-shadow:0 12px 24px rgba(20,200,118,.22)!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-hire-button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 15px 30px rgba(20,200,118,.28)!important;
+}
+
+.ugo-client-root .ugo-ref-provider-sheet .ugo-ref-back-list{
+  margin:12px auto 0!important;
+  color:#68766e!important;
+  font-size:10px!important;
+}
+
+/* Keyboard and touch polish */
+.ugo-client-root button:focus-visible,
+.ugo-client-root input:focus-visible{
+  outline:3px solid rgba(32,215,127,.35)!important;
+  outline-offset:2px!important;
+}
+
+@media (max-width:899px){
+  .ugo-client-root .ugo-ref-provider-sheet{
+    width:100%!important;
+    max-height:82vh!important;
+    padding:10px 14px calc(18px + env(safe-area-inset-bottom))!important;
+    border-radius:24px 24px 0 0!important;
+  }
+  .ugo-client-root .ugo-provider-card{
+    min-height:74px!important;
+  }
+  .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile{
+    padding:15px!important;
+  }
+}
+
+@media (max-width:640px){
+  .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head{
+    grid-template-columns:auto minmax(0,1fr)!important;
+  }
+  .ugo-client-root .ugo-ref-provider-sheet .ugo-ref-profile-head>strong{
+    grid-column:2!important;
+    justify-self:start!important;
+    margin-top:-4px!important;
+  }
+  .ugo-client-root .ugo-ref-provider-sheet .ugo-provider-facts{
+    grid-template-columns:1fr!important;
+  }
+}
+
+@media (prefers-reduced-motion:reduce){
+  .ugo-client-root *,
+  .ugo-client-root *::before,
+  .ugo-client-root *::after{
+    scroll-behavior:auto!important;
+    transition-duration:.01ms!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+  }
+}
