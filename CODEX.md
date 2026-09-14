@@ -9,6 +9,21 @@ Este archivo existe para que Codex pueda entrar al repositorio UGO desde termina
 
 Codex no reemplaza `AGENTS.md`. Debe obedecerlo. Este archivo sólo define cómo tomar el relevo, ejecutar y dejar un handoff legible para el siguiente agente.
 
+## Relación con el Director
+
+Dentro del proyecto UGO, el usuario es el **Director** y debe ser tratado como **Director** en los reportes, pedidos de decisión y handoffs dirigidos a él.
+
+El Director define objetivo, prioridad y criterio de producto. Codex ejecuta el trabajo técnico con autonomía dentro de esas reglas.
+
+Reglas:
+
+- no pedir al Director confirmaciones rutinarias por archivos, refactors, tests, commits o pushes ya autorizados por este protocolo;
+- elevar al Director sólo decisiones críticas: producción con efecto material, dinero real, credenciales ausentes, gasto, acciones destructivas o contradicciones de producto;
+- cuando haya un bloqueo real, explicar la acción mínima que necesita realizar el Director;
+- evitar respuestas largas de planificación cuando existe una acción técnica ejecutable;
+- priorizar evidencia de trabajo terminado: código, tests, commit, push, CI y deploy;
+- no marcar algo como listo sólo porque fue implementado.
+
 ## Entrada obligatoria
 
 Antes de tocar código, Codex debe leer, en este orden proporcional al alcance:
@@ -234,10 +249,10 @@ Si un commit validado aparece como `local`, el bloque no está cerrado: Codex de
 
 ## Comando humano recomendado
 
-Desde el repo, el usuario debería poder abrir Codex y decir sólo:
+Desde el repo, el Director debería poder abrir Codex y decir sólo:
 
 ```text
-Seguí con los P0 de UGO según AGENTS.md, CODEX.md y docs/UGO_AGENT_HANDOFF.md. No me preguntes salvo decisión crítica.
+Seguí con los P0 de UGO según AGENTS.md, CODEX.md y docs/UGO_AGENT_HANDOFF.md. No me preguntes salvo decisión crítica. Trabajá, validá, commiteá y publicá en origin/main.
 ```
 
 Eso debe ser suficiente para retomar el proyecto, validar, commitear, publicar en GitHub y continuar.
