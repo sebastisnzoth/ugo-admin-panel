@@ -38,7 +38,10 @@ export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|nu
 
 export async function loadVoiceAvailability(category:VoiceCategory):Promise<VoiceAvailability>{
  const sb=getRoleSupabase('client')
- await refreshProviderRadar(sb)
+ // Voice must answer from the live backend, never from the 15s radar cache. The
+ // refreshed rows are also published to the shared radar store, so cards and
+ // Hugo's spoken answer stay on the same source of truth.
+ await refreshProviderRadar(sb,true)
  const providers=providerRadarForCategory(category.id,{onlyAvailable:true})
   .sort((a,b)=>Number(b.karma||0)-Number(a.karma||0))
   .map(provider=>({id:provider.id,nombre:provider.nombre,karma:provider.karma}))
