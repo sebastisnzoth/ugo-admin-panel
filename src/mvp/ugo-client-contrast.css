@@ -1,0 +1,27 @@
+.ugo-client-root{--ugo-client-bg:#f4f7f5;--ugo-client-surface:#ffffff;--ugo-client-surface-soft:#eef4f1;--ugo-client-text:#14231c;--ugo-client-muted:#607068;--ugo-client-border:#d8e2dd;--ugo-client-primary:#0f8f63;--ugo-client-primary-strong:#087653;--ugo-client-accent:#0aa7b8;background:var(--ugo-client-bg);color:var(--ugo-client-text)}
+.ugo-client-root .ugo-quantum-shell,.ugo-client-root .ugo-ref-client{background:var(--ugo-client-bg);color:var(--ugo-client-text)}
+.ugo-client-root .ugo-ref-topbar,.ugo-client-root .ugo-home-panel,.ugo-client-root .ugo-ref-sheet,.ugo-client-root .ugo-provider-drawer,.ugo-client-root .ugo-ref-provider-sheet,.ugo-client-root .ugo-mobile-nav,.ugo-client-root .ugo-client-menu,.ugo-client-root .ugo-hugo-stage-card{background:rgba(255,255,255,.98);color:var(--ugo-client-text);border-color:var(--ugo-client-border)}
+.ugo-client-root .ugo-ref-circle,.ugo-client-root .ugo-ref-location,.ugo-client-root .ugo-home-search,.ugo-client-root .ugo-ref-search{background:#fff;color:var(--ugo-client-text);border-color:var(--ugo-client-border);box-shadow:0 8px 24px rgba(20,35,28,.08)}
+.ugo-client-root .ugo-ref-location small,.ugo-client-root .ugo-feature-copy small,.ugo-client-root .ugo-feature-copy em,.ugo-client-root .ugo-card-main small,.ugo-client-root .ugo-card-main em,.ugo-client-root .ugo-ref-bio,.ugo-client-root .ugo-provider-facts,.ugo-client-root .ugo-hugo-stage-head small,.ugo-client-root .ugo-hugo-context-main span{color:var(--ugo-client-muted)}
+.ugo-client-root .ugo-home-search input,.ugo-client-root .ugo-ref-search input,.ugo-client-root .ugo-hugo-stage-composer input{background:#fff;color:var(--ugo-client-text);caret-color:var(--ugo-client-primary)}
+.ugo-client-root .ugo-home-search input::placeholder,.ugo-client-root .ugo-ref-search input::placeholder,.ugo-client-root .ugo-hugo-stage-composer input::placeholder{color:#87958e}
+.ugo-client-root .ugo-category-row button,.ugo-client-root .ugo-ref-categories button{background:#fff;color:var(--ugo-client-text);border:1px solid var(--ugo-client-border)}
+.ugo-client-root .ugo-category-row button.active,.ugo-client-root .ugo-ref-categories button.active{background:#e6f5ef;color:var(--ugo-client-primary-strong);border-color:#8fd1b6;box-shadow:0 6px 18px rgba(15,143,99,.12)}
+.ugo-client-root .ugo-feature-card,.ugo-client-root .ugo-provider-card,.ugo-client-root .ugo-provider-full-profile{background:#fff;color:var(--ugo-client-text);border:1px solid var(--ugo-client-border);box-shadow:0 10px 28px rgba(20,35,28,.08)}
+.ugo-client-root .ugo-feature-card:hover,.ugo-client-root .ugo-provider-card:hover{border-color:#9bcdb9;box-shadow:0 12px 30px rgba(20,35,28,.12)}
+.ugo-client-root .ugo-feature-copy strong,.ugo-client-root .ugo-ref-profile-head>strong{color:var(--ugo-client-primary-strong)}
+.ugo-client-root .ugo-card-main .available,.ugo-client-root .ugo-ref-badges span{background:#e5f6ee;color:#087653;border-color:#b8e2cf}
+.ugo-client-root .ugo-card-main .offline{background:#f0f2f1;color:#6f7c76;border-color:#dde3e0}
+.ugo-client-root .ugo-hire-button,.ugo-client-root .ugo-hugo-stage-actions .primary,.ugo-client-root .ugo-hugo-stage-composer button{background:var(--ugo-client-primary);color:#fff;border-color:var(--ugo-client-primary)}
+.ugo-client-root .ugo-hire-button:hover,.ugo-client-root .ugo-hugo-stage-actions .primary:hover,.ugo-client-root .ugo-hugo-stage-composer button:hover{background:var(--ugo-client-primary-strong)}
+.ugo-client-root .ugo-ref-hugo{background:#f0fbfc;color:#075d68;border:1px solid #9edbe2;box-shadow:0 10px 28px rgba(10,167,184,.15)}
+.ugo-client-root .ugo-ref-hugo>span,.ugo-client-root .ugo-real-orb{background:var(--ugo-client-accent);color:#fff;border-color:#89d6df}
+.ugo-client-root .ugo-real-state,.ugo-client-root .ugo-hugo-stage-live{color:#3f5148}
+.ugo-client-root .ugo-hugo-stage-live i,.ugo-client-root .ugo-real-state i{background:var(--ugo-client-primary)}
+.ugo-client-root .ugo-hugo-context-card,.ugo-client-root .ugo-hugo-user-line,.ugo-client-root .ugo-hugo-assistant-line{background:var(--ugo-client-surface-soft);color:var(--ugo-client-text);border-color:var(--ugo-client-border)}
+.ugo-client-root .ugo-hugo-assistant-line{background:#eef9fa;border-color:#c9e9ed}
+.ugo-client-root .ugo-mobile-nav button{color:#65756d}.ugo-client-root .ugo-mobile-nav button.active,.ugo-client-root .ugo-ref-nav-hugo{color:var(--ugo-client-primary-strong)}
+.ugo-client-root .ugo-drawer-backdrop,.ugo-client-root .ugo-ref-backdrop,.ugo-client-root .ugo-client-menu-backdrop{background:rgba(10,22,16,.42)}
+.ugo-client-root .ugo-home-empty{background:#f7faf8;color:#53645b;border-color:var(--ugo-client-border)}
+.ugo-client-root .ugo-drawer-title-row h2,.ugo-client-root .ugo-featured-head h2,.ugo-client-root .ugo-ref-profile h3,.ugo-client-root .ugo-feature-copy b,.ugo-client-root .ugo-card-main b,.ugo-client-root .ugo-hugo-stage-head strong{color:var(--ugo-client-text)}
+.ugo-client-root button:focus-visible,.ugo-client-root input:focus-visible{outline:3px solid rgba(10,167,184,.28);outline-offset:2px}
