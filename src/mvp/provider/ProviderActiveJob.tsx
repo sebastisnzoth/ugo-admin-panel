@@ -1,5 +1,6 @@
 import React,{useState}from'react'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
+import{ServiceChat}from'../ServiceChat'
 import{useProviderData,money}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
@@ -31,6 +32,7 @@ export function ProviderActiveJob(){
     <div><small>VALOR</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
    </div>
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
+   <details className="provider-secondary-details"><summary>Chat con el cliente</summary><ServiceChat role="provider" serviceId={s.id} compact/></details>
   </article>
   <div className="provider-job-action">
    {s.estado==='asignado'&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperando al cliente</strong><span>UGO te avisa cuando la forma de pago esté confirmada.</span></div>}
