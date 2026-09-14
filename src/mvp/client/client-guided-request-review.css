@@ -1,0 +1,85 @@
+/* Review state for the guided request. Kept separate so request-form structural selectors
+   cannot accidentally reshape the final confirmation cards. */
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form)){
+  gap:10px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-kicker{
+  color:#7fe5b1!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>p:not(.ugo-guided-kicker):not([role="alert"]){
+  margin:0 0 4px!important;
+  color:#91a69a!important;
+  font-size:12px!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-understood{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-rows:auto auto auto!important;
+  gap:3px 12px!important;
+  align-items:center!important;
+  margin:0!important;
+  padding:13px 14px!important;
+  border:1px solid rgba(183,220,198,.14)!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,#0b1d18,#091813)!important;
+  color:#f5faf7!important;
+  box-shadow:0 8px 22px rgba(0,0,0,.07)!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-understood>span{
+  grid-column:1!important;
+  grid-row:1!important;
+  color:#7f9589!important;
+  font-size:8px!important;
+  font-weight:950!important;
+  letter-spacing:.1em!important;
+  text-transform:uppercase!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-understood>b{
+  grid-column:1!important;
+  grid-row:2!important;
+  color:#f4faf6!important;
+  font-size:13px!important;
+  line-height:1.35!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-understood>small{
+  grid-column:1!important;
+  grid-row:3!important;
+  color:#8fa49a!important;
+  font-size:9px!important;
+  line-height:1.35!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-understood>.ugo-guided-voice{
+  grid-column:2!important;
+  grid-row:1/4!important;
+  align-self:center!important;
+  min-width:72px!important;
+  min-height:38px!important;
+  margin:0!important;
+  padding:0 12px!important;
+  border:1px solid rgba(36,226,138,.2)!important;
+  border-radius:12px!important;
+  background:#0f2b20!important;
+  color:#9ce7bf!important;
+  font-size:10px!important;
+  font-weight:850!important;
+}
+
+.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step:not(:has(>form))>.ugo-guided-primary:last-child{
+  position:sticky!important;
+  top:auto!important;
+  bottom:calc(10px + env(safe-area-inset-bottom))!important;
+  z-index:18!important;
+  min-height:56px!important;
+  margin-top:8px!important;
+  border-radius:17px!important;
+  background:linear-gradient(180deg,#34ee98,#20d47f)!important;
+  color:#052316!important;
+  box-shadow:0 16px 34px rgba(16,153,88,.26),0 0 0 8px rgba(6,17,13,.82)!important;
+}
