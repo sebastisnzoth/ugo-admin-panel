@@ -2,7 +2,7 @@ import{getRoleSupabase}from'../lib/roleSupabase'
 import{providerRadarForCategory,refreshProviderRadar}from'./client/providerRadarStore'
 
 export type VoiceCategory={id:string;slug:string|null;nombre:string|null}
-export type VoiceProvider={id:string;nombre:string|null;karma:number|string|null}
+export type VoiceProvider={id:string;nombre:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;experiencia_anos:number|null}
 export type VoiceAvailability={category:VoiceCategory;providers:VoiceProvider[]}
 
 const commonAliases:Array<[RegExp,string[]]>=[
@@ -38,19 +38,29 @@ export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|nu
 
 export async function loadVoiceAvailability(category:VoiceCategory):Promise<VoiceAvailability>{
  const sb=getRoleSupabase('client')
- // Voice must answer from the live backend, never from the 15s radar cache. The
- // refreshed rows are also published to the shared radar store, so cards and
- // Hugo's spoken answer stay on the same source of truth.
  await refreshProviderRadar(sb,true)
  const providers=providerRadarForCategory(category.id,{onlyAvailable:true})
-  .sort((a,b)=>Number(b.karma||0)-Number(a.karma||0))
-  .map(provider=>({id:provider.id,nombre:provider.nombre,karma:provider.karma}))
+  .sort((a,b)=>Number(b.karma||0)-Number(a.karma||0)||Number(b.servicios_completados||0)-Number(a.servicios_completados||0)||Number(b.experiencia_anos||0)-Number(a.experiencia_anos||0))
+  .map(provider=>({id:provider.id,nombre:provider.nombre,karma:provider.karma,servicios_completados:provider.servicios_completados,tarifa_base:provider.tarifa_base,experiencia_anos:provider.experiencia_anos??null}))
  return{category,providers}
+}
+
+function providerFacts(provider:VoiceProvider,pt:boolean){
+ const bits:string[]=[]
+ const karma=Number(provider.karma||0),jobs=Number(provider.servicios_completados||0),exp=Number(provider.experiencia_anos||0),rate=Number(provider.tarifa_base||0)
+ if(karma>0)bits.push(`karma ${karma.toFixed(1)}`)
+ if(jobs>0)bits.push(pt?`${jobs} trabalho${jobs===1?'':'s'} concluído${jobs===1?'':'s'}`:`${jobs} trabajo${jobs===1?'':'s'} completado${jobs===1?'':'s'}`)
+ if(exp>0)bits.push(pt?`${exp} anos de experiência`:`${exp} años de experiencia`)
+ if(rate>0)bits.push(`R$ ${rate.toFixed(0)}/h`)
+ return bits.join(', ')
 }
 
 export function voiceAvailabilityText(result:VoiceAvailability,locale:'es-AR'|'pt-BR'){
  const pt=locale==='pt-BR',name=result.category.nombre||result.category.slug||'esta categoría',total=result.providers.length
  if(!total)return pt?`Agora não vejo profissionais de ${name} online.`:`Ahora no veo profesionales de ${name} online.`
- const names=result.providers.map(provider=>provider.nombre).filter(Boolean).slice(0,3)as string[],joined=names.length>1?`${names.slice(0,-1).join(', ')}${pt?' e ':' y '}${names.at(-1)}`:names[0]||'',more=total>names.length?(pt?` e mais ${total-names.length}`:` y ${total-names.length} más`):''
- return pt?`Sim. Vejo ${total} ${total===1?'profissional':'profissionais'} de ${name} online${joined?`: ${joined}${more}`:''}. Estou mostrando na tela.`:`Sí. Veo ${total} ${total===1?'profesional':'profesionales'} de ${name} online${joined?`: ${joined}${more}`:''}. Te los muestro en pantalla.`
+ const best=result.providers[0],bestName=best?.nombre||'',bestFacts=best?providerFacts(best,pt):'',hasSignals=Boolean(bestFacts)
+ const others=result.providers.slice(1,3).map(provider=>provider.nombre).filter(Boolean)as string[]
+ const otherText=others.length?pt?` Também estão online ${others.join(' e ')}.`:` También están online ${others.join(' y ')}.`:''
+ if(total===1)return pt?`Encontrei 1 profissional de ${name} online. Minha recomendação é ${bestName}${bestFacts?`, com ${bestFacts}`:''}.`:`Encontré 1 profesional de ${name} online. Mi recomendación es ${bestName}${bestFacts?`, con ${bestFacts}`:''}.`
+ return pt?`Vejo ${total} profissionais de ${name} online. ${hasSignals?'Pelos dados reais da UGO,':'Como primeira opção disponível,'} eu começaria por ${bestName}${bestFacts?`, com ${bestFacts}`:''}.${otherText}`:`Veo ${total} profesionales de ${name} online. ${hasSignals?'Por los datos reales de UGO,':'Como primera opción disponible,'} empezaría por ${bestName}${bestFacts?`, con ${bestFacts}`:''}.${otherText}`
 }
