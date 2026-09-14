@@ -23,6 +23,7 @@ import'./client-responsive-layout.css'
 import'./client-conversational-stage.css'
 import'./client-web-conversational.css'
 import'./client-visual-polish.css'
+import'./client-guided-request-redesign.css'
 
 type Props={demo:boolean}
 
