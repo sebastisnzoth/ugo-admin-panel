@@ -7,7 +7,7 @@
 
 ## CURRENT P0
 
-Cerrar la primera validación real Cliente ↔ Proveedor ↔ Admin sobre UGO TEST, sin tocar producción.
+Cerrar la validación de dispositivo/navegador de Cliente ↔ Proveedor ↔ Admin sobre UGO TEST y ejecutar el workflow aislado con login HTTP real cuando estén disponibles las credenciales humanas TEST.
 
 UGO TEST designado:
 
@@ -19,71 +19,75 @@ Proveedor: /?app=provider
 Admin: /?app=admin
 ```
 
-Producción `trfsjuseqjxlhrxuvdsm` está fuera de alcance hasta promoción explícita.
+Producción `trfsjuseqjxlhrxuvdsm` permanece fuera de alcance hasta promoción explícita.
 
 ## ESTADO ACTUAL
 
-12/09/2026:
+14/09/2026:
 
-- `main` apunta Cliente, Proveedor y Admin al mismo UGO TEST.
-- UGO TEST está ACTIVE_HEALTHY.
-- DB auditada: 1 Cliente, 1 Proveedor, 1 Admin; sin transacciones residuales relevantes.
-- RPCs críticos del lifecycle existen en TEST: matching, aceptación, pago efectivo, avance, ampliación, cierre y disputa.
-- `.env.example` apunta a UGO TEST y producción queda excluida del flujo de prueba.
-- `docs/UGO_TEST_RUNBOOK.md` documenta la prueba desde dos celulares + Admin.
-- UI incorpora marca visible `UGO TEST` en el último `main`.
-- Vercel sirve un build anterior de TEST, pero el último redeploy quedó bloqueado por límite gratuito diario (>100 deployments). Hay reintento programado después del reset del límite; no gastar ni cambiar plan.
+- Cliente, Proveedor y Admin apuntan al mismo UGO TEST.
+- Vercel volvió a desplegar `main` con builds `READY`; el bloqueo histórico por cuota diaria ya no es vigente.
+- El test contractual de voz fue corregido para exigir `refreshProviderRadar(sb,true)`; ya no contradice el comportamiento live de Hugo.
+- La migración `20260913005000_auxiliary_tables_rls_hardening.sql` fue aplicada en UGO TEST y se verificó RLS activo en las 13 tablas auxiliares cubiertas.
+- Se ejecutó una corrida real de backend/RPC/RLS con identidades TEST Cliente, Proveedor y Admin usando contexto `authenticated` + claim de usuario real de TEST, sin tocar producción.
+- Esa corrida utilizó un único `serviceId`: `68ef8d25-b382-4e98-986a-21c510cc78f1` (servicio #14).
+- El E2E detectó un drift real: un pago presencial en efectivo podía pasar de `en_progreso` a `esperando_aprobacion` después de la evidencia final pero antes de confirmar la recepción del efectivo.
+- El drift se corrigió con `20260914202500_restore_cash_review_ordering_guard.sql`, aplicado en UGO TEST, y quedó protegido por `tests/contracts/cash-review-ordering-restore.test.mjs`.
+- El mismo servicio se revalidó hasta `completado`; Cliente, Proveedor y Admin observan el mismo cierre persistido.
 
 ## IMPLEMENTED
 
-Baseline P0 Cliente ↔ Proveedor:
+Baseline P0 Cliente ↔ Proveedor ↔ Admin:
 
-- matching con recovery persistido;
-- aceptación con reconciliación de asignación;
-- pago con recovery/reconnect;
-- geolocalización antes de `llegado` y guard backend 200 m;
-- evidencia Antes/Después con recovery de Storage/DB;
-- lifecycle Proveedor con reconciliación de transiciones;
-- cierre Cliente con reconciliación persistida;
-- disputas con recovery;
-- Admin web conectado al mismo Supabase TEST.
-
-Entorno TEST:
-
-- target Supabase centralizado;
-- producción rechazada por el gate aislado;
-- URL y publishable key públicas fijas en CI, no tratadas como secretos;
-- gate aislado ampliado a Cliente ↔ Proveedor ↔ Admin;
-- seis GitHub Secrets humanos esperados: email/password de los tres roles;
-- migración `20260913005000_auxiliary_tables_rls_hardening.sql` versionada para 13 tablas auxiliares sin RLS;
-- contract test `auxiliary-rls-hardening.test.mjs` protege ownership, finanzas, push, mensajería y superficies WhatsApp.
+- matching dirigido con privacidad pre-asignación;
+- aceptación atómica e idempotente;
+- pago con gate antes de `en_camino`;
+- evidencia `Antes` antes de `en_progreso`;
+- ampliación aprobable sólo por Cliente y reconciliación de importes;
+- evidencia `Después` antes del cierre;
+- efectivo presencial debe quedar `liberado` antes de habilitar revisión;
+- aprobación final exclusiva del Cliente;
+- Admin puede observar el mismo servicio y pago bajo RLS;
+- hardening RLS auxiliar aplicado en UGO TEST;
+- regresión de voz live y regresión de orden de cierre efectivo cubiertas en CI.
 
 ## VALIDATED
 
-Evidencia confirmada:
+Evidencia confirmada sobre UGO TEST:
 
-- UGO Core CI run `34727990818` sobre `2cf7ab3`: success.
-- UGO Core CI run `34728566874` sobre `8ed3ac3`: success.
-- UGO Core CI run `34728738562` sobre `7842da4`: success; incluye build, lifecycle/contracts y hardening RLS estático.
-- Vercel deployment de `2cf7ab3`: READY y apuntando a UGO TEST.
-- Supabase TEST: esquema y RPCs críticos presentes.
-- Auditoría de funciones `SECURITY DEFINER`: los RPCs críticos revisados contienen checks explícitos de auth/ownership/rol; no revocar EXECUTE a ciegas.
+- RLS activo en `audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos` y `whatsapp_notificaciones`.
+- Servicio E2E `68ef8d25-b382-4e98-986a-21c510cc78f1`:
+  - Cliente creó solicitud `buscando`;
+  - matching dirigido generó oferta `068b6cc3-a19e-45f2-a3a1-73014e682e92`;
+  - Proveedor con oferta pendiente no pudo leer la fila completa de `servicios`;
+  - `obtener_ofertas_proveedor` devolvió la oportunidad redactada;
+  - aceptación dejó el mismo servicio en `asignado` y retry devolvió el mismo `serviceId`;
+  - salida sin pago fue rechazada;
+  - Cliente seleccionó efectivo, pago `875d5b2f-d050-4aa5-96a2-d9da6e611ce2`;
+  - Proveedor avanzó a `en_camino` y `llegado`;
+  - inicio sin evidencia inicial fue rechazado;
+  - con evidencia `Antes` avanzó a `en_progreso`;
+  - ampliación `ae661e88-b1a1-4f14-b8d5-5d51f708d3c2` de BRL 10 fue aprobada sólo por Cliente;
+  - servicio/pago convergieron a BRL 130, comisión BRL 19,50 y ganancia BRL 110,50;
+  - confirmación de efectivo sin evidencia final fue rechazada;
+  - después de evidencia `Después`, intento de pedir aprobación antes de cobrar detectó el drift y, tras el fix, quedó correctamente rechazado con `Confirmá la recepción del efectivo...`;
+  - `confirmar_pago_efectivo` liberó el mismo pago y movió el servicio a `esperando_aprobacion`;
+  - retry de confirmación conservó el mismo pago;
+  - Proveedor no pudo aprobar el servicio;
+  - Cliente aprobó y el servicio terminó `completado`;
+  - retry de aprobación fue rechazado;
+  - Cliente y Proveedor leen el mismo cierre;
+  - Admin TEST (`cccccccc-cccc-4ccc-8ccc-ccccccccccc3`) fue reconocido por `private.is_admin(...)` y leyó el mismo servicio/pago completado.
+- UGO Core CI volvió a verde después de corregir el contrato de voz; validar también el run del último SHA antes de declarar un nuevo commit como cerrado.
+- Vercel tiene despliegues `READY` recientes de `main`; validar siempre el SHA final del bloque, no asumir por alias.
 
-Pendiente de declarar VALIDATED:
+## PENDIENTE / BLOCKED
 
-- aplicar la nueva migración RLS auxiliar sobre UGO TEST;
-- E2E RPC/RLS con login real de Cliente/Proveedor/Admin;
-- prueba manual real en dos dispositivos + Admin;
-- Storage/cámara/GPS en dispositivo real;
-- deploy del último `main` cuando se libere el límite gratuito de Vercel.
+### B1 · Login HTTP real del workflow aislado
 
-## BLOCKED
+El harness `UGO Isolated RPC RLS` requiere contraseñas de las identidades TEST. Las herramientas actuales permiten validar DB/RPC/RLS con identidades reales y claims autenticados, pero no leer ni resetear de forma segura las contraseñas de Supabase Auth ni cargar GitHub Secrets.
 
-### B1 · Credenciales humanas TEST
-
-La base contiene una identidad de cada rol, pero las herramientas disponibles no permiten leer/resetear contraseñas de Supabase Auth ni administrar GitHub Secrets.
-
-Para ejecutar el gate aislado se requieren exactamente:
+Se requieren fuera del repositorio:
 
 ```text
 UGO_TEST_CLIENT_EMAIL
@@ -94,29 +98,19 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-No guardar esos valores en GitHub, código, commits ni documentos públicos.
+No guardar contraseñas en GitHub, código, commits ni documentos públicos.
 
-### B2 · Aplicación de RLS auxiliar
+### B2 · Validación física de dispositivo
 
-La migración ya está diseñada, versionada y validada por CI, pero la ejecución DDL directa fue bloqueada por los controles de la herramienta. No intentar bypass. Aplicarla primero en UGO TEST por un canal autorizado; producción sigue prohibida.
-
-Tablas cubiertas:
-
-`audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos`, `whatsapp_notificaciones`.
-
-### B3 · Vercel free-tier deploy cap
-
-Último `main` no pudo desplegar porque Vercel devolvió `api-deployments-free-per-day` (>100). El build ya está verde en GitHub Actions. Reintentar después del reset, sin upgrade pago.
+Pendiente una pasada manual desde dispositivos/sesiones reales para cámara, GPS, permisos de micrófono/voz, Storage, Realtime/reconexión y UX táctil. Esto no invalida el E2E backend ya cerrado, pero es obligatorio antes de promover a producción.
 
 ## NEXT
 
-1. aplicar `20260913005000_auxiliary_tables_rls_hardening.sql` en UGO TEST por canal autorizado;
-2. disponer/cargar las seis credenciales humanas TEST como GitHub Secrets;
-3. ejecutar `UGO Isolated RPC RLS` hasta verde;
-4. realizar prueba manual Cliente/Proveedor/Admin según `docs/UGO_TEST_RUNBOOK.md`;
-5. verificar Storage/cámara/GPS y Realtime desde dispositivos reales;
-6. reintentar deploy del último `main` al resetear el límite de Vercel;
-7. sólo después evaluar promoción a producción.
+1. confirmar CI verde y Vercel `READY` sobre el último SHA de `main`;
+2. ejecutar prueba manual Cliente/Proveedor/Admin desde dos dispositivos + Admin según `docs/UGO_TEST_RUNBOOK.md`;
+3. verificar cámara/GPS/Storage/Realtime y voz en Firefox/móvil;
+4. cuando existan las seis credenciales TEST en GitHub Secrets, ejecutar `UGO Isolated RPC RLS` con login real hasta verde;
+5. sólo entonces evaluar promoción controlada a producción.
 
 ## HANDOFF CONTRACT
 
