@@ -13,6 +13,7 @@ export type ProviderRadarRow={
  categoria_principal_id:string|null
  categoria_nombre:string|null
  categoria_emoji:string|null
+ categoria_ids?:string[]|null
  lat:number|null
  lng:number|null
  pais?:string|null
@@ -69,7 +70,8 @@ export async function refreshProviderRadar(supabase:SupabaseClient,force=false){
 
 export function providerRadarForCategory(categoryId:string,{onlyAvailable=false}:{onlyAvailable?:boolean}={}){
  return snapshot.providers.filter(provider=>{
-  if(provider.categoria_principal_id!==categoryId)return false
+  const categoryIds=Array.isArray(provider.categoria_ids)?provider.categoria_ids:[]
+  if(provider.categoria_principal_id!==categoryId&&!categoryIds.includes(categoryId))return false
   if(onlyAvailable&&!Boolean(provider.online&&provider.disponible))return false
   return true
  })
