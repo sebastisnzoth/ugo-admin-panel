@@ -11,6 +11,7 @@ const bridge=await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx',
 const browserVoice=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 const hugoApi=await readFile(new URL('../../api/hugo/chat.ts',import.meta.url),'utf8')
 const multirubroMigration=await readFile(new URL('../../supabase/migrations/20260914210000_provider_radar_multirubro_view.sql',import.meta.url),'utf8')
+const matchingMigration=await readFile(new URL('../../supabase/migrations/20260914212500_matching_multirubro_consistency.sql',import.meta.url),'utf8')
 
 test('voice categories come from the live UGO catalog',()=>{
  assert.match(catalog,/from\('categorias'\)/)
@@ -29,6 +30,15 @@ test('voice availability and client cards share one multirubro provider source o
  assert.match(radarBridge,/categories\.find\(item=>item\.id===selectedCategoryId\)\|\|intentCategory/)
  assert.match(multirubroMigration,/as categoria_ids/)
  assert.match(multirubroMigration,/proveedor_subcategorias/)
+})
+
+test('automatic and directed matching honor active provider rubros',()=>{
+ assert.match(matchingMigration,/create or replace function private\.iniciar_matching_impl/)
+ assert.match(matchingMigration,/create or replace function public\.iniciar_matching_dirigido/)
+ assert.match(matchingMigration,/public\.proveedor_subcategorias/)
+ assert.match(matchingMigration,/sc\.categoria_id=v_servicio\.categoria_id/)
+ assert.match(matchingMigration,/v_secondary_match/)
+ assert.match(matchingMigration,/and not v_secondary_match/)
 })
 
 test('client can finish a real request by voice with optional preferred provider without duplicate inserts',()=>{
