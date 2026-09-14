@@ -12,10 +12,11 @@ test('TEST catalog includes the additional client categories already understood 
  assert.match(migration,/where not exists/)
 })
 
-test('client home and guided request render active categories from the database',async()=>{
+test('client home and guided request consume active categories from the database',async()=>{
  const[home,guided]=await Promise.all([read('src/mvp/client/ClientPremiumHome.tsx'),read('src/mvp/client/ClientGuidedRequest.tsx')])
  assert.match(home,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
- assert.match(home,/categories\.map/)
+ assert.match(home,/CORE_SERVICES\.map\(item=>\(\{item,category:categories\.find\(item\.matches\)\|\|null\}\)\)/)
+ assert.match(home,/coreCategories\.map/)
  assert.match(guided,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
  assert.match(guided,/jardineria:\['jardinero'/)
 })
