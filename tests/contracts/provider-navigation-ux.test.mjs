@@ -4,10 +4,11 @@ import { readFile } from 'node:fs/promises'
 
 const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
-test('provider bottom navigation exposes earnings and active semantics', async () => {
+test('provider bottom navigation keeps active semantics and earnings reachable from profile', async () => {
   const root = await read('src/mvp/provider/ProviderRoot.tsx')
   assert.match(root, /openEarnings/)
-  assert.match(root, />Ganancias<\/button>/)
+  assert.match(root, />Perfil<\/button>/)
+  assert.match(root, /Ver ganancias/)
   assert.match(root, /aria-current=/)
 })
 
