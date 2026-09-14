@@ -10,7 +10,7 @@ import type{ClientHugoIntent,ClientScreen}from'./client/clientTypes'
 import{setProviderRadarRows}from'./client/providerRadarStore'
 import{getRoutingProvider}from'../lib/routing/provider'
 
-export type ProviderMapRow={id:string;nombre:string|null;foto_url:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;online:boolean|null;disponible:boolean|null;estado_verificacion:string|null;categoria_principal_id:string|null;categoria_nombre:string|null;categoria_emoji:string|null;lat:number|null;lng:number|null;pais?:string|null;zona?:string|null;bio?:string|null;experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
+export type ProviderMapRow={id:string;nombre:string|null;foto_url:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;online:boolean|null;disponible:boolean|null;estado_verificacion:string|null;categoria_principal_id:string|null;categoria_nombre:string|null;categoria_emoji:string|null;categoria_ids?:string[]|null;lat:number|null;lng:number|null;pais?:string|null;zona?:string|null;bio?:string|null;experiencia_anos?:number|null;especialidades?:string|null;idiomas?:string|null;disponibilidad_horaria?:string|null;telefono_profesional?:string|null;ciudad_base?:string|null}
 type IntentPayload={categoryId?:string;categoryName?:string;urgency:boolean;description:string}
 type Props={supabase:SupabaseClient;categories:Category[];selectedCategoryId:string;requestedScreen?:ClientScreen;requestedProviderId?:string|null;hugoIntent?:ClientHugoIntent|null;onCategorySelect:(id:string)=>void;onProviderPick:(provider:ProviderMapRow)=>void;onSearchClose?:()=>void;onIntent?:(intent:IntentPayload)=>void}
 type EtaMeta={etaSeconds:number;distanceMeters:number}
@@ -61,7 +61,7 @@ export function ClientQuantumExperience({supabase,categories,selectedCategoryId,
  const[reloadKey,setReloadKey]=useState(0)
  const[locationNotice,setLocationNotice]=useState('')
 
- const categoryFiltered=useMemo(()=>providers.filter(p=>!selectedCategoryId||p.categoria_principal_id===selectedCategoryId),[providers,selectedCategoryId])
+ const categoryFiltered=useMemo(()=>providers.filter(p=>!selectedCategoryId||p.categoria_principal_id===selectedCategoryId||(Array.isArray(p.categoria_ids)&&p.categoria_ids.includes(selectedCategoryId))),[providers,selectedCategoryId])
  const filtered=useMemo(()=>[...categoryFiltered].filter(p=>!search.trim()||`${p.nombre||''} ${p.categoria_nombre||''} ${p.especialidades||''}`.toLowerCase().includes(search.trim().toLowerCase())).sort((a,b)=>{const availability=Number(Boolean(b.online&&b.disponible))-Number(Boolean(a.online&&a.disponible));if(availability)return availability;const ae=etaByProvider[a.id]?.etaSeconds??Number.MAX_SAFE_INTEGER,be=etaByProvider[b.id]?.etaSeconds??Number.MAX_SAFE_INTEGER;if(ae!==be)return ae-be;return Number(b.karma||0)-Number(a.karma||0)}),[categoryFiltered,etaByProvider,search])
  const selectedProvider=useMemo(()=>filtered.find(p=>p.id===selected)||providers.find(p=>p.id===selected)||null,[filtered,providers,selected])
  const featured=filtered.slice(0,3)
