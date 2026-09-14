@@ -14,8 +14,9 @@ export function ClientPremiumHome(){
  const flow=useClientFlow(),auth=useRoleSession('client'),{supabase,session,profile}=auth
  const[categories,setCategories]=useState<Category[]>([]),[place,setPlace]=useState('Florianópolis, SC')
  const mapEl=useRef<HTMLDivElement|null>(null),mapRef=useRef<maplibregl.Map|null>(null),markerRef=useRef<maplibregl.Marker|null>(null)
- const talkToHugo=()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugo)
- const writeToHugo=(text='',send=false)=>window.dispatchEvent(new CustomEvent(UGO_UI_EVENTS.clientHugoText,{detail:text?{text,send}:undefined}))
+ const openRequest=()=>flow.actions.openSearch()
+ const talkToHugo=()=>{openRequest();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugoVoice),0)}
+ const writeToHugo=(text='',send=false)=>{openRequest();window.setTimeout(()=>window.dispatchEvent(new CustomEvent(UGO_UI_EVENTS.clientHugoText,{detail:text?{text,send}:undefined})),0)}
  useEffect(()=>{if(!session)return;let alive=true;Promise.all([supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre'),supabase.from('perfiles_cliente').select('direccion,barrio,ciudad').eq('usuario_id',session.user.id).maybeSingle()]).then(([cats,client])=>{if(!alive)return;setCategories((cats.data||[])as Category[]);const p=(client.data||null)as ClientProfile|null;const label=[p?.barrio,p?.ciudad].filter(Boolean).join(', ');if(label)setPlace(label)});return()=>{alive=false}},[session,supabase])
  useEffect(()=>{if(auth.loading||!session||!profile||!mapEl.current||mapRef.current)return;const map=new maplibregl.Map({container:mapEl.current,style:MAP_STYLE,center:FLORIPA,zoom:12.7,interactive:false,attributionControl:false});mapRef.current=map;map.once('load',()=>map.resize());const dot=document.createElement('div');dot.className='ugo-client-home-marker';const marker=new maplibregl.Marker({element:dot}).setLngLat(FLORIPA).addTo(map);markerRef.current=marker;navigator.geolocation?.getCurrentPosition(pos=>{const point:[number,number]=[pos.coords.longitude,pos.coords.latitude];map.jumpTo({center:point,zoom:14});marker.setLngLat(point)},()=>{},{timeout:5000,maximumAge:60000});return()=>{marker.remove();markerRef.current=null;map.remove();mapRef.current=null}},[auth.loading,session,profile])
  if(auth.loading||!session||!profile)return null

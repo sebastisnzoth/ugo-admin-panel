@@ -80,6 +80,8 @@ export function ClientGuidedRequest(){
  function closeMatching(){setStep('idle');setMessage('');flow.navigate('home')}
  async function cancelMatching(){const ok=await flow.actions.cancelService();if(ok){setStep('idle');setHasActive(false);setActiveServiceId('');setActiveState('');setMessage('');setDraft(emptyDraft);flow.navigate('home')}else setMessage('No pudimos cancelar desde esta pantalla. Probá nuevamente desde Servicios.')}
 
+ useEffect(()=>{const onText=(event:Event)=>{const detail=(event as CustomEvent<{text?:string;send?:boolean}>).detail||{},text=String(detail.text||'').trim();openRequest();window.setTimeout(()=>{if(text){setHugoText(text);if(detail.send)void handleNaturalInput(text)}else document.querySelector<HTMLInputElement>('.ugo-guided-request input[placeholder="Escribile a Hugo…"]')?.focus()},0)};const onVoice=()=>{openRequest();window.setTimeout(()=>startVoice(),0)};window.addEventListener(UGO_UI_EVENTS.clientHugoText,onText);window.addEventListener(UGO_UI_EVENTS.clientHugoVoice,onVoice);return()=>{window.removeEventListener(UGO_UI_EVENTS.clientHugoText,onText);window.removeEventListener(UGO_UI_EVENTS.clientHugoVoice,onVoice)}},[openRequest])
+
  if(auth.loading||!session||!ready)return null
  if(hasActive&&step==='idle')return null
  if(step==='idle')return <button type="button" className="ugo-guided-launch" onClick={openRequest}>Pedir un servicio</button>

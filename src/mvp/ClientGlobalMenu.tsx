@@ -11,9 +11,9 @@ export function ClientGlobalMenu(){
  useEffect(()=>{if(!open)return;const previous=document.body.style.overflow;document.body.style.overflow='hidden';return()=>{document.body.style.overflow=previous}},[open])
  function close(){setOpen(false)}
  function home(){close();flow.navigate('home')}
- function search(){close();emitUgoUiEvent(UGO_UI_EVENTS.clientHugoText)}
+ function search(){close();actions.openSearch();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugoText),0)}
  function profile(){close();actions.openProfile()}
- function hugo(){close();emitUgoUiEvent(UGO_UI_EVENTS.clientHugo)}
+ function hugo(){close();actions.openSearch();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientHugoVoice),0)}
  function history(){close();actions.openHistory()}
  function dispute(){close();actions.openDispute()}
  function location(){close();emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)}
