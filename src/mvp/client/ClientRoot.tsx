@@ -22,6 +22,7 @@ import'./client-payment-choice.css'
 import'./client-responsive-layout.css'
 import'./client-conversational-stage.css'
 import'./client-web-conversational.css'
+import'./client-visual-polish.css'
 
 type Props={demo:boolean}
 
