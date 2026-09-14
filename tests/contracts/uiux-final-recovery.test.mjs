@@ -14,7 +14,7 @@ test('client payment never hides a failed state load without recovery',async()=>
 test('provider active-job empty state keeps one simple exit and arrival has automatic plus manual recovery',async()=>{
  const src=await read('src/mvp/provider/ProviderActiveJob.tsx')
  assert.match(src,/Ver pedidos/)
- assert.match(src,/UGO detecta tu llegada automáticamente/)
+ assert.match(src,/UGO intenta detectar tu llegada automáticamente/)
  assert.match(src,/YA LLEGUÉ/)
  assert.doesNotMatch(src,/Confirmar llegada/)
 })
