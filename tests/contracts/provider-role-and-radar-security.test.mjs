@@ -8,6 +8,7 @@ const chat=await readFile(new URL('../../src/mvp/ServiceChat.tsx',import.meta.ur
 const radarMigration=await readFile(new URL('../../supabase/migrations/20260914232234_provider_radar_security_invoker.sql',import.meta.url),'utf8')
 const evidenceMigration=await readFile(new URL('../../supabase/migrations/20260914232954_service_evidence_storage_integrity_guard.sql',import.meta.url),'utf8')
 const realtimeMigration=await readFile(new URL('../../supabase/migrations/20260914233726_enable_core_realtime_publication.sql',import.meta.url),'utf8')
+const chatGrantMigration=await readFile(new URL('../../supabase/migrations/20260914233922_service_chat_authenticated_privileges.sql',import.meta.url),'utf8')
 const isolated=await readFile(new URL('../integration/client-provider-rpc-rls.test.mjs',import.meta.url),'utf8')
 
 test('provider payout always uses the provider-scoped Supabase session',()=>{
@@ -41,10 +42,11 @@ test('core live surfaces are explicitly published to Supabase Realtime',()=>{
  assert.match(realtimeMigration,/alter publication supabase_realtime add table/)
 })
 
-test('service chat uses the canonical mensajes table and columns',()=>{
+test('service chat uses the canonical mensajes table and columns with authenticated grants',()=>{
  assert.match(chat,/from\('mensajes'\)/)
  assert.match(chat,/table:'mensajes'/)
  assert.match(chat,/emisor_id:userId/)
  assert.match(chat,/contenido:text/)
  assert.doesNotMatch(chat,/mensajes_servicio/)
+ assert.match(chatGrantMigration,/grant select, insert, update on table public\.mensajes to authenticated/i)
 })
