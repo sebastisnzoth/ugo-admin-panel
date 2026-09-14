@@ -13,8 +13,8 @@ test('client mounts one canonical Hugo companion instead of the legacy voice-ord
   assert.doesNotMatch(root, /ClientHugoVoiceOrder/)
 })
 
-test('Hugo companion is wired to real client actions and intents in quantum mode', () => {
-  assert.match(bridge, /mode="quantum"/)
+test('Hugo companion is wired to the canonical voice dock, real client actions and intents', () => {
+  assert.match(bridge, /ClientVoiceHugoDock/)
   assert.match(bridge, /clientActions=\{flow\.actions\}/)
   assert.match(bridge, /onIntent=\{flow\.publishHugoIntent\}/)
 })
