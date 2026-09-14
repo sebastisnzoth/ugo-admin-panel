@@ -1,26 +1,28 @@
-import React,{useEffect,useState}from'react'
+import React,{useCallback,useEffect,useState}from'react'
 import{useRoleSession}from'../shared'
 import{useClientFlow}from'./clientFlow'
 import'./client-profile-panel.css'
 
 type Detail={telefono?:string|null;direccion?:string|null;barrio?:string|null;ciudad?:string|null;idioma_preferido?:string|null;contacto_preferido?:string|null}
+const empty:Detail={telefono:'',direccion:'',barrio:'',ciudad:'',idioma_preferido:'pt-BR',contacto_preferido:'WhatsApp'}
 
 export function ClientProfilePanel(){
- const flow=useClientFlow()
- const auth=useRoleSession('client'),{supabase,session,profile}=auth
- const[detail,setDetail]=useState<Detail|null>(null),[loading,setLoading]=useState(true)
- useEffect(()=>{if(!session)return;let alive=true;setLoading(true);supabase.from('perfiles_cliente').select('telefono,direccion,barrio,ciudad,idioma_preferido,contacto_preferido').eq('usuario_id',session.user.id).maybeSingle().then(({data})=>{if(alive){setDetail((data||null)as Detail|null);setLoading(false)}});return()=>{alive=false}},[session,supabase])
+ const flow=useClientFlow(),auth=useRoleSession('client'),{supabase,session,profile}=auth
+ const[detail,setDetail]=useState<Detail>(empty),[draft,setDraft]=useState<Detail>(empty),[loading,setLoading]=useState(true),[editing,setEditing]=useState(false),[saving,setSaving]=useState(false),[message,setMessage]=useState('')
+ const load=useCallback(async()=>{if(!session)return;setLoading(true);setMessage('');const{data,error}=await supabase.from('perfiles_cliente').select('telefono,direccion,barrio,ciudad,idioma_preferido,contacto_preferido').eq('usuario_id',session.user.id).maybeSingle();if(error){setMessage('No pudimos cargar el perfil. Reintentá sin perder tu cuenta.');setLoading(false);return}const next={...empty,...((data||{})as Detail)};setDetail(next);setDraft(next);setLoading(false)},[session,supabase])
+ useEffect(()=>{void load()},[load])
  if(!session)return null
- const address=[detail?.direccion,detail?.barrio,detail?.ciudad].filter(Boolean).join(', ')||'Sin dirección cargada'
- return <div className="ugo-client-screen-overlay" role="dialog" aria-modal="true" aria-label="Perfil del cliente">
-  <section className="ugo-client-profile-panel">
-   <header><button type="button" onClick={()=>flow.navigate('home')} aria-label="Volver">←</button><div><small>U.G.O. · CLIENTE</small><h2>Tu perfil</h2></div><span>{profile?.nombre?.slice(0,1).toUpperCase()||'U'}</span></header>
-   {loading?<div className="ugo-client-profile-loading">Cargando perfil…</div>:<div className="ugo-client-profile-body">
-    <div className="ugo-client-profile-name"><strong>{profile?.nombre||'Cliente UGO'}</strong><small>{session.user.email||'Sin email'}</small></div>
-    <dl><div><dt>Teléfono</dt><dd>{detail?.telefono||'Sin teléfono'}</dd></div><div><dt>Dirección</dt><dd>{address}</dd></div><div><dt>Idioma</dt><dd>{detail?.idioma_preferido||'pt-BR'}</dd></div><div><dt>Contacto preferido</dt><dd>{detail?.contacto_preferido||'WhatsApp'}</dd></div></dl>
-    <button type="button" className="ugo-client-profile-primary" onClick={()=>flow.navigate('home')}>Volver a Inicio</button>
-    <button type="button" className="ugo-client-profile-signout" onClick={()=>void auth.signOut()}>Cerrar sesión</button>
-   </div>}
-  </section>
- </div>
+ const address=[detail.direccion,detail.barrio,detail.ciudad].filter(Boolean).join(', ')||'Sin dirección cargada'
+ const save=async(event:React.FormEvent)=>{event.preventDefault();setSaving(true);setMessage('');const payload={telefono:draft.telefono?.trim()||null,direccion:draft.direccion?.trim()||null,barrio:draft.barrio?.trim()||null,ciudad:draft.ciudad?.trim()||null,idioma_preferido:draft.idioma_preferido||'pt-BR',contacto_preferido:draft.contacto_preferido||'WhatsApp'};const{error}=await(supabase as any).from('perfiles_cliente').upsert({usuario_id:session.user.id,...payload},{onConflict:'usuario_id'});setSaving(false);if(error)return setMessage(error.message||'No pudimos guardar el perfil.');setMessage('Perfil actualizado.');setEditing(false);await load()}
+ return <div className="ugo-client-screen-overlay" role="dialog" aria-modal="true" aria-label="Perfil del cliente"><section className="ugo-client-profile-panel">
+  <header><button type="button" onClick={()=>flow.navigate('home')} aria-label="Volver">←</button><div><small>U.GO · CLIENTE</small><h2>Tu perfil</h2></div><span>{profile?.nombre?.slice(0,1).toUpperCase()||'U'}</span></header>
+  {loading?<div className="ugo-client-profile-loading">Cargando perfil…</div>:<div className="ugo-client-profile-body">
+   <article className="ugo-client-profile-identity"><span>{profile?.nombre?.slice(0,1).toUpperCase()||'U'}</span><div><strong>{profile?.nombre||'Cliente UGO'}</strong><small>{session.user.email||'Sin email'}</small></div><button type="button" onClick={()=>setEditing(value=>!value)}>{editing?'Cerrar':'Editar'}</button></article>
+   {message&&<div className="ugo-client-profile-message" role="status">{message}</div>}
+   {editing&&<form className="ugo-client-profile-form" onSubmit={save}><label>Teléfono<input value={draft.telefono||''} onChange={event=>setDraft(value=>({...value,telefono:event.target.value}))} inputMode="tel" placeholder="Tu teléfono"/></label><label>Dirección<input value={draft.direccion||''} onChange={event=>setDraft(value=>({...value,direccion:event.target.value}))} placeholder="Calle y número"/></label><div><label>Barrio<input value={draft.barrio||''} onChange={event=>setDraft(value=>({...value,barrio:event.target.value}))}/></label><label>Ciudad<input value={draft.ciudad||''} onChange={event=>setDraft(value=>({...value,ciudad:event.target.value}))}/></label></div><div><label>Idioma<select value={draft.idioma_preferido||'pt-BR'} onChange={event=>setDraft(value=>({...value,idioma_preferido:event.target.value}))}><option value="pt-BR">Português</option><option value="es">Español</option></select></label><label>Contacto<select value={draft.contacto_preferido||'WhatsApp'} onChange={event=>setDraft(value=>({...value,contacto_preferido:event.target.value}))}><option>WhatsApp</option><option>Teléfono</option><option>Email</option></select></label></div><button className="ugo-client-profile-primary" disabled={saving}>{saving?'Guardando…':'Guardar cambios'}</button></form>}
+   <div className="ugo-client-profile-shortcuts"><button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><strong>Actividad</strong><small>Pedidos, trabajos y pagos</small></button><button type="button" onClick={()=>flow.navigate('home')}><span>⌁</span><strong>Nuevo pedido</strong><small>Contale a Hugo qué necesitás</small></button></div>
+   <div className="ugo-client-profile-sections"><details open><summary><span>⌖</span><div><strong>Direcciones</strong><small>{address}</small></div></summary><p>UGO reutiliza tu dirección para no volver a pedirla. Podés cambiarla desde Editar.</p></details><details><summary><span>●</span><div><strong>Contacto y notificaciones</strong><small>{detail.contacto_preferido||'WhatsApp'} · {detail.telefono||'sin teléfono'}</small></div></summary><p>Las novedades del servicio también aparecen dentro de UGO. Mantené actualizado el medio de contacto.</p></details><details><summary><span>?</span><div><strong>Ayuda y seguridad</strong><small>Soporte, disputas y privacidad</small></div></summary><p>Si un trabajo tiene un problema, abrí la actividad o la disputa del servicio. UGO nunca te pide la contraseña por mensaje.</p></details></div>
+   <button type="button" className="ugo-client-profile-signout" onClick={()=>void auth.signOut()}>Cerrar sesión</button>
+  </div>}
+ </section></div>
 }
