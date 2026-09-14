@@ -15,6 +15,7 @@ import'./provider-flow.css'
 import'./provider-responsive-layout.css'
 import'./provider-simple-flow.css'
 import'./provider-ux-v2.css'
+import'./provider-redesign-2026.css'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 
