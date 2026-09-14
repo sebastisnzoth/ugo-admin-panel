@@ -4,8 +4,7 @@ type BrowserVoiceBridge={startListening:()=>void;stopListening:()=>void;isAvaila
 
 declare global{interface Window{UGOVoiceBridge?:BrowserVoiceBridge}}
 
-const hasWebSpeech=()=>Boolean((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition)
-const canFallback=()=>Boolean(navigator.mediaDevices?.getUserMedia&&window.MediaRecorder)
+const canRecord=()=>Boolean(navigator.mediaDevices?.getUserMedia&&window.MediaRecorder)
 const emit=(name:string,detail:Record<string,unknown>)=>window.dispatchEvent(new CustomEvent(name,{detail}))
 
 function preferredMime(){
@@ -20,7 +19,9 @@ async function blobToBase64(blob:Blob){
 }
 
 function installBrowserBridge(){
- if(typeof window==='undefined'||window.UGOVoiceBridge||hasWebSpeech()||!canFallback())return
+ // UGO uses the same MediaRecorder -> Gemini transcription path in every browser
+ // that supports it. Web Speech stays only as a last-resort fallback in the dock.
+ if(typeof window==='undefined'||window.UGOVoiceBridge||!canRecord())return
  let active=false,stream:MediaStream|null=null,recorder:MediaRecorder|null=null,chunks:BlobPart[]=[],audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,analyser:AnalyserNode|null=null,raf=0,restartTimer=0,cycle=0,sendCurrent=false
 
  const clearRestart=()=>{if(restartTimer){window.clearTimeout(restartTimer);restartTimer=0}}
@@ -28,34 +29,30 @@ function installBrowserBridge(){
  const releaseStream=()=>{stream?.getTracks().forEach(track=>track.stop());stream=null}
  const fail=(code:string)=>{active=false;clearRestart();cleanupAnalysis();releaseStream();recorder=null;emit('ugo:native-voice-error',{code})}
  const schedule=(fn:()=>void,ms:number)=>{clearRestart();restartTimer=window.setTimeout(fn,ms)}
-
- const waitForHugoThenResume=(token:number)=>{
-  const started=Date.now();let heardHugo=false
-  const poll=()=>{
-   if(!active||token!==cycle)return
-   const speaking=Boolean(window.speechSynthesis?.speaking)
-   if(speaking)heardHugo=true
-   if(heardHugo&&!speaking){schedule(()=>void startCycle(),550);return}
-   if(Date.now()-started>15000){schedule(()=>void startCycle(),350);return}
-   schedule(poll,140)
-  }
-  schedule(poll,140)
- }
+ const waitForConsumer=(token:number)=>schedule(()=>{if(active&&token===cycle&&!recorder)void startCycle()},12000)
 
  const transcribe=async(blob:Blob,token:number)=>{
   if(!active||token!==cycle)return
   try{
-   emit('ugo:native-voice-state',{state:'ready'})
+   emit('ugo:native-voice-state',{state:'connecting'})
    const sb=getRoleSupabase('client'),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
-   if(!accessToken)throw new Error('Sesión de cliente no disponible')
+   if(!accessToken)throw Object.assign(new Error('Sesión de cliente no disponible'),{status:401})
    const audio=await blobToBase64(blob)
    const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({role:'client',voice_transcription:true,audio_base64:audio,mime_type:apiMime(blob.type)})})
    const data=await response.json().catch(()=>({})) as{transcript?:string;error?:string}
-   if(!response.ok)throw new Error(data.error||`Voice ${response.status}`)
-   const text=String(data.transcript||'').trim()
    if(!active||token!==cycle)return
-   if(text){emit('ugo:native-voice-result',{text,final:true});waitForHugoThenResume(token)}else schedule(()=>void startCycle(),350)
-  }catch(error){console.warn('UGO browser voice fallback failed',error);if(active&&token===cycle)fail('unavailable')}
+   if(response.status===422){emit('ugo:native-voice-state',{state:'ready',reason:'no-speech'});schedule(()=>void startCycle(),260);return}
+   if(response.status===429||response.status>=500){console.warn('UGO Gemini transcription retry',{status:response.status,error:data.error});emit('ugo:native-voice-state',{state:'ready',reason:'retry'});schedule(()=>void startCycle(),700);return}
+   if(!response.ok)throw Object.assign(new Error(data.error||`Voice ${response.status}`),{status:response.status})
+   const text=String(data.transcript||'').trim()
+   if(text){emit('ugo:native-voice-result',{text,final:true,engine:'gemini'});waitForConsumer(token)}else{emit('ugo:native-voice-state',{state:'ready',reason:'empty'});schedule(()=>void startCycle(),260)}
+  }catch(error:any){
+   console.warn('UGO Gemini browser transcription failed',error)
+   if(!active||token!==cycle)return
+   const status=Number(error?.status||0)
+   if(status===422||status===429||status>=500){emit('ugo:native-voice-state',{state:'ready',reason:'retry'});schedule(()=>void startCycle(),700);return}
+   fail(status===401||status===403?'session':'unavailable')
+  }
  }
 
  const finishCycle=(send:boolean)=>{
@@ -68,17 +65,17 @@ function installBrowserBridge(){
 
  const monitorSilence=(token:number,startedAt:number)=>{
   if(!active||token!==cycle||!recorder||!analyser)return
-  const values=new Uint8Array(analyser.fftSize);let speechStarted=false,lastVoiceAt=startedAt
+  const values=new Uint8Array(analyser.fftSize);let speechStarted=false,lastVoiceAt=startedAt,voiceFrames=0
   const tick=()=>{
    if(!active||token!==cycle||!recorder||!analyser)return
    analyser.getByteTimeDomainData(values)
    let sum=0
    for(const value of values){const sample=(value-128)/128;sum+=sample*sample}
    const rms=Math.sqrt(sum/values.length),now=performance.now(),elapsed=now-startedAt
-   if(rms>.022){speechStarted=true;lastVoiceAt=now}
-   if(speechStarted&&elapsed>700&&now-lastVoiceAt>850){finishCycle(true);return}
-   if(elapsed>10000){finishCycle(speechStarted);return}
-   if(!speechStarted&&elapsed>7000){finishCycle(false);return}
+   if(rms>.014){voiceFrames++;lastVoiceAt=now;if(voiceFrames>=4)speechStarted=true}else if(!speechStarted&&voiceFrames>0)voiceFrames--
+   if(speechStarted&&elapsed>700&&now-lastVoiceAt>900){finishCycle(true);return}
+   if(elapsed>11000){finishCycle(speechStarted);return}
+   if(!speechStarted&&elapsed>7500){finishCycle(false);return}
    raf=requestAnimationFrame(tick)
   }
   raf=requestAnimationFrame(tick)
@@ -87,7 +84,6 @@ function installBrowserBridge(){
  async function startCycle(){
   clearRestart()
   if(!active||recorder)return
-  if(window.speechSynthesis?.speaking){schedule(()=>void startCycle(),220);return}
   const token=++cycle
   try{
    if(!stream)stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}})
@@ -99,19 +95,19 @@ function installBrowserBridge(){
    current.onstop=()=>{
     const shouldSend=sendCurrent,blob=new Blob(chunks,{type:current.mimeType||mime||'audio/webm'});chunks=[]
     if(!active||token!==cycle)return
-    if(shouldSend&&blob.size>1000){void transcribe(blob,token)}else schedule(()=>void startCycle(),280)
+    if(shouldSend&&blob.size>1000){void transcribe(blob,token)}else{emit('ugo:native-voice-state',{state:'ready',reason:'silence'});schedule(()=>void startCycle(),260)}
    }
    const AudioContextCtor=window.AudioContext||(window as any).webkitAudioContext
    if(AudioContextCtor){audioContext=new AudioContextCtor();source=audioContext.createMediaStreamSource(stream);analyser=audioContext.createAnalyser();analyser.fftSize=1024;source.connect(analyser)}
-   current.start(250);emit('ugo:native-voice-state',{state:'hearing'})
+   current.start(250);emit('ugo:native-voice-state',{state:'hearing',engine:'gemini'})
    if(analyser)monitorSilence(token,performance.now());else schedule(()=>finishCycle(true),5000)
   }catch(error:any){console.warn('UGO microphone unavailable',error);fail(error?.name==='NotAllowedError'||error?.name==='SecurityError'?'not-allowed':'unavailable')}
  }
 
  window.UGOVoiceBridge={
-  isAvailable:()=>canFallback(),
-  startListening:()=>{if(active)return;active=true;emit('ugo:native-voice-state',{state:'ready'});void startCycle()},
-  stopListening:()=>{active=false;cycle++;clearRestart();cleanupAnalysis();const current=recorder;recorder=null;sendCurrent=false;if(current&&current.state!=='inactive'){try{current.stop()}catch{}}releaseStream();emit('ugo:native-voice-state',{state:'ready'})},
+  isAvailable:()=>canRecord(),
+  startListening:()=>{if(active)return;active=true;emit('ugo:native-voice-state',{state:'ready',engine:'gemini'});void startCycle()},
+  stopListening:()=>{active=false;cycle++;clearRestart();cleanupAnalysis();const current=recorder;recorder=null;sendCurrent=false;if(current&&current.state!=='inactive'){try{current.stop()}catch{}}releaseStream();emit('ugo:native-voice-state',{state:'ready',engine:'gemini'})},
  }
 }
 
