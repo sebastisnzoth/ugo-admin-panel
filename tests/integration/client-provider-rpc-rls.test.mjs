@@ -16,6 +16,8 @@ const enabled = missing.length === 0
 const requireIsolated = process.env.UGO_REQUIRE_ISOLATED_INTEGRATION === '1'
 const url = process.env.UGO_TEST_SUPABASE_URL || ''
 const PROD_REF = 'trfsjuseqjxlhrxuvdsm'
+const EVIDENCE_BUCKET = 'service-evidence'
+const EVIDENCE_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlKxQAAAABJRU5ErkJggg==', 'base64')
 
 function expectDomainError(result, message) {
   assert.equal(result.error?.code, 'P0001', 'Debe fallar por un guard de dominio, no por red, Auth o RPC ausente')
@@ -54,15 +56,27 @@ async function getPayment(supabase, serviceId) {
   return data
 }
 
-async function insertEvidence(supabase, serviceId, userId, tipo) {
+async function uploadEvidence(supabase, serviceId, userId, tipo) {
+  const path = `${serviceId}/${userId}/${crypto.randomUUID()}.png`
+  const uploaded = await supabase.storage.from(EVIDENCE_BUCKET).upload(path, EVIDENCE_PNG, {
+    upsert: false,
+    contentType: 'image/png',
+  })
+  if (uploaded.error) throw uploaded.error
+
   const { error } = await supabase.from('evidencias_servicio').insert({
     servicio_id: serviceId,
     usuario_id: userId,
     tipo,
-    storage_path: `integration/${serviceId}/${tipo}-${crypto.randomUUID()}.jpg`,
+    storage_path: path,
     descripcion: `UGO isolated integration ${tipo}`,
+    metadata: { integration_fixture: true, mime: 'image/png', bytes: EVIDENCE_PNG.byteLength },
   })
-  if (error) throw error
+  if (error) {
+    await supabase.storage.from(EVIDENCE_BUCKET).remove([path])
+    throw error
+  }
+  return path
 }
 
 test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, async () => {
@@ -77,6 +91,7 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
 
   const category = await firstCategory(c)
   let serviceId = null
+  const evidencePaths = []
 
   try {
     const { data: created, error: createError } = await c.from('servicios').insert({
@@ -134,7 +149,19 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
 
     const beforeInitialEvidence = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_progreso' })
     expectDomainError(beforeInitialEvidence, /foto inicial/)
-    await insertEvidence(p, serviceId, providerId, 'antes')
+
+    const forgedPath = `${serviceId}/${providerId}/${crypto.randomUUID()}.jpg`
+    const forgedEvidence = await p.from('evidencias_servicio').insert({
+      servicio_id: serviceId,
+      usuario_id: providerId,
+      tipo: 'antes',
+      storage_path: forgedPath,
+      descripcion: 'Debe rechazarse porque el objeto no existe en Storage',
+      metadata: { integration_test: true },
+    })
+    assert.ok(forgedEvidence.error, 'Una fila de evidencia sin objeto real en Storage debe ser rechazada')
+
+    evidencePaths.push(await uploadEvidence(p, serviceId, providerId, 'antes'))
     const start = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_progreso' })
     if (start.error) throw start.error
 
@@ -179,7 +206,7 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
 
     const beforeFinalEvidence = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
     expectDomainError(beforeFinalEvidence, /foto final/)
-    await insertEvidence(p, serviceId, providerId, 'despues')
+    evidencePaths.push(await uploadEvidence(p, serviceId, providerId, 'despues'))
     const review = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'esperando_aprobacion' })
     expectDomainError(review, /recepción del efectivo/)
     assert.equal((await getService(c, serviceId)).estado, 'en_progreso')
@@ -222,6 +249,7 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     assert.equal(service.proveedor_id, providerId)
     assert.deepEqual(await getService(p, serviceId), service, 'Ambos roles leen el mismo cierre persistido')
   } finally {
+    if (evidencePaths.length) await p.storage.from(EVIDENCE_BUCKET).remove(evidencePaths)
     if (serviceId) await c.from('servicios').delete().eq('id', serviceId)
     await Promise.allSettled([c.auth.signOut(), p.auth.signOut()])
   }
