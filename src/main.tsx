@@ -2,6 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { MvpApp } from './mvp/MvpApp'
 import { UGO_ENVIRONMENT } from './lib/supabaseProject'
+import './lib/browserVoiceBridge'
 
 class AppErrorBoundary extends React.Component<React.PropsWithChildren, {error: Error | null}> {
   state={error:null as Error|null}
