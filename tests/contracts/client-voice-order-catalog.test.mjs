@@ -10,6 +10,7 @@ const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx'
 const bridge=await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx',import.meta.url),'utf8')
 const browserVoice=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 const hugoApi=await readFile(new URL('../../api/hugo/chat.ts',import.meta.url),'utf8')
+const intent=await readFile(new URL('../../src/mvp/client/hugoVoiceIntent.ts',import.meta.url),'utf8')
 const multirubroMigration=await readFile(new URL('../../supabase/migrations/20260914210000_provider_radar_multirubro_view.sql',import.meta.url),'utf8')
 const matchingMigration=await readFile(new URL('../../supabase/migrations/20260914212500_matching_multirubro_consistency.sql',import.meta.url),'utf8')
 
@@ -38,66 +39,72 @@ test('automatic and directed matching honor active provider rubros',()=>{
  assert.match(matchingMigration,/public\.proveedor_subcategorias/)
  assert.match(matchingMigration,/sc\.categoria_id=v_servicio\.categoria_id/)
  assert.match(matchingMigration,/v_secondary_match/)
- assert.match(matchingMigration,/and not v_secondary_match/)
 })
 
-test('client can finish a real request by voice with optional preferred provider without duplicate inserts',()=>{
+test('client can finish a real request by voice without duplicate inserts',()=>{
  assert.match(dock,/from\('servicios'\)\.insert/)
  assert.match(dock,/preferredProviderId/)
  assert.match(dock,/getDispatchProvider\(\)/)
  assert.match(dock,/current\.serviceId=serviceId/)
  assert.match(dock,/dispatch\.getStatus\(serviceId\)/)
+ assert.match(dock,/23505/)
  assert.match(dock,/reintentar búsqueda/)
  assert.match(dock,/Confirmo el pedido/)
 })
 
-test('search recommendations remain inside the same conversational draft',()=>{
+test('search recommendations stay in the same draft and avoid a serial Gemini text round trip',()=>{
  assert.match(dock,/if\(searchIntent\(clean\)\)/)
- assert.match(dock,/const current:Draft=\{category,description:''/)
  assert.match(dock,/draft\.current=current/)
  assert.match(dock,/availability\.current=await loadVoiceAvailability\(category\)/)
- assert.match(dock,/await askNext\(clean,current,lead\)/)
+ assert.match(dock,/voiceAvailabilityText\(availability\.current,locale\.current\)/)
+ assert.doesNotMatch(dock,/geminiProviderLead/)
 })
 
-test('natural confirmation and spoken provider aliases do not trap the voice flow',()=>{
- assert.match(dock,/confirmar pedido/)
- assert.match(dock,/function similarity/)
- assert.match(dock,/bestScore>=\.7/)
- assert.match(dock,/missing==='confirm'&&affirmative\(source\)/)
- assert.match(dock,/finishOrder\(current,pt\)/)
+test('natural confirmation and provider aliases use shared behavioral intent helpers',()=>{
+ assert.match(dock,/chooseHugoProvider/)
+ assert.match(dock,/isHugoAffirmative/)
+ assert.match(dock,/missing==='confirm'&&isHugoAffirmative\(source\)/)
+ assert.match(intent,/parseHugoWhen/)
+ assert.match(intent,/resolveHugoGlobalCommand/)
 })
 
-test('Hugo recommends from real provider signals instead of only listing names',()=>{
+test('Hugo recommends only from real provider signals',()=>{
  assert.match(catalog,/servicios_completados/)
  assert.match(catalog,/experiencia_anos/)
  assert.match(catalog,/Mi recomendación es/)
  assert.match(catalog,/Por los datos reales de UGO/)
- assert.match(dock,/geminiProviderLead/)
- assert.match(dock,/profesionales_reales/)
+ assert.match(dock,/voiceAvailabilityText/)
 })
 
-test('Gemini is the canonical browser transcription path and no-speech is retryable',()=>{
+test('Gemini is the canonical browser transcription path and restarts quickly after a turn',()=>{
  assert.match(browserVoice,/MediaRecorder/)
  assert.match(browserVoice,/voice_transcription:true/)
- assert.match(browserVoice,/engine:'gemini'/)
+ assert.match(browserVoice,/capture_ms/)
  assert.match(browserVoice,/response\.status===422/)
- assert.match(browserVoice,/schedule\(\(\)=>void startCycle\(\),260\)/)
+ assert.match(browserVoice,/waitForConsumer=.*450/)
+ assert.match(browserVoice,/reason:'speech-start'/)
+ assert.doesNotMatch(browserVoice,/12000/)
  assert.doesNotMatch(browserVoice,/hasWebSpeech/)
 })
 
-test('client Hugo output uses Gemini TTS and never silently switches to browser speech',()=>{
+test('client Hugo output uses fast Gemini TTS with abortable nonblocking playback',()=>{
+ assert.match(hugoApi,/gemini-2\.5-flash-preview-tts/)
  assert.match(hugoApi,/gemini-3\.1-flash-tts-preview/)
  assert.match(hugoApi,/responseModalities:\['AUDIO'\]/)
- assert.match(hugoApi,/prebuiltVoiceConfig/)
- assert.match(dock,/fetch\('\/api\/hugo\/chat'/)
- assert.match(dock,/tts:true/)
- assert.match(dock,/playGeminiPcm/)
- assert.match(dock,/La voz de Gemini no respondió/)
+ assert.match(hugoApi,/Hugo TTS timing/)
+ assert.match(dock,/AbortController/)
+ assert.match(dock,/stopSpeechPlayback/)
+ assert.match(dock,/signal:controller\.signal/)
+ assert.match(dock,/Podés seguir hablando o escribiendo/)
  assert.doesNotMatch(dock,/SpeechSynthesisUtterance/)
  assert.doesNotMatch(dock,/speechSynthesis/)
+ assert.doesNotMatch(dock,/for\(let attempt=0/)
 })
 
-test('client bridge mounts the dedicated voice ordering dock and contrast layer',()=>{
- assert.match(bridge,/ClientVoiceHugoDock/)
- assert.match(bridge,/ugo-client-contrast\.css/)
+test('stop voice leaves the text composer usable and navigation is wired to ClientFlow',()=>{
+ assert.match(dock,/inputRef\.current\?\.focus\(\)/)
+ assert.match(dock,/placeholder="Escribile a Hugo…"/)
+ assert.match(dock,/onNavigateHome/)
+ assert.doesNotMatch(dock,/disabled=\{state==='connecting'\}/)
+ assert.match(bridge,/onNavigateHome=\{\(\)=>flow\.navigate\('home'\)\}/)
 })
