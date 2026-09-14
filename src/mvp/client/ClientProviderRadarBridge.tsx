@@ -62,8 +62,12 @@ export function ClientProviderRadarBridge(){
  const requestedScreen=flow.screen==='provider'&&!flow.providerId?'search':flow.screen
 
  function pickProvider(provider:ProviderMapRow){
-  const category=categories.find(item=>item.id===provider.categoria_principal_id)||intentCategory||null
-  const preferred={id:provider.id,categoryId:provider.categoria_principal_id||category?.id||'',categorySlug:category?.slug||'',at:Date.now()}
+  // The category the client is hiring for is the selected/requested category,
+  // not necessarily the provider's principal category (providers can be multirubro).
+  const category=categories.find(item=>item.id===selectedCategoryId)||intentCategory||categories.find(item=>item.id===provider.categoria_principal_id)||null
+  const categoryId=category?.id||provider.categoria_principal_id||''
+  const categoryName=category?.nombre||provider.categoria_nombre||''
+  const preferred={id:provider.id,categoryId,categorySlug:category?.slug||'',at:Date.now()}
   try{
    sessionStorage.setItem('ugo:preferred-provider',JSON.stringify(preferred))
    const key=`ugo:guided-request-draft:${session.user.id}`
@@ -71,8 +75,8 @@ export function ClientProviderRadarBridge(){
    try{current=JSON.parse(sessionStorage.getItem(key)||'{}')as Record<string,unknown>}catch{}
    sessionStorage.setItem(key,JSON.stringify({
     ...current,
-    categoryId:provider.categoria_principal_id||category?.id||'',
-    categoryName:provider.categoria_nombre||category?.nombre||'',
+    categoryId,
+    categoryName,
     categorySlug:category?.slug||'',
     amount:Number(provider.tarifa_base||0)>0?Number(provider.tarifa_base):current.amount??null,
     urgent:Boolean(flow.hugoIntent?.urgent),
