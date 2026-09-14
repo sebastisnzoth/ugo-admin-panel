@@ -7,17 +7,16 @@
 
 ## CURRENT P0
 
-Cerrar la validación física real de Hugo Cliente en navegador/dispositivo:
+Repetir una prueba física de Hugo Cliente después del bloque de latencia/voz del 14/09/2026:
 
 ```text
-“Buscame un electricista”
-→ recomendación con profesionales reales
-→ “Elegí a Sebastián Soto oficial”
-→ completar descripción/dirección/cuándo
-→ “Sí, por favor, confirmar pedido”
-→ un solo serviceId
-→ oferta visible para el proveedor elegido
-→ mismo serviceId visible en Cliente y Admin
+“Necesito un electricista”
+→ “Dos enchufes se me rompieron”
+→ “Mañana a las 10 de la mañana”
+→ elegir profesional real
+→ “Sí, confirmar pedido”
+→ probar “Volveme a Inicio”
+→ detener voz y continuar por texto
 ```
 
 UGO TEST:
@@ -32,92 +31,130 @@ Admin: /?app=admin
 
 Producción Supabase `trfsjuseqjxlhrxuvdsm` sigue fuera de alcance.
 
-## LAST COMPLETED · 14/09/2026
+## LAST COMPLETED · P0 voz/latencia física · 14/09/2026
 
-### Hugo / voz / listener ownership
+La prueba física real del Director reveló que Hugo respondía demasiado lento, parecía trabarse con “mañana a las 10”, no daba feedback confiable al confirmar, no entendía “volveme a la pantalla de inicio” y STOP no era una transición limpia a texto.
 
-- Hugo canónico usa `ClientVoiceHugoDock` en Home y superficies normales.
-- `browserVoiceBridge.ts` usa MediaRecorder → `/api/test` → Gemini en navegadores compatibles.
-- `422 Gemini no detectó voz` se trata como silencio/retry y no apaga la conversación.
-- salida de Hugo usa Gemini TTS por `/api/hugo/chat`; no usa `speechSynthesis` como falso Gemini.
-- búsqueda/recomendación conserva el mismo draft; la elección hablada puede resolver `Sebastián Soto oficial` contra `sebastianzothoficial` cuando ese proveedor está entre los candidatos reales.
-- creación + matching conservan el mismo `serviceId` frente a retry/respuesta perdida.
-- se encontró que `ClientGuidedRequest` todavía escucha eventos propios de Hugo cuando está montado en `request`. Para impedir dos motores escuchando a la vez, `ClientRoot` ahora monta **o** `ClientGuidedRequest` **o** `ClientHugoBridge`: nunca ambos durante `flow.screen==='request'`.
-- la selección por tarjeta del radar sigue usando checkout guiado; la selección por voz usa Hugo canónico. Ambos terminan en el mismo `getDispatchProvider()`/matching real, pero ya no compiten por eventos simultáneamente.
+### Evidencia de la prueba física real
 
-### Radar / matching / proveedor
+Vercel sobre el deploy anterior registró en la misma sesión:
 
-- `proveedores_mapa` expone categoría principal + rubros secundarios activos.
-- matching automático y dirigido usan la misma regla multirubro.
-- `20260914220700_matching_retry_idempotency.sql` está aplicado en UGO TEST: un retry automático no destruye ofertas pendientes todavía vigentes.
-- `ProviderDataProvider` carga oportunidades mediante `obtener_ofertas_proveedor()`.
-- `useProviderRealtime` escucha `ofertas_servicio` por `proveedor_id`, servicios, pagos y resync al volver online/visible.
+- `/api/test`: 12 requests de voz; 11 `200` y un `422 Gemini no detectó voz` a las 22:40:07 UTC.
+- `/api/hugo/chat`: múltiples respuestas `200`, pero dos `502` consecutivos a las 22:41:43/44 UTC.
+- causa exacta de esos `502`: cuota Free Tier agotada para `gemini-3.1-flash-tts`, límite 10 requests, con retry sugerido de ~15 s.
+- el cliente anterior hacía dos intentos TTS y mantenía la conversación serializada hasta terminar generación + reproducción.
+- `browserVoiceBridge` esperaba 900 ms de silencio para cerrar turno y mantenía un fallback de consumidor de 12 s.
+- la recomendación inicial hacía además una llamada Gemini de texto antes de generar TTS, aunque ya existía una recomendación determinista basada en datos reales.
 
-### Guard P0 · un pedido activo por cliente
-
-Se encontró un hueco real: Hugo preservaba el `serviceId` dentro de una conversación, pero la base todavía permitía que dos confirmaciones concurrentes/independientes insertaran dos servicios activos para el mismo cliente.
-
-Aplicado a UGO TEST: `client_single_active_service_guard`.
-
-- índice único parcial por `cliente_id` para estados activos;
-- trigger con mensaje legible: `Ya tenés un servicio activo. Seguilo o cancelalo antes de crear otro pedido.`;
-- cancelación real (`cancelar_servicio`) libera nuevamente el slot activo;
-- no existían duplicados activos antes de aplicar el guard.
-
-## VALIDATED · evidencia real UGO TEST
-
-Validación con Cliente TEST `aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1`, proveedor `sebastianzothoficial` y Admin TEST bajo rol `authenticated` + claims reales:
+La base confirma que la aparente falla de confirmación era principalmente UX/feedback, no pérdida del pedido. La sesión física creó realmente:
 
 ```text
-serviceId: 6850d638-fc61-46cf-8179-fb871e921330
-service #: 23
+serviceId: 96d3e438-b597-46d3-9dfc-2ed4a97394df
+service #: 25
+cliente real TEST: ccccaa2b-c315-4e1a-914f-7f2a53ea7553
 categoría: Electricidad
-proveedor: eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1
-oferta: 162e9cb5-82a2-4993-ae8b-9e81768b330f
+programado_para: 2026-09-15 13:00:00+00 = 10:00 America/Sao_Paulo
+```
+
+Ese pedido llegó a crear dos ofertas reales: `sebastianzothoficial` y Angel Ariel. El parser antiguo persistió mal la descripción como sólo `rompieron`. El servicio #25 quedó luego `cancelado`; el cliente real TEST quedó sin servicios activos, listo para retest.
+
+### Correcciones publicadas
+
+Commit funcional:
+
+```text
+04d8dfa39b944bbfd81019473a1255fdbe418ca2
+fix(hugo): make client voice flow responsive and interruptible
+```
+
+Cambios principales:
+
+- nuevo `src/mvp/client/hugoVoiceIntent.ts` con parser real testeable para horario, confirmación, proveedor y comandos globales;
+- “mañana a las 10”, “mañana a las 10 de la mañana”, “para mañana a las 10” y “mañana 10 de la mañana” convergen a mañana 10:00;
+- `parseDescription` conserva la frase completa `Dos enchufes se me rompieron`;
+- navegación global: Inicio, Actividad e intención de cancelar funcionan aun con Draft abierto;
+- cancelar por voz/botón exige confirmación humana;
+- selección + confirmación pueden resolverse en un solo turno;
+- STOP aborta fetch TTS pendiente, audio, AudioContext y micrófono, deja `busy=false` y enfoca el composer de texto;
+- el orb ya no queda deshabilitado mientras Hugo está `connecting`;
+- input de texto y voz comparten el mismo Draft; frases que llegan mientras lógica está ocupada se encolan en vez de perderse;
+- TTS dejó de ser barrera serial: el texto aparece inmediatamente, la escucha se rearma mientras se genera voz y el audio puede ser interrumpido por el usuario;
+- se eliminó el doble retry TTS del cliente;
+- TTS intenta primero `gemini-2.5-flash-preview-tts` y mantiene `gemini-3.1-flash-tts-preview` como fallback, con timeout corto y telemetría `Hugo TTS timing`;
+- recomendación inicial usa directamente `voiceAvailabilityText` sobre profesionales reales y elimina una llamada Gemini intermedia;
+- detección de fin de voz baja de 900 ms a 650 ms; fallback de consumidor de 12 s a 450 ms; retries de silencio/errores se rearman más rápido;
+- se agregó timing de captura/transcripción en consola para medir el próximo test físico;
+- guard de servicio activo sigue vigente y los errores `23505` se convierten en mensaje operativo legible.
+
+## VALIDATED
+
+### Código / CI
+
+UGO Core CI `#729`, run `34906818720`, sobre `04d8dfa39b944bbfd81019473a1255fdbe418ca2`: **success**.
+
+Pasaron:
+
+- dependency security gate;
+- TypeScript + production build;
+- `npm test`, incluidos contratos core/RPC-RLS;
+- test de comportamiento real de `hugoVoiceIntent.ts` ejecutando el módulo TS transpiliado, no sólo regex estático;
+- casos de mañana 10:00;
+- variantes de confirmación;
+- selección `Sebastián Soto oficial` + confirmación en el mismo turno;
+- comandos Inicio/Actividad/Cancelar;
+- contratos de TTS abortable/no bloqueante, 422 retryable y aislamiento de listeners;
+- lint crítico, ClientApp y reporte de lint completo.
+
+### Backend/RPC/RLS real UGO TEST
+
+Se hizo una nueva corrida equivalente al caso físico con identidad Cliente TEST, Proveedor y Admin bajo rol `authenticated` + claims reales:
+
+```text
+serviceId: ea3b3590-a9b5-498d-a2e7-5de18f2625f9
+service #: 26
+categoría: Electricidad
+descripción: Dos enchufes se me rompieron
+programado_para: 2026-09-15 13:00:00+00 = 10:00 America/Sao_Paulo
+proveedor dirigido: eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1 (sebastianzothoficial)
+oferta: b82f4f7a-449a-42db-ac56-6eb7f90c841f
 valor: BRL 120
 ```
 
 Resultados:
 
-- Cliente creó el servicio en `buscando`.
-- un segundo servicio activo para el mismo Cliente fue rechazado con SQLSTATE `23505` y el mensaje del guard.
-- `iniciar_matching_dirigido` creó la oferta para `sebastianzothoficial`.
-- bajo identidad Proveedor, `obtener_ofertas_proveedor()` devolvió la misma oferta/serviceId, Electricidad y BRL 120.
-- bajo identidad Cliente, el mismo serviceId quedó `ofrecido`.
-- bajo identidad Admin, `private.is_admin(auth.uid())=true` y se leyó el mismo serviceId/estado.
-- Cliente ejecutó `cancelar_servicio`; el servicio quedó `cancelado`.
-- después de cancelar, el Proveedor obtuvo `0` ofertas pendientes para ese serviceId.
-- servicio #23 queda como evidencia TEST persistida, no activo.
+- exactamente un servicio activo durante la validación;
+- matching dirigido generó una oferta pendiente al proveedor elegido;
+- `obtener_ofertas_proveedor()` bajo identidad Proveedor devolvió el mismo serviceId, la descripción completa, mañana 10:00 y BRL 120;
+- Cliente leyó el mismo serviceId en `ofrecido`;
+- Admin (`private.is_admin=true`) leyó exactamente el mismo serviceId/estado;
+- Cliente ejecutó `cancelar_servicio` y #26 quedó `cancelado`;
+- después de cancelar el proveedor obtuvo `0` ofertas pendientes para ese serviceId.
 
-También se revalidó como Cliente autenticado que Angel Ariel y `sebastianzothoficial` están online/disponibles en Electricidad y que la categoría aparece en `categoria_ids`.
+## RELEASED
 
-## CI / RELEASE
-
-Baseline verificado antes del último aislamiento de listeners:
-
-- commit `b156638ff182538f536b8beeb6667361e50dc216` · `fix(client): enforce one active service per client`;
-- UGO Core CI #727 alcanzó build, contratos core y lint sobre ese bloque;
-- Vercel `dpl_3dNMhC8WtHvoD4GY6tYdLuSDjG4b` quedó `READY`, target production de UGO TEST, 12 Node functions.
-
-El commit siguiente agrega únicamente el aislamiento `request` entre Hugo canónico y checkout guiado + su contrato. Verificar CI y Vercel sobre el SHA final antes de declarar ese último cambio `RELEASED`.
+- Vercel code deployment `dpl_BtTxzPRkr8zADYVKWFXTUzrvgrvz` está `READY` sobre `04d8dfa39b944bbfd81019473a1255fdbe418ca2`.
+- target: production de UGO TEST;
+- 12 funciones Node, sin sumar rutas serverless;
+- alias operativo: `ugo-admin-panel.vercel.app`.
 
 ## BLOCKED
 
-### B1 · validación física humana
+### B1 · única validación que exige dispositivo humano
 
-Único bloqueo del P0 de navegador/dispositivo:
+Pendiente medir físicamente, con este deploy:
 
-- escuchar realmente Gemini TTS;
-- validar autoplay/WebAudio y permiso de micrófono;
-- ejecutar hablada la secuencia completa;
-- comprobar visualmente Cliente + Proveedor + Admin;
-- pasada física de cámara/GPS/Storage/Realtime-reconnect/UX táctil antes de producción.
+- latencia percibida real micrófono → texto → respuesta;
+- barge-in/interrupción mientras TTS genera o habla;
+- que la voz 2.5 TTS tenga cuota disponible en ese momento;
+- autoplay/WebAudio y permisos de micrófono del navegador;
+- STOP → escribir inmediatamente en composer;
+- secuencia completa con Cliente/Proveedor visible en dispositivos reales.
 
-Las herramientas actuales no pueden otorgar permisos ni oír el audio del navegador del usuario.
+El backend, parser, matching, cancelación, CI y deploy ya tienen evidencia. No declarar la latencia física `MEASURED` hasta la próxima escucha real.
 
-### B2 · workflow HTTP aislado con login real
+### B2 · login HTTP aislado en GitHub Actions
 
-Requiere los seis secretos TEST:
+Sigue requiriendo las credenciales TEST que no deben guardarse en repo:
 
 ```text
 UGO_TEST_CLIENT_EMAIL
@@ -128,13 +165,10 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-No guardar esas contraseñas en repo, commits ni documentación pública.
-
 ## NEXT
 
-1. confirmar CI + Vercel `READY` del SHA final de `main`;
-2. ejecutar prueba física de Hugo Cliente con dos sesiones/dispositivos;
-3. si falla voz, seguir `/api/test` y `/api/hugo/chat` en runtime logs durante esa prueba;
-4. si falla oferta/tarjeta, seguir el mismo `serviceId` en `servicios` → `ofertas_servicio` → `obtener_ofertas_proveedor()`;
-5. cuando existan credenciales TEST en GitHub Secrets, ejecutar workflow aislado con login HTTP real;
-6. no promover producción hasta cerrar los bloqueos de release.
+1. prueba física corta sobre `https://ugo-admin-panel.vercel.app/?app=client` con la secuencia de CURRENT P0;
+2. mirar `UGO voice timing` y runtime `Hugo TTS timing` si vuelve a sentirse lento;
+3. confirmar que STOP deja escribir sin reactivar micrófono;
+4. sólo después continuar cámara/GPS/Storage/Realtime-reconnect/UX táctil;
+5. no promover Supabase producción hasta cerrar validación física.
