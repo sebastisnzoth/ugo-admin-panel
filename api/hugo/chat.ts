@@ -38,16 +38,6 @@ export default async function handler(req:any,res:any){
  const origin=String(req.headers?.origin||'')
  if(origin&&sameOrigin(req))res.setHeader('Access-Control-Allow-Origin',origin)
  if(req.method==='OPTIONS')return res.status(200).end()
- if(req.method==='GET'&&String(req.query?.tts_health||'')==='1'){
-  try{
-   const audio=await askGeminiTts('UGO listo.','es-AR')
-   return res.status(200).json({ok:true,model:audio.model,voice:audio.voice,sample_rate:audio.sample_rate,audio_bytes:Math.floor(audio.audio_base64.length*3/4)})
-  }catch(error:any){
-   console.error('Hugo TTS health failed',error)
-   const status=Number(error?.status)||502
-   return res.status(status>=400&&status<600?status:502).json({ok:false,error:error instanceof Error?error.message:'Gemini TTS no disponible'})
-  }
- }
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
