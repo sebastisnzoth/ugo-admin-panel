@@ -1,3 +1,5 @@
+import{getRoleSupabase}from'./roleSupabase'
+
 type BrowserVoiceBridge={startListening:()=>void;stopListening:()=>void;isAvailable:()=>boolean}
 
 declare global{interface Window{UGOVoiceBridge?:BrowserVoiceBridge}}
@@ -10,7 +12,7 @@ function preferredMime(){
  const candidates=['audio/webm;codecs=opus','audio/ogg;codecs=opus','audio/webm','audio/mp4']
  return candidates.find(type=>MediaRecorder.isTypeSupported?.(type))||''
 }
-function apiMime(value:string){const raw=value.toLowerCase().split(';')[0];return raw==='audio/mp4'?'audio/m4a':raw||'audio/webm'}
+function apiMime(value:string){return value.toLowerCase().split(';')[0]||'audio/webm'}
 async function blobToBase64(blob:Blob){
  const bytes=new Uint8Array(await blob.arrayBuffer());let binary=''
  for(let offset=0;offset<bytes.length;offset+=0x8000)binary+=String.fromCharCode(...bytes.subarray(offset,Math.min(offset+0x8000,bytes.length)))
@@ -44,11 +46,13 @@ function installBrowserBridge(){
   if(!active||token!==cycle)return
   try{
    emit('ugo:native-voice-state',{state:'ready'})
+   const sb=getRoleSupabase('client'),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
+   if(!accessToken)throw new Error('Sesión de cliente no disponible')
    const audio=await blobToBase64(blob)
-   const response=await fetch('/api/hugo/transcribe',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({audio,mimeType:apiMime(blob.type),locale:navigator.language||'es-AR'})})
-   const data=await response.json().catch(()=>({})) as{text?:string;error?:string}
+   const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({role:'client',voice_transcription:true,audio_base64:audio,mime_type:apiMime(blob.type)})})
+   const data=await response.json().catch(()=>({})) as{transcript?:string;error?:string}
    if(!response.ok)throw new Error(data.error||`Voice ${response.status}`)
-   const text=String(data.text||'').trim()
+   const text=String(data.transcript||'').trim()
    if(!active||token!==cycle)return
    if(text){emit('ugo:native-voice-result',{text,final:true});waitForHugoThenResume(token)}else schedule(()=>void startCycle(),350)
   }catch(error){console.warn('UGO browser voice fallback failed',error);if(active&&token===cycle)fail('unavailable')}
