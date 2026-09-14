@@ -12,6 +12,8 @@ const api = await readFile(new URL('../../api/test.ts', import.meta.url), 'utf8'
 
 test('client mounts one canonical Hugo companion instead of the legacy voice-order modal', () => {
   assert.match(root, /ClientHugoBridge/)
+  assert.match(root, /flow\.screen==='request'&&<ClientGuidedRequest/)
+  assert.doesNotMatch(root, /<ClientPremiumHome\/><ClientGuidedRequest/)
   assert.doesNotMatch(root, /ClientHugoVoiceOrder/)
 })
 
