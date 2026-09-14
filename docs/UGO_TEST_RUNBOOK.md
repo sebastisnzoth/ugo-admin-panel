@@ -16,7 +16,7 @@ La pregunta operativa permanente es:
 - Producción: `trfsjuseqjxlhrxuvdsm` — **prohibida para pruebas**
 - Web TEST: `https://ugo-admin-panel.vercel.app`
 
-Aunque Vercel denomine al alias principal como `production`, el build actual de `main` apunta explícitamente a **UGO TEST**. Eso no autoriza ningún cambio sobre Supabase de producción.
+Aunque Vercel denomine al alias principal como `production`, el build de `main` apunta explícitamente a **UGO TEST**. Eso no autoriza ningún cambio sobre Supabase de producción.
 
 ## Accesos web
 
@@ -25,6 +25,21 @@ Aunque Vercel denomine al alias principal como `production`, el build actual de 
 - Admin: `https://ugo-admin-panel.vercel.app/?app=admin`
 
 Usar dos dispositivos/sesiones separadas para Cliente y Proveedor. Admin puede abrirse en computadora o en una tercera sesión del navegador.
+
+## Baseline backend validada · 14/09/2026
+
+Antes de la prueba física se ejecutó un E2E real de DB/RPC/RLS sobre UGO TEST con identidades Cliente, Proveedor y Admin y un único servicio:
+
+```text
+serviceId: 68ef8d25-b382-4e98-986a-21c510cc78f1
+servicio: #14
+pago efectivo: 875d5b2f-d050-4aa5-96a2-d9da6e611ce2
+resultado final: completado
+```
+
+La corrida verificó matching dirigido, privacidad pre-asignación, aceptación e idempotencia, gate de pago, evidencia Antes/Después, ampliación, importes, confirmación de efectivo, aprobación exclusiva del Cliente y lectura convergente por Cliente/Proveedor/Admin.
+
+Durante esa corrida se encontró que `en_progreso → esperando_aprobacion` podía ocurrir antes de confirmar la recepción del efectivo. Se restauró el guard server-authoritative mediante `20260914202500_restore_cash_review_ordering_guard.sql`; el escenario fue repetido y ahora se rechaza hasta que el pago efectivo quede `liberado`.
 
 ## Prueba manual obligatoria
 
@@ -40,12 +55,12 @@ Usar dos dispositivos/sesiones separadas para Cliente y Proveedor. Admin puede a
 10. Proveedor: iniciar trabajo (`en_progreso`).
 11. Probar ampliación si corresponde al escenario.
 12. Proveedor: cargar evidencia `Después`.
-13. Si es efectivo, confirmar recepción según el contrato del producto.
-14. Proveedor: pedir aprobación (`esperando_aprobacion`).
+13. Si es efectivo, confirmar recepción. Antes de ese paso UGO debe impedir `esperando_aprobacion`.
+14. Confirmada la recepción, el servicio puede quedar `esperando_aprobacion`.
 15. Cliente: revisar evidencia final.
 16. Cliente: aprobar o abrir disputa según el escenario.
 17. Verificar cierre persistido y estado financiero.
-18. Admin: verificar servicio, usuarios, pago, disputa y estados resultantes.
+18. Admin: verificar el mismo `serviceId`, usuarios, pago, disputa y estados resultantes.
 
 ## Gate automático
 
@@ -60,26 +75,30 @@ El workflow `UGO Isolated RPC RLS` usa exclusivamente UGO TEST. La URL y publish
 
 Nunca guardar contraseñas en este repositorio.
 
+El E2E backend del 14/09 validó RLS/RPC con las identidades TEST reales mediante rol `authenticated` y claim de usuario. El workflow con `signInWithPassword` sigue siendo un gate adicional y debe ejecutarse cuando las credenciales humanas estén cargadas como Secrets.
+
 ## Credenciales humanas
 
 Las credenciales de Cliente Test, Proveedor Test y Admin Test se entregan fuera del repositorio. El PDF de acceso puede contener las credenciales de las cuentas de prueba para uso humano, pero nunca debe contener `service_role`, secret keys, tokens de GitHub/Vercel, database password ni claves privadas de infraestructura.
 
-## Seguridad pendiente detectada en UGO TEST
+## Seguridad aplicada en UGO TEST
 
-La auditoría del proyecto detectó tablas auxiliares con RLS deshabilitado: `audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos` y `whatsapp_notificaciones`.
+La migración `20260913005000_auxiliary_tables_rls_hardening.sql` fue aplicada en UGO TEST el 14/09/2026. Se verificó `relrowsecurity=true` en las 13 superficies cubiertas:
 
-No se debe habilitar RLS a ciegas: primero deben existir políticas coherentes con Cliente/Proveedor/Admin, porque activar RLS sin políticas puede bloquear flujos. Este punto es un gate de seguridad antes de promover el entorno a producción.
+`audit_log`, `documentos`, `documentos_proveedor`, `eventos_servicio`, `hugo_chat`, `hugo_sessions`, `mensajes`, `push_entregas`, `push_suscripciones`, `retiros`, `whatsapp_conversaciones`, `whatsapp_eventos` y `whatsapp_notificaciones`.
+
+Producción no fue modificada.
 
 ## Criterio de salida de TEST
 
 UGO TEST sólo está listo para promoción cuando:
 
-- CI principal está verde.
-- RPC/RLS aislado pasa con cuentas reales de Cliente/Proveedor/Admin.
+- CI principal está verde sobre el SHA que se pretende promover.
+- RPC/RLS aislado con login real pasa con cuentas de Cliente/Proveedor/Admin.
 - Cliente + Proveedor completan el flujo desde dispositivos reales.
 - Admin puede observar/operar el flujo esperado.
 - Realtime y reconexión mantienen estado persistido.
-- Storage/evidencias funcionan en dispositivo real.
+- Storage/evidencias, cámara, GPS y permisos de voz funcionan en dispositivo real.
 - no quedan P0 de seguridad o dinero sin resolver.
 - la prueba manual queda aceptada.
 
