@@ -7,6 +7,8 @@ const bridge = await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx
 const home = await readFile(new URL('../../src/mvp/client/ClientPremiumHome.tsx', import.meta.url), 'utf8')
 const voice = await readFile(new URL('../../src/mvp/VoiceHugoDock.tsx', import.meta.url), 'utf8')
 const events = await readFile(new URL('../../src/mvp/uiEvents.ts', import.meta.url), 'utf8')
+const guided = await readFile(new URL('../../src/mvp/client/ClientGuidedRequest.tsx', import.meta.url), 'utf8')
+const api = await readFile(new URL('../../api/test.ts', import.meta.url), 'utf8')
 
 test('client mounts one canonical Hugo companion instead of the legacy voice-order modal', () => {
   assert.match(root, /ClientHugoBridge/)
@@ -45,4 +47,14 @@ test('quantum Hugo stage renders real service context and contextual actions', (
   assert.match(voice, /Ver Actividad/)
   assert.match(voice, /Cancelar pedido/)
   assert.match(voice, /Revisar trabajo/)
+})
+test('guided request uses Gemini as primary understanding with a safe local fallback', () => {
+  assert.match(guided, /guided_request:true/)
+  assert.match(guided, /interpretWithGemini/)
+  assert.match(guided, /Gemini no pudo enriquecer el pedido; usamos la interpretación local/)
+  assert.match(guided, /Entendiendo tu pedido con Gemini/)
+  assert.match(api, /guidedRequestWithGemini/)
+  assert.match(api, /Hacé como máximo una pregunta/)
+  assert.match(api, /No preguntes presupuesto/)
+  assert.match(api, /responseMimeType:'application\/json'/)
 })
