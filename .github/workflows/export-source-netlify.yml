@@ -15,10 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Upload current repository source
+      - name: Pack Netlify web source
+        shell: bash
+        run: |
+          set -euo pipefail
+          paths=()
+          for p in src public api scripts netlify package.json package-lock.json index.html netlify.toml vercel.json vite.config.ts vite.config.js tsconfig.json tsconfig.app.json tsconfig.node.json eslint.config.js eslint.config.mjs; do
+            if [ -e "$p" ]; then paths+=("$p"); fi
+          done
+          tar -czf /tmp/ugo-web-source.tar.gz "${paths[@]}"
+          ls -lh /tmp/ugo-web-source.tar.gz
+      - name: Upload lean web source
         uses: actions/upload-artifact@v4
         with:
-          name: ugo-admin-panel-source
-          path: .
-          include-hidden-files: true
+          name: ugo-web-source
+          path: /tmp/ugo-web-source.tar.gz
           retention-days: 1
