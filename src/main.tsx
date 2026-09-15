@@ -4,6 +4,7 @@ import { MvpApp } from './mvp/MvpApp'
 import { UGO_ENVIRONMENT } from './lib/supabaseProject'
 import { installSentinel,reportSentinelIncident } from './lib/sentinel'
 import './lib/browserVoiceBridge'
+import './mvp/development-dashboard-status.css'
 
 installSentinel()
 
