@@ -52,8 +52,9 @@ test('service chat isolates fixed order conversations by service and participant
  const component=await read('src/mvp/ServiceChat.tsx')
  assert.match(component,/q=q\.eq\('id',serviceId\)\.eq\(role==='client'\?'cliente_id':'proveedor_id',uid\)/)
  assert.match(component,/eq\('servicio_id',current\.id\)/)
- assert.match(component,/messageConfig\.filter=`servicio_id=eq\.\$\{service\.id\}`/)
- assert.match(component,/serviceConfig\.filter=`id=eq\.\$\{service\.id\}`/)
+ assert.match(component,/const targetServiceId=serviceId\|\|null/)
+ assert.match(component,/messageConfig\.filter=`servicio_id=eq\.\$\{targetServiceId\}`/)
+ assert.match(component,/serviceConfig\.filter=`id=eq\.\$\{targetServiceId\}`/)
 })
 
 test('service chat converges even when a realtime event is missed',async()=>{
