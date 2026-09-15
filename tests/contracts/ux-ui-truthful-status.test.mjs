@@ -21,6 +21,20 @@ test('active order opens its exact detail from home in one action',async()=>{
  assert.match(home,/Abrir pedido y chat/)
 })
 
+test('client navbar exposes only working primary actions',async()=>{
+ const[navbar,root,css]=await Promise.all([
+  read('src/mvp/client/ClientStudioNavbar.tsx'),
+  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/mvp/client/client-navbar-cleanup.css'),
+ ])
+ assert.doesNotMatch(navbar,/Recados/)
+ assert.doesNotMatch(navbar,/se habilitará cuando/)
+ assert.match(navbar,/ugo-studio-nav-services/)
+ assert.match(navbar,/ugo-studio-nav-pro/)
+ assert.match(root,/client-navbar-cleanup\.css/)
+ assert.match(css,/\.ugo-studio-nav-pro/)
+})
+
 test('development dashboard gives validated a distinct visual state',async()=>{
  const[main,css]=await Promise.all([
   read('src/main.tsx'),
