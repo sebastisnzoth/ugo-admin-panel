@@ -8,7 +8,7 @@ type TrackedService={id:string;numero:number|string;estado:'asignado'|'en_camino
 type TrackedPayment={metodo?:string|null;estado?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 const TRACKABLE_STATES=['asignado','en_camino','llegado']
 
-export function ClientLiveTracking({serviceId=null}:{serviceId?:string|null}={}){
+export function ClientLiveTracking({serviceId=null,embedded=false}:{serviceId?:string|null;embedded?:boolean}={}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[service,setService]=useState<TrackedService|null>(null)
  const[payment,setPayment]=useState<TrackedPayment|null>(null)
@@ -29,14 +29,15 @@ export function ClientLiveTracking({serviceId=null}:{serviceId?:string|null}={})
  },[serviceId,supabase])
  useEffect(()=>{let channel:RealtimeChannel|null=null,alive=true;const resync=()=>{if(alive)void load()};const onVisibility=()=>{if(document.visibilityState==='visible')resync()};const initial=window.setTimeout(resync,0);window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility);supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;const filter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${data.user.id}`;channel=supabase.channel(`client-live-tracking-${serviceId||data.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter},resync).on('postgres_changes',{event:'*',schema:'public',table:'pagos',...(serviceId?{filter:`servicio_id=eq.${serviceId}`}:{filter:`cliente_id=eq.${data.user.id}`})},resync).subscribe(status=>{if(status==='SUBSCRIBED')resync()})}).catch(()=>{});return()=>{alive=false;window.clearTimeout(initial);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);if(channel)void supabase.removeChannel(channel)}},[load,serviceId,supabase])
  if(!service||!service.proveedor_id)return null
+ const rootClass=`ugo-live-tracking${embedded?' is-embedded':''}`
  if(service.estado==='asignado'){
   const cashSelected=payment?.metodo==='efectivo'
   const electronicConfirmed=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
   const electronicPending=Boolean(payment&&!cashSelected&&!electronicConfirmed)
   const title=cashSelected?'Efectivo seleccionado':electronicConfirmed?'Pago confirmado':electronicPending?'Esperando confirmación del pago':'Profesional asignado'
   const text=cashSelected?'La forma de pago ya está definida. El profesional puede iniciar el viaje cuando esté listo.':electronicConfirmed?'El pago electrónico quedó confirmado. El profesional puede iniciar el viaje.':electronicPending?'Terminá el pago electrónico para habilitar la salida del profesional.':'Elegí la forma de pago para habilitar el siguiente paso del servicio.'
-  return <aside className="ugo-live-tracking is-compact" aria-live="polite"><div className="ugo-live-tracking-status"><span>{cashSelected||electronicConfirmed?'✓':'•'}</span><div><strong>{title}</strong><p>{text}</p></div></div></aside>
+  return <aside className={`${rootClass} is-compact`} aria-live="polite"><div className="ugo-live-tracking-status"><span>{cashSelected||electronicConfirmed?'✓':'•'}</span><div><strong>{title}</strong><p>{text}</p></div></div></aside>
  }
- if(service.estado==='llegado')return <aside className="ugo-live-tracking is-compact is-arrived" aria-live="polite"><div className="ugo-live-tracking-status"><span>📍</span><div><strong>El profesional llegó</strong><p>Ya está en el punto del servicio. El siguiente paso es validar el inicio del trabajo.</p></div></div></aside>
- return <aside className="ugo-live-tracking" aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>Profesional en camino</strong><p>Seguimiento exacto sólo durante el traslado.</p></div><span className="ugo-live-dot">●</span></header><Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>Cargando mapa en vivo…</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id}/></Suspense></aside>
+ if(service.estado==='llegado')return <aside className={`${rootClass} is-compact is-arrived`} aria-live="polite"><div className="ugo-live-tracking-status"><span>📍</span><div><strong>El profesional llegó</strong><p>Ya está en el punto del servicio. El siguiente paso es validar el inicio del trabajo.</p></div></div></aside>
+ return <aside className={rootClass} aria-live="polite"><header><div><small>SERVICIO #{service.numero}</small><strong>Profesional en camino</strong><p>Seguimiento exacto sólo durante el traslado.</p></div><span className="ugo-live-dot">●</span></header><Suspense fallback={<div className="ugo-active-map-wrap"><div className="ugo-active-eta is-syncing"><small>Cargando mapa en vivo…</small></div></div>}><ClientActiveMap supabase={supabase} serviceId={service.id}/></Suspense></aside>
 }
