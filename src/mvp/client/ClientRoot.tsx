@@ -28,6 +28,7 @@ import'./client-guided-request-redesign.css'
 import'./client-guided-request-review.css'
 import'./client-redesign-2026.css'
 import'./client-stitch-orb-home.css'
+import'./client-stitch-radar.css'
 
 type Props={demo:boolean}
 
