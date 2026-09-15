@@ -15,6 +15,7 @@ import'./ugo-dark-premium.css'
 import'./browser-role-shell.css'
 
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
+const DevelopmentDashboard=lazy(()=>import('./DevelopmentDashboard').then(module=>({default:module.DevelopmentDashboard})))
 const ClientRoot=lazy(()=>import('./client/ClientRoot').then(module=>({default:module.ClientRoot})))
 const ProviderRoot=lazy(()=>import('./provider/ProviderRoot').then(module=>({default:module.ProviderRoot})))
 const UgoLanding=lazy(()=>import('./UgoLanding').then(module=>({default:module.UgoLanding})))
@@ -38,6 +39,7 @@ export function MvpApp(){
  if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
  if(app==='client')return <ClientApp/>
  if(app==='provider')return <ProviderApp/>
+ if(app==='development')return <Deferred><AdminGate><DevelopmentDashboard/></AdminGate></Deferred>
  if(app==='admin')return <Deferred><AdminGate/></Deferred>
  if(app==='web')return <Deferred><UgoWeb/></Deferred>
  return <Deferred><UgoLanding/></Deferred>
