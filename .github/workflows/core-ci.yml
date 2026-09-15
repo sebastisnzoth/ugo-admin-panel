@@ -27,6 +27,8 @@ jobs:
       UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
       UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
       UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+      UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
+      UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
