@@ -15,5 +15,6 @@ test('checklist supports validated between implemented and approved',()=>{
 test('validated does not inflate launch readiness',()=>{
  assert.match(dashboard,/approvedWeight=items\.filter\(item=>item\.status==='approved'\)/)
  assert.doesNotMatch(dashboard,/approvedWeight=items\.filter\(item=>item\.status==='validated'/)
- assert.match(dashboard,/Implementado y Validado se muestran separados hasta la prueba final/)
+ assert.match(dashboard,/const validated=items\.filter\(item=>item\.status==='validated'\)\.length/)
+ assert.match(dashboard,/stats\.validated/)
 })
