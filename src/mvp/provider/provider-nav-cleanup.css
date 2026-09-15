@@ -1,0 +1,2 @@
+/* Provider mobile navigation exposes four real destinations: Home, Orders, Work, Profile. */
+.ugo-provider-root .provider-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
