@@ -5,7 +5,7 @@ import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
 type ReviewService={id:string;numero:number|string;estado:string;proveedor_id:string|null}
 type ReviewPayment={metodo:string|null;estado:string;modelo_pago:string|null}
 
-export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute:()=>void;serviceId?:string|null}){
+export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute?:()=>void;serviceId?:string|null}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null)
@@ -50,6 +50,6 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
   {isCash&&!cashConfirmed&&<div className="ugo-completion-warning">El proveedor todavía debe confirmar que recibió el efectivo. UGO registra este pago, pero no tiene custodia electrónica sobre el dinero.</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
   <div className="ugo-completion-decision"><span>{isCash?(cashConfirmed?'El efectivo fue confirmado por el proveedor. Al aprobar, cerrás el servicio.':'Esperando confirmación del efectivo por parte del proveedor.'):'Al confirmar, el pago electrónico protegido se libera según el flujo de UGO.'}</span></div>
-  <div className="ugo-completion-actions"><button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button><button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'Aprobar trabajo':'Aprobar y liberar pago'}</button></div>
+  <div className="ugo-completion-actions">{onOpenDispute&&<button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button>}<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'Aprobar trabajo':'Aprobar y liberar pago'}</button></div>
  </section>
 }
