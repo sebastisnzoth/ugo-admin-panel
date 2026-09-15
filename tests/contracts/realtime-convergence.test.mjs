@@ -5,11 +5,12 @@ import { readFile } from 'node:fs/promises'
 const clientUrl = new URL('../../src/mvp/ClientLiveTracking.tsx', import.meta.url)
 const providerUrl = new URL('../../src/mvp/provider/useProviderRealtime.ts', import.meta.url)
 
-test('client realtime scopes payment events and resyncs after reconnect', async () => {
+test('client realtime scopes selected service and resyncs after reconnect', async () => {
   const source = await readFile(clientUrl, 'utf8')
 
-  assert.match(source, /table:'servicios',filter:`cliente_id=eq\.\$\{data\.user\.id\}`/)
-  assert.match(source, /table:'pagos',filter:`cliente_id=eq\.\$\{data\.user\.id\}`/)
+  assert.match(source, /const filter=serviceId\?`id=eq\.\$\{serviceId\}`:`cliente_id=eq\.\$\{data\.user\.id\}`/)
+  assert.match(source, /filter:`servicio_id=eq\.\$\{serviceId\}`/)
+  assert.match(source, /filter:`cliente_id=eq\.\$\{data\.user\.id\}`/)
   assert.match(source, /status==='SUBSCRIBED'/)
   assert.match(source, /window\.addEventListener\('online',resync\)/)
   assert.match(source, /document\.addEventListener\('visibilitychange',onVisibility\)/)
