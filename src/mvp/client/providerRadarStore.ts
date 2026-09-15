@@ -45,7 +45,7 @@ export function subscribeProviderRadar(listener:Listener){
 }
 
 export function setProviderRadarRows(rows:ProviderRadarRow[]){
- snapshot={providers:rows,loaded:true,error:null,updatedAt:Date.now()}
+ snapshot={providers:rows.filter(row=>row.estado_verificacion==='verificado'),loaded:true,error:null,updatedAt:Date.now()}
  emit()
  return snapshot
 }
@@ -60,7 +60,7 @@ export async function refreshProviderRadar(supabase:SupabaseClient,force=false){
  if(inFlight&&!force)return inFlight
  if(snapshot.loaded&&!force&&Date.now()-snapshot.updatedAt<15_000)return snapshot
  const task=(async()=>{
-  const{data,error}=await supabase.from('proveedores_mapa').select('*').order('online',{ascending:false}).order('disponible',{ascending:false}).limit(50)
+  const{data,error}=await supabase.from('proveedores_mapa').select('*').eq('estado_verificacion','verificado').order('online',{ascending:false}).order('disponible',{ascending:false}).limit(50)
   if(error)throw error
   return setProviderRadarRows((data||[])as ProviderRadarRow[])
  })()
@@ -70,6 +70,7 @@ export async function refreshProviderRadar(supabase:SupabaseClient,force=false){
 
 export function providerRadarForCategory(categoryId:string,{onlyAvailable=false}:{onlyAvailable?:boolean}={}){
  return snapshot.providers.filter(provider=>{
+  if(provider.estado_verificacion!=='verificado')return false
   const categoryIds=Array.isArray(provider.categoria_ids)?provider.categoria_ids:[]
   if(provider.categoria_principal_id!==categoryId&&!categoryIds.includes(categoryId))return false
   if(onlyAvailable&&!Boolean(provider.online&&provider.disponible))return false
