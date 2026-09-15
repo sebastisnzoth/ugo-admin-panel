@@ -8,12 +8,26 @@ type TrackedService={id:string;numero:number|string;estado:'asignado'|'en_camino
 type TrackedPayment={metodo?:string|null;estado?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 const TRACKABLE_STATES=['asignado','en_camino','llegado']
 
-export function ClientLiveTracking(){
+export function ClientLiveTracking({serviceId=null}:{serviceId?:string|null}={}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[service,setService]=useState<TrackedService|null>(null)
  const[payment,setPayment]=useState<TrackedPayment|null>(null)
- const load=useCallback(async()=>{const{data:{user}}=await supabase.auth.getUser();if(!user){setService(null);setPayment(null);return}const{data,error}=await supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',user.id).in('estado',TRACKABLE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle();if(error||!data){setService(null);setPayment(null);return}const current=data as TrackedService;setService(current);const{data:p}=await supabase.from('pagos').select('metodo,estado,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle();setPayment((p||null)as TrackedPayment|null)},[supabase])
- useEffect(()=>{let channel:RealtimeChannel|null=null,alive=true;const resync=()=>{if(alive)void load()};const onVisibility=()=>{if(document.visibilityState==='visible')resync()};const initial=window.setTimeout(resync,0);window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility);supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;channel=supabase.channel(`client-live-tracking-${data.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${data.user.id}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`cliente_id=eq.${data.user.id}`},resync).subscribe(status=>{if(status==='SUBSCRIBED')resync()})}).catch(()=>{});return()=>{alive=false;window.clearTimeout(initial);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);if(channel)void supabase.removeChannel(channel)}},[load,supabase])
+ const load=useCallback(async()=>{
+  const{data:{user}}=await supabase.auth.getUser();if(!user){setService(null);setPayment(null);return}
+  let query=supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',user.id).in('estado',TRACKABLE_STATES)
+  if(serviceId)query=query.eq('id',serviceId)
+  else query=query.order('created_at',{ascending:false}).limit(2)
+  const{data,error}=await query
+  if(error){setService(null);setPayment(null);return}
+  const rows=(data||[])as TrackedService[]
+  if(!serviceId&&rows.length!==1){setService(null);setPayment(null);return}
+  const current=rows[0]||null
+  if(!current){setService(null);setPayment(null);return}
+  setService(current)
+  const{data:p}=await supabase.from('pagos').select('metodo,estado,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle()
+  setPayment((p||null)as TrackedPayment|null)
+ },[serviceId,supabase])
+ useEffect(()=>{let channel:RealtimeChannel|null=null,alive=true;const resync=()=>{if(alive)void load()};const onVisibility=()=>{if(document.visibilityState==='visible')resync()};const initial=window.setTimeout(resync,0);window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility);supabase.auth.getUser().then(({data})=>{if(!alive||!data.user)return;const filter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${data.user.id}`;channel=supabase.channel(`client-live-tracking-${serviceId||data.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter},resync).on('postgres_changes',{event:'*',schema:'public',table:'pagos',...(serviceId?{filter:`servicio_id=eq.${serviceId}`}:{filter:`cliente_id=eq.${data.user.id}`})},resync).subscribe(status=>{if(status==='SUBSCRIBED')resync()})}).catch(()=>{});return()=>{alive=false;window.clearTimeout(initial);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);if(channel)void supabase.removeChannel(channel)}},[load,serviceId,supabase])
  if(!service||!service.proveedor_id)return null
  if(service.estado==='asignado'){
   const cashSelected=payment?.metodo==='efectivo'
