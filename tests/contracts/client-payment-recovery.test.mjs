@@ -4,9 +4,9 @@ import fs from'node:fs'
 
 const source=fs.readFileSync(new URL('../../src/mvp/client/ClientPaymentChoice.tsx',import.meta.url),'utf8')
 
-test('client payment realtime is scoped to the authenticated client',()=>{
- assert.match(source,/table:'pagos',filter:`cliente_id=eq\.\$\{session\.user\.id\}`/)
- assert.match(source,/table:'servicios',filter:`cliente_id=eq\.\$\{session\.user\.id\}`/)
+test('client payment realtime scopes selected service and preserves authenticated-client fallback',()=>{
+ assert.match(source,/serviceFilter=serviceId\?`id=eq\.\$\{serviceId\}`:`cliente_id=eq\.\$\{session\.user\.id\}`/)
+ assert.match(source,/paymentFilter=serviceId\?`servicio_id=eq\.\$\{serviceId\}`:`cliente_id=eq\.\$\{session\.user\.id\}`/)
 })
 
 test('client payment rehydrates persisted state after reconnect and visibility recovery',()=>{
