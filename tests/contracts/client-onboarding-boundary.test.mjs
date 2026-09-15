@@ -13,6 +13,7 @@ test('ClientOnboardingGate renders children instead of recursively loading Clien
 
 test('ClientRoot owns the single onboarding boundary', async () => {
   const root = await read('src/mvp/client/ClientRoot.tsx')
-  assert.match(root, /return <ClientOnboardingGate><div className="ugo-client-root">/)
+  assert.match(root, /return <ClientOnboardingGate><div className=/)
+  assert.match(root, /ugo-client-root ugo-client-screen-\$\{flow\.screen\}/)
   assert.equal((root.match(/<ClientOnboardingGate/g) || []).length, 1)
 })
