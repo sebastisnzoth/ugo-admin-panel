@@ -36,7 +36,7 @@ function runGuard(projectRef, required = true) {
 test('isolated harness rejects producción before any network request', () => {
   const result = runGuard('trfsjuseqjxlhrxuvdsm')
   assert.equal(result.status, 1)
-  assert.match(result.output, /se niega a ejecutar contra producción/)
+  assert.match(result.output, /P0 harness (?:se niega a ejecutar contra producción|debe ejecutar sólo contra UGO TEST designado)/)
   assert.doesNotMatch(result.output, /NETWORK_ATTEMPT_FORBIDDEN/)
 })
 
