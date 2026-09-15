@@ -21,12 +21,12 @@ export function DevelopmentDashboard(){
 
  const load=useCallback(async()=>{
   const client=supabase as any
-  const[{data:itemData,error:itemError},{data:eventData,error:eventError},{data:incidentData}]=await Promise.all([
+  const[{data:itemData,error:itemError},{data:eventData,error:eventError},{data:incidentData,error:incidentError}]=await Promise.all([
    client.from('development_checklist').select('*').order('position',{ascending:true}),
    client.from('development_checklist_events').select('*').order('changed_at',{ascending:false}).limit(40),
    client.from('development_incidents').select('id,severity,source_role,event_type,status,route,action,service_id,checklist_code,message,occurrences,first_seen_at,last_seen_at,runtime_revision').order('last_seen_at',{ascending:false}).limit(30),
   ])
-  if(itemError||eventError){setError(itemError?.message||eventError?.message||'No pudimos cargar el panel.');setLoading(false);return}
+  if(itemError||eventError||incidentError){setError(itemError?.message||eventError?.message||incidentError?.message||'No pudimos cargar el panel.');setLoading(false);return}
   const nextItems=(itemData||[])as ChecklistItem[]
   setItems(nextItems);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setDrafts(current=>{const next={...current};for(const item of nextItems)if(next[item.id]===undefined)next[item.id]=item.evidence||'';return next});setError('');setLoading(false)
  },[])
