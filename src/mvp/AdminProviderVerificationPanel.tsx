@@ -4,6 +4,8 @@ import{supabase}from'../lib/supabase'
 type VerificationState='registrado'|'pendiente'|'verificado'|'rechazado'|'suspendido'
 type ProviderRow={usuario_id:string;estado_verificacion:VerificationState;motivo_rechazo:string|null;bio:string|null;tarifa_base:number|string|null;online:boolean;disponible:boolean;ciudad_base:string|null;telefono_profesional:string|null;experiencia_anos:number|null;especialidades:any;updated_at:string;categoria_principal_id:string|null;usuario?:{nombre:string;apellido:string|null;email:string|null;karma:number;servicios_completados:number;activo:boolean;zona:string|null;pais:string|null}|null;categoria?:{nombre:string;emoji:string}|null}
 
+type VerificationResponse={error?:string;success?:boolean}
+
 export function AdminProviderVerificationPanel(){
  const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('pendiente'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState('')
  const load=useCallback(async()=>{
@@ -30,8 +32,16 @@ export function AdminProviderVerificationPanel(){
   if(state==='rechazado'&&!reason)return setMessage('Escribí el motivo antes de rechazar.');
   setBusy(row.usuario_id+state);setMessage('');
   try{
-   const{error}=await (supabase as any).rpc('admin_cambiar_verificacion_proveedor',{p_proveedor_id:row.usuario_id,p_estado:state,p_motivo:reason||null});
-   if(error)throw error;
+   const{data:{session}}=await supabase.auth.getSession();
+   const token=session?.access_token;
+   if(!token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.');
+   const response=await fetch('/api/operations?op=provider-verification',{
+    method:'POST',
+    headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+    body:JSON.stringify({providerId:row.usuario_id,state,reason:reason||null}),
+   });
+   const payload=await response.json().catch(()=>({})) as VerificationResponse;
+   if(!response.ok)throw new Error(payload.error||'No se pudo actualizar el proveedor.');
    setMessage(state==='verificado'?'✅ Proveedor verificado correctamente.':state==='rechazado'?'Proveedor rechazado con motivo registrado.':'Estado actualizado.');
    await load();
   }catch(e){setMessage(`Error: ${e instanceof Error?e.message:'No se pudo actualizar el proveedor.'}`)}finally{setBusy('')}
