@@ -14,7 +14,8 @@ test('WhatsApp serverless stays pinned to UGO TEST and service side effects requ
 })
 
 test('manual outbox processing cannot send WhatsApp without an Admin Bearer session',()=>{
- assert.match(source,/process_outbox\|\|'\)===\s*'1'\)\{if\(!\(await authorizeAdmin\(req,sb\)\)\)return res\.status\(401\)/)
+ const gate="if(req.method==='GET'&&String(req.query?.process_outbox||'')==='1'){if(!(await authorizeAdmin(req,sb)))return res.status(401).json({error:'Sesión Admin requerida para procesar la cola.'})"
+ assert.ok(source.includes(gate),'manual outbox path must require active Admin authorization before processing')
 })
 
 test('direct outbound WhatsApp cannot use same-origin as an authorization bypass',()=>{
