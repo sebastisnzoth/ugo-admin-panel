@@ -11,7 +11,8 @@ test('client home presents exactly four core service families',async()=>{
  assert.match(section,/label:'Electricidad'/)
  assert.match(section,/label:'Plomería'/)
  assert.equal((section.match(/key:'/g)||[]).length,4)
- assert.match(home,/4 rubros principales/)
+ assert.match(home,/Servicios rápidos/)
+ assert.match(home,/coreCategories\.map/)
 })
 
 test('core category curation does not delete the backend catalog',async()=>{
