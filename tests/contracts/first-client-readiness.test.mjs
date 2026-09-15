@@ -4,14 +4,26 @@ import { readFile } from 'node:fs/promises'
 
 const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
-test('matching never traps the client and exposes background, retry and real cancel exits', async () => {
+test('matching never traps the client and exposes background, retry and service-scoped cancel exits', async () => {
   const guided = await read('src/mvp/client/ClientGuidedRequest.tsx')
   assert.match(guided, /Seguir usando UGO/)
   assert.match(guided, /Reintentar búsqueda/)
-  assert.match(guided, /Cancelar solicitud/)
-  assert.match(guided, /flow\.actions\.cancelService\(\)/)
+  assert.match(guided, /Cancelar este pedido/)
+  assert.match(guided, /flow\.actions\.cancelService\(currentCreatingServiceId\)/)
   assert.match(guided, /Todavía no hay profesionales disponibles\. Tu solicitud sigue activa\./)
   assert.match(guided, /No pudimos reintentar ahora\. Tu solicitud sigue guardada\./)
+})
+
+test('client may start a new request while previous services remain active', async () => {
+  const guided = await read('src/mvp/client/ClientGuidedRequest.tsx')
+  const migration = await read('supabase/migrations/20260915014000_allow_multiple_client_active_services.sql')
+  assert.doesNotMatch(guided, /hasActive/)
+  assert.doesNotMatch(guided, /Ya tenés un servicio en curso/)
+  assert.match(guided, /currentCreatingServiceId/)
+  assert.match(guided, /request_draft_id:draftId/)
+  assert.match(migration, /DROP TRIGGER IF EXISTS trg_guard_single_active_client_service/)
+  assert.match(migration, /DROP INDEX IF EXISTS public\.servicios_cliente_single_active_uidx/)
+  assert.match(migration, /CREATE INDEX IF NOT EXISTS servicios_cliente_estado_created_idx/)
 })
 
 test('client cancellation is persisted by authorized RPC and expires pending offers', async () => {
