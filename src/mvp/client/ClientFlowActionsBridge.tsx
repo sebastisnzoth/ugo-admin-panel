@@ -6,7 +6,7 @@ import{useClientFlow}from'./clientFlow'
 
 const CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
 
-type ActiveServiceRow={id:string;estado:string}
+type OwnedServiceRow={id:string;estado:string}
 
 /**
  * Connects the shared client flow actions to real UI/navigation/database work.
@@ -22,14 +22,15 @@ export function ClientFlowActionsBridge(){
   if(!userId)return
 
   const openSearch=()=>window.dispatchEvent(new Event(UGO_CLIENT_GUIDED_REQUEST_OPEN))
-  const cancelService=async()=>{
+  const cancelService=async(serviceId:string)=>{
    try{
-    const{data,error}=await supabase.from('servicios').select('id,estado').eq('cliente_id',userId).in('estado',CANCELLABLE_SERVICE_STATES).order('created_at',{ascending:false}).limit(1).maybeSingle()
+    if(!serviceId)return false
+    const{data,error}=await supabase.from('servicios').select('id,estado').eq('id',serviceId).eq('cliente_id',userId).in('estado',CANCELLABLE_SERVICE_STATES).maybeSingle()
     if(error)throw error
-    const active=(data||null)as ActiveServiceRow|null
-    if(!active?.id)return false
+    const owned=(data||null)as OwnedServiceRow|null
+    if(!owned?.id)return false
 
-    await getDispatchProvider().cancel(active.id)
+    await getDispatchProvider().cancel(owned.id)
     return true
    }catch(error){
     console.error('UGO client cancellation failed',error)
