@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
+import{reportSentinelIncident}from'../lib/sentinel'
 import{getRoleSupabase,type UgoRole}from'../lib/roleSupabase'
 import'./service-chat.css'
 
@@ -25,6 +26,7 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  const[services,setServices]=useState<ChatService[]>([]),[selectedServiceId,setSelectedServiceId]=useState<string|null>(serviceId||null),[service,setService]=useState<ChatService|null>(null),[messages,setMessages]=useState<ChatMessage[]>([]),[userId,setUserId]=useState<string|null>(null),[draft,setDraft]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[unread,setUnread]=useState(0)
  const endRef=useRef<HTMLDivElement|null>(null)
  const normalizedRole: 'client'|'provider'=role==='client'?'client':'provider'
+ const reportChatFailure=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P0',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat`,checklistCode:'CHAT-REALTIME'})},[role,selectedServiceId,serviceId])
 
  const load=useCallback(async()=>{
   const{data:auth,error:authError}=await sb.auth.getUser();if(authError)throw authError
@@ -46,13 +48,14 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   setMessages((m||[])as ChatMessage[])
  },[role,sb,selectedServiceId,serviceId])
 
- useEffect(()=>{void load().catch(e=>setError(e instanceof Error?e.message:'No pudimos abrir el chat.'))},[load])
+ useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
   let alive=true
-  const resync=()=>{if(alive)void load().catch(e=>setError(e instanceof Error?e.message:'No pudimos sincronizar el chat.'))}
+  const resync=()=>{if(alive)void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);reportChatFailure('chat_resync_error',message,e)})}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
   window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible'&&navigator.onLine)resync()},10000)
   const suffix=serviceId&&service?.id?service.id:'all'
   let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}`)
   const messageConfig:any={event:'INSERT',schema:'public',table:'mensajes'}
@@ -64,9 +67,9 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   })
   const serviceConfig:any={event:'*',schema:'public',table:'servicios'}
   if(serviceId&&service?.id)serviceConfig.filter=`id=eq.${service.id}`
-  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{if(status==='SUBSCRIBED')resync()})
-  return()=>{alive=false;window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
- },[compact,load,role,sb,service?.id,serviceId,userId])
+  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reportChatFailure('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,service?.id)})
+  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
+ },[compact,load,reportChatFailure,role,sb,service?.id,serviceId,userId])
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
  useEffect(()=>{if(compact)endRef.current?.scrollIntoView({block:'nearest'})},[compact,messages])
 
@@ -76,8 +79,8 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   setBusy(true);setError('')
   const{error:insertError}=await sb.from('mensajes').insert({servicio_id:service.id,emisor_id:userId,emisor_rol:role==='client'?'cliente':'proveedor',contenido:clean,datos:{source}})
   setBusy(false)
-  if(insertError){setError(chatError(insertError.message));return}
-  setDraft('');await load()
+  if(insertError){const message=chatError(insertError.message);setError(message);reportChatFailure('chat_send_error',message,insertError,service.id);return}
+  setDraft('');await load().catch(e=>{const message=e instanceof Error?e.message:'El mensaje se guardó, pero no pudimos actualizar el hilo.';setError(message);reportChatFailure('chat_post_send_sync_error',message,e,service.id)})
  }
  const submit=(e:React.FormEvent)=>{e.preventDefault();void sendText(draft)}
  if(!service)return null
