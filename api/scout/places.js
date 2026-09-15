@@ -1,4 +1,9 @@
+import { createClient } from '@supabase/supabase-js';
+
 // api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
+
+const SUPABASE_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co';
+const SERVICE_KEY=process.env.UGO_TEST_SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_KEY||'';
 
 const QUERIES = {
   electricista:['electrician','eletricista','electricista','electrical'],
@@ -52,6 +57,17 @@ const OVERPASS_TAGS={
 
 const normalize=(s='')=>String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
 const hasPhone=p=>Boolean(String(p?.phone||'').replace(/\D/g,'').length>=7);
+
+function bearer(req){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
+async function requireAdmin(req){
+  if(!SERVICE_KEY)throw Object.assign(new Error('UGO TEST service key no configurada'),{status:503});
+  const token=bearer(req);if(!token)throw Object.assign(new Error('Sesión Admin requerida.'),{status:401});
+  const sb=createClient(SUPABASE_URL,SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const{data,error}=await sb.auth.getUser(token);if(error||!data?.user)throw Object.assign(new Error('Sesión inválida o vencida.'),{status:401});
+  const{data:profile,error:profileError}=await sb.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle();if(profileError)throw profileError;
+  if(!profile?.activo||!['admin','superadmin'].includes(String(profile.tipo)))throw Object.assign(new Error('Acceso Admin requerido.'),{status:403});
+  return data.user;
+}
 
 function haversine(lat1,lng1,lat2,lng2){
   const R=6371000,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
@@ -201,8 +217,9 @@ async function searchNominatim(lat,lng,radius,categoria,customCat=''){
 }
 
 export default async function handler(req,res){
-  res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','content-type');
+  res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','content-type,authorization');
   if(req.method==='OPTIONS')return res.status(200).end();if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
+  try{await requireAdmin(req);}catch(e){const status=Number(e?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:e instanceof Error?e.message:'Scout authorization failed'});}
   const {lat,lng,radius=5000,categoria='electricista',customCat=''}=req.body||{};
   const nLat=Number(lat),nLng=Number(lng),nRadius=Math.max(500,Math.min(Number(radius)||5000,200000));
   if(!Number.isFinite(nLat)||!Number.isFinite(nLng))return res.status(400).json({error:'lat y lng requeridos'});
