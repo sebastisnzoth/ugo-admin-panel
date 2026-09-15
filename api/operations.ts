@@ -12,7 +12,7 @@ function operation(req: VercelRequest) {
 
 function accessToken(req: VercelRequest) {
   const authHeader = req.headers.authorization || ''
-  return authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  return authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
 }
 
 async function selectCash(req: VercelRequest, res: VercelResponse) {
@@ -67,42 +67,95 @@ async function confirmCash(req: VercelRequest, res: VercelResponse) {
   })
 }
 
-async function verifyKyc(req: VercelRequest, res: VercelResponse) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return res.status(503).json({ error: 'Backend KYC no configurado.' })
-  const { documentoId, aprobado, notas, adminId } = req.body || {}
-  if (!documentoId || aprobado === undefined) return res.status(400).json({ error: 'Missing required fields' })
+function httpError(message: string, status: number) {
+  return Object.assign(new Error(message), { status })
+}
 
-  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+async function requireAdmin(req: VercelRequest) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw httpError('Backend KYC no configurado.', 503)
+
+  const token = accessToken(req)
+  if (!token) throw httpError('Sesión Admin requerida.', 401)
+
+  const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data: authData, error: authError } = await sb.auth.getUser(token)
+  const user = authData.user
+  if (authError || !user) throw httpError('Sesión inválida o vencida.', 401)
+
+  const { data: profile, error: profileError } = await sb
+    .from('usuarios')
+    .select('tipo,activo')
+    .eq('id', user.id)
+    .maybeSingle()
+
+  if (profileError) throw profileError
+  if (!profile?.activo || !['admin', 'superadmin'].includes(String(profile.tipo))) {
+    throw httpError('Acceso Admin requerido.', 403)
+  }
+
+  return { sb, user }
+}
+
+async function verifyKyc(req: VercelRequest, res: VercelResponse) {
+  const documentoId = typeof req.body?.documentoId === 'string' ? req.body.documentoId.trim() : ''
+  const aprobado = req.body?.aprobado
+  const notas = typeof req.body?.notas === 'string' ? req.body.notas.trim().slice(0, 2000) : null
+  if (!documentoId || typeof aprobado !== 'boolean') return res.status(400).json({ error: 'Missing required fields' })
+
   try {
-    const { data: doc } = await sb.from('documentos').select('usuario_id').eq('id', documentoId).single()
+    const { sb, user } = await requireAdmin(req)
+    const { data: doc, error: docError } = await sb
+      .from('documentos')
+      .select('usuario_id')
+      .eq('id', documentoId)
+      .maybeSingle()
+
+    if (docError) throw docError
     if (!doc) return res.status(404).json({ error: 'Documento no encontrado' })
 
-    await sb.from('documentos').update({
-      estado: aprobado ? 'aprobado' : 'rechazado',
-      notas,
-      revisor_id: adminId,
-      revisado_at: new Date().toISOString(),
-    }).eq('id', documentoId)
+    const { error: reviewError } = await sb
+      .from('documentos')
+      .update({
+        estado: aprobado ? 'aprobado' : 'rechazado',
+        notas,
+        revisor_id: user.id,
+        revisado_at: new Date().toISOString(),
+      })
+      .eq('id', documentoId)
+    if (reviewError) throw reviewError
 
     if (aprobado) {
-      const { data: docs } = await sb.from('documentos').select('estado').eq('usuario_id', doc.usuario_id)
-      const allApproved = docs?.every((d) => d.estado === 'aprobado')
+      const { data: docs, error: docsError } = await sb
+        .from('documentos')
+        .select('estado')
+        .eq('usuario_id', doc.usuario_id)
+      if (docsError) throw docsError
+
+      const allApproved = Boolean(docs?.length) && docs.every((item) => item.estado === 'aprobado')
       if (allApproved) {
-        await sb.from('usuarios').update({ activo: true }).eq('id', doc.usuario_id)
-        await sb.from('notificaciones').insert({
+        const { error: activateError } = await sb.from('usuarios').update({ activo: true }).eq('id', doc.usuario_id)
+        if (activateError) throw activateError
+
+        const { error: notificationError } = await sb.from('notificaciones').insert({
           usuario_id: doc.usuario_id,
           tipo: 'kyc_aprobado',
           titulo: '¡Bienvenido a U.GO!',
           mensaje: 'Tu perfil ha sido verificado y aprobado.',
           leido: false,
         })
+        if (notificationError) throw notificationError
       }
     }
 
     return res.status(200).json({ success: true, message: aprobado ? 'Documento aprobado' : 'Documento rechazado' })
   } catch (error) {
     console.error('KYC verify error:', error)
-    return res.status(500).json({ error: 'Internal server error', message: error instanceof Error ? error.message : 'Unknown error' })
+    const status = typeof error === 'object' && error !== null && 'status' in error ? Number((error as { status?: unknown }).status) : 500
+    return res.status(status >= 400 && status < 600 ? status : 500).json({
+      error: error instanceof Error ? error.message : 'Internal server error',
+    })
   }
 }
 
