@@ -1,0 +1,24 @@
+name: Export current source for Netlify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/export-source-netlify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Upload current repository source
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-admin-panel-source
+          path: .
+          include-hidden-files: true
+          retention-days: 1
