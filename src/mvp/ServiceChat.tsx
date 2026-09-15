@@ -28,10 +28,12 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  const normalizedRole: 'client'|'provider'=role==='client'?'client':'provider'
  const reportChatFailure=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P0',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat`,checklistCode:'CHAT-REALTIME'})},[role,selectedServiceId,serviceId])
 
+ const clearConversation=useCallback(()=>{setUserId(null);setServices([]);setService(null);setMessages([]);setUnread(0);setError('')},[])
  const load=useCallback(async()=>{
-  const{data:auth,error:authError}=await sb.auth.getUser();if(authError)throw authError
-  const uid=auth.user?.id||null;setUserId(uid)
-  if(!uid){setServices([]);setService(null);setMessages([]);return}
+  const{data:sessionData,error:sessionError}=await sb.auth.getSession();if(sessionError)throw sessionError
+  const uid=sessionData.session?.user?.id||null
+  if(!uid){clearConversation();return}
+  setUserId(uid)
   let q=sb.from('servicios').select('id,numero,cliente_id,proveedor_id,estado,descripcion,updated_at')
   if(serviceId)q=q.eq('id',serviceId).eq(role==='client'?'cliente_id':'proveedor_id',uid)
   else q=(role==='client'?q.eq('cliente_id',uid):q.eq('proveedor_id',uid)).in('estado',AUTO_STATES).order('updated_at',{ascending:false}).limit(12)
@@ -46,12 +48,12 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   const{data:m,error:me}=await sb.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido,created_at').eq('servicio_id',current.id).order('created_at',{ascending:true}).limit(200)
   if(me)throw me
   setMessages((m||[])as ChatMessage[])
- },[role,sb,selectedServiceId,serviceId])
+ },[clearConversation,role,sb,selectedServiceId,serviceId])
  const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure)
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{reportChatFailureRef.current=reportChatFailure},[reportChatFailure])
 
- useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure(e instanceof Error?'chat_load_error':'chat_load_error',message,e)})},[load,reportChatFailure])
+ useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
   let alive=true
@@ -71,7 +73,13 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   })
   const serviceConfig:any={event:'*',schema:'public',table:'servicios'}
   if(targetServiceId)serviceConfig.filter=`id=eq.${targetServiceId}`
-  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)})
+  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{
+   if(status==='SUBSCRIBED')resync()
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+    resync()
+    if(document.visibilityState==='visible'&&navigator.onLine)reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
+   }
+  })
   return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
  },[compact,role,sb,serviceId,userId])
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
