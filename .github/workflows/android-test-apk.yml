@@ -12,6 +12,7 @@ on:
       - 'package-lock.json'
       - 'vite.config.*'
       - 'capacitor.config.json'
+      - 'tests/contracts/android-local-runtime.test.mjs'
       - '.github/workflows/android-test-apk.yml'
 
 concurrency:
