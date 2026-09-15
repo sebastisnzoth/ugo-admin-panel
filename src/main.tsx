@@ -2,10 +2,12 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { MvpApp } from './mvp/MvpApp'
 import { UGO_ENVIRONMENT } from './lib/supabaseProject'
+import { installApiRuntimeBase } from './lib/apiRuntime'
 import { installSentinel,reportSentinelIncident } from './lib/sentinel'
 import './lib/browserVoiceBridge'
 import './mvp/development-dashboard-status.css'
 
+installApiRuntimeBase()
 installSentinel()
 
 class AppErrorBoundary extends React.Component<React.PropsWithChildren, {error: Error | null}> {
