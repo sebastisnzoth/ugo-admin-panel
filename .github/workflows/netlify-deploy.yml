@@ -1,0 +1,84 @@
+name: Netlify deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: netlify-main-production
+  cancel-in-progress: true
+
+env:
+  NETLIFY_SITE_ID: 4632bcb3-b387-42aa-8a02-069300afd951
+  NETLIFY_TEST_URL: https://ugo-admin-panel-netlify.netlify.app
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Netlify credential
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${NETLIFY_AUTH_TOKEN:-}" ]; then
+            echo "NETLIFY_AUTH_TOKEN is not configured in GitHub Actions secrets." >&2
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript and production build
+        run: npm run build
+
+      - name: Deploy main to existing Netlify TEST site
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes netlify-cli@latest deploy \
+            --prod \
+            --dir=dist \
+            --site="$NETLIFY_SITE_ID" \
+            --auth="$NETLIFY_AUTH_TOKEN" \
+            --message="main $GITHUB_SHA"
+
+      - name: Smoke static surfaces
+        shell: bash
+        run: |
+          set -euo pipefail
+          for path in / '/?app=client' '/?app=provider'; do
+            code="$(curl -sS -L -o /dev/null -w '%{http_code}' "$NETLIFY_TEST_URL$path")"
+            echo "$path -> $code"
+            test "$code" = '200'
+          done
+
+      - name: Smoke API adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$NETLIFY_TEST_URL/api/admin/integrations-status"
+          code="$(curl -sS -o /tmp/api.json -w '%{http_code}' "$url")"
+          echo "/api/admin/integrations-status -> $code"
+          cat /tmp/api.json
+          test "$code" != '404'
+          test "$code" != '301'
+          test "$code" != '302'
+          grep -Eq '^\{.*\}$' /tmp/api.json
