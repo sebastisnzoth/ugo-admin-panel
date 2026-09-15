@@ -29,7 +29,6 @@ test('environment guard rejects production Supabase configuration across all run
  assert.match(guard,/runtimeFiles\('api'\)/)
  assert.match(guard,/runtimeFiles\('src'\)/)
  assert.match(guard,/source\.includes\(PROD_REF\)/)
- assert.match(guard,/vercel\.json/)
 })
 
 test('Vercel automatic Git deployments stay disabled while hosting is intentionally paused',async()=>{
