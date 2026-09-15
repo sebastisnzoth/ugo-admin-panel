@@ -7,20 +7,21 @@ const workflow=fs.readFileSync('.github/workflows/android-test-apk.yml','utf8')
 const runtime=fs.readFileSync('src/lib/apiRuntime.ts','utf8')
 const main=fs.readFileSync('src/main.tsx','utf8')
 
-test('Android TEST packages the current web bundle instead of loading Vercel remotely',()=>{
+test('Android TEST packages the current web bundle instead of loading a remote UI',()=>{
  const parsed=JSON.parse(config)
  assert.equal(parsed.webDir,'dist')
  assert.equal(parsed.server?.url,undefined)
  assert.equal(parsed.plugins?.CapacitorHttp?.enabled,true)
  assert.doesNotMatch(config,/vercel\.app/i)
- assert.doesNotMatch(workflow,/remoteRuntime=.*vercel/i)
  assert.match(workflow,/bundleRuntime=local-dist/)
+ assert.match(workflow,/Android must not load a remote UI/)
 })
 
-test('Android TEST stamps the exact main revision and explicit TEST API base',()=>{
+test('Android TEST stamps the exact main revision and explicit compatible API base',()=>{
  assert.match(workflow,/VITE_APP_REVISION: \$\{\{ github\.sha \}\}/)
  assert.match(workflow,/VITE_API_BASE_URL: \$\{\{ env\.UGO_ANDROID_API_BASE \}\}/)
- assert.match(workflow,/UGO_ANDROID_API_BASE: https:\/\/ugo-admin-panel-netlify\.netlify\.app/)
+ assert.match(workflow,/UGO_ANDROID_API_BASE: https:\/\/ugo-admin-panel\.vercel\.app/)
+ assert.match(workflow,/Only serverless \/api calls use/)
  assert.match(workflow,/grep -R -q "\$\{GITHUB_SHA\}" android\/app\/src\/main\/assets\/public/)
  assert.match(workflow,/apiTransport=CapacitorHttp-native/)
 })
