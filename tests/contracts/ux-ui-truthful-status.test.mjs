@@ -21,6 +21,18 @@ test('active order opens its exact detail from home in one action',async()=>{
  assert.match(home,/Abrir pedido y chat/)
 })
 
+test('client detail is the only operational order surface while open',async()=>{
+ const root=await read('src/mvp/client/ClientRoot.tsx')
+ assert.match(root,/const detailOpen=Boolean\(selectedServiceId\)/)
+ assert.match(root,/!detailOpen&&<ClientPaymentChoice\/>/)
+ assert.match(root,/!detailOpen&&<ClientLiveTracking\/>/)
+ assert.match(root,/!detailOpen&&<ClientCompletionReview/)
+ assert.match(root,/!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(root,/!detailOpen&&<ServiceChat role="client"\/>/)
+ assert.match(root,/!detailOpen&&<DisputeDock/)
+ assert.match(root,/selectedServiceId&&<SentinelErrorBoundary/)
+})
+
 test('client navbar exposes only working primary actions',async()=>{
  const[navbar,root,css]=await Promise.all([
   read('src/mvp/client/ClientStudioNavbar.tsx'),
