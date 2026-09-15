@@ -9,12 +9,15 @@ const required = [
   'UGO_TEST_CLIENT_PASSWORD',
   'UGO_TEST_PROVIDER_EMAIL',
   'UGO_TEST_PROVIDER_PASSWORD',
+  'UGO_TEST_ADMIN_EMAIL',
+  'UGO_TEST_ADMIN_PASSWORD',
 ]
 
 const missing = required.filter(name => !process.env[name])
 const enabled = missing.length === 0
 const requireIsolated = process.env.UGO_REQUIRE_ISOLATED_INTEGRATION === '1'
 const url = process.env.UGO_TEST_SUPABASE_URL || ''
+const TEST_REF = 'tmossnqfwfwjrtzwcbmm'
 const PROD_REF = 'trfsjuseqjxlhrxuvdsm'
 const EVIDENCE_BUCKET = 'service-evidence'
 const EVIDENCE_PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlKxQAAAABJRU5ErkJggg==', 'base64')
@@ -79,17 +82,42 @@ async function uploadEvidence(supabase, serviceId, userId, tipo) {
   return path
 }
 
-test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, async () => {
+async function sendMessage(supabase, { serviceId, userId, role, text }) {
+  const { data, error } = await supabase.from('mensajes').insert({
+    servicio_id: serviceId,
+    emisor_id: userId,
+    emisor_rol: role,
+    contenido: text,
+  }).select('id,servicio_id,emisor_id,emisor_rol,contenido').single()
+  if (error) throw error
+  return data
+}
+
+test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enabled }, async () => {
+  assert.ok(url.includes(TEST_REF), 'P0 harness debe ejecutar sólo contra UGO TEST designado')
   assert.ok(!url.includes(PROD_REF), 'P0 harness se niega a ejecutar contra producción')
   assert.match(url, /^https:\/\/[a-z0-9-]+\.supabase\.co$/)
 
-  const [{ supabase: c, userId: clientId }, { supabase: p, userId: providerId }] = await Promise.all([
+  const [
+    { supabase: c, userId: clientId },
+    { supabase: p, userId: providerId },
+    { supabase: a, userId: adminId },
+  ] = await Promise.all([
     signIn(process.env.UGO_TEST_CLIENT_EMAIL, process.env.UGO_TEST_CLIENT_PASSWORD),
     signIn(process.env.UGO_TEST_PROVIDER_EMAIL, process.env.UGO_TEST_PROVIDER_PASSWORD),
+    signIn(process.env.UGO_TEST_ADMIN_EMAIL, process.env.UGO_TEST_ADMIN_PASSWORD),
   ])
   assert.notEqual(clientId, providerId, 'Cliente y Proveedor deben ser identidades distintas')
+  assert.notEqual(adminId, clientId, 'Admin y Cliente deben ser identidades distintas')
+  assert.notEqual(adminId, providerId, 'Admin y Proveedor deben ser identidades distintas')
+
+  const { data: adminProfile, error: adminProfileError } = await a.from('usuarios').select('tipo,activo').eq('id', adminId).single()
+  if (adminProfileError) throw adminProfileError
+  assert.equal(adminProfile.activo, true, 'Admin TEST debe estar activo')
+  assert.ok(['admin', 'superadmin'].includes(adminProfile.tipo), 'La tercera identidad debe ser Admin/Super Admin')
 
   const category = await firstCategory(c)
+  const runId = crypto.randomUUID()
   let serviceId = null
   const evidencePaths = []
 
@@ -100,7 +128,7 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
       estado: 'buscando',
       descripcion: `UGO integration ${Date.now()}`,
       urgencia: false,
-      metadata: { integration_test: true, source: 'rpc-rls-harness' },
+      metadata: { integration_test: true, source: 'rpc-rls-harness', e2e_run_id: runId, preserve_e2e_evidence: true },
     }).select('id').single()
     if (createError) throw createError
     serviceId = created.id
@@ -125,6 +153,7 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     assert.equal(accepted.data?.id, serviceId)
 
     const assignedService = await getService(c, serviceId)
+    assert.deepEqual(await getService(a, serviceId), assignedService, 'Admin debe observar el mismo serviceId asignado')
 
     const duplicateAccept = await p.rpc('aceptar_oferta', { p_oferta_id: offer.id })
     if (duplicateAccept.error) throw duplicateAccept.error
@@ -134,6 +163,30 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     let service = await getService(c, serviceId)
     assert.equal(service.proveedor_id, providerId)
     assert.equal(service.estado, 'asignado')
+
+    const clientMessage = await sendMessage(c, {
+      serviceId,
+      userId: clientId,
+      role: 'cliente',
+      text: `UGO E2E cliente ${Date.now()}`,
+    })
+    const { data: providerSawClient, error: providerChatReadError } = await p.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido').eq('id', clientMessage.id).single()
+    if (providerChatReadError) throw providerChatReadError
+    assert.deepEqual(providerSawClient, clientMessage, 'Proveedor debe leer el mensaje canónico del Cliente')
+
+    const providerMessage = await sendMessage(p, {
+      serviceId,
+      userId: providerId,
+      role: 'proveedor',
+      text: `UGO E2E proveedor ${Date.now()}`,
+    })
+    const { data: clientSawProvider, error: clientChatReadError } = await c.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido').eq('id', providerMessage.id).single()
+    if (clientChatReadError) throw clientChatReadError
+    assert.deepEqual(clientSawProvider, providerMessage, 'Cliente debe leer la respuesta canónica del Proveedor')
+
+    const { data: adminChat, error: adminChatError } = await a.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido').eq('servicio_id', serviceId).in('id', [clientMessage.id, providerMessage.id]).order('id')
+    if (adminChatError) throw adminChatError
+    assert.equal(adminChat.length, 2, 'Admin debe poder auditar el chat del mismo serviceId')
 
     const beforePay = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_camino' })
     expectDomainError(beforePay, /forma de pago habilitada/)
@@ -247,11 +300,21 @@ test('isolated Cliente ↔ Proveedor RPC/RLS lifecycle', { skip: !enabled }, asy
     assert.equal(service.estado, 'completado')
     assert.equal(service.cliente_id, clientId)
     assert.equal(service.proveedor_id, providerId)
-    assert.deepEqual(await getService(p, serviceId), service, 'Ambos roles leen el mismo cierre persistido')
+    assert.deepEqual(await getService(p, serviceId), service, 'Cliente y Proveedor leen el mismo cierre persistido')
+    assert.deepEqual(await getService(a, serviceId), service, 'Admin observa el mismo cierre persistido del serviceId E2E')
+    assert.deepEqual(await getPayment(a, serviceId), confirmedPayment, 'Admin observa el mismo pago persistido del serviceId E2E')
+
+    const { data: adminEvidence, error: adminEvidenceError } = await a.from('evidencias_servicio').select('tipo,storage_path').eq('servicio_id', serviceId).order('created_at')
+    if (adminEvidenceError) throw adminEvidenceError
+    assert.equal(adminEvidence.length, 2, 'El E2E debe conservar exactamente evidencia inicial y final reales')
+    assert.deepEqual(adminEvidence.map(row => row.tipo).sort(), ['antes', 'despues'])
+    assert.equal(evidencePaths.length, 2, 'El E2E debe haber subido dos objetos reales a Storage')
+    console.log(`UGO E2E VALIDATED serviceId=${serviceId} runId=${runId}`)
   } finally {
-    if (evidencePaths.length) await p.storage.from(EVIDENCE_BUCKET).remove(evidencePaths)
-    if (serviceId) await c.from('servicios').delete().eq('id', serviceId)
-    await Promise.allSettled([c.auth.signOut(), p.auth.signOut()])
+    // Este E2E preserva deliberadamente el servicio completado y sus objetos reales de Storage.
+    // servicios no expone DELETE por RLS; borrar sólo Storage dejaría evidencia inconsistente.
+    // El fixture queda marcado con metadata.integration_test + e2e_run_id para auditoría en UGO TEST.
+    await Promise.allSettled([c.auth.signOut(), p.auth.signOut(), a.auth.signOut()])
   }
 })
 
