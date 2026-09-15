@@ -1,0 +1,114 @@
+name: UGO Android TEST APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'api/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
+      - 'capacitor.config.json'
+      - '.github/workflows/android-test-apk.yml'
+
+concurrency:
+  group: ugo-android-test-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  apk:
+    name: Build debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install web dependencies
+        run: npm ci --include=dev
+
+      - name: Dependency security gate
+        run: npm audit --audit-level=high
+
+      - name: Build UGO TEST web bundle
+        run: npm run build
+
+      - name: Install Capacitor 8 TEST toolchain
+        run: >-
+          npm install --no-save --package-lock=false
+          @capacitor/core@8.5.2
+          @capacitor/cli@8.5.2
+          @capacitor/android@8.5.2
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Add required Android runtime permissions
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          path = Path('android/app/src/main/AndroidManifest.xml')
+          text = path.read_text()
+          permissions = [
+              '    <uses-permission android:name="android.permission.CAMERA" />',
+              '    <uses-permission android:name="android.permission.RECORD_AUDIO" />',
+              '    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />',
+              '    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />',
+          ]
+          missing = [p for p in permissions if p not in text]
+          if missing:
+              text = text.replace('<application', '\n'.join(missing) + '\n\n    <application', 1)
+              path.write_text(text)
+          PY
+
+      - name: Sync Capacitor web assets and config
+        run: npx cap sync android
+
+      - name: Build Android debug APK
+        shell: bash
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Collect APK and metadata
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          cp android/app/build/outputs/apk/debug/app-debug.apk artifacts/ugo-test-debug.apk
+          sha256sum artifacts/ugo-test-debug.apk > artifacts/ugo-test-debug.sha256
+          {
+            echo "appId=com.ugo.test"
+            echo "appName=UGO TEST"
+            echo "versionName=1.0"
+            echo "versionCode=1"
+            echo "environment=TEST"
+            echo "commit=${GITHUB_SHA}"
+            echo "remoteRuntime=https://ugo-admin-panel.vercel.app"
+            echo "capacitor=8.5.2"
+          } > artifacts/android-build-metadata.txt
+          test -s artifacts/ugo-test-debug.apk
+
+      - name: Upload Android TEST APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-android-test-apk
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
