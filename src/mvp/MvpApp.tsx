@@ -11,6 +11,7 @@ import'./service-history.css'
 import'./stitch-client-provider-alignment.css'
 import'./request-evidence.css'
 import'./ugo-uiux-p0.css'
+import'./ugo-dark-premium.css'
 import'./browser-role-shell.css'
 
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
@@ -38,7 +39,7 @@ export function MvpApp(){
  if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
  if(app==='client')return <ClientApp/>
  if(app==='provider')return <ProviderApp/>
- if(app==='development')return <Deferred><DevelopmentDashboard/></Deferred>
+ if(app==='development')return <Deferred><AdminGate><DevelopmentDashboard/></AdminGate></Deferred>
  if(app==='admin')return <Deferred><AdminGate/></Deferred>
  if(app==='web')return <Deferred><UgoWeb/></Deferred>
  return <Deferred><UgoLanding/></Deferred>
