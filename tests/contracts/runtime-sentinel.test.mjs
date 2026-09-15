@@ -9,6 +9,7 @@ const detail=fs.readFileSync('src/mvp/client/ClientServiceDetail.tsx','utf8')
 const chat=fs.readFileSync('src/mvp/ServiceChat.tsx','utf8')
 const dashboard=fs.readFileSync('src/mvp/DevelopmentDashboard.tsx','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915093000_runtime_sentinel.sql','utf8')
+const guardrails=fs.readFileSync('supabase/migrations/20260915093100_runtime_sentinel_guardrails.sql','utf8')
 
 test('Sentinel persists deduplicated authenticated incidents and can fail mapped checklist items',()=>{
  assert.match(migration,/create table if not exists public\.development_incidents/)
@@ -16,6 +17,19 @@ test('Sentinel persists deduplicated authenticated incidents and can fail mapped
  assert.match(migration,/create or replace function public\.report_development_incident/)
  assert.match(migration,/update public\.development_checklist[\s\S]*set status = 'failed'/)
  assert.match(migration,/alter publication supabase_realtime add table public\.development_incidents/)
+})
+
+test('participant incidents are service-scoped and cannot choose arbitrary checklist mutations',()=>{
+ assert.match(guardrails,/private\.is_service_participant\(p_service_id, auth\.uid\(\)\)/)
+ assert.match(guardrails,/when p_action = 'client\.activity\.open_order' then 'CLIENT-ORDER-OPEN'/)
+ assert.match(guardrails,/when p_action in \('client\.service\.chat','provider\.service\.chat','client\.order\.chat','provider\.order\.chat'\) then 'CHAT-REALTIME'/)
+ assert.match(guardrails,/when v_is_admin then p_checklist_code/)
+ assert.match(guardrails,/where code = v_checklist_code/)
+})
+
+test('Sentinel metadata strips common contact and credential fields',()=>{
+ assert.match(sentinel,/PRIVATE_METADATA_KEYS/)
+ for(const key of ['token','authorization','email','phone','messagecontent','password','secret','apikey','api_key'])assert.match(sentinel,new RegExp(`['\"]${key}['\"]`))
 })
 
 test('global runtime errors and React render failures are captured',()=>{
