@@ -51,27 +51,16 @@ perfiles_proveedor
 servicios
 ```
 
-Se detectaron huecos reales de recuperación: varias superficies dependían de carga inicial + eventos Realtime pero no reconstruían estado de persistencia de forma explícita al recuperar red, volver a foreground o completar la suscripción.
+Las superficies de Realtime corregidas rehidratan persistencia al montar/cargar, recuperar `online`, volver a `visibilityState=visible`, recibir `SUBSCRIBED` y recibir el evento correspondiente; además limpian listeners/canales al desmontar.
 
-Se corrigieron:
+Commit funcional:
 
 ```text
-src/mvp/NotificationCenter.tsx
-src/mvp/ServiceChat.tsx
-src/mvp/ServiceExpansionPanel.tsx
-src/hooks/useDisputes.ts
+678ffe5b2879e9391376940fe23a55e212d1d607
+fix(realtime): resync critical surfaces after reconnect
 ```
 
-Ahora las superficies críticas afectadas resyncan contra DB al:
-
-- montar/cargar;
-- recuperar `online`;
-- volver a `visibilityState=visible`;
-- recibir `SUBSCRIBED`;
-- recibir el evento Realtime correspondiente;
-- y limpian listeners/canales al desmontar.
-
-Nuevo contrato:
+Contrato:
 
 ```text
 tests/contracts/realtime-resync-recovery.test.mjs
@@ -84,46 +73,29 @@ Realtime backend/config + recovery contracts: VALIDATED
 Realtime visual Cliente↔Proveedor en dos dispositivos: MEASURED pendiente
 ```
 
-## COMMIT FUNCIONAL ACTUAL
+## CI FUNCIONAL AUTORITATIVO
 
 ```text
-678ffe5b2879e9391376940fe23a55e212d1d607
-fix(realtime): resync critical surfaces after reconnect
-```
-
-Parent:
-
-```text
-51fbd1cfd651c24d20ab53edd97399a7910a7a06
-```
-
-No se creó ninguna rama.
-
-## CI
-
-```text
-UGO Core CI #736
+UGO Core CI #737
 run: 34919576195
 SHA: 678ffe5b2879e9391376940fe23a55e212d1d607
 status: completed
 conclusion: success
 ```
 
-Pasaron los gates del workflow:
+Pasaron:
 
 - `npm ci`;
 - `npm audit --audit-level=high`;
 - build + TypeScript;
-- `npm test`, incluidos contratos de recovery Realtime;
+- `npm test`;
 - critical lint;
 - ClientApp lint;
 - full repo lint.
 
 ### Integration aislado
 
-NO está validado en CI. El harness se salta correctamente porque faltan variables TEST.
-
-Faltan para RPC/RLS Cliente↔Proveedor:
+NO está validado en CI. El harness se omite porque faltan variables TEST.
 
 ```text
 UGO_TEST_SUPABASE_URL
@@ -132,35 +104,33 @@ UGO_TEST_CLIENT_EMAIL
 UGO_TEST_CLIENT_PASSWORD
 UGO_TEST_PROVIDER_EMAIL
 UGO_TEST_PROVIDER_PASSWORD
-```
-
-Para Admin faltan además:
-
-```text
 UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-No imprimir ni guardar estos secretos en repo/docs.
+No imprimir ni guardar esos secretos en repo/docs.
 
 ## RELEASED
 
 Vercel desplegó el SHA funcional exacto:
 
 ```text
-deployment: dpl_BH55p6VP3WWA4BTNXuVYqVBbYhbg
+deployment: dpl_6AQRxdRRnWEzWWgiAxesP8c5SSo8
 SHA: 678ffe5b2879e9391376940fe23a55e212d1d607
 state: READY
+target: production del proyecto web UGO TEST
 branch: main
 ```
+
+El commit documental posterior `c5346ddaa24bd063bd82aa5d27230f58f0af4a7c` también quedó READY en `dpl_A5upmCSDUj9yRkB7FUiAzFKLxm8s`; no agrega funcionalidad.
 
 Smokes del alias UGO TEST:
 
 ```text
-/?app=client   → OK
-/?app=provider → OK
-/?app=admin    → OK
-/assets/index-TePIMTmi.js → OK
+/?app=client   → 200
+/?app=provider → 200
+/?app=admin    → 200
+/assets/index-TePIMTmi.js → 200
 ```
 
 Supabase PRODUCCIÓN no fue tocado.
@@ -174,15 +144,15 @@ actualizar_ubicacion_y_distancia(...)
 obtener_tracking_servicio_cliente(...)
 ```
 
-Validación transaccional en Supabase TEST, con servicios temporales y `ROLLBACK`:
+Validación transaccional en Supabase TEST con `ROLLBACK`:
 
-- Proveedor Sebastián asignado → actualización permitida y distancia calculada (~14.9 m en fixture);
-- Proveedor Angel intentando servicio asignado a Sebastián → rechazado: `Servicio no asignado al proveedor`;
-- Cliente dueño → puede leer tracking del servicio;
+- Proveedor Sebastián asignado → actualización permitida y tracking legible por el Cliente dueño;
+- Proveedor TEST distinto intentando actualizar el mismo servicio → rechazado: `Servicio no asignado al proveedor`;
+- Cliente dueño → lectura permitida;
 - Cliente ajeno → rechazado: `No autorizado`;
-- latitud inválida `91` → rechazado: `Coordenadas inválidas`;
-- `servicios.ubicacion_cliente = null` → fallback a `perfiles_cliente.ubicacion` funcionó;
-- persistencia de coordenadas del Proveedor se comprobó dentro de transacción y luego se revirtió para no ensuciar TEST.
+- latitud inválida `123.45` → rechazada: `Coordenadas inválidas`;
+- servicio fuera de estados de tracking → actualización con ese `serviceId` rechazada;
+- la prueba transaccional no dejó cambio persistente en TEST.
 
 Estado:
 
@@ -191,7 +161,7 @@ GPS/RPC backend: VALIDATED
 GPS físico caminando/tracking visual: MEASURED pendiente
 ```
 
-Migración ya aplicada/versionada:
+Migración aplicada/versionada:
 
 ```text
 20260914234234 provider_client_tracking_rpcs
@@ -208,7 +178,7 @@ Migración:
 
 Estado validado:
 
-- `public.mensajes` es la tabla canónica;
+- `public.mensajes` es tabla canónica;
 - `emisor_id = auth.uid()`;
 - rol Cliente/Proveedor/Admin debe coincidir con identidad real;
 - participantes tienen `SELECT` + `INSERT`;
@@ -219,11 +189,11 @@ Estado validado:
 
 El guard `service_evidence_storage_integrity_guard` sigue aplicado/versionado:
 
-- una fila `evidencias_servicio` necesita un objeto real en `storage.objects`;
+- una fila `evidencias_servicio` necesita objeto real en `storage.objects`;
 - bucket canónico: `service-evidence`;
-- path/ownership deben corresponder al usuario + `serviceId`;
-- evidencia con path falso fue rechazada históricamente;
-- integration harness usa `.upload()` real antes de registrar evidencia.
+- path/ownership deben corresponder a usuario + `serviceId`;
+- una evidencia con path falso ya fue rechazada;
+- el integration harness usa `.upload()` real antes de registrar evidencia.
 
 ### Estado de la corrida E2E nueva
 
@@ -234,9 +204,38 @@ Storage inicial: NO SUBIDO
 Storage final: NO SUBIDO
 ```
 
-Motivo: el entorno actual no expone una acción de upload real de Supabase Storage y GitHub Actions no tiene las credenciales TEST necesarias para ejecutar el harness autenticado. No reutilizar #28/#14 ni insertar objetos/filas falsas para aparentar cierre.
+Motivo: este entorno no expone upload real a Supabase Storage y GitHub Actions no dispone de las credenciales TEST requeridas para ejecutar el harness autenticado. No reutilizar #28/#14 ni insertar metadata/objetos falsos para aparentar cierre.
 
-## BLOCKED · FINANZAS
+## BLOCKED · FINANZAS · PRODUCT DECISION REQUIRED
+
+La auditoría de masters + implementación confirma que NO hay una política suficiente para implementar saldo/retiro definitivo sin decidir producto.
+
+### Lo que sí está definido
+
+`docs/UGO_DATA_BACKEND_MASTER.md` establece:
+
+```text
+efectivo: seleccionado → presencial pendiente → proveedor confirma recepción → registrado/liberado
+```
+
+También establece que:
+
+- efectivo nunca representa custodia electrónica UGO;
+- cada obligación financiera debe conservar bruto, comisión, neto, estado, fecha y referencia;
+- el saldo mostrado en UI nunca es autoridad suficiente para autorizar un retiro;
+- retiro y liberación/reembolso son operaciones críticas atómicas/auditables.
+
+`docs/UGO_TESTING_RELEASE_MASTER.md` fija para efectivo:
+
+```text
+en_progreso → Después → confirmar_pago_efectivo → esperando_aprobacion → aprobar_servicio
+```
+
+y exige probar comisión/ledger e idempotencia.
+
+`UGO_ROADMAP_MASTER.md` deja explícitamente pendiente una decisión de producto sobre modelo financiero de producción antes de implementar saldo/retiro/reembolso definitivo.
+
+### Lo que existe en código
 
 La UI/API esperan:
 
@@ -247,15 +246,15 @@ solicitar_retiro(p_monto)
 
 Ambos RPC siguen ausentes en Supabase TEST.
 
-La infraestructura real ya tiene:
+Infraestructura existente:
 
 - `pagos.ganancia_proveedor`;
 - tabla `retiros`;
 - lectura de retiros por Proveedor;
-- `admin_actualizar_retiro(...)` para administración;
-- camino futuro/principal de Mercado Pago Split representado en UI.
+- `admin_actualizar_retiro(...)`, con estados `procesando|pagado|fallido` y referencia externa obligatoria para `pagado`;
+- `ProviderPayoutPanel` modela retiro manual/legado con mínimo R$50 y describe Mercado Pago Split como camino principal cuando esté activo.
 
-Auditoría TEST confirmó un caso real:
+### Caso conflictivo real
 
 ```text
 servicio #28 = cancelado
@@ -263,19 +262,17 @@ método = efectivo
 pago = pendiente
 ```
 
-No existe una política inequívoca que autorice a decidir automáticamente:
+No existe una definición inequívoca para resolver automáticamente:
 
-1. cuándo un pago entra al saldo disponible;
-2. qué retiros comprometen/descuentan saldo;
-3. qué ocurre con pago efectivo pendiente al cancelar;
-4. si el retiro interno/manual legado debe mantenerse frente a Split;
-5. semántica financiera de cancelado/fallido/reembolsado/anulado.
+1. qué pagos alimentan `saldo_disponible`;
+2. si `pendiente/procesando` de retiro comprometen saldo y exactamente cuándo;
+3. qué hacer con pago efectivo `pendiente` al cancelar el servicio;
+4. si el retiro interno/manual se mantiene como producto o queda sólo como legado frente a Split;
+5. semántica de cancelado/fallido/reembolsado/anulado en pagos donde actualmente no hay regla explícita suficiente.
 
-No implementar una fórmula/enum/semántica nueva sin decisión de producto explícita.
+**No implementar nuevos RPC, fórmula de saldo, enum ni semántica financiera hasta decisión explícita de producto.**
 
 ## HUGO · ESTADO CONSERVADO
-
-Último P0 funcional Hugo:
 
 ```text
 04d8dfa39b944bbfd81019473a1255fdbe418ca2
@@ -284,7 +281,7 @@ fix(hugo): make client voice flow responsive and interruptible
 
 Preservar voz/texto en el mismo Draft, MediaRecorder→`/api/test`, retry 422 sin voz, parser/confirmación/selección de proveedor, Inicio/Actividad/Cancelar, STOP abortable, sin `speechSynthesis` y sin listeners Hugo competidores.
 
-La latencia post-fix todavía NO es `MEASURED` sin una nueva prueba física.
+La latencia post-fix todavía NO es `MEASURED` sin nueva prueba física.
 
 ## EVIDENCIA HISTÓRICA — NO USAR COMO NUEVO E2E
 
@@ -293,15 +290,15 @@ La latencia post-fix todavía NO es `MEASURED` sin una nueva prueba física.
 #14 68ef8d25-b382-4e98-986a-21c510cc78f1 · completado histórico
 ```
 
-No sirven como sustituto de la corrida NUEVA solicitada.
+No sustituyen la corrida NUEVA requerida después del hardening de Storage/chat/tracking.
 
 ## MEASURED PENDIENTE · FÍSICO
 
 No marcar como `MEASURED` sin dispositivo real:
 
 - micrófono / latencia Hugo / barge-in / STOP→texto;
-- cámara y evidencia tomada desde teléfono;
-- GPS real caminando y tracking visual;
+- cámara y evidencia desde teléfono;
+- GPS caminando y tracking visual;
 - Cliente + Proveedor en dos dispositivos con Realtime sin refresh;
 - Web Push real;
 - teclado móvil, safe areas, overlays y UX táctil.
@@ -309,10 +306,10 @@ No marcar como `MEASURED` sin dispositivo real:
 ## NEXT
 
 ```text
-1. habilitar en un entorno seguro las credenciales TEST del harness sin escribirlas en repo
-2. ejecutar E2E nuevo + dos uploads reales a service-evidence hasta completado
-3. verificar el mismo serviceId como Cliente, Proveedor y Admin
-4. cerrar decisión financiera explícita y recién entonces implementar saldo/retiro/cancel semantics
+1. definir explícitamente la política financiera mínima
+2. habilitar en entorno seguro las credenciales TEST del harness sin escribirlas en repo
+3. ejecutar E2E nuevo + dos uploads reales a service-evidence hasta completado
+4. verificar el mismo serviceId como Cliente, Proveedor y Admin
 5. realizar pasada física de dos dispositivos
 6. sólo después evaluar checklist de promoción
 ```
