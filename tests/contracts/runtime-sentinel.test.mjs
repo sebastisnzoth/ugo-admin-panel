@@ -10,21 +10,32 @@ const chat=fs.readFileSync('src/mvp/ServiceChat.tsx','utf8')
 const dashboard=fs.readFileSync('src/mvp/DevelopmentDashboard.tsx','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915093000_runtime_sentinel.sql','utf8')
 const guardrails=fs.readFileSync('supabase/migrations/20260915093100_runtime_sentinel_guardrails.sql','utf8')
+const revisionIsolation=fs.readFileSync('supabase/migrations/20260915200000_runtime_sentinel_revision_isolation.sql','utf8')
+const netlifyWorkflow=fs.readFileSync('.github/workflows/netlify-deploy.yml','utf8')
 
-test('Sentinel persists deduplicated authenticated incidents and can fail mapped checklist items',()=>{
+test('Sentinel persists deduplicated authenticated incidents and publishes them realtime',()=>{
  assert.match(migration,/create table if not exists public\.development_incidents/)
  assert.match(migration,/fingerprint text not null unique/)
  assert.match(migration,/create or replace function public\.report_development_incident/)
- assert.match(migration,/update public\.development_checklist[\s\S]*set status = 'failed'/)
  assert.match(migration,/alter publication supabase_realtime add table public\.development_incidents/)
 })
 
-test('participant incidents are service-scoped and cannot choose arbitrary checklist mutations',()=>{
+test('participant incidents are service-scoped and cannot choose arbitrary checklist classifications',()=>{
  assert.match(guardrails,/private\.is_service_participant\(p_service_id, auth\.uid\(\)\)/)
  assert.match(guardrails,/when p_action = 'client\.activity\.open_order' then 'CLIENT-ORDER-OPEN'/)
  assert.match(guardrails,/when p_action in \('client\.service\.chat','provider\.service\.chat','client\.order\.chat','provider\.order\.chat'\) then 'CHAT-REALTIME'/)
  assert.match(guardrails,/when v_is_admin then p_checklist_code/)
- assert.match(guardrails,/where code = v_checklist_code/)
+})
+
+test('runtime incidents are revision-tagged and cannot mutate release checklist state',()=>{
+ assert.match(revisionIsolation,/add column if not exists runtime_revision text/)
+ assert.match(revisionIsolation,/p_metadata->>'runtimeRevision'/)
+ assert.match(revisionIsolation,/coalesce\(v_runtime_revision,'unversioned'\)/)
+ assert.match(revisionIsolation,/Deliberately do not update development_checklist here/)
+ assert.doesNotMatch(revisionIsolation,/update public\.development_checklist/)
+ assert.match(sentinel,/VITE_APP_REVISION/)
+ assert.match(sentinel,/runtimeRevision:RUNTIME_REVISION/)
+ assert.match(netlifyWorkflow,/VITE_APP_REVISION: \$\{\{ github\.sha \}\}/)
 })
 
 test('Sentinel metadata strips common contact and credential fields',()=>{
