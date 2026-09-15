@@ -3,16 +3,14 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const source=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('client premium home mirrors the approved conversational product hierarchy',async()=>{
- const text=await source('src/mvp/client/ClientPremiumHome.tsx')
- assert.match(text,/Contame qué necesitás\. Yo te ayudo a resolverlo\./)
- assert.match(text,/Hablar con Hugo/)
- assert.match(text,/Escribirle a Hugo/)
- assert.match(text,/Decí “Hola Hugo”/)
- assert.match(text,/ugo-client-home-map/)
- assert.match(text,/\.ugo-real-orb/)
- assert.match(text,/\.ugo-hugo-stage-composer input/)
+test('client premium home preserves the current approved product hierarchy',async()=>{
+ const[text,root]=await Promise.all([source('src/mvp/client/ClientPremiumHome.tsx'),source('src/mvp/client/ClientRoot.tsx')])
+ assert.match(text,/const CORE_SERVICES:/)
+ assert.match(text,/4 rubros principales/)
+ assert.match(text,/Ver catálogo completo de especialidades/)
+ assert.match(text,/ugo-studio-map/)
  assert.match(text,/flow\.publishHugoIntent/)
+ assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientHugoBridge/)
  assert.doesNotMatch(text,/UGO_CLIENT_GUIDED_REQUEST_OPEN/)
  assert.match(text,/maplibre-gl\/dist\/maplibre-gl\.css/)
 })
