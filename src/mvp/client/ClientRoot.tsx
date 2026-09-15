@@ -27,15 +27,11 @@ import'./client-visual-polish.css'
 import'./client-guided-request-redesign.css'
 import'./client-guided-request-review.css'
 import'./client-redesign-2026.css'
-import'./client-stitch-orb-home.css'
-import'./client-stitch-radar.css'
-import'./client-stitch-tracking.css'
-import'./client-stitch-request.css'
 
 type Props={demo:boolean}
 
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow()
  const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
- return <ClientOnboardingGate><div className={`ugo-client-root screen-${flow.screen}`}><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientPremiumHome/>{flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} {flow.screen!=='request'&&<ClientHugoBridge/>}<ClientPaymentChoice/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceChat role="client"/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/><ClientProviderRadarBridge/>{flow.screen==='history'&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><button type="button" onClick={()=>flow.navigate('home')} style={{width:44,height:44,borderRadius:14,border:'1px solid #2d4357',background:'#102335',color:'#f6fbff',fontSize:20,marginBottom:10}} aria-label="Volver">←</button><ServiceHistoryPanel role="client" embedded/></div></div>}{flow.screen==='profile'&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
+ return <ClientOnboardingGate><div className="ugo-client-root"><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientPremiumHome/>{flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} {flow.screen!=='request'&&<ClientHugoBridge/>}<ClientPaymentChoice/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceChat role="client"/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/><ClientProviderRadarBridge/>{flow.screen==='history'&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><button type="button" onClick={()=>flow.navigate('home')} style={{width:44,height:44,borderRadius:14,border:'1px solid #2d4357',background:'#102335',color:'#f6fbff',fontSize:20,marginBottom:10}} aria-label="Volver">←</button><ServiceHistoryPanel role="client" embedded/></div></div>}{flow.screen==='profile'&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
 }

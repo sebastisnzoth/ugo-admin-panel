@@ -30,14 +30,14 @@ test('Hugo companion is wired to the canonical voice dock, real client actions a
 })
 
 test('home makes Hugo the primary conversational entrypoint while Activity stays unified', () => {
-  assert.match(home, /¿Qué necesitás\?/)
+  assert.match(home, /Contame qué necesitás\. Yo te ayudo a resolverlo\./)
   assert.match(home, /Hablar con Hugo/)
-  assert.match(home, />Escribir</)
+  assert.match(home, /Escribirle a Hugo/)
   assert.match(home, /\.ugo-real-orb/)
   assert.match(home, /\.ugo-hugo-stage-composer input/)
   assert.match(home, /flow\.publishHugoIntent/)
   assert.match(home, />Actividad</)
-  assert.match(home, />Servicios</)
+  assert.doesNotMatch(home, />Servicios</)
   assert.doesNotMatch(home, /UGO_CLIENT_GUIDED_REQUEST_OPEN/)
 })
 
