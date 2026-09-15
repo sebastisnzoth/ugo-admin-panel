@@ -4,13 +4,10 @@ import { readFile } from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('client cancellation always requires an explicit service id',async()=>{
- const [types,bridge]=await Promise.all([
-  read('src/mvp/client/clientTypes.ts'),
-  read('src/mvp/client/ClientFlowActionsBridge.tsx'),
- ])
- assert.match(types,/cancelService:\s*\(serviceId:\s*string\)\s*=>\s*Promise<boolean>/)
+test('client cancellation mutation boundary requires an explicit owned service id',async()=>{
+ const bridge=await read('src/mvp/client/ClientFlowActionsBridge.tsx')
  assert.match(bridge,/const cancelService=async\(serviceId:string\)/)
+ assert.match(bridge,/if\(!serviceId\)return false/)
  assert.match(bridge,/\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
  assert.doesNotMatch(bridge,/order\('created_at'[\s\S]*limit\(1\)/)
 })
