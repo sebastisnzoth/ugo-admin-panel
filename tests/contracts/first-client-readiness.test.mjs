@@ -48,10 +48,17 @@ test('client and provider critical lifecycle is backend-authoritative and realti
 
 test('isolated RPC RLS harness covers one real shared service through completion', async () => {
   const integration = await read('tests/integration/client-provider-rpc-rls.test.mjs')
+  assert.match(integration, /UGO_TEST_ADMIN_EMAIL/)
+  assert.match(integration, /UGO_TEST_ADMIN_PASSWORD/)
   assert.match(integration, /iniciar_matching_dirigido/)
   assert.match(integration, /aceptar_oferta/)
   assert.match(integration, /seleccionar_pago_efectivo/)
   assert.match(integration, /confirmar_pago_efectivo/)
   assert.match(integration, /aprobar_servicio/)
-  assert.match(integration, /Ambos roles leen el mismo cierre persistido/)
+  assert.match(integration, /Proveedor debe leer el mensaje canónico del Cliente/)
+  assert.match(integration, /Cliente debe leer la respuesta canónica del Proveedor/)
+  assert.match(integration, /Admin observa el mismo cierre persistido del serviceId E2E/)
+  assert.match(integration, /Admin observa el mismo pago persistido del serviceId E2E/)
+  assert.match(integration, /evidencePaths\.length, 2/)
+  assert.match(integration, /preserve_e2e_evidence: true/)
 })
