@@ -39,14 +39,17 @@ export function DevelopmentDashboard(){
   const approved=items.filter(item=>item.status==='approved').length
   const validated=items.filter(item=>item.status==='validated').length
   const p0Open=items.filter(item=>item.priority==='P0'&&item.status!=='approved').length
+  const p1Open=items.filter(item=>item.priority==='P1'&&item.status!=='approved').length
   const failed=items.filter(item=>item.status==='failed').length
   const unverified=items.filter(item=>item.status==='implemented').length
   const today=items.filter(item=>item.completed_at&&new Date(item.completed_at).toDateString()===new Date().toDateString()).length
   const sentinelOpen=incidents.filter(item=>item.status!=='resolved').length
   const sentinelP0=incidents.filter(item=>item.status!=='resolved'&&item.severity==='P0').length
-  return{verified:pct(approvedWeight,totalWeight),approved,validated,total:items.length,p0Open,failed,unverified,today,totalWeight,approvedWeight,sentinelOpen,sentinelP0}
+  const sentinelP1=incidents.filter(item=>item.status!=='resolved'&&item.severity==='P1').length
+  return{verified:pct(approvedWeight,totalWeight),approved,validated,total:items.length,p0Open,p1Open,failed,unverified,today,totalWeight,approvedWeight,sentinelOpen,sentinelP0,sentinelP1}
  },[incidents,items])
 
+ const releaseReady=stats.p0Open===0&&stats.p1Open===0&&stats.sentinelP0===0&&stats.sentinelP1===0
  const areas=useMemo(()=>Array.from(new Set(items.map(item=>item.area))).map(area=>{const rows=items.filter(item=>item.area===area),total=rows.reduce((sum,item)=>sum+item.weight,0),done=rows.filter(item=>item.status==='approved').reduce((sum,item)=>sum+item.weight,0);return{area,total:rows.length,approved:rows.filter(item=>item.status==='approved').length,progress:pct(done,total)}}).sort((a,b)=>a.area.localeCompare(b.area)),[items])
  const nextP0=useMemo(()=>items.filter(item=>item.priority==='P0'&&item.status!=='approved').sort((a,b)=>statusRank(a.status)-statusRank(b.status)||a.position-b.position)[0]||null,[items])
  const visible=useMemo(()=>items.filter(item=>filter==='all'||item.priority===filter||item.status===filter),[items,filter])
@@ -72,7 +75,7 @@ export function DevelopmentDashboard(){
   </header>
 
   <section className="devdash-hero">
-   <div className="devdash-hero-copy"><p className="devdash-kicker">ESTADO DEL PRODUCTO</p><h1>UGO listo para operar</h1><p>Una sola vista para saber qué está cerrado, qué bloquea el lanzamiento y cuál es el próximo problema que hay que resolver.</p><div className="devdash-hero-badges"><span>{stats.approved}/{stats.total} aprobadas</span><span>{stats.validated} validadas</span><span>{stats.unverified} sin validar</span><span>{stats.today} cerradas hoy</span></div></div>
+   <div className="devdash-hero-copy"><p className="devdash-kicker">ESTADO DEL PRODUCTO · {releaseReady?'READY':'NOT READY'}</p><h1>{releaseReady?'UGO listo para operar':'UGO todavía no está listo'}</h1><p>{releaseReady?'No quedan bloqueos P0/P1 ni incidentes críticos sin resolver.':'El panel mantiene separados código implementado, validación técnica, prueba real e incidentes runtime antes de habilitar salida.'}</p><div className="devdash-hero-badges"><span>{stats.approved}/{stats.total} aprobadas</span><span>{stats.validated} validadas</span><span>{stats.unverified} sin validar</span><span>{stats.today} cerradas hoy</span></div></div>
    <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>avance real</span></div></div><p><strong>{stats.approvedWeight}</strong> de {stats.totalWeight} puntos aprobados</p></div>
   </section>
 
@@ -81,8 +84,8 @@ export function DevelopmentDashboard(){
   <section className="devdash-metrics" aria-label="Métricas de cierre">
    <article className="tone-green"><span>Avance real</span><strong>{stats.verified}%</strong><small>aprobado con evidencia</small></article>
    <article className="tone-red"><span>P0 abiertos</span><strong>{stats.p0Open}</strong><small>bloquean el primer cliente</small></article>
-   <article className="tone-orange"><span>Fallos activos</span><strong>{stats.failed}</strong><small>requieren re-prueba</small></article>
-   <article className="tone-blue"><span>Sentinela</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} incidentes P0</small></article>
+   <article className="tone-orange"><span>P1 abiertos</span><strong>{stats.p1Open}</strong><small>requieren validación o desbloqueo</small></article>
+   <article className="tone-blue"><span>Sentinela</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} P0 · {stats.sentinelP1} P1</small></article>
   </section>
 
   {nextP0&&<section className="devdash-next"><div className="devdash-next-icon">!</div><div className="devdash-next-copy"><span>PRÓXIMO P0 A RESOLVER</span><h2>{nextP0.title}</h2><p>{nextP0.description}</p></div><div className={`devdash-pill status-${nextP0.status}`}>{STATUS_LABEL[nextP0.status]}</div></section>}
