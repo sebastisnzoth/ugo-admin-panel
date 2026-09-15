@@ -3,28 +3,46 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('service chat is anchored to canonical service participants',async()=>{
- const sql=await read('supabase/migrations/20260914170000_service_chat.sql')
- assert.match(sql,/create table if not exists public\.mensajes_servicio/)
- assert.match(sql,/servicio_id uuid not null references public\.servicios\(id\)/)
- assert.match(sql,/autor_id = auth\.uid\(\)/)
- assert.match(sql,/s\.cliente_id = auth\.uid\(\)/)
- assert.match(sql,/s\.proveedor_id = auth\.uid\(\)/)
- assert.match(sql,/s\.proveedor_id is not null/)
+test('service chat uses the canonical mensajes table and participant identity',async()=>{
+ const component=await read('src/mvp/ServiceChat.tsx')
+ const grants=await read('supabase/migrations/20260914233922_service_chat_authenticated_privileges.sql')
+ const hardening=await read('supabase/migrations/20260915001039_canonical_service_chat_hardening.sql')
+ assert.match(component,/from\('mensajes'\)/)
+ assert.match(component,/servicio_id:service\.id/)
+ assert.match(component,/emisor_id:userId/)
+ assert.match(component,/contenido:text/)
+ assert.doesNotMatch(component,/from\('mensajes_servicio'\)/)
+ assert.match(grants,/grant select, insert, update on table public\.mensajes to authenticated/i)
+ assert.match(hardening,/emisor_id = auth\.uid\(\)/i)
+ assert.match(hardening,/emisor_rol = 'cliente'/i)
+ assert.match(hardening,/s\.cliente_id = auth\.uid\(\)/i)
+ assert.match(hardening,/emisor_rol = 'proveedor'/i)
+ assert.match(hardening,/s\.proveedor_id = auth\.uid\(\)/i)
+ assert.match(hardening,/emisor_rol = 'admin'/i)
+ assert.match(hardening,/private\.is_admin\(auth\.uid\(\)\)/i)
 })
 
-test('service messages are immutable for participants and realtime enabled',async()=>{
- const sql=await read('supabase/migrations/20260914170000_service_chat.sql')
- assert.match(sql,/revoke update, delete on public\.mensajes_servicio from authenticated/)
- assert.match(sql,/alter publication supabase_realtime add table public\.mensajes_servicio/)
+test('legacy mensajes_servicio is migrated once and removed from the final schema',async()=>{
+ const hardening=await read('supabase/migrations/20260915001039_canonical_service_chat_hardening.sql')
+ assert.match(hardening,/to_regclass\('public\.mensajes_servicio'\)/i)
+ assert.match(hardening,/legacy_mensajes_servicio_id/i)
+ assert.match(hardening,/insert into public\.mensajes/i)
+ assert.match(hardening,/drop table public\.mensajes_servicio/i)
 })
 
-test('client and provider surfaces use the canonical chat component',async()=>{
+test('service message content is immutable while read receipt stays writable',async()=>{
+ const hardening=await read('supabase/migrations/20260915001039_canonical_service_chat_hardening.sql')
+ assert.match(hardening,/revoke update on table public\.mensajes from authenticated/i)
+ assert.match(hardening,/grant select, insert on table public\.mensajes to authenticated/i)
+ assert.match(hardening,/grant update\(leido_at\) on table public\.mensajes to authenticated/i)
+})
+
+test('client and provider surfaces use one canonical chat component with realtime',async()=>{
  const client=await read('src/mvp/client/ClientRoot.tsx')
  const provider=await read('src/mvp/provider/ProviderActiveJob.tsx')
  const component=await read('src/mvp/ServiceChat.tsx')
  assert.match(client,/<ServiceChat role="client"\/>/)
  assert.match(provider,/<ServiceChat role="provider" serviceId=\{s\.id\} compact\/>/)
- assert.match(component,/from\('mensajes_servicio'\)/)
+ assert.match(component,/table:'mensajes'/)
  assert.match(component,/postgres_changes/)
 })
