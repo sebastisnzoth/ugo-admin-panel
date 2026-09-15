@@ -30,24 +30,28 @@ Excepciones: `cancelado`, `disputado`.
 ## BASE FUNCIONAL / CI AUTORITATIVA
 
 ```text
-7fed2b5511e4a66e946cce04f610addf7b9bf7cf
-ci(android): resolve sdkmanager from runner SDK
+097ad6e89d08b5d0999f9d7e96ab6821e67239be
+fix(hugo): type canonical voice runtime
 ```
 
-Commits documentales posteriores pueden adelantar `main` con `[skip ci]` sin cambiar la base funcional.
+Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cambiar esta base funcional.
 
 ### Core CI
 
 ```text
-UGO Core CI #807
-run: 34935021482
-SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+UGO Core CI #815
+run: 34937373059
+SHA: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
 conclusion: success
 ```
 
-Gates verdes: audit, entorno TEST, TypeScript/build, tests, contratos, lint crítico, ClientApp lint y full lint.
+Gates verdes: dependency audit, entorno TEST, TypeScript/build, tests, contratos, lint crítico incluyendo Hugo canónico, ClientApp lint y full lint.
 
-### Android
+El E2E autenticado real sigue omitido porque faltan las 6 credenciales humanas TEST.
+
+### Android actual
+
+Nativo canónico:
 
 ```text
 Build UGO Android APKs #14
@@ -55,6 +59,8 @@ run: 34935021499
 SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
 conclusion: success
 ```
+
+No hubo cambios posteriores en `android-apk/`; estos wrappers cargan el Web TEST actual.
 
 Artefactos:
 
@@ -64,6 +70,15 @@ SHA-256 47a8396c543ddf27aa8225c34dc1553c435cf69d4fde1933584e002cb49144f9
 
 UGO Proveedor · com.ugo.provider · 1.0.0 (1)
 SHA-256 c0ca825d54f55131fa259b280f808d4ba2c6a52ce52d607b3766656bdd88a07a
+```
+
+QA current-head:
+
+```text
+UGO Android TEST APK #5
+run: 34937373061
+SHA: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
+conclusion: success
 ```
 
 ## P0-1 · MÚLTIPLES PEDIDOS A+B+C
@@ -90,19 +105,24 @@ Implementado y protegido por contratos:
 - backend TEST sin restricción global de un activo por cliente;
 - idempotencia por `request_draft_id` del mismo draft;
 - Cliente puede volver a Inicio y crear otro pedido;
+- matching puede continuar en background;
 - Actividad abre cada pedido por ID;
 - cancelación requiere ID explícito + ownership;
 - chat/tracking/pago/review/ampliaciones por ID;
 - Hugo crea pedidos nuevos aunque existan activos y desambigua status/cancelación;
+- Hugo canónico quedó tipado y cubierto por lint crítico;
+- superficies de voz legacy fueron retiradas para evitar dobles fuentes de verdad;
 - disputas no seleccionan arbitrariamente el último servicio;
 - Agenda Proveedor conserva trabajos futuros compatibles y abre por ID.
 
-Auditoría Supabase TEST del checkpoint:
+Auditoría directa Supabase TEST del 15/09/2026:
 
 ```text
-servicios_cliente_estado_created_idx = NON-UNIQUE
-servicios_cliente_request_draft_uidx = UNIQUE sólo para request_draft_id no vacío
-single-active trigger = AUSENTE
+servicios_cliente_estado_created_idx = PRESENTE · NON-UNIQUE
+servicios_cliente_request_draft_uidx = PRESENTE · UNIQUE sólo para cliente_id + request_draft_id no vacío
+servicios_cliente_single_active_uidx = AUSENTE
+trg_guard_single_active_client_service = AUSENTE
+trg_sync_service_schedule_canonical = PRESENTE
 ```
 
 ## P0-2 · E2E AUTENTICADO 3 ROLES
@@ -120,7 +140,7 @@ Harness:
 tests/integration/client-provider-rpc-rls.test.mjs
 ```
 
-Las seis credenciales humanas siguen ausentes en Core CI #807:
+Credenciales humanas ausentes:
 
 ```text
 UGO_TEST_CLIENT_EMAIL
@@ -131,7 +151,7 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-No inventar service IDs. Cuando existan las credenciales, la corrida debe demostrar A+B+C + cancelación selectiva + journey real Cliente↔Proveedor↔Admin, chat, pago y Storage.
+No inventar service IDs. Cuando existan las credenciales, la corrida debe demostrar A+B+C, cancelación selectiva y journey Cliente↔Proveedor↔Admin con chat, pago y Storage reales.
 
 ## P0-3 · ANDROID / DOS CELULARES
 
@@ -140,7 +160,8 @@ Estado:
 ```text
 APK Cliente: IMPLEMENTED
 APK Proveedor: IMPLEMENTED
-Gradle CI: VALIDATED
+Gradle nativo CI: VALIDATED
+APK QA current-head: VALIDATED
 prueba física: MEASURED pendiente
 ```
 
@@ -179,16 +200,17 @@ Invariante ya decidido: dinero de servicio incompleto/cancelado no puede convert
 
 ## VERCEL TEST
 
-Deployment funcional verificado:
+Deployment del HEAD funcional actual:
 
 ```text
-dpl_HVdhqu99z16qmTNvoJYjUW1jrLyy
-commit funcional: b2b0f753103520d7e5cbe4704e6322f11c5544b5
+deployment: dpl_4ypv3qnvsWPGNMuGy4QxeTRaNL3F
+commit: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
 state: READY
 alias: https://ugo-admin-panel.vercel.app
+aliasError: null
 ```
 
-Smoke:
+Smoke verificado:
 
 ```text
 /?app=client   HTTP 200
@@ -196,18 +218,20 @@ Smoke:
 /?app=admin    HTTP 200
 ```
 
-Los commits posteriores a esa base funcional son pipeline Android/documentación y no requieren quemar otro deployment para declarar el frontend cambiado.
-
 ## Core cerrado salvo regresión
 
 ```text
+multi-pedido estructural: IMPLEMENTED
+Hugo multi-pedido contracts: VALIDATED por CI
 Realtime recovery: VALIDATED
 GPS/tracking backend: VALIDATED
 chat canónico: VALIDATED
 Storage integrity guard: VALIDATED
 RLS/RPC críticos: VALIDATED
 SECURITY DEFINER críticos + negativos TEST: VALIDATED
-Android debug build: VALIDATED
+Android native debug build: VALIDATED
+Android QA current-head: VALIDATED
+Vercel current HEAD: RELEASED a TEST
 ```
 
 ## P1 · UX operativa
@@ -301,5 +325,7 @@ UGO sólo puede promoverse cuando:
 4. mantener finanzas BLOCKED hasta decisión explícita
 5. mantener PROD fuera de alcance
 ```
+
+No queda un P0 técnico automatizable conocido fuera de los bloqueos externos y la evidencia física pendiente.
 
 **Supabase PRODUCCIÓN `trfsjuseqjxlhrxuvdsm` NO FUE TOCADO.**
