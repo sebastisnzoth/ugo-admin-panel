@@ -14,8 +14,8 @@ export type ClientActionHandlers = {
   selectProvider: (providerId: string, providerName?: string | null) => void
   createService: () => Promise<boolean>
   startMatching: () => Promise<boolean>
-  /** Legacy surfaces may omit the id; the real bridge rejects that call without mutating. Canonical flows always pass serviceId. */
-  cancelService: (serviceId?: string) => Promise<boolean>
+  /** Cancellation is always service-scoped. Callers must resolve and pass the exact serviceId. */
+  cancelService: (serviceId: string) => Promise<boolean>
   openPayment: () => Promise<boolean>
   approveService: () => Promise<boolean>
   openReview: () => void
