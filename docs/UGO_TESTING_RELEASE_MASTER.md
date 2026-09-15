@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.6 · 15 de septiembre de 2026  
+**Versión:** 2.7 · 15 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama de integración:** `main`
 
@@ -16,12 +16,12 @@ L0 TypeScript/Lint
 → L2 Domain/RPC/API
 → L3 RLS/roles/Storage
 → L4 Integration/Realtime/Pagos/Mapas
-→ L5 E2E Cliente↔Proveedor↔Admin
-→ L6 Dispositivo físico
+→ L5 E2E Cliente↔Proveedor↔Admin + multi-pedido A+B+C
+→ L6 Dispositivo físico Android Cliente↔Proveedor
 → L7 Deploy/Smoke/Rollback readiness
 ```
 
-No declarar `VALIDATED`, `MEASURED` ni `RELEASED` sin evidencia de ejecución correspondiente.
+No declarar `VALIDATED`, `MEASURED` ni `RELEASED` sin evidencia correspondiente.
 
 ---
 
@@ -34,13 +34,13 @@ npm run test       ✅ disponible
 npm run test:e2e   ⬜ no es el gate autoritativo actual
 ```
 
-`npm test` incluye contratos y el harness de integración aislado. El harness real está en:
+Harness autenticado:
 
 ```text
 tests/integration/client-provider-rpc-rls.test.mjs
 ```
 
-Ese harness sólo se habilita cuando existen estas 8 variables:
+Variables:
 
 ```text
 UGO_TEST_SUPABASE_URL
@@ -53,39 +53,224 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-Con `UGO_REQUIRE_ISOLATED_INTEGRATION=1`, la ausencia de variables debe fallar el gate. Sin ese modo, el caso remoto puede quedar explícitamente omitido.
+El harness rechaza cualquier Supabase que no sea TEST `tmossnqfwfwjrtzwcbmm` y rechaza explícitamente producción `trfsjuseqjxlhrxuvdsm` antes de ejecutar el recorrido.
 
-El harness rechaza cualquier Supabase que no sea el TEST designado `tmossnqfwfwjrtzwcbmm` y rechaza explícitamente producción `trfsjuseqjxlhrxuvdsm` antes de ejecutar el recorrido.
-
-En `UGO Core CI`, la URL y la publishable/anon key públicas de UGO TEST están fijadas en el workflow; las 6 credenciales humanas Cliente/Proveedor/Admin se leen exclusivamente desde GitHub Secrets. Nunca guardar passwords en repo, commits, docs o logs.
+En Core CI, URL + publishable key TEST están fijadas en workflow. Las seis credenciales humanas deben vivir exclusivamente en GitHub Secrets.
 
 ---
 
-# 3. E2E autenticado autoritativo
+# 3. Estado CI autoritativo
 
-Una corrida válida debe crear un servicio NUEVO y conservar un único `serviceId` de punta a punta:
+Base funcional/CI:
+
+```text
+7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+ci(android): resolve sdkmanager from runner SDK
+```
+
+Core:
+
+```text
+UGO Core CI #807
+run: 34935021482
+SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+status: completed
+conclusion: success
+```
+
+Pasaron:
+
+- `npm ci --include=dev`;
+- `npm audit --audit-level=high`;
+- guard de entorno TEST;
+- preflight E2E;
+- TypeScript + Vite production build;
+- contratos/tests/integración local;
+- lint crítico operacional;
+- ClientApp lint;
+- full repository lint.
+
+En #807 el E2E autenticado remoto fue omitido explícitamente porque estas seis variables estaban vacías:
+
+```text
+UGO_TEST_CLIENT_EMAIL
+UGO_TEST_CLIENT_PASSWORD
+UGO_TEST_PROVIDER_EMAIL
+UGO_TEST_PROVIDER_PASSWORD
+UGO_TEST_ADMIN_EMAIL
+UGO_TEST_ADMIN_PASSWORD
+```
+
+Por lo tanto:
+
+```text
+E2E harness: IMPLEMENTED
+E2E autenticado: BLOCKED — missing GitHub TEST credentials
+```
+
+No convertir este bloqueo en `VALIDATED` por inferencia.
+
+---
+
+# 4. Gate multi-pedido A+B+C
+
+Principio:
+
+> **Un pedido. Un profesional. Sin vueltas.**
+
+significa un profesional por PEDIDO, no un único pedido activo por cliente.
+
+Caso mínimo obligatorio:
+
+```text
+A = Electricista · mañana 15:00
+B = Plomero · hoy
+C = Limpieza · viernes 10:00
+```
+
+Una validación real debe demostrar:
+
+```text
+crear A
+volver a Inicio
+crear B sin finalizar A
+volver a Inicio
+crear C sin finalizar A/B
+A.id != B.id
+B.id != C.id
+A.id != C.id
+Actividad muestra A+B+C
+abrir A por serviceId
+abrir B por serviceId
+cancelar B
+A intacto
+B cancelado
+C intacto
+```
+
+Además por pedido:
+
+- categoría independiente;
+- `programado_para` independiente;
+- proveedor independiente;
+- estado independiente;
+- chat `mensajes.servicio_id` correcto;
+- tracking correcto;
+- pago `servicio_id` correcto;
+- evidencia correcta;
+- ampliación correcta;
+- disputa correcta.
+
+Estado actual:
+
+```text
+multi-pedido arquitectura + contratos: IMPLEMENTED
+A+B+C autenticado con IDs reales: BLOCKED por credenciales TEST
+```
+
+No inventar IDs.
+
+---
+
+# 5. Backend multi-pedido / idempotencia
+
+TEST debe conservar:
+
+```text
+servicios_cliente_estado_created_idx = NON-UNIQUE
+servicios_cliente_request_draft_uidx = UNIQUE sobre cliente_id + request_draft_id no vacío
+single-active trigger = AUSENTE
+```
+
+La unicidad de `request_draft_id` protege retry/doble submit del MISMO draft; no puede impedir pedidos intencionalmente distintos.
+
+Prohibido reintroducir como selector de mutación:
+
+```text
+activeServiceId global
+latest active service
+.limit(1) para decidir qué pedido cancelar
+“ya tenés un pedido activo; cancelalo antes”
+```
+
+Una mutación crítica debe recibir un `serviceId` explícito o negarse a actuar si hay ambigüedad.
+
+---
+
+# 6. Hugo multi-pedido
+
+Contratos obligatorios:
+
+```text
+A activo + “necesito un plomero hoy” → iniciar nuevo B
+A+B activos + “necesito limpieza viernes” → iniciar nuevo C
+“cómo viene el electricista de mañana” → resolver pedido concreto
+“cancelá el plomero de hoy” → cancelar serviceId concreto
+“cancelá mi pedido” con varios candidatos → preguntar cuál; no mutar
+```
+
+Hugo puede resolver por categoría, proveedor, número, fecha u horario. Nunca inventa proveedor, rating, precio, disponibilidad, pago o estado.
+
+Voz/texto deben compartir contexto. El bridge Android nativo debe conservar STOP/fallback texto.
+
+---
+
+# 7. Proveedor / Agenda
+
+Proveedor puede tener varias asignaciones futuras compatibles.
+
+Separar conceptualmente:
+
+```text
+AGENDA = múltiples trabajos futuros
+MISIÓN ACTIVA = un servicio concreto accionable
+```
+
+Cada elemento de Agenda debe mantener/abrir su `serviceId` y mostrar fecha/hora, cliente, categoría, dirección y estado.
+
+Lifecycle operativo:
+
+```text
+Asignado
+→ En camino
+→ Llegué
+→ evidencia Antes
+→ Iniciar trabajo
+→ chat/ampliación si aplica
+→ evidencia Después
+→ Finalizar
+→ Esperando aprobación
+→ Completado
+```
+
+Backend de horarios/solapamientos es autoridad; no imponer un veto frontend global “ya tenés un trabajo”.
+
+---
+
+# 8. E2E autenticado 3 roles
+
+Una corrida válida debe crear datos NUEVOS y conservar cada `serviceId` durante su journey:
 
 ```text
 Cliente autenticado
 → crea servicio
-→ matching dirigido
-→ Proveedor recibe oportunidad redactada
-→ Proveedor acepta
-→ Cliente + Admin observan el mismo servicio
-→ chat Cliente↔Proveedor en public.mensajes
-→ Admin audita el mismo chat
-→ selección de pago
+→ matching
+→ Proveedor recibe oportunidad
+→ acepta
+→ Cliente + Admin observan mismo servicio
+→ chat Cliente↔Proveedor
+→ Admin audita mismo chat
+→ pago
 → en_camino
 → llegado
-→ evidencia REAL antes en Storage
+→ evidencia REAL antes
 → en_progreso
 → ampliación si corresponde
-→ evidencia REAL después en Storage
+→ evidencia REAL después
 → confirmación de pago
 → revisión/aprobación Cliente
 → completado
-→ Cliente + Proveedor + Admin convergen al mismo estado
-→ Admin observa pago + chat + evidencias del mismo serviceId
+→ Cliente + Proveedor + Admin convergen
 ```
 
 Bucket canónico:
@@ -94,63 +279,17 @@ Bucket canónico:
 service-evidence
 ```
 
-La evidencia E2E debe ser objeto real de Supabase Storage. Insertar sólo metadata/path no cuenta como evidencia y el guard debe rechazarlo.
+La evidencia debe existir realmente en Storage; metadata/path sin objeto no cuenta.
 
-El harness actual sube dos PNG reales (`antes`, `despues`) y comprueba que una evidencia con path inventado sea rechazada.
-
-El fixture E2E queda preservado en TEST para auditoría con metadata:
-
-```text
-integration_test = true
-source = rpc-rls-harness
-e2e_run_id = <uuid>
-preserve_e2e_evidence = true
-```
-
-No se debe borrar sólo Storage dejando filas de evidencia huérfanas.
+El fixture E2E preservado debe incluir `e2e_run_id` para auditoría.
 
 ---
 
-# 4. Cobertura contractual vigente
+# 9. Pagos / efectivo / ampliaciones
 
-Los contratos actuales protegen, entre otros:
+Pagos electrónicos: probar selección, creación, autorización, webhook, retry, duplicados, ampliación financiada, rechazo y recovery.
 
-```text
-radio de llegada backend = 200 m
-evidencia Antes/Durante/Después según lifecycle
-guards de inicio/finalización
-efectivo presencial
-orden efectivo: en_progreso → Después → confirmar_pago_efectivo → esperando_aprobacion → aprobar_servicio
-checkout separado para delta de ampliación
-idempotency/external_reference de ajuste
-validación de monto antes de incorporar delta
-review Cliente con ownership + proveedor asignado
-producción rechazada por el harness antes de red
-credenciales Admin requeridas en el E2E de 3 roles
-Storage real requerido para evidencia del E2E
-```
-
-Contrato verde no sustituye ejecución remota autenticada.
-
----
-
-# 5. Pagos electrónicos
-
-Probar selección, creación, autorización, webhook, retención/protección, retry, duplicados, liberación, reembolso/disputa y ampliación financiada.
-
-Aserción: ningún servicio avanza por condición financiera inexistente.
-
-La política financiera de saldo/retiro definitiva sigue bloqueada por decisión de producto. No inventar `saldo_proveedor()` ni `solicitar_retiro(...)` mientras esa política siga ambigua.
-
----
-
-# 6. Efectivo
-
-Probar selección, habilitación, copy correcto, confirmación Proveedor, duplicado, registro financiero, comisión/ledger, cierre Cliente y disputa sin promesa de reembolso automático.
-
-Aserción: efectivo nunca se describe como electrónicamente protegido.
-
-Orden ejecutable:
+Efectivo:
 
 ```text
 en_progreso
@@ -160,13 +299,21 @@ en_progreso
 → aprobar_servicio
 ```
 
-Pedir revisión antes de confirmar efectivo debe fallar. Repetir confirmación debe devolver el mismo pago sin nuevos importes, referencias o timestamps.
+Pedir revisión antes de confirmar efectivo debe fallar. Repetir confirmación válida debe ser idempotente.
 
-Un servicio cancelado/incompleto nunca debe convertirse accidentalmente en saldo retirable. La regla exacta de saldo/retiro permanece BLOCKED hasta definición financiera explícita.
+Ampliaciones deben preservar descripción, costo, tiempo, aprobación, checkout/delta e idempotencia sin incrementar dos veces.
+
+La política definitiva de saldo/retiro sigue:
+
+```text
+BLOCKED — PRODUCT DECISION REQUIRED
+```
+
+No inventar `saldo_proveedor()` ni `solicitar_retiro(...)`.
 
 ---
 
-# 7. Llegada + evidencia
+# 10. Llegada + evidencia
 
 ```text
 pago no habilitado → no en_camino
@@ -174,7 +321,7 @@ pago habilitado → en_camino
 >200 m → llegado rechazado cuando aplica geofence
 <=200 m → llegado permitido
 llegado sin Antes → inicio rechazado
-llegado + Antes real en Storage → inicio permitido
+llegado + Antes real → inicio permitido
 Antes fuera de llegado → rechazado
 Durante fuera de en_progreso → rechazado
 Después antes de en_progreso → rechazado
@@ -183,59 +330,9 @@ en_progreso + Después real → cierre elegible según método
 
 ---
 
-# 8. Ampliaciones + dinero
+# 11. RLS / RPC / SECURITY DEFINER
 
-```text
-extra 0 → aprobable
-sin pago + extra → total antes del checkout
-efectivo pendiente + extra → reajuste consistente
-pago fallido/reembolsado → siguiente intento ajustado
-electrónico activo + extra → checkout separado
-checkout pendiente → reutilizable
-approved monto/moneda válidos → incorpora una vez
-mismatch → no incorpora
-rechazado/cancelado → retry
-webhook duplicado → sin doble incremento
-refunded después de aplicado → pendiente_ajuste + bloqueo cierre
-actor no Cliente → denegado
-```
-
-Resolver una ampliación ya resuelta debe rechazarse. Los retries idempotentes válidos deben conservar el mismo estado persistido.
-
----
-
-# 9. Admin / Super Admin
-
-El E2E autoritativo usa una tercera identidad Admin/Super Admin real y exige:
-
-```text
-Admin activo
-rol admin/superadmin real
-lectura del mismo serviceId
-lectura del chat del mismo serviceId
-lectura del pago final del mismo serviceId
-lectura de las dos evidencias reales del mismo serviceId
-```
-
-Query params/UI nunca escalan privilegios.
-
-Para endpoints Admin privilegiados:
-
-```text
-sin Bearer → 401
-sesión inválida → 401
-usuario no admin → 403
-admin/super activo → respuesta autorizada
-respuesta nunca contiene secretos
-```
-
-Una función `admin_*` no debe convertirse automáticamente en `SECURITY DEFINER`; sólo cuando necesite privilegio elevado y con validación interna de identidad/rol/activo/ownership/permisos.
-
----
-
-# 10. RLS / RPC / SECURITY DEFINER
-
-Por cada tabla/bucket sensible:
+Por tabla/bucket sensible:
 
 ```text
 autorizado → permitido
@@ -244,50 +341,86 @@ anónimo → denegado salvo público explícito
 admin → privilegio real y justificado
 ```
 
-Los guards críticos `SECURITY DEFINER` ya fueron revisados con negativos reales en UGO TEST. No reabrir esa auditoría completa salvo regresión demostrable.
-
-Pendientes de producción: leaked-password protection y cualquier advisor que represente riesgo real.
+Los guards críticos ya fueron revisados con negativos reales en UGO TEST. No reabrir auditoría completa sin regresión demostrable.
 
 ---
 
-# 11. Concurrencia e idempotencia
+# 12. Concurrencia / Realtime
 
-Probar doble aceptación, doble click, doble webhook, doble efectivo, doble checkout/confirmación de ampliación, doble cierre/retiro y retry tras timeout.
+Probar doble aceptación, doble click, webhook duplicado, retry tras timeout, doble efectivo, doble confirmación de ampliación y doble cierre.
 
-Reaceptar la misma oferta por el mismo Proveedor es un retry idempotente: debe devolver el mismo servicio sin reasignar ni recalcular.
+Realtime debe:
 
-Errores de red, Auth, RPC ausente o queries RLS fallidas no cuentan como denegaciones de dominio válidas.
+- aplicar evento al `serviceId` correcto;
+- evitar duplicados;
+- limpiar subscriptions;
+- recuperar/refetch al reconectar;
+- converger a persistencia;
+- no convertir un único “servicio activo” en estado global de cuenta.
+
+Backend/recovery está `VALIDATED`; convergencia visual en dos celulares sigue `MEASURED` pendiente.
 
 ---
 
-# 12. Realtime
+# 13. Android nativo
 
-Validar evento correcto, ausencia de duplicados, cleanup, reconexión/refetch, cambio de usuario/serviceId y convergencia al mismo estado persistido.
+Ruta canónica:
 
-Backend/recovery ya está `VALIDATED`; la convergencia visual Cliente↔Proveedor en dos celulares sigue `MEASURED` pendiente.
+```text
+android-apk/
+```
+
+Flavors:
+
+```text
+Cliente   com.ugo.client   version 1.0.0 (1)
+Proveedor com.ugo.provider version 1.0.0 (1)
+```
+
+Workflow autoritativo:
+
+```text
+Build UGO Android APKs #14
+run: 34935021499
+SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+conclusion: success
+artifact: UGO-Android-APKs
+```
+
+SHA-256:
+
+```text
+UGO-Cliente.apk
+47a8396c543ddf27aa8225c34dc1553c435cf69d4fde1933584e002cb49144f9
+
+UGO-Proveedor.apk
+c0ca825d54f55131fa259b280f808d4ba2c6a52ce52d607b3766656bdd88a07a
+```
+
+El APK nativo contempla INTERNET, ubicación, cámara, micrófono, file chooser y bridge SpeechRecognizer para Hugo. La autorización de geolocalización debe concederse al WebView sólo después de permiso Android.
+
+La APK Capacitor TEST puede usarse para QA, pero no sustituye los flavors nativos.
 
 ---
 
-# 13. Prueba física obligatoria
+# 14. Prueba física obligatoria
 
-No marcar `MEASURED` sin dispositivo real.
+No marcar `MEASURED` sin dos dispositivos reales.
 
 Cliente:
 
 ```text
 login
-pedido
-Hugo voz
-Hugo texto
-categorías/proveedores reales
-matching
-tarjeta proveedor
-cancelación
-seguimiento
+A Electricista
+B Plomero sin finalizar A
+C Limpieza sin finalizar A/B
+Actividad A+B+C
+cancelación selectiva
+Hugo voz/texto
+tracking
 chat
 pago
 revisión
-historial
 ```
 
 Proveedor:
@@ -297,19 +430,17 @@ login
 online/offline
 oportunidad
 aceptar/rechazar
-trabajo activo
-mapa
+Agenda
+abrir serviceId correcto
+mapa/GPS
 en_camino
 llegada
-GPS
-cámara
-evidencia Antes
-iniciar trabajo
+cámara Antes
+iniciar
 chat
 ampliación
-evidencia Después
+cámara Después
 cierre
-ingreso visible
 ```
 
 Dos dispositivos:
@@ -319,13 +450,9 @@ Realtime sin refresh
 reconnect
 background/foreground
 GPS caminando
-cámara
 Storage
-push
 Hugo micrófono
-barge-in
-STOP
-fallback texto
+barge-in/STOP/fallback texto
 teclado
 safe areas
 overlays
@@ -334,73 +461,36 @@ botones táctiles
 
 ---
 
-# 14. Responsive + accesibilidad
+# 15. Vercel / Smoke
+
+Release funcional exige deploy/smoke verificable; CI verde no sustituye Vercel `READY`.
+
+Deployment funcional verificado:
+
+```text
+dpl_HVdhqu99z16qmTNvoJYjUW1jrLyy
+commit: b2b0f753103520d7e5cbe4704e6322f11c5544b5
+state: READY
+alias: https://ugo-admin-panel.vercel.app
+```
+
+Smoke del 15/09/2026:
+
+```text
+?app=client   HTTP 200
+?app=provider HTTP 200
+?app=admin    HTTP 200
+```
+
+Commits posteriores exclusivos de CI/Android/docs no deben interpretarse como necesidad de quemar deploy web si no cambian el bundle funcional.
+
+---
+
+# 16. Responsive + accesibilidad
 
 Breakpoints mínimos: `360×800`, `390×844`, `430×932`, tablet, `1280`, `1440`.
 
 Objetivo WCAG AA: foco visible, teclado, labels/aria, contraste, estado no sólo color, targets ≥48 px, errores accionables.
-
----
-
-# 15. CI actual
-
-`UGO Core CI` ejecuta:
-
-```text
-npm ci --include=dev
-npm audit --audit-level=high
-preflight de credenciales E2E
-npm run build
-npm test
-lint crítico operacional
-lint ClientApp con deuda legacy registrada aislada
-lint general como reporte de deuda
-```
-
-Estado verificado el 15/09/2026:
-
-```text
-UGO Core CI #761
-run: 34925210746
-SHA: 2d585734b8428e80831d0ea7f2184c7253def1bc
-status: completed
-conclusion: success
-```
-
-La metadata del job confirma que pasaron:
-
-- dependency security gate;
-- preflight de credenciales;
-- TypeScript + build;
-- core lifecycle/market/integration tests;
-- lint crítico;
-- ClientApp lint;
-- lint general.
-
-No marcar el nuevo E2E autenticado como `VALIDATED` hasta tener evidencia positiva de una corrida que produzca un `serviceId` NUEVO + `runId` + dos objetos Storage reales + chat/pago/cierre convergentes en los 3 roles.
-
----
-
-# 16. Vercel / Smoke
-
-Release funcional exige deploy/smoke verificable; CI verde no sustituye Vercel `READY`.
-
-Smoke mínimo:
-
-```text
-landing
-?app=client
-?app=provider
-?app=admin
-Auth
-Supabase data
-/api/admin/integrations-status
-API pagos crítica
-```
-
-El cliente pre-Stitch fue restaurado en `main` mediante `442d772e30a20a8b7725bcfbc329eb663ac2e789`; ese estado obtuvo CI verde y deployment Vercel `READY` antes del ajuste posterior exclusivo de CI.
-
-Cambios sólo documentales/CI no deben interpretarse como nuevo release funcional de frontend/backend.
 
 ---
 
@@ -423,14 +513,15 @@ No release comercial con P0 conocido.
 contrato definido
 UI/UX compatible
 persistencia correcta
+serviceId correcto
 RLS/RPC correcto
-método de pago correcto
 happy/error/offline
 build/lint/npm test
-RPC/RLS/E2E cuando aplican
+A+B+C autenticado cuando credenciales existan
 integraciones seguras y observables
-CI/deploy/smoke
+Android build
 prueba física cuando aplica
+CI/deploy/smoke
 rollback evaluado
 maestros + roadmap actualizados
 ```
@@ -440,28 +531,22 @@ maestros + roadmap actualizados
 # 19. Release checklist
 
 ```text
-[ ] main esperado
-[ ] build
-[ ] lint
-[ ] npm test
-[ ] E2E autenticado aplicable
-[ ] serviceId/runId nuevo preservado
-[ ] 2 objetos reales service-evidence
-[ ] mismo chat/pago/evidencias en Cliente/Proveedor/Admin
-[ ] permisos/RLS
-[ ] concurrencia/idempotencia
-[ ] pagos method-aware
-[ ] ampliaciones financiadas
-[ ] Realtime/reconexión
-[ ] integraciones Admin sin secretos
-[ ] prueba física dos dispositivos
-[ ] mobile/desktop/accesibilidad
-[ ] CI
-[ ] Vercel READY
-[ ] smoke
-[ ] rollback
-[ ] maestros
-[ ] roadmap
+[x] base funcional CI #807 verde
+[x] Android debug workflow #14 verde
+[x] APK Cliente generada
+[x] APK Proveedor generada
+[x] Vercel TEST READY
+[x] smoke Cliente/Proveedor/Admin HTTP 200
+[x] backend TEST sin single-active guard
+[x] idempotencia request_draft_id
+[ ] E2E A+B+C autenticado con IDs reales
+[ ] cancelación selectiva B validada remotamente dejando A/C intactos
+[ ] mismo chat/pago/evidencias en Cliente/Proveedor/Admin real
+[ ] prueba física dos Android
+[ ] mobile hardware camera/GPS/mic/Reatime MEASURED
+[ ] política financiera saldo/retiro definida
+[ ] seguridad producción cerrada
+[ ] rollback producción preparado
 ```
 
 ---
@@ -469,3 +554,5 @@ maestros + roadmap actualizados
 # 20. Regla final
 
 **UGO está listo cuando el circuito real y sus integraciones funcionan, resisten errores, preservan integridad y pueden demostrarse; no porque exista código o se vea bien.**
+
+**Supabase PROD `trfsjuseqjxlhrxuvdsm` permanece fuera de alcance y NO fue tocado en este checkpoint.**
