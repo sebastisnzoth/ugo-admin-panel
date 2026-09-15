@@ -23,7 +23,6 @@ export type ProviderRadarRow={
  especialidades?:string|null
  idiomas?:string|null
  disponibilidad_horaria?:string|null
- telefono_profesional?:string|null
  ciudad_base?:string|null
 }
 
