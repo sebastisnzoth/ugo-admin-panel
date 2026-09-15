@@ -16,7 +16,7 @@ const HANDLE_RE=/(^|\s)@[a-z0-9_.-]{3,}/i
 const PHONE_RE=/\+?\d[\d\s().-]{5,}\d/g
 
 function timeLabel(value:string){const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
-function hasContactDetails(value:string){if(EMAIL_RE.test(value)||URL_RE.test(value)||SOCIAL_RE.test(value)||HANDLE_RE.test(value))return true;const phones=value.match(PHONE_RE)||[];return phones.some(candidate=>candidate.replace(/\D/g,'').length>=8)}
+function hasContactDetails(value:string){if(EMAIL_RE.test(value)||URL_RE.test(value)||SOCIAL_RE.test(value)||HANDLE_RE.test(value))return true;const phones:string[]=value.match(PHONE_RE)??[];return phones.some(candidate=>candidate.replace(/\D/g,'').length>=8)}
 function serviceLabel(service:ChatService){const number=service.numero??service.id.slice(0,8);const detail=(service.descripcion||'Servicio UGO').trim();return `#${number} · ${detail.length>38?`${detail.slice(0,38)}…`:detail}`}
 function chatError(message:string){return message.includes('CONTACT_DETAILS_NOT_ALLOWED')||message.toLowerCase().includes('datos de contacto')?'Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.':message}
 
