@@ -18,6 +18,9 @@ concurrency:
   group: ugo-android-test-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  UGO_ANDROID_API_BASE: https://ugo-admin-panel-netlify.netlify.app
+
 jobs:
   apk:
     name: Build debug APK
@@ -46,6 +49,9 @@ jobs:
         run: npm audit --audit-level=high
 
       - name: Build UGO TEST web bundle
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_API_BASE_URL: ${{ env.UGO_ANDROID_API_BASE }}
         run: npm run build
 
       - name: Install Capacitor 8 TEST toolchain
@@ -80,6 +86,17 @@ jobs:
       - name: Sync Capacitor web assets and config
         run: npx cap sync android
 
+      - name: Verify APK uses local bundle and native TEST API transport
+        shell: bash
+        run: |
+          set -euo pipefail
+          ! grep -R "ugo-admin-panel.vercel.app" capacitor.config.json android/app/src/main/assets 2>/dev/null
+          grep -q '"webDir": "dist"' capacitor.config.json
+          grep -q '"CapacitorHttp"' capacitor.config.json
+          grep -q '"enabled": true' capacitor.config.json
+          grep -R -q "${GITHUB_SHA}" android/app/src/main/assets/public
+          grep -R -q "${UGO_ANDROID_API_BASE}" android/app/src/main/assets/public
+
       - name: Build Android debug APK
         shell: bash
         run: |
@@ -100,7 +117,9 @@ jobs:
             echo "versionCode=1"
             echo "environment=TEST"
             echo "commit=${GITHUB_SHA}"
-            echo "remoteRuntime=https://ugo-admin-panel.vercel.app"
+            echo "bundleRuntime=local-dist"
+            echo "apiBase=${UGO_ANDROID_API_BASE}"
+            echo "apiTransport=CapacitorHttp-native"
             echo "capacitor=8.5.2"
           } > artifacts/android-build-metadata.txt
           test -s artifacts/ugo-test-debug.apk
