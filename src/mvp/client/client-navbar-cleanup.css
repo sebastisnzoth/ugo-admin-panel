@@ -1,0 +1,13 @@
+/* Keep mobile navigation semantic: no nth-child dependency on removed/future items. */
+.ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services,
+.ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:flex!important}
+
+@media(max-width:760px){
+ .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services{display:flex!important}
+ .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:flex!important}
+}
+
+@media(max-width:460px){
+ .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services{display:flex!important}
+ .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:none!important}
+}
