@@ -11,6 +11,12 @@ test('client provider radar loads and stores verified professionals only',async(
  assert.match(store,/provider\.estado_verificacion!=='verificado'/)
 })
 
+test('client radar model does not expose professional contact fields',async()=>{
+ const store=await read('src/mvp/client/providerRadarStore.ts')
+ assert.doesNotMatch(store,/telefono_profesional/)
+ assert.doesNotMatch(store,/whatsapp/i)
+})
+
 test('home verification copy is backed by the verified radar store',async()=>{
  const home=await read('src/mvp/client/ClientPremiumHome.tsx')
  assert.match(home,/Especialistas verificados/)
