@@ -9,6 +9,7 @@ type IncidentInput={eventType:string;message:string;error?:unknown;role?:Sentine
 
 const CONTEXT_KEY='ugo-test-sentinel-context'
 const PRIVATE_METADATA_KEYS=new Set(['token','authorization','email','phone','messagecontent','password','secret','apikey','api_key'])
+const RUNTIME_REVISION=(import.meta.env.VITE_APP_REVISION||'unversioned').slice(0,80)
 let installed=false
 
 function routeLabel(){
@@ -35,10 +36,10 @@ function errorDetails(error:unknown,message:string){
  return{message,stack:null,name:'Error'}
 }
 function safeMetadata(value:Record<string,unknown>|undefined,errorName:string){
- const base:Record<string,unknown>={errorName,online:navigator.onLine,visibility:document.visibilityState}
+ const base:Record<string,unknown>={errorName,online:navigator.onLine,visibility:document.visibilityState,runtimeRevision:RUNTIME_REVISION}
  if(!value)return base
  for(const[key,item]of Object.entries(value)){
-  if(PRIVATE_METADATA_KEYS.has(key.toLowerCase()))continue
+  if(PRIVATE_METADATA_KEYS.has(key.toLowerCase())||key==='runtimeRevision')continue
   if(typeof item==='string')base[key]=item.slice(0,500)
   else if(typeof item==='number'||typeof item==='boolean'||item===null)base[key]=item
  }
