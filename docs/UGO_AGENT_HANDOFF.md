@@ -133,7 +133,7 @@ No imprimir ni guardar esos valores en repo/docs/logs.
 
 ```text
 serviceId E2E nuevo: NO CREADO
-overta E2E nueva: NO CREADA
+oferta E2E nueva: NO CREADA
 Storage inicial: NO SUBIDO
 Storage final: NO SUBIDO
 chat E2E nuevo: NO CREADO
