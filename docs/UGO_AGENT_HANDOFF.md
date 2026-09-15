@@ -1,162 +1,274 @@
 # UGO — Agent Handoff
 
-**Estado:** operativo en UGO TEST  
-**Rama:** `main`  
+**Estado:** operativo en UGO TEST, todavía NO promovible a producción  
+**Rama de verdad:** `main`  
 **Uso:** handoff compartido ChatGPT/Codex  
-**Regla:** verificar siempre contra `main` antes de continuar.
+**Regla:** verificar siempre `main`, CI, Vercel y Supabase TEST antes de continuar.
 
-## CURRENT P0
-
-Repetir una prueba física de Hugo Cliente después del bloque de latencia/voz del 14/09/2026:
+## ENTORNO
 
 ```text
-“Necesito un electricista”
-→ “Dos enchufes se me rompieron”
-→ “Mañana a las 10 de la mañana”
-→ elegir profesional real
-→ “Sí, confirmar pedido”
-→ probar “Volveme a Inicio”
-→ detener voz y continuar por texto
-```
-
-UGO TEST:
-
-```text
-Supabase: tmossnqfwfwjrtzwcbmm
-Web: https://ugo-admin-panel.vercel.app
+Repo: https://github.com/sebastisnzoth/ugo-admin-panel
+Supabase TEST: tmossnqfwfwjrtzwcbmm
+Web TEST: https://ugo-admin-panel.vercel.app
 Cliente: /?app=client
 Proveedor: /?app=provider
 Admin: /?app=admin
+Supabase PROD: trfsjuseqjxlhrxuvdsm · FUERA DE ALCANCE
 ```
 
-Producción Supabase `trfsjuseqjxlhrxuvdsm` sigue fuera de alcance.
+Principio de producto:
 
-## LAST COMPLETED · P0 voz/latencia física · 14/09/2026
+> **Un pedido. Un profesional. Sin vueltas.**
 
-La prueba física real del Director reveló que Hugo respondía demasiado lento, parecía trabarse con “mañana a las 10”, no daba feedback confiable al confirmar, no entendía “volveme a la pantalla de inicio” y STOP no era una transición limpia a texto.
+## CURRENT P0
 
-### Evidencia de la prueba física real
+Cerrar únicamente los bloques que todavía impiden declarar UGO TEST listo para promoción:
 
-Vercel sobre el deploy anterior registró en la misma sesión:
+1. E2E completo con **un único `serviceId`** hasta `completado`, incluyendo evidencia inicial y final con objetos reales en Storage;
+2. resolver decisión financiera de saldo/retiros y cancelación con pago existente sin inventar política comercial;
+3. prueba física humana de Hugo, cámara, GPS, tracking visual, Realtime en dos dispositivos, push y UX móvil;
+4. habilitar credenciales aisladas TEST en GitHub Actions si se quiere convertir el E2E HTTP autenticado en gate obligatorio.
 
-- `/api/test`: 12 requests de voz; 11 `200` y un `422 Gemini no detectó voz` a las 22:40:07 UTC.
-- `/api/hugo/chat`: múltiples respuestas `200`, pero dos `502` consecutivos a las 22:41:43/44 UTC.
-- causa exacta de esos `502`: cuota Free Tier agotada para `gemini-3.1-flash-tts`, límite 10 requests, con retry sugerido de ~15 s.
-- el cliente anterior hacía dos intentos TTS y mantenía la conversación serializada hasta terminar generación + reproducción.
-- `browserVoiceBridge` esperaba 900 ms de silencio para cerrar turno y mantenía un fallback de consumidor de 12 s.
-- la recomendación inicial hacía además una llamada Gemini de texto antes de generar TTS, aunque ya existía una recomendación determinista basada en datos reales.
+No reabrir P0 ya cerrados salvo regresión comprobada.
 
-La base confirma que la aparente falla de confirmación era principalmente UX/feedback, no pérdida del pedido. La sesión física creó realmente:
+## LAST COMPLETED · TRACKING + CHAT CANÓNICO · 15/09/2026
+
+### Problemas encontrados
+
+- Supabase TEST ya tenía `actualizar_ubicacion_y_distancia(...)` y `obtener_tracking_servicio_cliente(...)`, pero la migración no estaba versionada en `main`.
+- `ServiceChat.tsx` ya consumía la tabla canónica `public.mensajes`, pero un contrato viejo todavía esperaba `mensajes_servicio` y rompía CI #734.
+- La policy de `public.mensajes` permitía a un participante fijar `emisor_rol` sin comprobar que coincidiera con su rol real.
+- `authenticated` tenía UPDATE completo sobre `public.mensajes`, permitiendo mutabilidad de contenido además del recibo de lectura.
+- Existía deuda histórica en repo alrededor de `mensajes_servicio`, aunque TEST usa solamente `public.mensajes`.
+
+### Correcciones TEST
+
+Migración aplicada en Supabase TEST:
 
 ```text
-serviceId: 96d3e438-b597-46d3-9dfc-2ed4a97394df
-service #: 25
-cliente real TEST: ccccaa2b-c315-4e1a-914f-7f2a53ea7553
-categoría: Electricidad
-programado_para: 2026-09-15 13:00:00+00 = 10:00 America/Sao_Paulo
+20260915001039 canonical_service_chat_hardening
 ```
 
-Ese pedido llegó a crear dos ofertas reales: `sebastianzothoficial` y Angel Ariel. El parser antiguo persistió mal la descripción como sólo `rompieron`. El servicio #25 quedó luego `cancelado`; el cliente real TEST quedó sin servicios activos, listo para retest.
+Resultado:
 
-### Correcciones publicadas
+- `public.mensajes` queda como única tabla canónica de chat;
+- si existe `mensajes_servicio`, sus filas se migran una sola vez y la tabla legacy se elimina;
+- `emisor_id` queda ligado a `auth.uid()`;
+- `emisor_rol=cliente` exige ser el cliente del servicio;
+- `emisor_rol=proveedor` exige ser el proveedor asignado;
+- `emisor_rol=admin` exige `private.is_admin(auth.uid())`;
+- `authenticated` conserva `SELECT` + `INSERT`;
+- UPDATE de participantes queda restringido a `leido_at`.
 
-Commit funcional:
+Validación real TEST:
+
+- Cliente intentando insertar un mensaje con `emisor_rol='admin'` → rechazado por RLS;
+- Cliente insertando con `emisor_rol='cliente'` en su servicio → permitido;
+- permisos de tabla de `authenticated`: sólo `SELECT` + `INSERT`;
+- permiso de columna UPDATE: únicamente `leido_at`.
+
+### Tracking reconciliado
+
+Migración TEST existente:
+
+```text
+20260914234234 provider_client_tracking_rpcs
+```
+
+Fue recuperada y versionada en repo como:
+
+```text
+supabase/migrations/20260914234234_provider_client_tracking_rpcs.sql
+```
+
+Contratos:
+
+- `actualizar_ubicacion_y_distancia(lat,lng,serviceId)` sólo puede ejecutar tracking como Proveedor autenticado;
+- el `serviceId`, cuando existe, debe pertenecer a ese Proveedor y estar en estado operativo permitido;
+- usa PostGIS con `POINT(lng lat)` y calcula distancia contra `servicios.ubicacion_cliente` o fallback a `perfiles_cliente.ubicacion`;
+- `obtener_tracking_servicio_cliente(serviceId)` sólo entrega tracking al Cliente dueño del servicio.
+
+Validación TEST:
+
+- Proveedor autenticado puede actualizar su ubicación sin serviceId;
+- intentar tracking sobre servicio de otro proveedor → `Servicio no asignado al proveedor`;
+- Cliente TEST dueño del servicio #28 pudo leer proveedor, coordenadas proveedor/cliente y `provider_updated_at`;
+- GPS físico sigue siendo `MEASURED` pendiente.
+
+## COMMIT FUNCIONAL ACTUAL
+
+```text
+0e8ac7555c74d4a324499a09cbc681fbad11756b
+fix(core): reconcile tracking and canonical chat
+```
+
+Incluye:
+
+- `supabase/migrations/20260914234234_provider_client_tracking_rpcs.sql`;
+- `supabase/migrations/20260915001039_canonical_service_chat_hardening.sql`;
+- contratos actualizados de ServiceChat;
+- nuevos contratos de tracking.
+
+## CI
+
+El commit anterior `fa3009b3...` tuvo CI #734 **failure** por un test stale que todavía exigía `mensajes_servicio`; build había pasado y el único fallo funcional del suite era ese contrato desactualizado.
+
+Después de corregirlo:
+
+```text
+UGO Core CI #735
+run: 34912250870
+SHA: 0e8ac7555c74d4a324499a09cbc681fbad11756b
+status: completed
+conclusion: success
+```
+
+Pasaron build, TypeScript, tests core/contratos y lint del workflow.
+
+## RELEASED
+
+Vercel desplegó el SHA funcional exacto:
+
+```text
+deployment: dpl_BXNyW8m7uD5sMennj61TcCEqwFVo
+SHA: 0e8ac7555c74d4a324499a09cbc681fbad11756b
+state: READY
+target: production del proyecto web UGO TEST
+Node functions: 12
+```
+
+Smokes HTTP:
+
+```text
+/?app=client   → 200
+/?app=provider → 200
+/?app=admin    → 200
+```
+
+Supabase PRODUCCIÓN no fue tocado.
+
+## REALTIME
+
+TEST tiene publicación explícita para:
+
+```text
+servicios
+ofertas_servicio
+pagos
+evidencias_servicio
+ampliaciones_servicio
+mensajes
+disputas
+disputa_mensajes
+perfiles_proveedor
+notificaciones
+```
+
+Los consumidores principales resyncan contra persistencia al reconectar; Realtime no es fuente de verdad paralela.
+
+Estado:
+
+```text
+backend/config: VALIDATED
+dos dispositivos reales sin refresh: MEASURED pendiente
+```
+
+## EVIDENCIAS / STORAGE
+
+`service_evidence_storage_integrity_guard` permanece aplicado y versionado:
+
+- una fila `evidencias_servicio` necesita objeto real en `storage.objects`;
+- bucket canónico: `service-evidence`;
+- path/ownership deben corresponder a usuario + `serviceId`;
+- evidencia con path falso fue rechazada;
+- harness de integración fue ajustado para subir objeto real antes de registrar fila.
+
+Pendiente: nueva corrida E2E completa con evidencia inicial + final reales y el mismo `serviceId` hasta `completado`.
+
+## HUGO · ESTADO CONSERVADO
+
+Último P0 funcional Hugo:
 
 ```text
 04d8dfa39b944bbfd81019473a1255fdbe418ca2
 fix(hugo): make client voice flow responsive and interruptible
 ```
 
-Cambios principales:
+Preservar:
 
-- nuevo `src/mvp/client/hugoVoiceIntent.ts` con parser real testeable para horario, confirmación, proveedor y comandos globales;
-- “mañana a las 10”, “mañana a las 10 de la mañana”, “para mañana a las 10” y “mañana 10 de la mañana” convergen a mañana 10:00;
-- `parseDescription` conserva la frase completa `Dos enchufes se me rompieron`;
-- navegación global: Inicio, Actividad e intención de cancelar funcionan aun con Draft abierto;
-- cancelar por voz/botón exige confirmación humana;
-- selección + confirmación pueden resolverse en un solo turno;
-- STOP aborta fetch TTS pendiente, audio, AudioContext y micrófono, deja `busy=false` y enfoca el composer de texto;
-- el orb ya no queda deshabilitado mientras Hugo está `connecting`;
-- input de texto y voz comparten el mismo Draft; frases que llegan mientras lógica está ocupada se encolan en vez de perderse;
-- TTS dejó de ser barrera serial: el texto aparece inmediatamente, la escucha se rearma mientras se genera voz y el audio puede ser interrumpido por el usuario;
-- se eliminó el doble retry TTS del cliente;
-- TTS intenta primero `gemini-2.5-flash-preview-tts` y mantiene `gemini-3.1-flash-tts-preview` como fallback, con timeout corto y telemetría `Hugo TTS timing`;
-- recomendación inicial usa directamente `voiceAvailabilityText` sobre profesionales reales y elimina una llamada Gemini intermedia;
-- detección de fin de voz baja de 900 ms a 650 ms; fallback de consumidor de 12 s a 450 ms; retries de silencio/errores se rearman más rápido;
-- se agregó timing de captura/transcripción en consola para medir el próximo test físico;
-- guard de servicio activo sigue vigente y los errores `23505` se convierten en mensaje operativo legible.
-
-## VALIDATED
-
-### Código / CI
-
-UGO Core CI `#729`, run `34906818720`, sobre `04d8dfa39b944bbfd81019473a1255fdbe418ca2`: **success**.
-
-Pasaron:
-
-- dependency security gate;
-- TypeScript + production build;
-- `npm test`, incluidos contratos core/RPC-RLS;
-- test de comportamiento real de `hugoVoiceIntent.ts` ejecutando el módulo TS transpiliado, no sólo regex estático;
-- casos de mañana 10:00;
-- variantes de confirmación;
-- selección `Sebastián Soto oficial` + confirmación en el mismo turno;
+- voz/texto = mismo Draft;
+- MediaRecorder → `/api/test` → Gemini;
+- 422 sin voz = retry;
+- parser mañana 10:00;
+- confirmación natural e idempotente;
+- selección + confirmación en un turno;
 - comandos Inicio/Actividad/Cancelar;
-- contratos de TTS abortable/no bloqueante, 422 retryable y aislamiento de listeners;
-- lint crítico, ClientApp y reporte de lint completo.
+- STOP aborta voz/TTS y deja composer de texto usable;
+- sin `speechSynthesis`;
+- TTS Gemini no bloquea el estado lógico;
+- guided checkout y Hugo canónico no escuchan simultáneamente.
 
-### Backend/RPC/RLS real UGO TEST
+La mejora de latencia post-fix todavía NO es `MEASURED` hasta otra prueba física humana.
 
-Se hizo una nueva corrida equivalente al caso físico con identidad Cliente TEST, Proveedor y Admin bajo rol `authenticated` + claims reales:
+## E2E / EVIDENCIA HISTÓRICA ÚTIL
+
+Servicio real de auditoría:
 
 ```text
-serviceId: ea3b3590-a9b5-498d-a2e7-5de18f2625f9
-service #: 26
-categoría: Electricidad
-descripción: Dos enchufes se me rompieron
-programado_para: 2026-09-15 13:00:00+00 = 10:00 America/Sao_Paulo
-proveedor dirigido: eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1 (sebastianzothoficial)
-oferta: b82f4f7a-449a-42db-ac56-6eb7f90c841f
-valor: BRL 120
+serviceId: 3558ce63-5216-4a58-beed-30febf0581ba
+service #: 28
+cliente: Cliente TEST
+proveedor: sebastianzothoficial
+estado actual: cancelado
 ```
 
-Resultados:
+Ese servicio ya fue útil para validaciones de roles/tracking, pero NO reemplaza la corrida pendiente hasta `completado` con Storage real.
 
-- exactamente un servicio activo durante la validación;
-- matching dirigido generó una oferta pendiente al proveedor elegido;
-- `obtener_ofertas_proveedor()` bajo identidad Proveedor devolvió el mismo serviceId, la descripción completa, mañana 10:00 y BRL 120;
-- Cliente leyó el mismo serviceId en `ofrecido`;
-- Admin (`private.is_admin=true`) leyó exactamente el mismo serviceId/estado;
-- Cliente ejecutó `cancelar_servicio` y #26 quedó `cancelado`;
-- después de cancelar el proveedor obtuvo `0` ofertas pendientes para ese serviceId.
-
-## RELEASED
-
-- Vercel code deployment `dpl_BtTxzPRkr8zADYVKWFXTUzrvgrvz` está `READY` sobre `04d8dfa39b944bbfd81019473a1255fdbe418ca2`.
-- target: production de UGO TEST;
-- 12 funciones Node, sin sumar rutas serverless;
-- alias operativo: `ugo-admin-panel.vercel.app`.
-
-## BLOCKED
-
-### B1 · única validación que exige dispositivo humano
-
-Pendiente medir físicamente, con este deploy:
-
-- latencia percibida real micrófono → texto → respuesta;
-- barge-in/interrupción mientras TTS genera o habla;
-- que la voz 2.5 TTS tenga cuota disponible en ese momento;
-- autoplay/WebAudio y permisos de micrófono del navegador;
-- STOP → escribir inmediatamente en composer;
-- secuencia completa con Cliente/Proveedor visible en dispositivos reales.
-
-El backend, parser, matching, cancelación, CI y deploy ya tienen evidencia. No declarar la latencia física `MEASURED` hasta la próxima escucha real.
-
-### B2 · login HTTP aislado en GitHub Actions
-
-Sigue requiriendo las credenciales TEST que no deben guardarse en repo:
+Servicio histórico completado:
 
 ```text
+serviceId: 68ef8d25-b382-4e98-986a-21c510cc78f1
+service #: 14
+estado: completado
+```
+
+No usar evidencia histórica como sustituto de la corrida E2E nueva requerida.
+
+## BLOCKED · FINANZAS
+
+La UI actual todavía espera:
+
+```text
+saldo_proveedor()
+solicitar_retiro(p_monto)
+```
+
+Ambos RPC están ausentes en Supabase TEST.
+
+Infraestructura existente:
+
+- `pagos` ya registra `ganancia_proveedor`, estados y métodos;
+- `retiros` ya existe con estados `pendiente`, `procesando`, `pagado`, `fallido`;
+- Provider puede leer sus retiros;
+- Admin tiene `admin_actualizar_retiro(...)`;
+- `ProviderPayoutPanel` presenta retiro manual/legado y Mercado Pago Split como camino futuro/principal cuando esté activo.
+
+NO implementar todavía una fórmula nueva de saldo, retención, retiro, devolución o tratamiento financiero de cancelaciones sin decisión de producto explícita.
+
+Decisiones pendientes:
+
+1. mantener retiro interno/manual legado o esconderlo cuando Split sea el modelo elegido;
+2. definir qué estado debe tomar un `pago` efectivo `pendiente` cuando el servicio se cancela antes de confirmación de cobro;
+3. si se mantiene retiro interno, definir exactamente qué pagos alimentan `saldo_disponible` y qué retiros descuentan/comprometen saldo.
+
+## BLOCKED · CREDENCIALES CI AISLADO
+
+El workflow todavía no dispone de:
+
+```text
+UGO_TEST_SUPABASE_URL
+UGO_TEST_SUPABASE_ANON_KEY
 UGO_TEST_CLIENT_EMAIL
 UGO_TEST_CLIENT_PASSWORD
 UGO_TEST_PROVIDER_EMAIL
@@ -165,10 +277,29 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
+No guardar passwords en repo ni documentación. Los tests regulares saltan el E2E HTTP aislado cuando faltan secretos.
+
+## MEASURED PENDIENTE · PRUEBA FÍSICA HUMANA
+
+No marcar como `MEASURED` sin dispositivo real:
+
+- micrófono / latencia Hugo / barge-in / STOP→texto;
+- cámara y evidencia real desde teléfono;
+- GPS real y tracking visual en movimiento;
+- Cliente + Proveedor en dos dispositivos y Realtime sin refresh;
+- Web Push real;
+- safe area, teclado, overlays y UX táctil.
+
 ## NEXT
 
-1. prueba física corta sobre `https://ugo-admin-panel.vercel.app/?app=client` con la secuencia de CURRENT P0;
-2. mirar `UGO voice timing` y runtime `Hugo TTS timing` si vuelve a sentirse lento;
-3. confirmar que STOP deja escribir sin reactivar micrófono;
-4. sólo después continuar cámara/GPS/Storage/Realtime-reconnect/UX táctil;
-5. no promover Supabase producción hasta cerrar validación física.
+Orden recomendado:
+
+```text
+1. cerrar decisión financiera mínima
+2. ejecutar E2E nuevo con un único serviceId + Storage real hasta completado
+3. verificar Cliente/Proveedor/Admin sobre ese mismo serviceId
+4. prueba física de dos dispositivos
+5. sólo entonces preparar checklist de promoción
+```
+
+Nunca tocar Supabase producción hasta autorización explícita de promoción.
