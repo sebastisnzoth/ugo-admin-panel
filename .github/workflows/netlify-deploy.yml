@@ -55,6 +55,8 @@ jobs:
 
       - name: TypeScript and production build
         if: steps.netlify_auth.outputs.available == 'true'
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
         run: npm run build
 
       - name: Deploy main to existing Netlify TEST site
