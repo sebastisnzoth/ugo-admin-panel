@@ -14,7 +14,7 @@ test('client surfaces a persisted rating only after completed services',async()=
  assert.match(prompt,/from\('servicios'\)/)
  assert.match(prompt,/\.eq\('estado','completado'\)/)
  assert.match(prompt,/from\('resenas'\)/)
- assert.match(prompt,/cliente_id:session\.user\.id/)
+ assert.match(prompt,/cliente_id:userId/)
  assert.match(prompt,/proveedor_id:target\.service\.proveedor_id/)
  assert.match(prompt,/servicio_id:target\.service\.id/)
  assert.match(prompt,/puntuacion:score/)
@@ -30,7 +30,7 @@ test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',a
  assert.match(prompt,/Enviar calificación/)
 })
 
-test('rating prompt resyncs after lifecycle changes and reports failures to Sentinel',async()=>{
+test('rating prompt resyncs after lifecycle changes and reports foreground failures to Sentinel',async()=>{
  const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
  assert.match(prompt,/table:'servicios'/)
  assert.match(prompt,/addEventListener\('online'/)
@@ -38,4 +38,8 @@ test('rating prompt resyncs after lifecycle changes and reports failures to Sent
  assert.match(prompt,/SUBSCRIBED/)
  assert.match(prompt,/removeChannel/)
  assert.match(prompt,/checklistCode:'RATING'/)
+ assert.match(prompt,/const shouldEscalate=\(\)=>document\.visibilityState==='visible'&&navigator\.onLine/)
+ assert.match(prompt,/loadRef=useRef\(load\),reportRef=useRef\(report\)/)
+ assert.match(prompt,/\},\[supabase,userId\]\)/)
+ assert.match(prompt,/if\(shouldEscalate\(\)\)reportRef\.current\('rating_realtime_error'/)
 })
