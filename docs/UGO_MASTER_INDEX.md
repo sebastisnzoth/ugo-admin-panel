@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.5 · 13 de septiembre de 2026  
+**Versión:** 2.6 · 15 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro de UGO  
 **Rama de verdad:** `main`
 
@@ -41,6 +41,9 @@ Regla de experiencia del Proveedor: **simple adelante, trazable atrás. El prove
 ## Nivel 1 — Desarrollo
 `UGO_DEVELOPMENT_MASTER.md`
 
+## Nivel 1.2 — Preparación verificable para el primer cliente
+`UGO_DEVELOPMENT_READINESS_MASTER.md`
+
 ## Nivel 1.5 — Arquitectura de agentes y aceleración
 `UGO_AI_AGENT_SYSTEM_MASTER.md`
 
@@ -76,6 +79,8 @@ La unidad real de avance es un **escenario completo verificable**, no una pantal
 ```text
 IMPLEMENTED ≠ VALIDATED ≠ RELEASED ≠ MEASURED
 ```
+
+La fuente viva del avance hacia el primer cliente es `public.development_checklist` en UGO TEST, visible en `/?app=development`. Toda tarea que cambie de realidad debe actualizarse en ese checklist en el mismo bloque de trabajo. Sólo `approved` con evidencia cuenta para el porcentaje verificado; `implemented` significa que existe pero todavía falta la prueba exigida.
 
 Ninguna pantalla crítica puede dejar a una persona atrapada. Todo estado debe contemplar las salidas aplicables: acción principal, cancelar/salir, volver, retry, alternativa, error, timeout y recuperación.
 
