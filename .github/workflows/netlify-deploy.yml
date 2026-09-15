@@ -20,6 +20,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN || secrets.NETLIFY_TOKEN || secrets.NETLIFY_ACCESS_TOKEN }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -31,13 +33,11 @@ jobs:
           cache: npm
 
       - name: Verify Netlify credential
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
           if [ -z "${NETLIFY_AUTH_TOKEN:-}" ]; then
-            echo "NETLIFY_AUTH_TOKEN is not configured in GitHub Actions secrets." >&2
+            echo "No Netlify token found. Configure one of: NETLIFY_AUTH_TOKEN, NETLIFY_TOKEN, NETLIFY_ACCESS_TOKEN." >&2
             exit 1
           fi
 
@@ -48,8 +48,6 @@ jobs:
         run: npm run build
 
       - name: Deploy main to existing Netlify TEST site
-        env:
-          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         shell: bash
         run: |
           set -euo pipefail
