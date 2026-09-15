@@ -1,4 +1,4 @@
-import React from'react'
+import React,{useState}from'react'
 import{AppLocationButton}from'../AppLocationButton'
 import{DemoSebastianPaymentBridge}from'../DemoSebastianPaymentBridge'
 import{ServiceHistoryPanel}from'../ServiceHistoryPanel'
@@ -17,6 +17,7 @@ import{ClientPaymentChoice}from'./ClientPaymentChoice'
 import{ClientPremiumHome}from'./ClientPremiumHome'
 import{ClientProfilePanel}from'./ClientProfilePanel'
 import{ClientProviderRadarBridge}from'./ClientProviderRadarBridge'
+import{ClientServiceDetail}from'./ClientServiceDetail'
 import{useClientFlow}from'./clientFlow'
 import'./client-guided-request.css'
 import'./client-payment-choice.css'
@@ -31,7 +32,7 @@ import'./client-redesign-2026.css'
 type Props={demo:boolean}
 
 export function ClientRoot({demo}:Props){
- const flow=useClientFlow()
+ const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
  const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
- return <ClientOnboardingGate><div className="ugo-client-root"><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientPremiumHome/>{flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} {flow.screen!=='request'&&<ClientHugoBridge/>}<ClientPaymentChoice/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceChat role="client"/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/><ClientProviderRadarBridge/>{flow.screen==='history'&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><button type="button" onClick={()=>flow.navigate('home')} style={{width:44,height:44,borderRadius:14,border:'1px solid #2d4357',background:'#102335',color:'#f6fbff',fontSize:20,marginBottom:10}} aria-label="Volver">←</button><ServiceHistoryPanel role="client" embedded/></div></div>}{flow.screen==='profile'&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
+ return <ClientOnboardingGate><div className="ugo-client-root"><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientPremiumHome/>{flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} {flow.screen!=='request'&&<ClientHugoBridge/>}<ClientPaymentChoice/><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/><ClientLiveTracking/><ClientCompletionReview onOpenDispute={flow.actions.openDispute}/><ServiceExpansionPanel role="client"/><ServiceChat role="client"/><DisputeDock role="client" openRequest={flow.screen==='dispute'}/><AppLocationButton role="client"/><ClientProviderRadarBridge/>{flow.screen==='history'&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><button type="button" onClick={()=>flow.navigate('home')} style={{width:44,height:44,borderRadius:14,border:'1px solid #2d4357',background:'#102335',color:'#f6fbff',fontSize:20,marginBottom:10}} aria-label="Volver">←</button><ServiceHistoryPanel role="client" embedded onOpenService={serviceId=>setSelectedServiceId(serviceId)}/></div></div>}{selectedServiceId&&<ClientServiceDetail serviceId={selectedServiceId} onClose={()=>setSelectedServiceId(null)}/>} {flow.screen==='profile'&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
 }
