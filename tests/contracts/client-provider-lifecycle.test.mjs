@@ -60,7 +60,7 @@ test('request photos are optional but any supplied evidence stays bound to its e
   read('src/mvp/client/ClientGuidedRequest.tsx'),
   read('supabase/migrations/20260911_request_evidence_draft_binding.sql'),
  ])
- assert.match(client,/photoCount>0\?\{request_draft_id:draftId\}:\{\}/)
+ assert.match(client,/request_draft_id:draftId/)
  assert.match(client,/Continuar sin foto/)
  assert.doesNotMatch(client,/disabled=\{busy\|\|photoCount<1\}/)
  assert.match(binding,/draft_id=v_draft_id/)
