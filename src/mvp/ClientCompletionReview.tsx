@@ -5,7 +5,7 @@ import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
 type ReviewService={id:string;numero:number|string;estado:string;proveedor_id:string|null}
 type ReviewPayment={metodo:string|null;estado:string;modelo_pago:string|null}
 
-export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void}){
+export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute:()=>void;serviceId?:string|null}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null)
@@ -16,9 +16,14 @@ export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void})
  const load=useCallback(async()=>{
   const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';setUserId(uid)
   if(!uid){setService(null);setPayment(null);setHasFinalEvidence(false);return}
-  const{data,error}=await supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',uid).eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(1).maybeSingle()
+  let query=supabase.from('servicios').select('id,numero,estado,proveedor_id').eq('cliente_id',uid).eq('estado','esperando_aprobacion')
+  if(serviceId)query=query.eq('id',serviceId)
+  else query=query.order('created_at',{ascending:false}).limit(2)
+  const{data,error}=await query
   if(error){setNotice('No pudimos actualizar el cierre. Reintentaremos sin perder el servicio.');return}
-  const next=(data||null)as ReviewService|null
+  const rows=(data||[])as ReviewService[]
+  if(!serviceId&&rows.length!==1){setService(null);setPayment(null);setHasFinalEvidence(false);return}
+  const next=rows[0]||null
   setService(next)
   if(!next){setHasFinalEvidence(false);setPayment(null);return}
   const[{data:evidence,error:evidenceError},{data:paymentRow}]=await Promise.all([
@@ -27,16 +32,16 @@ export function ClientCompletionReview({onOpenDispute}:{onOpenDispute:()=>void})
   ])
   setHasFinalEvidence(!evidenceError&&Boolean(evidence?.length))
   setPayment((paymentRow||null)as ReviewPayment|null)
- },[supabase])
- const closurePersisted=useCallback(async(serviceId:string)=>{const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';if(!uid)return false;const{data}=await supabase.from('servicios').select('id,estado').eq('id',serviceId).eq('cliente_id',uid).maybeSingle();return data?.estado==='completado'},[supabase])
+ },[serviceId,supabase])
+ const closurePersisted=useCallback(async(id:string)=>{const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';if(!uid)return false;const{data}=await supabase.from('servicios').select('id,estado').eq('id',id).eq('cliente_id',uid).maybeSingle();return data?.estado==='completado'},[supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{if(!userId)return;const refresh=()=>void load().catch(()=>{});const ch=supabase.channel(`client-completion-review-${userId}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},refresh).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`cliente_id=eq.${userId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);supabase.removeChannel(ch)}},[load,supabase,userId])
- useEffect(()=>{document.body.classList.toggle('ugo-client-awaiting-review',Boolean(service));return()=>document.body.classList.remove('ugo-client-awaiting-review')},[service])
+ useEffect(()=>{if(!userId)return;const refresh=()=>void load().catch(()=>{});const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${userId}`;const ch=supabase.channel(`client-completion-review-${serviceId||userId}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio'},refresh).on('postgres_changes',{event:'*',schema:'public',table:'pagos',...(serviceId?{filter:`servicio_id=eq.${serviceId}`}:{filter:`cliente_id=eq.${userId}`})},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);supabase.removeChannel(ch)}},[load,serviceId,supabase,userId])
+ useEffect(()=>{if(serviceId)return;document.body.classList.toggle('ugo-client-awaiting-review',Boolean(service));return()=>document.body.classList.remove('ugo-client-awaiting-review')},[service,serviceId])
  if(!service)return null
  const isCash=payment?.metodo==='efectivo'||payment?.modelo_pago==='presencial'
  const cashConfirmed=isCash&&payment?.estado==='liberado'
  const canApprove=hasFinalEvidence&&Boolean(payment)&&(!isCash||cashConfirmed)
- async function approve(){if(!canApprove)return;setBusy(true);setNotice('');try{const serviceId=service.id;const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:serviceId});if(error){if(await closurePersisted(serviceId)){setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load();return}await load();throw error}setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load()}catch(e){await load().catch(()=>{});setNotice(e instanceof Error?e.message:'No pudimos confirmar el cierre. Actualizamos el estado real para que puedas reintentar.')}finally{setBusy(false)}}
+ async function approve(){if(!canApprove)return;setBusy(true);setNotice('');try{const id=service.id;const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:id});if(error){if(await closurePersisted(id)){setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load();return}await load();throw error}setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load()}catch(e){await load().catch(()=>{});setNotice(e instanceof Error?e.message:'No pudimos confirmar el cierre. Actualizamos el estado real para que puedas reintentar.')}finally{setBusy(false)}}
  return <section aria-live="polite" className="ugo-completion-review">
   <header><div><h2>¿Cómo quedó el trabajo?</h2><p>Servicio #{service.numero} · Revisá el registro final antes de cerrar el servicio.</p></div><span aria-hidden="true">✓</span></header>
   <ClientEvidenceGallery serviceId={service.id}/>
