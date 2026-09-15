@@ -31,7 +31,7 @@ export function ProviderDataProvider({children}:{children:React.ReactNode}){
  if(!provider||provider.estado_verificacion!=='verificado')return <ProviderOnboardingGate onVerified={reload}/>
  const run=async(fn:()=>Promise<void>,ok:string)=>{setBusy(true);setNotice(null);try{await fn();setNotice({type:'ok',text:ok});await reload();return true}catch(e){try{await reload()}catch{}setNotice({type:'error',text:e instanceof Error?e.message:'No se pudo completar la acción. Actualizamos el estado real para que puedas reintentar.'});return false}finally{setBusy(false)}}
  const toggleOnline=()=>run(()=>setProviderAvailability(supabase,session.user.id,!provider.disponible),provider.disponible?'Quedaste Offline.':'Ya estás Online.')
- const acceptOpportunity=(id:string)=>{if(service){setNotice({type:'info',text:'Ya tenés un trabajo activo. Finalizalo antes de aceptar otro.'});return Promise.resolve(false)}return run(()=>acceptProviderOpportunity(supabase,id),'Trabajo aceptado.')}
+ const acceptOpportunity=(id:string)=>run(()=>acceptProviderOpportunity(supabase,id),'Trabajo aceptado.')
  const rejectOpportunity=(id:string)=>run(()=>rejectProviderOpportunity(supabase,id),'Pedido rechazado.')
  const currentPayment=service?payments.find(p=>p.servicio_id===service.id):null
  const funded=currentPayment?.estado==='retenido'&&isProtectedPayment(currentPayment)
