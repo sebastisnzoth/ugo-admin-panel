@@ -1,6 +1,6 @@
 # UGO — Agent Handoff
 
-**Estado:** UGO TEST operativo; todavía NO promovible a producción comercial  
+**Estado:** UGO TEST operativo; NO promovible todavía a producción comercial  
 **Rama de verdad:** `main`  
 **Uso:** handoff compartido ChatGPT/Codex  
 **Regla:** verificar `main`, CI, Vercel y Supabase TEST antes de continuar.
@@ -21,37 +21,23 @@ Principio:
 
 > **Un pedido. Un profesional. Sin vueltas.**
 
-## HEAD REAL ACTUAL · 15/09/2026
+Interpretación obligatoria: un profesional por PEDIDO; un mismo cliente puede tener múltiples pedidos simultáneos e independientes.
+
+## BASE FUNCIONAL / CI AUTORITATIVA · 15/09/2026
 
 ```text
-main: 48b1fb400eb9275e2d74e9bc734b2915fccee65d
-docs(testing): align release master with 3-role real-storage e2e
+7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+ci(android): resolve sdkmanager from runner SDK
 ```
 
-Padre funcional/CI:
+Los commits documentales posteriores pueden adelantar `main` con `[skip ci]`; no confundir ese HEAD documental con una nueva base funcional.
+
+### Core CI
 
 ```text
-2d585734b8428e80831d0ea7f2184c7253def1bc
-ci(e2e): align core test target and report credential readiness
-```
-
-El cliente Stitch fue revertido y el frontend volvió al estado pre-Stitch con:
-
-```text
-442d772e30a20a8b7725bcfbc329eb663ac2e789
-revert(client-ui): restore pre-Stitch client experience
-```
-
-No reabrir la integración Stitch salvo decisión nueva explícita.
-
-## CI AUTORITATIVO
-
-Último CI completamente confirmado antes del commit documental actual:
-
-```text
-UGO Core CI #761
-run: 34925210746
-SHA: 2d585734b8428e80831d0ea7f2184c7253def1bc
+UGO Core CI #807
+run: 34935021482
+SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
 status: completed
 conclusion: success
 ```
@@ -59,17 +45,91 @@ conclusion: success
 Pasaron:
 
 - `npm ci --include=dev`;
-- `npm audit --audit-level=high`;
+- `npm audit --audit-level=high` → 0 vulnerabilidades auditables en el gate;
+- guard de entorno TEST;
 - preflight de credenciales E2E;
-- TypeScript + build;
-- core lifecycle/market/integration tests;
+- TypeScript + Vite production build;
+- tests/contratos/integración local;
 - lint crítico operacional;
 - ClientApp lint;
 - full repository lint.
 
-El commit documental `48b1fb4...` disparó `UGO Core CI #762`. No usarlo como evidencia final hasta que termine.
+El E2E autenticado remoto fue omitido de forma explícita porque las 6 credenciales humanas TEST siguen ausentes en GitHub Secrets.
 
-## P0-1 · E2E AUTENTICADO REAL
+### Android nativo
+
+```text
+Build UGO Android APKs #14
+run: 34935021499
+SHA: 7fed2b5511e4a66e946cce04f610addf7b9bf7cf
+conclusion: success
+artifact: UGO-Android-APKs
+```
+
+Artefactos debug generados:
+
+```text
+UGO Cliente
+package: com.ugo.client
+versionName: 1.0.0
+versionCode: 1
+SHA-256: 47a8396c543ddf27aa8225c34dc1553c435cf69d4fde1933584e002cb49144f9
+
+UGO Proveedor
+package: com.ugo.provider
+versionName: 1.0.0
+versionCode: 1
+SHA-256: c0ca825d54f55131fa259b280f808d4ba2c6a52ce52d607b3766656bdd88a07a
+```
+
+El proyecto nativo canónico vive en `android-apk/`. La APK Capacitor `com.ugo.test` puede mantenerse como herramienta QA, pero no sustituye silenciosamente Cliente/Proveedor nativos.
+
+## P0 · MÚLTIPLES PEDIDOS POR CLIENTE
+
+Estado:
+
+```text
+IMPLEMENTED
+VALIDATED real A+B+C: BLOCKED — missing TEST credentials
+```
+
+Regla:
+
+```text
+A Electricista mañana 15:00
+B Plomero hoy
+C Limpieza viernes 10:00
+```
+
+deben poder coexistir con tres `serviceId` distintos.
+
+Ya implementado:
+
+- eliminado el guard backend global “un servicio activo por cliente”;
+- índice de consulta normal `servicios_cliente_estado_created_idx`;
+- idempotencia por `request_draft_id` mediante índice único sólo para el mismo draft;
+- `ClientGuidedRequest` no bloquea un pedido nuevo por existir otro activo;
+- Actividad lista varios pedidos y abre detalle por `serviceId`;
+- cancelación canónica recibe `serviceId` explícito + ownership;
+- chat, tracking, pago, revisión y ampliaciones trabajan por `serviceId`;
+- Hugo usa contexto multi-pedido, no bloquea creación de B/C y resuelve status/cancelación a un servicio concreto;
+- si Hugo encuentra ambigüedad, debe pedir aclaración corta y no mutar nada;
+- disputas no eligen “el último servicio” cuando existen varios candidatos;
+- Proveedor puede conservar varias asignaciones futuras compatibles en Agenda;
+- cada trabajo de Agenda abre por `serviceId`.
+
+Auditoría TEST del 15/09/2026:
+
+```text
+servicios_cliente_estado_created_idx = NON-UNIQUE
+servicios_cliente_request_draft_uidx = UNIQUE sólo sobre cliente_id + request_draft_id no vacío
+trigger single-active = AUSENTE
+trg_sync_service_schedule_canonical = PRESENTE
+```
+
+No reintroducir `.limit(1)`, `activeServiceId` o “latest service” para decidir mutaciones destructivas de Cliente.
+
+## E2E AUTENTICADO REAL
 
 Harness:
 
@@ -81,14 +141,19 @@ Estado:
 
 ```text
 IMPLEMENTED
-NO VALIDATED todavía
+BLOCKED — missing GitHub TEST credentials
 ```
 
-El harness exige estas 8 variables:
+Presentes en Core CI:
 
 ```text
 UGO_TEST_SUPABASE_URL
 UGO_TEST_SUPABASE_ANON_KEY
+```
+
+Ausentes en Core CI #807:
+
+```text
 UGO_TEST_CLIENT_EMAIL
 UGO_TEST_CLIENT_PASSWORD
 UGO_TEST_PROVIDER_EMAIL
@@ -97,71 +162,82 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-En `UGO Core CI`, URL + publishable key públicas de UGO TEST están fijadas en el workflow. Las 6 credenciales humanas Cliente/Proveedor/Admin provienen exclusivamente de GitHub Secrets.
+No guardar passwords en repo/docs/logs. No inventar service IDs ni marcar `VALIDATED` hasta una corrida auténtica.
 
-No imprimir ni guardar passwords en repo/docs/logs.
-
-El E2E futuro debe crear un servicio NUEVO y conservar el mismo `serviceId`:
+La validación multi-pedido requerida debe probar, como mínimo:
 
 ```text
-Cliente crea
-→ matching
-→ Proveedor recibe oferta
-→ acepta
-→ Cliente/Admin ven mismo servicio
-→ chat Cliente↔Proveedor
-→ Admin audita chat
-→ pago
-→ en_camino
-→ llegado
-→ upload REAL antes
-→ en_progreso
-→ ampliación
-→ upload REAL después
-→ confirmar pago
-→ aprobación Cliente
-→ completado
-→ Cliente/Proveedor/Admin convergen
-→ Admin ve pago + chat + 2 evidencias del mismo serviceId
+crear A
+crear B sin finalizar A
+crear C sin finalizar A/B
+A.id != B.id != C.id
+cancelar B
+A intacto
+C intacto
+chat/tracking/pago/estado correctos por serviceId
+Proveedor opera el servicio correcto
+Cliente/Proveedor/Admin convergen
 ```
 
-Bucket:
+## ANDROID / PRUEBA FÍSICA
+
+Estado:
 
 ```text
-service-evidence
+APK Cliente: IMPLEMENTED
+APK Proveedor: IMPLEMENTED
+build Gradle CI: VALIDATED
+instalación + hardware real: MEASURED pendiente
 ```
 
-El harness ya:
+Android nativo ya contempla permisos/bridge para:
 
-- rechaza producción `trfsjuseqjxlhrxuvdsm`;
-- exige TEST `tmossnqfwfwjrtzwcbmm`;
-- usa una tercera identidad Admin/Super Admin real;
-- envía chat real en `public.mensajes`;
-- intenta una evidencia falsa y exige rechazo;
-- sube dos PNG reales a Storage (`antes`, `despues`);
-- verifica pago, ampliación, idempotencia y cierre;
-- preserva el fixture E2E con `e2e_run_id` para auditoría.
+- INTERNET;
+- cámara/file chooser;
+- ubicación fina/aproximada;
+- micrófono;
+- SpeechRecognizer nativo para Hugo;
+- WebView sobre el Web TEST.
 
-No marcar `VALIDATED` hasta tener evidencia positiva de:
+Se corrigió la autorización de geolocalización para no concederla al WebView antes de que Android confirme el permiso.
+
+No marcar `MEASURED` hasta probar en dos teléfonos físicos Cliente + Proveedor: GPS, cámara, Storage, Hugo voz, Realtime, background/foreground, chat, estados y A+B+C.
+
+## VERCEL TEST
+
+Deployment funcional verificado:
 
 ```text
-serviceId nuevo
-runId nuevo
-2 objetos Storage reales
-chat real
-pago real TEST
-estado final completado
-lectura convergente Cliente/Proveedor/Admin
+deployment: dpl_HVdhqu99z16qmTNvoJYjUW1jrLyy
+commit: b2b0f753103520d7e5cbe4704e6322f11c5544b5
+state: READY
+alias: https://ugo-admin-panel.vercel.app
 ```
 
-Históricos que NO sustituyen el nuevo E2E:
+Smoke verificado el 15/09/2026:
 
 ```text
-#14 68ef8d25-b382-4e98-986a-21c510cc78f1 · completado histórico
-#28 3558ce63-5216-4a58-beed-30febf0581ba · cancelado
+/?app=client   HTTP 200
+/?app=provider HTTP 200
+/?app=admin    HTTP 200
 ```
 
-## P0-2 · FINANZAS
+No se observaron errores/fatal funcionales recientes en runtime; existe un warning deprecado de Node en `/api/whatsapp/send`, no P0 del journey actual.
+
+## CORE YA CERRADO SALVO REGRESIÓN
+
+```text
+Realtime recovery: VALIDATED
+GPS/tracking backend: VALIDATED
+chat canónico: VALIDATED
+Storage integrity guard: VALIDATED
+RLS/RPC críticos: VALIDATED
+SECURITY DEFINER guards críticos + negativos TEST: VALIDATED
+Hugo contracts multi-pedido: IMPLEMENTED + CI verde
+Android Gradle debug: VALIDATED
+```
+
+## FINANZAS
 
 Estado:
 
@@ -176,90 +252,9 @@ saldo_proveedor()
 solicitar_retiro(p_monto)
 ```
 
-Falta definir explícitamente:
+Invariante vigente: ningún dinero de servicio incompleto/cancelado debe transformarse accidentalmente en saldo retirable.
 
-1. qué estados de pago alimentan `saldo_disponible`;
-2. cuándo `ganancia_proveedor` se vuelve disponible;
-3. cómo un retiro pendiente/procesando reserva saldo;
-4. cómo evitar doble retiro;
-5. qué ocurre con efectivo pendiente al cancelar;
-6. semántica de cancelado/fallido/reembolsado/anulado;
-7. retiro manual interno vs Mercado Pago Split;
-8. conciliación definitiva.
-
-Invariante ya definido:
-
-> ningún dinero de servicio incompleto/cancelado debe convertirse accidentalmente en saldo retirable.
-
-Caso real de referencia en TEST:
-
-```text
-servicio #28
-estado servicio = cancelado
-método = efectivo
-pago = pendiente
-```
-
-Se permiten tests de invariantes ya definidos y detección de inconsistencias. No inventar fórmula financiera.
-
-## P0-3 · PRUEBA FÍSICA DOS CELULARES
-
-Estado:
-
-```text
-PREPARABLE
-MEASURED pendiente
-```
-
-Cliente debe probar:
-
-```text
-login · pedir servicio · Hugo voz/texto · categorías reales · proveedores reales
-matching · tarjeta proveedor · cancelación · seguimiento · chat · pago · revisión · historial
-```
-
-Proveedor debe probar:
-
-```text
-login · online/offline · oportunidad · aceptar/rechazar · trabajo activo · mapa
-en_camino · llegada · GPS · cámara · evidencia Antes · iniciar trabajo · chat
-ampliación · evidencia Después · cierre · ingreso visible
-```
-
-En dos dispositivos:
-
-```text
-Realtime sin refresh
-reconnect
-background/foreground
-GPS caminando
-cámara
-Storage
-push
-Hugo micrófono
-barge-in
-STOP
-fallback texto
-teclado
-safe areas
-overlays
-botones táctiles
-```
-
-No marcar `MEASURED` sin prueba física real.
-
-## CORE YA VALIDADO · NO REABRIR SIN REGRESIÓN
-
-```text
-Realtime recovery
-GPS/tracking backend
-chat canónico
-Storage integrity guard
-RLS/RPC críticos
-SECURITY DEFINER guards críticos + negativos TEST
-```
-
-Pendiente producción de seguridad:
+## SEGURIDAD / PRODUCCIÓN PENDIENTE
 
 ```text
 MFA Admin
@@ -275,37 +270,17 @@ rollback
 protección de main
 ```
 
-## HUGO
-
-```text
-contracts: VALIDATED
-micrófono/latencia/barge-in/STOP físico: MEASURED pendiente
-```
-
-Hugo debe usar datos reales y nunca inventar proveedor, rating, precio, disponibilidad, pago o estado. Voz/texto comparten contexto y el fallback texto debe seguir operativo.
-
-## VERCEL TEST
-
-El estado pre-Stitch restaurado por `442d772e...` obtuvo deploy Vercel `READY`. Los commits posteriores `2d585734...` y `48b1fb4...` son CI/documentación y no cambian el frontend/backend funcional.
-
-Alias:
-
-```text
-https://ugo-admin-panel.vercel.app
-```
-
-Supabase PRODUCCIÓN no fue tocado.
+No promover comercialmente mientras estos puntos y finanzas sigan abiertos.
 
 ## NEXT
 
 ```text
-1. terminar/verificar Core CI del HEAD documental
-2. ejecutar E2E autenticado sólo si las 6 credenciales humanas TEST existen en GitHub Secrets
-3. si faltan, mantener BLOCKED y no inventarlas
-4. capturar serviceId/runId + 2 Storage reales sólo cuando la corrida auténtica ocurra
-5. preparar pasada física de dos celulares sin marcar MEASURED
-6. mantener finanzas BLOCKED hasta decisión explícita
-7. después avanzar UX operativa; no hacer refactor arquitectónico grande antes
+1. si aparecen las 6 credenciales humanas TEST en GitHub Secrets, ejecutar E2E autenticado A+B+C y capturar IDs reales
+2. instalar UGO Cliente + UGO Proveedor en dos Android físicos y ejecutar docs/UGO_TWO_DEVICE_PHYSICAL_RUNBOOK.md
+3. mantener prueba física como MEASURED pendiente hasta evidencia real
+4. mantener finanzas BLOCKED hasta decisión explícita
+5. corregir cualquier bug reproducible hallado en la pasada física y volver a Core CI + Android build
+6. no tocar Supabase PROD
 ```
 
-Detenerse sólo por producción, gasto real, credenciales inexistentes, decisión financiera irreversible no definida o riesgo de pérdida de datos.
+**Supabase PRODUCCIÓN `trfsjuseqjxlhrxuvdsm` NO FUE TOCADO.**
