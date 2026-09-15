@@ -19,6 +19,8 @@ function runGuard(projectRef, required = true) {
       UGO_TEST_CLIENT_PASSWORD: 'test-password',
       UGO_TEST_PROVIDER_EMAIL: 'provider@example.invalid',
       UGO_TEST_PROVIDER_PASSWORD: 'test-password',
+      UGO_TEST_ADMIN_EMAIL: 'admin@example.invalid',
+      UGO_TEST_ADMIN_PASSWORD: 'test-password',
     })
   }
   const blockNetwork = 'globalThis.fetch = async () => { throw new Error("NETWORK_ATTEMPT_FORBIDDEN") }'
@@ -42,6 +44,7 @@ test('designated UGO Test project is no longer rejected as legacy Arena', async 
   const source = await readFile(harnessUrl, 'utf8')
   assert.doesNotMatch(source, /ARENA_REF/)
   assert.doesNotMatch(source, /UGO Arena/)
+  assert.match(source, /TEST_REF = 'tmossnqfwfwjrtzwcbmm'/)
   assert.match(source, /PROD_REF = 'trfsjuseqjxlhrxuvdsm'/)
 })
 
@@ -49,6 +52,8 @@ test('required isolated gate fails without credentials while regular tests skip 
   const required = runGuard(null)
   assert.equal(required.status, 1)
   assert.match(required.output, /P0 isolated RPC\/RLS requerido pero faltan/)
+  assert.match(required.output, /UGO_TEST_ADMIN_EMAIL/)
+  assert.match(required.output, /UGO_TEST_ADMIN_PASSWORD/)
   const optional = runGuard(null, false)
   assert.equal(optional.status, 0)
   assert.match(optional.output, /SKIP isolated RPC\/RLS/)
@@ -84,10 +89,12 @@ test('cash confirmation opens review and repeated receipt preserves the same pay
   assert.doesNotMatch(source, /assert.ok\(duplicateCash.error/)
 })
 
-test('expansion and final closure assertions compare persisted money and both roles', async () => {
+test('expansion and final closure assertions compare persisted money and all roles', async () => {
   const source = await readFile(harnessUrl, 'utf8')
   assert.match(source, /assert.equal\(Number\(expandedPayment.monto_bruto\), Number\(expandedService.tarifa\)\)/)
   assert.match(source, /assert.deepEqual\(await getPayment\(c, serviceId\), expandedPayment\)/)
   assert.match(source, /assert.deepEqual\(await getService\(c, serviceId\), completedService\)/)
   assert.match(source, /assert.deepEqual\(await getService\(p, serviceId\), service/)
+  assert.match(source, /assert.deepEqual\(await getService\(a, serviceId\), service/)
+  assert.match(source, /assert.deepEqual\(await getPayment\(a, serviceId\), confirmedPayment/)
 })
