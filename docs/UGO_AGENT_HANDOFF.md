@@ -1,6 +1,6 @@
 # UGO — Agent Handoff
 
-**Estado:** operativo en UGO TEST, todavía NO promovible a producción  
+**Estado:** UGO TEST operativo, todavía NO promovible a producción  
 **Rama de verdad:** `main`  
 **Uso:** handoff compartido ChatGPT/Codex  
 **Regla:** verificar siempre `main`, CI, Vercel y Supabase TEST antes de continuar.
@@ -23,168 +23,255 @@ Principio de producto:
 
 ## CURRENT P0
 
-Cerrar únicamente los bloques que todavía impiden declarar UGO TEST listo para promoción:
+Cerrar sólo los bloques todavía abiertos:
 
-1. E2E completo con **un único `serviceId`** hasta `completado`, incluyendo evidencia inicial y final con objetos reales en Storage;
-2. resolver decisión financiera de saldo/retiros y cancelación con pago existente sin inventar política comercial;
-3. prueba física humana de Hugo, cámara, GPS, tracking visual, Realtime en dos dispositivos, push y UX móvil;
-4. habilitar credenciales aisladas TEST en GitHub Actions si se quiere convertir el E2E HTTP autenticado en gate obligatorio.
+1. **BLOCKED — TEST CREDENTIALS REQUIRED:** ejecutar un E2E NUEVO con un único `serviceId` hasta `completado`, autenticado como Cliente/Proveedor/Admin.
+2. **BLOCKED — REAL TEST STORAGE UPLOAD UNAVAILABLE:** ese E2E debe subir evidencia inicial + final como objetos reales al bucket `service-evidence`; no sirve insertar metadata/filas falsas.
+3. **BLOCKED — PRODUCT DECISION REQUIRED:** definir política financiera de saldo/retiros y qué ocurre con un pago efectivo `pendiente` cuando el servicio se cancela.
+4. **MEASURED pendiente:** Hugo físico, cámara, GPS en movimiento, Realtime visual en dos dispositivos, push y UX móvil.
 
-No reabrir P0 ya cerrados salvo regresión comprobada.
+No reabrir P0 ya cerrados salvo regresión demostrable.
 
-## LAST COMPLETED · TRACKING + CHAT CANÓNICO · 15/09/2026
+## LAST COMPLETED · REALTIME RECOVERY + GPS REVALIDATION · 15/09/2026
 
-### Problemas encontrados
+### Realtime backend/config
 
-- Supabase TEST ya tenía `actualizar_ubicacion_y_distancia(...)` y `obtener_tracking_servicio_cliente(...)`, pero la migración no estaba versionada en `main`.
-- `ServiceChat.tsx` ya consumía la tabla canónica `public.mensajes`, pero un contrato viejo todavía esperaba `mensajes_servicio` y rompía CI #734.
-- La policy de `public.mensajes` permitía a un participante fijar `emisor_rol` sin comprobar que coincidiera con su rol real.
-- `authenticated` tenía UPDATE completo sobre `public.mensajes`, permitiendo mutabilidad de contenido además del recibo de lectura.
-- Existía deuda histórica en repo alrededor de `mensajes_servicio`, aunque TEST usa solamente `public.mensajes`.
-
-### Correcciones TEST
-
-Migración aplicada en Supabase TEST:
+Supabase TEST publica explícitamente en `supabase_realtime`:
 
 ```text
-20260915001039 canonical_service_chat_hardening
+ampliaciones_servicio
+disputa_mensajes
+disputas
+evidencias_servicio
+mensajes
+notificaciones
+ofertas_servicio
+pagos
+perfiles_proveedor
+servicios
 ```
 
-Resultado:
+Se detectaron huecos reales de recuperación: varias superficies dependían de carga inicial + eventos Realtime pero no reconstruían estado de persistencia de forma explícita al recuperar red, volver a foreground o completar la suscripción.
 
-- `public.mensajes` queda como única tabla canónica de chat;
-- si existe `mensajes_servicio`, sus filas se migran una sola vez y la tabla legacy se elimina;
-- `emisor_id` queda ligado a `auth.uid()`;
-- `emisor_rol=cliente` exige ser el cliente del servicio;
-- `emisor_rol=proveedor` exige ser el proveedor asignado;
-- `emisor_rol=admin` exige `private.is_admin(auth.uid())`;
-- `authenticated` conserva `SELECT` + `INSERT`;
-- UPDATE de participantes queda restringido a `leido_at`.
-
-Validación real TEST:
-
-- Cliente intentando insertar un mensaje con `emisor_rol='admin'` → rechazado por RLS;
-- Cliente insertando con `emisor_rol='cliente'` en su servicio → permitido;
-- permisos de tabla de `authenticated`: sólo `SELECT` + `INSERT`;
-- permiso de columna UPDATE: únicamente `leido_at`.
-
-### Tracking reconciliado
-
-Migración TEST existente:
+Se corrigieron:
 
 ```text
-20260914234234 provider_client_tracking_rpcs
+src/mvp/NotificationCenter.tsx
+src/mvp/ServiceChat.tsx
+src/mvp/ServiceExpansionPanel.tsx
+src/hooks/useDisputes.ts
 ```
 
-Fue recuperada y versionada en repo como:
+Ahora las superficies críticas afectadas resyncan contra DB al:
+
+- montar/cargar;
+- recuperar `online`;
+- volver a `visibilityState=visible`;
+- recibir `SUBSCRIBED`;
+- recibir el evento Realtime correspondiente;
+- y limpian listeners/canales al desmontar.
+
+Nuevo contrato:
 
 ```text
-supabase/migrations/20260914234234_provider_client_tracking_rpcs.sql
+tests/contracts/realtime-resync-recovery.test.mjs
 ```
 
-Contratos:
+Estado:
 
-- `actualizar_ubicacion_y_distancia(lat,lng,serviceId)` sólo puede ejecutar tracking como Proveedor autenticado;
-- el `serviceId`, cuando existe, debe pertenecer a ese Proveedor y estar en estado operativo permitido;
-- usa PostGIS con `POINT(lng lat)` y calcula distancia contra `servicios.ubicacion_cliente` o fallback a `perfiles_cliente.ubicacion`;
-- `obtener_tracking_servicio_cliente(serviceId)` sólo entrega tracking al Cliente dueño del servicio.
-
-Validación TEST:
-
-- Proveedor autenticado puede actualizar su ubicación sin serviceId;
-- intentar tracking sobre servicio de otro proveedor → `Servicio no asignado al proveedor`;
-- Cliente TEST dueño del servicio #28 pudo leer proveedor, coordenadas proveedor/cliente y `provider_updated_at`;
-- GPS físico sigue siendo `MEASURED` pendiente.
+```text
+Realtime backend/config + recovery contracts: VALIDATED
+Realtime visual Cliente↔Proveedor en dos dispositivos: MEASURED pendiente
+```
 
 ## COMMIT FUNCIONAL ACTUAL
 
 ```text
-0e8ac7555c74d4a324499a09cbc681fbad11756b
-fix(core): reconcile tracking and canonical chat
+678ffe5b2879e9391376940fe23a55e212d1d607
+fix(realtime): resync critical surfaces after reconnect
 ```
 
-Incluye:
+Parent:
 
-- `supabase/migrations/20260914234234_provider_client_tracking_rpcs.sql`;
-- `supabase/migrations/20260915001039_canonical_service_chat_hardening.sql`;
-- contratos actualizados de ServiceChat;
-- nuevos contratos de tracking.
+```text
+51fbd1cfd651c24d20ab53edd97399a7910a7a06
+```
+
+No se creó ninguna rama.
 
 ## CI
 
-El commit anterior `fa3009b3...` tuvo CI #734 **failure** por un test stale que todavía exigía `mensajes_servicio`; build había pasado y el único fallo funcional del suite era ese contrato desactualizado.
-
-Después de corregirlo:
-
 ```text
-UGO Core CI #735
-run: 34912250870
-SHA: 0e8ac7555c74d4a324499a09cbc681fbad11756b
+UGO Core CI #736
+run: 34919576195
+SHA: 678ffe5b2879e9391376940fe23a55e212d1d607
 status: completed
 conclusion: success
 ```
 
-Pasaron build, TypeScript, tests core/contratos y lint del workflow.
+Pasaron los gates del workflow:
+
+- `npm ci`;
+- `npm audit --audit-level=high`;
+- build + TypeScript;
+- `npm test`, incluidos contratos de recovery Realtime;
+- critical lint;
+- ClientApp lint;
+- full repo lint.
+
+### Integration aislado
+
+NO está validado en CI. El harness se salta correctamente porque faltan variables TEST.
+
+Faltan para RPC/RLS Cliente↔Proveedor:
+
+```text
+UGO_TEST_SUPABASE_URL
+UGO_TEST_SUPABASE_ANON_KEY
+UGO_TEST_CLIENT_EMAIL
+UGO_TEST_CLIENT_PASSWORD
+UGO_TEST_PROVIDER_EMAIL
+UGO_TEST_PROVIDER_PASSWORD
+```
+
+Para Admin faltan además:
+
+```text
+UGO_TEST_ADMIN_EMAIL
+UGO_TEST_ADMIN_PASSWORD
+```
+
+No imprimir ni guardar estos secretos en repo/docs.
 
 ## RELEASED
 
 Vercel desplegó el SHA funcional exacto:
 
 ```text
-deployment: dpl_BXNyW8m7uD5sMennj61TcCEqwFVo
-SHA: 0e8ac7555c74d4a324499a09cbc681fbad11756b
+deployment: dpl_BH55p6VP3WWA4BTNXuVYqVBbYhbg
+SHA: 678ffe5b2879e9391376940fe23a55e212d1d607
 state: READY
-target: production del proyecto web UGO TEST
-Node functions: 12
+branch: main
 ```
 
-Smokes HTTP:
+Smokes del alias UGO TEST:
 
 ```text
-/?app=client   → 200
-/?app=provider → 200
-/?app=admin    → 200
+/?app=client   → OK
+/?app=provider → OK
+/?app=admin    → OK
+/assets/index-TePIMTmi.js → OK
 ```
 
 Supabase PRODUCCIÓN no fue tocado.
 
-## REALTIME
+## GPS / TRACKING · REVALIDADO EN TEST
 
-TEST tiene publicación explícita para:
+RPCs canónicos:
 
 ```text
-servicios
-ofertas_servicio
-pagos
-evidencias_servicio
-ampliaciones_servicio
-mensajes
-disputas
-disputa_mensajes
-perfiles_proveedor
-notificaciones
+actualizar_ubicacion_y_distancia(...)
+obtener_tracking_servicio_cliente(...)
 ```
 
-Los consumidores principales resyncan contra persistencia al reconectar; Realtime no es fuente de verdad paralela.
+Validación transaccional en Supabase TEST, con servicios temporales y `ROLLBACK`:
+
+- Proveedor Sebastián asignado → actualización permitida y distancia calculada (~14.9 m en fixture);
+- Proveedor Angel intentando servicio asignado a Sebastián → rechazado: `Servicio no asignado al proveedor`;
+- Cliente dueño → puede leer tracking del servicio;
+- Cliente ajeno → rechazado: `No autorizado`;
+- latitud inválida `91` → rechazado: `Coordenadas inválidas`;
+- `servicios.ubicacion_cliente = null` → fallback a `perfiles_cliente.ubicacion` funcionó;
+- persistencia de coordenadas del Proveedor se comprobó dentro de transacción y luego se revirtió para no ensuciar TEST.
 
 Estado:
 
 ```text
-backend/config: VALIDATED
-dos dispositivos reales sin refresh: MEASURED pendiente
+GPS/RPC backend: VALIDATED
+GPS físico caminando/tracking visual: MEASURED pendiente
 ```
+
+Migración ya aplicada/versionada:
+
+```text
+20260914234234 provider_client_tracking_rpcs
+supabase/migrations/20260914234234_provider_client_tracking_rpcs.sql
+```
+
+## CHAT CANÓNICO · ESTADO CONSERVADO
+
+Migración:
+
+```text
+20260915001039 canonical_service_chat_hardening
+```
+
+Estado validado:
+
+- `public.mensajes` es la tabla canónica;
+- `emisor_id = auth.uid()`;
+- rol Cliente/Proveedor/Admin debe coincidir con identidad real;
+- participantes tienen `SELECT` + `INSERT`;
+- UPDATE queda restringido a `leido_at`;
+- legacy `mensajes_servicio` se migra/elimina si existe.
 
 ## EVIDENCIAS / STORAGE
 
-`service_evidence_storage_integrity_guard` permanece aplicado y versionado:
+El guard `service_evidence_storage_integrity_guard` sigue aplicado/versionado:
 
-- una fila `evidencias_servicio` necesita objeto real en `storage.objects`;
+- una fila `evidencias_servicio` necesita un objeto real en `storage.objects`;
 - bucket canónico: `service-evidence`;
-- path/ownership deben corresponder a usuario + `serviceId`;
-- evidencia con path falso fue rechazada;
-- harness de integración fue ajustado para subir objeto real antes de registrar fila.
+- path/ownership deben corresponder al usuario + `serviceId`;
+- evidencia con path falso fue rechazada históricamente;
+- integration harness usa `.upload()` real antes de registrar evidencia.
 
-Pendiente: nueva corrida E2E completa con evidencia inicial + final reales y el mismo `serviceId` hasta `completado`.
+### Estado de la corrida E2E nueva
+
+```text
+serviceId E2E nuevo: NO CREADO
+oferta E2E nueva: NO CREADA
+Storage inicial: NO SUBIDO
+Storage final: NO SUBIDO
+```
+
+Motivo: el entorno actual no expone una acción de upload real de Supabase Storage y GitHub Actions no tiene las credenciales TEST necesarias para ejecutar el harness autenticado. No reutilizar #28/#14 ni insertar objetos/filas falsas para aparentar cierre.
+
+## BLOCKED · FINANZAS
+
+La UI/API esperan:
+
+```text
+saldo_proveedor()
+solicitar_retiro(p_monto)
+```
+
+Ambos RPC siguen ausentes en Supabase TEST.
+
+La infraestructura real ya tiene:
+
+- `pagos.ganancia_proveedor`;
+- tabla `retiros`;
+- lectura de retiros por Proveedor;
+- `admin_actualizar_retiro(...)` para administración;
+- camino futuro/principal de Mercado Pago Split representado en UI.
+
+Auditoría TEST confirmó un caso real:
+
+```text
+servicio #28 = cancelado
+método = efectivo
+pago = pendiente
+```
+
+No existe una política inequívoca que autorice a decidir automáticamente:
+
+1. cuándo un pago entra al saldo disponible;
+2. qué retiros comprometen/descuentan saldo;
+3. qué ocurre con pago efectivo pendiente al cancelar;
+4. si el retiro interno/manual legado debe mantenerse frente a Split;
+5. semántica financiera de cancelado/fallido/reembolsado/anulado.
+
+No implementar una fórmula/enum/semántica nueva sin decisión de producto explícita.
 
 ## HUGO · ESTADO CONSERVADO
 
@@ -195,111 +282,39 @@ Pendiente: nueva corrida E2E completa con evidencia inicial + final reales y el 
 fix(hugo): make client voice flow responsive and interruptible
 ```
 
-Preservar:
+Preservar voz/texto en el mismo Draft, MediaRecorder→`/api/test`, retry 422 sin voz, parser/confirmación/selección de proveedor, Inicio/Actividad/Cancelar, STOP abortable, sin `speechSynthesis` y sin listeners Hugo competidores.
 
-- voz/texto = mismo Draft;
-- MediaRecorder → `/api/test` → Gemini;
-- 422 sin voz = retry;
-- parser mañana 10:00;
-- confirmación natural e idempotente;
-- selección + confirmación en un turno;
-- comandos Inicio/Actividad/Cancelar;
-- STOP aborta voz/TTS y deja composer de texto usable;
-- sin `speechSynthesis`;
-- TTS Gemini no bloquea el estado lógico;
-- guided checkout y Hugo canónico no escuchan simultáneamente.
+La latencia post-fix todavía NO es `MEASURED` sin una nueva prueba física.
 
-La mejora de latencia post-fix todavía NO es `MEASURED` hasta otra prueba física humana.
-
-## E2E / EVIDENCIA HISTÓRICA ÚTIL
-
-Servicio real de auditoría:
+## EVIDENCIA HISTÓRICA — NO USAR COMO NUEVO E2E
 
 ```text
-serviceId: 3558ce63-5216-4a58-beed-30febf0581ba
-service #: 28
-cliente: Cliente TEST
-proveedor: sebastianzothoficial
-estado actual: cancelado
+#28 3558ce63-5216-4a58-beed-30febf0581ba · cancelado
+#14 68ef8d25-b382-4e98-986a-21c510cc78f1 · completado histórico
 ```
 
-Ese servicio ya fue útil para validaciones de roles/tracking, pero NO reemplaza la corrida pendiente hasta `completado` con Storage real.
+No sirven como sustituto de la corrida NUEVA solicitada.
 
-Servicio histórico completado:
-
-```text
-serviceId: 68ef8d25-b382-4e98-986a-21c510cc78f1
-service #: 14
-estado: completado
-```
-
-No usar evidencia histórica como sustituto de la corrida E2E nueva requerida.
-
-## BLOCKED · FINANZAS
-
-La UI actual todavía espera:
-
-```text
-saldo_proveedor()
-solicitar_retiro(p_monto)
-```
-
-Ambos RPC están ausentes en Supabase TEST.
-
-Infraestructura existente:
-
-- `pagos` ya registra `ganancia_proveedor`, estados y métodos;
-- `retiros` ya existe con estados `pendiente`, `procesando`, `pagado`, `fallido`;
-- Provider puede leer sus retiros;
-- Admin tiene `admin_actualizar_retiro(...)`;
-- `ProviderPayoutPanel` presenta retiro manual/legado y Mercado Pago Split como camino futuro/principal cuando esté activo.
-
-NO implementar todavía una fórmula nueva de saldo, retención, retiro, devolución o tratamiento financiero de cancelaciones sin decisión de producto explícita.
-
-Decisiones pendientes:
-
-1. mantener retiro interno/manual legado o esconderlo cuando Split sea el modelo elegido;
-2. definir qué estado debe tomar un `pago` efectivo `pendiente` cuando el servicio se cancela antes de confirmación de cobro;
-3. si se mantiene retiro interno, definir exactamente qué pagos alimentan `saldo_disponible` y qué retiros descuentan/comprometen saldo.
-
-## BLOCKED · CREDENCIALES CI AISLADO
-
-El workflow todavía no dispone de:
-
-```text
-UGO_TEST_SUPABASE_URL
-UGO_TEST_SUPABASE_ANON_KEY
-UGO_TEST_CLIENT_EMAIL
-UGO_TEST_CLIENT_PASSWORD
-UGO_TEST_PROVIDER_EMAIL
-UGO_TEST_PROVIDER_PASSWORD
-UGO_TEST_ADMIN_EMAIL
-UGO_TEST_ADMIN_PASSWORD
-```
-
-No guardar passwords en repo ni documentación. Los tests regulares saltan el E2E HTTP aislado cuando faltan secretos.
-
-## MEASURED PENDIENTE · PRUEBA FÍSICA HUMANA
+## MEASURED PENDIENTE · FÍSICO
 
 No marcar como `MEASURED` sin dispositivo real:
 
 - micrófono / latencia Hugo / barge-in / STOP→texto;
-- cámara y evidencia real desde teléfono;
-- GPS real y tracking visual en movimiento;
-- Cliente + Proveedor en dos dispositivos y Realtime sin refresh;
+- cámara y evidencia tomada desde teléfono;
+- GPS real caminando y tracking visual;
+- Cliente + Proveedor en dos dispositivos con Realtime sin refresh;
 - Web Push real;
-- safe area, teclado, overlays y UX táctil.
+- teclado móvil, safe areas, overlays y UX táctil.
 
 ## NEXT
 
-Orden recomendado:
-
 ```text
-1. cerrar decisión financiera mínima
-2. ejecutar E2E nuevo con un único serviceId + Storage real hasta completado
-3. verificar Cliente/Proveedor/Admin sobre ese mismo serviceId
-4. prueba física de dos dispositivos
-5. sólo entonces preparar checklist de promoción
+1. habilitar en un entorno seguro las credenciales TEST del harness sin escribirlas en repo
+2. ejecutar E2E nuevo + dos uploads reales a service-evidence hasta completado
+3. verificar el mismo serviceId como Cliente, Proveedor y Admin
+4. cerrar decisión financiera explícita y recién entonces implementar saldo/retiro/cancel semantics
+5. realizar pasada física de dos dispositivos
+6. sólo después evaluar checklist de promoción
 ```
 
 Nunca tocar Supabase producción hasta autorización explícita de promoción.
