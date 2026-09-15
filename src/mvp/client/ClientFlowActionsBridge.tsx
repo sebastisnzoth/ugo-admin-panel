@@ -22,7 +22,7 @@ export function ClientFlowActionsBridge(){
   if(!userId)return
 
   const openSearch=()=>window.dispatchEvent(new Event(UGO_CLIENT_GUIDED_REQUEST_OPEN))
-  const cancelService=async(serviceId:string)=>{
+  const cancelService=async(serviceId?:string)=>{
    try{
     if(!serviceId)return false
     const{data,error}=await supabase.from('servicios').select('id,estado').eq('id',serviceId).eq('cliente_id',userId).in('estado',CANCELLABLE_SERVICE_STATES).maybeSingle()
