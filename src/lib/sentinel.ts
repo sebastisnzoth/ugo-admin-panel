@@ -8,6 +8,7 @@ type SentinelContext={role?:SentinelRole;serviceId?:string|null;action?:string|n
 type IncidentInput={eventType:string;message:string;error?:unknown;role?:SentinelRole;severity?:Severity;serviceId?:string|null;action?:string|null;checklistCode?:string|null;metadata?:Record<string,unknown>}
 
 const CONTEXT_KEY='ugo-test-sentinel-context'
+const PRIVATE_METADATA_KEYS=new Set(['token','authorization','email','phone','messagecontent','password','secret','apikey','api_key'])
 let installed=false
 
 function routeLabel(){
@@ -22,8 +23,11 @@ function inferRole():SentinelRole{
  if(app==='development'||app==='admin')return'admin'
  return'unknown'
 }
+function discardContext(){
+ try{sessionStorage.removeItem(CONTEXT_KEY)}catch(error){console.debug('UGO Sentinel context cleanup unavailable',error)}
+}
 function readContext():SentinelContext|null{
- try{const raw=sessionStorage.getItem(CONTEXT_KEY);if(!raw)return null;const parsed=JSON.parse(raw)as SentinelContext;if(!parsed.expiresAt||parsed.expiresAt<Date.now()){sessionStorage.removeItem(CONTEXT_KEY);return null}return parsed}catch{return null}
+ try{const raw=sessionStorage.getItem(CONTEXT_KEY);if(!raw)return null;const parsed=JSON.parse(raw)as SentinelContext;if(!parsed.expiresAt||parsed.expiresAt<Date.now()){discardContext();return null}return parsed}catch(error){console.debug('UGO Sentinel context unavailable',error);return null}
 }
 function errorDetails(error:unknown,message:string){
  if(error instanceof Error)return{message:error.message||message,stack:error.stack||null,name:error.name}
@@ -34,7 +38,7 @@ function safeMetadata(value:Record<string,unknown>|undefined,errorName:string){
  const base:Record<string,unknown>={errorName,online:navigator.onLine,visibility:document.visibilityState}
  if(!value)return base
  for(const[key,item]of Object.entries(value)){
-  if(['token','authorization','email','phone','messageContent'].includes(key.toLowerCase()))continue
+  if(PRIVATE_METADATA_KEYS.has(key.toLowerCase()))continue
   if(typeof item==='string')base[key]=item.slice(0,500)
   else if(typeof item==='number'||typeof item==='boolean'||item===null)base[key]=item
  }
@@ -49,9 +53,9 @@ async function reportingClient(role:SentinelRole){
 
 export function setSentinelContext(input:Omit<SentinelContext,'expiresAt'>,ttlMs=30000){
  if(UGO_ENVIRONMENT!=='test')return
- try{sessionStorage.setItem(CONTEXT_KEY,JSON.stringify({...input,expiresAt:Date.now()+ttlMs}))}catch{}
+ try{sessionStorage.setItem(CONTEXT_KEY,JSON.stringify({...input,expiresAt:Date.now()+ttlMs}))}catch(error){console.debug('UGO Sentinel could not persist local context',error)}
 }
-export function clearSentinelContext(){try{sessionStorage.removeItem(CONTEXT_KEY)}catch{}}
+export function clearSentinelContext(){discardContext()}
 
 export async function reportSentinelIncident(input:IncidentInput){
  if(UGO_ENVIRONMENT!=='test')return null
