@@ -47,29 +47,33 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   if(me)throw me
   setMessages((m||[])as ChatMessage[])
  },[role,sb,selectedServiceId,serviceId])
+ const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure)
+ useEffect(()=>{loadRef.current=load},[load])
+ useEffect(()=>{reportChatFailureRef.current=reportChatFailure},[reportChatFailure])
 
- useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
+ useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure(e instanceof Error?'chat_load_error':'chat_load_error',message,e)})},[load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
   let alive=true
-  const resync=()=>{if(alive)void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);reportChatFailure('chat_resync_error',message,e)})}
+  const resync=()=>{if(alive)void loadRef.current().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);reportChatFailureRef.current('chat_resync_error',message,e)})}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
   window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
   const fallback=window.setInterval(()=>{if(document.visibilityState==='visible'&&navigator.onLine)resync()},10000)
-  const suffix=serviceId&&service?.id?service.id:'all'
+  const targetServiceId=serviceId||null
+  const suffix=targetServiceId||'all'
   let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}`)
   const messageConfig:any={event:'INSERT',schema:'public',table:'mensajes'}
-  if(serviceId&&service?.id)messageConfig.filter=`servicio_id=eq.${service.id}`
+  if(targetServiceId)messageConfig.filter=`servicio_id=eq.${targetServiceId}`
   ch=ch.on('postgres_changes',messageConfig,(payload:any)=>{
    const incoming=payload?.new as ChatMessage|undefined
-   if(!serviceId&&incoming?.servicio_id&&incoming.emisor_id!==userId){setSelectedServiceId(incoming.servicio_id);setUnread(value=>value+1);if(document.visibilityState==='visible'&&!compact)setOpen(true)}
+   if(!targetServiceId&&incoming?.servicio_id&&incoming.emisor_id!==userId){setSelectedServiceId(incoming.servicio_id);setUnread(value=>value+1);if(document.visibilityState==='visible'&&!compact)setOpen(true)}
    resync()
   })
   const serviceConfig:any={event:'*',schema:'public',table:'servicios'}
-  if(serviceId&&service?.id)serviceConfig.filter=`id=eq.${service.id}`
-  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reportChatFailure('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,service?.id)})
+  if(targetServiceId)serviceConfig.filter=`id=eq.${targetServiceId}`
+  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)})
   return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
- },[compact,load,reportChatFailure,role,sb,service?.id,serviceId,userId])
+ },[compact,role,sb,serviceId,userId])
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
  useEffect(()=>{if(compact)endRef.current?.scrollIntoView({block:'nearest'})},[compact,messages])
 
