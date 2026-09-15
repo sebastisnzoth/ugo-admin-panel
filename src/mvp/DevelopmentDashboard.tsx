@@ -6,6 +6,7 @@ type ChecklistStatus='pending'|'in_progress'|'implemented'|'blocked'|'failed'|'a
 type Priority='P0'|'P1'|'P2'|'P3'
 type ChecklistItem={id:string;code:string;area:string;title:string;description:string;priority:Priority;status:ChecklistStatus;weight:number;position:number;evidence:string|null;test_required:boolean;completed_at:string|null;updated_at:string;updated_by:string|null}
 type ChecklistEvent={id:number;checklist_id:string;code:string;old_status:ChecklistStatus|null;new_status:ChecklistStatus;evidence:string|null;changed_at:string;changed_by:string|null}
+type SentinelIncident={id:string;severity:Priority;source_role:string;event_type:string;status:'open'|'acknowledged'|'resolved';route:string|null;action:string|null;service_id:string|null;checklist_code:string|null;message:string;occurrences:number;first_seen_at:string;last_seen_at:string}
 
 const STATUS_LABEL:Record<ChecklistStatus,string>={pending:'Pendiente',in_progress:'En progreso',implemented:'Implementado · falta validar',blocked:'Bloqueado',failed:'Falló la prueba',approved:'Aprobado'}
 const STATUS_ORDER:ChecklistStatus[]=['failed','in_progress','implemented','blocked','pending','approved']
@@ -16,20 +17,21 @@ function formatWhen(value:string|null){if(!value)return'—';return new Intl.Dat
 function statusRank(status:ChecklistStatus){const i=STATUS_ORDER.indexOf(status);return i<0?99:i}
 
 export function DevelopmentDashboard(){
- const[items,setItems]=useState<ChecklistItem[]>([]),[events,setEvents]=useState<ChecklistEvent[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[live,setLive]=useState(false),[filter,setFilter]=useState('all'),[saving,setSaving]=useState<string|null>(null),[drafts,setDrafts]=useState<Record<string,string>>({})
+ const[items,setItems]=useState<ChecklistItem[]>([]),[events,setEvents]=useState<ChecklistEvent[]>([]),[incidents,setIncidents]=useState<SentinelIncident[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[live,setLive]=useState(false),[filter,setFilter]=useState('all'),[saving,setSaving]=useState<string|null>(null),[drafts,setDrafts]=useState<Record<string,string>>({})
 
  const load=useCallback(async()=>{
   const client=supabase as any
-  const[{data:itemData,error:itemError},{data:eventData,error:eventError}]=await Promise.all([
+  const[{data:itemData,error:itemError},{data:eventData,error:eventError},{data:incidentData}]=await Promise.all([
    client.from('development_checklist').select('*').order('position',{ascending:true}),
    client.from('development_checklist_events').select('*').order('changed_at',{ascending:false}).limit(40),
+   client.from('development_incidents').select('id,severity,source_role,event_type,status,route,action,service_id,checklist_code,message,occurrences,first_seen_at,last_seen_at').order('last_seen_at',{ascending:false}).limit(30),
   ])
   if(itemError||eventError){setError(itemError?.message||eventError?.message||'No pudimos cargar el panel.');setLoading(false);return}
   const nextItems=(itemData||[])as ChecklistItem[]
-  setItems(nextItems);setEvents((eventData||[])as ChecklistEvent[]);setDrafts(current=>{const next={...current};for(const item of nextItems)if(next[item.id]===undefined)next[item.id]=item.evidence||'';return next});setError('');setLoading(false)
+  setItems(nextItems);setEvents((eventData||[])as ChecklistEvent[]);setIncidents((incidentData||[])as SentinelIncident[]);setDrafts(current=>{const next={...current};for(const item of nextItems)if(next[item.id]===undefined)next[item.id]=item.evidence||'';return next});setError('');setLoading(false)
  },[])
 
- useEffect(()=>{document.title='UGO · Desarrollo';load();const channel=(supabase as any).channel('ugo-development-readiness-live').on('postgres_changes',{event:'*',schema:'public',table:'development_checklist'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'development_checklist_events'},()=>load()).subscribe((state:string)=>setLive(state==='SUBSCRIBED'));return()=>{(supabase as any).removeChannel(channel)}},[load])
+ useEffect(()=>{document.title='UGO · Desarrollo';load();const channel=(supabase as any).channel('ugo-development-readiness-live').on('postgres_changes',{event:'*',schema:'public',table:'development_checklist'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'development_checklist_events'},()=>load()).on('postgres_changes',{event:'*',schema:'public',table:'development_incidents'},()=>load()).subscribe((state:string)=>setLive(state==='SUBSCRIBED'));return()=>{(supabase as any).removeChannel(channel)}},[load])
 
  const stats=useMemo(()=>{
   const totalWeight=items.reduce((sum,item)=>sum+Number(item.weight||1),0)
@@ -39,8 +41,10 @@ export function DevelopmentDashboard(){
   const failed=items.filter(item=>item.status==='failed').length
   const unverified=items.filter(item=>item.status==='implemented').length
   const today=items.filter(item=>item.completed_at&&new Date(item.completed_at).toDateString()===new Date().toDateString()).length
-  return{verified:pct(approvedWeight,totalWeight),approved,total:items.length,p0Open,failed,unverified,today,totalWeight,approvedWeight}
- },[items])
+  const sentinelOpen=incidents.filter(item=>item.status!=='resolved').length
+  const sentinelP0=incidents.filter(item=>item.status!=='resolved'&&item.severity==='P0').length
+  return{verified:pct(approvedWeight,totalWeight),approved,total:items.length,p0Open,failed,unverified,today,totalWeight,approvedWeight,sentinelOpen,sentinelP0}
+ },[incidents,items])
 
  const areas=useMemo(()=>Array.from(new Set(items.map(item=>item.area))).map(area=>{const rows=items.filter(item=>item.area===area),total=rows.reduce((sum,item)=>sum+item.weight,0),done=rows.filter(item=>item.status==='approved').reduce((sum,item)=>sum+item.weight,0);return{area,total:rows.length,approved:rows.filter(item=>item.status==='approved').length,progress:pct(done,total)}}).sort((a,b)=>a.area.localeCompare(b.area)),[items])
  const nextP0=useMemo(()=>items.filter(item=>item.priority==='P0'&&item.status!=='approved').sort((a,b)=>statusRank(a.status)-statusRank(b.status)||a.position-b.position)[0]||null,[items])
@@ -74,6 +78,7 @@ export function DevelopmentDashboard(){
    <article><span>Avance real</span><strong>{stats.verified}%</strong><small>{stats.approvedWeight}/{stats.totalWeight} puntos validados</small></article>
    <article><span>P0 abiertos</span><strong>{stats.p0Open}</strong><small>impiden el primer cliente</small></article>
    <article><span>Fallos activos</span><strong>{stats.failed}</strong><small>requieren solución + re-prueba</small></article>
+   <article><span>Sentinela</span><strong>{stats.sentinelOpen}</strong><small>{stats.sentinelP0} incidentes P0 abiertos</small></article>
    <article><span>Sin validar</span><strong>{stats.unverified}</strong><small>implementados, todavía no aprobados</small></article>
    <article><span>Aprobadas hoy</span><strong>{stats.today}</strong><small>movimiento del día</small></article>
   </section>
@@ -90,6 +95,7 @@ export function DevelopmentDashboard(){
    </div>
 
    <aside className="devdash-side">
+    <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">SENTINELA</p><h2>Errores detectados</h2></div></div><div className="devdash-incidents">{incidents.length===0?<p className="devdash-empty">Todavía no hay incidentes capturados automáticamente.</p>:incidents.map(incident=><article key={incident.id} className={`devdash-incident severity-${incident.severity.toLowerCase()} status-${incident.status}`}><div><span className={`priority ${incident.severity.toLowerCase()}`}>{incident.severity}</span><strong>{incident.event_type}</strong>{incident.occurrences>1&&<b>×{incident.occurrences}</b>}</div><p>{incident.message}</p><small>{incident.source_role}{incident.action?` · ${incident.action}`:''}{incident.service_id?` · ${incident.service_id.slice(0,8)}`:''}</small><small>{formatWhen(incident.last_seen_at)}{incident.checklist_code?` · ${incident.checklist_code}`:''}</small></article>)}</div></section>
     <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">POR ÁREA</p><h2>Estado del ecosistema</h2></div></div><div className="devdash-area-list">{areas.map(row=><div className="devdash-area" key={row.area}><div><strong>{row.area}</strong><span>{row.approved}/{row.total}</span></div><div className="devdash-bar"><i style={{width:`${row.progress}%`}}/></div><small>{row.progress}% aprobado</small></div>)}</div></section>
     <section className="devdash-panel"><div className="devdash-section-head compact"><div><p className="devdash-kicker">REPORTE EN VIVO</p><h2>Últimos movimientos</h2></div></div><div className="devdash-events">{events.length===0?<p className="devdash-empty">Todavía no hay cambios registrados desde que se activó el panel.</p>:events.map(event=><div key={event.id}><span className={`event-dot status-${event.new_status}`}/><div><strong>{items.find(item=>item.code===event.code)?.title||event.code}</strong><p>{event.old_status?`${STATUS_LABEL[event.old_status]} → `:''}{STATUS_LABEL[event.new_status]}</p><small>{formatWhen(event.changed_at)}</small></div></div>)}</div></section>
    </aside>
