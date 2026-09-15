@@ -47,7 +47,7 @@ export function ClientRoot({demo}:Props){
   <ClientFlowActionsBridge/>
   {demo&&<DemoSebastianPaymentBridge/>}
   <ClientStudioNavbar/>
-  {flow.screen==='home'&&<ClientPremiumHome/>}
+  {flow.screen==='home'&&<ClientPremiumHome onOpenService={openService}/>} 
   {flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} 
   {flow.screen!=='request'&&flow.screen!=='home'&&<ClientHugoBridge/>}
   <ClientPaymentChoice/>
