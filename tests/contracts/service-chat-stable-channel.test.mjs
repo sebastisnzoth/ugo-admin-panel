@@ -18,3 +18,17 @@ test('realtime subscription is not recreated when selected conversation or loade
  assert.match(chat,/\},\[compact,role,sb,serviceId,userId\]\)/)
  assert.doesNotMatch(chat,/\},\[compact,load,reportChatFailure,role,sb,service\?\.id,serviceId,userId\]\)/)
 })
+
+test('session gaps clear chat state instead of becoming P0 auth errors',()=>{
+ assert.match(chat,/sb\.auth\.getSession\(\)/)
+ assert.doesNotMatch(chat,/sb\.auth\.getUser\(\)/)
+ assert.match(chat,/if\(!uid\)\{clearConversation\(\);return\}/)
+ assert.match(chat,/setUserId\(null\);setServices\(\[\]\);setService\(null\);setMessages\(\[\]\)/)
+})
+
+test('background realtime transport errors resync without downgrading the product',()=>{
+ assert.match(chat,/status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'/)
+ assert.match(chat,/resync\(\)/)
+ assert.match(chat,/document\.visibilityState==='visible'&&navigator\.onLine/)
+ assert.match(chat,/chat_realtime_subscription_error/)
+})
