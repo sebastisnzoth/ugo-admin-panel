@@ -5,15 +5,20 @@ type Payment={id:string;servicio_id:string;metodo?:string|null;estado:string;pix
 type ServiceWithCurrency=Service&{moneda?:string|null}
 const PAYMENT_STATES=['asignado']
 
-export function ClientPaymentChoice(){
+export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}){
  const auth=useRoleSession('client'),{supabase,session}=auth
  const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[cashEnabled,setCashEnabled]=useState(true),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[ready,setReady]=useState(false)
  const load=useCallback(async()=>{
   if(!session){setService(null);setPayment(null);setLoadError('');setReady(true);return}
   try{
-   const{data:rows,error:serviceError}=await supabase.from('servicios').select('*').eq('cliente_id',session.user.id).in('estado',PAYMENT_STATES).order('created_at',{ascending:false}).limit(1)
+   let query=supabase.from('servicios').select('*').eq('cliente_id',session.user.id).in('estado',PAYMENT_STATES)
+   if(serviceId)query=query.eq('id',serviceId)
+   else query=query.order('created_at',{ascending:false}).limit(2)
+   const{data:rows,error:serviceError}=await query
    if(serviceError)throw serviceError
-   const current=((rows||[])[0]as Service|undefined)||null
+   const services=(rows||[])as Service[]
+   if(!serviceId&&services.length!==1){setService(null);setPayment(null);setCashEnabled(true);setLoadError('');return}
+   const current=services[0]||null
    setService(current)
    if(!current){setPayment(null);setCashEnabled(true);setLoadError('');return}
    const moneda=String((current as ServiceWithCurrency).moneda||'BRL')
@@ -27,9 +32,9 @@ export function ClientPaymentChoice(){
    console.warn('UGO client payment state unavailable',error)
    setLoadError('No pudimos actualizar la forma de pago. Conservamos el último estado conocido para que puedas reintentar sin perder el servicio.')
   }finally{setReady(true)}
- },[session,supabase])
+ },[serviceId,session,supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{if(!session)return;const refresh=()=>void load();const ch=supabase.channel(`client-payment-choice-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`cliente_id=eq.${session.user.id}`},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${session.user.id}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,session,supabase])
+ useEffect(()=>{if(!session)return;const refresh=()=>void load();const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,serviceId,session,supabase])
  const selected=payment?.metodo||''
  const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
  const cashSelected=selected==='efectivo'
