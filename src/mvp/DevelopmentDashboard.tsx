@@ -49,7 +49,7 @@ export function DevelopmentDashboard(){
   return{verified:pct(approvedWeight,totalWeight),approved,validated,total:items.length,p0Open,p1Open,failed,unverified,today,totalWeight,approvedWeight,sentinelOpen,sentinelP0,sentinelP1}
  },[incidents,items])
 
- const releaseReady=stats.p0Open===0&&stats.p1Open===0&&stats.sentinelP0===0&&stats.sentinelP1===0
+ const releaseReady=!error&&items.length>0&&stats.p0Open===0&&stats.p1Open===0&&stats.sentinelP0===0&&stats.sentinelP1===0
  const areas=useMemo(()=>Array.from(new Set(items.map(item=>item.area))).map(area=>{const rows=items.filter(item=>item.area===area),total=rows.reduce((sum,item)=>sum+item.weight,0),done=rows.filter(item=>item.status==='approved').reduce((sum,item)=>sum+item.weight,0);return{area,total:rows.length,approved:rows.filter(item=>item.status==='approved').length,progress:pct(done,total)}}).sort((a,b)=>a.area.localeCompare(b.area)),[items])
  const nextP0=useMemo(()=>items.filter(item=>item.priority==='P0'&&item.status!=='approved').sort((a,b)=>statusRank(a.status)-statusRank(b.status)||a.position-b.position)[0]||null,[items])
  const visible=useMemo(()=>items.filter(item=>filter==='all'||item.priority===filter||item.status===filter),[items,filter])
