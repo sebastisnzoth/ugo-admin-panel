@@ -21,8 +21,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      UGO_TEST_SUPABASE_URL: ${{ secrets.UGO_TEST_SUPABASE_URL }}
-      UGO_TEST_SUPABASE_ANON_KEY: ${{ secrets.UGO_TEST_SUPABASE_ANON_KEY }}
+      # UGO TEST is the only allowed remote integration target. These two
+      # values are browser-public and intentionally match isolated-rpc-rls.yml.
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
       UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
       UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
       UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
@@ -44,6 +46,31 @@ jobs:
 
       - name: Dependency security gate
         run: npm audit --audit-level=high
+
+      - name: Isolated E2E credential readiness
+        shell: bash
+        run: |
+          required=(
+            UGO_TEST_CLIENT_EMAIL
+            UGO_TEST_CLIENT_PASSWORD
+            UGO_TEST_PROVIDER_EMAIL
+            UGO_TEST_PROVIDER_PASSWORD
+            UGO_TEST_ADMIN_EMAIL
+            UGO_TEST_ADMIN_PASSWORD
+          )
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "Isolated authenticated E2E will be skipped; missing GitHub Secrets:"
+            printf ' - %s\n' "${missing[@]}"
+          else
+            echo "All six human TEST credentials are present; authenticated Cliente ↔ Proveedor ↔ Admin E2E is enabled."
+          fi
 
       - name: TypeScript and production build
         run: npm run build
