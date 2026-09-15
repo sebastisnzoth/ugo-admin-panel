@@ -35,6 +35,7 @@ import'./client-ai-studio-flow.css'
 import'./client-google-ai-studio.css'
 import'./client-studio-reference.css'
 import'./client-studio-radar.css'
+import'./client-navbar-cleanup.css'
 
 type Props={demo:boolean}
 
