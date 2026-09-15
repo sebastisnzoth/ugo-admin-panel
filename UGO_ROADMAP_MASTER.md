@@ -2,15 +2,36 @@
 
 **Rama de verdad:** `main`  
 **Principio:** los MD maestros son fuente de verdad; Skills definen cómo trabajar; herramientas conectadas ejecutan y validan.  
-**Último checkpoint:** 14/09/2026.
+**Último checkpoint:** 15/09/2026.
 
 ## Objetivo de producto
+
+**Objetivo final no negociable: PRODUCCIÓN COMERCIAL REAL.**
+
+UGO no se considera terminado por tener una demo, un deploy `READY`, un build verde ni un backend funcional. El objetivo es operar comercialmente con clientes y proveedores reales, dinero real, comisión UGO trazable, seguridad, soporte operativo y capacidad de recuperación ante fallos.
 
 Cerrar un ecosistema operativo Cliente + Proveedor + Admin/Super Admin con lifecycle único, pagos trazables, evidencia temporal correcta, ampliaciones dentro de plataforma, Realtime, UX consistente y release reproducible.
 
 Pregunta permanente de producto:
 
-> **¿Qué impide hoy que esto tenga su primer cliente real?**
+> **¿Qué impide hoy que mañana un cliente real pague, un proveedor real trabaje, UGO cobre su comisión y todo quede seguro, trazable y recuperable?**
+
+Toda prioridad P0/P1 debe responder a esa pregunta. TEST, demo e inversores son hitos intermedios; no son el objetivo final.
+
+## Definición de producción comercial
+
+UGO alcanza producción comercial cuando, sin intervención manual excepcional del equipo técnico:
+
+- un Cliente real puede registrarse, pedir y pagar un servicio;
+- un Proveedor real puede registrarse, ponerse disponible, recibir, aceptar, ejecutar y cobrar;
+- UGO registra y concilia su comisión correctamente;
+- Cliente, Proveedor y Admin comparten el mismo `serviceId`, estado y realidad financiera;
+- cancelaciones, reembolsos, disputas, retiros y excepciones tienen reglas definidas y auditables;
+- cámara, GPS, Storage, voz y Realtime funcionan en dispositivos reales;
+- secretos, RLS, permisos, backups, logs, auditoría y límites operativos son adecuados para producción;
+- CI/E2E protegen el release y existe rollback/recovery razonable;
+- términos operativos, privacidad/LGPD, soporte y tratamiento de incidentes están definidos;
+- no queda ningún P0 de seguridad, dinero, integridad o continuidad operativa abierto.
 
 ## Contrato transversal vigente
 
@@ -88,6 +109,8 @@ Validado en esa corrida:
 - aprobación final exclusiva del Cliente;
 - cierre `completado` visible de forma convergente por Cliente, Proveedor y Admin.
 
+La corrida histórica no sustituye la nueva validación requerida después del endurecimiento de Storage/chat/tracking.
+
 ### 4. Admin / Super Admin — AVANZADO
 
 - Operaciones, usuarios, finanzas, validación, configuración y disputas existen.
@@ -106,7 +129,7 @@ UGO TEST: `tmossnqfwfwjrtzwcbmm`.
 - `tests/contracts/cash-review-ordering-restore.test.mjs` evita que ese guard vuelva a desaparecer del repo.
 - Producción no fue modificada.
 
-**Pendiente de seguridad no P0 inmediato:** seguir clasificando advisors de Supabase (políticas amplias, vistas `SECURITY DEFINER`, search path y leaked-password protection) sin romper funciones intencionalmente privilegiadas.
+**Pendiente de seguridad para producción:** seguir clasificando y cerrando advisors de Supabase (políticas amplias, vistas `SECURITY DEFINER`, search path y leaked-password protection) sin romper funciones intencionalmente privilegiadas.
 
 ### 6. QA / Release — EN CURSO
 
@@ -116,24 +139,23 @@ UGO TEST: `tmossnqfwfwjrtzwcbmm`.
 - Vercel volvió a producir despliegues `READY`; el viejo bloqueo por límite diario no gobierna ya el estado actual.
 - El workflow `UGO Isolated RPC RLS` permanece como gate adicional con `signInWithPassword` y requiere credenciales humanas TEST en GitHub Secrets.
 - El E2E de backend/RPC/RLS ya fue ejecutado con identidades TEST reales bajo contexto `authenticated`/JWT claim; no sustituye la prueba física ni el login HTTP automatizado.
+- La rama `main` debe evolucionar hacia protección con checks obligatorios antes de promoción comercial.
 
 ## Próximo checkpoint
 
-**P0 actual: validación física Cliente ↔ Proveedor ↔ Admin sobre UGO TEST.**
+**P0 actual: PRODUCTION COMMERCIAL READINESS.**
 
-Orden:
+No optimizar para “tener una demo”. Cerrar, en este orden, lo que impide operación comercial real:
 
-1. confirmar CI verde y Vercel `READY` sobre el SHA final de `main`;
-2. Cliente crea un pedido desde dispositivo real;
-3. Proveedor recibe y acepta desde otra sesión/dispositivo;
-4. completar pago, GPS/llegada, evidencia Antes, trabajo, evidencia Después y cierre;
-5. si es efectivo, comprobar visualmente que no pueda pedirse aprobación antes de confirmar recepción;
-6. Cliente aprueba;
-7. Admin observa el mismo `serviceId` y estado financiero;
-8. forzar reconnect/background para verificar Realtime;
-9. probar cámara, Storage y voz/micrófono reales;
-10. cargar las seis credenciales TEST como GitHub Secrets y ejecutar `UGO Isolated RPC RLS` con login HTTP real;
-11. sólo después evaluar promoción controlada a producción.
+1. cerrar la decisión financiera mínima: modelo de cobro, comisión UGO, saldo/retiros, cancelación, reembolso y conciliación;
+2. ejecutar un E2E nuevo completo con un único `serviceId`, Storage real, evidencia Antes/Después y cierre hasta `completado`;
+3. verificar Cliente/Proveedor/Admin sobre ese mismo `serviceId` y la misma realidad financiera;
+4. probar en dos dispositivos reales: Realtime sin refresh, reconnect/background, cámara, GPS/tracking, voz/Hugo, push y UX móvil;
+5. convertir autenticación E2E TEST en gate automatizado con credenciales aisladas fuera del repositorio;
+6. cerrar seguridad de producción, protección de `main`, observabilidad, backups y procedimiento de rollback;
+7. cerrar onboarding, soporte, disputas, privacidad/LGPD y operación comercial;
+8. ejecutar un piloto controlado completo antes de apertura progresiva;
+9. sólo con todos los gates verdes preparar y autorizar promoción a producción real.
 
 ## Bloqueo externo restante
 
@@ -150,16 +172,21 @@ UGO_TEST_ADMIN_PASSWORD
 
 Nunca guardar esas contraseñas en código, commits o documentación pública.
 
-## Criterio de salida de TEST
+También queda pendiente una decisión de producto explícita sobre el modelo financiero de producción antes de implementar saldo/retiro/reembolso definitivo.
+
+## Criterio de salida de TEST hacia producción comercial
 
 UGO TEST sólo puede promoverse cuando:
 
-- CI del SHA candidato está verde;
+- CI del SHA candidato está verde y los checks de `main` son obligatorios;
 - deploy candidato está `READY`;
 - workflow aislado con login real está verde;
 - Cliente + Proveedor completan el journey en dispositivos reales;
-- Admin observa/opera el mismo servicio;
-- cámara/GPS/Storage/voz y Realtime funcionan en dispositivo;
-- no queda un P0 de seguridad, dinero o integridad abierto.
+- Admin observa/opera el mismo servicio y la misma realidad financiera;
+- cámara/GPS/Storage/voz/Push y Realtime funcionan en dispositivo;
+- dinero real, comisión, cancelación, reembolso y retiro tienen reglas implementadas y auditables;
+- secretos, RLS, permisos, backups, logs, monitoreo y rollback están preparados;
+- soporte, disputas, privacidad/LGPD e incidentes tienen un flujo operativo definido;
+- no queda un P0 de seguridad, dinero, integridad o continuidad operativa abierto.
 
-Hasta entonces: **TEST avanzado y backend core cerrado; producción todavía no.**
+Hasta entonces: **TEST avanzado y backend core fuerte; el objetivo sigue siendo PRODUCCIÓN COMERCIAL REAL.**
