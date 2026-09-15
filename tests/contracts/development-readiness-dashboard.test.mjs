@@ -22,8 +22,8 @@ test('verified readiness counts only approved weighted checklist items',()=>{
  assert.doesNotMatch(dashboard,/status==='implemented'.*approvedWeight/)
 })
 
-test('READY is truthful and includes P0 P1 plus unresolved Sentinel risk',()=>{
- assert.match(dashboard,/const releaseReady=stats\.p0Open===0&&stats\.p1Open===0&&stats\.sentinelP0===0&&stats\.sentinelP1===0/)
+test('READY is truthful and includes data health, P0 P1 plus unresolved Sentinel risk',()=>{
+ assert.match(dashboard,/const releaseReady=!error&&items\.length>0&&stats\.p0Open===0&&stats\.p1Open===0&&stats\.sentinelP0===0&&stats\.sentinelP1===0/)
  assert.match(dashboard,/releaseReady\?'READY':'NOT READY'/)
  assert.match(dashboard,/UGO todavía no está listo/)
  assert.match(dashboard,/runtime_revision/)
