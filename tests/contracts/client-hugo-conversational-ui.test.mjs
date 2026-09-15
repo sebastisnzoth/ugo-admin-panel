@@ -12,13 +12,13 @@ const api = await readFile(new URL('../../api/test.ts', import.meta.url), 'utf8'
 test('client mounts one canonical Hugo companion instead of the legacy voice-order modal', () => {
   assert.match(root, /ClientHugoBridge/)
   assert.match(root, /flow\.screen==='request'&&<ClientGuidedRequest/)
-  assert.match(root, /flow\.screen!=='request'&&<ClientHugoBridge/)
+  assert.match(root, /flow\.screen!=='request'&&!detailOpen&&<ClientHugoBridge/)
   assert.doesNotMatch(root, /ClientHugoVoiceOrder/)
 })
 
 test('guided checkout and canonical Hugo never listen at the same time', () => {
   assert.match(root, /flow\.screen==='request'&&<ClientGuidedRequest/)
-  assert.match(root, /flow\.screen!=='request'&&<ClientHugoBridge/)
+  assert.match(root, /flow\.screen!=='request'&&!detailOpen&&<ClientHugoBridge/)
 })
 
 test('Hugo companion is wired to the canonical voice dock, real client actions and intents', () => {
@@ -28,15 +28,13 @@ test('Hugo companion is wired to the canonical voice dock, real client actions a
   assert.match(bridge, /services=\{services\}/)
 })
 
-test('home makes Hugo the primary conversational entrypoint while Activity stays unified', () => {
-  assert.match(home, /Contame qué necesitás\. Yo te ayudo a resolverlo\./)
-  assert.match(home, /Hablar con Hugo/)
-  assert.match(home, /Escribirle a Hugo/)
-  assert.match(home, /\.ugo-real-orb/)
-  assert.match(home, /\.ugo-hugo-stage-composer input/)
+test('home keeps canonical Hugo available while Activity stays unified', () => {
+  assert.match(root, /flow\.screen!=='request'&&!detailOpen&&<ClientHugoBridge/)
+  assert.match(bridge, /ClientVoiceHugoDock/)
   assert.match(home, /flow\.publishHugoIntent/)
-  assert.match(home, />Actividad</)
-  assert.doesNotMatch(home, />Servicios</)
+  assert.match(home, /Abrir Actividad/)
+  assert.match(home, /4 rubros principales/)
+  assert.doesNotMatch(home, /ClientHugoVoiceOrder/)
 })
 
 test('voice and text share the same canonical Hugo state and input handler', () => {
