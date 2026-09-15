@@ -10,6 +10,17 @@ test('client home uses the canonical completed service state',async()=>{
  assert.match(home,/services\.filter\(item=>item\.estado==='completado'\)\.length/)
 })
 
+test('active order opens its exact detail from home in one action',async()=>{
+ const[home,root]=await Promise.all([
+  read('src/mvp/client/ClientPremiumHome.tsx'),
+  read('src/mvp/client/ClientRoot.tsx'),
+ ])
+ assert.match(root,/<ClientPremiumHome onOpenService=\{openService\}\/>/)
+ assert.match(home,/onOpenService\?\:\(serviceId:string\)=>void/)
+ assert.match(home,/onOpenService\(latest\.id\)/)
+ assert.match(home,/Abrir pedido y chat/)
+})
+
 test('development dashboard gives validated a distinct visual state',async()=>{
  const[main,css]=await Promise.all([
   read('src/main.tsx'),
