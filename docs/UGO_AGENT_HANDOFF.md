@@ -1,9 +1,9 @@
 # UGO — Agent Handoff
 
-**Estado:** UGO TEST operativo, todavía NO promovible a producción comercial  
+**Estado:** UGO TEST operativo; todavía NO promovible a producción comercial  
 **Rama de verdad:** `main`  
 **Uso:** handoff compartido ChatGPT/Codex  
-**Regla:** verificar siempre `main`, CI, Vercel y Supabase TEST antes de continuar.
+**Regla:** verificar `main`, CI, Vercel y Supabase TEST antes de continuar.
 
 ## ENTORNO
 
@@ -17,84 +17,41 @@ Admin: /?app=admin
 Supabase PROD: trfsjuseqjxlhrxuvdsm · FUERA DE ALCANCE
 ```
 
-Principio de producto:
+Principio:
 
 > **Un pedido. Un profesional. Sin vueltas.**
 
-## CURRENT P0
-
-Cerrar sólo los bloques todavía abiertos:
-
-1. **BLOCKED — TEST CREDENTIALS REQUIRED:** GitHub Actions no tiene configuradas las 8 variables necesarias para ejecutar el E2E autenticado nuevo.
-2. **BLOCKED — PRODUCT DECISION REQUIRED:** definir política financiera de saldo/retiros y qué ocurre con pagos/retiros/cancelaciones antes de crear `saldo_proveedor()` o `solicitar_retiro(...)`.
-3. **MEASURED pendiente:** Hugo físico, cámara, GPS en movimiento, Realtime visual en dos dispositivos, push y UX móvil.
-
-El antiguo bloqueo separado “REAL TEST STORAGE UPLOAD UNAVAILABLE” ya NO describe correctamente el estado del repo: el harness implementa `.storage.from('service-evidence').upload(...)` real para evidencia `antes` y `despues`. Lo que impide hoy ejecutar ese recorrido en CI son las credenciales TEST ausentes.
-
-No reabrir P0 cerrados salvo regresión demostrable.
-
-## LAST COMPLETED · E2E HARNESS 3 ROLES + CI · 15/09/2026
-
-Se endureció el harness aislado para que una sola corrida futura use el mismo `serviceId` de punta a punta y lo verifique como Cliente, Proveedor y Admin.
-
-### Implementado
-
-`tests/integration/client-provider-rpc-rls.test.mjs` ahora cubre:
-
-- Cliente autenticado crea el servicio;
-- matching dirigido y oferta redactada;
-- Proveedor autenticado acepta;
-- Cliente y Admin observan el mismo servicio asignado;
-- chat canónico Cliente → Proveedor → Cliente sobre `public.mensajes`;
-- Admin puede auditar esos mensajes del mismo `serviceId`;
-- gate de pago antes de salida;
-- evidencia falsa sin objeto Storage rechazada;
-- upload REAL de evidencia `antes` al bucket `service-evidence`;
-- lifecycle `en_camino → llegado → en_progreso`;
-- ampliación y guards de ownership/idempotencia;
-- upload REAL de evidencia `despues`;
-- confirmación de efectivo e idempotencia;
-- aprobación exclusiva del Cliente;
-- cierre `completado` convergente Cliente/Proveedor/Admin;
-- Admin observa el mismo pago final;
-- Admin observa exactamente las dos evidencias reales del E2E.
-
-El fixture nuevo, cuando corra, queda deliberadamente preservado en TEST con:
+## HEAD REAL ACTUAL · 15/09/2026
 
 ```text
-metadata.integration_test = true
-metadata.source = rpc-rls-harness
-metadata.e2e_run_id = <uuid>
-metadata.preserve_e2e_evidence = true
+main: 48b1fb400eb9275e2d74e9bc734b2915fccee65d
+docs(testing): align release master with 3-role real-storage e2e
 ```
 
-No se intenta un DELETE ficticio: `servicios` no expone política DELETE al Cliente y borrar sólo los objetos Storage dejaría evidencia inconsistente. La evidencia E2E real debe quedar auditable.
-
-### Commits de esta pasada
+Padre funcional/CI:
 
 ```text
-cef3d1b46dc3cd32c30ea347113f12ceabaea3f2
-test(e2e): cover admin chat and preserve real evidence
-
-1207d7871a1f5600ae61d4730164c1c370a5f667
-ci(test): wire admin credentials for isolated e2e
-
-850b1c7c77638105e954d0f2d4b64e04c2e711e2
-test(contracts): align first-client e2e readiness
-
-71d85da5ebce5b6f4a1b80729666998822a941c6
-test(contracts): align isolated e2e guards
-
-936fc9361a95b87acfc4fcd52fcb28d495b811a4
-test(contracts): assert production preflight rejection
+2d585734b8428e80831d0ea7f2184c7253def1bc
+ci(e2e): align core test target and report credential readiness
 ```
 
-## CI AUTORITATIVO ACTUAL
+El cliente Stitch fue revertido y el frontend volvió al estado pre-Stitch con:
 
 ```text
-UGO Core CI #742
-run: 34922540607
-SHA: 936fc9361a95b87acfc4fcd52fcb28d495b811a4
+442d772e30a20a8b7725bcfbc329eb663ac2e789
+revert(client-ui): restore pre-Stitch client experience
+```
+
+No reabrir la integración Stitch salvo decisión nueva explícita.
+
+## CI AUTORITATIVO
+
+Último CI completamente confirmado antes del commit documental actual:
+
+```text
+UGO Core CI #761
+run: 34925210746
+SHA: 2d585734b8428e80831d0ea7f2184c7253def1bc
 status: completed
 conclusion: success
 ```
@@ -102,17 +59,32 @@ conclusion: success
 Pasaron:
 
 - `npm ci --include=dev`;
-- `npm audit --audit-level=high` → 0 vulnerabilities;
-- TEST environment guard;
-- build + TypeScript;
-- `npm test` → 198 tests, con integration real correctamente SKIPPED por credenciales ausentes;
-- critical operational lint;
+- `npm audit --audit-level=high`;
+- preflight de credenciales E2E;
+- TypeScript + build;
+- core lifecycle/market/integration tests;
+- lint crítico operacional;
 - ClientApp lint;
 - full repository lint.
 
-### Bloqueo exacto del E2E autenticado
+El commit documental `48b1fb4...` disparó `UGO Core CI #762`. No usarlo como evidencia final hasta que termine.
 
-GitHub Actions actualmente no recibe ninguna de estas 8 variables:
+## P0-1 · E2E AUTENTICADO REAL
+
+Harness:
+
+```text
+tests/integration/client-provider-rpc-rls.test.mjs
+```
+
+Estado:
+
+```text
+IMPLEMENTED
+NO VALIDATED todavía
+```
+
+El harness exige estas 8 variables:
 
 ```text
 UGO_TEST_SUPABASE_URL
@@ -125,234 +97,215 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-El workflow ya referencia las 8. Falta configurarlas de forma segura fuera del repositorio.
+En `UGO Core CI`, URL + publishable key públicas de UGO TEST están fijadas en el workflow. Las 6 credenciales humanas Cliente/Proveedor/Admin provienen exclusivamente de GitHub Secrets.
 
-No imprimir ni guardar esos valores en repo/docs/logs.
+No imprimir ni guardar passwords en repo/docs/logs.
 
-### Estado de la corrida E2E nueva
-
-```text
-serviceId E2E nuevo: NO CREADO
-oferta E2E nueva: NO CREADA
-Storage inicial: NO SUBIDO
-Storage final: NO SUBIDO
-chat E2E nuevo: NO CREADO
-cierre E2E nuevo: NO EJECUTADO
-```
-
-No marcar este recorrido como `VALIDATED` hasta que las 8 variables estén disponibles y el mismo harness termine verde autenticado.
-
-## RELEASED · UGO TEST
-
-El SHA funcional/contractual validado también llegó a Vercel:
+El E2E futuro debe crear un servicio NUEVO y conservar el mismo `serviceId`:
 
 ```text
-deployment: dpl_3Ghrdg8it7GmnDC7JVxPkYvLCSGW
-SHA: 936fc9361a95b87acfc4fcd52fcb28d495b811a4
-state: READY
-target: production del proyecto web UGO TEST
-branch: main
-alias: https://ugo-admin-panel.vercel.app
+Cliente crea
+→ matching
+→ Proveedor recibe oferta
+→ acepta
+→ Cliente/Admin ven mismo servicio
+→ chat Cliente↔Proveedor
+→ Admin audita chat
+→ pago
+→ en_camino
+→ llegado
+→ upload REAL antes
+→ en_progreso
+→ ampliación
+→ upload REAL después
+→ confirmar pago
+→ aprobación Cliente
+→ completado
+→ Cliente/Proveedor/Admin convergen
+→ Admin ve pago + chat + 2 evidencias del mismo serviceId
 ```
 
-Supabase PRODUCCIÓN no fue tocado.
-
-## SEGURIDAD SUPABASE TEST · SECURITY DEFINER
-
-Se revisaron los 15 warnings actuales de Supabase sobre funciones `SECURITY DEFINER` ejecutables por `authenticated`.
-
-Funciones cubiertas:
+Bucket:
 
 ```text
-abrir_disputa
-actualizar_ubicacion_y_distancia
-admin_get_auth_users
-admin_resolver_disputa
-admin_set_usuario_activo
-cancelar_servicio
-desactivar_push_suscripcion
-guardar_push_suscripcion
-iniciar_matching_dirigido
-obtener_demanda_proveedor
-obtener_ofertas_proveedor
-obtener_tracking_servicio_cliente
-proponer_ampliacion_servicio
-resolver_ampliacion_servicio
-responder_disputa
+service-evidence
 ```
 
-Resultado:
+El harness ya:
 
-- `anon` no tiene EXECUTE sobre los RPC críticos revisados;
-- Admin valida `private.is_admin(...)`;
-- cancelación valida Cliente dueño o Admin;
-- matching dirigido valida Cliente dueño/Admin y elegibilidad;
-- actualización GPS exige Proveedor autenticado y servicio asignado;
-- lectura tracking exige Cliente dueño;
-- disputas/ampliaciones validan participante/rol;
-- push queda ligado a `auth.uid()` y ownership del endpoint.
+- rechaza producción `trfsjuseqjxlhrxuvdsm`;
+- exige TEST `tmossnqfwfwjrtzwcbmm`;
+- usa una tercera identidad Admin/Super Admin real;
+- envía chat real en `public.mensajes`;
+- intenta una evidencia falsa y exige rechazo;
+- sube dos PNG reales a Storage (`antes`, `despues`);
+- verifica pago, ampliación, idempotencia y cierre;
+- preserva el fixture E2E con `e2e_run_id` para auditoría.
 
-Pruebas negativas reales en Supabase TEST, siempre transaccionales/sin persistir cambios:
+No marcar `VALIDATED` hasta tener evidencia positiva de:
 
-- Cliente normal → `admin_get_auth_users()` rechazado: `Solo administradores`;
-- Cliente ajeno → tracking de servicio ajeno rechazado: `No autorizado`;
-- Proveedor → `admin_get_auth_users()` rechazado: `Solo administradores`;
-- Proveedor → matching dirigido sobre servicio ajeno rechazado: `No autorizado`.
+```text
+serviceId nuevo
+runId nuevo
+2 objetos Storage reales
+chat real
+pago real TEST
+estado final completado
+lectura convergente Cliente/Proveedor/Admin
+```
+
+Históricos que NO sustituyen el nuevo E2E:
+
+```text
+#14 68ef8d25-b382-4e98-986a-21c510cc78f1 · completado histórico
+#28 3558ce63-5216-4a58-beed-30febf0581ba · cancelado
+```
+
+## P0-2 · FINANZAS
 
 Estado:
 
 ```text
-SECURITY DEFINER guards revisados + negativos TEST: VALIDATED
-Advisor genérico SECURITY DEFINER: clasificado, no silenciar rompiendo RPC privilegiados intencionales
-Leaked Password Protection: pendiente antes de producción
+BLOCKED — PRODUCT DECISION REQUIRED
 ```
 
-## REALTIME / GPS / CHAT / STORAGE · ESTADO CONSERVADO
-
-### Realtime
-
-`678ffe5b2879e9391376940fe23a55e212d1d607` sigue siendo el commit funcional de recovery Realtime. Superficies críticas rehidratan persistencia en mount/load, `online`, `visibilityState=visible`, `SUBSCRIBED` y eventos correspondientes.
-
-```text
-Realtime backend/config + recovery contracts: VALIDATED
-Realtime visual Cliente↔Proveedor en dos dispositivos: MEASURED pendiente
-```
-
-### GPS / tracking
-
-RPCs canónicos:
-
-```text
-actualizar_ubicacion_y_distancia(...)
-obtener_tracking_servicio_cliente(...)
-```
-
-Ya se validaron ownership, proveedor asignado, cliente dueño, cliente ajeno, coordenadas inválidas y estados válidos.
-
-```text
-GPS/RPC backend: VALIDATED
-GPS físico caminando/tracking visual: MEASURED pendiente
-```
-
-### Chat
-
-`public.mensajes` es tabla canónica; identidad y rol están ligados al usuario real; participantes tienen SELECT/INSERT y UPDATE queda restringido a lectura.
-
-```text
-Chat schema/RLS/contracts: VALIDATED
-Chat del NUEVO E2E autenticado: BLOCKED por credenciales CI
-```
-
-### Evidencias / Storage
-
-El guard `service_evidence_storage_integrity_guard` exige un objeto real en `storage.objects`; bucket canónico: `service-evidence`.
-
-```text
-Storage integrity guard: VALIDATED
-Nuevo upload real E2E antes/despues: IMPLEMENTED en harness, ejecución BLOCKED por credenciales CI
-```
-
-## BLOCKED · FINANZAS · PRODUCT DECISION REQUIRED
-
-La auditoría de masters + implementación confirma que NO existe una política suficiente para implementar saldo/retiro definitivo sin decidir producto.
-
-Definido hoy:
-
-```text
-efectivo: seleccionado → presencial pendiente → proveedor confirma recepción → registrado/liberado
-```
-
-Además:
-
-- efectivo nunca representa custodia electrónica UGO;
-- cada obligación conserva bruto, comisión, neto, estado, fecha y referencia;
-- saldo mostrado en UI no autoriza por sí solo un retiro;
-- retiro/liberación/reembolso deben ser atómicos y auditables.
-
-La UI/API esperan pero Supabase TEST todavía NO tiene:
+No crear todavía:
 
 ```text
 saldo_proveedor()
 solicitar_retiro(p_monto)
 ```
 
-Infraestructura existente:
+Falta definir explícitamente:
 
-- `pagos.ganancia_proveedor`;
-- tabla `retiros`;
-- lectura de retiros por Proveedor;
-- `admin_actualizar_retiro(...)`;
-- `ProviderPayoutPanel` con camino manual/legado y Mercado Pago Split como camino futuro principal.
+1. qué estados de pago alimentan `saldo_disponible`;
+2. cuándo `ganancia_proveedor` se vuelve disponible;
+3. cómo un retiro pendiente/procesando reserva saldo;
+4. cómo evitar doble retiro;
+5. qué ocurre con efectivo pendiente al cancelar;
+6. semántica de cancelado/fallido/reembolsado/anulado;
+7. retiro manual interno vs Mercado Pago Split;
+8. conciliación definitiva.
 
-Caso conflictivo real:
+Invariante ya definido:
+
+> ningún dinero de servicio incompleto/cancelado debe convertirse accidentalmente en saldo retirable.
+
+Caso real de referencia en TEST:
 
 ```text
-servicio #28 = cancelado
+servicio #28
+estado servicio = cancelado
 método = efectivo
 pago = pendiente
 ```
 
-Siguen sin definición inequívoca:
+Se permiten tests de invariantes ya definidos y detección de inconsistencias. No inventar fórmula financiera.
 
-1. qué estados de pago alimentan `saldo_disponible`;
-2. cuándo un retiro pendiente/procesando compromete saldo;
-3. qué ocurre con efectivo `pendiente` al cancelar servicio;
-4. si retiro interno/manual queda como producto o sólo legado frente a Split;
-5. semántica completa de cancelado/fallido/reembolsado/anulado.
+## P0-3 · PRUEBA FÍSICA DOS CELULARES
 
-**No implementar nuevos RPC, fórmula de saldo, enum ni semántica financiera hasta decisión explícita de producto.**
-
-## HUGO · ESTADO ACTUAL
-
-Se conserva el flujo canónico de voz/texto y el CI actual valida:
-
-- voz y texto comparten estado;
-- Gemini es camino canónico de transcripción browser;
-- Firefox/browser sin SpeechRecognition usa audio grabado;
-- salida usa Gemini TTS rápido con reproducción abortable/no bloqueante;
-- STOP deja el compositor de texto utilizable;
-- parser/confirmación/selección de proveedor usa datos reales;
-- disponibilidad de proveedores comparte fuente de verdad con radar;
-- Hugo no debe inventar proveedor, rating, precio, disponibilidad, pago o estado.
-
-No hubo errores nuevos de Hugo en runtime durante la revisión más reciente; el único ruido observado fue una deprecación `url.parse()` en `/api/whatsapp/send` con HTTP 200.
+Estado:
 
 ```text
-Hugo contracts: VALIDATED
-Hugo físico/latencia/barge-in/micrófono real: MEASURED pendiente
+PREPARABLE
+MEASURED pendiente
 ```
 
-## EVIDENCIA HISTÓRICA — NO USAR COMO NUEVO E2E
+Cliente debe probar:
 
 ```text
-#28 3558ce63-5216-4a58-beed-30febf0581ba · cancelado
-#14 68ef8d25-b382-4e98-986a-21c510cc78f1 · completado histórico
+login · pedir servicio · Hugo voz/texto · categorías reales · proveedores reales
+matching · tarjeta proveedor · cancelación · seguimiento · chat · pago · revisión · historial
 ```
 
-No sustituyen la corrida NUEVA posterior al hardening de Storage/chat/tracking.
+Proveedor debe probar:
 
-## MEASURED PENDIENTE · FÍSICO
+```text
+login · online/offline · oportunidad · aceptar/rechazar · trabajo activo · mapa
+en_camino · llegada · GPS · cámara · evidencia Antes · iniciar trabajo · chat
+ampliación · evidencia Después · cierre · ingreso visible
+```
 
-No marcar como `MEASURED` sin dispositivo real:
+En dos dispositivos:
 
-- micrófono / latencia Hugo / barge-in / STOP→texto;
-- cámara y evidencia desde teléfono;
-- GPS caminando y tracking visual;
-- Cliente + Proveedor en dos dispositivos con Realtime sin refresh;
-- Web Push real;
-- teclado móvil, safe areas, overlays y UX táctil.
+```text
+Realtime sin refresh
+reconnect
+background/foreground
+GPS caminando
+cámara
+Storage
+push
+Hugo micrófono
+barge-in
+STOP
+fallback texto
+teclado
+safe areas
+overlays
+botones táctiles
+```
+
+No marcar `MEASURED` sin prueba física real.
+
+## CORE YA VALIDADO · NO REABRIR SIN REGRESIÓN
+
+```text
+Realtime recovery
+GPS/tracking backend
+chat canónico
+Storage integrity guard
+RLS/RPC críticos
+SECURITY DEFINER guards críticos + negativos TEST
+```
+
+Pendiente producción de seguridad:
+
+```text
+MFA Admin
+leaked password protection
+api/* privilegiadas
+Bearer/Auth/ownership/rol
+rate limit
+secrets
+auditoría
+backups
+observabilidad
+rollback
+protección de main
+```
+
+## HUGO
+
+```text
+contracts: VALIDATED
+micrófono/latencia/barge-in/STOP físico: MEASURED pendiente
+```
+
+Hugo debe usar datos reales y nunca inventar proveedor, rating, precio, disponibilidad, pago o estado. Voz/texto comparten contexto y el fallback texto debe seguir operativo.
+
+## VERCEL TEST
+
+El estado pre-Stitch restaurado por `442d772e...` obtuvo deploy Vercel `READY`. Los commits posteriores `2d585734...` y `48b1fb4...` son CI/documentación y no cambian el frontend/backend funcional.
+
+Alias:
+
+```text
+https://ugo-admin-panel.vercel.app
+```
+
+Supabase PRODUCCIÓN no fue tocado.
 
 ## NEXT
 
 ```text
-1. configurar de forma segura las 8 variables TEST del workflow fuera del repo
-2. ejecutar Core CI con E2E autenticado habilitado
-3. capturar serviceId/runId nuevo y comprobar 2 objetos reales en service-evidence
-4. confirmar mismo serviceId/pago/chat/evidencias como Cliente, Proveedor y Admin
-5. resolver explícitamente la política financiera mínima de producción
-6. implementar saldo/retiro/reembolso sólo después de esa decisión
-7. realizar pasada física en dos dispositivos
-8. sólo después evaluar checklist de promoción comercial
+1. terminar/verificar Core CI del HEAD documental
+2. ejecutar E2E autenticado sólo si las 6 credenciales humanas TEST existen en GitHub Secrets
+3. si faltan, mantener BLOCKED y no inventarlas
+4. capturar serviceId/runId + 2 Storage reales sólo cuando la corrida auténtica ocurra
+5. preparar pasada física de dos celulares sin marcar MEASURED
+6. mantener finanzas BLOCKED hasta decisión explícita
+7. después avanzar UX operativa; no hacer refactor arquitectónico grande antes
 ```
 
-Nunca tocar Supabase producción hasta autorización explícita de promoción.
+Detenerse sólo por producción, gasto real, credenciales inexistentes, decisión financiera irreversible no definida o riesgo de pérdida de datos.
