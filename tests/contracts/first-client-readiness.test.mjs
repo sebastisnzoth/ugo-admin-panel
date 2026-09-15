@@ -45,7 +45,7 @@ test('lost cancellation response is reconciled against persisted service state',
 test('client can recover cancellation from Services outside the matching screen', async () => {
   const history = await read('src/mvp/ServiceHistoryPanel.tsx')
   assert.match(history, /CLIENT_CANCELLABLE_STATES/)
-  assert.match(history, /Cancelar solicitud/)
+  assert.match(history, /Cancelar pedido/)
   assert.match(history, /Solicitud cancelada correctamente/)
   assert.match(history, /El pedido sigue activo y podés reintentar/)
 })
