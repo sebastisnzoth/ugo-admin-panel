@@ -14,9 +14,18 @@ test('provider bottom navigation keeps active semantics and earnings reachable f
   assert.match(root, /aria-current=/)
 })
 
-test('provider bottom navigation fits five mobile targets', async () => {
-  const css = await read('src/mvp/provider/provider-flow.css')
-  assert.match(css, /grid-template-columns:repeat\(5,minmax\(0,1fr\)\)/)
-  assert.match(css, /\.provider-bottom-nav button\{[^}]*min-height:48px/)
-  assert.match(css, /\.provider-bottom-nav button:focus-visible/)
+test('provider bottom navigation exposes four real mobile destinations', async () => {
+  const [root, css] = await Promise.all([
+    read('src/mvp/provider/ProviderRoot.tsx'),
+    read('src/mvp/provider/provider-nav-cleanup.css'),
+  ])
+  assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/)
+  for (const label of ['Inicio','Pedidos','Trabajo','Perfil']) assert.match(root,new RegExp(`>${label}(?:<|\\{)`))
+  assert.match(root, /provider-nav-cleanup\.css/)
+})
+
+test('provider history is a screen instead of a floating launcher', async () => {
+  const root = await read('src/mvp/provider/ProviderRoot.tsx')
+  assert.match(root, /screen==='history'&&<div className="provider-screen"><ServiceHistoryPanel role="provider" embedded\/><\/div>/)
+  assert.doesNotMatch(root, /<ServiceHistoryPanel role="provider" openRequest=/)
 })
