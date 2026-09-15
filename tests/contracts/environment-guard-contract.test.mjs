@@ -32,6 +32,11 @@ test('environment guard rejects production Supabase configuration across all run
  assert.match(guard,/vercel\.json/)
 })
 
+test('Vercel automatic Git deployments stay disabled while hosting is intentionally paused',async()=>{
+ const vercel=JSON.parse(await read('vercel.json'))
+ assert.equal(vercel.git?.deploymentEnabled,false)
+})
+
 test('WhatsApp serverless fallback is TEST-only',async()=>{
  const source=await read('api/whatsapp/send.js')
  assert.match(source,new RegExp(TEST_REF))
