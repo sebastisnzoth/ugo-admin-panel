@@ -14,10 +14,10 @@ test('client surfaces a persisted rating only after completed services',async()=
  assert.match(prompt,/from\('servicios'\)/)
  assert.match(prompt,/\.eq\('estado','completado'\)/)
  assert.match(prompt,/from\('resenas'\)/)
- assert.match(prompt,/cliente_id:userId/)
- assert.match(prompt,/proveedor_id:target\.service\.proveedor_id/)
- assert.match(prompt,/servicio_id:target\.service\.id/)
- assert.match(prompt,/puntuacion:score/)
+ assert.match(prompt,/cliente_id\s*:\s*userId/)
+ assert.match(prompt,/proveedor_id\s*:\s*target\.service\.proveedor_id/)
+ assert.match(prompt,/servicio_id\s*:\s*target\.service\.id/)
+ assert.match(prompt,/puntuacion\s*:\s*score/)
 })
 
 test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',async()=>{
