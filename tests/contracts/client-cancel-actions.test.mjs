@@ -12,12 +12,14 @@ test('client cancellation is backed by an authenticated RPC', async () => {
   assert.match(migration, /grant execute on function public\.cancelar_servicio\(uuid\) to authenticated/)
 })
 
-test('matching cancel button reaches the real dispatch cancellation path', async () => {
+test('matching cancel button reaches the real dispatch cancellation path for one explicit service id', async () => {
   const guided = await read('src/mvp/client/ClientGuidedRequest.tsx')
   const bridge = await read('src/mvp/client/ClientFlowActionsBridge.tsx')
   const dispatch = await read('src/lib/dispatch/supabaseDispatch.ts')
-  assert.match(guided, /flow\.actions\.cancelService\(\)/)
-  assert.match(bridge, /await getDispatchProvider\(\)\.cancel\(active\.id\)/)
+  assert.match(guided, /flow\.actions\.cancelService\(currentCreatingServiceId\)/)
+  assert.match(bridge, /\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
+  assert.doesNotMatch(bridge, /order\('created_at'.*limit\(1\)/)
+  assert.match(bridge, /await getDispatchProvider\(\)\.cancel\(owned\.id\)/)
   assert.match(dispatch, /rpc\('cancelar_servicio', \{ p_servicio_id: serviceId \}\)/)
 })
 
