@@ -39,7 +39,7 @@ export function MvpApp(){
  if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
  if(app==='client')return <ClientApp/>
  if(app==='provider')return <ProviderApp/>
- if(app==='development')return <Deferred><AdminGate><DevelopmentDashboard/></AdminGate></Deferred>
+ if(app==='development')return <Deferred><DevelopmentDashboard/></Deferred>
  if(app==='admin')return <Deferred><AdminGate/></Deferred>
  if(app==='web')return <Deferred><UgoWeb/></Deferred>
  return <Deferred><UgoLanding/></Deferred>
