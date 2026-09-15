@@ -19,7 +19,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  UGO_ANDROID_API_BASE: https://ugo-admin-panel-netlify.netlify.app
+  # Android packages the current UI locally. Only serverless /api calls use
+  # the published TEST-compatible backend; no remote Vercel UI is loaded.
+  UGO_ANDROID_API_BASE: https://ugo-admin-panel.vercel.app
 
 jobs:
   apk:
@@ -90,10 +92,14 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          ! grep -R "ugo-admin-panel.vercel.app" capacitor.config.json android/app/src/main/assets 2>/dev/null
-          grep -q '"webDir": "dist"' capacitor.config.json
-          grep -q '"CapacitorHttp"' capacitor.config.json
-          grep -q '"enabled": true' capacitor.config.json
+          python3 - <<'PY'
+          import json
+          with open('capacitor.config.json') as fh:
+              config = json.load(fh)
+          assert config.get('webDir') == 'dist'
+          assert not (config.get('server') or {}).get('url'), 'Android must not load a remote UI'
+          assert ((config.get('plugins') or {}).get('CapacitorHttp') or {}).get('enabled') is True
+          PY
           grep -R -q "${GITHUB_SHA}" android/app/src/main/assets/public
           grep -R -q "${UGO_ANDROID_API_BASE}" android/app/src/main/assets/public
 
