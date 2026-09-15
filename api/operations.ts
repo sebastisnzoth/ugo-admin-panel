@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
 const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
+const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
 
 function operation(req: VercelRequest) {
   const raw = req.query.op
@@ -72,7 +73,7 @@ function httpError(message: string, status: number) {
 }
 
 async function requireAdmin(req: VercelRequest) {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw httpError('Backend KYC no configurado.', 503)
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) throw httpError('Backend Admin no configurado.', 503)
 
   const token = accessToken(req)
   if (!token) throw httpError('Sesión Admin requerida.', 401)
@@ -96,6 +97,13 @@ async function requireAdmin(req: VercelRequest) {
   }
 
   return { sb, user }
+}
+
+function adminErrorResponse(res: VercelResponse, error: unknown, fallback: string) {
+  const status = typeof error === 'object' && error !== null && 'status' in error ? Number((error as { status?: unknown }).status) : 500
+  return res.status(status >= 400 && status < 600 ? status : 500).json({
+    error: error instanceof Error ? error.message : fallback,
+  })
 }
 
 async function verifyKyc(req: VercelRequest, res: VercelResponse) {
@@ -152,10 +160,49 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json({ success: true, message: aprobado ? 'Documento aprobado' : 'Documento rechazado' })
   } catch (error) {
     console.error('KYC verify error:', error)
-    const status = typeof error === 'object' && error !== null && 'status' in error ? Number((error as { status?: unknown }).status) : 500
-    return res.status(status >= 400 && status < 600 ? status : 500).json({
-      error: error instanceof Error ? error.message : 'Internal server error',
-    })
+    return adminErrorResponse(res, error, 'Internal server error')
+  }
+}
+
+async function changeProviderVerification(req: VercelRequest, res: VercelResponse) {
+  const providerId = typeof req.body?.providerId === 'string' ? req.body.providerId.trim() : ''
+  const state = typeof req.body?.state === 'string' ? req.body.state.trim() : ''
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 2000) : ''
+
+  if (!providerId || !PROVIDER_VERIFICATION_STATES.has(state)) {
+    return res.status(400).json({ error: 'Proveedor o estado de verificación inválido.' })
+  }
+  if (state === 'rechazado' && !reason) {
+    return res.status(400).json({ error: 'El motivo es obligatorio al rechazar.' })
+  }
+
+  try {
+    const { sb } = await requireAdmin(req)
+    const { data: current, error: currentError } = await sb
+      .from('perfiles_proveedor')
+      .select('usuario_id,estado_verificacion')
+      .eq('usuario_id', providerId)
+      .maybeSingle()
+
+    if (currentError) throw currentError
+    if (!current) return res.status(404).json({ error: 'Proveedor no encontrado.' })
+
+    const { data: updated, error: updateError } = await sb
+      .from('perfiles_proveedor')
+      .update({
+        estado_verificacion: state,
+        motivo_rechazo: state === 'rechazado' ? reason : null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('usuario_id', providerId)
+      .select('usuario_id,estado_verificacion,motivo_rechazo,updated_at')
+      .single()
+
+    if (updateError) throw updateError
+    return res.status(200).json({ success: true, provider: updated })
+  } catch (error) {
+    console.error('Provider verification update error:', error)
+    return adminErrorResponse(res, error, 'No se pudo actualizar la verificación del proveedor.')
   }
 }
 
@@ -165,6 +212,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'cash-select': return selectCash(req, res)
     case 'cash-confirm': return confirmCash(req, res)
     case 'kyc-verify': return verifyKyc(req, res)
+    case 'provider-verification': return changeProviderVerification(req, res)
     default: return res.status(404).json({ error: 'Operación no encontrada.' })
   }
 }
