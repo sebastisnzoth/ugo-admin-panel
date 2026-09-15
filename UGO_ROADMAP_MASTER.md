@@ -77,7 +77,7 @@ Invariantes:
 - Realtime de oportunidades/servicios/pagos rehidrata persistencia.
 - Perfil y configuración multirubro fueron incorporados en `main`; validar su recorrido visual junto con la prueba física.
 
-### 3. Proveedor · ejecución del servicio — BACKEND E2E CERRADO / DISPOSITIVO PENDIENTE
+### 3. Proveedor · ejecución del servicio — BACKEND HISTÓRICO CERRADO / NUEVO E2E PREPARADO / DISPOSITIVO PENDIENTE
 
 El 14/09/2026 se ejecutó una corrida real DB/RPC/RLS en UGO TEST con identidades TEST y un único servicio:
 
@@ -111,11 +111,23 @@ Validado en esa corrida:
 
 La corrida histórica no sustituye la nueva validación requerida después del endurecimiento de Storage/chat/tracking.
 
+El harness actual ya está **IMPLEMENTED** para una nueva corrida única Cliente ↔ Proveedor ↔ Admin con:
+
+- el mismo `serviceId` durante todo el lifecycle;
+- chat canónico Cliente/Proveedor y auditoría Admin;
+- dos uploads reales a `service-evidence` (`antes` + `despues`);
+- pago, ampliación, idempotencia y cierre;
+- verificación final del mismo servicio, pago y evidencias desde Admin;
+- preservación auditada del fixture en TEST mediante `metadata.integration_test` + `e2e_run_id`.
+
+Ese nuevo E2E todavía NO está `VALIDATED`: GitHub Actions no dispone de las credenciales TEST necesarias para ejecutarlo autenticado.
+
 ### 4. Admin / Super Admin — AVANZADO
 
 - Operaciones, usuarios, finanzas, validación, configuración y disputas existen.
-- Admin TEST fue reconocido por `private.is_admin(...)` y pudo leer el mismo `serviceId` y pago del E2E final.
-- Queda validar en UI física las acciones operativas y journeys de excepción.
+- Admin TEST fue reconocido por `private.is_admin(...)` y pudo leer el mismo `serviceId` y pago del E2E histórico final.
+- El harness nuevo exige una tercera identidad Admin/Super Admin real y verifica servicio, chat, pago y evidencias sobre el mismo `serviceId`.
+- Queda ejecutar esa corrida autenticada nueva y validar en UI física las acciones operativas y journeys de excepción.
 
 ### 5. Backend / Supabase TEST — P0 CORE VALIDADO
 
@@ -129,39 +141,104 @@ UGO TEST: `tmossnqfwfwjrtzwcbmm`.
 - `tests/contracts/cash-review-ordering-restore.test.mjs` evita que ese guard vuelva a desaparecer del repo.
 - Producción no fue modificada.
 
-**Pendiente de seguridad para producción:** seguir clasificando y cerrando advisors de Supabase (políticas amplias, vistas `SECURITY DEFINER`, search path y leaked-password protection) sin romper funciones intencionalmente privilegiadas.
+#### Seguridad SECURITY DEFINER · VALIDATED EN TEST
 
-### 6. QA / Release — EN CURSO
+Los 15 warnings actuales de funciones `SECURITY DEFINER` expuestas a `authenticated` fueron revisados función por función. Los privilegios elevados son intencionales donde el RPC necesita operar sobre autoridad backend, y los guards internos de identidad/rol/ownership se conservaron.
 
-- Build/TypeScript y tests contractuales forman el gate regular.
-- El contrato de voz desactualizado fue corregido para el refresh forzado live.
-- `UGO Core CI` volvió a verde después de esa corrección; cada nuevo SHA debe volver a verificarse antes de declararlo cerrado.
-- Vercel volvió a producir despliegues `READY`; el viejo bloqueo por límite diario no gobierna ya el estado actual.
-- El workflow `UGO Isolated RPC RLS` permanece como gate adicional con `signInWithPassword` y requiere credenciales humanas TEST en GitHub Secrets.
-- El E2E de backend/RPC/RLS ya fue ejecutado con identidades TEST reales bajo contexto `authenticated`/JWT claim; no sustituye la prueba física ni el login HTTP automatizado.
-- La rama `main` debe evolucionar hacia protección con checks obligatorios antes de promoción comercial.
+Negativos transaccionales reales en TEST confirmaron:
+
+- usuario Cliente no puede ejecutar `admin_get_auth_users()`;
+- usuario Proveedor no puede ejecutar `admin_get_auth_users()`;
+- Cliente ajeno no puede leer tracking de otro servicio;
+- Proveedor no puede iniciar matching dirigido sobre servicio ajeno.
+
+`anon` no tiene EXECUTE sobre los RPC críticos revisados.
+
+**Pendiente antes de producción:** leaked-password protection y cualquier advisor restante que represente riesgo real, sin romper funciones privilegiadas intencionales.
+
+### 6. QA / Release — CI VERDE / E2E LOGIN BLOQUEADO POR SECRETS
+
+Último SHA funcional/contractual validado antes del handoff documental:
+
+```text
+936fc9361a95b87acfc4fcd52fcb28d495b811a4
+```
+
+CI autoritativo:
+
+```text
+UGO Core CI #742
+run: 34922540607
+conclusion: success
+```
+
+Pasaron:
+
+- npm install reproducible;
+- `npm audit --audit-level=high` sin vulnerabilidades;
+- TEST environment guard;
+- build + TypeScript;
+- 198 tests;
+- critical operational lint;
+- ClientApp lint;
+- full repository lint.
+
+Vercel desplegó ese SHA como `READY`:
+
+```text
+deployment: dpl_3Ghrdg8it7GmnDC7JVxPkYvLCSGW
+alias: https://ugo-admin-panel.vercel.app
+```
+
+El workflow Core CI ya referencia las ocho variables requeridas para el E2E autenticado, incluida la identidad Admin. En GitHub Actions hoy están ausentes, por lo que la integración se omite de forma explícita y segura en vez de tocar otro entorno.
+
+El harness rechaza una URL de Supabase que no sea el TEST designado y los contratos verifican que producción sea bloqueada antes de cualquier intento de red.
+
+La rama `main` debe evolucionar hacia protección con checks obligatorios antes de promoción comercial.
+
+## Finanzas · BLOCKED POR DECISIÓN DE PRODUCTO
+
+Antes de implementar saldo/retiros definitivos faltan decisiones inequívocas sobre:
+
+- estados que alimentan saldo disponible;
+- momento en que retiro pendiente/procesando compromete saldo;
+- tratamiento de efectivo pendiente si un servicio se cancela;
+- retiro manual interno vs Mercado Pago Split;
+- semántica final de cancelado/fallido/reembolsado/anulado.
+
+Los RPC esperados por UI siguen ausentes de Supabase TEST:
+
+```text
+saldo_proveedor()
+solicitar_retiro(p_monto)
+```
+
+No inventar estos contratos hasta decisión explícita de producto.
 
 ## Próximo checkpoint
 
 **P0 actual: PRODUCTION COMMERCIAL READINESS.**
 
-No optimizar para “tener una demo”. Cerrar, en este orden, lo que impide operación comercial real:
+No optimizar para “tener una demo”. Cerrar lo ejecutable y separar claramente bloqueos externos/decisiones de producto:
 
-1. cerrar la decisión financiera mínima: modelo de cobro, comisión UGO, saldo/retiros, cancelación, reembolso y conciliación;
-2. ejecutar un E2E nuevo completo con un único `serviceId`, Storage real, evidencia Antes/Después y cierre hasta `completado`;
-3. verificar Cliente/Proveedor/Admin sobre ese mismo `serviceId` y la misma realidad financiera;
-4. probar en dos dispositivos reales: Realtime sin refresh, reconnect/background, cámara, GPS/tracking, voz/Hugo, push y UX móvil;
-5. convertir autenticación E2E TEST en gate automatizado con credenciales aisladas fuera del repositorio;
-6. cerrar seguridad de producción, protección de `main`, observabilidad, backups y procedimiento de rollback;
-7. cerrar onboarding, soporte, disputas, privacidad/LGPD y operación comercial;
-8. ejecutar un piloto controlado completo antes de apertura progresiva;
-9. sólo con todos los gates verdes preparar y autorizar promoción a producción real.
+1. configurar en GitHub Actions las 8 variables TEST requeridas, sin guardarlas en el repositorio;
+2. ejecutar el E2E nuevo completo con un único `serviceId`, dos objetos reales Storage y cierre hasta `completado`;
+3. verificar Cliente/Proveedor/Admin sobre ese mismo `serviceId`, chat, evidencias y realidad financiera;
+4. resolver explícitamente la política financiera mínima: comisión, saldo/retiros, cancelación, reembolso y conciliación;
+5. implementar y probar finanzas sólo después de esa decisión;
+6. probar en dos dispositivos reales: Realtime sin refresh, reconnect/background, cámara, GPS/tracking, voz/Hugo, push y UX móvil;
+7. cerrar seguridad de producción, protección de `main`, observabilidad, backups y procedimiento de rollback;
+8. cerrar onboarding, soporte, disputas, privacidad/LGPD y operación comercial;
+9. ejecutar un piloto controlado completo antes de apertura progresiva;
+10. sólo con todos los gates verdes preparar y autorizar promoción a producción real.
 
 ## Bloqueo externo restante
 
-Para el workflow de login real faltan, fuera del repositorio:
+GitHub Actions no tiene configuradas actualmente las ocho variables que necesita el harness nuevo:
 
 ```text
+UGO_TEST_SUPABASE_URL
+UGO_TEST_SUPABASE_ANON_KEY
 UGO_TEST_CLIENT_EMAIL
 UGO_TEST_CLIENT_PASSWORD
 UGO_TEST_PROVIDER_EMAIL
@@ -170,7 +247,7 @@ UGO_TEST_ADMIN_EMAIL
 UGO_TEST_ADMIN_PASSWORD
 ```
 
-Nunca guardar esas contraseñas en código, commits o documentación pública.
+Nunca guardar esos valores en código, commits o documentación pública.
 
 También queda pendiente una decisión de producto explícita sobre el modelo financiero de producción antes de implementar saldo/retiro/reembolso definitivo.
 
@@ -180,7 +257,7 @@ UGO TEST sólo puede promoverse cuando:
 
 - CI del SHA candidato está verde y los checks de `main` son obligatorios;
 - deploy candidato está `READY`;
-- workflow aislado con login real está verde;
+- E2E aislado con login real Cliente/Proveedor/Admin está verde;
 - Cliente + Proveedor completan el journey en dispositivos reales;
 - Admin observa/opera el mismo servicio y la misma realidad financiera;
 - cámara/GPS/Storage/voz/Push y Realtime funcionan en dispositivo;
