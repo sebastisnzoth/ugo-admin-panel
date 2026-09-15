@@ -2,9 +2,9 @@
   "appId": "com.ugo.test",
   "appName": "UGO TEST",
   "webDir": "dist",
-  "server": {
-    "url": "https://ugo-admin-panel.vercel.app",
-    "cleartext": false,
-    "androidScheme": "https"
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
   }
 }
