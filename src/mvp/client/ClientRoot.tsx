@@ -44,25 +44,26 @@ export function ClientRoot({demo}:Props){
  const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
  const openService=(serviceId:string)=>{setSentinelContext({role:'client',serviceId,action:'client.activity.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'});setSelectedServiceId(serviceId)}
  const closeService=()=>{clearSentinelContext();setSelectedServiceId(null)}
+ const detailOpen=Boolean(selectedServiceId)
  return <ClientOnboardingGate><div className={`ugo-client-root ugo-client-screen-${flow.screen}`}>
   <ClientFlowActionsBridge/>
   {demo&&<DemoSebastianPaymentBridge/>}
   <ClientStudioNavbar/>
   {flow.screen==='home'&&<ClientPremiumHome onOpenService={openService}/>} 
   {flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} 
-  {flow.screen!=='request'&&flow.screen!=='home'&&<ClientHugoBridge/>}
-  <ClientPaymentChoice/>
+  {flow.screen!=='request'&&flow.screen!=='home'&&!detailOpen&&<ClientHugoBridge/>}
+  {!detailOpen&&<ClientPaymentChoice/>}
   <ClientGlobalMenu/>
   <NotificationCenter role="client" onOpenNotice={openNotice}/>
-  <ClientLiveTracking/>
-  <ClientCompletionReview onOpenDispute={flow.actions.openDispute}/>
-  <ClientRatingPrompt/>
-  <ServiceChat role="client"/>
-  <DisputeDock role="client" openRequest={flow.screen==='dispute'}/>
-  <AppLocationButton role="client"/>
+  {!detailOpen&&<ClientLiveTracking/>}
+  {!detailOpen&&<ClientCompletionReview onOpenDispute={flow.actions.openDispute}/>}
+  {!detailOpen&&<ClientRatingPrompt/>}
+  {!detailOpen&&<ServiceChat role="client"/>}
+  {!detailOpen&&<DisputeDock role="client" openRequest={flow.screen==='dispute'}/>}
+  {!detailOpen&&<AppLocationButton role="client"/>}
   <ClientProviderRadarBridge/>
-  {flow.screen==='history'&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><ServiceHistoryPanel role="client" embedded onOpenService={openService}/></div></div>}
+  {flow.screen==='history'&&!detailOpen&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><ServiceHistoryPanel role="client" embedded onOpenService={openService}/></div></div>}
   {selectedServiceId&&<SentinelErrorBoundary role="client" serviceId={selectedServiceId} checklistCode="CLIENT-ORDER-OPEN" action="client.activity.open_order" severity="P0" title="No pudimos abrir este pedido" onClose={closeService}><ClientServiceDetail serviceId={selectedServiceId} onClose={closeService}/></SentinelErrorBoundary>}
-  {flow.screen==='profile'&&<ClientProfilePanel/>}
+  {flow.screen==='profile'&&!detailOpen&&<ClientProfilePanel/>}
  </div></ClientOnboardingGate>
 }
