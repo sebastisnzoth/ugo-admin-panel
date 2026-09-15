@@ -19,6 +19,6 @@ test('client radar model does not expose professional contact fields',async()=>{
 
 test('home verification copy is backed by the verified radar store',async()=>{
  const home=await read('src/mvp/client/ClientPremiumHome.tsx')
- assert.match(home,/Especialistas verificados/)
+ assert.match(home,/Profesionales verificados en tu zona/)
  assert.match(home,/Perfiles verificados/)
 })
