@@ -51,7 +51,7 @@ export function ClientRoot({demo}:Props){
   <ClientStudioNavbar/>
   {flow.screen==='home'&&<ClientPremiumHome onOpenService={openService}/>} 
   {flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} 
-  {flow.screen!=='request'&&flow.screen!=='home'&&!detailOpen&&<ClientHugoBridge/>}
+  {flow.screen!=='request'&&!detailOpen&&<ClientHugoBridge/>}
   {!detailOpen&&<ClientPaymentChoice/>}
   <ClientGlobalMenu/>
   <NotificationCenter role="client" onOpenNotice={openNotice}/>
