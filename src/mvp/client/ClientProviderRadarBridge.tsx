@@ -7,22 +7,32 @@ import{refreshProviderRadar}from'./providerRadarStore'
 
 const normalize=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim()
 const categoryAliases:Record<string,string[]>={
- electricidad:['electricista','electricidad','electrico','electrica','eletricista','eletrica'],
- jardineria:['jardinero','jardineria','jardin','jardineiro','jardinagem'],
- plomeria:['plomero','plomeria','fontanero','encanador','encanamento'],
+ electricidad:['electricista','electricidad','electrico','electrica','eletricista','eletrica','enchufe','tomacorriente'],
+ jardineria:['jardinero','jardineria','jardin','jardineiro','jardinagem','pasto','cesped'],
+ plomeria:['plomero','plomeria','fontanero','encanador','encanamento','canilla','grifo'],
  limpieza:['limpieza','limpiador','limpiadora','limpeza','faxina','diarista'],
  pintura:['pintor','pintura'],
  cerrajeria:['cerrajero','cerrajeria','chaveiro'],
- reparaciones:['reparacion','reparaciones','reparar','arreglar'],
+ reparaciones:['reparacion','reparaciones','reparar','arreglar','conserto','manutencao'],
+}
+
+function aliasesForCategory(category:Category){
+ const name=normalize(category.nombre),slug=normalize(category.slug)
+ return Object.entries(categoryAliases).flatMap(([key,aliases])=>slug.includes(key)||name.includes(key)?aliases:[])
 }
 
 function matchCategory(categories:Category[],hint?:string|null){
  const target=normalize(String(hint||''))
  if(!target)return null
- return categories.find(category=>{
+ const direct=categories.find(category=>{
   const name=normalize(category.nombre),slug=normalize(category.slug)
   return name.includes(target)||target.includes(name)||slug.includes(target)||target.includes(slug)
- })||null
+ })
+ if(direct)return direct
+ return categories.find(category=>aliasesForCategory(category).some(alias=>{
+  const normalizedAlias=normalize(alias)
+  return target===normalizedAlias||target.includes(normalizedAlias)||normalizedAlias.includes(target)
+ }))||null
 }
 
 function intentNamesCategory(text:string,category:Category|null){
@@ -30,8 +40,7 @@ function intentNamesCategory(text:string,category:Category|null){
  const q=normalize(text)
  const slug=normalize(category.slug),name=normalize(category.nombre)
  if(q.includes(slug)||q.includes(name))return true
- const aliases=Object.entries(categoryAliases).find(([key])=>slug.includes(key)||name.includes(key))?.[1]||[]
- return aliases.some(alias=>q.includes(normalize(alias)))
+ return aliasesForCategory(category).some(alias=>q.includes(normalize(alias)))
 }
 
 export function ClientProviderRadarBridge(){
