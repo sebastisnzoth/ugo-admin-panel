@@ -32,6 +32,7 @@ import'./client-guided-request-review.css'
 import'./client-redesign-2026.css'
 import'./client-ai-studio-adapter.css'
 import'./client-ai-studio-flow.css'
+import'./client-google-ai-studio.css'
 
 type Props={demo:boolean}
 
