@@ -1,9 +1,13 @@
-name: Netlify deploy
+name: Netlify deploy (manual only)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Escribí DEPLOY_NETLIFY para habilitar este deploy manual'
+        required: true
+        default: 'NO'
+        type: string
 
 permissions:
   contents: read
@@ -18,6 +22,7 @@ env:
 
 jobs:
   deploy:
+    if: ${{ inputs.confirm == 'DEPLOY_NETLIFY' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
