@@ -47,3 +47,30 @@ test('client and provider surfaces use one canonical chat component with realtim
  assert.match(component,/table:'mensajes'/)
  assert.match(component,/postgres_changes/)
 })
+
+test('service chat isolates fixed order conversations by service and participant',async()=>{
+ const component=await read('src/mvp/ServiceChat.tsx')
+ assert.match(component,/q=q\.eq\('id',serviceId\)\.eq\(role==='client'\?'cliente_id':'proveedor_id',uid\)/)
+ assert.match(component,/eq\('servicio_id',current\.id\)/)
+ assert.match(component,/messageConfig\.filter=`servicio_id=eq\.\$\{service\.id\}`/)
+ assert.match(component,/serviceConfig\.filter=`id=eq\.\$\{service\.id\}`/)
+})
+
+test('service chat converges even when a realtime event is missed',async()=>{
+ const component=await read('src/mvp/ServiceChat.tsx')
+ assert.match(component,/window\.setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'&&navigator\.onLine\)resync\(\)\},10000\)/)
+ assert.match(component,/window\.addEventListener\('online',resync\)/)
+ assert.match(component,/document\.addEventListener\('visibilitychange',onVisibility\)/)
+ assert.match(component,/if\(status==='SUBSCRIBED'\)resync\(\)/)
+ assert.match(component,/window\.clearInterval\(fallback\)/)
+ assert.match(component,/sb\.removeChannel\(ch\)/)
+})
+
+test('client and provider keep separate auth storage while sharing the same role client in chat',async()=>{
+ const roleClient=await read('src/lib/roleSupabase.ts')
+ const shared=await read('src/mvp/shared.tsx')
+ const component=await read('src/mvp/ServiceChat.tsx')
+ assert.match(roleClient,/storageKey: `ugo-test-\$\{role\}-auth`/)
+ assert.match(shared,/getRoleSupabase\(role\)/)
+ assert.match(component,/getRoleSupabase\(role\)/)
+})
