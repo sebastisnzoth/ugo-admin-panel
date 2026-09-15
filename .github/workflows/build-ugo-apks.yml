@@ -24,11 +24,11 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Install Android 35
-        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Install Android 35 from runner SDK
+        shell: bash
+        run: |
+          echo "ANDROID_HOME=${ANDROID_SDK_ROOT}" >> "$GITHUB_ENV"
+          sdkmanager 'platform-tools' 'platforms;android-35' 'build-tools;35.0.0'
 
       - name: Gradle
         uses: gradle/actions/setup-gradle@v4
@@ -44,12 +44,13 @@ jobs:
           mkdir -p apk-output
           cp android-apk/app/build/outputs/apk/client/debug/app-client-debug.apk apk-output/UGO-Cliente.apk
           cp android-apk/app/build/outputs/apk/provider/debug/app-provider-debug.apk apk-output/UGO-Proveedor.apk
+          sha256sum apk-output/*.apk > apk-output/SHA256SUMS.txt
           ls -lh apk-output
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
           name: UGO-Android-APKs
-          path: apk-output/*.apk
+          path: apk-output/*
           if-no-files-found: error
           retention-days: 30
