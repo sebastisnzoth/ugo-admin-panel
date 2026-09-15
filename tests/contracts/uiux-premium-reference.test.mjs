@@ -5,10 +5,10 @@ const source=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client premium home mirrors the approved conversational product hierarchy',async()=>{
  const text=await source('src/mvp/client/ClientPremiumHome.tsx')
- assert.match(text,/Contame qué necesitás\. Yo te ayudo a resolverlo\./)
+ assert.match(text,/¿Qué necesitás\?/)
  assert.match(text,/Hablar con Hugo/)
- assert.match(text,/Escribirle a Hugo/)
- assert.match(text,/Decí “Hola Hugo”/)
+ assert.match(text,/>Escribir</)
+ assert.match(text,/UGO te va guiando paso a paso/)
  assert.match(text,/ugo-client-home-map/)
  assert.match(text,/\.ugo-real-orb/)
  assert.match(text,/\.ugo-hugo-stage-composer input/)
