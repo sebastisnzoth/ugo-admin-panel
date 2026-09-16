@@ -13,8 +13,8 @@ export function SuperAdminCommandCenter(){
  const[audit,setAudit]=useState<any[]>([]),[integrations,setIntegrations]=useState<Integration[]>([])
  const load=async()=>{setLoading(true);setError('');try{
   const{data:{user},error:userError}=await supabase.auth.getUser();if(userError||!user)throw userError||new Error('Sesión requerida.')
-  const{data:profile,error:profileError}=await supabase.from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(profileError)throw profileError
-  if(!profile?.activo||profile.tipo!=='superadmin'){setAuthorized(false);throw new Error('Acceso reservado a Super Admin.')}
+  const{data:profile,error:profileError}=await (supabase as any).from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(profileError)throw profileError
+  if(!profile?.activo||profile?.tipo!=='superadmin'){setAuthorized(false);throw new Error('Acceso reservado a Super Admin.')}
   setAuthorized(true)
   const db=supabase as any;const[{count:users},{count:services},{count:providers},{count:payments},{data:config,error:configError},{data:events,error:auditError},{data:{session}}]=await Promise.all([
    db.from('usuarios').select('id',{count:'exact',head:true}),db.from('servicios').select('id',{count:'exact',head:true}),db.from('perfiles_proveedor').select('usuario_id',{count:'exact',head:true}),db.from('pagos').select('id',{count:'exact',head:true}),db.from('config_sistema').select('clave,valor,grupo').eq('grupo','feature_flags').limit(100),db.from('audit_log').select('*').order('created_at',{ascending:false}).limit(30),supabase.auth.getSession()
