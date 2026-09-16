@@ -8,7 +8,7 @@ test('service chat uses the canonical mensajes table and participant identity',a
  const grants=await read('supabase/migrations/20260914233922_service_chat_authenticated_privileges.sql')
  const hardening=await read('supabase/migrations/20260915001039_canonical_service_chat_hardening.sql')
  assert.match(component,/from\('mensajes'\)/)
- assert.match(component,/servicio_id:service\.id/)
+ assert.match(component,/servicio_id:currentServiceId/)
  assert.match(component,/emisor_id:userId/)
  assert.match(component,/contenido:string/)
  assert.match(component,/contenido:clean/)
@@ -59,7 +59,8 @@ test('service chat isolates fixed order conversations by service and participant
 
 test('service chat converges even when a realtime event is missed',async()=>{
  const component=await read('src/mvp/ServiceChat.tsx')
- assert.match(component,/window\.setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'&&navigator\.onLine\)resync\(\)\},10000\)/)
+ assert.match(component,/function shouldEscalate\(\)\{return document\.visibilityState==='visible'&&navigator\.onLine\}/)
+ assert.match(component,/window\.setInterval\(\(\)=>\{if\(shouldEscalate\(\)\)resync\(\)\},10000\)/)
  assert.match(component,/window\.addEventListener\('online',resync\)/)
  assert.match(component,/document\.addEventListener\('visibilitychange',onVisibility\)/)
  assert.match(component,/if\(status==='SUBSCRIBED'\)resync\(\)/)
