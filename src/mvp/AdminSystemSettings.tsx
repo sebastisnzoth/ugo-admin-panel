@@ -63,13 +63,16 @@ export function AdminSystemSettings(){
  const refreshAll=async()=>{await refetch();if(tab==='integrations')await loadIntegrations()}
  const saveChanges=async()=>{
   if(!dirtyKeys.length)return
+  const ok=window.confirm(`Guardar ${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} de configuración?\n\n${dirtyKeys.map(key=>`• ${human(key)}`).join('\n')}\n\nEl cambio queda auditado y puede afectar la operación.`)
+  if(!ok)return
   setSaving(true);setSavedMessage('')
   try{
    for(const key of dirtyKeys)await update(key,draft[key])
    setSavedMessage(`${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} guardado${dirtyKeys.length===1?'':'s'}`)
    setDraft({})
    await refetch()
-  }finally{setSaving(false)}
+  }catch(x){window.alert(x instanceof Error?x.message:'No se pudo guardar la configuración.')}
+  finally{setSaving(false)}
  }
  const restoreDraft=()=>{setDraft({});setSavedMessage('')}
  const renderEditor=(items:[string,string][])=>{

@@ -8,7 +8,7 @@ const eventListeners: Array<(event: {table: string, type: string, row: any}) => 
 
 function initChannel() {
   if (globalChannel) return;
-  const TABLES = ['servicios','disputas','escrow','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];
+  const TABLES = ['servicios','disputas','pagos','retiros','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];
   const ch = (supabase as any).channel('ugo-admin-rt-' + Date.now());
   TABLES.forEach(table => {
     ch.on('postgres_changes', { event: '*', schema: 'public', table }, (payload: any) => {
@@ -46,7 +46,7 @@ export function useDashboardMetrics() {
   useEffect(() => {
     fetch();
     const t = setInterval(fetch, 30_000);
-    const u = ['servicios','escrow','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));
+    const u = ['servicios','pagos','retiros','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));
     return () => { clearInterval(t); u.forEach(f => f()); };
   }, [fetch]);
   return { metrics, loading, refetch: fetch };
@@ -71,7 +71,7 @@ export function useSystemAlerts() {
   useEffect(() => {
     fetch();
     const t = setInterval(fetch, 60_000);
-    const u = ['usuarios','disputas','escrow'].map(tb => subscribe(tb, fetch));
+    const u = ['usuarios','disputas','pagos','retiros'].map(tb => subscribe(tb, fetch));
     return () => { clearInterval(t); u.forEach(f => f()); };
   }, [fetch]);
   return { alerts, criticalCount: alerts.filter(a => a.severidad === 'critical').length, warningCount: alerts.filter(a => a.severidad === 'warning').length, refetch: fetch };
@@ -113,13 +113,8 @@ export function useOpenDisputes() {
     if (data) setDisputes(data as any); setLoading(false);
   }, []);
   const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {
-    const sb = supabase as any;
-    const { error } = await sb.rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });
-    if (error) { console.error('resolverDisputa:', error.message); return; }
-    const { data: d } = await sb.from('disputas').select('servicio_id').eq('id', id).single();
-    if (d?.servicio_id) {
-      await sb.from('escrow').update({ estado: favorDe === 'proveedor' ? 'liberado' : 'reembolsado', liberado_at: new Date().toISOString() }).eq('servicio_id', d.servicio_id);
-    }
+    const { error } = await (supabase as any).rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });
+    if (error) throw new Error(error.message || 'No se pudo resolver la disputa.');
     await fetch();
   }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('disputas', fetch); return u; }, [fetch]);
@@ -137,14 +132,14 @@ export function usePendingDocuments() {
   }, []);
   const updateEstado = useCallback(async (id: string, estado: string, notas?: string, notasRechazo?: string) => {
     const sb = supabase as any;
-    const payload: any = { estado, revisado_at: new Date().toISOString() };
+    const payload: any = { estado };
     if (notas) payload.notas = notas;
     if (notasRechazo && (estado === 'rechazado' || estado === 'reenvio_solicitado')) {
       payload.notas_rechazo = notasRechazo;
       if (estado === 'reenvio_solicitado') payload.intentos_resubmision = (docs.find(d => d.id === id)?.intentos_resubmision || 0) + 1;
     }
     const { error } = await sb.from('documentos').update(payload).eq('id', id);
-    if (error) { console.error('updateEstado:', error.message); return; }
+    if (error) throw new Error(error.message || 'No se pudo actualizar el documento.');
     await fetch();
   }, [fetch, docs]);
   const getSignedUrl = useCallback(async (path: string) => {
@@ -267,7 +262,11 @@ export function useConfigSistema() {
   }, []);
   const update = useCallback(async (clave: string, valor: string) => {
     const { error: updateError } = await (supabase as any).rpc('admin_update_config', { p_clave: clave, p_valor: valor });
-    if (updateError) { setError(updateError.message || 'No se pudo actualizar la configuración'); return; }
+    if (updateError) {
+      const message = updateError.message || 'No se pudo actualizar la configuración';
+      setError(message);
+      throw new Error(message);
+    }
     setConfig(prev => ({ ...prev, [clave]: valor }));
   }, []);
   useEffect(() => { fetch(); }, [fetch]);
@@ -297,15 +296,30 @@ export function useExport() {
 export function useVault() {
   const [escrows, setEscrows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetch = useCallback(async () => { const { data } = await (supabase as any).from('escrow').select('id,monto_total,comision_ugo,monto_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)').eq('estado','retenido').order('created_at', { ascending: true }); if (data) setEscrows(data); setLoading(false); }, []);
-  const liberarEscrow = useCallback(async (id: string) => { const { error } = await (supabase as any).rpc('admin_liberar_escrow', { p_escrow_id: id, p_notas: 'Liberado desde panel admin' }); if (!error) await fetch(); else console.error('liberarEscrow:', error.message); }, [fetch]);
-  useEffect(() => { fetch(); const u = subscribe('escrow', fetch); return u; }, [fetch]);
+  const fetch = useCallback(async () => {
+    const { data, error } = await (supabase as any).from('pagos')
+      .select('id,monto_total:monto_bruto,comision_ugo,monto_proveedor:ganancia_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')
+      .eq('estado','retenido').order('created_at', { ascending: true });
+    if (error) { console.error('useVault:', error.message); setEscrows([]); setLoading(false); return; }
+    setEscrows(data || []); setLoading(false);
+  }, []);
+  const liberarEscrow = useCallback(async (_id: string) => {
+    throw new Error('La liberación de fondos se gestiona desde Finanzas · Bóveda y retiros.');
+  }, []);
+  useEffect(() => { fetch(); const u = subscribe('pagos', fetch); return u; }, [fetch]);
   return { escrows, loading, liberarEscrow };
 }
 
 export function usePendingWithdrawals() {
   const [items, setItems] = useState<any[]>([]);
-  useEffect(() => { (supabase as any).from('escrow').select('id,monto_proveedor,created_at,proveedores:proveedor_id(nombre,stripe_account_id)').eq('estado','liberado').is('stripe_transfer_id', null).order('created_at', { ascending: true }).limit(20).then(({ data }: any) => { if (data) setItems(data); }); }, []);
+  const fetch = useCallback(async () => {
+    const { data, error } = await (supabase as any).from('retiros')
+      .select('id,monto,estado,created_at,proveedores:proveedor_id(nombre)')
+      .in('estado',['pendiente','procesando']).order('created_at', { ascending: true }).limit(20);
+    if (error) { console.error('usePendingWithdrawals:', error.message); setItems([]); return; }
+    setItems(data || []);
+  }, []);
+  useEffect(() => { fetch(); const u = subscribe('retiros', fetch); return u; }, [fetch]);
   return items;
 }
 
