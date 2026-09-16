@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getDispatchProvider}from'../lib/dispatch/provider'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
+import'./service-history.css'
 import'./provider-history.css'
 
 type Role='client'|'provider'|'admin'
@@ -70,11 +71,16 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
     <button type="button" className={filter==='proximos'?'active':''} onClick={()=>setFilter('proximos')} aria-pressed={filter==='proximos'}><span className="ugo-activity-summary-icon is-waiting">◷</span><span><small>PRÓXIMOS</small><strong>{upcomingCount}</strong><em>{upcomingCount===1?'pedido programado':'pedidos programados'}</em></span></button>
     <button type="button" className={filter==='finalizados'?'active':''} onClick={()=>setFilter('finalizados')} aria-pressed={filter==='finalizados'}><span className="ugo-activity-summary-icon is-done">✓</span><span><small>FINALIZADOS</small><strong>{finalCount}</strong><em>historial y cancelados</em></span></button>
    </div>}
-   <div className="ugo-history-filters">
+   {role==='client'?<div className="ugo-history-filters ugo-client-history-toolbar">
     <button type="button" className={filter==='todos'?'active':''} onClick={()=>setFilter('todos')} aria-pressed={filter==='todos'}>Todos <b>{rows.length}</b></button>
-    {role==='client'?<><button type="button" className={filter==='curso'?'active':''} onClick={()=>setFilter('curso')} aria-pressed={filter==='curso'}>En curso <b>{currentCount}</b></button><button type="button" className={filter==='proximos'?'active':''} onClick={()=>setFilter('proximos')} aria-pressed={filter==='proximos'}>Próximos <b>{upcomingCount}</b></button><button type="button" className={filter==='finalizados'?'active':''} onClick={()=>setFilter('finalizados')} aria-pressed={filter==='finalizados'}>Finalizados <b>{finalCount}</b></button></>:<><button type="button" className={filter==='activo'?'active':''} onClick={()=>setFilter('activo')}>Activos <b>{rows.filter(r=>ACTIVE_STATES.has(r.estado)).length}</b></button><button type="button" className={filter==='completado'?'active':''} onClick={()=>setFilter('completado')}>Completados <b>{rows.filter(r=>r.estado==='completado').length}</b></button>{role==='admin'&&<button type="button" className={filter==='cancelado'?'active':''} onClick={()=>setFilter('cancelado')}>Cancelados <b>{rows.filter(r=>r.estado==='cancelado').length}</b></button>}</>}
-    <button type="button" className={role==='client'?'ugo-history-refresh':undefined} onClick={()=>void load()} disabled={loading} aria-label="Actualizar actividad">↻</button>
-   </div>
+    <button type="button" className="ugo-history-refresh" onClick={()=>void load()} disabled={loading} aria-label="Actualizar actividad">↻</button>
+   </div>:<div className="ugo-history-filters">
+    <button type="button" className={filter==='todos'?'active':''} onClick={()=>setFilter('todos')}>Todos <b>{rows.length}</b></button>
+    <button type="button" className={filter==='activo'?'active':''} onClick={()=>setFilter('activo')}>Activos <b>{rows.filter(r=>ACTIVE_STATES.has(r.estado)).length}</b></button>
+    <button type="button" className={filter==='completado'?'active':''} onClick={()=>setFilter('completado')}>Completados <b>{rows.filter(r=>r.estado==='completado').length}</b></button>
+    {role==='admin'&&<button type="button" className={filter==='cancelado'?'active':''} onClick={()=>setFilter('cancelado')}>Cancelados <b>{rows.filter(r=>r.estado==='cancelado').length}</b></button>}
+    <button type="button" onClick={()=>void load()} disabled={loading} aria-label="Actualizar actividad">↻</button>
+   </div>}
    {actionNotice&&<div className="ugo-history-action-notice" role="status" aria-live="polite">{actionNotice}</div>}
    <div className="ugo-history-list">{loading&&<div className="ugo-history-empty">Cargando actividad…</div>}{error&&<div className="ugo-history-error">{error}</div>}{!loading&&!error&&visible.length===0&&<div className="ugo-history-empty">Todavía no hay movimientos en esta sección.</div>}{!loading&&!error&&visible.map(r=>{const state=clientState(r.estado);return <article key={r.id} className={role==='client'?`ugo-history-item state-${r.estado}`:undefined}>
     <div className="ugo-history-top"><div><small>PEDIDO</small><strong>#{r.numero??String(r.id).slice(0,8)}</strong></div><span className={`state-${r.estado}`}>{LABELS[r.estado]||r.estado}</span></div>
