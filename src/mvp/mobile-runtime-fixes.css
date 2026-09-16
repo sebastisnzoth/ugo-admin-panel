@@ -10,10 +10,10 @@ html,body,#root{width:100%!important;max-width:none!important;min-height:100%!im
 @media(max-width:760px){
  html,body,#root{height:100%!important;min-height:100%!important;overflow:hidden!important}
  body{position:static!important;overscroll-behavior-y:none!important}
- /* The operational shell itself owns scrolling in Android WebView. This is more reliable than body scrolling. */
+ /* The operational shell itself owns scrolling in Android WebView. */
  .mvp-shell{height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow-x:hidden!important;overflow-y:auto!important;-webkit-overflow-scrolling:touch!important;touch-action:pan-y!important;overscroll-behavior-y:contain!important;padding-bottom:0!important}
  .mvp-header{position:sticky!important;top:0!important;z-index:50!important}
- .mvp-layout{width:100%!important;height:auto!important;min-height:max-content!important;overflow:visible!important;padding:12px 10px calc(190px + env(safe-area-inset-bottom))!important}
+ .mvp-layout{width:100%!important;height:auto!important;min-height:max-content!important;overflow:visible!important;padding:12px 10px calc(112px + env(safe-area-inset-bottom))!important}
  .mvp-layout>*{flex-shrink:0}
  .mvp-card{width:100%!important;max-width:100%!important}
  .mvp-card-title{align-items:flex-start!important}
@@ -21,15 +21,29 @@ html,body,#root{width:100%!important;max-width:none!important;min-height:100%!im
  .mvp-review{padding-bottom:calc(60px + env(safe-area-inset-bottom))!important;margin-bottom:24px!important}
  .mvp-review textarea{min-height:120px!important}
  .mvp-stars{max-width:none!important;width:100%!important}
- .mvp-hugo-panel{max-height:60dvh!important;overflow-y:auto!important;bottom:calc(96px + env(safe-area-inset-bottom))!important}
+
+ /* P0 mobile: Hugo is a compact bottom sheet, never a centered overlay. */
+ .mvp-hugo-panel{position:fixed!important;left:10px!important;right:10px!important;top:auto!important;bottom:calc(76px + env(safe-area-inset-bottom))!important;width:auto!important;max-width:none!important;max-height:min(44dvh,360px)!important;margin:0!important;border-radius:24px!important;overflow-y:auto!important;overscroll-behavior:contain!important;z-index:140!important;transform:none!important}
+ .mvp-hugo-panel[hidden]{display:none!important}
+
+ /* Radar Hugo/orb stays above nav and away from the content/payment cards. */
+ .ugo-hugo-badge{position:fixed!important;left:auto!important;right:16px!important;top:auto!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;z-index:90!important;transform:none!important;pointer-events:auto!important}
+ .ugo-hugo-badge>span{width:58px!important;height:58px!important;font-size:28px!important}
+ .ugo-hugo-badge small{display:none!important}
+ .ugo-ref-hugo{position:fixed!important;left:auto!important;right:16px!important;top:auto!important;bottom:calc(82px + env(safe-area-inset-bottom))!important;z-index:90!important;transform:none!important;pointer-events:auto!important}
+ .ugo-ref-hugo>span{width:58px!important;height:58px!important;font-size:28px!important;pointer-events:auto!important}
+ .ugo-ref-hugo small{display:none!important}
+
  .ugo-request-sheet,.ugo-provider-drawer{max-height:calc(100dvh - 28px)!important;overflow-y:auto!important}
  .ugo-location-control{top:calc(72px + env(safe-area-inset-top))!important;right:10px!important;bottom:auto!important;z-index:80!important}
  .ugo-location-control>button{min-height:38px!important;padding:7px 10px!important;font-size:11px!important;opacity:.94}
 }
 
 @media(max-width:420px){
- .mvp-layout{padding-left:8px!important;padding-right:8px!important;padding-bottom:calc(210px + env(safe-area-inset-bottom))!important}
+ .mvp-layout{padding-left:8px!important;padding-right:8px!important;padding-bottom:calc(108px + env(safe-area-inset-bottom))!important}
  .mvp-card{padding:14px!important;border-radius:18px!important}
  .mvp-card-title h2{font-size:20px!important;line-height:1.1!important}
  .mvp-status{font-size:9px!important}
+ .mvp-hugo-panel{left:8px!important;right:8px!important;bottom:calc(72px + env(safe-area-inset-bottom))!important;max-height:42dvh!important}
+ .ugo-hugo-badge,.ugo-ref-hugo{right:12px!important;bottom:calc(78px + env(safe-area-inset-bottom))!important}
 }
