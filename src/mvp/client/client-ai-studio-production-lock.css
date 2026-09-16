@@ -1,0 +1,184 @@
+/* UGO · Google AI Studio production presentation lock.
+   Loaded LAST by ClientRoot. This file only settles presentation precedence.
+   Real Supabase data, serviceId, realtime, matching, chat, payments and actions remain authoritative. */
+
+.ugo-client-root{
+  --ugo-studio-bg:#f8f9ff;
+  --ugo-studio-surface:#ffffff;
+  --ugo-studio-low:#eff4ff;
+  --ugo-studio-line:#dce9ff;
+  --ugo-studio-ink:#0b1c30;
+  --ugo-studio-muted:#575e70;
+  --ugo-studio-primary:#006b58;
+  --ugo-studio-primary-dark:#005747;
+  --ugo-studio-accent:#00d6b2;
+  min-height:100dvh!important;
+  overflow-x:hidden!important;
+  background:var(--ugo-studio-bg)!important;
+  color:var(--ugo-studio-ink)!important;
+}
+
+/* Legacy client themes must never turn the production Studio shell dark again. */
+.ugo-client-root .ugo-client-premium-home.ugo-studio-home-page{
+  position:relative!important;
+  inset:auto!important;
+  width:100%!important;
+  min-height:calc(100dvh - 72px)!important;
+  display:block!important;
+  overflow:visible!important;
+  background:var(--ugo-studio-bg)!important;
+  color:var(--ugo-studio-ink)!important;
+  box-shadow:none!important;
+}
+
+.ugo-client-root .ugo-studio-navbar{
+  position:sticky!important;
+  top:0!important;
+  z-index:260!important;
+  width:100%!important;
+  background:rgba(255,255,255,.97)!important;
+  color:var(--ugo-studio-ink)!important;
+  border-bottom:1px solid var(--ugo-studio-line)!important;
+  box-shadow:0 1px 8px rgba(11,28,48,.05)!important;
+  backdrop-filter:blur(14px)!important;
+}
+
+.ugo-client-root .ugo-studio-service-card,
+.ugo-client-root .ugo-studio-map-card,
+.ugo-client-root .ugo-studio-account-grid>article,
+.ugo-client-root .ugo-studio-trust-grid>div,
+.ugo-client-root .ugo-studio-radar-card,
+.ugo-client-root .ugo-studio-radar-summary,
+.ugo-client-root .ugo-studio-radar-map-card,
+.ugo-client-root .ugo-studio-radar-note{
+  background:var(--ugo-studio-surface)!important;
+  color:var(--ugo-studio-ink)!important;
+  border-color:#e5eeff!important;
+}
+
+/* Real request flow: same visual language, no mock screen replacement. */
+.ugo-client-root .ugo-guided-request{
+  background:#fff!important;
+  color:var(--ugo-studio-ink)!important;
+  border-color:#e5e5e5!important;
+  box-shadow:0 24px 70px rgba(11,28,48,.14)!important;
+}
+.ugo-client-root .ugo-guided-request>header{
+  background:rgba(255,255,255,.97)!important;
+  color:var(--ugo-studio-ink)!important;
+  border-bottom-color:#ececec!important;
+}
+.ugo-client-root .ugo-guided-step,
+.ugo-client-root .ugo-guided-step h1,
+.ugo-client-root .ugo-guided-step h2,
+.ugo-client-root .ugo-guided-step h3{color:var(--ugo-studio-ink)!important}
+.ugo-client-root .ugo-guided-step>p,
+.ugo-client-root .ugo-guided-step label,
+.ugo-client-root .ugo-guided-step small{color:var(--ugo-studio-muted)!important}
+.ugo-client-root .ugo-guided-primary{
+  background:var(--ugo-studio-primary)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+.ugo-client-root .ugo-guided-primary:hover{background:var(--ugo-studio-primary-dark)!important}
+
+/* Activity/order detail remains the real serviceId workspace, but visually Studio. */
+.ugo-client-root .ugo-client-screen-overlay{
+  background:var(--ugo-studio-bg)!important;
+  color:var(--ugo-studio-ink)!important;
+}
+.ugo-client-root .ugo-history-panel.embedded,
+.ugo-client-root .ugo-history-panel.ugo-client-history{
+  background:#fff!important;
+  color:var(--ugo-studio-ink)!important;
+  border-color:#e5e5e5!important;
+  box-shadow:none!important;
+}
+
+/* Real realtime chat follows the same product surface. */
+.ugo-client-root .ugo-service-chat{
+  background:#fff!important;
+  color:var(--ugo-studio-ink)!important;
+  border-color:#e5e5e5!important;
+  box-shadow:0 18px 54px rgba(11,28,48,.14)!important;
+}
+.ugo-client-root .ugo-service-chat>header{border-bottom-color:#ececec!important}
+.ugo-client-root .ugo-service-chat header small{color:var(--ugo-studio-primary)!important}
+.ugo-client-root .ugo-service-chat-close{background:#f2f5f4!important;color:var(--ugo-studio-ink)!important}
+.ugo-client-root .ugo-service-chat-list article{background:#eff4ff!important;color:var(--ugo-studio-ink)!important}
+.ugo-client-root .ugo-service-chat-list article.is-own{background:#e6f7f4!important;color:#073c32!important}
+.ugo-client-root .ugo-service-chat-list small{color:var(--ugo-studio-muted)!important}
+.ugo-client-root .ugo-service-chat-empty{color:var(--ugo-studio-muted)!important}
+.ugo-client-root .ugo-service-chat-form{border-top-color:#ececec!important}
+.ugo-client-root .ugo-service-chat-form textarea{
+  background:#fff!important;
+  color:var(--ugo-studio-ink)!important;
+  border-color:#d9dfdd!important;
+}
+.ugo-client-root .ugo-service-chat-form button{
+  background:var(--ugo-studio-primary)!important;
+  color:#fff!important;
+}
+
+/* Keyboard accessibility is part of the final UI, not an optional theme detail. */
+.ugo-client-root :where(button,a,input,textarea,select,summary):focus-visible{
+  outline:3px solid rgba(0,214,178,.42)!important;
+  outline-offset:3px!important;
+}
+
+@media(max-width:760px){
+  .ugo-client-root .ugo-studio-navbar{
+    height:64px!important;
+    min-height:64px!important;
+    padding:0 12px!important;
+    gap:8px!important;
+  }
+  .ugo-client-root .ugo-studio-nav-left{gap:8px!important}
+  .ugo-client-root .ugo-studio-nav-left>nav{height:64px!important;min-height:64px!important}
+  .ugo-client-root .ugo-studio-nav-left>nav button{height:64px!important;min-height:64px!important;padding:0 8px!important}
+  .ugo-client-root .ugo-studio-location-pill b,
+  .ugo-client-root .ugo-studio-help b,
+  .ugo-client-root .ugo-studio-activity-pill b,
+  .ugo-client-root .ugo-studio-profile b,
+  .ugo-client-root .ugo-studio-profile i{display:none!important}
+  .ugo-client-root .ugo-studio-location-pill,
+  .ugo-client-root .ugo-studio-help,
+  .ugo-client-root .ugo-studio-activity-pill{width:40px!important;padding:0!important;justify-content:center!important}
+  .ugo-client-root .ugo-client-premium-home.ugo-studio-home-page{min-height:calc(100dvh - 64px)!important;padding-bottom:max(32px,env(safe-area-inset-bottom))!important}
+  .ugo-client-root .ugo-studio-home-main{
+    width:100%!important;
+    padding:12px!important;
+    grid-template-columns:1fr!important;
+    gap:14px!important;
+  }
+  .ugo-client-root .ugo-studio-left-column,
+  .ugo-client-root .ugo-studio-right-column{grid-column:1!important}
+  .ugo-client-root .ugo-studio-service-card{padding:18px!important;border-radius:20px!important}
+  .ugo-client-root .ugo-studio-map-card{border-radius:20px!important}
+  .ugo-client-root .ugo-studio-title-row h1{font-size:26px!important}
+  .ugo-client-root .ugo-studio-map{height:300px!important}
+  .ugo-client-root .ugo-studio-account-section,
+  .ugo-client-root .ugo-studio-schedule-section{width:calc(100% - 24px)!important;margin-left:auto!important;margin-right:auto!important}
+  .ugo-client-root .ugo-guided-request{max-width:100vw!important}
+  .ugo-client-root .ugo-service-chat{width:calc(100vw - 20px)!important;max-height:72dvh!important}
+}
+
+@media(max-width:460px){
+  .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:none!important}
+  .ugo-client-root .ugo-studio-logo{font-size:22px!important}
+  .ugo-client-root .ugo-studio-nav-actions{gap:5px!important}
+  .ugo-client-root .ugo-studio-profile{padding:4px!important}
+  .ugo-client-root .ugo-studio-services>button{grid-template-columns:42px 1fr auto!important;padding:10px!important}
+  .ugo-client-root .ugo-studio-service-price{font-size:11px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .ugo-client-root *,
+  .ugo-client-root *::before,
+  .ugo-client-root *::after{
+    scroll-behavior:auto!important;
+    animation-duration:.01ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.01ms!important;
+  }
+}
