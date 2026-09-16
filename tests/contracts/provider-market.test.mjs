@@ -27,7 +27,8 @@ test('provider opportunities refresh in realtime and acceptance stays server-aut
   assert.match(realtime, /table:'pagos'/)
   assert.doesNotMatch(realtime, /table:'perfiles_proveedor'/)
   assert.match(service, /rpc\('aceptar_oferta'/)
-  assert.match(service, /if\(!data\)[\s\S]*hasPersistedAcceptedOpportunity\(supabase,id\)[\s\S]*throw new Error/)
+  assert.match(service, /const serviceId=await opportunityServiceId\(supabase,id\)/)
+  assert.match(service, /if\(!data\)[\s\S]*persistedAcceptedOpportunity\(supabase,id,serviceId\)[\s\S]*if\(persisted===true\)return[\s\S]*throw unavailable/)
   assert.match(service, /persistedOffer\.estado!=='aceptada'/)
 })
 

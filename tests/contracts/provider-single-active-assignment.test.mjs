@@ -26,12 +26,14 @@ test('future scheduled assignments stay in agenda until they become actionable',
  assert.match(service,/\.limit\(50\)/)
 })
 
-test('ambiguous provider acceptance only recovers the exact accepted opportunity',async()=>{
+test('ambiguous provider acceptance only recovers the exact requested service',async()=>{
  const service=await read('src/mvp/provider/providerService.ts')
- assert.match(service,/hasPersistedAcceptedOpportunity\(supabase:SupabaseClient,opportunityId:string\)/)
+ assert.match(service,/persistedAcceptedOpportunity\(supabase:SupabaseClient,opportunityId:string,knownServiceId:string\|null\):Promise<boolean\|null>/)
+ assert.match(service,/const serviceId=await opportunityServiceId\(supabase,id\)/)
  assert.match(service,/from\('ofertas_servicio'\)[\s\S]*\.eq\('id',opportunityId\)[\s\S]*\.eq\('proveedor_id',userId\)/)
  assert.match(service,/persistedOffer\.estado!=='aceptada'/)
- assert.match(service,/from\('servicios'\)[\s\S]*\.eq\('id',persistedOffer\.servicio_id\)[\s\S]*\.eq\('proveedor_id',userId\)/)
- assert.match(service,/hasPersistedAcceptedOpportunity\(supabase,id\)/)
+ assert.match(service,/serviceId=persistedOffer\.servicio_id/)
+ assert.match(service,/from\('servicios'\)[\s\S]*\.eq\('id',serviceId\)[\s\S]*persistedService\.proveedor_id!==userId/)
+ assert.match(service,/persistedAcceptedOpportunity\(supabase,id,serviceId\)/)
  assert.doesNotMatch(service,/hasPersistedActiveAssignment/)
 })
