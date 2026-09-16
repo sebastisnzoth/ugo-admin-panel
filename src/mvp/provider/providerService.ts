@@ -46,35 +46,50 @@ export async function setProviderAvailability(supabase:SupabaseClient,userId:str
  if(error){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(error,'No se pudo actualizar la disponibilidad.'),error,role:'provider',severity:'P1',action:'provider.availability'});throw error}
 }
 
-async function hasPersistedAcceptedOpportunity(supabase:SupabaseClient,opportunityId:string){
- const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)return false
- const{data:offer,error:offerError}=await supabase.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado').eq('id',opportunityId).eq('proveedor_id',userId).maybeSingle()
- if(offerError||!offer)return false
- const persistedOffer=offer as PersistedOffer
- if(persistedOffer.estado!=='aceptada'||!persistedOffer.servicio_id)return false
- const{data:service,error:serviceError}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',persistedOffer.servicio_id).eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).maybeSingle()
- if(serviceError||!service)return false
- const persistedService=service as PersistedService
- return persistedService.id===persistedOffer.servicio_id&&persistedService.proveedor_id===userId&&PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+async function opportunityServiceId(supabase:SupabaseClient,opportunityId:string){
+ try{const{data,error}=await supabase.from('ofertas_servicio').select('servicio_id').eq('id',opportunityId).maybeSingle();if(error)return null;return typeof data?.servicio_id==='string'?data.servicio_id:null}catch{return null}
 }
 
-async function opportunityServiceId(supabase:SupabaseClient,opportunityId:string){
- try{const{data}=await supabase.from('ofertas_servicio').select('servicio_id').eq('id',opportunityId).maybeSingle();return typeof data?.servicio_id==='string'?data.servicio_id:null}catch{return null}
+async function persistedAcceptedOpportunity(supabase:SupabaseClient,opportunityId:string,knownServiceId:string|null):Promise<boolean|null>{
+ try{
+  const{data:auth,error:authError}=await supabase.auth.getUser();const userId=auth.user?.id;if(authError||!userId)return null
+  let serviceId=knownServiceId
+  if(!serviceId){
+   const{data:offer,error:offerError}=await supabase.from('ofertas_servicio').select('id,servicio_id,proveedor_id,estado').eq('id',opportunityId).eq('proveedor_id',userId).maybeSingle()
+   if(offerError)return null
+   if(!offer)return false
+   const persistedOffer=offer as PersistedOffer
+   if(persistedOffer.estado!=='aceptada'||!persistedOffer.servicio_id)return false
+   serviceId=persistedOffer.servicio_id
+  }
+  const{data:service,error:serviceError}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',serviceId).maybeSingle()
+  if(serviceError)return null
+  if(!service)return false
+  const persistedService=service as PersistedService
+  if(persistedService.id!==serviceId)return false
+  if(persistedService.proveedor_id!==userId)return false
+  return PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+ }catch{return null}
 }
 
 export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
+ const serviceId=await opportunityServiceId(supabase,id)
  const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
  if(error){
-  if(await hasPersistedAcceptedOpportunity(supabase,id))return
-  const serviceId=await opportunityServiceId(supabase,id)
-  void reportSentinelIncident({eventType:'provider_accept_offer_error',message:messageOf(error,'No se pudo aceptar el pedido.'),error,role:'provider',severity:'P0',serviceId,action:'provider.offer.accept',checklistCode:'PROVIDER-ASSIGN'})
+  const persisted=await persistedAcceptedOpportunity(supabase,id,serviceId)
+  if(persisted===true)return
+  if(persisted===false){
+   void reportSentinelIncident({eventType:'provider_accept_offer_error',message:messageOf(error,'No se pudo aceptar el pedido.'),error,role:'provider',severity:'P0',serviceId,action:'provider.offer.accept',checklistCode:'PROVIDER-ASSIGN'})
+  }else{
+   void reportSentinelIncident({eventType:'provider_accept_offer_recovery_unverified',message:'Falló la aceptación y no pudimos verificar si la asignación quedó persistida. Actualizamos el estado real antes de permitir otro intento.',error,role:'provider',severity:'P1',serviceId,action:'provider.offer.accept.recovery'})
+  }
   throw error
  }
  if(!data){
-  if(await hasPersistedAcceptedOpportunity(supabase,id))return
+  const persisted=await persistedAcceptedOpportunity(supabase,id,serviceId)
+  if(persisted===true)return
   const unavailable=new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')
-  const serviceId=await opportunityServiceId(supabase,id)
-  void reportSentinelIncident({eventType:'provider_offer_unavailable',message:unavailable.message,error:unavailable,role:'provider',severity:'P2',serviceId,action:'provider.offer.accept'})
+  void reportSentinelIncident({eventType:persisted===null?'provider_offer_recovery_unverified':'provider_offer_unavailable',message:persisted===null?'La oportunidad no confirmó aceptación y no pudimos verificar el estado persistido.':unavailable.message,error:unavailable,role:'provider',severity:persisted===null?'P1':'P2',serviceId,action:persisted===null?'provider.offer.accept.recovery':'provider.offer.accept'})
   throw unavailable
  }
 }
