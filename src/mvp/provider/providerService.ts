@@ -9,9 +9,11 @@ export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];s
 type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
+type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const LIVE_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
+const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'] as const
 const messageOf=(error:unknown,fallback:string)=>error instanceof Error?error.message:fallback
 
 function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
@@ -88,13 +90,25 @@ async function publishProviderLocation(supabase:SupabaseClient,serviceId:string)
  }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
 }
 
-export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){
+async function persistedProviderTransition(supabase:SupabaseClient,serviceId:string,target:ProviderTransitionState):Promise<boolean|null>{
  try{
-  if(state==='llegado')await publishProviderLocation(supabase,serviceId)
-  const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
-  if(error)throw error
- }catch(error){
+  const{data:auth,error:authError}=await supabase.auth.getUser();const userId=auth.user?.id;if(authError||!userId)return null
+  const{data,error}=await supabase.from('servicios').select('estado').eq('id',serviceId).eq('proveedor_id',userId).maybeSingle();if(error||!data)return null
+  const current=LIFECYCLE_ORDER.indexOf(String(data.estado||'') as typeof LIFECYCLE_ORDER[number]),wanted=LIFECYCLE_ORDER.indexOf(target as typeof LIFECYCLE_ORDER[number])
+  return wanted>=0&&current>=wanted
+ }catch{return null}
+}
+
+export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:ProviderTransitionState){
+ if(state==='llegado')await publishProviderLocation(supabase,serviceId)
+ const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
+ if(!error)return
+ const persisted=await persistedProviderTransition(supabase,serviceId,state)
+ if(persisted===true)return
+ if(persisted===false){
   void reportSentinelIncident({eventType:'provider_service_state_error',message:messageOf(error,`No se pudo avanzar el servicio a ${state}.`),error,role:'provider',severity:'P0',serviceId,action:'provider.service.advance',checklistCode:'PROVIDER-STATES',metadata:{targetState:state}})
-  throw error
+ }else{
+  void reportSentinelIncident({eventType:'provider_service_state_recovery_unverified',message:'No pudimos verificar si la transición quedó persistida. La interfaz volverá a consultar el estado real.',error,role:'provider',severity:'P1',serviceId,action:'provider.service.advance.recovery',metadata:{targetState:state}})
  }
+ throw error
 }
