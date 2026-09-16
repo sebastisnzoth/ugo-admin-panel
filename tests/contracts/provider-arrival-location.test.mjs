@@ -6,7 +6,7 @@ const service=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts
 const migration=fs.readFileSync(new URL('../../supabase/migrations/20260901_stage7_provider_arrival_lifecycle.sql',import.meta.url),'utf8')
 
 test('arrival publishes fresh provider geolocation before requesting llegado',()=>{
- assert.match(service,/if\(state==='llegado'\)await publishProviderLocation\(supabase\)/)
+ assert.match(service,/if\(state==='llegado'\)await publishProviderLocation\(supabase,serviceId\)/)
  assert.match(service,/navigator\.geolocation\.getCurrentPosition/)
  assert.match(service,/enableHighAccuracy:true/)
  assert.match(service,/maximumAge:15000/)
