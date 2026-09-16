@@ -12,10 +12,11 @@ test('each chat send carries a client attempt id that can be reconciled after an
 })
 
 test('chat reports P0 send failure only after persistence recovery confirms absence',()=>{
- const recovery=chat.indexOf("contains('datos',{clientMessageId:attemptId})")
- const confirmed=chat.indexOf("reportChatFailure('chat_send_error'",recovery)
- assert.ok(recovery>=0&&confirmed>recovery)
- assert.match(chat,/if\(recoveryError\)[\s\S]*chat_send_recovery_unverified[\s\S]*reportChatRecovery/)
+ const recoveryQuery=chat.indexOf("contains('datos',{clientMessageId:attemptId})")
+ const recoveryBranch=chat.indexOf('if(recoveryError)',recoveryQuery)
+ const unverified=chat.indexOf("reportChatRecovery('chat_send_recovery_unverified'",recoveryBranch)
+ const confirmed=chat.indexOf("reportChatFailure('chat_send_error'",unverified)
+ assert.ok(recoveryQuery>=0&&recoveryBranch>recoveryQuery&&unverified>recoveryBranch&&confirmed>unverified)
  assert.match(chat,/severity:'P1'[\s\S]*action:`\$\{role\}\.service\.chat\.recovery`/)
 })
 
