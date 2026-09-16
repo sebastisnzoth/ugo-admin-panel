@@ -1,116 +1,49 @@
-name: Admin consistency one-shot patch
+name: Admin consistency patch
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - '.github/workflows/admin-consistency-patch.yml'
+      - 'scripts/admin-consistency-patch.py'
 
 permissions:
   contents: write
 
 jobs:
   patch:
-    if: github.event.head_commit.message == 'chore: run admin consistency patch'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout main
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - name: Apply targeted consistency fixes
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
 
-          def replace_between(path, start, end, replacement):
-              p = Path(path)
-              text = p.read_text()
-              i = text.index(start)
-              j = text.index(end, i)
-              p.write_text(text[:i] + replacement + text[j:])
+      - name: Apply consistency patch
+        run: python3 scripts/admin-consistency-patch.py
 
-          hooks = Path('src/hooks/useAdminData.ts')
-          text = hooks.read_text()
-          text = text.replace(
-              "const TABLES = ['servicios','disputas','escrow','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];",
-              "const TABLES = ['servicios','disputas','pagos','retiros','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];"
-          )
-          text = text.replace(
-              "const u = ['servicios','escrow','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));",
-              "const u = ['servicios','pagos','retiros','disputas','documentos','usuarios'].map(tb => subscribe(tb, fetch));"
-          )
-          text = text.replace(
-              "const u = ['usuarios','disputas','escrow'].map(tb => subscribe(tb, fetch));",
-              "const u = ['usuarios','disputas','pagos','retiros'].map(tb => subscribe(tb, fetch));"
-          )
-          hooks.write_text(text)
-
-          replace_between(
-              'src/hooks/useAdminData.ts',
-              "  const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {",
-              "  useEffect(() => { fetch(); const u = subscribe('disputas', fetch); return u; }, [fetch]);",
-              """  const resolverDisputa = useCallback(async (id: string, resolucion: string, favorDe: 'cliente'|'proveedor') => {\n    const { error } = await (supabase as any).rpc('admin_resolver_disputa', { p_disputa_id: id, p_resolucion: resolucion, p_favor_de: favorDe });\n    if (error) throw new Error(error.message || 'No se pudo resolver la disputa.');\n    await fetch();\n  }, [fetch]);\n"""
-          )
-
-          replace_between(
-              'src/hooks/useAdminData.ts',
-              "  const updateEstado = useCallback(async (id: string, estado: string, notas?: string, notasRechazo?: string) => {",
-              "  const getSignedUrl = useCallback(async (path: string) => {",
-              """  const updateEstado = useCallback(async (id: string, estado: string, notas?: string, notasRechazo?: string) => {\n    const sb = supabase as any;\n    const payload: any = { estado };\n    if (notas) payload.notas = notas;\n    if (notasRechazo && (estado === 'rechazado' || estado === 'reenvio_solicitado')) {\n      payload.notas_rechazo = notasRechazo;\n      if (estado === 'reenvio_solicitado') payload.intentos_resubmision = (docs.find(d => d.id === id)?.intentos_resubmision || 0) + 1;\n    }\n    const { error } = await sb.from('documentos').update(payload).eq('id', id);\n    if (error) throw new Error(error.message || 'No se pudo actualizar el documento.');\n    await fetch();\n  }, [fetch, docs]);\n"""
-          )
-
-          replace_between(
-              'src/hooks/useAdminData.ts',
-              "  const update = useCallback(async (clave: string, valor: string) => {",
-              "  useEffect(() => { fetch(); }, [fetch]);",
-              """  const update = useCallback(async (clave: string, valor: string) => {\n    const { error: updateError } = await (supabase as any).rpc('admin_update_config', { p_clave: clave, p_valor: valor });\n    if (updateError) {\n      const message = updateError.message || 'No se pudo actualizar la configuración';\n      setError(message);\n      throw new Error(message);\n    }\n    setConfig(prev => ({ ...prev, [clave]: valor }));\n  }, []);\n"""
-          )
-
-          replace_between(
-              'src/hooks/useAdminData.ts',
-              "export function useVault() {",
-              "export function usePendingWithdrawals() {",
-              """export function useVault() {\n  const [escrows, setEscrows] = useState<any[]>([]);\n  const [loading, setLoading] = useState(true);\n  const fetch = useCallback(async () => {\n    const { data, error } = await (supabase as any).from('pagos')\n      .select('id,monto_total:monto_bruto,comision_ugo,monto_proveedor:ganancia_proveedor,estado,created_at,servicios:servicio_id(estado,zona),clientes:cliente_id(nombre),proveedores:proveedor_id(nombre)')\n      .eq('estado','retenido').order('created_at', { ascending: true });\n    if (error) { console.error('useVault:', error.message); setEscrows([]); setLoading(false); return; }\n    setEscrows(data || []); setLoading(false);\n  }, []);\n  const liberarEscrow = useCallback(async () => {\n    throw new Error('La liberación de fondos se gestiona desde Finanzas · Bóveda y retiros.');\n  }, []);\n  useEffect(() => { fetch(); const u = subscribe('pagos', fetch); return u; }, [fetch]);\n  return { escrows, loading, liberarEscrow };\n}\n\n"""
-          )
-
-          replace_between(
-              'src/hooks/useAdminData.ts',
-              "export function usePendingWithdrawals() {",
-              "export function useTiendas() {",
-              """export function usePendingWithdrawals() {\n  const [items, setItems] = useState<any[]>([]);\n  const fetch = useCallback(async () => {\n    const { data, error } = await (supabase as any).from('retiros')\n      .select('id,monto,estado,created_at,proveedores:proveedor_id(nombre)')\n      .in('estado',['pendiente','procesando']).order('created_at', { ascending: true }).limit(20);\n    if (error) { console.error('usePendingWithdrawals:', error.message); setItems([]); return; }\n    setItems(data || []);\n  }, []);\n  useEffect(() => { fetch(); const u = subscribe('retiros', fetch); return u; }, [fetch]);\n  return items;\n}\n\n"""
-          )
-
-          replace_between(
-              'src/mvp/AdminNativeModules.tsx',
-              "export function AdminDisputesNative(){",
-              "export function AdminMapNative(){",
-              """export function AdminDisputesNative(){\n const{disputes,loading,resolverDisputa}=useOpenDisputes();const[selected,setSelected]=useState<any>(null);const[text,setText]=useState('');const[favor,setFavor]=useState<'cliente'|'proveedor'>('cliente');const[message,setMessage]=useState('')\n const resolve=async()=>{if(!selected||text.trim().length<8)return;const ok=window.confirm(`Resolver ${selected.numero||selected.id.slice(0,8)} a favor de ${favor}. Esta decisión modifica el cierre financiero y queda auditada. ¿Confirmar?`);if(!ok)return;setMessage('');try{await resolverDisputa(selected.id,text.trim(),favor);setSelected(null);setText('');setMessage('Disputa resuelta y auditada.')}catch(e){setMessage(e instanceof Error?e.message:'No se pudo resolver la disputa.')}}\n return <div style={box}>{loading?<p>Cargando…</p>:<><table style={table}><thead><tr><th style={th}>Caso</th><th style={th}>Motivo</th><th style={th}>Monto</th><th style={th}>Partes</th><th style={th}></th></tr></thead><tbody>{disputes.map((d:any)=><tr key={d.id}><td style={td}><b>{d.numero||d.id.slice(0,8)}</b><br/><small>{d.estado}</small></td><td style={td}>{d.motivo}</td><td style={td}>{money(d.monto_disputado)}</td><td style={td}>{d.clientes?.nombre||'Cliente'} / {d.proveedores?.nombre||'Proveedor'}</td><td style={td}><button onClick={()=>setSelected(d)}>Resolver</button></td></tr>)}</tbody></table>{!disputes.length&&<p>Sin disputas abiertas.</p>}</>}{selected&&<div style={{marginTop:14,paddingTop:14,borderTop:'1px solid #e4e7ec'}}><strong>Resolver {selected.numero}</strong><div style={{display:'flex',gap:8,margin:'10px 0'}}><button onClick={()=>setFavor('cliente')} disabled={favor==='cliente'}>A favor cliente</button><button onClick={()=>setFavor('proveedor')} disabled={favor==='proveedor'}>A favor proveedor</button></div><textarea value={text} onChange={e=>setText(e.target.value)} placeholder=\"Resolución y justificación (mínimo 8 caracteres)\" style={{width:'100%',minHeight:90,padding:10}}/><button onClick={()=>void resolve()} disabled={text.trim().length<8} style={{marginTop:8}}>Revisar y confirmar resolución</button></div>}{message&&<p role=\"status\" style={{fontWeight:700}}>{message}</p>}</div>\n}\n\n"""
-          )
-
-          replace_between(
-              'src/mvp/AdminSystemSettings.tsx',
-              " const saveChanges=async()=>{",
-              " const restoreDraft=()=>{setDraft({});setSavedMessage('')}",
-              """ const saveChanges=async()=>{\n  if(!dirtyKeys.length)return\n  const ok=window.confirm(`Guardar ${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} de configuración?\\n\\n${dirtyKeys.map(key=>`• ${human(key)}`).join('\\n')}\\n\\nEl cambio queda auditado y puede afectar la operación.`)\n  if(!ok)return\n  setSaving(true);setSavedMessage('')\n  try{\n   for(const key of dirtyKeys)await update(key,draft[key])\n   setSavedMessage(`${dirtyKeys.length} cambio${dirtyKeys.length===1?'':'s'} guardado${dirtyKeys.length===1?'':'s'}`)\n   setDraft({})\n   await refetch()\n  }catch(x){window.alert(x instanceof Error?x.message:'No se pudo guardar la configuración.')}\n  finally{setSaving(false)}\n }\n"""
-          )
-          PY
       - name: Install dependencies
         run: npm ci
+
       - name: Test
         run: npm test
+
       - name: Build
         run: npm run build
-      - name: Commit fixes
+
+      - name: Commit verified fixes
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "No changes"
+            echo "No source changes to commit"
             exit 0
           fi
           git config user.name "ugo-ci-bot"
