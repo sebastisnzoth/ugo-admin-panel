@@ -1,4 +1,5 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
+import{getDispatchProvider}from'../lib/dispatch/provider'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
 import'./provider-history.css'
@@ -46,7 +47,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
  const load=useCallback(async()=>{if(!userId)return;setLoading(true);setError('');try{let q=(sb as any).from('servicios').select('id,numero,estado,descripcion,tarifa,created_at,updated_at,programado_para,cliente_id,proveedor_id,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre),proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').order('created_at',{ascending:false}).limit(role==='admin'?200:80);if(role==='client')q=q.eq('cliente_id',userId);if(role==='provider')q=q.eq('proveedor_id',userId);const{data,error}=await q;if(error)throw error;setRows((data||[]) as Row[])}catch(e:any){setError(e?.message||'No se pudo cargar la actividad.')}finally{setLoading(false)}},[role,sb,userId])
  useEffect(()=>{if(open)load()},[open,load])
  useEffect(()=>{if(!userId)return;const realtimeFilter=role==='client'?`cliente_id=eq.${userId}`:role==='provider'?`proveedor_id=eq.${userId}`:undefined;const change={event:'*' as const,schema:'public' as const,table:'servicios' as const,...(realtimeFilter?{filter:realtimeFilter}:{})};const ch=(sb as any).channel(`ugo-history-${role}-${userId}`).on('postgres_changes',change,()=>{if(open)void load()}).subscribe();return()=>{sb.removeChannel(ch)}},[load,open,role,sb,userId])
- const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;setCancellingId(serviceId);setActionNotice('');try{const{error}=await(sb as any).rpc('cancelar_servicio',{p_servicio_id:serviceId});if(error)throw error;setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,sb,userId])
+ const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;setCancellingId(serviceId);setActionNotice('');try{const owned=rows.find(row=>row.id===serviceId&&row.cliente_id===userId);if(!owned)throw new Error('No encontramos este pedido dentro de tu actividad actual.');await getDispatchProvider().cancel(serviceId);setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,rows,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
  const visible=rows.filter(row=>{
