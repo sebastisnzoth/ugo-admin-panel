@@ -1,6 +1,6 @@
 import test from 'node:test'
-import assert from 'node:assert/strict'
-import { readFile } from 'node:fs/promises'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
@@ -13,9 +13,10 @@ test('client cancellation mutation boundary requires an explicit owned service i
 })
 
 test('Hugo can create another request while services already exist',async()=>{
- const [dock,bridge]=await Promise.all([
+ const[dock,bridge,guided]=await Promise.all([
   read('src/mvp/client/ClientVoiceHugoDock.tsx'),
   read('src/mvp/client/ClientHugoBridge.tsx'),
+  read('src/mvp/client/ClientGuidedRequest.tsx'),
  ])
  assert.match(bridge,/setServices\(active\)/)
  assert.match(bridge,/services=\{services\}/)
@@ -23,6 +24,40 @@ test('Hugo can create another request while services already exist',async()=>{
  assert.match(dock,/if\(requestIntent\(clean\)\)\{/)
  assert.doesNotMatch(dock,/Ya tenés el pedido .* activo\. Seguilo o cancelalo antes de crear otro/)
  assert.doesNotMatch(dock,/Você já tem o pedido .* ativo/)
+ assert.match(guided,/const nextDraftId=crypto\.randomUUID\(\);setDraftId\(nextDraftId\)/)
+ assert.match(guided,/setCurrentCreatingServiceId\(''\)/)
+ assert.match(guided,/setDraft\(emptyDraft\)/)
+})
+
+test('each guided request persists its own generated service id and matching scope',async()=>{
+ const guided=await read('src/mvp/client/ClientGuidedRequest.tsx')
+ assert.match(guided,/\.insert\(\{cliente_id:session\.user\.id[\s\S]*estado:'buscando'/)
+ assert.match(guided,/\.select\('id'\)\.single\(\)/)
+ assert.match(guided,/const serviceId=String\(data\.id\)/)
+ assert.match(guided,/setCurrentCreatingServiceId\(serviceId\)/)
+ assert.match(guided,/getDispatchProvider\(\)\.start\(\{serviceId,category:/)
+ assert.match(guided,/filter:`id=eq\.\$\{serviceId\}`/)
+})
+
+test('Activity lists all owned orders and opens or cancels one exact service id',async()=>{
+ const history=await read('src/mvp/ServiceHistoryPanel.tsx')
+ assert.match(history,/\.eq\('cliente_id',userId\)/)
+ assert.match(history,/\.limit\(role==='admin'\?200:80\)/)
+ assert.match(history,/visible\.map\(r=>/)
+ assert.match(history,/onOpenService\(r\.id\)/)
+ assert.match(history,/cancelClientService\(r\.id\)/)
+ assert.match(history,/rows\.find\(row=>row\.id===serviceId&&row\.cliente_id===userId\)/)
+})
+
+test('client exact-order detail does not mix operational surfaces from another service',async()=>{
+ const[root,detail]=await Promise.all([
+  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/mvp/client/ClientServiceDetail.tsx'),
+ ])
+ assert.match(root,/setSelectedServiceId\(serviceId\)/)
+ assert.match(root,/selectedServiceId&&[\s\S]*ClientServiceDetail serviceId=\{selectedServiceId\}/)
+ assert.match(detail,/serviceId=\{service\.id\}/)
+ assert.match(detail,/ServiceChat role="client" serviceId=\{service\.id\}/)
 })
 
 test('Hugo cancellation resolves one concrete service before mutation',async()=>{
@@ -34,7 +69,7 @@ test('Hugo cancellation resolves one concrete service before mutation',async()=>
 })
 
 test('participant disputes use the selected service or refuse ambiguity',async()=>{
- const [hook,dock,detail]=await Promise.all([
+ const[hook,dock,detail]=await Promise.all([
   read('src/hooks/useDisputes.ts'),
   read('src/mvp/DisputeDock.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
@@ -45,7 +80,7 @@ test('participant disputes use the selected service or refuse ambiguity',async()
  assert.match(detail,/DisputeDock role="client" serviceId=\{service\.id\}/)
 })
 
-test('provider agenda exposes each scheduled service by its own id',async()=>{
+test('provider agenda exposes each assigned service by its own id',async()=>{
  const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
  assert.match(agenda,/setSelectedId\(row\.id\)/)
  assert.match(agenda,/ServiceChat role="provider" serviceId=\{selected\.id\}/)
