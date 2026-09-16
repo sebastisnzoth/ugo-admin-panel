@@ -14,7 +14,7 @@ export function ClientRatingPrompt(){
  const targetIdRef=useRef<string|null>(null)
  useEffect(()=>{targetIdRef.current=target?.service.id||null},[target?.service.id])
 
- const report=useCallback((eventType:string,text:string,error?:unknown,serviceId?:string)=>{void reportSentinelIncident({eventType,message:text,error,role:'client',severity:'P1',serviceId:serviceId||targetIdRef.current||undefined,action:'client.rating',checklistCode:'RATING'})},[])
+ const report=useCallback((eventType:string,text:string,error?:unknown,serviceId?:string)=>{const submit=eventType==='rating_submit_error';void reportSentinelIncident({eventType,message:text,error,role:'client',severity:'P1',serviceId:serviceId||targetIdRef.current||undefined,action:submit?'client.rating.submit':'client.rating.sync',checklistCode:submit?'RATING':undefined})},[])
 
  const load=useCallback(async()=>{
   if(!userId){setTarget(null);setMessage('');return}
