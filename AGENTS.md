@@ -1,6 +1,6 @@
 # UGO — AGENTS.md · Protocolo Maestro de Agentes
 
-**Versión:** 1.5 · 16 de septiembre de 2026  
+**Versión:** 1.6 · 16 de septiembre de 2026  
 **Rama de verdad:** `main`
 
 ## Objetivo
@@ -29,10 +29,50 @@ auditoría
 → corrección
 → revalidación
 → documentación
-→ siguiente P0/P1 relacionado
+→ consultar Centinela
+→ siguiente P0/P1 relacionado o cierre justificado
 ```
 
 Investigar primero repo, maestros, Skills, CI, Supabase TEST e historial. Preguntar al usuario sólo cuando haga falta una decisión material, una credencial/autorización externa, un gasto, una operación irreversible, una publicación con consecuencia externa no autorizada o un cambio de política comercial/dinero.
+
+## Gate obligatorio antes de parar: Centinela
+
+**Ningún agente puede detener voluntariamente un bloque de trabajo UGO sin consultar Centinela/Sentinel primero.**
+
+Antes de responder “terminado”, “listo”, “hasta acá”, cerrar sesión de trabajo o dejar de ejecutar por ausencia aparente de tareas, debe comprobar como mínimo:
+
+```text
+1 incidentes Sentinel del runtimeRevision / SHA actual
+2 P0/P1 abiertos o degradados en development_checklist
+3 fallos nuevos de CI, runtime, Realtime o persistencia detectados durante el bloque
+4 siguiente P0/P1 accionable que no dependa de usuario, dinero, credenciales o una acción irreversible
+```
+
+Decisión de cierre:
+
+```text
+Centinela detecta P0/P1 accionable
+→ NO parar
+→ tomar el siguiente problema
+→ corregir
+→ validar
+→ volver a consultar Centinela
+
+Centinela sin incidentes actuales pero checklist conserva P0/P1 accionable
+→ NO parar por comodidad
+→ continuar con el siguiente P0/P1 priorizado
+
+Sólo quedan bloqueos externos/requieren usuario/credenciales/dinero/acción irreversible
+→ se puede parar
+→ informar una única acción manual concreta
+→ conservar estado exacto para retomar
+
+No quedan P0/P1 accionables dentro del alcance autorizado
+→ cierre permitido
+→ reportar evidencia exacta
+```
+
+Consultar Centinela **no significa aprobar automáticamente el checklist**. Sentinel informa; los criterios de `validated`/`approved` siguen requiriendo su evidencia correspondiente.
 
 ## Protocolo de desbloqueo
 
@@ -194,6 +234,8 @@ No multiplicar MDs para el mismo contrato. Los maestros son autoridad actual; au
 
 ## Cierre al usuario
 
+Antes del cierre, consultar Centinela conforme al gate obligatorio anterior.
+
 Reportar brevemente:
 
 ```text
@@ -207,4 +249,4 @@ acción manual exacta sólo si es imprescindible
 
 ## Regla final
 
-> **Investigar antes de preguntar. Ejecutar lo autorizado. Corregir antes de maquillar. Validar por etapas. Mantener una sola realidad UGO. Si el SHA actual falla CI, decirlo y corregirlo; si una revisión no está publicada, no fingir que lo está.**
+> **Investigar antes de preguntar. Ejecutar lo autorizado. Corregir antes de maquillar. Validar por etapas. Consultar Centinela antes de parar. Mantener una sola realidad UGO. Si Centinela muestra un P0/P1 accionable, continuar; si el SHA actual falla CI, decirlo y corregirlo; si una revisión no está publicada, no fingir que lo está.**
