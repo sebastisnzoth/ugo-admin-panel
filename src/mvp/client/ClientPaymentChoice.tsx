@@ -5,10 +5,12 @@ import{useRoleSession,type Service}from'../shared'
 type Payment={id:string;servicio_id:string;metodo?:string|null;estado:string;pix_copia_cola?:string|null;pix_qr_code?:string|null;pix_expira_at?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 type ServiceWithCurrency=Service&{moneda?:string|null}
 const PAYMENT_STATES=['asignado']
+const shouldEscalatePaymentSync=()=>document.visibilityState==='visible'&&navigator.onLine
 
 export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}){
  const auth=useRoleSession('client'),{supabase,session}=auth
  const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[cashEnabled,setCashEnabled]=useState(true),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[ready,setReady]=useState(false)
+ const reportPaymentSyncFailure=useCallback((eventType:string,message:string,error?:unknown)=>{if(!shouldEscalatePaymentSync())return;void reportSentinelIncident({eventType,message,error,role:'client',severity:'P1',serviceId:serviceId||undefined,action:'client.order.payment.sync'})},[serviceId])
  const load=useCallback(async()=>{
   if(!session){setService(null);setPayment(null);setLoadError('');setReady(true);return}
   try{
@@ -31,11 +33,13 @@ export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}
    setPayment((p as Payment|null)||null);setCashEnabled(cashError?true:cashAllowed!==false);setLoadError('')
   }catch(error){
    console.warn('UGO client payment state unavailable',error)
-   setLoadError('No pudimos actualizar la forma de pago. Conservamos el último estado conocido para que puedas reintentar sin perder el servicio.')
+   const text='No pudimos actualizar la forma de pago. Conservamos el último estado conocido para que puedas reintentar sin perder el servicio.'
+   setLoadError(text)
+   reportPaymentSyncFailure('client_payment_state_sync_error',text,error)
   }finally{setReady(true)}
- },[serviceId,session,supabase])
+ },[reportPaymentSyncFailure,serviceId,session,supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{if(!session)return;const refresh=()=>void load();const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,serviceId,session,supabase])
+ useEffect(()=>{if(!session)return;const refresh=()=>void load();const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reportPaymentSyncFailure('client_payment_realtime_sync_error',`Canal de pago: ${status}`)}});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,reportPaymentSyncFailure,serviceId,session,supabase])
  const selected=payment?.metodo||''
  const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
  const cashSelected=selected==='efectivo'
