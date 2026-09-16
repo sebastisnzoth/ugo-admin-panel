@@ -12,6 +12,7 @@ const PREFERRED_PROVIDER_MAX_AGE_MS = 20 * 60 * 1000
 
 type RpcResponse = { data: any; error: any }
 type StoredPreferredProvider = { id?: unknown; categoryId?: unknown; categorySlug?: unknown; at?: unknown }
+type PersistedServiceRow = { id: string; estado: string; proveedor_id: string | null }
 
 function timeoutAfter<T>(ms: number, label: string): Promise<T> {
   return new Promise((_, reject) => {
@@ -91,27 +92,70 @@ async function persistPickup(serviceId: string, pickup: Coordinates | null) {
   }
 }
 
+function mapPersistedStatus(row: PersistedServiceRow): DispatchResult {
+  const stateMap: Record<string, DispatchResult['state']> = {
+    buscando: 'pending',
+    ofrecido: 'offering',
+    confirmado: 'matched',
+    asignado: 'matched',
+    cancelado: 'cancelled',
+  }
+  return {
+    serviceId: row.id,
+    state: stateMap[String(row.estado)] ?? 'pending',
+    providerId: row.proveedor_id ?? null,
+    raw: row,
+  }
+}
+
+async function readPersistedStatus(serviceId: string): Promise<DispatchResult | null> {
+  try {
+    const { data, error } = await bounded<any>(
+      (supabase as any)
+        .from('servicios')
+        .select('id,estado,proveedor_id')
+        .eq('id', serviceId)
+        .single(),
+      STATUS_TIMEOUT_MS,
+      'La verificación del pedido tardó demasiado.',
+    )
+    if (error || !data?.id) return null
+    return mapPersistedStatus(data as PersistedServiceRow)
+  } catch {
+    return null
+  }
+}
+
 export class SupabaseDispatchProvider implements DispatchProvider {
   private async recoverAcceptedDispatch(serviceId: string, originalError: unknown): Promise<DispatchResult> {
     // A response can be lost after the DB committed an offer/assignment. Only a
-    // persisted offered/matched state counts as success; "buscando" remains a
-    // retryable matching failure rather than a false positive.
-    try {
-      const persisted = await this.getStatus(serviceId)
-      if (persisted.state === 'offering' || persisted.state === 'matched') return persisted
-    } catch {
-      // Preserve the original matching error; status recovery is best-effort only.
+    // persisted offered/matched state counts as success. A persisted pending state
+    // confirms matching did not advance; an unreadable state is uncertainty, not P0.
+    const persisted = await readPersistedStatus(serviceId)
+    if (persisted?.state === 'offering' || persisted?.state === 'matched') return persisted
+
+    if (persisted) {
+      void reportSentinelIncident({
+        eventType: 'client_matching_error',
+        message: incidentMessage(originalError, 'No se pudo iniciar el matching.'),
+        error: originalError,
+        role: 'client',
+        severity: 'P0',
+        serviceId,
+        action: 'client.request.matching',
+        checklistCode: 'MATCH-ONLINE',
+      })
+    } else {
+      void reportSentinelIncident({
+        eventType: 'client_matching_recovery_unverified',
+        message: 'Falló el matching y no pudimos verificar el estado persistido. El pedido sigue recuperable desde Inicio o Actividad.',
+        error: originalError,
+        role: 'client',
+        severity: 'P1',
+        serviceId,
+        action: 'client.request.matching.recovery',
+      })
     }
-    void reportSentinelIncident({
-      eventType: 'client_matching_error',
-      message: incidentMessage(originalError, 'No se pudo iniciar el matching.'),
-      error: originalError,
-      role: 'client',
-      severity: 'P0',
-      serviceId,
-      action: 'client.request.matching',
-      checklistCode: 'MATCH-ONLINE',
-    })
     throw originalError
   }
 
@@ -175,64 +219,49 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     } catch (error) {
       // The RPC can commit successfully and the response still be lost. Re-read
       // the persisted state before showing the user a false cancellation error.
-      try {
-        const persisted = await this.getStatus(serviceId)
-        if (persisted.state === 'cancelled') return
-      } catch {
-        // Keep the original cancellation error below.
+      const persisted = await readPersistedStatus(serviceId)
+      if (persisted?.state === 'cancelled') return
+
+      if (persisted) {
+        void reportSentinelIncident({
+          eventType: 'client_cancel_error',
+          message: incidentMessage(error, 'No se pudo cancelar el pedido.'),
+          error,
+          role: 'client',
+          severity: 'P0',
+          serviceId,
+          action: 'client.request.cancel',
+          checklistCode: 'CLIENT-CANCEL',
+        })
+      } else {
+        void reportSentinelIncident({
+          eventType: 'client_cancel_recovery_unverified',
+          message: 'Falló la cancelación y no pudimos verificar el estado persistido. Reintentá desde Actividad.',
+          error,
+          role: 'client',
+          severity: 'P1',
+          serviceId,
+          action: 'client.request.cancel.recovery',
+        })
       }
-      void reportSentinelIncident({
-        eventType: 'client_cancel_error',
-        message: incidentMessage(error, 'No se pudo cancelar el pedido.'),
-        error,
-        role: 'client',
-        severity: 'P0',
-        serviceId,
-        action: 'client.request.cancel',
-        checklistCode: 'CLIENT-CANCEL',
-      })
       throw error
     }
   }
 
   async getStatus(serviceId: string): Promise<DispatchResult> {
-    try {
-      const { data, error } = await bounded<any>(
-        (supabase as any)
-          .from('servicios')
-          .select('id,estado,proveedor_id')
-          .eq('id', serviceId)
-          .single(),
-        STATUS_TIMEOUT_MS,
-        'La verificación del pedido tardó demasiado.',
-      )
-      if (error) throw error
+    const persisted = await readPersistedStatus(serviceId)
+    if (persisted) return persisted
 
-      const stateMap: Record<string, DispatchResult['state']> = {
-        buscando: 'pending',
-        ofrecido: 'offering',
-        confirmado: 'matched',
-        asignado: 'matched',
-        cancelado: 'cancelled',
-      }
-
-      return {
-        serviceId,
-        state: stateMap[String(data.estado)] ?? 'pending',
-        providerId: data.proveedor_id ?? null,
-        raw: data,
-      }
-    } catch (error) {
-      void reportSentinelIncident({
-        eventType: 'client_order_status_error',
-        message: incidentMessage(error, 'No se pudo verificar el estado real del pedido.'),
-        error,
-        role: 'client',
-        severity: 'P1',
-        serviceId,
-        action: 'client.request.status',
-      })
-      throw error
-    }
+    const error = new Error('No pudimos verificar el estado real del pedido.')
+    void reportSentinelIncident({
+      eventType: 'client_order_status_error',
+      message: error.message,
+      error,
+      role: 'client',
+      severity: 'P1',
+      serviceId,
+      action: 'client.request.status',
+    })
+    throw error
   }
 }
