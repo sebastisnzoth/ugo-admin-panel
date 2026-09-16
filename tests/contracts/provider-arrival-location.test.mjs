@@ -14,7 +14,17 @@ test('arrival publishes fresh provider geolocation before requesting llegado',()
 
 test('provider location is persisted in backend-compatible point order',()=>{
  assert.match(service,/POINT\(\$\{longitude\} \$\{latitude\}\)/)
- assert.match(service,/update\(\{ubicacion:point,ultima_ubicacion_at:/)
+ assert.match(service,/update\(\{ubicacion:point,ultima_ubicacion_at:publishedAt\}\)/)
+})
+
+test('ambiguous location update verifies exact persisted timestamp before Sentinel failure',()=>{
+ assert.match(service,/persistedProviderLocation\(supabase:SupabaseClient,userId:string,publishedAt:string\)/)
+ assert.match(service,/select\('ultima_ubicacion_at'\)[\s\S]*eq\('usuario_id',userId\)[\s\S]*maybeSingle\(\)/)
+ assert.match(service,/String\(data\.ultima_ubicacion_at\|\|''\)===publishedAt/)
+ assert.match(service,/if\(persisted===true\)return/)
+ assert.match(service,/persisted===false[\s\S]*provider_location_error/)
+ assert.match(service,/provider_location_recovery_unverified/)
+ assert.match(service,/severity:'P2'/)
 })
 
 test('backend remains authority for the 200 meter arrival gate',()=>{
