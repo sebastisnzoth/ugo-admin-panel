@@ -12,6 +12,8 @@ const vite=fs.readFileSync('vite.config.ts','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915093000_runtime_sentinel.sql','utf8')
 const guardrails=fs.readFileSync('supabase/migrations/20260915093100_runtime_sentinel_guardrails.sql','utf8')
 const revisionIsolation=fs.readFileSync('supabase/migrations/20260915200000_runtime_sentinel_revision_isolation.sql','utf8')
+const actionClassification=fs.readFileSync('supabase/migrations/20260916002000_sentinel_action_classification.sql','utf8')
+const providerPaymentClassification=fs.readFileSync('supabase/migrations/20260916003000_sentinel_provider_payment_classification.sql','utf8')
 
 test('Sentinel persists deduplicated authenticated incidents and publishes them realtime',()=>{
  assert.match(migration,/create table if not exists public\.development_incidents/)
@@ -25,6 +27,21 @@ test('participant incidents are service-scoped and cannot choose arbitrary check
  assert.match(guardrails,/when p_action = 'client\.activity\.open_order' then 'CLIENT-ORDER-OPEN'/)
  assert.match(guardrails,/when p_action in \('client\.service\.chat','provider\.service\.chat','client\.order\.chat','provider\.order\.chat'\) then 'CHAT-REALTIME'/)
  assert.match(guardrails,/when v_is_admin then p_checklist_code/)
+})
+
+test('core runtime actions are classified server-side instead of trusting browser checklist proposals',()=>{
+ for(const [action,code] of [
+  ['client.request.matching','MATCH-ONLINE'],
+  ['client.request.cancel','CLIENT-CANCEL'],
+  ['client.request.location','MAP-GPS'],
+  ['provider.offer.accept','PROVIDER-ASSIGN'],
+  ['provider.service.advance','PROVIDER-STATES'],
+  ['provider.service.location','MAP-GPS'],
+  ['client.rating.submit','RATING'],
+ ])assert.match(actionClassification,new RegExp(`p_action = '${action.replaceAll('.','\\.')}' then '${code}'`))
+ assert.match(providerPaymentClassification,/p_action in \('client\.order\.payment','provider\.payment\.cash_confirm'\) then 'PAYMENT-CLOSE'/)
+ assert.match(providerPaymentClassification,/when v_is_admin then p_checklist_code/)
+ assert.doesNotMatch(providerPaymentClassification,/update public\.development_checklist/)
 })
 
 test('runtime incidents are revision-tagged and cannot mutate release checklist state',()=>{
