@@ -11,7 +11,7 @@ test('providers can submit for review but cannot self-verify or set review outco
  assert.match(migration,/old\.estado_verificacion not in \('registrado','rechazado'\)/)
  assert.match(migration,/PROVIDER_VERIFICATION_ADMIN_ONLY/)
  assert.match(migration,/PROVIDER_REVIEW_FIELDS_ADMIN_ONLY/)
- assert.match(onboarding,/estado_verificacion:'pendiente'/)
+ assert.match(onboarding,/payload\.estado_verificacion='pendiente'/)
 })
 
 test('provider-owned document writes cannot forge KYC approval or reviewer fields',()=>{
