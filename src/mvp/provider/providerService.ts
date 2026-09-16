@@ -1,4 +1,5 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
+import{reportSentinelIncident}from'../../lib/sentinel'
 import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type Service}from'../shared'
 
 export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null}
@@ -11,6 +12,7 @@ type ProviderService=Service&{programado_para?:string|null}
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const LIVE_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
+const messageOf=(error:unknown,fallback:string)=>error instanceof Error?error.message:fallback
 
 function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
 export function pickActionableProviderService(rows:ProviderService[],now=Date.now()):Service|null{
@@ -21,18 +23,26 @@ export function pickActionableProviderService(rows:ProviderService[],now=Date.no
 }
 
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
- const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
-  supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
-  supabase.rpc('obtener_ofertas_proveedor'),
-  supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
-  supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
- ])
- if(pe)throw pe;if(oe)throw oe;if(se)throw se;if(pae)throw pae
- const services=(s||[])as ProviderService[]
- return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[]}
+ try{
+  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
+   supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
+   supabase.rpc('obtener_ofertas_proveedor'),
+   supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
+   supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
+  ])
+  if(pe)throw pe;if(oe)throw oe;if(se)throw se;if(pae)throw pae
+  const services=(s||[])as ProviderService[]
+  return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[]}
+ }catch(error){
+  void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,'No se pudo cargar el estado operativo del proveedor.'),error,role:'provider',severity:'P1',action:'provider.snapshot.load'})
+  throw error
+ }
 }
 
-export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);if(error)throw error}
+export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){
+ const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId)
+ if(error){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(error,'No se pudo actualizar la disponibilidad.'),error,role:'provider',severity:'P1',action:'provider.availability'});throw error}
+}
 
 async function hasPersistedAcceptedOpportunity(supabase:SupabaseClient,opportunityId:string){
  const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)return false
@@ -46,14 +56,45 @@ async function hasPersistedAcceptedOpportunity(supabase:SupabaseClient,opportuni
  return persistedService.id===persistedOffer.servicio_id&&persistedService.proveedor_id===userId&&PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
 }
 
-export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id});if(error){if(await hasPersistedAcceptedOpportunity(supabase,id))return;throw error}if(!data){if(await hasPersistedAcceptedOpportunity(supabase,id))return;throw new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')}}
-export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error)throw error}
+async function opportunityServiceId(supabase:SupabaseClient,opportunityId:string){
+ try{const{data}=await supabase.from('ofertas_servicio').select('servicio_id').eq('id',opportunityId).maybeSingle();return typeof data?.servicio_id==='string'?data.servicio_id:null}catch{return null}
+}
+
+export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
+ const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
+ if(error){
+  if(await hasPersistedAcceptedOpportunity(supabase,id))return
+  const serviceId=await opportunityServiceId(supabase,id)
+  void reportSentinelIncident({eventType:'provider_accept_offer_error',message:messageOf(error,'No se pudo aceptar el pedido.'),error,role:'provider',severity:'P0',serviceId,action:'provider.offer.accept',checklistCode:'PROVIDER-ASSIGN'})
+  throw error
+ }
+ if(!data){
+  if(await hasPersistedAcceptedOpportunity(supabase,id))return
+  const unavailable=new Error('La oportunidad ya no está disponible. Actualizamos tu radar para mostrarte las opciones vigentes.')
+  const serviceId=await opportunityServiceId(supabase,id)
+  void reportSentinelIncident({eventType:'provider_offer_unavailable',message:unavailable.message,error:unavailable,role:'provider',severity:'P2',serviceId,action:'provider.offer.accept'})
+  throw unavailable
+ }
+}
+export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error){const serviceId=await opportunityServiceId(supabase,id);void reportSentinelIncident({eventType:'provider_reject_offer_error',message:messageOf(error,'No se pudo rechazar el pedido.'),error,role:'provider',severity:'P1',serviceId,action:'provider.offer.reject'});throw error}}
 
 function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
-async function publishProviderLocation(supabase:SupabaseClient){const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)throw new Error('Sesión no disponible.');const position=await currentPosition();const latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude);if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new Error('No pudimos validar tu ubicación actual.');const point=`POINT(${longitude} ${latitude})`;const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:new Date().toISOString()}).eq('usuario_id',userId);if(error)throw error}
+async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
+ try{
+  const{data:auth}=await supabase.auth.getUser();const userId=auth.user?.id;if(!userId)throw new Error('Sesión no disponible.')
+  const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
+  if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new Error('No pudimos validar tu ubicación actual.')
+  const point=`POINT(${longitude} ${latitude})`;const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:new Date().toISOString()}).eq('usuario_id',userId);if(error)throw error
+ }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
+}
 
 export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'){
- if(state==='llegado')await publishProviderLocation(supabase)
- const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
- if(error)throw error
+ try{
+  if(state==='llegado')await publishProviderLocation(supabase,serviceId)
+  const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
+  if(error)throw error
+ }catch(error){
+  void reportSentinelIncident({eventType:'provider_service_state_error',message:messageOf(error,`No se pudo avanzar el servicio a ${state}.`),error,role:'provider',severity:'P0',serviceId,action:'provider.service.advance',checklistCode:'PROVIDER-STATES',metadata:{targetState:state}})
+  throw error
+ }
 }
