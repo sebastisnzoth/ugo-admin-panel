@@ -42,14 +42,15 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
  const cashConfirmed=isCash&&payment?.estado==='liberado'
  const canApprove=hasFinalEvidence&&Boolean(payment)&&(!isCash||cashConfirmed)
  async function approve(){if(!canApprove)return;setBusy(true);setNotice('');try{const id=service.id;const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:id});if(error){if(await closurePersisted(id)){setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load();return}await load();throw error}setNotice(isCash?'Trabajo aprobado. El pago en efectivo quedó registrado.':'Trabajo aprobado. El pago protegido fue liberado.');await load()}catch(e){await load().catch(()=>{});setNotice(e instanceof Error?e.message:'No pudimos confirmar el cierre. Actualizamos el estado real para que puedas reintentar.')}finally{setBusy(false)}}
+ const blockedReason=!hasFinalEvidence?'Falta la evidencia final del proveedor.':!payment?'Falta confirmar la forma de pago.':isCash&&!cashConfirmed?'El proveedor todavía debe confirmar que recibió el efectivo.':''
  return <section aria-live="polite" className="ugo-completion-review">
   <header><div><h2>¿Cómo quedó el trabajo?</h2><p>Servicio #{service.numero} · Revisá el registro final antes de cerrar el servicio.</p></div><span aria-hidden="true">✓</span></header>
-  <ClientEvidenceGallery serviceId={service.id}/>
   {!hasFinalEvidence&&<div className="ugo-completion-warning">Todavía no hay una foto final “Después” del proveedor asignado. UGO no habilita la aprobación hasta poder revisarla.</div>}
   {!payment&&<div className="ugo-completion-warning">UGO todavía no encuentra una forma de pago confirmada para este servicio.</div>}
   {isCash&&!cashConfirmed&&<div className="ugo-completion-warning">El proveedor todavía debe confirmar que recibió el efectivo. UGO registra este pago, pero no tiene custodia electrónica sobre el dinero.</div>}
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-  <div className="ugo-completion-decision"><span>{isCash?(cashConfirmed?'El efectivo fue confirmado por el proveedor. Al aprobar, cerrás el servicio.':'Esperando confirmación del efectivo por parte del proveedor.'):'Al confirmar, el pago electrónico protegido se libera según el flujo de UGO.'}</span></div>
-  <div className="ugo-completion-actions">{onOpenDispute&&<button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button>}<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'Aprobar trabajo':'Aprobar y liberar pago'}</button></div>
+  <div className="ugo-completion-decision"><span>{blockedReason|| (isCash?'El efectivo fue confirmado por el proveedor. Confirmá para cerrar el servicio.':'El trabajo está listo para confirmar. Al aprobar, UGO libera el pago electrónico protegido.')}</span></div>
+  <div className="ugo-completion-actions">{onOpenDispute&&<button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button>}<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'CONFIRMAR TRABAJO':'CONFIRMAR Y LIBERAR PAGO'}</button></div>
+  <ClientEvidenceGallery serviceId={service.id}/>
  </section>
 }
