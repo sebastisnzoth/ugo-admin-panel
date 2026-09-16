@@ -1,258 +1,152 @@
 # UGO — Development Master
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
-**Estado:** contrato maestro de desarrollo y ejecución  
-**Rama de integración:** `main`
+**Versión:** 2.2 · 16 de septiembre de 2026  
+**Estado:** contrato maestro de desarrollo  
+**Rama única de trabajo:** `main`
 
-> El objetivo del proceso de desarrollo es convertir ideas en resultados reales sin acumular pantallas inconclusas, reglas duplicadas ni deuda de integración.
-
----
-
-# 1. Principio de trabajo
+## 1. Principio
 
 ```text
-Problema real
-→ impacto esperado
+problema real
 → contrato de producto
-→ impacto técnico/datos
+→ impacto datos/permisos/dinero
 → vertical slice
-→ validación
-→ actualización de maestros
-→ release
-→ medición
-```
-
-No se desarrolla una función por existir una idea: primero debe explicar qué mejora.
-
----
-
-# 2. North Star de ejecución
-
-Priorizar trabajo que aumente:
-
-```text
-servicios completados
-confianza
-conversión
-velocidad de matching
-ejecución correcta
-monetización
-retención/repetición
-```
-
-No priorizar vanity features sobre P0/P1 abiertos.
-
----
-
-# 3. Madurez
-
-```text
-IDEA
-→ DEFINED
-→ READY
-→ IN PROGRESS
 → IMPLEMENTED
-→ VALIDATED
-→ RELEASED
-→ MEASURED
+→ CI VALIDATED
+→ RUNTIME VALIDATED
+→ PUBLISHED cuando corresponda
 ```
 
-Definiciones:
+No acumular pantallas sin persistencia ni reglas paralelas.
 
-- **IDEA:** propuesta sin contrato.
-- **DEFINED:** problema, actor y resultado definidos.
-- **READY:** dependencias/estados/permisos/UX conocidos.
-- **IN PROGRESS:** trabajo activo.
-- **IMPLEMENTED:** código integrado.
-- **VALIDATED:** pruebas aplicables superadas.
-- **RELEASED:** disponible en entorno objetivo y smoke OK.
-- **MEASURED:** existe señal de uso/impacto.
+## 2. North Star de ejecución
 
----
+Priorizar trabajo que aumente servicios completados, confianza, time-to-match, ejecución correcta, monetización y repetición. No desplazar P0/P1 por vanity features.
 
-# 4. Definition of Ready
+## 3. Definition of Ready
 
-Una tarea crítica está READY cuando incluye:
+Una tarea crítica identifica:
 
 ```text
 actor
 problema
 resultado esperado
-serviceId/entidad afectada
+serviceId/entidad
 estado anterior/nuevo
 permisos
-impacto de dinero si aplica
+impacto financiero si aplica
 happy path
-errores/recuperación
+error/offline/retry/cancel
 criterio de aceptación
-métrica esperada
+evidencia requerida
 ```
 
-Si toca dinero, permisos, servicio o evidencia, revisar Data/Backend antes de implementar.
+## 4. Vertical slices
 
----
-
-# 5. Vertical slices
-
-Preferir un tramo usable extremo a extremo sobre capas aisladas.
-
-Ejemplo correcto:
+Correcto:
 
 ```text
-Cliente crea solicitud con evidencia
-→ backend persiste
-→ matching crea oportunidad
-→ Proveedor la ve
-→ acepta de forma atómica
-→ Cliente observa asignación
+Cliente crea pedido
+→ persiste serviceId
+→ matching
+→ Proveedor ve oportunidad
+→ acepta atómicamente
+→ Cliente ve asignación
+→ ambos convergen
 ```
 
-Ejemplo incorrecto:
+Incorrecto: pantallas aisladas con estados locales ficticios.
+
+## 5. Ciclo obligatorio
 
 ```text
-crear cinco pantallas bonitas
-sin persistencia
-sin permisos
-sin transición real
+1 leer AGENTS + maestros afectados
+2 verificar HEAD real de main
+3 revisar código/migraciones/tests
+4 atacar P0/P1 más cercano al primer cliente
+5 implementar mínimo completo
+6 ejecutar gates locales disponibles
+7 corregir fallos
+8 integrar en main
+9 verificar CI del SHA exacto
+10 ejecutar/runtime QA aplicable
+11 actualizar checklist + maestros según evidencia
+12 publicar sólo cuando corresponda
+13 registrar próximo riesgo real
 ```
 
----
+## 6. Madurez
 
-# 6. Orden de decisión y conciencia documental
+- **IMPLEMENTED:** código integrado en `main`.
+- **CI VALIDATED:** CI aplicable verde en ese SHA.
+- **RUNTIME VALIDATED:** flujo probado en UGO TEST/runtime/dispositivo con evidencia.
+- **PUBLISHED:** revisión disponible en canal objetivo comprobado.
 
-Para cada cambio:
+No declarar una etapa por inferencia desde otra.
+
+## 7. Readiness continuo
+
+`public.development_checklist` es la fuente viva de preparación para primer cliente. `/?app=development` es el tablero público read-only basado en vistas sanitizadas.
+
+Mapeo operativo:
 
 ```text
-1 Master Index
-2 Governance
-3 maestro funcional afectado
-4 Data/Backend si toca estado/dinero/permisos
-5 UI/UX + Usabilidad
-6 Arquitectura
-7 Testing/Release
-8 Roadmap
-9 realidad actual de main
-10 implementar
-11 validar
-12 actualizar maestros afectados
+implemented → código existe
+validated   → validación técnica/automatizada aplicable
+approved    → criterio de aceptación requerido demostrado
 ```
 
-## Regla obligatoria de conciencia
+Sólo `approved` suma al porcentaje. Publicación se gestiona aparte o mediante items de release explícitos.
 
-Todo cambio significativo en `main` debe dejar los documentos maestros al mismo nivel de realidad que el código.
+## 8. Centinela
 
-No esperar a una auditoría futura para documentar:
+Toda vertical P0/P1 debe ser observable cuando sea razonable. Centinela captura fallos de runtime TEST y agrega contexto seguro de rol, acción y revisión.
 
-- estados nuevos o corregidos;
-- contratos RPC/backend;
-- cambios de pagos, dinero o comisiones;
-- reglas de matching/asignación;
-- cambios de permisos/RLS;
-- guards de evidencia;
-- cambios de UX canónica;
-- validaciones CI/build/lint/test;
-- deuda conocida y siguiente cierre.
+Reglas:
 
-Al terminar cada bloque de trabajo:
+- redacción de emails/teléfonos/links y metadata privada;
+- incidentes actuales separados de históricos por `runtimeRevision`;
+- clasificación crítica server-side desde acciones instrumentadas conocidas;
+- cola anónima temporal sanitizada sólo como fallback;
+- el feed público omite serviceId, stack, metadata y reporter IDs;
+- Centinela **no cambia estados del checklist**.
+
+## 9. Prioridad
 
 ```text
-Código real en main
-→ validación disponible
-→ maestros afectados actualizados
-→ Roadmap actualizado
-→ próximo riesgo visible
+P0 seguridad · datos · auth · dinero · core · bloqueo primer cliente
+P1 journey/operación/UX crítica
+P2 inteligencia/optimización
+P3 expansión/polish
 ```
 
-El objetivo es mantener **conciencia continua del proyecto**: cualquier persona o agente debe poder leer los maestros y entender qué está realmente cerrado, qué está parcial y qué sigue abierto sin reconstruir la historia desde los commits.
+Orden del readiness: `failed P0 → in_progress P0 → implemented P0 → blocked/pending P0 → resto`.
 
-Nunca marcar `HECHO`, `VALIDATED` o `RELEASED` sólo porque existe código.
+## 10. Git
 
----
-
-# 7. Prioridad
+Regla vigente:
 
 ```text
-P0 integridad · auth · permisos · dinero · core
-P1 operación necesaria · conversión · UX crítica
-P2 inteligencia · automatización · optimización
-P3 expansión · polish · experimentos
+main = única rama autorizada
 ```
 
-Regla: máximo foco simultáneo en pocos P0/P1; evitar diez frentes abiertos.
+No crear ramas nuevas ni clones paralelos. Verificar HEAD inmediatamente antes de escribir. Integrar por fast-forward; si otro trabajo avanzó `main`, reconstruir sobre ese HEAD y no usar `force`.
 
----
-
-# 8. Git
-
-- `main` = integración y verdad actual.
-- ramas cortas para cambios de riesgo/alcance claro;
-- no revivir ramas históricas completas sin auditoría;
-- commits pequeños y descriptivos;
-- no mezclar refactor masivo con cambio financiero/seguridad;
-- documentar migraciones y breaking changes.
-
-Convención sugerida:
+Commits descriptivos:
 
 ```text
 feat(scope): ...
 fix(scope): ...
-refactor(scope): ...
 docs(master): ...
 test(scope): ...
 chore(scope): ...
 ```
 
----
+Agrupar un bloque lógico para no disparar commits/CI/deploys artificiales.
 
-# 9. Desarrollo asistido por IA
+## 11. Bug fixing
 
-Agentes pueden diseñar, implementar y revisar, pero deben:
-
-- leer maestros antes de cambiar contratos;
-- verificar código real en `main`;
-- no inventar APIs/tablas/estados;
-- no declarar tests/deploy OK sin evidencia;
-- preservar datos y permisos;
-- producir cambios auditables y reversibles;
-- actualizar los maestros afectados en el mismo bloque de trabajo;
-- dejar explícito el próximo riesgo o contrato todavía no cerrado.
-
----
-
-# 10. UI y diseño
-
-Penpot/Figma/Stitch sirven para explorar y especificar.
-
-Regla:
-
-```text
-diseño → contrato UGO → implementación real
-```
-
-No copiar prototipos creando DOM/rutas/estados paralelos.
-
----
-
-# 11. Cambios P0
-
-Para auth, dinero, permisos, asignación, evidencia o cierres:
-
-```text
-contrato escrito
-migración/RPC si aplica
-prueba positiva
-prueba negativa
-idempotencia/concurrencia
-rollback o mitigación
-observabilidad
-actualización del maestro correspondiente
-```
-
----
-
-# 12. Bug fixing
-
-Clasificar causa:
+Clasificar la causa:
 
 ```text
 UI
@@ -262,65 +156,73 @@ persistencia
 RLS/permisos
 integración
 concurrencia
+runtime/publicación
 datos históricos
 ```
 
-Corregir la capa responsable. No ocultar fallas backend con copy o estado local falso.
+Corregir la capa responsable. No tapar backend roto con copy o loading infinito.
 
----
+## 12. P0 de UX operacional
 
-# 13. Métricas de ingeniería
+Ninguna pantalla principal queda atrapada. Matching debe contemplar proveedor, ausencia, timeout/error/offline, retry y cancelar. Cancelación debe persistir y sincronizar contraparte.
 
-Observar:
+Chat debe ser bidireccional realtime por `serviceId`, rehidratar historial y bloquear contacto off-platform.
 
-```text
-lead time
-bugs reabiertos
-fallos de build/lint/test
-regresiones P0/P1
-frecuencia de deploy
-tiempo de recuperación
-porcentaje IMPLEMENTED→VALIDATED
-desfase código↔maestros
-```
+Multi-pedido debe permitir A+B+C independientes; mutar B nunca usa “latest service” ni altera A/C.
 
-El objetivo es velocidad sostenible, no cantidad de commits.
+## 13. Quality discipline
 
----
-
-# 14. Release discipline
-
-Antes de marcar HECHO:
+Antes de declarar CI VALIDATED:
 
 ```text
-build/lint
-flujo afectado
-roles/permisos
-estado persistido
-método de pago si aplica
-error/retry
-responsive/accesibilidad
-tests del tramo
-CI/deploy/smoke cuando corresponda
-documentación maestra actualizada
+build/types
+contracts/tests
+lint aplicable
+RLS/RPC cuando toca
+concurrencia/idempotencia cuando toca
 ```
 
----
+Antes de RUNTIME VALIDATED:
 
-# 15. Regla de producto
+```text
+rol/cuenta real TEST
+serviceId exacto
+persistencia
+contraparte/realtime
+error/recovery
+hardware cuando aplica
+```
 
-Toda nueva función debe responder:
+Antes de PUBLISHED:
 
-1. ¿Qué problema real resuelve?
-2. ¿Qué actor gana?
-3. ¿Qué métrica debería mejorar?
-4. ¿Qué riesgo introduce?
-5. ¿Por qué va antes que los P0/P1 abiertos?
+```text
+revisión/canal identificados
+smoke objetivo
+rollback o mitigación
+```
 
-Si no hay respuesta sólida, vuelve a IDEA.
+## 14. Release discipline
 
----
+No usar una web publicada como proxy de `main`. La UI de un APK TEST puede provenir del `dist` local del SHA mientras `/api` usa backend publicado; documentar ambas revisiones cuando diverjan.
 
-# 16. Regla final
+No ejecutar publicación sólo para “hacer coincidir” documentación.
 
-**UGO gana si entrega un circuito confiable y medible con velocidad disciplinada y con maestros que reflejan la realidad actual; no si acumula funcionalidades ni documentación desactualizada.**
+## 15. Conciencia documental
+
+Todo cambio significativo debe terminar así:
+
+```text
+realidad de main
+→ evidencia CI
+→ evidencia runtime
+→ checklist
+→ maestros afectados
+→ roadmap
+→ publicación si aplica
+```
+
+Los snapshots viejos se conservan como historial, no como estado vigente.
+
+## 16. Regla final
+
+**UGO avanza cuando una capacidad pasa etapas demostrables y el sistema entero cuenta la misma historia. Un commit sin CI no está validado; CI sin runtime no está probado por usuarios; runtime sin publicación no está publicado.**

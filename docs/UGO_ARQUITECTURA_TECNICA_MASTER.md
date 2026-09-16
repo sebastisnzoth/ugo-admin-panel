@@ -1,38 +1,32 @@
 # UGO — Arquitectura Técnica Master
 
-**Versión:** 2.1 · 11 de septiembre de 2026  
+**Versión:** 2.2 · 16 de septiembre de 2026  
 **Estado:** contrato técnico vivo  
 **Repositorio:** `sebastisnzoth/ugo-admin-panel`  
-**Rama de integración:** `main`
+**Rama única:** `main`
 
-> El flujo maestro define qué ocurre; UI/UX define cómo se entiende; Data/Backend define la verdad persistida; este documento define dónde vive cada responsabilidad y cómo evoluciona UGO sin crear sistemas paralelos.
-
----
-
-# 1. Principios de arquitectura
+## 1. Principios
 
 1. `main` es la fuente integrada.
-2. No crear un segundo UGO para resolver una pantalla.
-3. Cliente, Proveedor, Admin y Web comparten dominio y Design System, pero conservan responsabilidades por rol.
-4. `serviceId` es identidad transversal del trabajo.
-5. Estado de servicio y estado operacional del proveedor son máquinas distintas.
-6. UI no reemplaza autorización ni integridad backend.
-7. Realtime sincroniza persistencia; no crea otra verdad.
-8. Pagos son method-aware: electrónico y efectivo tienen contratos distintos.
-9. Stitch/Figma/Penpot son referencias de diseño, no runtime.
-10. Arquitectura objetivo: simple, trazable, serverless, barata de operar y reemplazable por capas.
-11. Un panel Admin nunca debe confundir **credencial almacenada**, **configuración presente**, **feature habilitada** y **integración E2E validada**.
+2. `serviceId` es identidad transversal.
+3. Cliente, Proveedor y Admin observan el mismo servicio persistido.
+4. Estado del servicio y estado operacional del proveedor son máquinas distintas.
+5. Backend/RLS/RPC gobiernan transiciones críticas.
+6. Realtime sincroniza persistencia.
+7. Pagos son method-aware.
+8. UI/design no inventa dominio.
+9. Un cliente puede tener múltiples pedidos independientes.
+10. Observabilidad no puede mutar dominio ni readiness.
+11. Publicación es una capa separada de integración.
 
----
-
-# 2. Stack canónico actual
+## 2. Stack canónico
 
 Frontend:
 
 ```text
 React 19
-TypeScript 6
-Vite 8
+TypeScript
+Vite
 CSS / Design System UGO
 ```
 
@@ -52,134 +46,85 @@ Mapas:
 
 ```text
 MapLibre GL
-OpenStreetMap raster
-Haversine por defecto / OSRM opcional para routing
-TomTom SDK disponible en dependencias, no autoridad obligatoria del flujo actual
+OpenStreetMap
+Haversine por defecto / OSRM opcional
 ```
 
-Runtime:
+Serverless API publicada: `/api` en el runtime web configurado. El frontend no debe asumir que el bundle web publicado coincide con el HEAD de `main`.
 
-```text
-Vercel serverless /api
-```
+## 3. Superficies
 
-Build:
-
-```bash
-npm run build
-# tsc -b && vite build
-```
-
-Las funciones Vercel TypeScript usan declaraciones locales de request/response en `api/vercel-node.d.ts`; no deben requerir un paquete de tipos ausente durante el build serverless.
-
----
-
-# 3. Superficies
-
-`src/main.tsx` arranca la app. `src/mvp/MvpApp.tsx` selecciona superficie por `?app=`.
-
-Contrato:
+`src/mvp/MvpApp.tsx` resuelve:
 
 ```text
 ?app=client      → Cliente
 ?app=provider    → Proveedor
 ?app=admin       → Admin/Super Admin gate
+?app=development → Desarrollo público read-only
 ?app=web         → Web
-?app=client-web  → experiencia web cliente cuando aplique
 sin app          → Landing
 ```
 
-No agregar nuevas raíces para resolver variantes visuales si la capacidad pertenece a una superficie existente.
+`?app=development` es una excepción deliberada sin `AdminGate`; no concede privilegios administrativos.
 
----
+## 4. Desarrollo público
 
-# 4. Fronteras por rol
-
-## Cliente
-
-Responsabilidades UI:
+Arquitectura:
 
 ```text
-auth/onboarding
-home/radar
-búsqueda/categorías
-solicitud/evidencia
-matching
-servicio/pago
-tracking
-ampliaciones
-aprobación/disputa
-historial/reputación
+tablas readiness privadas/protegidas
+→ vistas públicas sanitizadas
+→ DevelopmentDashboard read-only
 ```
 
-## Proveedor
+El feed público no expone evidencia completa, actor de cambio, `serviceId`, stack, metadata privada ni reporter IDs.
+
+Una señal realtime no sensible sólo invalida/refresca la vista; no permite mutación.
+
+## 5. Centinela
+
+Flujo:
 
 ```text
-auth/onboarding/KYC
-home
-Demanda
-Oportunidades
-detalle de oportunidad
-trabajo activo
-tracking propio
-evidencia
-ampliaciones
-ganancias
-historial/disputa
+runtime TEST
+→ reportSentinelIncident
+→ redacción/sanitización
+→ contexto build/rol/acción
+→ clasificación server-side de acciones conocidas
+→ persistencia privada
+→ vista pública sanitizada
 ```
 
-Demanda y Oportunidades deben permanecer separadas.
-
-## Admin / Super Admin
+Fallback anónimo:
 
 ```text
-operación
-personas/KYC
-servicios
-finanzas/retiros
-disputas
-calidad
-Scout
-configuración
-integraciones/estado runtime
-permisos/auditoría
+fallo seguro sin cliente autenticado
+→ cola local limitada y sanitizada
+→ flush posterior cuando exista cliente autorizado
 ```
 
----
+Centinela no modifica `development_checklist`.
 
-# 5. Estado y navegación
+`runtimeRevision` permite separar incidente actual de histórico. Un reporte de un APK/build viejo no debe atribuirse al HEAD actual.
 
-La navegación UI puede ser local, pero el dominio crítico debe derivar de persistencia.
-
-Regla:
-
-```text
-screen state != domain state
-```
-
-`clientFlow` y `providerFlow` coordinan navegación/acciones, pero no deben convertirse en segunda base de datos.
-
----
-
-# 6. Contrato Cliente ↔ Proveedor
+## 6. Cliente ↔ Proveedor
 
 ```text
 Cliente crea solicitud
-→ backend crea/persiste serviceId
-→ matching produce oferta ligada al serviceId
-→ Proveedor autorizado consulta
-→ aceptación atómica
-→ servicio asignado
-→ ambos roles se sincronizan sobre el mismo registro
+→ backend persiste serviceId
+→ matching produce oportunidad
+→ Proveedor acepta atómicamente
+→ Cliente observa asignación
+→ pago habilita ejecución
+→ lifecycle
+→ aprobación/disputa
 ```
 
-Nunca crear un “job” paralelo desconectado del servicio sólo para la vista del proveedor.
+Chat, tracking, pago, evidencia y cancelación reciben/derivan el `serviceId` exacto; nunca mutan “el último servicio”.
 
----
+## 7. Lifecycle
 
-# 7. Máquina de estado
-
-Servicio persistido:
+Servicio:
 
 ```text
 borrador → buscando → ofrecido → asignado
@@ -187,13 +132,7 @@ borrador → buscando → ofrecido → asignado
 → esperando_aprobacion → completado
 ```
 
-Excepciones:
-
-```text
-cancelado · disputado
-```
-
-Pago pendiente/habilitado/protegido son condiciones derivadas del dominio `pagos`; no estados persistidos del servicio.
+Excepciones: `cancelado`, `disputado`.
 
 Proveedor:
 
@@ -202,228 +141,112 @@ offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
 
-Los componentes pueden derivar labels locales, pero no redefinir el dominio.
+## 8. Multi-pedido
 
----
+La arquitectura permite A+B+C pedidos independientes para un mismo cliente. `request_draft_id` puede proteger reintentos del mismo draft, pero no convertirse en single-active guard.
 
-# 8. Pagos
+Prohibido usar como autoridad de mutación:
 
-Arquitectura de pagos distingue método y procesador:
+```text
+activeServiceId global
+latest active service
+.limit(1) para cancelar/editar un pedido ambiguo
+```
+
+## 9. Pagos
 
 ```text
 intención UI
-→ API server-side
-→ adapter/procesador
+→ API/RPC server-side
+→ procesador/adaptador
 → referencia externa
 → webhook/conciliación
 → persistencia UGO
 ```
 
-Electrónico puede tener autorización, custodia, webhook, liberación/reembolso.
+Efectivo registra selección/recepción; no se presenta como dinero protegido electrónicamente.
 
-Efectivo registra selección, habilitación, confirmación presencial y obligación/comisión UGO cuando aplique.
+Credencial guardada ≠ runtime configurado ≠ feature habilitada ≠ E2E validado.
 
-No compartir copy o flags de `protected` con efectivo.
+## 10. Backend boundaries
 
-Credenciales privadas almacenadas por Admin y variables del runtime son conceptos distintos hasta que el adapter consuma explícitamente la bóveda privada.
+Frontend puede solicitar mutaciones y feedback reversible. Backend valida identidad, rol, participación, estado previo, concurrencia, dinero, evidencia y transición atómica.
 
----
-
-# 9. Backend boundaries
-
-Frontend puede:
-
-- solicitar mutaciones;
-- mostrar optimistic feedback reversible;
-- bloquear doble click;
-- renderizar permisos conocidos.
-
-Backend debe:
-
-- validar identidad/rol;
-- validar estado anterior;
-- validar participación;
-- aplicar transición atómica;
-- reconciliar dinero;
-- impedir doble aceptación;
-- autorizar evidencia/Storage;
-- registrar acciones críticas.
-
----
-
-# 10. Adapters e integraciones
-
-Toda integración externa debe quedar detrás de una frontera clara:
+## 11. Realtime
 
 ```text
-UI/domain intent
-→ adapter/service server-side cuando hay secretos
-→ API externa
-→ normalización
-→ persistencia
-```
-
-Aplica a pagos, mapas/routing, WhatsApp, IA, deploy y futuras integraciones.
-
-## Estado runtime Admin
-
-`api/admin/integrations-status.ts` expone sólo metadatos seguros a Admin/Super Admin autenticado:
-
-```text
-configured
-enabled
-environment
-runtime source
-nota operativa
-commit/entorno de deploy cuando existe
-```
-
-Nunca devuelve valores secretos.
-
-`AdminSystemSettings → Integraciones` distingue:
-
-```text
-No configurada
-Configurada / apagada
-Operativa en el runtime actual
-```
-
-`Operativa` aquí significa que el runtime tiene la configuración y feature necesarias; **no equivale a E2E validado**.
-
-Estado de wiring observado al 11/09/2026:
-
-- Supabase: core persistente.
-- Mercado Pago BR: runtime usa `MERCADO_PAGO_ACCESS_TOKEN`.
-- Pix direto: runtime usa `UGO_PIX_KEY`.
-- OpenPix: sandbox, condicionado por flag + AppID; no libera fondos reales.
-- Mercado Pago AR: router todavía lo bloquea aunque exista feature flag declarada.
-- Hugo Voice: secreto `OPENAI_API_KEY` sólo server-side.
-- WhatsApp Cloud API: envío server-side con token + phone ID; Gemini es apoyo opcional.
-- Mapas: MapLibre + OSM; routing Haversine por defecto / OSRM opcional.
-- Vercel: runtime de `/api`; estado de deployment debe verificarse por release/observabilidad, no por `navigator.onLine`.
-
-La tabla privada `private.payment_credentials` es bóveda de credenciales administrables. Guardar allí **no activa por sí solo** un procesador mientras los adapters sigan consumiendo variables de entorno. El panel debe mostrar esa diferencia explícitamente.
-
-Objetivo futuro: permitir que adapters server-side resuelvan credenciales desde una única fuente segura, con rotación/auditoría y fallback controlado, sin exponer secretos al frontend.
-
----
-
-# 11. Realtime
-
-Realtime sólo dispara sincronización de datos persistidos.
-
-Buenas prácticas:
-
-```text
-canal filtrado
+canal filtrado por entidad/serviceId
 cleanup
 reconexión
 refetch
 sin duplicados
-sin autorización implícita
+convergencia a persistencia
 ```
 
-Cliente y Proveedor deben converger al mismo estado tras reconexión.
-
----
-
-# 12. Storage/evidencias
-
-Uploads sensibles:
+## 12. Storage/evidencia
 
 ```text
 UI
-→ validación cliente básica
+→ validación básica
 → bucket privado
-→ metadata vinculada a draft/serviceId
-→ RLS/policy
-→ signed URL autorizada
+→ objeto real
+→ metadata ligada a draft/serviceId
+→ policy/RLS
+→ acceso autorizado
 ```
 
-El path físico no es permiso.
+Metadata/path sin objeto no es evidencia válida.
 
----
+## 13. Android TEST
 
-# 13. Design System
+El APK QA canónico puede empaquetar la UI del `dist` del SHA dentro de Capacitor. No debe cargar una UI remota mediante `server.url`.
 
-Tokens canónicos: `src/mvp/ugo-design-system.css` y capas de UI asociadas.
-
-Reglas:
-
-- reutilizar antes de duplicar;
-- no crear una paleta por pantalla;
-- targets táctiles ≥48px;
-- safe areas;
-- responsive real;
-- estados loading/empty/error/offline comunes.
-
----
-
-# 14. Legacy
-
-Código legacy puede coexistir temporalmente sólo con propósito de migración.
-
-No debe:
-
-- ser una segunda salida operacional;
-- recibir nuevas features;
-- duplicar reglas de estado;
-- bloquear evolución del shell nuevo.
-
-P0: retirar rutas/uso operacional de Provider legacy cuando el nuevo flujo pase smoke.
-
----
-
-# 15. Observabilidad mínima
-
-Toda vertical crítica debe poder responder:
+Contrato:
 
 ```text
-qué pasó
-para qué usuario/serviceId
-qué estado anterior/nuevo
-qué integración falló
-si hubo retry
-tiempo de respuesta
-resultado final
+UI = bundle local del build
+/api = backend publicado configurado por VITE_API_BASE_URL
+transport = CapacitorHttp cuando aplica
 ```
 
-Errores de producción deben ser accionables, no sólo console logs.
+Por eso se deben registrar por separado revisión del bundle y backend API utilizado.
 
-Para integraciones, distinguir salud de navegador, presencia de configuración, feature flag, respuesta de proveedor y E2E real.
+## 14. Observabilidad
 
----
-
-# 16. Cost discipline
-
-Mientras UGO valida mercado:
-
-- usar tiers gratuitos/low-cost razonables;
-- evitar infraestructura permanente innecesaria;
-- preferir serverless y servicios gestionados;
-- medir consumo antes de escalar;
-- no comprometer seguridad/integridad por ahorro.
-
----
-
-# 17. Definition of Done técnica
+Toda vertical crítica debe responder:
 
 ```text
-contrato de dominio respetado
-sin nueva fuente de verdad
-backend/RLS/RPC correcto
-states/error/retry
-types/build/lint
-tests del tramo
-responsive/accesibilidad
-observabilidad aplicable
-documentación afectada actualizada
+qué falló
+rol
+acción
+build
+serviceId privado cuando aplica
+estado esperado
+retry/recuperación
+resultado
 ```
 
-Para una integración externa, “Done” exige además credencial/runtime seguro, feature state explícito, error/retry y evidencia de validación apropiada.
+La vista pública muestra sólo la parte segura de esa información.
 
----
+## 15. Madurez técnica
 
-# 18. Regla final
+```text
+IMPLEMENTED
+→ CI VALIDATED
+→ RUNTIME VALIDATED
+→ PUBLISHED
+```
 
-**Toda nueva pieza debe integrarse al circuito existente; si para agregar una función hace falta inventar otro estado, otra base o otra app paralela, primero se revisa el diseño del sistema.**
+Arquitectura no considera “Done” una integración porque haya código o variable configurada.
+
+## 16. Legacy
+
+Legacy sólo puede coexistir durante migración; no recibe nuevas reglas ni debe crear una segunda salida operacional.
+
+## 17. Cost discipline
+
+Preferir serverless/managed y evitar infraestructura innecesaria; nunca ahorrar rompiendo seguridad o integridad.
+
+## 18. Regla final
+
+**Toda nueva pieza se integra al circuito existente. Desarrollo público observa sin privilegios; Centinela detecta sin gobernar; `main` integra sin implicar publicación; el `serviceId` mantiene unida la operación.**

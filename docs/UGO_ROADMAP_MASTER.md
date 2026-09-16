@@ -1,365 +1,153 @@
 # UGO — Roadmap Master
 
-**Versión:** 2.8 · 13 de septiembre de 2026  
+**Versión:** 2.9 · 16 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
-> `IMPLEMENTED ≠ VALIDATED ≠ RELEASED`. UGO primero cierra el circuito principal y después amplía el ecosistema.
+> **Un pedido. Un profesional. Sin vueltas.** Primero cerrar y demostrar el circuito real; después ampliar.
 
----
-
-# 1. North Star
-
-**Servicios confiables completados dentro de UGO.**
+## 1. Madurez
 
 ```text
-Necesidad → solicitud → matching → asignación
-→ método de pago → ejecución → evidencia
-→ aprobación/disputa → cobro → reputación → repetición
+IMPLEMENTED
+→ CI VALIDATED
+→ RUNTIME VALIDATED
+→ PUBLISHED
 ```
 
-Métricas: time-to-match, acceptance/completion rate, cancelación/disputa, repetición, GMV/take rate, liquidez proveedor, CSAT/NPS.
-
----
-
-# 2. Estados
+Leyenda del roadmap:
 
 ```text
-✅ HECHO      integrado + validación aplicable satisfecha
-🟡 PARCIAL   existe pero falta validación/cierre
-⬜ PENDIENTE no implementado/cerrado
-⛔ BLOQUEADO dependencia externa/decisión
+✅ cerrado con evidencia requerida
+🟡 implementado/parcial; falta etapa siguiente
+🔴 regresión/fallo comprobado
+⛔ bloqueo externo/decisión
+⬜ pendiente
 ```
 
-Prioridad: P0 integridad/auth/permisos/dinero/core; P1 operación/UX; P2 inteligencia; P3 expansión/polish.
+## 2. Snapshot 16/09/2026
 
----
-
-# 3. P0 — cerrar antes de expandir
+HEAD inspeccionado antes de esta sincronización:
 
 ```text
-[x] build integrado en Core CI
-[x] lint crítico/general integrado
-[x] npm test disponible
-[ ] tests RPC/RLS contra base aislada
-[ ] npm run test:e2e
-[ ] serviceId Cliente↔Proveedor validado E2E
-[x] aceptación de oportunidad atómica
-[ ] RLS sensible completamente validada
-[x] guards evidencia inicial/final/temporal
-[x] guard ampliación sin financiación
-[x] checkout/reconciliación delta electrónico implementado
-[ ] E2E/idempotencia/reembolso delta electrónico
-[ ] pagos electrónico/efectivo E2E
-[ ] idempotencia webhooks/efectivo/retiros completa
-[ ] Admin/Super server-side completamente validado
-[ ] ledger/comisión efectivo
-[ ] Provider legacy fuera de operación y smoke cerrado
-[ ] deploy production estable + smoke demostrable
+19c6dcddd2410b063e0d4171cd2178b95da47ef3
+fix(sentinel): classify core runtime actions server-side
 ```
 
----
+Cambios ya IMPLEMENTED en ese HEAD:
 
-# 4. Snapshot de conciencia
+- dashboard Desarrollo sin login;
+- feeds públicos sanitizados/read-only;
+- tablas readiness privadas protegidas;
+- `runtimeRevision` en Centinela;
+- separación build actual/histórico;
+- cola segura para incidentes anónimos;
+- matching/cancel/status Cliente instrumentados;
+- operaciones críticas Proveedor instrumentadas;
+- clasificación server-side de acciones Centinela;
+- retirada del hosting obsoleto del readiness activo.
 
-## Bloque A — solicitud → asignación → pago
+Core CI del mismo SHA `19c6dc…` terminó **FAILURE** en run `35040842854`, en el bloque de tests/contracts después de pasar TypeScript/build. Estado: **IMPLEMENTED, NO CI VALIDATED**. Corregir/obtener CI verde es P0 inmediato antes de promover esas capacidades.
 
-Cerrado a nivel de implementación:
+## 3. P0 inmediato
 
 ```text
-solicitud guiada Hugo + evidencia
-→ matching proveedores online/disponibles
-→ oferta con tarifa real
-→ aceptación atómica
-→ tarifa/comisión/neto
-→ elección de método
-→ método bloqueado salvo fallo
-→ viaje sólo con forma de pago válida
+[🔴] recuperar Core CI verde sobre HEAD actual
+[🟡] Development público/no-login → falta CI verde del SHA que lo consolide
+[🟡] Centinela runtime → falta CI verde + smoke runtime de build actual
+[🟡] Cliente exact order/detail/chat por serviceId → falta prueba dos sesiones
+[🟡] chat Proveedor → Cliente realtime → falta prueba física/runtime
+[🟡] matching no-provider/timeout/retry/cancel → falta runtime E2E
+[🟡] multi-pedido A+B+C → falta E2E autenticado/physical
+[🟡] Proveedor estados simples + Agenda → falta lifecycle físico
+[⬜] pagos electrónico/efectivo E2E completo
+[⬜] Admin/Super Admin server-side/security final
+[⛔] política definitiva saldo/retiro → decisión de producto pendiente
+[⬜] seguridad/release producción
 ```
 
-Producción fue verificada con 0 servicios asignados sin tarifa válida y 0 ofertas pendientes sin tarifa válida al cierre de ese bloque.
+## 4. Cliente
 
-## Bloque B — viaje → llegada → inicio
+| Área | Estado | Próximo cierre |
+|---|---|---|
+| Solicitud guiada | 🟡 | E2E real |
+| Matching | 🟡 | sin proveedor + timeout + retry + cancel |
+| Proveedores online/cards | 🟡 | validar contra datos reales |
+| Multi-pedido | 🟡 | A+B+C con IDs reales |
+| Actividad/detalle | 🟡 | smoke exact serviceId |
+| Cancelación | 🟡 | persistencia + contraparte + A/C intactos |
+| Chat | 🟡 | bidireccional dos sesiones |
+| Tracking/ETA | 🟡 | reconexión/GPS |
+| Pago | 🟡 | E2E por método |
+| Aprobación/disputa | 🟡 | E2E |
+
+## 5. Proveedor
+
+| Área | Estado | Próximo cierre |
+|---|---|---|
+| Oportunidades | 🟡 | E2E real |
+| Aceptar/rechazar | 🟡 | CI actual + competencia |
+| En camino/Llegué/Empezar/Listo | 🟡 | lifecycle físico |
+| Agenda/calendario | 🟡 | varios trabajos + serviceId exacto |
+| Chat | 🟡 | proveedor→cliente realtime |
+| Evidencia | 🟡 | cámara/Storage/guards reales |
+| Pago/efectivo | 🟡 | cierre method-aware |
+| Centinela operacional | 🟡 | CI + incident smoke |
+
+## 6. Desarrollo / Centinela
+
+Arquitectura IMPLEMENTED:
 
 ```text
-asignado + pago listo
-→ en_camino → tracking
-→ proximidad 200 m cuando aplica
-→ llegado → Foto Antes
-→ en_progreso
+landing → Desarrollo
+?app=development sin login
+→ vistas públicas sanitizadas
+→ progreso/checklist/áreas/incidentes
+→ realtime signal seguro
 ```
 
-UI/backend alineados y guard temporal de evidencia aplicado. Falta E2E GPS real.
-
-## Bloque C — ampliación → cierre
-
-Implementado:
+Centinela IMPLEMENTED:
 
 ```text
-ampliación con costo electrónico
-→ checkout de delta separado
-→ webhook monto/moneda
-→ RPC idempotente
-→ incorpora delta/comisión/neto
-→ aprobada + incluido
+runtime TEST
+→ reporte sanitizado
+→ build revision
+→ server classification
+→ persistencia privada
+→ feed público seguro
 ```
 
-No muta pago base. Retry/reembolso están modelados. Estado: **IMPLEMENTED, falta VALIDATED E2E**.
+Regla: ningún incidente cambia automáticamente el checklist.
 
-## Bloque D — red automatizada mínima
-
-`npm test` cubre contratos core de llegada, evidencia, efectivo, delta electrónico, ownership de review y lifecycle Cliente↔Proveedor. No reemplaza RPC/RLS/E2E.
-
-## Bloque E — Panel de control · Integraciones
-
-Auditoría realizada sobre `main`, Supabase producción y Vercel.
-
-### Panel Admin
-
-`Configuración → Sistema` distingue:
-
-```text
-General
-Reglas de negocio
-Medios de pago
-Credenciales de pago
-Integraciones
-Estado técnico
-```
-
-La pestaña **Integraciones** consulta `api/admin/integrations-status.ts` con sesión Admin y muestra metadata segura del runtime, sin exponer secretos.
-
-### Hallazgos
-
-- Supabase es el core persistente real.
-- La bóveda `private.payment_credentials` tenía **0 filas** al control registrado.
-- `AdminPaymentCredentials` puede guardar credenciales privadas, pero los adapters productivos siguen leyendo variables de entorno; “guardada en panel” no equivale a “usada en runtime”.
-- `admin_payment_credentials_status()` tuvo una dependencia no portable corregida con `20260911230000_admin_payment_credentials_status_fix.sql`.
-- Mercado Pago BR runtime: `MERCADO_PAGO_ACCESS_TOKEN`.
-- Pix direto: `UGO_PIX_KEY`.
-- OpenPix: sandbox + feature flag; no libera fondos reales.
-- Mercado Pago AR: declarado pero bloqueado por router en la fase actual.
-- Hugo Voice: `OPENAI_API_KEY` server-side.
-- WhatsApp Cloud API: token + phone ID server-side; bandeja Admin real.
-- Mapas actuales: MapLibre + OSM; routing Haversine por defecto / OSRM opcional.
-- Falta demostrar deployment de producción estable + smoke sobre HEAD vigente.
-
-### Riesgo visible
-
-```text
-credencial guardada
-≠ runtime configurado
-≠ feature habilitada
-≠ proveedor externo saludable
-≠ E2E validado
-```
-
-## Bloque F — Proveedor · flujo simple P0 · 13/09/2026
-
-Implementado en `main` el contrato definido en `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`:
-
-```text
-VER EL PROBLEMA
-→ ACEPTAR
-→ ESTOY YENDO
-→ llegada automática por ubicación cuando aplica
-   ↳ YA LLEGUÉ como fallback
-→ EMPEZAR TRABAJO
-→ LISTO
-```
-
-La simplificación es de **interfaz**, no de integridad. UGO conserva por detrás:
-
-- mismo `serviceId` y máquina de estados canónica;
-- aceptación atómica;
-- forma de pago válida antes de salir;
-- RPC/backend como autoridad de transiciones;
-- evidencia `Antes` antes de iniciar;
-- evidencia `Después` antes del cierre;
-- confirmación de efectivo cuando corresponda;
-- ampliaciones/precio adicional sólo como excepción explícita y aprobable;
-- Realtime y trazabilidad.
-
-La evidencia obligatoria se captura desde la acción humana (`EMPEZAR TRABAJO` / `LISTO`) sin convertirla en un paso administrativo separado. `LISTO` agrupa el cierre visible, mientras backend mantiene guards de evidencia, dinero y aprobación del cliente.
-
-La llegada automática usa el tracking real y radio operativo de 200 m cuando hay geolocalización autorizada; el botón manual permanece como recuperación.
-
-Estado de madurez: **IMPLEMENTED**. Para pasar a `VALIDATED` faltan E2E real Cliente↔Proveedor en TEST, GPS/cámara/permisos en dispositivo y smoke responsive del recorrido completo.
-
----
-
-# 5. Cliente
-
-| Área | Estado | P | Próximo cierre |
-|---|---|---:|---|
-| Auth/Recovery | 🟡 | P0 | smoke + regresión |
-| Onboarding | 🟡 | P1 | validación |
-| Home/Radar | 🟡 | P1 | smoke |
-| Categorías/Búsqueda | 🟡 | P1 | regresión |
-| Solicitud guiada Hugo | 🟡 | P0 | E2E |
-| Evidencia previa | 🟡 | P0 | E2E request→service |
-| Matching | 🟡 | P1 | timeout/recovery |
-| Pago electrónico | 🟡 | P0 | E2E |
-| Efectivo | 🟡 | P0 | ledger + E2E |
-| Lock método pago | ✅ | P0 | regresiones |
-| Tracking/ETA | 🟡 | P1 | reconexión/fallback |
-| Llegada | 🟡 | P1 | E2E GPS |
-| Servicio activo | 🟡 | P0 | narrativa única |
-| Ampliar servicio | 🟡 | P0 | E2E delta/reembolso/retry |
-| Aprobación/Disputa | 🟡 | P0 | E2E por método |
-| Historial/Reputación | 🟡 | P1 | validación integrada |
-
----
-
-# 6. Proveedor
-
-| Área | Estado | P | Próximo cierre |
-|---|---|---:|---|
-| Shell nuevo | 🟡 | P0 | smoke + legacy fuera |
-| Auth/Onboarding/KYC | 🟡 | P0 | roles/RLS |
-| Home | 🟡 | P1 | smoke responsive con datos reales |
-| Demanda | 🟡 | P1 | fuente analítica |
-| Oportunidades | 🟡 | P0 | flujo problem-first implementado; falta E2E real |
-| Aceptar/Rechazar | ✅ | P0 | E2E competitivo |
-| Tarifa al asignar | ✅ | P0 | monitoreo |
-| Trabajo activo | 🟡 | P0 | flujo simple implementado; falta E2E lifecycle |
-| Tracking | 🟡 | P1 | llegada automática implementada; falta E2E GPS/reconexión |
-| Radio 200 m | ✅ | P1 | E2E GPS |
-| Evidencia por estado | ✅ | P0 | integrada detrás de CTA; E2E positivo/negativo |
-| Ampliar servicio | 🟡 | P0 | excepción contextual; convergencia E2E |
-| Efectivo recibido | 🟡 | P0 | cierre visible unificado; ledger + E2E |
-| Hugo Asistente | 🟡 | P2 | mantener fuera del happy path salvo ayuda contextual |
-
----
-
-# 7. Admin / Super Admin
-
-| Área | Estado | P | Próximo cierre |
-|---|---|---:|---|
-| AdminGate/Auth | 🟡 | P0 | server-side/RLS E2E |
-| Operaciones | 🟡 | P1 | excepciones accionables |
-| Personas/KYC | 🟡 | P1 | permisos/auditoría |
-| Finanzas/Retiros | 🟡 | P0 | idempotencia/conciliación |
-| Disputas | 🟡 | P0 | resolución method-aware |
-| Roles/feature flags | 🟡 | P0 | enforcement real |
-| Credenciales privadas | 🟡 | P1 | bóveda existe; falta runtime resolver unificado |
-| Integraciones runtime | 🟡 | P0 | endpoint seguro listo; falta CI/deploy/smoke |
-| Estado técnico | 🟡 | P1 | no confundir navegador con backend |
-| Auditoría crítica | 🟡 | P0 | trail consistente |
-| Reportes/Scout | 🟡 | P2 | métricas/recomendaciones |
-| Super Admin | 🟡 | P1 | separación operación/config |
-
----
-
-# 8. Testing inmediato
+## 7. Testing
 
 Orden:
 
 ```text
-1 validar CI sobre HEAD actual
-2 E2E solicitud→asignación→Proveedor problem-first
-3 E2E pago electrónico base
-4 E2E efectivo
-5 E2E ESTOY YENDO→llegada automática/fallback→EMPEZAR→LISTO
-6 E2E evidencia Antes/Después integrada detrás de acciones
-7 E2E delta ampliación
-8 tests RPC/RLS aislados
-9 responsive/accessibility 360–430 + desktop
-10 deploy objetivo + smoke
+1 Core CI verde sobre HEAD
+2 contracts Development/Centinela
+3 E2E Cliente request→matching→asignación
+4 chat bidireccional exact serviceId
+5 A+B+C + cancelación selectiva
+6 Proveedor Agenda + lifecycle
+7 pagos/evidencia
+8 dos Android físicos
+9 responsive/accessibility
+10 publicación objetivo + smoke cuando corresponda
 ```
 
-Casos críticos del flujo Proveedor:
+## 8. Android
 
-```text
-sin forma de pago válida → ESTOY YENDO bloqueado
-GPS autorizado + <=200 m → llegada automática
-GPS denegado/error → YA LLEGUÉ disponible
-sin evidencia Antes → inicio no persiste
-foto Antes válida → inicio persiste
-sin evidencia Después → cierre no persiste
-foto Después válida → LISTO avanza a revisión
-cash → LISTO registra recepción antes de revisión
-ampliación con costo → no se ejecuta/cierra sin aprobación/financiación aplicable
-retry/realtime → mismo serviceId y estado real
-```
+El APK TEST debe empaquetar el `dist` del SHA local y usar backend API configurado, no una UI web remota. Cada nuevo artifact debe registrar revisión y pasar instalación/prueba física antes de considerarse RUNTIME VALIDATED.
 
----
+## 9. Release
 
-# 9. UI/UX
+La web publicada puede quedar detrás de `main`. No gastar deploys para sincronización documental. Publicar sólo cuando exista un bloque funcional que necesite prueba/release web y registrar revisión exacta + smoke.
 
-Después de integridad P0:
+## 10. Criterio del primer cliente
 
-```text
-[ ] Cliente converge completamente al journey Hugo
-[~] Proveedor happy path simple implementado; falta smoke/E2E real
-[ ] Proveedor legacy fuera de operación
-[ ] Admin/Super Admin converge
-[ ] loading/empty/error/offline consistentes
-[ ] mobile 360–430 validado en dispositivo
-[ ] desktop real validado
-[ ] accesibilidad AA crítica
-```
+Cliente crea uno o más pedidos independientes, matching encuentra o recupera correctamente, Proveedor recibe/acepta, ambos chatean por el mismo servicio, pago habilita ejecución, Proveedor resuelve y marca listo, Cliente aprueba/disputa, Admin puede observar/resolver y ninguna mutación afecta otro pedido.
 
----
+## 11. Regla final
 
-# 10. Growth / Hugo / Scout / Academia
-
-No desplazar P0 abiertos. Cuando el core sea demostrable:
-
-```text
-mejor matching → completion → reputación/datos → confianza
-→ repetición → más proveedores → menor time-to-match
-```
-
-Hugo debe reducir errores y fricción; Scout cerrar `Dato → interpretación → recomendación → acción → resultado`; Academia queda P3 salvo impacto directo en calidad P0/P1.
-
----
-
-# 11. Monetización
-
-Antes de escalar:
-
-```text
-comisión electrónica conciliada
-comisión efectivo trazable
-ampliaciones financiadas
-retiros seguros
-margen conocido
-coste por servicio medido
-fuga off-platform medida
-```
-
----
-
-# 12. Fases
-
-- **A Core confiable:** integridad, pagos, permisos, serviceId, evidencia, integraciones, E2E.
-- **B Operación excelente:** tracking, notificaciones, Admin, recuperación.
-- **C Retención/eficiencia:** reputación, repetición, Hugo, matching, métricas.
-- **D Inteligencia/expansión:** Scout avanzado, Academia, ciudades/categorías.
-
-No saltar fase dejando P0 crítico abierto.
-
----
-
-# 13. Criterio MVP exitoso
-
-Cliente pide/paga/sigue/amplía/aprueba; Proveedor ve el problema, acepta, va, resuelve y marca listo; Admin resuelve excepciones y observa integraciones reales. Permisos, dinero, evidencia y secretos están protegidos. CI, deploy y smoke son demostrables.
-
----
-
-# 14. Regla de conciencia continua
-
-```text
-código/migración
-→ validación
-→ maestros afectados
-→ Roadmap
-→ próximo riesgo visible
-```
-
----
-
-# 15. Regla final
-
-**El próximo gran avance de UGO es convertir el circuito ya existente —incluidas sus integraciones— en un sistema confiable, validado, medible, repetible y observable sin trasladar esa complejidad al proveedor.**
+**El siguiente gran avance no es sumar features: es volver verde el HEAD, demostrar en runtime el circuito Cliente ↔ Proveedor ↔ Admin y mantener Centinela/readiness como evidencia honesta de lo que funciona.**

@@ -1,23 +1,21 @@
 # UGO — Master Governance
 
-**Versión:** 2.2 · 11 de septiembre de 2026  
-**Estado:** contrato superior de compatibilidad documental  
+**Versión:** 2.3 · 16 de septiembre de 2026  
+**Estado:** contrato superior de compatibilidad  
 **Rama de verdad:** `main`
-
-> UGO mantiene una sola realidad de producto. Este documento fija las reglas que ningún flujo, pantalla, prototipo o implementación puede contradecir.
 
 ## 1. Autoridades
 
-- `UGO_MASTER_INDEX.md`: entrada y visión transversal.
-- `UGO_DEVELOPMENT_MASTER.md`: proceso de desarrollo.
-- `UGO_ECOSISTEMA_FLUJO.md`: producto y journeys.
-- `UGO_UIUX_MAESTRO.md`: experiencia y Design System.
-- `UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`: claridad operacional.
-- `UGO_UIUX_STITCH_MASTER.md`: referencia visual asistida.
-- `UGO_ARQUITECTURA_TECNICA_MASTER.md`: arquitectura.
-- `UGO_DATA_BACKEND_MASTER.md`: datos, permisos, dinero e integridad.
-- `UGO_TESTING_RELEASE_MASTER.md`: validación y release.
-- `UGO_ROADMAP_MASTER.md`: prioridad y madurez.
+- `UGO_MASTER_INDEX.md`: visión transversal.
+- `UGO_DEVELOPMENT_MASTER.md`: proceso de ejecución.
+- `UGO_DEVELOPMENT_READINESS_MASTER.md`: verdad medible hacia primer cliente.
+- `UGO_ECOSISTEMA_FLUJO.md`: producto/journeys.
+- `UGO_UIUX_MAESTRO.md` + usabilidad: experiencia.
+- `UGO_ARQUITECTURA_TECNICA_MASTER.md`: fronteras técnicas.
+- `UGO_DATA_BACKEND_MASTER.md`: persistencia, RLS, dinero e integridad.
+- `UGO_TESTING_RELEASE_MASTER.md`: evidencia, gates y release.
+- `UGO_ROADMAP_MASTER.md`: prioridades y estado.
+- `AGENTS.md`: protocolo de agentes.
 
 ## 2. Jerarquía de conflicto
 
@@ -26,171 +24,130 @@ integridad ejecutable
 → estado persistido real
 → Governance
 → Producto/Flujo
+→ Data/Backend
 → Arquitectura
-→ UI/UX + Usabilidad
-→ Stitch
+→ UI/UX
 → Roadmap
+→ snapshots históricos
 ```
 
-La UI no habilita transiciones prohibidas por backend. Stitch no inventa estados. Un mock no es función real. Un commit no equivale a release.
+Stitch/mock/diseño nunca inventan estado ni permiso.
 
 ## 3. Invariantes
 
-### Un solo servicio
-Cliente, Proveedor y Admin observan el mismo `serviceId` y el mismo estado persistido.
+### Servicio único
+Cliente, Proveedor y Admin comparten el mismo `serviceId` y estado persistido.
+
+### Multi-pedido
+Un cliente puede mantener múltiples pedidos activos/futuros independientes. No existe una regla global “un solo servicio activo por cliente”. La idempotencia del mismo draft no puede bloquear pedidos intencionalmente distintos.
 
 ### Asignación única
-Aceptar una oportunidad debe ser atómico y resistente a doble aceptación.
+Aceptar una oportunidad es atómico y resistente a doble aceptación.
 
-### Estado persistido de servicio
+### Lifecycle
+
 ```text
 borrador → buscando → ofrecido → asignado
 → en_camino → llegado → en_progreso
 → esperando_aprobacion → completado
 ```
+
 Excepciones: `cancelado`, `disputado`.
 
-La condición financiera entre `asignado` y `en_camino` se deriva de `pagos` y no crea un segundo lifecycle del servicio:
+### Estado proveedor
 
-```text
-electrónico retenido/protegido con referencia verificable
-O
-efectivo explícitamente seleccionado
-```
-
-`pago_pendiente`, `pago_habilitado` y `pago_protegido` son condiciones financieras/UX, no estados persistidos de `servicios`, salvo migración futura explícita.
-
-### Estado operacional del proveedor
 ```text
 offline → available → opportunity_pending → assigned
 → busy → completion_pending → available
 ```
-Nunca mezclar la máquina del proveedor con la del servicio.
 
-### Llegada
-Cuando existe ubicación exacta de cliente y aplica validación geográfica, la autoridad es backend. Radio operativo vigente: **200 m** para `en_camino → llegado`.
+No mezclarlo con el lifecycle del servicio.
 
-### Evidencia temporal
-```text
-llegado              → Antes
-en_progreso          → Durante / Después
-esperando_aprobacion → Después sólo para recuperación histórica
-```
-Una evidencia final no puede pre-cargarse antes de iniciar y luego usarse para cerrar el servicio.
+### Dinero
+Pagos son un dominio propio. Efectivo no es custodia electrónica. Un cambio de alcance con costo debe quedar aprobado y reconciliado según el método antes de cerrar.
 
-### Alcance adicional financiado
-Un trabajo adicional con costo no puede quedar aprobado si su impacto financiero no está incorporado o financiado según el método de pago.
+### Evidencia
+Ownership, estado temporal y objeto Storage real deben coincidir; metadata sola no prueba existencia.
+
+## 4. Madurez de entrega
 
 ```text
-sin pago / efectivo pendiente / pago fallido recuperable
-→ backend puede reajustar el total según contrato
-
-pago electrónico activo + costo adicional
-→ cobrar/reconciliar delta primero
-→ recién después aprobar alcance adicional
+IMPLEMENTED
+→ CI VALIDATED
+→ RUNTIME VALIDATED
+→ PUBLISHED
 ```
 
-No se permite usar un estado visual o `pendiente_ajuste` como sustituto de fondos realmente reconciliados.
+Una etapa sólo puede declararse con evidencia exacta para la revisión correspondiente.
 
-## 4. Pagos
+Reglas:
 
-Electrónico:
-```text
-pendiente → autorizado → retenido/protegido
-→ liberación pendiente → liberado/pagado
-```
+- CI de otro SHA no valida el actual.
+- HTTP 200 no valida el journey.
+- runtime verificado no demuestra que el mismo código esté publicado en otro canal.
+- una publicación vieja no representa `main`.
 
-Efectivo:
-```text
-seleccionado → presencial pendiente → servicio habilitado
-→ proveedor confirma recepción → registrado
-```
+## 5. Readiness
 
-**Efectivo no tiene custodia electrónica UGO y nunca se presenta como pago protegido.**
+`public.development_checklist` es la fuente privada/autorizada de readiness en UGO TEST. El panel `/?app=development` expone únicamente una representación pública sanitizada y read-only.
 
-Una vez elegido un método válido, no se sustituye silenciosamente por otro. Cambios requieren estado fallido o contrato backend explícito de recuperación.
+Sólo `approved` suma avance verificado. Una regresión real obliga a degradar el item correspondiente; no se conserva `approved` por conveniencia.
 
-Toda ampliación, disputa, cierre y timeline debe ser consciente del método.
+## 6. Centinela
 
-## 5. Evidencia y ampliaciones
+Centinela es observabilidad TEST, no autoridad de producto.
 
-Solicitud y ejecución deben conservar evidencia asociada inequívocamente al trabajo.
+Debe:
 
-```text
-Cliente o Proveedor propone ampliación
-→ descripción + costo + tiempo
-→ impacto financiero validado
-→ Cliente aprueba/rechaza
-→ registro auditable
-→ reconciliación según método
-→ continuación
-```
+- reportar fallas reales por rol/acción/build;
+- sanitizar contacto y metadata;
+- clasificar acciones críticas del lado servidor;
+- distinguir incidente actual/histórico;
+- mantener privados stack, serviceId y metadata sensible en el feed público.
 
-No modificar silenciosamente alcance o dinero. Si no existe todavía un mecanismo seguro para financiar un delta electrónico, UGO bloquea la aprobación con costo en vez de ocultar el faltante.
+No debe:
 
-## 6. Roles
+- cambiar automáticamente el checklist;
+- aprobar readiness;
+- exponer secretos o datos personales;
+- sustituir E2E/QA.
+
+## 7. Desarrollo público
+
+`?app=development` es deliberadamente público y sin login durante esta fase, pero sólo lectura. Esta excepción no convierte tablas privadas ni acciones administrativas en públicas.
+
+Separación obligatoria:
 
 ```text
-Cliente       solicita, elige método, sigue, aprueba, disputa, califica
-Proveedor     se disponibiliza, acepta, ejecuta, evidencia, cobra
-Admin         opera excepciones, personas, finanzas, disputas y calidad
-Super Admin   gobierna permisos, reglas, configuración e integraciones
-Hugo          asistencia contextual autorizada
-Scout         inteligencia y recomendaciones
-Academia      formación y mejora de calidad
+lectura pública sanitizada
+≠ escritura checklist
+≠ evidencia privada
+≠ administración
 ```
 
-Hugo, Scout y Academia no crean dominios paralelos.
+## 8. Git
 
-## 7. Confianza UGO
+Para este repo, `main` es la única rama de trabajo autorizada. Los agentes deben verificar HEAD antes de escribir y actualizarlo sólo por fast-forward. Si existe drift concurrente, reconstruir el cambio sobre el HEAD nuevo.
 
-Toda función debe mejorar al menos uno de:
+No crear ramas de rutina ni forzar historia.
+
+## 9. Release
+
+Publicar es una acción separada de integrar. Un commit puede quedar `IMPLEMENTED`/`CI VALIDATED` sin estar `PUBLISHED`.
+
+No disparar deploys innecesarios para cambios que no necesitan publicación runtime. Toda publicación debe identificar revisión, entorno/canal y smoke.
+
+La ruta de hosting retirada no forma parte de readiness ni release activo.
+
+## 10. Prioridad
 
 ```text
-Identidad · Trazabilidad · Pago claro · Evidencia
-Reputación · Soporte/Disputa · Seguridad · Calidad
+P0 seguridad · datos · auth · dinero · integridad core · primer cliente
+P1 journey principal · operación · UX crítica
+P2 optimización · automatización
+P3 expansión · polish
 ```
 
-## 8. Prioridad
+## 11. Regla final
 
-```text
-P0 integridad/auth/permisos/dinero/serviceId/core
-P1 operación necesaria/UX crítica/tracking/notificaciones
-P2 inteligencia/optimización/automatización
-P3 expansión/polish/experimentos
-```
-
-Ningún P2/P3 desplaza un P0 abierto sin decisión explícita.
-
-## 9. Madurez
-
-```text
-IDEA → DEFINED → READY → IN PROGRESS
-→ IMPLEMENTED → VALIDATED → RELEASED → MEASURED
-```
-
-`✅ HECHO` exige validación aplicable.
-
-## 10. Experiencia transversal
-
-```text
-Estado → contexto → próxima acción
-```
-
-Datos: `loading · loaded · empty · error/retry · offline/degraded`.
-
-Mutaciones: `idle → submitting → success / error + recovery`.
-
-Referencia mobile `390×844`, rango `360–430`, targets `≥48px`. Desktop es aplicación real.
-
-## 11. Sostenibilidad del negocio
-
-UGO debe proteger monetización sin degradar confianza. En pagos electrónicos la comisión se concilia con el pago real. En efectivo la comisión UGO debe quedar registrada mediante mecanismo auditable cuando corresponda. El producto debe reducir acuerdos fuera de plataforma ofreciendo trazabilidad, evidencia, reputación, ampliaciones y soporte.
-
-## 12. Conciencia documental
-
-Todo cambio que altere contratos reales de estado, dinero, permisos, evidencia o lifecycle debe actualizar en el mismo bloque los maestros afectados y el Roadmap. `main` y la documentación maestra no deben divergir conscientemente.
-
-## 13. Regla final
-
-**Ante cualquier duda, gana la opción que preserve una sola fuente de verdad, claridad para el usuario, integridad operacional y capacidad de auditar el servicio extremo a extremo.**
+**Ante conflicto, gana la opción que preserve una sola verdad, integridad, auditabilidad y evidencia por etapa. Lo público puede observar; sólo los contratos autorizados pueden mutar.**

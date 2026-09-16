@@ -1,16 +1,12 @@
 # UGO — Master Index
 
-**Versión:** 2.6 · 15 de septiembre de 2026  
-**Estado:** puerta de entrada única al sistema maestro de UGO  
+**Versión:** 2.7 · 16 de septiembre de 2026  
+**Estado:** puerta de entrada única al sistema maestro UGO  
 **Rama de verdad:** `main`
 
-> UGO mantiene **una sola realidad de producto**. Los documentos maestros se dividen por autoridad, pero nunca pueden crear flujos, estados o reglas paralelas.
+> UGO mantiene una sola realidad de producto. Los maestros dividen responsabilidades, no crean sistemas paralelos.
 
----
-
-# 1. North Star de UGO
-
-UGO existe para lograr esto:
+## 1. North Star
 
 ```text
 Necesidad real
@@ -20,123 +16,98 @@ Necesidad real
 → resultado aprobado
 → cobro correcto
 → reputación
-→ repetición/recomendación
+→ repetición
 ```
 
-La métrica principal es **servicios confiables completados dentro de UGO**.
+Métrica principal: **servicios confiables completados dentro de UGO**.
 
-Regla estratégica: **primero cerrar el circuito real; después ampliar el ecosistema.**
+Principio de producto: **Un pedido. Un profesional. Sin vueltas.** Esto significa un profesional por pedido, no un único pedido activo por cliente.
 
-Regla de confianza: **UGO es tu mejor amigo. Lo que UGO promete en pantalla debe ocurrir realmente. Lo que el equipo declara listo debe poder probarse.**
-
-Regla de experiencia del Proveedor: **simple adelante, trazable atrás. El proveedor ve el problema, acepta, va, resuelve y marca listo; UGO absorbe la complejidad necesaria.**
-
----
-
-# 2. Sistema maestro unificado
-
-## Nivel 0 — Gobierno
-`UGO_MASTER_GOVERNANCE.md`
-
-## Nivel 1 — Desarrollo
-`UGO_DEVELOPMENT_MASTER.md`
-
-## Nivel 1.2 — Preparación verificable para el primer cliente
-`UGO_DEVELOPMENT_READINESS_MASTER.md`
-
-## Nivel 1.5 — Arquitectura de agentes y aceleración
-`UGO_AI_AGENT_SYSTEM_MASTER.md`
-
-## Nivel 2 — Producto
-`UGO_ECOSISTEMA_FLUJO.md`
-
-## Nivel 3 — Experiencia
-`UGO_UIUX_MAESTRO.md`  
-`UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md`  
-`UGO_UIUX_STITCH_MASTER.md`  
-`UGO_CLIENTE_CONVERSACIONAL_INTERACTIVO_MASTER.md`
-
-Brief ejecutable específico del Proveedor: `UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
-
-## Nivel 4 — Ingeniería
-`UGO_ARQUITECTURA_TECNICA_MASTER.md`
-
-## Nivel 5 — Datos y seguridad
-`UGO_DATA_BACKEND_MASTER.md`
-
-## Nivel 6 — Calidad
-`UGO_TESTING_RELEASE_MASTER.md`
-
-## Nivel 7 — Ejecución
-`UGO_ROADMAP_MASTER.md`
-
----
-
-# 3. Contrato de confianza y avance real
-
-La unidad real de avance es un **escenario completo verificable**, no una pantalla, componente, commit o porcentaje estimado.
+## 2. Autoridades maestras
 
 ```text
-IMPLEMENTED ≠ VALIDATED ≠ RELEASED ≠ MEASURED
+Nivel 0  docs/UGO_MASTER_GOVERNANCE.md
+Nivel 1  docs/UGO_DEVELOPMENT_MASTER.md
+Nivel 1.2 docs/UGO_DEVELOPMENT_READINESS_MASTER.md
+Nivel 1.5 docs/UGO_AI_AGENT_SYSTEM_MASTER.md
+Nivel 2  docs/UGO_ECOSISTEMA_FLUJO.md
+Nivel 3  docs/UGO_UIUX_MAESTRO.md
+         docs/UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
+         docs/UGO_UIUX_STITCH_MASTER.md
+         docs/UGO_CLIENTE_CONVERSACIONAL_INTERACTIVO_MASTER.md
+Nivel 4  docs/UGO_ARQUITECTURA_TECNICA_MASTER.md
+Nivel 5  docs/UGO_DATA_BACKEND_MASTER.md
+Nivel 6  docs/UGO_TESTING_RELEASE_MASTER.md
+Nivel 7  docs/UGO_ROADMAP_MASTER.md
+Handoff  docs/UGO_AGENT_HANDOFF.md
+Agentes  AGENTS.md
 ```
 
-La fuente viva del avance hacia el primer cliente es `public.development_checklist` en UGO TEST, visible en `/?app=development`. Toda tarea que cambie de realidad debe actualizarse en ese checklist en el mismo bloque de trabajo. Sólo `approved` con evidencia cuenta para el porcentaje verificado; `implemented` significa que existe pero todavía falta la prueba exigida.
+Brief específico del proveedor: `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
 
-Ninguna pantalla crítica puede dejar a una persona atrapada. Todo estado debe contemplar las salidas aplicables: acción principal, cancelar/salir, volver, retry, alternativa, error, timeout y recuperación.
-
-Caso obligatorio de matching:
+## 3. Cadena de verdad
 
 ```text
-Buscando profesionales
-→ proveedor encontrado
-O → todavía no hay proveedor
-O → timeout/error/offline
-O → cliente cancela
+integridad ejecutable
+→ estado persistido real
+→ maestros
+→ roadmap/checklist
+→ UI visible
 ```
 
-Las ramas deben terminar en un estado coherente, persistido y recuperable. `Buscando profesionales` nunca puede ser un callejón sin salida.
+No se corrige una contradicción haciendo que la UI finja un estado inexistente.
 
-Cancelar es parte del journey principal. Un botón `Cancelar` que sólo cambia UI, no persiste, no sincroniza la contraparte o deja estados huérfanos no está terminado.
-
-La frase **“está listo, probalo”** queda reservada para una capacidad realmente disponible en el entorno indicado y con validación/smoke aplicable ejecutado.
-
----
-
-# 4. Matriz mínima Cliente ↔ Proveedor
-
-Antes de considerar cerrado el journey principal deben comprobarse como mínimo:
+## 4. Madurez canónica
 
 ```text
-1 Cliente crea solicitud válida
-2 Cliente edita antes de enviar
-3 Cliente cancela durante búsqueda
-4 matching sin proveedores disponibles
-5 matching timeout/error/offline y recuperación
-6 Proveedor recibe oportunidad y entiende el problema
-7 Proveedor rechaza
-8 oportunidad expira
-9 Proveedor acepta
-10 competencia/doble aceptación segura
-11 Cliente ve proveedor asignado
-12 cancelaciones permitidas posteriores
-13 pago habilita/bloquea correctamente
-14 proveedor marca En camino / llegada automática o fallback
-15 proveedor inicia trabajo
-16 evidencia sólo cuando la política la requiere y en el momento correcto
-17 servicio en progreso
-18 proveedor marca Listo / aprobación o disputa
-19 pago / registro / reputación / historial
-20 Admin converge al mismo serviceId y estado
-21 recorrido mobile desplegado y smokeado
+IMPLEMENTED
+→ CI VALIDATED
+→ RUNTIME VALIDATED
+→ PUBLISHED
 ```
 
-Reportar avance como escenarios validados, implementados pendientes y bloqueados. No usar un porcentaje global sin base medible.
+- `IMPLEMENTED`: integrado en `main`.
+- `CI VALIDATED`: gates automatizados aplicables verdes para ese SHA.
+- `RUNTIME VALIDATED`: prueba real en UGO TEST/runtime/dispositivo según el caso.
+- `PUBLISHED`: esa revisión está realmente disponible en el canal objetivo.
 
----
+No usar “listo”, “hecho”, “validado” o “publicado” intercambiablemente.
 
-# 5. Contrato transversal de servicio
+## 5. Readiness del primer cliente
 
-Estado persistido canónico:
+La fuente viva es `public.development_checklist` en Supabase TEST. La superficie `/?app=development` es **pública, sin login y sólo lectura**, alimentada por vistas sanitizadas. Las tablas base y evidencia privada permanecen protegidas.
+
+Estados del checklist:
+
+```text
+pending
+in_progress
+implemented
+validated
+blocked
+failed
+approved
+```
+
+Sólo `approved` cuenta para el porcentaje de readiness. `validated` significa validación técnica aplicable; `approved` significa que el criterio de aceptación requerido quedó demostrado. `PUBLISHED` sigue siendo una etapa de release separada salvo items de release explícitos.
+
+## 6. Centinela / Sentinel
+
+Centinela observa el runtime TEST para detectar fallas reales sin convertir observabilidad en una segunda autoridad.
+
+Contrato:
+
+- sanitiza mensajes y metadata;
+- separa incidentes del build actual de los históricos;
+- clasifica acciones críticas server-side;
+- instrumenta matching/cancel/status de Cliente y operaciones críticas de Proveedor;
+- puede retener de forma segura una cola anónima local hasta poder reportar;
+- el feed público omite datos sensibles;
+- **nunca auto-aprueba ni cambia el readiness checklist**.
+
+Un incidente P0 del build actual invalida cualquier narrativa de “todo listo” hasta investigarlo.
+
+## 7. Contrato transversal de servicio
 
 ```text
 borrador → buscando → ofrecido → asignado
@@ -144,87 +115,59 @@ borrador → buscando → ofrecido → asignado
 → esperando_aprobacion → completado
 ```
 
-Excepciones:
+Excepciones: `cancelado`, `disputado`.
+
+`serviceId` es la identidad transversal. Chat, tracking, pago, evidencia, ampliaciones, disputa y cancelación deben actuar sobre el `serviceId` exacto.
+
+Un cliente puede tener A+B+C pedidos coexistiendo; una mutación de B no puede tocar A/C.
+
+## 8. Proveedor simple adelante, trazable atrás
+
+Happy path visible:
 
 ```text
-cancelado · disputado
+Ver problema
+→ Aceptar
+→ Estoy yendo
+→ Llegué / llegada automática
+→ Empezar trabajo
+→ Listo
 ```
 
-Entre `asignado` y `en_camino` existe una condición financiera obligatoria: pago electrónico realmente habilitado/protegido o efectivo explícitamente seleccionado.
+UGO conserva detrás los guards de pago, estado, evidencia, permisos y aprobación.
 
-Proveedor operacional:
+## 9. Matching y recuperación
+
+Nunca existe un callejón sin salida:
 
 ```text
-offline → available → opportunity_pending → assigned
-→ busy → completion_pending → available
+Buscando
+→ proveedor encontrado
+O → sin proveedor todavía
+O → timeout/error/offline
+O → retry
+O → cancelar
 ```
 
-Nunca mezclar la máquina de estado del proveedor con la máquina del servicio.
+Cancelar debe persistir y converger en las superficies participantes.
 
----
+## 10. Chat P0
 
-# 6. Contrato Cliente ↔ Proveedor
+Debe demostrar por un mismo `serviceId`:
 
-```text
-Cliente crea solicitud + evidencia cuando aporta valor
-→ matching genera oportunidad para el mismo serviceId
-→ Proveedor autorizado ve el problema
-→ acepta/rechaza
-→ aceptación atómica y asignación única
-→ tarifa real fijada
-→ ambos observan el mismo servicio persistido
-→ método de pago habilita ejecución
-→ Proveedor: ESTOY YENDO
-→ llegada automática cuando sea confiable o fallback manual
-→ Proveedor: EMPEZAR TRABAJO
-→ evidencia contextual sólo cuando corresponda
-→ Proveedor: LISTO
-→ aprobación/disputa
-→ cierre
-```
+- Cliente → Proveedor realtime;
+- Proveedor → Cliente realtime;
+- rehidratación después de reload/reconnect;
+- respuestas rápidas operativas;
+- bloqueo de teléfonos, WhatsApp, emails, links y contacto off-platform;
+- cero mezcla entre servicios.
 
-`serviceId` es la identidad transversal del trabajo.
+## 11. Git y release
 
-La experiencia visible del proveedor no replica toda la máquina de estados. El happy path operativo debe conservar como acciones principales `Aceptar → Estoy yendo → Empezar trabajo → Listo`; UGO registra y sincroniza la trazabilidad por detrás.
+`main` es la única rama de trabajo autorizada para este proyecto. No crear ramas nuevas por rutina.
 
-Cada transición debe probar también las ramas reales que correspondan: cancelación, ausencia de proveedor, rechazo, expiración, timeout, offline, retry y doble acción.
+La publicación es manual/deliberada y puede quedar detrás de `main`. Un deploy o APK debe registrar la revisión que realmente contiene. No inferir publicación desde un commit.
 
----
+## 12. Regla final
 
-# 7. Madurez y Definition of Ready to Test
-
-```text
-IDEA → DEFINED → READY → IN PROGRESS
-→ IMPLEMENTED → VALIDATED → RELEASED → MEASURED
-```
-
-Una capacidad sólo puede entregarse como `LISTA PARA PROBAR` cuando existe en `main`, sus acciones críticas están conectadas a comportamiento real, happy path y recuperaciones aplicables funcionan, persiste correctamente, la contraparte converge cuando corresponde, pasan los gates aplicables y existe un deploy objetivo comprobable.
-
-Un commit, build o pantalla visible no significan `HECHO`.
-
----
-
-# 8. Principios de éxito
-
-1. Una sola fuente de verdad.
-2. Confianza antes que crecimiento superficial.
-3. UGO es tu mejor amigo: cumple lo que promete.
-4. Mobile-first sin degradar desktop.
-5. Estado → contexto → próxima acción → salida/recuperación.
-6. Ninguna pantalla crítica queda muerta o atrapada.
-7. Dinero, identidad y evidencia requerida siempre auditables.
-8. Cliente y Proveedor comparten el mismo servicio, no copias.
-9. Cancelación y errores son parte del journey, no casos decorativos.
-10. Todo botón crítico debe producir un resultado verificable.
-11. Hugo ayuda; no salta permisos ni estados.
-12. Los maestros se actualizan con el contrato real de `main`.
-13. La arquitectura de agentes existe para reducir lead time, no para multiplicar actividad.
-14. No declarar éxito sin evidencia exacta.
-15. Proteger el tiempo del founder: no confundir trabajo realizado con producto validado.
-16. El proveedor no administra UGO: resuelve el problema. La complejidad adicional sólo aparece cuando existe una razón real.
-
----
-
-# 9. Regla final
-
-**UGO cuida la confianza cumpliendo. Si una persona puede quedar atrapada, si un botón crítico no hace lo prometido, si cancelar no cierra correctamente el estado o si una rama real no tiene recuperación, el flujo no está terminado. Para el Proveedor, la misma regla se expresa de forma simple: ver problema, aceptar, ir, resolver, listo. Primero cerrar y probar el circuito Cliente ↔ Proveedor ↔ Admin; después ampliar.**
+**UGO cuida la confianza cumpliendo. Primero cerrar y demostrar Cliente ↔ Proveedor ↔ Admin; después ampliar. Código, checklist, Centinela y publicación deben decir exactamente qué está implementado, qué pasó CI, qué fue probado en runtime y qué está realmente publicado.**
