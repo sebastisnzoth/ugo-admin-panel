@@ -20,11 +20,14 @@ test('scheduled client requests converge on servicios.programado_para with initi
  assert.match(timezone,/jsonb_set\([\s\S]*'\{scheduled_at\}'[\s\S]*to_jsonb\(new\.programado_para\)/)
 })
 
-test('provider agenda is scoped to the authenticated provider and canonical schedule',async()=>{
+test('provider agenda is scoped to the authenticated provider and includes immediate plus scheduled assignments',async()=>{
  const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
  assert.match(agenda,/\.eq\('proveedor_id',id\)/)
- assert.match(agenda,/\.not\('programado_para','is',null\)/)
+ assert.doesNotMatch(agenda,/\.not\('programado_para','is',null\)/)
  assert.match(agenda,/\.in\('estado',AGENDA_STATES\)/)
+ assert.match(agenda,/immediateRows=rows\.filter\(row=>!row\.programado_para/)
+ assert.match(agenda,/todayRows=rows\.filter/)
+ assert.match(agenda,/upcomingRows=rows\.filter/)
  assert.match(agenda,/filter:`proveedor_id=eq\.\$\{id\}`/)
  assert.match(agenda,/Abrir trabajo/)
 })
