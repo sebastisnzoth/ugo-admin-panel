@@ -80,6 +80,16 @@ async function persistedAcceptedOpportunity(supabase:SupabaseClient,opportunityI
  }catch{return null}
 }
 
+async function persistedRejectedOpportunity(supabase:SupabaseClient,opportunityId:string):Promise<boolean|null>{
+ try{
+  const{data:auth,error:authError}=await supabase.auth.getUser();const userId=auth.user?.id;if(authError||!userId)return null
+  const{data,error}=await supabase.from('ofertas_servicio').select('estado').eq('id',opportunityId).eq('proveedor_id',userId).maybeSingle()
+  if(error)return null
+  if(!data)return false
+  return data.estado==='rechazada'
+ }catch{return null}
+}
+
 export async function acceptProviderOpportunity(supabase:SupabaseClient,id:string){
  const serviceId=await opportunityServiceId(supabase,id)
  const{data,error}=await supabase.rpc('aceptar_oferta',{p_oferta_id:id})
@@ -101,7 +111,17 @@ export async function acceptProviderOpportunity(supabase:SupabaseClient,id:strin
   throw unavailable
  }
 }
-export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id});if(error){const serviceId=await opportunityServiceId(supabase,id);void reportSentinelIncident({eventType:'provider_reject_offer_error',message:messageOf(error,'No se pudo rechazar el pedido.'),error,role:'provider',severity:'P1',serviceId,action:'provider.offer.reject'});throw error}}
+
+export async function rejectProviderOpportunity(supabase:SupabaseClient,id:string){
+ const serviceId=await opportunityServiceId(supabase,id)
+ const{error}=await supabase.rpc('rechazar_oferta',{p_oferta_id:id})
+ if(!error)return
+ const persisted=await persistedRejectedOpportunity(supabase,id)
+ if(persisted===true)return
+ if(persisted===false){void reportSentinelIncident({eventType:'provider_reject_offer_error',message:messageOf(error,'No se pudo rechazar el pedido.'),error,role:'provider',severity:'P1',serviceId,action:'provider.offer.reject'})}
+ else{void reportSentinelIncident({eventType:'provider_reject_offer_recovery_unverified',message:'No pudimos confirmar si el rechazo quedó persistido. El radar volverá a leer la oferta antes de escalar el incidente.',error,role:'provider',severity:'P2',serviceId,action:'provider.offer.reject.recovery'})}
+ throw error
+}
 
 function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
 async function persistedProviderLocation(supabase:SupabaseClient,userId:string,publishedAt:string):Promise<boolean|null>{
