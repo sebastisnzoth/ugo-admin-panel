@@ -15,7 +15,23 @@ test('client payment rehydrates persisted state after reconnect and visibility r
  assert.match(source,/visibilityState==='visible'/)
 })
 
-test('ambiguous payment selection errors re-read persisted state before surfacing failure',()=>{
- assert.match(source,/seleccionar_pago_efectivo[\s\S]*if\(error\)\{await load\(\);throw error\}/)
- assert.match(source,/if\(!response\.ok\)\{await load\(\);throw new Error/)
+test('ambiguous cash selection re-reads persisted state before surfacing failure',()=>{
+ assert.match(source,/paymentMethodPersisted\(method:'efectivo'\|'pix'\):Promise<boolean\|null>/)
+ assert.match(source,/seleccionar_pago_efectivo[\s\S]*const persisted=await paymentMethodPersisted\('efectivo'\)/)
+ assert.match(source,/if\(persisted===true\)\{[\s\S]*Efectivo seleccionado[\s\S]*await load\(\);return\}/)
+})
+
+test('ambiguous Pix generation re-reads persisted state once before Sentinel escalation',()=>{
+ assert.match(source,/if\(!response\.ok\)throw new Error/)
+ assert.match(source,/catch\(e\)\{const persisted=await paymentMethodPersisted\('pix'\)/)
+ assert.match(source,/if\(persisted===true\)\{[\s\S]*Pix generado[\s\S]*await load\(\);return\}/)
+ const reporterCalls=(source.match(/reportPaymentFailure\(e,'pix',persisted\)/g)||[]).length
+ assert.equal(reporterCalls,1)
+})
+
+test('payment Sentinel declares P0 only when persistence check confirms failure',()=>{
+ assert.match(source,/const confirmed=persisted===false/)
+ assert.match(source,/severity:confirmed\?'P0':'P1'/)
+ assert.match(source,/action:confirmed\?'client\.order\.payment':'client\.order\.payment\.recovery'/)
+ assert.match(source,/checklistCode:confirmed\?'PAYMENT-CLOSE':undefined/)
 })
