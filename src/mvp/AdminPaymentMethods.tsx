@@ -6,6 +6,7 @@ type Props={
 }
 
 const enabled=(value:string|undefined)=>['true','1','si','sí'].includes(String(value??'true').toLowerCase())
+const labels:Record<string,string>={pago_efectivo_activo:'efectivo global',pago_efectivo_br_activo:'efectivo en Brasil',pago_efectivo_ar_activo:'efectivo en Argentina'}
 
 export function AdminPaymentMethods({config,update}:Props){
  const[saving,setSaving]=useState<string|null>(null)
@@ -15,8 +16,10 @@ export function AdminPaymentMethods({config,update}:Props){
  const ar=enabled(config.pago_efectivo_ar_activo)
 
  async function toggle(key:string,value:boolean){
+  const ok=window.confirm(`Vas a ${value?'activar':'desactivar'} ${labels[key]||key}. Este cambio afecta nuevos servicios y queda auditado. ¿Confirmar?`)
+  if(!ok)return
   setSaving(key);setMessage('')
-  try{await update(key,String(value));setMessage('Configuración de efectivo actualizada.')}
+  try{await update(key,String(value));setMessage('Configuración de efectivo actualizada y registrada.')}
   catch(e){setMessage(e instanceof Error?e.message:'No se pudo actualizar el medio de pago.')}
   finally{setSaving(null)}
  }
