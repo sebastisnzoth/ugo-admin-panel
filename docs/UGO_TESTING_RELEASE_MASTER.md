@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.9 · 16 de septiembre de 2026  
+**Versión:** 3.0 · 16 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama única:** `main`
 
@@ -30,81 +30,50 @@ L6 dispositivo físico Android Cliente↔Proveedor
 L7 publicación/smoke/rollback
 ```
 
-## 3. Gates del repo
-
-```bash
-npm run build
-npm test
-npm run lint
-```
-
-`UGO Core CI` agrega instalación reproducible, audit de dependencias, guard de entorno TEST, contratos y lint operacional.
-
-CI verde de otro SHA no sirve como evidencia para HEAD actual.
-
-## 4. Recuperación CI del bloque Centinela/Development
-
-Checkpoint que expuso la regresión contractual:
+## 3. Checkpoint CI actual
 
 ```text
-SHA: 19c6dcddd2410b063e0d4171cd2178b95da47ef3
-run: 35040842854
-conclusion: failure
-```
-
-La falla no estaba en el comportamiento de llegada del proveedor. `providerService` pasó a publicar geolocalización con `serviceId` para mantener el reporte Centinela ligado al servicio exacto, mientras `provider-arrival-location.test.mjs` todavía exigía la firma anterior sin `serviceId`.
-
-Corrección integrada:
-
-```text
-SHA: a633575034dbdaa10d8499b2cbf2a542c646d7b1
-commit: test(provider): keep arrival location contract service-scoped
-run: 35042238358
-status: completed
+SHA: 51561b8aa632d74b755e8072a00d59e415097fae
+commit: test(client): align cancellation recovery contract
+UGO Core CI run: 35046419173
 conclusion: success
 ```
 
-En ese SHA pasaron instalación, security gate, TypeScript/build, suite de lifecycle/contracts y lints operacionales. Por lo tanto `a633575…` es el checkpoint **CI VALIDATED** para el código funcional que contiene Development público + Centinela.
+El fallo inmediatamente anterior era contractual: el test de cancelación todavía exigía `getStatus`, mientras la implementación ya usa lectura persistida directa para reconciliar una respuesta RPC perdida sin generar falsos P0. Se corrigió el contrato; no se degradó la lógica correcta.
 
-Los E2E autenticados que dependen de credenciales TEST siguen siendo un gate separado cuando esas credenciales están disponibles; CI verde no se convierte por sí solo en `RUNTIME VALIDATED`.
+Los E2E autenticados que dependen de credenciales TEST son un gate separado. Si se omiten por credenciales ausentes, CI verde no equivale a `RUNTIME VALIDATED`.
 
-## 5. Readiness / Development Dashboard
+## 4. Regla Sentinel para mutaciones críticas
 
-Gates contractuales ya cubiertos por el checkpoint CI verde:
+Aplicar a matching, cancelación, aceptación, lifecycle, cierre y cobro:
 
-- `?app=development` abre sin `AdminGate`;
+```text
+RPC devuelve error
+→ verificar estado persistido exacto
+→ éxito persistido: éxito recuperado, SIN P0
+→ fallo persistido confirmado: P0
+→ persistencia no verificable: P1
+```
+
+`provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente siguen este criterio en el código actual.
+
+## 5. Readiness / Development
+
+Contratos CI actuales mantienen:
+
+- `?app=development` sin `AdminGate`;
 - lectura pública sólo desde feeds sanitizados;
-- tablas/evidencia privadas siguen protegidas;
-- feed público no expone serviceId, stack, metadata privada ni reporter IDs;
-- Centinela diferencia build actual/histórico;
+- tablas/evidencia privadas protegidas;
+- feed público sin serviceId, stack, metadata privada ni reporter IDs;
+- build actual separado de histórico por `runtimeRevision`;
 - Centinela no muta checklist;
-- acciones core se clasifican server-side.
+- clasificación server-side de acciones conocidas.
 
-Estado: **CI VALIDATED** en `a633575…`; falta smoke/runtime TEST para promover a `RUNTIME VALIDATED`.
+Falta smoke runtime TEST para promover.
 
-## 6. E2E autenticado
+## 6. Multi-pedido A+B+C
 
-Harness canónico:
-
-```text
-tests/integration/client-provider-rpc-rls.test.mjs
-```
-
-Una corrida válida crea datos nuevos en Supabase TEST y conserva cada `serviceId` durante el journey.
-
-Nunca ejecutar el harness contra Supabase PROD.
-
-## 7. Multi-pedido A+B+C
-
-Caso mínimo:
-
-```text
-A = Electricista · mañana 15:00
-B = Plomero · hoy
-C = Limpieza · viernes 10:00
-```
-
-Debe demostrar:
+Debe demostrarse con datos TEST reales:
 
 ```text
 crear A
@@ -118,9 +87,9 @@ A intacto
 C intacto
 ```
 
-Chat, tracking, pago, evidencia, ampliación y disputa deben conservar independencia por `serviceId`.
+El repo ya contiene contratos que protegen aislamiento A/B/C; falta evidencia E2E autenticada/física.
 
-## 8. Chat P0
+## 7. Chat P0
 
 Con dos sesiones reales:
 
@@ -133,26 +102,18 @@ contacto off-platform → bloqueado
 servicio A ≠ chat servicio B
 ```
 
-Persistencia DB de un mensaje no sustituye convergencia visual en ambas sesiones.
+Persistencia DB no sustituye convergencia visual en ambas sesiones.
 
-## 9. Matching / cancelación
+## 8. Matching / radar / cancelación
 
-Probar:
+Probar proveedor disponible, cero proveedores, timeout, offline/error, retry y cancelación exacta con varios pedidos. No se acepta loading infinito.
 
-- proveedor disponible;
-- cero proveedores;
-- timeout;
-- offline/error;
-- retry;
-- cancelación durante búsqueda;
-- cancelación exacta con varios pedidos.
+El radar actual tiene recuperación ante gaps realtime; debe probarse contra disponibilidad real de TEST.
 
-No se acepta loading infinito.
-
-## 10. Proveedor / Agenda
+## 9. Proveedor / Agenda
 
 ```text
-AGENDA = múltiples trabajos futuros
+AGENDA = todos los trabajos futuros/asignados
 MISIÓN ACTIVA = serviceId concreto accionable
 ```
 
@@ -161,61 +122,34 @@ Lifecycle visible:
 ```text
 Aceptar
 → Estoy yendo
-→ Llegué/fallback
+→ Llegué
 → Empezar trabajo
 → Listo
+→ Cobro/cierre
 ```
 
-El backend conserva guards de pago/evidencia/estado.
+No usar una selección única de misión activa para ocultar trabajos futuros de Agenda.
 
-## 11. Pagos / evidencia
+## 10. Android TEST
 
-Probar método electrónico y efectivo por separado, idempotencia/retry/webhook, ampliaciones con costo y cierre.
-
-Evidencia válida requiere objeto real de Storage, ownership y timing correctos.
-
-## 12. RLS / RPC
-
-Por tabla/bucket sensible:
+Último artifact inspeccionado:
 
 ```text
-autorizado → permitido
-no participante → denegado
-anónimo → denegado salvo lectura pública explícita y sanitizada
-admin → privilegio justificado
+workflow run: 35044762155
+commit: 8c0123bd9d221ec6d09a4cd2f4a83f6a2ed9d800
+artifact: ugo-android-test-apk
+artifact id: 10425674680
+artifact digest: sha256:c53e57e44557b420ce7fb217325d8086a251f2e9f2d545e020b0dc37c9d8d982
+APK SHA-256: 329f74e50217f13d92322dba103513c86170a0bca5bfc30fc93fe389674e3df4
+bundleRuntime: local-dist
+environment: TEST
 ```
 
-La excepción del dashboard Desarrollo no amplía permisos sobre tablas privadas.
+Ese APK corresponde al último cambio de runtime Cliente `8c0123b…`, pero no al HEAD exacto `51561b8…`. Los commits posteriores contienen clasificación server-side y tests/contratos. Por trazabilidad estricta, Android queda **NOT READY para evidencia final del HEAD** hasta existir artifact del SHA objetivo.
 
-## 13. Centinela runtime
+Compilar ≠ probar: el artifact debe instalarse y pasar dos sesiones/dispositivos.
 
-Probar:
-
-- incidente P0 de Cliente y Proveedor;
-- sanitización de contacto/secretos;
-- `runtimeRevision` correcto;
-- incidente histórico no contado como actual;
-- cola anónima segura + flush;
-- clasificación server-side;
-- cero mutación automática del readiness.
-
-## 14. Android TEST
-
-Contrato de QA:
-
-```text
-bundleRuntime = local-dist
-UI = dist del SHA del workflow
-API base = backend TEST publicado
-sin server.url remoto
-CapacitorHttp activo cuando aplica
-```
-
-El artifact debe incluir metadata del commit y la verificación debe confirmar que el bundle contiene la revisión esperada.
-
-La APK no pasa a `RUNTIME VALIDATED` por compilar: debe instalarse y probarse en dispositivo.
-
-## 15. Prueba física
+## 11. Prueba física
 
 Cliente:
 
@@ -224,7 +158,7 @@ login
 A+B+C
 Actividad
 cancelación selectiva
-matching/recovery
+matching/radar/recovery
 chat
 tracking
 pago
@@ -238,47 +172,33 @@ login
 online/offline
 oportunidad
 aceptar/rechazar
-Agenda
+Agenda completa
 serviceId correcto
 GPS
 en camino/llegada
-cámara Antes/Después
 chat
-cierre
+cierre/cobro
 ```
 
-Dos dispositivos: Realtime, reconnect, background/foreground, GPS, Storage, micrófono/Hugo, teclado/safe areas.
+Dos sesiones/dispositivos: Realtime, reconnect, background/foreground y aislamiento entre pedidos.
 
-## 16. Publicación web
+## 12. Gates bloqueados
 
-Publicación es deliberada y puede quedar detrás de `main`.
-
-Un release web exige:
+Hasta evidencia real:
 
 ```text
-revisión exacta identificada
-estado READY equivalente
-smoke Cliente/Proveedor/Admin/Desarrollo aplicable
-backend esperado
-rollback/mitigación
+TWO-DEVICES = BLOCKED
+FULL-E2E = BLOCKED
+GO-LIVE = BLOCKED
 ```
 
-No disparar deploy para un cambio puramente documental ni afirmar que el alias actual contiene HEAD sin verificar la revisión.
+No promoverlos por contratos, persistencia aislada o compilación.
 
-La ruta de hosting retirada no forma parte del release activo.
+## 13. Publicación
 
-## 17. Severidad
+La publicación web puede quedar detrás de `main`. No disparar deploy para documentación, para conseguir un SHA de APK ni para sustituir QA Android. Un release exige revisión exacta, smoke y rollback/mitigación.
 
-```text
-P0 seguridad/datos/auth/dinero/core
-P1 flujo principal degradado/realtime/UX crítico
-P2 secundaria/consistencia
-P3 polish
-```
-
-No release comercial con P0 conocido.
-
-## 18. Definition of Done
+## 14. Definition of Done
 
 ```text
 contrato definido
@@ -292,8 +212,8 @@ maestros + roadmap sincronizados
 PUBLISHED sólo con revisión/smoke identificados
 ```
 
-## 19. Regla final
+## 15. Regla final
 
-**UGO está validado por evidencia, no por intención. CI verde habilita el siguiente gate; no reemplaza la prueba runtime. Si `main` avanzó después de una publicación, esa publicación no representa `main`.**
+**UGO está validado por evidencia, no por intención. CI verde habilita el siguiente gate; no reemplaza la prueba runtime.**
 
-**Supabase PROD `trfsjuseqjxlhrxuvdsm` permanece fuera de alcance.**
+**Supabase PROD permanece fuera de alcance.**
