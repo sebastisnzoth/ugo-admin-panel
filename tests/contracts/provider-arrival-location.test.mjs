@@ -12,19 +12,17 @@ test('arrival publishes fresh provider geolocation before requesting llegado',()
  assert.match(service,/maximumAge:15000/)
 })
 
-test('provider location is persisted in backend-compatible point order',()=>{
- assert.match(service,/POINT\(\$\{longitude\} \$\{latitude\}\)/)
- assert.match(service,/update\(\{ubicacion:point,ultima_ubicacion_at:publishedAt\}\)/)
+test('provider location is persisted through the canonical service-scoped tracking RPC',()=>{
+ assert.match(service,/supabase\.rpc\('actualizar_ubicacion_y_distancia',\{p_lat:latitude,p_lng:longitude,p_servicio_id:serviceId\}\)/)
+ assert.doesNotMatch(service,/ultima_ubicacion_at/)
+ assert.doesNotMatch(service,/\.from\('perfiles_proveedor'\)\.update\(\{ubicacion:/)
 })
 
-test('ambiguous location update verifies exact persisted timestamp before Sentinel failure',()=>{
- assert.match(service,/persistedProviderLocation\(supabase:SupabaseClient,userId:string,publishedAt:string\)/)
- assert.match(service,/select\('ultima_ubicacion_at'\)[\s\S]*eq\('usuario_id',userId\)[\s\S]*maybeSingle\(\)/)
- assert.match(service,/String\(data\.ultima_ubicacion_at\|\|''\)===publishedAt/)
- assert.match(service,/if\(persisted===true\)return/)
- assert.match(service,/persisted===false[\s\S]*provider_location_error/)
- assert.match(service,/provider_location_recovery_unverified/)
- assert.match(service,/severity:'P2'/)
+test('location failure stays scoped to MAP-GPS and never masquerades as lifecycle success',()=>{
+ assert.match(service,/eventType:'provider_location_error'/)
+ assert.match(service,/checklistCode:'MAP-GPS'/)
+ assert.match(service,/action:'provider\.service\.location'/)
+ assert.match(service,/if\(state==='llegado'\)await publishProviderLocation\(supabase,serviceId\)[\s\S]*supabase\.rpc\('avanzar_servicio'/)
 })
 
 test('backend remains authority for the 200 meter arrival gate',()=>{
