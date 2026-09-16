@@ -19,14 +19,18 @@ const PHONE_RE=/\+?\d[\d\s().-]{5,}\d/g
 function timeLabel(value:string){const d=new Date(value);return Number.isNaN(d.getTime())?'':d.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}
 function hasContactDetails(value:string){if(EMAIL_RE.test(value)||URL_RE.test(value)||SOCIAL_RE.test(value)||HANDLE_RE.test(value))return true;const phones:string[]=value.match(PHONE_RE)??[];return phones.some(candidate=>candidate.replace(/\D/g,'').length>=8)}
 function serviceLabel(service:ChatService){const number=service.numero??service.id.slice(0,8);const detail=(service.descripcion||'Servicio UGO').trim();return `#${number} · ${detail.length>38?`${detail.slice(0,38)}…`:detail}`}
-function chatError(message:string){return message.includes('CONTACT_DETAILS_NOT_ALLOWED')||message.toLowerCase().includes('datos de contacto')?'Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.':message}
+function isContactGuardError(message:string){return message.includes('CONTACT_DETAILS_NOT_ALLOWED')||message.toLowerCase().includes('datos de contacto')}
+function chatError(message:string){return isContactGuardError(message)?'Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.':message}
+function shouldEscalate(){return document.visibilityState==='visible'&&navigator.onLine}
+function chatAttemptId(){return globalThis.crypto?.randomUUID?.()||`chat-${Date.now()}-${Math.random().toString(36).slice(2)}`}
 
 export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;serviceId?:string|null;compact?:boolean}){
  const sb=useMemo(()=>getRoleSupabase(role),[role])
  const[services,setServices]=useState<ChatService[]>([]),[selectedServiceId,setSelectedServiceId]=useState<string|null>(serviceId||null),[service,setService]=useState<ChatService|null>(null),[messages,setMessages]=useState<ChatMessage[]>([]),[userId,setUserId]=useState<string|null>(null),[draft,setDraft]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[unread,setUnread]=useState(0)
  const endRef=useRef<HTMLDivElement|null>(null)
- const normalizedRole: 'client'|'provider'=role==='client'?'client':'provider'
+ const normalizedRole:'client'|'provider'=role==='client'?'client':'provider'
  const reportChatFailure=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P0',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat`,checklistCode:'CHAT-REALTIME'})},[role,selectedServiceId,serviceId])
+ const reportChatRecovery=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P1',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat.recovery`})},[role,selectedServiceId,serviceId])
 
  const clearConversation=useCallback(()=>{setUserId(null);setServices([]);setService(null);setMessages([]);setUnread(0);setError('')},[])
  const load=useCallback(async()=>{
@@ -53,14 +57,14 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{reportChatFailureRef.current=reportChatFailure},[reportChatFailure])
 
- useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
+ useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
   let alive=true
-  const resync=()=>{if(alive)void loadRef.current().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);reportChatFailureRef.current('chat_resync_error',message,e)})}
+  const resync=()=>{if(alive)void loadRef.current().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatFailureRef.current('chat_resync_error',message,e)})}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
   window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
-  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible'&&navigator.onLine)resync()},10000)
+  const fallback=window.setInterval(()=>{if(shouldEscalate())resync()},10000)
   const targetServiceId=serviceId||null
   const suffix=targetServiceId||'all'
   let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}`)
@@ -77,7 +81,7 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
     resync()
-    if(document.visibilityState==='visible'&&navigator.onLine)reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
+    if(shouldEscalate())reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
    }
   })
   return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
@@ -85,14 +89,21 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
  useEffect(()=>{if(compact)endRef.current?.scrollIntoView({block:'nearest'})},[compact,messages])
 
+ const syncAfterSaved=async(id:string)=>{setDraft('');await load().catch(e=>{const message=e instanceof Error?e.message:'El mensaje se guardó, pero no pudimos actualizar el hilo.';setError(message);if(shouldEscalate())reportChatRecovery('chat_post_send_sync_error',message,e,id)})}
  const sendText=async(text:string,source:'typed'|'quick_reply'='typed')=>{
   const clean=text.trim();if(!service||!userId||!clean||busy)return
   if(hasContactDetails(clean)){setError('Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.');return}
   setBusy(true);setError('')
-  const{error:insertError}=await sb.from('mensajes').insert({servicio_id:service.id,emisor_id:userId,emisor_rol:role==='client'?'cliente':'proveedor',contenido:clean,datos:{source}})
+  const currentServiceId=service.id,attemptId=chatAttemptId()
+  const{error:insertError}=await sb.from('mensajes').insert({servicio_id:currentServiceId,emisor_id:userId,emisor_rol:role==='client'?'cliente':'proveedor',contenido:clean,datos:{source,clientMessageId:attemptId}})
+  if(!insertError){setBusy(false);await syncAfterSaved(currentServiceId);return}
+  const message=chatError(insertError.message)
+  if(isContactGuardError(insertError.message)){setBusy(false);setError(message);return}
+  const{data:persisted,error:recoveryError}=await sb.from('mensajes').select('id').eq('servicio_id',currentServiceId).eq('emisor_id',userId).contains('datos',{clientMessageId:attemptId}).maybeSingle()
   setBusy(false)
-  if(insertError){const message=chatError(insertError.message);setError(message);reportChatFailure('chat_send_error',message,insertError,service.id);return}
-  setDraft('');await load().catch(e=>{const message=e instanceof Error?e.message:'El mensaje se guardó, pero no pudimos actualizar el hilo.';setError(message);reportChatFailure('chat_post_send_sync_error',message,e,service.id)})
+  if(persisted){await syncAfterSaved(currentServiceId);return}
+  if(recoveryError){const recoveryMessage='No pudimos confirmar si el mensaje quedó enviado. El chat volverá a sincronizar antes de escalar el incidente.';setError(recoveryMessage);if(shouldEscalate())reportChatRecovery('chat_send_recovery_unverified',recoveryMessage,recoveryError,currentServiceId);return}
+  setError(message);if(shouldEscalate())reportChatFailure('chat_send_error',message,insertError,currentServiceId)
  }
  const submit=(e:React.FormEvent)=>{e.preventDefault();void sendText(draft)}
  if(!service)return null
