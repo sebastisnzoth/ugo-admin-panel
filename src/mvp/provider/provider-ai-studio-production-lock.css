@@ -1,0 +1,138 @@
+/* UGO Provider · Google AI Studio production lock.
+   Presentation only. Provider state, offers, serviceId, agenda, earnings and realtime remain authoritative. */
+
+.ugo-provider-root{
+  --studio-bg:#f8f9ff;
+  --studio-surface:#fff;
+  --studio-low:#eff4ff;
+  --studio-line:#dce9ff;
+  --studio-container:#e5eeff;
+  --studio-ink:#0b1c30;
+  --studio-muted:#575e70;
+  --studio-primary:#006b58;
+  --studio-primary-dark:#005747;
+  --studio-accent:#00d6b2;
+  --studio-success:#067647;
+  --studio-danger:#a72c2c;
+  min-height:100dvh!important;
+  background:var(--studio-bg)!important;
+  color:var(--studio-ink)!important;
+  font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif!important
+}
+.ugo-provider-root h1,.ugo-provider-root h2,.ugo-provider-root h3,.ugo-provider-root strong,.ugo-provider-root b{font-family:"Plus Jakarta Sans",Inter,system-ui,sans-serif!important}
+.ugo-provider-root .provider-screen{width:min(1080px,calc(100% - 48px))!important;max-width:none!important;margin:0 auto!important;padding:30px 0 120px!important;background:transparent!important;color:var(--studio-ink)!important}
+.ugo-provider-root .provider-top,.ugo-provider-root .provider-section-head{margin-bottom:20px!important}
+.ugo-provider-root .provider-kicker{color:var(--studio-primary)!important;font-size:9px!important;letter-spacing:.12em!important}
+.ugo-provider-root .provider-top h1,.ugo-provider-root .provider-section-head h1,.ugo-provider-root .provider-mission-head h1,.ugo-provider-root .provider-opportunity-decision>h1{color:var(--studio-ink)!important;letter-spacing:-.04em!important}
+.ugo-provider-root .provider-top p,.ugo-provider-root .provider-section-head p,.ugo-provider-root .provider-mission-head p{color:var(--studio-muted)!important}
+
+.ugo-provider-root .provider-status{
+  min-height:42px!important;padding:0 13px!important;border:1px solid var(--studio-line)!important;border-radius:999px!important;
+  background:#fff!important;color:var(--studio-muted)!important;box-shadow:none!important
+}
+.ugo-provider-root .provider-status.is-online{border-color:#b9eadf!important;background:#e6f7f4!important;color:var(--studio-primary)!important;box-shadow:none!important}
+
+.ugo-provider-root .provider-focus-card{
+  min-height:250px!important;padding:28px!important;border:1px solid var(--studio-container)!important;border-radius:26px!important;
+  background:#fff!important;color:var(--studio-ink)!important;box-shadow:0 8px 26px rgba(11,28,48,.06)!important
+}
+.ugo-provider-root .provider-focus-card:before{display:none!important}
+.ugo-provider-root .provider-focus-card>span{color:var(--studio-primary)!important;font-size:9px!important;font-weight:900!important;letter-spacing:.1em!important}
+.ugo-provider-root .provider-focus-card h2{color:var(--studio-ink)!important;font-size:clamp(28px,5vw,40px)!important;max-width:650px!important}
+.ugo-provider-root .provider-focus-card p{color:var(--studio-muted)!important;max-width:700px!important}
+.ugo-provider-root .provider-focus-card .provider-main-action,
+.ugo-provider-root .provider-primary{background:var(--studio-primary)!important;color:#fff!important;box-shadow:none!important}
+.ugo-provider-root .provider-focus-card .provider-main-action:hover,.ugo-provider-root .provider-primary:hover{background:var(--studio-primary-dark)!important}
+
+.ugo-provider-root .provider-quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important;margin-top:14px!important}
+.ugo-provider-root .provider-card,.ugo-provider-root .provider-quick-card,.ugo-provider-root .provider-offer-sheet,.ugo-provider-root .provider-job-summary,.ugo-provider-root .provider-simple-status,.ugo-provider-root .provider-arrival-auto,.ugo-provider-root .provider-simple-done{
+  border:1px solid var(--studio-container)!important;border-radius:20px!important;background:#fff!important;color:var(--studio-ink)!important;box-shadow:0 4px 14px rgba(11,28,48,.04)!important
+}
+.ugo-provider-root .provider-quick-card{min-height:126px!important;padding:18px!important}
+.ugo-provider-root .provider-quick-card small{color:var(--studio-primary)!important}
+.ugo-provider-root .provider-quick-card strong{color:var(--studio-ink)!important}
+.ugo-provider-root .provider-quick-card span{color:var(--studio-muted)!important}
+.ugo-provider-root .provider-quick-card:first-child:before,.ugo-provider-root .provider-quick-card:last-child:before{background:var(--studio-low)!important;color:var(--studio-primary)!important}
+.ugo-provider-root .provider-quiet-link,.ugo-provider-root .provider-link{color:var(--studio-primary)!important}
+
+.ugo-provider-root .provider-opportunity-simple{padding:18px!important;border-color:var(--studio-container)!important;background:#fff!important;box-shadow:0 4px 14px rgba(11,28,48,.04)!important}
+.ugo-provider-root .provider-opportunity-simple:before{background:var(--studio-accent)!important}
+.ugo-provider-root .provider-opportunity-simple h2{color:var(--studio-ink)!important}
+.ugo-provider-root .provider-chip{background:var(--studio-low)!important;color:var(--studio-primary)!important}
+.ugo-provider-root .provider-chip.is-urgent{background:#fff6f6!important;color:var(--studio-danger)!important}
+.ugo-provider-root .provider-opportunity-facts>div,.ugo-provider-root .provider-decision-facts>div,.ugo-provider-root .provider-job-facts>div{border-color:var(--studio-container)!important;background:#f8f9ff!important}
+.ugo-provider-root .provider-opportunity-facts small,.ugo-provider-root .provider-decision-facts small,.ugo-provider-root .provider-offer-problem small,.ugo-provider-root .provider-job-problem>small,.ugo-provider-root .provider-job-facts small{color:#6b7a75!important}
+.ugo-provider-root .provider-opportunity-facts strong,.ugo-provider-root .provider-decision-facts strong{color:var(--studio-ink)!important}
+.ugo-provider-root .provider-opportunity-facts>div:last-child strong{color:var(--studio-primary)!important}
+
+.ugo-provider-root .provider-back{color:var(--studio-primary)!important}
+.ugo-provider-root .provider-offer-sheet{padding:22px!important}
+.ugo-provider-root .provider-offer-problem{padding:18px!important;border:1px solid var(--studio-line)!important;border-radius:16px!important;background:var(--studio-low)!important}
+.ugo-provider-root .provider-offer-problem small{color:var(--studio-primary)!important}
+.ugo-provider-root .provider-offer-problem p{color:var(--studio-ink)!important}
+.ugo-provider-root .provider-decision-bar,.ugo-provider-root .provider-job-action{
+  border-color:var(--studio-container)!important;background:rgba(255,255,255,.96)!important;box-shadow:0 14px 34px rgba(11,28,48,.12)!important
+}
+.ugo-provider-root .provider-reject{color:var(--studio-muted)!important}
+
+.ugo-provider-root .provider-job-progress:before{background:var(--studio-line)!important}
+.ugo-provider-root .provider-job-progress>div>span{border-color:var(--studio-line)!important;background:#fff!important;color:var(--studio-muted)!important}
+.ugo-provider-root .provider-job-progress>div.is-done>span{border-color:var(--studio-primary)!important;background:var(--studio-primary)!important;color:#fff!important}
+.ugo-provider-root .provider-job-progress>div.is-done{color:var(--studio-primary)!important}
+.ugo-provider-root .provider-job-problem{background:var(--studio-low)!important}
+.ugo-provider-root .provider-job-problem h2,.ugo-provider-root .provider-job-problem p{color:var(--studio-ink)!important}
+.ugo-provider-root .provider-job-facts a{color:var(--studio-primary)!important}
+.ugo-provider-root .provider-arrival-fallback{background:var(--studio-primary)!important;color:#fff!important}
+.ugo-provider-root .provider-simple-done{background:#eaf9f5!important}
+.ugo-provider-root .provider-secondary-details,.ugo-provider-root .provider-exception{border-color:var(--studio-container)!important;background:#fff!important}
+.ugo-provider-root .provider-secondary-details summary,.ugo-provider-root .provider-exception summary{color:var(--studio-ink)!important}
+
+.ugo-provider-root .provider-notice{top:14px!important;border-color:var(--studio-container)!important;border-radius:14px!important;background:#fff!important;color:var(--studio-ink)!important;box-shadow:0 10px 28px rgba(11,28,48,.12)!important}
+.ugo-provider-root .provider-notice.ok{background:#eaf9f5!important;color:#075846!important}
+.ugo-provider-root .provider-notice.error{background:#fff6f6!important;color:var(--studio-danger)!important}
+
+.ugo-provider-root .provider-bottom-nav{
+  width:min(calc(100% - 24px),720px)!important;height:calc(72px + env(safe-area-inset-bottom))!important;bottom:10px!important;
+  border:1px solid var(--studio-container)!important;border-radius:22px!important;background:rgba(255,255,255,.97)!important;
+  box-shadow:0 14px 38px rgba(11,28,48,.14)!important;backdrop-filter:blur(18px)!important
+}
+.ugo-provider-root .provider-bottom-nav button{color:#6b7a75!important}
+.ugo-provider-root .provider-bottom-nav button.active,.ugo-provider-root .provider-bottom-nav button[aria-current="page"]{background:var(--studio-primary)!important;color:#fff!important}
+.ugo-provider-root .provider-nav-badge{background:var(--studio-accent)!important;color:#005747!important}
+
+/* Shared real modules inside provider flow follow the same light system. */
+.ugo-provider-root .ugo-history-panel.embedded{background:#fff!important;color:var(--studio-ink)!important;border-color:var(--studio-container)!important}
+.ugo-provider-root .ugo-history-panel.embedded>header{background:#fff!important;border-bottom-color:var(--studio-container)!important}
+.ugo-provider-root .ugo-history-panel.embedded>header h2{color:var(--studio-ink)!important}
+.ugo-provider-root .ugo-history-panel.embedded>header p{color:var(--studio-muted)!important}
+.ugo-provider-root .ugo-history-list article{border-color:var(--studio-container)!important;background:#fff!important;box-shadow:0 4px 14px rgba(11,28,48,.04)!important}
+.ugo-provider-root .ugo-history-meta>div{background:#f8f9ff!important}
+.ugo-provider-root .ugo-service-chat{background:#fff!important;color:var(--studio-ink)!important;border-color:var(--studio-container)!important}
+.ugo-provider-root .ugo-service-chat-list article{background:var(--studio-low)!important;color:var(--studio-ink)!important}
+.ugo-provider-root .ugo-service-chat-list article.is-own{background:#e6f7f4!important;color:#073c32!important}
+.ugo-provider-root .ugo-service-chat-form textarea{background:#fff!important;color:var(--studio-ink)!important;border-color:#d9dfdd!important}
+.ugo-provider-root .ugo-service-chat-form button{background:var(--studio-primary)!important;color:#fff!important}
+
+.ugo-provider-root :where(button,a,input,textarea,select,summary):focus-visible{outline:3px solid rgba(0,214,178,.42)!important;outline-offset:3px!important}
+
+@media(min-width:900px){
+  .ugo-provider-root .provider-screen{padding-top:36px!important}
+  .ugo-provider-root .provider-home{display:grid!important;grid-template-columns:1.15fr .85fr!important;column-gap:18px!important;align-items:start!important}
+  .ugo-provider-root .provider-home>.provider-top{grid-column:1/-1!important}
+  .ugo-provider-root .provider-home>.provider-focus-card{grid-column:1!important;grid-row:2 / span 2!important}
+  .ugo-provider-root .provider-home>.provider-quick-grid{grid-column:2!important;grid-row:2!important;margin-top:0!important;grid-template-columns:1fr!important}
+  .ugo-provider-root .provider-home>.provider-quiet-link{grid-column:2!important;grid-row:3!important;justify-self:start!important}
+}
+
+@media(max-width:760px){
+  .ugo-provider-root .provider-screen{width:calc(100% - 24px)!important;padding:16px 0 112px!important}
+  .ugo-provider-root .provider-focus-card{min-height:230px!important;padding:20px!important;border-radius:21px!important}
+  .ugo-provider-root .provider-quick-grid{grid-template-columns:1fr 1fr!important}
+  .ugo-provider-root .provider-bottom-nav{width:calc(100% - 16px)!important;bottom:8px!important}
+}
+
+@media(max-width:420px){
+  .ugo-provider-root .provider-quick-grid{grid-template-columns:1fr!important}
+  .ugo-provider-root .provider-top{align-items:flex-start!important;gap:12px!important}
+  .ugo-provider-root .provider-status{min-width:88px!important}
+}
