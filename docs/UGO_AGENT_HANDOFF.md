@@ -1,7 +1,7 @@
 # UGO — Agent Handoff
 
 **Actualizado:** 16 de septiembre de 2026  
-**Estado:** UGO TEST en desarrollo; no promovible todavía a producción comercial  
+**Estado:** UGO TEST en desarrollo; CI funcional verde, runtime crítico aún pendiente  
 **Rama única:** `main`
 
 ## Entorno
@@ -27,40 +27,35 @@ IMPLEMENTED
 → PUBLISHED
 ```
 
-## Base inspeccionada antes de esta sincronización
+## Checkpoint funcional actual
 
 ```text
-HEAD: 19c6dcddd2410b063e0d4171cd2178b95da47ef3
-commit: fix(sentinel): classify core runtime actions server-side
+SHA: a633575034dbdaa10d8499b2cbf2a542c646d7b1
+commit: test(provider): keep arrival location contract service-scoped
+UGO Core CI run: 35042238358
+conclusion: success
 ```
 
-Core CI:
+La regresión anterior era un test contractual desactualizado: la llegada del Proveedor ahora publica ubicación con `serviceId` para mantener la observabilidad Centinela correctamente ligada al pedido exacto. El contrato fue actualizado y el Core CI volvió a verde.
 
-```text
-run: 35040842854
-conclusion: failure
-```
-
-Pasaron instalación, security gate, readiness de credenciales y TypeScript/build. Falló el bloque de core lifecycle/contracts; lint posterior quedó skipped.
-
-Conclusión obligatoria: ese SHA está IMPLEMENTED pero **NO CI VALIDATED**.
+Estado del bloque funcional: **CI VALIDATED**. No confundir con `RUNTIME VALIDATED` ni `PUBLISHED`.
 
 ## Desarrollo público
 
-IMPLEMENTED en `main`:
+IMPLEMENTED + CI VALIDATED en el checkpoint funcional:
 
-- `?app=development` ya no usa `AdminGate`;
+- `?app=development` no usa `AdminGate`;
 - dashboard read-only;
 - vistas públicas sanitizadas de checklist/eventos/incidentes;
 - base readiness privada continúa protegida;
 - señal realtime pública no sensible;
 - feed público sin serviceId, stack, metadata privada ni reporter IDs.
 
-No marcar CI VALIDATED hasta una corrida verde del SHA que contenga esta consolidación.
+Siguiente gate: smoke real de esa superficie contra UGO TEST.
 
 ## Centinela
 
-IMPLEMENTED:
+IMPLEMENTED + CI VALIDATED en contratos:
 
 - `runtimeRevision` en cada build;
 - dashboard distingue build actual de histórico;
@@ -72,6 +67,8 @@ IMPLEMENTED:
 - incidentes runtime aislados del readiness.
 
 Invariante: **Centinela nunca muta ni aprueba `development_checklist`.**
+
+Siguiente gate: provocar/capturar incidentes seguros en TEST y confirmar revisión, sanitización, persistencia y feed público.
 
 ## Cliente
 
@@ -101,6 +98,8 @@ Ver problema
 ```
 
 Agenda puede contener varios trabajos futuros. Cada acción debe operar el `serviceId` exacto.
+
+La llegada conserva publicación de geolocalización fresca antes de solicitar `llegado`, ahora service-scoped también para Centinela.
 
 P0 runtime pendiente: lifecycle completo + Agenda + chat en dispositivo.
 
@@ -157,14 +156,13 @@ protección de main
 ## NEXT
 
 ```text
-1 consolidar maestros en main
-2 recuperar UGO Core CI verde sobre el nuevo HEAD
-3 ejecutar/smoke Desarrollo + Centinela en TEST
-4 E2E Cliente↔Proveedor exact serviceId + chat
-5 A+B+C + cancelación selectiva
-6 prueba física dos Android
-7 pagos/finanzas/security pendientes
-8 publicar sólo cuando el bloque funcional lo requiera
+1 smoke Desarrollo + Centinela en UGO TEST
+2 E2E Cliente↔Proveedor exact serviceId + chat
+3 A+B+C + cancelación selectiva
+4 Proveedor Agenda + lifecycle
+5 prueba física dos Android
+6 pagos/finanzas/security pendientes
+7 publicar sólo cuando el bloque funcional lo requiera
 ```
 
 **No tocar Supabase PROD. No crear ramas. No asumir que una publicación vieja representa `main`.**

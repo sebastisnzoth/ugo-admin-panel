@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 2.8 · 16 de septiembre de 2026  
+**Versión:** 2.9 · 16 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama única:** `main`
 
@@ -42,41 +42,35 @@ npm run lint
 
 CI verde de otro SHA no sirve como evidencia para HEAD actual.
 
-## 4. Snapshot vigente al iniciar esta sincronización documental
+## 4. Recuperación CI del bloque Centinela/Development
 
-Base inspeccionada:
-
-```text
-HEAD: 19c6dcddd2410b063e0d4171cd2178b95da47ef3
-commit: fix(sentinel): classify core runtime actions server-side
-```
-
-Core CI exacto:
+Checkpoint que expuso la regresión contractual:
 
 ```text
+SHA: 19c6dcddd2410b063e0d4171cd2178b95da47ef3
 run: 35040842854
-status: completed
 conclusion: failure
 ```
 
-Resultado parcial comprobado:
+La falla no estaba en el comportamiento de llegada del proveedor. `providerService` pasó a publicar geolocalización con `serviceId` para mantener el reporte Centinela ligado al servicio exacto, mientras `provider-arrival-location.test.mjs` todavía exigía la firma anterior sin `serviceId`.
+
+Corrección integrada:
 
 ```text
-install dependencies           PASS
-dependency security gate      PASS
-E2E credential readiness      PASS
-TypeScript + production build PASS
-core lifecycle/contracts      FAIL
-lint posteriores              SKIPPED por fallo previo
+SHA: a633575034dbdaa10d8499b2cbf2a542c646d7b1
+commit: test(provider): keep arrival location contract service-scoped
+run: 35042238358
+status: completed
+conclusion: success
 ```
 
-Por lo tanto `19c6dc…` era **IMPLEMENTED pero NO CI VALIDATED** en ese checkpoint. Ningún maestro puede llamarlo validado por inferencia.
+En ese SHA pasaron instalación, security gate, TypeScript/build, suite de lifecycle/contracts y lints operacionales. Por lo tanto `a633575…` es el checkpoint **CI VALIDATED** para el código funcional que contiene Development público + Centinela.
 
-La siguiente corrida sobre un commit posterior deberá ser la nueva autoridad.
+Los E2E autenticados que dependen de credenciales TEST siguen siendo un gate separado cuando esas credenciales están disponibles; CI verde no se convierte por sí solo en `RUNTIME VALIDATED`.
 
 ## 5. Readiness / Development Dashboard
 
-Gates contractuales:
+Gates contractuales ya cubiertos por el checkpoint CI verde:
 
 - `?app=development` abre sin `AdminGate`;
 - lectura pública sólo desde feeds sanitizados;
@@ -86,7 +80,7 @@ Gates contractuales:
 - Centinela no muta checklist;
 - acciones core se clasifican server-side.
 
-Estas capacidades pueden estar `IMPLEMENTED`; pasan a `CI VALIDATED` sólo cuando el SHA exacto supere los contratos.
+Estado: **CI VALIDATED** en `a633575…`; falta smoke/runtime TEST para promover a `RUNTIME VALIDATED`.
 
 ## 6. E2E autenticado
 
@@ -300,6 +294,6 @@ PUBLISHED sólo con revisión/smoke identificados
 
 ## 19. Regla final
 
-**UGO está validado por evidencia, no por intención. Si el Core CI del SHA falla, ese SHA no está CI VALIDATED aunque el build haya pasado. Si `main` avanzó después de una publicación, esa publicación no representa `main`.**
+**UGO está validado por evidencia, no por intención. CI verde habilita el siguiente gate; no reemplaza la prueba runtime. Si `main` avanzó después de una publicación, esa publicación no representa `main`.**
 
 **Supabase PROD `trfsjuseqjxlhrxuvdsm` permanece fuera de alcance.**
