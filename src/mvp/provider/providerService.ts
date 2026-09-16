@@ -41,9 +41,17 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
  }
 }
 
+async function persistedProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean):Promise<boolean|null>{
+ try{const{data,error}=await supabase.from('perfiles_proveedor').select('disponible,online').eq('usuario_id',userId).maybeSingle();if(error)return null;if(!data)return false;return data.disponible===online&&data.online===online}catch{return null}
+}
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){
- const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId)
- if(error){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(error,'No se pudo actualizar la disponibilidad.'),error,role:'provider',severity:'P1',action:'provider.availability'});throw error}
+ let mutationError:unknown=null
+ try{const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);mutationError=error;if(!error)return}catch(error){mutationError=error}
+ const persisted=await persistedProviderAvailability(supabase,userId,online)
+ if(persisted===true)return
+ if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
+ else{void reportSentinelIncident({eventType:'provider_availability_recovery_unverified',message:'No pudimos confirmar el estado online/offline persistido. El radar volverá a leer la disponibilidad real.',error:mutationError,role:'provider',severity:'P2',action:'provider.availability.recovery'})}
+ throw mutationError||new Error('No se pudo actualizar la disponibilidad.')
 }
 
 async function opportunityServiceId(supabase:SupabaseClient,opportunityId:string){
