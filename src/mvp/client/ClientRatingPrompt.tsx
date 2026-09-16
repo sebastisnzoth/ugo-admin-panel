@@ -60,7 +60,10 @@ export function ClientRatingPrompt(){
   setBusy(true);setMessage('')
   const{error}=await supabase.from('resenas').insert({servicio_id:target.service.id,cliente_id:userId,proveedor_id:target.service.proveedor_id,puntuacion:score,comentario:comment.trim()||null})
   setBusy(false)
-  if(error){const text=error.code==='23505'?'Este servicio ya fue calificado.':error.message;setMessage(text);report('rating_submit_error',text,error,target.service.id);if(error.code==='23505')void load();return}
+  if(error){
+   if(error.code==='23505'){setMessage('Este servicio ya fue calificado.');void load();return}
+   const text=error.message;setMessage(text);report('rating_submit_error',text,error,target.service.id);return
+  }
   setMessage('Gracias. Tu calificación quedó guardada.')
   setScore(0);setComment('');setDismissed(null)
   window.setTimeout(()=>{setMessage('');void load()},900)
