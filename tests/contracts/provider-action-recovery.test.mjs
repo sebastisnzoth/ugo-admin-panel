@@ -33,8 +33,20 @@ test('arrival location failure stays location-scoped instead of becoming lifecyc
 })
 
 test('cash confirmation treats persisted released cash payment as success',()=>{
- assert.match(source,/confirmar_pago_efectivo[\s\S]*\.eq\('metodo','efectivo'\)\.eq\('estado','liberado'\)/)
- assert.match(source,/if\(persisted\?\.length\)[\s\S]*return true/)
+ assert.match(source,/releasedCashPersisted=async\(serviceId:string\):Promise<boolean\|null>/)
+ assert.match(source,/confirmar_pago_efectivo[\s\S]*const persisted=await releasedCashPersisted\(serviceId\)/)
+ assert.match(source,/if\(persisted===true\)\{[\s\S]*Efectivo recibido y registrado[\s\S]*return true/)
+})
+
+test('provider cash Sentinel declares P0 only after confirmed persistence failure',()=>{
+ assert.match(source,/const confirmed=persisted===false/)
+ assert.match(source,/severity:confirmed\?'P0':'P1'/)
+ assert.match(source,/action:confirmed\?'provider\.payment\.cash_confirm':'provider\.payment\.cash_confirm\.recovery'/)
+ assert.match(source,/checklistCode:confirmed\?'PAYMENT-CLOSE':undefined/)
+})
+
+test('complete service reuses cash persistence recovery before failing close',()=>{
+ assert.match(source,/completeService=async\(\)=>[\s\S]*confirmar_pago_efectivo[\s\S]*releasedCashPersisted\(serviceId\)[\s\S]*if\(persisted!==true\)\{reportCashFailure/)
 })
 
 test('provider still blocks departure until a valid payment method is persisted',()=>{
