@@ -1,7 +1,7 @@
 # UGO — Agent Handoff
 
 **Actualizado:** 16 de septiembre de 2026  
-**Estado:** UGO TEST en desarrollo; CI verde, runtime crítico aún pendiente  
+**Estado:** UGO TEST; CI verde, runtime físico pendiente  
 **Rama única:** `main`
 
 ## Entorno
@@ -16,177 +16,97 @@ Admin: /?app=admin
 Desarrollo: /?app=development · público/read-only
 ```
 
-No asumir que una publicación web vieja representa `main`.
-
-## Madurez
+## Checkpoint exacto
 
 ```text
-IMPLEMENTED
-→ CI VALIDATED
-→ RUNTIME VALIDATED
-→ PUBLISHED
+HEAD funcional/test previo a esta sincronización: c89a9bf7b8baacc949d0639371d87cbf9e78bc46
+UGO Core CI run: 35052952138
+conclusion: SUCCESS
+319 tests/contratos + TypeScript/build + lints: verde
 ```
 
-## Checkpoint CI
+Los E2E autenticados Cliente/Proveedor/Admin se omiten si faltan las seis credenciales TEST; ese skip no valida runtime.
 
-Checkpoint funcional/test actual antes de esta sincronización documental:
+## Sentinel / recovery
+
+Regla obligatoria:
 
 ```text
-53d04bada63e69a3c19212cba206acd585edbd8a
-test(provider): align offer recovery contracts
-UGO Core CI run 35047491737 → SUCCESS
+operación ambigua
+→ leer estado persistido exacto
+→ persistido = éxito recuperado
+→ fallo confirmado = incidente real
+→ no verificable = recovery telemetry, no falso readiness
 ```
 
-El fix funcional asociado está en `c3a414566becb81e90dde5dbec477eb31b8e7ec7` (`fix(sentinel): verify offer acceptance before P0`).
-
-## Sentinel
-
-Estado IMPLEMENTED + CI VALIDATED:
-
-- `runtimeRevision` por build;
-- build actual separado de incidentes históricos;
-- sanitización de emails/teléfonos/links/metadata sensible;
-- cola anónima local segura + flush autenticado;
-- matching, cancelación, radar, status y ubicación Cliente observables;
-- operaciones críticas Proveedor observables;
-- clasificación server-side de acciones conocidas;
-- incidentes runtime no mutan readiness.
-
-Regla de recovery:
-
-```text
-RPC error
-→ comprobar persistencia exacta
-→ persistido = éxito recuperado, sin P0
-→ fallo confirmado = P0
-→ no verificable = P1
-```
-
-La aceptación de oferta ahora cumple esta regla y conserva el `serviceId` exacto. `provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente deben conservar la misma semántica.
-
-## Snapshot real TEST
-
-Consulta read-only actual:
-
-```text
-3 proveedores verificados + online + disponibles
-1 servicio con mensajes persistidos de ambos roles
-0 servicios activos actuales
-0 clientes con múltiples pedidos activos actuales
-6 incidentes Sentinel públicos, todos sin runtimeRevision
-```
-
-Interpretación:
-
-- hay proveedores reales TEST disponibles para el próximo smoke;
-- DB demuestra chat en ambos sentidos, pero falta UI realtime dos sesiones;
-- no hay evidencia runtime A+B+C actual;
-- incidentes sin revisión son históricos, no del build candidato.
+Este patrón cubre matching, cancelación, aceptación/rechazo de oferta, disponibilidad, lifecycle, GPS, chat send, rating y pagos críticos. Centinela nunca muta `development_checklist`.
 
 ## Cliente
 
-Canónico actual:
-
-- pedidos simultáneos A+B+C permitidos;
-- cada pedido mantiene `serviceId` propio;
-- Home/Actividad/detalle abren el pedido exacto;
-- cancelación usa recovery persistido;
-- radar recupera estado ante gaps realtime;
-- chat es service-scoped, realtime + refetch/reconnect;
-- quick replies;
-- filtro de contacto off-platform.
-
-Contratos protegen el aislamiento A+B+C, pero falta E2E autenticado y dos sesiones reales.
+- A+B+C permitido y aislado por `serviceId`.
+- Actividad usa una sola navegación de estado y carga el CSS Cliente real.
+- cancelación y matching recuperan estado persistido.
+- chat exacto por `serviceId`, realtime + fallback/resync.
+- chat usa `clientMessageId` e idempotencia server-side en TEST.
+- quick replies y bloqueo de datos de contacto siguen activos.
+- rating reconcilia persistencia exacta.
+- pago separa fallo de mutación P0 de sync/realtime P1.
 
 ## Proveedor
 
-Happy path visible:
-
 ```text
-Oferta
-→ Aceptar
-→ Estoy yendo
-→ Llegué
-→ Empezar trabajo
-→ Listo
-→ Cobro/cierre
+Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cobro/cierre
 ```
 
-Agenda debe contener todos los trabajos futuros/asignados. La misión activa puede seleccionar un `serviceId` accionable, pero nunca sustituir la Agenda completa.
+- online/offline reconcilia `disponible + online`.
+- fallo confirmado de disponibilidad clasifica `MATCH-ONLINE` server-side.
+- rechazo de oferta reconcilia `rechazada` exacta.
+- GPS reconcilia `ultima_ubicacion_at` antes de incidente.
+- Agenda debe contener todos los trabajos futuros/asignados; misión activa sólo selecciona el trabajo accionable.
 
-Aceptación, estados, finalización y cobro no deben generar P0 hasta comprobar el estado persistido cuando una respuesta RPC es ambigua.
+## Chat P0
 
-## Chat
-
-P0 pendiente de evidencia runtime:
+Hardening de código/backend está hecho, pero `CHAT-REALTIME` permanece `IMPLEMENTED` hasta demostrar:
 
 ```text
 Cliente → Proveedor visible realtime
 Proveedor → Cliente visible realtime
 reload/reconnect conserva historial
-quick replies no mezclan serviceId
-pedido A no contamina pedido B
+quick replies correctas
 contacto externo bloqueado
+pedido A no contamina B/C
 ```
-
-INSERT en DB por sí solo no valida chat. `CHAT-REALTIME` permanece `IMPLEMENTED`.
 
 ## Development
 
-Mantener:
+Mantener público, sin login, read-only, vistas sanitizadas, revisión visible, incidentes actuales separados de históricos y Admin protegido.
 
-- `?app=development` sin login;
-- read-only público;
-- vistas sanitizadas;
-- tablas privadas protegidas;
-- revisión/build visible;
-- incidentes actuales separados de históricos;
-- Admin protegido.
-
-Las vistas públicas responden en TEST; falta smoke de UI del build final.
-
-## Android TEST
-
-Artifact funcional más reciente:
+## Gates externos que NO se promueven
 
 ```text
-run: 35047317846
-commit: c3a414566becb81e90dde5dbec477eb31b8e7ec7
-conclusion: success
-bundleRuntime: local-dist
-environment: TEST
+CHAT-REALTIME = implemented
+CLIENT-ACTIVITY-UX = implemented
+MAP-GPS = implemented
+RATING = implemented
+TWO-DEVICES = blocked
+FULL-E2E = blocked
+GO-LIVE = blocked
 ```
 
-Incluye el fix funcional de aceptación. Todavía falta artifact del SHA final exacto después de documentación/checkpoint para entregar el candidato físico definitivo.
-
-## Gates bloqueados
+## NEXT — no parar mientras haya trabajo interno
 
 ```text
-TWO-DEVICES = BLOCKED
-FULL-E2E = BLOCKED
-GO-LIVE = BLOCKED
+1 confirmar HEAD después de esta sincronización documental
+2 consultar Centinela para ese SHA
+3 generar Android TEST del SHA final exacto
+4 verificar VITE_APP_REVISION / bundleRuntime=local-dist / TEST
+5 descargar y validar artifact
+6 pasar a prueba física: dos sesiones/dispositivos
+7 Cliente A+B+C + matching + cancelación
+8 Proveedor Agenda + lifecycle + GPS
+9 chat visual bidireccional/reconnect
+10 pago/evidencia/rating
+11 publicar sólo cuando corresponda
 ```
 
-No promover sin evidencia real.
-
-## Credenciales TEST
-
-El runner de Core CI no tiene actualmente las seis credenciales TEST del harness autenticado Cliente/Proveedor/Admin. El skip se registra y no cuenta como runtime validation.
-
-## Finanzas
-
-Política definitiva de saldo/retiro sigue pendiente de decisión de producto. No inventar saldo disponible ni RPCs financieros sin contrato aprobado.
-
-## NEXT
-
-```text
-1 generar artifact Android del SHA final exacto
-2 instalarlo en dos sesiones/dispositivos
-3 Cliente crea A+B+C y verifica cards/matching/cancelación
-4 Proveedor acepta y completa lifecycle + Agenda
-5 comprobar chat visual bidireccional/reconnect
-6 pagos/rating/evidencia
-7 publicar sólo cuando corresponda
-```
-
-**No tocar Supabase PROD. No crear ramas. No desplegar web para resolver trazabilidad de QA.**
+**No tocar Supabase PROD. No crear ramas. No Vercel para resolver QA Android.**

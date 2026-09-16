@@ -1,185 +1,106 @@
 # UGO — Roadmap Master
 
-**Versión:** 3.2 · 16 de septiembre de 2026  
+**Versión:** 3.3 · 16 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
-> **Un pedido. Un profesional. Sin vueltas.** Primero cerrar y demostrar el circuito real; después ampliar.
+> **Un pedido. Un profesional. Sin vueltas.**
 
 ## 1. Madurez
 
 ```text
-IMPLEMENTED
-→ CI VALIDATED
-→ RUNTIME VALIDATED
-→ PUBLISHED
+IMPLEMENTED → CI VALIDATED → RUNTIME VALIDATED → PUBLISHED
 ```
 
-Leyenda:
+## 2. Checkpoint actual
 
 ```text
-✅ cerrado con evidencia requerida
-🟡 implementado/parcial; falta etapa siguiente
-🔴 regresión/fallo comprobado
-⛔ bloqueo externo/decisión
-⬜ pendiente
+c89a9bf7b8baacc949d0639371d87cbf9e78bc46
+UGO Core CI run 35052952138 → SUCCESS
+319 tests/contratos + build + lints → verde
 ```
 
-## 2. Snapshot actual
+## 3. Bloque endurecido
 
-Checkpoint CI VALIDATED que supersede al checkpoint anterior:
+- Actividad Cliente carga su CSS real y ya no duplica filtros de estado.
+- Rating reconcilia INSERT ambiguo antes de Sentinel.
+- GPS Proveedor reconcilia timestamp persistido antes de fallo.
+- disponibilidad online/offline reconcilia backend y clasifica fallo confirmado como `MATCH-ONLINE`.
+- rechazo de oferta reconcilia la oferta exacta.
+- chat usa `clientMessageId`, recovery exacto e índice idempotente server-side en TEST.
+- chat no trata contact guard esperado ni offline/hidden como P0.
+- pagos separan mutación crítica de errores de sincronización/realtime.
+- Centinela mantiene aislamiento por revisión y nunca aprueba checklist.
+
+## 4. P0 inmediato
 
 ```text
-53d04bada63e69a3c19212cba206acd585edbd8a
-test(provider): align offer recovery contracts
-UGO Core CI run 35047491737 → SUCCESS
+[✅] Core CI exacto verde en c89a9bf…
+[🟡] Development público/read-only → falta smoke del candidato final
+[🟡] CHAT-REALTIME → hardening completo; falta dos sesiones reales
+[🟡] multi-pedido A+B+C → contratos verdes; falta runtime real
+[🟡] matching/radar/cancelación → recovery protegido; falta E2E
+[🟡] Proveedor Agenda/lifecycle → contratos verdes; falta físico
+[🟡] GPS → persistencia protegida; falta permiso/GPS real
+[🟡] Rating → recovery protegido; falta post-servicio real
+[🟡] Android HEAD exacto → generar artifact del SHA final
+[⛔] TWO-DEVICES / FULL-E2E / GO-LIVE → evidencia externa pendiente
 ```
 
-El bloque actual protege además:
-
-- recuperación de matching/cancelación antes de registrar P0;
-- radar de proveedores con recuperación ante gaps realtime;
-- aislamiento de pedidos A+B+C por `serviceId`;
-- Agenda de Proveedor como conjunto completo, separada de la misión accionable;
-- `provider.service.advance`, `completeService` y `confirmCash` verifican persistencia antes de P0;
-- aceptación de oferta ahora usa recuperación triestado por pedido exacto: persistido = éxito; fallo confirmado = P0; estado no verificable = P1;
-- Development público/read-only y Centinela sanitizado siguen bajo contratos CI.
-
-Los E2E autenticados dependientes de credenciales TEST no convierten este checkpoint en `RUNTIME VALIDATED` cuando esas credenciales no están disponibles.
-
-## 3. Evidencia real de Supabase TEST
-
-Snapshot read-only tomado después del checkpoint:
-
-```text
-proveedores verificados + online + disponibles: 3
-servicios con mensajes persistidos de ambos roles: 1
-servicios activos actuales: 0
-clientes con 2+ pedidos activos actuales: 0
-incidentes públicos Sentinel: 6
-runtimeRevision de esos incidentes: NULL / históricos
-```
-
-Conclusiones permitidas:
-
-- existe disponibilidad real de proveedores en TEST;
-- existe evidencia DB de chat en ambos sentidos para al menos un servicio;
-- NO existe evidencia actual A+B+C porque no hay pedidos activos;
-- persistencia bidireccional de mensajes NO equivale a convergencia visual realtime en dos sesiones;
-- los seis incidentes sin revisión son históricos y no representan el build actual.
-
-## 4. Android TEST
-
-Último artifact generado por un cambio funcional legítimo:
-
-```text
-workflow: UGO Android TEST APK
-run: 35047317846
-commit: c3a414566becb81e90dde5dbec477eb31b8e7ec7
-conclusion: success
-bundleRuntime: local-dist
-environment: TEST
-```
-
-Incluye el fix funcional de recovery de aceptación, pero no los contratos/documentación posteriores. Android permanece **NOT READY para evidencia final del HEAD** hasta generar artifact del SHA final exacto.
-
-## 5. P0 inmediato
-
-```text
-[✅] Core CI verde en checkpoint funcional 53d04ba…
-[🟡] Development público/no-login → arquitectura validada; falta smoke del build final
-[🟡] Centinela → recovery crítico protegido; falta smoke del build final
-[🟡] Cliente exact order/detail/chat por serviceId → falta prueba dos sesiones
-[🟡] chat Cliente ↔ Proveedor realtime → DB bidireccional existe; falta convergencia visual dos sesiones
-[🟡] matching no-provider/timeout/retry/cancel → falta runtime E2E
-[🟡] multi-pedido A+B+C → protegido por contratos; falta E2E autenticado/físico actual
-[🟡] Proveedor estados simples + Agenda → protegido por contratos; falta lifecycle físico
-[🟡] Android HEAD exacto → falta artifact del SHA final
-[⬜] pagos electrónico/efectivo E2E completo
-[⬜] Admin/Super Admin server-side/security final
-[⛔] política definitiva saldo/retiro → decisión de producto pendiente
-[⬜] seguridad/release producción
-```
-
-## 6. Cliente
+## 5. Cliente
 
 | Área | Estado | Próximo cierre |
 |---|---|---|
 | Solicitud guiada | 🟡 | E2E real |
-| Matching | 🟡 | sin proveedor + timeout + retry + cancel |
-| Proveedores online/cards | 🟡 | comprobar UI con los 3 proveedores TEST online |
+| Matching | 🟡 | proveedor / cero proveedor / timeout / retry / cancel |
+| Online/cards | 🟡 | smoke UI real |
 | Multi-pedido | 🟡 | A+B+C con IDs reales |
-| Actividad/detalle | 🟡 | smoke exact serviceId |
-| Cancelación | 🟡 | persistencia + contraparte + A/C intactos |
-| Chat | 🟡 | bidireccional visual dos sesiones |
-| Tracking/ETA | 🟡 | reconexión/GPS |
+| Actividad/detalle | 🟡 | validación visual móvil |
+| Chat | 🟡 | dos sesiones bidireccionales |
+| Tracking/GPS | 🟡 | dispositivo real |
 | Pago | 🟡 | E2E por método |
-| Aprobación/disputa | 🟡 | E2E |
+| Rating | 🟡 | post-servicio real |
 
-## 7. Proveedor
+## 6. Proveedor
 
 | Área | Estado | Próximo cierre |
 |---|---|---|
-| Oportunidades | 🟡 | E2E real |
-| Aceptar/rechazar | 🟡 | recovery CI validado; falta runtime |
+| Disponibilidad | 🟡 | UI/runtime real |
+| Oportunidades | 🟡 | E2E |
+| Aceptar/rechazar | 🟡 | runtime real |
+| Agenda | 🟡 | varios trabajos + serviceId exacto |
 | En camino/Llegué/Empezar/Listo | 🟡 | lifecycle físico |
-| Agenda/calendario | 🟡 | varios trabajos + serviceId exacto |
 | Chat | 🟡 | proveedor→cliente visible realtime |
-| Evidencia | 🟡 | cámara/Storage/guards reales |
-| Pago/efectivo | 🟡 | cierre method-aware |
-| Centinela operacional | 🟡 | incident smoke runtime |
+| Evidencia | 🟡 | cámara/Storage real |
+| Cobro/cierre | 🟡 | method-aware E2E |
 
-## 8. Sentinel / recuperación
-
-Regla obligatoria para mutaciones críticas:
+## 7. Orden de ejecución
 
 ```text
-RPC error
-→ leer estado persistido exacto
-→ cambio persistido = éxito recuperado, sin P0
-→ cambio confirmado como ausente = P0
-→ estado no verificable = P1
+1 generar Android TEST del SHA final exacto
+2 validar metadata/revisión embebida
+3 smoke Development + Sentinel del mismo build
+4 E2E Cliente request→matching→asignación
+5 chat bidireccional exact serviceId
+6 A+B+C + cancelación selectiva
+7 Proveedor Agenda + lifecycle + GPS
+8 pagos/evidencia/rating
+9 dos Android físicos
+10 publicar sólo cuando corresponda
 ```
 
-Aplica a matching, cancelación, aceptación de oferta, lifecycle, finalización y cobro. Centinela nunca muta ni aprueba `development_checklist`.
-
-## 9. Testing
-
-Orden actual:
+## 8. Gates
 
 ```text
-1 artifact Android exacto del SHA final
-2 smoke Development público + Centinela en TEST
-3 E2E Cliente request→matching→asignación
-4 chat bidireccional exact serviceId
-5 A+B+C + cancelación selectiva
-6 Proveedor Agenda + lifecycle
-7 pagos/evidencia
-8 dos Android físicos
-9 responsive/accessibility
-10 publicación sólo cuando corresponda
+TWO-DEVICES = BLOCKED
+FULL-E2E = BLOCKED
+GO-LIVE = BLOCKED
 ```
 
-## 10. Gates que permanecen bloqueados
+Persistencia DB, contratos verdes y APK compilado no sustituyen evidencia física.
 
-No promover sin evidencia:
+## 9. Regla final
 
-```text
-TWO-DEVICES
-FULL-E2E
-GO-LIVE
-```
+**El siguiente avance real es convertir el checkpoint CI VALIDATED en evidencia runtime del mismo SHA, no sumar features.**
 
-Persistencia DB o contratos verdes no sustituyen visualización realtime en ambas sesiones.
-
-## 11. Release
-
-La web publicada puede quedar detrás de `main`. No hacer deploy para sincronización documental ni para sustituir la prueba Android. Publicar sólo cuando exista un bloque funcional que necesite release y registrar revisión exacta + smoke.
-
-## 12. Criterio del primer cliente
-
-Cliente crea A+B+C independientes, matching encuentra o recupera correctamente, Proveedor recibe/acepta, ambos chatean por el mismo `serviceId`, cancelación de B no toca A/C, lifecycle/pago/cierre permanecen aislados y Admin puede observar/resolver sin mezclar pedidos.
-
-## 13. Regla final
-
-**El siguiente gran avance no es sumar features: es convertir el bloque CI VALIDATED en evidencia runtime real Cliente ↔ Proveedor, con Android, Centinela y readiness atribuidos al SHA exacto.**
+No tocar Supabase PROD. No crear ramas. No desplegar web sólo para trazabilidad de QA.
