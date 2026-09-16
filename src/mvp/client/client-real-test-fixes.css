@@ -1,0 +1,50 @@
+/* Fixes from real client/provider test 2026-09-16.
+   Keep Hugo available without covering the service catalogue, activity or chat. */
+@media (min-width: 900px){
+  .ugo-client-root .prototype-hugo{
+    left:24px!important;
+    bottom:24px!important;
+    width:340px!important;
+    transform:none!important;
+    align-items:flex-start!important;
+    z-index:72!important;
+  }
+  .ugo-client-root .prototype-hugo .ugo-real-orb{
+    width:56px!important;
+    height:56px!important;
+    align-self:flex-start!important;
+  }
+  .ugo-client-root .prototype-hugo .ugo-real-state{
+    margin-top:6px!important;
+    font-size:8px!important;
+  }
+  .ugo-client-root .ugo-hugo-stage-card{
+    width:340px!important;
+    max-height:min(520px,calc(100vh - 150px))!important;
+    overflow:auto!important;
+    margin-bottom:8px!important;
+    border-radius:18px!important;
+    box-shadow:0 16px 40px rgba(11,28,48,.18)!important;
+  }
+  .ugo-client-root .ugo-service-chat:not(.is-compact){
+    right:24px!important;
+    left:auto!important;
+    bottom:24px!important;
+    max-width:390px!important;
+    max-height:calc(100vh - 120px)!important;
+    overflow:auto!important;
+    z-index:78!important;
+  }
+}
+@media (max-width: 899px){
+  .ugo-client-root .prototype-hugo{
+    left:12px!important;
+    right:auto!important;
+    bottom:76px!important;
+    width:min(340px,calc(100vw - 24px))!important;
+    transform:none!important;
+    align-items:flex-start!important;
+  }
+  .ugo-client-root .prototype-hugo .ugo-real-orb{width:52px!important;height:52px!important}
+  .ugo-client-root .ugo-hugo-stage-card{max-height:58vh!important;overflow:auto!important}
+}
