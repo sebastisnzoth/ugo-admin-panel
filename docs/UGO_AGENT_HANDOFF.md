@@ -29,15 +29,15 @@ IMPLEMENTED
 
 ## Checkpoint CI
 
-Último SHA de código/test validado antes de esta sincronización documental:
+Checkpoint funcional/test actual antes de esta sincronización documental:
 
 ```text
-51561b8aa632d74b755e8072a00d59e415097fae
-test(client): align cancellation recovery contract
-UGO Core CI run 35046419173 → SUCCESS
+53d04bada63e69a3c19212cba206acd585edbd8a
+test(provider): align offer recovery contracts
+UGO Core CI run 35047491737 → SUCCESS
 ```
 
-La corrección alineó el contrato de cancelación con la reconciliación persistida actual. No se revirtió la lógica de recovery.
+El fix funcional asociado está en `c3a414566becb81e90dde5dbec477eb31b8e7ec7` (`fix(sentinel): verify offer acceptance before P0`).
 
 ## Sentinel
 
@@ -56,13 +56,32 @@ Regla de recovery:
 
 ```text
 RPC error
-→ comprobar persistencia
+→ comprobar persistencia exacta
 → persistido = éxito recuperado, sin P0
 → fallo confirmado = P0
 → no verificable = P1
 ```
 
-`provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente deben conservar esta semántica.
+La aceptación de oferta ahora cumple esta regla y conserva el `serviceId` exacto. `provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente deben conservar la misma semántica.
+
+## Snapshot real TEST
+
+Consulta read-only actual:
+
+```text
+3 proveedores verificados + online + disponibles
+1 servicio con mensajes persistidos de ambos roles
+0 servicios activos actuales
+0 clientes con múltiples pedidos activos actuales
+6 incidentes Sentinel públicos, todos sin runtimeRevision
+```
+
+Interpretación:
+
+- hay proveedores reales TEST disponibles para el próximo smoke;
+- DB demuestra chat en ambos sentidos, pero falta UI realtime dos sesiones;
+- no hay evidencia runtime A+B+C actual;
+- incidentes sin revisión son históricos, no del build candidato.
 
 ## Cliente
 
@@ -95,7 +114,7 @@ Oferta
 
 Agenda debe contener todos los trabajos futuros/asignados. La misión activa puede seleccionar un `serviceId` accionable, pero nunca sustituir la Agenda completa.
 
-Las mutaciones críticas deben verificar persistencia antes de registrar P0.
+Aceptación, estados, finalización y cobro no deben generar P0 hasta comprobar el estado persistido cuando una respuesta RPC es ambigua.
 
 ## Chat
 
@@ -110,7 +129,7 @@ pedido A no contamina pedido B
 contacto externo bloqueado
 ```
 
-INSERT en DB por sí solo no valida chat.
+INSERT en DB por sí solo no valida chat. `CHAT-REALTIME` permanece `IMPLEMENTED`.
 
 ## Development
 
@@ -124,25 +143,21 @@ Mantener:
 - incidentes actuales separados de históricos;
 - Admin protegido.
 
-Falta smoke runtime TEST para promoción.
+Las vistas públicas responden en TEST; falta smoke de UI del build final.
 
 ## Android TEST
 
-Último artifact inspeccionado:
+Artifact funcional más reciente:
 
 ```text
-run: 35044762155
-commit: 8c0123bd9d221ec6d09a4cd2f4a83f6a2ed9d800
-artifact: ugo-android-test-apk
-artifact id: 10425674680
-APK SHA-256: 329f74e50217f13d92322dba103513c86170a0bca5bfc30fc93fe389674e3df4
+run: 35047317846
+commit: c3a414566becb81e90dde5dbec477eb31b8e7ec7
+conclusion: success
 bundleRuntime: local-dist
 environment: TEST
 ```
 
-Es el último APK del cambio runtime Cliente, pero no corresponde al HEAD exacto `51561b8…`; por trazabilidad estricta no declararlo READY final ni RUNTIME VALIDATED.
-
-No alterar runtime artificialmente sólo para disparar workflow.
+Incluye el fix funcional de aceptación. Todavía falta artifact del SHA final exacto después de documentación/checkpoint para entregar el candidato físico definitivo.
 
 ## Gates bloqueados
 
@@ -156,7 +171,7 @@ No promover sin evidencia real.
 
 ## Credenciales TEST
 
-Los E2E autenticados requieren credenciales TEST disponibles en el runner/entorno. Si faltan, el harness puede quedar omitido; registrar ese hecho y no convertir el resultado en runtime validation.
+El runner de Core CI no tiene actualmente las seis credenciales TEST del harness autenticado Cliente/Proveedor/Admin. El skip se registra y no cuenta como runtime validation.
 
 ## Finanzas
 
@@ -165,14 +180,13 @@ Política definitiva de saldo/retiro sigue pendiente de decisión de producto. N
 ## NEXT
 
 ```text
-1 obtener artifact Android para SHA objetivo sin deploy web
-2 smoke Development + Centinela en UGO TEST
-3 E2E Cliente↔Proveedor exact serviceId + chat
-4 A+B+C + cancelación selectiva
-5 Proveedor Agenda + lifecycle
-6 prueba dos sesiones/dispositivos
-7 pagos/finanzas/security
-8 publicar sólo cuando corresponda
+1 generar artifact Android del SHA final exacto
+2 instalarlo en dos sesiones/dispositivos
+3 Cliente crea A+B+C y verifica cards/matching/cancelación
+4 Proveedor acepta y completa lifecycle + Agenda
+5 comprobar chat visual bidireccional/reconnect
+6 pagos/rating/evidencia
+7 publicar sólo cuando corresponda
 ```
 
-**No tocar Supabase PROD. No crear ramas. No desplegar para resolver trazabilidad de QA.**
+**No tocar Supabase PROD. No crear ramas. No desplegar web para resolver trazabilidad de QA.**
