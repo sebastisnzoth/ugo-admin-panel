@@ -37,8 +37,8 @@ test('core runtime actions are classified server-side instead of trusting browse
   ['provider.offer.accept','PROVIDER-ASSIGN'],
   ['provider.service.advance','PROVIDER-STATES'],
   ['provider.service.location','MAP-GPS'],
-  ['client.rating.submit','RATING'],
  ])assert.match(actionClassification,new RegExp(`p_action = '${action.replaceAll('.','\\.')}' then '${code}'`))
+ assert.match(actionClassification,/p_action in \('client\.rating\.submit','provider\.rating\.submit'\) then 'RATING'/)
  assert.match(providerPaymentClassification,/p_action in \('client\.order\.payment','provider\.payment\.cash_confirm'\) then 'PAYMENT-CLOSE'/)
  assert.match(providerPaymentClassification,/when v_is_admin then p_checklist_code/)
  assert.doesNotMatch(providerPaymentClassification,/update public\.development_checklist/)
