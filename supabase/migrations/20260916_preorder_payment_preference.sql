@@ -1,0 +1,11 @@
+create table if not exists public.preferencias_pago_cliente (usuario_id uuid primary key references public.usuarios(id) on delete cascade, metodo text not null check (metodo in ('pix','efectivo')), updated_at timestamptz not null default now());
+alter table public.preferencias_pago_cliente enable row level security;
+drop policy if exists preferencias_pago_cliente_select_own on public.preferencias_pago_cliente;
+create policy preferencias_pago_cliente_select_own on public.preferencias_pago_cliente for select to authenticated using (usuario_id=auth.uid());
+drop policy if exists preferencias_pago_cliente_write_own on public.preferencias_pago_cliente;
+create policy preferencias_pago_cliente_write_own on public.preferencias_pago_cliente for all to authenticated using (usuario_id=auth.uid()) with check (usuario_id=auth.uid());
+create or replace function public.set_preorder_payment_preference(p_metodo text) returns text language plpgsql security definer set search_path='public','pg_temp' as $$ begin if auth.uid() is null then raise exception 'Autenticación requerida'; end if; if p_metodo not in ('pix','efectivo') then raise exception 'Método de pago inválido'; end if; insert into public.preferencias_pago_cliente(usuario_id,metodo,updated_at) values(auth.uid(),p_metodo,now()) on conflict(usuario_id) do update set metodo=excluded.metodo,updated_at=now(); return p_metodo; end; $$;
+revoke execute on function public.set_preorder_payment_preference(text) from public,anon; grant execute on function public.set_preorder_payment_preference(text) to authenticated;
+create or replace function private.apply_preorder_payment_preference() returns trigger language plpgsql security definer set search_path='public','private','pg_temp' as $$ declare v_metodo text; begin select metodo into v_metodo from public.preferencias_pago_cliente where usuario_id=new.cliente_id; if v_metodo is not null then new.metadata=coalesce(new.metadata,'{}'::jsonb)||jsonb_build_object('requested_payment_method',v_metodo,'payment_selected_before_order',true); end if; return new; end; $$;
+drop trigger if exists trg_apply_preorder_payment_preference on public.servicios;
+create trigger trg_apply_preorder_payment_preference before insert on public.servicios for each row execute function private.apply_preorder_payment_preference();
