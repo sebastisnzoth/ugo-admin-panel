@@ -22,6 +22,8 @@ concurrency:
 env:
   # Android packages the current UI locally. Only serverless /api calls use
   # the published TEST-compatible backend; no remote Vercel UI is loaded.
+  # Touching this workflow is also the explicit QA mechanism for producing
+  # an artifact whose embedded VITE_APP_REVISION matches the final main SHA.
   UGO_ANDROID_API_BASE: https://ugo-admin-panel.vercel.app
 
 jobs:
