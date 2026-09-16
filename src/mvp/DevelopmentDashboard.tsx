@@ -1,3 +1,4 @@
+// Public Development dashboard: never query private development_* base tables from the browser.
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
 import'./development-dashboard.css'
