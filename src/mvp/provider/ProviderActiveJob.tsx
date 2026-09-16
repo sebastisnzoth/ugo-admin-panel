@@ -34,8 +34,8 @@ export function ProviderActiveJob(){
     <div><small>VALOR</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
    </div>
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
-   <details className="provider-secondary-details"><summary>Chat con el cliente</summary><ServiceChat role="provider" serviceId={s.id} compact/></details>
   </article>
+  <section className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></section>
   <div className="provider-job-action">
    {s.estado==='asignado'&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperando al cliente</strong><span>UGO te avisa cuando la forma de pago esté confirmada.</span></div>}
    {s.estado==='asignado'&&paymentReady&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</button>}
