@@ -191,8 +191,11 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
   const state = typeof req.body?.state === 'string' ? req.body.state.trim() : ''
   const reason = typeof req.body?.reason === 'string' ? req.body.reason.trim().slice(0, 2000) : ''
 
-  if (!providerId || !PROVIDER_VERIFICATION_STATES.has(state)) {
-    return res.status(400).json({ error: 'Proveedor o estado de verificación inválido.' })
+  if (!providerId) {
+    return res.status(400).json({ error: 'Proveedor inválido.' })
+  }
+  if (!PROVIDER_VERIFICATION_STATES.has(state)) {
+    return res.status(400).json({ error: 'Estado de verificación inválido.' })
   }
   if (state === 'rechazado' && !reason) {
     return res.status(400).json({ error: 'El motivo es obligatorio al rechazar.' })
