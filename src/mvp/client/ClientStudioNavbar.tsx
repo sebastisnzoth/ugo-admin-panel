@@ -10,6 +10,7 @@ export function ClientStudioNavbar(){
  const[place,setPlace]=useState('Florianópolis - Canasvieiras')
  useEffect(()=>{if(!session)return;let alive=true;supabase.from('perfiles_cliente').select('barrio,ciudad').eq('usuario_id',session.user.id).maybeSingle().then(({data})=>{if(!alive)return;const row=(data||{})as ClientLocation;const next=[row.ciudad,row.barrio].filter(Boolean).join(' - ');if(next)setPlace(next)});return()=>{alive=false}},[session,supabase])
  const help=()=>document.querySelector<HTMLButtonElement>('.ugo-client-global-trigger')?.click()
+ const notifications=()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()
  const services=()=>flow.actions.openSearch()
  const firstName=profile?.nombre?.split(' ')[0]||'Usuario'
  return <header className="ugo-studio-navbar" data-ugo-source="UGO-PRODUCCION/Navbar">
@@ -23,6 +24,7 @@ export function ClientStudioNavbar(){
   <div className="ugo-studio-nav-actions">
    <button type="button" className={`ugo-studio-activity-pill ${flow.screen==='history'?'active':''}`} onClick={()=>flow.navigate('history')}><span className="material-symbols-outlined">receipt_long</span><b>Actividad</b></button>
    <button type="button" className="ugo-studio-location-pill" onClick={()=>emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)}><span className="material-symbols-outlined">location_on</span><b>{place}</b><span className="material-symbols-outlined ugo-studio-chevron">expand_more</span></button>
+   <button type="button" className="ugo-studio-notifications" onClick={notifications} aria-label="Abrir notificaciones"><span className="material-symbols-outlined">notifications</span></button>
    <button type="button" className="ugo-studio-help" onClick={help}><span className="material-symbols-outlined">help_outline</span><b>Ayuda</b></button>
    <button type="button" className={`ugo-studio-profile ${flow.screen==='profile'?'active':''}`} onClick={()=>flow.navigate('profile')} aria-label="Abrir perfil"><span>{profile?.nombre?.slice(0,1).toUpperCase()||'U'}</span><b>{firstName}</b><i>⌄</i></button>
   </div>
