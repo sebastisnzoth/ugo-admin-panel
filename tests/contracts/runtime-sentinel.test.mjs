@@ -12,9 +12,11 @@ const dashboard=fs.readFileSync(new URL('../../src/mvp/DevelopmentDashboard.tsx'
 test('Sentinel carries build revision and sanitizes runtime payloads',()=>{
  assert.match(sentinel,/VITE_APP_REVISION/)
  assert.match(sentinel,/runtimeRevision/)
- assert.match(sentinel,/sanitize/)
- assert.match(sentinel,/email/i)
- assert.match(sentinel,/phone/i)
+ assert.match(sentinel,/function redactText/)
+ assert.match(sentinel,/function safeMetadata/)
+ assert.match(sentinel,/PRIVATE_METADATA_KEYS/)
+ assert.match(sentinel,/\[dato protegido\]/)
+ assert.match(sentinel,/\[contacto protegido\]/)
 })
 
 test('anonymous public-page failures stay local until an authorized session exists',()=>{
