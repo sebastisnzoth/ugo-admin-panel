@@ -23,10 +23,11 @@ test('matching cancel button reaches the real dispatch cancellation path for one
   assert.match(dispatch, /rpc\('cancelar_servicio', \{ p_servicio_id: serviceId \}\)/)
 })
 
-test('Services screen offers a real cancellation action for cancellable client requests', async () => {
+test('Activity cancellation uses the same persisted-state recovery path as matching', async () => {
   const history = await read('src/mvp/ServiceHistoryPanel.tsx')
   assert.match(history, /CLIENT_CANCELLABLE_STATES/)
-  assert.match(history, /rpc\('cancelar_servicio',\{p_servicio_id:serviceId\}\)/)
+  assert.match(history, /rows\.find\(row=>row\.id===serviceId&&row\.cliente_id===userId\)/)
+  assert.match(history, /await getDispatchProvider\(\)\.cancel\(serviceId\)/)
+  assert.doesNotMatch(history, /\.rpc\('cancelar_servicio'/)
   assert.match(history, /'Cancelar pedido'/)
-  assert.match(history, /type="button" className=\{filter==='todos'/)
 })
