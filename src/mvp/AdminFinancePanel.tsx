@@ -37,10 +37,13 @@ export function AdminFinancePanel({embedded=false}:Props){
  async function act(row:Withdrawal,state:'procesando'|'pagado'|'fallido'){
   if(row.ambiente!=='real')return setMessage('Los retiros DEMO no pueden procesarse como dinero real.')
   const ref=(refs[row.id]||'').trim();if(state==='pagado'&&!ref)return setMessage('Ingresá la referencia real de la transferencia antes de marcar Pagado.')
+  const label=state==='pagado'?'marcar como PAGADO':state==='fallido'?'marcar como FALLIDO':'pasar a PROCESANDO'
+  const ok=window.confirm(`Retiro REAL de ${money(row.monto,row.moneda)} para ${row.proveedor?.nombre||'Proveedor UGO'}: vas a ${label}.${state==='pagado'?`\nReferencia externa: ${ref}`:''}\nEsta acción queda auditada. ¿Confirmar?`)
+  if(!ok)return
   setBusy(row.id+state);setMessage('')
   const{error}=await (supabase as any).rpc('admin_actualizar_retiro',{p_retiro_id:row.id,p_estado:state,p_transferencia_externa_id:ref||null,p_notas:state==='fallido'?'Marcado fallido desde Admin UGO':null})
   setBusy('');if(error)return setMessage(error.message)
-  setMessage(state==='pagado'?'Retiro REAL marcado como pagado con referencia externa.':'Retiro actualizado.');await load()
+  setMessage(state==='pagado'?'Retiro REAL marcado como pagado con referencia externa.':'Retiro actualizado y auditado.');await load()
  }
  const body=<div style={{background:'#fff',border:embedded?'0':'1px solid #ddd',borderRadius:22,padding:16,color:'#111'}}>
    <div style={{display:'flex',alignItems:'center',gap:8}}><div style={{flex:1}}><strong>Finanzas UGO · REAL</strong><div style={{fontSize:11,opacity:.6}}>DEMO excluido automáticamente de todos los totales comerciales</div></div>{!embedded&&<button onClick={()=>setOpen(false)} style={{border:0,background:'transparent',fontSize:22,cursor:'pointer'}}>×</button>}</div>
@@ -52,7 +55,7 @@ export function AdminFinancePanel({embedded=false}:Props){
    {pending.length===0&&<div style={{padding:16,textAlign:'center',fontSize:12,opacity:.6}}>No hay retiros reales pendientes.</div>}
    {pending.map(w=><div key={w.id} style={{border:'1px solid #e5e7eb',borderRadius:14,padding:11,marginBottom:8}}><div style={{display:'flex',justifyContent:'space-between',gap:8}}><div><b>{w.proveedor?.nombre||'Proveedor UGO'}</b><small style={{display:'block',opacity:.6}}>{new Date(w.created_at).toLocaleString('pt-BR')} · {w.estado} · REAL</small></div><strong>{money(w.monto,w.moneda)}</strong></div><input value={refs[w.id]||''} onChange={e=>setRefs(v=>({...v,[w.id]:e.target.value}))} placeholder="Referencia externa / E2E / ID transferencia" style={{width:'100%',marginTop:8,padding:9,border:'1px solid #d0d5dd',borderRadius:10}}/><div style={{display:'flex',gap:6,marginTop:8}}><button disabled={!!busy||w.estado==='procesando'} onClick={()=>act(w,'procesando')} style={{flex:1,padding:8,borderRadius:10,border:'1px solid #ddd',background:'#fff'}}>Procesar</button><button disabled={!!busy} onClick={()=>act(w,'pagado')} style={{flex:1,padding:8,borderRadius:10,border:0,background:'#111820',color:'#fff',fontWeight:800}}>Pagado</button><button disabled={!!busy} onClick={()=>act(w,'fallido')} style={{padding:8,borderRadius:10,border:'1px solid #f0b4b4',background:'#fff'}}>Fallido</button></div></div>)}
    {message&&<div style={{fontSize:12,padding:'8px 0'}}>{message}</div>}
-   <p style={{fontSize:10,opacity:.6,lineHeight:1.4,marginTop:10}}>GMV, comisión, saldo, retiros y reembolsos usan únicamente registros con ambiente REAL. “Liberado” es un estado interno; “Pagado” requiere referencia externa.</p>
+   <p style={{fontSize:10,opacity:.6,lineHeight:1.4,marginTop:10}}>GMV, comisión, saldo, retiros y reembolsos usan únicamente registros con ambiente REAL. “Liberado” es un estado interno; “Pagado” requiere referencia externa y confirmación administrativa.</p>
   </div>
  if(embedded)return body
  return <><button type="button" onClick={()=>setOpen(v=>!v)} style={{position:'fixed',left:18,bottom:18,zIndex:14020,border:0,borderRadius:999,padding:'11px 15px',fontWeight:900,background:'#111820',color:'#fff',boxShadow:'0 8px 28px rgba(0,0,0,.24)',cursor:'pointer'}}>💰 Finanzas</button>{open&&<aside style={{position:'fixed',left:18,bottom:66,zIndex:14019,width:'min(620px,calc(100vw - 36px))',maxHeight:'min(760px,calc(100vh - 90px))',overflow:'auto',background:'#fff',borderRadius:22,boxShadow:'0 18px 60px rgba(0,0,0,.3)'}}>{body}</aside>}</>
