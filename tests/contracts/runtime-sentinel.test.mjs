@@ -8,10 +8,10 @@ const clientRoot=fs.readFileSync('src/mvp/client/ClientRoot.tsx','utf8')
 const detail=fs.readFileSync('src/mvp/client/ClientServiceDetail.tsx','utf8')
 const chat=fs.readFileSync('src/mvp/ServiceChat.tsx','utf8')
 const dashboard=fs.readFileSync('src/mvp/DevelopmentDashboard.tsx','utf8')
+const vite=fs.readFileSync('vite.config.ts','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915093000_runtime_sentinel.sql','utf8')
 const guardrails=fs.readFileSync('supabase/migrations/20260915093100_runtime_sentinel_guardrails.sql','utf8')
 const revisionIsolation=fs.readFileSync('supabase/migrations/20260915200000_runtime_sentinel_revision_isolation.sql','utf8')
-const netlifyWorkflow=fs.readFileSync('.github/workflows/netlify-deploy.yml','utf8')
 
 test('Sentinel persists deduplicated authenticated incidents and publishes them realtime',()=>{
  assert.match(migration,/create table if not exists public\.development_incidents/)
@@ -35,12 +35,29 @@ test('runtime incidents are revision-tagged and cannot mutate release checklist 
  assert.doesNotMatch(revisionIsolation,/update public\.development_checklist/)
  assert.match(sentinel,/VITE_APP_REVISION/)
  assert.match(sentinel,/runtimeRevision:RUNTIME_REVISION/)
- assert.match(netlifyWorkflow,/VITE_APP_REVISION: \$\{\{ github\.sha \}\}/)
+ assert.match(vite,/VERCEL_GIT_COMMIT_SHA/)
+ assert.match(vite,/GITHUB_SHA/)
 })
 
-test('Sentinel metadata strips common contact and credential fields',()=>{
+test('Sentinel strips contact, credential and URL data before persistence',()=>{
  assert.match(sentinel,/PRIVATE_METADATA_KEYS/)
  for(const key of ['token','authorization','email','phone','messagecontent','password','secret','apikey','api_key'])assert.match(sentinel,new RegExp(`['\"]${key}['\"]`))
+ assert.match(sentinel,/function redactText/)
+ assert.match(sentinel,/Bearer \[protegido\]/)
+ assert.match(sentinel,/\[dato protegido\]/)
+ assert.match(sentinel,/\[enlace protegido\]/)
+ assert.match(sentinel,/\[contacto protegido\]/)
+})
+
+test('anonymous public-page failures are retained locally without anonymous database writes',()=>{
+ assert.match(sentinel,/ANON_QUEUE_KEY/)
+ assert.match(sentinel,/MAX_ANON_QUEUE=20/)
+ assert.match(sentinel,/queueAnonymousIncident\(payload\)/)
+ assert.match(sentinel,/p_severity:'P2'/)
+ assert.match(sentinel,/p_service_id:null/)
+ assert.match(sentinel,/p_checklist_code:null/)
+ assert.match(sentinel,/flushAnonymousQueueWithClient/)
+ assert.match(sentinel,/window\.setInterval\(\(\)=>void flushAnonymousQueue\(\),30000\)/)
 })
 
 test('global runtime errors and React render failures are captured',()=>{
@@ -71,8 +88,9 @@ test('chat reports realtime failures and has an online resync fallback',()=>{
  assert.match(chat,/checklistCode:'CHAT-REALTIME'/)
 })
 
-test('Development dashboard exposes Sentinel incidents and P0 count',()=>{
- assert.match(dashboard,/development_incidents/)
+test('Development dashboard exposes current-build Sentinel incidents and P0 count',()=>{
+ assert.match(dashboard,/development_incidents_public/)
+ assert.match(dashboard,/isCurrentRevision/)
  assert.match(dashboard,/Sentinela/)
  assert.match(dashboard,/sentinelP0/)
 })
