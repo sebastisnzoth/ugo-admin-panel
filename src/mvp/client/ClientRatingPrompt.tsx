@@ -54,19 +54,31 @@ export function ClientRatingPrompt(){
   return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
  },[supabase,userId])
 
+ const markSaved=useCallback((text='Gracias. Tu calificación quedó guardada.')=>{
+  setMessage(text);setScore(0);setComment('');setDismissed(null)
+  window.setTimeout(()=>{setMessage('');void loadRef.current()},900)
+ },[])
+
  async function submit(e:React.FormEvent){
   e.preventDefault()
   if(!userId||!target||score<1||score>5||busy)return
   setBusy(true);setMessage('')
-  const{error}=await supabase.from('resenas').insert({servicio_id:target.service.id,cliente_id:userId,proveedor_id:target.service.proveedor_id,puntuacion:score,comentario:comment.trim()||null})
+  const serviceId=target.service.id
+  const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:userId,proveedor_id:target.service.proveedor_id,puntuacion:score,comentario:comment.trim()||null})
+  if(!error){setBusy(false);markSaved();return}
+
+  // INSERT may have committed even when the client lost the response. The
+  // persisted row is authoritative: only report submit failure after an exact
+  // service/client recovery query confirms that nothing was saved.
+  const{data:persisted,error:recoveryError}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).maybeSingle()
   setBusy(false)
-  if(error){
-   if(error.code==='23505'){setMessage('Este servicio ya fue calificado.');void load();return}
-   const text=error.message;setMessage(text);report('rating_submit_error',text,error,target.service.id);return
+  if(persisted){markSaved(error.code==='23505'?'Este servicio ya fue calificado.':'Gracias. Tu calificación quedó guardada.');return}
+  if(recoveryError){
+   const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.'
+   setMessage(text);report('rating_submit_recovery_unverified',text,recoveryError,serviceId);return
   }
-  setMessage('Gracias. Tu calificación quedó guardada.')
-  setScore(0);setComment('');setDismissed(null)
-  window.setTimeout(()=>{setMessage('');void load()},900)
+  const text=error.message||'No se pudo guardar la calificación.'
+  setMessage(text);report('rating_submit_error',text,error,serviceId)
  }
 
  if(!target||target.service.id===dismissed)return null
