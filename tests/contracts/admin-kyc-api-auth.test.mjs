@@ -28,7 +28,9 @@ test('KYC approval validates its payload before privileged mutation',()=>{
 test('provider verification uses the authenticated Admin API instead of a missing RPC',()=>{
  assert.match(source,/case 'provider-verification': return changeProviderVerification\(req, res\)/)
  assert.match(source,/PROVIDER_VERIFICATION_STATES = new Set\(\['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'\]\)/)
- assert.match(source,/const \{ sb \} = await requireAdmin\(req\)/)
+ assert.match(source,/async function changeProviderVerification[\s\S]*const \{ sb, user \} = await requireAdmin\(req\)/)
+ assert.match(source,/evento: 'admin\.provider_verification\.update'/)
+ assert.match(source,/actor_id: user\.id/)
  assert.doesNotMatch(providerPanel,/admin_cambiar_verificacion_proveedor/)
  assert.match(providerPanel,/supabase\.auth\.getSession\(\)/)
  assert.match(providerPanel,/fetch\('\/api\/operations\?op=provider-verification'/)
