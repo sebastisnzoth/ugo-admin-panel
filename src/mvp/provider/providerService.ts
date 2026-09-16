@@ -128,30 +128,13 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
 }
 
 function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
-async function persistedProviderLocation(supabase:SupabaseClient,userId:string,publishedAt:string):Promise<boolean|null>{
- try{const{data,error}=await supabase.from('perfiles_proveedor').select('ultima_ubicacion_at').eq('usuario_id',userId).maybeSingle();if(error)return null;if(!data)return false;return String(data.ultima_ubicacion_at||'')===publishedAt}catch{return null}
-}
 async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
- let userId:string,point:string
  try{
-  const{data:auth,error:authError}=await supabase.auth.getUser();const authenticatedId=auth.user?.id;if(authError||!authenticatedId)throw authError||new Error('Sesión no disponible.')
-  userId=authenticatedId
   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
   if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new Error('No pudimos validar tu ubicación actual.')
-  point=`POINT(${longitude} ${latitude})`
+  const{error}=await supabase.rpc('actualizar_ubicacion_y_distancia',{p_lat:latitude,p_lng:longitude,p_servicio_id:serviceId})
+  if(error)throw error
  }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
- const publishedAt=new Date().toISOString()
- let mutationError:unknown
- try{
-  const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:publishedAt}).eq('usuario_id',userId)
-  if(!error)return
-  mutationError=error
- }catch(error){mutationError=error}
- const persisted=await persistedProviderLocation(supabase,userId,publishedAt)
- if(persisted===true)return
- if(persisted===false){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(mutationError,'No se pudo publicar la ubicación del proveedor.'),error:mutationError,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'})}
- else{void reportSentinelIncident({eventType:'provider_location_recovery_unverified',message:'No pudimos confirmar si la ubicación quedó persistida. Volveremos a leer el estado antes de escalar el incidente.',error:mutationError,role:'provider',severity:'P2',serviceId,action:'provider.service.location.recovery'})}
- throw mutationError
 }
 
 async function persistedProviderTransition(supabase:SupabaseClient,serviceId:string,target:ProviderTransitionState):Promise<boolean|null>{
