@@ -2,6 +2,12 @@ name: UGO Isolated RPC RLS
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'scripts/chat-realtime-probe.mjs'
+      - '.github/workflows/isolated-rpc-rls.yml'
 
 permissions:
   contents: read
@@ -57,3 +63,6 @@ jobs:
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration
+
+      - name: Realtime chat Cliente ↔ Proveedor without refresh
+        run: node scripts/chat-realtime-probe.mjs
