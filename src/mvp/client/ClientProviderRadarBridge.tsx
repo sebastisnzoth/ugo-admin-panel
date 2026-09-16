@@ -1,4 +1,5 @@
 import React,{useEffect,useMemo,useState}from'react'
+import{reportSentinelIncident}from'../../lib/sentinel'
 import{UGO_CLIENT_GUIDED_REQUEST_OPEN}from'../ClientQuickOrder'
 import{useRoleSession,type Category}from'../shared'
 import{useClientFlow}from'./clientFlow'
@@ -42,7 +43,22 @@ export function ClientProviderRadarBridge(){
  const[categories,setCategories]=useState<Category[]>([])
  const[selectedCategoryId,setSelectedCategoryId]=useState('')
  useEffect(()=>{if(!session)return;let alive=true;supabase.from('categorias').select('id,slug,nombre,emoji').eq('activa',true).order('nombre').then(({data})=>{if(alive)setCategories((data||[])as Category[])});return()=>{alive=false}},[session,supabase])
- useEffect(()=>{if(!session)return;let alive=true;const refresh=async()=>{try{await refreshProviderRadar(supabase,true)}catch(error){if(alive)console.warn('No pudimos sincronizar el radar compartido.',error)}};void refresh();const ch=supabase.channel(`client-provider-radar-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void refresh()}).subscribe();return()=>{alive=false;void supabase.removeChannel(ch)}},[session,supabase])
+ useEffect(()=>{
+  if(!session)return
+  let alive=true
+  const report=(eventType:string,message:string,error?:unknown)=>{if(!alive)return;void reportSentinelIncident({eventType,message,error,role:'client',severity:'P1',action:'client.provider_radar.sync',checklistCode:'MATCH-ONLINE'})}
+  const refresh=async()=>{try{await refreshProviderRadar(supabase,true)}catch(error){if(alive){console.warn('No pudimos sincronizar el radar compartido.',error);report('client_provider_radar_sync_error',error instanceof Error?error.message:'No pudimos sincronizar profesionales online.',error)}}}
+  void refresh()
+  const ch=supabase.channel(`client-provider-radar-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void refresh()}).subscribe(status=>{
+   if(status==='SUBSCRIBED')void refresh()
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){report('client_provider_radar_realtime_error',`Canal radar: ${status}`);void refresh()}
+  })
+  const onOnline=()=>void refresh()
+  const onVisibility=()=>{if(document.visibilityState==='visible')void refresh()}
+  const timer=window.setInterval(()=>{if(document.visibilityState==='visible'&&navigator.onLine)void refresh()},15000)
+  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
+  return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+ },[session,supabase])
  const intentCategory=useMemo(()=>matchCategory(categories,flow.hugoIntent?.categoryHint),[categories,flow.hugoIntent?.categoryHint])
  useEffect(()=>{if(!flow.hugoIntent||!intentCategory||flow.screen!=='home')return;if(!intentNamesCategory(flow.hugoIntent.text,intentCategory))return;setSelectedCategoryId(intentCategory.id);flow.navigate('search')},[flow,flow.hugoIntent,intentCategory])
  if(!session||!['search','provider'].includes(flow.screen))return null
