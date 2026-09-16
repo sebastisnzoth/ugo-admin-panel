@@ -9,7 +9,7 @@ type ChecklistItem={id:string;code:string;area:string;title:string;description:s
 type ChecklistEvent={id:number;checklist_id:string;code:string;old_status:ChecklistStatus|null;new_status:ChecklistStatus;changed_at:string}
 type SentinelIncident={id:string;severity:Priority;source_role:string;event_type:string;status:'open'|'acknowledged'|'resolved';route:string|null;action:string|null;checklist_code:string|null;message:string;occurrences:number;first_seen_at:string;last_seen_at:string;runtime_revision:string|null}
 
-const STATUS_LABEL:Record<ChecklistStatus,string>={pending:'Pendiente',in_progress:'En progreso',implemented:'Implementado · falta validar',validated:'Validado técnicamente · falta runtime',blocked:'Bloqueado',failed:'Falló la prueba',approved:'Aceptado con evidencia'}
+const STATUS_LABEL:Record<ChecklistStatus,string>={pending:'Pendiente',in_progress:'En progreso',implemented:'Implementado · falta validar',validated:'Validado técnicamente',blocked:'Bloqueado',failed:'Falló la prueba',approved:'Aceptado con evidencia'}
 const STATUS_ORDER:ChecklistStatus[]=['failed','in_progress','implemented','validated','blocked','pending','approved']
 const FILTERS:[string,string][]=[['all','Todo'],['P0','P0'],['failed','Falló'],['blocked','Bloqueado'],['implemented','Implementado'],['validated','Validado'],['approved','Aceptado']]
 const BUILT_STATUSES=new Set<ChecklistStatus>(['implemented','validated','approved'])
@@ -48,7 +48,7 @@ export function DevelopmentDashboard(){
   const totalWeight=weighted(items)
   const builtWeight=weighted(items.filter(item=>BUILT_STATUSES.has(item.status)))
   const technicalWeight=weighted(items.filter(item=>TECHNICAL_STATUSES.has(item.status)))
-  const approvedWeight=weighted(items.filter(item=>item.status==='approved'))
+  const approvedWeight=items.filter(item=>item.status==='approved').reduce((sum,item)=>sum+Number(item.weight||1),0)
   const approved=items.filter(item=>item.status==='approved').length
   const validated=items.filter(item=>item.status==='validated').length
   const p0Open=items.filter(item=>item.priority==='P0'&&item.status!=='approved').length
@@ -65,6 +65,7 @@ export function DevelopmentDashboard(){
  },[incidents,items])
 
  const releaseReady=!error&&items.length>0&&stats.p0Open===0&&stats.p1Open===0&&stats.sentinelP0===0&&stats.sentinelP1===0
+ const releaseLabel=releaseReady?'READY':'NOT READY'
  const areas=useMemo(()=>Array.from(new Set(items.map(item=>item.area))).map(area=>{
   const rows=items.filter(item=>item.area===area),totalWeight=weighted(rows),builtWeight=weighted(rows.filter(item=>BUILT_STATUSES.has(item.status))),technicalWeight=weighted(rows.filter(item=>TECHNICAL_STATUSES.has(item.status))),approvedWeight=weighted(rows.filter(item=>item.status==='approved'))
   return{area,total:rows.length,approved:rows.filter(item=>item.status==='approved').length,built:pct(builtWeight,totalWeight),technical:pct(technicalWeight,totalWeight),readiness:pct(approvedWeight,totalWeight)}
@@ -81,7 +82,7 @@ export function DevelopmentDashboard(){
   </header>
 
   <section className="devdash-hero">
-   <div className="devdash-hero-copy"><p className="devdash-kicker">PILOTO CIUDAD · {releaseReady?'GO':'NO-GO'} · FUENTE ÚNICA: CHECKLIST TEST</p><h1>{releaseReady?'UGO listo para piloto':'Piloto ciudad: todavía NO-GO'}</h1><p>{releaseReady?'Todos los P0/P1 exigidos y el runtime del build actual están aceptados con evidencia.':'El readiness final no es lo mismo que el trabajo construido. Este panel separa código integrado, validación técnica y aceptación runtime para que un porcentaje bajo no esconda el avance real ni infle el estado de producción.'}</p><div className="devdash-hero-badges"><span>{stats.built}% construido</span><span>{stats.technical}% validado técnicamente</span><span>{stats.verified}% aceptado para piloto</span><span>{stats.p0Open} P0 pendientes de aceptación</span><span>{stats.p0Blocked} P0 bloqueados</span><span>build {RUNTIME_REVISION.slice(0,8)}</span></div></div>
+   <div className="devdash-hero-copy"><p className="devdash-kicker">PILOTO CIUDAD · {releaseLabel} · FUENTE ÚNICA: CHECKLIST TEST</p><h1>{releaseReady?'UGO listo para piloto':'Piloto ciudad: todavía NO-GO'}</h1><p>{releaseReady?'Todos los P0/P1 exigidos y el runtime del build actual están aceptados con evidencia.':'El readiness final no es lo mismo que el trabajo construido. Este panel separa código integrado, validación técnica y aceptación runtime para que un porcentaje bajo no esconda el avance real ni infle el estado de producción.'}</p><div className="devdash-hero-badges"><span>{stats.built}% construido</span><span>{stats.technical}% validado técnicamente</span><span>{stats.verified}% aceptado para piloto</span><span>{stats.p0Open} P0 pendientes de aceptación</span><span>{stats.p0Blocked} P0 bloqueados</span><span>build {RUNTIME_REVISION.slice(0,8)}</span></div></div>
    <div className="devdash-progress-card"><div className="devdash-ring" style={{'--progress':`${stats.verified*3.6}deg`} as React.CSSProperties}><div><b>{stats.verified}%</b><span>readiness piloto</span></div></div><p><strong>{stats.approvedWeight}</strong> de {stats.totalWeight} puntos aceptados con evidencia</p></div>
   </section>
 
@@ -89,7 +90,7 @@ export function DevelopmentDashboard(){
 
   <section className="devdash-metrics" aria-label="Madurez y cierre del piloto">
    <article className="tone-green"><span>Software construido</span><strong>{stats.built}%</strong><small>{stats.builtWeight}/{stats.totalWeight} pts · implementado o superior</small></article>
-   <article className="tone-blue"><span>Validación técnica</span><strong>{stats.technical}%</strong><small>{stats.technicalWeight}/{stats.totalWeight} pts · validado o aceptado</small></article>
+   <article className="tone-blue"><span>Validación técnica</span><strong>{stats.technical}%</strong><small>{stats.technicalWeight}/{stats.totalWeight} pts · {stats.validated} ítems validados + aceptados</small></article>
    <article className="tone-orange"><span>Readiness piloto</span><strong>{stats.verified}%</strong><small>{stats.approvedWeight}/{stats.totalWeight} pts · sólo aceptación con evidencia</small></article>
    <article className="tone-red"><span>P0 por cerrar</span><strong>{stats.p0Open}</strong><small>{stats.p0Blocked} bloqueados · el resto espera evidencia/runtime</small></article>
    <article className="tone-orange"><span>P1 por cerrar</span><strong>{stats.p1Open}</strong><small>no se mezclan con P0 ni con progreso técnico</small></article>
