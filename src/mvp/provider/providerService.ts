@@ -45,8 +45,12 @@ async function persistedProviderAvailability(supabase:SupabaseClient,userId:stri
  try{const{data,error}=await supabase.from('perfiles_proveedor').select('disponible,online').eq('usuario_id',userId).maybeSingle();if(error)return null;if(!data)return false;return data.disponible===online&&data.online===online}catch{return null}
 }
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){
- let mutationError:unknown=null
- try{const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId);mutationError=error;if(!error)return}catch(error){mutationError=error}
+ let mutationError:unknown
+ try{
+  const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId)
+  if(!error)return
+  mutationError=error
+ }catch(error){mutationError=error}
  const persisted=await persistedProviderAvailability(supabase,userId,online)
  if(persisted===true)return
  if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
@@ -137,8 +141,12 @@ async function publishProviderLocation(supabase:SupabaseClient,serviceId:string)
   point=`POINT(${longitude} ${latitude})`
  }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
  const publishedAt=new Date().toISOString()
- let mutationError:unknown=null
- try{const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:publishedAt}).eq('usuario_id',userId);mutationError=error;if(!error)return}catch(error){mutationError=error}
+ let mutationError:unknown
+ try{
+  const{error}=await supabase.from('perfiles_proveedor').update({ubicacion:point,ultima_ubicacion_at:publishedAt}).eq('usuario_id',userId)
+  if(!error)return
+  mutationError=error
+ }catch(error){mutationError=error}
  const persisted=await persistedProviderLocation(supabase,userId,publishedAt)
  if(persisted===true)return
  if(persisted===false){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(mutationError,'No se pudo publicar la ubicación del proveedor.'),error:mutationError,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'})}
