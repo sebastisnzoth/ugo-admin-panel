@@ -24,7 +24,7 @@ env:
   # the published TEST-compatible backend; no remote Vercel UI is loaded.
   # Touching this workflow is also the explicit QA mechanism for producing
   # an artifact whose embedded VITE_APP_REVISION matches the final main SHA.
-  # QA rebuild marker: runtime-hardening candidate · 2026-09-16.
+  # QA rebuild marker: security-hardening candidate · 2026-09-16.
   UGO_ANDROID_API_BASE: https://ugo-admin-panel.vercel.app
 
 jobs:
