@@ -1,4 +1,5 @@
 import { getRoleSupabase } from '../roleSupabase'
+import { reportSentinelIncident } from '../sentinel'
 import type { Coordinates, DispatchProvider, DispatchRequest, DispatchResult } from './types'
 
 // Dispatch must use the same authenticated Supabase client as UGO Cliente.
@@ -20,6 +21,10 @@ function timeoutAfter<T>(ms: number, label: string): Promise<T> {
 
 async function bounded<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return Promise.race([promise, timeoutAfter<T>(ms, label)])
+}
+
+function incidentMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback
 }
 
 function storedPickup(): Coordinates | null {
@@ -70,9 +75,19 @@ async function persistPickup(serviceId: string, pickup: Coordinates | null) {
       STATUS_TIMEOUT_MS,
       'La ubicación tardó demasiado en guardarse.',
     )
-    if (error) console.warn('No se pudo persistir ubicación del servicio', error)
+    if (error) throw error
   } catch (error) {
     console.warn('No se pudo persistir ubicación del servicio', error)
+    void reportSentinelIncident({
+      eventType: 'client_request_location_error',
+      message: incidentMessage(error, 'No se pudo persistir la ubicación del pedido.'),
+      error,
+      role: 'client',
+      severity: 'P2',
+      serviceId,
+      action: 'client.request.location',
+      checklistCode: 'MAP-GPS',
+    })
   }
 }
 
@@ -87,6 +102,16 @@ export class SupabaseDispatchProvider implements DispatchProvider {
     } catch {
       // Preserve the original matching error; status recovery is best-effort only.
     }
+    void reportSentinelIncident({
+      eventType: 'client_matching_error',
+      message: incidentMessage(originalError, 'No se pudo iniciar el matching.'),
+      error: originalError,
+      role: 'client',
+      severity: 'P0',
+      serviceId,
+      action: 'client.request.matching',
+      checklistCode: 'MATCH-ONLINE',
+    })
     throw originalError
   }
 
@@ -156,35 +181,58 @@ export class SupabaseDispatchProvider implements DispatchProvider {
       } catch {
         // Keep the original cancellation error below.
       }
+      void reportSentinelIncident({
+        eventType: 'client_cancel_error',
+        message: incidentMessage(error, 'No se pudo cancelar el pedido.'),
+        error,
+        role: 'client',
+        severity: 'P0',
+        serviceId,
+        action: 'client.request.cancel',
+        checklistCode: 'CLIENT-CANCEL',
+      })
       throw error
     }
   }
 
   async getStatus(serviceId: string): Promise<DispatchResult> {
-    const { data, error } = await bounded<any>(
-      (supabase as any)
-        .from('servicios')
-        .select('id,estado,proveedor_id')
-        .eq('id', serviceId)
-        .single(),
-      STATUS_TIMEOUT_MS,
-      'La verificación del pedido tardó demasiado.',
-    )
-    if (error) throw error
+    try {
+      const { data, error } = await bounded<any>(
+        (supabase as any)
+          .from('servicios')
+          .select('id,estado,proveedor_id')
+          .eq('id', serviceId)
+          .single(),
+        STATUS_TIMEOUT_MS,
+        'La verificación del pedido tardó demasiado.',
+      )
+      if (error) throw error
 
-    const stateMap: Record<string, DispatchResult['state']> = {
-      buscando: 'pending',
-      ofrecido: 'offering',
-      confirmado: 'matched',
-      asignado: 'matched',
-      cancelado: 'cancelled',
-    }
+      const stateMap: Record<string, DispatchResult['state']> = {
+        buscando: 'pending',
+        ofrecido: 'offering',
+        confirmado: 'matched',
+        asignado: 'matched',
+        cancelado: 'cancelled',
+      }
 
-    return {
-      serviceId,
-      state: stateMap[String(data.estado)] ?? 'pending',
-      providerId: data.proveedor_id ?? null,
-      raw: data,
+      return {
+        serviceId,
+        state: stateMap[String(data.estado)] ?? 'pending',
+        providerId: data.proveedor_id ?? null,
+        raw: data,
+      }
+    } catch (error) {
+      void reportSentinelIncident({
+        eventType: 'client_order_status_error',
+        message: incidentMessage(error, 'No se pudo verificar el estado real del pedido.'),
+        error,
+        role: 'client',
+        severity: 'P1',
+        serviceId,
+        action: 'client.request.status',
+      })
+      throw error
     }
   }
 }
