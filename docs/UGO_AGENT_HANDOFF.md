@@ -1,7 +1,7 @@
 # UGO — Agent Handoff
 
 **Actualizado:** 16 de septiembre de 2026  
-**Estado:** UGO TEST en desarrollo; CI funcional verde, runtime crítico aún pendiente  
+**Estado:** UGO TEST en desarrollo; CI verde, runtime crítico aún pendiente  
 **Rama única:** `main`
 
 ## Entorno
@@ -9,16 +9,16 @@
 ```text
 Repo: sebastisnzoth/ugo-admin-panel
 Supabase TEST: tmossnqfwfwjrtzwcbmm
-Supabase PROD: trfsjuseqjxlhrxuvdsm · FUERA DE ALCANCE
+Supabase PROD: FUERA DE ALCANCE
 Cliente: /?app=client
 Proveedor: /?app=provider
 Admin: /?app=admin
 Desarrollo: /?app=development · público/read-only
 ```
 
-La publicación web no se presume equivalente a `main`; verificar revisión exacta antes de usarla como evidencia.
+No asumir que una publicación web vieja representa `main`.
 
-## Regla de madurez
+## Madurez
 
 ```text
 IMPLEMENTED
@@ -27,142 +27,152 @@ IMPLEMENTED
 → PUBLISHED
 ```
 
-## Checkpoint funcional actual
+## Checkpoint CI
+
+Último SHA de código/test validado antes de esta sincronización documental:
 
 ```text
-SHA: a633575034dbdaa10d8499b2cbf2a542c646d7b1
-commit: test(provider): keep arrival location contract service-scoped
-UGO Core CI run: 35042238358
-conclusion: success
+51561b8aa632d74b755e8072a00d59e415097fae
+test(client): align cancellation recovery contract
+UGO Core CI run 35046419173 → SUCCESS
 ```
 
-La regresión anterior era un test contractual desactualizado: la llegada del Proveedor ahora publica ubicación con `serviceId` para mantener la observabilidad Centinela correctamente ligada al pedido exacto. El contrato fue actualizado y el Core CI volvió a verde.
+La corrección alineó el contrato de cancelación con la reconciliación persistida actual. No se revirtió la lógica de recovery.
 
-Estado del bloque funcional: **CI VALIDATED**. No confundir con `RUNTIME VALIDATED` ni `PUBLISHED`.
+## Sentinel
 
-## Desarrollo público
+Estado IMPLEMENTED + CI VALIDATED:
 
-IMPLEMENTED + CI VALIDATED en el checkpoint funcional:
+- `runtimeRevision` por build;
+- build actual separado de incidentes históricos;
+- sanitización de emails/teléfonos/links/metadata sensible;
+- cola anónima local segura + flush autenticado;
+- matching, cancelación, radar, status y ubicación Cliente observables;
+- operaciones críticas Proveedor observables;
+- clasificación server-side de acciones conocidas;
+- incidentes runtime no mutan readiness.
 
-- `?app=development` no usa `AdminGate`;
-- dashboard read-only;
-- vistas públicas sanitizadas de checklist/eventos/incidentes;
-- base readiness privada continúa protegida;
-- señal realtime pública no sensible;
-- feed público sin serviceId, stack, metadata privada ni reporter IDs.
+Regla de recovery:
 
-Siguiente gate: smoke real de esa superficie contra UGO TEST.
+```text
+RPC error
+→ comprobar persistencia
+→ persistido = éxito recuperado, sin P0
+→ fallo confirmado = P0
+→ no verificable = P1
+```
 
-## Centinela
-
-IMPLEMENTED + CI VALIDATED en contratos:
-
-- `runtimeRevision` en cada build;
-- dashboard distingue build actual de histórico;
-- redacción de emails/teléfonos/links y metadata sensible;
-- cola local limitada para fallos anónimos seguros + flush posterior;
-- matching/cancel/status/ubicación Cliente instrumentados;
-- operaciones críticas Proveedor instrumentadas;
-- clasificación server-side desde acciones conocidas;
-- incidentes runtime aislados del readiness.
-
-Invariante: **Centinela nunca muta ni aprueba `development_checklist`.**
-
-Siguiente gate: provocar/capturar incidentes seguros en TEST y confirmar revisión, sanitización, persistencia y feed público.
+`provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente deben conservar esta semántica.
 
 ## Cliente
 
-Mantener como canónico:
+Canónico actual:
 
-- `ClientRoot` abre detalle por `serviceId` seleccionado;
-- Home/Actividad deben abrir el pedido exacto;
-- `ClientServiceDetail` consulta ownership por cliente y serviceId;
-- `ServiceChat` trabaja por `serviceId`, realtime + refetch/reconnect;
-- quick replies estilo Uber;
-- filtro de contacto off-platform;
-- múltiples pedidos simultáneos permitidos.
+- pedidos simultáneos A+B+C permitidos;
+- cada pedido mantiene `serviceId` propio;
+- Home/Actividad/detalle abren el pedido exacto;
+- cancelación usa recovery persistido;
+- radar recupera estado ante gaps realtime;
+- chat es service-scoped, realtime + refetch/reconnect;
+- quick replies;
+- filtro de contacto off-platform.
 
-P0 runtime pendiente: dos sesiones reales para chat y matching/cancelación.
+Contratos protegen el aislamiento A+B+C, pero falta E2E autenticado y dos sesiones reales.
 
 ## Proveedor
 
 Happy path visible:
 
 ```text
-Ver problema
+Oferta
 → Aceptar
 → Estoy yendo
-→ Llegué/fallback
+→ Llegué
 → Empezar trabajo
 → Listo
+→ Cobro/cierre
 ```
 
-Agenda puede contener varios trabajos futuros. Cada acción debe operar el `serviceId` exacto.
+Agenda debe contener todos los trabajos futuros/asignados. La misión activa puede seleccionar un `serviceId` accionable, pero nunca sustituir la Agenda completa.
 
-La llegada conserva publicación de geolocalización fresca antes de solicitar `llegado`, ahora service-scoped también para Centinela.
+Las mutaciones críticas deben verificar persistencia antes de registrar P0.
 
-P0 runtime pendiente: lifecycle completo + Agenda + chat en dispositivo.
+## Chat
 
-## Multi-pedido
+P0 pendiente de evidencia runtime:
 
-Principio:
+```text
+Cliente → Proveedor visible realtime
+Proveedor → Cliente visible realtime
+reload/reconnect conserva historial
+quick replies no mezclan serviceId
+pedido A no contamina pedido B
+contacto externo bloqueado
+```
 
-> **Un pedido. Un profesional. Sin vueltas.**
+INSERT en DB por sí solo no valida chat.
 
-No significa “un pedido activo por cliente”. Deben coexistir A+B+C independientes. Prohibido usar `latest active`, `.limit(1)` o un `activeServiceId` global para mutaciones ambiguas.
+## Development
+
+Mantener:
+
+- `?app=development` sin login;
+- read-only público;
+- vistas sanitizadas;
+- tablas privadas protegidas;
+- revisión/build visible;
+- incidentes actuales separados de históricos;
+- Admin protegido.
+
+Falta smoke runtime TEST para promoción.
 
 ## Android TEST
 
-El flujo QA actual empaqueta la UI local (`dist`) dentro del APK TEST y usa backend API configurado para `/api`; no debe cargar UI remota con `server.url`.
-
-Cada artifact debe identificar SHA. Compilar ≠ probar en teléfono.
-
-La prueba física prioritaria es Cliente + Proveedor en dos Android con Realtime, GPS, cámara, Storage, chat, lifecycle, background/foreground y A+B+C.
-
-## Publicación
-
-No realizar deploy sólo porque `main` avanzó. La publicación está desacoplada y se hace cuando el bloque funcional necesita una revisión web/externa.
-
-Para declarar PUBLISHED registrar:
+Último artifact inspeccionado:
 
 ```text
-revisión
-canal/entorno
-smoke
-dependencias/backend
-rollback/mitigación
+run: 35044762155
+commit: 8c0123bd9d221ec6d09a4cd2f4a83f6a2ed9d800
+artifact: ugo-android-test-apk
+artifact id: 10425674680
+APK SHA-256: 329f74e50217f13d92322dba103513c86170a0bca5bfc30fc93fe389674e3df4
+bundleRuntime: local-dist
+environment: TEST
 ```
 
-La ruta de hosting retirada no forma parte del camino activo ni debe bloquear readiness.
+Es el último APK del cambio runtime Cliente, pero no corresponde al HEAD exacto `51561b8…`; por trazabilidad estricta no declararlo READY final ni RUNTIME VALIDATED.
+
+No alterar runtime artificialmente sólo para disparar workflow.
+
+## Gates bloqueados
+
+```text
+TWO-DEVICES = BLOCKED
+FULL-E2E = BLOCKED
+GO-LIVE = BLOCKED
+```
+
+No promover sin evidencia real.
+
+## Credenciales TEST
+
+Los E2E autenticados requieren credenciales TEST disponibles en el runner/entorno. Si faltan, el harness puede quedar omitido; registrar ese hecho y no convertir el resultado en runtime validation.
 
 ## Finanzas
 
-La política definitiva de saldo/retiro sigue siendo una decisión de producto pendiente. No inventar RPCs de saldo/retiro ni convertir dinero de servicios incompletos/cancelados en saldo disponible.
-
-## Seguridad/producción pendiente
-
-```text
-MFA Admin
-protección de credenciales
-api privilegiadas
-Bearer/Auth/ownership/rol
-rate limit
-secrets/auditoría
-backups/observabilidad
-rollback
-protección de main
-```
+Política definitiva de saldo/retiro sigue pendiente de decisión de producto. No inventar saldo disponible ni RPCs financieros sin contrato aprobado.
 
 ## NEXT
 
 ```text
-1 smoke Desarrollo + Centinela en UGO TEST
-2 E2E Cliente↔Proveedor exact serviceId + chat
-3 A+B+C + cancelación selectiva
-4 Proveedor Agenda + lifecycle
-5 prueba física dos Android
-6 pagos/finanzas/security pendientes
-7 publicar sólo cuando el bloque funcional lo requiera
+1 obtener artifact Android para SHA objetivo sin deploy web
+2 smoke Development + Centinela en UGO TEST
+3 E2E Cliente↔Proveedor exact serviceId + chat
+4 A+B+C + cancelación selectiva
+5 Proveedor Agenda + lifecycle
+6 prueba dos sesiones/dispositivos
+7 pagos/finanzas/security
+8 publicar sólo cuando corresponda
 ```
 
-**No tocar Supabase PROD. No crear ramas. No asumir que una publicación vieja representa `main`.**
+**No tocar Supabase PROD. No crear ramas. No desplegar para resolver trazabilidad de QA.**
