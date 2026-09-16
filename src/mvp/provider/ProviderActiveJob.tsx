@@ -1,4 +1,5 @@
-import React,{useState}from'react'
+import React,{useMemo,useState}from'react'
+import{getRoleSupabase}from'../../lib/roleSupabase'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
 import{ServiceChat}from'../ServiceChat'
 import{useProviderData,money}from'./providerData'
@@ -12,7 +13,7 @@ const FLOW_ORDER:Record<string,number>={asignado:0,en_camino:0,llegado:1,en_prog
 function scheduledLabel(value:string){const date=new Date(value);return Number.isNaN(date.getTime())?'Horario programado':date.toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderActiveJob(){
- const d=useProviderData(),flow=useProviderFlow(),s=d.service
+ const d=useProviderData(),flow=useProviderFlow(),s=d.service,supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[evidence,setEvidence]=useState({initial:false,final:false})
  if(!s)return <section className="provider-screen provider-empty-screen"><span className="provider-kicker">TRABAJO</span><h1>No tenés un trabajo activo</h1><p>Cuando aparezca un pedido, mirá el problema y aceptalo si lo podés resolver.</p><button type="button" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>Ver pedidos</button></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
@@ -21,8 +22,9 @@ export function ProviderActiveJob(){
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
  const stateLabel=STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
  const progressIndex=FLOW_ORDER[s.estado]??0
+ const confirmArrival=async()=>{const normal=await d.advance('llegado');if(normal)return;const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:s.id,p_estado:'llegado'});if(!error)await d.reload()}
  return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
-  <header className="provider-mission-head"><span className="provider-kicker">TRABAJO ACTIVO</span><h1 id="provider-job-title">{stateLabel}</h1><p>Un paso por vez. UGO se ocupa del resto.</p></header>
+  <header className="provider-mission-head"><button type="button" className="provider-back" onClick={flow.actions.openHome}>← Inicio</button><span className="provider-kicker">TRABAJO ACTIVO</span><h1 id="provider-job-title">{stateLabel}</h1><p>Un paso por vez. UGO se ocupa del resto.</p></header>
   <div className="provider-job-progress" aria-label="Progreso del trabajo">{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<=progressIndex?'is-done':''}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
   <article className="provider-card provider-job-summary">
    <div className="provider-job-problem"><small>QUÉ HAY QUE RESOLVER</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
@@ -37,7 +39,7 @@ export function ProviderActiveJob(){
   <div className="provider-job-action">
    {s.estado==='asignado'&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperando al cliente</strong><span>UGO te avisa cuando la forma de pago esté confirmada.</span></div>}
    {s.estado==='asignado'&&paymentReady&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</button>}
-   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, usá el botón.</span><button type="button" className="provider-arrival-fallback" disabled={d.busy} onClick={()=>void d.advance('llegado')}>YA LLEGUÉ</button></div>}
+   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO usa el GPS como ayuda, pero el botón siempre debe permitirte confirmar la llegada.</span><button type="button" className="provider-arrival-fallback" disabled={d.busy} onClick={()=>void confirmArrival()}>YA LLEGUÉ</button></div>}
    {s.estado==='llegado'&&(evidence.initial?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
    {s.estado==='en_progreso'&&(evidence.final?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="CERRANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>)}
    {s.estado==='en_progreso'&&d.cashSelected&&<p className="provider-action-note">Al marcar TRABAJO LISTO confirmás que terminaste y que recibiste el efectivo acordado.</p>}
