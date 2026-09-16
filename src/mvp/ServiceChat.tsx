@@ -23,11 +23,14 @@ function isContactGuardError(message:string){return message.includes('CONTACT_DE
 function chatError(message:string){return isContactGuardError(message)?'Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.':message}
 function shouldEscalate(){return document.visibilityState==='visible'&&navigator.onLine}
 function chatAttemptId(){return globalThis.crypto?.randomUUID?.()||`chat-${Date.now()}-${Math.random().toString(36).slice(2)}`}
+function channelInstanceId(){return globalThis.crypto?.randomUUID?.()||`${Date.now()}-${Math.random().toString(36).slice(2)}`}
+function isMissingSessionError(error:unknown){const value=error as{message?:string;name?:string}|null;return value?.name==='AuthSessionMissingError'||/auth session missing|session missing/i.test(String(value?.message||''))}
 
 export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;serviceId?:string|null;compact?:boolean}){
  const sb=useMemo(()=>getRoleSupabase(role),[role])
  const[services,setServices]=useState<ChatService[]>([]),[selectedServiceId,setSelectedServiceId]=useState<string|null>(serviceId||null),[service,setService]=useState<ChatService|null>(null),[messages,setMessages]=useState<ChatMessage[]>([]),[userId,setUserId]=useState<string|null>(null),[draft,setDraft]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[unread,setUnread]=useState(0)
  const endRef=useRef<HTMLDivElement|null>(null)
+ const channelInstance=useRef(channelInstanceId())
  const normalizedRole:'client'|'provider'=role==='client'?'client':'provider'
  const reportChatFailure=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P0',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat`,checklistCode:'CHAT-REALTIME'})},[role,selectedServiceId,serviceId])
  const reportChatRecovery=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P1',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat.recovery`})},[role,selectedServiceId,serviceId])
@@ -53,21 +56,22 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   if(me)throw me
   setMessages((m||[])as ChatMessage[])
  },[clearConversation,role,sb,selectedServiceId,serviceId])
- const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure)
+ const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure),clearConversationRef=useRef(clearConversation)
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{reportChatFailureRef.current=reportChatFailure},[reportChatFailure])
+ useEffect(()=>{clearConversationRef.current=clearConversation},[clearConversation])
 
- useEffect(()=>{void load().catch(e=>{const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatFailure('chat_load_error',message,e)})},[load,reportChatFailure])
+ useEffect(()=>{void load().catch(e=>{if(isMissingSessionError(e)){clearConversation();return}const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatFailure('chat_load_error',message,e)})},[clearConversation,load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
   let alive=true
-  const resync=()=>{if(alive)void loadRef.current().catch(e=>{const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatFailureRef.current('chat_resync_error',message,e)})}
+  const resync=()=>{if(alive)void loadRef.current().catch(e=>{if(isMissingSessionError(e)){clearConversationRef.current();return}const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatFailureRef.current('chat_resync_error',message,e)})}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
   window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
   const fallback=window.setInterval(()=>{if(shouldEscalate())resync()},10000)
   const targetServiceId=serviceId||null
   const suffix=targetServiceId||'all'
-  let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}`)
+  let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}-${channelInstance.current}`)
   const messageConfig:any={event:'INSERT',schema:'public',table:'mensajes'}
   if(targetServiceId)messageConfig.filter=`servicio_id=eq.${targetServiceId}`
   ch=ch.on('postgres_changes',messageConfig,(payload:any)=>{
@@ -77,7 +81,8 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   })
   const serviceConfig:any={event:'*',schema:'public',table:'servicios'}
   if(targetServiceId)serviceConfig.filter=`id=eq.${targetServiceId}`
-  ch=ch.on('postgres_changes',serviceConfig,resync).subscribe((status:string)=>{
+  ch=ch.on('postgres_changes',serviceConfig,resync)
+  ch.subscribe((status:string)=>{
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
     resync()
@@ -89,7 +94,7 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
  useEffect(()=>{if(compact)endRef.current?.scrollIntoView({block:'nearest'})},[compact,messages])
 
- const syncAfterSaved=async(id:string)=>{setDraft('');await load().catch(e=>{const message=e instanceof Error?e.message:'El mensaje se guardó, pero no pudimos actualizar el hilo.';setError(message);if(shouldEscalate())reportChatRecovery('chat_post_send_sync_error',message,e,id)})}
+ const syncAfterSaved=async(id:string)=>{setDraft('');await load().catch(e=>{if(isMissingSessionError(e)){clearConversation();return}const message=e instanceof Error?e.message:'El mensaje se guardó, pero no pudimos actualizar el hilo.';setError(message);if(shouldEscalate())reportChatRecovery('chat_post_send_sync_error',message,e,id)})}
  const sendText=async(text:string,source:'typed'|'quick_reply'='typed')=>{
   const clean=text.trim();if(!service||!userId||!clean||busy)return
   if(hasContactDetails(clean)){setError('Por seguridad, no se pueden compartir teléfonos, WhatsApp, emails, usuarios de redes ni links. Usá el chat de UGO.');return}
