@@ -149,8 +149,12 @@ export function usePendingDocuments() {
   }, [fetch, docs]);
   const getSignedUrl = useCallback(async (path: string) => {
     if (!path) return null;
-    const { data } = await (supabase as any).storage.from('documentos').createSignedUrl(path, 300);
-    return data?.signedUrl ?? null;
+    const storage = (supabase as any).storage;
+    for (const bucket of ['provider-kyc','documentos']) {
+      const { data, error } = await storage.from(bucket).createSignedUrl(path, 300);
+      if (!error && data?.signedUrl) return data.signedUrl;
+    }
+    return null;
   }, []);
   useEffect(() => { fetch(); const u = subscribe('documentos', fetch); return u; }, [fetch]);
   return { docs, loading, updateEstado, getSignedUrl };
