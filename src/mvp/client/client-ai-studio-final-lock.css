@@ -1,0 +1,277 @@
+/* UGO · AI Studio final presentation lock
+   Loaded after every legacy client stylesheet. Presentation only: business state remains in real components. */
+
+/* ---------------- Navbar controls ---------------- */
+.ugo-client-root .ugo-studio-notifications{
+  width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;
+  display:grid!important;place-items:center!important;border:0!important;border-radius:999px!important;
+  background:#f4f7f6!important;color:#0b1c30!important;box-shadow:none!important;cursor:pointer!important
+}
+.ugo-client-root .ugo-studio-notifications:hover{background:#eaf0ee!important}
+.ugo-client-root .ugo-studio-notifications .material-symbols-outlined{font-size:18px!important}
+
+/* The Studio navbar is the visible entry point; legacy floating controls stay functional behind it. */
+.ugo-client-root .ugo-client-global-trigger{display:none!important}
+.ugo-client-root .ugo-location-control.role-client>button{position:fixed!important;left:-9999px!important;opacity:0!important;pointer-events:none!important}
+.ugo-client-root .ugo-location-control.role-client .ugo-location-message{
+  position:fixed!important;z-index:400!important;top:82px!important;left:50%!important;transform:translateX(-50%)!important;
+  max-width:min(420px,calc(100vw - 24px))!important;padding:10px 14px!important;border:1px solid #dce9ff!important;
+  border-radius:12px!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 10px 30px rgba(11,28,48,.12)!important;
+  font-size:11px!important;font-weight:850!important;text-align:center!important
+}
+
+/* ---------------- Notification center ---------------- */
+.ugo-client-root .ugo-notification-center.role-client{position:fixed!important;right:max(16px,calc((100vw - 1280px)/2))!important;top:80px!important;z-index:390!important}
+.ugo-client-root .ugo-notification-center.role-client>.ugo-notification-trigger{display:none!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel{
+  top:0!important;right:0!important;width:min(390px,calc(100vw - 24px))!important;border:1px solid #e5eeff!important;
+  border-radius:18px!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 18px 58px rgba(11,28,48,.18)!important
+}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel>header{border-bottom-color:#edf1f8!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel>header button{color:#006b58!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-push{background:#f8f9ff!important;border-bottom-color:#edf1f8!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-push button{background:#006b58!important;color:#fff!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-list>button{background:#fff!important;border-bottom-color:#f0f2f7!important;color:#0b1c30!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-list>button.is-unread{background:#effaf7!important}
+.ugo-client-root .ugo-notification-center.role-client .ugo-notification-icon{background:#eff4ff!important}
+
+/* ---------------- Help/global drawer ---------------- */
+.ugo-client-root .ugo-client-global-backdrop{background:rgba(11,28,48,.28)!important;backdrop-filter:blur(5px)!important}
+.ugo-client-root .ugo-client-global-drawer{
+  background:#fff!important;color:#0b1c30!important;border-left:1px solid #e5eeff!important;box-shadow:-28px 0 70px rgba(11,28,48,.16)!important
+}
+.ugo-client-root .ugo-client-global-head{border-bottom-color:#edf1f8!important;background:#fff!important}
+.ugo-client-root .ugo-client-menu-brand strong{color:#0b1c30!important}
+.ugo-client-root .ugo-client-menu-brand span{color:#006b58!important}
+.ugo-client-root .ugo-client-menu-close{border:1px solid #dce9ff!important;background:#eff4ff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-account-card,
+.ugo-client-root .ugo-client-menu-primary,
+.ugo-client-root .ugo-client-global-list button{
+  border-color:#e5eeff!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+}
+.ugo-client-root .ugo-client-menu-primary{background:#006b58!important;color:#fff!important;border-color:#006b58!important}
+.ugo-client-root .ugo-client-account-avatar,
+.ugo-client-root .ugo-client-global-list button>span{background:#eff4ff!important;color:#006b58!important}
+.ugo-client-root .ugo-client-account-card small,
+.ugo-client-root .ugo-client-global-list small,
+.ugo-client-root .ugo-client-menu-section-label,
+.ugo-client-root .ugo-client-global-footer span{color:#575e70!important}
+.ugo-client-root .ugo-client-global-footer{border-top-color:#edf1f8!important;color:#0b1c30!important}
+
+/* ---------------- Activity/history: remove old dark client theme ---------------- */
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history,
+.ugo-client-root .ugo-client-history{
+  width:100%!important;max-width:none!important;height:auto!important;max-height:none!important;border:0!important;border-radius:0!important;
+  background:#f8f9ff!important;color:#0b1c30!important;box-shadow:none!important
+}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history>header,
+.ugo-client-root .ugo-client-history>header{
+  padding:28px max(24px,calc((100vw - 1180px)/2)) 18px!important;background:#f8f9ff!important;color:#0b1c30!important;border-bottom:1px solid #e5eeff!important
+}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history>header small,
+.ugo-client-root .ugo-client-history>header small{color:#006b58!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history>header h2,
+.ugo-client-root .ugo-client-history>header h2{color:#0b1c30!important;font-size:30px!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history>header p,
+.ugo-client-root .ugo-client-history>header p{color:#575e70!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-client-history-total,
+.ugo-client-root .ugo-client-history .ugo-client-history-total{background:#e6f7f4!important;color:#006b58!important}
+.ugo-client-root .ugo-client-activity-summary{
+  width:min(1180px,calc(100% - 48px))!important;margin:18px auto 0!important;padding:0!important;display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:12px!important;background:transparent!important;border:0!important
+}
+.ugo-client-root .ugo-client-activity-summary button{
+  min-height:104px!important;padding:16px!important;border:1px solid #e5eeff!important;border-radius:19px!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 4px 14px rgba(11,28,48,.04)!important
+}
+.ugo-client-root .ugo-client-activity-summary button.active{border-color:#006b58!important;background:#eff4ff!important;box-shadow:0 0 0 1px #006b58!important}
+.ugo-client-root .ugo-client-activity-summary small{color:#6b7a75!important}
+.ugo-client-root .ugo-client-activity-summary strong{color:#0b1c30!important}
+.ugo-client-root .ugo-client-activity-summary em{color:#575e70!important}
+.ugo-client-root .ugo-activity-summary-icon{background:#eff4ff!important;color:#006b58!important}
+.ugo-client-root .ugo-client-history-toolbar,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-filters{
+  width:min(1180px,calc(100% - 48px))!important;margin:12px auto 0!important;padding:10px!important;border:1px solid #e5eeff!important;
+  border-radius:14px!important;background:#fff!important
+}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-filters button,
+.ugo-client-root .ugo-client-history .ugo-history-filters button{border-color:#dce9ff!important;background:#fff!important;color:#575e70!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-filters button.active,
+.ugo-client-root .ugo-client-history .ugo-history-filters button.active{border-color:#006b58!important;background:#eff4ff!important;color:#006b58!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-filters .ugo-history-refresh{color:#006b58!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-list,
+.ugo-client-root .ugo-client-history .ugo-history-list{
+  width:min(1180px,calc(100% - 48px))!important;margin:0 auto!important;padding:14px 0 54px!important;background:transparent!important;display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important
+}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-item,
+.ugo-client-root .ugo-client-history .ugo-history-item{
+  padding:18px!important;border:1px solid #e5eeff!important;border-radius:20px!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 4px 14px rgba(11,28,48,.04)!important
+}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top strong,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history h3,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-meta b,
+.ugo-client-root .ugo-client-history .ugo-history-top strong,
+.ugo-client-root .ugo-client-history h3,
+.ugo-client-root .ugo-client-history .ugo-history-meta b{color:#0b1c30!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top small,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-meta small,
+.ugo-client-root .ugo-client-history .ugo-history-top small,
+.ugo-client-root .ugo-client-history .ugo-history-meta small{color:#6b7a75!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-list p,
+.ugo-client-root .ugo-client-history .ugo-history-list p{color:#575e70!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-meta>div,
+.ugo-client-root .ugo-client-history .ugo-history-meta>div{background:#f8f9ff!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span,
+.ugo-client-root .ugo-client-history .ugo-history-top>span{background:#f2f5f4!important;color:#575e70!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-buscando,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-ofrecido{background:#fff7dc!important;color:#74520b!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-asignado,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-en_camino,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-en_progreso{background:#eaf6ff!important;color:#175cd3!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-completado{background:#eaf9f5!important;color:#067647!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-cancelado,
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-top>span.state-disputado{background:#fff1f3!important;color:#c01048!important}
+.ugo-client-root .ugo-history-state-focus{border-color:#e5eeff!important;background:#f8f9ff!important}
+.ugo-client-root .ugo-history-state-focus small{color:#6b7a75!important}
+.ugo-client-root .ugo-history-state-focus strong{color:#0b1c30!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-state-focus p,
+.ugo-client-root .ugo-client-history .ugo-history-state-focus p{color:#575e70!important}
+.ugo-client-root .ugo-history-state-focus.tone-live{border-color:#bcdcf6!important;background:#f1f8ff!important}
+.ugo-client-root .ugo-history-state-focus.tone-waiting{border-color:#eadca9!important;background:#fffaf0!important}
+.ugo-client-root .ugo-history-state-focus.tone-done{border-color:#b9eadf!important;background:#f0fbf8!important}
+.ugo-client-root .ugo-history-state-focus.tone-alert{border-color:#f0c7c7!important;background:#fff6f6!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-description{color:#575e70!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-open-button,
+.ugo-client-root .ugo-client-history .ugo-history-open-button{border-color:#006b58!important;background:#006b58!important;color:#fff!important}
+.ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-cancel-button,
+.ugo-client-root .ugo-client-history .ugo-history-cancel-button{border-color:#dce9ff!important;background:#fff!important;color:#575e70!important}
+.ugo-client-root .ugo-history-empty{background:#fff!important;border-color:#dce9ff!important;color:#575e70!important}
+.ugo-client-root .ugo-history-error{background:#fff6f6!important;border-color:#f0c7c7!important;color:#a72c2c!important}
+.ugo-client-root .ugo-history-action-notice{border:1px solid #b9eadf!important;background:#eaf9f5!important;color:#075846!important;border-radius:12px!important;padding:10px 12px!important}
+
+/* ---------------- Explicit service detail ---------------- */
+.ugo-client-root .ugo-client-screen-overlay>.ugo-client-history-wrap{
+  width:min(980px,calc(100% - 48px))!important;margin:0 auto!important;padding:26px 0 64px!important
+}
+.ugo-client-root .ugo-client-history-back{
+  position:sticky!important;top:88px!important;z-index:8!important;width:44px!important;height:44px!important;display:grid!important;place-items:center!important;
+  border:1px solid #dce9ff!important;border-radius:12px!important;background:#fff!important;color:#0b1c30!important;font-size:20px!important;
+  box-shadow:0 6px 18px rgba(11,28,48,.08)!important;cursor:pointer!important
+}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded{
+  width:100%!important;max-height:none!important;border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#0b1c30!important;overflow:visible!important
+}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded>header{background:#fff!important;color:#0b1c30!important;border-bottom-color:#edf1f8!important;border-radius:22px 22px 0 0!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded>header small{color:#006b58!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded>header h2{color:#0b1c30!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded>header p{color:#575e70!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded .ugo-history-meta{padding:0 18px 18px!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded .ugo-history-meta>div{background:#f8f9ff!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded .ugo-history-row-actions{padding:0 18px 18px!important;grid-template-columns:1fr!important}
+.ugo-client-root .ugo-client-history-wrap>.ugo-history-panel.embedded .ugo-history-cancel-button{min-height:44px!important;border:1px solid #f0c7c7!important;border-radius:11px!important;background:#fff6f6!important;color:#a72c2c!important;font-weight:900!important}
+
+/* ---------------- Guided request: replace remaining inline legacy-dark fields ---------------- */
+.ugo-client-root .ugo-guided-request .ugo-guided-step input,
+.ugo-client-root .ugo-guided-request .ugo-guided-step select,
+.ugo-client-root .ugo-guided-request .ugo-guided-step textarea{
+  border:1px solid #d9dfdd!important;border-radius:12px!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+}
+.ugo-client-root .ugo-guided-request .ugo-guided-step input::placeholder,
+.ugo-client-root .ugo-guided-request .ugo-guided-step textarea::placeholder{color:#87918e!important}
+.ugo-client-root .ugo-guided-request .ugo-guided-step form+button,
+.ugo-client-root .ugo-guided-request .ugo-guided-voice{
+  border:1px solid #dce9ff!important;background:#eff4ff!important;color:#006b58!important;box-shadow:none!important
+}
+.ugo-client-root .ugo-guided-request .ugo-guided-categories button,
+.ugo-client-root .ugo-guided-request .ugo-guided-options button{
+  border-color:#e5eeff!important;background:#fff!important;color:#0b1c30!important;box-shadow:none!important
+}
+.ugo-client-root .ugo-guided-request .ugo-guided-categories button.selected,
+.ugo-client-root .ugo-guided-request .ugo-guided-options button.selected{border-color:#006b58!important;background:#eff4ff!important;color:#006b58!important}
+.ugo-client-root .ugo-guided-request .ugo-guided-understood{border-color:#dce9ff!important;background:#f8f9ff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-guided-request .ugo-guided-understood span,
+.ugo-client-root .ugo-guided-request .ugo-guided-understood small{color:#575e70!important}
+.ugo-client-root .ugo-guided-request .ugo-guided-step>div[style*="background: rgb(16, 35, 53)"],
+.ugo-client-root .ugo-guided-request .ugo-guided-step>div[style*="background:#102335"]{
+  background:#eff4ff!important;border-color:#dce9ff!important;color:#0b1c30!important
+}
+
+/* ---------------- Realtime chat additions ---------------- */
+.ugo-client-root .ugo-service-chat-selector{padding:11px 12px;border-bottom:1px solid #edf1f8!important;background:#f8f9ff!important}
+.ugo-client-root .ugo-service-chat-selector label{display:grid!important;gap:5px!important}
+.ugo-client-root .ugo-service-chat-selector label>span{color:#6b7a75!important;font-size:8px!important;font-weight:900!important;letter-spacing:.09em!important}
+.ugo-client-root .ugo-service-chat-selector select{min-height:40px!important;border:1px solid #d9dfdd!important;border-radius:10px!important;background:#fff!important;color:#0b1c30!important;padding:0 10px!important}
+.ugo-client-root .ugo-service-chat-quick{padding:10px 12px!important;border-top:1px solid #edf1f8!important;background:#f8f9ff!important}
+.ugo-client-root .ugo-service-chat-quick>small{display:block!important;margin-bottom:7px!important;color:#6b7a75!important;font-size:8px!important;font-weight:900!important;letter-spacing:.09em!important}
+.ugo-client-root .ugo-service-chat-quick>div{display:flex!important;gap:6px!important;overflow-x:auto!important;scrollbar-width:none!important}
+.ugo-client-root .ugo-service-chat-quick>div::-webkit-scrollbar{display:none!important}
+.ugo-client-root .ugo-service-chat-quick button{flex:0 0 auto!important;min-height:34px!important;padding:0 10px!important;border:1px solid #dce9ff!important;border-radius:999px!important;background:#fff!important;color:#006b58!important;font-size:9px!important;font-weight:850!important;cursor:pointer!important}
+.ugo-client-root .ugo-service-chat-quick>p{margin:7px 0 0!important;color:#6b7a75!important;font-size:8.5px!important;line-height:1.35!important}
+.ugo-client-root .ugo-service-chat-guard{margin:0!important;padding:0 12px 10px!important;color:#a72c2c!important;font-size:10px!important}
+.ugo-client-root .ugo-service-chat-trigger{border-color:#dce9ff!important;background:#fff!important;color:#006b58!important;box-shadow:0 12px 32px rgba(11,28,48,.14)!important}
+.ugo-client-root .ugo-service-chat-trigger.has-unread{background:#006b58!important;color:#fff!important}
+
+/* ---------------- Rating ---------------- */
+.ugo-client-root .ugo-client-rating{
+  border:1px solid #e5eeff!important;border-radius:22px!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 22px 68px rgba(11,28,48,.18)!important
+}
+.ugo-client-root .ugo-client-rating>small{color:#006b58!important}
+.ugo-client-root .ugo-client-rating h2{color:#0b1c30!important}
+.ugo-client-root .ugo-client-rating>p{color:#575e70!important}
+.ugo-client-root .ugo-client-rating-close{border-color:#dce9ff!important;background:#eff4ff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-rating-stars button{border-color:#dce9ff!important;background:#fff!important;color:#a8b2ae!important}
+.ugo-client-root .ugo-client-rating-stars button.is-active{border-color:#e9b949!important;background:#fff8df!important;color:#d79a00!important}
+.ugo-client-root .ugo-client-rating label{color:#0b1c30!important}
+.ugo-client-root .ugo-client-rating label span{color:#6b7a75!important}
+.ugo-client-root .ugo-client-rating textarea{border-color:#d9dfdd!important;background:#fff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-client-rating-actions button{border-color:#dce9ff!important;background:#fff!important;color:#575e70!important}
+.ugo-client-root .ugo-client-rating-actions button:first-child{border-color:#006b58!important;background:#006b58!important;color:#fff!important}
+.ugo-client-root .ugo-client-rating-message{background:#eaf9f5!important;color:#075846!important}
+
+/* ---------------- Dispute/help ---------------- */
+.ugo-client-root .ugo-dispute-launch{border-color:#dce9ff!important;background:#fff!important;color:#575e70!important;box-shadow:0 8px 24px rgba(11,28,48,.12)!important}
+.ugo-client-root .ugo-dispute-launch.open-case{background:#fff9ed!important;border-color:#f0d5a2!important;color:#74520b!important}
+.ugo-client-root .ugo-dispute-backdrop{background:rgba(11,28,48,.28)!important;backdrop-filter:blur(5px)!important}
+.ugo-client-root .ugo-dispute-sheet{border-color:#e5eeff!important;background:#fff!important;color:#0b1c30!important;box-shadow:0 28px 80px rgba(11,28,48,.18)!important}
+.ugo-client-root .ugo-dispute-sheet header{border-bottom-color:#edf1f8!important}
+.ugo-client-root .ugo-dispute-sheet header small{color:#006b58!important}
+.ugo-client-root .ugo-dispute-sheet header button{background:#eff4ff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-dispute-sheet textarea{border-color:#d9dfdd!important;background:#fff!important;color:#0b1c30!important}
+.ugo-client-root .ugo-dispute-sheet>button.primary{background:#006b58!important;color:#fff!important}
+.ugo-client-root .ugo-dispute-note{border-color:#e5eeff!important;background:#f8f9ff!important}
+.ugo-client-root .ugo-dispute-note span{color:#575e70!important}
+.ugo-client-root .ugo-dispute-thread article{border-color:#e5eeff!important;background:#f8f9ff!important}
+.ugo-client-root .ugo-dispute-thread article.admin{background:#eff4ff!important;border-color:#dce9ff!important}
+
+@media(max-width:960px){
+  .ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-list,
+  .ugo-client-root .ugo-client-history .ugo-history-list{grid-template-columns:1fr!important}
+}
+
+@media(max-width:760px){
+  .ugo-client-root .ugo-studio-notifications{width:40px!important;height:40px!important}
+  .ugo-client-root .ugo-notification-center.role-client{top:70px!important;right:8px!important}
+  .ugo-client-root .ugo-location-control.role-client .ugo-location-message{top:70px!important}
+  .ugo-client-root .ugo-client-activity-summary,
+  .ugo-client-root .ugo-client-history-toolbar,
+  .ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-filters,
+  .ugo-client-root .ugo-client-screen-overlay .ugo-client-history .ugo-history-list,
+  .ugo-client-root .ugo-client-history .ugo-history-list{width:calc(100% - 24px)!important}
+  .ugo-client-root .ugo-client-activity-summary{grid-template-columns:1fr!important;margin-top:12px!important}
+  .ugo-client-root .ugo-client-activity-summary button{min-height:82px!important;grid-template-columns:34px 1fr!important}
+  .ugo-client-root .ugo-client-activity-summary button>span:last-child{grid-template-columns:1fr auto!important}
+  .ugo-client-root .ugo-client-activity-summary small,.ugo-client-root .ugo-client-activity-summary em{grid-column:1/3!important}
+  .ugo-client-root .ugo-client-screen-overlay .ugo-client-history>header,
+  .ugo-client-root .ugo-client-history>header{padding:18px 14px 14px!important}
+  .ugo-client-root .ugo-client-screen-overlay>.ugo-client-history-wrap{width:calc(100% - 24px)!important;padding:14px 0 44px!important}
+  .ugo-client-root .ugo-client-history-back{top:72px!important}
+  .ugo-client-root .ugo-client-rating{right:10px!important;bottom:82px!important;width:calc(100vw - 20px)!important}
+}
+
+@media(max-width:520px){
+  .ugo-client-root .ugo-studio-nav-actions{gap:4px!important}
+  .ugo-client-root .ugo-studio-notifications{display:grid!important}
+  .ugo-client-root .ugo-studio-help{display:none!important}
+  .ugo-client-root .ugo-client-activity-summary button{min-height:76px!important;padding:12px!important}
+  .ugo-client-root .ugo-history-meta{grid-template-columns:1fr 1fr!important}
+  .ugo-client-root .ugo-service-chat-quick>div{padding-bottom:2px!important}
+}
