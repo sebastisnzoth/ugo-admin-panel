@@ -1,6 +1,6 @@
 # UGO — Testing & Release Master
 
-**Versión:** 3.0 · 16 de septiembre de 2026  
+**Versión:** 3.1 · 16 de septiembre de 2026  
 **Estado:** contrato maestro de calidad y release  
 **Rama única:** `main`
 
@@ -33,15 +33,22 @@ L7 publicación/smoke/rollback
 ## 3. Checkpoint CI actual
 
 ```text
-SHA: 51561b8aa632d74b755e8072a00d59e415097fae
-commit: test(client): align cancellation recovery contract
-UGO Core CI run: 35046419173
+SHA: 53d04bada63e69a3c19212cba206acd585edbd8a
+commit: test(provider): align offer recovery contracts
+UGO Core CI run: 35047491737
 conclusion: success
 ```
 
-El fallo inmediatamente anterior era contractual: el test de cancelación todavía exigía `getStatus`, mientras la implementación ya usa lectura persistida directa para reconciliar una respuesta RPC perdida sin generar falsos P0. Se corrigió el contrato; no se degradó la lógica correcta.
+Pasaron instalación reproducible, security gate, TypeScript/build, **301 tests/contratos**, lints críticos, lint Cliente y reporte global de deuda lint. Los E2E autenticados quedan omitidos cuando faltan sus credenciales TEST; ese skip no equivale a runtime validation.
 
-Los E2E autenticados que dependen de credenciales TEST son un gate separado. Si se omiten por credenciales ausentes, CI verde no equivale a `RUNTIME VALIDATED`.
+El cambio funcional inmediatamente anterior es:
+
+```text
+c3a414566becb81e90dde5dbec477eb31b8e7ec7
+fix(sentinel): verify offer acceptance before P0
+```
+
+Corrige la última ruta detectada donde una aceptación podía convertirse en P0 si el RPC fallaba y la verificación posterior también era ilegible. Ahora la reconciliación es triestado y ligada al pedido exacto.
 
 ## 4. Regla Sentinel para mutaciones críticas
 
@@ -55,7 +62,7 @@ RPC devuelve error
 → persistencia no verificable: P1
 ```
 
-`provider.service.advance`, `completeService`, `confirmCash` y cancelación/matching Cliente siguen este criterio en el código actual.
+En el código actual esta regla cubre aceptación de oferta, `provider.service.advance`, `completeService`, `confirmCash`, matching y cancelación Cliente.
 
 ## 5. Readiness / Development
 
@@ -69,9 +76,27 @@ Contratos CI actuales mantienen:
 - Centinela no muta checklist;
 - clasificación server-side de acciones conocidas.
 
-Falta smoke runtime TEST para promover.
+Snapshot TEST actual: 27 items públicos, 80 eventos públicos y 6 incidentes públicos. Los 6 incidentes existentes tienen `runtime_revision = NULL`; son históricos/no atribuibles al build candidato y no deben bloquearlo como incidentes actuales.
 
-## 6. Multi-pedido A+B+C
+## 6. Evidencia runtime disponible y límites
+
+Consulta read-only de Supabase TEST:
+
+```text
+3 proveedores verificados + online + disponibles
+1 servicio con mensajes persistidos de Cliente y Proveedor
+0 servicios activos actualmente
+0 clientes con 2+ pedidos activos actualmente
+```
+
+Por lo tanto:
+
+- disponibilidad real de proveedores: evidencia DB presente;
+- chat bidireccional: evidencia de persistencia DB presente, **no** evidencia visual realtime en dos sesiones;
+- A+B+C: sólo contratos, **sin** evidencia runtime actual;
+- lifecycle completo: pendiente de sesión/dispositivo.
+
+## 7. Multi-pedido A+B+C
 
 Debe demostrarse con datos TEST reales:
 
@@ -87,9 +112,9 @@ A intacto
 C intacto
 ```
 
-El repo ya contiene contratos que protegen aislamiento A/B/C; falta evidencia E2E autenticada/física.
+El repo contiene contratos que protegen aislamiento A/B/C; falta evidencia E2E autenticada/física.
 
-## 7. Chat P0
+## 8. Chat P0
 
 Con dos sesiones reales:
 
@@ -102,15 +127,15 @@ contacto off-platform → bloqueado
 servicio A ≠ chat servicio B
 ```
 
-Persistencia DB no sustituye convergencia visual en ambas sesiones.
+Persistencia DB no sustituye convergencia visual en ambas sesiones. `CHAT-REALTIME` debe permanecer `IMPLEMENTED` hasta esa evidencia.
 
-## 8. Matching / radar / cancelación
+## 9. Matching / radar / cancelación
 
 Probar proveedor disponible, cero proveedores, timeout, offline/error, retry y cancelación exacta con varios pedidos. No se acepta loading infinito.
 
-El radar actual tiene recuperación ante gaps realtime; debe probarse contra disponibilidad real de TEST.
+El radar actual tiene recuperación ante gaps realtime; TEST reporta tres proveedores verificados online/disponibles y la UI debe demostrar que los refleja sin falsos online/offline.
 
-## 9. Proveedor / Agenda
+## 10. Proveedor / Agenda
 
 ```text
 AGENDA = todos los trabajos futuros/asignados
@@ -130,26 +155,23 @@ Aceptar
 
 No usar una selección única de misión activa para ocultar trabajos futuros de Agenda.
 
-## 10. Android TEST
+## 11. Android TEST
 
-Último artifact inspeccionado:
+Artifact funcional más reciente:
 
 ```text
-workflow run: 35044762155
-commit: 8c0123bd9d221ec6d09a4cd2f4a83f6a2ed9d800
-artifact: ugo-android-test-apk
-artifact id: 10425674680
-artifact digest: sha256:c53e57e44557b420ce7fb217325d8086a251f2e9f2d545e020b0dc37c9d8d982
-APK SHA-256: 329f74e50217f13d92322dba103513c86170a0bca5bfc30fc93fe389674e3df4
+workflow run: 35047317846
+commit: c3a414566becb81e90dde5dbec477eb31b8e7ec7
+conclusion: success
 bundleRuntime: local-dist
 environment: TEST
 ```
 
-Ese APK corresponde al último cambio de runtime Cliente `8c0123b…`, pero no al HEAD exacto `51561b8…`. Los commits posteriores contienen clasificación server-side y tests/contratos. Por trazabilidad estricta, Android queda **NOT READY para evidencia final del HEAD** hasta existir artifact del SHA objetivo.
+Ese APK contiene el fix funcional de aceptación, pero no los contratos/documentación posteriores. Antes de la prueba física final debe generarse un artifact del **SHA final exacto** y verificarse que `VITE_APP_REVISION` coincide.
 
 Compilar ≠ probar: el artifact debe instalarse y pasar dos sesiones/dispositivos.
 
-## 11. Prueba física
+## 12. Prueba física
 
 Cliente:
 
@@ -162,7 +184,7 @@ matching/radar/recovery
 chat
 tracking
 pago
-revisión
+rating
 ```
 
 Proveedor:
@@ -182,7 +204,11 @@ cierre/cobro
 
 Dos sesiones/dispositivos: Realtime, reconnect, background/foreground y aislamiento entre pedidos.
 
-## 12. Gates bloqueados
+## 13. Credenciales del E2E aislado
+
+El runner actual no dispone de las seis credenciales TEST necesarias para el harness autenticado Cliente/Proveedor/Admin. El Core CI registra el skip; no debe interpretarse como PASS runtime.
+
+## 14. Gates bloqueados
 
 Hasta evidencia real:
 
@@ -194,11 +220,11 @@ GO-LIVE = BLOCKED
 
 No promoverlos por contratos, persistencia aislada o compilación.
 
-## 13. Publicación
+## 15. Publicación
 
 La publicación web puede quedar detrás de `main`. No disparar deploy para documentación, para conseguir un SHA de APK ni para sustituir QA Android. Un release exige revisión exacta, smoke y rollback/mitigación.
 
-## 14. Definition of Done
+## 16. Definition of Done
 
 ```text
 contrato definido
@@ -212,7 +238,7 @@ maestros + roadmap sincronizados
 PUBLISHED sólo con revisión/smoke identificados
 ```
 
-## 15. Regla final
+## 17. Regla final
 
 **UGO está validado por evidencia, no por intención. CI verde habilita el siguiente gate; no reemplaza la prueba runtime.**
 
