@@ -38,6 +38,7 @@ import'./client-studio-radar.css'
 import'./client-navbar-cleanup.css'
 import'./client-ai-studio-production-lock.css'
 import'./client-ai-studio-production-ops.css'
+import'./client-ai-studio-final-lock.css'
 
 type Props={demo:boolean}
 
