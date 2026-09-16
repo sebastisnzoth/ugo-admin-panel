@@ -5,10 +5,12 @@ const read=(path)=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client payment never hides a failed state load without recovery',async()=>{
  const src=await read('src/mvp/client/ClientPaymentChoice.tsx')
- assert.match(src,/setLoadError\('No pudimos actualizar la forma de pago/)
+ assert.match(src,/const text='No pudimos actualizar la forma de pago/)
+ assert.match(src,/setLoadError\(text\)/)
  assert.match(src,/role="alert"/)
  assert.match(src,/>Reintentar</)
  assert.match(src,/Conservamos el último estado conocido/)
+ assert.match(src,/client_payment_state_sync_error/)
 })
 
 test('provider active-job empty state keeps one simple exit and arrival has automatic plus manual recovery',async()=>{
