@@ -5,6 +5,8 @@ const SUPABASE_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const SUPABASE_ANON_KEY = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
 const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || ''
 const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
+const USER_ROLES = new Set(['cliente', 'proveedor', 'admin', 'superadmin', 'arbitro'])
+const PRIVILEGED_USER_ROLES = new Set(['admin', 'superadmin', 'arbitro'])
 
 function operation(req: VercelRequest) {
   const raw = req.query.op
@@ -14,6 +16,14 @@ function operation(req: VercelRequest) {
 function accessToken(req: VercelRequest) {
   const authHeader = req.headers.authorization || ''
   return authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
+}
+
+function clean(value: unknown, max = 160) {
+  return String(value ?? '').trim().slice(0, max)
+}
+
+function validEmail(email: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
 async function selectCash(req: VercelRequest, res: VercelResponse) {
@@ -96,7 +106,7 @@ async function requireAdmin(req: VercelRequest) {
     throw httpError('Acceso Admin requerido.', 403)
   }
 
-  return { sb, user }
+  return { sb, user, role: String(profile.tipo) }
 }
 
 function adminErrorResponse(res: VercelResponse, error: unknown, fallback: string) {
@@ -128,8 +138,10 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
       .update({
         estado: aprobado ? 'aprobado' : 'rechazado',
         notas,
+        notas_rechazo: aprobado ? null : notas,
         revisor_id: user.id,
         revisado_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
       .eq('id', documentoId)
     if (reviewError) throw reviewError
@@ -150,12 +162,22 @@ async function verifyKyc(req: VercelRequest, res: VercelResponse) {
           usuario_id: doc.usuario_id,
           tipo: 'kyc_aprobado',
           titulo: '¡Bienvenido a U.GO!',
-          mensaje: 'Tu perfil ha sido verificado y aprobado.',
-          leido: false,
+          cuerpo: 'Tu perfil ha sido verificado y aprobado.',
+          datos: { source: 'admin_kyc', documentoId },
+          dedupe_key: `kyc_aprobado:${doc.usuario_id}`,
         })
-        if (notificationError) throw notificationError
+        if (notificationError && notificationError.code !== '23505') throw notificationError
       }
     }
+
+    const { error: auditError } = await sb.from('audit_log').insert({
+      evento: aprobado ? 'admin.kyc.approved' : 'admin.kyc.rejected',
+      actor_id: user.id,
+      entidad_tipo: 'documento',
+      entidad_id: documentoId,
+      detalles: { usuario_id: doc.usuario_id, notas },
+    })
+    if (auditError) throw auditError
 
     return res.status(200).json({ success: true, message: aprobado ? 'Documento aprobado' : 'Documento rechazado' })
   } catch (error) {
@@ -177,7 +199,7 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
   }
 
   try {
-    const { sb } = await requireAdmin(req)
+    const { sb, user } = await requireAdmin(req)
     const { data: current, error: currentError } = await sb
       .from('perfiles_proveedor')
       .select('usuario_id,estado_verificacion')
@@ -199,10 +221,99 @@ async function changeProviderVerification(req: VercelRequest, res: VercelRespons
       .single()
 
     if (updateError) throw updateError
+    const { error: auditError } = await sb.from('audit_log').insert({
+      evento: 'admin.provider_verification.update',
+      actor_id: user.id,
+      entidad_tipo: 'proveedor',
+      entidad_id: providerId,
+      detalles: { estado_anterior: current.estado_verificacion, estado_nuevo: state, motivo: reason || null },
+    })
+    if (auditError) throw auditError
     return res.status(200).json({ success: true, provider: updated })
   } catch (error) {
     console.error('Provider verification update error:', error)
     return adminErrorResponse(res, error, 'No se pudo actualizar la verificación del proveedor.')
+  }
+}
+
+async function createAdminManagedUser(req: VercelRequest, res: VercelResponse) {
+  const nombre = clean(req.body?.nombre, 80)
+  const apellido = clean(req.body?.apellido, 80)
+  const email = clean(req.body?.email, 254).toLowerCase()
+  const password = String(req.body?.password ?? '')
+  const role = clean(req.body?.role, 30)
+  const demo = Boolean(req.body?.demo)
+  const providerVerified = Boolean(req.body?.providerVerified)
+
+  if (!nombre) return res.status(400).json({ error: 'Nombre requerido.' })
+  if (!validEmail(email)) return res.status(400).json({ error: 'Email inválido.' })
+  if (password.length < 8 || password.length > 128) return res.status(400).json({ error: 'La contraseña debe tener entre 8 y 128 caracteres.' })
+  if (!USER_ROLES.has(role)) return res.status(400).json({ error: 'Rol inválido.' })
+
+  let createdId: string | null = null
+  try {
+    const { sb, user, role: actorRole } = await requireAdmin(req)
+    if (PRIVILEGED_USER_ROLES.has(role) && actorRole !== 'superadmin') {
+      return res.status(403).json({ error: 'Solo Super Admin puede crear cuentas administrativas.' })
+    }
+
+    const { data: created, error: createError } = await sb.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+      user_metadata: { nombre, apellido: apellido || null, tipo: role, es_demo: demo },
+    })
+    if (createError || !created.user) throw createError || new Error('Auth no devolvió el usuario creado.')
+    createdId = created.user.id
+
+    const { error: userError } = await sb.from('usuarios').upsert({
+      id: createdId,
+      nombre,
+      apellido: apellido || null,
+      email,
+      tipo: role,
+      activo: true,
+      es_demo: demo,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' })
+    if (userError) throw userError
+
+    if (role === 'cliente') {
+      const { error: clientError } = await sb.from('perfiles_cliente').upsert({ usuario_id: createdId }, { onConflict: 'usuario_id' })
+      if (clientError) throw clientError
+    }
+    if (role === 'proveedor') {
+      const verified = demo && providerVerified
+      const { error: providerError } = await sb.from('perfiles_proveedor').upsert({
+        usuario_id: createdId,
+        estado_verificacion: verified ? 'verificado' : 'registrado',
+        online: verified,
+        disponible: verified,
+      }, { onConflict: 'usuario_id' })
+      if (providerError) throw providerError
+    }
+
+    const { error: auditError } = await sb.from('audit_log').insert({
+      evento: 'admin_usuario_creado',
+      actor_id: user.id,
+      entidad_tipo: 'usuario',
+      entidad_id: createdId,
+      detalles: { email, role, demo, providerVerified: role === 'proveedor' ? providerVerified : false },
+    })
+    if (auditError) throw auditError
+
+    return res.status(201).json({ id: createdId, email, role })
+  } catch (error) {
+    if (createdId && SUPABASE_SERVICE_ROLE_KEY) {
+      const rollback = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, { auth: { persistSession: false, autoRefreshToken: false } })
+      await rollback.from('perfiles_cliente').delete().eq('usuario_id', createdId)
+      await rollback.from('perfiles_proveedor').delete().eq('usuario_id', createdId)
+      await rollback.from('usuarios').delete().eq('id', createdId)
+      await rollback.auth.admin.deleteUser(createdId)
+    }
+    const message = error instanceof Error ? error.message : 'No se pudo crear el usuario.'
+    const duplicate = /already|registered|duplicate/i.test(message)
+    return res.status(duplicate ? 409 : 500).json({ error: duplicate ? 'El email ya está registrado.' : 'No se pudo crear el usuario.' })
   }
 }
 
@@ -213,6 +324,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'cash-confirm': return confirmCash(req, res)
     case 'kyc-verify': return verifyKyc(req, res)
     case 'provider-verification': return changeProviderVerification(req, res)
+    case 'admin-create-user': return createAdminManagedUser(req, res)
     default: return res.status(404).json({ error: 'Operación no encontrada.' })
   }
 }
