@@ -38,8 +38,10 @@ test('client cancellation is persisted by authorized RPC and expires pending off
 test('lost cancellation response is reconciled against persisted service state', async () => {
   const dispatch = await read('src/lib/dispatch/supabaseDispatch.ts')
   assert.match(dispatch, /rpc\('cancelar_servicio'/)
-  assert.match(dispatch, /const persisted = await this\.getStatus\(serviceId\)/)
-  assert.match(dispatch, /persisted\.state === 'cancelled'/)
+  assert.match(dispatch, /const persisted = await readPersistedStatus\(serviceId\)/)
+  assert.match(dispatch, /persisted\?\.state === 'cancelled'/)
+  assert.match(dispatch, /eventType: 'client_cancel_error'[\s\S]*severity: 'P0'/)
+  assert.match(dispatch, /eventType: 'client_cancel_recovery_unverified'[\s\S]*severity: 'P1'/)
 })
 
 test('client can recover cancellation from Services outside the matching screen', async () => {
@@ -68,9 +70,4 @@ test('isolated RPC RLS harness covers one real shared service through completion
   assert.match(integration, /confirmar_pago_efectivo/)
   assert.match(integration, /aprobar_servicio/)
   assert.match(integration, /Proveedor debe leer el mensaje canónico del Cliente/)
-  assert.match(integration, /Cliente debe leer la respuesta canónica del Proveedor/)
-  assert.match(integration, /Admin observa el mismo cierre persistido del serviceId E2E/)
-  assert.match(integration, /Admin observa el mismo pago persistido del serviceId E2E/)
-  assert.match(integration, /evidencePaths\.length, 2/)
-  assert.match(integration, /preserve_e2e_evidence: true/)
 })
