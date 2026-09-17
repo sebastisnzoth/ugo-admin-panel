@@ -6,6 +6,7 @@ import { installApiRuntimeBase } from './lib/apiRuntime'
 import { installSentinel,reportSentinelIncident } from './lib/sentinel'
 import './lib/browserVoiceBridge'
 import './mvp/development-dashboard-status.css'
+import './mvp/client-mobile-p0.css'
 
 // Runtime candidate marker: source commits trigger exact-SHA CI, Android TEST packaging and Vercel publication.
 installApiRuntimeBase()
