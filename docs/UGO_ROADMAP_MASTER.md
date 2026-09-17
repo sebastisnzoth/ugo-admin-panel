@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 3.3 · 16 de septiembre de 2026  
+**Versión:** 3.4 · 16 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -74,7 +74,7 @@ UGO Core CI run 35052952138 → SUCCESS
 | Evidencia | 🟡 | cámara/Storage real |
 | Cobro/cierre | 🟡 | method-aware E2E |
 
-## 7. Orden de ejecución
+## 7. Orden de ejecución UGO A
 
 ```text
 1 generar Android TEST del SHA final exacto
@@ -89,7 +89,38 @@ UGO Core CI run 35052952138 → SUCCESS
 10 publicar sólo cuando corresponda
 ```
 
-## 8. Gates
+## 8. Track paralelo UGO B — AI Studio
+
+Contrato: `docs/UGO_DUAL_IMPLEMENTATION_MASTER.md`.
+
+UGO B (`sebastisnzoth/UGO-PRODUCCION`) avanza en paralelo sin detener este orden. Comparte el contrato Supabase TEST, no crea otro backend y no toca PROD para habilitar la competencia.
+
+Orden inicial de UGO B:
+
+```text
+B1 shell responsive móvil
+B2 entrypoint de producto sin demo obligatoria
+B3 configuración Supabase TEST por env
+B4 capa backend/sesión/roles
+B5 request persistido + serviceId
+B6 online/matching/aceptación
+B7 chat bidireccional realtime
+B8 lifecycle + Actividad
+B9 cancelación + multi-pedido
+B10 cierre + rating
+```
+
+Ciclo de aprendizaje:
+
+```text
+A demuestra mejora compatible → evaluar/portar a B
+B demuestra mejora compatible → evaluar/portar a A
+fallo de contrato común        → corregir una vez en backend/maestros
+```
+
+Milestone comparable: ambos ejecutan con datos TEST reales `login → pedido → matching → aceptación → chat → lifecycle → completar → rating`, más cancelación selectiva, multi-pedido, reload/reconnect y móvil sin superposición crítica.
+
+## 9. Gates
 
 ```text
 TWO-DEVICES = BLOCKED
@@ -99,8 +130,16 @@ GO-LIVE = BLOCKED
 
 Persistencia DB, contratos verdes y APK compilado no sustituyen evidencia física.
 
-## 9. Regla final
+UGO B tampoco puede usar mocks o navegación local como sustituto de runtime real para declararse comparable.
 
-**El siguiente avance real es convertir el checkpoint CI VALIDATED en evidencia runtime del mismo SHA, no sumar features.**
+## 10. Regla económica transversal
+
+Objetivo: **costo directo $0** mientras los recursos gratuitos verificados lo permitan.
+
+No habilitar gasto o infraestructura paga para acelerar A o B sin autorización explícita. Antes de sumar un servicio externo, verificar pricing/free tier actual y alternativa gratuita. La competencia no justifica duplicar infraestructura.
+
+## 11. Regla final
+
+**El siguiente avance real de UGO A sigue siendo convertir el checkpoint CI VALIDATED en evidencia runtime del mismo SHA, no sumar features. UGO B puede avanzar en paralelo para demostrar una experiencia mejor sobre el mismo contrato TEST; ninguna implementación puede fingir persistencia, frenar a la otra ni crear una segunda realidad UGO.**
 
 No tocar Supabase PROD. No crear ramas. No desplegar web sólo para trazabilidad de QA.
