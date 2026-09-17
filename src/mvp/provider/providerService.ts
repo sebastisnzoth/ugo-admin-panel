@@ -105,11 +105,8 @@ export async function acceptProviderOpportunity(supabase:SupabaseClient,id:strin
  if(error){
   const persisted=await persistedAcceptedOpportunity(supabase,id,serviceId)
   if(persisted===true)return
-  if(persisted===false){
-   void reportSentinelIncident({eventType:'provider_accept_offer_error',message:messageOf(error,'No se pudo aceptar el pedido.'),error,role:'provider',severity:'P0',serviceId,action:'provider.offer.accept',checklistCode:'PROVIDER-ASSIGN'})
-  }else{
-   void reportSentinelIncident({eventType:'provider_accept_offer_recovery_unverified',message:'Falló la aceptación y no pudimos verificar si la asignación quedó persistida. Actualizamos el estado real antes de permitir otro intento.',error,role:'provider',severity:'P1',serviceId,action:'provider.offer.accept.recovery'})
-  }
+  if(persisted===false){void reportSentinelIncident({eventType:'provider_accept_offer_error',message:messageOf(error,'No se pudo aceptar el pedido.'),error,role:'provider',severity:'P0',serviceId,action:'provider.offer.accept',checklistCode:'PROVIDER-ASSIGN'})}
+  else{void reportSentinelIncident({eventType:'provider_accept_offer_recovery_unverified',message:'Falló la aceptación y no pudimos verificar si la asignación quedó persistida. Actualizamos el estado real antes de permitir otro intento.',error,role:'provider',severity:'P1',serviceId,action:'provider.offer.accept.recovery'})}
   throw error
  }
  if(!data){
@@ -162,5 +159,15 @@ export async function advanceProviderService(supabase:SupabaseClient,serviceId:s
  }else{
   void reportSentinelIncident({eventType:'provider_service_state_recovery_unverified',message:'No pudimos verificar si la transición quedó persistida. La interfaz volverá a consultar el estado real.',error,role:'provider',severity:'P1',serviceId,action:'provider.service.advance.recovery',metadata:{targetState:state}})
  }
+ throw error
+}
+
+export async function cancelProviderService(supabase:SupabaseClient,serviceId:string,reason:string){
+ const motivo=reason.trim()
+ if(motivo.length<5)throw new Error('Indicá el motivo de la cancelación para que quede registrado.')
+ const{error}=await supabase.rpc('cancelar_servicio_proveedor',{p_servicio_id:serviceId,p_motivo:motivo})
+ if(!error)return
+ try{const{data}=await supabase.from('servicios').select('estado').eq('id',serviceId).maybeSingle();if(data?.estado==='cancelado')return}catch{}
+ void reportSentinelIncident({eventType:'provider_service_cancel_error',message:messageOf(error,'No se pudo cancelar el servicio.'),error,role:'provider',severity:'P0',serviceId,action:'provider.service.cancel',checklistCode:'PROVIDER-STATES'})
  throw error
 }
