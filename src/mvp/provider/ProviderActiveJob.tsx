@@ -10,6 +10,7 @@ import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 const STATE_LABEL:Record<string,string>={asignado:'Listo para ir',en_camino:'Vas al cliente',llegado:'Ya estás en el lugar',en_progreso:'Resolvé el problema',esperando_aprobacion:'Trabajo listo',completado:'Completado'}
 const FLOW_STEPS=[{state:'asignado',label:'Ir'},{state:'llegado',label:'Llegar'},{state:'en_progreso',label:'Resolver'},{state:'esperando_aprobacion',label:'Listo'}] as const
 const FLOW_ORDER:Record<string,number>={asignado:0,en_camino:0,llegado:1,en_progreso:2,esperando_aprobacion:3,completado:3}
+const CANCELLABLE=new Set(['asignado','en_camino','llegado'])
 function scheduledLabel(value:string){const date=new Date(value);return Number.isNaN(date.getTime())?'Horario programado':date.toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderActiveJob(){
@@ -23,6 +24,7 @@ export function ProviderActiveJob(){
  const stateLabel=STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
  const progressIndex=FLOW_ORDER[s.estado]??0
  const confirmArrival=async()=>{const normal=await d.advance('llegado');if(normal)return;const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:s.id,p_estado:'llegado'});if(!error)await d.reload()}
+ const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;const reason=window.prompt('Contanos brevemente por qué cancelás este pedido. El motivo queda registrado.');if(reason===null)return;if(reason.trim().length<5){window.alert('Indicá un motivo de al menos 5 caracteres para cancelar el pedido.');return}await d.cancelService(reason)}
  return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
   <header className="provider-mission-head"><button type="button" className="provider-back" onClick={flow.actions.openHome}>← Inicio</button><span className="provider-kicker">TRABAJO ACTIVO</span><h1 id="provider-job-title">{stateLabel}</h1><p>Un paso por vez. UGO se ocupa del resto.</p></header>
   <div className="provider-job-progress" aria-label="Progreso del trabajo">{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<=progressIndex?'is-done':''}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
@@ -42,9 +44,13 @@ export function ProviderActiveJob(){
    {s.estado==='asignado'&&paymentReady&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</button>}
    {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, el botón siempre te permite confirmarla.</span><button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?'Confirmando…':'YA LLEGUÉ'}</button></div>}
    {s.estado==='llegado'&&(evidence.initial?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
-   {s.estado==='en_progreso'&&(evidence.final?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="CERRANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>)}
-   {s.estado==='en_progreso'&&d.cashSelected&&<p className="provider-action-note">Al marcar TRABAJO LISTO confirmás que terminaste y que recibiste el efectivo acordado.</p>}
-   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Listo de tu lado</strong><span>El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.</span></div>}
+   {s.estado==='en_progreso'&&!evidence.final&&<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel={d.cashSelected?'SUBIR FOTO FINAL':'TRABAJO LISTO'} actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.cashSelected?d.reload():d.completeService()}/>} 
+   {s.estado==='en_progreso'&&evidence.final&&d.cashSelected&&!d.cashConfirmed&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.confirmCash()}>{d.busy?'Registrando…':'CONFIRMAR EFECTIVO RECIBIDO'}</button>}
+   {s.estado==='en_progreso'&&evidence.final&&(!d.cashSelected||d.cashConfirmed)&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</button>}
+   {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Primero documentá el resultado con la foto final. Después confirmás el efectivo por separado.</p>}
+   {s.estado==='en_progreso'&&d.cashSelected&&evidence.final&&!d.cashConfirmed&&<p className="provider-action-note">Confirmá el efectivo sólo si el cliente ya te pagó y vos recibiste el dinero.</p>}
+   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Listo de tu lado</strong><span>{d.cashSelected?'El efectivo ya quedó confirmado por vos. El cliente ahora revisa el trabajo y cierra el pedido.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span></div>}
+   {CANCELLABLE.has(s.estado)&&<button type="button" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</button>}
   </section>
 
   <section className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></section>
