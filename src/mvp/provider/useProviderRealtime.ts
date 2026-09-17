@@ -1,22 +1,29 @@
-import{useEffect}from'react'
+import{useEffect,useState}from'react'
 import type{SupabaseClient}from'@supabase/supabase-js'
 
 export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,onChange:()=>void){
+ const[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{
   if(!userId)return
+  let alive=true
+  let reconnectTimer:number|undefined
   const resync=()=>void onChange()
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
+  const onOnline=()=>{resync();reconnect()}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
-  window.addEventListener('online',resync)
+  window.addEventListener('online',onOnline)
   document.addEventListener('visibilitychange',onVisibility)
-  const ch=supabase.channel(`provider-flow-${userId}`)
+  const ch=supabase.channel(`provider-flow-${userId}-${channelEpoch}`)
    .on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},resync)
-   .subscribe(status=>{if(status==='SUBSCRIBED')resync()})
+   .subscribe(status=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){resync();reconnect()}})
   return()=>{
-   window.removeEventListener('online',resync)
+   alive=false
+   if(reconnectTimer)window.clearTimeout(reconnectTimer)
+   window.removeEventListener('online',onOnline)
    document.removeEventListener('visibilitychange',onVisibility)
    void supabase.removeChannel(ch)
   }
- },[onChange,supabase,userId])
+ },[channelEpoch,onChange,supabase,userId])
 }
