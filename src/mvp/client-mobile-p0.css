@@ -3,43 +3,12 @@
    Hugo / bottom sheet / navigation from overlapping each other. */
 @media (max-width: 899px){
   .ugo-ref-client{overflow:hidden}
-  .ugo-ref-client .ugo-ref-hugo{
-    position:absolute;
-    left:auto;
-    right:16px;
-    top:82px;
-    bottom:auto;
-    transform:none;
-    z-index:32;
-    pointer-events:auto;
-  }
+  .ugo-ref-client .ugo-ref-hugo{position:absolute;left:auto;right:16px;top:82px;bottom:auto;transform:none;z-index:32;pointer-events:auto}
   .ugo-ref-client .ugo-ref-hugo>span{width:58px;height:58px;font-size:28px}
   .ugo-ref-client .ugo-ref-hugo small{display:none}
-  .ugo-ref-client .ugo-ref-sheet{
-    left:10px;
-    right:10px;
-    bottom:76px;
-    width:auto;
-    max-height:min(48dvh,430px);
-    height:auto;
-    padding:8px 12px 10px;
-    gap:8px;
-    overflow-y:auto;
-    overscroll-behavior:contain;
-    z-index:30;
-  }
+  .ugo-ref-client .ugo-ref-sheet{left:10px;right:10px;bottom:76px;width:auto;max-height:min(48dvh,430px);height:auto;padding:8px 12px 10px;gap:8px;overflow-y:auto;overscroll-behavior:contain;z-index:30}
   .ugo-ref-client .ugo-ref-search{min-height:44px;padding:8px 10px;flex:0 0 auto}
-  .ugo-ref-client .ugo-ref-categories{
-    display:grid;
-    grid-template-columns:repeat(4,minmax(72px,1fr));
-    gap:6px;
-    overflow-x:auto;
-    overflow-y:hidden;
-    overscroll-behavior-inline:contain;
-    scrollbar-width:none;
-    padding:2px 2px 6px;
-    flex:0 0 auto;
-  }
+  .ugo-ref-client .ugo-ref-categories{display:grid;grid-template-columns:repeat(4,minmax(72px,1fr));gap:6px;overflow-x:auto;overflow-y:hidden;overscroll-behavior-inline:contain;scrollbar-width:none;padding:2px 2px 6px;flex:0 0 auto}
   .ugo-ref-client .ugo-ref-categories::-webkit-scrollbar{display:none}
   .ugo-ref-client .ugo-ref-categories button{min-width:72px;min-height:68px;padding:4px 2px;touch-action:manipulation}
   .ugo-ref-client .ugo-ref-categories button b{width:40px;height:40px;font-size:18px}
@@ -47,14 +16,19 @@
   .ugo-ref-client .ugo-ref-feature-title,.ugo-ref-client .ugo-ref-featured{display:none}
   .ugo-ref-client .ugo-ref-nav{z-index:40;min-height:64px;padding-bottom:env(safe-area-inset-bottom)}
   .ugo-ref-client .ugo-ref-nav button{min-height:56px;touch-action:manipulation}
-  .ugo-ref-client .ugo-ref-provider-sheet{
-    max-height:calc(100dvh - 72px);
-    overflow-y:auto;
-    overscroll-behavior:contain;
-    padding-bottom:calc(24px + env(safe-area-inset-bottom));
-  }
+  .ugo-ref-client .ugo-ref-provider-sheet{max-height:calc(100dvh - 72px);overflow-y:auto;overscroll-behavior:contain;padding-bottom:calc(24px + env(safe-area-inset-bottom))}
   .ugo-ref-client .ugo-provider-card,.ugo-ref-client .ugo-hire-button{touch-action:manipulation}
   .ugo-ref-client .ugo-hire-button{position:sticky;bottom:0;z-index:3;min-height:52px}
+
+  /* Real client shell: Hugo is a compact entry point, never a permanent overlay. */
+  .prototype-hugo{left:auto;right:14px;bottom:calc(76px + env(safe-area-inset-bottom));transform:none;width:64px;align-items:flex-end;z-index:86}
+  .prototype-hugo.state-idle .ugo-hugo-stage-card{display:none}
+  .prototype-hugo .ugo-real-orb{width:58px;height:58px}
+  .prototype-hugo .ugo-orb-icon{font-size:24px}
+  .prototype-hugo .ugo-real-state{display:none}
+  .prototype-hugo:not(.state-idle){left:10px;right:10px;width:auto;align-items:center}
+  .prototype-hugo:not(.state-idle) .ugo-hugo-stage-card{display:block;max-height:calc(100dvh - 190px);overflow-y:auto;overscroll-behavior:contain;margin-bottom:8px;padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+  .prototype-hugo:not(.state-idle) .ugo-real-orb{width:54px;height:54px}
 }
 @media (max-width: 380px){
   .ugo-ref-client .ugo-ref-topbar{left:8px;right:8px;gap:6px}
@@ -66,6 +40,8 @@
   .ugo-ref-client .ugo-ref-categories{grid-template-columns:repeat(4,minmax(68px,1fr))}
   .ugo-ref-client .ugo-ref-categories button{min-width:68px}
   .ugo-ref-client .ugo-ref-categories button b{width:36px;height:36px}
+  .prototype-hugo{right:10px}
+  .prototype-hugo:not(.state-idle){left:8px;right:8px}
 }
 @media (max-height: 700px) and (max-width: 899px){
   .ugo-ref-client .ugo-ref-hugo{top:68px}
@@ -77,4 +53,5 @@
   .ugo-ref-client .ugo-ref-categories button b{width:34px;height:34px;font-size:16px}
   .ugo-ref-client .ugo-ref-nav{min-height:58px}
   .ugo-ref-client .ugo-ref-nav button{min-height:50px}
+  .prototype-hugo:not(.state-idle) .ugo-hugo-stage-card{max-height:calc(100dvh - 150px)}
 }
