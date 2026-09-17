@@ -167,7 +167,7 @@ export async function cancelProviderService(supabase:SupabaseClient,serviceId:st
  if(motivo.length<5)throw new Error('Indicá el motivo de la cancelación para que quede registrado.')
  const{error}=await supabase.rpc('cancelar_servicio_proveedor',{p_servicio_id:serviceId,p_motivo:motivo})
  if(!error)return
- try{const{data}=await supabase.from('servicios').select('estado').eq('id',serviceId).maybeSingle();if(data?.estado==='cancelado')return}catch{}
+ try{const{data}=await supabase.from('servicios').select('estado').eq('id',serviceId).maybeSingle();if(data?.estado==='cancelado')return}catch{void 0}
  void reportSentinelIncident({eventType:'provider_service_cancel_error',message:messageOf(error,'No se pudo cancelar el servicio.'),error,role:'provider',severity:'P0',serviceId,action:'provider.service.cancel',checklistCode:'PROVIDER-STATES'})
  throw error
 }
