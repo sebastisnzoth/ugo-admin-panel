@@ -61,6 +61,8 @@ test('active electronic payments require a separately funded expansion delta',as
 
 test('completion review is scoped to the authenticated client and assigned-provider final evidence',async()=>{
  const ui=await read('src/mvp/ClientCompletionReview.tsx')
- assert.match(ui,/\.eq\('cliente_id',uid\)\.eq\('estado','esperando_aprobacion'\)/)
+ assert.match(ui,/\.eq\('cliente_id',uid\)/)
+ assert.match(ui,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
+ assert.match(ui,/else query=query\.eq\('estado','esperando_aprobacion'\)/)
  assert.match(ui,/\.eq\('tipo','despues'\)\.eq\('usuario_id',next\.proveedor_id\)/)
 })
