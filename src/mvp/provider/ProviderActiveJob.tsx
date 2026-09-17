@@ -35,16 +35,19 @@ export function ProviderActiveJob(){
    </div>
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
   </article>
-  <section className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></section>
-  <div className="provider-job-action">
-   {s.estado==='asignado'&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperando al cliente</strong><span>UGO te avisa cuando la forma de pago esté confirmada.</span></div>}
+
+  <section className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
+   <small>CONTROL DEL PEDIDO · #{s.numero??String(s.id).slice(0,8)}</small>
+   {s.estado==='asignado'&&!paymentReady&&<><button type="button" className="provider-primary provider-main-action" disabled>ESTOY YENDO</button><div className="provider-simple-status" role="status"><strong>Falta confirmar la forma de pago</strong><span>El botón queda visible y se habilita automáticamente cuando UGO confirma PIX o efectivo.</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</button>}
-   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, el botón siempre te permite confirmarla.</span><button type="button" className="provider-arrival-fallback" disabled={d.busy} onClick={()=>void confirmArrival()}>YA LLEGUÉ</button></div>}
+   {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, el botón siempre te permite confirmarla.</span><button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?'Confirmando…':'YA LLEGUÉ'}</button></div>}
    {s.estado==='llegado'&&(evidence.initial?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
    {s.estado==='en_progreso'&&(evidence.final?<button type="button" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</button>:<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="CERRANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>)}
    {s.estado==='en_progreso'&&d.cashSelected&&<p className="provider-action-note">Al marcar TRABAJO LISTO confirmás que terminaste y que recibiste el efectivo acordado.</p>}
    {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Listo de tu lado</strong><span>El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.</span></div>}
-  </div>
+  </section>
+
+  <section className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></section>
   {s.estado==='en_progreso'&&<details className="provider-exception"><summary>Cambió el trabajo o el precio</summary><p>Usalo sólo si apareció algo nuevo que el cliente tiene que aprobar.</p><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></details>}
  </section>
 }
