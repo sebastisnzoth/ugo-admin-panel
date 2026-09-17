@@ -45,8 +45,8 @@ import'./client-persistent-header.css'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
- const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();flow.navigate('home')}
  const openService=(serviceId:string)=>{setSentinelContext({role:'client',serviceId,action:'client.activity.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'});setSelectedServiceId(serviceId)}
+ const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();const serviceId=typeof notice.datos?.servicio_id==='string'?notice.datos.servicio_id:null;if(serviceId)return openService(serviceId);flow.navigate('home')}
  const closeService=()=>{clearSentinelContext();setSelectedServiceId(null)}
  const goHome=()=>{closeService();flow.navigate('home')}
  const detailOpen=Boolean(selectedServiceId),canonical=flow.screen==='home'||flow.screen==='request'
