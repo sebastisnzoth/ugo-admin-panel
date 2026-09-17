@@ -1,0 +1,7 @@
+import React,{useEffect,useState}from'react'
+import{useRoleSession}from'../shared'
+import'./client-summary-screen.css'
+type Draft={categoryName?:string;description?:string;address?:string;complement?:string;when?:string;scheduleAt?:string;paymentMethod?:string}
+const whenLabel=(d:Draft)=>d.when==='ahora'?'Lo antes posible':d.when==='hoy'?'Hoy':d.when==='manana'?'Mañana':d.scheduleAt?new Date(d.scheduleAt).toLocaleString('es-AR'):'Programado'
+export function ClientSummaryScreen({onBack,onConfirm}:{onBack:()=>void;onConfirm:()=>void}){const{session}=useRoleSession('client'),[d,setD]=useState<Draft>({});useEffect(()=>{if(!session)return;try{setD(JSON.parse(sessionStorage.getItem(`ugo:guided-request-draft:${session.user.id}`)||'{}'))}catch{}},[session]);if(!session)return null;return <main className="ugo-summary-screen"><header><button onClick={onBack}>←</button><strong>UGO</strong><div><i/><i/><i/><i/><i/></div><small>5 de 5</small></header><section><h1>Resumen del pedido</h1><p>Revisá los detalles antes de confirmar</p><article><h2>⚡ {d.categoryName||'Servicio'}</h2><dl><div><dt>▣ Qué hay que hacer</dt><dd>{d.description||'—'}</dd></div><div><dt>⌖ Dirección</dt><dd>{d.address||'—'}{d.complement?<><br/>{d.complement}</>:null}</dd></div><div><dt>▣ Cuándo</dt><dd>{whenLabel(d)}</dd></div><div><dt>▣ Forma de pago</dt><dd>{d.paymentMethod==='cash'?'Efectivo':'PIX'}</dd></div></dl></article></section><footer><button onClick={onConfirm}>Confirmar y buscar profesional</button></footer></main>}
+export default ClientSummaryScreen
