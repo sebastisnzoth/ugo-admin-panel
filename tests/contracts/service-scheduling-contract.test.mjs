@@ -29,7 +29,7 @@ test('provider agenda is scoped to the authenticated provider and includes immed
  assert.match(agenda,/todayRows=rows\.filter/)
  assert.match(agenda,/upcomingRows=rows\.filter/)
  assert.match(agenda,/filter:`proveedor_id=eq\.\$\{id\}`/)
- assert.match(agenda,/Abrir trabajo/)
+ assert.match(agenda,/Gestionar pedido/)
 })
 
 test('provider navigation exposes agenda without replacing the active-job journey',async()=>{
