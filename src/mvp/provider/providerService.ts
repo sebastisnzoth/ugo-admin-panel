@@ -10,11 +10,14 @@ type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:str
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
 type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
+type SnapshotPart='profile'|'offers'|'services'|'payments'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const LIVE_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
 const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'] as const
-const messageOf=(error:unknown,fallback:string)=>error instanceof Error?error.message:fallback
+const errorRecord=(error:unknown)=>error&&typeof error==='object'?error as Record<string,unknown>:null
+const messageOf=(error:unknown,fallback:string)=>{if(error instanceof Error&&error.message)return error.message;const record=errorRecord(error),message=record?.message;return typeof message==='string'&&message.trim()?message:fallback}
+const errorCode=(error:unknown)=>{const code=errorRecord(error)?.code;return typeof code==='string'&&code.trim()?code:null}
 
 function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
 export function pickActionableProviderService(rows:ProviderService[],now=Date.now()):Service|null{
@@ -25,6 +28,7 @@ export function pickActionableProviderService(rows:ProviderService[],now=Date.no
 }
 
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
+ let failedPart:SnapshotPart|null=null
  try{
   const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
    supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
@@ -32,11 +36,12 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
    supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
    supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
   ])
-  if(pe)throw pe;if(oe)throw oe;if(se)throw se;if(pae)throw pae
+  if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}
   const services=(s||[])as ProviderService[]
   return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[]}
  }catch(error){
-  void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,'No se pudo cargar el estado operativo del proveedor.'),error,role:'provider',severity:'P1',action:'provider.snapshot.load'})
+  const fallback='No se pudo cargar el estado operativo del proveedor.'
+  void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,fallback),error,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(error)}})
   throw error
  }
 }
