@@ -11,12 +11,14 @@ test('specific service chat uses prop serviceId before service data loads',()=>{
  assert.match(chat,/if\(targetServiceId\)serviceConfig\.filter=`id=eq\.\$\{targetServiceId\}`/)
 })
 
-test('realtime subscription is not recreated when selected conversation or loaded service changes',()=>{
+test('realtime subscription stays stable across conversation loads but recreates after transport failure',()=>{
  assert.match(chat,/const loadRef=useRef\(load\),reportChatFailureRef=useRef\(reportChatFailure\)/)
  assert.match(chat,/loadRef\.current=load/)
  assert.match(chat,/reportChatFailureRef\.current=reportChatFailure/)
- assert.match(chat,/\},\[compact,role,sb,serviceId,userId\]\)/)
+ assert.match(chat,/\},\[channelEpoch,compact,role,sb,serviceId,userId\]\)/)
  assert.doesNotMatch(chat,/\},\[compact,load,reportChatFailure,role,sb,service\?\.id,serviceId,userId\]\)/)
+ assert.match(chat,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(chat,/resync\(\);reconnect\(\)/)
 })
 
 test('session gaps clear chat state instead of becoming P0 auth errors',()=>{
