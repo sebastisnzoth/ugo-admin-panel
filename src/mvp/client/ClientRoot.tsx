@@ -13,10 +13,8 @@ import{SentinelErrorBoundary}from'../SentinelErrorBoundary'
 import{ClientOnboardingGate}from'../ClientOnboardingGate'
 import{ClientFlowActionsBridge}from'./ClientFlowActionsBridge'
 import{ClientGuidedRequest}from'./ClientGuidedRequest'
-import{ClientGuidedPaymentGate}from'./ClientGuidedPaymentGate'
 import{ClientHugoBridge}from'./ClientHugoBridge'
 import{ClientPaymentChoice}from'./ClientPaymentChoice'
-import{ClientPreOrderPayment}from'./ClientPreOrderPayment'
 import{ClientPremiumHome}from'./ClientPremiumHome'
 import{ClientProfilePanel}from'./ClientProfilePanel'
 import{ClientProviderRadarBridge}from'./ClientProviderRadarBridge'
@@ -25,7 +23,6 @@ import{ClientServiceDetail}from'./ClientServiceDetail'
 import{ClientStudioNavbar}from'./ClientStudioNavbar'
 import{useClientFlow}from'./clientFlow'
 import'./client-guided-request.css'
-import'./client-guided-payment-gate.css'
 import'./client-payment-choice.css'
 import'./client-responsive-layout.css'
 import'./client-conversational-stage.css'
@@ -53,5 +50,5 @@ export function ClientRoot({demo}:Props){
  const openService=(serviceId:string)=>{setSentinelContext({role:'client',serviceId,action:'client.activity.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'});setSelectedServiceId(serviceId)}
  const closeService=()=>{clearSentinelContext();setSelectedServiceId(null)}
  const detailOpen=Boolean(selectedServiceId)
- return <ClientOnboardingGate><div className={`ugo-client-root ugo-client-screen-${flow.screen}`}><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientStudioNavbar/>{flow.screen==='home'&&<><ClientPremiumHome onOpenService={openService}/><ClientPreOrderPayment/></>}{flow.screen==='request'&&<><ClientGuidedRequest key={flow.providerId||'default'}/><ClientGuidedPaymentGate/></>} {flow.screen!=='request'&&!detailOpen&&<ClientHugoBridge/>}{!detailOpen&&<ClientPaymentChoice/>}<ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/>{!detailOpen&&<ClientLiveTracking/>}{!detailOpen&&<ClientCompletionReview onOpenDispute={flow.actions.openDispute}/>}{!detailOpen&&<ClientRatingPrompt/>}{!detailOpen&&<ServiceChat role="client"/>}{!detailOpen&&<DisputeDock role="client" openRequest={flow.screen==='dispute'}/>}{!detailOpen&&<AppLocationButton role="client"/>}<ClientProviderRadarBridge/>{flow.screen==='history'&&!detailOpen&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><ServiceHistoryPanel role="client" embedded onOpenService={openService}/></div></div>}{selectedServiceId&&<SentinelErrorBoundary role="client" serviceId={selectedServiceId} checklistCode="CLIENT-ORDER-OPEN" action="client.activity.open_order" severity="P0" title="No pudimos abrir este pedido" onClose={closeService}><ClientServiceDetail serviceId={selectedServiceId} onClose={closeService}/></SentinelErrorBoundary>}{flow.screen==='profile'&&!detailOpen&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
+ return <ClientOnboardingGate><div className={`ugo-client-root ugo-client-screen-${flow.screen}`}><ClientFlowActionsBridge/>{demo&&<DemoSebastianPaymentBridge/>}<ClientStudioNavbar/>{flow.screen==='home'&&<ClientPremiumHome onOpenService={openService}/>} {flow.screen==='request'&&<ClientGuidedRequest key={flow.providerId||'default'}/>} {flow.screen!=='request'&&!detailOpen&&<ClientHugoBridge/>}{!detailOpen&&flow.screen!=='request'&&<ClientPaymentChoice/>}<ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={openNotice}/>{!detailOpen&&flow.screen!=='request'&&<ClientLiveTracking/>}{!detailOpen&&flow.screen!=='request'&&<ClientCompletionReview onOpenDispute={flow.actions.openDispute}/>}{!detailOpen&&flow.screen!=='request'&&<ClientRatingPrompt/>}{!detailOpen&&flow.screen!=='request'&&<ServiceChat role="client"/>}{!detailOpen&&flow.screen!=='request'&&<DisputeDock role="client" openRequest={flow.screen==='dispute'}/>}{!detailOpen&&flow.screen!=='request'&&<AppLocationButton role="client"/>}<ClientProviderRadarBridge/>{flow.screen==='history'&&!detailOpen&&<div className="ugo-client-screen-overlay"><div className="ugo-client-history-wrap"><ServiceHistoryPanel role="client" embedded onOpenService={openService}/></div></div>}{selectedServiceId&&<SentinelErrorBoundary role="client" serviceId={selectedServiceId} checklistCode="CLIENT-ORDER-OPEN" action="client.activity.open_order" severity="P0" title="No pudimos abrir este pedido" onClose={closeService}><ClientServiceDetail serviceId={selectedServiceId} onClose={closeService}/></SentinelErrorBoundary>}{flow.screen==='profile'&&!detailOpen&&<ClientProfilePanel/>}</div></ClientOnboardingGate>
 }
