@@ -41,6 +41,7 @@ import'./client-ai-studio-final-lock.css'
 import'./client-ai-studio-guided-complete.css'
 import'./client-real-test-fixes.css'
 import'./client-flow-reference-2026.css'
+import'./client-persistent-header.css'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
