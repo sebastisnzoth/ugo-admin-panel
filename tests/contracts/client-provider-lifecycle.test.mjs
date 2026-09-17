@@ -124,6 +124,20 @@ test('client approval is scoped to its service and backend verifies ownership pl
  assert.match(backend,/e\.usuario_id=v_servicio\.proveedor_id/)
 })
 
+test('client sees provider work evidence on the active assignment and exact service detail in realtime',async()=>{
+ const [gallery,postConfirm,detail,rls]=await Promise.all([
+  read('src/mvp/ClientEvidenceGallery.tsx'),
+  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('supabase/migrations/20260911_service_evidence.sql'),
+ ])
+ assert.match(postConfirm,/<ClientEvidenceGallery serviceId=\{service\.id\} hideWhenEmpty compact\/>/)
+ assert.match(detail,/<ClientEvidenceGallery serviceId=\{service\.id\} hideWhenEmpty\/>/)
+ assert.match(gallery,/table:'evidencias_servicio',filter:`servicio_id=eq\.\$\{serviceId\}`/)
+ assert.match(gallery,/createSignedUrl\(row\.storage_path,900\)/)
+ assert.match(rls,/s\.cliente_id = auth\.uid\(\) or s\.proveedor_id = auth\.uid\(\)/)
+})
+
 test('scope changes stay inside the active service and paid deltas are reconciled before closure',async()=>{
  const [panel,guard,checkout]=await Promise.all([
   read('src/mvp/ServiceExpansionPanel.tsx'),
