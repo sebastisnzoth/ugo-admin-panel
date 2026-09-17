@@ -84,8 +84,9 @@ test('cash completion requires a separate explicit provider receipt confirmation
   read('supabase/migrations/20260914202500_restore_cash_review_ordering_guard.sql'),
  ])
  const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
- assert.match(activeJob,/CONFIRMAR EFECTIVO RECIBIDO/)
- assert.match(activeJob,/onClick=\{\(\)=>void d\.confirmCash\(\)\}/)
+ assert.match(activeJob,/EL CLIENTE PAGÓ/)
+ assert.match(activeJob,/¿Confirmás que el cliente te pagó en efectivo y que recibiste el dinero\? Esta acción queda registrada\./)
+ assert.match(activeJob,/await d\.confirmCash\(\)/)
  assert.match(providerData,/if\(cashSelected&&!cashConfirmed\)\{setNotice\(\{type:'info'/)
  assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
  assert.match(backend,/old\.estado = 'en_progreso' and new\.estado = 'esperando_aprobacion'/)
@@ -146,15 +147,17 @@ test('client sees provider work evidence on the active assignment and exact serv
 })
 
 test('client and provider require cancellation confirmation before mutating an order',async()=>{
- const [postConfirm,detail,activeJob,providerData,providerService]=await Promise.all([
+ const [postConfirm,detail,history,activeJob,providerData,providerService]=await Promise.all([
   read('src/mvp/client/ClientPostConfirmFlow.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/mvp/ServiceHistoryPanel.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/providerService.ts'),
  ])
  assert.match(postConfirm,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
  assert.match(detail,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
+ assert.match(history,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
  assert.match(activeJob,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
  assert.match(activeJob,/window\.prompt\('Contanos brevemente por qué cancelás este pedido/)
  assert.match(providerData,/cancelProviderService\(supabase,serviceId,reason\)/)
