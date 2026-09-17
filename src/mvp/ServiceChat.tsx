@@ -28,9 +28,8 @@ function isMissingSessionError(error:unknown){const value=error as{message?:stri
 
 export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;serviceId?:string|null;compact?:boolean}){
  const sb=useMemo(()=>getRoleSupabase(role),[role])
- const[services,setServices]=useState<ChatService[]>([]),[selectedServiceId,setSelectedServiceId]=useState<string|null>(serviceId||null),[service,setService]=useState<ChatService|null>(null),[messages,setMessages]=useState<ChatMessage[]>([]),[userId,setUserId]=useState<string|null>(null),[draft,setDraft]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[unread,setUnread]=useState(0)
+ const[services,setServices]=useState<ChatService[]>([]),[selectedServiceId,setSelectedServiceId]=useState<string|null>(serviceId||null),[service,setService]=useState<ChatService|null>(null),[messages,setMessages]=useState<ChatMessage[]>([]),[userId,setUserId]=useState<string|null>(null),[draft,setDraft]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState(''),[open,setOpen]=useState(false),[unread,setUnread]=useState(0),[channelEpoch,setChannelEpoch]=useState(0)
  const endRef=useRef<HTMLDivElement|null>(null)
- const channelInstance=useRef(channelInstanceId())
  const normalizedRole:'client'|'provider'=role==='client'?'client':'provider'
  const reportChatFailure=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P0',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat`,checklistCode:'CHAT-REALTIME'})},[role,selectedServiceId,serviceId])
  const reportChatRecovery=useCallback((eventType:string,message:string,cause?:unknown,id?:string|null)=>{void reportSentinelIncident({eventType,message,error:cause,role,severity:'P1',serviceId:id||serviceId||selectedServiceId,action:`${role}.service.chat.recovery`})},[role,selectedServiceId,serviceId])
@@ -64,14 +63,16 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
  useEffect(()=>{void load().catch(e=>{if(isMissingSessionError(e)){clearConversation();return}const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatFailure('chat_load_error',message,e)})},[clearConversation,load,reportChatFailure])
  useEffect(()=>{
   if(!userId)return
-  let alive=true
+  let alive=true,reconnectTimer:number|undefined
   const resync=()=>{if(alive)void loadRef.current().catch(e=>{if(isMissingSessionError(e)){clearConversationRef.current();return}const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatFailureRef.current('chat_resync_error',message,e)})}
+  const reconnect=()=>{if(!alive)return;window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
-  window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
+  const onOnline=()=>{resync();reconnect()}
+  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
   const fallback=window.setInterval(()=>{if(shouldEscalate())resync()},10000)
   const targetServiceId=serviceId||null
   const suffix=targetServiceId||'all'
-  let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}-${channelInstance.current}`)
+  let ch:any=sb.channel(`service-chat-${role}-${suffix}-${userId.slice(0,6)}-${channelEpoch}-${channelInstanceId()}`)
   const messageConfig:any={event:'INSERT',schema:'public',table:'mensajes'}
   if(targetServiceId)messageConfig.filter=`servicio_id=eq.${targetServiceId}`
   ch=ch.on('postgres_changes',messageConfig,(payload:any)=>{
@@ -85,12 +86,12 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   ch.subscribe((status:string)=>{
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
-    resync()
+    resync();reconnect()
     if(shouldEscalate())reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
    }
   })
-  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
- },[compact,role,sb,serviceId,userId])
+  return()=>{alive=false;window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
+ },[channelEpoch,compact,role,sb,serviceId,userId])
  useEffect(()=>{if(open){setUnread(0);endRef.current?.scrollIntoView({block:'nearest'})}},[open,service?.id])
  useEffect(()=>{if(compact)endRef.current?.scrollIntoView({block:'nearest'})},[compact,messages])
 
