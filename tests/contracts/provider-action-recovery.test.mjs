@@ -45,8 +45,13 @@ test('provider cash Sentinel declares P0 only after confirmed persistence failur
  assert.match(source,/checklistCode:confirmed\?'PAYMENT-CLOSE':undefined/)
 })
 
-test('complete service reuses cash persistence recovery before failing close',()=>{
- assert.match(source,/completeService=async\(\)=>[\s\S]*confirmar_pago_efectivo[\s\S]*releasedCashPersisted\(serviceId\)[\s\S]*if\(persisted!==true\)\{reportCashFailure/)
+test('complete service requires explicit cash receipt confirmation instead of silently confirming it',()=>{
+ const confirmCash=source.slice(source.indexOf('const confirmCash'),source.indexOf('const completeService'))
+ const completeService=source.slice(source.indexOf('const completeService'),source.indexOf('const cancelService'))
+ assert.match(confirmCash,/confirmar_pago_efectivo[\s\S]*releasedCashPersisted\(serviceId\)/)
+ assert.match(completeService,/if\(cashSelected&&!cashConfirmed\)/)
+ assert.match(completeService,/Confirmá por separado que recibiste el efectivo/)
+ assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
 })
 
 test('provider still blocks departure until a valid payment method is persisted',()=>{
