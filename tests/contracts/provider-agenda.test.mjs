@@ -23,8 +23,18 @@ test('provider agenda keeps each immediate or scheduled job isolated by serviceI
  assert.match(agenda,/key=\{row\.id\}/)
  assert.match(agenda,/setSelectedId\(row\.id\)/)
  assert.match(agenda,/<ServiceChat role="provider" serviceId=\{selected\.id\} compact\/>/)
- assert.match(agenda,/Este detalle está ligado al serviceId exacto/)
- assert.match(agenda,/provider\.service\?\.id===selected\.id/)
+ assert.match(agenda,/Todos los cambios se aplican únicamente al serviceId/)
+ assert.match(agenda,/advanceProviderService\(db,selected\.id,target\)/)
+ assert.match(agenda,/cancelProviderService\(db,selected\.id,cancelReason\)/)
+})
+
+test('provider order detail exposes lifecycle evidence chat audit and cancellation',async()=>{
+ const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
+ for(const label of ['ESTOY YENDO','YA LLEGUÉ','EMPEZAR TRABAJO','TRABAJO LISTO','REGISTRO DEL PEDIDO','No voy a poder realizar este pedido']) assert.match(agenda,new RegExp(label))
+ assert.match(agenda,/ProviderEvidencePanel service=\{selectedService\} compact forceKind="antes"/)
+ assert.match(agenda,/ProviderEvidencePanel service=\{selectedService\} compact forceKind="despues"/)
+ assert.match(agenda,/servicio_estado_eventos/)
+ assert.match(agenda,/cancelReason\.trim\(\)\.length<5/)
 })
 
 test('provider agenda exposes immediate, today and upcoming work without hiding unscheduled assignments',async()=>{
