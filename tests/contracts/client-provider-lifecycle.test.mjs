@@ -88,8 +88,10 @@ test('cash completion requires a separate explicit provider receipt confirmation
  assert.match(activeJob,/onClick=\{\(\)=>void d\.confirmCash\(\)\}/)
  assert.match(providerData,/if\(cashSelected&&!cashConfirmed\)\{setNotice\(\{type:'info'/)
  assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
- assert.match(backend,/confirmar_pago_efectivo_impl/)
- assert.match(backend,/estado='esperando_aprobacion'/)
+ assert.match(backend,/old\.estado = 'en_progreso' and new\.estado = 'esperando_aprobacion'/)
+ assert.match(backend,/v_pago\.metodo = 'efectivo'/)
+ assert.match(backend,/v_pago\.estado <> 'liberado'/)
+ assert.match(backend,/Confirmá la recepción del efectivo antes de pedir la aprobación del cliente/)
 })
 
 test('provider simple flow keeps automatic arrival with a manual fallback',async()=>{
@@ -115,7 +117,7 @@ test('provider opportunity UI is problem-first and avoids exposing ranking burea
  assert.doesNotMatch(opportunities,/TU VISITA BASE/)
 })
 
-test('client approval stays scoped and completed review keeps its exact service evidence visible',async()=>{
+test('client approval is scoped to its service and completed review keeps its exact service evidence visible',async()=>{
  const [client,backend]=await Promise.all([
   read('src/mvp/ClientCompletionReview.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
