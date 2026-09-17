@@ -9,7 +9,7 @@ const shouldEscalatePaymentSync=()=>document.visibilityState==='visible'&&naviga
 
 export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}){
  const auth=useRoleSession('client'),{supabase,session}=auth
- const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[cashEnabled,setCashEnabled]=useState(true),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[ready,setReady]=useState(false)
+ const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[cashEnabled,setCashEnabled]=useState(true),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[ready,setReady]=useState(false),[channelEpoch,setChannelEpoch]=useState(0)
  const reportPaymentSyncFailure=useCallback((eventType:string,message:string,error?:unknown)=>{if(!shouldEscalatePaymentSync())return;void reportSentinelIncident({eventType,message,error,role:'client',severity:'P1',serviceId:serviceId||undefined,action:'client.order.payment.sync'})},[serviceId])
  const load=useCallback(async()=>{
   if(!session){setService(null);setPayment(null);setLoadError('');setReady(true);return}
@@ -39,7 +39,20 @@ export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}
   }finally{setReady(true)}
  },[reportPaymentSyncFailure,serviceId,session,supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{if(!session)return;const refresh=()=>void load();const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reportPaymentSyncFailure('client_payment_realtime_sync_error',`Canal de pago: ${status}`)}});const onOnline=()=>refresh();const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,reportPaymentSyncFailure,serviceId,session,supabase])
+ useEffect(()=>{
+  if(!session)return
+  let alive=true
+  let reconnectTimer:number|undefined
+  const refresh=()=>void load()
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
+  const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`
+  const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`
+  const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}-${channelEpoch}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reconnect();reportPaymentSyncFailure('client_payment_realtime_sync_error',`Canal de pago: ${status}`)}})
+  const onOnline=()=>{refresh();reconnect()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+ },[channelEpoch,load,reportPaymentSyncFailure,serviceId,session,supabase])
  const selected=payment?.metodo||''
  const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
  const cashSelected=selected==='efectivo'
