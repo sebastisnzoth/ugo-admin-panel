@@ -159,7 +159,7 @@ export async function advanceProviderService(supabase:SupabaseClient,serviceId:s
  }else{
   void reportSentinelIncident({eventType:'provider_service_state_recovery_unverified',message:'No pudimos verificar si la transición quedó persistida. La interfaz volverá a consultar el estado real.',error,role:'provider',severity:'P1',serviceId,action:'provider.service.advance.recovery',metadata:{targetState:state}})
  }
- throw error
+ throw new Error(messageOf(error,`No se pudo avanzar el servicio a ${state}.`))
 }
 
 export async function cancelProviderService(supabase:SupabaseClient,serviceId:string,reason:string){

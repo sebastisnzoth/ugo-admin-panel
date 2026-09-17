@@ -62,3 +62,24 @@ test('provider agenda resyncs from realtime and reports operational failures to 
  assert.match(agenda,/checklistCode:'PROVIDER-AGENDA'/)
  assert.match(agenda,/severity:'P1'/)
 })
+
+
+test('provider agenda blocks early departure and waits for persisted payment before enabling ESTOY YENDO',async()=>{
+ const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
+ assert.match(agenda,/TRAVEL_LEAD_MS=60\*60\*1000/)
+ assert.match(agenda,/departureReady=departureAt==null\|\|clock>=departureAt/)
+ assert.match(agenda,/selectedPaymentReady=Boolean/)
+ assert.match(agenda,/Trabajo programado/)
+ assert.match(agenda,/60 minutos antes/)
+ assert.match(agenda,/Esperando forma de pago/)
+ assert.match(agenda,/selected\.estado==='asignado'&&departureReady&&selectedPaymentReady/)
+})
+
+test('cash is materialized server-side when an assigned service requested efectivo',async()=>{
+ const sql=await read('supabase/migrations/20260917235500_materialize_cash_on_assignment.sql')
+ assert.match(sql,/materialize_cash_payment_on_assignment/)
+ assert.match(sql,/requested_payment_method/)
+ assert.match(sql,/'efectivo','efectivo','presencial'/)
+ assert.match(sql,/after update of proveedor_id,estado,tarifa,comision_ugo,ganancia_proveedor/)
+ assert.match(sql,/not exists\(select 1 from public\.pagos p where p\.servicio_id=s\.id\)/)
+})
