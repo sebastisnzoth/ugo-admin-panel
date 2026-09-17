@@ -36,10 +36,14 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
   }, [])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
     setHugoIntent({ ...intent, id: ++intentId.current })
-    // The guided request is the canonical order composer. Feed it the selected
-    // category/intent so Home never starts matching before the client completes
-    // need, address, timing, payment and review.
-    window.dispatchEvent(new CustomEvent(GUIDED_TEXT_EVENT, { detail: { text: intent.text, send: true } }))
+    // The guided request is the canonical order composer. Mount it first, then
+    // deliver the selected category/intent. This prevents Home from losing the
+    // event while ClientGuidedRequest is still unmounted.
+    setScreen('request')
+    setProviderId(null)
+    window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(GUIDED_TEXT_EVENT, { detail: { text: intent.text, send: true } }))
+    }, 0)
   }, [])
   const registerActions = useCallback((next: Partial<ClientActionHandlers>) => {
     handlersRef.current = { ...handlersRef.current, ...next }
