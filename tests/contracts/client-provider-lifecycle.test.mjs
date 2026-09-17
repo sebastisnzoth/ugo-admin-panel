@@ -77,17 +77,19 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
  assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
 })
 
-test('provider closes with one visible TRABAJO LISTO action while backend keeps evidence and cash guards',async()=>{
+test('cash completion requires a separate explicit provider receipt confirmation',async()=>{
  const [providerData,activeJob,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
-  read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
+  read('supabase/migrations/20260914202500_restore_cash_review_ordering_guard.sql'),
  ])
- assert.match(activeJob,/actionLabel="TRABAJO LISTO"/)
- assert.match(activeJob,/completeService/)
- assert.match(providerData,/confirmar_pago_efectivo/)
- assert.match(providerData,/advanceProviderService\(supabase,serviceId,'esperando_aprobacion'\)/)
- assert.match(backend,/v_servicio\.estado='en_progreso'[\s\S]*e\.tipo='despues'/)
+ const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
+ assert.match(activeJob,/CONFIRMAR EFECTIVO RECIBIDO/)
+ assert.match(activeJob,/onClick=\{\(\)=>void d\.confirmCash\(\)\}/)
+ assert.match(providerData,/if\(cashSelected&&!cashConfirmed\)\{setNotice\(\{type:'info'/)
+ assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
+ assert.match(backend,/confirmar_pago_efectivo_impl/)
+ assert.match(backend,/estado='esperando_aprobacion'/)
 })
 
 test('provider simple flow keeps automatic arrival with a manual fallback',async()=>{
@@ -113,12 +115,15 @@ test('provider opportunity UI is problem-first and avoids exposing ranking burea
  assert.doesNotMatch(opportunities,/TU VISITA BASE/)
 })
 
-test('client approval is scoped to its service and backend verifies ownership plus final provider evidence',async()=>{
+test('client approval stays scoped and completed review keeps its exact service evidence visible',async()=>{
  const [client,backend]=await Promise.all([
   read('src/mvp/ClientCompletionReview.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
- assert.match(client,/\.eq\('cliente_id',uid\)\.eq\('estado','esperando_aprobacion'\)/)
+ assert.match(client,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
+ assert.match(client,/else query=query\.eq\('estado','esperando_aprobacion'\)/)
+ assert.match(client,/completed=service\.estado==='completado'/)
+ assert.match(client,/<ClientEvidenceGallery serviceId=\{service\.id\}\/>/)
  assert.match(client,/rpc\('aprobar_servicio'/)
  assert.match(backend,/v_servicio\.cliente_id<>auth\.uid\(\)/)
  assert.match(backend,/e\.usuario_id=v_servicio\.proveedor_id/)
@@ -136,6 +141,22 @@ test('client sees provider work evidence on the active assignment and exact serv
  assert.match(gallery,/table:'evidencias_servicio',filter:`servicio_id=eq\.\$\{serviceId\}`/)
  assert.match(gallery,/createSignedUrl\(row\.storage_path,900\)/)
  assert.match(rls,/s\.cliente_id = auth\.uid\(\) or s\.proveedor_id = auth\.uid\(\)/)
+})
+
+test('client and provider require cancellation confirmation before mutating an order',async()=>{
+ const [postConfirm,detail,activeJob,providerData,providerService]=await Promise.all([
+  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
+  read('src/mvp/provider/providerData.tsx'),
+  read('src/mvp/provider/providerService.ts'),
+ ])
+ assert.match(postConfirm,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
+ assert.match(detail,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
+ assert.match(activeJob,/window\.confirm\('¿Realmente querés cancelar este pedido\?'\)/)
+ assert.match(activeJob,/window\.prompt\('Contanos brevemente por qué cancelás este pedido/)
+ assert.match(providerData,/cancelProviderService\(supabase,serviceId,reason\)/)
+ assert.match(providerService,/rpc\('cancelar_servicio_proveedor'/)
 })
 
 test('scope changes stay inside the active service and paid deltas are reconciled before closure',async()=>{
