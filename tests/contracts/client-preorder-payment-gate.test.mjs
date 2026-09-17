@@ -4,23 +4,38 @@ import {readFile} from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('client home requires a persisted payment method before starting a service request',async()=>{
- const [home,payment]=await Promise.all([
+test('client can start a request without configuring payment on Home',async()=>{
+ const [home,need,payment,summary,profile]=await Promise.all([
   read('src/mvp/client/ClientHomeScreen.tsx'),
-  read('src/mvp/client/ClientPreOrderPayment.tsx'),
+  read('src/mvp/client/ClientNeedScreen.tsx'),
+  read('src/mvp/client/ClientPaymentScreen.tsx'),
+  read('src/mvp/client/ClientSummaryScreen.tsx'),
+  read('src/mvp/client/ClientProfilePanel.tsx'),
  ])
- assert.match(home,/<ClientPreOrderPayment/)
- assert.match(home,/if\(!paymentReady\|\|!paymentMethod\)/)
- assert.match(home,/UGO no busca ningún profesional hasta que la forma de pago quede guardada/)
- assert.match(payment,/useState<Method\|null>\(null\)/)
- assert.doesNotMatch(payment,/useState<Method>\('efectivo'\)/)
+ assert.doesNotMatch(home,/ClientPreOrderPayment/)
+ assert.doesNotMatch(home,/paymentReady|paymentWarning|Primero elegí cómo vas a pagar/)
+ assert.doesNotMatch(need,/paymentAllowed|paymentChecked|Elegí una forma de pago en Inicio/)
+ assert.match(payment,/useState<Method>\('cash'\)/)
+ assert.match(payment,/Predeterminado · pagás al profesional/)
  assert.match(payment,/set_preorder_payment_preference/)
+ assert.match(payment,/la forma de pago nunca bloquea que empieces el pedido/)
+ assert.match(summary,/d\.paymentMethod==='pix'\?'PIX':'Efectivo'/)
+ assert.match(profile,/Forma de pago/)
+ assert.match(profile,/Efectivo/)
+ assert.match(profile,/Nunca bloquea que empieces a solicitar un servicio/)
 })
 
-test('backend rejects service creation without a pre-order payment preference',async()=>{
- const sql=await read('supabase/migrations/20260917150500_require_preorder_payment_preference.sql')
- assert.match(sql,/if v_metodo is null then/)
- assert.match(sql,/Elegí una forma de pago antes de crear el pedido/)
- assert.match(sql,/requested_payment_method/)
- assert.match(sql,/payment_selected_before_order/)
+test('backend defaults to cash instead of rejecting service creation',async()=>{
+ const [sql,postConfirm,paymentChoice]=await Promise.all([
+  read('supabase/migrations/20260917230000_default_cash_nonblocking_preorder.sql'),
+  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/mvp/client/ClientPaymentChoice.tsx'),
+ ])
+ assert.match(sql,/v_metodo := 'efectivo'/)
+ assert.match(sql,/payment_preference_source/)
+ assert.match(sql,/default_cash/)
+ assert.doesNotMatch(sql,/Elegí una forma de pago antes de crear el pedido/)
+ assert.match(postConfirm,/payment_method:draft\.paymentMethod==='pix'\?'pix':'efectivo'/)
+ assert.match(paymentChoice,/seleccionar_pago_efectivo/)
+ assert.match(paymentChoice,/requested_payment_method/)
 })

@@ -1,11 +1,13 @@
 # UGO · Contrato de pago en efectivo
 
-**Versión:** 2.0 · 11 de septiembre de 2026  
+**Versión:** 2.1 · 17 de septiembre de 2026  
 **Estado:** P0 · contrato operativo de método presencial
 
 ## Regla funcional
 
 Un cliente puede elegir **Efectivo** una vez que el servicio tiene proveedor asignado. Ese servicio queda habilitado para avanzar sin custodia electrónica de UGO.
+
+En la experiencia Cliente, **Efectivo es la preferencia predeterminada** cuando no existe una elección guardada. La forma de pago no bloquea el inicio de una solicitud: se muestra en el paso de confirmación y también puede cambiarse desde Perfil. La preferencia del pedido queda registrada en metadata; la creación financiera del pago en efectivo sigue ocurriendo cuando el servicio ya tiene proveedor asignado.
 
 Flujo canónico:
 
