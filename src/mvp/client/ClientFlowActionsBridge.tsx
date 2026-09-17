@@ -21,7 +21,13 @@ export function ClientFlowActionsBridge(){
  useEffect(()=>{
   if(!userId)return
 
-  const openSearch=()=>window.dispatchEvent(new Event(UGO_CLIENT_GUIDED_REQUEST_OPEN))
+  const openSearch=()=>{
+   // ClientGuidedRequest only exists on the request screen. Mount that screen
+   // before emitting the open event so catalogue/schedule entry points cannot
+   // dispatch into an unmounted listener.
+   navigate('request')
+   window.setTimeout(()=>window.dispatchEvent(new Event(UGO_CLIENT_GUIDED_REQUEST_OPEN)),0)
+  }
   const cancelService=async(serviceId:string)=>{
    try{
     if(!serviceId)return false
