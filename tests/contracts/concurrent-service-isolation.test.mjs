@@ -84,5 +84,7 @@ test('provider agenda exposes each assigned service by its own id',async()=>{
  const agenda=await read('src/mvp/provider/ProviderAgenda.tsx')
  assert.match(agenda,/setSelectedId\(row\.id\)/)
  assert.match(agenda,/ServiceChat role="provider" serviceId=\{selected\.id\}/)
- assert.match(agenda,/Este detalle está ligado al serviceId exacto/)
+ assert.match(agenda,/Todos los cambios se aplican únicamente al serviceId/)
+ assert.match(agenda,/advanceProviderService\(db,selected\.id,target\)/)
+ assert.match(agenda,/cancelProviderService\(db,selected\.id,cancelReason\)/)
 })
