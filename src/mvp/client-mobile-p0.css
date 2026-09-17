@@ -20,24 +20,30 @@
     right:10px;
     bottom:76px;
     width:auto;
-    max-height:none;
+    max-height:min(48dvh,430px);
     height:auto;
     padding:8px 12px 10px;
     gap:8px;
-    overflow:visible;
+    overflow-y:auto;
+    overscroll-behavior:contain;
     z-index:30;
   }
-  .ugo-ref-client .ugo-ref-search{min-height:44px;padding:8px 10px}
+  .ugo-ref-client .ugo-ref-search{min-height:44px;padding:8px 10px;flex:0 0 auto}
   .ugo-ref-client .ugo-ref-categories{
     display:grid;
-    grid-template-columns:repeat(4,minmax(0,1fr));
-    gap:4px;
-    overflow:visible;
+    grid-template-columns:repeat(4,minmax(72px,1fr));
+    gap:6px;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-inline:contain;
+    scrollbar-width:none;
+    padding:2px 2px 6px;
+    flex:0 0 auto;
   }
-  .ugo-ref-client .ugo-ref-categories button{min-width:0;min-height:64px;padding:3px 1px;touch-action:manipulation}
+  .ugo-ref-client .ugo-ref-categories::-webkit-scrollbar{display:none}
+  .ugo-ref-client .ugo-ref-categories button{min-width:72px;min-height:68px;padding:4px 2px;touch-action:manipulation}
   .ugo-ref-client .ugo-ref-categories button b{width:40px;height:40px;font-size:18px}
-  .ugo-ref-client .ugo-ref-categories button span{font-size:8px;line-height:1.1;max-width:100%;overflow:hidden;text-overflow:ellipsis}
-  .ugo-ref-client .ugo-ref-categories button:nth-child(n+5){display:none}
+  .ugo-ref-client .ugo-ref-categories button span{font-size:9px;line-height:1.15;max-width:100%;overflow:hidden;text-overflow:ellipsis}
   .ugo-ref-client .ugo-ref-feature-title,.ugo-ref-client .ugo-ref-featured{display:none}
   .ugo-ref-client .ugo-ref-nav{z-index:40;min-height:64px;padding-bottom:env(safe-area-inset-bottom)}
   .ugo-ref-client .ugo-ref-nav button{min-height:56px;touch-action:manipulation}
@@ -57,15 +63,17 @@
   .ugo-ref-client .ugo-ref-hugo{right:12px;top:72px}
   .ugo-ref-client .ugo-ref-hugo>span{width:52px;height:52px}
   .ugo-ref-client .ugo-ref-sheet{left:8px;right:8px;bottom:70px;padding:7px 9px 8px}
+  .ugo-ref-client .ugo-ref-categories{grid-template-columns:repeat(4,minmax(68px,1fr))}
+  .ugo-ref-client .ugo-ref-categories button{min-width:68px}
   .ugo-ref-client .ugo-ref-categories button b{width:36px;height:36px}
 }
 @media (max-height: 700px) and (max-width: 899px){
   .ugo-ref-client .ugo-ref-hugo{top:68px}
   .ugo-ref-client .ugo-ref-hugo>span{width:48px;height:48px;font-size:23px}
-  .ugo-ref-client .ugo-ref-sheet{bottom:66px;padding-top:6px;padding-bottom:7px}
+  .ugo-ref-client .ugo-ref-sheet{bottom:66px;max-height:44dvh;padding-top:6px;padding-bottom:7px}
   .ugo-ref-client .ugo-ref-sheet>.ugo-drawer-handle{display:none}
   .ugo-ref-client .ugo-ref-search{min-height:40px;padding:6px 9px}
-  .ugo-ref-client .ugo-ref-categories button{min-height:54px}
+  .ugo-ref-client .ugo-ref-categories button{min-height:56px}
   .ugo-ref-client .ugo-ref-categories button b{width:34px;height:34px;font-size:16px}
   .ugo-ref-client .ugo-ref-nav{min-height:58px}
   .ugo-ref-client .ugo-ref-nav button{min-height:50px}
