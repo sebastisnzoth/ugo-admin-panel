@@ -10,7 +10,7 @@ const shouldEscalate=()=>document.visibilityState==='visible'&&navigator.onLine
 export function ClientRatingPrompt(){
  const{session,supabase}=useRoleSession('client'),userId=session?.user.id||null
  const[target,setTarget]=useState<RatingTarget|null>(null)
- const[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null)
+ const[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
  const targetIdRef=useRef<string|null>(null)
  useEffect(()=>{targetIdRef.current=target?.service.id||null},[target?.service.id])
 
@@ -39,20 +39,22 @@ export function ClientRatingPrompt(){
  useEffect(()=>{void load().catch(error=>{if(!shouldEscalate())return;const text=error instanceof Error?error.message:'No pudimos cargar la calificación.';setMessage(text);report('rating_load_error',text,error)})},[load,report])
  useEffect(()=>{
   if(!userId)return
-  let alive=true
+  let alive=true,reconnectScheduled=false
   const resync=()=>{if(alive)void loadRef.current().catch(error=>{if(shouldEscalate())reportRef.current('rating_resync_error',error instanceof Error?error.message:'No pudimos sincronizar la calificación.',error)})}
+  const reconnect=()=>{if(!alive||reconnectScheduled)return;reconnectScheduled=true;window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
-  window.addEventListener('online',resync);document.addEventListener('visibilitychange',onVisibility)
+  const onOnline=()=>{resync();reconnect()}
+  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
   const timer=window.setInterval(()=>{if(shouldEscalate())resync()},15000)
-  const channel=supabase.channel(`client-rating-${userId.slice(0,6)}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},resync).subscribe(status=>{
+  const channel=supabase.channel(`client-rating-${userId.slice(0,6)}-${channelEpoch}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},resync).subscribe(status=>{
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
-    resync()
+    resync();reconnect()
     if(shouldEscalate())reportRef.current('rating_realtime_error',`Canal rating: ${status}`,undefined,targetIdRef.current||undefined)
    }
   })
-  return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('online',resync);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
- },[supabase,userId])
+  return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+ },[channelEpoch,supabase,userId])
 
  const markSaved=useCallback((text='Gracias. Tu calificación quedó guardada.')=>{
   setMessage(text);setScore(0);setComment('');setDismissed(null)
@@ -66,17 +68,10 @@ export function ClientRatingPrompt(){
   const serviceId=target.service.id
   const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:userId,proveedor_id:target.service.proveedor_id,puntuacion:score,comentario:comment.trim()||null})
   if(!error){setBusy(false);markSaved();return}
-
-  // INSERT may have committed even when the client lost the response. The
-  // persisted row is authoritative: only report submit failure after an exact
-  // service/client recovery query confirms that nothing was saved.
   const{data:persisted,error:recoveryError}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).maybeSingle()
   setBusy(false)
   if(persisted){markSaved(error.code==='23505'?'Este servicio ya fue calificado.':'Gracias. Tu calificación quedó guardada.');return}
-  if(recoveryError){
-   const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.'
-   setMessage(text);report('rating_submit_recovery_unverified',text,recoveryError,serviceId);return
-  }
+  if(recoveryError){const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.';setMessage(text);report('rating_submit_recovery_unverified',text,recoveryError,serviceId);return}
   const text=error.message||'No se pudo guardar la calificación.'
   setMessage(text);report('rating_submit_error',text,error,serviceId)
  }
