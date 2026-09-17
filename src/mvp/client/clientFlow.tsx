@@ -1,8 +1,9 @@
-import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from './clientTypes'
 
 const noop = () => {}
 const unavailable = async () => false
+const GUIDED_TEXT_EVENT = 'ugo:client:focus-hugo-text'
 
 const emptyActions: ClientActionHandlers = {
   openSearch: noop, openProvider: noop, selectProvider: noop, createService: unavailable,
@@ -35,6 +36,10 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
   }, [])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
     setHugoIntent({ ...intent, id: ++intentId.current })
+    // The guided request is the canonical order composer. Feed it the selected
+    // category/intent so Home never starts matching before the client completes
+    // need, address, timing, payment and review.
+    window.dispatchEvent(new CustomEvent(GUIDED_TEXT_EVENT, { detail: { text: intent.text, send: true } }))
   }, [])
   const registerActions = useCallback((next: Partial<ClientActionHandlers>) => {
     handlersRef.current = { ...handlersRef.current, ...next }
@@ -50,6 +55,21 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
       return (handler as (...values: never[]) => unknown)(...args)
     }]),
   ) as ClientActionHandlers, [])
+
+  useEffect(() => {
+    // Service cards are themselves an entry point to the order journey on
+    // mobile. Keep the Home implementation reusable while guaranteeing that a
+    // category tap continues immediately into the canonical guided request.
+    const onCategoryTap = (event: MouseEvent) => {
+      const target = event.target instanceof Element ? event.target.closest<HTMLButtonElement>('.ugo-studio-services button') : null
+      if (!target || target.disabled) return
+      const label = target.querySelector('strong')?.textContent?.trim()
+      if (!label) return
+      window.setTimeout(() => publishHugoIntent({ text: `Necesito ${label}`, categoryHint: label, urgent: false, description: null }), 0)
+    }
+    document.addEventListener('click', onCategoryTap)
+    return () => document.removeEventListener('click', onCategoryTap)
+  }, [publishHugoIntent])
 
   return <ClientFlowContext.Provider value={{ screen, providerId, hugoIntent, actions, navigate, publishHugoIntent, registerActions }}>{children}</ClientFlowContext.Provider>
 }
