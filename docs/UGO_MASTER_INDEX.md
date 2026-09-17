@@ -1,6 +1,6 @@
 # UGO — Master Index
 
-**Versión:** 2.7 · 16 de septiembre de 2026  
+**Versión:** 2.8 · 16 de septiembre de 2026  
 **Estado:** puerta de entrada única al sistema maestro UGO  
 **Rama de verdad:** `main`
 
@@ -30,6 +30,7 @@ Nivel 0  docs/UGO_MASTER_GOVERNANCE.md
 Nivel 1  docs/UGO_DEVELOPMENT_MASTER.md
 Nivel 1.2 docs/UGO_DEVELOPMENT_READINESS_MASTER.md
 Nivel 1.5 docs/UGO_AI_AGENT_SYSTEM_MASTER.md
+Coord.   docs/UGO_DUAL_IMPLEMENTATION_MASTER.md
 Nivel 2  docs/UGO_ECOSISTEMA_FLUJO.md
 Nivel 3  docs/UGO_UIUX_MAESTRO.md
          docs/UGO_MAESTRO_USABILIDAD_ECOSISTEMA.md
@@ -44,6 +45,8 @@ Agentes  AGENTS.md
 ```
 
 Brief específico del proveedor: `docs/UGO_PROVIDER_SIMPLE_FLOW_PROMPT.md`.
+
+`docs/UGO_DUAL_IMPLEMENTATION_MASTER.md` coordina la competencia autorizada entre **UGO A** (`ugo-admin-panel`) y **UGO B** (`UGO-PRODUCCION`). Esa competencia es de implementación/UX, no una autorización para duplicar backend, reglas de negocio o verdad persistida.
 
 ## 3. Cadena de verdad
 
@@ -168,6 +171,25 @@ Debe demostrar por un mismo `serviceId`:
 
 La publicación es manual/deliberada y puede quedar detrás de `main`. Un deploy o APK debe registrar la revisión que realmente contiene. No inferir publicación desde un commit.
 
-## 12. Regla final
+## 12. Implementación dual A ↔ B
 
-**UGO cuida la confianza cumpliendo. Primero cerrar y demostrar Cliente ↔ Proveedor ↔ Admin; después ampliar. Código, checklist, Centinela y publicación deben decir exactamente qué está implementado, qué pasó CI, qué fue probado en runtime y qué está realmente publicado.**
+La implementación dual es una estrategia de entrega controlada, no un fork del producto:
+
+```text
+UGO A: integración/madurez actual sigue avanzando
+UGO B: experiencia AI Studio se convierte en flujo real
+ambos: mismo contrato Supabase TEST + mismos criterios E2E
+```
+
+Reglas:
+
+- ninguno frena al otro;
+- cada solución demostrada puede transferirse al otro repo;
+- UGO B no puede declararse funcional con mocks/local state en el camino crítico;
+- UGO A no conserva una UX inferior sólo por antigüedad si B demuestra una mejora compatible;
+- la comparación usa el mismo E2E, móvil y costo directo $0;
+- Supabase PROD permanece fuera del experimento hasta release autorizado.
+
+## 13. Regla final
+
+**UGO cuida la confianza cumpliendo. Primero cerrar y demostrar Cliente ↔ Proveedor ↔ Admin; después ampliar. Código, checklist, Centinela y publicación deben decir exactamente qué está implementado, qué pasó CI, qué fue probado en runtime y qué está realmente publicado. La competencia A ↔ B puede mejorar la implementación, pero nunca crear dos verdades de producto.**
