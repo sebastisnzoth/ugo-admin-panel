@@ -2,6 +2,7 @@ import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{clearSentinelContext,reportSentinelIncident}from'../../lib/sentinel'
 import{getRoleSupabase}from'../../lib/roleSupabase'
 import{ClientCompletionReview}from'../ClientCompletionReview'
+import{ClientEvidenceGallery}from'../ClientEvidenceGallery'
 import{ClientLiveTracking}from'../ClientLiveTracking'
 import{DisputeDock}from'../DisputeDock'
 import{SentinelErrorBoundary}from'../SentinelErrorBoundary'
@@ -28,6 +29,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
   {loading&&<section className="ugo-history-panel embedded"><div className="ugo-history-empty">Cargando pedido…</div></section>}
   {error&&<section className="ugo-history-panel embedded"><div className="ugo-history-error">{error}</div><button type="button" className="ugo-guided-primary" onClick={()=>void load()}>Reintentar</button></section>}
   {!loading&&!error&&service&&<><section className="ugo-history-panel embedded"><header><div><small>PEDIDO #{service.numero??String(service.id).slice(0,8)}</small><h2>{service.categoria?.emoji||'🧰'} {service.categoria?.nombre||'Servicio UGO'}</h2><p>{service.descripcion||'Sin descripción adicional.'}</p></div><span className={`state-${service.estado}`}>{STATUS_LABELS[service.estado]||service.estado}</span></header><div className="ugo-history-meta"><div><small>{service.programado_para?'PROGRAMADO':'CREADO'}</small><b>{when(service.programado_para,service.created_at)}</b></div><div><small>PROVEEDOR</small><b>{service.proveedor?.nombre||'Todavía sin asignar'}</b></div><div><small>DIRECCIÓN</small><b>{service.direccion_cliente||'Por confirmar'}</b></div><div><small>IMPORTE</small><b>{money(service.tarifa,service.moneda)}</b></div></div>{notice&&<div className="ugo-history-action-notice" role="status">{notice}</div>}{CANCELLABLE.has(service.estado)&&<div className="ugo-history-row-actions"><button type="button" className="ugo-history-cancel-button" disabled={busy} onClick={()=>void cancel()}>{busy?'Cancelando…':'Cancelar este pedido'}</button></div>}</section>
+   <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.evidence" title="Evidencias temporalmente no disponibles" compact><ClientEvidenceGallery serviceId={service.id} hideWhenEmpty/></SentinelErrorBoundary>
    {awaitingApproval&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.review" checklistCode="PAYMENT-CLOSE" severity="P0" title="Cierre temporalmente no disponible" compact><ClientCompletionReview serviceId={service.id}/></SentinelErrorBoundary>}
    <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.chat" checklistCode="CHAT-REALTIME" severity="P0" title="Chat temporalmente no disponible" compact><ServiceChat role="client" serviceId={service.id} compact/></SentinelErrorBoundary>
    {!awaitingApproval&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.tracking" title="Seguimiento temporalmente no disponible" compact><ClientLiveTracking serviceId={service.id} embedded/></SentinelErrorBoundary>}
