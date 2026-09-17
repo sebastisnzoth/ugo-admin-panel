@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{reportSentinelIncident}from'../../lib/sentinel'
 import{useRoleSession,type Service}from'../shared'
+import{useClientFlow}from'./clientFlow'
 
 type Payment={id:string;servicio_id:string;metodo?:string|null;estado:string;pix_copia_cola?:string|null;pix_qr_code?:string|null;pix_expira_at?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 type ServiceWithCurrency=Service&{moneda?:string|null}
@@ -8,76 +9,23 @@ const PAYMENT_STATES=['asignado']
 const shouldEscalatePaymentSync=()=>document.visibilityState==='visible'&&navigator.onLine
 
 export function ClientPaymentChoice({serviceId=null}:{serviceId?:string|null}={}){
- const auth=useRoleSession('client'),{supabase,session}=auth
+ const flow=useClientFlow(),auth=useRoleSession('client'),{supabase,session}=auth
  const[service,setService]=useState<Service|null>(null),[payment,setPayment]=useState<Payment|null>(null),[cashEnabled,setCashEnabled]=useState(true),[busy,setBusy]=useState<'pix'|'cash'|''>(''),[message,setMessage]=useState(''),[loadError,setLoadError]=useState(''),[ready,setReady]=useState(false),[channelEpoch,setChannelEpoch]=useState(0)
  const reportPaymentSyncFailure=useCallback((eventType:string,message:string,error?:unknown)=>{if(!shouldEscalatePaymentSync())return;void reportSentinelIncident({eventType,message,error,role:'client',severity:'P1',serviceId:serviceId||undefined,action:'client.order.payment.sync'})},[serviceId])
  const load=useCallback(async()=>{
   if(!session){setService(null);setPayment(null);setLoadError('');setReady(true);return}
-  try{
-   let query=supabase.from('servicios').select('*').eq('cliente_id',session.user.id).in('estado',PAYMENT_STATES)
-   if(serviceId)query=query.eq('id',serviceId)
-   else query=query.order('created_at',{ascending:false}).limit(2)
-   const{data:rows,error:serviceError}=await query
-   if(serviceError)throw serviceError
-   const services=(rows||[])as Service[]
-   if(!serviceId&&services.length!==1){setService(null);setPayment(null);setCashEnabled(true);setLoadError('');return}
-   const current=services[0]||null
-   setService(current)
-   if(!current){setPayment(null);setCashEnabled(true);setLoadError('');return}
-   const moneda=String((current as ServiceWithCurrency).moneda||'BRL')
-   const[{data:p,error:paymentError},{data:cashAllowed,error:cashError}]=await Promise.all([
-    supabase.from('pagos').select('id,servicio_id,metodo,estado,pix_copia_cola,pix_qr_code,pix_expira_at,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
-    supabase.rpc('cash_payment_enabled',{p_moneda:moneda})
-   ])
-   if(paymentError)throw paymentError
-   setPayment((p as Payment|null)||null);setCashEnabled(cashError?true:cashAllowed!==false);setLoadError('')
-  }catch(error){
-   console.warn('UGO client payment state unavailable',error)
-   const text='No pudimos actualizar la forma de pago. Conservamos el último estado conocido para que puedas reintentar sin perder el servicio.'
-   setLoadError(text)
-   reportPaymentSyncFailure('client_payment_state_sync_error',text,error)
-  }finally{setReady(true)}
+  try{let query=supabase.from('servicios').select('*').eq('cliente_id',session.user.id).in('estado',PAYMENT_STATES);if(serviceId)query=query.eq('id',serviceId);else query=query.order('created_at',{ascending:false}).limit(2);const{data:rows,error:serviceError}=await query;if(serviceError)throw serviceError;const services=(rows||[])as Service[];if(!serviceId&&services.length!==1){setService(null);setPayment(null);setCashEnabled(true);setLoadError('');return}const current=services[0]||null;setService(current);if(!current){setPayment(null);setCashEnabled(true);setLoadError('');return}const moneda=String((current as ServiceWithCurrency).moneda||'BRL');const[{data:p,error:paymentError},{data:cashAllowed,error:cashError}]=await Promise.all([supabase.from('pagos').select('id,servicio_id,metodo,estado,pix_copia_cola,pix_qr_code,pix_expira_at,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle(),supabase.rpc('cash_payment_enabled',{p_moneda:moneda})]);if(paymentError)throw paymentError;setPayment((p as Payment|null)||null);setCashEnabled(cashError?true:cashAllowed!==false);setLoadError('')}catch(error){console.warn('UGO client payment state unavailable',error);const text='No pudimos actualizar la forma de pago. Conservamos el último estado conocido para que puedas reintentar sin perder el servicio.';setLoadError(text);reportPaymentSyncFailure('client_payment_state_sync_error',text,error)}finally{setReady(true)}
  },[reportPaymentSyncFailure,serviceId,session,supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
- useEffect(()=>{
-  if(!session)return
-  let alive=true
-  let reconnectTimer:number|undefined
-  const refresh=()=>void load()
-  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
-  const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`
-  const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`
-  const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}-${channelEpoch}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reconnect();reportPaymentSyncFailure('client_payment_realtime_sync_error',`Canal de pago: ${status}`)}})
-  const onOnline=()=>{refresh();reconnect()}
-  const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
-  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
-  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
- },[channelEpoch,load,reportPaymentSyncFailure,serviceId,session,supabase])
- const selected=payment?.metodo||''
- const protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))
- const cashSelected=selected==='efectivo'
- const retryable=payment?.estado==='fallido'
- const pixLocked=Boolean(selected==='pix'&&!retryable)
- const qr=useMemo(()=>payment?.pix_qr_code?`data:image/png;base64,${payment.pix_qr_code}`:'',[payment?.pix_qr_code])
- if(auth.loading||!session||!ready)return null
+ useEffect(()=>{if(!session)return;let alive=true;let reconnectTimer:number|undefined;const refresh=()=>void load();const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)};const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const paymentFilter=serviceId?`servicio_id=eq.${serviceId}`:`cliente_id=eq.${session.user.id}`;const ch=supabase.channel(`client-payment-choice-${serviceId||session.user.id}-${channelEpoch}`).on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:paymentFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reconnect();reportPaymentSyncFailure('client_payment_realtime_sync_error',`Canal de pago: ${status}`)}});const onOnline=()=>{refresh();reconnect()};const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[channelEpoch,load,reportPaymentSyncFailure,serviceId,session,supabase])
+ const selected=payment?.metodo||'',protectedPayment=Boolean(payment&&(payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id)),cashSelected=selected==='efectivo',retryable=payment?.estado==='fallido',pixLocked=Boolean(selected==='pix'&&!retryable),qr=useMemo(()=>payment?.pix_qr_code?`data:image/png;base64,${payment.pix_qr_code}`:'',[payment?.pix_qr_code])
+ if(flow.screen==='request'||auth.loading||!session||!ready)return null
  if(loadError&&!service)return <section className="ugo-client-payment-choice is-error" aria-label="Estado del pago"><div className="ugo-client-payment-feedback" role="alert"><b>No pudimos actualizar el pago</b><span>{loadError}</span><button type="button" onClick={()=>void load()}>Reintentar</button></div></section>
  if(!service||protectedPayment||cashSelected)return null
-
  async function paymentMethodPersisted(method:'efectivo'|'pix'):Promise<boolean|null>{try{const{data,error}=await supabase.from('pagos').select('id,estado').eq('servicio_id',service.id).eq('metodo',method).order('created_at',{ascending:false}).limit(1);if(error)return null;const row=data?.[0];return Boolean(row&&row.estado!=='fallido')}catch{return null}}
  function reportPaymentFailure(error:unknown,method:'efectivo'|'pix',persisted:boolean|null){const confirmed=persisted===false;void reportSentinelIncident({eventType:confirmed?'client_payment_selection_error':'client_payment_recovery_unverified',message:confirmed?`No se pudo guardar el pago ${method} y Supabase confirmó que no quedó persistido.`:`Falló el pago ${method} y no pudimos verificar si quedó persistido.`,error,role:'client',severity:confirmed?'P0':'P1',serviceId:service.id,action:confirmed?'client.order.payment':'client.order.payment.recovery',checklistCode:confirmed?'PAYMENT-CLOSE':undefined,metadata:{method}})}
  async function chooseCash(){if(!cashEnabled){setMessage('El pago en efectivo no está disponible para este servicio.');return}setBusy('cash');setMessage('');try{const{error}=await supabase.rpc('seleccionar_pago_efectivo',{p_servicio_id:service.id});if(error){const persisted=await paymentMethodPersisted('efectivo');if(persisted===true){setMessage('Efectivo seleccionado. El profesional ya puede preparar la salida.');await load();return}reportPaymentFailure(error,'efectivo',persisted);await load();throw error}setMessage('Efectivo seleccionado. El profesional ya puede preparar la salida.');await load()}catch(e){setMessage(e instanceof Error?e.message:'No se pudo elegir efectivo.')}finally{setBusy('')}}
  async function choosePix(){if(!session.access_token)return;setBusy('pix');setMessage('');try{const response=await fetch('/api/pagos/crear',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${session.access_token}`},body:JSON.stringify({servicioId:service.id,metodo:'pix'})});const body=await response.json().catch(()=>({}));if(!response.ok)throw new Error(body.error||'No se pudo generar Pix.');setMessage(body.alreadyPaid?'El pago ya estaba confirmado.':'Pix generado. Confirmalo para habilitar la salida del profesional.');await load()}catch(e){const persisted=await paymentMethodPersisted('pix');if(persisted===true){setMessage('Pix generado. Confirmalo para habilitar la salida del profesional.');await load();return}reportPaymentFailure(e,'pix',persisted);setMessage(e instanceof Error?e.message:'No se pudo generar Pix.')}finally{setBusy('')}}
  async function copyPix(){if(!payment?.pix_copia_cola)return;try{await navigator.clipboard.writeText(payment.pix_copia_cola);setMessage('Código Pix copiado.')}catch{setMessage('No pudimos copiarlo automáticamente. Seleccioná el código manualmente.')}}
-
- return <section className="ugo-client-payment-choice" aria-label="Elegir forma de pago">
-  <header><small>SERVICIO #{service.numero}</small><h2>{pixLocked?'Completá el pago':'¿Cómo querés pagar?'}</h2><p>{pixLocked?'Ya generaste un Pix para este servicio. Confirmalo para continuar.':'Elegí una opción sin salir del servicio. UGO mantiene el mismo seguimiento.'}</p></header>
-  {loadError&&<div className="ugo-client-payment-feedback" role="alert"><b>Datos temporalmente desactualizados</b><span>{loadError}</span><button type="button" onClick={()=>void load()}>Reintentar</button></div>}
-  <div className="ugo-client-payment-options">
-   <button type="button" className={selected==='pix'?'selected':''} onClick={choosePix} disabled={Boolean(busy)||pixLocked}><span>⚡</span><div><b>Pix</b><small>{pixLocked?'Pix generado y pendiente de confirmación.':'Pago electrónico confirmado dentro de UGO.'}</small></div><i>{selected==='pix'?'✓':'›'}</i></button>
-   {!pixLocked&&cashEnabled&&<button type="button" onClick={chooseCash} disabled={Boolean(busy)}><span>💵</span><div><b>Efectivo</b><small>Pagás al profesional al finalizar. UGO registra la confirmación.</small></div><i>›</i></button>}
-  </div>
-  {busy&&<div className="ugo-client-payment-feedback" role="status" aria-live="polite">{busy==='pix'?'Preparando Pix…':'Guardando forma de pago…'}</div>}
-  {selected==='pix'&&payment?.pix_copia_cola&&<div className="ugo-client-pix-box">{qr&&<img src={qr} alt="QR Code Pix"/>}<b>Escaneá o copiá el código Pix</b><textarea aria-label="Código Pix copia y pega" readOnly value={payment.pix_copia_cola}/><button type="button" onClick={copyPix}>Copiar código Pix</button>{payment.pix_expira_at&&<small>Válido hasta {new Date(payment.pix_expira_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small>}</div>}
-  {message&&<div className="ugo-client-payment-feedback" role="status" aria-live="polite">{message}</div>}
- </section>
+ return <section className="ugo-client-payment-choice" aria-label="Elegir forma de pago"><header><small>SERVICIO #{service.numero}</small><h2>{pixLocked?'Completá el pago':'¿Cómo querés pagar?'}</h2><p>{pixLocked?'Ya generaste un Pix para este servicio. Confirmalo para continuar.':'Elegí una opción sin salir del servicio. UGO mantiene el mismo seguimiento.'}</p></header>{loadError&&<div className="ugo-client-payment-feedback" role="alert"><b>Datos temporalmente desactualizados</b><span>{loadError}</span><button type="button" onClick={()=>void load()}>Reintentar</button></div>}<div className="ugo-client-payment-options"><button type="button" className={selected==='pix'?'selected':''} onClick={choosePix} disabled={Boolean(busy)||pixLocked}><span>⚡</span><div><b>Pix</b><small>{pixLocked?'Pix generado y pendiente de confirmación.':'Pago electrónico confirmado dentro de UGO.'}</small></div><i>{selected==='pix'?'✓':'›'}</i></button>{!pixLocked&&cashEnabled&&<button type="button" onClick={chooseCash} disabled={Boolean(busy)}><span>💵</span><div><b>Efectivo</b><small>Pagás al profesional al finalizar. UGO registra la confirmación.</small></div><i>›</i></button>}</div>{busy&&<div className="ugo-client-payment-feedback" role="status" aria-live="polite">{busy==='pix'?'Preparando Pix…':'Guardando forma de pago…'}</div>}{selected==='pix'&&payment?.pix_copia_cola&&<div className="ugo-client-pix-box">{qr&&<img src={qr} alt="QR Code Pix"/>}<b>Escaneá o copiá el código Pix</b><textarea aria-label="Código Pix copia y pega" readOnly value={payment.pix_copia_cola}/><button type="button" onClick={copyPix}>Copiar código Pix</button>{payment.pix_expira_at&&<small>Válido hasta {new Date(payment.pix_expira_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}</small>}</div>}{message&&<div className="ugo-client-payment-feedback" role="status" aria-live="polite">{message}</div>}</section>
 }
