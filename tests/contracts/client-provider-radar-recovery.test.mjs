@@ -17,7 +17,7 @@ test('client provider radar resyncs and recreates its realtime channel after tra
  const bridge=await read('src/mvp/client/ClientProviderRadarBridge.tsx')
  assert.match(bridge,/const\[channelEpoch,setChannelEpoch\]=useState\(0\)/)
  assert.match(bridge,/table:'perfiles_proveedor'/)
- assert.match(bridge,/client-provider-radar-\$\{session\.user\.id\}-\$\{channelEpoch\}/)
+ assert.match(bridge,/client-provider-radar-\$\{session\.user\.id\}-\$\{instanceId\}-\$\{channelEpoch\}/)
  assert.match(bridge,/status==='SUBSCRIBED'/)
  assert.match(bridge,/status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'/)
  assert.match(bridge,/const reconnect=\(\)=>/)
@@ -27,7 +27,7 @@ test('client provider radar resyncs and recreates its realtime channel after tra
  assert.match(bridge,/window\.addEventListener\('online',onOnline\)/)
  assert.match(bridge,/document\.addEventListener\('visibilitychange',onVisibility\)/)
  assert.match(bridge,/removeChannel\(ch\)/)
- assert.match(bridge,/\},\[channelEpoch,session,supabase\]\)/)
+ assert.match(bridge,/\},\[channelEpoch,instanceId,session,supabase\]\)/)
 })
 
 test('provider radar operational failures report to Sentinel without browser-owned readiness mutation',async()=>{
