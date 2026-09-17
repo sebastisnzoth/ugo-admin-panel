@@ -9,9 +9,9 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   let reconnectTimer:number|undefined
   const resync=()=>void onChange()
   const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
-  const onOnline=()=>{resync();reconnect()}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
-  window.addEventListener('online',onOnline)
+  window.addEventListener('online',resync)
+  window.addEventListener('online',reconnect)
   document.addEventListener('visibilitychange',onVisibility)
   const ch=supabase.channel(`provider-flow-${userId}-${channelEpoch}`)
    .on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio',filter:`proveedor_id=eq.${userId}`},resync)
@@ -21,7 +21,8 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
   return()=>{
    alive=false
    if(reconnectTimer)window.clearTimeout(reconnectTimer)
-   window.removeEventListener('online',onOnline)
+   window.removeEventListener('online',resync)
+   window.removeEventListener('online',reconnect)
    document.removeEventListener('visibilitychange',onVisibility)
    void supabase.removeChannel(ch)
   }
