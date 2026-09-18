@@ -367,9 +367,9 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,pers
 
 
 let SESSION=null,PROV=null,MAP=null,MARKER=null;
-const TIMELINE_STATES = ['negociando','confirmado','en_camino','ejecutando','completado'];
-const TIMELINE_LABELS = ['Negociando','Confirmado','En camino','Ejecutando','Completado'];
-const TIMELINE_ICONS = ['📋','✓','🚗','⚙️','✅'];
+const TIMELINE_STATES = ['buscando', 'asignado', 'en_camino', 'en_progreso', 'completado'];
+const TIMELINE_LABELS = ['Buscando', 'Asignado', 'En camino', 'En progreso', 'Completado'];
+const TIMELINE_ICONS = ['🔍', '✓', '🚗', '⚙️', '✅'];
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
 let CHECKING_DISTANCE_INTERVAL=null;
 let LAST_ACTIVITY='';

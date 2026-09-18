@@ -426,9 +426,9 @@ let myRating = 0;
 let SVC_PAGADO = false;    // escrow asegurado
 
 // Timeline visual del progreso del servicio
-const TIMELINE_ESTADOS = ['negociando', 'confirmado', 'en_camino', 'ejecutando', 'completado'];
-const TIMELINE_LABELS = ['Pedido', 'Aceptado', 'En camino', 'Trabajando', 'Listo'];
-const TIMELINE_EMOJIS = ['📝', '✓', '🚗', '⚙️', '✅'];
+const TIMELINE_ESTADOS = ['buscando', 'asignado', 'en_camino', 'en_progreso', 'completado'];
+const TIMELINE_LABELS = ['Buscando', 'Asignado', 'En camino', 'En progreso', 'Completado'];
+const TIMELINE_EMOJIS = ['🔍', '✓', '🚗', '⚙️', '✅'];
 
 function renderTimeline(estado){
   const idx = TIMELINE_ESTADOS.indexOf(estado) || 0;
@@ -495,7 +495,7 @@ async function createService(prov) {
   const { data: svc, error } = await sb.from('servicios').insert({
     cliente_id:      SESSION.user.id,
     proveedor_id:    prov.id || null,
-    estado:          'negociando',
+    estado:          prov.id ? 'asignado' : 'ofrecido',
     descripcion:     descReal,
     foto_url:        FOTO_URL || null,
     zona:            CLI?.zona || '',
@@ -693,12 +693,12 @@ function onServiceUpdate(svc) {
     if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
     showRating(svc.tarifa || ACTIVE_SVC.prov?.tarifa_base || 80);
     trHugo(`¡${nom} marcó el trabajo como terminado! 🎉 Revisalo y calificá tu experiencia: con tu aprobación libero el pago de la bóveda.`);
-  } else if (st === 'cancelado' || st === 'rechazado') {
+  } else if (st === 'cancelado') {
     // El proveedor no puede tomar el trabajo → Hugo busca otro
     stopCascade(); hideCascadeInfo();
     if (svcChannel) { sb.removeChannel(svcChannel); svcChannel = null; }
     if (provChannel){ sb.removeChannel(provChannel); provChannel = null; }
-    trHugo(`${nom} no puede tomar el trabajo en este momento 😕 Tranquilo: puedo buscarte otro proveedor ya mismo.`);
+    trHugo(`${nom} no puede tomar el trabajo en este momento 😕 Tranquilo: puedo buscarte otro proveedor`);
     document.getElementById('tr-status').textContent = '🔄 Buscando alternativa';
     const c = document.getElementById('tr-cancel');
     if (c) { c.style.display='block'; c.textContent='🔁 Buscar otro proveedor'; c.onclick = buscarOtroProveedor; }
