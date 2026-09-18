@@ -2,7 +2,7 @@ import React,{Suspense,lazy,useEffect,useState}from'react'
 import{ClientFlowProvider}from'./client/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
 import{getRoleSupabase}from'../lib/roleSupabase'
-import{Button,Input}from'./shared'
+import{Button,Input,LoadingScreen}from'./shared'
 import'./mvp.css'
 import'./ugo-design-system.css'
 import'./ugo-uiux.css'
@@ -24,7 +24,7 @@ const UgoWeb=lazy(()=>import('./UgoWeb').then(module=>({default:module.UgoWeb}))
 const UgoClientWeb=lazy(()=>import('./UgoClientWeb').then(module=>({default:module.UgoClientWeb})))
 const UgoTestDemo=lazy(()=>import('./UgoTestDemo').then(module=>({default:module.UgoTestDemo})))
 
-function RouteLoading(){return <main className="mvp-loading" aria-live="polite"><p>Cargando UGO…</p></main>}
+function RouteLoading(){return <LoadingScreen label="Abriendo UGO…"/>}
 function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
 function BrowserShell({children}:{children:React.ReactNode}){return <div className="ugo-browser-role-shell"><div className="ugo-browser-role-app">{children}</div></div>}
 function ClientApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
