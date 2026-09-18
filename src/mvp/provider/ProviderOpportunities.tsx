@@ -42,7 +42,8 @@ export function ProviderOpportunityDetail({id}:{id:string|null}){
    <details className="provider-secondary-details"><summary>Fotos o archivos del pedido</summary><ProviderRequestEvidence serviceId={item.serviceId}/></details>
   </article>
   <div className="provider-decision provider-decision-bar">
-   <button className="provider-primary provider-main-action" disabled={d.busy||Boolean(d.service)} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':d.service?'YA TENÉS UN TRABAJO':'ACEPTAR TRABAJO'}</button>
+   {d.service&&<p className="provider-action-note">Ya tenés un trabajo activo. Podés aceptar este también: UGO lo agrega a tu agenda sin interrumpir el que estás haciendo.</p>}
+   <button className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':'ACEPTAR TRABAJO'}</button>
    <button className="provider-reject provider-wide" disabled={d.busy} onClick={()=>flow.actions.rejectOpportunity(item.id)}>No puedo tomarlo</button>
   </div>
  </section>
