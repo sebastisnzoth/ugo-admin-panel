@@ -23,6 +23,7 @@ export function ProviderHome(){
    <button className="provider-primary provider-main-action" onClick={next.action} disabled={d.busy}>{d.busy?'Procesando…':next.label}</button>
   </article>
   <div className="provider-quick-grid">
+   {d.service&&d.opportunities.length>0&&<button className="provider-card provider-quick-card" onClick={flow.actions.openOpportunities}><small>NUEVOS PEDIDOS</small><strong>{d.opportunities.length} disponible{d.opportunities.length===1?'':'s'}</strong><span>Podés aceptar otro →</span></button>}
    <button className="provider-card provider-quick-card" onClick={flow.actions.openAgenda}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver horarios →</span></button>
    <button className="provider-card provider-quick-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>{money(d.retained)}</strong><span>{money(d.released)} liberado/registrado →</span></button>
   </div>
