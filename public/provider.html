@@ -370,6 +370,8 @@ let SESSION=null,PROV=null,MAP=null,MARKER=null;
 const TIMELINE_STATES = ['buscando', 'asignado', 'en_camino', 'en_progreso', 'completado'];
 const TIMELINE_LABELS = ['Buscando', 'Asignado', 'En camino', 'En progreso', 'Completado'];
 const TIMELINE_ICONS = ['🔍', '✓', '🚗', '⚙️', '✅'];
+// Estados validados contra enum servicio_estado de PostgreSQL
+// Estados fantasmas removidos: negociando, confirmado, ejecutando, rechazado
 let PENDING_JOBS=[],COMPLETED_TODAY=0,REJECTED_TODAY=0,EARNED_TODAY=0,EARNED_ACTIVE=0;
 let CHECKING_DISTANCE_INTERVAL=null;
 let LAST_ACTIVITY='';
@@ -721,7 +723,7 @@ function rejectJob(release=true){
   // el cascade del cliente busque otro proveedor en vez de dejarlo esperando.
   if(release&&svcId&&SESSION){
     sb.from('servicios').update({proveedor_id:null})
-      .eq('id',svcId).eq('proveedor_id',SESSION.user.id).eq('estado','negociando')
+      .eq('id',svcId).eq('proveedor_id',SESSION.user.id).eq('estado','asignado')
       .then(()=>{});
   }
   toast('Pedido rechazado');

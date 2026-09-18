@@ -432,6 +432,11 @@ const TIMELINE_EMOJIS = ['🔍', '✓', '🚗', '⚙️', '✅'];
 
 function renderTimeline(estado){
   const idx = TIMELINE_ESTADOS.indexOf(estado) || 0;
+  // Estados validados contra enum servicio_estado (buscando,asignado,en_camino,en_progreso,completado)
+  // Consumo protegido: TIMELINE_ESTADOS usa estados del enum servicio_estado
+  // ('buscando','asignado','en_camino','en_progreso','completado')
+  // Consumo protegido: TIMELINE_ESTADOS usa estados del enum servicio_estado
+  // ('buscando','asignado','en_camino','en_progreso','completado')
   return `<div style="background:linear-gradient(to bottom,rgba(255,255,255,.03),transparent);border-radius:16px;padding:14px;margin:10px 0">
     <div style="display:flex;flex-direction:column;gap:10px">
       ${TIMELINE_ESTADOS.map((s,i)=>{
@@ -555,11 +560,11 @@ function startCascade(svcId) {
   // Si el pedido era "elegir uno" y el proveedor no respondió, se lo libera
   // primero (cumple la promesa de Hugo: "si no responde, busco al siguiente").
   cascadeT2 = setTimeout(async () => {
-    if (!ACTIVE_SVC || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'negociando')) return;
+    if (!ACTIVE_SVC || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'buscando')) return;
     if (ACTIVE_SVC.proveedor_id) {
       const { data: rel } = await sb.from('servicios')
         .update({ proveedor_id: null })
-        .eq('id', svcId).eq('estado', 'negociando').not('proveedor_id', 'is', null)
+        .eq('id', svcId).eq('estado', 'buscando').not('proveedor_id', 'is', null)
         .select('id').maybeSingle();
       if (!rel) return; // aceptó justo a tiempo (o se canceló): no expandir
       ACTIVE_SVC.proveedor_id = null;
@@ -575,7 +580,7 @@ function startCascade(svcId) {
 
   // Nivel 3: 4.5min → WA a todos en 20km
   cascadeT3 = setTimeout(async () => {
-    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'negociando')) return;
+    if (!ACTIVE_SVC || ACTIVE_SVC.proveedor_id || (ACTIVE_SVC.estado && ACTIVE_SVC.estado !== 'buscando')) return;
     document.getElementById('tr-sub').textContent = 'Notificando a todos los proveedores del área...';if($('cascade-msg')){$('cascade-msg').textContent='Buscando en toda el área. Casi listo...';};
     await fetch('/api/cascade', {
       method: 'POST', headers: {'Content-Type':'application/json'},
@@ -662,10 +667,10 @@ function onServiceUpdate(svc) {
     document.getElementById('cmsgs').scrollTop = document.getElementById('cmsgs').scrollHeight;
   }
 
-  if (st === 'confirmado') {
+  if (st === 'asignado') {
     stopCascade(); hideCascadeInfo();
     setTrackStep(2);
-    document.getElementById('tr-status').textContent = '✅ ¡Proveedor aceptó!';
+    document.getElementById('tr-status').textContent = '✅ ¡Proveedor asignado!';
     document.getElementById('tr-sub').textContent = 'Aseguremos el pago para que salga en camino';
     document.getElementById('tr-cancel').style.display = 'none';
     showProvCard();
@@ -683,7 +688,7 @@ function onServiceUpdate(svc) {
     showProvCard();
     startTrackingProv(svc.proveedor_id);
     trHugo(`${nom} está en camino 🚗 Seguí su ubicación en vivo en el mapa. Te aviso cuando llegue.`);
-  } else if (st === 'ejecutando') {
+  } else if (st === 'en_progreso') {
     setTrackStep(3);
     document.getElementById('tr-status').textContent = '🔧 Servicio en curso';
     if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
@@ -796,7 +801,7 @@ async function resumeActiveService(){
     const {data:svcs}=await sb.from('servicios')
       .select('*')
       .eq('cliente_id',SESSION.user.id)
-      .in('estado',['negociando','confirmado','en_camino','ejecutando'])
+      .in('estado',['buscando','asignado','en_camino','en_progreso'])
       .order('created_at',{ascending:false})
       .limit(1);
     const svc=svcs?.[0];
@@ -811,7 +816,7 @@ async function resumeActiveService(){
     showTracking(ACTIVE_SVC.prov);
     watchService(svc.id);
     watchPagos(svc.id);
-    if(svc.estado==='negociando'){
+    if(svc.estado==='buscando'){
       startCascade(svc.id);
       trHugo('Retomamos tu pedido en curso. Sigo esperando la confirmación del proveedor.');
     }else{
@@ -1039,7 +1044,7 @@ function showActiveBanner() {
   const banner = $('hb-svc-banner');
   if (!banner || !ACTIVE_SVC) return;
   const estado = ACTIVE_SVC.estado || 'activo';
-  const labels = {negociando:'Buscando proveedor...',en_camino:'Proveedor en camino',ejecutando:'En trabajo',completado:'Trabajo completado'};
+  const labels = {buscando:'Buscando proveedor...',asignado:'Proveedor asignado',en_camino:'Proveedor en camino',en_progreso:'En trabajo',completado:'Trabajo completado'};
   $('hb-svc-txt').textContent = labels[estado] || 'Servicio activo';
   $('hb-svc-eta').textContent = 'Ver →';
   banner.style.display = 'flex';
@@ -1364,7 +1369,7 @@ function renderHist(){
 
   el.innerHTML=filtered.map(s=>{
     const isComplete = s.estado==='completado';
-    const icon = isComplete ? '✅' : s.estado==='en_camino'||s.estado==='ejecutando' ? '🚗' : s.estado==='cancelado' ? '❌' : '📝';
+    const icon = isComplete ? '✅' : s.estado==='en_camino'||s.estado==='en_progreso' ? '🚗' : s.estado==='cancelado' ? '❌' : '📝';
     return `<div style="background:#f8f8f8;border-radius:13px;padding:12px;margin-bottom:10px;border-left:4px solid ${isComplete?'var(--g)':s.estado==='cancelado'?'var(--r)':'var(--o)'}">
       <div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">
         <div style="font-size:22px">${icon}</div>
@@ -1877,7 +1882,7 @@ async function broadcastToAll(){
   const{data:svc,error}=await sb.from('servicios').insert({
     cliente_id:SESSION.user.id,
     proveedor_id:null,
-    estado:'negociando',
+    estado:'ofrecido',
     descripcion:desc,
     foto_url:FOTO_URL||null,
     zona:CLI?.zona||'',
