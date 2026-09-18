@@ -59,12 +59,73 @@ export function useRoleSession(role:UgoRole){
 }
 
 export function AuthScreen({role,supabase,error,onError}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void}){
-  const[mode,setMode]=useState<'login'|'register'|'recovery'>('login');const[name,setName]=useState('');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[busy,setBusy]=useState(false);const[notice,setNotice]=useState('');const label=role==='client'?'Cliente':'Proveedor'
+  const[mode,setMode]=useState<'login'|'register'|'recovery'>('login')
+  const[name,setName]=useState('')
+  const[email,setEmail]=useState('')
+  const[password,setPassword]=useState('')
+  const[showPassword,setShowPassword]=useState(false)
+  const[busy,setBusy]=useState(false)
+  const[notice,setNotice]=useState('')
+  const label=role==='client'?'Cliente':'Profesional'
   const appParam=role==='client'?'client':'provider'
   const authRedirectTo=`${window.location.origin}${window.location.pathname}?app=${appParam}`
+  const title=mode==='login'?'Bienvenido a UGO':mode==='register'?'Creá tu cuenta':'Recuperá tu acceso'
+  const description=mode==='recovery'
+    ?'Ingresá tu email y te enviaremos un enlace seguro para crear una contraseña nueva.'
+    :role==='client'
+      ?'Pedí un servicio y seguí todo desde un solo lugar.'
+      :'Recibí oportunidades y organizá tu trabajo con UGO.'
+  const intro=role==='client'
+    ?{eyebrow:'UGO CLIENTE',title:'Lo que necesitás, sin vueltas.',text:'Pedí un servicio, coordiná y seguí cada etapa desde el celular.',items:['Profesionales locales','Seguimiento del pedido','Actividad y pagos en un solo lugar']}
+    :{eyebrow:'UGO PROFESIONAL',title:'Tu trabajo, mejor organizado.',text:'Conectate cuando quieras y gestioná oportunidades, agenda y ganancias.',items:['Vos elegís cuándo estar online','Pedidos y agenda claros','Actividad y ganancias ordenadas']}
+  function changeMode(next:'login'|'register'|'recovery'){onError('');setNotice('');setPassword('');setShowPassword(false);setMode(next)}
   async function signInWithGoogle(){onError('');setNotice('');setBusy(true);try{window.localStorage.setItem(OAUTH_ROLE_KEY,role==='client'?'cliente':'proveedor');const{error:x}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:authRedirectTo}});if(x)throw x}catch(x){window.localStorage.removeItem(OAUTH_ROLE_KEY);onError(x instanceof Error?x.message:'No se pudo iniciar sesión con Google.');setBusy(false)}}
   async function submit(e:FormEvent){e.preventDefault();onError('');setNotice('');setBusy(true);try{if(mode==='recovery'){const{error:x}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:authRedirectTo});if(x)throw x;setNotice('Si existe una cuenta con este email, te enviamos un enlace para restablecer la contraseña.');return}if(mode==='login'){const{error:x}=await supabase.auth.signInWithPassword({email,password});if(x)throw x}else{if(!name.trim())throw new Error('Escribí tu nombre.');const{data,error:x}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:authRedirectTo,data:{nombre:name.trim(),tipo:role==='client'?'cliente':'proveedor'}}});if(x)throw x;if(!data.session)setNotice('Cuenta creada. Revisá tu correo para confirmar el acceso.')}}catch(x){onError(x instanceof Error?x.message:'No se pudo completar el acceso.')}finally{setBusy(false)}}
-  return <div className={`mvp-auth-page role-${role}`}><button className="mvp-back" onClick={()=>go('home')}>← U.G.O.</button><div className="mvp-auth-card"><div className="mvp-mini-orb"/><div className="mvp-kicker">U.G.O. · {label}</div><h1>{mode==='login'?'Entrar a tu espacio':mode==='register'?'Crear tu cuenta':'Recuperar acceso'}</h1><p>{mode==='recovery'?'Te enviaremos un enlace seguro para definir una contraseña nueva.':role==='client'?'Pedí, seguí y aprobá servicios con Hugo coordinando cada etapa.':'Recibí oportunidades, ejecutá trabajos y controlá tus ganancias.'}</p><div className="mvp-auth-tabs"><button className={mode==='login'?'active':''} onClick={()=>setMode('login')}>Ingresar</button><button className={mode==='register'?'active':''} onClick={()=>setMode('register')}>Registrarse</button></div>{mode!=='recovery'&&<Button type="button" variant="secondary" className="mvp-secondary" onClick={signInWithGoogle} disabled={busy}>Continuar con Google</Button>}<form onSubmit={submit}>{mode==='register'&&<label>Nombre<Input value={name} onChange={e=>setName(e.target.value)} autoComplete="name"/></label>}<label>Email<Input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label>{mode!=='recovery'&&<label>Contraseña<Input type="password" value={password} onChange={e=>setPassword(e.target.value)} minLength={6} required/></label>}{(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'}>{error||notice}</div>}<Button className="mvp-primary" loading={busy}>{mode==='login'?'Ingresar':mode==='register'?'Crear cuenta':'Enviar enlace'}</Button>{mode==='login'?<Button type="button" variant="secondary" className="mvp-secondary" onClick={()=>setMode('recovery')}>Olvidé mi contraseña</Button>:<Button type="button" variant="secondary" className="mvp-secondary" onClick={()=>setMode('login')}>Volver a ingresar</Button>}</form></div></div>
+  return <div className={`mvp-auth-page role-${role}`}>
+    <button type="button" className="mvp-back" onClick={()=>go('home')} aria-label="Volver a UGO">← Volver</button>
+    <div className="mvp-auth-shell">
+      <section className="mvp-auth-intro" aria-label={intro.eyebrow}>
+        <div className="mvp-auth-brand"><strong>UGO</strong><span>{label}</span></div>
+        <div className="mvp-auth-intro-copy">
+          <small>{intro.eyebrow}</small>
+          <h2>{intro.title}</h2>
+          <p>{intro.text}</p>
+          <div className="mvp-auth-benefits">{intro.items.map(item=><span key={item}><i>✓</i>{item}</span>)}</div>
+        </div>
+        <button type="button" className="mvp-auth-role-switch" onClick={()=>go(role==='client'?'provider':'client')}>
+          {role==='client'?'¿Trabajás con UGO? Abrir app Profesional →':'¿Necesitás un servicio? Abrir app Cliente →'}
+        </button>
+      </section>
+      <section className="mvp-auth-card" aria-label={mode==='login'?'Iniciar sesión':mode==='register'?'Crear cuenta':'Recuperar contraseña'}>
+        <header className="mvp-auth-card-head">
+          <div className="mvp-mini-orb" aria-hidden="true"/>
+          <div>
+            <div className="mvp-kicker">UGO · {label.toUpperCase()}</div>
+            <h1>{title}</h1>
+            <p>{description}</p>
+          </div>
+        </header>
+        {mode!=='recovery'&&<div className="mvp-auth-tabs" role="tablist" aria-label="Acceso a UGO">
+          <button type="button" role="tab" aria-selected={mode==='login'} className={mode==='login'?'active':''} onClick={()=>changeMode('login')}>Ingresar</button>
+          <button type="button" role="tab" aria-selected={mode==='register'} className={mode==='register'?'active':''} onClick={()=>changeMode('register')}>Crear cuenta</button>
+        </div>}
+        {mode!=='recovery'&&<>
+          <button type="button" className="mvp-google-button" onClick={signInWithGoogle} disabled={busy}><span className="mvp-google-mark">G</span><b>Continuar con Google</b></button>
+          <div className="mvp-auth-divider"><span>o continuá con email</span></div>
+        </>}
+        <form onSubmit={submit}>
+          {mode==='register'&&<label><span>Nombre</span><Input value={name} onChange={e=>setName(e.target.value)} autoComplete="name" placeholder="Tu nombre" required/></label>}
+          <label><span>Email</span><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder="tu@email.com" required/></label>
+          {mode!=='recovery'&&<label><span>Contraseña</span><div className="mvp-password-field"><Input type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode==='login'?'current-password':'new-password'} minLength={6} placeholder="Mínimo 6 caracteres" required/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword?'Ocultar contraseña':'Mostrar contraseña'}>{showPassword?'Ocultar':'Ver'}</button></div></label>}
+          {mode==='login'&&<button type="button" className="mvp-auth-text-action" onClick={()=>changeMode('recovery')}>¿Olvidaste tu contraseña?</button>}
+          {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error||notice}</div>}
+          <Button className="mvp-primary" loading={busy}>{mode==='login'?'Ingresar a UGO':mode==='register'?'Crear cuenta':'Enviar enlace'}</Button>
+          {mode==='recovery'&&<button type="button" className="mvp-auth-recovery-back" onClick={()=>changeMode('login')}>← Volver a ingresar</button>}
+        </form>
+        <p className="mvp-auth-footnote">{mode==='register'?'Al crear tu cuenta vas a poder completar tu perfil dentro de la app.':'Acceso seguro mediante UGO.'}</p>
+      </section>
+    </div>
+  </div>
 }
 
 export function AppHeader({role,name,onLogout}:{role:string;name:string;onLogout:()=>void}){return <header className="mvp-header"><button className="mvp-brand" onClick={()=>go('home')}><span>U.G.O.</span><small>{role}</small></button><nav><button onClick={()=>go('client')}>Cliente</button><button onClick={()=>go('provider')}>Proveedor</button><button onClick={()=>go('admin')}>Control</button></nav><div className="mvp-user-chip"><span>{name.slice(0,1).toUpperCase()}</span>{name}<button onClick={onLogout}>Salir</button></div></header>}
