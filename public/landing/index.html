@@ -2,101 +2,512 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <meta name="theme-color" content="#ffffff" />
 <title>UGO — Servicios cuando los necesitás</title>
-<meta name="description" content="Pedí servicios locales con UGO. Encontrá profesionales verificados, coordiná, seguí el trabajo y pagá desde una sola experiencia." />
+<meta name="description" content="Pedí servicios locales con UGO. Un pedido, un profesional, sin vueltas." />
 <style>
-:root{--black:#000;--ink:#111;--muted:#5e5e5e;--line:#e6e6e6;--soft:#f6f6f6;--cyan:#19d9d1;--cyan2:#dffaf8;--white:#fff;--radius:16px;--max:1216px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--ink);background:#fff;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button,input{font:inherit}.wrap{width:min(var(--max),calc(100% - 48px));margin:auto}.top{position:sticky;top:0;z-index:80;background:rgba(255,255,255,.97);border-bottom:1px solid #eee;backdrop-filter:blur(16px)}.nav{height:72px;display:flex;align-items:center;gap:34px}.brand{font-size:30px;font-weight:950;letter-spacing:-2px;position:relative;line-height:1}.brand:after{content:"";position:absolute;left:23px;bottom:-9px;width:22px;height:5px;border-radius:999px;background:var(--cyan)}.navlinks{display:flex;align-items:center;gap:26px;font-size:14px;font-weight:650}.navlinks a{padding:26px 0 22px}.navlinks a:hover{opacity:.58}.actions{margin-left:auto;display:flex;align-items:center;gap:10px}.ghost,.primary{border:0;border-radius:999px;min-height:42px;padding:0 18px;font-weight:800;cursor:pointer}.ghost{background:#fff}.primary{background:#000;color:#fff}.primary:hover{background:#252525}.lang{font-size:13px;font-weight:700;margin-right:2px}.hamb{display:none;border:0;background:#f4f4f4;width:42px;height:42px;border-radius:50%;font-size:20px}
-.hero{padding:54px 0 64px}.heroGrid{display:grid;grid-template-columns:.9fr 1.1fr;gap:64px;align-items:center}.kicker{font-size:13px;font-weight:800;margin-bottom:12px}.hero h1{font-size:clamp(52px,6vw,72px);line-height:.98;letter-spacing:-.058em;margin:0 0 22px;max-width:560px}.hero p{font-size:18px;line-height:1.5;color:#424242;max-width:520px;margin:0 0 24px}.orderCard{max-width:520px}.inputrow{height:58px;background:#f3f3f3;border-radius:10px;margin-bottom:10px;display:flex;align-items:center;gap:12px;padding:0 16px}.inputrow b{width:22px;text-align:center}.inputrow input{border:0;outline:0;background:transparent;width:100%;font-size:15px}.when{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.mini{height:50px;background:#f3f3f3;border-radius:10px;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:14px;font-weight:650}.ctaButton{width:100%;height:52px;border:0;border-radius:10px;background:#000;color:#fff;font-weight:850;font-size:16px;cursor:pointer}.heroTrust{display:flex;gap:22px;flex-wrap:wrap;margin-top:22px;color:#4a4a4a;font-size:12px;font-weight:650}.heroTrust span{display:flex;align-items:center;gap:7px}.heroVisual{background:#dff8f6;min-height:560px;border-radius:4px;position:relative;overflow:hidden}.visualSky{position:absolute;inset:0;background:linear-gradient(180deg,#b9edf0 0,#e9fbf9 58%,#d1ece6 58%,#d1ece6 100%)}.sun{position:absolute;width:118px;height:118px;border-radius:50%;background:#fff6b6;right:60px;top:54px}.hill{position:absolute;left:-10%;right:-10%;height:260px;border-radius:50% 50% 0 0;background:#88c9b6;bottom:150px;transform:rotate(-6deg)}.hill.two{background:#64b1a5;bottom:105px;left:32%;transform:rotate(7deg)}.house{position:absolute;right:74px;bottom:88px;width:290px;height:245px;background:#fff;box-shadow:0 16px 40px rgba(0,0,0,.08)}.house:before{content:"";position:absolute;left:-28px;right:-28px;top:-48px;height:65px;background:#222;transform:skewX(-12deg)}.window{position:absolute;right:34px;top:44px;width:98px;height:84px;background:#bfe9f0;border:10px solid #202020}.door{position:absolute;left:34px;bottom:0;width:72px;height:120px;background:#2d3d42}.proFigure{position:absolute;left:90px;bottom:76px;width:155px;height:260px}.proHead{position:absolute;width:68px;height:68px;border-radius:50%;background:#d6986f;left:43px;top:2px}.proCap{position:absolute;width:84px;height:34px;border-radius:50px 50px 8px 8px;background:#111;left:36px;top:-5px}.proBody{position:absolute;width:122px;height:160px;background:#111;left:16px;top:63px;border-radius:22px 22px 12px 12px}.proBody:after{content:"UGO";position:absolute;color:#fff;font-weight:900;font-size:24px;left:34px;top:50px}.toolbox{position:absolute;width:116px;height:66px;background:#262626;bottom:0;left:20px;border-radius:10px}.toolbox:before{content:"";position:absolute;width:58px;height:18px;border:6px solid #262626;border-bottom:0;border-radius:14px 14px 0 0;left:24px;top:-17px}.visualCopy{position:absolute;right:46px;top:210px;width:250px;font-size:33px;line-height:1.02;font-weight:900;letter-spacing:-.04em}.visualCopy:after{content:"";display:block;width:42px;height:6px;background:var(--cyan);margin-top:18px}
-.quick{padding:12px 0 62px}.sectionTitle{font-size:32px;line-height:1.1;letter-spacing:-.035em;margin:0 0 22px}.quickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.quickCard{min-height:124px;border-radius:10px;background:#f3f3f3;padding:18px;display:flex;justify-content:space-between;align-items:flex-start;transition:.2s}.quickCard:hover{background:#ededed;transform:translateY(-1px)}.quickCard h3{margin:0 0 6px;font-size:17px}.quickCard p{margin:0;color:#666;font-size:12px;line-height:1.4}.ico{font-size:34px;margin-left:12px}
-.activity{padding:58px 0 70px;border-top:1px solid #f1f1f1}.activityGrid{display:grid;grid-template-columns:1.15fr 1fr 1fr;gap:14px}.panel{border:1px solid var(--line);border-radius:12px;padding:18px;min-height:290px}.panel h3{margin:0 0 16px;font-size:15px}.mapCard{height:145px;border-radius:8px;position:relative;overflow:hidden;background:linear-gradient(145deg,#bde1f2 0 38%,#e8ece7 38%)}.road{position:absolute;width:140%;height:6px;background:#111;left:-18%;top:74px;transform:rotate(-11deg)}.dotA,.dotB{position:absolute;width:15px;height:15px;border:4px solid #111;border-radius:50%;background:var(--cyan)}.dotA{left:19%;top:85px}.dotB{right:17%;top:43px}.activeTitle{font-size:18px;font-weight:850;margin:14px 0 5px}.sub{color:#666;font-size:12px;line-height:1.45}.worker{display:flex;align-items:center;gap:10px;margin-top:14px}.avatar{width:34px;height:34px;border-radius:50%;background:#111;color:#fff;display:grid;place-items:center;font-size:12px}.worker b{font-size:12px}.worker small{color:#666}.history{display:grid;gap:8px}.historyItem{display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #eee}.historyItem:last-child{border:0}.smallIcon{width:42px;height:42px;border-radius:8px;background:#f3f3f3;display:grid;place-items:center}.historyItem b{font-size:12px}.historyItem span{font-size:10px;color:#707070}.linkPill{background:#f3f3f3;border-radius:999px;padding:8px 10px;font-size:10px;font-weight:800}.options{display:grid;gap:8px}.option{min-height:56px;background:#f3f3f3;border-radius:8px;display:flex;align-items:center;gap:12px;padding:0 14px}.option b{font-size:13px}.option span{margin-left:auto;font-size:20px;color:#777}
-.feature{padding:54px 0}.featureGrid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px;align-items:stretch}.reserve{min-height:380px;background:#aee3e4;border-radius:10px;padding:34px;position:relative;overflow:hidden}.reserve h2{font-size:36px;line-height:1.02;letter-spacing:-.04em;margin:0 0 14px;width:54%}.reserve p{width:50%;line-height:1.5;margin:0 0 20px;font-size:14px}.calendar{display:flex;gap:8px;width:54%}.calendar .mini{background:#fff;flex:1}.reserve .ctaButton{width:54%;margin-top:10px}.clock{position:absolute;width:240px;height:240px;border-radius:50%;background:#fff;right:-18px;bottom:-44px;border:16px solid #333}.clock:before,.clock:after{content:"";position:absolute;left:50%;top:50%;background:#111;transform-origin:left center}.clock:before{width:70px;height:6px;transform:rotate(20deg)}.clock:after{width:58px;height:6px;transform:rotate(-92deg)}.benefits{border:1px solid var(--line);border-radius:10px;padding:28px}.benefits h3{margin:0 0 20px}.benefit{display:flex;gap:12px;margin:18px 0}.benefit i{font-style:normal}.benefit span{font-size:13px;line-height:1.4}.textlink{text-decoration:underline;font-size:12px;font-weight:700}
-.city,.providerBlock,.business{padding:58px 0}.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}.split.reverse .picture{order:-1}.copy h2{font-size:38px;line-height:1.05;letter-spacing:-.04em;margin:0 0 18px}.copy p{color:#4f4f4f;line-height:1.55;font-size:15px;margin-bottom:22px}.picture{min-height:350px;border-radius:6px;background:#cbe8f4;position:relative;overflow:hidden}.cityPic{background:linear-gradient(#83c8f0 0 43%,#f4c25d 43% 53%,#8bc690 53%)}.cityPic:before{content:"";position:absolute;left:9%;right:8%;bottom:0;height:160px;background:linear-gradient(90deg,#fff 0 10%,#e5af62 10% 20%,#fff 20% 33%,#f5d269 33% 44%,#fff 44% 60%,#d77d54 60% 75%,#fff 75%);clip-path:polygon(0 35%,8% 16%,15% 35%,23% 5%,31% 35%,39% 18%,47% 35%,56% 0,64% 35%,73% 14%,82% 35%,91% 9%,100% 35%,100% 100%,0 100%)}.providerPic{background:linear-gradient(135deg,#ffe4c9,#d6eff2)}.providerPic:after{content:"UGO";position:absolute;width:170px;height:230px;border-radius:80px 80px 24px 24px;background:#111;color:#fff;display:grid;place-items:center;font-size:38px;font-weight:900;left:calc(50% - 85px);bottom:-12px}.businessPic{background:linear-gradient(180deg,#c7eafb,#e7efe9)}.businessPic:before{content:"";position:absolute;left:8%;right:8%;top:18%;bottom:15%;background:repeating-linear-gradient(90deg,#a9d8e8 0 72px,#fff 72px 82px);border:12px solid #fff;box-shadow:0 24px 40px rgba(0,0,0,.08)}
-.apps{background:#f3f3f3;padding:44px 0 54px}.appsGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.appCard{background:#fff;min-height:132px;padding:18px;display:grid;grid-template-columns:96px 1fr auto;gap:18px;align-items:center}.qr{width:96px;height:96px;background:repeating-conic-gradient(#111 0 25%,#fff 0 50%) 0/18px 18px;border:10px solid #fff;outline:1px solid #ddd}.appCard h3{margin:0 0 4px;font-size:16px}.appCard p{margin:0;color:#666;font-size:12px}.arrow{font-size:24px}.footer{background:#000;color:#fff;padding:66px 0 34px}.footTop{display:grid;grid-template-columns:1.45fr repeat(3,1fr);gap:42px}.footLogo{font-size:30px;font-weight:950;letter-spacing:-2px}.footIntro{color:#aaa;font-size:12px;line-height:1.5;max-width:300px;margin-top:12px}.footer h4{font-size:13px;margin:0 0 18px}.footer a{display:block;color:#bbb;font-size:12px;margin:11px 0}.footBottom{border-top:1px solid #222;margin-top:50px;padding-top:22px;display:flex;justify-content:space-between;color:#777;font-size:11px}.mobilebar{display:none}
-@media(max-width:960px){.navlinks{display:none}.heroGrid,.split{grid-template-columns:1fr}.heroVisual{min-height:460px}.quickGrid{grid-template-columns:1fr 1fr}.activityGrid{grid-template-columns:1fr 1fr}.activityGrid .panel:first-child{grid-column:1/-1}.featureGrid{grid-template-columns:1fr}.footTop{grid-template-columns:1fr 1fr}.appsGrid{grid-template-columns:1fr}.split.reverse .picture{order:0}}
-@media(max-width:680px){body{padding-bottom:78px}.wrap{width:min(100% - 28px,var(--max))}.nav{height:64px}.lang,.actions .ghost,.actions .primary{display:none}.hamb{display:block}.brand{font-size:27px}.hero{padding:36px 0 44px}.heroGrid{gap:32px}.hero h1{font-size:48px}.hero p{font-size:16px}.when{grid-template-columns:1fr}.heroVisual{min-height:390px}.visualCopy{font-size:24px;width:180px;right:22px;top:90px}.house{right:24px;transform:scale(.8);transform-origin:right bottom}.proFigure{left:38px;transform:scale(.82);transform-origin:left bottom}.quick{padding-bottom:44px}.quickGrid,.activityGrid{grid-template-columns:1fr}.activityGrid .panel:first-child{grid-column:auto}.sectionTitle{font-size:28px}.feature{padding:44px 0}.reserve{padding:26px;min-height:430px}.reserve h2,.reserve p,.calendar,.reserve .ctaButton{width:100%}.clock{opacity:.38}.calendar{position:relative;z-index:2}.split{gap:24px}.copy h2{font-size:32px}.picture{min-height:280px}.appsGrid{grid-template-columns:1fr}.appCard{grid-template-columns:72px 1fr auto}.qr{width:72px;height:72px;background-size:14px 14px}.footTop{grid-template-columns:1fr 1fr}.footTop>div:first-child{grid-column:1/-1}.footBottom{flex-direction:column;gap:12px}.mobilebar{display:flex;position:fixed;z-index:90;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));padding:7px;gap:7px;background:rgba(255,255,255,.95);border:1px solid #ddd;border-radius:17px;box-shadow:0 10px 34px rgba(0,0,0,.18);backdrop-filter:blur(14px)}.mobilebar a{flex:1;min-height:48px;border-radius:11px;display:grid;place-items:center;font-size:12px;font-weight:850}.mobilebar a:first-child{background:#000;color:#fff}.mobilebar a:last-child{background:#f1f1f1}.mobileMenu{display:none;position:absolute;top:64px;left:0;right:0;background:#fff;border-bottom:1px solid #eee;padding:10px 20px 20px}.mobileMenu.open{display:block}.mobileMenu a{display:block;padding:13px 0;font-weight:750;border-bottom:1px solid #eee}}
+:root{
+  --black:#090909;--ink:#151515;--muted:#666;--line:#e8e8e8;--soft:#f6f6f6;
+  --cyan:#17d9d1;--cyan-soft:#dff9f7;--white:#fff;--max:1180px;
+  --shadow:0 18px 50px rgba(0,0,0,.08)
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:#fff;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+body.menu-open{overflow:hidden}
+a{color:inherit;text-decoration:none}
+button,input{font:inherit}
+button,a{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:3px solid rgba(23,217,209,.45);outline-offset:3px}
+.wrap{width:min(var(--max),calc(100% - 48px));margin:auto}
+section[id]{scroll-margin-top:92px}
 
-/* UGO RESPONSIVE HARDENING v1 */
-html,body{max-width:100%;overflow-x:hidden}body{min-width:320px}img,svg,video,canvas{max-width:100%;height:auto}section[id]{scroll-margin-top:88px}*{min-width:0}
-@media(max-width:1100px){.wrap{width:min(100% - 36px,1180px)}.links{gap:14px}.nav{gap:18px}.herogrid{grid-template-columns:.95fr 1.05fr}.hero h1{font-size:clamp(50px,6vw,66px)}.phone{right:15px}}
-@media(max-width:900px){body{padding-bottom:82px}.nav{height:70px}.brand{font-size:34px}.links,.actions{display:none}.herogrid,.how,.cards2,.servicegrid,.downloadgrid{grid-template-columns:1fr}.herogrid{min-height:auto;padding:50px 0 0}.hero h1{font-size:clamp(46px,10vw,58px)}.lead{font-size:17px}.herocta .btn{min-height:50px}.visual{height:500px;margin-top:10px}.radar{inset:30px 0 20px}.phone{right:50%;transform:translateX(50%) rotate(3deg);bottom:-35px}.label{left:8%;top:50px}.m1{left:8%;top:155px}.m2{left:auto;right:8%;top:230px}.m3{left:14%;top:325px}.metrics{border-left:0;border-top:1px solid rgba(255,255,255,.12);padding:28px 0 0}.trustgrid{grid-template-columns:repeat(2,1fr)}.community .wrap{align-items:flex-start;flex-direction:column;padding-top:48px;padding-bottom:48px}.bigugo{font-size:64px}.footgrid{grid-template-columns:repeat(2,1fr)}.mobilebar{display:flex;position:fixed;z-index:80;bottom:max(12px,env(safe-area-inset-bottom));left:12px;right:12px;padding:8px;gap:8px;border-radius:18px;background:rgba(6,18,21,.94);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,.1);box-shadow:0 18px 50px rgba(0,0,0,.35)}.mobilebar a{flex:1;min-height:50px;border-radius:12px;display:grid;place-items:center;text-align:center;font-size:12px;font-weight:800;padding:0 10px}.mobilebar .c{background:var(--mint);color:#04110e}.mobilebar .p{border:1px solid rgba(255,255,255,.2)}}
-@media(max-width:640px){.wrap{width:min(100% - 28px,1180px)}section.block{padding:48px 0}.title h2{font-size:clamp(28px,9vw,36px)}.hero h1{font-size:clamp(42px,13vw,52px);line-height:1}.eyebrow{font-size:10px;letter-spacing:.13em}.lead{font-size:16px}.herocta{display:grid;grid-template-columns:1fr}.herocta .btn{width:100%}.trustline{gap:9px 14px}.visual{height:455px}.phone{width:min(235px,68vw);height:455px}.screen{padding:34px 11px 14px}.cats{gap:6px}.cats span{height:55px}.label{left:0;top:35px;font-size:10px;padding:10px 12px}.marker{width:54px;height:54px;font-size:24px}.m1{left:0;top:140px}.m2{right:0;top:235px}.m3{display:none}.steps{grid-template-columns:1fr;gap:24px}.step{display:grid;grid-template-columns:64px 1fr;gap:0 14px;align-items:start}.step .ico{grid-row:1/3}.step h3{margin:5px 0 5px}.step p{margin:0}.metricgrid{grid-template-columns:1fr;gap:12px}.cards2{gap:14px}.card{min-height:360px;padding:24px}.card h2{font-size:24px;max-width:80%}.ghostperson{width:160px;height:210px;opacity:.42}.trustgrid{grid-template-columns:1fr}.servicegrid h2,.community h2{font-size:clamp(30px,9vw,38px)}.chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.chip{flex:0 0 auto;scroll-snap-align:start}.city{height:230px}.downloadgrid{gap:30px}.phoneMini{width:190px;height:280px}.footgrid{grid-template-columns:1fr 1fr;gap:24px 18px}.footer{padding-bottom:105px}}
-@media(max-width:390px){.wrap{width:min(100% - 22px,1180px)}.brand{font-size:31px}.brand small{font-size:8px}.hero h1{font-size:clamp(39px,12.8vw,48px)}.visual{height:420px}.phone{width:220px;height:430px}.marker{width:50px;height:50px}.card{padding:20px}.card h2{max-width:100%;font-size:22px}.ghostperson{opacity:.25}.footgrid{grid-template-columns:1fr}.mobilebar{left:8px;right:8px;bottom:max(8px,env(safe-area-inset-bottom))}.mobilebar a{font-size:11px;padding:0 7px}}
-@media(max-width:340px){.hero h1{font-size:38px}.visual{height:395px}.phone{width:205px;height:405px}.label{display:none}.m2{display:none}.mobilebar{gap:5px;padding:6px}}
-@media(orientation:landscape) and (max-height:520px) and (max-width:900px){body{padding-bottom:72px}.visual{height:430px}.herogrid{padding-top:30px}section[id]{scroll-margin-top:70px}}
-@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+/* Header */
+.top{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(18px)}
+.nav{height:72px;display:flex;align-items:center;gap:30px;position:relative}
+.brand{font-size:30px;font-weight:950;letter-spacing:-2px;line-height:1;position:relative}
+.brand:after{content:"";position:absolute;left:24px;bottom:-8px;width:21px;height:4px;border-radius:999px;background:var(--cyan)}
+.navlinks{display:flex;align-items:center;gap:25px;font-size:13px;font-weight:700}
+.navlinks a{padding:27px 0 24px}
+.navlinks a:hover{opacity:.55}
+.actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.lang{font-size:12px;font-weight:800;color:#666;padding:0 6px}
+.navBtn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;padding:0 17px;border-radius:999px;font-size:13px;font-weight:850}
+.navBtn.light{background:#fff}
+.navBtn.dark{background:#000;color:#fff}
+.navBtn.dark:hover{background:#262626}
+.hamb{display:none;width:42px;height:42px;border:0;border-radius:50%;background:#f2f2f2;font-size:20px;cursor:pointer}
+.mobileMenu{display:none}
 
+/* Hero */
+.hero{padding:58px 0 54px}
+.heroGrid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:58px;align-items:center}
+.kicker{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;font-weight:850;color:#444}
+.kickerDot{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px var(--cyan-soft)}
+.hero h1{max-width:570px;margin:0 0 18px;font-size:clamp(48px,5.4vw,68px);line-height:.98;letter-spacing:-.055em;font-weight:950}
+.heroLead{max-width:540px;margin:0 0 26px;color:#505050;font-size:17px;line-height:1.55}
+.orderCard{max-width:540px}
+.inputrow{height:58px;background:#f3f3f3;border:1px solid transparent;border-radius:12px;margin-bottom:10px;display:flex;align-items:center;gap:12px;padding:0 16px}
+.inputrow:focus-within{background:#fff;border-color:#bcbcbc;box-shadow:0 0 0 4px #f2f2f2}
+.fieldIcon{width:24px;text-align:center;font-size:17px}
+.inputrow input{width:100%;border:0;outline:0;background:transparent;color:#111;font-size:15px}
+.when{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.mini{height:48px;border:1px solid #d6d6d6;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:800;cursor:pointer}
+.mini.active{border-color:#111;background:#111;color:#fff}
+.ctaButton{width:100%;height:52px;border:0;border-radius:12px;background:#000;color:#fff;font-weight:900;font-size:15px;cursor:pointer}
+.ctaButton:hover{background:#252525}
+.heroTrust{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:18px;color:#565656;font-size:11px;font-weight:750}
+.heroTrust span{display:flex;align-items:center;gap:6px}
+.trustMark{color:#0d8f8a;font-weight:950}
+
+.heroVisual{min-height:500px;border-radius:24px;position:relative;overflow:hidden;background:#dff8f6;box-shadow:inset 0 0 0 1px rgba(0,0,0,.03)}
+.visualSky{position:absolute;inset:0;background:linear-gradient(180deg,#bdeff1 0,#e9fbf9 58%,#d9eee8 58%,#d9eee8 100%)}
+.sun{position:absolute;width:110px;height:110px;border-radius:50%;background:#fff2a5;right:58px;top:48px}
+.hill{position:absolute;left:-10%;right:-10%;height:250px;border-radius:50% 50% 0 0;background:#89c9b6;bottom:128px;transform:rotate(-6deg)}
+.hill.two{left:28%;bottom:86px;background:#67b2a6;transform:rotate(7deg)}
+.house{position:absolute;right:68px;bottom:70px;width:276px;height:220px;background:#fff;box-shadow:0 18px 44px rgba(0,0,0,.09)}
+.house:before{content:"";position:absolute;left:-26px;right:-26px;top:-44px;height:58px;background:#202020;transform:skewX(-11deg)}
+.window{position:absolute;right:30px;top:40px;width:88px;height:78px;background:#c1e8ef;border:9px solid #252525}
+.door{position:absolute;left:32px;bottom:0;width:68px;height:108px;background:#2f3f44}
+.proFigure{position:absolute;left:72px;bottom:58px;width:148px;height:245px}
+.proHead{position:absolute;width:64px;height:64px;border-radius:50%;background:#d6976e;left:42px;top:2px}
+.proCap{position:absolute;width:80px;height:32px;border-radius:50px 50px 8px 8px;background:#111;left:34px;top:-3px}
+.proBody{position:absolute;width:118px;height:152px;background:#111;left:15px;top:60px;border-radius:22px 22px 12px 12px}
+.proBody:after{content:"UGO";position:absolute;color:#fff;font-size:21px;font-weight:950;left:34px;top:47px}
+.toolbox{position:absolute;width:112px;height:62px;background:#292929;bottom:0;left:18px;border-radius:9px}
+.toolbox:before{content:"";position:absolute;width:56px;height:18px;border:5px solid #292929;border-bottom:0;border-radius:14px 14px 0 0;left:23px;top:-16px}
+.visualCopy{position:absolute;right:40px;top:184px;width:220px;font-size:31px;line-height:1.01;font-weight:950;letter-spacing:-.045em}
+.visualCopy:after{content:"";display:block;width:40px;height:5px;border-radius:5px;background:var(--cyan);margin-top:16px}
+
+/* Sections */
+.section{padding:64px 0}
+.section.soft{background:#fafafa;border-top:1px solid #f2f2f2;border-bottom:1px solid #f2f2f2}
+.sectionHead{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:24px}
+.sectionHead h2{margin:0;font-size:clamp(28px,3vw,38px);line-height:1.06;letter-spacing:-.04em}
+.sectionHead p{max-width:540px;margin:8px 0 0;color:var(--muted);font-size:14px;line-height:1.55}
+.textLink{font-size:12px;font-weight:850;text-decoration:underline;text-underline-offset:3px;white-space:nowrap}
+
+/* Categories */
+.quickGrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.quickCard{min-height:132px;border-radius:16px;background:#f4f4f4;padding:18px;display:flex;justify-content:space-between;gap:14px;transition:.18s}
+.quickCard:hover{background:#ededed;transform:translateY(-2px)}
+.quickCard h3{margin:0 0 7px;font-size:17px;letter-spacing:-.02em}
+.quickCard p{margin:0;color:#6b6b6b;font-size:12px;line-height:1.45}
+.icoBox{flex:0 0 42px;width:42px;height:42px;border-radius:12px;background:#fff;display:grid;place-items:center;font-size:22px;border:1px solid #ebebeb}
+
+/* How */
+.howGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.step{min-height:250px;border:1px solid var(--line);border-radius:18px;padding:24px;background:#fff}
+.stepTop{display:flex;align-items:center;justify-content:space-between}
+.stepNum{width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#111;color:#fff;font-weight:950}
+.stepTag{font-size:10px;font-weight:900;letter-spacing:.12em;color:#aaa}
+.step h3{margin:24px 0 9px;font-size:21px;letter-spacing:-.025em}
+.step p{margin:0;color:#666;font-size:14px;line-height:1.55}
+.stepHint{margin-top:18px;display:inline-flex;padding:7px 10px;border-radius:999px;background:var(--cyan-soft);font-size:10px;font-weight:850}
+
+/* Schedule */
+.featureGrid{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}
+.reserve{min-height:360px;border-radius:18px;background:#afe7e6;padding:32px;position:relative;overflow:hidden}
+.reserve h2{width:54%;margin:0 0 12px;font-size:34px;line-height:1.02;letter-spacing:-.04em}
+.reserve p{width:52%;margin:0 0 22px;font-size:14px;line-height:1.5}
+.calendar{display:flex;gap:8px;width:55%;position:relative;z-index:2}
+.calendar .mini{flex:1;background:#fff;border-color:#fff}
+.reserve .ctaButton{width:55%;margin-top:10px;position:relative;z-index:2}
+.clock{position:absolute;width:225px;height:225px;border-radius:50%;right:-12px;bottom:-42px;background:#fff;border:15px solid #333}
+.clock:before,.clock:after{content:"";position:absolute;left:50%;top:50%;height:5px;background:#111;transform-origin:left center}
+.clock:before{width:66px;transform:rotate(20deg)}
+.clock:after{width:54px;transform:rotate(-90deg)}
+.benefits{border:1px solid var(--line);border-radius:18px;padding:26px;background:#fff}
+.benefits h3{margin:0 0 18px;font-size:18px}
+.benefit{display:flex;gap:11px;margin:17px 0}
+.benefitIcon{width:26px;height:26px;border-radius:8px;background:#f4f4f4;display:grid;place-items:center;flex:0 0 26px;font-size:12px}
+.benefit span:last-child{font-size:13px;line-height:1.45}
+
+/* Audience cards */
+.audienceGrid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.audienceCard{min-height:355px;border-radius:20px;padding:32px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.audienceCard.client{background:#f4f4f4}
+.audienceCard.provider{background:#111;color:#fff}
+.audienceLabel{font-size:10px;font-weight:900;letter-spacing:.14em;color:#777}
+.provider .audienceLabel{color:#aaa}
+.audienceCard h2{max-width:430px;margin:14px 0 12px;font-size:34px;line-height:1.04;letter-spacing:-.04em}
+.audienceCard p{max-width:420px;margin:0;color:#666;font-size:14px;line-height:1.55}
+.provider p{color:#bbb}
+.audienceBtn{align-self:flex-start;margin-top:auto;display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;font-size:12px;font-weight:900;background:#000;color:#fff}
+.provider .audienceBtn{background:#fff;color:#111}
+.rings{position:absolute;right:-90px;bottom:-115px;width:270px;height:270px;border:1px solid #d8d8d8;border-radius:50%}
+.rings:before,.rings:after{content:"";position:absolute;border:1px solid #d8d8d8;border-radius:50%;inset:38px}
+.rings:after{inset:78px}
+.provider .rings,.provider .rings:before,.provider .rings:after{border-color:#303030}
+
+/* Business */
+.businessBand{display:grid;grid-template-columns:1fr .9fr;gap:18px;align-items:center;border:1px solid var(--line);border-radius:20px;padding:34px;background:#fff}
+.businessBand h2{margin:0 0 10px;font-size:31px;letter-spacing:-.04em}
+.businessBand p{margin:0;color:#666;font-size:14px;line-height:1.55;max-width:620px}
+.businessActions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.pillBtn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:0 18px;border-radius:999px;font-size:12px;font-weight:900;border:1px solid #d9d9d9;background:#fff}
+.pillBtn.dark{background:#000;color:#fff;border-color:#000}
+
+/* Apps */
+.apps{background:#f4f4f4;padding:46px 0 54px}
+.appsGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.appCard{min-height:120px;background:#fff;border-radius:16px;padding:20px;display:grid;grid-template-columns:54px 1fr auto;gap:16px;align-items:center;border:1px solid #ececec}
+.appIcon{width:54px;height:54px;border-radius:15px;background:#111;color:#fff;display:grid;place-items:center;font-weight:950;font-size:14px;letter-spacing:-.5px}
+.appCard h3{margin:0 0 4px;font-size:16px}
+.appCard p{margin:0;color:#666;font-size:12px}
+.arrow{font-size:22px}
+
+/* Footer */
+.footer{background:#000;color:#fff;padding:58px 0 26px}
+.footTop{display:grid;grid-template-columns:1.45fr repeat(3,1fr);gap:38px}
+.footLogo{font-size:30px;font-weight:950;letter-spacing:-2px}
+.footIntro{max-width:300px;margin-top:12px;color:#aaa;font-size:12px;line-height:1.55}
+.footer h4{margin:0 0 16px;font-size:12px}
+.footer a{display:block;margin:10px 0;color:#aaa;font-size:12px}
+.footer a:hover{color:#fff}
+.footBottom{border-top:1px solid #232323;margin-top:42px;padding-top:20px;display:flex;justify-content:space-between;gap:18px;color:#777;font-size:11px}
+.mobilebar{display:none}
+
+@media(max-width:980px){
+  .navlinks{display:none}
+  .hamb{display:grid;place-items:center}
+  .heroGrid{grid-template-columns:1fr;gap:34px}
+  .hero h1{max-width:760px}
+  .heroLead{max-width:650px}
+  .orderCard{max-width:650px}
+  .heroVisual{min-height:460px}
+  .quickGrid{grid-template-columns:1fr 1fr}
+  .featureGrid{grid-template-columns:1fr}
+  .footTop{grid-template-columns:1fr 1fr}
+  .mobileMenu{position:absolute;top:64px;left:20px;right:20px;padding:10px;background:#fff;border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .mobileMenu.open{display:block}
+  .mobileMenu a{display:flex;align-items:center;justify-content:space-between;min-height:45px;padding:0 12px;border-radius:10px;font-size:13px;font-weight:800}
+  .mobileMenu a:hover{background:#f6f6f6}
+  .mobileMenu a+a{border-top:1px solid #f4f4f4}
+}
+@media(max-width:720px){
+  body{padding-bottom:80px}
+  .wrap{width:min(100% - 28px,var(--max))}
+  .nav{height:64px}
+  .brand{font-size:27px}
+  .actions .lang,.actions .navBtn{display:none}
+  .hero{padding:34px 0 38px}
+  .hero h1{font-size:clamp(42px,13vw,54px)}
+  .heroLead{font-size:16px}
+  .when{grid-template-columns:1fr 1fr}
+  .heroVisual{min-height:370px;border-radius:18px}
+  .visualCopy{right:18px;top:74px;width:165px;font-size:23px}
+  .sun{width:80px;height:80px;right:32px;top:32px}
+  .house{right:16px;bottom:42px;transform:scale(.72);transform-origin:right bottom}
+  .proFigure{left:22px;bottom:36px;transform:scale(.72);transform-origin:left bottom}
+  .section{padding:48px 0}
+  .sectionHead{align-items:flex-start}
+  .sectionHead .textLink{display:none}
+  .quickGrid,.howGrid,.audienceGrid{grid-template-columns:1fr}
+  .quickCard{min-height:116px}
+  .reserve{padding:26px;min-height:415px}
+  .reserve h2,.reserve p,.calendar,.reserve .ctaButton{width:100%}
+  .clock{opacity:.28}
+  .businessBand{grid-template-columns:1fr;padding:26px}
+  .businessActions{justify-content:flex-start}
+  .appsGrid{grid-template-columns:1fr}
+  .footTop{grid-template-columns:1fr 1fr}
+  .footTop>div:first-child{grid-column:1/-1}
+  .footBottom{flex-direction:column}
+  .mobilebar{display:flex;position:fixed;z-index:120;left:10px;right:10px;bottom:max(10px,env(safe-area-inset-bottom));padding:7px;gap:7px;background:rgba(255,255,255,.95);border:1px solid #ddd;border-radius:17px;box-shadow:0 10px 34px rgba(0,0,0,.18);backdrop-filter:blur(14px)}
+  .mobilebar a{flex:1;min-height:48px;border-radius:11px;display:grid;place-items:center;text-align:center;font-size:12px;font-weight:900}
+  .mobilebar a:first-child{background:#000;color:#fff}
+  .mobilebar a:last-child{background:#f1f1f1}
+}
+@media(max-width:420px){
+  .wrap{width:min(100% - 22px,var(--max))}
+  .hero h1{font-size:43px}
+  .when{grid-template-columns:1fr}
+  .heroVisual{min-height:335px}
+  .visualCopy{top:54px}
+  .quickCard{padding:16px}
+  .calendar{flex-direction:column}
+  .audienceCard{min-height:330px;padding:26px}
+  .audienceCard h2{font-size:30px}
+  .footTop{grid-template-columns:1fr}
+  .footTop>div:first-child{grid-column:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;transition:none!important}
+}
 </style>
 </head>
 <body>
 <header class="top">
- <div class="wrap nav">
-  <a class="brand" href="/landing/">UGO</a>
-  <nav class="navlinks">
-   <a href="#servicios">Servicios</a><a href="#actividad">Actividad</a><a href="#programar">Programar</a><a href="#profesionales">Profesionales</a><a href="#empresas">Empresas</a><a href="/?app=development">Desarrollo</a>
-  </nav>
-  <div class="actions"><span class="lang">ES</span><a class="ghost" href="/?app=client">Entrar</a><a class="primary" href="/?app=client">Buscar servicio</a><button class="hamb" id="hamb" aria-label="Abrir menú">☰</button></div>
- </div>
- <div class="mobileMenu" id="mobileMenu"><a href="#servicios">Servicios</a><a href="#programar">Programar</a><a href="#profesionales">Profesionales</a><a href="#empresas">Empresas</a><a href="/?app=development">Desarrollo</a></div>
+  <div class="wrap nav">
+    <a class="brand" href="/landing/" aria-label="UGO inicio">UGO</a>
+    <nav class="navlinks" aria-label="Navegación principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#actividad">Cómo funciona</a>
+      <a href="#programar">Programar</a>
+      <a href="#profesionales">Profesionales</a>
+      <a href="#empresas">Empresas</a>
+      <a href="/?app=development">Desarrollo</a>
+    </nav>
+    <div class="actions">
+      <span class="lang">ES</span>
+      <a class="navBtn light" href="/?app=client">Entrar</a>
+      <a class="navBtn dark" href="/?app=client">Pedir servicio</a>
+      <button class="hamb" id="hamb" type="button" aria-label="Abrir menú" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+    </div>
+    <nav class="mobileMenu" id="mobileMenu" aria-label="Navegación móvil">
+      <a href="#servicios">Servicios <span>›</span></a>
+      <a href="#actividad">Cómo funciona <span>›</span></a>
+      <a href="#programar">Programar <span>›</span></a>
+      <a href="#profesionales">Profesionales <span>›</span></a>
+      <a href="#empresas">Empresas <span>›</span></a>
+      <a href="/?app=development">Desarrollo <span>›</span></a>
+    </nav>
+  </div>
 </header>
 
 <main>
 <section class="hero">
- <div class="wrap heroGrid">
-  <div>
-   <div class="kicker">📍 Florianópolis, BR</div>
-   <h1>Pedí cualquier servicio con la app de UGO</h1>
-   <p>Profesionales confiables, cuando los necesitás. Hogar, reparaciones, instalaciones y mucho más.</p>
-   <div class="orderCard">
-    <label class="inputrow"><b>⌕</b><input id="serviceInput" placeholder="¿Qué servicio necesitás?" autocomplete="off" /></label>
-    <label class="inputrow"><b>●</b><input id="placeInput" placeholder="¿Dónde necesitás el servicio?" value="Florianópolis" /></label>
-    <div class="when"><button class="mini" type="button">◷ Ahora</button><button class="mini" type="button">▣ Programar</button></div>
-    <button class="ctaButton" type="button" id="findService">Ver profesionales</button>
-   </div>
-   <div class="heroTrust"><span>✓ Profesionales verificados</span><span>★ Reputación real</span><span>⚡ Atención rápida</span></div>
+  <div class="wrap heroGrid">
+    <div>
+      <div class="kicker"><span class="kickerDot"></span>Florianópolis, BR</div>
+      <h1>Pedí lo que necesitás. UGO encuentra quién lo resuelve.</h1>
+      <p class="heroLead">Servicios para el hogar y el día a día, con profesionales locales y un flujo simple de principio a fin.</p>
+      <div class="orderCard" role="search" aria-label="Buscar servicio">
+        <label class="inputrow">
+          <span class="fieldIcon" aria-hidden="true">⌕</span>
+          <input id="serviceInput" aria-label="Servicio" placeholder="¿Qué servicio necesitás?" autocomplete="off" />
+        </label>
+        <label class="inputrow">
+          <span class="fieldIcon" aria-hidden="true">⌖</span>
+          <input id="placeInput" aria-label="Ubicación" placeholder="¿Dónde necesitás el servicio?" value="Florianópolis" />
+        </label>
+        <div class="when" role="group" aria-label="Cuándo necesitás el servicio">
+          <button class="mini active" id="nowBtn" type="button" aria-pressed="true">◷ Ahora</button>
+          <button class="mini" id="scheduleBtn" type="button" aria-pressed="false">▣ Programar</button>
+        </div>
+        <button class="ctaButton" type="button" id="findService">Pedir servicio</button>
+      </div>
+      <div class="heroTrust">
+        <span><b class="trustMark">✓</b> Profesionales verificados</span>
+        <span><b class="trustMark">★</b> Reputación real</span>
+        <span><b class="trustMark">⚡</b> Sin llamadas ni vueltas</span>
+      </div>
+    </div>
+
+    <div class="heroVisual" aria-label="Ilustración de un profesional UGO llegando a un hogar">
+      <div class="visualSky"></div>
+      <div class="sun"></div>
+      <div class="hill"></div>
+      <div class="hill two"></div>
+      <div class="house"><div class="window"></div><div class="door"></div></div>
+      <div class="proFigure"><div class="proHead"></div><div class="proCap"></div><div class="proBody"></div><div class="toolbox"></div></div>
+      <div class="visualCopy">Tu hogar<br>en buenas manos</div>
+    </div>
   </div>
-  <div class="heroVisual" aria-label="Profesional UGO atendiendo un hogar">
-   <div class="visualSky"></div><div class="sun"></div><div class="hill"></div><div class="hill two"></div>
-   <div class="house"><div class="window"></div><div class="door"></div></div>
-   <div class="proFigure"><div class="proHead"></div><div class="proCap"></div><div class="proBody"></div><div class="toolbox"></div></div>
-   <div class="visualCopy">Tu hogar<br>en buenas manos</div>
-  </div>
- </div>
 </section>
 
-<section class="quick" id="servicios"><div class="wrap"><h2 class="sectionTitle">Descubrí todo lo que podés hacer con UGO</h2><div class="quickGrid">
- <a class="quickCard" href="/?app=client"><div><h3>Electricidad</h3><p>Instalaciones, fallas, urgencias y más.</p></div><div class="ico">⚡</div></a>
- <a class="quickCard" href="/?app=client"><div><h3>Limpieza</h3><p>Hogar, oficinas y servicios por hora.</p></div><div class="ico">🧹</div></a>
- <a class="quickCard" href="/?app=client"><div><h3>Plomería</h3><p>Pérdidas, cañerías e instalaciones.</p></div><div class="ico">🔧</div></a>
- <a class="quickCard" href="/?app=client"><div><h3>Reparaciones</h3><p>Soluciones para tu casa o negocio.</p></div><div class="ico">🛠️</div></a>
- </div></div></section>
+<section class="section" id="servicios">
+  <div class="wrap">
+    <div class="sectionHead">
+      <div>
+        <h2>¿Qué necesitás resolver?</h2>
+        <p>Elegí una categoría o escribí directamente lo que necesitás. UGO te lleva al mismo flujo simple de pedido.</p>
+      </div>
+      <a class="textLink" href="/?app=client">Ver todos los servicios →</a>
+    </div>
+    <div class="quickGrid">
+      <a class="quickCard" href="/?app=client&service=Electricidad"><div><h3>Electricidad</h3><p>Instalaciones, fallas, urgencias y más.</p></div><div class="icoBox">⚡</div></a>
+      <a class="quickCard" href="/?app=client&service=Limpieza"><div><h3>Limpieza</h3><p>Hogar, oficinas y servicios por hora.</p></div><div class="icoBox">⌂</div></a>
+      <a class="quickCard" href="/?app=client&service=Plomería"><div><h3>Plomería</h3><p>Pérdidas, cañerías e instalaciones.</p></div><div class="icoBox">◒</div></a>
+      <a class="quickCard" href="/?app=client&service=Reparaciones"><div><h3>Reparaciones</h3><p>Soluciones para tu casa o negocio.</p></div><div class="icoBox">✦</div></a>
+    </div>
+  </div>
+</section>
 
-<section class="activity" id="actividad"><div class="wrap"><h2 class="sectionTitle">Tu cuenta y actividad</h2><div class="activityGrid">
- <article class="panel"><h3>Servicio más reciente</h3><div class="mapCard"><div class="road"></div><span class="dotA"></span><span class="dotB"></span></div><div class="activeTitle">Instalación eléctrica</div><div class="sub">Hoy, 14:30 · Canasvieiras, Florianópolis</div><div class="worker"><div class="avatar">MS</div><div><b>Martín S. · ★ 4,9</b><br><small>Profesional en camino</small></div></div></article>
- <article class="panel"><h3>Trabajos anteriores</h3><div class="history"><div class="historyItem"><div class="smallIcon">🧹</div><div><b>Limpieza del hogar</b><br><span>12 de agosto</span></div><span class="linkPill">Calificar</span></div><div class="historyItem"><div class="smallIcon">⚡</div><div><b>Reparación eléctrica</b><br><span>3 de agosto</span></div><span class="linkPill">Ver detalle</span></div><div class="historyItem"><div class="smallIcon">🪛</div><div><b>Armado de muebles</b><br><span>28 de julio</span></div><span class="linkPill">Ver detalle</span></div></div></article>
- <article class="panel"><h3>Opciones de servicio</h3><div class="options"><a class="option" href="/?app=client"><b>▣ Programar un servicio</b><span>›</span></a><a class="option" href="/?app=client"><b>↻ Servicios recurrentes</b><span>›</span></a><a class="option" href="/?app=client"><b>⌖ Mis direcciones</b><span>›</span></a><a class="option" href="/?app=client"><b>◫ Métodos de pago</b><span>›</span></a></div></article>
- </div></div></section>
+<section class="section soft" id="actividad">
+  <div class="wrap">
+    <div class="sectionHead">
+      <div>
+        <h2>Un pedido. Un profesional. Sin vueltas.</h2>
+        <p>La landing ya no simula actividad ni pedidos falsos: explica el recorrido real antes de entrar a la app.</p>
+      </div>
+    </div>
+    <div class="howGrid">
+      <article class="step">
+        <div class="stepTop"><span class="stepNum">1</span><span class="stepTag">PEDIDO</span></div>
+        <h3>Contanos qué necesitás</h3>
+        <p>Elegí el servicio, indicá dónde y definí si lo necesitás ahora o más tarde.</p>
+        <span class="stepHint">Menos campos, menos fricción</span>
+      </article>
+      <article class="step">
+        <div class="stepTop"><span class="stepNum">2</span><span class="stepTag">MATCHING</span></div>
+        <h3>UGO busca al profesional</h3>
+        <p>El sistema encuentra una opción disponible para tu pedido. No tenés que navegar perfiles sin fin.</p>
+        <span class="stepHint">Flujo directo</span>
+      </article>
+      <article class="step">
+        <div class="stepTop"><span class="stepNum">3</span><span class="stepTag">SEGUIMIENTO</span></div>
+        <h3>Seguí el servicio</h3>
+        <p>Estado, coordinación y calificación quedan dentro de UGO para que todo sea claro y trazable.</p>
+        <span class="stepHint">Todo en un solo lugar</span>
+      </article>
+    </div>
+  </div>
+</section>
 
-<section class="feature" id="programar"><div class="wrap"><h2 class="sectionTitle">Programá para más tarde</h2><div class="featureGrid"><div class="reserve"><h2>La ayuda que necesitás, cuando la necesitás</h2><p>Programá tu servicio con anticipación y asegurá tu profesional favorito.</p><div class="calendar"><div class="mini">▣ Seleccioná una fecha</div><div class="mini">◷ Elegí un horario</div></div><button class="ctaButton" onclick="location.href='/?app=client'">Programar servicio</button><div class="clock"></div></div><aside class="benefits"><h3>Ventajas</h3><div class="benefit"><i>▣</i><span>Elegí el día y horario que prefieras.</span></div><div class="benefit"><i>★</i><span>Asegurá tu profesional favorito.</span></div><div class="benefit"><i>✓</i><span>Recibí recordatorios automáticos.</span></div><div class="benefit"><i>↻</i><span>Repetí servicios frecuentes fácilmente.</span></div><a class="textlink" href="/?app=client">Conocé más sobre programación →</a></aside></div></div></section>
+<section class="section" id="programar">
+  <div class="wrap">
+    <div class="sectionHead">
+      <div>
+        <h2>¿No es para ahora? Programalo.</h2>
+        <p>Elegí fecha y horario sin cambiar de aplicación ni repetir el pedido.</p>
+      </div>
+    </div>
+    <div class="featureGrid">
+      <div class="reserve">
+        <h2>La ayuda que necesitás, cuando la necesitás</h2>
+        <p>Programá el servicio con anticipación y recibí recordatorios antes de la visita.</p>
+        <div class="calendar">
+          <button class="mini" type="button" onclick="goScheduled()">▣ Elegir fecha</button>
+          <button class="mini" type="button" onclick="goScheduled()">◷ Elegir horario</button>
+        </div>
+        <button class="ctaButton" type="button" onclick="goScheduled()">Programar servicio</button>
+        <div class="clock" aria-hidden="true"></div>
+      </div>
+      <aside class="benefits">
+        <h3>Simple desde el inicio</h3>
+        <div class="benefit"><span class="benefitIcon">✓</span><span>Elegí día y horario.</span></div>
+        <div class="benefit"><span class="benefitIcon">✓</span><span>Recibí recordatorios.</span></div>
+        <div class="benefit"><span class="benefitIcon">✓</span><span>Revisá el estado desde la app.</span></div>
+        <div class="benefit"><span class="benefitIcon">✓</span><span>Calificá al finalizar.</span></div>
+        <a class="textLink" href="/?app=client">Abrir UGO Cliente →</a>
+      </aside>
+    </div>
+  </div>
+</section>
 
-<section class="city"><div class="wrap split"><div class="copy"><h2>¿Estás organizando tu próxima tarea?</h2><p>Desde pequeños arreglos hasta proyectos más grandes, UGO te conecta con profesionales locales en Florianópolis y toda la región. Más tiempo para vos, más vida para lo importante.</p><a class="primary" style="display:inline-flex;align-items:center" href="/?app=client">⌖ Explorar servicios en Florianópolis</a></div><div class="picture cityPic"></div></div></section>
+<section class="section" id="profesionales">
+  <div class="wrap">
+    <div class="audienceGrid">
+      <article class="audienceCard client">
+        <span class="audienceLabel">PARA CLIENTES</span>
+        <h2>Resolvé tareas sin perder tiempo buscando.</h2>
+        <p>Entrá, pedí y seguí el servicio desde una experiencia pensada para usar rápido en el celular.</p>
+        <a class="audienceBtn" href="/?app=client">Abrir UGO Cliente</a>
+        <div class="rings" aria-hidden="true"></div>
+      </article>
+      <article class="audienceCard provider">
+        <span class="audienceLabel">PARA PROFESIONALES</span>
+        <h2>Trabajá cuando quieras y recibí oportunidades.</h2>
+        <p>Organizá tu disponibilidad, atendé pedidos y gestioná tu actividad desde UGO Proveedor.</p>
+        <a class="audienceBtn" href="/?app=provider">Abrir UGO Proveedor</a>
+        <div class="rings" aria-hidden="true"></div>
+      </article>
+    </div>
+  </div>
+</section>
 
-<section class="providerBlock" id="profesionales"><div class="wrap split reverse"><div class="picture providerPic"></div><div class="copy"><h2>Trabajá cuando quieras, ganá con UGO</h2><p>Sumate como profesional, elegí tus horarios y conectate con personas que necesitan tu ayuda. Vos ponés el talento, nosotros las oportunidades.</p><a class="primary" style="display:inline-flex;align-items:center" href="/?app=provider">Comenzar como profesional</a></div></div></section>
+<section class="section soft" id="empresas">
+  <div class="wrap">
+    <div class="businessBand">
+      <div>
+        <h2>UGO para empresas</h2>
+        <p>Servicios on-demand para oficinas, locales y equipos de trabajo, con una experiencia simple y centralizada.</p>
+      </div>
+      <div class="businessActions">
+        <a class="pillBtn" href="/?app=development">Ver desarrollo</a>
+        <a class="pillBtn dark" href="/?app=client">Conocer UGO</a>
+      </div>
+    </div>
+  </div>
+</section>
 
-<section class="business" id="empresas"><div class="wrap split"><div class="copy"><h2>UGO para empresas</h2><p>Soluciones de servicios on-demand para oficinas, locales y equipos de trabajo. Simplificá la gestión y mantené tus espacios siempre en funcionamiento.</p><a class="primary" style="display:inline-flex;align-items:center" href="/?app=client">Conocer soluciones</a></div><div class="picture businessPic"></div></div></section>
-
-<section class="apps"><div class="wrap"><h2 class="sectionTitle">Es más fácil con UGO</h2><div class="appsGrid"><a class="appCard" href="/?app=client"><div class="qr"></div><div><h3>Abrí UGO Cliente</h3><p>Pedí, programá y seguí tus servicios.</p></div><div class="arrow">→</div></a><a class="appCard" href="/?app=provider"><div class="qr"></div><div><h3>Abrí UGO Proveedor</h3><p>Recibí trabajos y organizá tu agenda.</p></div><div class="arrow">→</div></a></div></div></section>
+<section class="apps">
+  <div class="wrap">
+    <div class="sectionHead">
+      <div><h2>Entrá por donde te corresponde</h2><p>Dos accesos claros. Sin QR falsos ni elementos decorativos que parezcan botones.</p></div>
+    </div>
+    <div class="appsGrid">
+      <a class="appCard" href="/?app=client">
+        <div class="appIcon">UGO</div>
+        <div><h3>UGO Cliente</h3><p>Pedí, programá y seguí tus servicios.</p></div>
+        <div class="arrow">→</div>
+      </a>
+      <a class="appCard" href="/?app=provider">
+        <div class="appIcon">PRO</div>
+        <div><h3>UGO Proveedor</h3><p>Recibí trabajos y organizá tu actividad.</p></div>
+        <div class="arrow">→</div>
+      </a>
+    </div>
+  </div>
+</section>
 </main>
 
-<footer class="footer"><div class="wrap"><div class="footTop"><div><div class="footLogo">UGO</div><div class="footIntro">Servicios locales para personas reales. Un pedido. Un profesional. Sin vueltas.</div></div><div><h4>Empresa</h4><a href="#">Sobre UGO</a><a href="#">Cómo funciona</a><a href="#">Seguridad</a><a href="/?app=development">Desarrollo</a></div><div><h4>Servicios</h4><a href="#servicios">Electricidad</a><a href="#servicios">Limpieza</a><a href="#servicios">Plomería</a><a href="#servicios">Reparaciones</a></div><div><h4>Accesos</h4><a href="/?app=client">Cliente</a><a href="/?app=provider">Proveedor</a><a href="/?app=admin">Administración</a><a href="#">Ayuda</a></div></div><div class="footBottom"><span>© 2026 UGO</span><span>Español (Brasil) · Florianópolis, BR · Términos · Privacidad</span></div></div></footer>
+<footer class="footer">
+  <div class="wrap">
+    <div class="footTop">
+      <div>
+        <div class="footLogo">UGO</div>
+        <div class="footIntro">Servicios locales para personas reales. Un pedido. Un profesional. Sin vueltas.</div>
+      </div>
+      <div><h4>Empresa</h4><a href="#actividad">Cómo funciona</a><a href="#empresas">Empresas</a><a href="/?app=development">Desarrollo</a></div>
+      <div><h4>Servicios</h4><a href="/?app=client&service=Electricidad">Electricidad</a><a href="/?app=client&service=Limpieza">Limpieza</a><a href="/?app=client&service=Plomería">Plomería</a><a href="/?app=client&service=Reparaciones">Reparaciones</a></div>
+      <div><h4>Accesos</h4><a href="/?app=client">Cliente</a><a href="/?app=provider">Proveedor</a><a href="/?app=admin">Administración</a></div>
+    </div>
+    <div class="footBottom"><span>© 2026 UGO</span><span>Español · Florianópolis, BR · Términos · Privacidad</span></div>
+  </div>
+</footer>
 
-<div class="mobilebar"><a href="/?app=client">Buscar servicio</a><a href="/?app=provider">Trabajar con UGO</a></div>
+<div class="mobilebar" aria-label="Acciones rápidas">
+  <a href="/?app=client">Pedir servicio</a>
+  <a href="/?app=provider">Trabajar con UGO</a>
+</div>
+
 <script>
-const hamb=document.getElementById('hamb'),menu=document.getElementById('mobileMenu');hamb?.addEventListener('click',()=>menu.classList.toggle('open'));menu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>menu.classList.remove('open')));
-function openClient(){const s=document.getElementById('serviceInput').value.trim();const p=document.getElementById('placeInput').value.trim();const q=new URLSearchParams({app:'client'});if(s)q.set('service',s);if(p)q.set('place',p);location.href='/?'+q.toString()}
-document.getElementById('findService').addEventListener('click',openClient);document.getElementById('serviceInput').addEventListener('keydown',e=>{if(e.key==='Enter')openClient()});
+const hamb=document.getElementById('hamb');
+const menu=document.getElementById('mobileMenu');
+const nowBtn=document.getElementById('nowBtn');
+const scheduleBtn=document.getElementById('scheduleBtn');
+let mode='now';
+
+function setMenu(open){
+  menu?.classList.toggle('open',open);
+  document.body.classList.toggle('menu-open',open && window.innerWidth<=720);
+  hamb?.setAttribute('aria-expanded',String(open));
+  if(hamb) hamb.textContent=open?'×':'☰';
+}
+hamb?.addEventListener('click',()=>setMenu(!menu.classList.contains('open')));
+menu?.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>setMenu(false)));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')setMenu(false)});
+window.addEventListener('resize',()=>{if(window.innerWidth>980)setMenu(false)});
+
+function setMode(next){
+  mode=next;
+  const isNow=next==='now';
+  nowBtn?.classList.toggle('active',isNow);
+  scheduleBtn?.classList.toggle('active',!isNow);
+  nowBtn?.setAttribute('aria-pressed',String(isNow));
+  scheduleBtn?.setAttribute('aria-pressed',String(!isNow));
+  const cta=document.getElementById('findService');
+  if(cta) cta.textContent=isNow?'Pedir servicio':'Programar servicio';
+}
+nowBtn?.addEventListener('click',()=>setMode('now'));
+scheduleBtn?.addEventListener('click',()=>setMode('scheduled'));
+
+function openClient(forceScheduled=false){
+  const s=document.getElementById('serviceInput')?.value.trim()||'';
+  const p=document.getElementById('placeInput')?.value.trim()||'';
+  const q=new URLSearchParams({app:'client'});
+  if(s)q.set('service',s);
+  if(p)q.set('place',p);
+  if(forceScheduled || mode==='scheduled')q.set('when','scheduled');
+  location.href='/?'+q.toString();
+}
+function goScheduled(){openClient(true)}
+document.getElementById('findService')?.addEventListener('click',()=>openClient(false));
+document.getElementById('serviceInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')openClient(false)});
 </script>
 </body>
 </html>
