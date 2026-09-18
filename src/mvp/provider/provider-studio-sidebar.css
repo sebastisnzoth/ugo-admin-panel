@@ -1,11 +1,11 @@
 /* UGO Provider desktop sidebar.
-   The middle navigation owns the scroll area; utility controls never overlap it. */
+   Header and footer stay visible; only the primary nav may scroll. */
 @media(min-width:1000px){
   .ugo-provider-root{padding-left:244px!important}
   .ugo-provider-root .provider-screen{width:min(1120px,calc(100% - 48px))!important}
 
   .provider-studio-sidebar{
-    display:flex;
+    display:grid;
     position:fixed;
     z-index:80;
     inset:0 auto 0 0;
@@ -13,6 +13,7 @@
     height:100vh;
     height:100dvh;
     min-height:0;
+    grid-template-rows:auto auto minmax(0,1fr) auto;
     overflow:hidden;
     padding:
       max(18px,env(safe-area-inset-top))
@@ -21,19 +22,16 @@
     box-sizing:border-box;
     background:#fff;
     border-right:1px solid #dce9ff;
-    flex-direction:column;
     color:#0b1c30;
   }
 
   .provider-studio-brand{
-    flex:0 0 auto;
     font:900 28px/1 'Plus Jakarta Sans',sans-serif;
     color:#006b58;
     margin:0 8px 24px;
   }
 
   .provider-studio-user{
-    flex:0 0 auto;
     display:grid;
     grid-template-columns:46px minmax(0,1fr);
     gap:2px 10px;
@@ -52,24 +50,17 @@
     color:#fff;
     font-weight:900;
   }
-  .provider-studio-user strong{
-    min-width:0;
-    font-size:13px;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    white-space:nowrap;
-  }
+  .provider-studio-user strong,
   .provider-studio-user small{
     min-width:0;
-    font-size:10px;
-    color:#687386;
     overflow:hidden;
     text-overflow:ellipsis;
     white-space:nowrap;
   }
+  .provider-studio-user strong{font-size:13px}
+  .provider-studio-user small{font-size:10px;color:#687386}
 
-  .provider-studio-sidebar nav{
-    flex:1 1 auto;
+  .provider-studio-nav{
     min-height:0;
     overflow-y:auto;
     overflow-x:hidden;
@@ -82,9 +73,10 @@
     gap:4px;
     padding:12px 0;
   }
-  .provider-studio-sidebar nav::-webkit-scrollbar{width:5px}
-  .provider-studio-sidebar nav::-webkit-scrollbar-thumb{background:#cbd8e7;border-radius:999px}
-  .provider-studio-sidebar nav button{
+  .provider-studio-nav::-webkit-scrollbar{width:5px}
+  .provider-studio-nav::-webkit-scrollbar-thumb{background:#cbd8e7;border-radius:999px}
+
+  .provider-studio-nav button{
     width:100%;
     min-height:42px;
     padding:0 12px;
@@ -95,14 +87,13 @@
     color:#25364a;
     font-weight:750;
     cursor:pointer;
-    flex:0 0 auto;
   }
-  .provider-studio-sidebar nav button:hover,
-  .provider-studio-sidebar nav button:focus-visible{
+  .provider-studio-nav button:hover,
+  .provider-studio-nav button:focus-visible{
     background:#eaf9f5;
     color:#006b58;
   }
-  .provider-studio-sidebar nav b{
+  .provider-studio-nav b{
     float:right;
     min-width:20px;
     height:20px;
@@ -113,13 +104,38 @@
     line-height:20px;
   }
 
+  .provider-studio-footer{
+    display:grid;
+    gap:8px;
+    padding-top:10px;
+    border-top:1px solid #eef2f7;
+    background:#fff;
+  }
+
+  .provider-studio-utility{
+    width:100%;
+    min-height:40px;
+    padding:0 12px;
+    border:1px solid #d7dee8;
+    border-radius:12px;
+    background:#fff;
+    color:#344054;
+    box-shadow:none;
+    text-align:left;
+    font-weight:850;
+    cursor:pointer;
+  }
+  .provider-studio-utility:hover,
+  .provider-studio-utility:focus-visible{
+    border-color:#b9ddd5;
+    background:#eaf9f5;
+    color:#006b58;
+  }
+
   .provider-studio-availability{
-    position:relative;
-    z-index:2;
-    flex:0 0 auto;
     width:100%;
     min-height:48px;
-    margin-top:8px;
+    margin:0;
     border:0;
     border-radius:14px;
     background:#006b58;
@@ -128,8 +144,9 @@
     cursor:pointer;
   }
 
-  /* Desktop already has Ayuda in the sidebar. The floating dispute launcher
-     ("Elegir servicio" when several jobs exist) must never sit on top of it. */
+  /* The contextual DisputeDock launcher used to render "Elegir servicio"
+     over the sidebar. Desktop now exposes that action in the sidebar footer. */
+  .ugo-provider-root>.ugo-dispute-launch,
   .ugo-provider-root .ugo-dispute-launch{display:none!important}
 
   .ugo-provider-root .provider-bottom-nav{display:none!important}
@@ -138,27 +155,35 @@
   .ugo-provider-root .provider-home{max-width:1120px!important}
 }
 
-/* Compact desktop/laptop heights: keep all primary navigation visible
-   before resorting to the nav's own scrollbar. */
-@media(min-width:1000px) and (max-height:720px){
+/* Compact laptop heights: reduce vertical chrome before allowing nav scroll. */
+@media(min-width:1000px) and (max-height:760px){
   .provider-studio-sidebar{
-    padding-top:max(12px,env(safe-area-inset-top));
+    padding-top:max(10px,env(safe-area-inset-top));
     padding-bottom:max(10px,env(safe-area-inset-bottom));
   }
-  .provider-studio-brand{font-size:26px;margin-bottom:14px}
-  .provider-studio-user{padding-bottom:11px}
-  .provider-studio-user>span{width:42px;height:42px}
-  .provider-studio-sidebar nav{
-    grid-auto-rows:minmax(38px,auto);
-    gap:2px;
-    padding:8px 0;
+  .provider-studio-brand{font-size:25px;margin-bottom:12px}
+  .provider-studio-user{padding-bottom:10px}
+  .provider-studio-user>span{width:40px;height:40px}
+  .provider-studio-nav{
+    grid-auto-rows:minmax(36px,auto);
+    gap:1px;
+    padding:7px 0;
   }
-  .provider-studio-sidebar nav button{min-height:38px}
-  .provider-studio-availability{min-height:44px;margin-top:6px}
+  .provider-studio-nav button{min-height:36px}
+  .provider-studio-footer{gap:6px;padding-top:7px}
+  .provider-studio-utility{min-height:36px}
+  .provider-studio-availability{min-height:42px}
 }
 
-/* Mobile/tablet use the canonical bottom navigation. Keep the contextual
-   dispute entry above it, on the opposite side of other controls. */
+@media(min-width:1000px) and (max-height:620px){
+  .provider-studio-user small{display:none}
+  .provider-studio-user>span{grid-row:auto}
+  .provider-studio-brand{margin-bottom:8px}
+  .provider-studio-user{padding-bottom:8px}
+}
+
+/* Mobile/tablet keep the canonical bottom navigation and the contextual
+   dispute action, placed safely above the bottom bar. */
 @media(max-width:999px){
   .provider-studio-sidebar{display:none!important}
   .ugo-provider-root .ugo-dispute-launch{
