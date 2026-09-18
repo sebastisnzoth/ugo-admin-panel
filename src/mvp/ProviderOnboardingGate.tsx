@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
+import{LoadingScreen}from'./shared'
 import'./provider-onboarding.css'
 
 type P={usuario_id:string;estado_verificacion:string;motivo_rechazo:string|null;onboarding_paso:number|null;telefono_profesional:string|null;ciudad_base:string|null;categoria_principal_id:string|null;cpf:string|null;pix_chave:string|null;pix_tipo:string|null;termos_aceitos_at:string|null;termos_versao:string|null;bio:string|null;experiencia_anos:number|null;especialidades:string|null;idiomas:string|null;disponibilidad_horaria:string|null;zona_radio_km:number|null}
@@ -29,10 +30,10 @@ export function ProviderOnboardingGate({onVerified}:ProviderOnboardingGateProps)
  function next(){if(!validateStep())return;setStep(v=>Math.min(6,v+1));window.scrollTo({top:0,behavior:'smooth'})}
  function back(){setMsg('');setStep(v=>Math.max(1,v-1));window.scrollTo({top:0,behavior:'smooth'})}
  const upload=(type:string,title:string,required=false)=>{const d=doc(type),state=d?.estado||'Sin cargar';return <label className="ugo-provider-upload"><input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={busy} onChange={e=>e.target.files?.[0]&&uploadDoc(type,e.target.files[0])}/><span className="ugo-provider-upload-copy"><b>{title}{required?' *':''}</b><span>{d?.notas_rechazo||'JPG, PNG, WEBP o PDF'}</span></span><span className={`ugo-provider-upload-badge ${state}`}>{state}</span></label>}
- if(loading)return <div className="mvp-loading"><p>Preparando registro profesional…</p></div>
+ if(loading)return <LoadingScreen label="Preparando tu cuenta profesional…"/>
  if(!session)return <div className="ugo-provider-state"><h2>Sesión de proveedor requerida</h2><p>Volvé al acceso de UGO Pro para iniciar sesión.</p><button className="primary" onClick={()=>window.location.replace(`${window.location.pathname}?app=provider`)}>Volver al acceso</button></div>
  if(!p||!user)return <div className="ugo-provider-state"><h2>Registro profesional</h2><p>{msg||'No se pudo cargar el perfil.'}</p><button className="secondary" onClick={()=>sb.auth.signOut()}>Cerrar sesión</button></div>
- if(p.estado_verificacion==='verificado')return <div className="mvp-loading"><p>Activando tu espacio UGO Pro…</p></div>
+ if(p.estado_verificacion==='verificado')return <LoadingScreen label="Activando UGO Profesional…"/>
  if(p.estado_verificacion==='suspendido')return <div className="ugo-provider-state"><h2>Cuenta profesional suspendida</h2><p>Tu acceso operativo está suspendido. Contactá a UGO para revisión.</p><button className="secondary" onClick={()=>sb.auth.signOut()}>Cerrar sesión</button></div>
  if(p.estado_verificacion==='pendiente')return <div className="ugo-provider-state"><div style={{fontSize:42}}>⏳</div><h1>Registro en revisión</h1><p>Recibimos tus datos y documentos. UGO debe aprobarlos antes de que puedas aparecer como proveedor activo y recibir trabajos.</p>{msg&&<p>{msg}</p>}<div className="ugo-provider-state-actions"><button className="secondary" onClick={()=>{setP({...p,estado_verificacion:'registrado'});setStep(1)}}>Revisar mis datos</button><button className="secondary" onClick={()=>sb.auth.signOut()}>Cerrar sesión</button></div></div>
  const rejected=p.estado_verificacion==='rechazado',meta=STEPS[step-1]
