@@ -896,7 +896,7 @@ const sb=supabase.createClient(SB_URL,SB_KEY,{auth:{detectSessionInUrl:true,pers
 
 let SESSION=null,CLI=null,MAP=null;
 let myLat=-27.5969,myLng=-48.5495,myAddr='';
-let chatHistory=[], SELECTED_PROV=null;
+let chatHistory=[], SELECTED_PROV=null, ACTIVE_SVC_CHAT=null;
 /* Hugo 2.0: memoria persistente (hugo_sessions + hugo_chat). Kill-switch: config_sistema.hugo_v2_enabled */
 let HUGO_V2=false,HUGO_SID=null,HUGO_MEMORY=[],HUGO_META={};
 /* Hugo 2.0: región del usuario (tabla regiones). REGIONS cachea la tabla; REGION_CODE es 'BR'/'AR'. */
@@ -1454,7 +1454,7 @@ async function loadHugoContext(){
 }
 function hugoSave(rol,contenido,extra){
   if(!HUGO_V2||!HUGO_SID||!contenido)return;
-  sb.from('hugo_chat').insert({session_id:HUGO_SID,usuario_id:SESSION.user.id,rol_mensaje:rol,contenido,...(extra||{})})
+  sb.from('hugo_chat').insert({session_id:HUGO_SID,usuario_id:SESSION.user.id,rol_mensaje:rol,contenido,servicio_id:ACTIVE_SVC_CHAT?.id,...(extra||{})})
     .then(({error})=>{if(error)console.warn('hugoSave:',error.message);else sb.from('hugo_sessions').update({updated_at:new Date().toISOString()}).eq('id',HUGO_SID).then(()=>{});});
 }
 function hugoMeta(patch){
