@@ -869,7 +869,7 @@ async function submitRating() {
 
 async function cancelService() {
   if (!ACTIVE_SVC || !confirm('¿Cancelar el pedido?')) return;
-  await sb.from('servicios').update({ estado: 'cancelado' }).eq('id', ACTIVE_SVC.id);
+  await sb.rpc('cancelar_servicio', { p_servicio_id: ACTIVE_SVC.id });
   if (svcChannel)  { sb.removeChannel(svcChannel);  svcChannel  = null; }
   if (provChannel) { sb.removeChannel(provChannel); provChannel = null; }
   if (pagoChannel) { sb.removeChannel(pagoChannel); pagoChannel = null; }
