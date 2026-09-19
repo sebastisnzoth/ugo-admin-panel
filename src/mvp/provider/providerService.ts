@@ -13,7 +13,8 @@ type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_apro
 type SnapshotPart='profile'|'offers'|'services'|'payments'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
-const LIVE_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
+const MISSION_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso'])
+const PASSIVE_SERVICE_STATES=new Set(['esperando_aprobacion','disputado'])
 const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'] as const
 const errorRecord=(error:unknown)=>error&&typeof error==='object'?error as Record<string,unknown>:null
 const messageOf=(error:unknown,fallback:string)=>{if(error instanceof Error&&error.message)return error.message;const record=errorRecord(error),message=record?.message;return typeof message==='string'&&message.trim()?message:fallback}
@@ -22,10 +23,11 @@ const isExpectedProviderTransitionRejection=(message:string)=>/programado para m
 
 function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
 export function pickActionableProviderService(rows:ProviderService[],now=Date.now()):Service|null{
- const live=rows.find(service=>LIVE_SERVICE_STATES.has(service.estado));if(live)return live
+ const mission=rows.find(service=>MISSION_SERVICE_STATES.has(service.estado));if(mission)return mission
  const immediate=rows.find(service=>service.estado==='asignado'&&!scheduleTime(service));if(immediate)return immediate
  const scheduled=rows.filter(service=>service.estado==='asignado').map(service=>({service,time:scheduleTime(service)})).filter((item):item is{service:ProviderService;time:number}=>item.time!=null&&item.time<=now+ACTIONABLE_SCHEDULE_LEAD_MS).sort((a,b)=>a.time-b.time)
- return scheduled[0]?.service||null
+ if(scheduled[0]?.service)return scheduled[0].service
+ return rows.find(service=>PASSIVE_SERVICE_STATES.has(service.estado))||null
 }
 
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{

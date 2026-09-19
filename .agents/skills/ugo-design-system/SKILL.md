@@ -153,7 +153,7 @@ Iniciar
 Trabajar
 Ampliar si corresponde
 Foto final
-Confirmar efectivo cuando corresponda
+Esperar confirmación del cliente cuando el pago sea en efectivo
 Finalizar / revisión
 ```
 

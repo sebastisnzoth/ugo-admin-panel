@@ -1,7 +1,7 @@
 /* Responsive layout for the canonical UGO Provider flow.
    Mobile keeps the bottom navigation; wider screens progressively become an operational web workspace. */
 
-@media (min-width:600px) and (max-width:899px){
+@media (min-width:600px) and (max-width:999px){
   .provider-screen{
     width:min(100%,760px);
     padding:30px 32px;
@@ -12,7 +12,7 @@
   .provider-notice{width:min(calc(100% - 48px),720px)}
 }
 
-@media (min-width:900px){
+@media (min-width:1000px){
   .ugo-provider-root{
     min-height:100dvh;
     padding:0 0 0 112px;

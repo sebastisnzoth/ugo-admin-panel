@@ -23,7 +23,7 @@ Encontrar diferencias entre lo definido, lo implementado y lo que realmente func
 - pago listo antes de `en_camino`;
 - llegada con autoridad backend/radio 200 m cuando aplica;
 - evidencia temporal `Antes/Durante/Después`;
-- efectivo recibido antes de aprobación;
+- efectivo: proveedor marca `TRABAJO LISTO` → cliente aprueba → cliente paga y confirma `YA PAGUÉ`; el proveedor no confirma el cobro desde su app;
 - aprobación del cliente con ownership/evidencia válidos;
 - ampliación con delta financiero reconciliado;
 - método de pago no sustituido silenciosamente.

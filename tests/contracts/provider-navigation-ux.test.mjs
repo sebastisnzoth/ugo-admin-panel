@@ -29,3 +29,23 @@ test('provider history is a screen instead of a floating launcher', async () => 
   assert.match(root, /screen==='history'&&<div className="provider-screen"><ServiceHistoryPanel role="provider" embedded\/><\/div>/)
   assert.doesNotMatch(root, /<ServiceHistoryPanel role="provider" openRequest=/)
 })
+
+
+test('provider tablet keeps mobile navigation until the desktop studio sidebar takes over', async () => {
+  const [responsive, studio] = await Promise.all([
+    read('src/mvp/provider/provider-responsive-layout.css'),
+    read('src/mvp/provider/provider-studio-sidebar.css'),
+  ])
+  assert.match(responsive, /@media \(min-width:600px\) and \(max-width:999px\)/)
+  assert.match(responsive, /@media \(min-width:1000px\)/)
+  assert.doesNotMatch(responsive, /@media \(min-width:900px\)/)
+  assert.match(studio, /@media\(min-width:1000px\)/)
+  assert.match(studio, /@media\(max-width:999px\)/)
+})
+
+test('provider work navigation opens agenda when there is no actionable mission', async () => {
+  const sidebar = await read('src/mvp/provider/ProviderStudioSidebar.tsx')
+  assert.match(sidebar, /d\.service\?f\.actions\.openActiveJob:f\.actions\.openAgenda/)
+  assert.match(sidebar, /d\.service\?'Trabajo activo':'Mis trabajos'/)
+  assert.doesNotMatch(sidebar, /d\.service\?f\.actions\.openActiveJob:f\.actions\.openHistory/)
+})

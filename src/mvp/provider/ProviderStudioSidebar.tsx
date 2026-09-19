@@ -17,7 +17,7 @@ export function ProviderStudioSidebar(){
    <button type="button" onClick={f.actions.openOpportunities}>▣ Trabajos {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</button>
    <button type="button" onClick={f.actions.openAgenda}>▦ Calendario</button>
    <button type="button" onClick={f.actions.openEarnings}>＄ Ganancias</button>
-   <button type="button" onClick={d.service?f.actions.openActiveJob:f.actions.openHistory}>▤ Trabajo activo</button>
+   <button type="button" onClick={d.service?f.actions.openActiveJob:f.actions.openAgenda}>▤ {d.service?'Trabajo activo':'Mis trabajos'}</button>
    <button type="button" onClick={f.actions.openHistory}>◷ Historial</button>
    <button type="button" onClick={f.actions.openProfile}>♙ Perfil</button>
   </nav>
