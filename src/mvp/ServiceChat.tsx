@@ -55,16 +55,17 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
   if(me)throw me
   setMessages((m||[])as ChatMessage[])
  },[clearConversation,role,sb,selectedServiceId,serviceId])
- const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure),clearConversationRef=useRef(clearConversation)
+ const loadRef=useRef(load),reportChatFailureRef=useRef(reportChatFailure),reportChatRecoveryRef=useRef(reportChatRecovery),clearConversationRef=useRef(clearConversation)
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{reportChatFailureRef.current=reportChatFailure},[reportChatFailure])
+ useEffect(()=>{reportChatRecoveryRef.current=reportChatRecovery},[reportChatRecovery])
  useEffect(()=>{clearConversationRef.current=clearConversation},[clearConversation])
 
- useEffect(()=>{void load().catch(e=>{if(isMissingSessionError(e)){clearConversation();return}const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatFailure('chat_load_error',message,e)})},[clearConversation,load,reportChatFailure])
+ useEffect(()=>{void load().catch(e=>{if(isMissingSessionError(e)){clearConversation();return}const message=e instanceof Error?e.message:'No pudimos abrir el chat.';setError(message);if(shouldEscalate())reportChatRecovery('chat_load_error',message,e)})},[clearConversation,load,reportChatRecovery])
  useEffect(()=>{
   if(!userId)return
   let alive=true,reconnectTimer:number|undefined
-  const resync=()=>{if(alive)void loadRef.current().catch(e=>{if(isMissingSessionError(e)){clearConversationRef.current();return}const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatFailureRef.current('chat_resync_error',message,e)})}
+  const resync=()=>{if(alive)void loadRef.current().catch(e=>{if(isMissingSessionError(e)){clearConversationRef.current();return}const message=e instanceof Error?e.message:'No pudimos sincronizar el chat.';setError(message);if(shouldEscalate())reportChatRecoveryRef.current('chat_resync_error',message,e)})}
   const reconnect=()=>{if(!alive)return;window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1500)}
   const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
   const onOnline=()=>{resync();reconnect()}
@@ -87,7 +88,7 @@ export function ServiceChat({role,serviceId,compact=false}:{role:UgoRole;service
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
     resync();reconnect()
-    if(shouldEscalate())reportChatFailureRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
+    if(shouldEscalate())reportChatRecoveryRef.current('chat_realtime_subscription_error',`Canal Realtime: ${status}`,undefined,targetServiceId)
    }
   })
   return()=>{alive=false;window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}

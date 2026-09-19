@@ -12,9 +12,10 @@ test('specific service chat uses prop serviceId before service data loads',()=>{
 })
 
 test('realtime subscription stays stable across conversation loads but recreates after transport failure',()=>{
- assert.match(chat,/const loadRef=useRef\(load\),reportChatFailureRef=useRef\(reportChatFailure\)/)
+ assert.match(chat,/const loadRef=useRef\(load\),reportChatFailureRef=useRef\(reportChatFailure\),reportChatRecoveryRef=useRef\(reportChatRecovery\)/)
  assert.match(chat,/loadRef\.current=load/)
  assert.match(chat,/reportChatFailureRef\.current=reportChatFailure/)
+ assert.match(chat,/reportChatRecoveryRef\.current=reportChatRecovery/)
  assert.match(chat,/\},\[channelEpoch,compact,role,sb,serviceId,userId\]\)/)
  assert.doesNotMatch(chat,/\},\[compact,load,reportChatFailure,role,sb,service\?\.id,serviceId,userId\]\)/)
  assert.match(chat,/setChannelEpoch\(value=>value\+1\)/)
@@ -32,5 +33,6 @@ test('background realtime transport errors resync without downgrading the produc
  assert.match(chat,/status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'/)
  assert.match(chat,/resync\(\)/)
  assert.match(chat,/document\.visibilityState==='visible'&&navigator\.onLine/)
- assert.match(chat,/chat_realtime_subscription_error/)
+ assert.match(chat,/reportChatRecoveryRef\.current\('chat_realtime_subscription_error'/)
+ assert.match(chat,/severity:'P1'[\s\S]*action:`\$\{role\}\.service\.chat\.recovery`/)
 })

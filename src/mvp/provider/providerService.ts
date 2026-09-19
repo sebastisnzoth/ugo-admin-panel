@@ -18,6 +18,7 @@ const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando
 const errorRecord=(error:unknown)=>error&&typeof error==='object'?error as Record<string,unknown>:null
 const messageOf=(error:unknown,fallback:string)=>{if(error instanceof Error&&error.message)return error.message;const record=errorRecord(error),message=record?.message;return typeof message==='string'&&message.trim()?message:fallback}
 const errorCode=(error:unknown)=>{const code=errorRecord(error)?.code;return typeof code==='string'&&code.trim()?code:null}
+const isExpectedProviderTransitionRejection=(message:string)=>/programado para más adelante|iniciar el traslado hasta 60 minutos antes/i.test(message)
 
 function scheduleTime(service:ProviderService){if(!service.programado_para)return null;const value=new Date(service.programado_para).getTime();return Number.isFinite(value)?value:null}
 export function pickActionableProviderService(rows:ProviderService[],now=Date.now()):Service|null{
@@ -154,12 +155,13 @@ export async function advanceProviderService(supabase:SupabaseClient,serviceId:s
  if(!error)return
  const persisted=await persistedProviderTransition(supabase,serviceId,state)
  if(persisted===true)return
+ const transitionMessage=messageOf(error,`No se pudo avanzar el servicio a ${state}.`)
  if(persisted===false){
-  void reportSentinelIncident({eventType:'provider_service_state_error',message:messageOf(error,`No se pudo avanzar el servicio a ${state}.`),error,role:'provider',severity:'P0',serviceId,action:'provider.service.advance',checklistCode:'PROVIDER-STATES',metadata:{targetState:state}})
+  if(!isExpectedProviderTransitionRejection(transitionMessage))void reportSentinelIncident({eventType:'provider_service_state_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.advance',checklistCode:'PROVIDER-STATES',metadata:{targetState:state}})
  }else{
   void reportSentinelIncident({eventType:'provider_service_state_recovery_unverified',message:'No pudimos verificar si la transición quedó persistida. La interfaz volverá a consultar el estado real.',error,role:'provider',severity:'P1',serviceId,action:'provider.service.advance.recovery',metadata:{targetState:state}})
  }
- throw new Error(messageOf(error,`No se pudo avanzar el servicio a ${state}.`))
+ throw new Error(transitionMessage)
 }
 
 export async function cancelProviderService(supabase:SupabaseClient,serviceId:string,reason:string){

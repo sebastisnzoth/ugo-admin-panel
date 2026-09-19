@@ -26,6 +26,6 @@ test('expected contact guard rejection never becomes a Sentinel P0',()=>{
 
 test('offline or hidden chat load and resync failures do not escalate as realtime P0',()=>{
  assert.match(chat,/function shouldEscalate\(\)\{return document\.visibilityState==='visible'&&navigator\.onLine\}/)
- assert.match(chat,/chat_load_error[\s\S]*if\(shouldEscalate\(\)\)reportChatFailure/)
- assert.match(chat,/chat_resync_error[\s\S]*if\(shouldEscalate\(\)\)reportChatFailureRef\.current/)
+ assert.match(chat,/chat_load_error[\s\S]*if\(shouldEscalate\(\)\)reportChatRecovery/)
+ assert.match(chat,/chat_resync_error[\s\S]*if\(shouldEscalate\(\)\)reportChatRecoveryRef\.current/)
 })

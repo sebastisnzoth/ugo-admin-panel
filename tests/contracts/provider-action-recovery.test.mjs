@@ -19,8 +19,13 @@ test('provider Sentinel verifies persistence before declaring lifecycle P0',()=>
  assert.match(service,/persistedProviderTransition\(supabase:SupabaseClient,serviceId:string,target:ProviderTransitionState\):Promise<boolean\|null>/)
  assert.match(service,/const persisted=await persistedProviderTransition\(supabase,serviceId,state\)/)
  assert.match(service,/if\(persisted===true\)return/)
- assert.match(service,/if\(persisted===false\)\{[\s\S]*eventType:'provider_service_state_error'[\s\S]*severity:'P0'[\s\S]*action:'provider\.service\.advance'/)
+ assert.match(service,/if\(persisted===false\)\{[\s\S]*if\(!isExpectedProviderTransitionRejection\(transitionMessage\)\)[\s\S]*eventType:'provider_service_state_error'[\s\S]*severity:'P0'[\s\S]*action:'provider\.service\.advance'/)
  assert.match(service,/persisted===false[\s\S]*else\{[\s\S]*eventType:'provider_service_state_recovery_unverified'[\s\S]*severity:'P1'/)
+})
+
+test('scheduled-too-early rejection is treated as expected business validation, not Sentinel P0',()=>{
+ assert.match(service,/isExpectedProviderTransitionRejection=.*programado para más adelante/)
+ assert.match(service,/if\(!isExpectedProviderTransitionRejection\(transitionMessage\)\)void reportSentinelIncident/)
 })
 
 test('arrival location failure stays location-scoped instead of becoming lifecycle P0',()=>{
