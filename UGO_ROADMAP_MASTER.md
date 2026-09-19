@@ -30,8 +30,10 @@ Excepciones: `cancelado`, `disputado`.
 ## BASE FUNCIONAL / CI AUTORITATIVA
 
 ```text
-5d827021cfa87e4d21aecd50326ab9d90a83136b
-fix(client-ui): load desktop shell hardening last
+14f75074d2e19a8dda2f02a3343b93ea2eb40fdb
+test(provider): align actionable assignment contract
+
+Runtime funcional Proveedor: 1890c805fab826199c854b53112a627b70015494
 ```
 
 Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cambiar esta base funcional.
@@ -39,9 +41,9 @@ Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cam
 ### Core CI
 
 ```text
-UGO Core CI #1337
-run: 35417306630 · attempt 2
-SHA: 5d827021cfa87e4d21aecd50326ab9d90a83136b
+UGO Core CI #1339
+run: 35418764077
+SHA: 14f75074d2e19a8dda2f02a3343b93ea2eb40fdb
 conclusion: success
 ```
 
@@ -72,14 +74,18 @@ UGO Proveedor · com.ugo.provider · 1.0.0 (1)
 SHA-256 c0ca825d54f55131fa259b280f808d4ba2c6a52ce52d607b3766656bdd88a07a
 ```
 
-QA current-head:
+QA current runtime Proveedor:
 
 ```text
-UGO Android TEST APK #5
-run: 34937373061
-SHA: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
+UGO Android TEST APK #325
+run: 35418703450
+SHA: 1890c805fab826199c854b53112a627b70015494
 conclusion: success
+artifact: ugo-android-test-apk
+digest: sha256:a47a4afa7b432a1b01baa4382db01062632c26b606b2de53e67068a89537b82c
 ```
+
+`14f7507` sólo actualiza contratos de test; no cambia el runtime empaquetado.
 
 ## P0-1 · MÚLTIPLES PEDIDOS A+B+C
 
@@ -203,8 +209,8 @@ Invariante ya decidido: dinero de servicio incompleto/cancelado no puede convert
 Deployment del HEAD funcional actual:
 
 ```text
-deployment: dpl_BdANPVwqFmVk9iVhwwbkr1bjA2UC
-commit: 5d827021cfa87e4d21aecd50326ab9d90a83136b
+deployment: dpl_9SAFDe7quyWhxnt3eYbc3u24irJ3
+commit: 14f75074d2e19a8dda2f02a3343b93ea2eb40fdb
 state: READY
 alias: https://ugo-admin-panel.vercel.app
 aliasError: null
@@ -255,6 +261,14 @@ Problema → siguiente acción → mapa → evidencia → chat → terminar
 Regla: **menos diálogo, más solución.**
 
 Agenda separa trabajos futuros de la misión activa.
+
+Auditoría Proveedor 19/09:
+
+- tablet 600–999 mantiene bottom navigation; sidebar desktop desde 1000 px;
+- `Trabajo activo` sin misión abre Agenda/Mis trabajos, no Historial;
+- estados pasivos (`esperando_aprobacion`, `disputado`) quedan detrás de misiones y asignaciones accionables al elegir el trabajo principal;
+- nuevo pedido inmediato no queda oculto por un servicio que sólo espera al cliente;
+- Skills QA/Design System ya no describen confirmación de efectivo por el proveedor.
 
 Flujo efectivo validado por contrato/CI:
 

@@ -19,11 +19,14 @@ Desarrollo: /?app=development · público/read-only
 ## Checkpoint exacto
 
 ```text
-HEAD funcional validado: 5d827021cfa87e4d21aecd50326ab9d90a83136b
-UGO Core CI run: 35417306630 · attempt 2
+HEAD main validado: 14f75074d2e19a8dda2f02a3343b93ea2eb40fdb
+Runtime funcional Proveedor: 1890c805fab826199c854b53112a627b70015494
+UGO Core CI run: 35418764077
 conclusion: SUCCESS
 TypeScript/build + npm test + lint crítico + ClientApp lint + full lint: verde
-Vercel TEST deployment: dpl_BdANPVwqFmVk9iVhwwbkr1bjA2UC · READY
+Vercel TEST deployment: dpl_9SAFDe7quyWhxnt3eYbc3u24irJ3 · READY
+Android TEST run: 35418703450 · SUCCESS · runtime 1890c805
+APK digest: sha256:a47a4afa7b432a1b01baa4382db01062632c26b606b2de53e67068a89537b82c
 ```
 
 Los E2E autenticados Cliente/Proveedor/Admin se omiten si faltan las seis credenciales TEST; ese skip no valida runtime.
@@ -67,8 +70,12 @@ Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cliente
 - efectivo canónico: el proveedor NO confirma cobro; marca TRABAJO LISTO, el cliente aprueba y después confirma “YA PAGUÉ”.
 - `confirmar_pago_efectivo_cliente(serviceId)` está aplicada en Supabase TEST mediante `provider_multi_jobs_cash_close_flow`.
 - “Elegir servicio” abre Agenda y no Historial.
+- “Trabajo activo” abre Agenda/Mis trabajos cuando no existe misión accionable; nunca deriva a Historial por ausencia de misión.
+- responsive tablet 600–999 conserva navegación móvil; sidebar desktop toma control recién desde 1000 px.
+- un servicio pasivo (`esperando_aprobacion`/`disputado`) no tapa un nuevo pedido inmediato o programado ya accionable.
 - errores recuperables de Realtime y validaciones normales de horario no se elevan como P0.
-- Centinela para revisiones `17caf5c`/`5d82702`: 0 P0/P1 abiertos al checkpoint.
+- Skills QA/Design System están alineadas: el proveedor no confirma efectivo; el cliente aprueba y luego confirma `YA PAGUÉ`.
+- Centinela para revisiones `1890c80`/`14f7507`: 0 P0/P1 abiertos al checkpoint.
 
 ## Chat P0
 
@@ -102,7 +109,7 @@ GO-LIVE = blocked
 ## NEXT — no parar mientras haya trabajo interno
 
 ```text
-1 mantener como base funcional validada 5d827021cfa87e4d21aecd50326ab9d90a83136b
+1 mantener como runtime funcional validado 1890c805fab826199c854b53112a627b70015494 y HEAD CI validado 14f75074d2e19a8dda2f02a3343b93ea2eb40fdb
 2 pasar a prueba física: dos sesiones/dispositivos
 3 validar CHAT-REALTIME Cliente ↔ Proveedor por serviceId + reconnect
 4 validar MAP-GPS/arrival en celular real
