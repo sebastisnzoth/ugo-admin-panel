@@ -1,7 +1,7 @@
 # UGO — Roadmap Maestro
 
 **Rama de verdad:** `main`  
-**Último checkpoint:** 15/09/2026  
+**Último checkpoint:** 18/09/2026  
 **Principio:** **Un pedido. Un profesional. Sin vueltas.**
 
 ## Objetivo
@@ -30,8 +30,8 @@ Excepciones: `cancelado`, `disputado`.
 ## BASE FUNCIONAL / CI AUTORITATIVA
 
 ```text
-097ad6e89d08b5d0999f9d7e96ab6821e67239be
-fix(hugo): type canonical voice runtime
+c55b52421611f05bd1fd3031f10168064cde53ec
+test(provider): align recovery and scheduled navigation
 ```
 
 Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cambiar esta base funcional.
@@ -39,9 +39,9 @@ Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cam
 ### Core CI
 
 ```text
-UGO Core CI #815
-run: 34937373059
-SHA: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
+UGO Core CI #1335
+run: 35417275158 · attempt 2
+SHA: c55b52421611f05bd1fd3031f10168064cde53ec
 conclusion: success
 ```
 
@@ -203,8 +203,8 @@ Invariante ya decidido: dinero de servicio incompleto/cancelado no puede convert
 Deployment del HEAD funcional actual:
 
 ```text
-deployment: dpl_4ypv3qnvsWPGNMuGy4QxeTRaNL3F
-commit: 097ad6e89d08b5d0999f9d7e96ab6821e67239be
+deployment: dpl_Fme9L29ydL95EWhEN43oravBGKRK
+commit: c55b52421611f05bd1fd3031f10168064cde53ec
 state: READY
 alias: https://ugo-admin-panel.vercel.app
 aliasError: null
@@ -255,6 +255,20 @@ Problema → siguiente acción → mapa → evidencia → chat → terminar
 Regla: **menos diálogo, más solución.**
 
 Agenda separa trabajos futuros de la misión activa.
+
+Flujo efectivo validado por contrato/CI:
+
+```text
+Proveedor: TRABAJO LISTO
+→ Cliente confirma el trabajo
+→ UGO muestra monto en efectivo
+→ Cliente toca YA PAGUÉ
+→ pago liberado/registrado
+→ servicio completado
+→ proveedor recibe “El cliente pagó”
+```
+
+La RPC canónica `confirmar_pago_efectivo_cliente(serviceId)` está aplicada en Supabase TEST. El proveedor no confirma el efectivo desde su app.
 
 ### Admin
 

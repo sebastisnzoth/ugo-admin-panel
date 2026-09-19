@@ -1,6 +1,6 @@
 # UGO — Agent Handoff
 
-**Actualizado:** 16 de septiembre de 2026  
+**Actualizado:** 18 de septiembre de 2026  
 **Estado:** UGO TEST; CI verde, runtime físico pendiente  
 **Rama única:** `main`
 
@@ -19,10 +19,11 @@ Desarrollo: /?app=development · público/read-only
 ## Checkpoint exacto
 
 ```text
-HEAD funcional/test previo a esta sincronización: c89a9bf7b8baacc949d0639371d87cbf9e78bc46
-UGO Core CI run: 35052952138
+HEAD funcional validado: c55b52421611f05bd1fd3031f10168064cde53ec
+UGO Core CI run: 35417275158 · attempt 2
 conclusion: SUCCESS
-319 tests/contratos + TypeScript/build + lints: verde
+TypeScript/build + npm test + lint crítico + ClientApp lint + full lint: verde
+Vercel TEST deployment: dpl_Fme9L29ydL95EWhEN43oravBGKRK · READY
 ```
 
 Los E2E autenticados Cliente/Proveedor/Admin se omiten si faltan las seis credenciales TEST; ese skip no valida runtime.
@@ -55,7 +56,7 @@ Este patrón cubre matching, cancelación, aceptación/rechazo de oferta, dispon
 ## Proveedor
 
 ```text
-Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cobro/cierre
+Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cliente aprueba → Cliente paga/confirma → Cierre
 ```
 
 - online/offline reconcilia `disponible + online`.
@@ -63,6 +64,11 @@ Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cobro/c
 - rechazo de oferta reconcilia `rechazada` exacta.
 - GPS reconcilia `ultima_ubicacion_at` antes de incidente.
 - Agenda debe contener todos los trabajos futuros/asignados; misión activa sólo selecciona el trabajo accionable.
+- efectivo canónico: el proveedor NO confirma cobro; marca TRABAJO LISTO, el cliente aprueba y después confirma “YA PAGUÉ”.
+- `confirmar_pago_efectivo_cliente(serviceId)` está aplicada en Supabase TEST mediante `provider_multi_jobs_cash_close_flow`.
+- “Elegir servicio” abre Agenda y no Historial.
+- errores recuperables de Realtime y validaciones normales de horario no se elevan como P0.
+- Centinela para revisiones `17caf5c`/`c55b524`: 0 P0/P1 abiertos al checkpoint.
 
 ## Chat P0
 
@@ -96,17 +102,14 @@ GO-LIVE = blocked
 ## NEXT — no parar mientras haya trabajo interno
 
 ```text
-1 confirmar HEAD después de esta sincronización documental
-2 consultar Centinela para ese SHA
-3 generar Android TEST del SHA final exacto
-4 verificar VITE_APP_REVISION / bundleRuntime=local-dist / TEST
-5 descargar y validar artifact
-6 pasar a prueba física: dos sesiones/dispositivos
-7 Cliente A+B+C + matching + cancelación
-8 Proveedor Agenda + lifecycle + GPS
-9 chat visual bidireccional/reconnect
-10 pago/evidencia/rating
-11 publicar sólo cuando corresponda
+1 mantener como base funcional validada c55b52421611f05bd1fd3031f10168064cde53ec
+2 pasar a prueba física: dos sesiones/dispositivos
+3 validar CHAT-REALTIME Cliente ↔ Proveedor por serviceId + reconnect
+4 validar MAP-GPS/arrival en celular real
+5 validar efectivo completo: Trabajo listo → cliente aprueba → YA PAGUÉ → proveedor recibe “El cliente pagó”
+6 ejecutar E2E autenticado A+B+C cuando existan las 6 credenciales TEST
+7 generar/validar Android TEST del candidato que vaya a prueba física
+8 publicar sólo cuando corresponda
 ```
 
 **No tocar Supabase PROD. No crear ramas. No Vercel para resolver QA Android.**
