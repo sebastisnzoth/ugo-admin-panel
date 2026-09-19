@@ -1,0 +1,171 @@
+/* UGO Client desktop shell hardening.
+   Keeps the persistent header full-width and turns Hugo/notifications into
+   deliberate desktop workspaces instead of disconnected floating islands. */
+
+@media(min-width:900px){
+  .ugo-client-root{
+    min-height:100dvh!important;
+    background:
+      radial-gradient(circle at 50% 0,rgba(0,107,88,.045),transparent 34rem),
+      #f8f9ff!important;
+  }
+
+  .ugo-client-root .ugo-client-persistent-header{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    height:64px!important;
+    transform:none!important;
+    padding:0 22px!important;
+    border-left:0!important;
+    border-right:0!important;
+    border-bottom:1px solid #dce9ff!important;
+    background:rgba(255,255,255,.98)!important;
+    box-shadow:0 1px 10px rgba(11,28,48,.05)!important;
+  }
+
+  .ugo-client-root .ugo-client-header-menu{
+    width:42px!important;
+    height:42px!important;
+    border-radius:12px!important;
+    background:#f4f7f6!important;
+  }
+
+  .ugo-client-root .ugo-client-header-logo{
+    font-size:25px!important;
+    padding:0 2px!important;
+  }
+
+  .ugo-client-root .ugo-home-screen{padding-top:64px!important}
+  .ugo-client-root .ugo-client-screen-overlay{padding-top:64px!important}
+  .ugo-client-root.ugo-client-screen-profile .ugo-client-profile-panel{margin-top:64px!important}
+
+  .ugo-client-root .ugo-notification-center.role-client{
+    top:8px!important;
+    right:78px!important;
+    z-index:320!important;
+  }
+
+  .ugo-client-root .ugo-notification-center.role-client .ugo-notification-trigger{
+    width:46px!important;
+    height:46px!important;
+    box-shadow:0 6px 22px rgba(11,28,48,.12)!important;
+  }
+
+  .ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel{
+    top:54px!important;
+    width:390px!important;
+    max-height:calc(100dvh - 82px)!important;
+  }
+
+  /* Hugo search is a real desktop destination, not a bottom-left floating card. */
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo{
+    top:84px!important;
+    bottom:24px!important;
+    left:50%!important;
+    width:min(520px,calc(100vw - 520px))!important;
+    max-width:520px!important;
+    transform:translateX(-50%)!important;
+    justify-content:center!important;
+    align-items:center!important;
+    padding:0!important;
+  }
+
+  .ugo-client-root.ugo-client-screen-search .ugo-hugo-stage-card{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    max-width:520px!important;
+    max-height:calc(100dvh - 250px)!important;
+    margin:0 0 18px!important;
+    overflow:auto!important;
+    border-radius:24px!important;
+    box-shadow:0 22px 64px rgba(11,28,48,.18)!important;
+  }
+
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo .ugo-real-orb{
+    width:72px!important;
+    height:72px!important;
+    align-self:center!important;
+  }
+
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo .ugo-real-state{
+    width:auto!important;
+    max-width:none!important;
+    margin-top:8px!important;
+    padding:6px 10px!important;
+    font-size:9px!important;
+  }
+
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo .ugo-real-state span{
+    display:inline!important;
+  }
+
+  /* Other operational screens keep Hugo compact, but never off-canvas. */
+  .ugo-client-root:not(.ugo-client-screen-search):not(.ugo-client-screen-home):not(.ugo-client-screen-request) .prototype-hugo{
+    left:20px!important;
+    right:auto!important;
+    bottom:22px!important;
+    width:360px!important;
+    max-width:calc(100vw - 440px)!important;
+    transform:none!important;
+    align-items:flex-start!important;
+  }
+
+  .ugo-client-root:not(.ugo-client-screen-search):not(.ugo-client-screen-home):not(.ugo-client-screen-request) .ugo-hugo-stage-card{
+    position:relative!important;
+    inset:auto!important;
+    width:100%!important;
+    max-height:min(500px,calc(100dvh - 170px))!important;
+    margin:0 0 12px!important;
+    overflow:auto!important;
+  }
+}
+
+/* Medium desktops/laptops: reserve an explicit right rail for notifications. */
+@media(min-width:900px) and (max-width:1180px){
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo{
+    left:24px!important;
+    width:430px!important;
+    max-width:430px!important;
+    transform:none!important;
+  }
+
+  .ugo-client-root.ugo-client-screen-search .ugo-hugo-stage-card{
+    max-width:430px!important;
+  }
+
+  .ugo-client-root .ugo-notification-center.role-client{
+    right:24px!important;
+  }
+
+  .ugo-client-root .ugo-notification-center.role-client .ugo-notification-panel{
+    width:min(360px,calc(100vw - 500px))!important;
+    min-width:320px!important;
+  }
+}
+
+@media(min-width:900px) and (max-height:720px){
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo{
+    top:72px!important;
+    bottom:12px!important;
+  }
+  .ugo-client-root.ugo-client-screen-search .ugo-hugo-stage-card{
+    max-height:calc(100dvh - 190px)!important;
+    margin-bottom:10px!important;
+  }
+  .ugo-client-root.ugo-client-screen-search .prototype-hugo .ugo-real-orb{
+    width:58px!important;
+    height:58px!important;
+  }
+}
+
+/* Phone/tablet behavior remains mobile-first and full-width. */
+@media(max-width:899px){
+  .ugo-client-root .ugo-client-persistent-header{
+    left:0!important;
+    right:0!important;
+    width:100%!important;
+    transform:none!important;
+  }
+}
