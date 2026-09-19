@@ -77,22 +77,25 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
  assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
 })
 
-test('cash completion requires a separate explicit provider receipt confirmation',async()=>{
- const [providerData,activeJob,backend]=await Promise.all([
+test('cash completion is approved and paid by the client after provider marks work ready',async()=>{
+ const [providerData,activeJob,clientReview,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
-  read('supabase/migrations/20260914202500_restore_cash_review_ordering_guard.sql'),
+  read('src/mvp/ClientCompletionReview.tsx'),
+  read('supabase/migrations/20260918_provider_multi_jobs_cash_close_flow.sql'),
  ])
  const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
- assert.match(activeJob,/EL CLIENTE PAGÓ/)
- assert.match(activeJob,/¿Confirmás que el cliente te pagó en efectivo y que recibiste el dinero\? Esta acción queda registrada\./)
- assert.match(activeJob,/await d\.confirmCash\(\)/)
- assert.match(providerData,/if\(cashSelected&&!cashConfirmed\)\{setNotice\(\{type:'info'/)
- assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
- assert.match(backend,/old\.estado = 'en_progreso' and new\.estado = 'esperando_aprobacion'/)
- assert.match(backend,/v_pago\.metodo = 'efectivo'/)
- assert.match(backend,/v_pago\.estado <> 'liberado'/)
- assert.match(backend,/Confirmá la recepción del efectivo antes de pedir la aprobación del cliente/)
+ assert.match(activeJob,/TRABAJO LISTO/)
+ assert.match(activeJob,/Primero el cliente confirma el trabajo\. Después UGO le muestra cuánto pagarte/)
+ assert.doesNotMatch(activeJob,/confirmCash/)
+ assert.doesNotMatch(providerData,/confirmCash/)
+ assert.match(completeService,/advanceProviderService\(supabase,serviceId,'esperando_aprobacion'\)/)
+ assert.match(clientReview,/rpc\('aprobar_servicio'/)
+ assert.match(clientReview,/rpc\('confirmar_pago_efectivo_cliente'/)
+ assert.match(clientReview,/YA PAGUÉ/)
+ assert.match(backend,/create or replace function public\.confirmar_pago_efectivo_cliente/)
+ assert.match(backend,/'pago_efectivo_confirmado'/)
+ assert.match(backend,/'El cliente pagó'/)
 })
 
 test('provider simple flow keeps automatic arrival with a manual fallback',async()=>{
