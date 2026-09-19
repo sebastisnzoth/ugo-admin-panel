@@ -8,5 +8,6 @@ test('future scheduled acceptance opens agenda instead of an inactive job screen
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  assert.match(root,/ACTIONABLE_SCHEDULE_LEAD_MS=60\*60\*1000/)
  assert.match(root,/isFuture=scheduledAt!=null[\s\S]*scheduledAt>Date\.now\(\)\+ACTIONABLE_SCHEDULE_LEAD_MS/)
- assert.match(root,/flow\.navigate\(isFuture\?'agenda':'active-job'\)/)
+ assert.match(root,/alreadyWorking=Boolean\(data\.service\)/)
+ assert.match(root,/flow\.navigate\(alreadyWorking\|\|isFuture\?'agenda':'active-job'\)/)
 })
