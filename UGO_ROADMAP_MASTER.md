@@ -30,8 +30,8 @@ Excepciones: `cancelado`, `disputado`.
 ## BASE FUNCIONAL / CI AUTORITATIVA
 
 ```text
-c55b52421611f05bd1fd3031f10168064cde53ec
-test(provider): align recovery and scheduled navigation
+5d827021cfa87e4d21aecd50326ab9d90a83136b
+fix(client-ui): load desktop shell hardening last
 ```
 
 Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cambiar esta base funcional.
@@ -39,9 +39,9 @@ Commits documentales posteriores con `[skip ci]` pueden adelantar `main` sin cam
 ### Core CI
 
 ```text
-UGO Core CI #1335
-run: 35417275158 · attempt 2
-SHA: c55b52421611f05bd1fd3031f10168064cde53ec
+UGO Core CI #1337
+run: 35417306630 · attempt 2
+SHA: 5d827021cfa87e4d21aecd50326ab9d90a83136b
 conclusion: success
 ```
 
@@ -203,8 +203,8 @@ Invariante ya decidido: dinero de servicio incompleto/cancelado no puede convert
 Deployment del HEAD funcional actual:
 
 ```text
-deployment: dpl_Fme9L29ydL95EWhEN43oravBGKRK
-commit: c55b52421611f05bd1fd3031f10168064cde53ec
+deployment: dpl_BdANPVwqFmVk9iVhwwbkr1bjA2UC
+commit: 5d827021cfa87e4d21aecd50326ab9d90a83136b
 state: READY
 alias: https://ugo-admin-panel.vercel.app
 aliasError: null

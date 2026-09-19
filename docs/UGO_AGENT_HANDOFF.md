@@ -19,11 +19,11 @@ Desarrollo: /?app=development · público/read-only
 ## Checkpoint exacto
 
 ```text
-HEAD funcional validado: c55b52421611f05bd1fd3031f10168064cde53ec
-UGO Core CI run: 35417275158 · attempt 2
+HEAD funcional validado: 5d827021cfa87e4d21aecd50326ab9d90a83136b
+UGO Core CI run: 35417306630 · attempt 2
 conclusion: SUCCESS
 TypeScript/build + npm test + lint crítico + ClientApp lint + full lint: verde
-Vercel TEST deployment: dpl_Fme9L29ydL95EWhEN43oravBGKRK · READY
+Vercel TEST deployment: dpl_BdANPVwqFmVk9iVhwwbkr1bjA2UC · READY
 ```
 
 Los E2E autenticados Cliente/Proveedor/Admin se omiten si faltan las seis credenciales TEST; ese skip no valida runtime.
@@ -68,7 +68,7 @@ Oferta → Aceptar → Estoy yendo → Llegué → Empezar → Listo → Cliente
 - `confirmar_pago_efectivo_cliente(serviceId)` está aplicada en Supabase TEST mediante `provider_multi_jobs_cash_close_flow`.
 - “Elegir servicio” abre Agenda y no Historial.
 - errores recuperables de Realtime y validaciones normales de horario no se elevan como P0.
-- Centinela para revisiones `17caf5c`/`c55b524`: 0 P0/P1 abiertos al checkpoint.
+- Centinela para revisiones `17caf5c`/`5d82702`: 0 P0/P1 abiertos al checkpoint.
 
 ## Chat P0
 
@@ -102,7 +102,7 @@ GO-LIVE = blocked
 ## NEXT — no parar mientras haya trabajo interno
 
 ```text
-1 mantener como base funcional validada c55b52421611f05bd1fd3031f10168064cde53ec
+1 mantener como base funcional validada 5d827021cfa87e4d21aecd50326ab9d90a83136b
 2 pasar a prueba física: dos sesiones/dispositivos
 3 validar CHAT-REALTIME Cliente ↔ Proveedor por serviceId + reconnect
 4 validar MAP-GPS/arrival en celular real
