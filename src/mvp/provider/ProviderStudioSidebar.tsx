@@ -23,7 +23,7 @@ export function ProviderStudioSidebar(){
   </nav>
 
   <div className="provider-studio-footer">
-   <button type="button" className="provider-studio-utility" onClick={f.actions.openHistory}>⚖ Elegir servicio</button>
+   <button type="button" className="provider-studio-utility" onClick={f.actions.openAgenda}>⚖ Elegir servicio</button>
    <button type="button" className="provider-studio-utility" onClick={f.actions.openDispute}>? Ayuda</button>
    <button type="button" className="provider-studio-availability" disabled={d.busy} onClick={()=>void d.toggleOnline()}>
     {d.online?'● Online · Cambiar a Offline':'○ Offline · Cambiar a Online'}

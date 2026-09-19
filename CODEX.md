@@ -132,7 +132,7 @@ qué retomar después
 - trabajar sobre `main` salvo instrucción explícita distinta;
 - `origin/main` es el destino normal de todo bloque terminado y validado;
 - no clonar otra copia por rutina;
-- no usar `UGO Arena` para pruebas del flujo principal;
+- usar únicamente el Supabase TEST declarado en `docs/UGO_AGENT_HANDOFF.md` para pruebas del flujo principal; el nombre visible del proyecto no define si es TEST o PROD;
 - no usar Supabase producción como entorno destructivo de test;
 - no crear branch/proyecto Supabase pago sin aprobación humana;
 - no inventar CI verde, deploy, migración aplicada ni E2E exitoso;

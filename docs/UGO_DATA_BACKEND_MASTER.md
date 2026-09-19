@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.4 · 11 de septiembre de 2026  
+**Versión:** 2.5 · 18 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -99,10 +99,13 @@ Requiere referencia externa, importe/moneda reconciliados server-side, webhook i
 
 ```text
 seleccionado → presencial pendiente
-→ proveedor confirma recepción → registrado/liberado
+→ proveedor marca TRABAJO LISTO
+→ cliente aprueba el trabajo
+→ cliente entrega el efectivo y confirma “YA PAGUÉ”
+→ registrado/liberado + servicio completado + notificación al proveedor
 ```
 
-Efectivo nunca se representa como custodia electrónica UGO.
+Efectivo nunca se representa como custodia electrónica UGO. El proveedor no confirma el cobro desde su app: el cierre lo confirma el cliente después de aprobar el trabajo. La RPC canónica es `confirmar_pago_efectivo_cliente(serviceId)`.
 
 ## Lock de método
 

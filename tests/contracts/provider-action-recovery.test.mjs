@@ -32,25 +32,15 @@ test('arrival location failure stays location-scoped instead of becoming lifecyc
  assert.match(service,/eventType:'provider_location_error'[\s\S]*severity:'P1'[\s\S]*action:'provider\.service\.location'/)
 })
 
-test('cash confirmation treats persisted released cash payment as success',()=>{
- assert.match(source,/releasedCashPersisted=async\(serviceId:string\):Promise<boolean\|null>/)
- assert.match(source,/confirmar_pago_efectivo[\s\S]*const persisted=await releasedCashPersisted\(serviceId\)/)
- assert.match(source,/if\(persisted===true\)\{[\s\S]*Efectivo recibido y registrado[\s\S]*return true/)
+test('provider no longer confirms cash directly',()=>{
+ assert.doesNotMatch(source,/confirmCash/)
+ assert.doesNotMatch(source,/confirmar_pago_efectivo/)
 })
 
-test('provider cash Sentinel declares P0 only after confirmed persistence failure',()=>{
- assert.match(source,/const confirmed=persisted===false/)
- assert.match(source,/severity:confirmed\?'P0':'P1'/)
- assert.match(source,/action:confirmed\?'provider\.payment\.cash_confirm':'provider\.payment\.cash_confirm\.recovery'/)
- assert.match(source,/checklistCode:confirmed\?'PAYMENT-CLOSE':undefined/)
-})
-
-test('complete service requires explicit cash receipt confirmation instead of silently confirming it',()=>{
- const confirmCash=source.slice(source.indexOf('const confirmCash'),source.indexOf('const completeService'))
+test('provider completion hands cash close to the client',()=>{
  const completeService=source.slice(source.indexOf('const completeService'),source.indexOf('const cancelService'))
- assert.match(confirmCash,/confirmar_pago_efectivo[\s\S]*releasedCashPersisted\(serviceId\)/)
- assert.match(completeService,/if\(cashSelected&&!cashConfirmed\)/)
- assert.match(completeService,/Confirmá por separado que recibiste el efectivo/)
+ assert.match(completeService,/advanceProviderService\(supabase,serviceId,'esperando_aprobacion'\)/)
+ assert.match(completeService,/UGO avisó al cliente y sigue el cierre por detrás/)
  assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
 })
 
