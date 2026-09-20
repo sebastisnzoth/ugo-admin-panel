@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - "src/**"
+      - "wordpress/**"
       - "public/**"
       - "index.html"
       - "package.json"
@@ -81,6 +82,19 @@ jobs:
           port: 21
           local-dir: ./dist/
           server-dir: /htdocs/wp-content/uploads/ugo-app-build/current/
+          timeout: 120000
+
+      - name: Publish WordPress landing bridge
+        if: steps.ftp.outputs.ready == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.UGO_FTP_SERVER }}
+          username: ${{ secrets.UGO_FTP_USERNAME }}
+          password: ${{ secrets.UGO_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./wordpress/mu-plugins/
+          server-dir: /htdocs/wp-content/mu-plugins/
           timeout: 120000
 
       - name: Deployment summary
