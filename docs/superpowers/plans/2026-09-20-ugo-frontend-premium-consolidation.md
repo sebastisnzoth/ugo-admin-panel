@@ -83,14 +83,29 @@ git commit -m "docs(ui): establish premium UX contract"
 - Modify `src/mvp/client/ClientRoot.tsx`
 - Create `tests/contracts/client-home-premium-consolidation.test.mjs`
 
-- [ ] RED test must assert:
-  - `aria-label="Limpiar búsqueda"`;
-  - `setQuery('')` and `searchRef.current?.focus()`;
-  - existing map fallback `Podés pedir el servicio igual`;
-  - `Pedíselo a Hugo` remains;
-  - CSS contains `var(--ugo-color-primary)`, `var(--ugo-color-on-surface)`, `var(--ugo-touch-target)`, `var(--ugo-font-caption)`;
-  - CSS no longer contains `#087d63|#102335|#0b1c30`;
-  - `ClientRoot.tsx` loads `client-home-screen.css` after `client-desktop-shell-fixes.css`.
+- [ ] Write RED test:
+
+```js
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('client home is readable, clearable and resilient',async()=>{
+ const[src,css,root]=await Promise.all([
+  read('src/mvp/client/ClientHomeScreen.tsx'),
+  read('src/mvp/client/client-home-screen.css'),
+  read('src/mvp/client/ClientRoot.tsx')
+ ])
+ assert.match(src,/aria-label="Limpiar búsqueda"/)
+ assert.match(src,/setQuery\(''\)/)
+ assert.match(src,/searchRef\.current\?\.focus\(\)/)
+ assert.match(src,/El mapa no pudo cargarse\. Podés pedir el servicio igual\./)
+ assert.match(src,/Pedíselo a Hugo/)
+ for(const x of['var(--ugo-color-primary)','var(--ugo-color-on-surface)','var(--ugo-touch-target)','var(--ugo-font-caption)'])assert.ok(css.includes(x),x)
+ assert.doesNotMatch(css,/#087d63|#102335|#0b1c30/i)
+ assert.ok(root.lastIndexOf("'./client-home-screen.css'")>root.lastIndexOf("'./client-desktop-shell-fixes.css'"))
+})
+```
 
 Run `node --test tests/contracts/client-home-premium-consolidation.test.mjs` → FAIL.
 
@@ -123,7 +138,30 @@ git commit -m "style(client): consolidate premium home"
 - Modify `src/mvp/provider/provider-redesign-2026.css`
 - Create `tests/contracts/provider-premium-consolidation.test.mjs`
 
-- [ ] RED test asserts provider aliases use `--ugo-color-on-surface`, `--ugo-color-primary`, `--ugo-color-secondary-container`, `--ugo-color-error`; raw `--pro-green:#`, `--pro-cyan:#`, `--pro-danger:#` disappear; `ProviderHome.tsx` still contains `d.service&&d.opportunities.length>0`, `Podés aceptar otro`, and `openAgenda`.
+- [ ] Write RED test:
+
+```js
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('provider derives visual aliases from UGO and preserves future work',async()=>{
+ const[css,home]=await Promise.all([
+  read('src/mvp/provider/provider-redesign-2026.css'),
+  read('src/mvp/provider/ProviderHome.tsx')
+ ])
+ assert.match(css,/--pro-ink:var\(--ugo-color-on-surface\)/)
+ assert.match(css,/--pro-green:var\(--ugo-color-primary\)/)
+ assert.match(css,/--pro-cyan:var\(--ugo-color-secondary-container\)/)
+ assert.match(css,/--pro-danger:var\(--ugo-color-error\)/)
+ assert.doesNotMatch(css,/--pro-green:#|--pro-cyan:#|--pro-danger:#/)
+ assert.match(home,/d\.service&&d\.opportunities\.length>0/)
+ assert.match(home,/Podés aceptar otro/)
+ assert.match(home,/flow\.actions\.openAgenda/)
+})
+```
+
+Run `node --test tests/contracts/provider-premium-consolidation.test.mjs` → FAIL.
 
 - [ ] Replace alias block with:
 
@@ -163,7 +201,32 @@ git commit -m "style(provider): align role UI with UGO tokens"
 - Modify `src/mvp/admin-uiux-final.css`
 - Create `tests/contracts/admin-premium-navigation.test.mjs`
 
-- [ ] RED test asserts no `role="tab"`, `role="tablist"` or `aria-selected`; Operaciones/Personas/Finanzas/Configuración wrappers have `role="group"`; active buttons have `aria-pressed`; Admin CSS uses `--ugo-font-caption`; no `font-size:7px`.
+- [ ] Write RED test:
+
+```js
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('admin uses readable button groups instead of incomplete tabs',async()=>{
+ const[src,phase,home,finalCss]=await Promise.all([
+  read('src/mvp/AdminPhase2.tsx'),
+  read('src/mvp/admin-phase2.css'),
+  read('src/mvp/admin-home-stitch.css'),
+  read('src/mvp/admin-uiux-final.css')
+ ])
+ assert.doesNotMatch(src,/role="tab"/)
+ assert.doesNotMatch(src,/role="tablist"/)
+ assert.doesNotMatch(src,/aria-selected=/)
+ assert.match(src,/role="group" aria-label="Menú de operaciones"/)
+ assert.match(src,/aria-pressed=\{operationView===/)
+ assert.match(phase,/font-size:var\(--ugo-font-caption\)/)
+ assert.match(home,/\.ahs-service-row\{[^}]*font-size:var\(--ugo-font-caption\)/s)
+ assert.doesNotMatch(finalCss,/font-size:7px/)
+})
+```
+
+Run `node --test tests/contracts/admin-premium-navigation.test.mjs` → FAIL.
 
 - [ ] Convert those four view switchers to normal button groups. Preserve every current setter, label, badge and active class. Use `aria-pressed={sameBooleanAsActiveClass}`.
 
@@ -209,7 +272,25 @@ export function UgoDemoBoundary({children}:{children:React.ReactNode}){
 
 Style banner sticky, ≥48 px, with UGO warning/surface/text tokens.
 
-- [ ] Lazy-load it in `MvpApp.tsx`; only replace the `app==='web'` route with `<UgoDemoBoundary><UgoWeb/></UgoDemoBoundary>`. Do not wrap client/provider/admin.
+- [ ] Lazy-load it in `MvpApp.tsx` with:
+
+```ts
+const UgoDemoBoundary=lazy(()=>import('./UgoDemoBoundary').then(module=>({default:module.UgoDemoBoundary})))
+```
+
+Then replace only:
+
+```tsx
+if(app==='web')return <Deferred><UgoWeb/></Deferred>
+```
+
+with:
+
+```tsx
+if(app==='web')return <Deferred><UgoDemoBoundary><UgoWeb/></UgoDemoBoundary></Deferred>
+```
+
+Do not wrap client/provider/admin.
 
 - [ ] Verify and commit:
 
@@ -227,7 +308,18 @@ git commit -m "fix(demo): isolate fictitious legacy web route"
 - Create `docs/UGO_CSS_MIGRATION_LEDGER.md`
 - Modify `tests/contracts/frontend-premium-consolidation.test.mjs`
 
-- [ ] Add a RED test requiring the ledger to mention `client-ai-studio-final-lock.css`, `client-real-test-fixes.css`, and `Retiro sólo con evidencia de consumidor cero`.
+- [ ] Add this RED test to `frontend-premium-consolidation.test.mjs`:
+
+```js
+test('legacy CSS debt is frozen behind an evidence-based retirement gate',async()=>{
+ const ledger=await read('docs/UGO_CSS_MIGRATION_LEDGER.md')
+ assert.match(ledger,/client-ai-studio-final-lock\.css/)
+ assert.match(ledger,/client-real-test-fixes\.css/)
+ assert.match(ledger,/Retiro sólo con evidencia de consumidor cero/)
+})
+```
+
+Run `node --test tests/contracts/frontend-premium-consolidation.test.mjs` → FAIL because the ledger does not exist.
 
 - [ ] Create ledger naming canonical owners: global `ugo-design-system.css`; Cliente Home `client-home-screen.css`; Cliente shell `client-persistent-header.css` + `client-desktop-shell-fixes.css`; Provider `provider-redesign-2026.css`; Admin `admin-phase2.css` + `admin-home-stitch.css` + `admin-uiux-final.css`. Freeze existing historical Cliente `visual-polish`, `guided-request-redesign`, `ai-studio-*-lock/ops/complete`, `real-test-fixes`, `flow-reference-2026` from gaining new cross-screen responsibilities. Retirement requires selector search + relevant tests + build + browser proof.
 
