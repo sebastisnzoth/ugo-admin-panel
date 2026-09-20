@@ -11,7 +11,7 @@
 
 /* Admin Journey 1: dashboard surfaces consume canonical tokens. */
 .ugo-admin2{font-family:var(--ugo-font);color:var(--ugo-color-on-surface);background:var(--ugo-color-surface)!important}
-.ugo-admin2-sidebar{background:var(--ugo-color-on-surface)!important;color:var(--ugo-color-surface-lowest)}
+.ugo-admin2-sidebar{background:var(--ugo-color-surface-lowest)!important;color:var(--ugo-color-on-surface)!important;border-right:1px solid var(--ugo-color-outline-variant)}
 .ugo-admin2-sidebar nav button.active{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important}
 .ugo-admin2-kpis article,.ugo-admin2-flow,.ugo-admin2-priority,.ugo-admin2-health{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;box-shadow:var(--ugo-shadow-card)!important;border-radius:var(--ugo-radius-lg)!important}
 .ugo-admin2-refresh{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md)!important}
@@ -25,3 +25,30 @@
 .ugo-admin2 .ugo-provider-verification,.ugo-admin2 .ugo-provider-list,.ugo-admin2 .ugo-provider-detail{font-family:var(--ugo-font)}
 .ugo-admin2 .ugo-provider-verification,.ugo-admin2 .ugo-provider-detail{background:var(--ugo-color-surface-lowest)!important;border-color:var(--ugo-color-outline-variant)!important;border-radius:var(--ugo-radius-lg)!important;box-shadow:var(--ugo-shadow-card)!important}
 .ugo-admin2 .ugo-provider-verification button,.ugo-admin2 .ugo-provider-detail button{min-height:var(--ugo-touch-target);border-radius:var(--ugo-radius-md);font-family:var(--ugo-font)}
+
+
+/* Admin contrast hardening — all sections must consume semantic surface tokens. */
+.ugo-admin2-section-head{
+  background:var(--ugo-color-surface-lowest)!important;
+  color:var(--ugo-color-on-surface)!important;
+  border-color:var(--ugo-color-outline-variant)!important;
+  box-shadow:var(--ugo-shadow-card);
+}
+.ugo-admin2-section-head h2{color:var(--ugo-color-on-surface)!important}
+.ugo-admin2-section-head>span{background:color-mix(in srgb,var(--ugo-color-success) 15%,var(--ugo-color-surface-lowest))!important;color:var(--ugo-color-primary)!important}
+.ugo-admin2-refresh{
+  background:var(--ugo-color-surface-lowest)!important;
+  color:var(--ugo-color-on-surface)!important;
+  border-color:var(--ugo-color-outline-variant)!important;
+}
+.ugo-admin2-refresh:hover:not(:disabled){background:var(--ugo-color-surface-low)!important}
+.ugo-admin2-native-module{color:var(--ugo-color-on-surface)!important}
+.ugo-admin2-native-module table{color:var(--ugo-color-on-surface)!important}
+.ugo-admin2-native-module tbody tr{transition:background var(--ugo-duration-fast)}
+.ugo-admin2-native-module tbody tr:hover{background:color-mix(in srgb,var(--ugo-color-primary) 5%,transparent)}
+.ugo-admin2-native-module button{
+  background:var(--ugo-color-surface-low)!important;
+  color:var(--ugo-color-on-surface)!important;
+  border-color:var(--ugo-color-outline-variant)!important;
+}
+.ugo-admin2-native-module button:hover:not(:disabled){background:var(--ugo-color-surface-high)!important}
