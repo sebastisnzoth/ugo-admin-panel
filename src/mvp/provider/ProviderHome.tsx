@@ -28,7 +28,7 @@ export function ProviderHome(){
   <div className="provider-quick-grid">
    {d.service&&d.opportunities.length>0&&<button className="provider-card provider-quick-card" onClick={flow.actions.openOpportunities}><small>NUEVOS PEDIDOS</small><strong>{d.opportunities.length} disponible{d.opportunities.length===1?'':'s'}</strong><span>Podés aceptar otro →</span></button>}
    <button className="provider-card provider-quick-card" onClick={flow.actions.openAgenda}><small>AGENDA</small><strong>Próximos trabajos</strong><span>Ver horarios →</span></button>
-   <button className="provider-card provider-quick-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>{money(d.retained)}</strong><span>{money(d.released)} liberado/registrado →</span></button>
+   <button className="provider-card provider-quick-card" onClick={flow.actions.openEarnings}><small>DINERO</small><strong>Saldo UGO {money(d.released)}</strong><span>Efectivo {money(d.cashReceived)} · Debés UGO {money(d.ugoDebt)} →</span></button>
   </div>
   {d.online&&<button className="provider-quiet-link" type="button" onClick={flow.actions.openDemand}>Ver radar de demanda</button>}
  </section>
