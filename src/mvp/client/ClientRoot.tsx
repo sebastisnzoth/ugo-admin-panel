@@ -45,6 +45,7 @@ import'./client-persistent-header.css'
 import'./client-desktop-shell-fixes.css'
 import'./client-home-screen.css'
 import'./client-home-app-v3.css'
+import'./client-premium-2026.css'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow(),pushServiceId=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('serviceId'),[selectedServiceId,setSelectedServiceId]=useState<string|null>(()=>pushServiceId)
