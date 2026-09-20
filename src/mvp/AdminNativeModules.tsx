@@ -1,7 +1,7 @@
 import React,{useMemo,useState}from'react'
 import{
  useDashboardMetrics,useConversionKPIs,useSystemAlerts,useActiveServices,useOpenDisputes,
- usePendingDocuments,useVault,usePendingWithdrawals,useTarifas,useCategorias,useConfigSistema,
+ usePendingDocuments,useVault,usePendingWithdrawals,useCategorias,useConfigSistema,
  useNotificaciones,useExport
 }from'../hooks/useAdminData'
 import{SecMapaOperativo}from'../components/MapaOperativo'
