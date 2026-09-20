@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
 export const SERVICE_STATES = [
+  'borrador',
   'buscando',
   'ofrecido',
   'asignado',
@@ -11,6 +12,7 @@ export const SERVICE_STATES = [
   'esperando_aprobacion',
   'completado',
   'cancelado',
+  'disputado',
 ] as const
 
 export type ServiceState = (typeof SERVICE_STATES)[number]
