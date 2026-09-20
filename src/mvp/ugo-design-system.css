@@ -2,6 +2,9 @@
   /* UGO Design System v1 — Kinetic Trust, extracted from Stitch handoff. */
   --ugo-font:"Plus Jakarta Sans","Inter Tight",Inter,ui-sans-serif,system-ui,sans-serif;
   --ugo-font-mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --ugo-font-caption:12px;
+  --ugo-font-body:14px;
+  --ugo-font-title:16px;
   --ugo-color-surface:#faf8ff;
   --ugo-color-surface-dim:#d2d9f4;
   --ugo-color-surface-lowest:#ffffff;
@@ -29,6 +32,9 @@
   --ugo-color-warning:#b45309;
   --ugo-color-success:#006948;
   --ugo-color-focus:#0058be;
+  --ugo-scrollbar-thumb:color-mix(in srgb,var(--ugo-color-outline) 72%,transparent);
+  --ugo-scrollbar-thumb-hover:var(--ugo-color-on-surface-variant);
+  --ugo-scrollbar-track:color-mix(in srgb,var(--ugo-color-surface-container) 76%,transparent);
   --ugo-space-xxs:4px; --ugo-space-xs:8px; --ugo-space-sm:12px;
   --ugo-space-md:16px; --ugo-space-lg:20px; --ugo-space-xl:24px;
   --ugo-space-2xl:32px; --ugo-space-3xl:40px;
@@ -48,6 +54,13 @@
   --ugo-radius-xl-legacy:28px; --ugo-mobile-w:390px; --ugo-mobile-h:844px;
   font-family:var(--ugo-font); color:var(--ugo-color-on-surface); background:var(--ugo-color-surface);
 }
+
+html{scrollbar-color:var(--ugo-scrollbar-thumb) var(--ugo-scrollbar-track);scrollbar-width:thin}
+html::-webkit-scrollbar{width:12px;height:12px}
+html::-webkit-scrollbar-track{background:var(--ugo-scrollbar-track)}
+html::-webkit-scrollbar-thumb{border:3px solid var(--ugo-scrollbar-track);border-radius:var(--ugo-radius-full);background:var(--ugo-scrollbar-thumb)}
+html::-webkit-scrollbar-thumb:hover{background:var(--ugo-scrollbar-thumb-hover)}
+@media(forced-colors:active){html{scrollbar-color:auto}}
 
 .ugo-ds-button,.ugo-ds-icon-button,.ugo-ds-field,.ugo-ds-search{font-family:var(--ugo-font)}
 .ugo-ds-button{display:inline-flex;align-items:center;justify-content:center;gap:var(--ugo-space-xs);min-height:var(--ugo-touch-target);border:1px solid transparent;border-radius:var(--ugo-radius-md);padding:0 var(--ugo-space-md);font-size:14px;font-weight:600;line-height:20px;cursor:pointer;transition:background var(--ugo-duration-fast),border-color var(--ugo-duration-fast),transform var(--ugo-duration-fast),box-shadow var(--ugo-duration-fast)}
