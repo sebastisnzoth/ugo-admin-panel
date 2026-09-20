@@ -357,13 +357,20 @@ Implementado en `main`:
 Estado de madurez:
 
 ```text
-Calendar código/backend       IMPLEMENTED
-Calendar DB TEST              APPLIED
-Calendar OAuth runtime        BLOCKED hasta credenciales Google
-Disputas v2 código/backend    IMPLEMENTED
-Disputas v2 DB TEST           aplicar/verificar migración
-IA disputa runtime            requiere GEMINI_API_KEY + smoke Admin
-E2E físico                    pendiente
+Calendar código/backend       CI VALIDATED
+Calendar DB TEST              APPLIED + RLS server-only verificada
+Calendar OAuth runtime        BLOCKED: credenciales OAuth Google + smoke Proveedor
+Disputas v2 código/backend    CI VALIDATED
+Disputas v2 DB TEST           APPLIED · 14 reglas · bucket privado · legacy RPC cerrado
+IA disputa runtime            Gemini HEALTH OK · falta smoke autenticado Admin
+E2E físico                    pendiente: dos sesiones/dispositivos
 ```
 
 Ningún análisis IA ejecuta una resolución o movimiento de dinero. PROD permanece intacto.
+
+
+### Validación técnica del bloque Calendar + Disputas
+
+El candidato de código `8fd3811dbb6361499327f8c952aac3d7e50ce94c` pasó UGO Core CI completo y Android TEST APK. Vercel publicó ese mismo SHA como READY. En UGO TEST se verificó que hay 14 reglas activas de disputa, `dispute-evidence` es privado, `abrir_disputa_v2` es ejecutable por participantes autenticados, el RPC legacy quedó revocado y `disputa_ai_analisis` no es legible por `authenticated`.
+
+El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rutas consolidadas de Calendar/Disputas existen en Vercel sin exceder el límite Hobby de funciones. La madurez no sube a RUNTIME VALIDATED para Calendar hasta conectar una cuenta Google real, ni para Disputas hasta ejecutar el flujo autenticado Cliente/Proveedor/Admin con adjunto.

@@ -500,7 +500,7 @@ UGO mantiene `servicios.programado_para` y el lifecycle persistido como única f
 
 - `proveedor_calendar_conexiones`: OAuth server-only, RLS cerrada a navegador;
 - `proveedor_calendar_eventos`: mapa idempotente `serviceId → google_event_id`;
-- create/update/delete se ejecutan en `/api/calendar/sync`;
+- create/update/delete se exponen por `/api/calendar/sync`; en Vercel Hobby las rutas Calendar se reescriben a la función física consolidada `api/test.ts` para respetar el límite de serverless functions;
 - una cancelación o eliminación de programación retira el evento Google; el historial permanece en UGO;
 - el bridge Proveedor resincroniza al abrir/volver online/foreground y cada cinco minutos mientras la app está activa;
 - si Google falla, no cambia el estado del servicio ni bloquea el trabajo.
@@ -514,3 +514,8 @@ Para runtime hacen falta credenciales OAuth Web y redirect URI en el entorno ser
 `acuerdos_previos_disputa` registra una propuesta amistosa antes del caso formal sin alterar dinero por sí sola. Los adjuntos viven en el bucket privado `dispute-evidence` con ruta `serviceId/userId/file`.
 
 `disputa_ai_analisis` es server-only. Gemini recibe snapshot, hilo y hasta seis imágenes disponibles para producir soporte de decisión. El resultado no resuelve el caso, no mueve dinero y no es visible a participantes como decisión oficial. El Reglamento canónico está en `docs/UGO_DISPUTE_RULES_MASTER.md`.
+
+
+## Validación 20/09/2026
+
+UGO TEST confirma la separación de privilegios del bloque nuevo: conexiones/tokens Calendar son server-only; el bucket `dispute-evidence` es privado; existen 14 motivos activos; el RPC legacy `abrir_disputa(uuid,text,jsonb)` ya no es ejecutable por `authenticated`; `abrir_disputa_v2` sí lo es; y los análisis IA no pueden ser leídos directamente por usuarios finales. El health de Gemini publicado responde OK. La validación Calendar completa requiere todavía OAuth Google real y no se simula.

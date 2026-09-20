@@ -67,3 +67,16 @@ Implementá disputas UGO con la secuencia prevenir/acuerdo/disputa/snapshot/evid
 ```text
 No declares OK por mirar el código. Ejecutá test-env, contratos, TypeScript/build, lint crítico, checks de RLS y Realtime. Luego probá en dos sesiones reales: Cliente crea pedido, Proveedor acepta, chat bidireccional, estados con sonido/push, pago, rating bilateral, agenda futura, Google Calendar create/update/delete y disputa con adjunto. Revisá Sentinel del SHA final. Marcá explícitamente qué es IMPLEMENTED, CI VALIDATED, RUNTIME VALIDATED y PUBLISHED.
 ```
+
+
+## Evidencia técnica del bloque implementado
+
+Baseline de código validado: `8fd3811dbb6361499327f8c952aac3d7e50ce94c`.
+
+- UGO Core CI: **SUCCESS**.
+- Android TEST APK: **SUCCESS**, artifact `10607996531`, SHA-256 `8e30b10ad96f3aa9e957166b1f3a2b889842ece06900773f01b5428a8080c11b`.
+- Vercel producción: **READY** sobre el mismo SHA.
+- Supabase TEST: migraciones Calendar y Disputas v2 aplicadas; 14 reglas activas; bucket de disputa privado; RPC legacy de apertura revocado.
+- Gemini: health server-side **OK**.
+- Sentinel del SHA de validación: sin incidentes registrados al momento del cierre técnico.
+- Bloqueos externos restantes: credenciales OAuth Google + cuenta Proveedor para smoke Calendar; sesiones reales Cliente/Proveedor/Admin y dos dispositivos para E2E físico.
