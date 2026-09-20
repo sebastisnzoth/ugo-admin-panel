@@ -16,6 +16,8 @@ test('admin uses readable button groups instead of incomplete tabs',async()=>{
  assert.match(src,/role="group" aria-label="Menú de operaciones"/)
  assert.match(src,/aria-pressed=\{operationView===/)
  assert.match(phase,/font-size:var\(--ugo-font-caption\)/)
+ assert.doesNotMatch(phase,/font-size:8px/)
+ assert.match(phase,/\.ugo-admin2-submenu button\{[^}]*min-height:var\(--ugo-touch-target\)/s)
  assert.match(home,/\.ahs-service-row\{[^}]*font-size:var\(--ugo-font-caption\)/s)
  assert.doesNotMatch(finalCss,/font-size:7px/)
 })
