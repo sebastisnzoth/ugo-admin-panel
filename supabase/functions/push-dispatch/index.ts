@@ -5,7 +5,7 @@ import webpush from "npm:web-push@3.6.7";
 type Subscription={endpoint:string;p256dh:string;auth:string;activa:boolean};
 type Delivery={id:string;suscripcion_id:string;suscripcion:Subscription|Subscription[]|null};
 type Config={vapid_public:string;vapid_private:string;dispatch_token:string;edge_url:string;vapid_subject:string};
-const HIGH_URGENCY_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_cancelado','aprobacion_pendiente','pago_efectivo_confirmado']);
+const HIGH_URGENCY_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_cancelado','aprobacion_pendiente','trabajo_aprobado','pago_efectivo_pendiente','pago_efectivo_confirmado']);
 
 Deno.serve(async(req:Request)=>{
   if(req.method!=="POST")return new Response("method not allowed",{status:405});

@@ -11,8 +11,8 @@ const VAPID_PUBLIC='BPiPh1AzAkgiOv1lkTx0hW8X7UoP9NTnAJUWA7voNwMrwExQ7CCNC4Pbue6a
 function vapidBytes(base64:string){const pad='='.repeat((4-base64.length%4)%4),raw=atob((base64+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
 function b64(buffer:ArrayBuffer|null){if(!buffer)return'';const bytes=new Uint8Array(buffer);let s='';bytes.forEach(v=>s+=String.fromCharCode(v));return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
 const PROVIDER_CALL_TYPES=new Set(['nueva_oferta','trabajo_asignado'])
-const PROVIDER_ATTENTION_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','servicio_completado','servicio_cancelado','servicio_disputado','pago_liberado','pago_efectivo_confirmado','agenda_recordatorio','agenda_salida'])
-const CLIENT_ATTENTION_TYPES=new Set(['proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','servicio_cancelado','servicio_disputado','chat_mensaje'])
+const PROVIDER_ATTENTION_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','servicio_completado','servicio_cancelado','servicio_disputado','pago_liberado','trabajo_aprobado','pago_efectivo_confirmado','agenda_recordatorio','agenda_salida'])
+const CLIENT_ATTENTION_TYPES=new Set(['proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','servicio_cancelado','servicio_disputado','chat_mensaje','pago_efectivo_pendiente'])
 type AudioWindow=Window&typeof globalThis&{webkitAudioContext?:typeof AudioContext}
 let providerAudioContext:AudioContext|null=null
 function providerAudio(){

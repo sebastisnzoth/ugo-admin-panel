@@ -15,3 +15,14 @@ test('cash services reach client review before payment confirmation and close on
   assert.match(migration, /'El cliente pagó'/)
   assert.match(migration, /set estado='completado'/)
 })
+
+
+test('cash approval notifications demand attention from both client and provider',async()=>{
+ const[center,edge]=await Promise.all([
+  readFile(new URL('../../src/mvp/NotificationCenter.tsx',import.meta.url),'utf8'),
+  readFile(new URL('../../supabase/functions/push-dispatch/index.ts',import.meta.url),'utf8'),
+ ])
+ assert.match(center,/PROVIDER_ATTENTION_TYPES=new Set\([^\n]*'trabajo_aprobado'/)
+ assert.match(center,/CLIENT_ATTENTION_TYPES=new Set\([^\n]*'pago_efectivo_pendiente'/)
+ assert.match(edge,/HIGH_URGENCY_TYPES=new Set\([^\n]*'trabajo_aprobado'[^\n]*'pago_efectivo_pendiente'/)
+})

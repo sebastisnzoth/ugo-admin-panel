@@ -72,3 +72,10 @@ test('browser rotates an obsolete VAPID subscription instead of reporting a fals
   assert.match(notificationCenter, /await\s+sub\.unsubscribe\(\)/)
   assert.match(notificationCenter, /pushManager\.subscribe\(\{userVisibleOnly:true,applicationServerKey:vapidBytes\(VAPID_PUBLIC\)\}\)/)
 })
+
+
+test('cash approval and cash-to-pay notices are high-urgency on both sides', () => {
+  assert.match(notificationCenter, /PROVIDER_ATTENTION_TYPES=new Set\([^\n]*'trabajo_aprobado'/)
+  assert.match(notificationCenter, /CLIENT_ATTENTION_TYPES=new Set\([^\n]*'pago_efectivo_pendiente'/)
+  assert.match(edge, /HIGH_URGENCY_TYPES=new Set\([^\n]*'trabajo_aprobado'[^\n]*'pago_efectivo_pendiente'/)
+})
