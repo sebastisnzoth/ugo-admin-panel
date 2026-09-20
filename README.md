@@ -13,6 +13,7 @@ UGO conecta clientes con proveedores de servicios locales y permite operar todo 
 La consola Admin está organizada en cinco áreas principales:
 
 ### Inicio
+
 - Estado operativo general
 - Servicios activos
 - Proveedores online
@@ -21,6 +22,7 @@ La consola Admin está organizada en cinco áreas principales:
 - Prioridades administrativas
 
 ### Operaciones
+
 - Resumen
 - Mapa en vivo
 - Servicios
@@ -31,6 +33,7 @@ La consola Admin está organizada en cinco áreas principales:
 - Mensajes
 
 ### Personas
+
 - Usuarios
 - Verificación de proveedores
 - Documentos
@@ -38,11 +41,13 @@ La consola Admin está organizada en cinco áreas principales:
 - Importación
 
 ### Finanzas
+
 - Conciliación PIX
 - Bóveda y retiros
 - Tarifas
 
 ### Configuración
+
 - Categorías
 - Analytics
 - Notificaciones
