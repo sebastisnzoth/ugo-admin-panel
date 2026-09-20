@@ -35,7 +35,7 @@ export function SecMapaOperativo(){
       ]);
       if(ue)throw ue;if(se)throw se;if(ce)throw ce;
       setUsers((u||[]) as MapUser[]);setServices((s||[]) as MapService[]);setCats((c||[]) as Cat[]);setLastUpd(new Date().toLocaleTimeString('es-AR'));
-    }catch(e:any){setError(e?.message||'No se pudo cargar el mapa operativo')}
+    }catch(e:any){console.error('[AdminMap] load failed',e);setError('No pudimos actualizar la capa operativa del mapa. Reintentá en unos segundos.')}
     finally{setLoading(false)}
   },[]);
 
@@ -75,7 +75,7 @@ export function SecMapaOperativo(){
       <strong style={{fontSize:14}}>🗺 Mapa Operativo</strong>{pill('Proveedores',prov.length,'#276EF1')}{pill('Online',online,'#05944F')}{pill('Offline',offline,'#F59E0B')}{pill('Clientes',clients,'#276EF1')}{pill('Servicios',services.length,'#8B5CF6')}
       <div style={{flex:1}}/><input value={geoSearch} onChange={e=>setGeoSearch(e.target.value)} onKeyDown={e=>e.key==='Enter'&&goLocation()} placeholder="Buscar ciudad, barrio..." style={{padding:'7px 10px',border:'1px solid #ddd',borderRadius:8,width:190}}/><select value={geoRadius} onChange={e=>setGeoRadius(Number(e.target.value))} style={{padding:'7px',border:'1px solid #ddd',borderRadius:8}}><option value={0}>Sin radio</option><option value={2000}>2 km</option><option value={5000}>5 km</option><option value={10000}>10 km</option><option value={20000}>20 km</option></select><button onClick={goLocation} disabled={geoBusy} style={{padding:'7px 10px',border:0,borderRadius:8,background:'#276EF1',color:'#fff'}}>🗺 Ir</button><button onClick={load} style={{padding:'7px 10px',border:0,borderRadius:8,background:'#111',color:'#fff'}}>↻</button><label style={{fontSize:11}}><input type="checkbox" checked={auto} onChange={e=>setAuto(e.target.checked)}/> Auto</label><span style={{fontSize:10,color:'#999'}}>{visible.length} visibles · {lastUpd}</span>
     </div>
-    {error&&<div style={{padding:'8px 14px',background:'#fff1f0',color:'#b42318',fontSize:12}}>⚠️ {error}</div>}
+    {error&&<div style={{padding:'8px 14px',background:'#fff1f0',color:'#b42318',fontSize:12,display:'flex',alignItems:'center',gap:10}}>⚠️ <span style={{flex:1}}>{error}</span><button type="button" onClick={()=>void load()} style={{border:'1px solid #fecdca',borderRadius:8,background:'#fff',color:'#b42318',padding:'6px 9px',fontWeight:800}}>Reintentar</button></div>}
     <div style={{flex:1,display:'flex',minHeight:0}}>
       <aside style={{width:190,background:'#fafafa',borderRight:'1px solid #e5e5e5',padding:12,overflowY:'auto'}}>
         <small style={{fontWeight:800,color:'#999'}}>TIPO</small><label style={{display:'block',marginTop:8,fontSize:12}}><input type="checkbox" checked={showProv} onChange={e=>setShowProv(e.target.checked)}/> 🔧 Proveedores</label><label style={{display:'block',marginTop:6,fontSize:12}}><input type="checkbox" checked={showCli} onChange={e=>setShowCli(e.target.checked)}/> 👤 Clientes</label>
