@@ -1,6 +1,6 @@
 # UGO — Roadmap Master
 
-**Versión:** 3.4 · 16 de septiembre de 2026  
+**Versión:** 3.5 · 20 de septiembre de 2026  
 **Estado:** tablero maestro vivo de ejecución  
 **Rama de verdad:** `main`
 
@@ -265,3 +265,20 @@ Implementado:
 - RLS validada: proveedor sólo ve su deuda; Super Admin ve todas.
 
 Mantener como VALIDATED hasta completar un servicio físico nuevo de punta a punta en dos dispositivos.
+
+
+---
+
+## 15. Checkpoint 20/09/2026 · límite de comisión UGO del proveedor
+
+Implementado en código/backend:
+
+- botón `PAGAR UGO · PIX` en Ganancias por deuda de comisión;
+- a partir de **3 servicios** con comisión real pendiente, el proveedor queda Offline para nuevos pedidos;
+- las ofertas pendientes se expiran al alcanzar el límite;
+- backend impide volver Online y también bloquea cualquier nueva asignación mientras persistan 3 o más deudas;
+- trabajos ya asignados permanecen operables y se pueden finalizar;
+- informar una referencia no libera el bloqueo por sí solo: al menos una deuda debe quedar conciliada como `pagado` o `anulado`;
+- al quedar por debajo de 3, el proveedor puede volver Online manualmente.
+
+Pendiente de cierre de madurez: aplicar migración en UGO TEST, validar Pix con `UGO_PIX_KEY` configurada y ejecutar E2E de tercer cobro → Offline → pago/conciliación → Online.

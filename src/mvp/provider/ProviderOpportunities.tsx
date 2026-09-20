@@ -11,7 +11,7 @@ export function ProviderOpportunities(){
  const flow=useProviderFlow(),d=useProviderData(),items=[...d.opportunities].sort((a,b)=>rankOpportunity(b)-rankOpportunity(a))
  return <section className="provider-screen provider-opportunities-simple" aria-labelledby="provider-opportunities-title">
   <header className="provider-section-head"><div><span className="provider-kicker">PEDIDOS PARA VOS</span><h1 id="provider-opportunities-title">Elegí qué resolver</h1><p>Primero el problema. Después dónde, cuándo y cuánto.</p></div><button className="provider-link" type="button" onClick={flow.actions.openDemand}>Radar</button></header>
-  <div className="provider-list">{items.length===0?<article className="provider-card provider-empty"><strong>No hay pedidos ahora</strong><span>{d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}</span></article>:items.map(item=><article className="provider-card provider-opportunity-simple" key={item.id}>
+  {d.debtBlocked?<article className="provider-card provider-debt-lock"><strong>Nuevos pedidos pausados</strong><span>Tenés {d.pendingDebtCount} servicios con comisión UGO pendiente. Pagá a UGO para volver a recibir y aceptar trabajos.</span><button type="button" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</button></article>:<div className="provider-list">{items.length===0?<article className="provider-card provider-empty"><strong>No hay pedidos ahora</strong><span>{d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}</span></article>:items.map(item=><article className="provider-card provider-opportunity-simple" key={item.id}>
    <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
    <h2>{item.title}</h2>
    <div className="provider-opportunity-facts">
@@ -20,12 +20,13 @@ export function ProviderOpportunities(){
     <div><small>VALOR</small><strong>{money(item.estimatedValue)}</strong></div>
    </div>
    <button className="provider-primary provider-wide" onClick={()=>flow.actions.openOpportunity(item.id)}>Ver y decidir</button>
-  </article>)}</div>
+  </article>)}</div>}
  </section>
 }
 
 export function ProviderOpportunityDetail({id}:{id:string|null}){
  const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id)
+ if(d.debtBlocked)return <section className="provider-screen provider-opportunity-detail"><button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button><span className="provider-kicker">COMISIONES UGO</span><h1>Pagá a UGO para aceptar otro trabajo</h1><p>Tenés {d.pendingDebtCount} servicios con comisión pendiente. El límite es 3.</p><button type="button" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</button></section>
  if(!item)return <section className="provider-screen"><button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button><h1>Este pedido ya no está disponible</h1><p>Puede haber sido tomado, cancelado o actualizado.</p></section>
  return <section className="provider-screen provider-opportunity-detail provider-opportunity-decision">
   <button className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</button>

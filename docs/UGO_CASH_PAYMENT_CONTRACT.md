@@ -1,6 +1,6 @@
 # UGO · Contrato canónico de pago en efectivo
 
-**Versión:** 3.0 · 20 de septiembre de 2026  
+**Versión:** 3.1 · 20 de septiembre de 2026  
 **Estado:** P0 · flujo financiero presencial
 
 ## Regla de negocio
@@ -138,3 +138,25 @@ La conciliación de deuda requiere una referencia externa y queda auditada.
 6. El cliente confirma el efectivo sólo después de aprobar el trabajo.
 7. La comisión de efectivo no se considera cobrada hasta conciliación Admin.
 8. DEMO y REAL permanecen separados.
+
+
+## Límite de deuda para nuevos pedidos
+
+UGO permite que el proveedor complete y cobre normalmente los trabajos ya asignados. La deuda de comisión sólo afecta la **elegibilidad para trabajos nuevos**.
+
+Regla vigente:
+
+```text
+0–2 servicios con comisión UGO pendiente → puede seguir Online y aceptar nuevos pedidos
+3 o más servicios con comisión UGO pendiente → Offline obligatorio + sin nuevas ofertas + aceptación bloqueada
+```
+
+Cuenta como pendiente toda fila REAL de `deudas_ugo_proveedor` con saldo mayor a cero y estado distinto de `pagado` o `anulado`. El estado `informado` sigue siendo deuda abierta hasta que Admin/Super Admin la concilie.
+
+Al alcanzar el tercer servicio pendiente, backend fuerza `perfiles_proveedor.online=false` y `disponible=false`, expira ofertas todavía pendientes y rechaza cualquier asignación nueva. Los servicios ya asignados **no se cancelan ni se bloquean**.
+
+Cuando el total vuelve a menos de 3 deudas conciliadas, el proveedor puede ponerse Online manualmente otra vez. UGO no lo reactiva automáticamente.
+
+### Botón PAGAR UGO
+
+Ganancias ofrece `PAGAR UGO · PIX` por comisión pendiente. El backend autentica al proveedor, toma el saldo real de la deuda y genera un Pix BRL hacia la chave `UGO_PIX_KEY`. Generar o copiar el Pix no salda la deuda. Después del pago, el proveedor informa la referencia y la conciliación administrativa continúa siendo la autoridad para marcar `pagado`.

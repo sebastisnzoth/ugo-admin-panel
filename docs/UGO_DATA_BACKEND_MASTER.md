@@ -1,6 +1,6 @@
 # UGO — Data & Backend Master
 
-**Versión:** 2.5 · 18 de septiembre de 2026  
+**Versión:** 2.6 · 20 de septiembre de 2026  
 **Estado:** contrato maestro de datos, Supabase y backend  
 **Rama de verdad:** `main`
 
@@ -450,3 +450,25 @@ La migración también recupera los cobros en efectivo históricos ya confirmado
 ## Snapshot de tarifa
 
 Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa`, calcula comisión/neto y lo vuelve a aplicar en el momento de asignación. Esto evita que `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base` reemplacen silenciosamente la cotización que vio el cliente.
+
+
+# 24. Límite de deuda UGO del Proveedor · 20/09/2026
+
+La elegibilidad de matching incorpora la deuda de comisión por efectivo sin modificar trabajos ya asignados:
+
+```text
+unresolved_real_debts = count(deudas_ugo_proveedor where saldo_pendiente > 0 and estado not in pagado/anulado)
+blocked = unresolved_real_debts >= 3
+```
+
+Cuando `blocked=true` el backend:
+
+- fuerza `perfiles_proveedor.online=false` y `disponible=false`;
+- expira ofertas pendientes del proveedor;
+- impide volver Online mientras persista el bloqueo;
+- rechaza cualquier nueva asignación en `servicios.proveedor_id`;
+- conserva intactos los servicios previamente asignados para que puedan completarse.
+
+La defensa de asignación es transversal y no depende de que la UI o un flujo concreto use `aceptar_oferta`. El desbloqueo ocurre cuando quedan menos de tres deudas reales abiertas; la vuelta Online es manual.
+
+`api/deudas/pagar` genera un Pix server-side únicamente para la deuda autenticada y usa `UGO_PIX_KEY`. No muta el estado financiero. `informar_pago_deuda_ugo` registra la referencia, y `admin_confirmar_deuda_ugo_pagada` conserva la autoridad de conciliación.
