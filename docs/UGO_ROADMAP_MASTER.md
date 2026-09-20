@@ -143,3 +143,33 @@ No habilitar gasto o infraestructura paga para acelerar A o B sin autorización 
 **El siguiente avance real de UGO A sigue siendo convertir el checkpoint CI VALIDATED en evidencia runtime del mismo SHA, no sumar features. UGO B puede avanzar en paralelo para demostrar una experiencia mejor sobre el mismo contrato TEST; ninguna implementación puede fingir persistencia, frenar a la otra ni crear una segunda realidad UGO.**
 
 No tocar Supabase PROD. No crear ramas. No desplegar web sólo para trazabilidad de QA.
+
+
+---
+
+## 12. Checkpoint 20/09/2026 · trazabilidad Admin + rating bilateral
+
+Implementado en `main`:
+
+- ficha completa de servicio Admin/Super Admin con cronología, request evidence, evidencia operativa, pagos y calificaciones;
+- historial legacy `eventos_servicio` fusionado con `servicio_estado_eventos`;
+- ficha completa por usuario con alta, acceso, servicios, documentos y reputación;
+- `resenas` permite dos direcciones por servicio mediante `autor_tipo`;
+- Cliente mantiene visible la calificación post-servicio sin depender de una pantalla secundaria;
+- Proveedor puede calificar al Cliente y el prompt se difiere mientras exista misión activa;
+- RLS de ambas direcciones validada con actor Cliente y actor Proveedor sobre servicio completado;
+- lectura de historial legacy habilitada a `authenticated` bajo RLS de participante/Admin.
+
+Estado de madurez del bloque:
+
+```text
+Backend migration             APPLIED en UGO TEST
+RLS bilateral                 VALIDATED con transacciones rollback
+UI/código                     IMPLEMENTED en main
+Vercel/build                  validar SHA final del bloque
+E2E dos dispositivos          pendiente
+rating post-servicio real     pendiente
+cámara/evidencia física       pendiente
+```
+
+Este bloque no elimina los gates TWO-DEVICES / FULL-E2E / GO-LIVE.
