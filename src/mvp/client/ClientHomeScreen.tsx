@@ -75,6 +75,12 @@ export function ClientHomeScreen({onOpenService}:Props){
     <div className="ugo-home-categories">{cards.map(({key,label,emoji,sub,category})=><button type="button" key={key} disabled={!category} onClick={()=>choose(category)}><span className="ugo-home-category-icon">{category?.emoji||emoji}</span><div><b>{label}</b><small>{sub}</small></div><em>→</em></button>)}</div>
     {showAll&&<div className="ugo-home-all-results" aria-label="Todas las categorías">{categories.map(c=><button type="button" key={c.id} onClick={()=>choose(c)}><span>{c.emoji||'🧰'}</span><strong>{c.nombre}</strong><b>→</b></button>)}</div>}
    </div>
+   <nav className="ugo-home-mobile-nav" aria-label="Navegación principal">
+    <button type="button" className="active" onClick={()=>flow.navigate('home')}><span>⌂</span><small>Inicio</small></button>
+    <button type="button" onClick={()=>{setShowAll(true);window.setTimeout(()=>document.querySelector('.ugo-home-services')?.scrollIntoView({behavior:'smooth',block:'start'}),0)}}><span>▦</span><small>Servicios</small></button>
+    <button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><small>Actividad</small></button>
+    <button type="button" onClick={()=>flow.navigate('profile')}><span>◉</span><small>Perfil</small></button>
+   </nav>
   </section>
  </main>
 }
