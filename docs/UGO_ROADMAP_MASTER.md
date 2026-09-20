@@ -485,3 +485,17 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 - el prompt prohíbe responder “no tengo acceso al historial” cuando DATOS UGO ya contiene esa información;
 - “qué pasó hoy” y seguimientos conversacionales pueden resumirse usando hechos persistidos, sin inventar;
 - pendiente de madurez: smoke autenticado por voz con un proveedor que tenga trabajos/pagos históricos reales.
+
+
+---
+
+## Checkpoint 20/09/2026 · paridad Voz ↔ formulario Cliente
+
+- el pedido por voz usa el mismo orden canónico que el formulario: profesional/categoría → qué hay que hacer → dónde → cuándo → pago → confirmación;
+- “necesito un electricista” ya no dispara disponibilidad/recomendaciones largas: valida la categoría y pregunta una sola cosa, “¿Qué hay que hacer?”;
+- la voz no salta la ubicación usando silenciosamente una dirección predeterminada; Casa/Trabajo se usan sólo cuando el cliente los menciona;
+- “acá”, “aquí”, “donde estoy” y “usar mi ubicación” toman GPS explícitamente, hacen reverse geocoding y preservan lat/lng + procedencia `current`;
+- ubicaciones guardadas conservan lat/lng cuando existen;
+- el borrador de voz sincroniza dirección, etiqueta, coordenadas, cuándo y pago con las mismas pantallas escritas;
+- se elimina el monólogo de disponibilidad durante la captura: Hugo hace una pregunta por turno y valida brevemente la respuesta;
+- pendiente de madurez: smoke físico por voz completo desde Home hasta Resumen, verificando permiso GPS y texto visible en “¿Qué hay que hacer?”.
