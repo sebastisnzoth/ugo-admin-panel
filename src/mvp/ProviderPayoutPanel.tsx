@@ -7,7 +7,7 @@ import'./provider-payout.css'
 type Props={accessToken:string}
 type Balance={total_liberado:number;total_retirado:number;saldo_disponible:number;saldo_procesando:number}
 type Withdrawal={id:string;monto:number;moneda:string;estado:string;created_at:string;procesado_at?:string|null;transferencia_externa_id?:string|null}
-type Payment={id:string;servicio_id:string;ganancia_proveedor:number;moneda:string;estado:string;liberado_at?:string|null;created_at:string}
+type Payment={id:string;servicio_id:string;ganancia_proveedor:number;moneda:string;estado:string;metodo?:string|null;liberado_at?:string|null;created_at:string}
 
 export function ProviderPayoutPanel({accessToken}:Props){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
@@ -21,12 +21,12 @@ export function ProviderPayoutPanel({accessToken}:Props){
   const[{data:b,error:be},{data:w},{data:p},{data:profile}]=await Promise.all([
    (supabase as any).rpc('saldo_proveedor'),
    supabase.from('retiros').select('id,monto,moneda,estado,created_at,procesado_at,transferencia_externa_id').eq('proveedor_id',u.user.id).order('created_at',{ascending:false}).limit(30),
-   supabase.from('pagos').select('id,servicio_id,ganancia_proveedor,moneda,estado,liberado_at,created_at').eq('proveedor_id',u.user.id).eq('estado','liberado').order('liberado_at',{ascending:false}).limit(30),
+   supabase.from('pagos').select('id,servicio_id,ganancia_proveedor,moneda,estado,metodo,liberado_at,created_at').eq('proveedor_id',u.user.id).eq('estado','liberado').order('liberado_at',{ascending:false}).limit(100),
    supabase.from('perfiles_proveedor').select('cuenta_pago_externa').eq('usuario_id',u.user.id).maybeSingle(),
   ])
   if(be)throw be;const row=Array.isArray(b)?b[0]:b
   if(row)setBalance({total_liberado:Number(row.total_liberado||0),total_retirado:Number(row.total_retirado||0),saldo_disponible:Number(row.saldo_disponible||0),saldo_procesando:Number(row.saldo_procesando||0)})
-  setWithdrawals((w||[])as Withdrawal[]);setPayments((p||[])as Payment[]);setAccount(String((profile as any)?.cuenta_pago_externa||''))
+  setWithdrawals((w||[])as Withdrawal[]);setPayments(((p||[])as Payment[]).filter(row=>row.metodo!=='efectivo').slice(0,30));setAccount(String((profile as any)?.cuenta_pago_externa||''))
  },[supabase])
 
  useEffect(()=>{load().catch(e=>setMessage(e.message||'No se pudo cargar ganancias.'))},[load])
@@ -48,6 +48,6 @@ export function ProviderPayoutPanel({accessToken}:Props){
   <p style={{fontSize:11,opacity:.7,lineHeight:1.4}}>Un retiro pendiente o procesando no significa que el dinero ya salió a una cuenta externa. UGO solo lo marca como pagado cuando existe confirmación real.</p>
   {message&&<div style={{marginTop:8,fontSize:12}}>{message}</div>}
   <details style={{marginTop:10}}><summary>Historial de retiros ({withdrawals.length})</summary>{withdrawals.map(w=><div key={w.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(w.created_at).toLocaleDateString('pt-BR')} · {statusLabel(w.estado)} · <b>{money(w.monto,w.moneda)}</b>{w.transferencia_externa_id?<small style={{display:'block',opacity:.65}}>Ref: {w.transferencia_externa_id}</small>:null}</div>)}</details>
-  <details style={{marginTop:8}}><summary>Trabajos cobrados ({payments.length})</summary>{payments.map(p=><div key={p.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(p.liberado_at||p.created_at).toLocaleDateString('pt-BR')} · <b>{money(p.ganancia_proveedor,p.moneda)}</b></div>)}</details>
+  <details style={{marginTop:8}}><summary>Pagos digitales liberados ({payments.length})</summary>{payments.map(p=><div key={p.id} style={{fontSize:12,padding:'6px 0'}}>{new Date(p.liberado_at||p.created_at).toLocaleDateString('pt-BR')} · <b>{money(p.ganancia_proveedor,p.moneda)}</b></div>)}</details>
  </div>
 }
