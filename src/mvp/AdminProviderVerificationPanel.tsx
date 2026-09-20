@@ -14,7 +14,7 @@ const when=(v?:string|null)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit'
 const specialText=(v:any)=>Array.isArray(v)?v.join(', '):v&&typeof v==='object'?JSON.stringify(v):String(v||'')
 
 export function AdminProviderVerificationPanel(){
- const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[docs,setDocs]=useState<ProviderDoc[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('pendiente'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[expanded,setExpanded]=useState<Record<string,boolean>>({})
+ const[open,setOpen]=useState(true),[rows,setRows]=useState<ProviderRow[]>([]),[docs,setDocs]=useState<ProviderDoc[]>([]),[filter,setFilter]=useState<'todos'|VerificationState>('todos'),[motives,setMotives]=useState<Record<string,string>>({}),[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[expanded,setExpanded]=useState<Record<string,boolean>>({})
  const load=useCallback(async()=>{
   setMessage('')
   const[{data:profiles,error:pe},{data:users,error:ue},{data:cats,error:ce},{data:documents,error:de}]=await Promise.all([
@@ -29,11 +29,11 @@ export function AdminProviderVerificationPanel(){
   setDocs((documents||[])as ProviderDoc[])
  },[])
 
- useEffect(()=>{if(!open)return;void load().catch(e=>setMessage(e instanceof Error?e.message:'No se pudo cargar verificación.'));const ch=supabase.channel('admin-provider-verification').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',tablfz'usuarios'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'documentos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[open,load])
+ useEffect(()=>{if(!open)return;void load().catch(e=>setMessage(e instanceof Error?e.message:'No se pudo cargar verificación.'));const ch=supabase.channel('admin-provider-verification').on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'documentos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[open,load])
 
  const docsByUser=useMemo(()=>{const out:Record<string,ProviderDoc[]>={};for(const d of docs)(out[d.usuario_id]??=[]).push(d);return out},[docs])
  const visible=useMemo(()=>filter==='todos'?rows:rows.filter(r=>r.estado_verificacion===filter),[rows,filter])
- const pending=rows.filter(r=>['registrado','pendiente'].includes(r.estado_verification)).length
+ const pending=rows.filter(r=>['registrado','pendiente'].includes(r.estado_verificacion)).length
 
  async function providerState(row:ProviderRow,state:VerificationState){
   const reason=(motives[row.usuario_id]||'').trim()
