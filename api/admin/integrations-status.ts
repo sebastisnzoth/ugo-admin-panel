@@ -37,19 +37,19 @@ async function fetchWithTimeout(url:string,init:RequestInit,timeout=12000){
 }
 function deliveryProviders(){
  return[
-  {id:'uber',label:'Uber Direct',configured:Boolean(process.env.UBER_DIRECT_CLIENT_ID&&process.env.UBER_DIRECT_CLIENT_SECRET),docs:'https://developer.uber.com/docs/deliveries',required:['UBER_DIRECT_CLIENT_ID','UBER_DIRECT_CLIENT_SECRET'],capabilities:['OAuth 2.0','cotización/entrega','tracking/webhooks'],note:'API oficial Uber Direct. Puede requerir aprobación escrita de Uber.'},
+  {id:'uber',label:'Uber Direct',configured:Boolean(process.env.UBER_DIRECT_CLIENT_ID&&process.env.UBER_DIRECT_CLIENT_SECRET&&process.env.UBER_DIRECT_CUSTOMER_ID),docs:'https://developer.uber.com/docs/deliveries',required:['UBER_DIRECT_CLIENT_ID','UBER_DIRECT_CLIENT_SECRET','UBER_DIRECT_CUSTOMER_ID'],capabilities:['OAuth 2.0','cotización/entrega','tracking/webhooks'],note:'API oficial Uber Direct. UGO usa Customer ID + OAuth server-side; producción puede requerir aprobación y billing habilitado.'},
   {id:'ifood',label:'iFood',configured:Boolean(process.env.IFOOD_CLIENT_ID&&process.env.IFOOD_CLIENT_SECRET),docs:'https://developer.ifood.com.br/pt-BR/',required:['IFOOD_CLIENT_ID','IFOOD_CLIENT_SECRET'],capabilities:['OAuth 2.0','Merchant','Orders','Shipping','Events'],note:'Producción requiere homologación y permisos del merchant.'},
   {id:'rappi',label:'Rappi / Rappi Cargo',configured:Boolean((process.env.RAPPI_ACCESS_TOKEN||process.env.RAPPI_API_KEY)&&process.env.RAPPI_TEST_URL),docs:'https://merchants.rappi.com/pt-br/o-que-ofrecemos/sistema-pos',required:['RAPPI_ACCESS_TOKEN (ou RAPPI_API_KEY)','RAPPI_TEST_URL'],capabilities:['Open Orders / POS','Cargo','tracking'],note:'El endpoint exacto depende del producto Rappi habilitado para la cuenta.'}
  ]
 }
 async function testUber(){
- const clientId=process.env.UBER_DIRECT_CLIENT_ID,secret=process.env.UBER_DIRECT_CLIENT_SECRET
- if(!clientId||!secret)return{ok:false,configured:false,state:'missing_credentials',message:'Faltan credenciales de Uber Direct.'}
+ const clientId=process.env.UBER_DIRECT_CLIENT_ID,secret=process.env.UBER_DIRECT_CLIENT_SECRET,customerId=process.env.UBER_DIRECT_CUSTOMER_ID
+ if(!clientId||!secret||!customerId){const missing=[!clientId?'Client ID':'',!secret?'Client Secret':'',!customerId?'Customer ID':''].filter(Boolean).join(', ');return{ok:false,configured:false,state:'missing_credentials',message:`Faltan credenciales de Uber Direct: ${missing}.`}}
  const body=new URLSearchParams({client_id:clientId,client_secret:secret,grant_type:'client_credentials',scope:'eats.deliveries'})
  const response=await fetchWithTimeout('https://auth.uber.com/oauth/v2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body})
  const json=await response.json().catch(()=>({}))
  if(!response.ok||!json?.access_token)return{ok:false,configured:true,state:'auth_failed',message:'Uber rechazó la autenticación.',status:response.status}
- return{ok:true,configured:true,state:'authenticated',message:'OAuth Uber Direct válido.',expiresIn:json.expires_in??null,scope:json.scope??'eats.deliveries'}
+ return{ok:true,configured:true,state:'operational',message:'OAuth Uber Direct válido y Customer ID configurado.',expiresIn:json.expires_in??null,scope:json.scope??'eats.deliveries'}
 }
 async function testIfood(){
  const clientId=process.env.IFOOD_CLIENT_ID,secret=process.env.IFOOD_CLIENT_SECRET
@@ -92,7 +92,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
   const whatsappConfigured=Boolean((process.env.WHATSAPP_ACCESS_TOKEN||process.env.META_WHATSAPP_ACCESS_TOKEN)&&(process.env.WHATSAPP_PHONE_NUMBER_ID||process.env.META_WHATSAPP_PHONE_NUMBER_ID))
   const openAiConfigured=Boolean(process.env.OPENAI_API_KEY)
   const argentinaFlag=process.env.PAYMENTS_ARGENTINA_ENABLED==='true'
-  const uberDirectConfigured=Boolean(process.env.UBER_DIRECT_CLIENT_ID&&process.env.UBER_DIRECT_CLIENT_SECRET)
+  const uberDirectConfigured=Boolean(process.env.UBER_DIRECT_CLIENT_ID&&process.env.UBER_DIRECT_CLIENT_SECRET&&process.env.UBER_DIRECT_CUSTOMER_ID)
   const ifoodConfigured=Boolean(process.env.IFOOD_CLIENT_ID&&process.env.IFOOD_CLIENT_SECRET)
   const rappiConfigured=Boolean((process.env.RAPPI_ACCESS_TOKEN||process.env.RAPPI_API_KEY)&&process.env.RAPPI_TEST_URL)
 
@@ -104,7 +104,7 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
    {id:'mercadopago_ar',label:'Mercado Pago Argentina',category:'payments',configured:false,enabled:false,environment:'disabled',runtimeSource:'router',note:argentinaFlag?'Feature flag solicitado, pero el router todavía bloquea Argentina.':'Declarado pero no activado en esta fase.'},
    {id:'openai_hugo',label:'OpenAI · Hugo Voice',category:'ai',configured:openAiConfigured,enabled:openAiConfigured,environment:process.env.VERCEL_ENV||'server',runtimeSource:'OPENAI_API_KEY',note:`Modelo: ${process.env.OPENAI_REALTIME_MODEL||'default del servidor'}.`},
    {id:'whatsapp',label:'WhatsApp Cloud API',category:'messaging',configured:whatsappConfigured,enabled:whatsappConfigured,environment:'production',runtimeSource:'WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID',note:'Bandeja Admin y envío server-side. Gemini es apoyo opcional para extracción.'},
-   {id:'uber_direct',label:'Uber Direct',category:'delivery',configured:uberDirectConfigured,enabled:uberDirectConfigured,environment:'server',runtimeSource:'UBER_DIRECT_CLIENT_ID + UBER_DIRECT_CLIENT_SECRET',note:'Conector OAuth 2.0 para entregas Uber Direct. Requiere cuenta/credenciales habilitadas por Uber.'},
+   {id:'uber_direct',label:'Uber Direct',category:'delivery',configured:uberDirectConfigured,enabled:uberDirectConfigured,environment:'server',runtimeSource:'UBER_DIRECT_CLIENT_ID + UBER_DIRECT_CLIENT_SECRET + UBER_DIRECT_CUSTOMER_ID',note:'Conector OAuth 2.0 para cotizar, crear y seguir entregas Uber Direct. Requiere cuenta Direct, Customer ID y credenciales habilitadas por Uber.'},
    {id:'ifood',label:'iFood Developer',category:'delivery',configured:ifoodConfigured,enabled:ifoodConfigured,environment:'server',runtimeSource:'IFOOD_CLIENT_ID + IFOOD_CLIENT_SECRET',note:'Conector OAuth 2.0 para Merchant/Orders/Shipping. Producción requiere homologación y permisos de tienda.'},
    {id:'rappi',label:'Rappi / Rappi Cargo',category:'delivery',configured:rappiConfigured,enabled:rappiConfigured,environment:'server',runtimeSource:'RAPPI_ACCESS_TOKEN + RAPPI_TEST_URL',note:'Conector preparado para API pública/Open Orders/Cargo. El endpoint de validación depende de la cuenta Rappi habilitada.'},
    {id:'maps',label:'Mapas y rutas',category:'maps',configured:true,enabled:true,environment:'client',runtimeSource:'OpenStreetMap + MapLibre; routing configurable',note:'Mapa base no requiere clave. Routing usa VITE_ROUTING_ENGINE (haversine por defecto / OSRM opcional).'},
