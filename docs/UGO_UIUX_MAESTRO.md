@@ -398,3 +398,47 @@ Desde `Personas → Usuarios → Ver historial`, Admin/Super Admin debe poder in
 Al completar un servicio, la calificación aparece en el contexto post-servicio del Cliente y del Proveedor, sin invadir Inicio/Pedido ni un detalle operativo activo. Ambas direcciones usan 1–5 estrellas + comentario opcional. En Proveedor, el prompt nunca interrumpe una misión activa; se difiere hasta que no haya trabajo en curso.
 
 Admin muestra ambas direcciones juntas y marca claramente una calificación faltante como `Pendiente`, no como cero estrellas.
+
+
+---
+
+# 14. Admin operativo · mapa, Scout, KYC y Finanzas
+
+## Mapa
+
+Los errores técnicos de PostgREST no se muestran crudos. Si la capa operativa no carga se presenta un mensaje breve con `Reintentar`; el mapa base no debe convertir un fallo de datos en una pantalla rota.
+
+## Scout
+
+Scout debe funcionar como flujo visible:
+
+```text
+zona/GPS → categoría → radio → Buscar
+→ resultados externos + mapa
+→ seleccionar profesional
+→ guardar prospecto en Supabase
+→ generar contacto con Hugo
+→ registrar Contactado / Aprobar / Descartar
+```
+
+Siempre deben verse estado de búsqueda, motivo de vacío y contadores persistidos. Nunca usar credenciales/proyectos Supabase hard-coded diferentes al runtime UGO.
+
+## Personas → Verificación
+
+Cada proveedor muestra en la misma card su paquete documental canónico:
+
+```text
+identidad frente
+identidad dorso
+selfie
+comprobante de domicilio
++ documentos adicionales
+```
+
+Cada archivo muestra estado, fecha, OCR disponible y acciones `Ver / Aprobar / Rechazar`. La ausencia se muestra como `No enviado`. El rechazo general del proveedor queda separado del rechazo de un documento individual.
+
+## Finanzas → PIX
+
+La conciliación es un dashboard inline, no un bloque/modal flotante. Debe mostrar KPIs, estado vacío limpio, servicio/partes/monto/TXID, E2E bancaria, motivo de rechazo y acciones auditables.
+
+Los botones globales `Actualizar` deben conservar ancho/padding y no truncarse en escritorio ni móvil.
