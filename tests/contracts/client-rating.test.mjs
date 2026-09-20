@@ -33,7 +33,7 @@ test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',a
 test('ambiguous rating insert failure reconciles exact persisted service before Sentinel',async()=>{
  const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
  const insertIndex=prompt.indexOf("from('resenas').insert")
- const recoveryIndex=prompt.indexOf("from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).maybeSingle()",insertIndex)
+ const recoveryIndex=prompt.indexOf("from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).eq('autor_tipo','cliente').maybeSingle()",insertIndex)
  const reportIndex=prompt.indexOf("report('rating_submit_error'",recoveryIndex)
  assert.ok(insertIndex>=0&&recoveryIndex>insertIndex&&reportIndex>recoveryIndex)
  assert.match(prompt,/if\(persisted\)\{markSaved\([\s\S]*return\}/)
@@ -66,4 +66,22 @@ test('rating prompt resyncs after lifecycle changes and reports foreground failu
  assert.match(prompt,/loadRef=useRef\(load\),reportRef=useRef\(report\)/)
  assert.match(prompt,/\},\[supabase,userId\]\)/)
  assert.match(prompt,/if\(shouldEscalate\(\)\)reportRef\.current\('rating_realtime_error'/)
+})
+
+
+test('ratings are bilateral: provider can rate the client and both directions share the same service',async()=>{
+ const[prompt,root,migration]=await Promise.all([
+  read('src/mvp/ProviderRatingPrompt.tsx'),
+  read('src/mvp/provider/ProviderRoot.tsx'),
+  read('supabase/migrations/20260920030000_bilateral_service_ratings.sql'),
+ ])
+ assert.match(root,/ProviderRatingPrompt/)
+ assert.match(prompt,/\.eq\('estado','completado'\)/)
+ assert.match(prompt,/autor_tipo:'proveedor'/)
+ assert.match(prompt,/cliente_id:target\.service\.cliente_id/)
+ assert.match(prompt,/proveedor_id:userId/)
+ assert.match(migration,/drop constraint if exists resenas_servicio_id_key/)
+ assert.match(migration,/resenas_servicio_autor_tipo_uidx/)
+ assert.match(migration,/autor_tipo='proveedor'/)
+ assert.match(migration,/autor_tipo='cliente'/)
 })
