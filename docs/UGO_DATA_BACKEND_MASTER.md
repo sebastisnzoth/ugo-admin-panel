@@ -404,3 +404,17 @@ Las vistas del mapa se derivan de `usuarios`, `perfiles_proveedor`, `categorias`
 KYC usa `documentos` y Storage privado; las vistas firmadas son temporales. La decisión individual registra revisor/timestamp y no reemplaza la decisión general del proveedor.
 
 PIX directo mantiene el RPC protegido `conciliar_pix_direto`; la UI sólo presenta y valida pagos reales `ambiente=real`, exige referencia E2E al aprobar y motivo al rechazar.
+
+### Extensión de la ficha administrativa por `serviceId`
+
+La reconstrucción administrativa también consume las fuentes canónicas ya existentes:
+
+```text
+mensajes                    chat Cliente ↔ Proveedor ligado al serviceId
+mapa_operativo_servicios    última posición persistida disponible para Admin
+disputas                    expediente de reclamo/disputa
+disputa_mensajes            conversación y evidencias del expediente
+```
+
+No se crea una tabla paralela. `private.es_participante_servicio()` incluye a Admin para lectura del chat y la RLS de disputas permite lectura administrativa. La UI trata chat, ubicación y expediente como capas secundarias: una falla de una de estas fuentes no elimina cronología, pagos, evidencia o reputación ya disponibles.
+

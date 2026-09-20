@@ -442,3 +442,16 @@ Cada archivo muestra estado, fecha, OCR disponible y acciones `Ver / Aprobar / R
 La conciliación es un dashboard inline, no un bloque/modal flotante. Debe mostrar KPIs, estado vacío limpio, servicio/partes/monto/TXID, E2E bancaria, motivo de rechazo y acciones auditables.
 
 Los botones globales `Actualizar` deben conservar ancho/padding y no truncarse en escritorio ni móvil.
+
+### Comunicación, ubicación y reclamos
+
+La ficha integral del `serviceId` también incluye, en modo sólo lectura administrativa:
+
+```text
+chat canónico del servicio (`mensajes`)
+última ubicación persistida disponible de cliente/proveedor (`mapa_operativo_servicios`)
+expediente de disputa/reclamo (`disputas` + `disputa_mensajes`)
+```
+
+El chat conserva emisor, rol, mensaje y timestamp. La ubicación se etiqueta como **última posición persistida** y nunca se presenta como GPS en tiempo real si no existe una actualización viva. Los reclamos muestran estado, motivo, monto, resolución y conversación del expediente. Si una fuente secundaria falla, la ficha conserva el resto de la trazabilidad y muestra un aviso explícito en lugar de romper toda la operación.
+

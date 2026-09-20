@@ -202,3 +202,13 @@ Vercel c99ff7fd               READY
 ```
 
 No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con sesión Admin.
+
+---
+
+## Checkpoint · trazabilidad Admin extendida · 20/09/2026
+
+- `Operaciones → Servicios → Ver / Editar` conserva el historial existente y suma chat canónico, última ubicación persistida y expediente de disputas/reclamos sobre el mismo `serviceId`.
+- La extensión reutiliza `mensajes`, `mapa_operativo_servicios`, `disputas` y `disputa_mensajes`; no crea una fuente paralela.
+- Chat/ubicación/reclamos degradan con aviso si una fuente secundaria falla, sin ocultar cronología, pagos, evidencias o reputación.
+- Contrato `admin-complete-trace` ampliado para cubrir las cuatro fuentes nuevas.
+

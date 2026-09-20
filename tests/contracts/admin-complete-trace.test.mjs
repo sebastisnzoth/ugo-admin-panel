@@ -5,9 +5,10 @@ import { readFile } from 'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('admin service operation exposes complete service trace',async()=>{
- const[services,trace]=await Promise.all([
+ const[services,trace,extended]=await Promise.all([
   read('src/mvp/AdminServicesPro.tsx'),
   read('src/mvp/AdminServiceTracePanel.tsx'),
+  read('src/mvp/AdminServiceExtendedTrace.tsx'),
  ])
  assert.match(services,/AdminServiceTracePanel/)
  assert.match(services,/<AdminServiceTracePanel service=\{editing\}\/>/)
@@ -18,6 +19,13 @@ test('admin service operation exposes complete service trace',async()=>{
  assert.match(trace,/Fotos y evidencias/)
  assert.match(trace,/Cronología/)
  assert.match(trace,/SERVICE ID/)
+ for(const table of ['mensajes','disputas','disputa_mensajes','mapa_operativo_servicios']){
+  assert.match(extended,new RegExp(`from\\\\('${table}'\\\\)`))
+ }
+ assert.match(extended,/Chat del servicio/)
+ assert.match(extended,/Disputas y reclamos/)
+ assert.match(extended,/Estado y ubicación/)
+ assert.match(extended,/última persistida/i)
 })
 
 test('admin user rows open complete history with services documents and ratings',async()=>{
