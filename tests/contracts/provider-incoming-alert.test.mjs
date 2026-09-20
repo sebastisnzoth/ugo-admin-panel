@@ -15,10 +15,12 @@ test('provider gets an Uber-like foreground alert for offer or direct assignment
  assert.match(center,/is-provider-call/)
 })
 
-test('assigned-work notification opens the provider active job after resync',async()=>{
+test('assigned-work and service notifications open the exact provider service after resync',async()=>{
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  assert.match(root,/notice\.tipo==='trabajo_asignado'/)
- assert.match(root,/data\.reload\(\)\.then\(\(\)=>flow\.actions\.openActiveJob\(\)\)/)
+ assert.match(root,/serviceId=typeof notice\.datos\.servicio_id==='string'/)
+ assert.match(root,/data\.reload\(\)\.then\(\(\)=>serviceId\?flow\.actions\.openAgendaService\(serviceId\):flow\.actions\.openActiveJob\(\)\)/)
+ assert.match(root,/if\(serviceId\)return flow\.actions\.openAgendaService\(serviceId\)/)
 })
 
 test('provider attention is disabled while Offline or debt-blocked for incoming calls',async()=>{

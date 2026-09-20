@@ -49,3 +49,20 @@ test('provider work navigation opens agenda when there is no actionable mission'
   assert.match(sidebar, /d\.service\?'Trabajo activo':'Mis trabajos'/)
   assert.doesNotMatch(sidebar, /d\.service\?f\.actions\.openActiveJob:f\.actions\.openHistory/)
 })
+
+
+test('provider service deep links open the exact agenda service from system push',async()=>{
+ const[flow,root,agenda,sw]=await Promise.all([
+  read('src/mvp/provider/providerFlow.tsx'),
+  read('src/mvp/provider/ProviderRoot.tsx'),
+  read('src/mvp/provider/ProviderAgenda.tsx'),
+  read('public/sw.js'),
+ ])
+ assert.match(flow,/agendaServiceId/)
+ assert.match(flow,/openAgendaService/)
+ assert.match(root,/params\.get\('serviceId'\)/)
+ assert.match(root,/flow\.navigate\('agenda',serviceId\)/)
+ assert.match(root,/ProviderAgenda key=\{flow\.agendaServiceId\|\|'agenda'\}/)
+ assert.match(agenda,/useState<string\|null>\(\(\)=>flow\.agendaServiceId\)/)
+ assert.match(sw,/serviceId=\$\{encodeURIComponent\(serviceId\)\}/)
+})

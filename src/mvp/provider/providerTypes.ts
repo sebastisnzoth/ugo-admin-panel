@@ -41,6 +41,7 @@ export type ProviderActionHandlers = {
   rejectOpportunity: (id: string) => Promise<boolean>
   openActiveJob: () => void
   openAgenda: () => void
+  openAgendaService: (serviceId: string) => void
   openEarnings: () => void
   openProfile: () => void
   openHistory: () => void
