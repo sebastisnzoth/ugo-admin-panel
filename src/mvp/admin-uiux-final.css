@@ -13,3 +13,35 @@
  .ugo-admin2-metrics-error button{width:100%}
 }
 @media(max-width:390px){.ugo-admin2-sidebar nav button span{font-size:7px}.ugo-admin2-sidebar nav button b{font-size:16px}}
+
+
+/* Personas > Documentos */
+.ugo-admin-documents{overflow:hidden}
+.ugo-admin-documents-scroll{width:100%;overflow-x:auto;scrollbar-width:thin}
+.ugo-admin-documents table{min-width:860px}
+.ugo-admin-documents th{white-space:nowrap}
+.ugo-admin-documents td{font-size:12px}
+.ugo-admin-documents-provider{display:block;color:var(--ugo-color-on-surface);font-size:12px;font-weight:800;line-height:1.35}
+.ugo-admin-documents-type{display:inline-flex;align-items:center;min-height:28px;padding:0 9px;border-radius:999px;background:var(--ugo-color-surface-low);color:var(--ugo-color-on-surface);font-weight:750;text-transform:capitalize}
+.ugo-admin-documents-status{display:inline-flex;align-items:center;min-height:26px;padding:0 9px;border-radius:999px;font-size:10px;font-weight:900;text-transform:capitalize}
+.ugo-admin-documents-status.pendiente{background:color-mix(in srgb,var(--ugo-color-warning) 15%,var(--ugo-color-surface-lowest));color:var(--ugo-color-warning)}
+.ugo-admin-documents-status.aprobado{background:color-mix(in srgb,var(--ugo-color-success) 15%,var(--ugo-color-surface-lowest));color:var(--ugo-color-success)}
+.ugo-admin-documents-status.rechazado{background:color-mix(in srgb,var(--ugo-color-error) 15%,var(--ugo-color-surface-lowest));color:var(--ugo-color-error)}
+.ugo-admin-documents-ocr{font-weight:850;color:var(--ugo-color-on-surface)}
+.ugo-admin-documents-muted,.ugo-admin-documents-date{color:var(--ugo-color-on-surface-variant);font-size:11px}
+.ugo-admin-documents-actions{display:flex;gap:7px;flex-wrap:wrap}
+.ugo-admin-documents-actions button{min-height:38px!important;padding:0 12px!important;border-radius:10px!important;font-size:11px!important;font-weight:850!important}
+.ugo-admin-documents-actions .view{background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important;border-color:var(--ugo-color-outline-variant)!important}
+.ugo-admin-documents-actions .approve{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-color:var(--ugo-color-primary)!important}
+.ugo-admin-documents-actions .approve:hover:not(:disabled){filter:brightness(1.07)}
+.ugo-admin-documents-actions .reject{background:transparent!important;color:var(--ugo-color-error)!important;border-color:color-mix(in srgb,var(--ugo-color-error) 65%,var(--ugo-color-outline-variant))!important}
+.ugo-admin-documents-actions .reject:hover:not(:disabled){background:color-mix(in srgb,var(--ugo-color-error) 10%,transparent)!important}
+.ugo-admin-documents-message{margin:14px 0 0;padding:11px 12px;border-radius:10px;background:var(--ugo-color-surface-low);color:var(--ugo-color-on-surface);font-size:12px;font-weight:750}
+.ugo-admin-documents-loading,.ugo-admin-documents-empty{min-height:180px;display:grid;place-items:center;align-content:center;gap:5px;text-align:center;color:var(--ugo-color-on-surface-variant)}
+.ugo-admin-documents-empty strong{color:var(--ugo-color-on-surface);font-size:15px}.ugo-admin-documents-empty span{font-size:12px}
+@media(max-width:700px){
+ .ugo-admin-documents{padding:10px!important}
+ .ugo-admin-documents table{min-width:760px}
+ .ugo-admin-documents-actions{flex-wrap:nowrap}
+ .ugo-admin-documents-actions button{min-height:40px!important}
+}
