@@ -60,3 +60,13 @@ test('Hugo orb uses authenticated Gemini as its conversational companion while U
   assert.match(api, /Nunca digas que un pedido fue creado o una oferta enviada/)
 })
 
+test('active assigned service does not hijack a new Hugo request', () => {
+  assert.match(hugo, /function newRequestIntent\(text:string\)/)
+  assert.match(hugo, /const directCategory=await resolveVoiceCategory\(clean\)/)
+  assert.match(hugo, /if\(directCategory\|\|newRequestIntent\(clean\)\)/)
+  assert.doesNotMatch(hugo, /statusIntent\(clean\)\|\|services\.length/)
+  assert.match(api, /REGLA MULTIPEDIDO/)
+  assert.match(api, /necesito un pintor/)
+  assert.match(api, /NO respondas con el estado del servicio activo/)
+})
+
