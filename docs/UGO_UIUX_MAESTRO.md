@@ -491,3 +491,10 @@ voz → Gemini STT → texto visible
 
 Personalidad: Hugo debe sonar simpático, cercano, práctico y resolutivo, como un compañero de confianza. No debe sonar como formulario ni inventar profesionales, precios, disponibilidad, dirección, reputación o estados. Gemini razona y conversa; UGO conserva la autoridad sobre catálogo, profesionales, pedidos, matching y pagos.
 
+
+
+---
+
+## Frontend Premium · contrato de consolidación · 20/09/2026
+
+Cliente, Proveedor y Admin consumen `src/mvp/ugo-design-system.css` como fuente runtime de tokens. El comportamiento transversal de búsqueda, foco, estados degradados, navegación accesible, demo y responsive queda documentado en `UX-CONTRACT.md`. El contrato referencia este maestro y no crea otra verdad de negocio.
