@@ -519,3 +519,27 @@ Para runtime hacen falta credenciales OAuth Web y redirect URI en el entorno ser
 ## Validación 20/09/2026
 
 UGO TEST confirma la separación de privilegios del bloque nuevo: conexiones/tokens Calendar son server-only; el bucket `dispute-evidence` es privado; existen 14 motivos activos; el RPC legacy `abrir_disputa(uuid,text,jsonb)` ya no es ejecutable por `authenticated`; `abrir_disputa_v2` sí lo es; y los análisis IA no pueden ser leídos directamente por usuarios finales. El health de Gemini publicado responde OK. La validación Calendar completa requiere todavía OAuth Google real y no se simula.
+
+
+# 26. Admin Control Center Realtime y ficha 360° · 20/09/2026
+
+El Admin no depende de cambiar de pestaña ni de pulsar “Actualizar” para observar cambios operativos.
+
+```text
+servicios / pagos / perfiles / deuda / eventos
+                 │
+                 ├── Supabase Realtime
+                 │      └── resync desde persistencia
+                 │
+                 └── fallback visible/online cada 8–15 s
+```
+
+Principios:
+
+- Realtime sólo dispara resincronización; la verdad sigue siendo la fila persistida del `serviceId`.
+- El panel de servicios escucha `servicios`, `servicio_estado_eventos`, `perfiles_proveedor`, `pagos`, `deudas_ugo_proveedor` y cambios de usuarios.
+- Si el canal entra en `CHANNEL_ERROR` o `TIMED_OUT`, Admin muestra estado degradado, vuelve a suscribirse y conserva polling de recuperación.
+- La ficha **360°** conserva un único `serviceId` y reúne timeline/auditoría, Cliente, Proveedor, pago, deuda UGO, evidencias, calificaciones, chat, ubicación persistida y disputas.
+- Las fuentes de auditoría/360 (`servicio_estado_eventos`, `eventos_servicio`, `evidencias_solicitud`, `resenas`, `deudas_ugo_proveedor`, `disputa_mensajes`) están publicadas en `supabase_realtime` cuando existen.
+- El centro de Alertas combina alertas persistidas con excepciones derivadas únicamente de datos reales: matching demorado, estado que requiere proveedor sin `proveedor_id`, traslado prolongado, aprobación demorada, disputa y bloqueo de proveedor por deuda UGO.
+- Las alertas derivadas no cambian estados ni dinero automáticamente; sirven para priorizar intervención administrativa.
