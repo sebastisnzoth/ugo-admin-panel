@@ -195,7 +195,7 @@ export default async function handler(req:any,res:any){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})
   const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:authData,error:authError}=await authClient.auth.getUser(token);if(authError||!authData.user)return res.status(401).json({error:'Sesión inválida'})
   const requestedRole=req.body?.role==='provider'?'provider':'client',expectedRole=requestedRole==='provider'?'proveedor':'cliente';const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:profile}=await userClient.from('usuarios').select('tipo').eq('id',authData.user.id).maybeSingle();if(!profile||profile.tipo!==expectedRole)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'})
-  if(requestedRole==='client'&&req.body?.voice_transcription===true){
+  if(req.body?.voice_transcription===true){
    const audioBase64=String(req.body?.audio_base64||''),mimeType=String(req.body?.mime_type||'').split(';')[0].trim().toLowerCase()
    if(!AUDIO_MIME_TYPES.has(mimeType))return res.status(415).json({error:'Formato de audio no compatible'})
    if(!audioBase64||audioBase64.length>3400000||!/^[A-Za-z0-9+/=]+$/.test(audioBase64))return res.status(413).json({error:'El audio está vacío o supera el límite permitido'})
