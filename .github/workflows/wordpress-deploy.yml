@@ -1,4 +1,5 @@
 name: Deploy UGO to WordPress
+# Triggered after FTP secrets were configured.
 
 on:
   push:
