@@ -6,6 +6,7 @@ const hugo = await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.ts
 const intent = await readFile(new URL('../../src/mvp/client/hugoVoiceIntent.ts', import.meta.url), 'utf8')
 const catalog = await readFile(new URL('../../src/mvp/voiceCatalog.ts', import.meta.url), 'utf8')
 const types = await readFile(new URL('../../src/mvp/client/clientTypes.ts', import.meta.url), 'utf8')
+const api = await readFile(new URL('../../api/test.ts', import.meta.url), 'utf8')
 
 test('canonical Hugo asks only category, description, address and when before confirmation', () => {
   assert.match(hugo, /function nextMissing\(current:Draft\)/)
@@ -46,3 +47,16 @@ test('cancellation contract requires one resolved service id', () => {
   assert.match(hugo, /cancelService\(pending\.serviceId\)/)
   assert.match(hugo, /Encontré \$\{candidates\.length\} pedidos que se pueden cancelar/)
 })
+
+test('Hugo orb uses authenticated Gemini as its conversational companion while UGO keeps action authority', () => {
+  assert.match(hugo, /companion_mode:true/)
+  assert.match(hugo, /Authorization:\`Bearer \${accessToken}\`/)
+  assert.match(hugo, /history:conversation\.current\.slice\(0,-1\)/)
+  assert.match(hugo, /const companion=await askGeminiCompanion\(clean\)/)
+  assert.match(hugo, /companion\.category_hint/)
+  assert.match(api, /el compañero de confianza del cliente dentro de U\.G\.O\./)
+  assert.match(api, /CATEGORIAS UGO REALES/)
+  assert.match(api, /action=prepare_request/)
+  assert.match(api, /Nunca digas que un pedido fue creado o una oferta enviada/)
+})
+

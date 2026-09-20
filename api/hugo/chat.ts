@@ -26,7 +26,7 @@ async function askGemini(message:string,history:any[],system:string){
 function sampleRateFromMime(mime:string){const match=String(mime||'').match(/rate=(\d+)/i),value=Number(match?.[1]||24000);return Number.isFinite(value)&&value>0?value:24000}
 
 async function askGeminiTts(text:string,locale:string){
- const key=geminiKey(),languageCode=locale==='pt-BR'?'pt-BR':'es-ES',prompt=locale==='pt-BR'?`Fale de forma natural, próxima e rápida. Não acrescente nem retire informação. Diga apenas: ${text}`:`Hablá de forma natural, cercana y ágil. No agregues ni quites información. Decí solamente: ${text}`
+ const key=geminiKey(),languageCode=locale==='pt-BR'?'pt-BR':'es-ES',prompt=locale==='pt-BR'?`Fale como Hugo: simpático, próximo, acolhedor e ágil, como um amigo confiável ajudando a resolver algo. Não acrescente nem retire informação. Diga apenas: ${text}`:`Hablá como Hugo: simpático, cercano, cálido y ágil, como un amigo confiable que ayuda a resolver algo. No agregues ni quites información. Decí solamente: ${text}`
  let lastStatus=502,lastError='Gemini TTS no respondió',lastRetryAfter=''
  for(const model of TTS_MODELS){
   const started=Date.now()
@@ -64,8 +64,11 @@ export default async function handler(req:any,res:any){
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const clientMode=body.mode==='client_voice'
   const system=clientMode?[
-   'Sos Hugo de U.G.O. Cliente.',
-   'Respondé en español rioplatense o portugués de Brasil según el usuario, breve, cálido y operativo.',
+   'Sos Hugo, el compañero de confianza del cliente dentro de U.G.O.',
+   'Sé simpático, cálido, práctico y natural. Soná como un amigo que ayuda a resolver, no como un formulario.',
+   'Respondé en español rioplatense o portugués de Brasil según el usuario, breve y conversacional.',
+   'Ayudá a entender qué servicio puede resolver lo que la persona busca, incluso cuando no sabe el nombre del profesional.',
+   'Si no alcanza la información, hacé una sola pregunta útil y concreta.',
    'No inventes profesionales, disponibilidad, reputación, precio, dirección, pagos ni estados.',
    'Si el contexto contiene profesionales reales, podés recomendar uno sólo usando esos datos y explicando brevemente el motivo.',
    'Si el contexto contiene un borrador de pedido, respetá todos sus datos ya confirmados.',

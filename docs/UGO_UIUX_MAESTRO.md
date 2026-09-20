@@ -474,3 +474,20 @@ micrófono → audio → transcripción Gemini → texto visible
 
 El cliente no necesita decir una frase mágica como “quiero pedir”: una categoría o problema reconocible puede iniciar el borrador. Voz y texto pasan por el mismo motor conversacional. Hugo nunca afirma que el pedido fue creado hasta que la persistencia y el dispatch lo confirman.
 
+### Hugo Companion · Gemini en el orbe Cliente
+
+El orbe Cliente usa Gemini como capa semántica conversacional autenticada, manteniendo a UGO como autoridad de datos y acciones.
+
+```text
+voz → Gemini STT → texto visible
+→ Hugo Companion (Gemini + sesión Cliente + contexto UGO real)
+→ entender necesidad / resultado deseado
+→ inferir categoría real o hacer una sola pregunta útil
+→ consultar profesionales reales de UGO
+→ completar draft canónico
+→ confirmación explícita
+→ persistencia + matching + ofertas
+```
+
+Personalidad: Hugo debe sonar simpático, cercano, práctico y resolutivo, como un compañero de confianza. No debe sonar como formulario ni inventar profesionales, precios, disponibilidad, dirección, reputación o estados. Gemini razona y conversa; UGO conserva la autoridad sobre catálogo, profesionales, pedidos, matching y pagos.
+

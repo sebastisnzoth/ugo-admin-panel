@@ -232,3 +232,14 @@ No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con s
 - Confirmación explícita persiste un único `serviceId` en `buscando` y ejecuta `dispatch.start()` para generar ofertas reales.
 - Se mantiene alternativa completa por texto y la confirmación humana antes de publicar una solicitud.
 
+---
+
+## Checkpoint · Hugo Companion Gemini · 20/09/2026
+
+- Orbe Cliente conectado al endpoint Gemini autenticado con memoria conversacional corta.
+- Gemini interpreta necesidades ambiguas y puede proponer una categoría real UGO o hacer una única pregunta aclaratoria.
+- El catálogo real de categorías y los profesionales verificables se incorporan al contexto de Gemini.
+- La conversación mantiene tono cercano/simpático sin ceder a Gemini autoridad para inventar o ejecutar acciones.
+- Pedido, confirmación, matching y ofertas siguen usando el lifecycle canónico y datos reales de UGO.
+- Fallback local permanece disponible si Gemini está temporalmente indisponible.
+
