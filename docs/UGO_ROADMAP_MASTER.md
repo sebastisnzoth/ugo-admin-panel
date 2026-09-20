@@ -173,3 +173,32 @@ cámara/evidencia física       pendiente
 ```
 
 Este bloque no elimina los gates TWO-DEVICES / FULL-E2E / GO-LIVE.
+
+
+---
+
+## 13. Checkpoint 20/09/2026 · reparación Admin operacional
+
+Cerrado en código/backend y validado por CI:
+
+- restauradas `mapa_operativo_usuarios`, `mapa_operativo_servicios` y `vista_todos_proveedores` como vistas Admin-only;
+- el mapa deja de depender de una relación inexistente y muestra fallback/reintento sin error SQL crudo;
+- creado `prospectos_scouts` con RLS Admin-only;
+- Scout migrado del proyecto Supabase hard-coded viejo a la sesión UGO actual + bearer Admin;
+- Scout guarda prospectos, registra contacto/aprobación y enlaza Outreach con Hugo/WhatsApp;
+- Personas → Verificación incorpora documentos enviados, archivos faltantes, vista privada y aprobación/rechazo por documento;
+- Finanzas → PIX rediseñado inline con KPIs, estados vacíos y contexto de servicio/cliente/proveedor;
+- botón `Actualizar` y contención de módulos corregidos;
+- Super Admin degrada a datos parciales si falla una consulta secundaria y las cards de gobierno quedan compactas;
+- contratos automáticos nuevos para mapa/Scout y KYC documentos.
+
+Evidencia técnica del bloque antes de sincronizar estos maestros:
+
+```text
+Supabase TEST map views       VALIDATED como Super Admin
+Scout INSERT/RLS              VALIDATED dentro de ROLLBACK
+Core CI c99ff7fd              PASS
+Vercel c99ff7fd               READY
+```
+
+No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con sesión Admin.
