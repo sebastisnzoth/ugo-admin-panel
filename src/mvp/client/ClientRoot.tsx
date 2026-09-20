@@ -43,6 +43,7 @@ import'./client-real-test-fixes.css'
 import'./client-flow-reference-2026.css'
 import'./client-persistent-header.css'
 import'./client-desktop-shell-fixes.css'
+import'./client-home-screen.css'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
  const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
