@@ -21,6 +21,7 @@ const ClientRoot=lazy(()=>import('./client/ClientRoot').then(module=>({default:m
 const ProviderRoot=lazy(()=>import('./provider/ProviderRoot').then(module=>({default:module.ProviderRoot})))
 const UgoLanding=lazy(()=>import('./UgoLanding').then(module=>({default:module.UgoLanding})))
 const UgoWeb=lazy(()=>import('./UgoWeb').then(module=>({default:module.UgoWeb})))
+const UgoDemoBoundary=lazy(()=>import('./UgoDemoBoundary').then(module=>({default:module.UgoDemoBoundary})))
 const UgoClientWeb=lazy(()=>import('./UgoClientWeb').then(module=>({default:module.UgoClientWeb})))
 const UgoTestDemo=lazy(()=>import('./UgoTestDemo').then(module=>({default:module.UgoTestDemo})))
 
@@ -42,7 +43,7 @@ export function MvpApp(){
  if(app==='provider')return <ProviderApp/>
  if(app==='development')return <Deferred><DevelopmentDashboard/></Deferred>
  if(app==='admin')return <Deferred><AdminGate/></Deferred>
- if(app==='web')return <Deferred><UgoWeb/></Deferred>
+ if(app==='web')return <Deferred><UgoDemoBoundary><UgoWeb/></UgoDemoBoundary></Deferred>
  return <Deferred><UgoLanding/></Deferred>
 }
 
