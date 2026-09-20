@@ -560,3 +560,18 @@ La función:
 - es ejecutable por `authenticated` y no por `anon`.
 
 `SupabaseDispatchProvider.start()` intenta este snapshot antes de `iniciar_matching`. Un fallo de geolocalización no borra ni duplica el pedido: se reporta como `MAP-GPS` y el matching puede continuar.
+
+
+## Procedencia de coordenadas por pedido
+
+El borrador Cliente conserva `pickupLat`, `pickupLng` y `pickupSource = current | saved | manual`.
+
+Reglas:
+
+- `current`: coordenadas obtenidas por Geolocation API para esa selección;
+- `saved`: sólo hay coordenadas si `direcciones_cliente.latitud/longitud` no son nulas y son finitas;
+- `manual`: coordenadas nulas hasta que exista una geocodificación explícita;
+- el dispatch canónico usa `pickupFallback='none'`, evitando que una ubicación global anterior sea atribuida a una dirección distinta;
+- `null` se valida antes de conversión numérica para impedir que JavaScript lo transforme en `0`.
+
+Esto preserva integridad geográfica para ranking por distancia y para el gate backend de llegada a 200 m.

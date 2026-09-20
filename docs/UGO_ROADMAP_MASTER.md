@@ -432,3 +432,17 @@ Corrección validada en `615cf1b6ef479c11f56325ef7e385d6b15c29eb4`:
 - el matching sigue siendo recuperable si el GPS no está disponible.
 
 UGO Core CI del commit pasó TypeScript/build, contratos, lifecycle/RLS y lint completo. Falta revalidación física de GPS en Cliente para promover MAP-GPS más allá del estado técnico.
+
+
+### Hardening de procedencia GPS · 20/09/2026
+
+El snapshot GPS ahora queda asociado a la **dirección elegida para ese pedido**, no al último GPS global del navegador:
+
+- “Usar mi ubicación” guarda coordenadas exactas en el borrador del pedido;
+- un lugar guardado usa coordenadas sólo si ese lugar realmente las tiene;
+- una dirección escrita manualmente invalida coordenadas previas del borrador;
+- valores nulos nunca se convierten accidentalmente en `0,0`;
+- el flujo canónico pasa `pickupFallback='none'`, por lo que no reutiliza `ugo:last-client-location` de otra dirección;
+- los flujos legacy que explícitamente quieran la ubicación reciente conservan el fallback `stored`.
+
+UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 456 contratos (453 pass, 2 skip), lifecycle/RLS y lint. El APK Android del bundle de código `b24c74c8d6043c9edfba2568a996b01faa05fdfb` también compiló correctamente. Falta prueba física GPS para elevar `MAP-GPS` a validación runtime.
