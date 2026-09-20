@@ -10,7 +10,8 @@ type Service={
 type Evidence={id:string;kind:'solicitud'|'servicio';tipo:string;storage_path:string;descripcion:string|null;created_at:string;usuario_id?:string|null;url?:string|null}
 type StateEvent={id:string;actor_id:string|null;actor_role:string;estado_anterior:string|null;estado_nuevo:string;motivo:string|null;created_at:string}
 type LegacyEvent={id:number|string;actor_id:string|null;evento:string;estado_anterior:string|null;estado_nuevo:string|null;detalles:Record<string,unknown>|null;created_at:string}
-type Payment={id:string;estado:string;metodo:string|null;modelo_pago:string|null;monto_bruto:number|null;moneda:string|null;created_at:string;updated_at:string|null;autorizado_at:string|null;liberado_at:string|null;reembolsado_at:string|null;fecha_confirmacion:string|null;pix_informado_at:string|null;pix_conciliado_at:string|null}
+type Payment={id:string;estado:string;metodo:string|null;modelo_pago:string|null;monto_bruto:number|null;comision_ugo:number|null;ganancia_proveedor:number|null;moneda:string|null;created_at:string;updated_at:string|null;autorizado_at:string|null;liberado_at:string|null;reembolsado_at:string|null;fecha_confirmacion:string|null;pix_informado_at:string|null;pix_conciliado_at:string|null}
+type CashDebt={id:string;pago_id:string;comision_ugo:number;monto_pagado_ugo:number;saldo_pendiente:number;moneda:string;estado:string;referencia_pago:string|null;pago_informado_at:string|null;pagado_at:string|null;created_at:string}
 type Review={id:string;autor_tipo:string;puntuacion:number;comentario:string|null;created_at:string;cliente_id:string;proveedor_id:string}
 const stateLabel=(s?:string|null)=>({borrador:'Pedido creado',buscando:'Buscando profesional',ofrecido:'Oferta enviada',asignado:'Profesional asignado',en_camino:'Proveedor en camino',llegado:'Proveedor llegó',en_progreso:'Trabajo iniciado',esperando_aprobacion:'Trabajo listo / esperando aprobación',completado:'Servicio completado',cancelado:'Servicio cancelado',disputado:'Servicio en disputa'} as Record<string,string>)[String(s||'')]||String(s||'Evento')
 const when=(v?:string|null)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',second:'2-digit'}):'—'
@@ -18,19 +19,20 @@ const money=(v:number|null,currency:string|null)=>{try{return new Intl.NumberFor
 const name=(p?:{nombre?:string|null;apellido?:string|null}|null)=>[p?.nombre,p?.apellido].filter(Boolean).join(' ')||'—'
 
 export function AdminServiceTracePanel({service}:{service:Service}){
- const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[legacyEvents,setLegacyEvents]=useState<LegacyEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({})
+ const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[legacyEvents,setLegacyEvents]=useState<LegacyEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[debts,setDebts]=useState<CashDebt[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({})
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
-   const[{data:req,error:reqError},{data:work,error:workError},{data:eventRows,error:eventError},{data:legacyRows,error:legacyError},{data:paymentRows,error:paymentError},{data:reviewRows,error:reviewError}]=await Promise.all([
+   const[{data:req,error:reqError},{data:work,error:workError},{data:eventRows,error:eventError},{data:legacyRows,error:legacyError},{data:paymentRows,error:paymentError},{data:debtRows,error:debtError},{data:reviewRows,error:reviewError}]=await Promise.all([
     (supabase as any).from('evidencias_solicitud').select('id,storage_path,descripcion,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('evidencias_servicio').select('id,tipo,storage_path,descripcion,created_at,usuario_id').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('servicio_estado_eventos').select('id,actor_id,actor_role,estado_anterior,estado_nuevo,motivo,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('eventos_servicio').select('id,actor_id,evento,estado_anterior,estado_nuevo,detalles,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
-    (supabase as any).from('pagos').select('id,estado,metodo,modelo_pago,monto_bruto,moneda,created_at,updated_at,autorizado_at,liberado_at,reembolsado_at,fecha_confirmacion,pix_informado_at,pix_conciliado_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
+    (supabase as any).from('pagos').select('id,estado,metodo,modelo_pago,monto_bruto,comision_ugo,ganancia_proveedor,moneda,created_at,updated_at,autorizado_at,liberado_at,reembolsado_at,fecha_confirmacion,pix_informado_at,pix_conciliado_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
+    (supabase as any).from('deudas_ugo_proveedor').select('id,pago_id,comision_ugo,monto_pagado_ugo,saldo_pendiente,moneda,estado,referencia_pago,pago_informado_at,pagado_at,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('resenas').select('id,autor_tipo,puntuacion,comentario,created_at,cliente_id,proveedor_id').eq('servicio_id',service.id).order('created_at',{ascending:true})
    ])
-   const firstError=reqError||workError||eventError||legacyError||paymentError||reviewError;if(firstError)throw firstError
+   const firstError=reqError||workError||eventError||legacyError||paymentError||debtError||reviewError;if(firstError)throw firstError
    const requestEvidence:Evidence[]=await Promise.all(((req||[])as any[]).map(async row=>{const{data}=await supabase.storage.from('request-evidence').createSignedUrl(row.storage_path,1800);return{id:row.id,kind:'solicitud',tipo:'pedido',storage_path:row.storage_path,descripcion:row.descripcion,created_at:row.created_at,url:data?.signedUrl||null}}))
    const serviceEvidence:Evidence[]=await Promise.all(((work||[])as any[]).map(async row=>{const{data}=await supabase.storage.from('service-evidence').createSignedUrl(row.storage_path,1800);return{...row,kind:'servicio',url:data?.signedUrl||null}}))
    const eventList=(eventRows||[])as StateEvent[]
@@ -38,7 +40,7 @@ export function AdminServiceTracePanel({service}:{service:Service}){
    const actorIds=Array.from(new Set([...eventList.map(e=>e.actor_id),...legacyList.map(e=>e.actor_id)].filter(Boolean))) as string[]
    if(actorIds.length){const{data:userRows}=await (supabase as any).from('usuarios').select('id,nombre,apellido').in('id',actorIds);setActors(Object.fromEntries((userRows||[]).map((u:any)=>[u.id,[u.nombre,u.apellido].filter(Boolean).join(' ')||u.id.slice(0,8)])))}else setActors({})
    setEvidence([...requestEvidence,...serviceEvidence].sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime()))
-   setEvents(eventList);setLegacyEvents(legacyList);setPayments((paymentRows||[])as Payment[]);setReviews((reviewRows||[])as Review[])
+   setEvents(eventList);setLegacyEvents(legacyList);setPayments((paymentRows||[])as Payment[]);setDebts((debtRows||[])as CashDebt[]);setReviews((reviewRows||[])as Review[])
   }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la trazabilidad completa del servicio.')}finally{setLoading(false)}
  },[service.id])
  useEffect(()=>{void load()},[load])
