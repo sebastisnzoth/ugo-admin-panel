@@ -4,7 +4,7 @@ import{supabase}from'../lib/supabase'
 type ProviderId='uber'|'ifood'|'rappi'
 type ProviderRow={id:ProviderId;label:string;configured:boolean;docs:string;required:string[];capabilities:string[];note:string}
 type TestResult={provider:ProviderId;ok:boolean;configured:boolean;state:string;message:string;status?:number;testedAt?:string;expiresIn?:number|null;merchants?:number|null}
-type Payload={providers:ProviderRow[]}
+type Payload={deliveryProviders:ProviderRow[]}
 
 async function adminRequest(path:string,init:RequestInit={}){
  const run=async(token:string)=>fetch(path,{...init,headers:{...(init.headers||{}),Authorization:`Bearer ${token}`}})
@@ -34,10 +34,10 @@ export function AdminDeliveryIntegrations(){
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
-   const response=await adminRequest('/api/admin/delivery-integrations')
+   const response=await adminRequest('/api/admin/integrations-status')
    const payload=await response.json().catch(()=>({}))
    if(!response.ok)throw new Error(payload.error||'Não foi possível carregar as integrações.')
-   setProviders((payload as Payload).providers||[])
+   setProviders((payload as Payload).deliveryProviders||[])
   }catch(e){setError(e instanceof Error?e.message:'Não foi possível carregar as integrações.')}finally{setLoading(false)}
  },[])
  useEffect(()=>{void load()},[load])
@@ -45,7 +45,7 @@ export function AdminDeliveryIntegrations(){
  async function test(provider:ProviderId){
   setTesting(provider);setError('')
   try{
-   const response=await adminRequest('/api/admin/delivery-integrations',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider})})
+   const response=await adminRequest('/api/admin/integrations-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({provider})})
    const payload=await response.json().catch(()=>({}))
    const result={provider,ok:response.ok,configured:Boolean(payload.configured),state:String(payload.state||'test_failed'),message:String(payload.message||payload.error||'Falha na verificação.'),status:payload.status,testedAt:payload.testedAt,expiresIn:payload.expiresIn,merchants:payload.merchants} as TestResult
    setResults(v=>({...v,[provider]:result}))
