@@ -21,7 +21,7 @@ test('Hugo can create another request while services already exist',async()=>{
  assert.match(bridge,/setServices\(active\)/)
  assert.match(bridge,/services=\{services\}/)
  assert.match(dock,/request_draft_id:current\.requestDraftId/)
- assert.match(dock,/if\(requestIntent\(clean\)\)\{/)
+ assert.match(dock,/if\(directCategory\|\|newRequestIntent\(clean\)\)\{/)
  assert.doesNotMatch(dock,/Ya tenés el pedido .* activo\. Seguilo o cancelalo antes de crear otro/)
  assert.doesNotMatch(dock,/Você já tem o pedido .* ativo/)
  assert.match(guided,/const nextDraftId=crypto\.randomUUID\(\);setDraftId\(nextDraftId\)/)
