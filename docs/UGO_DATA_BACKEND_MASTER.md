@@ -469,6 +469,6 @@ Cuando `blocked=true` el backend:
 - rechaza cualquier nueva asignación en `servicios.proveedor_id`;
 - conserva intactos los servicios previamente asignados para que puedan completarse.
 
-La defensa de asignación es transversal y no depende de que la UI o un flujo concreto use `aceptar_oferta`. El desbloqueo ocurre cuando quedan menos de tres deudas reales abiertas; la vuelta Online es manual.
+La defensa de asignación es transversal y no depende de que la UI o un flujo concreto use `aceptar_oferta`. El desbloqueo ocurre cuando quedan menos de tres deudas reales abiertas; la vuelta Online es manual. No se expone un RPC público adicional de estado: la UI deriva el contador desde las deudas que ya puede leer por RLS.
 
 `api/test?ugo_debt=1` genera un Pix server-side dentro de la función consolidada de UGO únicamente para la deuda autenticada y usa `UGO_PIX_KEY`. No muta el estado financiero. `informar_pago_deuda_ugo` registra la referencia, y `admin_confirmar_deuda_ugo_pagada` conserva la autoridad de conciliación.

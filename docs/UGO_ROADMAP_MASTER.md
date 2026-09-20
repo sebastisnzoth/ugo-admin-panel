@@ -281,4 +281,4 @@ Implementado en código/backend:
 - informar una referencia no libera el bloqueo por sí solo: al menos una deuda debe quedar conciliada como `pagado` o `anulado`;
 - al quedar por debajo de 3, el proveedor puede volver Online manualmente.
 
-Pendiente de cierre de madurez: aplicar migración en UGO TEST, validar Pix con `UGO_PIX_KEY` configurada y ejecutar E2E de tercer cobro → Offline → pago/conciliación → Online.
+Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offline`, `disponible=false` y sin ofertas pendientes; otro con 1 deuda continuó Online. Core CI del bloque quedó verde. Pendiente de cierre de madurez: validar Pix con `UGO_PIX_KEY` configurada y ejecutar E2E de pago/conciliación → Online.
