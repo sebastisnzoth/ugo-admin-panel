@@ -455,3 +455,22 @@ expediente de disputa/reclamo (`disputas` + `disputa_mensajes`)
 
 El chat conserva emisor, rol, mensaje y timestamp. La ubicación se etiqueta como **última posición persistida** y nunca se presenta como GPS en tiempo real si no existe una actualización viva. Los reclamos muestran estado, motivo, monto, resolución y conversación del expediente. Si una fuente secundaria falla, la ficha conserva el resto de la trazabilidad y muestra un aviso explícito en lugar de romper toda la operación.
 
+### Orbe Hugo Cliente · pedido conversacional
+
+El orbe de Hugo permanece disponible en Inicio y Solicitud del Cliente sin obligar a navegar a una pantalla secundaria. En reposo se muestra sólo el orbe; al activarlo abre la conversación.
+
+Contrato de voz:
+
+```text
+micrófono → audio → transcripción Gemini → texto visible
+→ detectar categoría/problema
+→ preguntar sólo datos faltantes: trabajo, dirección, cuándo
+→ resumen hablado/visible
+→ confirmación explícita del cliente
+→ crear serviceId en buscando
+→ dispatch.start(serviceId)
+→ ofertas reales a proveedores elegibles
+```
+
+El cliente no necesita decir una frase mágica como “quiero pedir”: una categoría o problema reconocible puede iniciar el borrador. Voz y texto pasan por el mismo motor conversacional. Hugo nunca afirma que el pedido fue creado hasta que la persistencia y el dispatch lo confirman.
+

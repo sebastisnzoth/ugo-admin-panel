@@ -222,3 +222,13 @@ No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con s
 - Se corrige también la rama electrónica de `aprobar_servicio_impl` para evitar la misma regresión.
 - Contrato automático agregado para impedir futuras escrituras del Cliente sobre el perfil protegido del Proveedor.
 
+---
+
+## Checkpoint · Orbe Hugo Cliente · 20/09/2026
+
+- Orbe habilitado desde Inicio/Solicitud; en reposo no despliega el panel conversacional sobre la interfaz.
+- Browser voice usa MediaRecorder + transcripción Gemini autenticada y muestra la voz convertida a texto.
+- Categoría/problema hablado puede iniciar pedido sin frase mágica; Hugo pregunta únicamente datos faltantes.
+- Confirmación explícita persiste un único `serviceId` en `buscando` y ejecuta `dispatch.start()` para generar ofertas reales.
+- Se mantiene alternativa completa por texto y la confirmación humana antes de publicar una solicitud.
+
