@@ -30,6 +30,11 @@ export type AdminProviderOption = {
   apellido: string | null
   karma: number | null
   activo: boolean
+  online: boolean
+  disponible: boolean
+  estado_verificacion: string | null
+  pendingDebtCount: number
+  debtBlocked: boolean
 }
 
 export function useAdminActiveServices() {
@@ -75,7 +80,27 @@ export function useAdminActiveServices() {
       console.error('[AdminServices] provider load failed:', providerError.message)
       setProviders([])
     } else {
-      setProviders((providerRows || []) as AdminProviderOption[])
+      const baseProviders=(providerRows||[]) as Array<Omit<AdminProviderOption,'online'|'disponible'|'estado_verificacion'|'pendingDebtCount'|'debtBlocked'>>
+      const ids=baseProviders.map(provider=>provider.id)
+      let profileRows:Array<{usuario_id:string;online:boolean|null;disponible:boolean|null;estado_verificacion:string|null}>=[]
+      let debtRows:Array<{proveedor_id:string;estado:string;ambiente:string;saldo_pendiente:number|string|null}>=[]
+      if(ids.length){
+        const[{data:profiles,error:profilesError},{data:debts,error:debtsError}]=await Promise.all([
+          (supabase as any).from('perfiles_proveedor').select('usuario_id,online,disponible,estado_verificacion').in('usuario_id',ids),
+          (supabase as any).from('deudas_ugo_proveedor').select('proveedor_id,estado,ambiente,saldo_pendiente').in('proveedor_id',ids),
+        ])
+        if(profilesError)console.warn('[AdminServices] provider status unavailable:',profilesError.message)
+        else profileRows=(profiles||[]) as typeof profileRows
+        if(debtsError)console.warn('[AdminServices] provider debt status unavailable:',debtsError.message)
+        else debtRows=(debts||[]) as typeof debtRows
+      }
+      const profileById=new Map(profileRows.map(row=>[row.usuario_id,row]))
+      const debtCountById=new Map<string,number>()
+      for(const debt of debtRows){
+        if(debt.ambiente!=='real'||['pagado','anulado'].includes(debt.estado)||Number(debt.saldo_pendiente||0)<=0)continue
+        debtCountById.set(debt.proveedor_id,(debtCountById.get(debt.proveedor_id)||0)+1)
+      }
+      setProviders(baseProviders.map(provider=>{const status=profileById.get(provider.id),pendingDebtCount=debtCountById.get(provider.id)||0;return{...provider,online:Boolean(status?.online),disponible:Boolean(status?.disponible),estado_verificacion:status?.estado_verificacion||null,pendingDebtCount,debtBlocked:pendingDebtCount>=3}}))
     }
 
     setLoading(false)

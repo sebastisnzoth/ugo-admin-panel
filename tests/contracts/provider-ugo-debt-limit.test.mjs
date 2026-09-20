@@ -35,3 +35,16 @@ test('provider UI exposes the debt block and a real pay UGO action',async()=>{
  assert.match(endpoint,/eq\('proveedor_id',user\.id\)/)
  assert.match(endpoint,/Generar|pixCopiaCola/)
 })
+
+
+test('admin cannot knowingly select a debt-blocked provider',async()=>{
+ const[hook,admin]=await Promise.all([
+  read('src/hooks/useAdminActiveServices.ts'),
+  read('src/mvp/AdminServicesPro.tsx'),
+ ])
+ assert.match(hook,/pendingDebtCount>=3/)
+ assert.match(hook,/debtBlocked:pendingDebtCount>=3/)
+ assert.match(admin,/disabled=\{p\.debtBlocked\}/)
+ assert.match(admin,/BLOQUEADO UGO/)
+ assert.match(admin,/no puede recibir otro pedido/)
+})
