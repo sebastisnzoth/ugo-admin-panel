@@ -44,6 +44,21 @@ export function AdminServiceTracePanel({service}:{service:Service}){
   }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la trazabilidad completa del servicio.')}finally{setLoading(false)}
  },[service.id])
  useEffect(()=>{void load()},[load])
+ useEffect(()=>{
+  let alive=true
+  const sync=()=>{if(alive)void load()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
+  const onOnline=()=>sync()
+  window.addEventListener('online',onOnline)
+  document.addEventListener('visibilitychange',onVisibility)
+  let channel:any=supabase.channel(`admin-trace-live-${service.id}-${Date.now()}`)
+  const scoped=['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']
+  for(const table of scoped)channel=channel.on('postgres_changes',{event:'*',schema:'public',table,filter:`servicio_id=eq.${service.id}`},sync)
+  channel=channel.on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
+  channel.subscribe((status:string)=>{if(status==='SUBSCRIBED')sync();if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(sync,1200)})
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},15000)
+  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+ },[load,service.id])
 
  const timeline=useMemo(()=>{
   const rows:{key:string;at:string;title:string;detail:string;role?:string}[]=[]
