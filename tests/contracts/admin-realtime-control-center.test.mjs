@@ -40,9 +40,9 @@ test('service 360 sheet refreshes trace chat payments disputes and evidence live
  assert.match(services,/Control integral del servicio/)
  assert.match(services,/services\.find\(\(row:any\)=>row\.id===editing\.id\)/)
  for(const table of ['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']){
-  assert.match(trace,new RegExp("table:'"+table+"'"))
+  assert.match(trace,new RegExp("'"+table+"'"))
  }
- assert.match(trace,/filter:`servicio_id=eq\.\$\{service\.id\}`/)
+ assert.match(trace,/for\(const table of scoped\)channel=channel\.on\('postgres_changes',\{event:'\*',schema:'public',table,filter:`servicio_id=eq\.\$\{service\.id\}`\}/)
  assert.match(extended,/table:'mensajes'/)
  assert.match(extended,/table:'disputas'/)
  assert.match(extended,/table:'disputa_mensajes'/)

@@ -9,7 +9,7 @@ test('future scheduled acceptance opens agenda instead of an inactive job screen
  assert.match(root,/ACTIONABLE_SCHEDULE_LEAD_MS=60\*60\*1000/)
  assert.match(root,/isFuture=scheduledAt!=null[\s\S]*scheduledAt>Date\.now\(\)\+ACTIONABLE_SCHEDULE_LEAD_MS/)
  assert.match(root,/alreadyWorking=Boolean\(data\.service&&\['asignado','en_camino','llegado','en_progreso'\]\.includes\(data\.service\.estado\)\)/)
- assert.match(root,/flow\.navigate\(alreadyWorking\|\|isFuture\?'agenda':'active-job'\)/)
+ assert.match(root,/if\(alreadyWorking\|\|isFuture\)flow\.navigate\('agenda',opportunity\?\.serviceId\|\|null\);else flow\.navigate\('active-job'\)/)
 })
 
 

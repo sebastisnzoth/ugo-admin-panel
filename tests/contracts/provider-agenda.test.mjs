@@ -10,7 +10,7 @@ test('provider agenda is mounted and scoped to the authenticated provider',async
   read('src/mvp/provider/ProviderRoot.tsx'),
  ])
  assert.match(root,/import\{ProviderAgenda\}from'\.\/ProviderAgenda'/)
- assert.match(root,/screen==='agenda'&&<ProviderAgenda\/>/)
+ assert.match(root,/screen==='agenda'&&<ProviderAgenda key=\{flow\.agendaServiceId\|\|'agenda'\}\/>/)
  assert.match(agenda,/from\('servicios'\)/)
  assert.match(agenda,/\.eq\('proveedor_id',id\)/)
  assert.doesNotMatch(agenda,/\.not\('programado_para','is',null\)/)
