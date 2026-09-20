@@ -380,3 +380,27 @@ Las reseñas históricas previas a este contrato se interpretan como `autor_tipo
 ## Historial por usuario
 
 La ficha Admin/Super Admin de una persona debe componer, según rol y permisos: alta, último acceso, estado de cuenta, perfil, servicios como cliente/proveedor, documentos canónicos de `documentos`, calificaciones emitidas y recibidas y sus timestamps. Todo enlace conserva el `serviceId` original.
+
+
+---
+
+# 22. Reparación Admin operacional · 20/09/2026
+
+El panel Admin/Super Admin recupera contratos reales para mapa, Scout, KYC y Finanzas sin fuentes paralelas:
+
+```text
+mapa_operativo_usuarios      vista security_invoker · Admin only
+mapa_operativo_servicios     vista security_invoker · Admin only
+vista_todos_proveedores      vista security_invoker · Admin only
+prospectos_scouts            tabla RLS Admin only
+documentos                   fuente canónica de KYC
+pagos                        fuente canónica de conciliación PIX
+```
+
+Las vistas del mapa se derivan de `usuarios`, `perfiles_proveedor`, `categorias` y `servicios`; no exponen datos a `anon`. Scout usa la sesión Supabase actual, envía bearer Admin al backend protegido y persiste prospectos sólo bajo RLS administrativa.
+
+`prospectos_scouts` conserva fuente externa, categoría, teléfono/contacto, coordenadas, score, estado y timestamps de contacto/aprobación. Los estados administrativos son `prospecto_pendiente`, `invitado`, `aprobado` y `rechazado`.
+
+KYC usa `documentos` y Storage privado; las vistas firmadas son temporales. La decisión individual registra revisor/timestamp y no reemplaza la decisión general del proveedor.
+
+PIX directo mantiene el RPC protegido `conciliar_pix_direto`; la UI sólo presenta y valida pagos reales `ambiente=real`, exige referencia E2E al aprobar y motivo al rechazar.
