@@ -362,3 +362,39 @@ Objetivo: que una solicitud común pueda confirmarse en **menos de un minuto** c
 # 12. Regla final
 
 **El cliente no llena UGO: UGO se va completando mientras el cliente cuenta lo que necesita. El proveedor no administra UGO: ve el problema, acepta, va, resuelve y marca listo. Hugo y el sistema absorben la complejidad sin ocultar controles críticos.**
+
+---
+
+# 13. Admin / Super Admin · trazabilidad total
+
+La regla visual y operativa para Administración es:
+
+> **Todo lo relevante que Cliente o Proveedor hacen sobre un servicio debe poder reconstruirse desde el panel, respetando permisos y privacidad.**
+
+## Ficha de servicio
+
+`Operaciones → Servicios → Ver / Editar` no es sólo un formulario. Debe mostrar una ficha integral del mismo `serviceId`:
+
+```text
+resumen + estado
+cliente / proveedor
+pedido y programación
+cronología con fecha y hora
+fotos del pedido
+evidencias Antes / Durante / Después
+pago y timestamps financieros visibles al rol
+calificación Cliente → Proveedor
+calificación Proveedor → Cliente
+```
+
+Las imágenes usan miniaturas y apertura ampliada con signed URL; si no existe evidencia, se muestra un estado vacío explícito. La cronología diferencia actor/rol y nunca inventa horarios faltantes.
+
+## Ficha de usuario
+
+Desde `Personas → Usuarios → Ver historial`, Admin/Super Admin debe poder inspeccionar alta, último acceso, datos operativos permitidos, servicios vinculados, documentación del proveedor y reputación emitida/recibida.
+
+## Calificación post-servicio
+
+Al completar un servicio, la calificación debe ser accesible desde cualquier pantalla no bloqueante del Cliente y del Proveedor. Ambas direcciones usan 1–5 estrellas + comentario opcional. En Proveedor, el prompt nunca interrumpe una misión activa; se difiere hasta que no haya trabajo en curso.
+
+Admin muestra ambas direcciones juntas y marca claramente una calificación faltante como `Pendiente`, no como cero estrellas.
