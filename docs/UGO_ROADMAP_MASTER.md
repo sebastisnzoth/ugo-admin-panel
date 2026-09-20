@@ -458,3 +458,17 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 - conserva tres backups y no persiste tokens GitHub en opciones WordPress;
 - el FTP existente queda como espejo compatible, no como única ruta de actualización;
 - madurez: implementación integrada; publicación/activación y smoke WordPress deben verificarse en el SHA resultante.
+
+
+---
+
+## Checkpoint 20/09/2026 · historial detallado Proveedor
+
+- `Mis trabajos` permite volver a abrir cualquier servicio del historial en modo sólo lectura;
+- cada tarjeta Proveedor incorpora `Abrir trabajo`;
+- el detalle reconstruye pedido, cliente, dirección, importe, programación y estado;
+- muestra fotos originales enviadas por el Cliente y evidencias del Proveedor separadas en Antes / Durante / Después;
+- cada foto puede abrirse en tamaño completo mediante URL firmada temporal;
+- incorpora pago/resumen económico cuando existe y timeline persistido de estados para explicar cómo se hizo;
+- el detalle queda ligado al `serviceId` exacto y usa RLS del rol Proveedor;
+- madurez: implementación en código; pendiente smoke visual/runtime autenticado sobre un servicio completado real.
