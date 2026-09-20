@@ -1,0 +1,19 @@
+.ugo-demo-boundary{min-height:100dvh;background:var(--ugo-color-surface)}
+.ugo-demo-boundary-banner{
+ position:sticky;
+ top:0;
+ z-index:20000;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ gap:var(--ugo-space-sm);
+ min-height:var(--ugo-touch-target);
+ padding:8px var(--ugo-space-md);
+ border-bottom:1px solid color-mix(in srgb,var(--ugo-color-warning) 45%,var(--ugo-color-outline-variant));
+ background:color-mix(in srgb,var(--ugo-color-warning) 12%,var(--ugo-color-surface-lowest));
+ color:var(--ugo-color-on-surface);
+ font:600 var(--ugo-font-caption)/1.35 var(--ugo-font);
+ text-align:center
+}
+.ugo-demo-boundary-banner strong{color:var(--ugo-color-warning)}
+@media(max-width:520px){.ugo-demo-boundary-banner{align-items:flex-start;flex-direction:column;gap:2px}}
