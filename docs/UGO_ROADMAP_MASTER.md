@@ -293,3 +293,13 @@ Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offl
 - Baseline: WCAG 2.2 AA, targets de 48 px, scrollbar visible y movimiento reducido.
 - Slices: Home/Mapa Cliente, alias visuales Proveedor, legibilidad/semántica Admin y frontera DEMO para `?app=web`.
 - CSS histórico se retira sólo con evidencia de consumidor cero, build, tests y verificación visual.
+
+
+---
+
+## Checkpoint 20/09/2026 · solicitud Cliente/Hugo coherente
+
+- la descripción escrita puede corregir una categoría anterior de Hugo antes de continuar (ej. “pérdida de agua” cambia Electricidad → Plomería);
+- el catálogo de voz reconoce fuga/pérdida de agua, cañería/desagüe y vazamento como Plomería antes del fallback genérico de Reparaciones;
+- al abrir el compositor canónico de solicitud, la conversación expandida de Hugo se cierra para no competir visualmente con el paso 1/5; el orbe queda disponible para reabrirlo;
+- una falla sólo de audio TTS ya no se presenta como error rojo del pedido cuando el texto de Hugo sí llegó y el flujo sigue operativo.

@@ -7,7 +7,7 @@ export type VoiceAvailability={category:VoiceCategory;providers:VoiceProvider[]}
 
 const commonAliases:Array<[RegExp,string[]]>=[
  [/\b(electricista|electricidad|eletricista|eletrica|enchufe|tomacorriente)\b/,['electricidad','eletrica']],
- [/\b(plomero|plomeria|fontanero|encanador|encanamento|canilla|grifo)\b/,['plomeria','encanamento','hidraulica']],
+ [/\b(plomero|plomeria|fontanero|encanador|encanamento|canilla|grifo|perdida de agua|fuga de agua|fuga|cano|caño|caneria|cañeria|desague|vazamento)\b/,['plomeria','encanamento','hidraulica']],
  [/\b(jardinero|jardineria|jardineiro|jardinagem|pasto|cesped)\b/,['jardineria','jardinagem']],
  [/\b(limpieza|limpiador|faxina|limpeza|diarista)\b/,['limpieza','limpeza','faxina']],
  [/\b(pintor|pintura)\b/,['pintura','reparaciones','reparacao','manutencao']],
@@ -24,10 +24,8 @@ export function normalizeVoiceText(value:string){return String(value||'').toLowe
 function words(value:string){return normalizeVoiceText(value).split(/\s+/).map(x=>x.replace(/[^\p{L}\p{N}]/gu,'')).filter(x=>x.length>=3&&!stop.has(x))}
 function categoryText(category:VoiceCategory){return normalizeVoiceText(`${category.nombre||''} ${category.slug||''}`)}
 
-export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|null>{
- const sb=getRoleSupabase('client'),{data,error}=await sb.from('categorias').select('id,slug,nombre').eq('activa',true).order('nombre')
- if(error)throw error
- const categories=(data||[])as VoiceCategory[],normalized=normalizeVoiceText(text)
+export function resolveVoiceCategoryFromCatalog(categories:VoiceCategory[],text:string):VoiceCategory|null{
+ const normalized=normalizeVoiceText(text)
  const direct=categories.find(category=>{const name=normalizeVoiceText(category.nombre||''),slug=normalizeVoiceText(category.slug||'');return(Boolean(name)&&normalized.includes(name))||(Boolean(slug)&&normalized.includes(slug))})
  if(direct)return direct
  const alias=commonAliases.find(([pattern])=>pattern.test(normalized))
@@ -35,6 +33,12 @@ export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|nu
  const input=words(normalized);let best:VoiceCategory|null=null,bestScore=0
  for(const category of categories){const candidates=words(categoryText(category));if(!candidates.length)continue;const overlap=candidates.filter(word=>input.some(token=>token===word||token.startsWith(word)||word.startsWith(token))).length/candidates.length;if(overlap>bestScore){best=category;bestScore=overlap}}
  return bestScore>=0.6?best:null
+}
+
+export async function resolveVoiceCategory(text:string):Promise<VoiceCategory|null>{
+ const sb=getRoleSupabase('client'),{data,error}=await sb.from('categorias').select('id,slug,nombre').eq('activa',true).order('nombre')
+ if(error)throw error
+ return resolveVoiceCategoryFromCatalog((data||[])as VoiceCategory[],text)
 }
 
 export async function loadVoiceAvailability(category:VoiceCategory):Promise<VoiceAvailability>{
