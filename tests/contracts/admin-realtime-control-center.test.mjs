@@ -65,3 +65,14 @@ test('admin alert center reacts to service provider and debt changes with fallba
  assert.match(src,/deudas_ugo_proveedor/)
  assert.match(src,/setInterval\(sync, 10_000\)/)
 })
+
+
+test('admin operational exception queue derives stuck and inconsistent work from persisted state',async()=>{
+ const src=await read('src/mvp/AdminDecisionCenter.tsx')
+ assert.match(src,/matching_demorado/)
+ assert.match(src,/traslado_demorado/)
+ assert.match(src,/aprobacion_demorada/)
+ assert.match(src,/servicio_inconsistente/)
+ assert.match(src,/proveedor_deuda_ugo/)
+ assert.match(src,/useAdminActiveServices/)
+})
