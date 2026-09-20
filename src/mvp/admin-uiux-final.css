@@ -4,15 +4,15 @@
 .ugo-admin2-metrics-error strong{font-size:14px}.ugo-admin2-metrics-error span{font-size:12px;line-height:1.45;color:var(--ugo-color-on-surface-variant)}
 .ugo-admin2-metrics-error button{min-height:var(--ugo-touch-target);padding:0 var(--ugo-space-md);border:1px solid var(--ugo-color-outline-variant);border-radius:var(--ugo-radius-md);background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font-weight:800}
 .ugo-admin2-status.degraded i{background:var(--ugo-color-warning);box-shadow:0 0 0 4px color-mix(in srgb,var(--ugo-color-warning) 18%,transparent)}
-.ugo-admin2 [role="tab"]:focus-visible,.ugo-admin2-sidebar nav button:focus-visible,.ugo-admin2-refresh:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 35%,transparent);outline-offset:2px}
+.ugo-admin2 [role="group"] button:focus-visible,.ugo-admin2-sidebar nav button:focus-visible,.ugo-admin2-refresh:focus-visible{outline:3px solid color-mix(in srgb,var(--ugo-color-focus) 35%,transparent);outline-offset:2px}
 @media(max-width:700px){
- .ugo-admin2-sidebar nav{grid-template-columns:repeat(6,minmax(0,1fr))!important}
- .ugo-admin2-sidebar nav button{min-width:0}
- .ugo-admin2-sidebar nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+ .ugo-admin2-sidebar nav{display:flex!important;overflow-x:auto;gap:4px!important}
+ .ugo-admin2-sidebar nav button{flex:0 0 76px;min-width:76px}
+ .ugo-admin2-sidebar nav button span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:var(--ugo-font-caption)}
  .ugo-admin2-metrics-error{align-items:stretch;flex-direction:column}
  .ugo-admin2-metrics-error button{width:100%}
 }
-@media(max-width:390px){.ugo-admin2-sidebar nav button span{font-size:7px}.ugo-admin2-sidebar nav button b{font-size:16px}}
+@media(max-width:390px){.ugo-admin2-sidebar nav button b{font-size:16px}}
 
 
 /* Personas > Documentos */
@@ -30,7 +30,7 @@
 .ugo-admin-documents-ocr{font-weight:850;color:var(--ugo-color-on-surface)}
 .ugo-admin-documents-muted,.ugo-admin-documents-date{color:var(--ugo-color-on-surface-variant);font-size:11px}
 .ugo-admin-documents-actions{display:flex;gap:7px;flex-wrap:wrap}
-.ugo-admin-documents-actions button{min-height:38px!important;padding:0 12px!important;border-radius:10px!important;font-size:11px!important;font-weight:850!important}
+.ugo-admin-documents-actions button{min-height:var(--ugo-touch-target)!important;padding:0 12px!important;border-radius:10px!important;font-size:11px!important;font-weight:850!important}
 .ugo-admin-documents-actions .view{background:var(--ugo-color-surface-low)!important;color:var(--ugo-color-on-surface)!important;border-color:var(--ugo-color-outline-variant)!important}
 .ugo-admin-documents-actions .approve{background:var(--ugo-color-primary)!important;color:var(--ugo-color-on-primary)!important;border-color:var(--ugo-color-primary)!important}
 .ugo-admin-documents-actions .approve:hover:not(:disabled){filter:brightness(1.07)}
@@ -43,7 +43,7 @@
  .ugo-admin-documents{padding:10px!important}
  .ugo-admin-documents table{min-width:760px}
  .ugo-admin-documents-actions{flex-wrap:nowrap}
- .ugo-admin-documents-actions button{min-height:40px!important}
+ .ugo-admin-documents-actions button{min-height:var(--ugo-touch-target)!important}
 }
 
 
