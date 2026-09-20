@@ -43,7 +43,7 @@ export function ProviderOpportunityDetail({id}:{id:string|null}){
    <details className="provider-secondary-details"><summary>Fotos o archivos del pedido</summary><ProviderRequestEvidence serviceId={item.serviceId}/></details>
   </article>
   <div className="provider-decision provider-decision-bar">
-   {d.service&&<p className="provider-action-note">Ya tenés un trabajo activo. Podés aceptar este también: UGO lo agrega a tu agenda sin interrumpir el que estás haciendo.</p>}
+   {d.service&&<p className="provider-action-note">{item.scheduledAt?'Ya tenés otro trabajo. UGO validará que este horario no se superponga; si entra, lo agrega a tu agenda sin interrumpir el actual.':'Ya tenés otro trabajo. Este pedido no tiene un horario futuro confirmado; UGO verificará si podés tomarlo sin superponer trabajos.'}</p>}
    <button className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':'ACEPTAR TRABAJO'}</button>
    <button className="provider-reject provider-wide" disabled={d.busy} onClick={()=>flow.actions.rejectOpportunity(item.id)}>No puedo tomarlo</button>
   </div>
