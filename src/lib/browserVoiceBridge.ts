@@ -34,10 +34,11 @@ function installBrowserBridge(){
   const requestStarted=performance.now()
   try{
    emit('ugo:native-voice-state',{state:'connecting',engine:'gemini'})
-   const sb=getRoleSupabase('client'),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
-   if(!accessToken)throw Object.assign(new Error('Sesión de cliente no disponible'),{status:401})
+   const appRole=(()=>{const app=new URLSearchParams(window.location.search).get('app')||'';return app.startsWith('provider')?'provider':'client'})()
+   const sb=getRoleSupabase(appRole),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
+   if(!accessToken)throw Object.assign(new Error(`Sesión de ${appRole==='provider'?'proveedor':'cliente'} no disponible`),{status:401})
    const audio=await blobToBase64(blob)
-   const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({role:'client',voice_transcription:true,audio_base64:audio,mime_type:apiMime(blob.type),capture_ms:Math.round(captureMs)})})
+   const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${accessToken}`},body:JSON.stringify({role:appRole,voice_transcription:true,audio_base64:audio,mime_type:apiMime(blob.type),capture_ms:Math.round(captureMs)})})
    const data=await response.json().catch(()=>({})) as{transcript?:string;error?:string;model?:string}
    const requestMs=Math.round(performance.now()-requestStarted)
    console.info('UGO voice timing',{captureMs:Math.round(captureMs),transcriptionMs:requestMs,status:response.status,model:data.model||null})
