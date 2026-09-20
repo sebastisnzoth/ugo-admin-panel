@@ -422,3 +422,31 @@ No se crea una tabla paralela. `private.es_participante_servicio()` incluye a Ad
 
 Las RPC ejecutadas por Cliente para aprobar/cerrar un servicio no actualizan `usuarios.servicios_completados` del Proveedor. Ese campo está protegido por `trg_00_usuario_sensitive_guard` y una escritura cruzada debe seguir siendo rechazada. La autoridad del conteo es `servicios.estado='completado'`; cualquier materialización/analytics derivada debe ejecutarse por una ruta administrativa segura, nunca dentro de la transacción Cliente de pago/cierre.
 
+
+
+---
+
+# 23. Efectivo, saldo proveedor y deuda UGO · 20/09/2026
+
+El efectivo se contabiliza separado de la custodia digital.
+
+```text
+pagos.metodo = efectivo + estado liberado
+        │
+        ├── monto_bruto           = dinero entregado directamente al proveedor
+        ├── comision_ugo          = comisión económica del servicio
+        ├── ganancia_proveedor    = neto económico después de comisión
+        └── deudas_ugo_proveedor  = cuenta por cobrar de UGO
+```
+
+`deudas_ugo_proveedor` tiene una fila única por `pago_id`, RLS proveedor/Admin, saldo generado y estados `pendiente/informado/parcial/pagado/anulado`.
+
+El proveedor puede informar una referencia con `informar_pago_deuda_ugo`, pero eso no cancela la deuda. Sólo Admin/Super Admin puede conciliarla con `admin_confirmar_deuda_ugo_pagada`, que exige referencia y genera auditoría.
+
+Los pagos en efectivo liberados no deben participar del saldo retirable del proveedor. El saldo UGO sólo incluye ganancias de pagos digitales liberados.
+
+La migración también recupera los cobros en efectivo históricos ya confirmados. En TEST al momento del despliegue se reconciliaron contablemente 7 cobros existentes: R$ 880,00 cobrados por proveedores y R$ 132,00 de comisión UGO pendientes.
+
+## Snapshot de tarifa
+
+Cuando el pedido contiene `metadata.tariff_quote.precio_referencia`, `private.apply_service_pricing_snapshot` congela ese importe en `servicios.tarifa`, calcula comisión/neto y lo vuelve a aplicar en el momento de asignación. Esto evita que `tarifa_ofrecida` o `perfiles_proveedor.tarifa_base` reemplacen silenciosamente la cotización que vio el cliente.
