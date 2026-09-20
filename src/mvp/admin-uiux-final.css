@@ -110,3 +110,14 @@
  .ugo-admin2-main>header{padding-right:0}
  .ugo-admin2-module-card{overflow:hidden!important}
 }
+
+
+/* Super Admin compact governance cards — avoids giant empty role/flag blocks. */
+.ugo-superadmin .ugo-admin2-module-card{
+  min-height:0!important;
+  padding:14px!important;
+  overflow:hidden!important;
+}
+.ugo-superadmin .ugo-admin2-module-card>strong{font-size:12px}
+.ugo-superadmin .ugo-admin2-module-card>p{margin:5px 0 0!important;font-size:10px!important;line-height:1.45!important}
+.ugo-superadmin nav.ugo-admin2-submenu{overflow-x:auto!important;scrollbar-width:thin}
