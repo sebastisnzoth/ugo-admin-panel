@@ -33,7 +33,7 @@ export function ProviderActiveJob(){
    <div className="provider-job-facts">
     <div><small>DÓNDE</small><strong>📍 {address}</strong>{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">Abrir mapa →</a>}</div>
     {scheduledAt&&<div><small>CUÁNDO</small><strong>🗓 {scheduledLabel(scheduledAt)}</strong></div>}
-    <div><small>VALOR</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
+    <div><small>COBRÁS</small><strong>{money(s.ganancia_proveedor||s.tarifa,s.moneda)}</strong><span>{s.tarifa?`Total cliente ${money(s.tarifa,s.moneda)} · Comisión UGO ${money(s.comision_ugo||0,s.moneda)}`:'Importe por confirmar'} · {d.funded?'Pago protegido por UGO':d.cashSelected?'Pago en efectivo':'Forma de pago pendiente'}</span></div>
    </div>
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
   </article>
