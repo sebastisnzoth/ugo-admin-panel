@@ -60,3 +60,16 @@ test('provider receives normal chat and lifecycle alerts even when incoming-work
  assert.match(center,/PROVIDER_CALL_TYPES\.has\(notice\.tipo\)&&!attentionEnabled/)
  assert.match(center,/playProviderTone/)
 })
+
+
+test('push opt-in is visible in both role notification centers',async()=>{
+ const [center,css]=await Promise.all([
+  read('src/mvp/NotificationCenter.tsx'),
+  read('src/mvp/notification-center.css'),
+ ])
+ assert.match(center,/pushState==='off'/)
+ assert.match(center,/ugo-notification-enable-chip/)
+ assert.match(center,/Activar notificaciones/)
+ assert.match(center,/enablePush\(\)/)
+ assert.match(css,/\.ugo-notification-enable-chip/)
+})
