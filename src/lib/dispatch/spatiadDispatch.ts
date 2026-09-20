@@ -20,7 +20,7 @@ export class SpatiadDispatchProvider implements DispatchProvider {
   constructor(private readonly endpoint = '/api/dispatch') {}
 
   async start(request: DispatchRequest): Promise<DispatchResult> {
-    const pickup = request.pickup || storedPickup()
+    const pickup = request.pickup || (request.pickupFallback === 'none' ? null : storedPickup())
     if (!pickup) {
       throw new Error('Spatiad requiere una ubicación reciente del cliente. Activá la ubicación y volvé a intentar.')
     }
