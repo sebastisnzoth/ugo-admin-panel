@@ -1,642 +1,201 @@
-// ScoutSection.tsx — Scout Radar con Leaflet + teardrop pins
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
+import{supabase}from'../lib/supabase'
+import'./scout-section.css'
 
-declare const L: any;
+declare const L:any
 
-const SB_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SB_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
+type Provider={id:string;name:string;phone?:string;address?:string;lat:number;lng:number;dist:number;website?:string;source?:string;subcategoria_label?:string}
+type Prospect={id:string;external_id:string|null;nombre:string;categoria:string;telefono:string|null;email:string|null;website:string|null;direccion:string|null;ciudad:string|null;pais:string|null;latitud:number|null;longitud:number|null;fuente:string;score_confianza:number;estado:string;notas_hugo:string|null;created_at:string;contactado_at:string|null;aprobado_at:string|null}
+type DbProvider={id:string;nombre:string;lat:number|null;lng:number|null;categoria:string|null;cat_emoji:string|null;pin_color:string|null;estado_mapa:string|null;telefono:string|null;zona:string|null}
 
-// Categorías con label en ES / PT / EN
-const CAT_CONFIG: Record<string,{label:string;emoji:string;grupo:string}> = {
-  // ── HOGAR ──────────────────────────────────────────────────
-  electricista:      {label:'Electricista · Eletricista',       emoji:'⚡',  grupo:'🏠 Hogar'},
-  plomero:           {label:'Plomero · Encanador · Hidráulica', emoji:'🚿',  grupo:'🏠 Hogar'},
-  gasista:           {label:'Gasista Matriculado · Gas Fitter',  emoji:'🔥',  grupo:'🏠 Hogar'},
-  limpeza:           {label:'Limpieza · Faxina',                emoji:'🧹',  grupo:'🏠 Hogar'},
-  chaveiro:          {label:'Chaveiro · Cerrajero · Locksmith',  emoji:'🔑',  grupo:'🏠 Hogar'},
-  pintura:           {label:'Pintura · Pintor',                  emoji:'🎨',  grupo:'🏠 Hogar'},
-  carpintaria:       {label:'Carpintaria · Marcenaria',          emoji:'🪚',  grupo:'🏠 Hogar'},
-  jardinagem:        {label:'Jardinagem · Paisagismo',           emoji:'🌿',  grupo:'🏠 Hogar'},
-  climatizacao:      {label:'Climatização · AC · HVAC',         emoji:'❄️',  grupo:'🏠 Hogar'},
-  ti_redes:          {label:'TI · Informática · Redes',          emoji:'💻',  grupo:'🏠 Hogar'},
-  reformas:          {label:'Reformas · Construção',             emoji:'🏗️', grupo:'🏠 Hogar'},
-  marido_aluguel:    {label:'Marido de Aluguel · Serv. Gerais',  emoji:'🛠️', grupo:'🏠 Hogar'},
-  mudanca:           {label:'Mudança · Frete',                   emoji:'📦',  grupo:'🏠 Hogar'},
-  // ── AUTOMOTIVO ─────────────────────────────────────────────
-  automotivo:        {label:'Automotivo (todos os serviços)',    emoji:'🚗',  grupo:'🚗 Automotivo'},
-  // ── PERSONALIZADO ──────────────────────────────────────────
-  custom:            {label:'✏️ Categoría personalizada...',    emoji:'🔍',  grupo:'⚙️ Personalizado'},
-};
+const CATEGORIES=[
+ ['electricista','⚡','Electricista · Eletricista'],
+ ['plomero','🚿','Plomero · Encanador'],
+ ['limpeza','🧹','Limpieza · Faxina'],
+ ['chaveiro','🔑','Cerrajero · Chaveiro'],
+ ['pintura','🎨','Pintura'],
+ ['carpintaria','🪚','Carpintería · Marcenaria'],
+ ['jardinagem','🌿','Jardinería · Jardinagem'],
+ ['climatizacao','❄️','Climatización · Ar condicionado'],
+ ['ti_redes','💻','TI · Informática · Redes'],
+ ['reformas','🏗️','Reformas · Construção'],
+ ['marido_aluguel','🛠️','Marido de aluguel · Servicios generales'],
+ ['mudanca','📦','Mudanza · Frete'],
+ ['automotivo','🚗','Automotivo'],
+] as const
 
-const fmtD = (d:number) => d<1000?Math.round(d)+'m':(d/1000).toFixed(1)+'km';
-const pinColor = (hasPhone:boolean, dist:number) =>
-  hasPhone && dist < 2000 ? '#05944F' : hasPhone ? '#F59E0B' : dist < 2000 ? '#E11900' : '#9CA3AF';
+const category=(key:string)=>CATEGORIES.find(([id])=>id===key)||CATEGORIES[0]
+const fmtDistance=(meters:number)=>meters<1000?`${Math.round(meters)} m`:`${(meters/1000).toFixed(1)} km`
+const safePhone=(value?:string|null)=>String(value||'').replace(/\D/g,'')
+const sourceLabel=(s?:string)=>s==='tomtom'?'TomTom':s==='geoapify'?'Geoapify':s==='osm'?'OpenStreetMap':s==='nominatim'?'Nominatim':s||'Scout'
 
-function makePin(color:string, emoji:string, size=30) {
-  const tail = Math.round(size*0.4);
-  return L.divIcon({
-    html: `<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 3px 6px rgba(0,0,0,.28));">
-      <div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2.5px solid #FFF;
-        display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*.43)}px;">
-        ${emoji}</div>
-      <div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;
-        border-top:${Math.round(tail*1.4)}px solid ${color};margin-top:-2px;"></div>
-    </div>`,
-    className:'',
-    iconSize:[size, size+Math.round(tail*1.4)+2],
-    iconAnchor:[size/2, size+Math.round(tail*1.4)+2],
-    popupAnchor:[0,-(size+Math.round(tail*1.4)+2)],
-  });
+function icon(color:string,label:string,size=28){
+ return L.divIcon({html:`<div class="ugo-scout-pin" style="--pin:${color};--size:${size}px"><span>${label}</span><i></i></div>`,className:'',iconSize:[size,size+13],iconAnchor:[size/2,size+13]})
 }
 
-type Provider = {id:string;name:string;phone?:string;address?:string;lat:number;lng:number;dist:number;website?:string;source?:string};
+export function SecScout(){
+ const mapEl=useRef<HTMLDivElement>(null),mapRef=useRef<any>(null),resultMarkers=useRef<any[]>([]),dbMarkers=useRef<any[]>([]),centerMarker=useRef<any>(null)
+ const[leafletReady,setLeafletReady]=useState(false),[mapReady,setMapReady]=useState(false)
+ const[lat,setLat]=useState(-27.5954),[lng,setLng]=useState(-48.5480),[locationLabel,setLocationLabel]=useState('Florianópolis, SC')
+ const[address,setAddress]=useState(''),[categoryId,setCategoryId]=useState('electricista'),[radius,setRadius]=useState(5000)
+ const[results,setResults]=useState<Provider[]>([]),[prospects,setProspects]=useState<Prospect[]>([]),[dbProviders,setDbProviders]=useState<DbProvider[]>([])
+ const[selected,setSelected]=useState<Provider|null>(null),[loading,setLoading]=useState(false),[geoBusy,setGeoBusy]=useState(false),[busyId,setBusyId]=useState('')
+ const[status,setStatus]=useState('Listo para buscar profesionales externos.'),[error,setError]=useState(''),[outreach,setOutreach]=useState('')
 
-const S = {
-  card:{background:'#FFF',border:'1px solid rgba(0,0,0,.1)',borderRadius:'12px',padding:'12px',boxShadow:'0 1px 4px rgba(0,0,0,.06)'},
-  lbl:{fontSize:'9px',fontWeight:700,textTransform:'uppercase' as const,letterSpacing:'.6px',color:'rgba(0,0,0,.45)',marginBottom:'4px',display:'block'},
-  inp:{width:'100%',padding:'8px 12px',border:'1.5px solid rgba(0,0,0,.15)',borderRadius:'8px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',background:'#F8F9FA',color:'#111'},
-  sel:{width:'100%',padding:'8px 12px',border:'1.5px solid rgba(0,0,0,.15)',borderRadius:'8px',fontSize:'12px',fontFamily:'Inter,sans-serif',outline:'none',background:'#F8F9FA',color:'#111',cursor:'pointer'},
-  btn:(v='p')=>({padding:'8px 16px',borderRadius:'50px',border:'none',cursor:'pointer',fontFamily:'Inter,sans-serif',fontSize:'11px',fontWeight:700,
-    background:v==='p'?'#05944F':v==='wa'?'#25D366':'rgba(0,0,0,.07)',
-    color:v==='p'||v==='wa'?'#FFF':'#111',transition:'all .15s',whiteSpace:'nowrap'} as React.CSSProperties),
-};
+ const loadProspects=useCallback(async()=>{
+  const{data,error}=await(supabase as any).from('prospectos_scouts').select('id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,latitud,longitud,fuente,score_confianza,estado,notas_hugo,created_at,contactado_at,aprobado_at').order('created_at',{ascending:false}).limit(100)
+  if(error)throw error
+  setProspects((data||[])as Prospect[])
+ },[])
 
-export function SecScout() {
-  const [lat,setLat]           = useState(-27.5954);
-  const [lng,setLng]           = useState(-48.5480);
-  const [locLabel,setLocLabel] = useState('Florianópolis, SC (predeterminado)');
-  const [addrInput,setAddrInput] = useState('');
-  const [addrLoading,setAddrLoading] = useState(false);
-  const [cat,setCat]           = useState('electricista');
-  const [radius,setRadius]     = useState('5000');
-  const [loading,setLoading]   = useState(false);
-  const [loadMsg,setLoadMsg]   = useState('');
-  const [results,setResults]   = useState<Provider[]>([]);
-  const [selected,setSelected] = useState<Provider|null>(null);
-  const [outreach,setOutreach] = useState<{type:'wa'|'email';text:string}|null>(null);
-  const [genLoading,setGenLoading] = useState(false);
-  const [manualPhone,setManualPhone] = useState('');
-  const [added,setAdded]       = useState<Set<string>>(new Set());
-  const [contacted,setContacted] = useState<Set<string>>(new Set());
-  const [prospectos,setProspectos] = useState<any[]>([]);
-  const [approving,setApproving] = useState<string|null>(null);
-  const [selMap,setSelMap]       = useState<Set<string>>(new Set());
-  const [bulkLoading,setBulkLoading] = useState(false);
-  const [stats,setStats]       = useState({found:0,contacted:0,joined:0});
-  const [customCat,setCustomCat] = useState('');
-  const [leafletReady,setLeafletReady] = useState(false);
+ const loadDbProviders=useCallback(async()=>{
+  const{data,error}=await(supabase as any).from('vista_todos_proveedores').select('id,nombre,lat,lng,categoria,cat_emoji,pin_color,estado_mapa,telefono,zona').not('lat','is',null).not('lng','is',null).limit(500)
+  if(error)throw error
+  setDbProviders((data||[])as DbProvider[])
+ },[])
 
-  const mapRef    = useRef<HTMLDivElement>(null);
-  const mapInst   = useRef<any>(null);
-  const markers   = useRef<any[]>([]);
-  const centerMk  = useRef<any>(null);
+ useEffect(()=>{void Promise.all([loadProspects(),loadDbProviders()]).catch(e=>setError(e instanceof Error?e.message:'No se pudo cargar Scout.'))},[loadProspects,loadDbProviders])
 
-  // ── Leaflet init ─────────────────────────────────────────────
-  useEffect(() => {
-    if ((window as any).L) { setLeafletReady(true); return; }
-    const link = document.createElement('link');
-    link.rel = 'stylesheet'; link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
-    document.head.appendChild(link);
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-    script.onload = () => setLeafletReady(true);
-    document.body.appendChild(script);
-  }, []);
+ useEffect(()=>{
+  if((window as any).L){setLeafletReady(true);return}
+  if(!document.querySelector('link[data-ugo-leaflet]')){const link=document.createElement('link');link.rel='stylesheet';link.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';link.dataset.ugoLeaflet='1';document.head.appendChild(link)}
+  const existing=document.querySelector('script[data-ugo-leaflet]') as HTMLScriptElement|null
+  if(existing){existing.addEventListener('load',()=>setLeafletReady(true),{once:true});return}
+  const script=document.createElement('script');script.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';script.dataset.ugoLeaflet='1';script.onload=()=>setLeafletReady(true);script.onerror=()=>setError('No se pudo cargar el motor del mapa.');document.body.appendChild(script)
+ },[])
 
-  useEffect(() => {
-    if (!leafletReady || !mapRef.current || mapInst.current) return;
-    const map = L.map(mapRef.current, { center:[-27.5954,-48.5480], zoom:13, zoomControl:true });
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution:'© OpenStreetMap contributors', maxZoom:19
-    }).addTo(map);
-    mapInst.current = map;
-    [100,400,800].forEach(t => setTimeout(()=>map.invalidateSize(),t));
-    setCenter(-27.5954,-48.5480);
-  }, [leafletReady]);
+ useEffect(()=>{
+  if(!leafletReady||!mapEl.current||mapRef.current)return
+  const map=L.map(mapEl.current,{zoomControl:true,attributionControl:true}).setView([lat,lng],13)
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)
+  mapRef.current=map;setMapReady(true)
+  ;[80,300,800].forEach(ms=>window.setTimeout(()=>map.invalidateSize(),ms))
+  return()=>{try{map.remove()}catch{}mapRef.current=null}
+ },[leafletReady])
 
-  const setCenter = useCallback((la:number,lo:number) => {
-    const map = mapInst.current; if (!map) return;
-    if (centerMk.current) map.removeLayer(centerMk.current);
-    centerMk.current = L.marker([la,lo], { icon: L.divIcon({
-      html:'<div style="width:16px;height:16px;border-radius:50%;background:#111;border:3px solid #FFF;box-shadow:0 0 0 4px rgba(17,17,17,.15);"></div>',
-      className:'',iconSize:[16,16],iconAnchor:[8,8]
-    })}).addTo(map);
-    map.setView([la,lo],14);
-  },[]);
+ useEffect(()=>{
+  const map=mapRef.current;if(!map||!(window as any).L)return
+  if(centerMarker.current)centerMarker.current.remove()
+  centerMarker.current=L.marker([lat,lng],{icon:icon('#0f172a','◎',22),zIndexOffset:500}).addTo(map).bindPopup(`Centro de búsqueda · ${locationLabel}`)
+ },[lat,lng,locationLabel,mapReady])
 
-  // ── Carga prospectos ──────────────────────────────────────────
-  const loadProspectos = useCallback(async () => {
-    const r = await fetch(`${SB_URL}/rest/v1/prospectos_scouts?order=created_at.desc&limit=50`,{
-      headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
-    const data = await r.json();
-    if (Array.isArray(data)) {
-      setProspectos(data);
-      setStats({found:data.length,contacted:data.filter((p:any)=>p.estado==='invitado').length,joined:data.filter((p:any)=>p.estado==='aprobado').length});
-    }
-  },[]);
-  useEffect(()=>{ loadProspectos(); loadDbProviders(); },[loadProspectos]);
+ useEffect(()=>{
+  const map=mapRef.current;if(!map||!(window as any).L)return
+  dbMarkers.current.forEach(m=>m.remove());dbMarkers.current=[]
+  dbProviders.forEach(p=>{
+   if(p.lat==null||p.lng==null)return
+   const m=L.marker([p.lat,p.lng],{icon:icon(p.pin_color||'#64748b',p.cat_emoji||'✓',22),zIndexOffset:-100}).addTo(map)
+   m.bindPopup(`<b>${p.nombre}</b><br><small>Ya registrado en UGO · ${p.categoria||'Proveedor'} · ${p.estado_mapa||'—'}</small>`)
+   dbMarkers.current.push(m)
+  })
+ },[dbProviders,mapReady])
 
-  // ── Carga proveedores de Supabase para mostrar en mapa ───────
-  const loadDbProviders = useCallback(async () => {
-    const r = await fetch(`${SB_URL}/rest/v1/vista_todos_proveedores?select=id,nombre,lat,lng,categoria,cat_emoji,pin_color,estado_mapa,telefono,zona`,{
-      headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`}});
-    const data = await r.json();
-    if (!Array.isArray(data)||!mapInst.current) return;
-    // Capa separada de proveedores DB (pines más pequeños)
-    data.forEach((p:any) => {
-      const sz=24, tail=Math.round(sz*.4);
-      const mk = L.marker([p.lat,p.lng],{icon:L.divIcon({
-        html:`<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 2px 4px rgba(0,0,0,.25));opacity:.85;">
-          <div style="width:${sz}px;height:${sz}px;border-radius:50%;background:${p.pin_color||'#6B7280'};border:2px solid #FFF;display:flex;align-items:center;justify-content:center;font-size:${Math.round(sz*.43)}px;">${p.cat_emoji||'📍'}</div>
-          <div style="width:0;height:0;border-left:${tail}px solid transparent;border-right:${tail}px solid transparent;border-top:${Math.round(tail*1.4)}px solid ${p.pin_color||'#6B7280'};margin-top:-1px;"></div>
-        </div>`,className:'',iconSize:[sz,sz+Math.round(tail*1.4)+1],iconAnchor:[sz/2,sz+Math.round(tail*1.4)+1],popupAnchor:[0,-(sz+Math.round(tail*1.4)+1)]
-      }),zIndexOffset:-100}).addTo(mapInst.current);
-      mk.bindPopup(`<div style="font-family:Inter,sans-serif;min-width:140px;padding:2px;">
-        <div style="font-size:9px;font-weight:700;color:#276EF1;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">✅ Registrado en U.GO</div>
-        <div style="font-weight:700;font-size:12px;">${p.nombre}</div>
-        <div style="font-size:10px;color:#666;">${p.cat_emoji||''} ${p.categoria||'—'}${p.telefono?` · 📱 ${p.telefono}`:''}</div>
-        <div style="font-size:10px;color:${p.pin_color||'#666'};margin-top:3px;">${p.estado_mapa==='online'?'🟢 Online':p.estado_mapa==='offline'?'🟡 Offline':'🔴 Inactivo'}</div>
-        ${p.zona?`<div style="font-size:9px;color:#aaa;margin-top:2px;">📍 ${p.zona}</div>`:''}
-      </div>`);
-    });
-  },[]);
+ useEffect(()=>{
+  const map=mapRef.current;if(!map||!(window as any).L)return
+  resultMarkers.current.forEach(m=>m.remove());resultMarkers.current=[]
+  const[,emoji]=category(categoryId)
+  results.forEach(p=>{
+   const color=p.phone?'#10b981':'#94a3b8'
+   const m=L.marker([p.lat,p.lng],{icon:icon(color,emoji,30),zIndexOffset:200}).addTo(map)
+   m.bindPopup(`<b>${p.name}</b><br><small>${fmtDistance(p.dist)} · ${sourceLabel(p.source)}</small>`)
+   m.on('click',()=>{setSelected(p);setOutreach('')})
+   resultMarkers.current.push(m)
+  })
+  if(results.length){try{map.fitBounds([[lat,lng],...results.map(p=>[p.lat,p.lng])],{padding:[28,28],maxZoom:15})}catch{}}
+ },[results,categoryId,lat,lng,mapReady])
 
-  // ── GPS ───────────────────────────────────────────────────────
-  const getGPS = () => {
-    setLocLabel('Detectando GPS...');
-    navigator.geolocation?.getCurrentPosition(
-      p => { setLat(p.coords.latitude); setLng(p.coords.longitude); setCenter(p.coords.latitude,p.coords.longitude);
-        fetch(`https://nominatim.openstreetmap.org/reverse?lat=${p.coords.latitude}&lon=${p.coords.longitude}&format=json`,{headers:{'User-Agent':'ugo-scout/1.0'}})
-          .then(r=>r.json()).then(d=>{ const parts=[d.address?.suburb||d.address?.neighbourhood,d.address?.city||d.address?.town].filter(Boolean); setLocLabel(parts.join(', ')||d.display_name.split(',')[0]); }).catch(()=>{}); },
-      () => setLocLabel('Florianópolis, SC (GPS denegado)')
-    );
-  };
+ const stats=useMemo(()=>({
+  saved:prospects.length,
+  contacted:prospects.filter(p=>p.estado==='invitado'||p.estado==='aprobado').length,
+  approved:prospects.filter(p=>p.estado==='aprobado').length
+ }),[prospects])
 
-  // ── Geocodificar dirección ────────────────────────────────────
-  const geocode = async () => {
-    if (!addrInput.trim()) return;
-    setAddrLoading(true);
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addrInput)}&format=json&limit=1&addressdetails=1`,{headers:{'User-Agent':'ugo-scout/1.0'}});
-    const d = await r.json();
-    if (d[0]) {
-      const la=parseFloat(d[0].lat), lo=parseFloat(d[0].lon);
-      setLat(la); setLng(lo); setCenter(la,lo);
-      const parts=[d[0].address?.suburb||d[0].address?.neighbourhood,d[0].address?.city||d[0].address?.town||d[0].address?.municipality].filter(Boolean);
-      setLocLabel(parts.join(', ')||d[0].display_name.split(',').slice(0,3).join(','));
-      setAddrInput('');
-    } else {
-      // Try without country restriction
-      const r2 = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addrInput)}&format=json&limit=3&addressdetails=1`,{headers:{'User-Agent':'ugo-scout/1.0'}});
-      const d2 = await r2.json();
-      if (d2[0]) {
-        const la=parseFloat(d2[0].lat), lo=parseFloat(d2[0].lon);
-        setLat(la); setLng(lo); setCenter(la,lo);
-        const parts=[d2[0].address?.city||d2[0].address?.town||d2[0].address?.municipality,d2[0].address?.country].filter(Boolean);
-        setLocLabel(parts.join(', ')||d2[0].display_name.split(',').slice(0,3).join(','));
-        setAddrInput('');
-      } else alert('No encontrado. Probá con: "Buenos Aires, Argentina" o "Santiago, Chile"');
-    }
-    setAddrLoading(false);
-  };
+ async function authToken(){
+  const{data:{session},error}=await supabase.auth.getSession()
+  if(error||!session?.access_token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
+  return session.access_token
+ }
 
-  // ── Buscar proveedores ────────────────────────────────────────
-  const doSearch = async () => {
-    setLoading(true); setResults([]); setSelected(null); setOutreach(null);
-    markers.current.forEach(m=>mapInst.current?.removeLayer(m)); markers.current=[];
-    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
-    const searchLabel = cat==='custom' ? (customCat||'?') : cfg.label;
-    setLoadMsg(`${cfg.emoji} Buscando ${searchLabel}...`);
+ async function geocode(){
+  const q=address.trim();if(!q)return
+  setGeoBusy(true);setError('')
+  try{
+   const response=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1&addressdetails=1`)
+   if(!response.ok)throw new Error('No se pudo consultar la ubicación.')
+   const rows=await response.json();if(!rows?.[0])throw new Error('No encontramos esa zona o dirección.')
+   const la=Number(rows[0].lat),lo=Number(rows[0].lon);if(!Number.isFinite(la)||!Number.isFinite(lo))throw new Error('La ubicación no tiene coordenadas válidas.')
+   setLat(la);setLng(lo);setLocationLabel(rows[0].display_name?.split(',').slice(0,3).join(',')||q);setAddress('');mapRef.current?.setView([la,lo],14)
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo ubicar la zona.')}finally{setGeoBusy(false)}
+ }
 
-    try {
-      const r = await fetch('/api/scout/places',{
-        method:'POST', headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({lat,lng,radius:parseInt(radius),categoria:cat,customCat:cat==='custom'?customCat:undefined}),
-      });
-      const data = await r.json();
-      const provs: Provider[] = (data.results||[]).map((p:any)=>({
-        id:p.id, name:p.name, phone:p.phone||undefined,
-        address:p.address||undefined, lat:p.lat, lng:p.lng, dist:p.dist,
-        website:p.website||undefined, source:p.source,
-      })).sort((a:Provider,b:Provider)=>a.dist-b.dist);
+ function gps(){
+  setError('')
+  if(!navigator.geolocation){setError('Este navegador no ofrece GPS. Usá la búsqueda por zona.');return}
+  setGeoBusy(true)
+  navigator.geolocation.getCurrentPosition(p=>{setLat(p.coords.latitude);setLng(p.coords.longitude);setLocationLabel('Ubicación GPS');mapRef.current?.setView([p.coords.latitude,p.coords.longitude],14);setGeoBusy(false)},()=>{setError('No se pudo usar GPS. Podés buscar ciudad, barrio o dirección.');setGeoBusy(false)},{enableHighAccuracy:true,timeout:10000})
+ }
 
-      if (!provs.length) {
-        setLoadMsg(''); setLoading(false);
-        alert(`Sin resultados para "${cfg.label}" en ${fmtD(parseInt(radius))} radio.\nProbá un radio mayor.`);
-        return;
-      }
+ async function search(){
+  setLoading(true);setError('');setStatus('Buscando profesionales externos…');setResults([]);setSelected(null);setOutreach('')
+  try{
+   const token=await authToken()
+   const response=await fetch('/api/scout/places',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({lat,lng,radius,categoria:categoryId})})
+   const payload=await response.json().catch(()=>({}))
+   if(!response.ok)throw new Error(payload.error||`Scout respondió HTTP ${response.status}`)
+   const rows=((payload.results||[])as any[]).map(p=>({id:String(p.id),name:String(p.name||'Profesional'),phone:p.phone||undefined,address:p.address||undefined,lat:Number(p.lat),lng:Number(p.lng),dist:Number(p.dist||0),website:p.website||undefined,source:p.source||payload.source,subcategoria_label:p.subcategoria_label||undefined})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng))
+   setResults(rows)
+   setStatus(rows.length?`${rows.length} profesionales encontrados con teléfono · fuente ${sourceLabel(payload.source)}.`:`No encontramos profesionales con teléfono en ${radius/1000} km. Probá ampliar el radio o cambiar categoría.`)
+  }catch(e){setError(e instanceof Error?e.message:'Scout no pudo completar la búsqueda.');setStatus('La búsqueda no se completó.')}finally{setLoading(false)}
+ }
 
-      // Pins en mapa
-      provs.forEach(p => {
-        const color = pinColor(!!p.phone, p.dist);
-        const mk = L.marker([p.lat,p.lng],{
-          icon: makePin(color, p.phone ? cfg.emoji : '📍', 30)
-        }).addTo(mapInst.current);
-        mk.bindPopup(`
-          <div style="font-family:Inter,sans-serif;min-width:160px;padding:2px;">
-            <div style="font-weight:700;font-size:13px;margin-bottom:3px;">${p.name}</div>
-            <div style="font-size:10px;color:#666;margin-bottom:4px;">${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}</div>
-            ${p.phone?`<div style="font-size:11px;color:#05944F;font-weight:600;">📱 ${p.phone}</div>`:''}
-            ${p.address?`<div style="font-size:10px;color:#888;margin-top:3px;">📍 ${p.address}</div>`:''}
-            <div style="font-size:9px;color:#bbb;margin-top:4px;">
-              ${p.source==='tomtom'?'📍 TomTom':p.source==='cnpj_br'?'🇧🇷 CNPJ/Receita':'🗺 OpenStreetMap'}
-            </div>
-          </div>`);
-        mk.on('click',()=>{ setSelected(p); setOutreach(null); setManualPhone(''); });
-        markers.current.push(mk);
-      });
+ async function saveProspect(p:Provider){
+  setBusyId(p.id);setError('')
+  try{
+   const[,emoji,label]=category(categoryId)
+   const row={external_id:p.id,nombre:p.name,categoria:categoryId,telefono:p.phone||null,email:null,website:p.website||null,direccion:p.address||null,ciudad:locationLabel.split(',')[0]?.trim()||'Florianópolis',pais:'BR',latitud:p.lat,longitud:p.lng,fuente:p.source||'scout',score_confianza:p.phone?75:40,estado:'prospecto_pendiente',notas_hugo:`Scout ${emoji} ${label} · ${fmtDistance(p.dist)}`}
+   const{error}=await(supabase as any).from('prospectos_scouts').upsert(row,{onConflict:'external_id'})
+   if(error)throw error
+   await loadProspects();setStatus(`${p.name} quedó guardado en Scout.`)
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo guardar el prospecto.')}finally{setBusyId('')}
+ }
 
-      // Fit bounds
-      const bounds = L.latLngBounds([[lat,lng],...provs.map((p:Provider)=>[p.lat,p.lng])]);
-      mapInst.current.fitBounds(bounds,{padding:[30,30],maxZoom:15});
+ async function setProspectState(row:Prospect,next:'invitado'|'aprobado'|'rechazado'){
+  setBusyId(row.id);setError('')
+  try{
+   const{error}=await(supabase as any).from('prospectos_scouts').update({estado:next}).eq('id',row.id)
+   if(error)throw error
+   await loadProspects();setStatus(next==='invitado'?'Contacto registrado.':next==='aprobado'?'Prospecto aprobado para incorporación.':'Prospecto descartado.')
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo actualizar el prospecto.')}finally{setBusyId('')}
+ }
 
-      setResults(provs);
-      setLoadMsg(`${data.source==='tomtom'?'📍 TomTom':data.source==='cnpj_br'?'🇧🇷 CNPJ':'🗺 OSM'} — ${provs.length} proveedores`);
-    } catch(e:any) { alert('Error: '+e.message); }
+ async function generateOutreach(){
+  if(!selected)return
+  setBusyId('outreach');setError('')
+  const[,emoji,label]=category(categoryId)
+  const fallback=`Olá! Sou Hugo, do UGO. Estamos incorporando profissionais de ${label} na sua região. O UGO conecta você a clientes próximos sem mensalidade. Se tiver interesse, responda esta mensagem e seguimos com o cadastro. ${emoji}`
+  try{
+   const token=await authToken()
+   const response=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({mode:'admin',messages:[{role:'user',content:`Escreva uma mensagem WhatsApp curta, profissional e natural em português convidando ${selected.name}, profissional de ${label}, para conhecer o UGO. Máximo 70 palavras. Não invente benefícios financeiros.`}],max_tokens:180})})
+   const payload=await response.json().catch(()=>({}))
+   setOutreach(payload?.content?.[0]?.text?.trim()||fallback)
+  }catch{setOutreach(fallback)}finally{setBusyId('')}
+ }
 
-    setLoading(false);
-  };
-
-  // ── Guardar en Supabase ───────────────────────────────────────
-  const addToHugo = useCallback(async (p:Provider) => {
-    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
-    await fetch(`${SB_URL}/rest/v1/prospectos_scouts`,{
-      method:'POST',
-      headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json',Prefer:'return=minimal,resolution=ignore-duplicates'},
-      body:JSON.stringify({
-        nombre:p.name, categoria:cat, telefono:p.phone||null, email:null, website:p.website||null,
-        direccion:p.address||null, ciudad:locLabel.split(',')[0]?.trim()||'Florianópolis', pais:'BR',
-        latitud:p.lat, longitud:p.lng, fuente:p.source==='tomtom'?'tomtom':p.source==='cnpj_br'?'cnpj_br':'osm',
-        score_confianza:p.phone?65:30, estado:'prospecto_pendiente',
-        notas_hugo:`Scout ${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}`,
-      })
-    });
-    setAdded(prev=>new Set([...prev,p.id]));
-    await loadProspectos();
-  },[cat,locLabel,loadProspectos]);
-
-  // ── Generar outreach ──────────────────────────────────────────
-  const genOutreach = async (type:'wa'|'email') => {
-    if (!selected) return;
-    setGenLoading(true); setOutreach(null);
-    const cfg = CAT_CONFIG[cat==='custom'?'custom':cat] || {label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
-    const prompt = type==='wa'
-      ? `Você é Hugo do U.GO. Escreva mensagem WhatsApp curta (máx 80 palavras) em português convidando ${selected.name} (${cfg.label}) para ser provedor do U.GO. Benefícios: 85% do valor garantido, sem mensalidade, clientes verificados. Link: https://ugo.app/cadastro. Máx 1 emoji, sem colchetes.`
-      : `Você é Hugo do U.GO. Escreva email profissional em português para ${selected.name}. Primeira linha: "Assunto: [assunto]". Convide para ser provedor U.GO. Máx 150 palavras. Link: https://ugo.app/cadastro`;
-    const r = await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({mode:'admin',messages:[{role:'user',content:prompt}],max_tokens:300})});
-    const d = await r.json();
-    setOutreach({type,text:d.content?.[0]?.text||'Error al generar.'});
-    setContacted(prev=>new Set([...prev,selected.id]));
-    setGenLoading(false);
-  };
-
-  // ── Aprobar prospecto ─────────────────────────────────────────
-  const aprobar = useCallback(async (id:string) => {
-    setApproving(id);
-    const r = await fetch(`${SB_URL}/rest/v1/rpc/aprobar_prospecto`,{
-      method:'POST',
-      headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
-      body:JSON.stringify({p_prospecto_id:id,p_admin_email:'sebastianzoth@gmail.com'})
-    });
-    const d = await r.json();
-    if (d.ok) {
-      const prosp = prospectos.find(p=>p.id===id);
-      if (prosp?.telefono) {
-        const msgR = await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({mode:'admin',messages:[{role:'user',content:`Mensaje WhatsApp breve en português invitando a "${prosp.nombre}" (${prosp.categoria}) a U.GO. Link: ${d.link_onboarding||'https://ugo.app/cadastro'}. Sin colchetes. Máx 60 palavras.`}],max_tokens:120})});
-        const msgD = await msgR.json();
-        const msg = msgD.content?.[0]?.text?.trim()||`Olá ${prosp.nombre}! Convidamos você para o U.GO: ${d.link_onboarding||'https://ugo.app/cadastro'}`;
-        const waR = await fetch('/api/whatsapp/send',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({to:prosp.telefono,message:msg,prospecto_id:id})});
-        const waD = await waR.json();
-        alert(`✅ ${prosp.nombre} aprobado\n${waD.ok?`📲 WhatsApp enviado`:`📋 ${d.link_onboarding||''}`}`);
-      } else {
-        if (d.link_onboarding) navigator.clipboard.writeText(d.link_onboarding).catch(()=>{});
-        alert(`✅ Aprobado\n📋 Link copiado: ${d.link_onboarding||''}`);
-      }
-      await loadProspectos();
-    } else alert('Error: '+(d.error||d.message||'Revisar Supabase'));
-    setApproving(null);
-  },[prospectos,loadProspectos]);
-
-
-  // ── Aprobación masiva ─────────────────────────────────────────
-  const toggleSel = (id:string) => setSelMap(prev => {
-    const n = new Set(prev);
-    n.has(id) ? n.delete(id) : n.add(id);
-    return n;
-  });
-
-  const selAll = () => {
-    const pending = prospectos.filter(p => p.estado !== 'aprobado' && p.estado !== 'rechazado');
-    setSelMap(new Set(pending.map(p => p.id)));
-  };
-
-  const selNone = () => setSelMap(new Set());
-
-  const aprobarBulk = async () => {
-    if (!selMap.size) return;
-    const ids = Array.from(selMap);
-    setBulkLoading(true);
-    let ok=0, err=0;
-    for (const id of ids) {
-      try {
-        const prosp = prospectos.find(p=>p.id===id);
-        if (!prosp) continue;
-        // Insert directly to usuarios
-        const slug = (prosp.nombre||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'.').slice(0,25);
-        const email = `${slug}.${Date.now().toString(36)}@ugo-import.br`;
-        const row = {
-          email, nombre: prosp.nombre||prosp.name||'',
-          tipo: 'proveedor', activo: true, karma: 5.0,
-          telefono: prosp.telefono||null,
-          categoria: prosp.categoria||'Geral',
-          endereco: prosp.direccion||prosp.address||null,
-          lat: prosp.lat||null, lng: prosp.lng||null,
-          bio: prosp.website?`Website: ${prosp.website}`:null,
-          pais: prosp.pais||'BR', updated_at: new Date().toISOString()
-        };
-        const r1 = await fetch(`${SB_URL}/rest/v1/usuarios`, {
-          method:'POST',
-          headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-          body: JSON.stringify(row)
-        });
-        // Update prospecto estado
-        await fetch(`${SB_URL}/rest/v1/prospectos_scouts?id=eq.${id}`, {
-          method:'PATCH',
-          headers:{apikey:SB_KEY,Authorization:`Bearer ${SB_KEY}`,'Content-Type':'application/json'},
-          body: JSON.stringify({estado:'aprobado', aprobado_at: new Date().toISOString()})
-        });
-        if (r1.ok||r1.status===201) ok++; else err++;
-      } catch { err++; }
-    }
-    setBulkLoading(false);
-    setSelMap(new Set());
-    alert(`✅ ${ok} proveedores aprobados y guardados como usuarios.${err>0?`\n⚠️ ${err} errores.`:''}`);
-    await loadProspectos();
-  };
-
-  const phoneToUse = selected?.phone||manualPhone;
-  const stColors:Record<string,string> = {prospecto_pendiente:'#996000',invitado:'#276EF1',en_revision:'#7356BF',aprobado:'#05944F',rechazado:'#E11900'};
-  const stIcons:Record<string,string>  = {prospecto_pendiente:'⏳',invitado:'📨',en_revision:'⭐',aprobado:'✅',rechazado:'❌'};
-
-  return (
-    <div style={{padding:'16px',overflowY:'auto',height:'100%',fontFamily:'Inter,sans-serif'}}>
-      {/* Header */}
-      <div style={{fontSize:'18px',fontWeight:800,color:'#111',marginBottom:'2px',letterSpacing:'-.3px'}}>📡 Hugo Scout</div>
-      <div style={{fontSize:'11px',color:'rgba(0,0,0,.5)',marginBottom:'14px'}}>
-        Reclutamiento de proveedores · Florianópolis & LATAM
-      </div>
-
-      {/* Stats */}
-      <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'8px',marginBottom:'14px'}}>
-        {[['En Supabase',stats.found,'#276EF1'],['Contactados',stats.contacted,'#05944F'],['Incorporados',stats.joined,'#111']].map(([l,v,c])=>(
-          <div key={String(l)} style={{...S.card,padding:'10px'}}>
-            <div style={{fontSize:'9px',textTransform:'uppercase',letterSpacing:'.8px',color:'rgba(0,0,0,.4)',marginBottom:'3px'}}>{l}</div>
-            <div style={{fontSize:'22px',fontWeight:800,color:String(c)}}>{v}</div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{display:'grid',gridTemplateColumns:'1fr 320px',gap:'12px'}}>
-        {/* LEFT: Map */}
-        <div>
-          {/* Zona */}
-          <div style={{...S.card,marginBottom:'10px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:'8px',marginBottom:'8px'}}>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontSize:'9px',fontWeight:700,textTransform:'uppercase',letterSpacing:'.5px',color:'rgba(0,0,0,.4)',marginBottom:'1px'}}>ZONA DE BÚSQUEDA</div>
-                <div style={{fontSize:'12px',fontWeight:600,color:'#111',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{locLabel}</div>
-              </div>
-              <button style={S.btn()} onClick={getGPS}>📍 GPS</button>
-            </div>
-            <div style={{display:'flex',gap:'7px'}}>
-              <input style={{...S.inp,flex:1}} value={addrInput} onChange={e=>setAddrInput(e.target.value)}
-                onKeyDown={e=>e.key==='Enter'&&geocode()}
-                placeholder="Escribí ciudad, barrio o dirección..."/>
-              <button style={{...S.btn('s'),padding:'8px 14px',background:'rgba(0,0,0,.07)',color:'#111'}}
-                onClick={geocode} disabled={addrLoading||!addrInput.trim()}>
-                {addrLoading?'⏳':'🔍 Ir'}
-              </button>
-            </div>
-          </div>
-
-          {/* Controles */}
-          <div style={{...S.card,display:'grid',gridTemplateColumns:'1fr 120px auto auto',gap:'10px',alignItems:'flex-end',marginBottom:'10px'}}>
-            <div>
-              <label style={S.lbl}>Categoría</label>
-              <select style={S.sel} value={cat} onChange={e=>{setCat(e.target.value);setResults([]);setSelected(null);}}>
-  {(() => {
-                const groups: Record<string,Array<[string,{label:string;emoji:string;grupo:string}]>> = {};
-                Object.entries(CAT_CONFIG).forEach(([k,v]) => {
-                  if (!groups[v.grupo]) groups[v.grupo] = [];
-                  groups[v.grupo].push([k,v]);
-                });
-                return Object.entries(groups).map(([grupo, items]) => (
-                  <optgroup key={grupo} label={grupo}>
-                    {items.map(([k,v]) => <option key={k} value={k}>{v.emoji} {v.label}</option>)}
-                  </optgroup>
-                ));
-              })()}
-              </select>
-            </div>
-            {cat==='custom'&&(
-              <div>
-                <label style={S.lbl}>Categoría personalizada</label>
-                <input style={S.inp} value={customCat}
-                  onChange={e=>setCustomCat(e.target.value)}
-                  onKeyDown={e=>e.key==='Enter'&&doSearch()}
-                  placeholder="Ej: cerrajero, taller mecánico, pintor..."/>
-              </div>
-            )}
-            <div>
-              <label style={S.lbl}>Radio</label>
-              <select style={S.sel} value={radius} onChange={e=>setRadius(e.target.value)}>
-                <option value="2000">2 km</option>
-                <option value="5000">5 km</option>
-                <option value="10000">10 km</option>
-                <option value="20000">20 km</option>
-                <option value="50000">50 km</option>
-                <option value="100000">100 km</option>
-                <option value="200000">200 km</option>
-                <option value="500000">500 km (país)</option>
-              </select>
-            </div>
-            <button style={S.btn()} onClick={doSearch} disabled={loading}>
-              {loading?'⏳ Buscando...':'🔎 Buscar'}
-            </button>
-            <button style={{...S.btn('s'),padding:'8px 12px',background:'rgba(0,0,0,.07)',color:'#111'}}
-              onClick={()=>{
-                if(!results.length)return;
-                const hdr=['id','nombre','categoria','direccion','ciudad','pais','telefono','email','website','rating','reviews_count','latitud','longitud','fuente','estado','fecha_prospectado','notas_hugo','score_confianza'];
-                const now=new Date().toISOString().replace('T',' ').slice(0,19);
-                const ciudad=locLabel.split(',')[0]?.trim()||'Florianópolis';
-                const cfg=CAT_CONFIG[cat]||{label:customCat||cat,emoji:'🔍',grupo:'⚙️ Personalizado'};
-                const rows=results.map(p=>['',p.name,cat,p.address||'',ciudad,locLabel.split(',').slice(-1)[0]?.trim()||'Brasil',p.phone||'','',p.website||'','','0',p.lat?.toFixed(10)||'',p.lng?.toFixed(10)||'',p.source==='tomtom'?'tomtom':p.source==='cnpj_br'?'cnpj_br':'osm','prospecto_pendiente',now,`Scout ${cfg.emoji} ${cfg.label} · ${fmtD(p.dist)}`,p.phone?'65':'30']);
-                const csv=[hdr,...rows].map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(',')).join('\n');
-                const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'}));
-                a.download=`prospectos_scouts_${cat}_${new Date().toISOString().split('T')[0]}.csv`; a.click();
-              }} disabled={!results.length}>⬇ CSV</button>
-          </div>
-
-          {/* Mapa */}
-          <div style={{...S.card,padding:0,overflow:'hidden',height:'320px',position:'relative',marginBottom:'10px',borderRadius:'12px'}}>
-            <div ref={mapRef} style={{width:'100%',height:'100%'}}/>
-            {loading&&<div style={{position:'absolute',inset:0,background:'rgba(255,255,255,.9)',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',zIndex:1000}}>
-              <div style={{fontSize:'28px',marginBottom:'8px',animation:'spin 1s linear infinite'}}>⟳</div>
-              <div style={{fontSize:'11px',color:'rgba(0,0,0,.6)'}}>{loadMsg}</div>
-              <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
-            </div>}
-          </div>
-
-          {/* Leyenda */}
-          {results.length>0&&<div style={{display:'flex',gap:'12px',marginBottom:'8px',fontSize:'10px',color:'rgba(0,0,0,.5)',flexWrap:'wrap'}}>
-            {[['#05944F','Con teléfono < 2km'],['#F59E0B','Con teléfono > 2km'],['#E11900','Sin teléfono < 2km'],['#9CA3AF','Sin teléfono > 2km']].map(([c,l])=>(
-              <span key={l}><span style={{display:'inline-block',width:9,height:9,borderRadius:'50%',background:c,marginRight:4,verticalAlign:'middle'}}/>{l}</span>
-            ))}
-            <span style={{marginLeft:'auto'}}>{loadMsg}</span>
-          </div>}
-
-          {/* Lista de resultados */}
-          {results.length>0&&<div>
-            <div style={{fontSize:'11px',fontWeight:700,marginBottom:'8px',color:'rgba(0,0,0,.6)'}}>
-              {results.length} proveedores · {results.filter(p=>p.phone).length} con teléfono
-            </div>
-            {results.map(p=>{
-              const color = pinColor(!!p.phone,p.dist);
-              return (
-                <div key={p.id} onClick={()=>{setSelected(s=>s?.id===p.id?null:p);setOutreach(null);setManualPhone('');}}
-                  style={{...S.card,cursor:'pointer',borderColor:selected?.id===p.id?'#05944F':'rgba(0,0,0,.08)',
-                    background:selected?.id===p.id?'rgba(5,148,79,.03)':'#FFF',
-                    display:'flex',alignItems:'center',gap:'10px',padding:'9px 12px',marginBottom:'5px',
-                    borderLeft:`3px solid ${color}`}}>
-                  <div style={{width:'36px',height:'36px',borderRadius:'50%',background:color,border:'2px solid #FFF',
-                    display:'flex',alignItems:'center',justifyContent:'center',fontSize:'13px',flexShrink:0,
-                    boxShadow:`0 2px 6px ${color}44`}}>
-                    {p.phone?CAT_CONFIG[cat]?.emoji:'📍'}
-                  </div>
-                  <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</div>
-                    <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>
-                      {fmtD(p.dist)}
-                      {p.phone&&<span style={{color:'#05944F',marginLeft:6,fontWeight:600}}>📱 {p.phone}</span>}
-                      {p.address&&<span style={{marginLeft:6}}>· {p.address.split(',')[0]}</span>}
-                    </div>
-                  </div>
-                  <div style={{display:'flex',gap:'5px',flexShrink:0,alignItems:'center'}}>
-                    {contacted.has(p.id)&&<span style={{fontSize:'8px',padding:'2px 6px',borderRadius:'20px',background:'rgba(5,148,79,.1)',color:'#05944F',border:'1px solid rgba(5,148,79,.2)',fontWeight:700}}>✓</span>}
-                    <button style={{...S.btn(added.has(p.id)?undefined:'p'),padding:'5px 10px',fontSize:'10px',background:added.has(p.id)?'rgba(0,0,0,.06)':'#05944F',color:added.has(p.id)?'#666':'#FFF'}}
-                      onClick={e=>{e.stopPropagation();if(!added.has(p.id))addToHugo(p);}} disabled={added.has(p.id)}>
-                      {added.has(p.id)?'✓ Guardado':'+ Hugo'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>}
-        </div>
-
-        {/* RIGHT: Outreach */}
-        <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
-          <div style={S.card}>
-            <div style={{fontSize:'11px',fontWeight:700,marginBottom:'12px'}}>✉️ Outreach con Hugo
-              {selected&&<span style={{fontSize:'9px',padding:'2px 7px',borderRadius:'20px',background:'rgba(5,148,79,.1)',color:'#05944F',border:'1px solid rgba(5,148,79,.2)',fontWeight:700,marginLeft:8}}>{CAT_CONFIG[cat]?.emoji} {CAT_CONFIG[cat]?.label}</span>}
-            </div>
-            {!selected?(
-              <div style={{textAlign:'center',padding:'24px 0',color:'rgba(0,0,0,.35)'}}>
-                <div style={{fontSize:'32px',marginBottom:'8px'}}>👆</div>
-                <div style={{fontSize:'11px',fontWeight:600,marginBottom:'4px'}}>Seleccioná un proveedor</div>
-                <div style={{fontSize:'10px',lineHeight:1.5}}>Del mapa o la lista de resultados</div>
-              </div>
-            ):(
-              <>
-                <div style={{background:'#F8F9FA',borderRadius:'10px',padding:'10px 12px',marginBottom:'12px'}}>
-                  <div style={{fontWeight:700,fontSize:'13px',marginBottom:'2px'}}>{selected.name}</div>
-                  <div style={{fontSize:'10px',color:'rgba(0,0,0,.5)'}}>{CAT_CONFIG[cat]?.label} · {fmtD(selected.dist)}</div>
-                  {selected.phone&&<div style={{fontSize:'12px',marginTop:'5px',color:'#05944F',fontWeight:600}}>📱 {selected.phone}</div>}
-                  {selected.address&&<div style={{fontSize:'10px',marginTop:'3px',color:'rgba(0,0,0,.55)'}}>📍 {selected.address}</div>}
-                  {selected.website&&<a href={selected.website} target="_blank" rel="noreferrer" style={{fontSize:'10px',color:'#276EF1',display:'block',marginTop:'3px'}}>🌐 Website</a>}
-                  <div style={{fontSize:'9px',color:'rgba(0,0,0,.35)',marginTop:'4px'}}>
-                    {selected.source==='tomtom'?'📍 TomTom':selected.source==='cnpj_br'?'🇧🇷 Receita Federal':'🗺 OpenStreetMap'}
-                  </div>
-                </div>
-
-                {!selected.phone&&<div style={{marginBottom:'10px'}}>
-                  <label style={S.lbl}>📱 Teléfono para WhatsApp</label>
-                  <input style={S.inp} value={manualPhone} onChange={e=>setManualPhone(e.target.value)} placeholder="+55 48 9 9999-9999"/>
-                </div>}
-
-                <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'7px',marginBottom:'12px'}}>
-                  <button style={S.btn('wa')} onClick={()=>genOutreach('wa')} disabled={genLoading}>📲 WhatsApp</button>
-                  <button style={{...S.btn('s'),background:'rgba(0,0,0,.07)',color:'#111'}} onClick={()=>genOutreach('email')} disabled={genLoading}>📧 Email</button>
-                </div>
-
-                {genLoading&&<div style={{textAlign:'center',padding:'12px',background:'#F8F9FA',borderRadius:'8px',marginBottom:'10px',fontSize:'11px',color:'rgba(0,0,0,.5)'}}>✨ Hugo generando...</div>}
-
-                {outreach&&<div style={{background:'#F8F9FA',border:'1px solid rgba(0,0,0,.1)',borderRadius:'10px',padding:'12px'}}>
-                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:'8px'}}>
-                    <span style={{fontSize:'10px',fontWeight:700,color:'rgba(0,0,0,.5)'}}>{outreach.type==='wa'?'📲 WhatsApp':'📧 Email'}</span>
-                    <button style={{...S.btn('s'),padding:'3px 10px',fontSize:'9px',background:'rgba(0,0,0,.07)',color:'#111'}}
-                      onClick={()=>navigator.clipboard.writeText(outreach.text)}>📋 Copiar</button>
-                  </div>
-                  <div style={{fontSize:'11px',lineHeight:1.65,whiteSpace:'pre-wrap',maxHeight:'180px',overflowY:'auto'}}>{outreach.text}</div>
-                  {outreach.type==='wa'&&phoneToUse&&(
-                    <a href={`https://wa.me/${phoneToUse.replace(/\D/g,'')}?text=${encodeURIComponent(outreach.text)}`}
-                      target="_blank" rel="noreferrer" onClick={()=>setContacted(prev=>new Set([...prev,selected.id]))}
-                      style={{display:'flex',alignItems:'center',justifyContent:'center',padding:'9px',background:'#25D366',color:'#FFF',borderRadius:'9px',textDecoration:'none',fontSize:'11px',fontWeight:700,marginTop:'10px'}}>
-                      Abrir WhatsApp →
-                    </a>
-                  )}
-                </div>}
-              </>
-            )}
-          </div>
-
-          <div style={{...S.card,padding:'12px',fontSize:'10px',color:'rgba(0,0,0,.5)',lineHeight:1.7}}>
-            <b style={{color:'rgba(0,0,0,.7)',display:'block',marginBottom:'5px'}}>💡 Flujo</b>
-            1. Zona → Categoría → Buscar<br/>
-            2. Pin/fila → seleccionar → Outreach<br/>
-            3. <b>+ Hugo</b> → guarda en Supabase<br/>
-            4. <b>✓ Aprobar</b> → WhatsApp automático
-          </div>
-        </div>
-      </div>
-
-      {/* Prospectos */}
-      <div style={{marginTop:'16px'}}>
-        <div style={{display:'flex',alignItems:'center',gap:'10px',marginBottom:'10px'}}>
-          <div style={{fontSize:'13px',fontWeight:700,color:'#111'}}>🗂 Prospectos en Supabase ({prospectos.length})</div>
-          <button style={{...S.btn('s'),padding:'5px 12px',fontSize:'10px',background:'rgba(0,0,0,.07)',color:'#111'}} onClick={loadProspectos}>↻</button>
-        </div>
-        <div style={{display:'flex',flexDirection:'column',gap:'6px'}}>
-          {/* Bulk bar */}
-              <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:8,flexWrap:'wrap'}}>
-                <span style={{fontSize:11,fontWeight:700,color:'rgba(0,0,0,.5)'}}>📋 {prospectos.length}</span>
-                <button onClick={selAll} style={{fontSize:'9px',padding:'3px 8px',borderRadius:20,border:'1px solid #ddd',background:'transparent',cursor:'pointer',fontWeight:700}}>☑ Todos</button>
-                <button onClick={selNone} style={{fontSize:'9px',padding:'3px 8px',borderRadius:20,border:'1px solid #ddd',background:'transparent',cursor:'pointer',fontWeight:700}}>☐ Ninguno</button>
-                {selMap.size>0&&<button onClick={aprobarBulk} disabled={bulkLoading}
-                  style={{padding:'4px 12px',borderRadius:20,border:'none',background:'#05944F',color:'#fff',cursor:'pointer',fontWeight:700,fontSize:'10px',marginLeft:'auto'}}>
-                  {bulkLoading?'⏳...':<>✅ Aprobar <b>{selMap.size}</b> seleccionados</>}
-                </button>}
-              </div>
-              {prospectos.map(p=>(
-            <div key={p.id} style={{...S.card,display:'flex',alignItems:'center',gap:'8px',padding:'8px 10px',outline:selMap.has(p.id)?'2px solid #05944F':'none',cursor:'pointer'}}>
-              <input type="checkbox" checked={selMap.has(p.id)} onChange={e=>{e.stopPropagation();toggleSel(p.id);}} style={{flexShrink:0,width:14,height:14,cursor:'pointer'}}/>
-              <div style={{width:'32px',height:'32px',borderRadius:'50%',background:`${stColors[p.estado]||'#999'}18`,border:`1.5px solid ${stColors[p.estado]||'#999'}44`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:'15px',flexShrink:0}}>{stIcons[p.estado]||'⏳'}</div>
-              <div style={{flex:1,minWidth:0}}>
-                <div style={{fontWeight:700,fontSize:'12px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.nombre}</div>
-                <div style={{fontSize:'10px',color:'rgba(0,0,0,.45)',marginTop:'2px'}}>{p.categoria} · {p.ciudad}{p.telefono?` · 📱 ${p.telefono}`:''}</div>
-              </div>
-              <div style={{display:'flex',gap:'6px',flexShrink:0,alignItems:'center'}}>
-                <span style={{fontSize:'9px',fontWeight:700,padding:'2px 8px',borderRadius:'20px',border:`1px solid ${stColors[p.estado]||'#999'}`,color:stColors[p.estado]||'#999',background:`${stColors[p.estado]||'#999'}12`}}>{(p.estado||'').replace(/_/g,' ').toUpperCase()}</span>
-                {p.estado==='prospecto_pendiente'&&<button style={{...S.btn(),padding:'5px 12px',fontSize:'10px'}} onClick={()=>aprobar(p.id)} disabled={approving===p.id}>{approving===p.id?'⏳':'✓ Aprobar'}</button>}
-              </div>
-            </div>
-          ))}
-          {prospectos.length===0&&<div style={{...S.card,textAlign:'center',padding:'20px',color:'rgba(0,0,0,.4)',fontSize:'12px'}}>Sin prospectos. Buscá y pulsá "+ Hugo".</div>}
-        </div>
-      </div>
-    </div>
-  );
+ const selectedSaved=selected?prospects.find(p=>p.external_id===selected.id):null
+ return <div className="ugo-scout">
+  <header className="ugo-scout-head"><div><small>SCOUT UGO</small><h2>Prospección territorial de proveedores</h2><p>Buscá profesionales externos, guardalos como prospectos y registrá el contacto sin salir del panel.</p></div><div className="ugo-scout-stats"><div><b>{stats.saved}</b><span>En Supabase</span></div><div><b>{stats.contacted}</b><span>Contactados</span></div><div><b>{stats.approved}</b><span>Aprobados</span></div></div></header>
+  <section className="ugo-scout-controls">
+   <div className="ugo-scout-location"><label><span>Zona de búsqueda</span><strong>{locationLabel}</strong></label><button type="button" onClick={gps} disabled={geoBusy}>⌖ GPS</button></div>
+   <div className="ugo-scout-searchline"><input value={address} onChange={e=>setAddress(e.target.value)} onKeyDown={e=>{if(e.key==='Enter')void geocode()}} placeholder="Ciudad, barrio o dirección…"/><button type="button" onClick={()=>void geocode()} disabled={geoBusy||!address.trim()}>{geoBusy?'Ubicando…':'Ir'}</button></div>
+   <div className="ugo-scout-searchline"><select value={categoryId} onChange={e=>setCategoryId(e.target.value)}>{CATEGORIES.map(([id,emoji,label])=><option key={id} value={id}>{emoji} {label}</option>)}</select><select value={radius} onChange={e=>setRadius(Number(e.target.value))}><option value={2000}>2 km</option><option value={5000}>5 km</option><option value={10000}>10 km</option><option value={20000}>20 km</option><option value={50000}>50 km</option></select><button className="primary" type="button" onClick={()=>void search()} disabled={loading}>{loading?'Buscando…':'🔎 Buscar'}</button></div>
+  </section>
+  {error&&<div className="ugo-scout-error" role="alert">{error}<button type="button" onClick={()=>setError('')}>×</button></div>}
+  <div className="ugo-scout-status" role="status">{status}</div>
+  <div className="ugo-scout-main">
+   <div className="ugo-scout-map"><div ref={mapEl}/>{!leafletReady&&<span>Cargando mapa…</span>}</div>
+   <aside className="ugo-scout-outreach">{selected?<><small>PROFESIONAL SELECCIONADO</small><h3>{selected.name}</h3><p>{selected.address||locationLabel}</p><div className="ugo-scout-tags"><span>{fmtDistance(selected.dist)}</span><span>{sourceLabel(selected.source)}</span>{selected.subcategoria_label&&<span>{selected.subcategoria_label}</span>}</div>{selected.phone&&<b>📱 {selected.phone}</b>}<div className="ugo-scout-actions"><button type="button" className="primary" onClick={()=>void saveProspect(selected)} disabled={busyId===selected.id}>{selectedSaved?'Actualizar prospecto':'+ Guardar en Scout'}</button><button type="button" onClick={()=>void generateOutreach()} disabled={busyId==='outreach'}>{busyId==='outreach'?'Generando…':'✦ Hugo'}</button></div>{outreach&&<div className="ugo-scout-message"><textarea readOnly value={outreach}/>{selected.phone&&<a href={`https://wa.me/${safePhone(selected.phone)}?text=${encodeURIComponent(outreach)}`} target="_blank" rel="noreferrer" onClick={()=>{if(selectedSaved)void setProspectState(selectedSaved,'invitado')}}>Abrir WhatsApp ↗</a>}</div>}</>:<div className="ugo-scout-empty">Seleccioná un resultado del mapa o de la lista para trabajar el contacto.</div>}</aside>
+  </div>
+  <section className="ugo-scout-results"><header><div><small>RESULTADOS DE BÚSQUEDA</small><strong>{results.length}</strong></div></header>{results.length?<div className="ugo-scout-result-grid">{results.map(p=><button type="button" key={p.id} className={selected?.id===p.id?'active':''} onClick={()=>{setSelected(p);setOutreach('')}}><b>{p.name}</b><span>{p.phone||'Sin teléfono'} · {fmtDistance(p.dist)}</span><small>{p.address||sourceLabel(p.source)}</small></button>)}</div>:<p>No hay resultados cargados. Elegí zona, categoría y radio y pulsá Buscar.</p>}</section>
+  <section className="ugo-scout-prospects"><header><div><small>PROSPECTOS GUARDADOS</small><strong>{prospects.length}</strong></div><button type="button" onClick={()=>void loadProspects()}>↻ Actualizar</button></header>{prospects.length?<div className="ugo-scout-prospect-list">{prospects.slice(0,30).map(p=><article key={p.id}><div><b>{p.nombre}</b><span>{p.telefono||'Sin teléfono'} · {p.categoria}</span><small>{p.ciudad||'—'} · {sourceLabel(p.fuente)} · {new Date(p.created_at).toLocaleString('es-AR')}</small></div><em className={p.estado}>{p.estado.replaceAll('_',' ')}</em><div className="ugo-scout-actions">{p.estado==='prospecto_pendiente'&&<button type="button" onClick={()=>void setProspectState(p,'invitado')} disabled={busyId===p.id}>Contactado</button>}{p.estado!=='aprobado'&&p.estado!=='rechazado'&&<button type="button" className="primary" onClick={()=>void setProspectState(p,'aprobado')} disabled={busyId===p.id}>Aprobar</button>}{p.estado!=='rechazado'&&p.estado!=='aprobado'&&<button type="button" className="danger" onClick={()=>void setProspectState(p,'rechazado')} disabled={busyId===p.id}>Descartar</button>}</div></article>)}</div>:<p>Todavía no hay prospectos guardados.</p>}</section>
+ </div>
 }
-export default SecScout;
