@@ -9,7 +9,7 @@ type AdminGateProps={children?:React.ReactNode}
 
 function resolveAdminLogin(value:string){
  const clean=value.trim()
- return clean.includes('@')?clean.toLowerCase():`${clean.toLowerCase()}@ugoadmin.com`
+ return clean.includes('@')?clean.toLowerCase():`${clean.toLowerCase()}@example.com`
 }
 
 export function AdminGate({children}:AdminGateProps={}){
