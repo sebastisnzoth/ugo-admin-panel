@@ -4,13 +4,14 @@ import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type 
 
 export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null}
 export type ProviderPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null;metodo?:string|null;procesador?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null;fecha_confirmacion?:string|null}
-export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];service:Service|null;payments:ProviderPayment[]}
+export type ProviderDebt={id:string;pago_id:string;servicio_id:string;proveedor_id:string;monto_servicio:number;comision_ugo:number;monto_pagado_ugo:number;saldo_pendiente:number;moneda:string;ambiente:'real'|'demo';estado:'pendiente'|'informado'|'parcial'|'pagado'|'anulado';referencia_pago?:string|null;pago_informado_at?:string|null;pagado_at?:string|null;created_at:string;servicio?:{numero?:number|string|null}|null}
+export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];service:Service|null;payments:ProviderPayment[];debts:ProviderDebt[]}
 
 type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
 type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
-type SnapshotPart='profile'|'offers'|'services'|'payments'
+type SnapshotPart='profile'|'offers'|'services'|'payments'|'debts'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const MISSION_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso'])
@@ -33,15 +34,16 @@ export function pickActionableProviderService(rows:ProviderService[],now=Date.no
 export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string):Promise<ProviderSnapshot>{
  let failedPart:SnapshotPart|null=null
  try{
-  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae}]=await Promise.all([
+  const[{data:p,error:pe},{data:o,error:oe},{data:s,error:se},{data:pay,error:pae},{data:debts,error:debtError}]=await Promise.all([
    supabase.from('perfiles_proveedor').select('*').eq('usuario_id',userId).maybeSingle(),
    supabase.rpc('obtener_ofertas_proveedor'),
    supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
    supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
+   (supabase as any).from('deudas_ugo_proveedor').select('id,pago_id,servicio_id,proveedor_id,monto_servicio,comision_ugo,monto_pagado_ugo,saldo_pendiente,moneda,ambiente,estado,referencia_pago,pago_informado_at,pagado_at,created_at,servicio:servicios!deudas_ugo_proveedor_servicio_id_fkey(numero)').eq('proveedor_id',userId).order('created_at',{ascending:false}),
   ])
-  if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}
+  if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}if(debtError){failedPart='debts';throw debtError}
   const services=(s||[])as ProviderService[]
-  return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[]}
+  return{provider:(p as ProviderProfileFull|null)||null,offers:(o||[])as Offer[],service:pickActionableProviderService(services),payments:(pay||[])as ProviderPayment[],debts:(debts||[])as ProviderDebt[]}
  }catch(error){
   const fallback='No se pudo cargar el estado operativo del proveedor.'
   void reportSentinelIncident({eventType:'provider_snapshot_error',message:messageOf(error,fallback),error,role:'provider',severity:'P1',action:'provider.snapshot.load',metadata:{component:failedPart,errorCode:errorCode(error)}})
