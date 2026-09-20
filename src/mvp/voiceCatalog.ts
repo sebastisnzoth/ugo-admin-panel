@@ -10,7 +10,7 @@ const commonAliases:Array<[RegExp,string[]]>=[
  [/\b(plomero|plomeria|fontanero|encanador|encanamento|canilla|grifo)\b/,['plomeria','encanamento','hidraulica']],
  [/\b(jardinero|jardineria|jardineiro|jardinagem|pasto|cesped)\b/,['jardineria','jardinagem']],
  [/\b(limpieza|limpiador|faxina|limpeza|diarista)\b/,['limpieza','limpeza','faxina']],
- [/\b(pintor|pintura)\b/,['pintura']],
+ [/\b(pintor|pintura)\b/,['pintura','reparaciones','reparacao','manutencao']],
  [/\b(cerrajero|cerrajeria|chaveiro)\b/,['cerrajeria','chaveiro']],
  [/\b(carpintero|carpinteria|marceneiro|marcenaria)\b/,['carpinteria','marcenaria']],
  [/\b(mueble|muebles|puerta de cocina|puertas de cocina|bisagra|bisagras|movel|moveis|dobradica|dobradicas)\b/,['reparaciones','reparacao','manutencao','carpinteria','marcenaria']],
