@@ -21,7 +21,8 @@ test('Hugo stays as an orb until the client opens the conversation',()=>{
 test('spoken category/problem can begin an order without magic request wording',()=>{
  assert.match(dock,/directCategory=await resolveVoiceCategory\(clean\)/)
  assert.match(dock,/category:suggested/)
- assert.match(dock,/await askNext\(clean,current,voiceAvailabilityText/)
+ assert.match(dock,/¿Qué hay que hacer\?/)
+ assert.match(dock,/syncDraft\(current\)/)
 })
 
 test('voice becomes text through the authenticated Gemini transcription bridge',()=>{

@@ -8,14 +8,16 @@ const catalog = await readFile(new URL('../../src/mvp/voiceCatalog.ts', import.m
 const types = await readFile(new URL('../../src/mvp/client/clientTypes.ts', import.meta.url), 'utf8')
 const api = await readFile(new URL('../../api/test.ts', import.meta.url), 'utf8')
 
-test('canonical Hugo asks only category, description, address and when before confirmation', () => {
+test('canonical Hugo mirrors written request fields before confirmation', () => {
   assert.match(hugo, /function nextMissing\(current:Draft\)/)
   assert.match(hugo, /if\(!current\.category\)return'category'/)
   assert.match(hugo, /if\(!current\.description\)return'description'/)
   assert.match(hugo, /if\(!current\.address\)return'address'/)
   assert.match(hugo, /if\(!current\.when\)return'when'/)
+  assert.match(hugo, /if\(!current\.paymentMethod\)return'payment'/)
   assert.doesNotMatch(hugo, /return'budget'/)
-  assert.match(hugo, /¿Y para cuándo lo necesitás\? ¿Ahora, hoy o para otro momento\?/) 
+  assert.match(hugo, /¿Cuándo lo necesitás\? ¿Ahora, hoy o para otro momento\?/)
+  assert.match(hugo, /¿Cómo vas a pagar: efectivo o PIX\?/) 
 })
 
 test('canonical Hugo understands furniture repairs and tomorrow afternoon', () => {
