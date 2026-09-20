@@ -42,3 +42,8 @@ La referencia móvil primaria es 390×844 y debe mantenerse usable de 360–430 
 ## Scroll y movimiento
 
 El documento usa los tokens compartidos de scrollbar de `ugo-design-system.css`. Los scrollbars permanecen visibles y operables. `prefers-reduced-motion: reduce` elimina movimiento no esencial.
+
+
+## Finanzas presenciales
+
+El efectivo lo confirma el cliente después de aprobar el trabajo. UGO registra el total cobrado por el proveedor y mantiene la comisión como deuda separada hasta conciliación. A partir de 3 servicios con comisión pendiente, el proveedor no recibe ni acepta pedidos nuevos; los trabajos ya asignados continúan normalmente.
