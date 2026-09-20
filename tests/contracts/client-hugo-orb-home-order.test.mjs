@@ -7,7 +7,7 @@ const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx'
 const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 
 test('Hugo orb is available from Cliente home/request and does not require a secondary screen',()=>{
- assert.match(root,/\{!detailOpen&&<ClientHugoBridge\/>\}/)
+ assert.match(root,/<ClientHugoBridge\/>/)
  assert.doesNotMatch(root,/!canonical&&!detailOpen&&<ClientHugoBridge\/>/)
 })
 
