@@ -8,7 +8,7 @@ const eventListeners: Array<(event: {table: string, type: string, row: any}) => 
 
 function initChannel() {
   if (globalChannel) return;
-  const TABLES = ['servicios','disputas','pagos','retiros','documentos','usuarios','audit_log','categorias','tarifas','notificaciones'];
+  const TABLES = ['servicios','servicio_estado_eventos','disputas','pagos','retiros','documentos','usuarios','perfiles_proveedor','deudas_ugo_proveedor','audit_log','categorias','tarifas','notificaciones'];
   const ch = (supabase as any).channel('ugo-admin-rt-' + Date.now());
   TABLES.forEach(table => {
     ch.on('postgres_changes', { event: '*', schema: 'public', table }, (payload: any) => {
@@ -16,7 +16,7 @@ function initChannel() {
       eventListeners.forEach(f => f({ table, type: payload.eventType, row: payload.new || payload.old }));
     });
   });
-  globalChannel = ch.subscribe((status: string) => console.log('[RT] status:', status));
+  globalChannel = ch.subscribe((status: string) => { console.log('[RT] status:', status); if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(()=>resetRealtimeChannel(),1500); });
 }
 
 export function resetRealtimeChannel() {
@@ -70,9 +70,14 @@ export function useSystemAlerts() {
   }, []);
   useEffect(() => {
     fetch();
-    const t = setInterval(fetch, 60_000);
-    const u = ['usuarios','disputas','pagos','retiros'].map(tb => subscribe(tb, fetch));
-    return () => { clearInterval(t); u.forEach(f => f()); };
+    const sync=()=>{if(document.visibilityState==='visible')void fetch()};
+    const t = setInterval(sync, 10_000);
+    const u = ['servicios','servicio_estado_eventos','usuarios','perfiles_proveedor','deudas_ugo_proveedor','disputas','pagos','retiros'].map(tb => subscribe(tb, fetch));
+    const onOnline=()=>void fetch();
+    const onVisibility=()=>sync();
+    window.addEventListener('online',onOnline);
+    document.addEventListener('visibilitychange',onVisibility);
+    return () => { clearInterval(t); u.forEach(f => f()); window.removeEventListener('online',onOnline); document.removeEventListener('visibilitychange',onVisibility); };
   }, [fetch]);
   return { alerts, criticalCount: alerts.filter(a => a.severidad === 'critical').length, warningCount: alerts.filter(a => a.severidad === 'warning').length, refetch: fetch };
 }
