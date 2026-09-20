@@ -35,7 +35,7 @@ test('confirmed conversational orders are idempotent and start real dispatch', (
 
 test('canonical Hugo can create another request while active services exist', () => {
   assert.match(hugo, /services=\[\]/)
-  assert.match(hugo, /if\(requestIntent\(clean\)\)/)
+  assert.match(hugo, /if\(directCategory\|\|newRequestIntent\(clean\)\)/)
   assert.doesNotMatch(hugo, /Ya tenés el pedido/)
   assert.doesNotMatch(hugo, /cancelarlo antes de crear otro/)
 })
