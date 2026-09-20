@@ -15,7 +15,7 @@ test('canonical Hugo asks only category, description, address and when before co
   assert.match(hugo, /if\(!current\.address\)return'address'/)
   assert.match(hugo, /if\(!current\.when\)return'when'/)
   assert.doesNotMatch(hugo, /return'budget'/)
-  assert.match(hugo, /¿Cuándo lo necesitás\? ¿Ahora, hoy o para otro momento\?/) 
+  assert.match(hugo, /¿Y para cuándo lo necesitás\? ¿Ahora, hoy o para otro momento\?/) 
 })
 
 test('canonical Hugo understands furniture repairs and tomorrow afternoon', () => {
