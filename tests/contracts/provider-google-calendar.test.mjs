@@ -1,16 +1,15 @@
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
-
 const read=path=>readFile(new URL('../../'+path,import.meta.url),'utf8')
 
 test('provider Google Calendar is a server-side mirror keyed by serviceId',async()=>{
- const[migration,profile,root,sync,shared]=await Promise.all([
+ const[migration,profile,root,server,vercel]=await Promise.all([
   read('supabase/migrations/20260920150000_provider_google_calendar.sql'),
   read('src/mvp/provider/ProviderProfile.tsx'),
   read('src/mvp/provider/ProviderRoot.tsx'),
-  read('api/calendar/sync.ts'),
-  read('api/calendar/_shared.ts'),
+  read('api/test.ts'),
+  read('vercel.json'),
  ])
  assert.match(migration,/proveedor_calendar_conexiones/)
  assert.match(migration,/refresh_token text not null/)
@@ -18,11 +17,11 @@ test('provider Google Calendar is a server-side mirror keyed by serviceId',async
  assert.match(migration,/servicio_id uuid primary key/)
  assert.match(profile,/ProviderCalendarIntegration/)
  assert.match(root,/ProviderCalendarSyncBridge/)
- assert.match(sync,/ugoServiceId:service\.id/)
- assert.match(sync,/service\.estado==='cancelado'|shouldExist/)
- assert.match(sync,/method:'DELETE'/)
- assert.match(sync,/method:'PATCH'/)
- assert.match(shared,/https:\/\/accounts\.google\.com\/o\/oauth2\/v2\/auth/)
+ assert.match(server,/ugoServiceId:service\.id/)
+ assert.match(server,/calendarDelete/)
+ assert.match(server,/method:'PATCH'/)
+ assert.match(server,/accounts\.google\.com\/o\/oauth2\/v2\/auth/)
+ assert.match(vercel,/"source": "\/api\/calendar\/sync"[\s\S]*?"destination": "\/api\/test\?ugo_calendar=sync"/)
  assert.doesNotMatch(profile,/refresh_token|GOOGLE_CALENDAR_CLIENT_SECRET/)
 })
 

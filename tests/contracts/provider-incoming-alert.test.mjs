@@ -5,7 +5,8 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('provider gets an Uber-like foreground alert for offer or direct assignment',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
- assert.match(center,/PROVIDER_ATTENTION_TYPES=new Set\(\['nueva_oferta','trabajo_asignado'\]\)/)
+ assert.match(center,/PROVIDER_CALL_TYPES=new Set\(\['nueva_oferta','trabajo_asignado'\]\)/)
+ assert.match(center,/PROVIDER_ATTENTION_TYPES=new Set\(\[[^\]]*'nueva_oferta'[^\]]*'trabajo_asignado'/)
  assert.match(center,/navigator\.vibrate/)
  assert.match(center,/AudioContext/)
  assert.match(center,/playProviderTone/)
@@ -20,12 +21,8 @@ test('assigned-work notification opens the provider active job after resync',asy
  assert.match(root,/data\.reload\(\)\.then\(\(\)=>flow\.actions\.openActiveJob\(\)\)/)
 })
 
-
-test('provider attention is disabled while Offline or debt-blocked',async()=>{
- const[root,center]=await Promise.all([
-  read('src/mvp/provider/ProviderRoot.tsx'),
-  read('src/mvp/NotificationCenter.tsx'),
- ])
+test('provider attention is disabled while Offline or debt-blocked for incoming calls',async()=>{
+ const[root,center]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/NotificationCenter.tsx')])
  assert.match(root,/attentionEnabled=\{data\.online&&!data\.debtBlocked\}/)
- assert.match(center,/!attentionEnabled/)
+ assert.match(center,/PROVIDER_CALL_TYPES\.has\(notice\.tipo\)&&!attentionEnabled/)
 })

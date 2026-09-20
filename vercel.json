@@ -32,6 +32,30 @@
       "destination": "/api/operations?op=kyc-verify"
     },
     {
+      "source": "/api/calendar/start",
+      "destination": "/api/test?ugo_calendar=start"
+    },
+    {
+      "source": "/api/calendar/callback",
+      "destination": "/api/test?ugo_calendar=callback"
+    },
+    {
+      "source": "/api/calendar/status",
+      "destination": "/api/test?ugo_calendar=status"
+    },
+    {
+      "source": "/api/calendar/sync",
+      "destination": "/api/test?ugo_calendar=sync"
+    },
+    {
+      "source": "/api/calendar/disconnect",
+      "destination": "/api/test?ugo_calendar=disconnect"
+    },
+    {
+      "source": "/api/disputes/analyze",
+      "destination": "/api/test?ugo_dispute_ai=1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
