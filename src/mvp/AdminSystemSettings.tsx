@@ -3,10 +3,11 @@ import{useConfigSistema}from'../hooks/useAdminData'
 import{supabase}from'../lib/supabase'
 import{AdminPaymentCredentials}from'./AdminPaymentCredentials'
 import{AdminPaymentMethods}from'./AdminPaymentMethods'
+import{AdminDeliveryIntegrations}from'./AdminDeliveryIntegrations'
 import'./admin-system-settings.css'
 
 type Group='general'|'rules'|'payments'|'credentials'|'integrations'|'technical'
-type IntegrationStatus={id:string;label:string;category:'core'|'payments'|'ai'|'messaging'|'maps'|'deploy';configured:boolean;enabled:boolean;environment:string;runtimeSource:string;note:string}
+type IntegrationStatus={id:string;label:string;category:'core'|'payments'|'ai'|'messaging'|'maps'|'deploy'|'delivery';configured:boolean;enabled:boolean;environment:string;runtimeSource:string;note:string}
 type IntegrationResponse={generatedAt:string;deployment:{environment:string;commit:string|null};integrations:IntegrationStatus[];warning:string}
 type Meta={description?:string;unit?:string}
 
@@ -16,7 +17,7 @@ const isPaymentMethod=(key:string)=>/^pago_efectivo_/i.test(key)
 const isRule=(key:string)=>/(matching|radio|timeout|comision|escrow|retiro|moneda|pago|pix|mercado|verific|document|proveedor|cliente|cancel|servicio|hugo|voz|oferta|minimo|maximo|tolerancia)/i.test(key)
 const boolValue=(value:string)=>['true','false','1','0','si','no','sí'].includes(String(value).toLowerCase())
 const toBool=(value:string)=>['true','1','si','sí'].includes(String(value).toLowerCase())
-const categoryLabel:Record<IntegrationStatus['category'],string>={core:'Core',payments:'Pagos',ai:'IA',messaging:'Mensajería',maps:'Mapas',deploy:'Deploy'}
+const categoryLabel:Record<IntegrationStatus['category'],string>={core:'Core',payments:'Pagos',ai:'IA',messaging:'Mensajería',maps:'Mapas',deploy:'Deploy',delivery:'Logística'}
 const meta:Record<string,Meta>={
  matching_automatico:{description:'Activa el emparejamiento automático entre solicitudes y proveedores.'},
  radio_busqueda_km:{description:'Radio máximo para localizar proveedores alrededor del cliente.',unit:'km'},
@@ -50,9 +51,14 @@ export function AdminSystemSettings(){
  const loadIntegrations=useCallback(async()=>{
   setIntegrationsLoading(true);setIntegrationsError('')
   try{
-   const{data:{session}}=await supabase.auth.getSession()
+   let{data:{session}}=await supabase.auth.getSession()
+   if(!session){const refreshed=await supabase.auth.refreshSession();session=refreshed.data.session}
    if(!session)throw new Error('Sesión Admin requerida.')
-   const response=await fetch('/api/admin/integrations-status',{headers:{Authorization:`Bearer ${session.access_token}`}})
+   let response=await fetch('/api/admin/integrations-status',{headers:{Authorization:`Bearer ${session.access_token}`}})
+   if(response.status===401){
+    const refreshed=await supabase.auth.refreshSession()
+    if(refreshed.data.session)response=await fetch('/api/admin/integrations-status',{headers:{Authorization:`Bearer ${refreshed.data.session.access_token}`}})
+   }
    const payload=await response.json().catch(()=>({}))
    if(!response.ok)throw new Error(payload.error||'No se pudo verificar el runtime de integraciones.')
    setIntegrations(payload as IntegrationResponse)
@@ -102,6 +108,7 @@ export function AdminSystemSettings(){
    {integrationsError&&<div className="ugo-system-state error"><strong>No se pudo verificar</strong><span>{integrationsError}</span></div>}
    {integrationsLoading&&!integrations&&<div className="ugo-system-state">Consultando configuración segura del runtime…</div>}
    {integrations&&<><div className="ugo-integration-grid">{integrations.integrations.map(item=><article key={item.id} className={`ugo-integration-card ${item.enabled?'is-enabled':item.configured?'is-configured':'is-off'}`}><header><div><small>{categoryLabel[item.category]} · {item.environment}</small><strong>{item.label}</strong></div><span>{item.enabled?'Operativa':item.configured?'Configurada / apagada':'No configurada'}</span></header><p>{item.note}</p><footer><b>Fuente runtime</b><code>{item.runtimeSource}</code></footer></article>)}</div><div className="ugo-system-note"><strong>Lectura segura del runtime</strong><span>{integrations.warning} Las credenciales guardadas en la bóveda privada se muestran aparte y no se consideran activas si el runtime que procesa la integración no las consume.</span></div></>}
+   <AdminDeliveryIntegrations/>
   </section>}
   {tab==='technical'&&<section className="ugo-system-card"><div className="ugo-system-cardhead"><div><small>ESTADO TÉCNICO</small><h4>Salud del panel y conexión</h4></div></div><div className="ugo-system-health"><article><small>BUILD CLIENTE</small><strong>{import.meta.env.MODE}</strong><span>Modo Vite actual</span></article><article><small>NAVEGADOR</small><strong>{navigator.onLine?'Online':'Offline'}</strong><span>Conectividad del dispositivo; no prueba backend</span></article><article><small>CONFIG SISTEMA</small><strong>{entries.length}</strong><span>Parámetros visibles cargados</span></article><article><small>RUNTIME</small><strong>{integrations?.deployment.environment||'Sin verificar'}</strong><span>{integrations?.deployment.commit?`Commit ${integrations.deployment.commit.slice(0,8)}`:'Abrí Integraciones para verificar servidor'}</span></article></div><div className="ugo-system-note"><strong>Importante</strong><span>“Online” del navegador no significa que Supabase, pagos, WhatsApp, Hugo o el deploy estén operativos. La pestaña Integraciones verifica presencia de configuración en el runtime server-side sin exponer secretos.</span></div></section>}
  </div>
