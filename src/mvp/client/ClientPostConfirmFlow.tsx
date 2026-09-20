@@ -12,7 +12,7 @@ type ServiceRow={id:string;estado:string;proveedor_id:string|null;numero?:number
 type View='matching'|'assigned'|'chat'|'detail'|'rating'
 const MATCHING=new Set(['buscando','ofrecido'])
 const TERMINAL=new Set(['completado','cancelado','cancelada','rechazado','rechazada'])
-const draftPickup=(draft:Draft)=>{const latitude=Number(draft.pickupLat),longitude=Number(draft.pickupLng);return Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180?{latitude,longitude}:null}
+const draftPickup=(draft:Draft)=>{if(draft.pickupLat==null||draft.pickupLng==null)return null;const latitude=Number(draft.pickupLat),longitude=Number(draft.pickupLng);return Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180?{latitude,longitude}:null}
 export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
  const{session,supabase}=useRoleSession('client'),flow=useClientFlow(),[service,setService]=useState<ServiceRow|null>(null),[view,setView]=useState<View>('matching'),[seconds,setSeconds]=useState(0),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[score,setScore]=useState(0),[comment,setComment]=useState(''),creating=useRef(false)
  const draftKey=session?`ugo:guided-request-draft:${session.user.id}`:'',idKey=session?`ugo:canonical-active-service:${session.user.id}`:''
