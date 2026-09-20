@@ -10,6 +10,7 @@ import{ServiceChat}from'../ServiceChat'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
 import{STATUS_LABELS}from'../shared'
 import{ClientPaymentChoice}from'./ClientPaymentChoice'
+import{ClientRatingPrompt}from'./ClientRatingPrompt'
 import{useClientFlow}from'./clientFlow'
 
 type DetailRow={id:string;numero:number|string|null;estado:string;descripcion:string|null;direccion_cliente:string|null;programado_para:string|null;created_at:string|null;tarifa:number|string|null;moneda:string|null;proveedor_id:string|null;categoria:{nombre?:string|null;emoji?:string|null}|null;proveedor:{nombre?:string|null;karma?:number|null}|null}
@@ -35,6 +36,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
    {!awaitingApproval&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.tracking" title="Seguimiento temporalmente no disponible" compact><ClientLiveTracking serviceId={service.id} embedded/></SentinelErrorBoundary>}
    {!awaitingApproval&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.payment" checklistCode="PAYMENT-CLOSE" severity="P0" title="Pago temporalmente no disponible" compact><ClientPaymentChoice serviceId={service.id}/></SentinelErrorBoundary>}
    {!awaitingApproval&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.expansion" title="Cambios del servicio temporalmente no disponibles" compact><ServiceExpansionPanel role="client" serviceId={service.id} compact/></SentinelErrorBoundary>}
+   {service.estado==='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.rating.submit" checklistCode="RATING" severity="P1" title="Calificación temporalmente no disponible" compact><ClientRatingPrompt serviceId={service.id} embedded/></SentinelErrorBoundary>}
    <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title="Ayuda temporalmente no disponible" compact><DisputeDock role="client" serviceId={service.id}/></SentinelErrorBoundary>
   </>}
  </div></div>

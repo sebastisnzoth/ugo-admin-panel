@@ -5,9 +5,10 @@ import'./client-rating-prompt.css'
 
 type CompletedService={id:string;numero:number|string|null;proveedor_id:string;descripcion:string|null;completado_at:string|null;updated_at:string|null}
 type RatingTarget={service:CompletedService;providerName:string}
+type Props={serviceId?:string|null;embedded?:boolean}
 const shouldEscalate=()=>document.visibilityState==='visible'&&navigator.onLine
 
-export function ClientRatingPrompt(){
+export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
  const{session,supabase}=useRoleSession('client'),userId=session?.user.id||null
  const[target,setTarget]=useState<RatingTarget|null>(null)
  const[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
@@ -18,7 +19,9 @@ export function ClientRatingPrompt(){
 
  const load=useCallback(async()=>{
   if(!userId){setTarget(null);setMessage('');return}
-  const{data:services,error:serviceError}=await supabase.from('servicios').select('id,numero,proveedor_id,descripcion,completado_at,updated_at').eq('cliente_id',userId).eq('estado','completado').not('proveedor_id','is',null).order('completado_at',{ascending:false,nullsFirst:false}).limit(12)
+  let servicesQuery=supabase.from('servicios').select('id,numero,proveedor_id,descripcion,completado_at,updated_at').eq('cliente_id',userId).eq('estado','completado').not('proveedor_id','is',null)
+  servicesQuery=serviceId?servicesQuery.eq('id',serviceId).limit(1):servicesQuery.order('completado_at',{ascending:false,nullsFirst:false}).limit(12)
+  const{data:services,error:serviceError}=await servicesQuery
   if(serviceError)throw serviceError
   const rows=(services||[])as CompletedService[]
   if(!rows.length){setTarget(null);return}
@@ -31,7 +34,7 @@ export function ClientRatingPrompt(){
   const{data:provider,error:providerError}=await supabase.from('usuarios').select('nombre').eq('id',service.proveedor_id).maybeSingle()
   if(providerError)throw providerError
   setTarget({service,providerName:String(provider?.nombre||'tu profesional')})
- },[supabase,userId])
+ },[serviceId,supabase,userId])
  const loadRef=useRef(load),reportRef=useRef(report)
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{reportRef.current=report},[report])
@@ -78,7 +81,7 @@ export function ClientRatingPrompt(){
 
  if(!target||target.service.id===dismissed)return null
  const number=target.service.numero??target.service.id.slice(0,8)
- return <aside className="ugo-client-rating" aria-label={`Calificar pedido ${number}`}>
+ return <aside className={`ugo-client-rating ${embedded?'is-embedded':''}`} aria-label={`Calificar pedido ${number}`}>
   <button type="button" className="ugo-client-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label="Calificar más tarde">×</button>
   <small>SERVICIO FINALIZADO · PEDIDO #{number}</small>
   <h2>¿Cómo te fue con {target.providerName}?</h2>

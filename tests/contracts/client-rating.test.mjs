@@ -85,3 +85,26 @@ test('ratings are bilateral: provider can rate the client and both directions sh
  assert.match(migration,/autor_tipo='proveedor'/)
  assert.match(migration,/autor_tipo='cliente'/)
 })
+
+
+test('client rating is immediately available after payment closes the selected service',async()=>{
+ const[root,detail,prompt]=await Promise.all([
+  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/mvp/client/ClientRatingPrompt.tsx'),
+ ])
+ assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
+ assert.match(prompt,/serviceId\?servicesQuery\.eq\('id',serviceId\)\.limit\(1\)/)
+ assert.match(prompt,/embedded\?'is-embedded'/)
+})
+
+test('completed-service notification can land on home and still expose client rating',async()=>{
+ const[root,flow]=await Promise.all([
+  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/mvp/client/ClientFlowActionsBridge.tsx'),
+ ])
+ assert.match(root,/notice\.tipo==='servicio_completado'\)return flow\.actions\.openReview\(\)/)
+ assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
+ assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+})
