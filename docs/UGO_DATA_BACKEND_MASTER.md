@@ -471,4 +471,4 @@ Cuando `blocked=true` el backend:
 
 La defensa de asignación es transversal y no depende de que la UI o un flujo concreto use `aceptar_oferta`. El desbloqueo ocurre cuando quedan menos de tres deudas reales abiertas; la vuelta Online es manual.
 
-`api/deudas/pagar` genera un Pix server-side únicamente para la deuda autenticada y usa `UGO_PIX_KEY`. No muta el estado financiero. `informar_pago_deuda_ugo` registra la referencia, y `admin_confirmar_deuda_ugo_pagada` conserva la autoridad de conciliación.
+`api/test?ugo_debt=1` genera un Pix server-side dentro de la función consolidada de UGO únicamente para la deuda autenticada y usa `UGO_PIX_KEY`. No muta el estado financiero. `informar_pago_deuda_ugo` registra la referencia, y `admin_confirmar_deuda_ugo_pagada` conserva la autoridad de conciliación.

@@ -32,6 +32,6 @@ test('provider UI exposes the debt block and a real pay UGO action',async()=>{
  assert.match(opportunities,/PAGAR UGO/)
  assert.match(home,/Pagá a UGO para volver al radar/)
  assert.match(endpoint,/UGO_PIX_KEY/)
- assert.match(endpoint,/eq\('proveedor_id',auth\.user\.id\)/)
+ assert.match(endpoint,/eq\('proveedor_id',user\.id\)/)
  assert.match(endpoint,/Generar|pixCopiaCola/)
 })
