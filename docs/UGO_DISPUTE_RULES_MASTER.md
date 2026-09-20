@@ -69,3 +69,12 @@ Reembolsos parciales, compensaciones, multas y cambios de dinero nunca se improv
 ## Derecho a revisión
 
 La resolución y su fundamento quedan visibles en el expediente. Un pedido de revisión posterior debe referenciar el mismo caso; no crea una segunda realidad del servicio.
+
+
+## Matriz de reglas por motivo
+
+Cada motivo activo tiene un `criterio_resolucion` y un `resultado_preferido`. Son una guía consistente para Admin y para el asistente IA; **no sustituyen la evaluación del expediente**.
+
+La base impone `auto_aplicar=false`: ninguna fila de la matriz puede cerrar un caso, sancionar una cuenta o mover dinero automáticamente. Las salidas financieras como reembolso, ajuste, crédito o penalización requieren el flujo financiero/contractual correspondiente y auditoría separada.
+
+Ejemplos de orientación: trabajo incompleto/calidad → evaluar corrección o retrabajo; sin acceso → evaluar reprogramación; cobro incorrecto/negativa de pago → conciliación financiera; daño, fraude y seguridad → revisión humana obligatoria.

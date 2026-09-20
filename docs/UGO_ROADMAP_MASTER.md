@@ -382,3 +382,12 @@ El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rut
 - cada bucket conserva su frontera de seguridad: `service-evidence` para evidencia del trabajo y `dispute-evidence` para el expediente;
 - el análisis Gemini consume ambas fuentes, pero la resolución continúa siendo humana;
 - validación backend real en UGO TEST con transacción ROLLBACK sobre un servicio completado: Cliente propuso acuerdo, Proveedor lo respondió y Cliente abrió `abrir_disputa_v2`; se verificó motivo, hilo y snapshot completo con servicio, pago, eventos, chat y evidencias; al terminar no quedó ningún artefacto QA persistido.
+
+
+### Checkpoint 20/09/2026 · matriz objetiva de resolución
+
+- cada motivo de disputa incorpora criterio verificable y salida sugerida por política;
+- Admin ve la regla junto al expediente antes de resolver;
+- Gemini recibe la misma regla persistida, evitando prompts divergentes;
+- `auto_aplicar=false` está protegido por constraint: la matriz nunca resuelve, sanciona ni mueve dinero sola;
+- daño, fraude y seguridad continúan con salida `revision_humana`.

@@ -9,6 +9,7 @@ const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionD
 const when=(v:any)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'
 const severity=(s:any)=>String(s||'info').toLowerCase()
 const stateLabel=(s:any)=>String(s||'—').replaceAll('_',' ')
+const policyOutcomeLabel=(value:any)=>({confirmar_servicio:'Confirmar servicio',retrabajo:'Corrección / retrabajo',reagendar:'Reagendar',ajuste_financiero:'Revisión financiera',reembolso:'Evaluar reembolso',penalizacion:'Evaluar consecuencia contractual',revision_humana:'Revisión humana',solicitar_evidencia:'Pedir más evidencia',acuerdo:'Buscar acuerdo'} as Record<string,string>)[String(value||'')]||stateLabel(value)
 
 export function AdminAlertsDecisionCenter(){
  const{alerts,criticalCount,warningCount,refetch}=useSystemAlerts()
@@ -32,22 +33,23 @@ export function AdminAlertsDecisionCenter(){
 export function AdminDisputesDecisionCenter(){
  const{disputes,loading,error,resolverDisputa}=useAdminDisputes()
  const[selected,setSelected]=useState<any>(null),[text,setText]=useState(''),[favor,setFavor]=useState<'cliente'|'proveedor'>('cliente'),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null)
- const[messages,setMessages]=useState<any[]>([]),[evidence,setEvidence]=useState<any[]>([]),[serviceInfo,setServiceInfo]=useState<any>(null),[paymentInfo,setPaymentInfo]=useState<any>(null),[events,setEvents]=useState<any[]>([]),[detailLoading,setDetailLoading]=useState(false),[detailError,setDetailError]=useState<string|null>(null)
+ const[messages,setMessages]=useState<any[]>([]),[evidence,setEvidence]=useState<any[]>([]),[serviceInfo,setServiceInfo]=useState<any>(null),[paymentInfo,setPaymentInfo]=useState<any>(null),[events,setEvents]=useState<any[]>([]),[ruleInfo,setRuleInfo]=useState<any>(null),[detailLoading,setDetailLoading]=useState(false),[detailError,setDetailError]=useState<string|null>(null)
  const total=useMemo(()=>disputes.reduce((n:any,d:any)=>n+Number(d.monto_disputado||0),0),[disputes])
 
- useEffect(()=>{if(!selected){setMessages([]);setEvidence([]);setServiceInfo(null);setPaymentInfo(null);setEvents([]);setDetailError(null);return}
+ useEffect(()=>{if(!selected){setMessages([]);setEvidence([]);setServiceInfo(null);setPaymentInfo(null);setEvents([]);setRuleInfo(null);setDetailError(null);return}
   let alive=true;setDetailLoading(true);setDetailError(null)
   Promise.all([
    (supabase as any).from('disputa_mensajes').select('id,autor_id,autor_rol,mensaje,evidencias,created_at').eq('disputa_id',selected.id).order('created_at',{ascending:true}),
    (supabase as any).from('evidencias_servicio').select('id,tipo,storage_path,descripcion,usuario_id,created_at').eq('servicio_id',selected.servicio_id).order('created_at',{ascending:true}),
    (supabase as any).from('servicios').select('id,numero,estado,tarifa,descripcion,direccion_cliente,created_at,aceptado_at,iniciado_at,completado_at,cancelado_at').eq('id',selected.servicio_id).maybeSingle(),
    (supabase as any).from('pagos').select('id,estado,monto_bruto,comision_ugo,ganancia_proveedor,metodo,procesador,mp_status,autorizado_at,liberado_at,reembolsado_at,created_at').eq('servicio_id',selected.servicio_id).order('created_at',{ascending:false}).limit(1).maybeSingle(),
-   (supabase as any).from('eventos_servicio').select('id,evento,estado_anterior,estado_nuevo,created_at').eq('servicio_id',selected.servicio_id).order('created_at',{ascending:false}).limit(12)
-  ]).then(async([m,e,s,p,ev]:any[])=>{
+   (supabase as any).from('eventos_servicio').select('id,evento,estado_anterior,estado_nuevo,created_at').eq('servicio_id',selected.servicio_id).order('created_at',{ascending:false}).limit(12),
+   selected.motivo_codigo?(supabase as any).from('reglas_motivos_disputa').select('codigo,etiqueta,severidad,requiere_humano,ventana_horas,evidencia_sugerida,criterio_resolucion,resultado_preferido,auto_aplicar').eq('codigo',selected.motivo_codigo).maybeSingle():Promise.resolve({data:null,error:null})
+  ]).then(async([m,e,s,p,ev,rule]:any[])=>{
    if(!alive)return
-   const firstError=[m,e,s,p,ev].find((x:any)=>x?.error)?.error
+   const firstError=[m,e,s,p,ev,rule].find((x:any)=>x?.error)?.error
    if(firstError)setDetailError(firstError.message||'No se pudo cargar todo el contexto del caso.')
-   setMessages(m.data||[]);setServiceInfo(s.data||null);setPaymentInfo(p.data||null);setEvents(ev.data||[])
+   setMessages(m.data||[]);setServiceInfo(s.data||null);setPaymentInfo(p.data||null);setEvents(ev.data||[]);setRuleInfo(rule.data||null)
    const rows=e.data||[]
    const signed=await Promise.all(rows.map(async(row:any)=>{const{data}=await(supabase as any).storage.from('service-evidence').createSignedUrl(row.storage_path,900);return{...row,url:data?.signedUrl||null}}))
    if(alive){setEvidence(signed);setDetailLoading(false)}
@@ -87,6 +89,7 @@ export function AdminDisputesDecisionCenter(){
 
    <section className="ugo-case-evidence"><div className="ugo-case-section-title"><small>EVIDENCIAS DEL SERVICIO</small><span>{evidence.length} archivo(s)</span></div>{detailLoading?<p>Cargando evidencias…</p>:evidence.length?<div className="ugo-evidence-grid">{evidence.map((e:any)=><figure key={e.id}>{e.url?<button type="button" className="ugo-evidence-image" onClick={()=>window.open(e.url,'_blank','noopener,noreferrer')}><img src={e.url} alt={`Evidencia ${e.tipo||''}`}/></button>:<div className="ugo-evidence-placeholder">Sin vista previa</div>}<figcaption><div><b>{String(e.tipo||'evidencia').toUpperCase()}</b><span>{when(e.created_at)}</span></div><p>{e.descripcion||'Sin descripción.'}</p>{e.url&&<button type="button" onClick={()=>window.open(e.url,'_blank','noopener,noreferrer')}>Ver evidencia</button>}</figcaption></figure>)}</div>:<p>No hay fotos o documentos registrados para este servicio.</p>}</section>
 
+   {ruleInfo&&<section className="ugo-dispute-policy"><div><small>REGLA APLICABLE · {String(ruleInfo.severidad||'media').toUpperCase()}</small><strong>{ruleInfo.etiqueta||'Política de disputa'}</strong></div><p>{ruleInfo.criterio_resolucion}</p><div><span>Salida sugerida por política</span><b>{policyOutcomeLabel(ruleInfo.resultado_preferido)}</b></div>{ruleInfo.evidencia_sugerida&&<em>Evidencia esperada: {ruleInfo.evidencia_sugerida}</em>}{ruleInfo.requiere_humano&&<strong className="human">Revisión humana obligatoria</strong>}<footer>Esta regla orienta la revisión. No resuelve el caso ni ejecuta movimientos de dinero automáticamente.</footer></section>}
    <AdminDisputeAssistant disputeId={selected.id} onDraft={draft=>setText(draft)}/>
    <div className="ugo-resolution-choice"><button className={favor==='cliente'?'active client':''} onClick={()=>setFavor('cliente')}>A favor del cliente</button><button className={favor==='proveedor'?'active provider':''} onClick={()=>setFavor('proveedor')}>A favor del proveedor</button></div>
    <div className={`ugo-impact ${impact.tone}`}><strong>{impact.title}</strong>{impact.items.map((x,i)=><span key={i}>• {x}</span>)}</div>
