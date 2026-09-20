@@ -242,10 +242,32 @@ export function useCategorias() {
 export function useTarifas() {
   const [tarifas, setTarifas] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const fetch = useCallback(async () => { const { data } = await (supabase as any).from('tarifas').select('*,categorias:categoria_id(nombre,emoji)').order('zona'); if (data) setTarifas(data); setLoading(false); }, []);
-  const upsert = useCallback(async (categoriaId: string, zona: string, precios: any) => { await (supabase as any).rpc('admin_upsert_tarifa', { p_categoria_id: categoriaId, p_zona: zona, p_precio_base: precios.base, p_precio_hora: precios.hora, p_precio_min: precios.min, p_precio_max: precios.max }); await fetch(); }, [fetch]);
+  const [error, setError] = useState('');
+  const fetch = useCallback(async () => {
+    setLoading(true); setError('');
+    const { data, error: queryError } = await (supabase as any).from('tarifas').select('*,categorias:categoria_id(nombre,emoji)').order('zona');
+    if (queryError) { setError(queryError.message || 'No se pudieron cargar las tarifas.'); setTarifas([]); setLoading(false); return; }
+    setTarifas(data || []); setLoading(false);
+  }, []);
+  const upsert = useCallback(async (categoriaId: string, zona: string, precios: any) => {
+    const { error: rpcError } = await (supabase as any).rpc('admin_upsert_tarifa', {
+      p_categoria_id: categoriaId,
+      p_zona: zona,
+      p_precio_base: Number(precios.base || 0),
+      p_precio_hora: Number(precios.hora || 0),
+      p_precio_min: Number(precios.min || 0),
+      p_precio_max: precios.max === '' || precios.max == null ? null : Number(precios.max)
+    });
+    if (rpcError) throw new Error(rpcError.message || 'No se pudo guardar la tarifa.');
+    await fetch();
+  }, [fetch]);
+  const setActiva = useCallback(async (id: string, activa: boolean) => {
+    const { error: rpcError } = await (supabase as any).rpc('admin_set_tarifa_activa', { p_tarifa_id: id, p_activa: activa });
+    if (rpcError) throw new Error(rpcError.message || 'No se pudo actualizar la tarifa.');
+    await fetch();
+  }, [fetch]);
   useEffect(() => { fetch(); const u = subscribe('tarifas', fetch); return u; }, [fetch]);
-  return { tarifas, loading, upsert, refetch: fetch };
+  return { tarifas, loading, error, upsert, setActiva, refetch: fetch };
 }
 
 export function useConfigSistema() {
