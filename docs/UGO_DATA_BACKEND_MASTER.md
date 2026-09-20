@@ -543,3 +543,20 @@ Principios:
 - Las fuentes de auditoría/360 (`servicio_estado_eventos`, `eventos_servicio`, `evidencias_solicitud`, `resenas`, `deudas_ugo_proveedor`, `disputa_mensajes`) están publicadas en `supabase_realtime` cuando existen.
 - El centro de Alertas combina alertas persistidas con excepciones derivadas únicamente de datos reales: matching demorado, estado que requiere proveedor sin `proveedor_id`, traslado prolongado, aprobación demorada, disputa y bloqueo de proveedor por deuda UGO.
 - Las alertas derivadas no cambian estados ni dinero automáticamente; sirven para priorizar intervención administrativa.
+
+
+# 28. Snapshot GPS del pedido Cliente · 20/09/2026
+
+`public.guardar_ubicacion_servicio_cliente(p_servicio_id, p_lat, p_lng)` es la frontera canónica para congelar la ubicación específica de un pedido antes del matching.
+
+La función:
+
+- exige `auth.uid()`;
+- verifica que el actor sea el `cliente_id` del mismo `serviceId`;
+- valida rangos de latitud/longitud;
+- rechaza servicios terminales;
+- escribe `servicios.ubicacion_cliente` como geography SRID 4326;
+- mantiene `perfiles_cliente.ubicacion` sólo como fallback histórico de tracking;
+- es ejecutable por `authenticated` y no por `anon`.
+
+`SupabaseDispatchProvider.start()` intenta este snapshot antes de `iniciar_matching`. Un fallo de geolocalización no borra ni duplica el pedido: se reporta como `MAP-GPS` y el matching puede continuar.

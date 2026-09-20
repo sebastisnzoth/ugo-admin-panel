@@ -414,3 +414,21 @@ El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rut
 - Alertas ahora incorpora excepciones operativas reales: matching demorado, servicio inconsistente, traslado prolongado, aprobación demorada, disputas y proveedores bloqueados por deuda UGO;
 - migración `admin_operational_realtime_publication` aplicada en UGO TEST;
 - madurez pendiente: CI del SHA exacto y prueba de dos roles cambiando estado mientras Admin permanece abierto sin interacción manual.
+
+
+---
+
+## Checkpoint 20/09/2026 · snapshot GPS Cliente antes de matching
+
+Sentinel detectó el incidente real `client_request_location_error`: `SupabaseDispatchProvider` ya llamaba `guardar_ubicacion_servicio_cliente`, pero el RPC no existía en UGO TEST.
+
+Corrección validada en `615cf1b6ef479c11f56325ef7e385d6b15c29eb4`:
+
+- RPC canónico agregado y aplicado en UGO TEST;
+- valida sesión, ownership del Cliente, coordenadas y estado no terminal;
+- persiste `servicios.ubicacion_cliente` con `POINT(lng lat)` / SRID 4326;
+- el GPS queda ligado al `serviceId` antes de iniciar matching;
+- auditoría registra la acción sin copiar coordenadas crudas al log;
+- el matching sigue siendo recuperable si el GPS no está disponible.
+
+UGO Core CI del commit pasó TypeScript/build, contratos, lifecycle/RLS y lint completo. Falta revalidación física de GPS en Cliente para promover MAP-GPS más allá del estado técnico.
