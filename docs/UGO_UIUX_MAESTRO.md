@@ -395,6 +395,6 @@ Desde `Personas → Usuarios → Ver historial`, Admin/Super Admin debe poder in
 
 ## Calificación post-servicio
 
-Al completar un servicio, la calificación debe ser accesible desde cualquier pantalla no bloqueante del Cliente y del Proveedor. Ambas direcciones usan 1–5 estrellas + comentario opcional. En Proveedor, el prompt nunca interrumpe una misión activa; se difiere hasta que no haya trabajo en curso.
+Al completar un servicio, la calificación aparece en el contexto post-servicio del Cliente y del Proveedor, sin invadir Inicio/Pedido ni un detalle operativo activo. Ambas direcciones usan 1–5 estrellas + comentario opcional. En Proveedor, el prompt nunca interrumpe una misión activa; se difiere hasta que no haya trabajo en curso.
 
 Admin muestra ambas direcciones juntas y marca claramente una calificación faltante como `Pendiente`, no como cero estrellas.
