@@ -160,7 +160,8 @@ export class SupabaseDispatchProvider implements DispatchProvider {
   }
 
   async start(request: DispatchRequest): Promise<DispatchResult> {
-    await persistPickup(request.serviceId, request.pickup || storedPickup())
+    const pickup = request.pickup || (request.pickupFallback === 'none' ? null : storedPickup())
+    await persistPickup(request.serviceId, pickup)
     const storedPreferredProviderId = consumeStoredPreferredProvider(request.category)
     const preferredProviderId = request.preferredProviderId || storedPreferredProviderId
 
