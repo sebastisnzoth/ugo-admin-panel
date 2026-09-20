@@ -323,3 +323,15 @@ Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offl
 - tocar la alerta abre el pedido exacto; el detalle y Home continúan resincando `servicios` por Realtime;
 - notificaciones también alimentan Web Push cuando el usuario lo habilitó;
 - pendiente de madurez RUNTIME: prueba física en dos dispositivos con Proveedor marcando ESTOY YENDO/LLEGUÉ y enviando chat mientras Cliente está en Home y con la app en background.
+
+
+---
+
+## Checkpoint 20/09/2026 · push bidireccional Cliente ↔ Proveedor
+
+- `notificaciones` agrega automáticamente el rol del destinatario antes del encolado Push;
+- Cliente y Proveedor reciben avisos de chat y eventos operativos críticos en foreground con tono/vibración;
+- Web Push abre la app del rol correcto y conserva el `serviceId` cuando está disponible;
+- `push-dispatch` v2 prioriza chat, asignación, recorrido, cancelación, aprobación y pago como eventos de alta urgencia;
+- ambos roles ven una acción visible para activar Push si el navegador todavía no tiene suscripción;
+- validación de base: runtime Push configurado; actualmente existen suscripciones Cliente y el Proveedor debe autorizar Push en su dispositivo para recibir avisos con la app cerrada.
