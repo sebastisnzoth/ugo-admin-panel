@@ -20,8 +20,9 @@ test('canonical client order never reuses stale browser GPS for a different addr
 })
 
 test('saved-place pickup is exact only when that place has coordinates', async () => {
-  const location = await read('src/mvp/client/ClientLocationScreen.tsx')
-  assert.match(location, /Number\.isFinite\(lat\)&&Number\.isFinite\(lng\)/)
+  const [location, post] = await Promise.all([read('src/mvp/client/ClientLocationScreen.tsx'), read('src/mvp/client/ClientPostConfirmFlow.tsx')])
+  assert.match(location, /place\.latitud!=null&&place\.longitud!=null&&Number\.isFinite\(lat\)&&Number\.isFinite\(lng\)/)
+  assert.match(post, /draft\.pickupLat==null\|\|draft\.pickupLng==null/)
   assert.match(location, /pickupLat/)
   assert.match(location, /pickupLng/)
 })
