@@ -76,3 +76,18 @@ test('admin operational exception queue derives stuck and inconsistent work from
  assert.match(src,/proveedor_deuda_ugo/)
  assert.match(src,/useAdminActiveServices/)
 })
+
+
+test('admin deep-links alerts and home activity to the exact 360 service sheet',async()=>{
+ const[phase,home,services,alerts]=await Promise.all([
+  read('src/mvp/AdminPhase2.tsx'),
+  read('src/mvp/AdminHomeStitch.tsx'),
+  read('src/mvp/AdminServicesPro.tsx'),
+  read('src/mvp/AdminDecisionCenter.tsx'),
+ ])
+ assert.match(phase,/onOpenService=\{openService\}/)
+ assert.match(phase,/initialServiceId=\{selectedServiceId\}/)
+ assert.match(home,/onClick=\{\(\)=>onOpenService\(service\.id\)\}/)
+ assert.match(services,/initialServiceId/)
+ assert.match(alerts,/Abrir ficha 360°/)
+})
