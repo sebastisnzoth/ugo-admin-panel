@@ -282,3 +282,14 @@ Implementado en código/backend:
 - al quedar por debajo de 3, el proveedor puede volver Online manualmente.
 
 Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offline`, `disponible=false` y sin ofertas pendientes; otro con 1 deuda continuó Online. Core CI del bloque quedó verde. Pendiente de cierre de madurez: validar Pix con `UGO_PIX_KEY` configurada y ejecutar E2E de pago/conciliación → Online.
+
+
+---
+
+## 16. Checkpoint 20/09/2026 · consolidación Frontend Premium
+
+- Diseño aprobado para unificar Cliente, Proveedor y Admin bajo tokens `--ugo-*`.
+- `UX-CONTRACT.md` documenta comportamiento frontend transversal sin duplicar lifecycle.
+- Baseline: WCAG 2.2 AA, targets de 48 px, scrollbar visible y movimiento reducido.
+- Slices: Home/Mapa Cliente, alias visuales Proveedor, legibilidad/semántica Admin y frontera DEMO para `?app=web`.
+- CSS histórico se retira sólo con evidencia de consumidor cero, build, tests y verificación visual.
