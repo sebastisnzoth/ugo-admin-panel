@@ -26,10 +26,10 @@ export function PixReconciliationPanel({embedded=true}:Props){
    const serviceIds=[...new Set([...list,...historyList].map(r=>r.servicio_id).filter(Boolean))],userIds=[...new Set([...list,...historyList].flatMap(r=>[r.cliente_id,r.proveedor_id]).filter(Boolean))]
    const[{data:s,error:se},{data:u,error:ue}]=await Promise.all([
     serviceIds.length?db.from('servicios').select('id,numero,descripcion').in('id',serviceIds):Promise.resolve({data:[],error:null}),
-    userIds.length?db.from('usuarios').select('id,nombre').in('id,userIds):Promise.resolve({data:[],error:null}),
+    userIds.length?db.from('usuarios').select('id,nombre').in('id',userIds):Promise.resolve({data:[],error:null}),
    ])
    if(se)throw se;if(ue)throw ue
-   setServices(Object.fromEntries(((s||[]) as ServiceRow[]).map(x=>[x.id,x])));setUsers(Object.fromEntries((u||[]) as UserRow[]).map(x=>[x.id,x])))
+   setServices(Object.fromEntries(((s||[]) as ServiceRow[]).map(x=>[x.id,x])));setUsers(Object.fromEntries(((u||[]) as UserRow[]).map(x=>[x.id,x])))
   }catch(e){setLoadError(e instanceof Error?e.message:'No se pudo cargar Pix.')}finally{setLoading(false)}
  },[])
  useEffect(()=>{void load();const ch=supabase.channel('admin-pix-reconciliation').on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe();return()=>{void supabase.removeChannel(ch)}},[load])
