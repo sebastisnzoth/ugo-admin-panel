@@ -2,6 +2,7 @@ import React,{useEffect,useMemo,useState}from'react'
 import{useSystemAlerts}from'../hooks/useAdminData'
 import{useAdminDisputes}from'../hooks/useDisputes'
 import{supabase}from'../lib/supabase'
+import{AdminDisputeAssistant}from'./AdminDisputeAssistant'
 import'./admin-decision-center.css'
 
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
@@ -86,6 +87,7 @@ export function AdminDisputesDecisionCenter(){
 
    <section className="ugo-case-evidence"><div className="ugo-case-section-title"><small>EVIDENCIAS DEL SERVICIO</small><span>{evidence.length} archivo(s)</span></div>{detailLoading?<p>Cargando evidencias…</p>:evidence.length?<div className="ugo-evidence-grid">{evidence.map((e:any)=><figure key={e.id}>{e.url?<button type="button" className="ugo-evidence-image" onClick={()=>window.open(e.url,'_blank','noopener,noreferrer')}><img src={e.url} alt={`Evidencia ${e.tipo||''}`}/></button>:<div className="ugo-evidence-placeholder">Sin vista previa</div>}<figcaption><div><b>{String(e.tipo||'evidencia').toUpperCase()}</b><span>{when(e.created_at)}</span></div><p>{e.descripcion||'Sin descripción.'}</p>{e.url&&<button type="button" onClick={()=>window.open(e.url,'_blank','noopener,noreferrer')}>Ver evidencia</button>}</figcaption></figure>)}</div>:<p>No hay fotos o documentos registrados para este servicio.</p>}</section>
 
+   <AdminDisputeAssistant disputeId={selected.id} onDraft={draft=>setText(draft)}/>
    <div className="ugo-resolution-choice"><button className={favor==='cliente'?'active client':''} onClick={()=>setFavor('cliente')}>A favor del cliente</button><button className={favor==='proveedor'?'active provider':''} onClick={()=>setFavor('proveedor')}>A favor del proveedor</button></div>
    <div className={`ugo-impact ${impact.tone}`}><strong>{impact.title}</strong>{impact.items.map((x,i)=><span key={i}>• {x}</span>)}</div>
    <label className="ugo-resolution-label">Fundamento de la resolución<textarea value={text} onChange={e=>setText(e.target.value)} placeholder="Explicá qué evidencia revisaste, qué ocurrió y por qué UGO toma esta decisión..."/></label>

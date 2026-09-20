@@ -335,3 +335,35 @@ Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offl
 - `push-dispatch` v2 prioriza chat, asignación, recorrido, cancelación, aprobación y pago como eventos de alta urgencia;
 - ambos roles ven una acción visible para activar Push si el navegador todavía no tiene suscripción;
 - validación de base: runtime Push configurado; actualmente existen suscripciones Cliente y el Proveedor debe autorizar Push en su dispositivo para recibir avisos con la app cerrada.
+
+
+---
+
+## 17. Checkpoint 20/09/2026 · Calendar + Disputas v2
+
+Implementado en `main`:
+
+- integración Google Calendar Proveedor como espejo server-side e idempotente por serviceId;
+- crear/actualizar/eliminar eventos programados y recordatorios;
+- conexión/desconexión OAuth preparada sin exponer refresh tokens al navegador;
+- catálogo formal de motivos de disputa con ventanas y severidad;
+- acuerdo amistoso previo trazable;
+- snapshot del contexto al abrir disputa;
+- adjuntos privados de la disputa;
+- asistente Gemini de evidencia para Admin, incluyendo lectura de imágenes;
+- casos sensibles marcados para revisión humana obligatoria;
+- reglamento y prompts/checklist registrados.
+
+Estado de madurez:
+
+```text
+Calendar código/backend       IMPLEMENTED
+Calendar DB TEST              APPLIED
+Calendar OAuth runtime        BLOCKED hasta credenciales Google
+Disputas v2 código/backend    IMPLEMENTED
+Disputas v2 DB TEST           aplicar/verificar migración
+IA disputa runtime            requiere GEMINI_API_KEY + smoke Admin
+E2E físico                    pendiente
+```
+
+Ningún análisis IA ejecuta una resolución o movimiento de dinero. PROD permanece intacto.

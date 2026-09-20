@@ -492,3 +492,25 @@ El sonido foreground depende de que el navegador haya permitido AudioContext des
 Toda fila nueva de `public.notificaciones` se enriquece server-side con el rol canónico del destinatario (`client` o `provider`) antes de entrar a `push_entregas`. El Service Worker usa ese rol y, cuando existe, el `servicio_id` para abrir la app correcta desde una notificación del sistema.
 
 El mismo canal cubre chat, asignación, recorrido del proveedor, llegada, inicio, aprobación/cierre, cancelación, disputa y eventos de pago. En foreground, Cliente y Proveedor reciben banner, vibración y tono; en background/cerrado, Web Push depende de una suscripción autorizada por el usuario. La UI muestra una acción visible `Activar notificaciones` mientras el dispositivo no esté suscripto.
+
+
+# 26. Google Calendar Proveedor · 20/09/2026
+
+UGO mantiene `servicios.programado_para` y el lifecycle persistido como única fuente de verdad. Google Calendar es un espejo opcional.
+
+- `proveedor_calendar_conexiones`: OAuth server-only, RLS cerrada a navegador;
+- `proveedor_calendar_eventos`: mapa idempotente `serviceId → google_event_id`;
+- create/update/delete se ejecutan en `/api/calendar/sync`;
+- una cancelación o eliminación de programación retira el evento Google; el historial permanece en UGO;
+- el bridge Proveedor resincroniza al abrir/volver online/foreground y cada cinco minutos mientras la app está activa;
+- si Google falla, no cambia el estado del servicio ni bloquea el trabajo.
+
+Para runtime hacen falta credenciales OAuth Web y redirect URI en el entorno server-side.
+
+# 27. Disputas v2 · reglas, snapshot e IA
+
+`reglas_motivos_disputa` define actor, severidad, ventana y obligación humana. `abrir_disputa_v2` valida la regla, captura `snapshot` antes de mutar el servicio, escala acuerdos pendientes y conserva el expediente del mismo `serviceId`.
+
+`acuerdos_previos_disputa` registra una propuesta amistosa antes del caso formal sin alterar dinero por sí sola. Los adjuntos viven en el bucket privado `dispute-evidence` con ruta `serviceId/userId/file`.
+
+`disputa_ai_analisis` es server-only. Gemini recibe snapshot, hilo y hasta seis imágenes disponibles para producir soporte de decisión. El resultado no resuelve el caso, no mueve dinero y no es visible a participantes como decisión oficial. El Reglamento canónico está en `docs/UGO_DISPUTE_RULES_MASTER.md`.
