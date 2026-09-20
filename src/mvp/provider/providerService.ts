@@ -39,6 +39,7 @@ export async function loadProviderSnapshot(supabase:SupabaseClient,userId:string
    supabase.rpc('obtener_ofertas_proveedor'),
    supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre)').eq('proveedor_id',userId).in('estado',PROVIDER_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50),
    supabase.from('pagos').select('*').eq('proveedor_id',userId).order('created_at',{ascending:false}),
+   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- tabla agregada por migración 20260920070000; regenerar tipos al promover TEST→PROD.
    (supabase as any).from('deudas_ugo_proveedor').select('id,pago_id,servicio_id,proveedor_id,monto_servicio,comision_ugo,monto_pagado_ugo,saldo_pendiente,moneda,ambiente,estado,referencia_pago,pago_informado_at,pagado_at,created_at,servicio:servicios!deudas_ugo_proveedor_servicio_id_fkey(numero)').eq('proveedor_id',userId).order('created_at',{ascending:false}),
   ])
   if(pe){failedPart='profile';throw pe}if(oe){failedPart='offers';throw oe}if(se){failedPart='services';throw se}if(pae){failedPart='payments';throw pae}if(debtError){failedPart='debts';throw debtError}
