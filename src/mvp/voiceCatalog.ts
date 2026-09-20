@@ -1,7 +1,7 @@
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{providerRadarForCategory,refreshProviderRadar}from'./client/providerRadarStore'
 
-export type VoiceCategory={id:string;slug:string|null;nombre:string|null}
+export type VoiceCategory={id:string;slug:string|null;nombre:string|null;emoji?:string|null}
 export type VoiceProvider={id:string;nombre:string|null;karma:number|string|null;servicios_completados:number|null;tarifa_base:number|string|null;experiencia_anos:number|null}
 export type VoiceAvailability={category:VoiceCategory;providers:VoiceProvider[]}
 
