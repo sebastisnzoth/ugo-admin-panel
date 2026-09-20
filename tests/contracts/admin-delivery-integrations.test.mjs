@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const status=fs.readFileSync('api/admin/integrations-status.ts','utf8')
-const api=fs.readFileSync('api/admin/delivery-integrations.ts','utf8')
+const api=fs.readFileSync('api/admin/integrations-status.ts','utf8')
 const ui=fs.readFileSync('src/mvp/AdminDeliveryIntegrations.tsx','utf8')
 const settings=fs.readFileSync('src/mvp/AdminSystemSettings.tsx','utf8')
 
@@ -46,6 +46,7 @@ test('Admin integrations retry an expired Supabase session once',()=>{
 test('Admin UI provides connector cards and server-side tests',()=>{
  assert.match(settings,/AdminDeliveryIntegrations/)
  assert.match(ui,/Uber · iFood · Rappi/)
+ assert.match(ui,/\/api\/admin\/integrations-status/)
  assert.match(ui,/Testar conexão/)
  assert.match(ui,/Documentação oficial/)
 })
