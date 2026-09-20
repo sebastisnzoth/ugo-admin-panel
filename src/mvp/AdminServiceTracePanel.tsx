@@ -8,6 +8,7 @@ type Service={
 }
 type Evidence={id:string;kind:'solicitud'|'servicio';tipo:string;storage_path:string;descripcion:string|null;created_at:string;usuario_id?:string|null;url?:string|null}
 type StateEvent={id:string;actor_id:string|null;actor_role:string;estado_anterior:string|null;estado_nuevo:string;motivo:string|null;created_at:string}
+type LegacyEvent={id:number|string;actor_id:string|null;evento:string;estado_anterior:string|null;estado_nuevo:string|null;detalles:Record<string,unknown>|null;created_at:string}
 type Payment={id:string;estado:string;metodo:string|null;modelo_pago:string|null;monto_bruto:number|null;moneda:string|null;created_at:string;updated_at:string|null;autorizado_at:string|null;liberado_at:string|null;reembolsado_at:string|null;fecha_confirmacion:string|null;pix_informado_at:string|null;pix_conciliado_at:string|null}
 type Review={id:string;autor_tipo:string;puntuacion:number;comentario:string|null;created_at:string;cliente_id:string;proveedor_id:string}
 const stateLabel=(s?:string|null)=>({borrador:'Pedido creado',buscando:'Buscando profesional',ofrecido:'Oferta enviada',asignado:'Profesional asignado',en_camino:'Proveedor en camino',llegado:'Proveedor llegó',en_progreso:'Trabajo iniciado',esperando_aprobacion:'Trabajo listo / esperando aprobación',completado:'Servicio completado',cancelado:'Servicio cancelado',disputado:'Servicio en disputa'} as Record<string,string>)[String(s||'')]||String(s||'Evento')
@@ -16,25 +17,27 @@ const money=(v:number|null,currency:string|null)=>{try{return new Intl.NumberFor
 const name=(p?:{nombre?:string|null;apellido?:string|null}|null)=>[p?.nombre,p?.apellido].filter(Boolean).join(' ')||'—'
 
 export function AdminServiceTracePanel({service}:{service:Service}){
- const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({})
+ const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[legacyEvents,setLegacyEvents]=useState<LegacyEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({})
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
-   const[{data:req,error:reqError},{data:work,error:workError},{data:eventRows,error:eventError},{data:paymentRows,error:paymentError},{data:reviewRows,error:reviewError}]=await Promise.all([
+   const[{data:req,error:reqError},{data:work,error:workError},{data:eventRows,error:eventError},{data:legacyRows,error:legacyError},{data:paymentRows,error:paymentError},{data:reviewRows,error:reviewError}]=await Promise.all([
     (supabase as any).from('evidencias_solicitud').select('id,storage_path,descripcion,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('evidencias_servicio').select('id,tipo,storage_path,descripcion,created_at,usuario_id').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('servicio_estado_eventos').select('id,actor_id,actor_role,estado_anterior,estado_nuevo,motivo,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
+    (supabase as any).from('eventos_servicio').select('id,actor_id,evento,estado_anterior,estado_nuevo,detalles,created_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('pagos').select('id,estado,metodo,modelo_pago,monto_bruto,moneda,created_at,updated_at,autorizado_at,liberado_at,reembolsado_at,fecha_confirmacion,pix_informado_at,pix_conciliado_at').eq('servicio_id',service.id).order('created_at',{ascending:true}),
     (supabase as any).from('resenas').select('id,autor_tipo,puntuacion,comentario,created_at,cliente_id,proveedor_id').eq('servicio_id',service.id).order('created_at',{ascending:true})
    ])
-   const firstError=reqError||workError||eventError||paymentError||reviewError;if(firstError)throw firstError
+   const firstError=reqError||workError||eventError||legacyError||paymentError||reviewError;if(firstError)throw firstError
    const requestEvidence:Evidence[]=await Promise.all(((req||[])as any[]).map(async row=>{const{data}=await supabase.storage.from('request-evidence').createSignedUrl(row.storage_path,1800);return{id:row.id,kind:'solicitud',tipo:'pedido',storage_path:row.storage_path,descripcion:row.descripcion,created_at:row.created_at,url:data?.signedUrl||null}}))
    const serviceEvidence:Evidence[]=await Promise.all(((work||[])as any[]).map(async row=>{const{data}=await supabase.storage.from('service-evidence').createSignedUrl(row.storage_path,1800);return{...row,kind:'servicio',url:data?.signedUrl||null}}))
    const eventList=(eventRows||[])as StateEvent[]
-   const actorIds=Array.from(new Set(eventList.map(e=>e.actor_id).filter(Boolean))) as string[]
+   const legacyList=(legacyRows||[])as LegacyEvent[]
+   const actorIds=Array.from(new Set([...eventList.map(e=>e.actor_id),...legacyList.map(e=>e.actor_id)].filter(Boolean))) as string[]
    if(actorIds.length){const{data:userRows}=await (supabase as any).from('usuarios').select('id,nombre,apellido').in('id',actorIds);setActors(Object.fromEntries((userRows||[]).map((u:any)=>[u.id,[u.nombre,u.apellido].filter(Boolean).join(' ')||u.id.slice(0,8)])))}else setActors({})
    setEvidence([...requestEvidence,...serviceEvidence].sort((a,b)=>new Date(a.created_at).getTime()-new Date(b.created_at).getTime()))
-   setEvents(eventList);setPayments((paymentRows||[])as Payment[]);setReviews((reviewRows||[])as Review[])
+   setEvents(eventList);setLegacyEvents(legacyList);setPayments((paymentRows||[])as Payment[]);setReviews((reviewRows||[])as Review[])
   }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la trazabilidad completa del servicio.')}finally{setLoading(false)}
  },[service.id])
  useEffect(()=>{void load()},[load])
@@ -44,12 +47,13 @@ export function AdminServiceTracePanel({service}:{service:Service}){
   if(service.created_at)rows.push({key:'created',at:service.created_at,title:'Pedido creado',detail:`Cliente: ${name(service.cliente)}`,role:'cliente'})
   if(service.programado_para)rows.push({key:'scheduled',at:service.programado_para,title:'Horario solicitado / programado',detail:'Fecha prevista para el servicio',role:'sistema'})
   if(service.aceptado_at)rows.push({key:'accepted',at:service.aceptado_at,title:'Pedido aceptado / asignado',detail:`Proveedor: ${name(service.proveedor)}`,role:'proveedor'})
+  for(const e of legacyEvents)rows.push({key:`legacy-${e.id}`,at:e.created_at,title:e.estado_nuevo?stateLabel(e.estado_nuevo):e.evento.replaceAll('_',' '),detail:[e.estado_anterior?`Desde ${stateLabel(e.estado_anterior)}`:null,actors[e.actor_id||'']?`Actor: ${actors[e.actor_id||'']}`:null].filter(Boolean).join(' · ')||'Evento histórico registrado por UGO',role:'histórico'})
   for(const e of events)rows.push({key:`event-${e.id}`,at:e.created_at,title:stateLabel(e.estado_nuevo),detail:[e.estado_anterior?`Desde ${stateLabel(e.estado_anterior)}`:null,e.motivo?e.motivo:null,actors[e.actor_id||'']?`Actor: ${actors[e.actor_id||'']}`:null].filter(Boolean).join(' · ')||'Cambio registrado por UGO',role:e.actor_role})
   if(service.iniciado_at)rows.push({key:'started',at:service.iniciado_at,title:'Horario de inicio registrado',detail:'Inicio persistido del trabajo',role:'sistema'})
   if(service.completado_at)rows.push({key:'completed',at:service.completado_at,title:'Horario de cierre registrado',detail:'Servicio completado',role:'sistema'})
   if(service.cancelado_at)rows.push({key:'cancelled',at:service.cancelado_at,title:'Horario de cancelación',detail:'Servicio cancelado',role:'sistema'})
   return rows.sort((a,b)=>new Date(a.at).getTime()-new Date(b.at).getTime())
- },[actors,events,service])
+ },[actors,events,legacyEvents,service])
 
  const clientReview=reviews.find(r=>(r.autor_tipo||'cliente')==='cliente')
  const providerReview=reviews.find(r=>r.autor_tipo==='proveedor')
