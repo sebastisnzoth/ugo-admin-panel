@@ -22,12 +22,12 @@ test('provider UI exposes the debt block and a real pay UGO action',async()=>{
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderOpportunities.tsx'),
   read('src/mvp/provider/ProviderHome.tsx'),
-  read('api/deudas/pagar.ts'),
+  read('api/test.ts'),
  ])
  assert.match(data,/pendingDebtCount>=3/)
  assert.match(data,/debtBlocked/)
  assert.match(earnings,/PAGAR UGO · PIX/)
- assert.match(earnings,/\/api\/deudas\/pagar/)
+ assert.match(earnings,/\/api\/test\?ugo_debt=1/)
  assert.match(opportunities,/Nuevos pedidos pausados/)
  assert.match(opportunities,/PAGAR UGO/)
  assert.match(home,/Pagá a UGO para volver al radar/)

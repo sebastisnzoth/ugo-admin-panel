@@ -4,6 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || ''
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+const UGO_PIX_KEY = process.env.UGO_PIX_KEY
 const GEMINI_MODELS = Array.from(new Set([
   process.env.GEMINI_MODEL,
   'gemini-3.5-flash-lite',
@@ -47,6 +48,21 @@ async function mercadoPagoOAuth(req:any,res:any){try{
   }
   return res.status(400).json({error:'Acción OAuth inválida'})
  }catch(error:any){console.error('Mercado Pago OAuth failed',error);const status=Number(error?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'Error OAuth'})}}
+
+function debtPixEmv(id:string,value:string){return`${id}${String(value.length).padStart(2,'0')}${value}`}
+function debtPixCrc16(payload:string){let crc=0xffff;for(let i=0;i<payload.length;i+=1){crc^=payload.charCodeAt(i)<<8;for(let bit=0;bit<8;bit+=1)crc=(crc&0x8000)?((crc<<1)^0x1021)&0xffff:(crc<<1)&0xffff}return crc.toString(16).toUpperCase().padStart(4,'0')}
+function debtPixAscii(value:string,max:number){return value.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 .\-]/g,'').toUpperCase().slice(0,max)}
+function buildUgoDebtPix(key:string,amount:number,txid:string){const merchant=debtPixEmv('00','BR.GOV.BCB.PIX')+debtPixEmv('01',key.trim()),additional=debtPixEmv('05',debtPixAscii(txid,25)||'UGO'),base=debtPixEmv('00','01')+debtPixEmv('26',merchant)+debtPixEmv('52','0000')+debtPixEmv('53','986')+debtPixEmv('54',amount.toFixed(2))+debtPixEmv('58','BR')+debtPixEmv('59','UGO SERVICOS')+debtPixEmv('60','FLORIANOPOLIS')+debtPixEmv('62',additional)+'6304';return`${base}${debtPixCrc16(base)}`}
+async function providerUgoDebtPayment(req:any,res:any){try{
+ if(!UGO_PIX_KEY)return res.status(503).json({error:'El Pix de UGO todavía no está configurado. Podés pagar por el medio indicado por UGO e informar la referencia.'})
+ const deudaId=typeof req.body?.deudaId==='string'?req.body.deudaId:'';if(!deudaId)return res.status(400).json({error:'Falta deudaId.'})
+ const{sb,user}=await authenticatedProvider(req)
+ const{data:debt,error}=await sb.from('deudas_ugo_proveedor').select('id,proveedor_id,servicio_id,saldo_pendiente,moneda,ambiente,estado,servicio:servicios!deudas_ugo_proveedor_servicio_id_fkey(numero)').eq('id',deudaId).eq('proveedor_id',user.id).maybeSingle();if(error)throw error;if(!debt)return res.status(404).json({error:'Comisión pendiente no encontrada.'})
+ if(debt.ambiente!=='real')return res.status(409).json({error:'Este pago no corresponde al ambiente real.'});if(['pagado','anulado'].includes(String(debt.estado)))return res.status(409).json({error:'Esta comisión ya no está pendiente.'});if(String(debt.estado)==='informado')return res.status(409).json({error:'Este pago ya fue informado y está pendiente de conciliación.'});if(String(debt.moneda||'BRL')!=='BRL')return res.status(409).json({error:'El pago Pix a UGO está disponible sólo para deudas en BRL.'})
+ const amount=Math.round(Number(debt.saldo_pendiente||0)*100)/100;if(!Number.isFinite(amount)||amount<=0)return res.status(409).json({error:'La comisión no tiene saldo pendiente.'})
+ const txid=`UGOD${String(debt.id).replace(/-/g,'').slice(0,21)}`,pixCopiaCola=buildUgoDebtPix(UGO_PIX_KEY,amount,txid),service=Array.isArray(debt.servicio)?debt.servicio[0]:debt.servicio
+ return res.status(200).json({success:true,deudaId:debt.id,servicioId:debt.servicio_id,servicioNumero:service?.numero||null,monto:amount,moneda:'BRL',pixCopiaCola,pixChave:UGO_PIX_KEY,txid})
+ }catch(error:any){console.error('UGO debt Pix failed',error);const status=Number(error?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'No se pudo generar el pago a UGO.'})}}
 
 async function callGemini(geminiKey:string,body:any){let lastStatus=0,lastError='Gemini no respondió';for(const model of GEMINI_MODELS){const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':geminiKey},body:JSON.stringify(body)});const payload:any=await response.json().catch(()=>({}));if(response.ok)return{response,payload,model};lastStatus=response.status;lastError=payload?.error?.message||`Gemini respondió ${response.status}`;const retryable=response.status===404||response.status===429||response.status===503||/high demand|overloaded|temporar|no longer available|not found|new users/i.test(lastError);console.warn('Hugo Gemini fallback',{model,status:response.status,retryable,message:lastError});if(!retryable)break}throw Object.assign(new Error(lastError),{status:lastStatus||502})}
 type GuidedRequestResult={reply:string;category_hint:string|null;description:string|null;address:string|null;when:'ahora'|'hoy'|'programar'|null;schedule_at:string|null;urgent:boolean;preferences:string|null;ready_to_review:boolean;model:string}
@@ -138,7 +154,7 @@ async function hugoUgoContext(role:'client'|'provider',userId:string){
 }
 
 export default async function handler(req:any,res:any){
- res.setHeader('Cache-Control','no-store');if(req.method==='OPTIONS')return res.status(200).end();if(req.method==='GET'&&req.query?.code&&req.query?.state)return mercadoPagoOAuth(req,res);if(String(req.query?.mp_oauth||'')==='1')return mercadoPagoOAuth(req,res);if(req.method==='GET'&&String(req.query?.health||'')==='1')return geminiHealth(res);if(req.method==='POST'&&String(req.query?.routing||'')==='1')return routing(req,res);if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
+ res.setHeader('Cache-Control','no-store');if(req.method==='OPTIONS')return res.status(200).end();if(req.method==='GET'&&req.query?.code&&req.query?.state)return mercadoPagoOAuth(req,res);if(String(req.query?.mp_oauth||'')==='1')return mercadoPagoOAuth(req,res);if(req.method==='GET'&&String(req.query?.health||'')==='1')return geminiHealth(res);if(req.method==='POST'&&String(req.query?.routing||'')==='1')return routing(req,res);if(req.method==='POST'&&String(req.query?.ugo_debt||'')==='1')return providerUgoDebtPayment(req,res);if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
  try{
   const token=bearer(req);if(!token)return res.status(401).json({error:'Sesión requerida'});const geminiKey=process.env.GEMINI_API_KEY?.trim();if(!geminiKey)return res.status(503).json({error:'GEMINI_API_KEY no está configurada en Vercel'})
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})

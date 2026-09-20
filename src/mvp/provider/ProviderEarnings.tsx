@@ -26,7 +26,7 @@ export function ProviderEarnings(){
  async function startPix(debt:typeof pendingDebts[number]){
   setBusy(`pix:${debt.id}`);setMessage('')
   try{
-   const response=await fetch('/api/deudas/pagar',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${d.accessToken}`},body:JSON.stringify({deudaId:debt.id})})
+   const response=await fetch('/api/test?ugo_debt=1',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${d.accessToken}`},body:JSON.stringify({deudaId:debt.id})})
    const payload=await response.json().catch(()=>({}))
    if(!response.ok)throw new Error(payload.error||'No se pudo generar el pago a UGO.')
    setPix({deudaId:debt.id,servicio:String(debt.servicio?.numero||String(debt.servicio_id).slice(0,8)),monto:Number(payload.monto||debt.saldo_pendiente||0),moneda:String(payload.moneda||debt.moneda||'BRL'),pixCopiaCola:String(payload.pixCopiaCola||''),pixChave:String(payload.pixChave||''),txid:String(payload.txid||'')})
