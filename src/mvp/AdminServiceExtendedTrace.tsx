@@ -38,6 +38,24 @@ export function AdminServiceExtendedTrace({service}:{service:Service}){
   }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la trazabilidad extendida.')}finally{setLoading(false)}
  },[service.id,service.cliente_id,service.proveedor_id])
  useEffect(()=>{void load()},[load])
+ useEffect(()=>{
+  let alive=true
+  const sync=()=>{if(alive)void load()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
+  const onOnline=()=>sync()
+  window.addEventListener('online',onOnline)
+  document.addEventListener('visibilitychange',onVisibility)
+  let channel:any=supabase.channel(`admin-extended-live-${service.id}-${Date.now()}`)
+  channel=channel
+   .on('postgres_changes',{event:'*',schema:'public',table:'mensajes',filter:`servicio_id=eq.${service.id}`},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'disputas',filter:`servicio_id=eq.${service.id}`},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'disputa_mensajes'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},sync)
+   .subscribe((status:string)=>{if(status==='SUBSCRIBED')sync();if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(sync,1200)})
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
+  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+ },[load,service.id])
  return <div className="ugo-admin-extended-trace">
   <div className="ugo-admin-extended-trace-head"><strong>Comunicación, ubicación y reclamos</strong><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></div>
   {error&&<div className="ugo-admin-service-trace-error">{error}</div>}{!!warnings.length&&<div className="ugo-admin-service-trace-warning">{warnings.join(' ')}</div>}
