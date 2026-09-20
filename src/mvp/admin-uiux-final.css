@@ -87,3 +87,26 @@
  .ugo-superadmin-error{grid-template-columns:1fr}
  .ugo-superadmin-error button{grid-column:1;grid-row:auto;width:100%}
 }
+
+
+/* Screenshot repair pass 2026-09-20 */
+.ugo-admin2-refresh{
+  min-width:118px!important;
+  padding-inline:15px!important;
+  white-space:nowrap!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  flex:0 0 auto!important;
+}
+.ugo-admin2-main>header{padding-right:10px}
+.ugo-admin2-module-card{overflow:visible!important}
+.ugo-admin2-module-card .ugo-pix-admin,
+.ugo-admin2-module-card .ugo-provider-verification{width:100%;box-sizing:border-box}
+.ugo-admin2 .ugo-provider-verification-toggle{margin-bottom:2px}
+.ugo-admin2 .ugo-provider-verification,
+.ugo-admin2 .ugo-pix-admin{font-family:inherit}
+@media(max-width:700px){
+ .ugo-admin2-refresh{min-width:104px!important;padding-inline:11px!important}
+ .ugo-admin2-main>header{padding-right:0}
+ .ugo-admin2-module-card{overflow:hidden!important}
+}
