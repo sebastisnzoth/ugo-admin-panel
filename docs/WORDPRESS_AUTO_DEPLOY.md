@@ -44,3 +44,17 @@ https://ugoapp.infy.click/ugo-admin/?app=admin
 ```
 
 If an old screen remains in the browser, force refresh once because the HTML may be cached locally. Vite asset filenames are content-hashed, so normal future updates should load the new files automatically.
+
+## Actualización directa desde GitHub
+
+WordPress también puede actualizar el build sin subir un ZIP manualmente ni depender del FTP. El workflow publica en la release fija `wordpress-latest`:
+
+- `ugo-build-manifest.json` con el SHA exacto de `main`;
+- `ugo-wordpress-build.zip` con el contenido portable de `dist/`;
+- `ugo-wordpress-build.zip.sha256` para verificar integridad.
+
+El MU plugin `wordpress/mu-plugins/ugo-github-updater.php` agrega `Herramientas → UGO Actualizaciones`. Desde ahí un administrador puede comparar la revisión instalada, ejecutar **Actualizar ahora** y usar **Volver a versión anterior**.
+
+Antes de activar un paquete el updater valida SHA-256, rutas seguras del ZIP, `index.html`, `assets/` y que el commit interno coincida con el manifest. La versión activa se mueve a `wp-content/uploads/ugo-app-build/backups/` y se conservan los tres backups más recientes.
+
+El repositorio es público actualmente, por lo que no requiere token. Si en el futuro pasa a privado, usar `UGO_GITHUB_TOKEN` sólo como constante/variable server-side; el plugin no persiste ese secreto en opciones de WordPress.

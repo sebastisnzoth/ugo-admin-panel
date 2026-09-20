@@ -446,3 +446,15 @@ El snapshot GPS ahora queda asociado a la **dirección elegida para ese pedido**
 - los flujos legacy que explícitamente quieran la ubicación reciente conservan el fallback `stored`.
 
 UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 456 contratos (453 pass, 2 skip), lifecycle/RLS y lint. El APK Android del bundle de código `b24c74c8d6043c9edfba2568a996b01faa05fdfb` también compiló correctamente. Falta prueba física GPS para elevar `MAP-GPS` a validación runtime.
+
+---
+
+## Checkpoint 20/09/2026 · WordPress pull updater desde GitHub
+
+- GitHub Actions genera `ugo-wordpress-build.zip` desde el SHA exacto de `main`;
+- la release fija `wordpress-latest` publica manifest + ZIP + SHA-256;
+- WordPress incorpora `Herramientas → UGO Actualizaciones` para comparar revisión, actualizar y hacer rollback;
+- el updater valida checksum, commit y estructura antes de activar;
+- conserva tres backups y no persiste tokens GitHub en opciones WordPress;
+- el FTP existente queda como espejo compatible, no como única ruta de actualización;
+- madurez: implementación integrada; publicación/activación y smoke WordPress deben verificarse en el SHA resultante.

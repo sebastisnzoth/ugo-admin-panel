@@ -21,7 +21,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   wordpress:
@@ -71,6 +71,50 @@ jobs:
           echo "Build ready:"
           du -sh dist
 
+      - name: Create GitHub pull package metadata
+        shell: bash
+        run: |
+          mkdir -p release
+          BUILT_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          cat > dist/ugo-build-manifest.json <<EOF
+          {
+            "schema": 1,
+            "repo": "${GITHUB_REPOSITORY}",
+            "branch": "main",
+            "commit": "${GITHUB_SHA}",
+            "short_commit": "${GITHUB_SHA::12}",
+            "built_at": "${BUILT_AT}",
+            "build_file": "ugo-wordpress-build.zip"
+          }
+          EOF
+          cp dist/ugo-build-manifest.json release/ugo-build-manifest.json
+          (cd dist && zip -qr ../release/ugo-wordpress-build.zip .)
+          sha256sum release/ugo-wordpress-build.zip > release/ugo-wordpress-build.zip.sha256
+
+      - name: Publish GitHub package for WordPress updater
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh release view wordpress-latest >/dev/null 2>&1; then
+            gh release upload wordpress-latest \
+              release/ugo-build-manifest.json \
+              release/ugo-wordpress-build.zip \
+              release/ugo-wordpress-build.zip.sha256 \
+              --clobber
+            gh release edit wordpress-latest \
+              --title "UGO WordPress · latest" \
+              --notes "Build automático de main: ${GITHUB_SHA}"
+          else
+            gh release create wordpress-latest \
+              release/ugo-build-manifest.json \
+              release/ugo-wordpress-build.zip \
+              release/ugo-wordpress-build.zip.sha256 \
+              --target "${GITHUB_SHA}" \
+              --title "UGO WordPress · latest" \
+              --notes "Build automático de main: ${GITHUB_SHA}"
+          fi
+
       - name: Publish build to WordPress over FTP
         if: steps.ftp.outputs.ready == 'true'
         uses: SamKirkland/FTP-Deploy-Action@v4.3.6
@@ -106,5 +150,5 @@ jobs:
             echo "Open: https://ugoapp.infy.click/ugo-cliente/?app=client" >> "$GITHUB_STEP_SUMMARY"
           else
             echo "### UGO → WordPress" >> "$GITHUB_STEP_SUMMARY"
-            echo "Build succeeded. FTP publish is waiting for the three UGO_FTP_* repository secrets." >> "$GITHUB_STEP_SUMMARY"
+            echo "Build + GitHub pull package published. FTP mirror is waiting for the three UGO_FTP_* repository secrets." >> "$GITHUB_STEP_SUMMARY"
           fi
