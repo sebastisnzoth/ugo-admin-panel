@@ -8,3 +8,9 @@
 .ugo-notification-live.is-provider-call>span:nth-child(2)>b{font-size:12px}
 @keyframes ugo-provider-call-in{from{opacity:0;transform:translate(-50%,-18px) scale(.97)}to{opacity:1;transform:translate(-50%,0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.ugo-notification-live.is-provider-call{animation:none}}
+
+.ugo-notification-enable-chip{position:absolute;right:0;top:56px;display:flex;align-items:center;gap:7px;min-height:38px;padding:0 12px;border:1px solid #9ed8c6;border-radius:999px;background:#fff;color:#075e4b;box-shadow:0 10px 28px rgba(19,27,46,.16);white-space:nowrap;font:800 10px/1.1 inherit;cursor:pointer}
+.ugo-notification-enable-chip span{font-size:14px}
+.ugo-notification-enable-chip:hover{background:#effaf5}
+.ugo-notification-enable-chip:focus-visible{outline:3px solid rgba(0,169,107,.24);outline-offset:2px}
+@media(max-width:520px){.ugo-notification-enable-chip{top:54px;right:-2px;min-height:40px}}
