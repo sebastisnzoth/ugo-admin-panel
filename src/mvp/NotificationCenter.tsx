@@ -5,7 +5,7 @@ import'./notification-center.css'
 
 export type UgoNotification={id:string;tipo:string;titulo:string;cuerpo:string|null;datos:Record<string,unknown>;leida_at:string|null;created_at:string}
 type AppRole='client'|'provider'
-type Props={role:AppRole;onOpenNotice?:(notice:UgoNotification)=>void}
+type Props={role:AppRole;onOpenNotice?:(notice:UgoNotification)=>void;attentionEnabled?:boolean}
 type PushRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:{message?:string}|null}>}
 const VAPID_PUBLIC='BPiPh1AzAkgiOv1lkTx0hW8X7UoP9NTnAJUWA7voNwMrwExQ7CCNC4Pbue6aH5AFkhy0xPzjIpcXv3uuou1YDyk'
 function vapidBytes(base64:string){const pad='='.repeat((4-base64.length%4)%4),raw=atob((base64+pad).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...raw].map(c=>c.charCodeAt(0)))}
@@ -27,11 +27,11 @@ function emitProviderTone(ctx:AudioContext){
 function playProviderTone(){const ctx=providerAudio();if(!ctx)return;if(ctx.state==='running'){emitProviderTone(ctx);return}void ctx.resume().then(()=>emitProviderTone(ctx)).catch(()=>{})}
 
 
-export function NotificationCenter({role,onOpenNotice}:Props){
+export function NotificationCenter({role,onOpenNotice,attentionEnabled=true}:Props){
  const db=useMemo(()=>getRoleSupabase(role),[role])
  const[uid,setUid]=useState<string|null>(null),[rows,setRows]=useState<UgoNotification[]>([]),[open,setOpen]=useState(false),[error,setError]=useState(''),[pushState,setPushState]=useState<'unsupported'|'off'|'on'|'blocked'|'loading'>('off'),[liveNotice,setLiveNotice]=useState<UgoNotification|null>(null),providerAlertSeen=useRef<Set<string>>(new Set())
- const signalProviderAlert=useCallback((notice:UgoNotification)=>{if(role!=='provider'||!PROVIDER_ATTENTION_TYPES.has(notice.tipo)||providerAlertSeen.current.has(notice.id))return;providerAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.([180,80,180,80,340]);playProviderTone()},[role])
- useEffect(()=>{if(role!=='provider')return;const arm=()=>{const ctx=providerAudio();if(ctx?.state==='suspended')void ctx.resume().catch(()=>{})};window.addEventListener('pointerdown',arm,true);window.addEventListener('keydown',arm,true);return()=>{window.removeEventListener('pointerdown',arm,true);window.removeEventListener('keydown',arm,true)}},[role])
+ const signalProviderAlert=useCallback((notice:UgoNotification)=>{if(role!=='provider'||!attentionEnabled||!PROVIDER_ATTENTION_TYPES.has(notice.tipo)||providerAlertSeen.current.has(notice.id))return;providerAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.([180,80,180,80,340]);playProviderTone()},[attentionEnabled,role])
+ useEffect(()=>{if(role!=='provider'||!attentionEnabled)return;const arm=()=>{const ctx=providerAudio();if(ctx?.state==='suspended')void ctx.resume().catch(()=>{})};window.addEventListener('pointerdown',arm,true);window.addEventListener('keydown',arm,true);return()=>{window.removeEventListener('pointerdown',arm,true);window.removeEventListener('keydown',arm,true)}},[attentionEnabled,role])
  const load=useCallback(async(userId:string)=>{const{data,error}=await db.from('notificaciones').select('id,tipo,titulo,cuerpo,datos,leida_at,created_at').eq('usuario_id',userId).order('created_at',{ascending:false}).limit(30);if(error)throw error;const next=(data||[])as UgoNotification[];setRows(next);if(role==='provider'){const pending=next.find(notice=>!notice.leida_at&&PROVIDER_ATTENTION_TYPES.has(notice.tipo));if(pending)signalProviderAlert(pending)}},[db,role,signalProviderAlert])
  const retireStalePush=useCallback(async(sub:PushSubscription|null)=>{if(!sub)return null;const currentKey=sub.options.applicationServerKey?b64(sub.options.applicationServerKey):'';if(currentKey===VAPID_PUBLIC)return sub;const rpc=db as unknown as PushRpcClient;const{error}=await rpc.rpc('desactivar_push_suscripcion',{p_endpoint:sub.endpoint});if(error)throw new Error(error.message||'No se pudo retirar la suscripción push anterior.');await sub.unsubscribe();return null},[db])
  useEffect(()=>{if(!liveNotice)return;const attention=role==='provider'&&PROVIDER_ATTENTION_TYPES.has(liveNotice.tipo),timer=window.setTimeout(()=>setLiveNotice(null),attention?30000:9000);return()=>window.clearTimeout(timer)},[liveNotice,role])

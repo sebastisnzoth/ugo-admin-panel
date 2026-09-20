@@ -19,3 +19,13 @@ test('assigned-work notification opens the provider active job after resync',asy
  assert.match(root,/notice\.tipo==='trabajo_asignado'/)
  assert.match(root,/data\.reload\(\)\.then\(\(\)=>flow\.actions\.openActiveJob\(\)\)/)
 })
+
+
+test('provider attention is disabled while Offline or debt-blocked',async()=>{
+ const[root,center]=await Promise.all([
+  read('src/mvp/provider/ProviderRoot.tsx'),
+  read('src/mvp/NotificationCenter.tsx'),
+ ])
+ assert.match(root,/attentionEnabled=\{data\.online&&!data\.debtBlocked\}/)
+ assert.match(center,/!attentionEnabled/)
+})
