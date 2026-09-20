@@ -15,3 +15,5 @@ test('stop voice leaves the text composer usable and navigation is wired to Clie
 
 test('new category request wins even while another client service is active',()=>{assert.match(dock,/const directCategory=await resolveVoiceCategory\(clean\)/);assert.match(dock,/if\(directCategory\|\|newRequestIntent\(clean\)\)/);assert.doesNotMatch(dock,/statusIntent\(clean\)\|\|services\.length/);assert.match(dock,/serviceId:null,requestDraftId:newDraftId\(\)/)})
 
+test('painter request resolves even while Pintura catalog is inactive',()=>{assert.match(catalog,/pintor\|pintura/);assert.match(catalog,/\['pintura','reparaciones','reparacao','manutencao'\]/);assert.match(dock,/if\(directCategory\|\|newRequestIntent\(clean\)\)/)})
+
