@@ -418,3 +418,7 @@ disputa_mensajes            conversación y evidencias del expediente
 
 No se crea una tabla paralela. `private.es_participante_servicio()` incluye a Admin para lectura del chat y la RLS de disputas permite lectura administrativa. La UI trata chat, ubicación y expediente como capas secundarias: una falla de una de estas fuentes no elimina cronología, pagos, evidencia o reputación ya disponibles.
 
+### Cierre Cliente y campos protegidos de Proveedor
+
+Las RPC ejecutadas por Cliente para aprobar/cerrar un servicio no actualizan `usuarios.servicios_completados` del Proveedor. Ese campo está protegido por `trg_00_usuario_sensitive_guard` y una escritura cruzada debe seguir siendo rechazada. La autoridad del conteo es `servicios.estado='completado'`; cualquier materialización/analytics derivada debe ejecutarse por una ruta administrativa segura, nunca dentro de la transacción Cliente de pago/cierre.
+

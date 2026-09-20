@@ -212,3 +212,13 @@ No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con s
 - Chat/ubicación/reclamos degradan con aviso si una fuente secundaria falla, sin ocultar cronología, pagos, evidencias o reputación.
 - Contrato `admin-complete-trace` ampliado para cubrir las cuatro fuentes nuevas.
 
+---
+
+## Checkpoint · cierre efectivo Cliente P0 · 20/09/2026
+
+- Detectada regresión en `confirmar_pago_efectivo_cliente(serviceId)`: el cierre ejecutado por Cliente intentaba actualizar `usuarios.servicios_completados` del Proveedor.
+- `trg_00_usuario_sensitive_guard` rechazaba correctamente esa escritura cruzada con `ADMIN_REQUIRED`, revirtiendo pago + cierre completos.
+- El cierre canónico vuelve a mutar sólo `servicios` + `pagos`; `servicios` permanece fuente de verdad de trabajos completados.
+- Se corrige también la rama electrónica de `aprobar_servicio_impl` para evitar la misma regresión.
+- Contrato automático agregado para impedir futuras escrituras del Cliente sobre el perfil protegido del Proveedor.
+
