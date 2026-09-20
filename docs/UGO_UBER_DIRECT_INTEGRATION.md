@@ -21,7 +21,7 @@ UGO Admin
 Endpoint UGO:
 
 ```text
-/api/uber/direct
+/api/admin/integrations-status
 ```
 
 Acciones:
@@ -33,7 +33,7 @@ Acciones:
 - `list_deliveries`
 - `cancel_delivery`
 
-El endpoint exige sesión Admin/Super Admin y nunca envía Client Secret al navegador.
+El gateway comparte la función Admin existente para respetar el límite de funciones del plan Vercel y exige sesión Admin/Super Admin. Nunca envía Client Secret al navegador.
 
 ## Credenciales requeridas
 
@@ -92,11 +92,11 @@ Estados esperados:
 ### Test
 
 ```http
-POST /api/uber/direct
+POST /api/admin/integrations-status
 Authorization: Bearer <SUPABASE_ADMIN_TOKEN>
 Content-Type: application/json
 
-{"action":"test"}
+{"provider":"uber","action":"test"}
 ```
 
 ### Cotización
@@ -105,6 +105,7 @@ El `payload` usa el contrato oficial de Uber Direct.
 
 ```json
 {
+  "provider": "uber",
   "action": "quote",
   "payload": {
     "pickup_address": "{\"street_address\":[\"...\"],\"city\":\"...\",\"state\":\"...\",\"zip_code\":\"...\",\"country\":\"BR\"}",
@@ -117,6 +118,7 @@ El `payload` usa el contrato oficial de Uber Direct.
 
 ```json
 {
+  "provider": "uber",
   "action": "create_delivery",
   "payload": {
     "quote_id": "dqt_...",
@@ -136,13 +138,13 @@ El `payload` usa el contrato oficial de Uber Direct.
 ### Consultar entrega
 
 ```json
-{"action":"get_delivery","deliveryId":"del_..."}
+{"provider":"uber","action":"get_delivery","deliveryId":"del_..."}
 ```
 
 ### Cancelar
 
 ```json
-{"action":"cancel_delivery","deliveryId":"del_...","payload":{}}
+{"provider":"uber","action":"cancel_delivery","deliveryId":"del_...","payload":{}}
 ```
 
 ## Reglas UGO
