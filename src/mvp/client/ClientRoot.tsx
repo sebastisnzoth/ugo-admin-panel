@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react'
+import React,{useState}from'react'
 import{setSentinelContext,clearSentinelContext}from'../../lib/sentinel'
 import{AppLocationButton}from'../AppLocationButton'
 import{DemoSebastianPaymentBridge}from'../DemoSebastianPaymentBridge'
@@ -47,10 +47,8 @@ import'./client-home-screen.css'
 import'./client-home-app-v3.css'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
- const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(null)
- const pushServiceId=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('serviceId')
+ const flow=useClientFlow(),pushServiceId=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('serviceId'),[selectedServiceId,setSelectedServiceId]=useState<string|null>(()=>pushServiceId)
  const openService=(serviceId:string)=>{setSentinelContext({role:'client',serviceId,action:'client.activity.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'});setSelectedServiceId(serviceId)}
- useEffect(()=>{if(pushServiceId)setSelectedServiceId(pushServiceId)},[pushServiceId])
  const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();const serviceId=typeof notice.datos?.servicio_id==='string'?notice.datos.servicio_id:null;if(serviceId)return openService(serviceId);flow.navigate('home')}
  const closeService=()=>{clearSentinelContext();setSelectedServiceId(null)}
  const goHome=()=>{closeService();flow.navigate('home')}
