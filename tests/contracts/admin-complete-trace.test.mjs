@@ -20,7 +20,7 @@ test('admin service operation exposes complete service trace',async()=>{
  assert.match(trace,/Cronología/)
  assert.match(trace,/SERVICE ID/)
  for(const table of ['mensajes','disputas','disputa_mensajes','mapa_operativo_servicios']){
-  assert.match(extended,new RegExp(`from\\\\('${table}'\\\\)`))
+  assert.match(extended,new RegExp(`from\\('${table}'\\)`))
  }
  assert.match(extended,/Chat del servicio/)
  assert.match(extended,/Disputas y reclamos/)
