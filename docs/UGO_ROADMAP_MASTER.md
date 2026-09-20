@@ -374,3 +374,11 @@ Ningún análisis IA ejecuta una resolución o movimiento de dinero. PROD perman
 El candidato de código `8fd3811dbb6361499327f8c952aac3d7e50ce94c` pasó UGO Core CI completo y Android TEST APK. Vercel publicó ese mismo SHA como READY. En UGO TEST se verificó que hay 14 reglas activas de disputa, `dispute-evidence` es privado, `abrir_disputa_v2` es ejecutable por participantes autenticados, el RPC legacy quedó revocado y `disputa_ai_analisis` no es legible por `authenticated`.
 
 El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rutas consolidadas de Calendar/Disputas existen en Vercel sin exceder el límite Hobby de funciones. La madurez no sube a RUNTIME VALIDATED para Calendar hasta conectar una cuenta Google real, ni para Disputas hasta ejecutar el flujo autenticado Cliente/Proveedor/Admin con adjunto.
+
+
+### Checkpoint 20/09/2026 · evidencia automática en disputas
+
+- Admin Disputas muestra en un mismo visor las evidencias operativas `Antes / Durante / Después` ya vinculadas al `serviceId` y los adjuntos cargados específicamente durante la disputa;
+- cada bucket conserva su frontera de seguridad: `service-evidence` para evidencia del trabajo y `dispute-evidence` para el expediente;
+- el análisis Gemini consume ambas fuentes, pero la resolución continúa siendo humana;
+- validación backend real en UGO TEST con transacción ROLLBACK sobre un servicio completado: Cliente propuso acuerdo, Proveedor lo respondió y Cliente abrió `abrir_disputa_v2`; se verificó motivo, hilo y snapshot completo con servicio, pago, eventos, chat y evidencias; al terminar no quedó ningún artefacto QA persistido.

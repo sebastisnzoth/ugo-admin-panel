@@ -37,7 +37,7 @@ Cliente ausente, imposibilidad de acceso, negativa de pago, tarea extra fuera de
 
 ## Evidencia válida
 
-Chat del serviceId, estados/timestamps, agenda, forma y estado de pago, evidencia Antes/Durante/Después, fotos adjuntas a la disputa y comprobantes. UGO toma un **snapshot inmutable de contexto** al abrir el caso para que los cambios posteriores no borren el punto de partida.
+Chat del serviceId, estados/timestamps, agenda, forma y estado de pago, evidencia Antes/Durante/Después, fotos adjuntas a la disputa y comprobantes. Las evidencias operativas que el Proveedor ya cargó durante el trabajo quedan ligadas automáticamente al mismo `serviceId` y el Admin las ve junto a los adjuntos posteriores del expediente. UGO toma un **snapshot inmutable de contexto** al abrir el caso para que los cambios posteriores no borren el punto de partida.
 
 Una foto demuestra sólo lo que se observa en ella. Por sí sola no demuestra quién causó un daño ni cuándo ocurrió, salvo que otros datos verificables completen esa relación.
 
