@@ -243,3 +243,25 @@ No se marca APPROVED visual/E2E hasta prueba real en navegador/dispositivo con s
 - Pedido, confirmación, matching y ofertas siguen usando el lifecycle canónico y datos reales de UGO.
 - Fallback local permanece disponible si Gemini está temporalmente indisponible.
 
+
+
+---
+
+## 14. Checkpoint 20/09/2026 · efectivo y tarifa única
+
+Implementado:
+
+- tarifa UGO cotizada se persiste en el servicio y se congela al asignar proveedor;
+- Cliente, Proveedor, pago e historial administrativo comparten el mismo snapshot económico;
+- proveedor ve total cliente, comisión y neto;
+- efectivo confirmado por el cliente se registra como dinero recibido directamente por el proveedor;
+- efectivo no vuelve a formar parte del saldo retirable UGO;
+- creada `deudas_ugo_proveedor` para comisión pendiente de cada cobro presencial;
+- proveedor ve `Cobrado en efectivo` y `Debés a UGO`;
+- proveedor puede informar referencia de pago de comisión;
+- Admin puede conciliar la comisión con referencia externa y auditoría;
+- historial del servicio incorpora deuda/comisión del efectivo;
+- backfill TEST: 7 cobros, R$ 880,00 efectivo y R$ 132,00 comisión pendiente;
+- RLS validada: proveedor sólo ve su deuda; Super Admin ve todas.
+
+Mantener como VALIDATED hasta completar un servicio físico nuevo de punta a punta en dos dispositivos.
