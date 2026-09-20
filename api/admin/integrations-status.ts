@@ -7,7 +7,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 type Integration = {
   id: string
   label: string
-  category: 'core'|'payments'|'ai'|'messaging'|'maps'|'deploy'
+  category: 'core'|'payments'|'ai'|'messaging'|'maps'|'deploy'|'delivery'
   configured: boolean
   enabled: boolean
   environment: string
@@ -42,6 +42,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const whatsappConfigured = Boolean((process.env.WHATSAPP_ACCESS_TOKEN || process.env.META_WHATSAPP_ACCESS_TOKEN) && (process.env.WHATSAPP_PHONE_NUMBER_ID || process.env.META_WHATSAPP_PHONE_NUMBER_ID))
   const openAiConfigured = Boolean(process.env.OPENAI_API_KEY)
   const argentinaFlag = process.env.PAYMENTS_ARGENTINA_ENABLED === 'true'
+  const uberDirectConfigured = Boolean(process.env.UBER_DIRECT_CLIENT_ID && process.env.UBER_DIRECT_CLIENT_SECRET)
+  const ifoodConfigured = Boolean(process.env.IFOOD_CLIENT_ID && process.env.IFOOD_CLIENT_SECRET)
+  const rappiConfigured = Boolean((process.env.RAPPI_ACCESS_TOKEN || process.env.RAPPI_API_KEY) && process.env.RAPPI_TEST_URL)
 
   const integrations: Integration[] = [
     { id:'supabase', label:'Supabase', category:'core', configured:true, enabled:true, environment:'production', runtimeSource:'server env', note:'Auth, PostgreSQL, Realtime y Storage del proyecto UGO.' },
@@ -51,6 +54,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     { id:'mercadopago_ar', label:'Mercado Pago Argentina', category:'payments', configured:false, enabled:false, environment:'disabled', runtimeSource:'router', note: argentinaFlag ? 'Feature flag solicitado, pero el router todavía bloquea Argentina.' : 'Declarado pero no activado en esta fase.' },
     { id:'openai_hugo', label:'OpenAI · Hugo Voice', category:'ai', configured:openAiConfigured, enabled:openAiConfigured, environment:process.env.VERCEL_ENV || 'server', runtimeSource:'OPENAI_API_KEY', note:`Modelo: ${process.env.OPENAI_REALTIME_MODEL || 'default del servidor'}.` },
     { id:'whatsapp', label:'WhatsApp Cloud API', category:'messaging', configured:whatsappConfigured, enabled:whatsappConfigured, environment:'production', runtimeSource:'WHATSAPP_ACCESS_TOKEN + WHATSAPP_PHONE_NUMBER_ID', note:'Bandeja Admin y envío server-side. Gemini es apoyo opcional para extracción.' },
+    { id:'uber_direct', label:'Uber Direct', category:'delivery', configured:uberDirectConfigured, enabled:uberDirectConfigured, environment:'server', runtimeSource:'UBER_DIRECT_CLIENT_ID + UBER_DIRECT_CLIENT_SECRET', note:'Conector OAuth 2.0 para entregas Uber Direct. Requiere cuenta/credenciales habilitadas por Uber.' },
+    { id:'ifood', label:'iFood Developer', category:'delivery', configured:ifoodConfigured, enabled:ifoodConfigured, environment:'server', runtimeSource:'IFOOD_CLIENT_ID + IFOOD_CLIENT_SECRET', note:'Conector OAuth 2.0 para Merchant/Orders/Shipping. Producción requiere homologación y permisos de tienda.' },
+    { id:'rappi', label:'Rappi / Rappi Cargo', category:'delivery', configured:rappiConfigured, enabled:rappiConfigured, environment:'server', runtimeSource:'RAPPI_ACCESS_TOKEN + RAPPI_TEST_URL', note:'Conector preparado para API pública/Open Orders/Cargo. El endpoint de validación depende de la cuenta Rappi habilitada.' },
     { id:'maps', label:'Mapas y rutas', category:'maps', configured:true, enabled:true, environment:'client', runtimeSource:'OpenStreetMap + MapLibre; routing configurable', note:'Mapa base no requiere clave. Routing usa VITE_ROUTING_ENGINE (haversine por defecto / OSRM opcional).' },
     { id:'vercel', label:'Vercel', category:'deploy', configured:Boolean(process.env.VERCEL), enabled:Boolean(process.env.VERCEL), environment:process.env.VERCEL_ENV || 'unknown', runtimeSource:'Vercel runtime', note:`Commit runtime: ${(process.env.VERCEL_GIT_COMMIT_SHA || 'desconocido').slice(0,8)}.` },
   ]
