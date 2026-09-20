@@ -1,5 +1,6 @@
 import React,{useMemo,useState}from'react'
 import{SERVICE_STATES,type ServiceState,useAdminActiveServices}from'../hooks/useAdminActiveServices'
+import{AdminServiceTracePanel}from'./AdminServiceTracePanel'
 import'./admin-services-pro.css'
 
 const ACTIVE=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion'] as const
@@ -75,7 +76,7 @@ export function AdminServicesPro(){
     <label className="wide">Descripción<textarea rows={4} value={form.descripcion} onChange={e=>setForm({...form,descripcion:e.target.value})}/></label>
     {form.estado==='cancelado'&&<label className="wide danger">Motivo de cancelación<textarea rows={3} placeholder="Obligatorio para cancelar. Se agrega al registro de la operación." value={form.motivo} onChange={e=>setForm({...form,motivo:e.target.value})}/></label>}
    </div>
-   <div className="ugo-operation-audit"><strong>Actividad disponible</strong><p>Creado {when(editing.created_at)} · Última modificación {when(editing.updated_at)}. Los cambios de estado quedan reflejados por la fecha de actualización del servicio.</p></div>
+   <AdminServiceTracePanel service={editing}/>
    {editMessage&&<div className={`ugo-operation-message ${editMessage.includes('correctamente')?'ok':''}`}>{editMessage}</div>}
    <footer><button className="secondary" onClick={closeEdit} disabled={editBusy}>Cancelar</button><button onClick={()=>{void saveEdit()}} disabled={editBusy}>{editBusy?'Guardando…':'Guardar cambios'}</button></footer>
   </section></div>}
