@@ -485,3 +485,10 @@ Las acciones operativas del servicio convergen por el mismo `serviceId`.
 - Web Push continúa saliendo desde `trg_enqueue_push_for_notification` cuando el usuario activó avisos del navegador.
 
 El sonido foreground depende de que el navegador haya permitido AudioContext después de una interacción del usuario; si la app está cerrada, el aviso depende del permiso Web Push del dispositivo.
+
+
+## Push bidireccional Cliente ↔ Proveedor
+
+Toda fila nueva de `public.notificaciones` se enriquece server-side con el rol canónico del destinatario (`client` o `provider`) antes de entrar a `push_entregas`. El Service Worker usa ese rol y, cuando existe, el `servicio_id` para abrir la app correcta desde una notificación del sistema.
+
+El mismo canal cubre chat, asignación, recorrido del proveedor, llegada, inicio, aprobación/cierre, cancelación, disputa y eventos de pago. En foreground, Cliente y Proveedor reciben banner, vibración y tono; en background/cerrado, Web Push depende de una suscripción autorizada por el usuario. La UI muestra una acción visible `Activar notificaciones` mientras el dispositivo no esté suscripto.
