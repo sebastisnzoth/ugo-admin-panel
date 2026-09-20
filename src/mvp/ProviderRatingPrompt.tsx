@@ -5,7 +5,7 @@ import{reportSentinelIncident}from'../lib/sentinel'
 type CompletedService={id:string;numero:number|string|null;cliente_id:string;descripcion:string|null;completado_at:string|null}
 type Target={service:CompletedService;clientName:string}
 
-export function ProviderRatingPrompt(){
+export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[userId,setUserId]=useState(''),[target,setTarget]=useState<Target|null>(null),[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null)
 
@@ -43,7 +43,7 @@ export function ProviderRatingPrompt(){
   setMessage(text);void reportSentinelIncident({eventType:'provider_rating_submit_error',message:text,error,role:'provider',severity:'P1',serviceId,action:'provider.rating.submit',checklistCode:'RATING'})
  }
 
- if(!target||target.service.id===dismissed)return null
+ if(suspended||!target||target.service.id===dismissed)return null
  const number=target.service.numero??target.service.id.slice(0,8)
  return <aside className="ugo-provider-rating" aria-label={`Calificar cliente del servicio ${number}`}>
   <button type="button" className="ugo-provider-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label="Calificar más tarde">×</button>
