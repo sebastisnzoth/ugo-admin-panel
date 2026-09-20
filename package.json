@@ -1,7 +1,7 @@
 {
   "name": "ugo-deploy",
   "private": true,
-  "_redeploy": "20260915-public-development-no-login",
+  "_redeploy": "20260920-cash-debt-pricing-final",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
