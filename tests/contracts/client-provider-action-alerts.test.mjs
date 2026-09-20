@@ -33,3 +33,30 @@ test('client foreground notification rings, vibrates and stays actionable',async
  assert.match(center,/UGO · MENSAJE NUEVO/)
  assert.match(center,/notice\.tipo\)/)
 })
+
+
+test('bidirectional push metadata routes every notification to the recipient app',async()=>{
+ const [sql,sw,edge]=await Promise.all([
+  read('supabase/migrations/20260920121500_bidirectional_push_routing.sql'),
+  read('public/sw.js'),
+  read('supabase/functions/push-dispatch/index.ts'),
+ ])
+ assert.match(sql,/before insert on public\.notificaciones/)
+ assert.match(sql,/when 'cliente' then 'client'/)
+ assert.match(sql,/when 'proveedor' then 'provider'/)
+ assert.match(sql,/jsonb_build_object\('role',v_role\)/)
+ assert.match(sw,/payload\?\.data\?\.servicio_id/)
+ assert.match(sw,/app=provider/)
+ assert.match(sw,/app=client/)
+ assert.match(sw,/serviceId=/)
+ assert.match(edge,/HIGH_URGENCY_TYPES/)
+ assert.match(edge,/'chat_mensaje'/)
+})
+
+test('provider receives normal chat and lifecycle alerts even when incoming-work attention is disabled',async()=>{
+ const center=await read('src/mvp/NotificationCenter.tsx')
+ assert.match(center,/PROVIDER_CALL_TYPES=new Set\(\['nueva_oferta','trabajo_asignado'\]\)/)
+ assert.match(center,/PROVIDER_ATTENTION_TYPES=new Set\(\[[^\]]*'chat_mensaje'/)
+ assert.match(center,/PROVIDER_CALL_TYPES\.has\(notice\.tipo\)&&!attentionEnabled/)
+ assert.match(center,/playProviderTone/)
+})
