@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL=process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY
-const UBER_API_BASE=(process.env.UBER_DIRECT_API_BASE_URL||'https://api.uber.com/v1').replace(/\\\/$/,'')
+const UBER_API_BASE=(process.env.UBER_DIRECT_API_BASE_URL||'https://api.uber.com/v1').replace(/\/$/,'')
 
 type Provider='uber'|'ifood'|'rappi'
 type UberOperation='quote'|'create_delivery'|'get_delivery'|'cancel_delivery'|'list_deliveries'
