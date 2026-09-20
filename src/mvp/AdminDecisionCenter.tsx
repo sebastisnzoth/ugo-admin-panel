@@ -1,5 +1,6 @@
 import React,{useEffect,useMemo,useState}from'react'
 import{useSystemAlerts}from'../hooks/useAdminData'
+import{useAdminActiveServices}from'../hooks/useAdminActiveServices'
 import{useAdminDisputes}from'../hooks/useDisputes'
 import{supabase}from'../lib/supabase'
 import{AdminDisputeAssistant}from'./AdminDisputeAssistant'
@@ -12,8 +13,38 @@ const stateLabel=(s:any)=>String(s||'—').replaceAll('_',' ')
 const policyOutcomeLabel=(value:any)=>({confirmar_servicio:'Confirmar servicio',retrabajo:'Corrección / retrabajo',reagendar:'Reagendar',ajuste_financiero:'Revisión financiera',reembolso:'Evaluar reembolso',penalizacion:'Evaluar consecuencia contractual',revision_humana:'Revisión humana',solicitar_evidencia:'Pedir más evidencia',acuerdo:'Buscar acuerdo'} as Record<string,string>)[String(value||'')]||stateLabel(value)
 
 export function AdminAlertsDecisionCenter(){
- const{alerts,criticalCount,warningCount,refetch}=useSystemAlerts()
+ const{alerts:systemAlerts,refetch}=useSystemAlerts()
+ const{services,providers}=useAdminActiveServices()
  const[filter,setFilter]=useState<'all'|'critical'|'warning'|'info'>('all')
+ const operationalAlerts=useMemo(()=>{
+  const now=Date.now(),rows:any[]=[]
+  const ageMinutes=(value:any)=>{const at=new Date(value||0).getTime();return Number.isFinite(at)?Math.max(0,(now-at)/60000):0}
+  for(const service of services){
+   const updated=service.updated_at||service.created_at,age=ageMinutes(updated),future=service.programado_para&&new Date(service.programado_para).getTime()>now
+   if(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'].includes(service.estado)&&!service.proveedor_id){
+    rows.push({id:`ops-provider-${service.id}`,severidad:'critical',tipo:'servicio_inconsistente',titulo:`Servicio #${service.numero||String(service.id).slice(0,8)} sin proveedor`,descripcion:`El estado ${stateLabel(service.estado)} requiere proveedor asignado, pero el serviceId no tiene proveedor_id.`,created_at:updated,servicio_id:service.id})
+   }
+   if(!future&&['buscando','ofrecido'].includes(service.estado)&&age>=10){
+    rows.push({id:`ops-match-${service.id}`,severidad:'warning',tipo:'matching_demorado',titulo:`Matching demorado · #${service.numero||String(service.id).slice(0,8)}`,descripcion:`El pedido lleva ${Math.floor(age)} min en ${stateLabel(service.estado)} sin converger a una asignación.`,created_at:updated,servicio_id:service.id})
+   }
+   if(service.estado==='en_camino'&&age>=90){
+    rows.push({id:`ops-route-${service.id}`,severidad:'warning',tipo:'traslado_demorado',titulo:`Traslado prolongado · #${service.numero||String(service.id).slice(0,8)}`,descripcion:`El proveedor lleva aproximadamente ${Math.floor(age)} min en camino. Conviene revisar ubicación o contactar a las partes.`,created_at:updated,servicio_id:service.id})
+   }
+   if(service.estado==='esperando_aprobacion'&&age>=120){
+    rows.push({id:`ops-approval-${service.id}`,severidad:'warning',tipo:'aprobacion_demorada',titulo:`Aprobación pendiente · #${service.numero||String(service.id).slice(0,8)}`,descripcion:`El trabajo lleva aproximadamente ${Math.floor(age/60)} h esperando confirmación del cliente.`,created_at:updated,servicio_id:service.id})
+   }
+   if(service.estado==='disputado'){
+    rows.push({id:`ops-dispute-${service.id}`,severidad:'critical',tipo:'disputa_servicio',titulo:`Servicio en disputa · #${service.numero||String(service.id).slice(0,8)}`,descripcion:'Hay una disputa abierta sobre este serviceId y requiere seguimiento administrativo.',created_at:updated,servicio_id:service.id})
+   }
+  }
+  for(const provider of providers.filter(p=>p.debtBlocked)){
+   rows.push({id:`ops-debt-${provider.id}`,severidad:'warning',tipo:'proveedor_deuda_ugo',titulo:`Proveedor bloqueado por deuda UGO`,descripcion:`${[provider.nombre,provider.apellido].filter(Boolean).join(' ')} acumula ${provider.pendingDebtCount} comisiones pendientes y no puede recibir nuevos pedidos.`,created_at:new Date().toISOString(),proveedor_id:provider.id})
+  }
+  return rows
+ },[providers,services])
+ const alerts=useMemo(()=>[...operationalAlerts,...systemAlerts],[operationalAlerts,systemAlerts])
+ const criticalCount=alerts.filter((a:any)=>severity(a.severidad)==='critical').length
+ const warningCount=alerts.filter((a:any)=>severity(a.severidad)==='warning').length
  const visible=useMemo(()=>alerts.filter((a:any)=>filter==='all'||severity(a.severidad)===filter),[alerts,filter])
  const recommended=(a:any)=>{
   const t=String(a.tipo||a.titulo||'').toLowerCase()
