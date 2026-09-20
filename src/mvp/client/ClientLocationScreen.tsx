@@ -1,6 +1,7 @@
 import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../shared'
 import{ClientWhenScreen}from'./ClientWhenScreen'
+import{UGO_UI_EVENTS}from'../uiEvents'
 import'./client-location-screen.css'
 
 type TariffQuote={tarifa_id:string;zona:string;precio_base:number;precio_hora:number;precio_min:number;precio_max:number|null;precio_referencia:number;moneda:string}
@@ -39,6 +40,8 @@ export function ClientLocationScreen({onBack,onContinue}:{onBack:()=>void;onCont
    return null
   }finally{setQuoting(false)}
  }
+
+ useEffect(()=>{if(!key)return;const onVoiceDraft=(event:Event)=>{const detail=(event as CustomEvent<{address?:string;when?:string|null;scheduleAt?:string;urgent?:boolean;paymentMethod?:'cash'|'pix'|null;voiceJourney?:boolean}>).detail||{},nextAddress=String(detail.address||'').trim();try{const previous=JSON.parse(sessionStorage.getItem(key)||'{}');sessionStorage.setItem(key,JSON.stringify({...previous,...(nextAddress?{address:nextAddress,addressLabel:previous.addressLabel||'Dirección del servicio'}:{}),...(detail.when?{when:detail.when,scheduleAt:detail.scheduleAt||'',urgent:Boolean(detail.urgent)}:{}),...(detail.paymentMethod?{paymentMethod:detail.paymentMethod}:{}),voiceJourney:Boolean(detail.voiceJourney)}))}catch{}if(nextAddress.length<5)return;setSelectedPlace('');setAddress(nextAddress);setMessage('');setQuote(null);setQuoteChecked(false);void(async()=>{const currentQuote=await loadQuote(nextAddress,zone);save(nextAddress,zone,currentQuote);setStage('when')})()};window.addEventListener(UGO_UI_EVENTS.clientHugoDraft,onVoiceDraft);return()=>window.removeEventListener(UGO_UI_EVENTS.clientHugoDraft,onVoiceDraft)},[key,zone])
 
  const choosePlace=(place:SavedPlace)=>{const nextZone=place.barrio||place.ciudad||'',lat=Number(place.latitud),lng=Number(place.longitud),hasCoords=place.latitud!=null&&place.longitud!=null&&Number.isFinite(lat)&&Number.isFinite(lng);setSelectedPlace(place.id);setAddress(place.direccion);setComplement(place.complemento||'');setZone(nextZone);setMessage('');setQuote(null);setQuoteChecked(false);save(place.direccion,nextZone,null);savePickup(hasCoords?lat:null,hasCoords?lng:null,'saved');void loadQuote(place.direccion,nextZone)}
  const useLocation=()=>{
