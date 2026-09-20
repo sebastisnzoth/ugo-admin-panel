@@ -3,8 +3,8 @@ import{SERVICE_STATES,type ServiceState,useAdminActiveServices}from'../hooks/use
 import{AdminServiceTracePanel}from'./AdminServiceTracePanel'
 import'./admin-services-pro.css'
 
-const ACTIVE=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion'] as const
-const label=(s:string)=>({buscando:'Buscando',ofrecido:'Ofrecido',asignado:'Asignado',en_camino:'En camino',llegado:'Llegó',en_progreso:'En progreso',esperando_aprobacion:'Esperando aprobación',completado:'Completado',cancelado:'Cancelado'} as Record<string,string>)[s]||s.replace(/_/g,' ')
+const ACTIVE=['borrador','buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado'] as const
+const label=(s:string)=>({borrador:'Borrador',buscando:'Buscando',ofrecido:'Ofrecido',asignado:'Asignado',en_camino:'En camino',llegado:'Llegó',en_progreso:'En progreso',esperando_aprobacion:'Esperando aprobación',completado:'Completado',cancelado:'Cancelado',disputado:'En disputa'} as Record<string,string>)[s]||s.replace(/_/g,' ')
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 const when=(v:any)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'
 const fullName=(u:any)=>[u?.nombre,u?.apellido].filter(Boolean).join(' ')||'—'
