@@ -35,3 +35,10 @@ test('assignment notification and active home card open the exact service id',as
  assert.match(home,/onClick=\{\(\)=>openOrder\(order\.id\)\}/)
  assert.match(home,/onOpenService\(serviceId\)/)
 })
+
+
+test('client recovers an unread service alert after reopening the app',async()=>{
+ const center=await read('src/mvp/NotificationCenter.tsx')
+ assert.match(center,/else if\(role==='client'\)\{const pending=next\.find\(notice=>!notice\.leida_at&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\);if\(pending\)signalClientAlert\(pending\)\}/)
+ assert.match(center,/\[db,role,signalClientAlert,signalProviderAlert\]/)
+})
