@@ -17,6 +17,7 @@ export type DispatchRequest = {
   serviceId: string
   category: string
   pickup?: Coordinates | null
+  pickupFallback?: 'stored' | 'none'
   initialRadiusKm?: number
   maxRadiusKm?: number
   timeoutSeconds?: number
