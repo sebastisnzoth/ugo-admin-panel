@@ -12,7 +12,7 @@ const fullName=(u:any)=>[u?.nombre,u?.apellido].filter(Boolean).join(' ')||'—'
 type EditForm={estado:ServiceState;proveedor_id:string;tarifa:string;descripcion:string;direccion_cliente:string;motivo:string}
 const toForm=(s:any):EditForm=>({estado:s.estado,proveedor_id:s.proveedor_id||s.proveedor?.id||'',tarifa:String(Number(s.tarifa||0)),descripcion:s.descripcion||'',direccion_cliente:s.direccion_cliente||'',motivo:''})
 
-export function AdminServicesPro(){
+export function AdminServicesPro({initialServiceId,onInitialServiceConsumed}:{initialServiceId?:string|null;onInitialServiceConsumed?:()=>void}={}){
  const{services,providers,loading,error,refetch,updateService,updateServiceStatus,liveStatus,lastSynced}=useAdminActiveServices();const[q,setQ]=useState('');const[state,setState]=useState('todos')
  const[drafts,setDrafts]=useState<Record<string,ServiceState>>({});const[saving,setSaving]=useState<string|null>(null);const[actionMessage,setActionMessage]=useState<Record<string,{kind:'ok'|'error';text:string}>>({})
  const[editing,setEditing]=useState<any|null>(null);const[form,setForm]=useState<EditForm|null>(null);const[editBusy,setEditBusy]=useState(false);const[editMessage,setEditMessage]=useState('')
@@ -37,6 +37,7 @@ export function AdminServicesPro(){
  }
  useEffect(()=>{if(!editing)return;const fresh=services.find((row:any)=>row.id===editing.id);if(fresh)setEditing(fresh)},[services,editing?.id])
  const openEdit=(s:any)=>{setEditing(s);setForm(toForm(s));setEditMessage('')}
+ useEffect(()=>{if(!initialServiceId||editing)return;const service=services.find((row:any)=>String(row.id)===String(initialServiceId));if(!service)return;setEditing(service);setForm(toForm(service));setEditMessage('');onInitialServiceConsumed?.()},[editing,initialServiceId,onInitialServiceConsumed,services])
  const closeEdit=()=>{if(editBusy)return;setEditing(null);setForm(null);setEditMessage('')}
  const saveEdit=async()=>{
   if(!editing||!form)return
