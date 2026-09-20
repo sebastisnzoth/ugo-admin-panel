@@ -472,3 +472,16 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 - incorpora pago/resumen económico cuando existe y timeline persistido de estados para explicar cómo se hizo;
 - el detalle queda ligado al `serviceId` exacto y usa RLS del rol Proveedor;
 - madurez: implementación en código; pendiente smoke visual/runtime autenticado sobre un servicio completado real.
+
+
+---
+
+## Checkpoint 20/09/2026 · Hugo Proveedor conoce su historial
+
+- Hugo Proveedor recibe desde backend el historial propio del proveedor autenticado, no sólo la misión/cliente actual;
+- puede responder cantidad histórica de trabajos completados, trabajos completados/cancelados hoy y últimos servicios realizados;
+- calcula para el día operativo de Florianópolis/São Paulo ganancia neta, cobro bruto, comisión UGO, efectivo y pagos electrónicos desde pagos persistidos;
+- preguntas informativas sobre “ganancias” o “historial” ya no abren pantallas automáticamente: navegar requiere una intención explícita como abrir/ver/mostrar;
+- el prompt prohíbe responder “no tengo acceso al historial” cuando DATOS UGO ya contiene esa información;
+- “qué pasó hoy” y seguimientos conversacionales pueden resumirse usando hechos persistidos, sin inventar;
+- pendiente de madurez: smoke autenticado por voz con un proveedor que tenga trabajos/pagos históricos reales.

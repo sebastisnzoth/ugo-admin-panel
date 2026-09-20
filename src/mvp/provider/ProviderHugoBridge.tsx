@@ -51,9 +51,9 @@ export function ProviderHugoBridge(){
   if(/\b(demanda|radar|zonas?)\b/.test(value)){flow.actions.openDemand();await speak(pt?'Abri o radar de demanda.':'Abrí el radar de demanda.');return true}
   if(/\b(pedidos?|oportunidades?|ofertas?)\b/.test(value)&&/\b(abrir|ver|mostrar|mostra|quiero|quero)\b/.test(value)){flow.actions.openOpportunities();await speak(pt?'Abri suas oportunidades.':'Abrí tus oportunidades.');return true}
   if(/\b(agenda|calendario)\b/.test(value)){flow.actions.openAgenda();await speak(pt?'Abri sua agenda.':'Abrí tu agenda.');return true}
-  if(/\b(ganancias?|ganhos?|cobros?|saldo|dinheiro)\b/.test(value)){flow.actions.openEarnings();await speak(pt?'Abri seus ganhos.':'Abrí tus ganancias.');return true}
+  if(/\b(ganancias?|ganhos?|cobros?|saldo|dinheiro)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|mostra|ir|lleva|levame|levá|leva)\b/.test(value)){flow.actions.openEarnings();await speak(pt?'Abri seus ganhos.':'Abrí tus ganancias.');return true}
   if(/\b(perfil|cuenta|conta)\b/.test(value)&&/\b(abrir|ver|mostrar|mostra|ir)\b/.test(value)){flow.actions.openProfile();await speak(pt?'Abri seu perfil.':'Abrí tu perfil.');return true}
-  if(/\b(historial|atividade|actividad)\b/.test(value)){flow.actions.openHistory();await speak(pt?'Abri seu histórico.':'Abrí tu historial.');return true}
+  if(/\b(historial|atividade|actividad)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|mostra|ir|lleva|levame|levá|leva)\b/.test(value)){flow.actions.openHistory();await speak(pt?'Abri seu histórico.':'Abrí tu historial.');return true}
   if(/\b(disputa|problema|soporte|suporte)\b/.test(value)&&/\b(abrir|ver|mostrar|ajuda|ayuda)\b/.test(value)){flow.actions.openDispute();await speak(pt?'Abri suporte e disputas.':'Abrí soporte y disputas.');return true}
   if(/\b(trabalho atual|trabajo actual|servicio actual|missao|mision)\b/.test(value)){data.service?flow.actions.openActiveJob():flow.actions.openAgenda();await speak(data.service?(pt?'Abri o trabalho atual.':'Abrí el trabajo actual.'):(pt?'Você não tem um trabalho ativo. Abri sua agenda.':'No tenés un trabajo activo. Abrí tu agenda.'));return true}
   if(/\b(poneme|ponerme|quedar|ficar|modo)\b.*\b(online|disponible)\b/.test(value)||value==='online'){if(!data.online)await data.toggleOnline();await speak(pt?'Você está online.':'Estás online.');return true}
