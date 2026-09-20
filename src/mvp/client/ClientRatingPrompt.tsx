@@ -23,7 +23,7 @@ export function ClientRatingPrompt(){
   const rows=(services||[])as CompletedService[]
   if(!rows.length){setTarget(null);return}
   const ids=rows.map(row=>row.id)
-  const{data:reviews,error:reviewError}=await supabase.from('resenas').select('servicio_id').eq('cliente_id',userId).in('servicio_id',ids)
+  const{data:reviews,error:reviewError}=await supabase.from('resenas').select('servicio_id').eq('cliente_id',userId).eq('autor_tipo','cliente').in('servicio_id',ids)
   if(reviewError)throw reviewError
   const reviewed=new Set((reviews||[]).map(row=>String(row.servicio_id)))
   const service=rows.find(row=>!reviewed.has(row.id))||null
@@ -66,9 +66,9 @@ export function ClientRatingPrompt(){
   if(!userId||!target||score<1||score>5||busy)return
   setBusy(true);setMessage('')
   const serviceId=target.service.id
-  const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:userId,proveedor_id:target.service.proveedor_id,puntuacion:score,comentario:comment.trim()||null})
+  const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:userId,proveedor_id:target.service.proveedor_id,autor_tipo:'cliente',puntuacion:score,comentario:comment.trim()||null})
   if(!error){setBusy(false);markSaved();return}
-  const{data:persisted,error:recoveryError}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).maybeSingle()
+  const{data:persisted,error:recoveryError}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).eq('autor_tipo','cliente').maybeSingle()
   setBusy(false)
   if(persisted){markSaved(error.code==='23505'?'Este servicio ya fue calificado.':'Gracias. Tu calificación quedó guardada.');return}
   if(recoveryError){const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.';setMessage(text);report('rating_submit_recovery_unverified',text,recoveryError,serviceId);return}
