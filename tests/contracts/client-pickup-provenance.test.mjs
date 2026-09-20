@@ -1,0 +1,27 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFile } from 'node:fs/promises'
+
+const read = path => readFile(new URL('../../' + path, import.meta.url), 'utf8')
+
+test('canonical client order never reuses stale browser GPS for a different address', async () => {
+  const [types, dispatch, location, post] = await Promise.all([
+    read('src/lib/dispatch/types.ts'),
+    read('src/lib/dispatch/supabaseDispatch.ts'),
+    read('src/mvp/client/ClientLocationScreen.tsx'),
+    read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  ])
+  assert.match(types, /pickupFallback\?: 'stored' \| 'none'/)
+  assert.match(dispatch, /request\.pickupFallback === 'none' \? null : storedPickup\(\)/)
+  assert.match(location, /savePickup\(null,null,'manual'\)/)
+  assert.match(location, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
+  assert.match(location, /savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/)
+  assert.match(post, /pickup:draftPickup\(draft\),pickupFallback:'none'/)
+})
+
+test('saved-place pickup is exact only when that place has coordinates', async () => {
+  const location = await read('src/mvp/client/ClientLocationScreen.tsx')
+  assert.match(location, /Number\.isFinite\(lat\)&&Number\.isFinite\(lng\)/)
+  assert.match(location, /pickupLat/)
+  assert.match(location, /pickupLng/)
+})
