@@ -38,7 +38,7 @@ export function AdminReportsCenter(){
    db.from('resenas').select('id,servicio_id,proveedor_id,puntuacion,created_at').gte('created_at',s).lte('created_at',e).order('created_at',{ascending:false}).limit(2000),
    db.from('perfiles_proveedor').select('usuario_id,estado_verificacion,online,disponible,created_at').limit(2000)
   ])
-  const firstError=results.find((r:any)=>r.error)?.error;if(firstError){setError(firstError.message||'No se pudieron cargar los reportes');setLoading(false);return}
+  const firstError=results.find((r:any)=>r.error)?.error;if(firstError){console.error('[AdminReports] load failed',firstError);const raw=String(firstError.message||'');setError(/permission denied|42501/i.test(raw)?'No pudimos leer una fuente del reporte. Reintentá en unos segundos.':'No se pudieron cargar los reportes. Reintentá en unos segundos.');setLoading(false);return}
   setData({services:results[0].data||[],payments:results[1].data||[],withdrawals:results[2].data||[],disputes:results[3].data||[],reviews:results[4].data||[],providers:results[5].data||[]});setUpdated(new Date());setLoading(false)
  },[start.getTime(),end.getTime()])
  useEffect(()=>{void load()},[load])
