@@ -391,3 +391,13 @@ El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rut
 - Gemini recibe la misma regla persistida, evitando prompts divergentes;
 - `auto_aplicar=false` está protegido por constraint: la matriz nunca resuelve, sanciona ni mueve dinero sola;
 - daño, fraude y seguridad continúan con salida `revision_humana`.
+
+
+### Checkpoint 20/09/2026 · Proveedor acepta trabajos futuros mientras trabaja
+
+- corregido el guard server-side que bloqueaba cualquier nueva aceptación si el Proveedor estaba `en_camino/llegado/en_progreso`;
+- un pedido **inmediato** sigue bloqueado mientras hay un trabajo en ejecución;
+- un pedido **programado para más adelante** puede aceptarse si comienza después de la ventana estimada del trabajo actual + 30 minutos;
+- `esperando_aprobacion` y `disputado` ya no se tratan como trabajo físico en ejecución para bloquear agenda;
+- los conflictos entre trabajos ya programados continúan usando duración estimada + buffer de 30 minutos;
+- cada aceptación conserva su propio `serviceId` y aparece por separado en Agenda.

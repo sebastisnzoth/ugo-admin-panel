@@ -83,3 +83,15 @@ test('cash is materialized server-side when an assigned service requested efecti
  assert.match(sql,/after update of proveedor_id,estado,tarifa,comision_ugo,ganancia_proveedor/)
  assert.match(sql,/not exists\(select 1 from public\.pagos p where p\.servicio_id=s\.id\)/)
 })
+
+
+test('provider can accept a non-overlapping future job while another service is live',async()=>{
+ const sql=await read('supabase/migrations/20260920154000_provider_future_jobs_during_live_work.sql')
+ assert.match(sql,/Podés aceptar otro si está programado para más adelante/)
+ assert.match(sql,/existing\.estado in \('en_camino','llegado','en_progreso'\)/)
+ assert.doesNotMatch(sql,/existing\.estado in \('en_camino','llegado','en_progreso','esperando_aprobacion','disputado'\)/)
+ assert.match(sql,/v_target_start < \(/)
+ assert.match(sql,/private\.service_duration_minutes\(existing\.metadata\)/)
+ assert.match(sql,/now\(\) \+ v_buffer/)
+ assert.match(sql,/Ese horario queda demasiado cerca del trabajo que estás haciendo/)
+})
