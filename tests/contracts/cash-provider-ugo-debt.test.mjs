@@ -4,6 +4,7 @@ import fs from'node:fs'
 
 const debt=fs.readFileSync('supabase/migrations/20260920070000_cash_provider_ugo_debt_ledger.sql','utf8')
 const pricing=fs.readFileSync('supabase/migrations/20260920071000_lock_tariff_snapshot_end_to_end.sql','utf8')
+const wallet=fs.readFileSync('supabase/migrations/20260920072000_provider_digital_balance_cash_exclusion.sql','utf8')
 const client=fs.readFileSync('src/mvp/client/ClientPostConfirmFlow.tsx','utf8')
 const providerData=fs.readFileSync('src/mvp/provider/providerData.tsx','utf8')
 const earnings=fs.readFileSync('src/mvp/provider/ProviderEarnings.tsx','utf8')
@@ -48,4 +49,12 @@ test('quoted tariff is the canonical service amount end to end',()=>{
  assert.match(client,/serviceAmount=requested>0\?requested:quoted>0\?quoted:null/)
  assert.match(client,/comision_ugo:commission/)
  assert.match(providerData,/estimatedValue:Number\(serviceData\?\.tarifa\|\|offer\.tarifa_ofrecida\|\|0\)/)
+})
+
+test('provider withdrawal balance excludes cash at the database boundary',()=>{
+ assert.match(wallet,/create or replace function public\.saldo_proveedor\(\)/i)
+ assert.match(wallet,/coalesce\(p\.metodo,''\)<>'efectivo'/)
+ assert.match(wallet,/create or replace function public\.solicitar_retiro\(p_monto numeric\)/i)
+ assert.match(wallet,/pg_advisory_xact_lock/)
+ assert.match(wallet,/Saldo insuficiente/)
 })
