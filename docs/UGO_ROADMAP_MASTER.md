@@ -303,3 +303,11 @@ Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offl
 - el catálogo de voz reconoce fuga/pérdida de agua, cañería/desagüe y vazamento como Plomería antes del fallback genérico de Reparaciones;
 - al abrir el compositor canónico de solicitud, la conversación expandida de Hugo se cierra para no competir visualmente con el paso 1/5; el orbe queda disponible para reabrirlo;
 - una falla sólo de audio TTS ya no se presenta como error rojo del pedido cuando el texto de Hugo sí llegó y el flujo sigue operativo.
+
+
+### Checkpoint 20/09/2026 · mejora visual paso 1/5 Cliente
+
+- el paso “qué hay que hacer” deja de verse como una tira móvil perdida en desktop: ahora usa un panel centrado más ancho, jerarquía visual, card de categoría y opciones rápidas 2×2;
+- “Continuar” sólo se habilita cuando hay categoría y una descripción válida, evitando errores tardíos;
+- las opciones rápidas priorizan la categoría realmente inferida desde la descripción; un hint viejo ya no puede volver a mostrar opciones de Electricidad después de corregir a Plomería;
+- el orbe de Hugo queda disponible como acceso lateral compacto en desktop sin competir con el formulario.

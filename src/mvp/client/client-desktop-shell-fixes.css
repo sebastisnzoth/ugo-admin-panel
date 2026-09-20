@@ -169,3 +169,14 @@
     transform:none!important;
   }
 }
+
+
+/* Request mode: keep the wide desktop canvas intentional instead of leaving a
+   disconnected mobile strip in the middle of the page. */
+@media(min-width:900px){
+ .ugo-client-root.ugo-client-screen-request{
+   background:
+    radial-gradient(circle at 50% 28%,rgba(7,150,111,.07),transparent 30rem),
+    linear-gradient(180deg,#f6f8fd 0,#f8faf9 100%)!important;
+ }
+}
