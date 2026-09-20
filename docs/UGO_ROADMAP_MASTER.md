@@ -311,3 +311,15 @@ Migración aplicada en UGO TEST: un proveedor con 6 deudas abiertas quedó `Offl
 - “Continuar” sólo se habilita cuando hay categoría y una descripción válida, evitando errores tardíos;
 - las opciones rápidas priorizan la categoría realmente inferida desde la descripción; un hint viejo ya no puede volver a mostrar opciones de Electricidad después de corregir a Plomería;
 - el orbe de Hugo queda disponible como acceso lateral compacto en desktop sin competir con el formulario.
+
+
+---
+
+## Checkpoint 20/09/2026 · alertas Cliente en tiempo real
+
+- asignación y lifecycle del Proveedor ya generan notificaciones Cliente por `serviceId`;
+- chat Proveedor → Cliente ahora crea `chat_mensaje` server-side, deduplicado por mensaje/destinatario;
+- Cliente recibe banner visible, vibración y tono foreground para chat y cambios críticos de estado;
+- tocar la alerta abre el pedido exacto; el detalle y Home continúan resincando `servicios` por Realtime;
+- notificaciones también alimentan Web Push cuando el usuario lo habilitó;
+- pendiente de madurez RUNTIME: prueba física en dos dispositivos con Proveedor marcando ESTOY YENDO/LLEGUÉ y enviando chat mientras Cliente está en Home y con la app en background.
