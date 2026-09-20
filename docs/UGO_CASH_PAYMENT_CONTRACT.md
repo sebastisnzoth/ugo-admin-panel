@@ -1,67 +1,140 @@
-# UGO · Contrato de pago en efectivo
+# UGO · Contrato canónico de pago en efectivo
 
-**Versión:** 2.1 · 17 de septiembre de 2026  
-**Estado:** P0 · contrato operativo de método presencial
+**Versión:** 3.0 · 20 de septiembre de 2026  
+**Estado:** P0 · flujo financiero presencial
 
-## Regla funcional
+## Regla de negocio
 
-Un cliente puede elegir **Efectivo** una vez que el servicio tiene proveedor asignado. Ese servicio queda habilitado para avanzar sin custodia electrónica de UGO.
+El efectivo es un medio de pago presencial. UGO registra el servicio y su economía, pero **no custodia el dinero físico**.
 
-En la experiencia Cliente, **Efectivo es la preferencia predeterminada** cuando no existe una elección guardada. La forma de pago no bloquea el inicio de una solicitud: se muestra en el paso de confirmación y también puede cambiarse desde Perfil. La preferencia del pedido queda registrada en metadata; la creación financiera del pago en efectivo sigue ocurriendo cuando el servicio ya tiene proveedor asignado.
+El cliente paga el importe total directamente al proveedor. Por eso ese dinero:
 
-Flujo canónico:
+- aparece como **Cobrado en efectivo** para el proveedor;
+- no se suma al **Saldo UGO**;
+- no puede retirarse otra vez desde UGO;
+- genera una deuda separada del proveedor hacia UGO por la comisión de plataforma.
 
-`asignado → efectivo pendiente → en_camino → llegado → en_progreso → evidencia final → proveedor confirma recepción → esperando_aprobacion → cliente aprueba → completado`
+## Flujo canónico de cierre
 
-## Invariante de cierre
+```text
+servicio en_progreso
+→ proveedor carga evidencia final
+→ servicio esperando_aprobacion
+→ cliente CONFIRMA TRABAJO
+→ UGO muestra cuánto pagar al proveedor
+→ cliente entrega efectivo
+→ cliente pulsa YA PAGUÉ
+→ pago efectivo queda confirmado/liberado como registro contable
+→ servicio completado
+→ UGO crea deuda de comisión del proveedor
+→ proveedor ve DEBÉS A UGO
+→ proveedor paga la comisión e informa referencia
+→ Admin concilia la referencia
+→ deuda UGO pagada
+```
 
-Mientras el efectivo siga `pendiente`, el servicio **permanece en `en_progreso`**, aunque ya exista evidencia final.
+El proveedor no tiene que volver a confirmar que recibió el efectivo para cerrar el servicio. La confirmación final pertenece al cliente que entregó el dinero.
 
-La evidencia final significa **trabajo terminado físicamente**; no significa todavía **servicio listo para aprobación** cuando el método es efectivo.
+## Economía del servicio
 
-`confirmar_pago_efectivo(p_servicio_id)` es el paso de dominio que, una vez verificada la evidencia final:
+La misma tarifa se conserva en todo el flujo:
 
-1. registra la recepción presencial del dinero;
-2. cambia el pago a `liberado/registrado` según el contrato actual;
-3. habilita y lleva el servicio a `esperando_aprobacion`;
-4. notifica al cliente para que revise y apruebe.
+```text
+tarifa cliente = monto del servicio
+comisión UGO = tarifa × comisión vigente
+neto proveedor = tarifa - comisión UGO
+```
 
-Nunca debe existir como estado normal:
+Cuando existe una tarifa UGO cotizada por categoría/zona, su snapshot queda guardado en el servicio y se congela al asignar proveedor. Una oferta o tarifa_base del proveedor no puede reemplazar silenciosamente una tarifa UGO ya cotizada.
 
-`esperando_aprobacion + efectivo pendiente`.
+## Ejemplo
 
-Si aparece por datos históricos, el sistema debe tratarlo como un estado de recuperación: el cliente no puede aprobar y el proveedor debe completar la confirmación del efectivo.
+Servicio: R$ 120,00  
+Comisión UGO 15%: R$ 18,00  
+Neto económico del proveedor: R$ 102,00
 
-## Seguridad y dinero
+Si el cliente paga en efectivo:
 
-- Efectivo **no** se etiqueta como pago protegido.
-- UGO registra método, monto, comisión, ganancia y confirmación, pero no custodia el dinero físico.
-- No se permite cambiar a efectivo si ya existe un pago electrónico `autorizado`, `retenido`, `liberado`, `reembolsado` o `disputado`.
-- La selección y la confirmación son idempotentes y serializadas por servicio.
-- Sólo el cliente del servicio puede seleccionar efectivo.
-- Sólo el proveedor asignado puede confirmar recepción.
-- Confirmar efectivo requiere evidencia final.
-- El cliente sólo puede aprobar después de la confirmación del efectivo.
-- Repetir la confirmación no puede duplicar cobros, notificaciones ni transiciones.
+- el proveedor recibe físicamente **R$ 120,00**;
+- UGO registra **R$ 120,00 cobrado en efectivo**;
+- UGO registra **R$ 18,00 Debés a UGO**;
+- el saldo retirable UGO no aumenta por esos R$ 120,00;
+- cuando el proveedor paga R$ 18,00 y Admin concilia la referencia, la deuda queda saldada.
+
+## Fuentes canónicas
+
+- `servicios.tarifa`: precio total congelado del servicio.
+- `servicios.comision_ugo`: comisión económica.
+- `servicios.ganancia_proveedor`: neto del proveedor.
+- `pagos`: registro del medio de pago y confirmación del cliente.
+- `deudas_ugo_proveedor`: libro separado de comisiones adeudadas por cobros presenciales.
+
+## Estados de deuda UGO
+
+- `pendiente`: existe una comisión a pagar.
+- `informado`: el proveedor informó una referencia; todavía no está conciliada.
+- `parcial`: reservado para pagos parciales.
+- `pagado`: Admin verificó y concilió el pago.
+- `anulado`: deuda anulada administrativamente.
+
+Informar una referencia **no** salda la deuda. Sólo `admin_confirmar_deuda_ugo_pagada` puede conciliarla.
 
 ## RPC canónicos
 
-- `seleccionar_pago_efectivo(p_servicio_id uuid)`
-- `confirmar_pago_efectivo(p_servicio_id uuid)`
-- `aprobar_servicio(p_servicio_id uuid)`
+### Flujo del cliente
 
-Las rutas HTTP son sólo compatibilidad. El contrato de dominio vive en Supabase/RPC y no puede depender de que Vercel tenga un backend financiero alternativo configurado.
+- `seleccionar_pago_efectivo(p_servicio_id uuid)`
+- `aprobar_servicio(p_servicio_id uuid)`
+- `confirmar_pago_efectivo_cliente(p_servicio_id uuid)`
+
+### Comisión del proveedor
+
+- `informar_pago_deuda_ugo(p_deuda_id uuid, p_referencia text)`
+- `admin_confirmar_deuda_ugo_pagada(p_deuda_id uuid, p_referencia text, p_notas text)`
 
 ## UI obligatoria
 
-Proveedor, al terminar con efectivo pendiente:
+### Cliente
 
-**Próximo paso: Confirmar efectivo recibido**
+Después de aprobar el trabajo:
 
-Cliente, mientras no exista confirmación:
+**Pagá R$ X al proveedor**
 
-**Esperando confirmación del cobro por parte del proveedor.**
+y luego:
 
-Sólo después debe aparecer como acción principal:
+**YA PAGUÉ R$ X**
 
-**Aprobar trabajo**
+### Proveedor
+
+En Ganancias:
+
+- **Saldo UGO** — sólo dinero digital liberado;
+- **En proceso** — dinero digital protegido;
+- **Cobrado en efectivo** — dinero recibido directamente del cliente;
+- **Debés a UGO** — comisión pendiente de los cobros presenciales.
+
+Por servicio en efectivo debe poder ver total cobrado, comisión, neto y estado de la deuda.
+
+### Admin / Super Admin
+
+Finanzas debe mostrar por separado:
+
+- GMV real;
+- saldo digital de proveedores;
+- efectivo cobrado por proveedores;
+- deuda UGO por efectivo;
+- comisión UGO efectivamente cobrada;
+- retiros y reembolsos.
+
+La conciliación de deuda requiere una referencia externa y queda auditada.
+
+## Invariantes
+
+1. Un cobro en efectivo nunca se contabiliza como saldo custodio de UGO.
+2. Un mismo pago en efectivo genera como máximo una deuda de comisión.
+3. Realtime puede refrescar la UI, pero la deuda vive en PostgreSQL.
+4. El proveedor sólo ve sus deudas; Admin/Super Admin puede ver todas.
+5. `anon` no puede leer el libro de deuda.
+6. El cliente confirma el efectivo sólo después de aprobar el trabajo.
+7. La comisión de efectivo no se considera cobrada hasta conciliación Admin.
+8. DEMO y REAL permanecen separados.
