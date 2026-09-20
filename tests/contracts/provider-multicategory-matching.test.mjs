@@ -29,3 +29,15 @@ test('multirubro does not replace the canonical single service assignment',async
  assert.doesNotMatch(sql,/alter table public\.servicios[\s\S]*drop column[\s\S]*proveedor_id/i)
  assert.doesNotMatch(sql,/create table if not exists public\.servicios_equipo/i)
 })
+
+
+test('current matching consumes provider selected category ids and debt eligibility',async()=>{
+ const sql=await read('supabase/migrations/20260920091500_match_selected_provider_categories.sql')
+ assert.match(sql,/create or replace function private\.proveedor_trabaja_categoria/)
+ assert.match(sql,/p_categoria_id=any\(coalesce\(u\.categorias_ids,'\{\}'::uuid\[\]\)\)/)
+ assert.match(sql,/private\.proveedor_trabaja_categoria\(u\.id,v_servicio\.categoria_id\)/)
+ assert.match(sql,/private\.proveedor_bloqueado_por_deuda_ugo\(u\.id\)/)
+ assert.match(sql,/create or replace function public\.iniciar_matching_dirigido/)
+ assert.match(sql,/private\.proveedor_trabaja_categoria\(p_proveedor_id,v_servicio\.categoria_id\)/)
+ assert.match(sql,/private\.proveedor_bloqueado_por_deuda_ugo\(p_proveedor_id\)/)
+})
