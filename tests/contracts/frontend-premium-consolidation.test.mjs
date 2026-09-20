@@ -13,3 +13,11 @@ test('premium contract and tokens exist',async()=>{
  for(const x of['--ugo-font-caption:12px','--ugo-font-body:14px','--ugo-font-title:16px','--ugo-scrollbar-thumb:'])assert.ok(css.includes(x),x)
  assert.match(css,/scrollbar-color:var\(--ugo-scrollbar-thumb\)/)
 })
+
+
+test('legacy CSS debt is frozen behind an evidence-based retirement gate',async()=>{
+ const ledger=await read('docs/UGO_CSS_MIGRATION_LEDGER.md')
+ assert.match(ledger,/client-ai-studio-final-lock\.css/)
+ assert.match(ledger,/client-real-test-fixes\.css/)
+ assert.match(ledger,/Retiro sólo con evidencia de consumidor cero/)
+})
