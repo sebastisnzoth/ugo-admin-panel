@@ -19,8 +19,8 @@ test('Hugo stays as an orb until the client opens the conversation',()=>{
 })
 
 test('spoken category/problem can begin an order without magic request wording',()=>{
- assert.match(dock,/inferredCategory=await resolveVoiceCategory\(clean\)/)
- assert.match(dock,/category:inferredCategory/)
+ assert.match(dock,/directCategory=await resolveVoiceCategory\(clean\)/)
+ assert.match(dock,/category:suggested/)
  assert.match(dock,/await askNext\(clean,current,voiceAvailabilityText/)
 })
 
