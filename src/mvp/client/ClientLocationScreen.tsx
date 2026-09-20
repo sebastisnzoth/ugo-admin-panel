@@ -40,7 +40,7 @@ export function ClientLocationScreen({onBack,onContinue}:{onBack:()=>void;onCont
   }finally{setQuoting(false)}
  }
 
- const choosePlace=(place:SavedPlace)=>{const nextZone=place.barrio||place.ciudad||'',lat=Number(place.latitud),lng=Number(place.longitud),hasCoords=Number.isFinite(lat)&&Number.isFinite(lng);setSelectedPlace(place.id);setAddress(place.direccion);setComplement(place.complemento||'');setZone(nextZone);setMessage('');setQuote(null);setQuoteChecked(false);save(place.direccion,nextZone,null);savePickup(hasCoords?lat:null,hasCoords?lng:null,'saved');void loadQuote(place.direccion,nextZone)}
+ const choosePlace=(place:SavedPlace)=>{const nextZone=place.barrio||place.ciudad||'',lat=Number(place.latitud),lng=Number(place.longitud),hasCoords=place.latitud!=null&&place.longitud!=null&&Number.isFinite(lat)&&Number.isFinite(lng);setSelectedPlace(place.id);setAddress(place.direccion);setComplement(place.complemento||'');setZone(nextZone);setMessage('');setQuote(null);setQuoteChecked(false);save(place.direccion,nextZone,null);savePickup(hasCoords?lat:null,hasCoords?lng:null,'saved');void loadQuote(place.direccion,nextZone)}
  const useLocation=()=>{
   if(!navigator.geolocation){setMessage('Ingresá la dirección manualmente.');return}
   setLocating(true);setMessage('')
