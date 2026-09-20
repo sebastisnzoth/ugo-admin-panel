@@ -3,8 +3,11 @@ import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL=process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY=process.env.SUPABASE_SERVICE_KEY
+const UBER_API_BASE=(process.env.UBER_DIRECT_API_BASE_URL||'https://api.uber.com/v1').replace(/\\\/$/,'')
 
 type Provider='uber'|'ifood'|'rappi'
+type UberOperation='quote'|'create_delivery'|'get_delivery'|'cancel_delivery'|'list_deliveries'
+type JsonRecord=Record<string,unknown>
 type Integration={
  id:string
  label:string
@@ -35,6 +38,73 @@ async function fetchWithTimeout(url:string,init:RequestInit,timeout=12000){
  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),timeout)
  try{return await fetch(url,{...init,signal:controller.signal})}finally{clearTimeout(timer)}
 }
+function uberCredentials(){
+ const clientId=process.env.UBER_DIRECT_CLIENT_ID,clientSecret=process.env.UBER_DIRECT_CLIENT_SECRET,customerId=process.env.UBER_DIRECT_CUSTOMER_ID
+ if(!clientId||!clientSecret||!customerId){
+  const missing=[!clientId?'UBER_DIRECT_CLIENT_ID':'',!clientSecret?'UBER_DIRECT_CLIENT_SECRET':'',!customerId?'UBER_DIRECT_CUSTOMER_ID':''].filter(Boolean)
+  throw Object.assign(new Error(`Faltan credenciales Uber Direct: ${missing.join(', ')}.`),{status:503})
+ }
+ return{clientId,clientSecret,customerId}
+}
+async function uberOauthToken(){
+ const{clientId,clientSecret}=uberCredentials()
+ const body=new URLSearchParams({client_id:clientId,client_secret:clientSecret,grant_type:'client_credentials',scope:'eats.deliveries'})
+ const response=await fetchWithTimeout('https://auth.uber.com/oauth/v2/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body})
+ const json=await response.json().catch(()=>({})) as JsonRecord
+ if(!response.ok||typeof json.access_token!=='string'){
+  const detail=typeof json.error==='string'?json.error:'OAuth rechazado'
+  throw Object.assign(new Error(`Uber Direct: ${detail}.`),{status:response.status||502})
+ }
+ return{token:json.access_token,expiresIn:typeof json.expires_in==='number'?json.expires_in:null,scope:typeof json.scope==='string'?json.scope:'eats.deliveries'}
+}
+function safeDeliveryId(raw:unknown){
+ const value=String(raw||'').trim()
+ if(!/^[A-Za-z0-9_-]{1,200}$/.test(value))throw Object.assign(new Error('deliveryId inválido.'),{status:400})
+ return value
+}
+async function uberApiRequest(path:string,token:string,init:RequestInit={}){
+ const response=await fetchWithTimeout(`${UBER_API_BASE}${path}`,{
+  ...init,
+  headers:{Accept:'application/json',Authorization:`Bearer ${token}`,...(init.body?{'Content-Type':'application/json'}:{}),...(init.headers||{})}
+ })
+ const text=await response.text()
+ let data:unknown={}
+ try{data=text?JSON.parse(text):{}}catch{data={message:text}}
+ if(!response.ok){
+  const record=data&&typeof data==='object'?data as JsonRecord:{}
+  const message=typeof record.message==='string'?record.message:`Uber Direct respondió HTTP ${response.status}.`
+  throw Object.assign(new Error(message),{status:response.status})
+ }
+ return data
+}
+async function runUberOperation(action:UberOperation,input:JsonRecord){
+ const{customerId}=uberCredentials()
+ const auth=await uberOauthToken()
+ const payload=(input.payload&&typeof input.payload==='object'&&!Array.isArray(input.payload)?input.payload:{}) as JsonRecord
+ if(action==='quote'){
+  const data=await uberApiRequest(`/customers/${encodeURIComponent(customerId)}/delivery_quotes`,auth.token,{method:'POST',body:JSON.stringify(payload)})
+  return{ok:true,provider:'uber',action,data}
+ }
+ if(action==='create_delivery'){
+  const data=await uberApiRequest(`/customers/${encodeURIComponent(customerId)}/deliveries`,auth.token,{method:'POST',body:JSON.stringify(payload)})
+  return{ok:true,provider:'uber',action,data}
+ }
+ if(action==='list_deliveries'){
+  const params=new URLSearchParams()
+  for(const key of ['filter','limit','offset'] as const){const value=String(input[key]||'').trim();if(value)params.set(key,value)}
+  const suffix=params.toString()?`?${params.toString()}`:''
+  const data=await uberApiRequest(`/customers/${encodeURIComponent(customerId)}/deliveries${suffix}`,auth.token)
+  return{ok:true,provider:'uber',action,data}
+ }
+ const deliveryId=safeDeliveryId(input.deliveryId)
+ if(action==='get_delivery'){
+  const data=await uberApiRequest(`/customers/${encodeURIComponent(customerId)}/deliveries/${encodeURIComponent(deliveryId)}`,auth.token)
+  return{ok:true,provider:'uber',action,deliveryId,data}
+ }
+ const data=await uberApiRequest(`/customers/${encodeURIComponent(customerId)}/deliveries/${encodeURIComponent(deliveryId)}/cancel`,auth.token,{method:'POST',body:JSON.stringify(payload)})
+ return{ok:true,provider:'uber',action:'cancel_delivery',deliveryId,data}
+}
+
 function deliveryProviders(){
  return[
   {id:'uber',label:'Uber Direct',configured:Boolean(process.env.UBER_DIRECT_CLIENT_ID&&process.env.UBER_DIRECT_CLIENT_SECRET&&process.env.UBER_DIRECT_CUSTOMER_ID),docs:'https://developer.uber.com/docs/deliveries',required:['UBER_DIRECT_CLIENT_ID','UBER_DIRECT_CLIENT_SECRET','UBER_DIRECT_CUSTOMER_ID'],capabilities:['OAuth 2.0','cotización/entrega','tracking/webhooks'],note:'API oficial Uber Direct. UGO usa Customer ID + OAuth server-side; producción puede requerir aprobación y billing habilitado.'},
@@ -78,8 +148,17 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
  try{
   await requireAdmin(req)
   if(req.method==='POST'){
-   const provider=String(req.body?.provider||'') as Provider
+   const input=(req.body&&typeof req.body==='object'&&!Array.isArray(req.body)?req.body:{}) as JsonRecord
+   const provider=String(input.provider||'') as Provider
    if(!['uber','ifood','rappi'].includes(provider))return res.status(400).json({error:'Proveedor inválido.'})
+   const action=String(input.action||'test')
+   if(provider==='uber'&&action!=='test'){
+    const allowed:UberOperation[]=['quote','create_delivery','get_delivery','cancel_delivery','list_deliveries']
+    if(!allowed.includes(action as UberOperation))return res.status(400).json({error:'Acción Uber Direct inválida.'})
+    const result=await runUberOperation(action as UberOperation,input)
+    return res.status(200).json(result)
+   }
+   if(action!=='test')return res.status(400).json({error:'Esta integración sólo admite la acción test.'})
    const result=provider==='uber'?await testUber():provider==='ifood'?await testIfood():await testRappi()
    return res.status(result.ok?200:result.configured?502:409).json({provider,...result,testedAt:new Date().toISOString()})
   }
