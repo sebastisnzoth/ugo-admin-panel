@@ -12,7 +12,7 @@ const severity=(s:any)=>String(s||'info').toLowerCase()
 const stateLabel=(s:any)=>String(s||'—').replaceAll('_',' ')
 const policyOutcomeLabel=(value:any)=>({confirmar_servicio:'Confirmar servicio',retrabajo:'Corrección / retrabajo',reagendar:'Reagendar',ajuste_financiero:'Revisión financiera',reembolso:'Evaluar reembolso',penalizacion:'Evaluar consecuencia contractual',revision_humana:'Revisión humana',solicitar_evidencia:'Pedir más evidencia',acuerdo:'Buscar acuerdo'} as Record<string,string>)[String(value||'')]||stateLabel(value)
 
-export function AdminAlertsDecisionCenter(){
+export function AdminAlertsDecisionCenter({onOpenService}:{onOpenService?:(serviceId:string)=>void}={}){
  const{alerts:systemAlerts,refetch}=useSystemAlerts()
  const{services,providers}=useAdminActiveServices()
  const[filter,setFilter]=useState<'all'|'critical'|'warning'|'info'>('all')
@@ -57,7 +57,7 @@ export function AdminAlertsDecisionCenter(){
  return <div className="ugo-decision">
   <div className="ugo-decision-summary"><article><small>CRÍTICAS</small><strong>{criticalCount}</strong><span>Intervención inmediata</span></article><article><small>ADVERTENCIAS</small><strong>{warningCount}</strong><span>Revisar operación</span></article><article><small>TOTAL</small><strong>{alerts.length}</strong><span>Alertas activas</span></article><button onClick={refetch}>↻ Actualizar</button></div>
   <div className="ugo-decision-toolbar"><div>{(['all','critical','warning','info'] as const).map(x=><button key={x} className={filter===x?'active':''} onClick={()=>setFilter(x)}>{x==='all'?'Todas':x==='critical'?'Críticas':x==='warning'?'Advertencias':'Informativas'}</button>)}</div></div>
-  <div className="ugo-decision-list">{visible.map((a:any,i)=><article key={a.id||i} className={`ugo-alert-card ${severity(a.severidad)}`}><header><div><span>{severity(a.severidad)==='critical'?'Crítica':severity(a.severidad)==='warning'?'Advertencia':'Información'}</span><h3>{a.titulo||a.tipo||'Alerta operativa'}</h3></div><small>{when(a.created_at)}</small></header><p>{a.descripcion||a.mensaje||'La operación requiere revisión administrativa.'}</p><div className="ugo-alert-action"><b>Acción recomendada</b><span>{recommended(a)}</span></div></article>)}{!visible.length&&<div className="ugo-decision-empty">✓ No hay alertas en este filtro.</div>}</div>
+  <div className="ugo-decision-list">{visible.map((a:any,i)=>{const serviceId=String(a.servicio_id||a.service_id||a.datos?.servicio_id||'');return <article key={a.id||i} className={`ugo-alert-card ${severity(a.severidad)}`}><header><div><span>{severity(a.severidad)==='critical'?'Crítica':severity(a.severidad)==='warning'?'Advertencia':'Información'}</span><h3>{a.titulo||a.tipo||'Alerta operativa'}</h3></div><small>{when(a.created_at)}</small></header><p>{a.descripcion||a.mensaje||'La operación requiere revisión administrativa.'}</p><div className="ugo-alert-action"><div><b>Acción recomendada</b><span>{recommended(a)}</span></div>{serviceId&&onOpenService&&<button type="button" onClick={()=>onOpenService(serviceId)}>Abrir ficha 360° →</button>}</div></article>})}{!visible.length&&<div className="ugo-decision-empty">✓ No hay alertas en este filtro.</div>}</div>
  </div>
 }
 
