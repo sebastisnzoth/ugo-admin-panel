@@ -105,7 +105,11 @@ function ugo_gh_admin_rollback(){
   is_wp_error($r)?ugo_gh_result('error',$r->get_error_message()):ugo_gh_result('success','Se restauró la versión anterior de UGO.',(string)($r['commit']??''));wp_safe_redirect(admin_url('tools.php?page=ugo-github-updater'));exit;
 }
 add_action('admin_post_ugo_github_update','ugo_gh_admin_update');add_action('admin_post_ugo_github_rollback','ugo_gh_admin_rollback');
-add_action('admin_menu',fn()=>add_management_page('UGO · Actualizaciones','UGO Actualizaciones','manage_options','ugo-github-updater','ugo_gh_page'));
+add_action('admin_menu',function(){
+  add_menu_page('UGO · Actualizaciones','UGO','manage_options','ugo-github-updater','ugo_gh_page','dashicons-update',3);
+  add_submenu_page('ugo-github-updater','UGO · Actualizaciones','Actualizar desde GitHub','manage_options','ugo-github-updater','ugo_gh_page');
+  add_management_page('UGO · Actualizaciones','UGO Actualizaciones','manage_options','ugo-github-updater','ugo_gh_page');
+});
 function ugo_gh_short($s){return $s?substr((string)$s,0,12):'sin registrar';}
 function ugo_gh_page(){
   if(!current_user_can('manage_options'))return;$c=ugo_gh_current();$rel=ugo_gh_release();$rm=is_wp_error($rel)?$rel:ugo_gh_manifest($rel);$last=get_option(UGO_GH_RESULT,[]);$bk=ugo_gh_latest_backup();$cc=(string)($c['commit']??'');$rc=!is_wp_error($rm)?(string)($rm['commit']??''):'';$same=$cc!==''&&$rc!==''&&hash_equals($cc,$rc);?>
