@@ -4,6 +4,10 @@ import fs from'node:fs'
 
 const debt=fs.readFileSync('supabase/migrations/20260920070000_cash_provider_ugo_debt_ledger.sql','utf8')
 const pricing=fs.readFileSync('supabase/migrations/20260920071000_lock_tariff_snapshot_end_to_end.sql','utf8')
+const freeze=fs.readFileSync('supabase/migrations/20260920075500_freeze_ugo_quote_and_hide_debt_blocked_offers.sql','utf8')
+const blocking=fs.readFileSync('supabase/migrations/20260920073500_provider_ugo_debt_order_block.sql','utf8')
+const cashUi=fs.readFileSync('src/mvp/ClientCashPaymentOption.tsx','utf8')
+const home=fs.readFileSync('src/mvp/provider/ProviderHome.tsx','utf8')
 const wallet=fs.readFileSync('supabase/migrations/20260920072000_provider_digital_balance_cash_exclusion.sql','utf8')
 const client=fs.readFileSync('src/mvp/client/ClientPostConfirmFlow.tsx','utf8')
 const providerData=fs.readFileSync('src/mvp/provider/providerData.tsx','utf8')
@@ -57,4 +61,26 @@ test('provider withdrawal balance excludes cash at the database boundary',()=>{
  assert.match(wallet,/create or replace function public\.solicitar_retiro\(p_monto numeric\)/i)
  assert.match(wallet,/pg_advisory_xact_lock/)
  assert.match(wallet,/Saldo insuficiente/)
+})
+
+
+test('three unresolved cash commissions pause new provider work',()=>{
+ assert.match(blocking,/count\(\*\) >= 3/)
+ assert.match(blocking,/online=false,disponible=false/)
+ assert.match(blocking,/estado='expirada'/)
+ assert.match(freeze,/not private\.proveedor_bloqueado_por_deuda_ugo\(auth\.uid\(\)\)/)
+})
+
+test('quoted UGO price cannot be silently replaced at assignment',()=>{
+ assert.match(freeze,/freeze_ugo_quoted_tariff/)
+ assert.match(freeze,/new\.tarifa := v_frozen/)
+ assert.match(freeze,/new\.comision_ugo := round\(v_frozen \* 0\.15,2\)/)
+ assert.match(freeze,/new\.ganancia_proveedor := round\(v_frozen - new\.comision_ugo,2\)/)
+})
+
+test('cash responsibility is visible and client-confirmed',()=>{
+ assert.match(cashUi,/vos confirmás en UGO que entregaste el efectivo/)
+ assert.doesNotMatch(cashUi,/El profesional confirmará la recepción al finalizar/)
+ assert.match(home,/Efectivo \{money\(d\.cashReceived\)\}/)
+ assert.match(home,/Debés UGO \{money\(d\.ugoDebt\)\}/)
 })
