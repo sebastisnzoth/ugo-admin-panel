@@ -1,4 +1,4 @@
-import React,{useMemo,useState}from'react'
+import React,{useEffect,useMemo,useState}from'react'
 import{SERVICE_STATES,type ServiceState,useAdminActiveServices}from'../hooks/useAdminActiveServices'
 import{AdminServiceTracePanel}from'./AdminServiceTracePanel'
 import'./admin-services-pro.css'
@@ -13,7 +13,7 @@ type EditForm={estado:ServiceState;proveedor_id:string;tarifa:string;descripcion
 const toForm=(s:any):EditForm=>({estado:s.estado,proveedor_id:s.proveedor_id||s.proveedor?.id||'',tarifa:String(Number(s.tarifa||0)),descripcion:s.descripcion||'',direccion_cliente:s.direccion_cliente||'',motivo:''})
 
 export function AdminServicesPro(){
- const{services,providers,loading,error,refetch,updateService,updateServiceStatus}=useAdminActiveServices();const[q,setQ]=useState('');const[state,setState]=useState('todos')
+ const{services,providers,loading,error,refetch,updateService,updateServiceStatus,liveStatus,lastSynced}=useAdminActiveServices();const[q,setQ]=useState('');const[state,setState]=useState('todos')
  const[drafts,setDrafts]=useState<Record<string,ServiceState>>({});const[saving,setSaving]=useState<string|null>(null);const[actionMessage,setActionMessage]=useState<Record<string,{kind:'ok'|'error';text:string}>>({})
  const[editing,setEditing]=useState<any|null>(null);const[form,setForm]=useState<EditForm|null>(null);const[editBusy,setEditBusy]=useState(false);const[editMessage,setEditMessage]=useState('')
  const rows=useMemo(()=>services.filter((s:any)=>{
@@ -35,6 +35,7 @@ export function AdminServicesPro(){
    setActionMessage(m=>({...m,[String(s.id)]:{kind:'error',text:err instanceof Error?err.message:'No se pudo actualizar el estado.'}}))
   }finally{setSaving(null)}
  }
+ useEffect(()=>{if(!editing)return;const fresh=services.find((row:any)=>row.id===editing.id);if(fresh)setEditing(fresh)},[services,editing?.id])
  const openEdit=(s:any)=>{setEditing(s);setForm(toForm(s));setEditMessage('')}
  const closeEdit=()=>{if(editBusy)return;setEditing(null);setForm(null);setEditMessage('')}
  const saveEdit=async()=>{
@@ -53,7 +54,7 @@ export function AdminServicesPro(){
   finally{setEditBusy(false)}
  }
  return <div className="ugo-services-pro">
-  <div className="ugo-services-pro-toolbar"><div><small>CONTROL DE OPERACIONES</small><strong>{services.length} operaciones cargadas · {activeCount} activas</strong></div><button onClick={()=>{void refetch()}} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></div>
+  <div className="ugo-services-pro-toolbar"><div><small>CONTROL DE OPERACIONES</small><strong>{services.length} operaciones cargadas · {activeCount} activas</strong><span className={`ugo-admin-live-state ${liveStatus}`}><i/>{liveStatus==='live'?'En vivo':liveStatus==='connecting'?'Conectando Realtime…':'Realtime degradado · resincronización automática'}{lastSynced&&<em> · {lastSynced.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}</em>}</span></div><button onClick={()=>{void refetch()}} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></div>
   <div className="ugo-services-pro-filters"><input value={q} onChange={e=>setQ(e.target.value)} placeholder="Buscar #, cliente, proveedor, categoría o descripción…"/><select value={state} onChange={e=>setState(e.target.value)}><option value="todos">Todos los estados</option>{SERVICE_STATES.map(s=><option key={s} value={s}>{label(s)} ({counts[s]||0})</option>)}</select></div>
   <div className="ugo-services-pro-pills"><button className={state==='todos'?'active':''} onClick={()=>setState('todos')}>Todos <b>{services.length}</b></button>{SERVICE_STATES.map(s=><button key={s} className={state===s?'active':''} onClick={()=>setState(s)}>{label(s)} <b>{counts[s]||0}</b></button>)}</div>
   {error?<div className="ugo-services-pro-empty"><strong>No se pudieron cargar las operaciones</strong><span>{error}</span><button onClick={()=>{void refetch()}}>Reintentar</button></div>:loading&&!services.length?<div className="ugo-services-pro-empty">Cargando operación…</div>:!rows.length?<div className="ugo-services-pro-empty"><strong>No hay operaciones para este filtro</strong><span>Probá otro estado o limpiá la búsqueda.</span></div>:<div className="ugo-services-pro-list">{rows.map((s:any)=>{
@@ -62,11 +63,11 @@ export function AdminServicesPro(){
     <div className="ugo-services-pro-main"><div className={`ugo-services-pro-status status-${s.estado}`}><i/>{label(s.estado)}</div><h3>Servicio #{s.numero||'—'} · {s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h3><p>{s.descripcion||'Sin descripción adicional.'}</p>{s.direccion_cliente&&<small>{s.direccion_cliente}</small>}</div>
     <div className="ugo-services-pro-people"><small>CLIENTE</small><strong>{fullName(s.cliente)}</strong><small>PROVEEDOR</small><strong>{s.proveedor?fullName(s.proveedor):'Sin asignar'}</strong></div>
     <div className="ugo-services-pro-meta"><small>TARIFA</small><strong>{money(s.tarifa)}</strong><small>ACTUALIZADO</small><span>{when(s.updated_at||s.created_at)}</span></div>
-    <div className="ugo-services-pro-control"><small>CONTROL ADMINISTRATIVO</small><div className="ugo-services-pro-control-row"><select aria-label={`Cambiar estado del servicio ${s.numero||s.id}`} value={draft} disabled={saving===id} onChange={e=>{setDrafts(d=>({...d,[id]:e.target.value as ServiceState}));setActionMessage(m=>{const copy={...m};delete copy[id];return copy})}}>{SERVICE_STATES.map(option=><option key={option} value={option}>{label(option)}</option>)}</select><button onClick={()=>{void changeStatus(s)}} disabled={!changed||saving===id}>{saving===id?'Guardando…':'Guardar estado'}</button><button className="secondary" onClick={()=>openEdit(s)}>Ver / Editar</button></div>{message&&<span className={`ugo-services-pro-feedback ${message.kind}`}>{message.text}</span>}</div>
+    <div className="ugo-services-pro-control"><small>CONTROL ADMINISTRATIVO</small><div className="ugo-services-pro-control-row"><select aria-label={`Cambiar estado del servicio ${s.numero||s.id}`} value={draft} disabled={saving===id} onChange={e=>{setDrafts(d=>({...d,[id]:e.target.value as ServiceState}));setActionMessage(m=>{const copy={...m};delete copy[id];return copy})}}>{SERVICE_STATES.map(option=><option key={option} value={option}>{label(option)}</option>)}</select><button onClick={()=>{void changeStatus(s)}} disabled={!changed||saving===id}>{saving===id?'Guardando…':'Guardar estado'}</button><button className="secondary" onClick={()=>openEdit(s)}>Ficha 360°</button></div>{message&&<span className={`ugo-services-pro-feedback ${message.kind}`}>{message.text}</span>}</div>
    </article>
   })}</div>}
   {editing&&form&&<div className="ugo-operation-modal-backdrop" role="presentation" onMouseDown={e=>{if(e.currentTarget===e.target)closeEdit()}}><section className="ugo-operation-modal" role="dialog" aria-modal="true" aria-label={`Editar servicio ${editing.numero||editing.id}`}>
-   <header><div><small>OPERACIÓN #{editing.numero||'—'}</small><h2>Editar operación</h2><p>{editing.categoria?.emoji} {editing.categoria?.nombre||'Servicio'} · Cliente: {fullName(editing.cliente)}</p></div><button className="icon" onClick={closeEdit} aria-label="Cerrar">×</button></header>
+   <header><div><small>FICHA 360° · OPERACIÓN #{editing.numero||'—'}</small><h2>Control integral del servicio</h2><p>{editing.categoria?.emoji} {editing.categoria?.nombre||'Servicio'} · Cliente: {fullName(editing.cliente)} · <span className={`ugo-admin-live-inline ${liveStatus}`}>{liveStatus==='live'?'● EN VIVO':'◌ RESINCRONIZANDO'}</span></p></div><button className="icon" onClick={closeEdit} aria-label="Cerrar">×</button></header>
    <div className="ugo-operation-summary"><div><small>CREADO</small><strong>{when(editing.created_at)}</strong></div><div><small>ÚLTIMA ACTUALIZACIÓN</small><strong>{when(editing.updated_at)}</strong></div><div><small>ESTADO ACTUAL</small><strong>{label(editing.estado)}</strong></div></div>
    <div className="ugo-operation-form-grid">
     <label>Estado<select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value as ServiceState})}>{SERVICE_STATES.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
