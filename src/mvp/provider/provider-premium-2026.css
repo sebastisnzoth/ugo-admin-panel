@@ -778,3 +778,9 @@
     width:calc(100% - 14px)!important;
   }
 }
+
+
+/* Global Hugo stays available on every provider screen. */
+.ugo-provider-root .provider-global-hugo{z-index:190!important}
+@media(min-width:1000px){.ugo-provider-root .provider-global-hugo{left:calc(50% + 126px)!important;width:min(520px,calc(100vw - 300px))!important}}
+@media(max-width:999px){.ugo-provider-root .provider-global-hugo{bottom:88px!important}}
