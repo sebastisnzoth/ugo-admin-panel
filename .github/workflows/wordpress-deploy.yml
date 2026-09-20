@@ -1,0 +1,95 @@
+name: Deploy UGO to WordPress
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "public/**"
+      - "index.html"
+      - "package.json"
+      - "package-lock.json"
+      - "vite.config.ts"
+      - "tsconfig*.json"
+      - ".github/workflows/wordpress-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: ugo-wordpress-production
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  wordpress:
+    name: Build and publish WordPress app
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+
+      - name: Check FTP configuration
+        id: ftp
+        shell: bash
+        env:
+          FTP_SERVER: ${{ secrets.UGO_FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.UGO_FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.UGO_FTP_PASSWORD }}
+        run: |
+          if [ -n "$FTP_SERVER" ] && [ -n "$FTP_USERNAME" ] && [ -n "$FTP_PASSWORD" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+            echo "WordPress FTP deployment is configured."
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::UGO WordPress deploy skipped: configure UGO_FTP_SERVER, UGO_FTP_USERNAME and UGO_FTP_PASSWORD in GitHub Actions secrets."
+          fi
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript check
+        run: npx tsc -b
+
+      - name: Build portable WordPress bundle
+        run: npx vite build --base=./
+
+      - name: Verify build
+        shell: bash
+        run: |
+          test -f dist/index.html
+          test -d dist/assets
+          echo "Build ready:"
+          du -sh dist
+
+      - name: Publish build to WordPress over FTP
+        if: steps.ftp.outputs.ready == 'true'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.6
+        with:
+          server: ${{ secrets.UGO_FTP_SERVER }}
+          username: ${{ secrets.UGO_FTP_USERNAME }}
+          password: ${{ secrets.UGO_FTP_PASSWORD }}
+          protocol: ftp
+          port: 21
+          local-dir: ./dist/
+          server-dir: /htdocs/wp-content/uploads/ugo-app-build/current/
+          timeout: 120000
+
+      - name: Deployment summary
+        shell: bash
+        run: |
+          if [ "${{ steps.ftp.outputs.ready }}" = "true" ]; then
+            echo "### UGO → WordPress" >> "$GITHUB_STEP_SUMMARY"
+            echo "Build published to the WordPress UGO build directory." >> "$GITHUB_STEP_SUMMARY"
+            echo "Open: https://ugoapp.infy.click/ugo-cliente/?app=client" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "### UGO → WordPress" >> "$GITHUB_STEP_SUMMARY"
+            echo "Build succeeded. FTP publish is waiting for the three UGO_FTP_* repository secrets." >> "$GITHUB_STEP_SUMMARY"
+          fi
