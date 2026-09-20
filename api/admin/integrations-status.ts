@@ -68,7 +68,7 @@ async function uberApiRequest(path:string,token:string,init:RequestInit={}){
   headers:{Accept:'application/json',Authorization:`Bearer ${token}`,...(init.body?{'Content-Type':'application/json'}:{}),...(init.headers||{})}
  })
  const text=await response.text()
- let data:unknown={}
+ let data:unknown
  try{data=text?JSON.parse(text):{}}catch{data={message:text}}
  if(!response.ok){
   const record=data&&typeof data==='object'?data as JsonRecord:{}
