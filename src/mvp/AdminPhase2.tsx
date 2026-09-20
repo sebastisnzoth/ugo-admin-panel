@@ -37,12 +37,12 @@ export function AdminPhase2(){
  const[financeView,setFinanceView]=useState<FinanceView>('pix')
  const[settingsView,setSettingsView]=useState<SettingsView>('categories')
  const[adminRole,setAdminRole]=useState<AdminRole|null>(null),[roleError,setRoleError]=useState('')
- const[metrics,setMetrics]=useState<Metrics>(empty),[loading,setLoading]=useState(true),[updated,setUpdated]=useState<Date|null>(null),[metricsError,setMetricsError]=useState('')
+ const[metrics,setMetrics]=useState<Metrics>(empty),[loading,setLoading]=useState(true),[updated,setUpdated]=useState<Date|null>(null),[metricsError,setMetricsError]=useState(''),[liveStatus,setLiveStatus]=useState<'connecting'|'live'|'degraded'>('connecting'),[channelEpoch,setChannelEpoch]=useState(0)
  const isSuperAdmin=adminRole==='superadmin'
  useEffect(()=>{let active=true;(async()=>{try{const{data:{user},error:userError}=await supabase.auth.getUser();if(userError||!user)throw userError||new Error('Sesión Admin requerida.');const adminDb=supabase as any;const{data,error}=await adminDb.from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(error)throw error;const role=String(data?.tipo||'');if(!data?.activo||!['admin','superadmin'].includes(role))throw new Error('Acceso administrativo no autorizado.');if(active)setAdminRole(role as AdminRole)}catch(error){if(active){setAdminRole(null);setRoleError(error instanceof Error?error.message:'No pudimos validar el rol administrativo.')}}})();return()=>{active=false}},[])
  useEffect(()=>{if(section==='superadmin'&&adminRole&&!isSuperAdmin)setSection('home')},[section,adminRole,isSuperAdmin])
- const load=useCallback(async()=>{
-  setLoading(true);setMetricsError('')
+ const load=useCallback(async(options?:{silent?:boolean})=>{
+  if(!options?.silent)setLoading(true);setMetricsError('')
   const db=supabase as any,today=new Date();today.setHours(0,0,0,0)
   const activeStates=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion']
   try{
@@ -62,9 +62,31 @@ export function AdminPhase2(){
   }catch(error){
    console.warn('UGO Admin metrics unavailable',error)
    setMetricsError('No pudimos actualizar los indicadores. Conservamos los últimos datos válidos para no mostrar ceros falsos.')
-  }finally{setLoading(false)}
+  }finally{if(!options?.silent)setLoading(false)}
  },[])
- useEffect(()=>{void load();const ch=supabase.channel('ugo-admin-phase2').on('postgres_changes',{event:'*',schema:'public',table:'servicios'},()=>{void load()}).on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},()=>{void load()}).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>{void load()}).subscribe();return()=>{void supabase.removeChannel(ch)}},[load])
+ useEffect(()=>{
+  let alive=true
+  const sync=()=>{if(alive)void load({silent:true})}
+  const onOnline=()=>{setLiveStatus('connecting');sync()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
+  window.addEventListener('online',onOnline)
+  document.addEventListener('visibilitychange',onVisibility)
+  void load()
+  const ch=supabase.channel(`ugo-admin-phase2-${channelEpoch}`)
+   .on('postgres_changes',{event:'*',schema:'public',table:'servicios'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'servicio_estado_eventos'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'pagos'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'usuarios'},sync)
+   .on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor'},sync)
+   .subscribe(status=>{
+    if(!alive)return
+    if(status==='SUBSCRIBED'){setLiveStatus('live');sync();return}
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){setLiveStatus('degraded');window.setTimeout(()=>{if(alive)setChannelEpoch(v=>v+1)},1500)}
+   })
+  const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
+  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+ },[channelEpoch,load])
  const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración',superadmin:'Super Admin'}[section]),[section])
  const opMeta:Record<OperationView,{eyebrow:string;title:string}>={overview:{eyebrow:'RESUMEN OPERATIVO',title:'Estado general de la operación'},map:{eyebrow:'MAPA EN VIVO',title:'Proveedores y servicios sobre el territorio'},services:{eyebrow:'SERVICIOS',title:'Pedidos y trabajos activos'},alerts:{eyebrow:'ALERTAS',title:'Eventos que requieren atención'},disputes:{eyebrow:'DISPUTAS',title:'Conflictos y resoluciones'},scout:{eyebrow:'SCOUT UGO',title:'Prospección y detección de oportunidades'},history:{eyebrow:'HISTORIAL',title:'Trazabilidad completa de UGO'},messages:{eyebrow:'MENSAJES',title:'WhatsApp y atención operativa'}}
  const openPeople=(view:PeopleView)=>{setSection('people');setPeopleView(view)}
@@ -79,7 +101,7 @@ export function AdminPhase2(){
    <button aria-current={current(section==='finance')} className={section==='finance'?'active':''} onClick={()=>setSection('finance')}><b>◫</b><span>Finanzas</span>{metrics.pendingPix>0&&<em>{metrics.pendingPix}</em>}</button>
    <button aria-current={current(section==='settings')} className={section==='settings'?'active':''} onClick={()=>setSection('settings')}><b>⚙</b><span>Configuración</span></button>
    {isSuperAdmin&&<button aria-current={current(section==='superadmin')} className={section==='superadmin'?'active':''} onClick={()=>setSection('superadmin')}><b>◉</b><span>Super Admin</span></button>}
-  </nav><div className={`ugo-admin2-status${metricsError||roleError?' degraded':''}`}><i/>{roleError?'Rol no verificado':metricsError?'Datos degradados':'Sistema operativo'}<small>{roleError?roleError:metricsError?'Reintentar actualización':updated?`Actualizado ${updated.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}`:'Sincronizando…'}</small></div></aside>
+  </nav><div className={`ugo-admin2-status${metricsError||roleError?' degraded':''}`}><i/>{roleError?'Rol no verificado':metricsError?'Datos degradados':liveStatus==='live'?'Sistema en vivo':liveStatus==='connecting'?'Conectando Realtime':'Realtime degradado'}<small>{roleError?roleError:metricsError?'Reintentar actualización':updated?`Sincronizado ${updated.toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`:'Sincronizando…'}</small></div></aside>
   <main className="ugo-admin2-main"><header><div><small>UGO · {isSuperAdmin?'SUPER ADMIN':'ADMIN'}</small><h1>{title}</h1></div><button className="ugo-admin2-refresh" onClick={()=>void load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></header>
    {metricsError&&<div className="ugo-admin2-metrics-error" role="alert"><div><strong>Indicadores temporalmente desactualizados</strong><span>{metricsError}</span></div><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Reintentando…':'Reintentar'}</button></div>}
    {section==='home'&&<AdminHomeStitch metrics={metrics} loading={loading} onOpenServices={()=>{setSection('operations');setOperationView('services')}} onOpenVerification={()=>openPeople('verification')} onOpenPix={()=>openFinance('pix')}/>}
