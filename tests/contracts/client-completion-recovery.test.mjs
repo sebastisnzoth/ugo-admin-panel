@@ -20,11 +20,11 @@ test('ambiguous electronic approval treats persisted completed state as success 
  assert.match(source,/closurePersisted=useCallback/)
  assert.match(source,/\.eq\('id',id\)\.eq\('cliente_id',uid\)\.maybeSingle\(\)/)
  assert.match(source,/return data\?\.estado==='completado'/)
- assert.match(source,/aprobar_servicio[\s\S]*if\(error\)\{[\s\S]*if\(!isCash&&await closurePersisted\(id\)\)[\s\S]*await load\(\);return/)
+ assert.match(source,/aprobar_servicio[\s\S]*if\(error\)\{[\s\S]*if\(!isCash&&await closurePersisted\(id\)\)[\s\S]*await load\(\);await onCompleted\?\.\(\);return/)
 })
 
 test('ambiguous cash confirmation also recovers from an already completed owned service',()=>{
- assert.match(source,/confirmar_pago_efectivo_cliente[\s\S]*if\(error\)\{[\s\S]*if\(await closurePersisted\(id\)\)[\s\S]*await load\(\);return/)
+ assert.match(source,/confirmar_pago_efectivo_cliente[\s\S]*if\(error\)\{[\s\S]*if\(await closurePersisted\(id\)\)[\s\S]*await load\(\);await onCompleted\?\.\(\);return/)
 })
 
 test('review load error does not erase a previously known active closure',()=>{

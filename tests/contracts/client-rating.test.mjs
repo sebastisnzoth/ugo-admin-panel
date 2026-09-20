@@ -64,7 +64,7 @@ test('rating prompt resyncs after lifecycle changes and reports foreground failu
  assert.match(prompt,/removeChannel/)
  assert.match(prompt,/const shouldEscalate=\(\)=>document\.visibilityState==='visible'&&navigator\.onLine/)
  assert.match(prompt,/loadRef=useRef\(load\),reportRef=useRef\(report\)/)
- assert.match(prompt,/\},\[supabase,userId\]\)/)
+ assert.match(prompt,/\},\[serviceId,supabase,userId\]\)/)
  assert.match(prompt,/if\(shouldEscalate\(\)\)reportRef\.current\('rating_realtime_error'/)
 })
 
