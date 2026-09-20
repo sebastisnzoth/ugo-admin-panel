@@ -401,3 +401,16 @@ El health canónico de Gemini respondió OK con `gemini-3.5-flash-lite`. Las rut
 - `esperando_aprobacion` y `disputado` ya no se tratan como trabajo físico en ejecución para bloquear agenda;
 - los conflictos entre trabajos ya programados continúan usando duración estimada + buffer de 30 minutos;
 - cada aceptación conserva su propio `serviceId` y aparece por separado en Agenda.
+
+
+---
+
+## Checkpoint 20/09/2026 · Admin cabina operativa Realtime
+
+- Operaciones Admin se resincronizan automáticamente ante cambios de Cliente/Proveedor sin cambiar de pestaña;
+- se agregó estado visible `En vivo / Conectando / Realtime degradado` y fallback periódico de recuperación;
+- la ficha de servicio pasa a ser **360°**, manteniendo Cliente, Proveedor, timeline, pagos, deuda, fotos, ratings, chat, ubicación y disputas sobre el mismo `serviceId`;
+- timeline, chat, pagos, evidencia y expediente se actualizan por Realtime y además tienen fallback de resincronización;
+- Alertas ahora incorpora excepciones operativas reales: matching demorado, servicio inconsistente, traslado prolongado, aprobación demorada, disputas y proveedores bloqueados por deuda UGO;
+- migración `admin_operational_realtime_publication` aplicada en UGO TEST;
+- madurez pendiente: CI del SHA exacto y prueba de dos roles cambiando estado mientras Admin permanece abierto sin interacción manual.
