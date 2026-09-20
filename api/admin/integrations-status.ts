@@ -117,8 +117,11 @@ export default async function handler(req:VercelRequest,res:VercelResponse){
    deliveryProviders:deliveryProviders(),
    warning:'Configurado indica presencia de configuración en el runtime actual; no equivale a transacción E2E validada.'
   })
- }catch(error:any){
-  const status=Number(error?.status||500)
-  return res.status(status).json({error:error?.name==='AbortError'?'Tiempo de espera agotado al verificar la integración.':error?.message||'No se pudo verificar la integración.'})
+ }catch(error:unknown){
+  const err=error instanceof Error?error:null
+  const status=typeof error==='object'&&error!==null&&'status' in error
+   ?Number((error as {status?:unknown}).status||500)
+   :500
+  return res.status(status).json({error:err?.name==='AbortError'?'Tiempo de espera agotado al verificar la integración.':err?.message||'No se pudo verificar la integración.'})
  }
 }
