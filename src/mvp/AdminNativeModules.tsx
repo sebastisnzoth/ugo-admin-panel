@@ -7,6 +7,7 @@ import{
 import{SecMapaOperativo}from'../components/MapaOperativo'
 import{SecScout}from'../components/ScoutSection'
 import{SecValidacionPaises,SecImportProviders}from'../components/AdvancedSections'
+import{AdminTariffsPanel}from'./AdminTariffsPanel'
 
 const money=(v:any)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
 const when=(v:any)=>v?new Date(v).toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):'—'
@@ -57,9 +58,7 @@ export function AdminVaultNative(){
  return <div><div style={{...grid,marginBottom:10}}><article style={box}><small>Retenido</small><strong style={{display:'block',fontSize:27}}>{money(total)}</strong></article><article style={box}><small>Escrows</small><strong style={{display:'block',fontSize:27}}>{escrows.length}</strong></article><article style={box}><small>Retiros pendientes</small><strong style={{display:'block',fontSize:27}}>{withdrawals.length}</strong></article></div><div style={box}><p>Vista histórica de bóveda. Las acciones de dinero real se procesan exclusivamente desde <b>Finanzas · Bóveda y retiros</b>, con confirmación y referencia externa.</p></div></div>
 }
 
-export function AdminTariffsNative(){
- const{tarifas}=useTarifas();return <div style={box}><table style={table}><thead><tr><th style={th}>Categoría</th><th style={th}>Zona</th><th style={th}>Base</th><th style={th}>Hora</th><th style={th}>Mín.</th><th style={th}>Máx.</th></tr></thead><tbody>{tarifas.map((t:any)=><tr key={t.id}><td style={td}>{t.categorias?.emoji} {t.categorias?.nombre}</td><td style={td}>{t.zona}</td><td style={td}>{money(t.precio_base)}</td><td style={td}>{money(t.precio_hora)}</td><td style={td}>{money(t.precio_min)}</td><td style={td}>{money(t.precio_max)}</td></tr>)}</tbody></table>{!tarifas.length&&<p>Sin tarifas configuradas.</p>}</div>
-}
+export function AdminTariffsNative(){return <AdminTariffsPanel/>}
 
 export function AdminCategoriesNative(){
  const{categorias,toggleActiva}=useCategorias();const toggle=async(c:any)=>{const next=!c.activa;const ok=window.confirm(`${next?'Activar':'Desactivar'} la categoría “${c.nombre}”? El cambio afecta la disponibilidad del catálogo para nuevos pedidos.`);if(!ok)return;await toggleActiva(c.id,next)};return <div style={{display:'grid',gap:8}}>{categorias.map((c:any)=><article key={c.id} style={{...box,display:'flex',alignItems:'center',gap:10,opacity:c.activa?1:.6}}><span style={{fontSize:24}}>{c.emoji}</span><div style={{flex:1}}><strong>{c.nombre}</strong><small style={{display:'block',color:'#667085'}}>{c.subcategorias?.length||0} subcategorías</small></div><button onClick={()=>void toggle(c)}>{c.activa?'Desactivar':'Activar'}</button></article>)}</div>
