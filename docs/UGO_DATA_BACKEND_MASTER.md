@@ -341,3 +341,42 @@ Para integraciones externas: metadata segura, secretos server-side, feature stat
 # 20. Regla final
 
 **Si frontend y backend difieren, se corrige el contrato completo; nunca se maquilla una inconsistencia sólo en la UI.**
+
+---
+
+# 21. Trazabilidad Admin/Super Admin y reputación bilateral · 20/09/2026
+
+## Historial completo por `serviceId`
+
+Admin y Super Admin deben poder reconstruir un servicio de punta a punta sin depender de la pantalla operativa de Cliente o Proveedor. La vista administrativa consume la misma realidad persistida y une, por `serviceId`:
+
+```text
+servicios
++ evidencias_solicitud / request-evidence
++ evidencias_servicio / service-evidence
++ eventos_servicio (histórico legacy)
++ servicio_estado_eventos (auditoría actual)
++ pagos
++ resenas
+```
+
+La cronología conserva actor, rol, estado anterior/nuevo, motivo y timestamps disponibles. Las fotos de solicitud quedan vinculadas al servicio por `request_draft_id`; las evidencias operativas mantienen ownership y signed URL privada. Admin no duplica archivos ni crea una fuente de verdad paralela.
+
+`eventos_servicio` conserva el historial anterior a `servicio_estado_eventos`; su lectura para `authenticated` queda limitada por la RLS participante/Admin ya existente.
+
+## Reputación bilateral
+
+Un servicio completado admite como máximo dos reseñas direccionales:
+
+```text
+cliente  → proveedor   autor_tipo = cliente
+proveedor → cliente    autor_tipo = proveedor
+```
+
+La unicidad vigente es `(servicio_id, autor_tipo)`, no `servicio_id` aislado. RLS valida que el actor autenticado sea exactamente el cliente o proveedor del servicio completado y sólo pueda emitir su propia dirección.
+
+Las reseñas históricas previas a este contrato se interpretan como `autor_tipo='cliente'`.
+
+## Historial por usuario
+
+La ficha Admin/Super Admin de una persona debe componer, según rol y permisos: alta, último acceso, estado de cuenta, perfil, servicios como cliente/proveedor, documentos canónicos de `documentos`, calificaciones emitidas y recibidas y sus timestamps. Todo enlace conserva el `serviceId` original.
