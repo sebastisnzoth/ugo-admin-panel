@@ -20,7 +20,7 @@ function money(value:number|null|undefined,currency:string|null|undefined){
  catch{return `R$ ${Number(value||0).toFixed(2).replace('.',',')}`}
 }
 
-export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDispute?:()=>void;serviceId?:string|null}){
+export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted}:{onOpenDispute?:()=>void;serviceId?:string|null;onCompleted?:()=>void|Promise<void>}){
  const supabase=useMemo(()=>getRoleSupabase('client'),[])
  const[userId,setUserId]=useState('')
  const[service,setService]=useState<ReviewService|null>(null)
@@ -71,11 +71,12 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
    const id=service.id
    const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:id})
    if(error){
-    if(!isCash&&await closurePersisted(id)){setNotice('Trabajo aprobado. El pago protegido fue liberado.');await load();return}
+    if(!isCash&&await closurePersisted(id)){setNotice('Trabajo aprobado. El pago protegido fue liberado.');await load();await onCompleted?.();return}
     await load();throw error
    }
    setNotice(isCash?`Trabajo aprobado. Ahora pagá ${amount} a ${providerName}.`:'Trabajo aprobado. El pago protegido fue liberado.')
    await load()
+   if(!isCash)await onCompleted?.()
   }catch(e){
    await load().catch(()=>{})
    setNotice(e instanceof Error?e.message:'No pudimos confirmar el trabajo. Actualizamos el estado real para que puedas reintentar.')
@@ -89,11 +90,12 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null}:{onOpenDis
    const id=service.id
    const{error}=await supabase.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:id})
    if(error){
-    if(await closurePersisted(id)){setNotice('Pago confirmado. UGO avisó al proveedor y cerró el servicio.');await load();return}
+    if(await closurePersisted(id)){setNotice('Pago confirmado. UGO avisó al proveedor y cerró el servicio.');await load();await onCompleted?.();return}
     await load();throw error
    }
    setNotice('Pago confirmado. UGO avisó al proveedor y cerró el servicio.')
    await load()
+   await onCompleted?.()
   }catch(e){
    await load().catch(()=>{})
    setNotice(e instanceof Error?e.message:'No pudimos confirmar el pago. El servicio conserva su estado para que puedas reintentar.')

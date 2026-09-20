@@ -31,3 +31,9 @@ test('review load error does not erase a previously known active closure',()=>{
  assert.doesNotMatch(source,/if\(error\)\{setService\(null\)/)
  assert.match(source,/Reintentaremos sin perder el servicio/)
 })
+
+
+test('cash close directly refreshes the parent detail so rating can appear without waiting for realtime',()=>{
+ assert.match(source,/onCompleted\?:\(\)=>void\|Promise<void>/)
+ assert.match(source,/confirmar_pago_efectivo_cliente[\s\S]*await load\(\)[\s\S]*await onCompleted\?\.\(\)/)
+})
