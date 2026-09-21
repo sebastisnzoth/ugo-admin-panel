@@ -12,6 +12,7 @@ import{AdminSystemSettings}from'./AdminSystemSettings'
 import{AdminReportsCenter}from'./AdminReportsCenter'
 import{AdminFinancePanel}from'./AdminFinancePanel'
 import{SuperAdminCommandCenter}from'./SuperAdminCommandCenter'
+import{ConversationalOrb}from'../components/ConversationalOrb'
 import{
  AdminOverviewNative,AdminMapNative,AdminScoutNative,
  AdminDocumentsNative,AdminKycNative,AdminImportNative,AdminTariffsNative,
@@ -89,6 +90,7 @@ export function AdminPhase2(){
   return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
  },[channelEpoch,load])
  const title=useMemo(()=>({home:'Inicio',operations:'Operaciones',people:'Personas',finance:'Finanzas',settings:'Configuración',superadmin:'Super Admin'}[section]),[section])
+ const hugoSection=useMemo(()=>section==='operations'?`operations:${operationView}`:section==='people'?`people:${peopleView}`:section==='finance'?`finance:${financeView}`:section==='settings'?`settings:${settingsView}`:section,[section,operationView,peopleView,financeView,settingsView])
  const opMeta:Record<OperationView,{eyebrow:string;title:string}>={overview:{eyebrow:'RESUMEN OPERATIVO',title:'Estado general de la operación'},map:{eyebrow:'MAPA EN VIVO',title:'Proveedores y servicios sobre el territorio'},services:{eyebrow:'SERVICIOS',title:'Pedidos y trabajos activos'},alerts:{eyebrow:'ALERTAS',title:'Eventos que requieren atención'},disputes:{eyebrow:'DISPUTAS',title:'Conflictos y resoluciones'},scout:{eyebrow:'SCOUT UGO',title:'Prospección y detección de oportunidades'},history:{eyebrow:'HISTORIAL',title:'Trazabilidad completa de UGO'},messages:{eyebrow:'MENSAJES',title:'WhatsApp y atención operativa'}}
  const openPeople=(view:PeopleView)=>{setSection('people');setPeopleView(view)}
  const openFinance=(view:FinanceView)=>{setSection('finance');setFinanceView(view)}
@@ -116,5 +118,6 @@ export function AdminPhase2(){
    {section==='settings'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>CONFIGURACIÓN</small><h2>Sistema UGO</h2></div></div><div className="ugo-admin2-submenu" role="group" aria-label="Configuración"><button aria-pressed={settingsView==='categories'} className={settingsView==='categories'?'active':''} onClick={()=>setSettingsView('categories')}>Categorías</button><button aria-pressed={settingsView==='analytics'} className={settingsView==='analytics'?'active':''} onClick={()=>setSettingsView('analytics')}>Analytics</button><button aria-pressed={settingsView==='notifications'} className={settingsView==='notifications'?'active':''} onClick={()=>setSettingsView('notifications')}>Notificaciones</button><button aria-pressed={settingsView==='reports'} className={settingsView==='reports'?'active':''} onClick={()=>setSettingsView('reports')}>Reportes</button><button aria-pressed={settingsView==='system'} className={settingsView==='system'?'active':''} onClick={()=>setSettingsView('system')}>Sistema</button></div>{settingsView==='categories'&&nativeWrap(<AdminCategoriesNative/>)}{settingsView==='analytics'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='notifications'&&nativeWrap(<AdminNotificationsNative/>)}{settingsView==='reports'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='system'&&nativeWrap(<AdminSystemSettings/>)}</section>}
    {section==='superadmin'&&isSuperAdmin&&<section className="ugo-admin2-section"><SuperAdminCommandCenter/></section>}
   </main>
+  {section!=='superadmin'&&<ConversationalOrb metrics={metrics} role="admin" section={hugoSection}/>} 
  </div>
 }
