@@ -110,9 +110,17 @@ export function SecScout(){
   approved:prospects.filter(p=>p.estado==='aprobado').length
  }),[prospects])
 
- async function authToken(){
-  const{data:{session},error}=await supabase.auth.getSession()
-  if(error||!session?.access_token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
+ async function authToken(forceRefresh=false){
+  const current=forceRefresh?await supabase.auth.refreshSession():await supabase.auth.getSession()
+  if(current.error)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
+  let session=current.data.session
+  const now=Math.floor(Date.now()/1000)
+  if(!forceRefresh&&session?.expires_at&&session.expires_at<=now+60){
+   const refreshed=await supabase.auth.refreshSession()
+   if(refreshed.error||!refreshed.data.session?.access_token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
+   session=refreshed.data.session
+  }
+  if(!session?.access_token)throw new Error('La sesión Admin venció. Volvé a iniciar sesión.')
   return session.access_token
  }
 
@@ -138,8 +146,9 @@ export function SecScout(){
  async function search(){
   setLoading(true);setError('');setStatus('Buscando profesionales externos…');setResults([]);setSelected(null);setOutreach('')
   try{
-   const token=await authToken()
-   const response=await fetch('/api/scout/places',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({lat,lng,radius,categoria:categoryId})})
+   const request=async(token:string)=>fetch('/api/scout/places',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({lat,lng,radius,categoria:categoryId})})
+   let response=await request(await authToken())
+   if(response.status===401)response=await request(await authToken(true))
    const payload=await response.json().catch(()=>({}))
    if(!response.ok)throw new Error(payload.error||`Scout respondió HTTP ${response.status}`)
    const rows=((payload.results||[])as any[]).map(p=>({id:String(p.id),name:String(p.name||'Profesional'),phone:p.phone||undefined,address:p.address||undefined,lat:Number(p.lat),lng:Number(p.lng),dist:Number(p.dist||0),website:p.website||undefined,source:p.source||payload.source,subcategoria_label:p.subcategoria_label||undefined})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng))

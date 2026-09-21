@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
 
 const SUPABASE_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co';
-const SERVICE_KEY=process.env.UGO_TEST_SUPABASE_SERVICE_KEY||process.env.SUPABASE_SERVICE_KEY||'';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl';
 
 const QUERIES = {
   electricista:['electrician','eletricista','electricista','electrical'],
@@ -60,9 +60,11 @@ const hasPhone=p=>Boolean(String(p?.phone||'').replace(/\D/g,'').length>=7);
 
 function bearer(req){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
 async function requireAdmin(req){
-  if(!SERVICE_KEY)throw Object.assign(new Error('UGO TEST service key no configurada'),{status:503});
   const token=bearer(req);if(!token)throw Object.assign(new Error('Sesión Admin requerida.'),{status:401});
-  const sb=createClient(SUPABASE_URL,SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
+  const sb=createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+    global:{headers:{Authorization:`Bearer ${token}`}},
+    auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}
+  });
   const{data,error}=await sb.auth.getUser(token);if(error||!data?.user)throw Object.assign(new Error('Sesión inválida o vencida.'),{status:401});
   const{data:profile,error:profileError}=await sb.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle();if(profileError)throw profileError;
   if(!profile?.activo||!['admin','superadmin'].includes(String(profile.tipo)))throw Object.assign(new Error('Acceso Admin requerido.'),{status:403});

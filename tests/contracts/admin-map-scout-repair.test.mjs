@@ -27,6 +27,8 @@ test('Scout persists prospect data behind admin RLS',()=>{
 
 test('Scout uses the current Supabase session for protected search',()=>{
  assert.match(scout,/supabase\.auth\.getSession\(\)/)
+ assert.match(scout,/supabase\.auth\.refreshSession\(\)/)
+ assert.match(scout,/if\(response\.status===401\)response=await request\(await authToken\(true\)\)/)
  assert.match(scout,/Authorization:`Bearer \$\{token\}`/)
  assert.match(scout,/fetch\('\/api\/scout\/places'/)
  assert.doesNotMatch(scout,/byajcqrgetloavrgyqak/)
