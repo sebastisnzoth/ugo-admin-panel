@@ -136,31 +136,44 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
 }
 
 const GPS_TARGET_ACCURACY_M=80
-const GPS_TIMEOUT_MS=15_000
-function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
-function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{
- if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}
- let best:GeolocationPosition|null=null,settled=false,watchId:number|null=null,timer:number|null=null
- const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer)}
- const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
- const fail=(message:string)=>{if(settled)return;settled=true;cleanup();reject(new Error(message))}
- timer=window.setTimeout(()=>{if(best)finish(best);else fail('No pudimos obtener una ubicación GPS reciente. Activá ubicación precisa y reintentá.')},GPS_TIMEOUT_MS+500)
- watchId=navigator.geolocation.watchPosition(position=>{
-  if(Date.now()-position.timestamp>GPS_TIMEOUT_MS||!usablePosition(position))return
-  if(!best||position.coords.accuracy<best.coords.accuracy)best=position
-  if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
- },error=>{
-  if(error.code===1){fail('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.');return}
-  if(best)finish(best);else fail('No pudimos obtener una ubicación GPS reciente. Revisá la señal e intentá otra vez.')
- },{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
-})}
+const GPS_ACCEPTABLE_ACCURACY_M=250
+const GPS_FRESH_MS=30_000
+const GPS_TIMEOUT_MS=20_000
+function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);return Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(accuracy)&&accuracy>0&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
+function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
+function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
+function geolocationError(error:GeolocationPositionError){
+ if(error.code===1)return new Error('Necesitamos tu ubicación para confirmar la llegada. Habilitá Ubicación precisa para UGO y reintentá.')
+ if(error.code===2)return new Error('El teléfono todavía no pudo fijar tu posición. Salí a un lugar con mejor señal y reintentá.')
+ return new Error('El GPS está demorando en fijar tu posición. Mantené UGO abierto y reintentá.')
+}
+function onePosition(options:PositionOptions){return new Promise<GeolocationPosition>((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
+async function currentPosition(){
+ if(!navigator.geolocation)throw new Error('Este dispositivo no permite obtener tu ubicación.')
+ let best:GeolocationPosition|null=null,lastError:GeolocationPositionError|null=null
+ // First wake the location provider. A strict maximumAge=0 call can fail on mobile WebViews
+ // before the GPS has a fix, so use a recent device fix only as a candidate while acquiring a fresh one.
+ try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:7_000});if(acceptablePosition(warm))best=warm}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
+ return await new Promise<GeolocationPosition>((resolve,reject)=>{
+  let settled=false,watchId:number|null=null,timer:number|null=null
+  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer)}
+  const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
+  const fail=(error:Error)=>{if(settled)return;settled=true;cleanup();reject(error)}
+  timer=window.setTimeout(()=>{if(best&&acceptablePosition(best))finish(best);else if(lastError)fail(geolocationError(lastError));else fail(new Error('No pudimos fijar tu ubicación con precisión suficiente. Mantené la ubicación precisa activa, dejá UGO abierto unos segundos y reintentá.'))},GPS_TIMEOUT_MS)
+  watchId=navigator.geolocation.watchPosition(position=>{
+   if(!usablePosition(position)||positionAge(position)>GPS_FRESH_MS)return
+   if(!best||position.coords.accuracy<best.coords.accuracy||position.timestamp>best.timestamp)best=position
+   if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
+  },error=>{lastError=error;if(error.code===1)fail(geolocationError(error))},{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
+ })
+}
 async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
  try{
   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
-  if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!usablePosition(position))throw new Error('El GPS devolvió una ubicación inválida. Activá ubicación precisa y reintentá.')
+  if(!acceptablePosition(position))throw new Error('La ubicación recibida no es suficientemente reciente o precisa para confirmar la llegada. Reintentá con Ubicación precisa activa.')
   const{error}=await supabase.rpc('actualizar_ubicacion_y_distancia',{p_lat:latitude,p_lng:longitude,p_servicio_id:serviceId})
   if(error)throw error
- }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
+ }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P0',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
 }
 
 async function persistedProviderTransition(supabase:SupabaseClient,serviceId:string,target:ProviderTransitionState):Promise<boolean|null>{
