@@ -56,6 +56,7 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
  return JSON.stringify({
   hugo:{nombre:'Hugo',rol:role==='superadmin'?'Hugo Super Admin':'Hugo Admin',superficie:section,modo:'lectura y análisis; no ejecuta cambios sin confirmación explícita'},
   dashboard:dashboard.data||metrics||null,
+  superadmin:privileged,
   usuarios:{muestra:u.length,activos:u.filter((v:any)=>v.activo).length,clientes:u.filter((v:any)=>v.tipo==='cliente').length,proveedores:u.filter((v:any)=>v.tipo==='proveedor').length,admins:u.filter((v:any)=>['admin','superadmin'].includes(String(v.tipo))).length,recientes:compactRows(u,10)},
   proveedores:{muestra:p.length,online:p.filter((v:any)=>v.online).length,activos:p.filter((v:any)=>v.activo).length,recientes:compactRows(p,10)},
   servicios:{muestra:s.length,por_estado:byState(s),recientes:compactRows(s,14)},
@@ -67,7 +68,6 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   categorias:{total:cats.length,activas:cats.filter((v:any)=>v.activa!==false).length,nombres:cats.slice(0,40).map((v:any)=>({nombre:v.nombre,emoji:v.emoji,activa:v.activa}))},
   tarifas:{muestra:rates.length,activas:rates.filter((v:any)=>v.activa!==false).length,recientes:compactRows(rates,10)},
   notificaciones:{muestra:notes.length,recientes:compactRows(notes,8)},
-  superadmin:privileged,
   generado_en:new Date().toISOString()
  });
 }
