@@ -499,3 +499,12 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 - el borrador de voz sincroniza dirección, etiqueta, coordenadas, cuándo y pago con las mismas pantallas escritas;
 - se elimina el monólogo de disponibilidad durante la captura: Hugo hace una pregunta por turno y valida brevemente la respuesta;
 - pendiente de madurez: smoke físico por voz completo desde Home hasta Resumen, verificando permiso GPS y texto visible en “¿Qué hay que hacer?”.
+
+
+### Hotfix 20/09/2026 · “utiliza mi ubicación” por voz
+
+- el intent GPS de Hugo reconoce “mi ubicación”, “utiliza mi ubicación”, “usa mi ubicación”, “tomá mi ubicación”, “acá/aquí” y equivalentes PT-BR;
+- el comando GPS se procesa aunque la conversación ya haya avanzado o exista una dirección previa: reemplaza la dirección del borrador por la ubicación actual;
+- la voz llama directamente a `navigator.geolocation.getCurrentPosition`, hace reverse geocoding, persiste lat/lng y emite `clientHugoDraft`;
+- `ClientLocationScreen` recibe el mismo borrador y carga dirección + coordenadas sin exigir tocar “Usar mi ubicación”;
+- si el permiso GPS falla, Hugo lo informa y mantiene el pedido abierto para escribir la dirección.

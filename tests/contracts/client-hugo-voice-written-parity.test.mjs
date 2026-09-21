@@ -36,3 +36,12 @@ test('saved voice places preserve coordinates when available',()=>{
  assert.match(address,/latitude:Number\.isFinite/)
  assert.match(address,/longitude:Number\.isFinite/)
 })
+
+
+test('spoken utilizar mi ubicación triggers GPS directly without requiring the location button',()=>{
+ assert.match(dock,/utilizar\|utiliza/)
+ assert.match(dock,/if\(wantsGps\(source\)\)\{const ok=await captureCurrentLocation\(current\)/)
+ assert.match(dock,/navigator\.geolocation\.getCurrentPosition/)
+ assert.match(dock,/current\.pickupSource='current'/)
+ assert.match(dock,/syncDraft\(current\);await askNext\(source,current/)
+})
