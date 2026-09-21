@@ -7,6 +7,7 @@ const migration=fs.readFileSync(new URL('../../supabase/migrations/20260901_stag
 const activeJob=fs.readFileSync(new URL('../../src/mvp/provider/ProviderActiveJob.tsx',import.meta.url),'utf8')
 const tracker=fs.readFileSync(new URL('../../src/mvp/ProviderLocationTracker.tsx',import.meta.url),'utf8')
 const locationButton=fs.readFileSync(new URL('../../src/mvp/AppLocationButton.tsx',import.meta.url),'utf8')
+const nullIslandGuard=fs.readFileSync(new URL('../../supabase/migrations/20260921221500_reject_null_island_provider_location.sql',import.meta.url),'utf8')
 
 test('arrival publishes fresh provider geolocation before requesting llegado',()=>{
  assert.match(service,/if\(state==='llegado'\)await publishProviderLocation\(supabase,serviceId\)/)
@@ -48,4 +49,14 @@ test('provider background tracking and profile location both request fresh GPS',
  assert.match(locationButton,/rpc\('actualizar_ubicacion_y_distancia'/)
  assert.match(locationButton,/p_servicio_id:null/)
  assert.match(locationButton,/maximumAge:0/)
+})
+
+
+test('arrival rejects Null Island instead of persisting a fake provider position',()=>{
+ assert.match(service,/usablePosition/)
+ assert.match(service,/Math\.abs\(lat\)<0\.0001&&Math\.abs\(lng\)<0\.0001/)
+ assert.match(tracker,/Math\.abs\(point\[0\]\)<0\.0001&&Math\.abs\(point\[1\]\)<0\.0001/)
+ assert.match(nullIslandGuard,/abs\(p_lat\) < 0\.0001 and abs\(p_lng\) < 0\.0001/)
+ assert.match(nullIslandGuard,/set ubicacion=null/)
+ assert.match(nullIslandGuard,/set lat=null,[\s\S]*lng=null/)
 })

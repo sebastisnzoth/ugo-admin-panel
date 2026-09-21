@@ -50,6 +50,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const rpc=supabase as unknown as LocationRpcClient
   const watchId=navigator.geolocation.watchPosition(async pos=>{
    const point:[number,number]=[pos.coords.latitude,pos.coords.longitude]
+   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001))return
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
    writing=true

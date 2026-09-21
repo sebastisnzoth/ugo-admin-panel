@@ -137,6 +137,7 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
 
 const GPS_TARGET_ACCURACY_M=80
 const GPS_TIMEOUT_MS=15_000
+function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude);return Number.isFinite(lat)&&Number.isFinite(lng)&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
 function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{
  if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}
  let best:GeolocationPosition|null=null,settled=false,watchId:number|null=null,timer:number|null=null
@@ -145,7 +146,7 @@ function currentPosition(){return new Promise<GeolocationPosition>((resolve,reje
  const fail=(message:string)=>{if(settled)return;settled=true;cleanup();reject(new Error(message))}
  timer=window.setTimeout(()=>{if(best)finish(best);else fail('No pudimos obtener una ubicación GPS reciente. Activá ubicación precisa y reintentá.')},GPS_TIMEOUT_MS+500)
  watchId=navigator.geolocation.watchPosition(position=>{
-  if(Date.now()-position.timestamp>GPS_TIMEOUT_MS)return
+  if(Date.now()-position.timestamp>GPS_TIMEOUT_MS||!usablePosition(position))return
   if(!best||position.coords.accuracy<best.coords.accuracy)best=position
   if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
  },error=>{
@@ -156,7 +157,7 @@ function currentPosition(){return new Promise<GeolocationPosition>((resolve,reje
 async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
  try{
   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
-  if(!Number.isFinite(latitude)||!Number.isFinite(longitude))throw new Error('No pudimos validar tu ubicación actual.')
+  if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||!usablePosition(position))throw new Error('El GPS devolvió una ubicación inválida. Activá ubicación precisa y reintentá.')
   const{error}=await supabase.rpc('actualizar_ubicacion_y_distancia',{p_lat:latitude,p_lng:longitude,p_servicio_id:serviceId})
   if(error)throw error
  }catch(error){void reportSentinelIncident({eventType:'provider_location_error',message:messageOf(error,'No se pudo publicar la ubicación del proveedor.'),error,role:'provider',severity:'P1',serviceId,action:'provider.service.location',checklistCode:'MAP-GPS'});throw error}
