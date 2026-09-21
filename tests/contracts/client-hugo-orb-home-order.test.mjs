@@ -25,10 +25,13 @@ test('spoken category/problem can begin an order without magic request wording',
  assert.match(dock,/syncDraft\(current\)/)
 })
 
-test('voice becomes text through the authenticated Gemini transcription bridge',()=>{
- assert.match(bridge,/MediaRecorder/)
- assert.match(bridge,/voice_transcription:true/)
+test('voice becomes text through the authenticated Gemini Live transcription bridge',()=>{
+ assert.match(bridge,/BidiGenerateContentConstrained/)
+ assert.match(bridge,/voice_live_token:true/)
+ assert.match(bridge,/interimInputTranscription/)
+ assert.match(bridge,/inputTranscription/)
  assert.match(bridge,/ugo:native-voice-result/)
+ assert.doesNotMatch(bridge,/MediaRecorder/)
  assert.match(dock,/setUserTranscript\(clean\)/)
 })
 

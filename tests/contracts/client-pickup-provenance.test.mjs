@@ -12,7 +12,7 @@ test('canonical client order never reuses stale browser GPS for a different addr
     read('src/mvp/client/ClientPostConfirmFlow.tsx'),
   ])
   assert.match(types, /pickupFallback\?: 'stored' \| 'none'/)
-  assert.match(dispatch, /request\.pickupFallback === 'none' \? null : storedPickup\(\)/)
+  assert.match(dispatch, /const pickup = request\.pickup \|\| \(request\.pickupFallback === 'stored' \? storedPickup\(\) : null\)/)
   assert.match(location, /savePickup\(null,null,'manual'\)/)
   assert.match(location, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
   assert.match(location, /savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/)
