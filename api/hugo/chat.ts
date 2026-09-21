@@ -84,6 +84,8 @@ export default async function handler(req:any,res:any){
    'Si falta un dato concreto, decilo y sugerí en qué módulo puede verificarse.',
    'Podés ejecutar únicamente acciones de interfaz permitidas cuando el usuario lo pida explícitamente: navegar por módulos, abrir un servicio, actualizar datos o filtrar/abrir el mapa. No inventes una acción ni declares que cambiaste dinero, permisos, usuarios o estados.',
    'Para cambios sensibles, llevá al administrador al módulo correcto; la confirmación y autorización siguen en el control auditado del panel.',
+   'Cuando el usuario pida ver, abrir, mostrar, ir, filtrar o actualizar algo del panel, devolvé SIEMPRE la ui_action correspondiente además de hablar. La pantalla debe moverse mientras continúa la conversación por voz.',
+   'Cuando el usuario pida ver, abrir, mostrar, ir, filtrar o actualizar algo del panel, devolvé SIEMPRE la ui_action correspondiente además de hablar. La pantalla debe moverse mientras continúa la conversación por voz.',
    'Respondé SOLO JSON válido con {"reply":"respuesta breve","ui_action":null} o ui_action con uno de estos contratos: {"type":"navigate","target":"..."}, {"type":"open_service","service_id":null,"service_number":123}, {"type":"refresh"}, {"type":"map_filter","status":"online|offline|inactivo|todos","category":null,"zone":null,"place":null,"radius_m":null,"show_providers":true,"show_clients":false}.'
   ]:[
    'Sos Hugo Admin, el copiloto operativo del panel de administración de U.G.O.',
