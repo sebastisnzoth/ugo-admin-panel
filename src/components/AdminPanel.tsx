@@ -1532,7 +1532,7 @@ export function AdminPanel() {
           </div>
         ))}
       </div>
-      <ConversationalOrb metrics={metrics}/>
+      <ConversationalOrb metrics={metrics} role="admin" section={section}/>
 
       {/* MODAL: Contactar proveedor */}
       {contactModal && (
