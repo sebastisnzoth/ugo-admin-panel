@@ -801,3 +801,20 @@ El recorrido completo es:
 La promesa emocional final de UGO debe ser:
 
 **“Decime qué necesitás. Yo te ayudo a resolverlo.”**
+
+---
+
+## Voz Live · contrato de latencia
+
+La entrada por voz de Hugo debe comportarse como una conversación continua, no como cargas de grabaciones completas.
+
+Implementación canónica:
+
+- una pulsación abre una sesión Gemini Live de transcripción y la mantiene viva;
+- el audio del micrófono se transmite como PCM16 mono 16 kHz en bloques cercanos a 100 ms;
+- la transcripción provisional aparece mientras la persona habla y la transcripción final alimenta exactamente el mismo estado conversacional que el texto;
+- cuando Hugo reproduce voz, la captura se pausa sin destruir la sesión y se reanuda al terminar;
+- si Gemini Live no está disponible, Hugo cae a reconocimiento del dispositivo o texto sin perder el pedido;
+- nunca se expone `GEMINI_API_KEY` en el navegador: el backend entrega un token efímero autenticado y restringido.
+
+La respuesta conversacional puede ser veloz, pero ninguna acción se considera realizada hasta que la capa UGO correspondiente confirme persistencia/estado real.

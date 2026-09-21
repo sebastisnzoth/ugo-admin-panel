@@ -250,3 +250,31 @@ Preferir serverless/managed y evitar infraestructura innecesaria; nunca ahorrar 
 ## 18. Regla final
 
 **Toda nueva pieza se integra al circuito existente. Desarrollo público observa sin privilegios; Centinela detecta sin gobernar; `main` integra sin implicar publicación; el `serviceId` mantiene unida la operación.**
+
+## 19. Hugo Voice · Gemini Live
+
+La voz del Cliente/Proveedor usa una sesión de transcripción **Gemini Live persistente**, no el ciclo `grabar archivo → subir → transcribir → volver a grabar`.
+
+Contrato:
+
+```text
+sesión UGO autenticada
+→ POST /api/test { voice_live_token: true }
+→ backend valida Auth/rol y emite token efímero restringido
+→ navegador abre WebSocket Gemini Live directo
+→ micrófono PCM16 mono 16 kHz en chunks ~100 ms
+→ interimInputTranscription actualiza texto visible
+→ inputTranscription final entra al mismo handleText que el teclado
+→ dominio UGO ejecuta la acción real
+```
+
+Seguridad y continuidad:
+
+- `GEMINI_API_KEY` permanece sólo server-side;
+- el navegador recibe únicamente un token efímero de un uso, corto y restringido a `gemini-3.5-transcribe-live` + salida TEXT;
+- `responseModalities` del WebSocket vive dentro de `setup.generationConfig`; el token usa `liveConnectConstraints` en la raíz del request de `auth_tokens`;
+- durante TTS, `pauseListening/resumeListening` conserva el WebSocket y el micrófono para no renegociar una sesión por turno;
+- ante cierre inesperado se solicita un token nuevo y se reconecta con backoff; si Live no inicia, la UI conserva fallback de reconocimiento del dispositivo/texto;
+- voz, teclado y botones siguen entrando al mismo flujo canónico; Gemini transcribe/interpreta, pero no se convierte en autoridad de servicio, dinero, disponibilidad ni permisos.
+
+Madurez de esta pieza: código integrado y sujeto a CI; la promoción a `RUNTIME VALIDATED` exige smoke real con micrófono, permiso, ES/PT, interrupción/reanudación y recorrido Home → pedido.

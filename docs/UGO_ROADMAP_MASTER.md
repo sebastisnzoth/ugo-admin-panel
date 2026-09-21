@@ -531,3 +531,17 @@ Correcciones del barrido:
 - la calificación final usa el componente canónico con `autor_tipo='cliente'`, evitando un segundo camino de rating.
 
 Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cliente + Proveedor en dos dispositivos sigue siendo el gate para marcar FULL-E2E.
+
+---
+
+## Checkpoint 21/09/2026 · Hugo voz Gemini Live
+
+- reemplazado en el bridge principal el ciclo `MediaRecorder → blob completo → /api/test → transcripción → reinicio` por streaming PCM16 directo a Gemini Live;
+- `/api/test` emite tokens efímeros sólo después de validar sesión Supabase + rol Cliente/Proveedor; la API key de Gemini continúa server-side;
+- el token queda restringido a `gemini-3.5-transcribe-live`, salida TEXT e input transcription;
+- el WebSocket usa el endpoint efímero `BidiGenerateContentConstrained` y setup correcto con `generationConfig.responseModalities`;
+- Hugo muestra hipótesis `interimInputTranscription` mientras escucha y procesa únicamente `inputTranscription` final;
+- TTS pausa/reanuda la captura sin destruir la sesión Live, eliminando la reconexión por cada turno;
+- reconexión con token nuevo ante cierre inesperado y fallback al reconocimiento del dispositivo/texto si Live no puede arrancar;
+- paridad voz ↔ texto preservada: el transcript final entra al mismo `handleText`, GPS/pago/confirmación/matching siguen gobernados por UGO;
+- madurez: IMPLEMENTED; CI y smoke físico de micrófono/ES-PT/reconexión pendientes del SHA resultante.

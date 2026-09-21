@@ -98,6 +98,17 @@ async function transcribeGeminiAudio(geminiKey:string,audioBase64:string,mimeTyp
 }
 async function geminiHealth(res:any){const geminiKey=process.env.GEMINI_API_KEY?.trim();if(!geminiKey)return res.status(503).json({ok:false,keyConfigured:false,error:'GEMINI_API_KEY missing'});try{const{response,payload,model}=await callGemini(geminiKey,{contents:[{role:'user',parts:[{text:'Respondé únicamente OK.'}]}],generationConfig:{maxOutputTokens:40,temperature:0}});const text=payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join('').trim()||'';return res.status(response.ok&&text?200:502).json({ok:Boolean(response.ok&&text),keyConfigured:true,model,googleStatus:response.status,response:text||null})}catch(error){return res.status(502).json({ok:false,keyConfigured:true,error:error instanceof Error?error.message:'network error'})}}
 
+const GEMINI_LIVE_TRANSCRIBE_MODEL=String(process.env.GEMINI_LIVE_TRANSCRIBE_MODEL||'gemini-3.5-transcribe-live').replace(/^models\//,'')
+async function createGeminiLiveToken(geminiKey:string){
+ const now=Date.now(),expireTime=new Date(now+11*60*1000).toISOString(),newSessionExpireTime=new Date(now+60*1000).toISOString()
+ const request={uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:{model:'models/'+GEMINI_LIVE_TRANSCRIBE_MODEL,config:{responseModalities:['TEXT'],inputAudioTranscription:{languageCodes:[],mode:'SMART'}}}}
+ const response=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':geminiKey},body:JSON.stringify(request),signal:AbortSignal.timeout(8000)})
+ const payload:any=await response.json().catch(()=>({}))
+ if(!response.ok)throw Object.assign(new Error(payload?.error?.message||'Gemini Live no pudo emitir un token temporal'),{status:response.status>=400&&response.status<600?response.status:502})
+ const token=String(payload?.name||'').trim();if(!token)throw Object.assign(new Error('Gemini Live devolvió un token temporal vacío'),{status:502})
+ return{token,model:GEMINI_LIVE_TRANSCRIBE_MODEL,expires_at:expireTime}
+}
+
 function safeText(v:any,max=180){return String(v??'').replace(/[\r\n|]+/g,' ').trim().slice(0,max)}
 function normalize(v:any){return safeText(v,300).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')}
 function distanceKm(aLat:any,aLng:any,bLat:any,bLng:any){const lat1=Number(aLat),lng1=Number(aLng),lat2=Number(bLat),lng2=Number(bLng);if(![lat1,lng1,lat2,lng2].every(Number.isFinite))return null;const r=6371,toRad=(v:number)=>v*Math.PI/180,dLat=toRad(lat2-lat1),dLng=toRad(lng2-lng1),x=Math.sin(dLat/2)**2+Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLng/2)**2;return r*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x))}
@@ -227,6 +238,7 @@ export default async function handler(req:any,res:any){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})
   const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:authData,error:authError}=await authClient.auth.getUser(token);if(authError||!authData.user)return res.status(401).json({error:'Sesión inválida'})
   const requestedRole=req.body?.role==='provider'?'provider':'client',expectedRole=requestedRole==='provider'?'proveedor':'cliente';const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:profile}=await userClient.from('usuarios').select('tipo').eq('id',authData.user.id).maybeSingle();if(!profile||profile.tipo!==expectedRole)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'})
+  if(req.body?.voice_live_token===true){const liveToken=await createGeminiLiveToken(geminiKey);return res.status(200).json(liveToken)}
   if(req.body?.voice_transcription===true){
    const audioBase64=String(req.body?.audio_base64||''),mimeType=String(req.body?.mime_type||'').split(';')[0].trim().toLowerCase()
    if(!AUDIO_MIME_TYPES.has(mimeType))return res.status(415).json({error:'Formato de audio no compatible'})
