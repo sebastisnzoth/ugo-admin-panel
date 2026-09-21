@@ -21,12 +21,14 @@ test('Admin Hugo uses Gemini Live voice and Gemini TTS instead of browser-only v
 
 test('Admin Hugo reads the operational domains exposed across the control center',async()=>{
  const orb=await read('src/components/ConversationalOrb.tsx')
- for(const source of ['mapa_operativo_usuarios','mapa_operativo_servicios','servicio_estado_eventos','resenas','mensajes','config_sistema']){
+ for(const source of ['mapa_operativo_usuarios','mapa_operativo_servicios','servicio_estado_eventos','resenas','mensajes','config_sistema','development_checklist','development_incidents']){
   assert.match(orb,new RegExp("from\\('"+source+"'\\)"))
  }
  assert.match(orb,/mapa_operativo/)
  assert.match(orb,/timeline_estados/)
  assert.match(orb,/calificaciones/)
+ assert.match(orb,/readiness/)
+ assert.match(orb,/incidentes/)
  assert.match(orb,/fuentes_no_disponibles/)
 })
 

@@ -69,7 +69,7 @@ export default async function handler(req:any,res:any){
    res.setHeader('Server-Timing',`gemini-tts;dur=${elapsed}`)
    return res.status(200).json({...audio,timing_ms:elapsed})
   }
-  const message=clean(body.message,1800),context=clean(body.context,30000),history=Array.isArray(body.history)?body.history:[]
+  const message=clean(body.message,1800),context=clean(body.context,60000),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const clientMode=body.mode==='client_voice'
   const requestedRole=clean(body.role,20).toLowerCase()
@@ -92,6 +92,7 @@ export default async function handler(req:any,res:any){
    'Diferenciá siempre datos EN VIVO del contexto de explicaciones generales sobre cómo funciona U.G.O.',
    'No inventes usuarios, servicios, pagos, métricas, estados ni acciones.',
    'Si CONTEXTO OPERATIVO EN VIVO trae fuentes_no_disponibles, aclaralo cuando afecte la respuesta.',
+   'Cuando te pregunten qué falta, qué está mal, bloqueos, errores o si UGO está listo, priorizá readiness e incidentes del contexto, separando P0 de P1 y distinguiendo implementado, validado y bloqueado.',
    'Podés ejecutar únicamente acciones de interfaz permitidas cuando el usuario lo pida explícitamente: navegar por módulos, abrir un servicio, actualizar datos o filtrar/abrir el mapa. No inventes una acción ni declares que cambiaste dinero, permisos, usuarios o estados.',
    'Para cambios sensibles, llevá al administrador al módulo correcto; la confirmación y autorización siguen en el control auditado del panel.',
    'Respondé SOLO JSON válido con {"reply":"respuesta breve","ui_action":null} o ui_action con uno de estos contratos: {"type":"navigate","target":"..."}, {"type":"open_service","service_id":null,"service_number":123}, {"type":"refresh"}, {"type":"map_filter","status":"online|offline|inactivo|todos","category":null,"zone":null,"place":null,"radius_m":null,"show_providers":true,"show_clients":false}.'

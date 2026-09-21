@@ -51,12 +51,14 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   sb.from('servicio_estado_eventos').select('id,servicio_id,actor_role,estado_anterior,estado_nuevo,motivo,created_at').order('created_at',{ascending:false}).limit(60),
   sb.from('resenas').select('id,servicio_id,proveedor_id,puntuacion,comentario,autor_tipo,created_at').order('created_at',{ascending:false}).limit(40),
   sb.from('mensajes').select('id,servicio_id,emisor_rol,contenido,leido_at,created_at').order('created_at',{ascending:false}).limit(40),
-  sb.from('config_sistema').select('clave,grupo,descripcion,updated_at').order('grupo').limit(80)
+  sb.from('config_sistema').select('clave,grupo,descripcion,updated_at').order('grupo').limit(80),
+  sb.from('development_checklist').select('code,area,title,description,priority,status,evidence,test_required,updated_at').order('position',{ascending:true}).limit(80),
+  sb.from('development_incidents').select('severity,event_type,status,action,checklist_code,message,occurrences,last_seen_at,runtime_revision').neq('status','resolved').order('last_seen_at',{ascending:false}).limit(60)
  ]);
- const names=['dashboard','usuarios','proveedores','servicios','disputas','pagos','retiros','deuda_ugo','documentos','categorias','tarifas','notificaciones','mapa_usuarios','mapa_servicios','eventos_estado','resenas','mensajes','configuracion'];
+ const names=['dashboard','usuarios','proveedores','servicios','disputas','pagos','retiros','deuda_ugo','documentos','categorias','tarifas','notificaciones','mapa_usuarios','mapa_servicios','eventos_estado','resenas','mensajes','configuracion','readiness','incidentes'];
  const unavailable=results.map((result:any,index)=>result?.error?names[index]:null).filter(Boolean);
- const[dashboard,users,providers,services,disputes,payments,withdrawals,cashDebts,docs,categories,tariffs,notifications,mapUsers,mapServices,stateEvents,reviews,messages,config]=results;
- const u=users.data||[],p=providers.data||[],s=services.data||[],d=disputes.data||[],pay=payments.data||[],w=withdrawals.data||[],debts=cashDebts.data||[],x=docs.data||[],cats=categories.data||[],rates=tariffs.data||[],notes=notifications.data||[],mapU=mapUsers.data||[],mapS=mapServices.data||[],events=stateEvents.data||[],ratings=reviews.data||[],msgs=messages.data||[],cfg=config.data||[];
+ const[dashboard,users,providers,services,disputes,payments,withdrawals,cashDebts,docs,categories,tariffs,notifications,mapUsers,mapServices,stateEvents,reviews,messages,config,checklist,incidents]=results;
+ const u=users.data||[],p=providers.data||[],s=services.data||[],d=disputes.data||[],pay=payments.data||[],w=withdrawals.data||[],debts=cashDebts.data||[],x=docs.data||[],cats=categories.data||[],rates=tariffs.data||[],notes=notifications.data||[],mapU=mapUsers.data||[],mapS=mapServices.data||[],events=stateEvents.data||[],ratings=reviews.data||[],msgs=messages.data||[],cfg=config.data||[],ready=checklist.data||[],incs=incidents.data||[];
  const sum=(rows:any[],field:string)=>rows.reduce((total,row)=>total+Number(row?.[field]||0),0);
  const byState=(rows:any[])=>rows.reduce((all:any,row:any)=>{const key=String(row?.estado||row?.estado_nuevo||'sin_estado');all[key]=(all[key]||0)+1;return all},{});
  const privileged=role==='superadmin'?{feature_flags:extraContext?.flags||{},integraciones:Array.isArray(extraContext?.integrations)?extraContext.integrations.slice(0,20):[],auditoria:Array.isArray(extraContext?.audit)?extraContext.audit.slice(0,12):[]}:undefined;
@@ -80,6 +82,8 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   calificaciones:{muestra:ratings.length,promedio:ratings.length?ratings.reduce((n:number,v:any)=>n+Number(v.puntuacion||0),0)/ratings.length:null,recientes:compactRows(ratings,10)},
   mensajes:{muestra:msgs.length,no_leidos:msgs.filter((v:any)=>!v.leido_at).length,recientes:compactRows(msgs.map((v:any)=>({...v,contenido:String(v.contenido||'').slice(0,180)})),12)},
   configuracion:{claves:compactRows(cfg,30)},
+  readiness:{bloqueados:ready.filter((v:any)=>v.status==='blocked').length,pendientes:ready.filter((v:any)=>!['approved','validated'].includes(String(v.status))).length,p0_abiertos:ready.filter((v:any)=>v.priority==='P0'&&!['approved','validated'].includes(String(v.status))).length,p1_abiertos:ready.filter((v:any)=>v.priority==='P1'&&!['approved','validated'].includes(String(v.status))).length,items:compactRows(ready,40)},
+  incidentes:{p0_abiertos:incs.filter((v:any)=>v.severity==='P0').length,p1_abiertos:incs.filter((v:any)=>v.severity==='P1').length,recientes:compactRows(incs,24)},
   fuentes_no_disponibles:unavailable,
   generado_en:new Date().toISOString()
  });
