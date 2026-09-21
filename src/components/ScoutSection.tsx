@@ -4,7 +4,7 @@ import'./scout-section.css'
 
 declare const L:any
 
-type Provider={id:string;name:string;phone?:string;address?:string;lat:number;lng:number;dist:number;website?:string;source?:string;subcategoria_label?:string}
+type Provider={id:string;name:string;phone?:string;email?:string;address?:string;lat:number;lng:number;dist:number;website?:string;source?:string;subcategoria_label?:string}
 type Prospect={id:string;external_id:string|null;nombre:string;categoria:string;telefono:string|null;email:string|null;website:string|null;direccion:string|null;ciudad:string|null;pais:string|null;latitud:number|null;longitud:number|null;fuente:string;score_confianza:number;estado:string;notas_hugo:string|null;created_at:string;contactado_at:string|null;aprobado_at:string|null}
 type DbProvider={id:string;nombre:string;lat:number|null;lng:number|null;categoria:string|null;cat_emoji:string|null;pin_color:string|null;estado_mapa:string|null;telefono:string|null;zona:string|null}
 
@@ -28,6 +28,7 @@ const category=(key:string)=>CATEGORIES.find(([id])=>id===key)||CATEGORIES[0]
 const fmtDistance=(meters:number)=>meters<1000?`${Math.round(meters)} m`:`${(meters/1000).toFixed(1)} km`
 const safePhone=(value?:string|null)=>String(value||'').replace(/\D/g,'')
 const sourceLabel=(s?:string)=>s==='tomtom'?'TomTom':s==='geoapify'?'Geoapify':s==='osm'?'OpenStreetMap':s==='nominatim'?'Nominatim':s||'Scout'
+const escapeHtml=(value:unknown)=>String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]||ch))
 
 function icon(color:string,label:string,size=28){
  return L.divIcon({html:`<div class="ugo-scout-pin" style="--pin:${color};--size:${size}px"><span>${label}</span><i></i></div>`,className:'',iconSize:[size,size+13],iconAnchor:[size/2,size+13]})
@@ -41,6 +42,8 @@ export function SecScout(){
  const[results,setResults]=useState<Provider[]>([]),[prospects,setProspects]=useState<Prospect[]>([]),[dbProviders,setDbProviders]=useState<DbProvider[]>([])
  const[selected,setSelected]=useState<Provider|null>(null),[loading,setLoading]=useState(false),[geoBusy,setGeoBusy]=useState(false),[busyId,setBusyId]=useState('')
  const[status,setStatus]=useState('Listo para buscar profesionales externos.'),[error,setError]=useState(''),[outreach,setOutreach]=useState('')
+ const[checked,setChecked]=useState<string[]>([]),[campaignBusy,setCampaignBusy]=useState(false),[campaignProgress,setCampaignProgress]=useState('')
+ const[recruitmentText,setRecruitmentText]=useState('Olá {nombre}! Sou da equipe UGO. Estamos convidando profissionais de {categoria} em {zona} para conhecer a plataforma e receber oportunidades de clientes próximos. Se tiver interesse, responda esta mensagem e eu te explico como funciona. Se não quiser receber novos contatos, é só me avisar.')
 
  const loadProspects=useCallback(async()=>{
   const{data,error}=await(supabase as any).from('prospectos_scouts').select('id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,latitud,longitud,fuente,score_confianza,estado,notas_hugo,created_at,contactado_at,aprobado_at').order('created_at',{ascending:false}).limit(100)
@@ -109,6 +112,10 @@ export function SecScout(){
   contacted:prospects.filter(p=>p.estado==='invitado'||p.estado==='aprobado').length,
   approved:prospects.filter(p=>p.estado==='aprobado').length
  }),[prospects])
+ const selectedResults=useMemo(()=>results.filter(p=>checked.includes(p.id)),[results,checked])
+ const selectedPhones=useMemo(()=>selectedResults.filter(p=>safePhone(p.phone).length>=10),[selectedResults])
+ const selectedEmails=useMemo(()=>selectedResults.filter(p=>Boolean(p.email)),[selectedResults])
+ const personalize=(p:Provider)=>recruitmentText.replaceAll('{nombre}',p.name||'profissional').replaceAll('{categoria}',category(categoryId)[2]).replaceAll('{zona}',locationLabel)
 
  async function authToken(forceRefresh=false){
   const current=forceRefresh?await supabase.auth.refreshSession():await supabase.auth.getSession()
@@ -144,28 +151,95 @@ export function SecScout(){
  }
 
  async function search(){
-  setLoading(true);setError('');setStatus('Buscando profesionales externos…');setResults([]);setSelected(null);setOutreach('')
+  setLoading(true);setError('');setStatus('Buscando profesionales externos…');setResults([]);setChecked([]);setSelected(null);setOutreach('')
   try{
    const request=async(token:string)=>fetch('/api/scout/places',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify({lat,lng,radius,categoria:categoryId})})
    let response=await request(await authToken())
    if(response.status===401)response=await request(await authToken(true))
    const payload=await response.json().catch(()=>({}))
    if(!response.ok)throw new Error(payload.error||`Scout respondió HTTP ${response.status}`)
-   const rows=((payload.results||[])as any[]).map(p=>({id:String(p.id),name:String(p.name||'Profesional'),phone:p.phone||undefined,address:p.address||undefined,lat:Number(p.lat),lng:Number(p.lng),dist:Number(p.dist||0),website:p.website||undefined,source:p.source||payload.source,subcategoria_label:p.subcategoria_label||undefined})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng))
+   const rows=((payload.results||[])as any[]).map(p=>({id:String(p.id),name:String(p.name||'Profesional'),phone:p.phone||undefined,email:p.email||undefined,address:p.address||undefined,lat:Number(p.lat),lng:Number(p.lng),dist:Number(p.dist||0),website:p.website||undefined,source:p.source||payload.source,subcategoria_label:p.subcategoria_label||undefined})).filter(p=>Number.isFinite(p.lat)&&Number.isFinite(p.lng))
    setResults(rows)
    setStatus(rows.length?`${rows.length} profesionales encontrados con teléfono · fuente ${sourceLabel(payload.source)}.`:`No encontramos profesionales con teléfono en ${radius/1000} km. Probá ampliar el radio o cambiar categoría.`)
   }catch(e){setError(e instanceof Error?e.message:'Scout no pudo completar la búsqueda.');setStatus('La búsqueda no se completó.')}finally{setLoading(false)}
  }
 
+ function prospectRow(p:Provider){
+  const[,emoji,label]=category(categoryId)
+  return{external_id:p.id,nombre:p.name,categoria:categoryId,telefono:p.phone||null,email:p.email||null,website:p.website||null,direccion:p.address||null,ciudad:locationLabel.split(',')[0]?.trim()||'Florianópolis',pais:'BR',latitud:p.lat,longitud:p.lng,fuente:p.source||'scout',score_confianza:p.phone?75:40,estado:'prospecto_pendiente',notas_hugo:`Scout ${emoji} ${label} · ${fmtDistance(p.dist)}`}
+ }
+
+ async function persistProspects(items:Provider[]){
+  const unique=[...new Map(items.map(p=>[p.id,p])).values()]
+  if(!unique.length)return
+  const ids=unique.map(p=>p.id)
+  const{data:existing,error:lookupError}=await(supabase as any).from('prospectos_scouts').select('id,external_id').in('external_id',ids)
+  if(lookupError)throw lookupError
+  const byExternal=new Map((existing||[]).map((row:any)=>[String(row.external_id),String(row.id)]))
+  const inserts=unique.filter(p=>!byExternal.has(p.id)).map(prospectRow)
+  if(inserts.length){const{error}=await(supabase as any).from('prospectos_scouts').insert(inserts);if(error)throw error}
+  for(const p of unique.filter(p=>byExternal.has(p.id))){
+   const{error}=await(supabase as any).from('prospectos_scouts').update(prospectRow(p)).eq('id',byExternal.get(p.id))
+   if(error)throw error
+  }
+ }
+
  async function saveProspect(p:Provider){
   setBusyId(p.id);setError('')
+  try{await persistProspects([p]);await loadProspects();setStatus(`${p.name} quedó guardado en Scout.`)}
+  catch(e){setError(e instanceof Error?e.message:'No se pudo guardar el prospecto.')}finally{setBusyId('')}
+ }
+
+ async function saveSelected(){
+  if(!selectedResults.length)return
+  setCampaignBusy(true);setError('');setCampaignProgress(`Guardando ${selectedResults.length} prospectos…`)
+  try{await persistProspects(selectedResults);await loadProspects();setStatus(`${selectedResults.length} prospectos quedaron guardados en Scout.`);setCampaignProgress('Guardado completo.')}
+  catch(e){setError(e instanceof Error?e.message:'No se pudieron guardar los prospectos seleccionados.');setCampaignProgress('')}
+  finally{setCampaignBusy(false)}
+ }
+
+ function exportExcel(){
+  const rows=selectedResults.length?selectedResults:results
+  if(!rows.length){setError('No hay resultados para exportar.');return}
+  const headers=['Nombre','Categoría','Teléfono','Email','Dirección','Distancia','Fuente','Subcategoría','Latitud','Longitud','Website']
+  const body=rows.map(p=>[p.name,category(categoryId)[2],p.phone||'',p.email||'',p.address||'',fmtDistance(p.dist),sourceLabel(p.source),p.subcategoria_label||'',p.lat,p.lng,p.website||''])
+  const table=`<table><thead><tr>${headers.map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${body.map(row=>`<tr>${row.map(v=>`<td>${escapeHtml(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+  const html=`<!doctype html><html><head><meta charset="utf-8"></head><body>${table}</body></html>`
+  const blob=new Blob(['\ufeff',html],{type:'application/vnd.ms-excel;charset=utf-8'})
+  const url=URL.createObjectURL(blob),a=document.createElement('a'),stamp=new Date().toISOString().slice(0,10)
+  a.href=url;a.download=`ugo-scout-${categoryId}-${stamp}.xls`;document.body.appendChild(a);a.click();a.remove();window.setTimeout(()=>URL.revokeObjectURL(url),1000)
+  setStatus(`Excel generado con ${rows.length} profesionales.`)
+ }
+
+ function openEmailDraft(){
+  if(!selectedEmails.length){setError('Los seleccionados no tienen email público disponible.');return}
+  const subject='UGO · Convite para profissionais'
+  const generic=recruitmentText.replaceAll('{nombre}','profissional').replaceAll('{categoria}',category(categoryId)[2]).replaceAll('{zona}',locationLabel)
+  window.location.href=`mailto:?bcc=${encodeURIComponent(selectedEmails.map(p=>p.email).filter(Boolean).join(','))}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(generic)}`
+  setStatus(`Abrí un email para ${selectedEmails.length} contactos.`)
+ }
+
+ async function sendWhatsAppSelected(){
+  const batch=selectedPhones.slice(0,20)
+  if(!batch.length){setError('Seleccioná profesionales con WhatsApp/teléfono.');return}
+  setCampaignBusy(true);setError('');setCampaignProgress(`Preparando campaña 0/${batch.length}…`)
   try{
-   const[,emoji,label]=category(categoryId)
-   const row={external_id:p.id,nombre:p.name,categoria:categoryId,telefono:p.phone||null,email:null,website:p.website||null,direccion:p.address||null,ciudad:locationLabel.split(',')[0]?.trim()||'Florianópolis',pais:'BR',latitud:p.lat,longitud:p.lng,fuente:p.source||'scout',score_confianza:p.phone?75:40,estado:'prospecto_pendiente',notas_hugo:`Scout ${emoji} ${label} · ${fmtDistance(p.dist)}`}
-   const{error}=await(supabase as any).from('prospectos_scouts').upsert(row,{onConflict:'external_id'})
-   if(error)throw error
-   await loadProspects();setStatus(`${p.name} quedó guardado en Scout.`)
-  }catch(e){setError(e instanceof Error?e.message:'No se pudo guardar el prospecto.')}finally{setBusyId('')}
+   await persistProspects(batch);await loadProspects()
+   const{data:saved,error:savedError}=await(supabase as any).from('prospectos_scouts').select('id,external_id').in('external_id',batch.map(p=>p.id))
+   if(savedError)throw savedError
+   const savedIds=new Map((saved||[]).map((row:any)=>[String(row.external_id),String(row.id)]))
+   let token=await authToken(),sent=0,failed=0
+   for(let i=0;i<batch.length;i++){
+    const p=batch[i],payload={to:safePhone(p.phone),message:personalize(p),prospecto_id:savedIds.get(p.id)||null}
+    let response=await fetch('/api/whatsapp/send',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(payload)})
+    if(response.status===401){token=await authToken(true);response=await fetch('/api/whatsapp/send',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(payload)})}
+    if(response.ok)sent++;else failed++
+    setCampaignProgress(`WhatsApp ${i+1}/${batch.length} · enviados ${sent} · errores ${failed}`)
+   }
+   await loadProspects()
+   setStatus(`Campaña WhatsApp finalizada: ${sent} enviados, ${failed} con error.${selectedPhones.length>20?' Se limitó este lote a 20 contactos.':''}`)
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo completar la campaña de WhatsApp.')}
+  finally{setCampaignBusy(false)}
  }
 
  async function setProspectState(row:Prospect,next:'invitado'|'aprobado'|'rechazado'){
@@ -200,11 +274,23 @@ export function SecScout(){
   </section>
   {error&&<div className="ugo-scout-error" role="alert">{error}<button type="button" onClick={()=>setError('')}>×</button></div>}
   <div className="ugo-scout-status" role="status">{status}</div>
+  <section className="ugo-scout-recruit">
+   <header><div><small>RECLUTAMIENTO SCOUT</small><strong>{selectedResults.length} seleccionados</strong></div><span>WhatsApp envía hasta 20 por lote para evitar disparos accidentales.</span></header>
+   <textarea value={recruitmentText} onChange={e=>setRecruitmentText(e.target.value)} aria-label="Mensaje de reclutamiento"/><small className="ugo-scout-template-help">Variables: {'{nombre}'} · {'{categoria}'} · {'{zona}'}</small>
+   <div className="ugo-scout-actions">
+    <button type="button" onClick={()=>setChecked(results.length===checked.length?[]:results.map(p=>p.id))} disabled={!results.length}>{results.length&&checked.length===results.length?'Limpiar selección':'Seleccionar todos'}</button>
+    <button type="button" onClick={()=>void saveSelected()} disabled={!selectedResults.length||campaignBusy}>💾 Guardar seleccionados</button>
+    <button type="button" onClick={exportExcel} disabled={!results.length}>⬇ Excel {selectedResults.length?'seleccionados':'encontrados'}</button>
+    <button type="button" className="primary" onClick={()=>void sendWhatsAppSelected()} disabled={!selectedPhones.length||campaignBusy}>WhatsApp ({selectedPhones.length})</button>
+    <button type="button" onClick={openEmailDraft} disabled={!selectedEmails.length||campaignBusy}>Email ({selectedEmails.length})</button>
+   </div>
+   {campaignProgress&&<div className="ugo-scout-campaign-progress" role="status">{campaignProgress}</div>}
+  </section>
   <div className="ugo-scout-main">
    <div className="ugo-scout-map"><div ref={mapEl}/>{!leafletReady&&<span>Cargando mapa…</span>}</div>
-   <aside className="ugo-scout-outreach">{selected?<><small>PROFESIONAL SELECCIONADO</small><h3>{selected.name}</h3><p>{selected.address||locationLabel}</p><div className="ugo-scout-tags"><span>{fmtDistance(selected.dist)}</span><span>{sourceLabel(selected.source)}</span>{selected.subcategoria_label&&<span>{selected.subcategoria_label}</span>}</div>{selected.phone&&<b>📱 {selected.phone}</b>}<div className="ugo-scout-actions"><button type="button" className="primary" onClick={()=>void saveProspect(selected)} disabled={busyId===selected.id}>{selectedSaved?'Actualizar prospecto':'+ Guardar en Scout'}</button><button type="button" onClick={()=>void generateOutreach()} disabled={busyId==='outreach'}>{busyId==='outreach'?'Generando…':'✦ Hugo'}</button></div>{outreach&&<div className="ugo-scout-message"><textarea readOnly value={outreach}/>{selected.phone&&<a href={`https://wa.me/${safePhone(selected.phone)}?text=${encodeURIComponent(outreach)}`} target="_blank" rel="noreferrer" onClick={()=>{if(selectedSaved)void setProspectState(selectedSaved,'invitado')}}>Abrir WhatsApp ↗</a>}</div>}</>:<div className="ugo-scout-empty">Seleccioná un resultado del mapa o de la lista para trabajar el contacto.</div>}</aside>
+   <aside className="ugo-scout-outreach">{selected?<><small>PROFESIONAL SELECCIONADO</small><h3>{selected.name}</h3><p>{selected.address||locationLabel}</p><div className="ugo-scout-tags"><span>{fmtDistance(selected.dist)}</span><span>{sourceLabel(selected.source)}</span>{selected.subcategoria_label&&<span>{selected.subcategoria_label}</span>}</div>{selected.phone&&<b>📱 {selected.phone}</b>}{selected.email&&<b>✉ {selected.email}</b>}<div className="ugo-scout-actions"><button type="button" className="primary" onClick={()=>void saveProspect(selected)} disabled={busyId===selected.id}>{selectedSaved?'Actualizar prospecto':'+ Guardar en Scout'}</button><button type="button" onClick={()=>void generateOutreach()} disabled={busyId==='outreach'}>{busyId==='outreach'?'Generando…':'✦ Hugo'}</button></div>{outreach&&<div className="ugo-scout-message"><textarea readOnly value={outreach}/>{selected.phone&&<a href={`https://wa.me/${safePhone(selected.phone)}?text=${encodeURIComponent(outreach)}`} target="_blank" rel="noreferrer" onClick={()=>{if(selectedSaved)void setProspectState(selectedSaved,'invitado')}}>Abrir WhatsApp ↗</a>}</div>}</>:<div className="ugo-scout-empty">Seleccioná un resultado del mapa o de la lista para trabajar el contacto.</div>}</aside>
   </div>
-  <section className="ugo-scout-results"><header><div><small>RESULTADOS DE BÚSQUEDA</small><strong>{results.length}</strong></div></header>{results.length?<div className="ugo-scout-result-grid">{results.map(p=><button type="button" key={p.id} className={selected?.id===p.id?'active':''} onClick={()=>{setSelected(p);setOutreach('')}}><b>{p.name}</b><span>{p.phone||'Sin teléfono'} · {fmtDistance(p.dist)}</span><small>{p.address||sourceLabel(p.source)}</small></button>)}</div>:<p>No hay resultados cargados. Elegí zona, categoría y radio y pulsá Buscar.</p>}</section>
+  <section className="ugo-scout-results"><header><div><small>RESULTADOS DE BÚSQUEDA</small><strong>{results.length}</strong></div><span>{checked.length} seleccionados</span></header>{results.length?<div className="ugo-scout-result-grid">{results.map(p=><div key={p.id} className={`ugo-scout-result-card ${selected?.id===p.id?'active':''}`}><label className="ugo-scout-check"><input type="checkbox" checked={checked.includes(p.id)} onChange={e=>setChecked(current=>e.target.checked?[...current,p.id]:current.filter(id=>id!==p.id))}/><span>Seleccionar</span></label><button type="button" className="ugo-scout-result-open" onClick={()=>{setSelected(p);setOutreach('')}}><b>{p.name}</b><span>{p.phone||'Sin teléfono'}{p.email?` · ${p.email}`:''} · {fmtDistance(p.dist)}</span><small>{p.address||sourceLabel(p.source)}</small></button></div>)}</div>:<p>No hay resultados cargados. Elegí zona, categoría y radio y pulsá Buscar.</p>}</section>
   <section className="ugo-scout-prospects"><header><div><small>PROSPECTOS GUARDADOS</small><strong>{prospects.length}</strong></div><button type="button" onClick={()=>void loadProspects()}>↻ Actualizar</button></header>{prospects.length?<div className="ugo-scout-prospect-list">{prospects.slice(0,30).map(p=><article key={p.id}><div><b>{p.nombre}</b><span>{p.telefono||'Sin teléfono'} · {p.categoria}</span><small>{p.ciudad||'—'} · {sourceLabel(p.fuente)} · {new Date(p.created_at).toLocaleString('es-AR')}</small></div><em className={p.estado}>{p.estado.replaceAll('_',' ')}</em><div className="ugo-scout-actions">{p.estado==='prospecto_pendiente'&&<button type="button" onClick={()=>void setProspectState(p,'invitado')} disabled={busyId===p.id}>Contactado</button>}{p.estado!=='aprobado'&&p.estado!=='rechazado'&&<button type="button" className="primary" onClick={()=>void setProspectState(p,'aprobado')} disabled={busyId===p.id}>Aprobar</button>}{p.estado!=='rechazado'&&p.estado!=='aprobado'&&<button type="button" className="danger" onClick={()=>void setProspectState(p,'rechazado')} disabled={busyId===p.id}>Descartar</button>}</div></article>)}</div>:<p>Todavía no hay prospectos guardados.</p>}</section>
  </div>
 }

@@ -164,7 +164,7 @@ async function searchTomTom(lat,lng,radius,categoria,customCat,key){
         if(!Number.isFinite(pLat)||!Number.isFinite(pLng))continue;
         const candidate={
           id:`tt_${id}`,name:p.poi?.name||p.address?.freeformAddress||q,
-          phone:p.poi?.phone||null,address:p.address?.freeformAddress||null,website:p.poi?.url||null,
+          phone:p.poi?.phone||null,email:p.poi?.email||null,address:p.address?.freeformAddress||null,website:p.poi?.url||null,
           lat:pLat,lng:pLng,dist:Number.isFinite(Number(p.dist))?Number(p.dist):haversine(lat,lng,pLat,pLng),source:'tomtom',
           categories:(p.poi?.categories||[]).map(String),
           classifications:(p.poi?.classifications||[]).flatMap(c=>[c?.code,...(c?.names||[]).map(n=>n?.name)]).filter(Boolean).map(String)
@@ -191,6 +191,7 @@ async function searchGeoapify(lat,lng,radius,categoria,customCat,key){
       const pLng=Number(coords[0]??p.lon),pLat=Number(coords[1]??p.lat);if(!Number.isFinite(pLat)||!Number.isFinite(pLng))return null;
       return {id:`geo_${p.place_id||p.osm_id||`${pLat}_${pLng}`}`,name:p.name||p.address_line1||p.formatted||'Profesional',
         phone:p.contact?.phone||p.phone||p.datasource?.raw?.phone||p.datasource?.raw?.['contact:phone']||null,
+        email:p.contact?.email||p.email||p.datasource?.raw?.email||p.datasource?.raw?.['contact:email']||null,
         address:p.formatted||[p.address_line1,p.address_line2].filter(Boolean).join(', ')||null,
         website:p.website||p.contact?.website||p.datasource?.raw?.website||p.datasource?.raw?.['contact:website']||null,
         lat:pLat,lng:pLng,dist:haversine(Number(lat),Number(lng),pLat,pLng),source:'geoapify',categories:p.categories||[],datasource:p.datasource||null};
@@ -207,14 +208,14 @@ async function searchOverpass(lat,lng,radius,categoria,customCat=''){
   let els=[];
   if(tags.length){const parts=tags.map(([k,v])=>`node["${k}"="${v}"](around:${radius},${lat},${lng});way["${k}"="${v}"](around:${radius},${lat},${lng});`).join('');els=await run(`[out:json][timeout:30];(${parts});out center;`);}
   if(!els.length&&nameRx)els=await run(`[out:json][timeout:30];(node["name"~"${nameRx}",i](around:${radius},${lat},${lng});way["name"~"${nameRx}",i](around:${radius},${lat},${lng}););out center;`);
-  const rows=els.map(el=>{const pLat=el.lat??el.center?.lat,pLng=el.lon??el.center?.lon,t=el.tags||{},name=t.name||t['name:pt']||t['name:es']||t['name:en'];if(!pLat||!pLng||!name)return null;return{id:`osm_${el.id}`,name,phone:t.phone||t['contact:phone']||t['contact:mobile']||null,address:[t['addr:street'],t['addr:housenumber'],t['addr:city']].filter(Boolean).join(', ')||null,website:t.website||t['contact:website']||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'osm',categories:[t.craft,t.shop,t.amenity,t.office].filter(Boolean)};}).filter(Boolean);
+  const rows=els.map(el=>{const pLat=el.lat??el.center?.lat,pLng=el.lon??el.center?.lon,t=el.tags||{},name=t.name||t['name:pt']||t['name:es']||t['name:en'];if(!pLat||!pLng||!name)return null;return{id:`osm_${el.id}`,name,phone:t.phone||t['contact:phone']||t['contact:mobile']||null,email:t.email||t['contact:email']||null,address:[t['addr:street'],t['addr:housenumber'],t['addr:city']].filter(Boolean).join(', ')||null,website:t.website||t['contact:website']||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'osm',categories:[t.craft,t.shop,t.amenity,t.office].filter(Boolean)};}).filter(Boolean);
   return validRows(rows,categoria,customCat);
 }
 
 async function searchNominatim(lat,lng,radius,categoria,customCat=''){
   const queries=categoria==='custom'&&customCat?[customCat]:(QUERIES[categoria]||[categoria]),results=[];
   const bbox=[lat-radius/111000,lng-radius/85000,lat+radius/111000,lng+radius/85000].join(',');
-  for(const q of queries.slice(0,3)){try{const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&bounded=1&viewbox=${bbox}&extratags=1`;const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.3'},signal:AbortSignal.timeout(10000)});if(!r.ok)continue;const d=await r.json();for(const p of d){const pLat=parseFloat(p.lat),pLng=parseFloat(p.lon);if(!Number.isFinite(pLat)||!Number.isFinite(pLng))continue;results.push({id:`nom_${p.place_id}`,name:p.display_name?.split(',')[0]||q,phone:p.extratags?.phone||null,address:p.display_name||null,website:p.extratags?.website||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'nominatim',categories:[p.type,p.class,p.extratags?.craft,p.extratags?.shop].filter(Boolean)});}}catch(e){console.warn('[Nominatim]',e?.message||e);}}
+  for(const q of queries.slice(0,3)){try{const url=`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=20&bounded=1&viewbox=${bbox}&extratags=1`;const r=await fetch(url,{headers:{'User-Agent':'ugo-scout/2.3'},signal:AbortSignal.timeout(10000)});if(!r.ok)continue;const d=await r.json();for(const p of d){const pLat=parseFloat(p.lat),pLng=parseFloat(p.lon);if(!Number.isFinite(pLat)||!Number.isFinite(pLng))continue;results.push({id:`nom_${p.place_id}`,name:p.display_name?.split(',')[0]||q,phone:p.extratags?.phone||null,email:p.extratags?.email||p.extratags?.['contact:email']||null,address:p.display_name||null,website:p.extratags?.website||null,lat:pLat,lng:pLng,dist:haversine(lat,lng,pLat,pLng),source:'nominatim',categories:[p.type,p.class,p.extratags?.craft,p.extratags?.shop].filter(Boolean)});}}catch(e){console.warn('[Nominatim]',e?.message||e);}}
   return validRows(results,categoria,customCat);
 }
 
