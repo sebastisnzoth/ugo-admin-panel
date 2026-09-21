@@ -16,7 +16,8 @@ test('canonical client order never reuses stale browser GPS for a different addr
   assert.match(location, /savePickup\(null,null,'manual'\)/)
   assert.match(location, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
   assert.match(location, /savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/)
-  assert.match(post, /pickup:draftPickup\(draft\),pickupFallback:'none'/)
+  assert.match(post, /pickup:draftPickup\(draft\)/)
+  assert.match(post, /pickup:context\.pickup,pickupFallback:'none'/)
 })
 
 test('saved-place pickup is exact only when that place has coordinates', async () => {

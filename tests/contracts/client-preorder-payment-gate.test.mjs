@@ -19,7 +19,7 @@ test('client can start a request without configuring payment on Home',async()=>{
  assert.match(payment,/Predeterminado · pagás al profesional/)
  assert.match(payment,/set_preorder_payment_preference/)
  assert.match(payment,/la forma de pago nunca bloquea que empieces el pedido/)
- assert.match(summary,/d\.paymentMethod==='pix'\?'PIX':'Efectivo'/)
+ assert.match(summary,/d\.paymentMethod==='pix'\?'PIX · se confirma con el profesional asignado':'Efectivo · pagás al finalizar'/)
  assert.match(profile,/Forma de pago/)
  assert.match(profile,/Efectivo/)
  assert.match(profile,/Nunca bloquea que empieces a solicitar un servicio/)
