@@ -278,3 +278,27 @@ Seguridad y continuidad:
 - voz, teclado y botones siguen entrando al mismo flujo canónico; Gemini transcribe/interpreta, pero no se convierte en autoridad de servicio, dinero, disponibilidad ni permisos.
 
 Madurez de esta pieza: código integrado y sujeto a CI; la promoción a `RUNTIME VALIDATED` exige smoke real con micrófono, permiso, ES/PT, interrupción/reanudación y recorrido Home → pedido.
+
+
+---
+
+## Hugo Admin Voice Command Bus · 21/09/2026
+
+La capa de voz de navegador es compartida entre Cliente, Proveedor y Admin. `browserVoiceBridge.ts` obtiene un token efímero server-side y transmite PCM 16 kHz por Gemini Live para transcripción incremental. Para Admin usa la sesión administrativa global y el backend valida que el usuario activo tenga rol `admin` o `superadmin`.
+
+El Control Center conserva separación estricta entre **comprender** y **ejecutar**:
+
+```text
+Gemini Live (voz)
+→ transcripción
+→ /api/hugo/chat + contexto Admin autorizado
+→ JSON { reply, ui_action }
+→ allowlist cliente
+→ event bus ugo:admin:hugo-action
+→ AdminPhase2
+→ navegación / apertura serviceId / refresh / comando mapa
+```
+
+El mapa recibe `ugo:admin:map-command` y aplica filtros de estado, categoría, zona, radio, localidad y visibilidad de actores.
+
+No existe ejecución arbitraria de SQL ni mutación libre desde el modelo. Dinero, permisos, KYC, disputas, usuarios y configuración sensible continúan detrás de RPC/RLS y confirmaciones auditadas de los módulos correspondientes. Gemini TTS se usa para la respuesta hablada con fallback local cuando el servicio de audio no está disponible.

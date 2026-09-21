@@ -9,6 +9,7 @@ type MapUser = {
 };
 type MapService = {id:string;estado:string;descripcion:string|null;tarifa:number|null;created_at:string;lat_cliente:number|null;lng_cliente:number|null;proveedor_lat:number|null;proveedor_lng:number|null};
 type Cat = {slug:string;nombre:string;emoji:string|null};
+type HugoMapCommand={status?:'todos'|'online'|'offline'|'inactivo';category?:string|null;zone?:string|null;place?:string|null;radius_m?:number|null;show_providers?:boolean|null;show_clients?:boolean|null};
 
 function pin(color:string,emoji:string,sz=32){
   const tail=Math.round(sz*.4);
@@ -65,7 +66,9 @@ export function SecMapaOperativo(){
     if(visible.length&&!geoCenter){try{map.fitBounds(visible.map(u=>[u.lat,u.lng]),{padding:[40,40],maxZoom:14})}catch{}}
   },[visible,services,catEmoji,geoCenter]);
 
-  async function goLocation(){if(!geoSearch.trim())return;setGeoBusy(true);try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(geoSearch)}&format=json&limit=1`);const d=await r.json();if(!d?.[0])throw new Error('Localidad no encontrada');const la=Number(d[0].lat),lo=Number(d[0].lon);setGeoCenter([la,lo]);mapRef.current?.setView([la,lo],13)}catch(e:any){setError(e.message)}finally{setGeoBusy(false)}}
+  const goLocationValue=React.useCallback(async(query:string)=>{const clean=query.trim();if(!clean)return;setGeoSearch(clean);setGeoBusy(true);try{const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(clean)}&format=json&limit=1`);const d=await r.json();if(!d?.[0])throw new Error('Localidad no encontrada');const la=Number(d[0].lat),lo=Number(d[0].lon);setGeoCenter([la,lo]);mapRef.current?.setView([la,lo],13)}catch(e:any){setError(e.message)}finally{setGeoBusy(false)}},[])
+  const goLocation=()=>void goLocationValue(geoSearch)
+  React.useEffect(()=>{const handler=(event:Event)=>{const command=(event as CustomEvent<HugoMapCommand>).detail||{};if(command.status&&['todos','online','offline','inactivo'].includes(command.status))setStatus(command.status);if(typeof command.show_providers==='boolean')setShowProv(command.show_providers);if(typeof command.show_clients==='boolean')setShowCli(command.show_clients);if(command.zone!=null)setZone(String(command.zone));if(command.radius_m!=null&&Number.isFinite(Number(command.radius_m)))setGeoRadius(Math.max(0,Math.min(50000,Number(command.radius_m))));if(command.category!=null){const wanted=String(command.category).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''),match=cats.find(c=>c.slug.toLowerCase()===wanted||c.nombre.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').includes(wanted));setCategory(match?.slug||String(command.category)||'todos')}if(command.place)void goLocationValue(String(command.place))};window.addEventListener('ugo:admin:map-command',handler as EventListener);return()=>window.removeEventListener('ugo:admin:map-command',handler as EventListener)},[cats,goLocationValue])
 
   const prov=users.filter(u=>u.tipo==='proveedor'),online=prov.filter(u=>u.online&&u.activo).length,offline=prov.filter(u=>!u.online&&u.activo).length,clients=users.filter(u=>u.tipo==='cliente').length;
   const pill=(label:string,value:number,color:string)=> <div style={{background:color+'14',borderRadius:20,padding:'3px 9px',fontSize:10,fontWeight:700,color}}>{value} {label}</div>;

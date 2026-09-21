@@ -1,4 +1,5 @@
 import{getRoleSupabase}from'./roleSupabase'
+import{supabase as adminSupabase}from'./supabase'
 
 type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean}
 type LiveTokenResponse={token?:string;model?:string;expires_at?:string;error?:string}
@@ -28,7 +29,7 @@ function resample(input:Float32Array,fromRate:number){
  for(let i=0;i<length;i++){const position=i*ratio,left=Math.floor(position),right=Math.min(input.length-1,left+1),mix=position-left;output[i]=(input[left]||0)*(1-mix)+(input[right]||0)*mix}
  return output
 }
-function currentRole(){const app=new URLSearchParams(window.location.search).get('app')||'';return app.startsWith('provider')?'provider':'client'}
+function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
 function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['TEXT']},inputAudioTranscription:{languageCodes:[],mode:'SMART'}}}}
 
 function installBrowserBridge(){
@@ -46,7 +47,7 @@ function installBrowserBridge(){
  const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
 
  const issueToken=async()=>{
-  const role=currentRole(),sb=getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
+  const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
   if(!accessToken)throw Object.assign(new Error('Sesión no disponible para voz'),{status:401})
   const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true})})
   const data=await response.json().catch(()=>({})) as LiveTokenResponse

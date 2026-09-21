@@ -9,13 +9,22 @@ const TTS_VOICE=process.env.GEMINI_TTS_VOICE||'Puck'
 
 function sameOrigin(req:any){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
 function clean(v:any,max=4000){return String(v??'').trim().slice(0,max)}
-function actionFrom(text:string){return text.match(/\[ACCION:\s*([^\]]+)\]/i)?.[1]?.trim()||null}
-function stripAction(text:string){return text.replace(/\[ACCION:[^\]]+\]/gi,'').trim()}
+function extractJson(text:string){try{return JSON.parse(text)}catch{}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{}}return null}
+const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
+function uiAction(raw:any,role:'admin'|'superadmin'){
+ if(!raw||typeof raw!=='object')return null
+ const type=clean(raw.type,30)
+ if(type==='refresh')return{type:'refresh'}
+ if(type==='navigate'){const target=clean(raw.target,80);if(!NAV_TARGETS.has(target)||target==='superadmin'&&role!=='superadmin')return null;return{type:'navigate',target}}
+ if(type==='open_service'){const serviceId=clean(raw.service_id,80),number=Number(raw.service_number);if(serviceId&&!/^[0-9a-f-]{36}$/i.test(serviceId))return null;if(!serviceId&&!Number.isFinite(number))return null;return{type:'open_service',service_id:serviceId||undefined,service_number:Number.isFinite(number)?number:undefined}}
+ if(type==='map_filter'){const status=['todos','online','offline','inactivo'].includes(String(raw.status))?String(raw.status):undefined,category=clean(raw.category,80)||null,zone=clean(raw.zone,120)||null,place=clean(raw.place,160)||null,radius=Number(raw.radius_m),showProviders=typeof raw.show_providers==='boolean'?raw.show_providers:null,showClients=typeof raw.show_clients==='boolean'?raw.show_clients:null;return{type:'map_filter',status,category,zone,place,radius_m:Number.isFinite(radius)?Math.max(0,Math.min(50000,radius)):null,show_providers:showProviders,show_clients:showClients}}
+ return null
+}
 function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw Object.assign(new Error('GEMINI_API_KEY no configurada'),{status:503});return key}
 
 async function askGemini(message:string,history:any[],system:string){
  const key=geminiKey()
- const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((m:any)=>({role:m?.role==='assistant'?'model':'user',parts:[{text:clean(m?.content,1200)}]})),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.2,maxOutputTokens:700}}),signal:AbortSignal.timeout(12000)})
+ const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((m:any)=>({role:m?.role==='assistant'?'model':'user',parts:[{text:clean(m?.content,1200)}]})),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.15,maxOutputTokens:900,responseMimeType:'application/json'}}),signal:AbortSignal.timeout(12000)})
  const payload:any=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(payload?.error?.message||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
  const text=clean(payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join(''),5000)
@@ -73,15 +82,19 @@ export default async function handler(req:any,res:any){
    'No inventes usuarios, servicios, pagos, métricas, estados, permisos, integraciones ni acciones.',
    'No reveles secretos, tokens, credenciales ni valores sensibles de configuración.',
    'Si falta un dato concreto, decilo y sugerí en qué módulo puede verificarse.',
-   'Si proponés una acción administrativa, no afirmes que fue ejecutada: devolvela al final como [ACCION: descripción].'
+   'Podés ejecutar únicamente acciones de interfaz permitidas cuando el usuario lo pida explícitamente: navegar por módulos, abrir un servicio, actualizar datos o filtrar/abrir el mapa. No inventes una acción ni declares que cambiaste dinero, permisos, usuarios o estados.',
+   'Para cambios sensibles, llevá al administrador al módulo correcto; la confirmación y autorización siguen en el control auditado del panel.',
+   'Respondé SOLO JSON válido con {"reply":"respuesta breve","ui_action":null} o ui_action con uno de estos contratos: {"type":"navigate","target":"..."}, {"type":"open_service","service_id":null,"service_number":123}, {"type":"refresh"}, {"type":"map_filter","status":"online|offline|inactivo|todos","category":null,"zone":null,"place":null,"radius_m":null,"show_providers":true,"show_clients":false}.'
   ]:[
    'Sos Hugo Admin, el copiloto operativo del panel de administración de U.G.O.',
-   'Podés explicar y analizar la información visible del panel Admin: operación, servicios, clientes, proveedores, documentos, pagos, retiros, disputas, categorías, tarifas, notificaciones, reportes, Scout y métricas cuando esos datos estén presentes en el contexto.',
+   'Podés explicar y analizar la información visible del panel Admin: operación, mapa, servicios, clientes, proveedores, documentos, pagos, retiros, deudas UGO, disputas, categorías, tarifas, notificaciones, reportes, mensajes, calificaciones, timeline y Scout cuando esos datos estén presentes en el contexto.',
    'No asumas permisos de Super Admin ni afirmes acceso a gobierno global, secretos o configuración crítica.',
    'Diferenciá siempre datos EN VIVO del contexto de explicaciones generales sobre cómo funciona U.G.O.',
    'No inventes usuarios, servicios, pagos, métricas, estados ni acciones.',
-   'Si falta un dato concreto, decilo y sugerí en qué módulo puede verificarse.',
-   'Si proponés una acción administrativa, no afirmes que fue ejecutada: devolvela al final como [ACCION: descripción].'
+   'Si CONTEXTO OPERATIVO EN VIVO trae fuentes_no_disponibles, aclaralo cuando afecte la respuesta.',
+   'Podés ejecutar únicamente acciones de interfaz permitidas cuando el usuario lo pida explícitamente: navegar por módulos, abrir un servicio, actualizar datos o filtrar/abrir el mapa. No inventes una acción ni declares que cambiaste dinero, permisos, usuarios o estados.',
+   'Para cambios sensibles, llevá al administrador al módulo correcto; la confirmación y autorización siguen en el control auditado del panel.',
+   'Respondé SOLO JSON válido con {"reply":"respuesta breve","ui_action":null} o ui_action con uno de estos contratos: {"type":"navigate","target":"..."}, {"type":"open_service","service_id":null,"service_number":123}, {"type":"refresh"}, {"type":"map_filter","status":"online|offline|inactivo|todos","category":null,"zone":null,"place":null,"radius_m":null,"show_providers":true,"show_clients":false}.'
   ]
   const system=clientMode?[
    'Sos Hugo, el compañero de confianza del cliente dentro de U.G.O.',
@@ -100,8 +113,8 @@ export default async function handler(req:any,res:any){
    `SUPERFICIE ACTUAL: ${surface}`,
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
-  const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system),accion=clientMode?null:actionFrom(result.text)
-  return res.status(200).json({hugo_mensaje:stripAction(result.text)||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion,ui_action:null,datos:null,model:result.model})
+  const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(parsed?.reply,1800),action=clientMode?null:uiAction(parsed?.ui_action,adminRole)
+  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model})
  }catch(error:any){
   console.error('Hugo chat failed',error)
   const status=Number(error?.status)||502

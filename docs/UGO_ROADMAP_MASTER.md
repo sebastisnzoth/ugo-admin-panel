@@ -545,3 +545,17 @@ Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cli
 - reconexión con token nuevo ante cierre inesperado y fallback al reconocimiento del dispositivo/texto si Live no puede arrancar;
 - paridad voz ↔ texto preservada: el transcript final entra al mismo `handleText`, GPS/pago/confirmación/matching siguen gobernados por UGO;
 - madurez: IMPLEMENTED; CI y smoke físico de micrófono/ES-PT/reconexión pendientes del SHA resultante.
+
+
+---
+
+## Checkpoint 21/09/2026 · Hugo Admin · Gemini Live + acciones del Control Center
+
+- Hugo Admin usa el bridge Gemini Live para voz en navegador cuando existe sesión Admin/Super Admin autorizada;
+- la respuesta hablada usa Gemini TTS con fallback del navegador, evitando depender sólo de Web Speech;
+- el contexto operativo de Hugo cubre dashboard, usuarios, proveedores, servicios, disputas, pagos, retiros, deuda UGO, documentos, categorías, tarifas, notificaciones, mapa operativo, timeline de estados, calificaciones, mensajes y claves no sensibles de configuración;
+- las fuentes que fallen se declaran como `fuentes_no_disponibles` para que Hugo no invente datos faltantes;
+- Gemini puede solicitar únicamente acciones UI allowlisted: navegar módulos, abrir un servicio, refrescar datos y abrir/filtrar el mapa;
+- el mapa acepta comandos de Hugo para estado, categoría, zona, localidad, radio y visibilidad Cliente/Proveedor;
+- cambios sensibles de usuarios, dinero, permisos, KYC, disputas o configuración siguen pasando por los controles auditados y confirmaciones existentes del panel;
+- pendiente de madurez: smoke autenticado por voz en Admin real verificando Gemini Live → consulta de datos → navegación/filtrado → Gemini TTS.

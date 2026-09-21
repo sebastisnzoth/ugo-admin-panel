@@ -28,6 +28,7 @@ type PeopleView='users'|'providers'|'verification'|'documents'|'kyc'|'import'
 type FinanceView='pix'|'vault'|'tariffs'
 type SettingsView='categories'|'analytics'|'notifications'|'reports'|'system'
 type AdminRole='admin'|'superadmin'
+type HugoUiAction={type:'navigate'|'open_service'|'refresh'|'map_filter';target?:string;service_id?:string;service_number?:number;status?:string;category?:string|null;zone?:string|null;place?:string|null;radius_m?:number|null;show_providers?:boolean|null;show_clients?:boolean|null}
 type Metrics={active:number;online:number;users:number;pendingProviders:number;pendingPix:number;completedToday:number}
 const empty:Metrics={active:0,online:0,users:0,pendingProviders:0,pendingPix:0,completedToday:0}
 
@@ -95,6 +96,31 @@ export function AdminPhase2(){
  const openPeople=(view:PeopleView)=>{setSection('people');setPeopleView(view)}
  const openFinance=(view:FinanceView)=>{setSection('finance');setFinanceView(view)}
  const openService=(serviceId:string)=>{setSelectedServiceId(serviceId);setSection('operations');setOperationView('services')}
+ const applyHugoNavigation=useCallback((target:string)=>{
+  if(target==='home'){setSection('home');return}
+  if(target==='superadmin'){if(isSuperAdmin)setSection('superadmin');return}
+  const[group,view]=target.split(':')
+  if(group==='operations'&&['overview','map','services','alerts','disputes','scout','history','messages'].includes(view)){setSection('operations');setOperationView(view as OperationView);return}
+  if(group==='people'&&['users','verification','documents','kyc','import'].includes(view)){setSection('people');setPeopleView(view as PeopleView);return}
+  if(group==='finance'&&['pix','vault','tariffs'].includes(view)){setSection('finance');setFinanceView(view as FinanceView);return}
+  if(group==='settings'&&['categories','analytics','notifications','reports','system'].includes(view)){setSection('settings');setSettingsView(view as SettingsView)}
+ },[isSuperAdmin])
+ const runHugoAction=useCallback(async(action:HugoUiAction)=>{
+  if(action.type==='refresh'){await load();return}
+  if(action.type==='navigate'){if(action.target)applyHugoNavigation(action.target);return}
+  if(action.type==='open_service'){
+   if(action.service_id){openService(action.service_id);return}
+   const number=Number(action.service_number);if(!Number.isFinite(number))return
+   const{data,error}=await(supabase as any).from('servicios').select('id,numero').eq('numero',number).order('created_at',{ascending:false}).limit(1).maybeSingle()
+   if(!error&&data?.id)openService(String(data.id))
+   return
+  }
+  if(action.type==='map_filter'){
+   setSection('operations');setOperationView('map')
+   window.setTimeout(()=>window.dispatchEvent(new CustomEvent('ugo:admin:map-command',{detail:action})),120)
+  }
+ },[applyHugoNavigation,load])
+ useEffect(()=>{const handler=(event:Event)=>{const action=(event as CustomEvent<HugoUiAction>).detail;if(action?.type)void runHugoAction(action)};window.addEventListener('ugo:admin:hugo-action',handler as EventListener);return()=>window.removeEventListener('ugo:admin:hugo-action',handler as EventListener)},[runHugoAction])
  const nativeWrap=(node:React.ReactNode)=><div className="ugo-admin2-native-module">{node}</div>
  const current=(value:boolean):'page'|undefined=>value?'page':undefined
  return <div className={`ugo-admin2${section==='home'?' ugo-admin-stitch':''}`}>
