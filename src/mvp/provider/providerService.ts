@@ -135,7 +135,24 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
  throw error
 }
 
-function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}navigator.geolocation.getCurrentPosition(resolve,()=>reject(new Error('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.')),{enableHighAccuracy:true,timeout:12000,maximumAge:15000})})}
+const GPS_TARGET_ACCURACY_M=80
+const GPS_TIMEOUT_MS=15_000
+function currentPosition(){return new Promise<GeolocationPosition>((resolve,reject)=>{
+ if(!navigator.geolocation){reject(new Error('Este dispositivo no permite obtener tu ubicación.'));return}
+ let best:GeolocationPosition|null=null,settled=false,watchId:number|null=null,timer:number|null=null
+ const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer)}
+ const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
+ const fail=(message:string)=>{if(settled)return;settled=true;cleanup();reject(new Error(message))}
+ timer=window.setTimeout(()=>{if(best)finish(best);else fail('No pudimos obtener una ubicación GPS reciente. Activá ubicación precisa y reintentá.')},GPS_TIMEOUT_MS+500)
+ watchId=navigator.geolocation.watchPosition(position=>{
+  if(Date.now()-position.timestamp>GPS_TIMEOUT_MS)return
+  if(!best||position.coords.accuracy<best.coords.accuracy)best=position
+  if(position.coords.accuracy<=GPS_TARGET_ACCURACY_M)finish(position)
+ },error=>{
+  if(error.code===1){fail('Necesitamos tu ubicación actual para confirmar que llegaste al cliente. Activá el permiso de ubicación y reintentá.');return}
+  if(best)finish(best);else fail('No pudimos obtener una ubicación GPS reciente. Revisá la señal e intentá otra vez.')
+ },{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
+})}
 async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
  try{
   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)

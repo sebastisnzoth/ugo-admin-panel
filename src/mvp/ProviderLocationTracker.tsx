@@ -7,8 +7,8 @@ type Props={service?:Service|null;onAutoArrival?:()=>Promise<boolean>|boolean|vo
 type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
 type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:unknown}>}
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
-const MIN_WRITE_MS=10_000
-const MIN_MOVE_M=15
+const MIN_WRITE_MS=5_000
+const MIN_MOVE_M=5
 const ARRIVAL_RADIUS_M=200
 
 function distanceMeters(a:[number,number],b:[number,number]){
@@ -65,7 +65,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      try{const ok=await autoArrivalRef.current();if(ok===false)attemptedServiceRef.current=null}catch{attemptedServiceRef.current=null}
     }
    }
-  },()=>{}, {enableHighAccuracy:true,maximumAge:5000,timeout:12000})
+  },()=>{}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
  },[available,serviceActive,service?.id,service?.estado,supabase])
 

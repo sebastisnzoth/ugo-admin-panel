@@ -5,12 +5,17 @@ import { readFile } from 'node:fs/promises'
 const read = path => readFile(new URL('../../' + path, import.meta.url), 'utf8')
 
 test('client dispatch persists pickup on the exact service before matching', async () => {
-  const [dispatch, sql] = await Promise.all([
+  const [dispatch, guided, sql] = await Promise.all([
     read('src/lib/dispatch/supabaseDispatch.ts'),
+    read('src/mvp/client/ClientGuidedRequest.tsx'),
     read('supabase/migrations/20260920162500_client_service_pickup_rpc.sql')
   ])
   assert.match(dispatch, /rpc\('guardar_ubicacion_servicio_cliente'/)
-  assert.match(dispatch, /const pickup = request\.pickup \|\| \(request\.pickupFallback === 'none' \? null : storedPickup\(\)\)/)
+  assert.match(dispatch, /const pickup = request\.pickup \|\| \(request\.pickupFallback === 'stored' \? storedPickup\(\) : null\)/)
+  assert.match(guided, /pickupFallback:'none'/)
+  assert.match(guided, /pickup:draftPickup\(draft\)/)
+  assert.match(guided, /latitud,longitud/)
+  assert.match(guided, /pickupSource:'manual'/)
   assert.match(dispatch, /await persistPickup\(request\.serviceId, pickup\)/)
   assert.match(dispatch, /await persistPickup[\s\S]*rpc\('iniciar_matching'/)
   assert.match(sql, /create or replace function public\.guardar_ubicacion_servicio_cliente/)

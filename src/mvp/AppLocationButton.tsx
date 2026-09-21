@@ -7,6 +7,7 @@ import'./provider-special-states.css'
 type AppRole='client'|'provider'|'admin'
 type DbError={message?:string}|null
 type LocationTableClient={from:(table:string)=>{update:(values:Record<string,unknown>)=>{eq:(column:string,value:string)=>PromiseLike<{error:DbError}>}}}
+type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>PromiseLike<{error:DbError}>}
 
 export function AppLocationButton({role}:{role:AppRole}){
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
@@ -19,20 +20,23 @@ export function AppLocationButton({role}:{role:AppRole}){
   navigator.geolocation.getCurrentPosition(async pos=>{
    try{
     const lat=pos.coords.latitude,lng=pos.coords.longitude,point=`POINT(${lng} ${lat})`,tables=sb as unknown as LocationTableClient
-    const{error:uerr}=await tables.from('usuarios').update({lat,lng}).eq('id',userId)
-    if(uerr)throw new Error(uerr.message||'No se pudo actualizar la ubicación de la cuenta.')
-    if(role==='client'){
-      const{error}=await tables.from('perfiles_cliente').update({ubicacion:point}).eq('usuario_id',userId)
-      if(error)throw new Error(error.message||'No se pudo actualizar la ubicación del cliente.')
-    }
     if(role==='provider'){
-      const{error}=await tables.from('perfiles_proveedor').update({ubicacion:point}).eq('usuario_id',userId)
+      const{error}=await(sb as unknown as LocationRpcClient).rpc('actualizar_ubicacion_y_distancia',{p_lat:lat,p_lng:lng,p_servicio_id:null})
       if(error)throw new Error(error.message||'No se pudo actualizar la ubicación del proveedor.')
+    }else{
+      const{error:uerr}=await tables.from('usuarios').update({lat,lng}).eq('id',userId)
+      if(uerr)throw new Error(uerr.message||'No se pudo actualizar la ubicación de la cuenta.')
+      if(role==='client'){
+        const{error}=await tables.from('perfiles_cliente').update({ubicacion:point}).eq('usuario_id',userId)
+        if(error)throw new Error(error.message||'No se pudo actualizar la ubicación del cliente.')
+        try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:lat,longitude:lng,at:Date.now()}))}catch{}
+      }
     }
-    setOk(true);setMsg('Ubicación actualizada')
+    const accuracy=Math.round(Number(pos.coords.accuracy||0))
+    setOk(true);setMsg(accuracy>0?`Ubicación actualizada · precisión ±${accuracy} m`:'Ubicación actualizada')
     window.setTimeout(()=>{setOk(false);setMsg('')},2500)
    }catch(error){setMsg(error instanceof Error?error.message:'No se pudo guardar la ubicación')}finally{setBusy(false)}
-  },()=>{setBusy(false);setMsg('Permití acceso a ubicación en el navegador')},{enableHighAccuracy:true,timeout:12000,maximumAge:30000})
+  },()=>{setBusy(false);setMsg('Permití acceso a ubicación en el navegador')},{enableHighAccuracy:true,timeout:15000,maximumAge:0})
  },[role,sb,userId])
  useEffect(()=>{if(role!=='client')return;const handler=()=>capture();window.addEventListener(UGO_UI_EVENTS.clientLocation,handler);return()=>window.removeEventListener(UGO_UI_EVENTS.clientLocation,handler)},[capture,role])
  if(!userId)return null

@@ -1,5 +1,4 @@
-import React,{useMemo,useState}from'react'
-import{getRoleSupabase}from'../../lib/roleSupabase'
+import React,{useState}from'react'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
 import{ServiceChat}from'../ServiceChat'
 import{useProviderData,money}from'./providerData'
@@ -14,7 +13,7 @@ const CANCELLABLE=new Set(['asignado','en_camino','llegado'])
 function scheduledLabel(value:string){const date=new Date(value);return Number.isNaN(date.getTime())?'Horario programado':date.toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderActiveJob(){
- const d=useProviderData(),flow=useProviderFlow(),s=d.service,supabase=useMemo(()=>getRoleSupabase('provider'),[])
+ const d=useProviderData(),flow=useProviderFlow(),s=d.service
  const[evidence,setEvidence]=useState({initial:false,final:false})
  if(!s)return <section className="provider-screen provider-empty-screen"><span className="provider-kicker">TRABAJO</span><h1>No tenés un trabajo activo</h1><p>Cuando aparezca un pedido, mirá el problema y aceptalo si lo podés resolver.</p><button type="button" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>Ver pedidos</button></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
@@ -23,7 +22,7 @@ export function ProviderActiveJob(){
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
  const stateLabel=STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
  const progressIndex=FLOW_ORDER[s.estado]??0
- const confirmArrival=async()=>{const normal=await d.advance('llegado');if(normal)return;const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:s.id,p_estado:'llegado'});if(!error)await d.reload()}
+ const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;const reason=window.prompt('Contanos brevemente por qué cancelás este pedido. El motivo queda registrado.');if(reason===null)return;if(reason.trim().length<5){window.alert('Indicá un motivo de al menos 5 caracteres para cancelar el pedido.');return}await d.cancelService(reason)}
  return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
   <header className="provider-mission-head"><button type="button" className="provider-back" onClick={flow.actions.openHome}>← Inicio</button><span className="provider-kicker">TRABAJO ACTIVO</span><h1 id="provider-job-title">{stateLabel}</h1><p>Un paso por vez. UGO se ocupa del resto.</p></header>
