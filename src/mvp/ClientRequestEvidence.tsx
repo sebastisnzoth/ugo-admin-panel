@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
+import'./request-evidence.css'
 
 type Row={id:string;storage_path:string;descripcion:string|null;created_at:string;url?:string|null}
 type Props={draftId:string;inline?:boolean;onBusyChange?:(busy:boolean)=>void;onCountChange?:(count:number)=>void}

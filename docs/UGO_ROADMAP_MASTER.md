@@ -508,3 +508,26 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 - la voz llama directamente a `navigator.geolocation.getCurrentPosition`, hace reverse geocoding, persiste lat/lng y emite `clientHugoDraft`;
 - `ClientLocationScreen` recibe el mismo borrador y carga dirección + coordenadas sin exigir tocar “Usar mi ubicación”;
 - si el permiso GPS falla, Hugo lo informa y mantiene el pedido abierto para escribir la dirección.
+
+
+---
+
+## Checkpoint 20/09/2026 · Cliente punta a punta auditado
+
+Se consolidó el recorrido canónico Cliente como una sola cadena operativa:
+
+`Inicio → Qué hay que hacer + fotos opcionales → Dónde → Cuándo → Cómo pagar → Resumen → Confirmar → Matching → Asignación → Seguimiento/chat/pago → Aprobación → Pago/cierre → Calificación`.
+
+Correcciones del barrido:
+- las fotos previas vuelven a estar dentro del flujo canónico y quedan ligadas al mismo `request_draft_id`;
+- ubicación guardada, GPS y dirección manual conservan etiqueta, complemento y procedencia correctos sin reciclar coordenadas de otra dirección;
+- el paso Pago aclara que Efectivo es el default y que PIX se completa después de la asignación; no se cobra al armar el pedido;
+- Resumen valida datos obligatorios y muestra forma de pago + fotos antes de publicar;
+- creación del servicio recupera por `request_draft_id` ante reintentos/23505 y elimina el bloqueo singleton que impedía pedidos independientes;
+- Matching ya no expulsa automáticamente al Cliente a Home: queda visible, permite reintentar y también “Seguir usando UGO” mientras la búsqueda continúa;
+- el contexto de retry permanece en memoria aunque el borrador se limpie tras iniciar matching;
+- un pedido que quedó `buscando/ofrecido` puede reintentar matching desde su detalle;
+- cierre conserva la regla: primero validar trabajo; en efectivo después pagar y marcar “YA PAGUÉ”; electrónico libera sólo el pago protegido;
+- la calificación final usa el componente canónico con `autor_tipo='cliente'`, evitando un segundo camino de rating.
+
+Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cliente + Proveedor en dos dispositivos sigue siendo el gate para marcar FULL-E2E.
