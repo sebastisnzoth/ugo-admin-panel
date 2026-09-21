@@ -14,7 +14,7 @@ test('Admin Hugo uses Gemini Live voice and Gemini TTS instead of browser-only v
  assert.match(api,/voiceRole=\['client','provider','admin','superadmin'\]/)
  assert.match(api,/voiceRole==='admin'\?\['admin','superadmin'\]\.includes\(profileRole\)/)
  assert.match(orb,/UGOVoiceBridge/)
- assert.match(orb,/Gemini Live te escucha/)
+ assert.match(orb,/Te escucho\. Hablame…/)
  assert.match(orb,/tts:true/)
  assert.match(orb,/audio_base64/)
 })

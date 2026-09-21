@@ -37,7 +37,7 @@ test('confirmed conversational orders are idempotent and start real dispatch', (
 
 test('canonical Hugo can create another request while active services exist', () => {
   assert.match(hugo, /services=\[\]/)
-  assert.match(hugo, /if\(directCategory\|\|newRequestIntent\(clean\)\)/)
+  assert.match(hugo, /if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
   assert.doesNotMatch(hugo, /Ya tenés el pedido/)
   assert.doesNotMatch(hugo, /cancelarlo antes de crear otro/)
 })
@@ -65,7 +65,7 @@ test('Hugo orb uses authenticated Gemini as its conversational companion while U
 test('active assigned service does not hijack a new Hugo request', () => {
   assert.match(hugo, /function newRequestIntent\(text:string\)/)
   assert.match(hugo, /const directCategory=await resolveVoiceCategory\(clean\)/)
-  assert.match(hugo, /if\(directCategory\|\|newRequestIntent\(clean\)\)/)
+  assert.match(hugo, /if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
   assert.doesNotMatch(hugo, /statusIntent\(clean\)\|\|services\.length/)
   assert.match(api, /REGLA MULTIPEDIDO/)
   assert.match(api, /necesito un pintor/)

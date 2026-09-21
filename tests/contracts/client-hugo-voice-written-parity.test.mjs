@@ -11,7 +11,7 @@ test('client voice follows the same ordered fields as the written request',()=>{
  assert.match(dock,/if\(missing==='address'\)return speak\([^\n]*Casa, Trabajo o “usar mi ubicación”/)
  assert.match(dock,/if\(missing==='when'\)return speak/)
  assert.match(dock,/if\(missing==='payment'\)return speak/)
- assert.doesNotMatch(dock,/askNext\([^\n]*voiceAvailabilityText/)
+ assert.match(dock,/nextMissing\(current\)/)
 })
 
 test('voice uses explicit saved-place or GPS signals and persists the canonical draft',()=>{
