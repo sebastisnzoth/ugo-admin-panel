@@ -31,7 +31,7 @@ function compactRows(rows:any[]|null|undefined,max=12){return rows?.length?rows.
 
 async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dashboard',extraContext?:any){
  const sb=supabase as any;
- const[dashboard,users,providers,services,disputes,payments,withdrawals,docs,categories,tariffs,notifications]=await Promise.all([
+ const[dashboard,users,providers,services,disputes,payments,withdrawals,cashDebts,docs,categories,tariffs,notifications]=await Promise.all([
   sb.from('vista_admin_dashboard').select('*').maybeSingle(),
   sb.from('usuarios').select('id,nombre,apellido,tipo,activo,online,zona,pais,karma,servicios_completados,fecha_registro').order('fecha_registro',{ascending:false}).limit(40),
   sb.from('vista_todos_proveedores').select('id,nombre,apellido,categoria,zona,pais,activo,online,estado_mapa,servicios_completados').limit(40),
@@ -39,12 +39,13 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   sb.from('disputas').select('id,numero,estado,monto_disputado,motivo,created_at').order('created_at',{ascending:false}).limit(30),
   sb.from('pagos').select('id,servicio_id,estado,monto_bruto,comision_ugo,ganancia_proveedor,metodo,created_at').order('created_at',{ascending:false}).limit(40),
   sb.from('retiros').select('id,proveedor_id,monto,estado,created_at').order('created_at',{ascending:false}).limit(30),
+  sb.from('deudas_ugo_proveedor').select('id,pago_id,servicio_id,proveedor_id,monto_servicio,comision_ugo,monto_pagado_ugo,saldo_pendiente,estado,created_at').order('created_at',{ascending:false}).limit(30),
   sb.from('documentos').select('id,tipo,estado,created_at,usuario_id,ocr_valido,ocr_confianza').order('created_at',{ascending:false}).limit(30),
   sb.from('categorias').select('id,nombre,emoji,activa').order('nombre').limit(80),
   sb.from('tarifas').select('id,zona,precio_base,precio_hora,precio_min,precio_max,activa,categoria_id').limit(60),
   sb.from('notificaciones').select('id,titulo,tipo,created_at').order('created_at',{ascending:false}).limit(20)
  ]);
- const u=users.data||[],p=providers.data||[],s=services.data||[],d=disputes.data||[],pay=payments.data||[],w=withdrawals.data||[],x=docs.data||[],cats=categories.data||[],rates=tariffs.data||[],notes=notifications.data||[];
+ const u=users.data||[],p=providers.data||[],s=services.data||[],d=disputes.data||[],pay=payments.data||[],w=withdrawals.data||[],debts=cashDebts.data||[],x=docs.data||[],cats=categories.data||[],rates=tariffs.data||[],notes=notifications.data||[];
  const sum=(rows:any[],field:string)=>rows.reduce((total,row)=>total+Number(row?.[field]||0),0);
  const byState=(rows:any[])=>rows.reduce((all:any,row:any)=>{const key=String(row?.estado||'sin_estado');all[key]=(all[key]||0)+1;return all},{});
  const privileged=role==='superadmin'?{
@@ -61,6 +62,7 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   disputas:{abiertas:d.filter((v:any)=>['abierta','en_revision'].includes(v.estado)).length,por_estado:byState(d),recientes:compactRows(d,8)},
   pagos:{muestra:pay.length,por_estado:byState(pay),monto_bruto_muestra:sum(pay,'monto_bruto'),comision_ugo_muestra:sum(pay,'comision_ugo'),recientes:compactRows(pay,10)},
   retiros:{muestra:w.length,por_estado:byState(w),monto_muestra:sum(w,'monto'),recientes:compactRows(w,8)},
+  deuda_ugo_efectivo:{muestra:debts.length,por_estado:byState(debts),saldo_pendiente_muestra:sum(debts,'saldo_pendiente'),recientes:compactRows(debts,8)},
   documentos:{pendientes:x.filter((v:any)=>['pendiente','procesando'].includes(v.estado)).length,por_estado:byState(x),recientes:compactRows(x,8)},
   categorias:{total:cats.length,activas:cats.filter((v:any)=>v.activa!==false).length,nombres:cats.slice(0,40).map((v:any)=>({nombre:v.nombre,emoji:v.emoji,activa:v.activa}))},
   tarifas:{muestra:rates.length,activas:rates.filter((v:any)=>v.activa!==false).length,recientes:compactRows(rates,10)},
