@@ -1,9 +1,9 @@
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
- 'gemini-2.5-flash-preview-tts',
  process.env.GEMINI_TTS_MODEL,
  'gemini-3.1-flash-tts-preview',
+ 'gemini-2.5-flash-preview-tts',
 ].filter(Boolean)as string[]))
 const TTS_VOICE=process.env.GEMINI_TTS_VOICE||'Puck'
 
@@ -45,7 +45,8 @@ async function askGeminiTts(text:string,locale:string){
    console.info('Hugo TTS timing',{model,ms:elapsed,status:response.status})
    if(response.ok){const part=payload?.candidates?.[0]?.content?.parts?.find((item:any)=>item?.inlineData?.data),audioBase64=clean(part?.inlineData?.data,4_500_000),mimeType=clean(part?.inlineData?.mimeType||'audio/L16;codec=pcm;rate=24000',120);if(audioBase64)return{audio_base64:audioBase64,mime_type:mimeType,sample_rate:sampleRateFromMime(mimeType),model,voice:TTS_VOICE};lastError='Gemini TTS no devolvió audio';lastStatus=502;continue}
    lastStatus=response.status;lastError=payload?.error?.message||`Gemini TTS ${response.status}`;lastRetryAfter=String(response.headers.get('retry-after')||'')
-   const retryable=[404,429,500,502,503].includes(response.status)||/quota|overloaded|temporar|not found|unavailable/i.test(lastError)
+   if(response.status===429)break
+   const retryable=[404,500,502,503].includes(response.status)||/overloaded|temporar|not found|unavailable/i.test(lastError)
    if(!retryable)break
   }catch(error:any){const elapsed=Date.now()-started;console.warn('Hugo TTS timing',{model,ms:elapsed,status:'transport',message:error instanceof Error?error.message:String(error)});lastError=error instanceof Error?error.message:'Gemini TTS no disponible';lastStatus=504}
  }
