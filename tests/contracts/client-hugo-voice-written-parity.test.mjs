@@ -14,9 +14,12 @@ test('client voice follows the same ordered fields as the written request',()=>{
  assert.doesNotMatch(dock,/askNext\([^\n]*voiceAvailabilityText/)
 })
 
-test('voice does not silently consume a default saved address before asking where',()=>{
- assert.match(dock,/const label=savedLabel\(source\)/)
- assert.match(dock,/addressPromise=!current\.address&&label\?resolveClientSavedAddress\(label\):Promise\.resolve\(null\)/)
+test('voice uses explicit saved-place or GPS signals and persists the canonical draft',()=>{
+ assert.match(dock,/savedLabel\(source\)\|\|companion\?\.address_label/)
+ assert.match(dock,/resolveClientSavedAddress\(label\)/)
+ assert.match(dock,/accessTokenUserId\(accessToken\)/)
+ assert.match(dock,/ugo:guided-request-draft:/)
+ assert.match(dock,/voiceJourney:true/)
 })
 
 test('voice current location persists exact pickup coordinates into canonical request',()=>{
@@ -40,8 +43,18 @@ test('saved voice places preserve coordinates when available',()=>{
 
 test('spoken utilizar mi ubicación triggers GPS directly without requiring the location button',()=>{
  assert.match(dock,/utilizar\|utiliza/)
- assert.match(dock,/if\(wantsGps\(source\)\)\{const ok=await captureCurrentLocation\(current\)/)
+ assert.match(dock,/gpsRequested=wantsGps\(source\)\|\|Boolean\(companion\?\.use_current_location\)/)
  assert.match(dock,/navigator\.geolocation\.getCurrentPosition/)
+ assert.match(dock,/ugo:last-client-location/)
  assert.match(dock,/current\.pickupSource='current'/)
- assert.match(dock,/syncDraft\(current\);await askNext\(source,current/)
+ assert.match(dock,/Promise\.allSettled/)
+})
+
+test('one natural turn can fill location time payment and exact dispatch pickup',()=>{
+ assert.match(dock,/const applyTurnSignals=/)
+ assert.match(dock,/const localWhen=parseHugoWhen\(source\),localPayment=parsePaymentMethod\(source\)/)
+ assert.match(dock,/companion\?\.payment_method/)
+ assert.match(dock,/pickupFallback:'none'/)
+ assert.match(dock,/payment_method:current\.paymentMethod==='pix'\?'pix':'efectivo'/)
+ assert.match(dock,/finishOrder/)
 })

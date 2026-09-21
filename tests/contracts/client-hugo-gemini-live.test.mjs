@@ -16,21 +16,22 @@ test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=
  assert.doesNotMatch(bridge,/audio_base64/)
 })
 
-test('Gemini Live websocket setup uses the transcription schema and incremental results',()=>{
+test('Gemini Live websocket setup uses transcription, VAD and incremental results',()=>{
  assert.match(bridge,/generationConfig:\{responseModalities:\['TEXT'\]\}/)
- assert.match(bridge,/inputAudioTranscription:\{languageCodes:\[\],mode:'SMART'\}/)
+ assert.match(bridge,/inputAudioTranscription:\{\}/)
+ assert.match(bridge,/silenceDurationMs:500/)
+ assert.match(bridge,/END_SENSITIVITY_HIGH/)
  assert.match(bridge,/interimInputTranscription/)
  assert.match(bridge,/inputTranscription/)
  assert.match(bridge,/final:false/)
  assert.match(bridge,/final:true/)
 })
 
-test('ephemeral token request is authenticated server-side and uses root liveConnectConstraints',()=>{
+test('ephemeral token request uses a short one-use token without the production-rejected constraint field',()=>{
  assert.match(api,/voice_live_token===true/)
  assert.match(api,/generativelanguage\.googleapis\.com\/v1beta\/auth_tokens/)
- assert.match(api,/liveConnectConstraints:\{model:'models\/'\+GEMINI_LIVE_TRANSCRIBE_MODEL/)
- assert.match(api,/responseModalities:\['TEXT'\]/)
- assert.match(api,/inputAudioTranscription:\{languageCodes:\[\],mode:'SMART'\}/)
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
+ assert.doesNotMatch(api,/liveConnectConstraints:\{model/)
  assert.doesNotMatch(api,/auth_token\s*:/)
 })
 
