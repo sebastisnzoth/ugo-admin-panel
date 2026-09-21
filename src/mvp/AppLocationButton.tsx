@@ -29,7 +29,7 @@ export function AppLocationButton({role}:{role:AppRole}){
       if(role==='client'){
         const{error}=await tables.from('perfiles_cliente').update({ubicacion:point}).eq('usuario_id',userId)
         if(error)throw new Error(error.message||'No se pudo actualizar la ubicación del cliente.')
-        try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:lat,longitude:lng,at:Date.now()}))}catch{}
+        try{sessionStorage.setItem('ugo:last-client-location',JSON.stringify({latitude:lat,longitude:lng,at:Date.now()}))}catch(error){console.warn('No pudimos guardar la última ubicación local.',error)}
       }
     }
     const accuracy=Math.round(Number(pos.coords.accuracy||0))
