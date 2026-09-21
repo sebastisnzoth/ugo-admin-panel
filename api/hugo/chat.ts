@@ -60,7 +60,7 @@ export default async function handler(req:any,res:any){
    res.setHeader('Server-Timing',`gemini-tts;dur=${elapsed}`)
    return res.status(200).json({...audio,timing_ms:elapsed})
   }
-  const message=clean(body.message,1800),context=clean(body.context,20000),history=Array.isArray(body.history)?body.history:[]
+  const message=clean(body.message,1800),context=clean(body.context,30000),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const clientMode=body.mode==='client_voice'
   const requestedRole=clean(body.role,20).toLowerCase()
