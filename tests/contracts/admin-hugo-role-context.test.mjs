@@ -14,7 +14,7 @@ test('Hugo is mounted and named on the current Admin control center',async()=>{
  assert.match(src,/section!=='superadmin'/)
  assert.match(orb,/>Hugo<\/b>/)
  assert.match(orb,/Hugo Admin/)
- assert.match(orb,/operations:\$\{operationView\}/)
+ assert.match(src,/operations:\$\{operationView\}/)
 })
 
 test('Hugo Super Admin receives governance context without mixing Admin permissions',async()=>{
