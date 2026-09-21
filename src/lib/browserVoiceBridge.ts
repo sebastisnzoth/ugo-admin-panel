@@ -30,7 +30,7 @@ function resample(input:Float32Array,fromRate:number){
  return output
 }
 function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['TEXT']},inputAudioTranscription:{}}}}
+function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['TEXT']},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{}}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
@@ -56,6 +56,7 @@ function installBrowserBridge(){
  }
 
  const handleMessage=(data:any)=>{
+  if(data?.error){console.warn('Gemini Live server error',data.error);failRuntime('unavailable');return false}
   if(data?.setupComplete){setupReady=true;reconnectAttempt=0;emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'connected'});return true}
   const content=data?.serverContent
   const interim=String(content?.interimInputTranscription?.text||'').trim()
