@@ -7,8 +7,10 @@ test('Scout saves prospects without relying on a partial-index upsert',async()=>
  const src=await read('src/components/ScoutSection.tsx')
  assert.match(src,/function prospectRow\(p:Provider\)/)
  assert.match(src,/from\('prospectos_scouts'\)\.insert\(inserts\)/)
- assert.match(src,/from\('prospectos_scouts'\)\.update\(prospectRow\(p\)\)\.eq\('id'/)
+ assert.match(src,/const\{estado:_,\.\.\.patch\}=prospectRow\(p\)/)
+ assert.match(src,/from\('prospectos_scouts'\)\.update\(patch\)\.eq\('id'/)
  assert.doesNotMatch(src,/upsert\(row,\{onConflict:'external_id'\}\)/)
+ assert.doesNotMatch(src,/update\(prospectRow\(p\)\)/)
 })
 
 test('Scout exports found or selected providers to an Excel-compatible file',async()=>{

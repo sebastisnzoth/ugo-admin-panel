@@ -179,7 +179,8 @@ export function SecScout(){
   const inserts=unique.filter(p=>!byExternal.has(p.id)).map(prospectRow)
   if(inserts.length){const{error}=await(supabase as any).from('prospectos_scouts').insert(inserts);if(error)throw error}
   for(const p of unique.filter(p=>byExternal.has(p.id))){
-   const{error}=await(supabase as any).from('prospectos_scouts').update(prospectRow(p)).eq('id',byExternal.get(p.id))
+   const{estado:_,...patch}=prospectRow(p)
+   const{error}=await(supabase as any).from('prospectos_scouts').update(patch).eq('id',byExternal.get(p.id))
    if(error)throw error
   }
  }
