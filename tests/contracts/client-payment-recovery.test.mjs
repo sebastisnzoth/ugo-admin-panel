@@ -2,7 +2,7 @@ import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
 
-const source=fs.readFileSync(new URL('../../src/mvp/client/ClientPaymentChoice.tsx',import.meta.url),'utf8')
+const source=fs.readFileSync(new URL('../../src/features/client/payments/ClientPaymentChoice.tsx',import.meta.url),'utf8')
 
 test('client payment realtime scopes selected service and preserves authenticated-client fallback',()=>{
  assert.match(source,/serviceFilter=serviceId\?`id=eq\.\$\{serviceId\}`:`cliente_id=eq\.\$\{session\.user\.id\}`/)
