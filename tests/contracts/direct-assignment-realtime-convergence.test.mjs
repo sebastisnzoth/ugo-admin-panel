@@ -23,6 +23,6 @@ test('direct assignment notifies both client and externally assigned provider',a
 })
 
 test('client home never labels a row with provider id as searching',async()=>{
- const home=await read('src/mvp/client/ClientHomeScreen.tsx')
+ const home=await read('src/features/client/home/ClientHomeScreen.tsx')
  assert.match(home,/order\.proveedor_id\?'Profesional asignado'/)
 })
