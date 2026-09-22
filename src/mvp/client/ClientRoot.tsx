@@ -21,12 +21,13 @@ import{ClientProviderRadarBridge}from'./ClientProviderRadarBridge'
 import{ClientRatingPrompt}from'./ClientRatingPrompt'
 import{ClientServiceDetail}from'./ClientServiceDetail'
 import{useClientFlow}from'./clientFlow'
+import{clientDeepLinkedServiceId,clientNoticeDestination}from'../../features/client/navigation/clientNavigation'
 import'../../features/client/clientStyles'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
- const flow=useClientFlow(),pushServiceId=typeof window==='undefined'?null:new URLSearchParams(window.location.search).get('serviceId'),[selectedServiceId,setSelectedServiceId]=useState<string|null>(()=>pushServiceId)
+ const flow=useClientFlow(),[selectedServiceId,setSelectedServiceId]=useState<string|null>(()=>clientDeepLinkedServiceId(typeof window==='undefined'?'':window.location.search))
  const openService=(serviceId:string)=>{setSentinelContext({role:'client',serviceId,action:'client.activity.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'});setSelectedServiceId(serviceId)}
- const openNotice=(notice:UgoNotification)=>{if(notice.tipo.includes('disputa'))return flow.actions.openDispute();if(notice.tipo==='servicio_completado')return flow.actions.openReview();const serviceId=typeof notice.datos?.servicio_id==='string'?notice.datos.servicio_id:null;if(serviceId)return openService(serviceId);flow.navigate('home')}
+ const openNotice=(notice:UgoNotification)=>{const destination=clientNoticeDestination(notice);if(destination.kind==='dispute')return flow.actions.openDispute();if(destination.kind==='review')return flow.actions.openReview();if(destination.kind==='service')return openService(destination.serviceId);flow.navigate('home')}
  const closeService=()=>{clearSentinelContext();setSelectedServiceId(null)}
  const goHome=()=>{closeService();flow.navigate('home')}
  const detailOpen=Boolean(selectedServiceId),canonical=flow.screen==='home'||flow.screen==='request'
