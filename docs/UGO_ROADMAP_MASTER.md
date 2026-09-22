@@ -559,3 +559,7 @@ Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cli
 - el mapa acepta comandos de Hugo para estado, categoría, zona, localidad, radio y visibilidad Cliente/Proveedor;
 - cambios sensibles de usuarios, dinero, permisos, KYC, disputas o configuración siguen pasando por los controles auditados y confirmaciones existentes del panel;
 - pendiente de madurez: smoke autenticado por voz en Admin real verificando Gemini Live → consulta de datos → navegación/filtrado → Gemini TTS.
+## Scout CRM · Gmail outreach (2026-09-22)
+
+Implementado en `main`: OAuth Gmail server-side, estado conectar/desconectar en Scout, envío individual y campañas de hasta 20 destinatarios por lote, auditoría de envíos y convergencia con el embudo CRM. Pendiente externo para runtime: habilitar Gmail API en Google Cloud, registrar el redirect URI de Scout, cargar credenciales OAuth server-side, aplicar la migración TEST y autorizar una cuenta Google desde el panel. No requiere deploy hasta que se autorice la etapa de publicación.
+
