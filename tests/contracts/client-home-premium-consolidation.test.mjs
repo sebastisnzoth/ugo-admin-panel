@@ -6,7 +6,7 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 test('client home is readable, clearable and resilient',async()=>{
  const[src,css,root]=await Promise.all([
   read('src/mvp/client/ClientHomeScreen.tsx'),
-  read('src/mvp/client/client-home-screen.css'),
+  read('src/features/client/ui/clientHomeScreen.css'),
   read('src/features/client/clientStyles.ts')
  ])
  assert.match(src,/aria-label="Limpiar búsqueda"/)
