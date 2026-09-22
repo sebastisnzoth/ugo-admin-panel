@@ -1,4 +1,4 @@
-import'../../mvp/client/client-guided-request.css'
+import'./request/clientGuidedRequest.css'
 import'./payments/clientPaymentChoice.css'
 import'../../mvp/client/client-responsive-layout.css'
 import'../../mvp/client/client-conversational-stage.css'
