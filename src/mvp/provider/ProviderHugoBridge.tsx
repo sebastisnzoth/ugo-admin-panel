@@ -1,11 +1,10 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
-import{STATUS_LABELS}from'../shared'
+import{detectProviderVoiceLocale,findProviderVoiceOpportunity,normalizeProviderVoice,providerVoiceContext,providerVoiceSummary,type ProviderHugoLocale as Locale}from'../../features/provider/voice/providerVoiceHelpers'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData}from'./providerData'
 import'../voice.css'
 
 type VoiceState='idle'|'connecting'|'ready'|'hearing'|'speaking'|'error'
-type Locale='es-AR'|'pt-BR'
 type SpeechRecognitionAlternativeLike={transcript?:string}
 type SpeechRecognitionResultLike={0?:SpeechRecognitionAlternativeLike;isFinal?:boolean}
 type SpeechRecognitionEventLike={resultIndex?:number;results:ArrayLike<SpeechRecognitionResultLike>}
@@ -18,21 +17,14 @@ type TtsReply={audio_base64?:string;sample_rate?:number;error?:string;hugo_mensa
 type CompanionReply={reply?:string;model?:string;error?:string}
 
 const LABELS:Record<VoiceState,string>={idle:'Toca para hablar',connecting:'Procesando...',ready:'Te escucho',hearing:'Escuchando...',speaking:'Hablando...',error:'Voz no disponible'}
-const norm=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
 const ugoWindow=()=>window as UgoWindow
-const isPt=(value:string)=>{const text=norm(value);return/(^|\s)(quero|preciso|voce|servico|agora|nao|sim|trabalho|ganhos)(\s|$)/.test(text)}
-const money=(value:number)=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(value||0))
 
 export function ProviderHugoBridge(){
  const flow=useProviderFlow(),data=useProviderData()
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[userTranscript,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),running=useRef(false),busy=useRef(false),native=useRef(false),voicePaused=useRef(false),recognition=useRef<SpeechRecognitionLike|null>(null),ttsAbort=useRef<AbortController|null>(null),audioContext=useRef<AudioContext|null>(null),audioSource=useRef<AudioBufferSourceNode|null>(null),conversation=useRef<Array<{role:'user'|'assistant';content:string}>>([])
 
- const summary=useMemo(()=>{
-  if(data.service){const status=STATUS_LABELS[data.service.estado]||data.service.estado,category=data.service.categoria?.nombre||'servicio';return`Tenés un ${category} ${status.toLowerCase()}.`}
-  if(data.opportunities.length)return`Tenés ${data.opportunities.length} oportunidad${data.opportunities.length===1?'':'es'} disponible${data.opportunities.length===1?'':'s'}.`
-  return data.online?'Estás online y disponible para recibir pedidos.':'Estás offline. Podés pedirme que te ponga online.'
- },[data.online,data.opportunities.length,data.service])
+ const summary=useMemo(()=>providerVoiceSummary(data),[data.online,data.opportunities.length,data.service])
 
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
  const stopSpeech=useCallback(()=>{try{ttsAbort.current?.abort()}catch{}ttsAbort.current=null;try{window.speechSynthesis?.cancel()}catch{}try{audioSource.current?.stop()}catch{}try{void audioContext.current?.close()}catch{}audioSource.current=null;audioContext.current=null},[])
@@ -42,11 +34,11 @@ export function ProviderHugoBridge(){
  const deviceSpeech=useCallback(async(text:string,lang:Locale)=>{if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined')throw new Error('Sin voz');const speech=new SpeechSynthesisUtterance(text);speech.lang=lang;speech.rate=1.03;await new Promise<void>((resolve,reject)=>{speech.onend=()=>resolve();speech.onerror=()=>reject(new Error('Sin voz'));window.speechSynthesis.cancel();window.speechSynthesis.speak(speech)})},[])
  const speak=useCallback(async(reply:string)=>{stopSpeech();setAssistantTranscript(reply);conversation.current=[...conversation.current,{role:'assistant' as const,content:reply}].slice(-10);setError('');if(!running.current){setState('idle');return}const controller=new AbortController();ttsAbort.current=controller;try{pauseRecognition();setState('speaking');const response=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tts:true,text:reply,locale:locale.current}),signal:controller.signal}),payload=await response.json().catch(()=>null)as TtsReply|null;if(!response.ok||!payload?.audio_base64)throw new Error(payload?.error||payload?.hugo_mensaje||'TTS no disponible');await playPcm(payload.audio_base64,Number(payload.sample_rate||24000))}catch(e){if(controller.signal.aborted)return;try{await deviceSpeech(reply,locale.current)}catch{}}finally{if(ttsAbort.current===controller)ttsAbort.current=null;if(running.current){setState('ready');resumeRecognition()}}},[deviceSpeech,pauseRecognition,playPcm,resumeRecognition,stopSpeech])
 
- const context=useCallback(()=>{const opportunity=data.opportunities.slice(0,4).map((item,index)=>`${index+1}. ${item.category}: ${item.title}, ${item.zone}, ${money(item.estimatedValue)}`).join(' | '),service=data.service?`${data.service.categoria?.nombre||'Servicio'} #${data.service.numero||data.service.id}: ${STATUS_LABELS[data.service.estado]||data.service.estado}. ${data.service.descripcion||''}`:'sin trabajo activo';return`Pantalla=${flow.screen}. Estado=${data.online?'online':'offline'}. Trabajo=${service}. Oportunidades=${opportunity||'ninguna'}. Ganancias liberadas=${money(data.released)}. Efectivo=${money(data.cashReceived)}. Deuda UGO=${money(data.ugoDebt)}.`},[data.cashReceived,data.online,data.opportunities,data.released,data.service,data.ugoDebt,flow.screen])
+ const context=useCallback(()=>providerVoiceContext(data,flow.screen),[data.cashReceived,data.online,data.opportunities,data.released,data.service,data.ugoDebt,flow.screen])
 
- const findOpportunity=useCallback((source:string)=>{const value=norm(source),number=value.match(/(?:pedido|oportunidad|numero|nro|#)\s*(\d+)/)?.[1];if(number){const byIndex=data.opportunities[Number(number)-1];if(byIndex)return byIndex}const matches=data.opportunities.filter(item=>{const words=norm(`${item.category} ${item.title}`).split(/\s+/).filter(w=>w.length>=4);return words.some(w=>value.includes(w))});return matches.length===1?matches[0]:data.opportunities.length===1?data.opportunities[0]:null},[data.opportunities])
+ const findOpportunity=useCallback((source:string)=>findProviderVoiceOpportunity(source,data.opportunities),[data.opportunities])
 
- const localCommand=useCallback(async(source:string)=>{const value=norm(source),pt=locale.current==='pt-BR'
+ const localCommand=useCallback(async(source:string)=>{const value=normalizeProviderVoice(source),pt=locale.current==='pt-BR'
   if(/\b(inicio|home|principal)\b/.test(value)){flow.actions.openHome();await speak(pt?'Voltei ao início.':'Volví al inicio.');return true}
   if(/\b(demanda|radar|zonas?)\b/.test(value)){flow.actions.openDemand();await speak(pt?'Abri o radar de demanda.':'Abrí el radar de demanda.');return true}
   if(/\b(pedidos?|oportunidades?|ofertas?)\b/.test(value)&&/\b(abrir|ver|mostrar|mostra|quiero|quero)\b/.test(value)){flow.actions.openOpportunities();await speak(pt?'Abri suas oportunidades.':'Abrí tus oportunidades.');return true}
@@ -68,7 +60,7 @@ export function ProviderHugoBridge(){
   return false
  },[data,findOpportunity,flow.actions,speak,summary])
 
- const handleText=useCallback(async(source:string)=>{const clean=source.trim();if(!clean||busy.current)return;busy.current=true;setUserTranscript(clean);locale.current=isPt(clean)?'pt-BR':'es-AR';conversation.current=[...conversation.current,{role:'user' as const,content:clean}].slice(-10);setState('connecting');setError('');try{if(await localCommand(clean))return;const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${data.accessToken}`},body:JSON.stringify({role:'provider',companion_mode:true,message:clean,context:context(),history:conversation.current.slice(0,-1)})}),payload=await response.json().catch(()=>null)as CompanionReply|null;if(!response.ok||!payload?.reply)throw new Error(payload?.error||'Hugo no pudo responder');await speak(payload.reply)}catch(e){setState('error');setError(e instanceof Error?e.message:'No pude procesar eso.')}finally{busy.current=false}},[context,data.accessToken,localCommand,speak])
+ const handleText=useCallback(async(source:string)=>{const clean=source.trim();if(!clean||busy.current)return;busy.current=true;setUserTranscript(clean);locale.current=detectProviderVoiceLocale(clean);conversation.current=[...conversation.current,{role:'user' as const,content:clean}].slice(-10);setState('connecting');setError('');try{if(await localCommand(clean))return;const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${data.accessToken}`},body:JSON.stringify({role:'provider',companion_mode:true,message:clean,context:context(),history:conversation.current.slice(0,-1)})}),payload=await response.json().catch(()=>null)as CompanionReply|null;if(!response.ok||!payload?.reply)throw new Error(payload?.error||'Hugo no pudo responder');await speak(payload.reply)}catch(e){setState('error');setError(e instanceof Error?e.message:'No pude procesar eso.')}finally{busy.current=false}},[context,data.accessToken,localCommand,speak])
 
  const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);busy.current=false;voicePaused.current=false;stopSpeech();try{recognition.current?.abort()}catch{}try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{}recognition.current=null;native.current=false;setState('idle');setError('')},[setRunning,stopSpeech])
  const start=useCallback(async()=>{setPanelOpen(true);setError('');setState('connecting');const bridge=ugoWindow().UGOVoiceBridge;if(bridge&&bridge.isAvailable?.()!==false){native.current=true;setRunning(true);voicePaused.current=false;bridge.startListening();setState('ready');return}const SR=ugoWindow().SpeechRecognition||ugoWindow().webkitSpeechRecognition;if(!SR){setState('error');setError('El reconocimiento de voz no está disponible. Revisá el permiso del micrófono y tocá el orbe para reintentar.');return}setRunning(true);voicePaused.current=false;const rec=new SR();recognition.current=rec;rec.lang=locale.current;rec.continuous=false;rec.interimResults=true;rec.onstart=()=>setState('ready');rec.onspeechstart=()=>{stopSpeech();setState('hearing')};rec.onresult=(event:SpeechRecognitionEventLike)=>{let value='',final=false;for(let i=event.resultIndex||0;i<event.results.length;i++){value+=String(event.results[i]?.[0]?.transcript||'');final=final||Boolean(event.results[i]?.isFinal)}value=value.trim();if(value){setUserTranscript(value);if(final)void handleText(value)}};rec.onerror=(event:SpeechRecognitionErrorEventLike)=>{const code=String(event.error||'');if(code==='no-speech'||code==='aborted')return;setRunning(false);setState('error');setError(code==='not-allowed'?'Permití el micrófono para hablar con Hugo.':'Se interrumpió el reconocimiento de voz.')};rec.onend=()=>{if(running.current&&!busy.current&&!voicePaused.current)window.setTimeout(()=>{if(running.current&&!voicePaused.current)try{rec.start()}catch{}},120)};rec.start()},[handleText,setRunning,stopSpeech])
