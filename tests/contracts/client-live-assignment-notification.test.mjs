@@ -26,7 +26,7 @@ test('client receives inserted notifications in realtime and shows a visible liv
 
 test('assignment notification and active home card open the exact service id',async()=>{
  const [root,home]=await Promise.all([
-  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/features/client/navigation/clientNavigation.ts'),
   read('src/mvp/client/ClientHomeScreen.tsx'),
  ])
  assert.match(root,/notice\.datos\?\.servicio_id/)
