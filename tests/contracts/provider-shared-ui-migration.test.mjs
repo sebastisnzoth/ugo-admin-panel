@@ -18,7 +18,7 @@ test('provider home starts consuming the shared UI foundation without changing b
 })
 
 test('provider visual aliases resolve to the global design tokens',async()=>{
- const[root,css]=await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/provider/provider-design-tokens.css')])
+ const[styles,css]=await Promise.all([read('src/features/provider/providerStyles.ts'),read('src/mvp/provider/provider-design-tokens.css')])
  assert.match(root,/provider-design-tokens\.css/)
  assert.match(css,/--provider-accent:var\(--ugo-color-brand-500\)/)
  assert.match(css,/--provider-surface:var\(--ugo-color-surface\)/)
