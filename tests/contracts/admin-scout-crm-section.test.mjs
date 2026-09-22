@@ -1,0 +1,42 @@
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+
+test('Admin navigation exposes CRM as a first-class section next to Scout',async()=>{
+ const admin=await read('src/components/AdminPanel.tsx')
+ assert.match(admin,/import \{ ScoutCRM \} from '\.\/ScoutCRM'/)
+ assert.match(admin,/\|'crm'\|/)
+ assert.match(admin,/id:'crm',icon:'◫',label:'CRM'/)
+ assert.match(admin,/section==='crm'&&<ScoutCRM\/>/)
+})
+
+test('CRM loads the complete Scout prospect base and subscribes to realtime changes',async()=>{
+ const crm=await read('src/components/ScoutCRM.tsx')
+ assert.match(crm,/\.range\(from,from\+pageSize-1\)/)
+ assert.match(crm,/channel\('admin-scout-crm'\)/)
+ assert.match(crm,/postgres_changes/)
+ assert.match(crm,/table:'prospectos_scouts'/)
+})
+
+test('CRM provides funnel, demand, filtering, follow-up and prospect cards',async()=>{
+ const crm=await read('src/components/ScoutCRM.tsx')
+ assert.match(crm,/Embudo de reclutamiento/)
+ assert.match(crm,/scout_demanda_categorias/)
+ assert.match(crm,/Seguimientos vencidos/)
+ assert.match(crm,/recruitment_score/)
+ assert.match(crm,/proximo_contacto_at/)
+ assert.match(crm,/FICHA CRM/)
+ assert.match(crm,/Guardar cambios/)
+})
+
+test('CRM supports recontact and recruiting campaigns without exposing provider secrets',async()=>{
+ const crm=await read('src/components/ScoutCRM.tsx')
+ assert.match(crm,/wa\.me/)
+ assert.match(crm,/mailto:/)
+ assert.match(crm,/action:'enrich_emails'/)
+ assert.match(crm,/action:'email_campaign'/)
+ assert.match(crm,/Abrir BCC/)
+ assert.doesNotMatch(crm,/RESEND_API_KEY/)
+ assert.doesNotMatch(crm,/TOMTOM_API_KEY/)
+})

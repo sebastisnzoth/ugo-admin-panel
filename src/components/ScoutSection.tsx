@@ -212,17 +212,9 @@ export function SecScout(){
  async function persistProspects(items:Provider[]){
   const unique=[...new Map(items.map(p=>[p.id,p])).values()]
   if(!unique.length)return
-  const ids=unique.map(p=>p.id)
-  const{data:existing,error:lookupError}=await(supabase as any).from('prospectos_scouts').select('id,external_id').in('external_id',ids)
-  if(lookupError)throw lookupError
-  const byExternal=new Map((existing||[]).map((row:any)=>[String(row.external_id),String(row.id)]))
-  const inserts=unique.filter(p=>!byExternal.has(p.id)).map(prospectRow)
-  if(inserts.length){const{error}=await(supabase as any).from('prospectos_scouts').insert(inserts);if(error)throw error}
-  for(const p of unique.filter(p=>byExternal.has(p.id))){
-   const{estado:_,...patch}=prospectRow(p)
-   const{error}=await(supabase as any).from('prospectos_scouts').update(patch).eq('id',byExternal.get(p.id))
-   if(error)throw error
-  }
+  const rows=unique.map(prospectRow)
+  const{error}=await(supabase as any).rpc('admin_scout_upsert_candidates',{p_rows:rows})
+  if(error)throw error
  }
 
  async function saveProspect(p:Provider){

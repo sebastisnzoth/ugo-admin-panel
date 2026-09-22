@@ -22,8 +22,7 @@ test('Scout persists prospect data behind admin RLS',()=>{
  assert.match(migration,/prospectos_scouts_admin_insert/i)
  assert.match(migration,/private\.is_admin\(auth\.uid\(\)\)/)
  assert.match(scout,/from\('prospectos_scouts'\)/)
- assert.match(scout,/from\('prospectos_scouts'\)\.insert\(inserts\)/)
- assert.match(scout,/from\('prospectos_scouts'\)\.update\(patch\)\.eq\('id'/)
+ assert.match(scout,/rpc\('admin_scout_upsert_candidates',\{p_rows:rows\}\)/)
 })
 
 test('Scout uses the current Supabase session for protected search',()=>{

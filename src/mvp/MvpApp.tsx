@@ -25,6 +25,7 @@ const UgoWeb=lazy(()=>import('./UgoWeb').then(module=>({default:module.UgoWeb}))
 const UgoDemoBoundary=lazy(()=>import('./UgoDemoBoundary').then(module=>({default:module.UgoDemoBoundary})))
 const UgoClientWeb=lazy(()=>import('./UgoClientWeb').then(module=>({default:module.UgoClientWeb})))
 const UgoTestDemo=lazy(()=>import('./UgoTestDemo').then(module=>({default:module.UgoTestDemo})))
+const ProviderRecruitmentLanding=lazy(()=>import('./ProviderRecruitmentLanding').then(module=>({default:module.ProviderRecruitmentLanding})))
 
 function RouteLoading(){return <LoadingScreen label="Abriendo UGO…"/>}
 function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
@@ -37,6 +38,7 @@ export function MvpApp(){
  const app=params.get('app')
  const demo=params.get('demo')==='1'
  if(demo)return <Deferred><UgoTestDemo/></Deferred>
+ if(app==='recruit')return <Deferred><ProviderRecruitmentLanding/></Deferred>
  if(app==='client-web'||app==='web-client')return <ClientApp web/>
  if(app==='provider-web'||app==='web-provider')return <ProviderApp web/>
  if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
