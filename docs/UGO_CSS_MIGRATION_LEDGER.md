@@ -8,6 +8,7 @@
 - Tokens y primitivas globales: `src/mvp/ugo-design-system.css`.
 - Cliente Home base: `src/features/client/ui/clientHomeScreen.css`.
 - Cliente pedido guiado base: `src/features/client/request/clientGuidedRequest.css`.
+- Cliente Need Screen: `src/features/client/request/ClientNeedScreen.tsx` + `src/features/client/request/clientNeedScreen.css`.
 - Cliente review del pedido guiado: `src/features/client/request/clientGuidedRequestReview.css`.
 - Cliente payment choice: `src/features/client/payments/clientPaymentChoice.css`.
 - Cliente conversación base: `src/features/client/conversation/clientConversationalStage.css`.
