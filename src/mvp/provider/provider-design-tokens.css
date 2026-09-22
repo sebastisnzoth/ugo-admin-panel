@@ -1,0 +1,17 @@
+.ugo-provider-root{
+ --provider-accent:var(--ugo-color-brand-500);
+ --provider-surface:var(--ugo-color-surface);
+ --provider-surface-muted:var(--ugo-color-surface-muted);
+ --provider-text:var(--ugo-color-text);
+ --provider-text-muted:var(--ugo-color-text-muted);
+ --provider-border:var(--ugo-color-border);
+ --provider-radius:var(--ugo-radius-lg);
+ --provider-shadow:var(--ugo-shadow-sm);
+}
+.ugo-provider-root .provider-screen{color:var(--provider-text)}
+.ugo-provider-root .provider-card{border-color:var(--provider-border);border-radius:var(--provider-radius)}
+.ugo-provider-root .provider-primary{border-radius:var(--ugo-radius-md)}
+.ugo-provider-root .provider-focus-card{box-shadow:var(--ugo-shadow-md)}
+.ugo-provider-root .ugo-ui-section-header{margin-bottom:var(--ugo-space-4)}
+.ugo-provider-root .ugo-ui-section-header h2{font-size:clamp(24px,6vw,34px);line-height:1.08}
+.ugo-provider-root .ugo-ui-section-header small{font-weight:900;letter-spacing:.08em;color:var(--ugo-color-brand-600)}
