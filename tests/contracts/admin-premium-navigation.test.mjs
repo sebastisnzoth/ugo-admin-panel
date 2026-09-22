@@ -21,3 +21,12 @@ test('admin uses readable button groups instead of incomplete tabs',async()=>{
  assert.match(home,/\.ahs-service-row\{[^}]*font-size:var\(--ugo-font-caption\)/s)
  assert.doesNotMatch(finalCss,/font-size:7px/)
 })
+
+test('active Admin shell exposes Gmail connection globally',async()=>{
+ const src=await read('src/mvp/AdminPhase2.tsx')
+ assert.match(src,/✉ Conectar Gmail/)
+ assert.match(src,/\/api\/scout\/gmail/)
+ assert.match(src,/connectGmail/)
+ assert.match(src,/gmail\.connected/)
+ assert.match(src,/setOperationView\('scout'\)/)
+})
