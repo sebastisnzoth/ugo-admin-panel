@@ -1,12 +1,12 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
-import{useRoleSession,type Category}from'../shared'
-import{ClientRequestEvidence}from'../ClientRequestEvidence'
-import{resolveVoiceCategoryFromCatalog}from'../voiceCatalog'
-import{useClientFlow}from'./clientFlow'
-import{ClientLocationScreen}from'./ClientLocationScreen'
-import{ClientPostConfirmFlow}from'./ClientPostConfirmFlow'
-import{UGO_UI_EVENTS}from'../uiEvents'
-import'./client-need-screen.css'
+import{useRoleSession,type Category}from'../../../mvp/shared'
+import{ClientRequestEvidence}from'../../../mvp/ClientRequestEvidence'
+import{resolveVoiceCategoryFromCatalog}from'../../../mvp/voiceCatalog'
+import{useClientFlow}from'../../../mvp/client/clientFlow'
+import{ClientLocationScreen}from'../../../mvp/client/ClientLocationScreen'
+import{ClientPostConfirmFlow}from'../../../mvp/client/ClientPostConfirmFlow'
+import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
+import'./clientNeedScreen.css'
 
 const QUICK:Record<string,string[]>={electricidad:['Reparar toma de corriente','Instalar luminaria','Revisar tablero eléctrico','Otro…'],plomeria:['Reparar pérdida de agua','Destapar cañería','Cambiar grifería','Otro…'],limpieza:['Limpieza general','Limpieza profunda','Limpieza después de obra','Otro…'],reparaciones:['Montaje o instalación','Reparación en el hogar','Ajuste o mantenimiento','Otro…']}
 const norm=(value:string)=>value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'')
