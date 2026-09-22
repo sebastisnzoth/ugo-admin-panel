@@ -5,7 +5,7 @@ const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 const [need,location,when,payment,summary,post,detail,completion,rating,evidence]=await Promise.all([
  read('src/features/client/request/ClientNeedScreen.tsx'),
- read('src/mvp/client/ClientLocationScreen.tsx'),
+ read('src/features/client/request/ClientLocationScreen.tsx'),
  read('src/mvp/client/ClientWhenScreen.tsx'),
  read('src/mvp/client/ClientPaymentScreen.tsx'),
  read('src/mvp/client/ClientSummaryScreen.tsx'),
