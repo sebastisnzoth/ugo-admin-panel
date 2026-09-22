@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 
 const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
-const location=await readFile(new URL('../../src/mvp/client/ClientLocationScreen.tsx',import.meta.url),'utf8')
+const location=await readFile(new URL('../../src/features/client/request/ClientLocationScreen.tsx',import.meta.url),'utf8')
 const address=await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts',import.meta.url),'utf8')
 
 test('client voice follows the canonical ordered request fields without a text composer',()=>{
