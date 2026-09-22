@@ -54,3 +54,38 @@ test('Scout loads all saved prospects and separates them by category',async()=>{
  assert.match(src,/PROSPECTOS GUARDADOS POR CATEGORÍA/)
  assert.doesNotMatch(src,/prospects\.slice\(0,30\)/)
 })
+
+test('Scout recruitment CRM exposes funnel, follow-up, demand priority and editable prospect cards',async()=>{
+ const src=await read('src/components/ScoutSection.tsx')
+ assert.match(src,/EMBUDO DE RECLUTAMIENTO/)
+ assert.match(src,/scout_demanda_categorias/)
+ assert.match(src,/pipeline_etapa/)
+ assert.match(src,/recruitment_score/)
+ assert.match(src,/proximo_contacto_at/)
+ assert.match(src,/FICHA SCOUT/)
+ assert.match(src,/saveProspectCard/)
+ assert.match(src,/registerContact/)
+ assert.match(src,/Guardar todos/)
+})
+
+test('Scout can enrich public business emails and send opt-in recruitment email through server-side credentials',async()=>{
+ const ui=await read('src/components/ScoutSection.tsx')
+ const api=await read('api/scout/places.js')
+ assert.match(ui,/collectPublicEmails/)
+ assert.match(ui,/sendSavedEmailCampaign/)
+ assert.match(api,/publicEmailFromWebsite/)
+ assert.match(api,/lookup\(host/)
+ assert.match(api,/process\.env\.RESEND_API_KEY/)
+ assert.match(api,/action==='email_campaign'/)
+ assert.doesNotMatch(ui,/RESEND_API_KEY/)
+})
+
+test('Scout recruitment migration adds CRM stages without removing legacy estado',async()=>{
+ const sql=await read('supabase/migrations/20260921211000_scout_recruitment_crm_v1.sql')
+ assert.match(sql,/add column if not exists pipeline_etapa/)
+ assert.match(sql,/add column if not exists recruitment_score/)
+ assert.match(sql,/add column if not exists proximo_contacto_at/)
+ assert.match(sql,/add column if not exists no_contactar/)
+ assert.match(sql,/create or replace view public\.scout_demanda_categorias/)
+ assert.match(sql,/private\.is_admin\(auth\.uid\(\)\)/)
+})

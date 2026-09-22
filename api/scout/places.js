@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import { isIP } from 'node:net';
+import { lookup } from 'node:dns/promises';
 
 // api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
 
@@ -68,7 +70,7 @@ async function requireAdmin(req){
   const{data,error}=await sb.auth.getUser(token);if(error||!data?.user)throw Object.assign(new Error('Sesión inválida o vencida.'),{status:401});
   const{data:profile,error:profileError}=await sb.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle();if(profileError)throw profileError;
   if(!profile?.activo||!['admin','superadmin'].includes(String(profile.tipo)))throw Object.assign(new Error('Acceso Admin requerido.'),{status:403});
-  return data.user;
+  return {user:data.user,sb};
 }
 
 function haversine(lat1,lng1,lat2,lng2){
@@ -219,11 +221,36 @@ async function searchNominatim(lat,lng,radius,categoria,customCat=''){
   return validRows(results,categoria,customCat);
 }
 
+
+const EMAIL_RX=/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/ig;
+function cleanEmail(value=''){const v=String(value||'').trim().replace(/^mailto:/i,'').split('?')[0].toLowerCase();return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)?v:''}
+function isPrivateAddress(address=''){const a=String(address).toLowerCase();if(a==='::1'||a.startsWith('fc')||a.startsWith('fd')||a.startsWith('fe80:'))return true;if(!/^\d+\.\d+\.\d+\.\d+$/.test(a))return false;const [x,y]=a.split('.').map(Number);return x===10||x===127||x===0||(x===169&&y===254)||(x===172&&y>=16&&y<=31)||(x===192&&y===168)}
+async function publicWebsite(raw=''){
+  try{
+    const value=/^https?:\/\//i.test(String(raw))?String(raw):`https://${String(raw)}`,u=new URL(value),host=u.hostname.toLowerCase();
+    if(!['http:','https:'].includes(u.protocol)||!host||host==='localhost'||host.endsWith('.local')||host.endsWith('.internal')||isPrivateAddress(host))return null;
+    if(isIP(host)){if(isPrivateAddress(host))return null}else{const addresses=await lookup(host,{all:true,verbatim:true});if(!addresses.length||addresses.some(x=>isPrivateAddress(x.address)))return null}
+    u.username='';u.password='';u.hash='';return u
+  }catch{return null}
+}
+function emailsFromHtml(html=''){const out=new Set();for(const m of String(html).matchAll(/mailto:([^"'<>\s?]+)/ig)){const e=cleanEmail(m[1]);if(e)out.add(e)}for(const m of String(html).matchAll(EMAIL_RX)){const e=cleanEmail(m[0]);if(e&&!/\.(png|jpg|jpeg|gif|svg|webp|css|js)$/i.test(e))out.add(e)}return [...out].filter(e=>!/(example\.com|sentry\.io|wixpress\.com|cloudflare\.com)$/i.test(e)).slice(0,5)}
+async function fetchHtml(url){const r=await fetch(url,{redirect:'follow',headers:{'User-Agent':'UGO-Scout/1.0 (+business-contact-discovery)','Accept':'text/html,application/xhtml+xml'},signal:AbortSignal.timeout(6500)});if(!r.ok)return'';const type=String(r.headers.get('content-type')||''),len=Number(r.headers.get('content-length')||0);if(type&&!/text\/html|application\/xhtml\+xml/i.test(type)||len>1500000)return'';return(await r.text()).slice(0,600000)}
+async function publicEmailFromWebsite(raw){const base=await publicWebsite(raw);if(!base)return'';try{const home=await fetchHtml(base.toString());let emails=emailsFromHtml(home);if(emails[0])return emails[0];const hrefs=[...home.matchAll(/href=["']([^"']+)["']/ig)].map(m=>m[1]).filter(h=>/(contato|contact|fale-conosco|falecom|sobre|about)/i.test(h)).slice(0,3);for(const href of hrefs){try{const u=new URL(href,base);if(u.origin!==base.origin)continue;emails=emailsFromHtml(await fetchHtml(u.toString()));if(emails[0])return emails[0]}catch{}}}catch{}return''}
+async function enrichEmails(sb,ids){const unique=[...new Set((Array.isArray(ids)?ids:[]).map(String))].slice(0,20);if(!unique.length)return{checked:0,found:0};const{data,error}=await sb.from('prospectos_scouts').select('id,email,website,estado,no_contactar').in('id',unique);if(error)throw error;const rows=(data||[]).filter(p=>p.estado!=='rechazado'&&!p.no_contactar&&!cleanEmail(p.email)&&p.website);let found=0;for(let i=0;i<rows.length;i+=4){const results=await Promise.all(rows.slice(i,i+4).map(async p=>({p,email:await publicEmailFromWebsite(p.website)})));for(const item of results){if(!item.email)continue;const{error:updateError}=await sb.from('prospectos_scouts').update({email:item.email}).eq('id',item.p.id);if(!updateError)found++}}return{checked:rows.length,found}}
+function mailText(template,row,zona=''){return String(template||'').replaceAll('{nombre}',row.nombre||'profissional').replaceAll('{categoria}',row.categoria||'serviços').replaceAll('{zona}',row.ciudad||zona||'sua região').slice(0,6000)}
+async function sendResend(to,subject,textBody){const key=String(process.env.RESEND_API_KEY||'').trim(),from=String(process.env.SCOUT_EMAIL_FROM||process.env.EMAIL_FROM||'').trim();if(!key||!from)throw Object.assign(new Error('Email masivo no configurado. Cargá RESEND_API_KEY y SCOUT_EMAIL_FROM.'),{status:503});const r=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({from,to:[to],subject:String(subject||'UGO · Convite para profissionais').slice(0,180),text:textBody}),signal:AbortSignal.timeout(12000)});const payload=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(payload?.message||`Resend ${r.status}`),{status:r.status});return payload}
+async function emailCampaign(sb,body){const ids=[...new Set((Array.isArray(body.ids)?body.ids:[]).map(String))].slice(0,25);if(!ids.length)return{sent:0,failed:0};const subject=String(body.subject||'UGO · Convite para profissionais'),template=String(body.message||''),zona=String(body.zona||'');if(!template.trim())throw Object.assign(new Error('Falta el mensaje de reclutamiento.'),{status:400});const{data,error}=await sb.from('prospectos_scouts').select('id,nombre,categoria,email,ciudad,estado,pipeline_etapa,contactos_intentos,contactado_at,no_contactar').in('id',ids);if(error)throw error;let sent=0,failed=0;for(const row of data||[]){const email=cleanEmail(row.email);if(!email||row.no_contactar||row.estado==='rechazado'){failed++;continue}try{await sendResend(email,subject,mailText(template,row,zona));sent++;const now=new Date(),next=new Date(now.getTime()+2*24*60*60*1000);await sb.from('prospectos_scouts').update({estado:row.estado==='prospecto_pendiente'?'invitado':row.estado,pipeline_etapa:['nuevo','listo'].includes(row.pipeline_etapa)?'contactado':row.pipeline_etapa,contactado_at:row.contactado_at||now.toISOString(),ultimo_contacto_at:now.toISOString(),ultimo_canal:'email',contactos_intentos:Number(row.contactos_intentos||0)+1,proximo_contacto_at:next.toISOString()}).eq('id',row.id)}catch(e){if(Number(e?.status)===503)throw e;failed++}}return{sent,failed}}
+
 export default async function handler(req,res){
   res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','content-type,authorization');
   if(req.method==='OPTIONS')return res.status(200).end();if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
-  try{await requireAdmin(req);}catch(e){const status=Number(e?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:e instanceof Error?e.message:'Scout authorization failed'});}
-  const {lat,lng,radius=5000,categoria='electricista',customCat=''}=req.body||{};
+  let auth;try{auth=await requireAdmin(req);}catch(e){const status=Number(e?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:e instanceof Error?e.message:'Scout authorization failed'});}
+  const body=typeof req.body==='string'?JSON.parse(req.body):(req.body||{}),action=String(body.action||'search');
+  try{
+    if(action==='enrich_emails')return res.status(200).json(await enrichEmails(auth.sb,body.ids));
+    if(action==='email_campaign')return res.status(200).json(await emailCampaign(auth.sb,body));
+  }catch(e){const status=Number(e?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:e instanceof Error?e.message:'Scout action failed'});}
+  const {lat,lng,radius=5000,categoria='electricista',customCat=''}=body;
   const nLat=Number(lat),nLng=Number(lng),nRadius=Math.max(500,Math.min(Number(radius)||5000,200000));
   if(!Number.isFinite(nLat)||!Number.isFinite(nLng))return res.status(400).json({error:'lat y lng requeridos'});
   try{
