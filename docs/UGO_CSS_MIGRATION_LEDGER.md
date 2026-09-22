@@ -7,6 +7,7 @@
 
 - Tokens y primitivas globales: `src/mvp/ugo-design-system.css`.
 - Cliente Home base: `src/features/client/ui/clientHomeScreen.css`.
+- Cliente payment choice: `src/features/client/payments/clientPaymentChoice.css`.
 - Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.
@@ -43,7 +44,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 `src/features/client/clientStyles.ts` mantiene **25 capas** en orden de cascada. El orden es contrato y no debe reordenarse durante retiros incrementales:
 
 1. `../../mvp/client/client-guided-request.css`
-2. `../../mvp/client/client-payment-choice.css`
+2. `./payments/clientPaymentChoice.css`
 3. `../../mvp/client/client-responsive-layout.css`
 4. `../../mvp/client/client-conversational-stage.css`
 5. `../../mvp/client/client-web-conversational.css`
