@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{reportSentinelIncident}from'../lib/sentinel'
 
@@ -7,7 +7,8 @@ type Target={service:CompletedService;clientName:string}
 
 export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
- const[userId,setUserId]=useState(''),[target,setTarget]=useState<Target|null>(null),[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null)
+ const[userId,setUserId]=useState(''),[target,setTarget]=useState<Target|null>(null),[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
+ const loadRef=useRef<()=>Promise<void>>(async()=>{})
 
  const load=useCallback(async()=>{
   const{data:{user}}=await supabase.auth.getUser();const uid=user?.id||'';setUserId(uid)
@@ -27,8 +28,9 @@ export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
   setTarget({service,clientName:String(client?.nombre||'el cliente')})
  },[supabase])
 
+ useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{void load().catch(error=>{const text=error instanceof Error?error.message:'No pudimos cargar la calificación.';setMessage(text);void reportSentinelIncident({eventType:'provider_rating_load_error',message:text,error,role:'provider',severity:'P1',action:'provider.rating.sync',checklistCode:'RATING'})})},[load])
- useEffect(()=>{if(!userId)return;const refresh=()=>void load().catch(()=>{});const ch=supabase.channel(`provider-rating-${userId.slice(0,6)}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()});return()=>{void supabase.removeChannel(ch)}},[load,supabase,userId])
+ useEffect(()=>{if(!userId)return;let alive=true,reconnectScheduled=false;const refresh=()=>{if(alive)void loadRef.current().catch(()=>{})};const reconnect=()=>{if(!alive||reconnectScheduled)return;reconnectScheduled=true;window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)};const onOnline=()=>{refresh();reconnect()};const onVisibility=()=>{if(document.visibilityState==='visible')refresh()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);const ch=supabase.channel(`provider-rating-${userId.slice(0,6)}-${channelEpoch}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')reconnect()});return()=>{alive=false;window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[channelEpoch,supabase,userId])
 
  async function submit(e:React.FormEvent){
   e.preventDefault();if(!userId||!target||score<1||score>5||busy)return

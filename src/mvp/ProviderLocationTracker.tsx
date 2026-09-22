@@ -22,6 +22,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
+ const[locationError,setLocationError]=useState('')
  const serviceActive=Boolean(service&&ACTIVE_TRACKING_STATES.has(service.estado))
  const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
@@ -49,6 +50,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false
   const rpc=supabase as unknown as LocationRpcClient
   const watchId=navigator.geolocation.watchPosition(async pos=>{
+   setLocationError('')
    const point:[number,number]=[pos.coords.latitude,pos.coords.longitude]
    if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001))return
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
@@ -66,10 +68,12 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      try{const ok=await autoArrivalRef.current();if(ok===false)attemptedServiceRef.current=null}catch{attemptedServiceRef.current=null}
     }
    }
-  },()=>{}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
+  },error=>{setLocationError(error.code===1?'UGO necesita permiso de ubicación precisa para seguir el servicio.':error.code===2?'No pudimos obtener tu GPS. Revisá que la ubicación del dispositivo esté activada.':'El GPS tardó demasiado en responder. Reintentando…')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
  },[available,serviceActive,service?.id,service?.estado,supabase])
 
- if(service?.estado!=='en_camino'||distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
+ if(service?.estado!=='en_camino')return null
+ if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert">📍 {locationError}</div>
+ if(distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
  return <div className="provider-arrival-toast" role="status">📍 Llegada detectada · UGO está confirmando automáticamente</div>
 }

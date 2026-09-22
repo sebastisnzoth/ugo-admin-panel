@@ -23,11 +23,15 @@ test('provider location is persisted through the canonical service-scoped tracki
  assert.doesNotMatch(service,/\.from\('perfiles_proveedor'\)\.update\(\{ubicacion:/)
 })
 
-test('location failure stays scoped to MAP-GPS and never masquerades as lifecycle success',()=>{
+test('arrival GPS failure is a P0 blocker and never advances lifecycle without a valid publication',()=>{
  assert.match(service,/eventType:'provider_location_error'/)
+ assert.match(service,/severity:'P0'/)
  assert.match(service,/checklistCode:'MAP-GPS'/)
  assert.match(service,/action:'provider\.service\.location'/)
  assert.match(service,/if\(state==='llegado'\)await publishProviderLocation\(supabase,serviceId\)[\s\S]*supabase\.rpc\('avanzar_servicio'/)
+ assert.match(service,/GPS_ACCEPTABLE_ACCURACY_M=250/)
+ assert.match(service,/GPS_FRESH_MS=30_000/)
+ assert.match(service,/acceptablePosition/)
 })
 
 test('backend remains authority for the 200 meter arrival gate',()=>{
@@ -59,4 +63,14 @@ test('arrival rejects Null Island instead of persisting a fake provider position
  assert.match(nullIslandGuard,/abs\(p_lat\) < 0\.0001 and abs\(p_lng\) < 0\.0001/)
  assert.match(nullIslandGuard,/set ubicacion=null/)
  assert.match(nullIslandGuard,/set lat=null,[\s\S]*lng=null/)
+})
+
+
+test('provider tracker surfaces precise GPS failures and never auto-arrives from an error callback',()=>{
+ assert.match(tracker,/error=>\{setLocationError\(error\.code===1\?'UGO necesita permiso de ubicación precisa/)
+ assert.match(tracker,/No pudimos obtener tu GPS\. Revisá que la ubicación del dispositivo esté activada\./)
+ assert.match(tracker,/El GPS tardó demasiado en responder\. Reintentando/)
+ const errorHandler=tracker.slice(tracker.indexOf('error=>{setLocationError'),tracker.indexOf('}, {enableHighAccuracy:true'))
+ assert.doesNotMatch(errorHandler,/autoArrivalRef/)
+ assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })

@@ -21,3 +21,15 @@ test('provider Hugo only navigates to earnings or history on explicit navigation
  assert.match(bridge,/abrir\|abre\|ver\|mostrar\|mostra\|ir/)
  assert.match(bridge,/companion_mode:true/)
 })
+
+
+test('provider Hugo lifecycle commands use the guarded provider flow and never bypass arrival GPS',async()=>{
+ const bridge=await source('src/mvp/provider/ProviderHugoBridge.tsx')
+ assert.match(bridge,/data\.advance\('en_camino'\)/)
+ assert.match(bridge,/data\.advance\('llegado'\)/)
+ assert.match(bridge,/data\.service\.estado!=='en_camino'/)
+ assert.match(bridge,/GPS preciso/)
+ assert.doesNotMatch(bridge,/from\('servicios'\)\.update\(\{estado:/)
+ assert.match(bridge,/evidencia inicial es obligatoria/)
+ assert.match(bridge,/evidencia final/)
+})

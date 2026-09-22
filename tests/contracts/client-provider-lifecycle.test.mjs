@@ -82,7 +82,7 @@ test('cash completion is approved and paid by the client after provider marks wo
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('src/mvp/ClientCompletionReview.tsx'),
-  read('supabase/migrations/20260918_provider_multi_jobs_cash_close_flow.sql'),
+  read('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql'),
  ])
  const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
  assert.match(activeJob,/TRABAJO LISTO/)
@@ -96,6 +96,9 @@ test('cash completion is approved and paid by the client after provider marks wo
  assert.match(backend,/create or replace function public\.confirmar_pago_efectivo_cliente/)
  assert.match(backend,/'pago_efectivo_confirmado'/)
  assert.match(backend,/'El cliente pagó'/)
+ assert.match(backend,/v_servicio\.estado<>'esperando_aprobacion'/)
+ assert.match(backend,/trabajo_aprobado_at/)
+ assert.match(backend,/v_pago\.estado not in \('pendiente','liberado'\)/)
 })
 
 test('provider simple flow keeps automatic arrival with a manual fallback',async()=>{

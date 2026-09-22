@@ -13,7 +13,7 @@ const recoveryAssertions=(source,label)=>{
 }
 
 test('critical realtime consumers recover from missed events using persisted state',async()=>{
- const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking]=await Promise.all([
+ const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm]=await Promise.all([
   read('src/mvp/NotificationCenter.tsx'),
   read('src/mvp/ServiceChat.tsx'),
   read('src/mvp/ServiceExpansionPanel.tsx'),
@@ -21,6 +21,8 @@ test('critical realtime consumers recover from missed events using persisted sta
   read('src/mvp/provider/useProviderRealtime.ts'),
   read('src/mvp/client/ClientPaymentChoice.tsx'),
   read('src/mvp/ClientLiveTracking.tsx'),
+  read('src/mvp/ClientCompletionReview.tsx'),
+  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
  ])
  recoveryAssertions(notifications,'NotificationCenter')
  recoveryAssertions(chat,'ServiceChat')
@@ -29,6 +31,10 @@ test('critical realtime consumers recover from missed events using persisted sta
  recoveryAssertions(provider,'Provider flow')
  recoveryAssertions(clientPayment,'ClientPaymentChoice')
  recoveryAssertions(clientTracking,'ClientLiveTracking')
+ recoveryAssertions(completion,'ClientCompletionReview')
+ recoveryAssertions(postConfirm,'ClientPostConfirmFlow')
+ assert.match(completion,/CHANNEL_ERROR|TIMED_OUT/)
+ assert.match(postConfirm,/CHANNEL_ERROR|TIMED_OUT/)
 })
 
 test('chat and expansion resync when the parent service changes',async()=>{

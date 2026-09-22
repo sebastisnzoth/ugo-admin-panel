@@ -6,12 +6,13 @@ const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx'
 const location=await readFile(new URL('../../src/mvp/client/ClientLocationScreen.tsx',import.meta.url),'utf8')
 const address=await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts',import.meta.url),'utf8')
 
-test('client voice follows the same ordered fields as the written request',()=>{
+test('client voice follows the canonical ordered request fields without a text composer',()=>{
  assert.match(dock,/if\(missing==='description'\)return speak\([^\n]*¿Qué hay que hacer\?/)
  assert.match(dock,/if\(missing==='address'\)return speak\([^\n]*Casa, Trabajo o “usar mi ubicación”/)
  assert.match(dock,/if\(missing==='when'\)return speak/)
  assert.match(dock,/if\(missing==='payment'\)return speak/)
  assert.match(dock,/nextMissing\(current\)/)
+ assert.doesNotMatch(dock,/sendTyped|inputRef|\[typed,setTyped\]/)
 })
 
 test('voice uses explicit saved-place or GPS signals and persists the canonical draft',()=>{

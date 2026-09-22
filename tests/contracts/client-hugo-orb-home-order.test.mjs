@@ -11,11 +11,13 @@ test('Hugo orb is available from Cliente home/request and does not require a sec
  assert.doesNotMatch(root,/!canonical&&!detailOpen&&<ClientHugoBridge\/>/)
 })
 
-test('Hugo stays as an orb until the client opens the conversation',()=>{
+test('Hugo stays voice-only: the orb opens the controller without restoring a text conversation',()=>{
  assert.match(dock,/\[panelOpen,setPanelOpen\]=useState\(false\)/)
  assert.match(dock,/setPanelOpen\(true\)/)
  assert.match(dock,/setPanelOpen\(false\)/)
- assert.match(dock,/\{panelOpen&&<div className="ugo-hugo-stage-card">/)
+ assert.match(dock,/ugo-hugo-voice-controller/)
+ assert.doesNotMatch(dock,/ugo-hugo-stage-card/)
+ assert.doesNotMatch(dock,/sendTyped|inputRef|\[typed,setTyped\]/)
 })
 
 test('spoken category/problem can begin an order without magic request wording',()=>{

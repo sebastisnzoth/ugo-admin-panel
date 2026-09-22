@@ -108,3 +108,19 @@ test('completed-service notification can land on home and still expose client ra
  assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
  assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
 })
+
+
+test('provider rating recovers after realtime interruption and foreground resume',async()=>{
+ const prompt=await read('src/mvp/ProviderRatingPrompt.tsx')
+ assert.match(prompt,/channelEpoch/)
+ assert.match(prompt,/loadRef/)
+ assert.match(prompt,/addEventListener\('online'/)
+ assert.match(prompt,/visibilitychange/)
+ assert.match(prompt,/SUBSCRIBED/)
+ assert.match(prompt,/CHANNEL_ERROR/)
+ assert.match(prompt,/TIMED_OUT/)
+ assert.match(prompt,/setChannelEpoch/)
+ assert.match(prompt,/removeEventListener\('online'/)
+ assert.match(prompt,/removeEventListener\('visibilitychange'/)
+ assert.match(prompt,/removeChannel/)
+})
