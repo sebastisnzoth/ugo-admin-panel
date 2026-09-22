@@ -7,7 +7,7 @@ const read = path => readFile(new URL('../../' + path, import.meta.url), 'utf8')
 test('client dispatch persists pickup on the exact service before matching', async () => {
   const [dispatch, guided, sql] = await Promise.all([
     read('src/lib/dispatch/supabaseDispatch.ts'),
-    read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+    read('src/features/client/request/ClientPostConfirmFlow.tsx'),
     read('supabase/migrations/20260920162500_client_service_pickup_rpc.sql')
   ])
   assert.match(dispatch, /rpc\('guardar_ubicacion_servicio_cliente'/)

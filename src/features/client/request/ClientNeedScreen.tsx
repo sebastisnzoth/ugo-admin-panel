@@ -4,7 +4,7 @@ import{ClientRequestEvidence}from'../../../mvp/ClientRequestEvidence'
 import{resolveVoiceCategoryFromCatalog}from'../../../mvp/voiceCatalog'
 import{useClientFlow}from'../flow/clientFlow'
 import{ClientLocationScreen}from'./ClientLocationScreen'
-import{ClientPostConfirmFlow}from'../../../mvp/client/ClientPostConfirmFlow'
+import{ClientPostConfirmFlow}from'./ClientPostConfirmFlow'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import'./clientNeedScreen.css'
 
