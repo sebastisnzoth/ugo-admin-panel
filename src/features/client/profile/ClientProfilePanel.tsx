@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useState}from'react'
 import{useRoleSession}from'../../../mvp/shared'
-import{useClientFlow}from'../../../mvp/client/clientFlow'
+import{useClientFlow}from'../flow/clientFlow'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import'./clientProfilePanel.css'
 
