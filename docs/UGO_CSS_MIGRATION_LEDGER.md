@@ -32,7 +32,7 @@ Estas capas Cliente siguen existiendo por compatibilidad, pero no pueden ganar n
 - `src/features/client/legacy/ai/clientAiStudioFinalLock.css` (legacy: `client-ai-studio-final-lock.css`)
 - `src/features/client/legacy/ai/clientAiStudioGuidedComplete.css` (legacy: `client-ai-studio-guided-complete.css`)
 - `client-real-test-fixes.css`
-- `client-flow-reference-2026.css`
+- `src/features/client/legacy/request/clientFlowReference2026.css` (legacy: `client-flow-reference-2026.css`)
 
 ## Gate de retiro
 
@@ -70,7 +70,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 16. `./legacy/ai/clientAiStudioFinalLock.css`
 17. `./legacy/ai/clientAiStudioGuidedComplete.css`
 18. `../../mvp/client/client-real-test-fixes.css`
-19. `../../mvp/client/client-flow-reference-2026.css`
+19. `./legacy/request/clientFlowReference2026.css`
 20. `./ui/clientPersistentHeader.css`
 21. `../../mvp/client/client-desktop-shell-fixes.css`
 22. `./ui/clientHomeScreen.css`
