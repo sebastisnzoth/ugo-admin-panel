@@ -9,7 +9,7 @@
 - Cliente Home base: `src/features/client/ui/clientHomeScreen.css`.
 - Cliente pedido guiado base: `src/features/client/request/clientGuidedRequest.css`.
 - Cliente payment choice: `src/features/client/payments/clientPaymentChoice.css`.
-- Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
+- Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `src/features/client/ui/clientResponsiveLayout.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.
 
@@ -46,7 +46,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 
 1. `./request/clientGuidedRequest.css`
 2. `./payments/clientPaymentChoice.css`
-3. `../../mvp/client/client-responsive-layout.css`
+3. `./ui/clientResponsiveLayout.css`
 4. `../../mvp/client/client-conversational-stage.css`
 5. `../../mvp/client/client-web-conversational.css`
 6. `../../mvp/client/client-visual-polish.css`

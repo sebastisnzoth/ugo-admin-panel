@@ -1,6 +1,6 @@
 import'./request/clientGuidedRequest.css'
 import'./payments/clientPaymentChoice.css'
-import'../../mvp/client/client-responsive-layout.css'
+import'./ui/clientResponsiveLayout.css'
 import'../../mvp/client/client-conversational-stage.css'
 import'../../mvp/client/client-web-conversational.css'
 import'../../mvp/client/client-visual-polish.css'
