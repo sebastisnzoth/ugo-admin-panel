@@ -1,6 +1,7 @@
 import React from'react'
 import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
+import{Button,StatusPill}from'../../shared/ui'
 
 export function ProviderStudioSidebar(){
  const d=useProviderData(),f=useProviderFlow()
@@ -9,25 +10,25 @@ export function ProviderStudioSidebar(){
   <div className="provider-studio-user">
    <span>{(d.name||'P').slice(0,1).toUpperCase()}</span>
    <strong>{d.name||'Proveedor UGO'}</strong>
-   <small>★ {d.karma.toFixed(1)} · Proveedor verificado</small>
+   <small>★ {d.karma.toFixed(1)} · Proveedor verificado</small><StatusPill tone={d.online?'success':'neutral'}>{d.online?'Online':'Offline'}</StatusPill>
   </div>
 
   <nav className="provider-studio-nav" aria-label="Navegación principal">
-   <button type="button" onClick={f.actions.openHome}>⌂ Inicio</button>
-   <button type="button" onClick={f.actions.openOpportunities}>▣ Trabajos {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</button>
-   <button type="button" onClick={f.actions.openAgenda}>▦ Calendario</button>
-   <button type="button" onClick={f.actions.openEarnings}>＄ Ganancias</button>
-   <button type="button" onClick={d.service?f.actions.openActiveJob:f.actions.openAgenda}>▤ {d.service?'Trabajo activo':'Mis trabajos'}</button>
-   <button type="button" onClick={f.actions.openHistory}>◷ Historial</button>
-   <button type="button" onClick={f.actions.openProfile}>♙ Perfil</button>
+   <Button variant="ghost" onClick={f.actions.openHome}>⌂ Inicio</Button>
+   <Button variant="ghost" onClick={f.actions.openOpportunities}>▣ Trabajos {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</Button>
+   <Button variant="ghost" onClick={f.actions.openAgenda}>▦ Calendario</Button>
+   <Button variant="ghost" onClick={f.actions.openEarnings}>＄ Ganancias</Button>
+   <Button variant="ghost" onClick={d.service?f.actions.openActiveJob:f.actions.openAgenda}>▤ {d.service?'Trabajo activo':'Mis trabajos'}</Button>
+   <Button variant="ghost" onClick={f.actions.openHistory}>◷ Historial</Button>
+   <Button variant="ghost" onClick={f.actions.openProfile}>♙ Perfil</Button>
   </nav>
 
   <div className="provider-studio-footer">
-   <button type="button" className="provider-studio-utility" onClick={f.actions.openAgenda}>⚖ Elegir servicio</button>
-   <button type="button" className="provider-studio-utility" onClick={f.actions.openDispute}>? Ayuda</button>
-   <button type="button" className="provider-studio-availability" disabled={d.busy} onClick={()=>void d.toggleOnline()}>
+   <Button variant="ghost" className="provider-studio-utility" onClick={f.actions.openAgenda}>⚖ Elegir servicio</Button>
+   <button type="button" className="provider-studio-utility" onClick={f.actions.openDispute}>? Ayuda</Button>
+   <Button variant={d.online?'primary':'secondary'} className="provider-studio-availability" disabled={d.busy} onClick={()=>void d.toggleOnline()}>
     {d.online?'● Online · Cambiar a Offline':'○ Offline · Cambiar a Online'}
-   </button>
+   </Button>
   </div>
  </aside>
 }
