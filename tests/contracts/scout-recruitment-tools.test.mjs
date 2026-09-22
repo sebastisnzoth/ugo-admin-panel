@@ -51,7 +51,7 @@ test('Scout loads all saved prospects and separates them by category',async()=>{
  assert.doesNotMatch(src,/\.limit\(100\)/)
  assert.match(src,/categoryStats/)
  assert.match(src,/visibleProspects/)
- assert.match(src,/PROSPECTOS GUARDADOS POR CATEGORÍA/)
+ assert.match(src,/CRM SCOUT POR CATEGORÍA/)
  assert.doesNotMatch(src,/prospects\.slice\(0,30\)/)
 })
 
