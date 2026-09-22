@@ -8,6 +8,7 @@
 - Tokens y primitivas globales: `src/mvp/ugo-design-system.css`.
 - Cliente Home base: `src/features/client/ui/clientHomeScreen.css`.
 - Cliente pedido guiado base: `src/features/client/request/clientGuidedRequest.css`.
+- Cliente review del pedido guiado: `src/features/client/request/clientGuidedRequestReview.css`.
 - Cliente payment choice: `src/features/client/payments/clientPaymentChoice.css`.
 - Cliente conversación base: `src/features/client/conversation/clientConversationalStage.css`.
 - Cliente conversación web/desktop: `src/features/client/conversation/clientWebConversational.css`.
@@ -53,7 +54,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 5. `./conversation/clientWebConversational.css`
 6. `./legacy/clientVisualPolish.css`
 7. `./legacy/request/clientGuidedRequestRedesign.css`
-8. `../../mvp/client/client-guided-request-review.css`
+8. `./request/clientGuidedRequestReview.css`
 9. `../../mvp/client/client-redesign-2026.css`
 10. `../../mvp/client/client-ai-studio-flow.css`
 11. `../../mvp/client/client-google-ai-studio.css`
