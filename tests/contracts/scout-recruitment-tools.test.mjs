@@ -22,6 +22,8 @@ test('Scout recruitment supports explicit multi-select WhatsApp and email action
  assert.match(src,/sendWhatsAppSelected/)
  assert.match(src,/selectedPhones\.slice\(0,20\)/)
  assert.match(src,/openEmailDraft/)
+ assert.match(src,/sendSelectedEmailCampaign/)
+ assert.match(src,/gmailStatus\.connected/)
  assert.match(src,/bcc=/)
  assert.match(src,/recruitmentText/)
  assert.match(src,/Se não quiser receber novos contatos/)
@@ -67,18 +69,20 @@ test('Scout recruitment CRM exposes funnel, follow-up, demand priority and edita
  assert.match(src,/Guardar todos/)
 })
 
-test('Scout can enrich public business emails and send opt-in recruitment email through server-side credentials',async()=>{
+test('Scout can enrich public business emails and send opt-in recruitment email through connected Gmail',async()=>{
  const ui=await read('src/components/ScoutSection.tsx')
  const api=await read('api/scout/places.js')
+ const gmail=await read('src/server/scoutGmail.js')
  assert.match(ui,/collectPublicEmails/)
  assert.match(ui,/sendSavedEmailCampaign/)
+ assert.match(ui,/\/api\/scout\/gmail/)
  assert.match(api,/publicEmailFromWebsite/)
  assert.match(api,/lookup\(host/)
- assert.match(api,/process\.env\.RESEND_API_KEY/)
- assert.match(api,/action==='email_campaign'/)
- assert.doesNotMatch(ui,/RESEND_API_KEY/)
+ assert.match(gmail,/gmail\.send/)
+ assert.match(gmail,/messages\/send/)
+ assert.match(gmail,/scout_email_envios/)
+ assert.doesNotMatch(ui,/SCOUT_GMAIL_CLIENT_SECRET/)
 })
-
 test('Scout recruitment migration adds CRM stages without removing legacy estado',async()=>{
  const sql=await read('supabase/migrations/20260921211000_scout_recruitment_crm_v1.sql')
  assert.match(sql,/add column if not exists pipeline_etapa/)
