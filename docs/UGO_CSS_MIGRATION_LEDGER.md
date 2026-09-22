@@ -16,7 +16,7 @@
 - Cliente Google AI Studio visual source-of-truth: `src/features/client/ai/clientGoogleAiStudio.css`.
 - Cliente Studio reference visual source-of-truth: `src/features/client/ai/clientStudioReference.css`.
 - Cliente Radar Studio: `src/features/client/radar/clientStudioRadar.css`.
-- Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `src/features/client/ui/clientResponsiveLayout.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
+- Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `src/features/client/ui/clientResponsiveLayout.css` + `src/features/client/ui/clientDesktopShell.css`.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.
 
@@ -72,7 +72,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 18. `../../mvp/client/client-real-test-fixes.css`
 19. `./legacy/request/clientFlowReference2026.css`
 20. `./ui/clientPersistentHeader.css`
-21. `../../mvp/client/client-desktop-shell-fixes.css`
+21. `./ui/clientDesktopShell.css`
 22. `./ui/clientHomeScreen.css`
 23. `../../mvp/client/client-home-app-v3.css`
 24. `../../mvp/client/client-premium-2026.css`
