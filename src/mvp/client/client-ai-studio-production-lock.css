@@ -18,6 +18,11 @@
   color:var(--ugo-studio-ink)!important;
 }
 
+/* Semantic Studio navigation visibility belongs to the production shell lock.
+   Keep selectors class-based so adding/removing nav items never changes behavior by position. */
+.ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services,
+.ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:flex!important}
+
 /* Legacy client themes must never turn the production Studio shell dark again. */
 .ugo-client-root .ugo-client-premium-home.ugo-studio-home-page{
   position:relative!important;
@@ -127,6 +132,8 @@
 }
 
 @media(max-width:760px){
+  .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services,
+  .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:flex!important}
   .ugo-client-root .ugo-studio-navbar{
     height:64px!important;
     min-height:64px!important;
@@ -164,6 +171,7 @@
 }
 
 @media(max-width:460px){
+  .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-services{display:flex!important}
   .ugo-client-root .ugo-studio-nav-left>nav .ugo-studio-nav-pro{display:none!important}
   .ugo-client-root .ugo-studio-logo{font-size:22px!important}
   .ugo-client-root .ugo-studio-nav-actions{gap:5px!important}
