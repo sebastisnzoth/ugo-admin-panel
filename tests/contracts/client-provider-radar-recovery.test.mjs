@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client provider radar reads only verified providers and category availability from the shared store',async()=>{
- const store=await read('src/mvp/client/providerRadarStore.ts')
+ const store=await read('src/features/client/radar/providerRadarStore.ts')
  assert.match(store,/from\('proveedores_mapa'\)/)
  assert.match(store,/\.eq\('estado_verificacion','verificado'\)/)
  assert.match(store,/row=>row\.estado_verificacion==='verificado'/)
