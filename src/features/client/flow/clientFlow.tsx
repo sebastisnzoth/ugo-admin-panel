@@ -1,6 +1,6 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
-import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from './clientTypes'
-import { useClientCategoryShortcut } from '../../features/client/hooks/useClientCategoryShortcut'
+import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from '../../../mvp/client/clientTypes'
+import { useClientCategoryShortcut } from '../hooks/useClientCategoryShortcut'
 
 const noop = () => {}
 const unavailable = async () => false
