@@ -5,7 +5,7 @@ import fs from'node:fs'
 const migration=fs.readFileSync('supabase/migrations/20260920062000_operational_tariffs.sql','utf8')
 const safeQuote=fs.readFileSync('supabase/migrations/20260920063000_service_zone_safe_quote.sql','utf8')
 const admin=fs.readFileSync('src/mvp/AdminTariffsPanel.tsx','utf8')
-const location=fs.readFileSync('src/mvp/client/ClientLocationScreen.tsx','utf8')
+const location=fs.readFileSync('src/features/client/request/ClientLocationScreen.tsx','utf8')
 const summary=fs.readFileSync('src/mvp/client/ClientSummaryScreen.tsx','utf8')
 const post=fs.readFileSync('src/mvp/client/ClientPostConfirmFlow.tsx','utf8')
 
