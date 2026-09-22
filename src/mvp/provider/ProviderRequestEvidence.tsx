@@ -1,11 +1,8 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
-import{getRoleSupabase}from'../../lib/roleSupabase'
+import{providerEvidenceDb,loadRequestEvidence,type RequestEvidenceRow as Row}from'../../features/provider/services/providerEvidenceService'
 import{Button,EmptyState,LoadingState}from'../../shared/ui'
 
-type Row={id:string;storage_path:string;descripcion:string|null;url?:string|null;urlError?:string|null}
 type EvidenceError={kind:'query'|'storage'|'unknown';message:string}
-const BUCKET='request-evidence'
-
 function friendlyError(error:EvidenceError){
  if(error.kind==='query')return 'No pudimos consultar las fotos del pedido. Puede ser un problema de permisos/RLS o de conexión.'
  if(error.kind==='storage')return 'Encontramos el registro de la foto, pero no pudimos abrir el archivo en Storage.'
@@ -13,15 +10,11 @@ function friendlyError(error:EvidenceError){
 }
 
 export function ProviderRequestEvidence({serviceId}:{serviceId:string}){
- const supabase=useMemo(()=>getRoleSupabase('provider'),[]),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState<EvidenceError|null>(null)
+ const supabase=useMemo(()=>providerEvidenceDb(),[]),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(true),[loadError,setLoadError]=useState<EvidenceError|null>(null)
  const load=useCallback(async()=>{
   setLoading(true);setLoadError(null)
-  const{data,error}=await supabase.from('evidencias_solicitud').select('id,storage_path,descripcion').eq('servicio_id',serviceId).order('created_at',{ascending:true})
-  if(error){setRows([]);setLoadError({kind:'query',message:error.message});setLoading(false);return}
-  const signed=await Promise.all(((data||[])as Row[]).map(async r=>{
-   const{data:s,error:storageError}=await supabase.storage.from(BUCKET).createSignedUrl(r.storage_path,900)
-   return{...r,url:s?.signedUrl||null,urlError:storageError?.message||(!s?.signedUrl?'SIGNED_URL_MISSING':null)}
-  }))
+  let signed:Row[]
+  try{signed=await loadRequestEvidence(serviceId)}catch(error){setRows([]);setLoadError({kind:'query',message:error instanceof Error?error.message:String(error)});setLoading(false);return}
   setRows(signed)
   if(signed.some(r=>r.urlError))setLoadError({kind:'storage',message:'SIGNED_URL_FAILED'})
   setLoading(false)
