@@ -28,7 +28,7 @@ Estas capas Cliente siguen existiendo por compatibilidad, pero no pueden ganar n
 - `src/features/client/legacy/request/clientGuidedRequestRedesign.css` (legacy: `client-guided-request-redesign.css`)
 - `src/features/client/legacy/clientRedesign2026.css` (legacy: `client-redesign-2026.css`)
 - `src/features/client/legacy/ai/clientAiStudioProductionLock.css` (legacy: `client-ai-studio-production-lock.css`)
-- `client-ai-studio-production-ops.css`
+- `src/features/client/legacy/ai/clientAiStudioProductionOps.css` (legacy: `client-ai-studio-production-ops.css`)
 - `client-ai-studio-final-lock.css`
 - `client-ai-studio-guided-complete.css`
 - `client-real-test-fixes.css`
@@ -66,7 +66,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 12. `./ai/clientStudioReference.css`
 13. `./radar/clientStudioRadar.css`
 14. `./legacy/ai/clientAiStudioProductionLock.css`
-15. `../../mvp/client/client-ai-studio-production-ops.css`
+15. `./legacy/ai/clientAiStudioProductionOps.css`
 16. `../../mvp/client/client-ai-studio-final-lock.css`
 17. `../../mvp/client/client-ai-studio-guided-complete.css`
 18. `../../mvp/client/client-real-test-fixes.css`
