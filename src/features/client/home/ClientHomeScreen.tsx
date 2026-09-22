@@ -2,7 +2,7 @@ import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import * as maplibregl from'maplibre-gl'
 import'maplibre-gl/dist/maplibre-gl.css'
 import{useRoleSession,type Category}from'../../../mvp/shared'
-import{useClientFlow}from'../../../mvp/client/clientFlow'
+import{useClientFlow}from'../flow/clientFlow'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../../../mvp/uiEvents'
 import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../../../mvp/client/providerRadarStore'
 
