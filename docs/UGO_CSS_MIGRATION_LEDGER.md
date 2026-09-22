@@ -13,6 +13,7 @@
 - Cliente conversación base: `src/features/client/conversation/clientConversationalStage.css`.
 - Cliente conversación web/desktop: `src/features/client/conversation/clientWebConversational.css`.
 - Cliente AI Studio flow: `src/features/client/ai/clientAiStudioFlow.css`.
+- Cliente Google AI Studio visual source-of-truth: `src/features/client/ai/clientGoogleAiStudio.css`.
 - Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `src/features/client/ui/clientResponsiveLayout.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.
@@ -59,7 +60,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 8. `./request/clientGuidedRequestReview.css`
 9. `./legacy/clientRedesign2026.css`
 10. `./ai/clientAiStudioFlow.css`
-11. `../../mvp/client/client-google-ai-studio.css`
+11. `./ai/clientGoogleAiStudio.css`
 12. `../../mvp/client/client-studio-reference.css`
 13. `../../mvp/client/client-studio-radar.css`
 14. `../../mvp/client/client-ai-studio-production-lock.css`
