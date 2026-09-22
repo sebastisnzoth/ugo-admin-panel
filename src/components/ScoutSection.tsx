@@ -8,6 +8,7 @@ type Provider={id:string;name:string;phone?:string;email?:string;address?:string
 type Prospect={id:string;external_id:string|null;nombre:string;categoria:string;telefono:string|null;email:string|null;website:string|null;direccion:string|null;ciudad:string|null;pais:string|null;latitud:number|null;longitud:number|null;fuente:string;score_confianza:number;estado:string;notas_hugo:string|null;created_at:string;updated_at:string;contactado_at:string|null;aprobado_at:string|null;pipeline_etapa:string;recruitment_score:number;contactos_intentos:number;ultimo_canal:string|null;ultimo_contacto_at:string|null;proximo_contacto_at:string|null;no_contactar:boolean;invitation_token:string|null}
 type DbProvider={id:string;nombre:string;lat:number|null;lng:number|null;categoria:string|null;cat_emoji:string|null;pin_color:string|null;estado_mapa:string|null;telefono:string|null;zona:string|null}
 type DemandRow={slug:string;nombre:string;emoji:string|null;pedidos_30d:number;proveedores_activos:number;brecha:number;prioridad:string}
+type GmailStatus={configured:boolean;connected:boolean;email:string|null;updatedAt:string|null}
 
 const CATEGORIES=[
  ['electricista','⚡','Electricista · Eletricista'],
@@ -51,6 +52,7 @@ export function SecScout(){
  const[savedCategory,setSavedCategory]=useState('all'),[pipelineFilter,setPipelineFilter]=useState('all'),[prospectSearch,setProspectSearch]=useState(''),[followupOnly,setFollowupOnly]=useState(false)
  const[selectedProspect,setSelectedProspect]=useState<Prospect|null>(null),[prospectDraft,setProspectDraft]=useState<Prospect|null>(null),[prospectBusy,setProspectBusy]=useState(false)
  const[demand,setDemand]=useState<DemandRow[]>([]),[emailSubject,setEmailSubject]=useState('UGO · Convite para profissionais')
+ const[gmailStatus,setGmailStatus]=useState<GmailStatus>({configured:false,connected:false,email:null,updatedAt:null}),[gmailBusy,setGmailBusy]=useState(false)
  const[recruitmentText,setRecruitmentText]=useState('Olá {nombre}! Sou da equipe UGO. Estamos convidando profissionais de {categoria} em {zona} para conhecer a plataforma e receber oportunidades de clientes próximos. Se tiver interesse, responda esta mensagem e eu te explico como funciona. Se não quiser receber novos contatos, é só me avisar.')
 
  const loadProspects=useCallback(async()=>{
@@ -74,8 +76,14 @@ export function SecScout(){
   if(error)throw error
   setDemand((data||[])as DemandRow[])
  },[])
+ const loadGmailStatus=useCallback(async()=>{
+  const session=await supabase.auth.getSession();const token=session.data.session?.access_token;if(!token)return
+  const response=await fetch('/api/scout/gmail',{headers:{Authorization:`Bearer ${token}`}}),payload=await response.json().catch(()=>({}))
+  if(response.ok)setGmailStatus({configured:Boolean(payload.configured),connected:Boolean(payload.connected),email:payload.email||null,updatedAt:payload.updatedAt||null})
+ },[])
 
- useEffect(()=>{void Promise.all([loadProspects(),loadDbProviders(),loadDemand()]).catch(e=>setError(e instanceof Error?e.message:'No se pudo cargar Scout.'))},[loadProspects,loadDbProviders,loadDemand])
+ useEffect(()=>{void Promise.all([loadProspects(),loadDbProviders(),loadDemand(),loadGmailStatus()]).catch(e=>setError(e instanceof Error?e.message:'No se pudo cargar Scout.'))},[loadProspects,loadDbProviders,loadDemand,loadGmailStatus])
+ useEffect(()=>{const params=new URLSearchParams(window.location.search),oauth=params.get('scout_gmail');if(oauth==='connected')setStatus('Gmail conectado. Ya podés enviar invitaciones desde Scout.');if(oauth==='error')setError('Google no pudo completar la conexión de Gmail. Revisá las credenciales OAuth e intentá nuevamente.');if(oauth){params.delete('scout_gmail');const q=params.toString();window.history.replaceState({},'',`${window.location.pathname}${q?`?${q}`:''}${window.location.hash}`)}},[])
 
  useEffect(()=>{
   if((window as any).L){setLeafletReady(true);return}
@@ -171,6 +179,21 @@ export function SecScout(){
   return session.access_token
  }
 
+ async function gmailAction(body:Record<string,unknown>){
+  const request=async(token:string)=>fetch('/api/scout/gmail',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},body:JSON.stringify(body)})
+  let response=await request(await authToken());if(response.status===401)response=await request(await authToken(true))
+  const payload=await response.json().catch(()=>({}));if(!response.ok)throw new Error(payload.error||`Gmail Scout respondió HTTP ${response.status}`);return payload
+ }
+ async function connectGmail(){
+  if(gmailBusy)return;setGmailBusy(true);setError('')
+  try{const payload=await gmailAction({action:'start'});if(!payload.url)throw new Error('Google no devolvió la URL de autorización.');window.location.assign(String(payload.url))}
+  catch(e){setError(e instanceof Error?e.message:'No se pudo iniciar Gmail.');setGmailBusy(false)}
+ }
+ async function disconnectGmail(){
+  if(gmailBusy||!gmailStatus.connected||!window.confirm('¿Desconectar la cuenta Gmail de Scout? No se enviarán más invitaciones hasta volver a conectarla.'))return
+  setGmailBusy(true);setError('');try{await gmailAction({action:'disconnect'});setGmailStatus(v=>({...v,connected:false,email:null,updatedAt:null}));setStatus('Gmail desconectado de Scout.')}catch(e){setError(e instanceof Error?e.message:'No se pudo desconectar Gmail.')}finally{setGmailBusy(false)}
+ }
+
  async function geocode(){
   const q=address.trim();if(!q)return
   setGeoBusy(true);setError('')
@@ -259,6 +282,26 @@ export function SecScout(){
   setStatus(`Abrí un email para ${selectedEmails.length} contactos.`)
  }
 
+ async function sendSelectedEmailCampaign(){
+  if(!selectedEmails.length){setError('Los seleccionados no tienen email público disponible.');return}
+  if(!gmailStatus.connected){setError('Conectá una cuenta Gmail en Scout antes de enviar.');return}
+  if(!window.confirm(`Enviar invitación desde ${gmailStatus.email||'Gmail'} a ${selectedEmails.length} profesionales seleccionados?`))return
+  setCampaignBusy(true);setError('');let sent=0,failed=0,done=0
+  try{
+   await persistProspects(selectedEmails)
+   const{data:saved,error:savedError}=await(supabase as any).from('prospectos_scouts').select('id,external_id').in('external_id',selectedEmails.map(p=>p.id))
+   if(savedError)throw savedError
+   const ids=(saved||[]).map((row:any)=>String(row.id))
+   for(const batch of chunks(ids,20)){
+    setCampaignProgress(`Gmail ${done}/${ids.length} · enviados ${sent} · errores ${failed}`)
+    const payload=await gmailAction({action:'send_campaign',ids:batch,subject:emailSubject,message:recruitmentText,zona:locationLabel})
+    sent+=Number(payload.sent||0);failed+=Number(payload.failed||0);done+=batch.length
+   }
+   await Promise.all([loadProspects(),loadGmailStatus()]);setCampaignProgress('');setStatus(`Campaña Gmail finalizada: ${sent} enviados · ${failed} errores.`)
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo completar la campaña Gmail.')}
+  finally{setCampaignBusy(false)}
+ }
+
  async function sendWhatsAppSelected(){
   const batch=selectedPhones.slice(0,20)
   if(!batch.length){setError('Seleccioná profesionales con WhatsApp/teléfono.');return}
@@ -317,12 +360,13 @@ export function SecScout(){
 
  async function sendSavedEmailCampaign(){
   if(!savedEmails.length){setError('Esta vista todavía no tiene emails disponibles.');return}
-  if(!window.confirm(`Enviar email de reclutamiento a ${savedEmails.length} prospectos visibles?`))return
+  if(!gmailStatus.connected){setError('Conectá una cuenta Gmail en Scout antes de enviar.');return}
+  if(!window.confirm(`Enviar desde ${gmailStatus.email||'Gmail'} el email de reclutamiento a ${savedEmails.length} prospectos visibles?`))return
   setCampaignBusy(true);setError('');let sent=0,failed=0,done=0
   try{
    for(const batch of chunks(savedEmails,20)){
     setCampaignProgress(`Email ${done}/${savedEmails.length} · enviados ${sent} · errores ${failed}`)
-    const payload=await scoutAction({action:'email_campaign',ids:batch.map(p=>p.id),subject:emailSubject,message:recruitmentText,zona:locationLabel})
+    const payload=await gmailAction({action:'send_campaign',ids:batch.map(p=>p.id),subject:emailSubject,message:recruitmentText,zona:locationLabel})
     sent+=Number(payload.sent||0);failed+=Number(payload.failed||0);done+=batch.length
    }
    await loadProspects();setCampaignProgress('');setStatus(`Campaña finalizada: ${sent} emails enviados · ${failed} errores.`)
@@ -367,11 +411,14 @@ export function SecScout(){
   void registerContact(p,'whatsapp').then(()=>setStatus(`WhatsApp registrado para ${p.nombre}; seguimiento programado en 2 días.`)).catch(e=>setError(e instanceof Error?e.message:'No se pudo registrar el contacto.'))
  }
 
- function contactProspectEmail(p:Prospect){
+ async function contactProspectEmail(p:Prospect){
   const email=String(p.email||'').trim();if(!email){setError('Este prospecto todavía no tiene email.');return}
   if(p.no_contactar){setError('Este prospecto está marcado como no contactar.');return}
-  window.location.href=`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(prospectMessage(p))}`
-  void registerContact(p,'email').then(()=>setStatus(`Email registrado para ${p.nombre}; seguimiento programado en 2 días.`)).catch(e=>setError(e instanceof Error?e.message:'No se pudo registrar el contacto.'))
+  if(!gmailStatus.connected){setError('Conectá una cuenta Gmail en Scout antes de enviar.');return}
+  setBusyId('email-'+p.id);setError('')
+  try{await gmailAction({action:'send',prospectId:p.id,subject:emailSubject,message:recruitmentText,zona:p.ciudad||locationLabel});await loadProspects();setStatus(`Invitación Gmail enviada a ${p.nombre} desde ${gmailStatus.email||'la cuenta conectada'}.`)}
+  catch(e){setError(e instanceof Error?e.message:'No se pudo enviar el email.')}
+  finally{setBusyId('')}
  }
 
  async function setProspectState(row:Prospect,next:'invitado'|'aprobado'|'rechazado'){
@@ -407,7 +454,8 @@ export function SecScout(){
   {error&&<div className="ugo-scout-error" role="alert">{error}<button type="button" onClick={()=>setError('')}>×</button></div>}
   <div className="ugo-scout-status" role="status">{status}</div>
   <section className="ugo-scout-recruit">
-   <header><div><small>RECLUTAMIENTO SCOUT</small><strong>{selectedResults.length} seleccionados</strong></div><span>WhatsApp envía hasta 20 por lote para evitar disparos accidentales.</span></header>
+   <header><div><small>RECLUTAMIENTO SCOUT</small><strong>{selectedResults.length} seleccionados</strong></div><span>WhatsApp y Gmail envían hasta 20 por lote para evitar disparos accidentales.</span></header>
+   <div className={`ugo-scout-gmail ${gmailStatus.connected?'connected':''}`}><div><small>GMAIL SCOUT</small><strong>{gmailStatus.connected?`✓ ${gmailStatus.email||'Cuenta conectada'}`:gmailStatus.configured?'Cuenta lista para conectar':'Falta configurar OAuth de Google'}</strong><span>{gmailStatus.connected?'Los envíos quedan registrados en la ficha y en el embudo.':'Conectá una cuenta Google una sola vez para enviar invitaciones desde el panel.'}</span></div><div className="ugo-scout-actions">{gmailStatus.connected?<button type="button" onClick={()=>void disconnectGmail()} disabled={gmailBusy}>{gmailBusy?'Procesando…':'Desconectar Gmail'}</button>:<button type="button" className="primary" onClick={()=>void connectGmail()} disabled={gmailBusy||!gmailStatus.configured}>{gmailBusy?'Abriendo Google…':'Conectar Gmail'}</button>}</div></div>
    <input value={emailSubject} onChange={e=>setEmailSubject(e.target.value)} aria-label="Asunto de email" placeholder="Asunto del email"/>
    <textarea value={recruitmentText} onChange={e=>setRecruitmentText(e.target.value)} aria-label="Mensaje de reclutamiento"/><small className="ugo-scout-template-help">Variables: {'{nombre}'} · {'{categoria}'} · {'{zona}'}</small>
    <div className="ugo-scout-actions">
@@ -416,7 +464,8 @@ export function SecScout(){
     <button type="button" onClick={()=>void saveAllResults()} disabled={!results.length||campaignBusy}>Guardar todos ({results.length})</button>
     <button type="button" onClick={exportExcel} disabled={!results.length}>⬇ Excel {selectedResults.length?'seleccionados':'encontrados'}</button>
     <button type="button" className="primary" onClick={()=>void sendWhatsAppSelected()} disabled={!selectedPhones.length||campaignBusy}>WhatsApp ({selectedPhones.length})</button>
-    <button type="button" onClick={openEmailDraft} disabled={!selectedEmails.length||campaignBusy}>Email ({selectedEmails.length})</button>
+    <button type="button" onClick={openEmailDraft} disabled={!selectedEmails.length||campaignBusy}>Borrador ({selectedEmails.length})</button>
+    <button type="button" className="primary" onClick={()=>void sendSelectedEmailCampaign()} disabled={!selectedEmails.length||campaignBusy||!gmailStatus.connected}>Gmail ({selectedEmails.length})</button>
    </div>
    {campaignProgress&&<div className="ugo-scout-campaign-progress" role="status">{campaignProgress}</div>}
   </section>
@@ -433,7 +482,7 @@ export function SecScout(){
   <section className="ugo-scout-prospects">
    <header><div><small>CRM SCOUT POR CATEGORÍA</small><strong>{prospects.length} prospectos · {savedEmails.length} emails en vista</strong></div><button type="button" onClick={()=>void loadProspects()}>↻ Actualizar</button></header>
    <div className="ugo-scout-category-tabs"><button type="button" className={savedCategory==='all'?'active':''} onClick={()=>setSavedCategory('all')}>Todos <b>{prospects.length}</b></button>{categoryStats.map(c=><button type="button" key={c.id} className={savedCategory===c.id?'active':''} onClick={()=>setSavedCategory(c.id)}>{c.emoji} {c.label} <b>{c.total}</b>{demandByScout.get(c.id)?.prioridad==='alta'&&<small>ALTA</small>}</button>)}</div>
-   <div className="ugo-scout-crm-toolbar"><input value={prospectSearch} onChange={e=>setProspectSearch(e.target.value)} placeholder="Buscar nombre, teléfono, email, ciudad…"/><select value={pipelineFilter} onChange={e=>setPipelineFilter(e.target.value)}><option value="all">Todo el embudo</option>{PIPELINE.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select><button type="button" className={followupOnly?'active':''} onClick={()=>setFollowupOnly(v=>!v)}>Seguimientos ({funnel.seguimiento})</button><button type="button" onClick={()=>void collectPublicEmails()} disabled={!websitesMissingEmail.length||campaignBusy}>Recopilar emails ({websitesMissingEmail.length})</button><button type="button" onClick={openSavedEmailDraft} disabled={!savedEmails.length}>BCC ({savedEmails.length})</button><button type="button" className="primary" onClick={()=>void sendSavedEmailCampaign()} disabled={!savedEmails.length||campaignBusy}>Enviar email ({savedEmails.length})</button></div>
+   <div className="ugo-scout-crm-toolbar"><input value={prospectSearch} onChange={e=>setProspectSearch(e.target.value)} placeholder="Buscar nombre, teléfono, email, ciudad…"/><select value={pipelineFilter} onChange={e=>setPipelineFilter(e.target.value)}><option value="all">Todo el embudo</option>{PIPELINE.map(([id,label])=><option key={id} value={id}>{label}</option>)}</select><button type="button" className={followupOnly?'active':''} onClick={()=>setFollowupOnly(v=>!v)}>Seguimientos ({funnel.seguimiento})</button><button type="button" onClick={()=>void collectPublicEmails()} disabled={!websitesMissingEmail.length||campaignBusy}>Recopilar emails ({websitesMissingEmail.length})</button><button type="button" onClick={openSavedEmailDraft} disabled={!savedEmails.length}>BCC ({savedEmails.length})</button><button type="button" className="primary" onClick={()=>void sendSavedEmailCampaign()} disabled={!savedEmails.length||campaignBusy||!gmailStatus.connected}>Enviar con Gmail ({savedEmails.length})</button></div>
    {visibleProspects.length?<div className="ugo-scout-prospect-list">{visibleProspects.map(p=><article key={p.id} className={selectedProspect?.id===p.id?'active':''}><button type="button" className="ugo-scout-prospect-main" onClick={()=>openProspectCard(p)}><div className="ugo-scout-prospect-title"><b>{p.nombre}</b><em className={p.pipeline_etapa}>{pipelineLabel(p.pipeline_etapa)}</em><i>Score {p.recruitment_score}</i></div><span>{p.telefono||'Sin teléfono'} · {p.email||'Sin email'} · {category(p.categoria)[2]}</span><small>{p.ciudad||'—'} · {sourceLabel(p.fuente)} · contactos {p.contactos_intentos||0}{p.proximo_contacto_at?` · próximo ${new Date(p.proximo_contacto_at).toLocaleString('es-AR')}`:''}{p.no_contactar?' · NO CONTACTAR':''}</small></button><div className="ugo-scout-actions"><button type="button" onClick={()=>openProspectCard(p)}>Ficha</button><button type="button" onClick={()=>contactProspectWhatsApp(p)} disabled={!p.telefono||p.no_contactar}>WhatsApp</button><button type="button" onClick={()=>contactProspectEmail(p)} disabled={!p.email||p.no_contactar}>Email</button>{p.estado!=='aprobado'&&p.estado!=='rechazado'&&<button type="button" className="primary" onClick={()=>void setProspectState(p,'aprobado')} disabled={busyId===p.id}>Aprobar</button>}</div></article>)}</div>:<p>No hay prospectos con estos filtros.</p>}
   </section>
   {selectedProspect&&prospectDraft&&<div className="ugo-scout-card-backdrop" role="presentation" onMouseDown={e=>{if(e.target===e.currentTarget)closeProspectCard()}}>
