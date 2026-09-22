@@ -37,6 +37,7 @@ Estas capas Cliente siguen existiendo por compatibilidad, pero no pueden ganar n
 - `client-real-test-fixes.css`
 - `src/features/client/legacy/request/clientFlowReference2026.css` (legacy: `client-flow-reference-2026.css`)
 - `src/features/client/legacy/home/clientHomeAppV3.css` (legacy: `client-home-app-v3.css`)
+- `src/features/client/legacy/premium/clientPremium2026.css` (legacy: `client-premium-2026.css`)
 
 ## Gate de retiro
 
@@ -79,7 +80,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 21. `./ui/clientDesktopShell.css`
 22. `./ui/clientHomeScreen.css`
 23. `./legacy/home/clientHomeAppV3.css`
-24. `../../mvp/client/client-premium-2026.css`
+24. `./legacy/premium/clientPremium2026.css`
 25. `./profile/clientProfilePremium2026.css`
 
 ## Hotspot de solapamiento confirmado
