@@ -6,6 +6,7 @@ const sentinel=fs.readFileSync(new URL('../../src/lib/sentinel.ts',import.meta.u
 const service=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts',import.meta.url),'utf8')
 const chat=fs.readFileSync(new URL('../../src/mvp/ServiceChat.tsx',import.meta.url),'utf8')
 const clientRoot=fs.readFileSync(new URL('../../src/mvp/client/ClientRoot.tsx',import.meta.url),'utf8')
+const clientRootNavigation=fs.readFileSync(new URL('../../src/features/client/navigation/useClientRootNavigation.ts',import.meta.url),'utf8')
 const detail=fs.readFileSync(new URL('../../src/mvp/client/ClientServiceDetail.tsx',import.meta.url),'utf8')
 const dashboard=fs.readFileSync(new URL('../../src/mvp/DevelopmentDashboard.tsx',import.meta.url),'utf8')
 
@@ -39,9 +40,10 @@ test('provider lifecycle errors reconcile persistence before Sentinel P0',()=>{
 })
 
 test('opening an Activity order carries serviceId and P0 checklist context',()=>{
- assert.match(clientRoot,/action:'client\.activity\.open_order'/)
- assert.match(clientRoot,/checklistCode:'CLIENT-ORDER-OPEN'/)
- assert.match(clientRoot,/severity:'P0'/)
+ assert.match(clientRoot,/useClientRootNavigation/)
+ assert.match(clientRootNavigation,/action:'client\.activity\.open_order'/)
+ assert.match(clientRootNavigation,/checklistCode:'CLIENT-ORDER-OPEN'/)
+ assert.match(clientRootNavigation,/severity:'P0'/)
  assert.match(detail,/eventType:'client_order_load_error'/)
  assert.match(detail,/checklistCode:'CLIENT-ORDER-OPEN'/)
 })

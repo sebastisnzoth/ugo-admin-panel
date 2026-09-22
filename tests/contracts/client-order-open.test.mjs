@@ -3,13 +3,14 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const root=fs.readFileSync('src/mvp/client/ClientRoot.tsx','utf8')
+const rootNavigation=fs.readFileSync('src/features/client/navigation/useClientRootNavigation.ts','utf8')
 const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
 const detail=fs.readFileSync('src/mvp/client/ClientServiceDetail.tsx','utf8')
 const map=fs.readFileSync('src/mvp/ClientActiveMap.tsx','utf8')
 
 test('Activity opens the exact serviceId under the CLIENT-ORDER-OPEN sentinel context',()=>{
  assert.match(history,/onClick=\{\(\)=>onOpenService\(r\.id\)\}>Abrir pedido y chat<\/button>/)
- assert.match(root,/const openService=\(serviceId:string\)=>\{setSentinelContext\(\{role:'client',serviceId,action:'client\.activity\.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'\}\);setSelectedServiceId\(serviceId\)\}/)
+ assert.match(rootNavigation,/const openService=useCallback\(\(serviceId:string\)=>\{setSentinelContext\(\{role:'client',serviceId,action:'client\.activity\.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'\}\);setSelectedServiceId\(serviceId\)\}/)
  assert.match(root,/ClientServiceDetail serviceId=\{selectedServiceId\}/)
 })
 
