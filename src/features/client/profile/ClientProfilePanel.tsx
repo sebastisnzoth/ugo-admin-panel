@@ -1,8 +1,8 @@
 import React,{useCallback,useEffect,useState}from'react'
-import{useRoleSession}from'../shared'
-import{useClientFlow}from'./clientFlow'
-import{UGO_UI_EVENTS}from'../uiEvents'
-import'../../features/client/profile/clientProfilePanel.css'
+import{useRoleSession}from'../../../mvp/shared'
+import{useClientFlow}from'../../../mvp/client/clientFlow'
+import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
+import'./clientProfilePanel.css'
 
 type Detail={telefono?:string|null;direccion?:string|null;barrio?:string|null;ciudad?:string|null;idioma_preferido?:string|null;contacto_preferido?:string|null}
 type PaymentMethod='efectivo'|'pix'
