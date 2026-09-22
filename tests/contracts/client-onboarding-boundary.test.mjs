@@ -17,3 +17,11 @@ test('ClientRoot owns the single onboarding boundary', async () => {
   assert.match(root, /ugo-client-root ugo-client-screen-\$\{flow\.screen\}/)
   assert.equal((root.match(/<ClientOnboardingGate/g) || []).length, 1)
 })
+
+test('client onboarding CSS lives beside its feature boundary', async () => {
+  const [gate, css] = await Promise.all([read('src/features/client/onboarding/ClientOnboardingGate.tsx'), read('src/features/client/onboarding/clientOnboarding.css')])
+  assert.match(gate, /\.\/clientOnboarding\.css/)
+  assert.doesNotMatch(gate, /mvp\/client-onboarding\.css/)
+  assert.match(css, /\.ugo-client-onboarding/)
+  assert.match(css, /\.ugo-client-onboarding-card/)
+})
