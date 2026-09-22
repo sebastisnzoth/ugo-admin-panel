@@ -575,3 +575,10 @@ Reglas:
 - `null` se valida antes de conversión numérica para impedir que JavaScript lo transforme en `0`.
 
 Esto preserva integridad geográfica para ranking por distancia y para el gate backend de llegada a 200 m.
+## Scout Gmail · datos y permisos (2026-09-22)
+
+- `scout_gmail_conexiones`: singleton de la cuenta remitente de Scout; contiene email, refresh token, scope y admin que conectó la cuenta.
+- `scout_email_envios`: auditoría server-only de destinatario, asunto, IDs de Gmail, estado, error y admin remitente.
+- Ambas tablas tienen RLS habilitado, sin grants para `anon` ni `authenticated`; sólo `service_role` puede leer o mutar tokens/auditoría.
+- Un envío exitoso actualiza el mismo `prospectos_scouts`: `ultimo_canal=email`, intentos, timestamps y próximo seguimiento. `no_contactar` y `rechazado` bloquean el envío server-side.
+
