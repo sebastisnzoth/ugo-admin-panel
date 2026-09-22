@@ -21,7 +21,7 @@ test('provider bottom navigation exposes four real mobile destinations', async (
   ])
   assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/)
   for (const label of ['Inicio','Pedidos','Trabajo','Perfil']) assert.match(root,new RegExp(`>${label}(?:<|\\{)`))
-  assert.match(root, /provider-nav-cleanup\.css/)
+  assert.match(styles, /provider-nav-cleanup\.css/)
 })
 
 test('provider history is a screen instead of a floating launcher', async () => {
