@@ -29,7 +29,7 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
  const [sql,postConfirm,paymentChoice]=await Promise.all([
   read('supabase/migrations/20260917230000_default_cash_nonblocking_preorder.sql'),
   read('src/mvp/client/ClientPostConfirmFlow.tsx'),
-  read('src/mvp/client/ClientPaymentChoice.tsx'),
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
  ])
  assert.match(sql,/v_metodo := 'efectivo'/)
  assert.match(sql,/payment_preference_source/)
