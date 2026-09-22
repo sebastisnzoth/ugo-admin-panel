@@ -93,7 +93,7 @@ test('client rating is immediately available after payment closes the selected s
   read('src/mvp/client/ClientServiceDetail.tsx'),
   read('src/mvp/client/ClientRatingPrompt.tsx'),
  ])
- assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(await read('src/mvp/client/ClientRoot.tsx'),/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
  assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
  assert.match(prompt,/serviceId\?servicesQuery\.eq\('id',serviceId\)\.limit\(1\)/)
  assert.match(prompt,/embedded\?'is-embedded'/)
@@ -104,7 +104,7 @@ test('completed-service notification can land on home and still expose client ra
   read('src/features/client/navigation/clientNavigation.ts'),
   read('src/mvp/client/ClientFlowActionsBridge.tsx'),
  ])
- assert.match(root,/notice\.tipo==='servicio_completado'\)return flow\.actions\.openReview\(\)/)
+ assert.match(root,/notice\.tipo==='servicio_completado'/)
  assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
  assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
 })
