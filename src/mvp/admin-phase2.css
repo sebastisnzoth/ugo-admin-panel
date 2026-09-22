@@ -52,3 +52,15 @@
   border-color:var(--ugo-color-outline-variant)!important;
 }
 .ugo-admin2-native-module button:hover:not(:disabled){background:var(--ugo-color-surface-high)!important}
+
+.ugo-admin2-head-actions{display:flex;align-items:center;gap:8px;margin-left:auto}
+.ugo-admin2-gmail{display:inline-flex;align-items:center;gap:7px;max-width:min(260px,34vw);padding:9px 13px;border-radius:999px;border:1px solid var(--ugo-color-outline-variant);background:var(--ugo-color-surface-lowest);color:var(--ugo-color-on-surface);font:inherit;font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer}
+.ugo-admin2-gmail:hover{border-color:var(--ugo-color-primary);background:color-mix(in srgb,var(--ugo-color-primary) 6%,var(--ugo-color-surface-lowest))}
+.ugo-admin2-gmail i{width:7px;height:7px;border-radius:50%;background:#98a2b3;flex:none}
+.ugo-admin2-gmail.connected{color:var(--ugo-color-primary);border-color:color-mix(in srgb,var(--ugo-color-primary) 35%,transparent);background:color-mix(in srgb,var(--ugo-color-primary) 7%,var(--ugo-color-surface-lowest))}
+.ugo-admin2-gmail.connected i{background:var(--ugo-color-primary)}
+.ugo-admin2-gmail:disabled{opacity:.6;cursor:wait}
+.ugo-admin2-gmail-message{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 12px;padding:10px 12px;border:1px solid color-mix(in srgb,var(--ugo-color-error) 30%,transparent);border-radius:12px;background:color-mix(in srgb,var(--ugo-color-error) 6%,var(--ugo-color-surface-lowest));color:var(--ugo-color-on-surface);font-size:12px;font-weight:700}
+.ugo-admin2-gmail-message.ok{border-color:color-mix(in srgb,var(--ugo-color-primary) 30%,transparent);background:color-mix(in srgb,var(--ugo-color-primary) 6%,var(--ugo-color-surface-lowest))}
+.ugo-admin2-gmail-message button{border:0;background:transparent;color:inherit;font-size:18px;line-height:1;cursor:pointer}
+@media(max-width:760px){.ugo-admin2-head-actions{gap:5px}.ugo-admin2-gmail{max-width:145px;padding:8px 10px;font-size:10px}.ugo-admin2-gmail.connected{max-width:165px}}
