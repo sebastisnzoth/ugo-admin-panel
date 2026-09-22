@@ -18,6 +18,12 @@
   --ugo-color-warning-bg:#fffaeb;
   --ugo-color-danger:#b42318;
   --ugo-color-danger-bg:#fff1f0;
+  --ugo-color-inverse-surface:#0b1d2b;
+  --ugo-color-inverse-border:#2b465b;
+  --ugo-color-inverse-text:#f5fbff;
+  --ugo-color-inverse-text-muted:#7890a2;
+  --ugo-color-accent-bright:#20f29a;
+  --ugo-color-on-accent-bright:#04150f;
   --ugo-space-1:4px;
   --ugo-space-2:8px;
   --ugo-space-3:12px;
