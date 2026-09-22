@@ -1,5 +1,6 @@
 import React from'react'
 import type{Service}from'../shared'
+import{Card,StatusPill}from'../../shared/ui'
 
 type Props={service:Service;funded:boolean;cashSelected:boolean;cashConfirmed:boolean;initialEvidence:boolean;finalEvidence:boolean}
 type AssistantStage={title:string;summary:string;items:string[];tone:'ready'|'attention'|'working'|'done'}
@@ -16,5 +17,5 @@ function buildStage({service,funded,cashSelected,cashConfirmed,initialEvidence,f
 
 export function ProviderWorkAssistant(props:Props){
  const stage=buildStage(props)
- return <article className={`provider-hugo-assistant is-${stage.tone}`} aria-labelledby="provider-hugo-title"><header><div className="provider-hugo-orb" aria-hidden="true">H</div><div><small>HUGO · ASISTENTE DE TRABAJO</small><h2 id="provider-hugo-title">{stage.title}</h2></div></header><p>{stage.summary}</p><ul>{stage.items.map(item=><li key={item}>{item}</li>)}</ul><footer>Guía contextual basada en el estado real del servicio. Hugo no modifica pagos, estados ni alcance sin una acción válida.</footer></article>
+ return <Card className={`provider-hugo-assistant is-${stage.tone}`} aria-labelledby="provider-hugo-title"><header><div className="provider-hugo-orb" aria-hidden="true">H</div><div><small>HUGO · ASISTENTE DE TRABAJO</small><h2 id="provider-hugo-title">{stage.title}</h2><StatusPill tone={stage.tone==='attention'?'warning':stage.tone==='done'?'success':'neutral'}>{stage.tone==='attention'?'Requiere atención':stage.tone==='done'?'Listo':stage.tone==='working'?'En curso':'Preparado'}</StatusPill></div></header><p>{stage.summary}</p><ul>{stage.items.map(item=><li key={item}>{item}</li>)}</ul><footer>Guía contextual basada en el estado real del servicio. Hugo no modifica pagos, estados ni alcance sin una acción válida.</footer></Card>
 }
