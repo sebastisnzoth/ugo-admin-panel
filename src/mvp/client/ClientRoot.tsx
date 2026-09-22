@@ -5,7 +5,7 @@ import{ClientFlowActionsBridge}from'../../features/client/actions/ClientFlowActi
 import{ClientNeedScreen}from'../../features/client/request/ClientNeedScreen'
 import{ClientHomeScreen}from'../../features/client/home/ClientHomeScreen'
 import{ClientProfilePanel}from'../../features/client/profile/ClientProfilePanel'
-import{useClientFlow}from'./clientFlow'
+import{useClientFlow}from'../../features/client/flow/clientFlow'
 import{useClientRootNavigation}from'../../features/client/navigation/useClientRootNavigation'
 import{ClientPersistentHeader}from'../../features/client/ui/ClientPersistentHeader'
 import{ClientHistoryOverlay}from'../../features/client/ui/ClientHistoryOverlay'
