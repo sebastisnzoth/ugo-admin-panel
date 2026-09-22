@@ -10,7 +10,7 @@ test('client can start a request without configuring payment on Home',async()=>{
   read('src/mvp/client/ClientNeedScreen.tsx'),
   read('src/mvp/client/ClientPaymentScreen.tsx'),
   read('src/mvp/client/ClientSummaryScreen.tsx'),
-  read('src/mvp/client/ClientProfilePanel.tsx'),
+  read('src/features/client/profile/ClientProfilePanel.tsx'),
  ])
  assert.doesNotMatch(home,/ClientPreOrderPayment/)
  assert.doesNotMatch(home,/paymentReady|paymentWarning|Primero elegí cómo vas a pagar/)
