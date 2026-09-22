@@ -2,7 +2,7 @@ import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
 
-const payment=fs.readFileSync(new URL('../../src/mvp/client/ClientPaymentChoice.tsx',import.meta.url),'utf8')
+const payment=fs.readFileSync(new URL('../../src/features/client/payments/ClientPaymentChoice.tsx',import.meta.url),'utf8')
 
 test('payment state load failures are visible to Sentinel only while foreground and online',()=>{
  assert.match(payment,/const shouldEscalatePaymentSync=\(\)=>document\.visibilityState==='visible'&&navigator\.onLine/)

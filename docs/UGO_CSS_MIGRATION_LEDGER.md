@@ -7,7 +7,7 @@
 
 - Tokens y primitivas globales: `src/mvp/ugo-design-system.css`.
 - Cliente Home base: `src/features/client/ui/clientHomeScreen.css`.
-- Cliente payment choice: `src/features/client/payments/clientPaymentChoice.css`.
+- Cliente payment choice: `src/features/client/payments/ClientPaymentChoice.tsx` + `clientPaymentChoice.css`.
 - Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `client-desktop-shell-fixes.css` hasta probar la migración completa del shell.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.

@@ -1,7 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
-import{reportSentinelIncident}from'../../lib/sentinel'
-import{useRoleSession,type Service}from'../shared'
-import{useClientFlow}from'./clientFlow'
+import{reportSentinelIncident}from'../../../lib/sentinel'
+import{useRoleSession,type Service}from'../../../mvp/shared'
+import{useClientFlow}from'../../../mvp/client/clientFlow'
 
 type Payment={id:string;servicio_id:string;metodo?:string|null;estado:string;pix_copia_cola?:string|null;pix_qr_code?:string|null;pix_expira_at?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 type ServiceWithCurrency=Service&{moneda?:string|null;metadata?:Record<string,unknown>|null}
