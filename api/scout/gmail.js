@@ -131,10 +131,12 @@ async function markContact(sb,row,userId){
   const{error}=await sb.from('prospectos_scouts').update(patch).eq('id',row.id);if(error)throw error;
 }
 async function logSend(sb,{row,to,subject,userId,payload,error}){
-  await sb.from('scout_email_envios').insert({
-    prospecto_id:row?.id||null,to_email:to,subject,gmail_message_id:payload?.id||null,gmail_thread_id:payload?.threadId||null,
-    estado:error?'failed':'sent',error:error?String(error).slice(0,1200):null,sent_by:userId
-  }).catch(()=>undefined);
+  try{
+    await sb.from('scout_email_envios').insert({
+      prospecto_id:row?.id||null,to_email:to,subject,gmail_message_id:payload?.id||null,gmail_thread_id:payload?.threadId||null,
+      estado:error?'failed':'sent',error:error?String(error).slice(0,1200):null,sent_by:userId
+    });
+  }catch{}
 }
 async function sendProspect(sb,config,conn,row,subject,template,zona,userId){
   const to=cleanEmail(row.email);
