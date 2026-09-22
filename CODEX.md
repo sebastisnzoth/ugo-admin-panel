@@ -1,167 +1,284 @@
-# UGO — CODEX.md · Protocolo de ejecución para Codex
+# UGO — CODEX.md · Guía operativa para Codex
 
-**Rama de verdad:** `main`  
-**Autoridad superior:** `AGENTS.md`
+Rama de verdad: `main`
+Autoridad superior: `AGENTS.md`
 
 ## Objetivo
 
-Este archivo existe para que Codex pueda entrar al repositorio UGO desde terminal o entorno cloud, recuperar contexto operativo sin depender de prompts largos y continuar el trabajo de forma autónoma.
+Este archivo da instrucciones operativas a Codex para trabajar dentro del repositorio UGO sin depender de prompts largos ni de contexto improvisado. Debe avanzar con autonomía, auditar la realidad del código, priorizar correcciones de base y dejar el repositorio en un estado mejorado y verificable.
 
-Codex no reemplaza `AGENTS.md`. Debe obedecerlo. Este archivo sólo define cómo tomar el relevo, ejecutar y dejar un handoff legible para el siguiente agente.
+Codex no reemplaza a `AGENTS.md`. Debe obedecerlo. Este archivo define cómo tomar el relevo, qué revisar, qué corregir y cómo dejar evidencia útil para el siguiente agente.
 
-## Relación con el Director
+## Principio rector
 
-Dentro del proyecto UGO, el usuario es el **Director** y debe ser tratado como **Director** en los reportes, pedidos de decisión y handoffs dirigidos a él.
+La pregunta permanente es:
 
-El Director define objetivo, prioridad y criterio de producto. Codex ejecuta el trabajo técnico con autonomía dentro de esas reglas.
+> ¿Qué impide hoy que UGO consiga y atienda correctamente a su primer cliente real?
 
-Reglas:
+Toda acción debe priorizar esa respuesta. No hacer polish si hay un bloqueo P0/P1 real.
 
-- no pedir al Director confirmaciones rutinarias por archivos, refactors, tests, commits o pushes ya autorizados por este protocolo;
-- elevar al Director sólo decisiones críticas: producción con efecto material, dinero real, credenciales ausentes, gasto, acciones destructivas o contradicciones de producto;
-- cuando haya un bloqueo real, explicar la acción mínima que necesita realizar el Director;
-- evitar respuestas largas de planificación cuando existe una acción técnica ejecutable;
-- priorizar evidencia de trabajo terminado: código, tests, commit, push, CI y deploy;
-- no marcar algo como listo sólo porque fue implementado.
+## Misión del repo en este momento
 
-## Entrada obligatoria
+Este repositorio tiene una aplicación React + TypeScript + Vite funcional y con estructura real, pero la base de frontend está más cerca de un MVP operativo que de una arquitectura sostenible para escalar.
 
-Antes de tocar código, Codex debe leer, en este orden proporcional al alcance:
+Se detectan estos patrones reales en el código:
+
+- routing por rol (`client`, `provider`, `admin`, `development`, etc.) en `src/mvp/MvpApp.tsx`
+- bootstrapping de runtime y observabilidad en `src/main.tsx`
+- muchos módulos y archivos específicos por pantalla/rol bajo `src/mvp/`
+- muchos archivos CSS específicos por tema/pantalla bajo `src/mvp/*.css`
+- hooks por dominio bajo `src/hooks/`
+- ausencia real de una base de componentes reutilizables (`shared/ui`)
+- ausencia real de tokens de diseño y estilo centralizado
+- documentación más madura que la implementación actual
+
+Esto no significa que el repo esté roto; significa que está lejos de una base frontend mantenible.
+
+## Reglas de trabajo
+
+### 1) Investigar antes de tocar código
+
+Antes de crear/modificar archivos, Codex debe revisar en este orden:
 
 ```text
 AGENTS.md
 → CODEX.md
-→ docs/UGO_AGENT_HANDOFF.md
-→ UGO_ROADMAP_MASTER.md
-→ docs/UGO_AUDIT_20260912.md
-→ maestros/Skills afectados
+→ README.md
+→ package.json
+→ src/main.tsx
+→ src/mvp/MvpApp.tsx
+→ src/mvp/*
+→ src/components/*
+→ src/hooks/*
+→ src/lib/*
 → realidad actual de main
 ```
 
-Pregunta permanente:
+No asumir que la docs reflectan la realidad del código. Primero validar con la estructura actual.
 
-> **¿Qué impide hoy que esto tenga su primer cliente real?**
+### 2) No hacer rewrite total
 
-La respuesta gobierna la prioridad P0/P1.
+No reescribir todo el repo en una sola operación. La regla es:
 
-## Modo autónomo
+- mejorar la base
+- migrar la app en etapas
+- mantener el sistema funcional
+- validar cada cambio
 
-Una orden como:
+### 3) Prioridad de corrección
+
+Prioridad real:
+
+1. base de UI reutilizable
+2. tokens de diseño y estilo centralizado
+3. arquitectura por features
+4. servicios/data layer
+5. limpieza de CSS legacy
+6. pruebas críticas
+
+No priorizar polish antes que la base.
+
+### 4) Modo autónomo permitido
+
+Una instrucción como:
 
 ```text
 seguí según AGENTS.md y CODEX.md
 ```
 
-autoriza a Codex a encadenar, sin pedir confirmaciones rutinarias:
+autoriza a Codex a hacer esto sin pedir confirmación rutinaria:
 
 ```text
 auditar
-→ elegir el siguiente P0/P1 con dependencia satisfecha
-→ implementar
-→ probar
-→ corregir
-→ revalidar
-→ actualizar handoff/roadmap si corresponde
-→ commit
-→ push a origin/main
-→ verificar sincronización local/remota
+→ detectar el siguiente bloqueo real
+→ corregir la capa responsable
+→ validar
+→ documentar o dejar handoff
+→ commitear
+→ publicar en origin/main
 → continuar con el siguiente bloque relacionado
 ```
 
-No pedir permiso por archivo, test, refactor local, commit, documentación, corrección reversible o publicación rutinaria de cambios ya validados dentro del alcance.
+### 5) Publicación en GitHub
 
-## Regla permanente de publicación en GitHub
+Toda mejora implementada y validada debe quedar publicada en `origin/main`.
 
-**Todo trabajo terminado y validado por Codex debe quedar publicado en GitHub en `origin/main`.**
-
-El cierre normal de un bloque es:
+Regla:
 
 ```text
-IMPLEMENTAR
-→ VALIDAR
+IMPLEMENTADO
+→ VALIDADO
 → COMMIT
 → PUSH origin/main
-→ VERIFICAR origin/main
-→ ACTUALIZAR HANDOFF/ROADMAP si cambió el estado real
-→ CONTINUAR
+→ VERIFICAR sincronización remota
 ```
 
-Reglas obligatorias:
+No cerrar sin publicar cambios validados salvo un bloqueo real ejecutado por una causa externa.
 
-- no dejar commits terminados y validados sólo en local;
-- después de cada commit validado, publicar en `origin/main` sin esperar una nueva orden del usuario;
-- verificar que `main` local y `origin/main` queden sincronizados después del push;
-- si existe más de un commit local terminado y validado, publicar todos los que pertenezcan al bloque autorizado;
-- no declarar `RELEASED` por el solo hecho de hacer push: `RELEASED` requiere evidencia del deploy correspondiente;
-- si el entorno de Codex exige una confirmación técnica del sandbox para `git add`, `git commit` o `git push`, solicitar únicamente esa aprobación mínima y continuar automáticamente después;
-- una limitación del sandbox no cambia esta política ni convierte el push en una decisión de producto;
-- nunca hacer push de un cambio que no haya alcanzado el gate de validación aplicable;
-- si un gate general falla por deuda preexistente no causada por el cambio, registrar la evidencia exacta, ejecutar los gates focalizados disponibles y no ocultar el fallo;
-- detener la publicación únicamente ante un freno real definido en este documento o en `AGENTS.md`.
+## Auditar antes de corregir
 
-La regla por defecto es, por tanto:
+Codex debe revisar estas señales del repo antes de decidir qué cambiar:
 
-> **Trabajo Codex terminado + validado = commit + GitHub `origin/main` + verificación remota.**
+- `src/mvp/MvpApp.tsx`: routing actual, carga de pantallas y estilo global
+- `src/main.tsx`: runtime, errores, observabilidad
+- `src/hooks/*`: qué tan madura es la capa de datos
+- `src/mvp/*.css`: cuánta duplicación/fragmentación visual hay
+- `src/components/*`: si hay verdaderos componentes reutilizables o si hay pantallas monolíticas
 
-## Frenos reales
+## Objetivo de refactor del repo
 
-Codex debe detenerse sólo cuando avanzar requiera alguno de estos casos y no exista alternativa reversible segura:
-
-- producción con efecto material o irreversible;
-- dinero real, precios, comisiones o settlement;
-- credenciales o permisos externos no disponibles;
-- gasto o infraestructura paga;
-- exposición sensible de datos/seguridad;
-- operación destructiva;
-- contradicción material entre maestros;
-- ampliación de alcance hacia otro producto.
-
-Cuando ocurra, no reportar sólo “bloqueado”. Escribir en `docs/UGO_AGENT_HANDOFF.md` exactamente:
+El refactor objetivo no es cambiar la app de tecnología. Es convertir el repo en una base mejor organizada:
 
 ```text
-BLOCKED
-qué falta
-por qué bloquea
-acción mínima del usuario
-resultado esperado
-qué retomar después
+src/
+  app/
+    App.tsx
+    router.tsx
+    providers.tsx
+    layouts/
+
+  features/
+    client/
+    provider/
+    admin/
+    finance/
+    operations/
+
+  shared/
+    ui/
+    services/
+    hooks/
+    lib/
+    types/
+    config/
+
+  styles/
+    tokens.css
+    globals.css
+    reset.css
 ```
 
-## Regla de repositorio
+## Base mínima de arquitectura a crear
 
-- trabajar sobre `main` salvo instrucción explícita distinta;
-- `origin/main` es el destino normal de todo bloque terminado y validado;
-- no clonar otra copia por rutina;
-- usar únicamente el Supabase TEST declarado en `docs/UGO_AGENT_HANDOFF.md` para pruebas del flujo principal; el nombre visible del proyecto no define si es TEST o PROD;
-- no usar Supabase producción como entorno destructivo de test;
-- no crear branch/proyecto Supabase pago sin aprobación humana;
-- no inventar CI verde, deploy, migración aplicada ni E2E exitoso;
-- distinguir siempre `IMPLEMENTED`, `VALIDATED`, `RELEASED`, `MEASURED`.
+### 1) shared/ui
 
-## Fuente de estado compartido
+Crear una capa mínima de componentes reutilizables:
 
-`docs/UGO_AGENT_HANDOFF.md` es el buzón operativo compartido entre ChatGPT/Codex y cualquier otro agente.
+- Button
+- Input
+- Select
+- Textarea
+- Card
+- Modal
+- Badge
+- Tabs
+- SectionHeader
+- EmptyState
+- LoadingState
+- StatusPill
 
-Al comenzar:
-1. leerlo;
-2. verificar que siga alineado con `main`;
-3. si está desactualizado, corregirlo antes de usarlo como verdad.
+Cada componente debe respetar:
 
-Al terminar un bloque significativo:
-1. actualizar `LAST COMPLETED`;
-2. actualizar `CURRENT P0`;
-3. registrar `BLOCKED` sólo si es real;
-4. registrar evidencia de validación exacta;
-5. dejar `NEXT` accionable;
-6. incluir commits relevantes;
-7. publicar el bloque validado en `origin/main`;
-8. verificar que el SHA remoto corresponda al cierre esperado.
+- tokens de diseño
+- tamaño consistente
+- estados de error/loading/disabled
+- accesibilidad mínima
 
-No convertir el handoff en diario largo. Debe ser breve, actual y ejecutable.
+### 2) styles/tokens.css
 
-## Validación mínima
+Centralizar esto:
 
-Usar gates reales del repo cuando el cambio los afecta:
+- colores primarios/secondary
+- neutrales
+- success/warning/error
+- spacing scale
+- border radius
+- shadows
+- typography
+- breakpoints
+- z-index
+
+### 3) feature modules
+
+La lógica debe pasar a features por dominio:
+
+- `features/client/`
+- `features/provider/`
+- `features/admin/`
+- `features/finance/`
+- `features/operations/`
+
+Cada feature debe tener:
+
+- screens/
+- hooks/
+- services/
+- types/
+
+### 4) servicios y capa de datos
+
+Los hooks y pantallas no deben estar haciendo acceso directo a Supabase ad hoc en demasiados lados.
+
+Crear servicios centralizados:
+
+- `shared/services/supabaseClient.ts`
+- `shared/services/adminService.ts`
+- `shared/services/clientService.ts`
+- `shared/services/providerService.ts`
+
+## Qué evitar
+
+Codex no debe:
+
+- crear una nueva app desde cero
+- reescribir todo el repo en un solo cambio
+- seguir agregando archivos CSS específicos sin una base común
+- crear componentes UI duplicados una y otra vez
+- mezclar lógica de dominio y estilo en pantallas gigantes
+- crear feature modules vacíos sin una lógica concreta
+
+## Fases recomendadas de refactor
+
+### Fase 1: base visual y UI
+
+Objetivo:
+
+- crear `shared/ui`
+- crear `styles/tokens.css`
+- centralizar diseño base
+
+### Fase 2: reorganización por feature
+
+Objetivo:
+
+- mover pantallas y lógica crítica a feature modules
+- dejar una capa de routing clara
+
+### Fase 3: servicios y datos
+
+Objetivo:
+
+- centralizar acceso a Supabase
+- crear contratos de tipos y response objects
+- sacar lógica de data fuera de pantallas
+
+### Fase 4: limpieza de CSS legacy
+
+Objetivo:
+
+- reducir los archivos CSS globales específicos
+- mantener solo estilos de feature cuando hagan falta
+
+### Fase 5: pruebas críticas
+
+Objetivo:
+
+- validar flujos principales del cliente/proveedor/admin
+- proteger cambios con tests mínimo de regresión
+
+## Validación mínima recomendada
+
+Cuando cambie la base o la lógica crítica, ejecutar al menos:
 
 ```bash
 npm run build
@@ -169,61 +286,26 @@ npm test
 npm run lint
 ```
 
-Para integración aislada Cliente ↔ Proveedor:
+Y, si aplica al flujo integrado, también:
 
 ```bash
 UGO_REQUIRE_ISOLATED_INTEGRATION=1 npm run test:integration
 ```
 
-Sólo ejecutar ese harness si existen las seis variables `UGO_TEST_*` y el `UGO_TEST_SUPABASE_URL` NO corresponde a producción.
+## Criterios de éxito del refactor
 
-## E2E P0 canónico
+El refactor está bien si:
 
-El journey de referencia es:
+- el repo tiene una base de UI reutilizable
+- los roles están organizados por features
+- la lógica de acceso a datos está centralizada
+- la UI visual ya no depende de cientos de CSS ad hoc
+- una nueva pantalla puede crearse sin recrear toda la base visual
+- los cambios críticos se validan con smoke tests mínimos
 
-```text
-Cliente crea solicitud
-→ matching
-→ Proveedor acepta
-→ pago válido
-→ en_camino
-→ llegado
-→ evidencia Antes
-→ en_progreso
-→ ampliación opcional
-→ evidencia Después
-→ esperando_aprobacion
-→ Cliente aprueba o disputa
-→ cierre financiero
-```
+## Reporte de salida esperado
 
-Invariantes:
-
-- mismo `serviceId` transversal;
-- backend/RPC/RLS autoridad de estados críticos;
-- asignación atómica;
-- pago y evidencia bloquean transiciones inválidas;
-- ampliación conserva integridad financiera;
-- Realtime rehidrata persistencia y no crea segunda verdad;
-- retry/evento duplicado debe ser idempotente.
-
-## Estado actual de referencia
-
-No asumir que este bloque permanece vigente sin revisar `docs/UGO_AGENT_HANDOFF.md` y `UGO_ROADMAP_MASTER.md`.
-
-A fecha de creación de este protocolo:
-
-- harness RPC/RLS aislado ya existe;
-- workflow manual aislado ya existe;
-- protección contra producción ya existe;
-- reembolso de ampliación está versionado pero su migración no debe darse por aplicada sin evidencia;
-- convergencia Realtime fue endurecida en repo;
-- evidencia previa del Cliente es opcional cuando no aporta valor;
-- Vercel puede rechazar builds por rate limit; eso no equivale a fallo de código.
-
-## Reporte de salida
-
-Al terminar, el reporte debe usar exactamente este formato compacto:
+Al terminar un bloque, Codex debe dejar un reporte breve con este formato:
 
 ```text
 IMPLEMENTED
@@ -239,20 +321,44 @@ BLOCKED
 - none | detalle exacto
 
 NEXT
-- siguiente P0/P1 concreto
+- siguiente acción concreta
 
 COMMITS
 - <sha> <mensaje> · local/published
 ```
 
-Si un commit validado aparece como `local`, el bloque no está cerrado: Codex debe intentar publicarlo en `origin/main` antes de terminar, salvo freno real documentado.
+## Regla final
 
-## Comando humano recomendado
+Este repo no necesita un rewrite heroico. Necesita una base sólida.
 
-Desde el repo, el Director debería poder abrir Codex y decir sólo:
+La corrección correcta aquí es:
+
+- crear `shared/ui`
+- crear `styles/tokens.css`
+- organizar features por dominio
+- centralizar servicios
+- limpiar el CSS legacy
+- reforzar validación crítica
+- publicar cambios en `origin/main`
+
+Si el repo se deja como está, seguirá siendo un MVP funcional con deuda creciente.
+Si se corrige la base, se vuelve sostenible.
+
+El trabajo de Codex debe apuntar a esa base, no a la fachada visual.
+
+## Orden de ejecución recomendado para Codex
 
 ```text
-Seguí con los P0 de UGO según AGENTS.md, CODEX.md y docs/UGO_AGENT_HANDOFF.md. No me preguntes salvo decisión crítica. Trabajá, validá, commiteá y publicá en origin/main.
+1. revisar main, MvpApp, hooks y CSS fragmentado
+2. crear shared/ui + tokens
+3. crear app router/providers skeleton
+4. crear feature folders base
+5. migrar pantallas críticas
+6. mover lógica de data a services
+7. limpiar CSS legacy
+8. ejecutar build/test/lint
+9. commitear y publicar origin/main
+10. continuar con el siguiente bloque
 ```
 
-Eso debe ser suficiente para retomar el proyecto, validar, commitear, publicar en GitHub y continuar.
+Esto es la operación correcta para este repositorio.
