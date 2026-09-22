@@ -22,7 +22,7 @@ test('critical realtime consumers recover from missed events using persisted sta
   read('src/mvp/client/ClientPaymentChoice.tsx'),
   read('src/mvp/ClientLiveTracking.tsx'),
   read('src/mvp/ClientCompletionReview.tsx'),
-  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
  ])
  recoveryAssertions(notifications,'NotificationCenter')
  recoveryAssertions(chat,'ServiceChat')
