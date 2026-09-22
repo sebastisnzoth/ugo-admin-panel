@@ -1,15 +1,13 @@
-import React,{useMemo,useState}from'react'
-import{getRoleSupabase}from'../../lib/roleSupabase'
+import React,{useState}from'react'
 import{ProviderPayoutPanel}from'../ProviderPayoutPanel'
 import{useProviderData,money}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{Button,Card,SectionHeader,StatusPill,Textarea}from'../../shared/ui'
-
-type PixDebtPayment={deudaId:string;servicio:string;monto:number;moneda:string;pixCopiaCola:string;pixChave:string;txid:string}
+import{createProviderDebtPix,reportProviderDebtPaid,type ProviderPixDebtPayment}from'../../features/provider/services/providerEarningsService'
 
 export function ProviderEarnings(){
- const d=useProviderData(),flow=useProviderFlow(),supabase=useMemo(()=>getRoleSupabase('provider'),[])
- const[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[pix,setPix]=useState<PixDebtPayment|null>(null)
+ const d=useProviderData(),flow=useProviderFlow()
+ const[busy,setBusy]=useState(''),[message,setMessage]=useState(''),[pix,setPix]=useState<ProviderPixDebtPayment|null>(null)
  const pendingDebts=d.debts.filter(x=>x.ambiente==='real'&&!['pagado','anulado'].includes(x.estado)&&Number(x.saldo_pendiente||0)>0)
  const actionableDebt=pendingDebts.find(x=>x.estado!=='informado')||null
  async function reportPaid(id:string){
@@ -17,9 +15,8 @@ export function ProviderEarnings(){
   if(ref===null)return
   if(ref.trim().length<4){setMessage('Ingresá una referencia válida.');return}
   setBusy(id);setMessage('')
-  const{error}=await(supabase as any).rpc('informar_pago_deuda_ugo',{p_deuda_id:id,p_referencia:ref.trim()})
+  try{await reportProviderDebtPaid(id,ref)}catch(error){setBusy('');setMessage(error instanceof Error?error.message:'No se pudo informar el pago.');return}
   setBusy('')
-  if(error){setMessage(error.message||'No se pudo informar el pago.');return}
   setMessage('Pago informado. UGO lo revisará y marcará la comisión como saldada.')
   if(pix?.deudaId===id)setPix(null)
   await d.reload()
@@ -27,10 +24,7 @@ export function ProviderEarnings(){
  async function startPix(debt:typeof pendingDebts[number]){
   setBusy(`pix:${debt.id}`);setMessage('')
   try{
-   const response=await fetch('/api/test?ugo_debt=1',{method:'POST',headers:{'Content-Type':'application/json',Authorization:`Bearer ${d.accessToken}`},body:JSON.stringify({deudaId:debt.id})})
-   const payload=await response.json().catch(()=>({}))
-   if(!response.ok)throw new Error(payload.error||'No se pudo generar el pago a UGO.')
-   setPix({deudaId:debt.id,servicio:String(debt.servicio?.numero||String(debt.servicio_id).slice(0,8)),monto:Number(payload.monto||debt.saldo_pendiente||0),moneda:String(payload.moneda||debt.moneda||'BRL'),pixCopiaCola:String(payload.pixCopiaCola||''),pixChave:String(payload.pixChave||''),txid:String(payload.txid||'')})
+   setPix(await createProviderDebtPix(d.accessToken,debt))
   }catch(error){setMessage(error instanceof Error?error.message:'No se pudo generar el pago a UGO.')}
   finally{setBusy('')}
  }
