@@ -1,16 +1,16 @@
 import React from'react'
 import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
-import{Button,StatusPill}from'../../shared/ui'
+import{Button}from'../../shared/ui'
 
 export function ProviderStudioSidebar(){
  const d=useProviderData(),f=useProviderFlow()
  return <aside className="provider-studio-sidebar" aria-label="Menú proveedor">
   <div className="provider-studio-brand">UGO</div>
   <div className="provider-studio-user">
-   <span>{(d.name||'P').slice(0,1).toUpperCase()}</span>
+   <span className="provider-studio-avatar" aria-hidden="true">{(d.name||'P').slice(0,1).toUpperCase()}</span>
    <strong>{d.name||'Proveedor UGO'}</strong>
-   <small>★ {d.karma.toFixed(1)} · Proveedor verificado</small><StatusPill tone={d.online?'success':'neutral'}>{d.online?'Online':'Offline'}</StatusPill>
+   <small>★ {d.karma.toFixed(1)} · Proveedor verificado</small>
   </div>
 
   <nav className="provider-studio-nav" aria-label="Navegación principal">
