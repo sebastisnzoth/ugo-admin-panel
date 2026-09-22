@@ -12,7 +12,8 @@ test('provider profile and categories consume shared form primitives',async()=>{
  assert.match(p,/d\.signOut/)
  assert.match(c,/Select/)
  assert.match(c,/LoadingState/)
- assert.match(c,/guardar_categorias_proveedor/)
+ const service=await read('src/features/provider/services/providerCategoriesService.ts')
+ assert.match(service,/guardar_categorias_proveedor/)
 })
 
 test('provider demand consumes shared UI and keeps live data actions',async()=>{

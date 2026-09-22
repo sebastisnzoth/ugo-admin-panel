@@ -17,12 +17,13 @@ test('three unresolved UGO commission debts block provider from new work',async(
 })
 
 test('provider UI exposes the debt block and a real pay UGO action',async()=>{
- const[earnings,data,opportunities,home,endpoint]=await Promise.all([
+ const[earnings,data,opportunities,home,endpoint,earningsService]=await Promise.all([
   read('src/mvp/provider/ProviderEarnings.tsx'),
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderOpportunities.tsx'),
   read('src/mvp/provider/ProviderHome.tsx'),
   read('api/test.ts'),
+  read('src/features/provider/services/providerEarningsService.ts'),
  ])
  assert.match(data,/pendingDebtCount>=3/)
  assert.match(data,/debtBlocked/)
