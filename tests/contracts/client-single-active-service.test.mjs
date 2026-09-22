@@ -20,7 +20,7 @@ test('database corrective migration removes the obsolete one-active-service-per-
 })
 
 test('client cancellation targets one explicit owned service instead of freeing a global active slot', async () => {
-  const bridge = await read('src/mvp/client/ClientFlowActionsBridge.tsx')
+  const bridge = await read('src/features/client/actions/ClientFlowActionsBridge.tsx')
   const dispatch = await read('src/lib/dispatch/supabaseDispatch.ts')
 
   assert.match(bridge, /if\(!serviceId\)return false/)
