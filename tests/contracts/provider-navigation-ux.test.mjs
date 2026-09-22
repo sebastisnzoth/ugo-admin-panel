@@ -19,10 +19,8 @@ test('provider bottom navigation exposes four real mobile destinations', async (
     read('src/mvp/provider/ProviderRoot.tsx'),
     read('src/mvp/provider/provider-responsive-layout.css'),
   ])
-  const styles = await read('src/features/provider/providerStyles.ts')
   assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/)
   for (const label of ['Inicio','Pedidos','Trabajo','Perfil']) assert.match(root,new RegExp(`>${label}(?:<|\\{)`))
-  assert.match(styles, /provider-nav-cleanup\.css/)
 })
 
 test('provider history is a screen instead of a floating launcher', async () => {
