@@ -3,12 +3,14 @@ import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
 const root=await readFile(new URL('../../src/mvp/client/ClientRoot.tsx',import.meta.url),'utf8')
+const globals=await readFile(new URL('../../src/features/client/ui/ClientGlobalSurfaces.tsx',import.meta.url),'utf8')
 const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 
 test('Hugo orb is available from Cliente home/request and does not require a secondary screen',()=>{
- assert.match(root,/<ClientHugoBridge\/>/)
- assert.doesNotMatch(root,/!canonical&&!detailOpen&&<ClientHugoBridge\/>/)
+ assert.match(root,/ClientGlobalSurfaces onOpenNotice=\{openNotice\}/)
+ assert.match(globals,/<ClientHugoBridge\/>/)
+ assert.doesNotMatch(globals,/!canonical&&!detailOpen&&<ClientHugoBridge\/>/)
 })
 
 test('Hugo stays voice-only: the orb opens the controller without restoring a text conversation',()=>{
