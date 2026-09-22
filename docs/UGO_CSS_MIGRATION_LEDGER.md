@@ -16,6 +16,7 @@
 - Cliente Google AI Studio visual source-of-truth: `src/features/client/ai/clientGoogleAiStudio.css`.
 - Cliente Studio reference visual source-of-truth: `src/features/client/ai/clientStudioReference.css`.
 - Cliente Radar Studio: `src/features/client/radar/clientStudioRadar.css`.
+- Cliente Perfil Premium 2026: `src/features/client/profile/clientProfilePremium2026.css`.
 - Shell Cliente: `src/features/client/ui/clientPersistentHeader.css` + `src/features/client/ui/clientResponsiveLayout.css` + `src/features/client/ui/clientDesktopShell.css`.
 - Proveedor: `src/mvp/provider/provider-redesign-2026.css`, con alias visuales derivados de `--ugo-*`.
 - Admin: `src/mvp/admin-phase2.css`, `src/mvp/admin-home-stitch.css`, `src/mvp/admin-uiux-final.css`.
@@ -76,7 +77,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 22. `./ui/clientHomeScreen.css`
 23. `../../mvp/client/client-home-app-v3.css`
 24. `../../mvp/client/client-premium-2026.css`
-25. `../../mvp/client/client-profile-premium-2026.css`
+25. `./profile/clientProfilePremium2026.css`
 
 ## Hotspot de solapamiento confirmado
 
