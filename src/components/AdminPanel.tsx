@@ -16,6 +16,7 @@ import { ConversationalOrb } from './ConversationalOrb';
 
 type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'analytics'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'crm'|'validacion_paises'|'import_provs'|'mapa_ops'|'tiendas';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
+type ScoutGmailStatus = { configured:boolean; connected:boolean; email:string|null; updatedAt:string|null };
 
 const CSS = `
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
@@ -33,6 +34,12 @@ const CSS = `
 .live-dot{width:6px;height:6px;border-radius:50%;background:#05944F;animation:blink 2s infinite;}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 .ua-clock{font-size:11px;color:var(--muted);font-weight:500;}
+.gmail-top{display:flex;align-items:center;gap:6px;border:1px solid rgba(0,0,0,.14);background:#FFF;color:#222;border-radius:999px;padding:5px 10px;font-size:9px;font-weight:800;cursor:pointer;max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:all .15s;}
+.gmail-top:hover{border-color:#05944F;background:rgba(5,148,79,.05);}
+.gmail-top.connected{color:#05944F;border-color:rgba(5,148,79,.3);background:rgba(5,148,79,.07);}
+.gmail-top:disabled{opacity:.55;cursor:wait;}
+.gmail-dot{width:6px;height:6px;border-radius:50%;background:#9CA3AF;flex:none;}
+.gmail-top.connected .gmail-dot{background:#05944F;}
 .ua-nav{display:flex;flex-direction:column;align-items:center;padding:8px 5px;gap:2px;background:#FFF;border-right:1px solid var(--border);overflow-y:auto;scrollbar-width:none;}
 .nav-div{width:32px;height:1px;background:var(--border);margin:4px 0;}
 .nav-item{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;width:50px;padding:8px 0;border-radius:10px;cursor:pointer;color:var(--muted);font-size:14px;transition:all .15s;border:none;background:transparent;}
@@ -364,8 +371,62 @@ export function AdminPanel() {
   const [editingTarifa, setEditingTarifa] = useState<any>(null);
   const [contactModal, setContactModal] = useState<any>(null);
   const [rtToasts, setRtToasts] = useState<{id:number;msg:string;color:string}[]>([]);
+  const [scoutGmail, setScoutGmail] = useState<ScoutGmailStatus>({configured:false,connected:false,email:null,updatedAt:null});
+  const [scoutGmailBusy, setScoutGmailBusy] = useState(false);
   const [contactMsg, setContactMsg] = useState({ titulo:'', cuerpo:'' });
   const [contactSent, setContactSent] = useState(false);
+
+  const adminAuthToken = useCallback(async (force=false) => {
+    const result = force ? await (supabase as any).auth.refreshSession() : await (supabase as any).auth.getSession();
+    const token = result?.data?.session?.access_token;
+    if (result?.error || !token) throw new Error('Sesión Admin vencida.');
+    return token as string;
+  }, []);
+
+  const loadScoutGmail = useCallback(async () => {
+    if (!session) return;
+    try {
+      const token = await adminAuthToken();
+      const response = await fetch('/api/scout/gmail', { headers:{ Authorization:`Bearer ${token}` } });
+      const payload = await response.json().catch(()=>({}));
+      if (response.ok) setScoutGmail({
+        configured:Boolean(payload.configured),
+        connected:Boolean(payload.connected),
+        email:payload.email||null,
+        updatedAt:payload.updatedAt||null,
+      });
+    } catch {}
+  }, [session, adminAuthToken]);
+
+  const connectScoutGmail = useCallback(async () => {
+    if (scoutGmailBusy) return;
+    if (scoutGmail.connected) { setSection('crm'); return; }
+    setScoutGmailBusy(true);
+    try {
+      const request = async (token:string) => fetch('/api/scout/gmail', {
+        method:'POST',
+        headers:{'Content-Type':'application/json',Authorization:`Bearer ${token}`},
+        body:JSON.stringify({action:'start'}),
+      });
+      let response = await request(await adminAuthToken());
+      if (response.status===401) response = await request(await adminAuthToken(true));
+      const payload = await response.json().catch(()=>({}));
+      if (!response.ok) throw new Error(payload.error||`Gmail respondió HTTP ${response.status}`);
+      if (!payload.url) throw new Error('Google no devolvió la URL de autorización.');
+      window.location.assign(String(payload.url));
+    } catch (error) {
+      addToast(error instanceof Error?error.message:'No se pudo conectar Gmail.','#E11900');
+      setScoutGmailBusy(false);
+    }
+  }, [scoutGmailBusy, scoutGmail.connected, adminAuthToken, addToast]);
+
+  useEffect(() => { void loadScoutGmail(); }, [loadScoutGmail]);
+  useEffect(() => {
+    const params=new URLSearchParams(window.location.search),oauth=params.get('scout_gmail');
+    if(oauth==='connected'){addToast('✓ Gmail conectado a Scout.');void loadScoutGmail();}
+    if(oauth==='error')addToast('Google no pudo completar la conexión de Gmail.','#E11900');
+    if(oauth){params.delete('scout_gmail');const q=params.toString();window.history.replaceState({},'',`${window.location.pathname}${q?`?${q}`:''}${window.location.hash}`);}
+  }, [addToast, loadScoutGmail]);
 
   // Hugo
   const [chat, setChat] = useState<{role:'hugo'|'admin'; text:string; action?:string; ts:Date}[]>([
@@ -1194,7 +1255,12 @@ export function AdminPanel() {
         <div className="ua-tb">
           <div><div className="ua-logo">U.GO</div><div className="ua-logo-sub">Quantum OS</div></div>
           {metrics&&<>{criticalCount>0&&<div className="chip chip-r" onClick={()=>setSection('alertas')}>🚨 {criticalCount} críticas</div>}{disputes.length>0&&<div className="chip chip-a">⚖️ {disputes.length}</div>}</>}
-          <div className="ua-tb-r"><div className="live-pill"><div className="live-dot"/>LIVE</div><div className="ua-clock">{clock}</div></div>
+          <div className="ua-tb-r">
+            <button type="button" className={`gmail-top${scoutGmail.connected?' connected':''}`} onClick={()=>void connectScoutGmail()} disabled={scoutGmailBusy} title={scoutGmail.connected?'Abrir CRM Scout':scoutGmail.configured?'Conectar una cuenta Gmail a Scout':'Configurar OAuth de Google para Scout'}>
+              <span className="gmail-dot"/><span>{scoutGmailBusy?'Conectando…':scoutGmail.connected?`Gmail · ${scoutGmail.email||'conectado'}`:'✉ Conectar Gmail'}</span>
+            </button>
+            <div className="live-pill"><div className="live-dot"/>LIVE</div><div className="ua-clock">{clock}</div>
+          </div>
         </div>
 
         <nav className="ua-nav">
