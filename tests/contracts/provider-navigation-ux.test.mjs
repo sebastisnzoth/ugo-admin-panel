@@ -19,7 +19,7 @@ test('provider bottom navigation exposes four real mobile destinations', async (
     read('src/mvp/provider/ProviderRoot.tsx'),
     read('src/mvp/provider/provider-responsive-layout.css'),
   ])
-  assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/)
+  assert.match(css, /grid-template-columns:var\(--provider-nav-columns\)/)
   for (const label of ['Inicio','Pedidos','Trabajo','Perfil']) assert.match(root,new RegExp(`>${label}(?:<|\\{)`))
 })
 
