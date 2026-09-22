@@ -302,3 +302,9 @@ Gemini Live (voz)
 El mapa recibe `ugo:admin:map-command` y aplica filtros de estado, categoría, zona, radio, localidad y visibilidad de actores.
 
 No existe ejecución arbitraria de SQL ni mutación libre desde el modelo. Dinero, permisos, KYC, disputas, usuarios y configuración sensible continúan detrás de RPC/RLS y confirmaciones auditadas de los módulos correspondientes. Gemini TTS se usa para la respuesta hablada con fallback local cuando el servicio de audio no está disponible.
+## Scout · Gmail de reclutamiento (2026-09-22)
+
+Scout usa OAuth 2.0 server-side para conectar una cuenta Gmail operativa del panel Admin. El navegador nunca recibe client secret ni refresh token. La conexión se persiste en `public.scout_gmail_conexiones` con acceso exclusivo `service_role`; `/api/scout/gmail` valida rol Admin/Super Admin, renueva access tokens y envía por Gmail API con el scope mínimo `gmail.send`.
+
+El flujo canónico es: Scout/CRM → API autenticada → conexión Gmail server-only → Gmail API → auditoría `scout_email_envios` → actualización del prospecto (canal, intentos, último contacto y seguimiento). El envío directo reemplaza `mailto:` como canal principal; el borrador BCC queda sólo como respaldo manual.
+
