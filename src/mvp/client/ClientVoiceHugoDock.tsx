@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
+import React,{useCallback,useEffect,useRef,useState}from'react'
 import type{Service}from'../shared'
 import{STATUS_LABELS}from'../shared'
 import{getRoleSupabase}from'../../lib/roleSupabase'
@@ -95,7 +95,7 @@ async function resolveServiceCandidates(source:string,services:HugoService[],onl
  return rows.filter(item=>dayMatches(source,item))
 }
 
-export function ClientVoiceHugoDock({accessToken,service,services=[],availableOffers=0,paymentStatus='none',clientActions,onIntent,onNavigateHome,requestComposerOpen=false}:Props){
+export function ClientVoiceHugoDock({accessToken,service,services=[],clientActions,onIntent,onNavigateHome,requestComposerOpen=false}:Props){
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),recognition=useRef<SpeechRecognitionLike|null>(null),running=useRef(false),busy=useRef(false),native=useRef(false),voicePaused=useRef(false),audioContextRef=useRef<AudioContext|null>(null),audioSourceRef=useRef<AudioBufferSourceNode|null>(null),ttsAbortRef=useRef<AbortController|null>(null),ttsSequence=useRef(0),ttsCooldownUntil=useRef(0),queuedInput=useRef<string|null>(null),pendingCancel=useRef<PendingCancel|null>(null),conversation=useRef<Array<{role:'user'|'assistant';content:string}>>([]),processTextRef=useRef<(value:string)=>void>(()=>undefined)
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
