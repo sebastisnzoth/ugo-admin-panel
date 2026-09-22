@@ -17,7 +17,7 @@ test('provider bottom navigation keeps active semantics and earnings reachable f
 test('provider bottom navigation exposes four real mobile destinations', async () => {
   const [root, css] = await Promise.all([
     read('src/mvp/provider/ProviderRoot.tsx'),
-    read('src/mvp/provider/provider-nav-cleanup.css'),
+    read('src/mvp/provider/provider-responsive-layout.css'),
   ])
   const styles = await read('src/features/provider/providerStyles.ts')
   assert.match(css, /grid-template-columns:repeat\(4,minmax\(0,1fr\)\)/)
