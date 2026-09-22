@@ -1,8 +1,8 @@
 import React,{useCallback,useEffect,useState}from'react'
 import type{FormEvent,ReactNode}from'react'
-import{AuthScreen,LoadingScreen,useRoleSession}from'./shared'
-import'./client-stitch-alignment.css'
-import'./client-onboarding.css'
+import{AuthScreen,LoadingScreen,useRoleSession}from'../../../mvp/shared'
+import'../../../mvp/client-stitch-alignment.css'
+import'../../../mvp/client-onboarding.css'
 
 const TERMS_VERSION='2026-09-04'
 type Form={nombre:string;apellido:string;telefono:string;direccion:string;barrio:string;ciudad:string;idioma:string;contacto:string;lat:number|null;lng:number|null}
