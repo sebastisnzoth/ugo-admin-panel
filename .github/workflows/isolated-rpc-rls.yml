@@ -6,7 +6,15 @@ on:
     branches:
       - main
     paths:
+      - 'api/**'
+      - 'src/**'
+      - 'supabase/**'
+      - 'tests/integration/**'
+      - 'tests/contracts/**'
+      - 'scripts/assert-test-environment.mjs'
       - 'scripts/chat-realtime-probe.mjs'
+      - 'package.json'
+      - 'package-lock.json'
       - '.github/workflows/isolated-rpc-rls.yml'
 
 permissions:
@@ -16,23 +24,24 @@ concurrency:
   group: ugo-isolated-rpc-rls
   cancel-in-progress: false
 
+env:
+  # UGO TEST is the only allowed remote integration target. These are
+  # browser-public values; credentials remain GitHub Actions secrets.
+  UGO_REQUIRE_ISOLATED_INTEGRATION: '1'
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
 jobs:
   isolated-integration:
     name: Cliente ↔ Proveedor ↔ Admin isolated RPC/RLS
     runs-on: ubuntu-latest
-    timeout-minutes: 20
-    env:
-      UGO_REQUIRE_ISOLATED_INTEGRATION: '1'
-      # UGO TEST is the only allowed remote integration target. URL and
-      # publishable key are browser-public values, not infrastructure secrets.
-      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
-      UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
-      UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
-      UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
-      UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
-      UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
-      UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
-      UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,6 +58,7 @@ jobs:
       - name: Enforce designated UGO TEST project and refuse production
         shell: bash
         run: |
+          set -euo pipefail
           if [[ "$UGO_TEST_SUPABASE_URL" == *"trfsjuseqjxlhrxuvdsm"* ]]; then
             echo "Refusing to run isolated integration against production."
             exit 1
@@ -58,8 +68,14 @@ jobs:
             exit 1
           fi
 
+      - name: Verify repository environment guard
+        run: npm run verify:test-env
+
       - name: TypeScript and production build
         run: npm run build
+
+      - name: Core contract regression suite
+        run: npm test
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration
