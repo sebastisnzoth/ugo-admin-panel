@@ -2,6 +2,7 @@ import React,{Suspense,lazy,useEffect,useState}from'react'
 import{ClientFlowProvider}from'./client/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
 import{getRoleSupabase}from'../lib/roleSupabase'
+import{resolveAppRoute}from'../app/router'
 import{Button,Input,LoadingScreen}from'./shared'
 import'./mvp.css'
 import'./ugo-design-system.css'
@@ -34,19 +35,17 @@ function ClientApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="cli
 function ProviderApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
 
 export function MvpApp(){
- const params=new URLSearchParams(window.location.search)
- const app=params.get('app')
- const demo=params.get('demo')==='1'
- if(demo)return <Deferred><UgoTestDemo/></Deferred>
- if(app==='recruit')return <Deferred><ProviderRecruitmentLanding/></Deferred>
- if(app==='client-web'||app==='web-client')return <ClientApp web/>
- if(app==='provider-web'||app==='web-provider')return <ProviderApp web/>
- if(app==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
- if(app==='client')return <ClientApp/>
- if(app==='provider')return <ProviderApp/>
- if(app==='development')return <Deferred><DevelopmentDashboard/></Deferred>
- if(app==='admin')return <Deferred><AdminGate/></Deferred>
- if(app==='web')return <Deferred><UgoDemoBoundary><UgoWeb/></UgoDemoBoundary></Deferred>
+ const route=resolveAppRoute(window.location.search)
+ if(route==='demo')return <Deferred><UgoTestDemo/></Deferred>
+ if(route==='recruit')return <Deferred><ProviderRecruitmentLanding/></Deferred>
+ if(route==='client-web')return <ClientApp web/>
+ if(route==='provider-web')return <ProviderApp web/>
+ if(route==='stitch-client')return <Deferred><UgoClientWeb/></Deferred>
+ if(route==='client')return <ClientApp/>
+ if(route==='provider')return <ProviderApp/>
+ if(route==='development')return <Deferred><DevelopmentDashboard/></Deferred>
+ if(route==='admin')return <Deferred><AdminGate/></Deferred>
+ if(route==='web')return <Deferred><UgoDemoBoundary><UgoWeb/></UgoDemoBoundary></Deferred>
  return <Deferred><UgoLanding/></Deferred>
 }
 

@@ -2,21 +2,8 @@ import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{supabase}from'../lib/supabase'
 import'./scout-crm.css'
 
-type Prospect={id:string;external_id:string|null;nombre:string;categoria:string;telefono:string|null;email:string|null;website:string|null;direccion:string|null;ciudad:string|null;pais:string|null;fuente:string;score_confianza:number;estado:string;notas_hugo:string|null;created_at:string;updated_at:string;contactado_at:string|null;aprobado_at:string|null;pipeline_etapa:string;recruitment_score:number;contactos_intentos:number;ultimo_canal:string|null;ultimo_contacto_at:string|null;proximo_contacto_at:string|null;no_contactar:boolean;invitation_token:string|null;invitation_expires_at:string|null;invitation_revoked_at:string|null;invitation_opened_at:string|null;invitation_claimed_at:string|null;converted_user_id:string|null;source_campaign_id:string|null}
-type DemandRow={slug:string;nombre:string;emoji:string|null;pedidos_30d:number;proveedores_activos:number;brecha:number;prioridad:string}
-type Campaign={id:string;nombre:string;categoria:string|null;zona:string|null;canal:string;estado:string;created_at:string;total:number;enviados:number;respondieron:number;interesados:number;convertidos:number}
-type EventRow={id:string;canal:string;tipo:string;direccion:string;estado:string|null;mensaje:string|null;metadata:any;created_at:string}
-type DuplicateGroup={duplicate_key:string;total:number;prospect_ids:string[]}
-type GmailStatus={configured:boolean;connected:boolean;email:string|null;updatedAt:string|null}
-
-const STAGES=[['nuevo','Nuevo'],['listo','Listo'],['contactado','Contactado'],['respondio','Respondió'],['interesado','Interesado'],['registro_iniciado','Registro iniciado'],['documentos_pendientes','Documentos'],['aprobado','Aprobado'],['activo','Activo'],['no_interesado','No interesado']]as const
-const CATEGORY_LABELS:Record<string,string>={electricista:'Electricista',plomero:'Plomero',limpeza:'Limpieza',chaveiro:'Cerrajería',pintura:'Pintura',carpintaria:'Carpintería',jardinagem:'Jardinería',climatizacao:'Climatización',ti_redes:'TI / Redes',reformas:'Reformas',marido_aluguel:'Servicios generales',mudanca:'Mudanzas',automotivo:'Automotivo'}
-const demandScoutKey=(slug:string)=>({electricidad:'electricista',plomeria:'plomero',limpieza:'limpeza',cerrajeria:'chaveiro',pintura:'pintura',jardineria:'jardinagem',reparaciones:'reformas'}as Record<string,string>)[slug]||slug
-const stageLabel=(stage:string)=>STAGES.find(([id])=>id===stage)?.[1]||stage.replaceAll('_',' ')
-const safePhone=(value?:string|null)=>String(value||'').replace(/\D/g,'')
-const safeWebsite=(value?:string|null)=>{try{const raw=String(value||'').trim();if(!raw)return'';const u=new URL(/^https?:\/\//i.test(raw)?raw:`https://${raw}`);return['http:','https:'].includes(u.protocol)?u.toString():''}catch{return''}}
-const selectFields='id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,fuente,score_confianza,estado,notas_hugo,created_at,updated_at,contactado_at,aprobado_at,pipeline_etapa,recruitment_score,contactos_intentos,ultimo_canal,ultimo_contacto_at,proximo_contacto_at,no_contactar,invitation_token,invitation_expires_at,invitation_revoked_at,invitation_opened_at,invitation_claimed_at,converted_user_id,source_campaign_id'
-const legacyState=(stage:string)=>stage==='activo'||stage==='aprobado'?'aprobado':stage==='no_interesado'?'rechazado':['contactado','respondio','interesado','registro_iniciado','documentos_pendientes'].includes(stage)?'invitado':'prospecto_pendiente'
+import{CATEGORY_LABELS,STAGES,demandScoutKey,legacyState,safePhone,safeWebsite,stageLabel,type Campaign,type DemandRow,type DuplicateGroup,type EventRow,type GmailStatus,type Prospect}from'../features/scout/model'
+import{bulkUpdateScoutProspects,createScoutCampaign,issueScoutInvitation,loadProspectHistory,loadScoutCrmDashboard,updateScoutProspect,updateScoutProspectStage}from'../features/scout/services/scoutCrmService'
 const PAGE_SIZE=100
 
 export function ScoutCRM(){
@@ -31,15 +18,8 @@ export function ScoutCRM(){
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
-   const all:Prospect[]=[],pageSize=500
-   for(let from=0;from<10000;from+=pageSize){const{data,error}=await(supabase as any).from('prospectos_scouts').select(selectFields).order('updated_at',{ascending:false}).range(from,from+pageSize-1);if(error)throw error;const rows=(data||[])as Prospect[];all.push(...rows);if(rows.length<pageSize)break}
-   const[{data:d,error:de},{data:c,error:ce},{data:du,error:due}]=await Promise.all([
-    (supabase as any).from('scout_demanda_categorias').select('slug,nombre,emoji,pedidos_30d,proveedores_activos,brecha,prioridad').order('brecha',{ascending:false}),
-    (supabase as any).from('scout_campaign_metrics').select('id,nombre,categoria,zona,canal,estado,created_at,total,enviados,respondieron,interesados,convertidos').order('created_at',{ascending:false}).limit(20),
-    (supabase as any).from('scout_duplicate_groups').select('duplicate_key,total,prospect_ids').limit(200)
-   ])
-   if(de)throw de;if(ce)throw ce;if(due)throw due
-   setProspects(all);setDemand((d||[])as DemandRow[]);setCampaigns((c||[])as Campaign[]);setDuplicates((du||[])as DuplicateGroup[])
+   const dashboard=await loadScoutCrmDashboard()
+   setProspects(dashboard.prospects);setDemand(dashboard.demand);setCampaigns(dashboard.campaigns);setDuplicates(dashboard.duplicates)
   }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar el CRM.')}
   finally{setLoading(false)}
  },[])
@@ -95,16 +75,15 @@ export function ScoutCRM(){
  const baseRecruitUrl=()=>`${window.location.origin}${window.location.pathname}`
 
  async function issueInvite(p:Prospect,campaignId=activeCampaignId||null){
-  const{data,error}=await(supabase as any).rpc('admin_issue_scout_invitation',{p_prospecto:p.id,p_campaign:campaignId,p_days:14});if(error)throw error
-  const row=Array.isArray(data)?data[0]:data;if(!row?.token)throw new Error('No se pudo generar la invitación.')
-  return`${baseRecruitUrl()}?app=recruit&invite=${encodeURIComponent(row.token)}`
+  const invite=await issueScoutInvitation(p.id,campaignId,14)
+  return baseRecruitUrl()+'?app=recruit&invite='+encodeURIComponent(invite.token)
  }
- async function loadHistory(id:string){const{data,error}=await(supabase as any).from('scout_contact_events').select('id,canal,tipo,direccion,estado,mensaje,metadata,created_at').eq('prospecto_id',id).order('created_at',{ascending:false}).limit(100);if(!error)setHistory((data||[])as EventRow[])}
+ async function loadHistory(id:string){try{setHistory(await loadProspectHistory(id))}catch{setHistory([])}}
  function openCard(p:Prospect){setSelected(p);setDraft({...p});setError('');void loadHistory(p.id)}
  function closeCard(){setSelected(null);setDraft(null);setHistory([])}
 
- async function saveCard(){if(!draft)return;setBusy(true);setError('');try{const patch={nombre:draft.nombre.trim(),categoria:draft.categoria,telefono:draft.telefono?.trim()||null,email:draft.email?.trim()||null,website:draft.website?.trim()||null,direccion:draft.direccion?.trim()||null,ciudad:draft.ciudad?.trim()||null,pais:draft.pais||'BR',pipeline_etapa:draft.pipeline_etapa,estado:legacyState(draft.pipeline_etapa),score_confianza:Math.max(0,Math.min(100,Number(draft.score_confianza)||0)),notas_hugo:draft.notas_hugo?.trim()||null,proximo_contacto_at:draft.proximo_contacto_at||null,no_contactar:Boolean(draft.no_contactar)};const{data,error}=await(supabase as any).from('prospectos_scouts').update(patch).eq('id',draft.id).select(selectFields).single();if(error)throw error;setSelected(data);setDraft(data);await load();await loadHistory(draft.id);setStatus(`Ficha actualizada: ${data.nombre}`)}catch(e){setError(e instanceof Error?e.message:'No se pudo actualizar la ficha.')}finally{setBusy(false)}}
- async function setStage(p:Prospect,stage:string){setBusy(true);setError('');try{const patch:any={pipeline_etapa:stage,estado:legacyState(stage)};if(stage==='aprobado'&&!p.aprobado_at)patch.aprobado_at=new Date().toISOString();const{error}=await(supabase as any).from('prospectos_scouts').update(patch).eq('id',p.id);if(error)throw error;await load();await loadHistory(p.id);setStatus(`${p.nombre}: ${stageLabel(stage)}`)}catch(e){setError(e instanceof Error?e.message:'No se pudo cambiar la etapa.')}finally{setBusy(false)}}
+ async function saveCard(){if(!draft)return;setBusy(true);setError('');try{const patch={nombre:draft.nombre.trim(),categoria:draft.categoria,telefono:draft.telefono?.trim()||null,email:draft.email?.trim()||null,website:draft.website?.trim()||null,direccion:draft.direccion?.trim()||null,ciudad:draft.ciudad?.trim()||null,pais:draft.pais||'BR',pipeline_etapa:draft.pipeline_etapa,estado:legacyState(draft.pipeline_etapa),score_confianza:Math.max(0,Math.min(100,Number(draft.score_confianza)||0)),notas_hugo:draft.notas_hugo?.trim()||null,proximo_contacto_at:draft.proximo_contacto_at||null,no_contactar:Boolean(draft.no_contactar)};const data=await updateScoutProspect(draft.id,patch);setSelected(data);setDraft(data);await load();await loadHistory(draft.id);setStatus('Ficha actualizada: '+data.nombre)}catch(e){setError(e instanceof Error?e.message:'No se pudo actualizar la ficha.')}finally{setBusy(false)}}
+ async function setStage(p:Prospect,stage:string){setBusy(true);setError('');try{await updateScoutProspectStage(p,stage);await load();await loadHistory(p.id);setStatus(p.nombre+': '+stageLabel(stage))}catch(e){setError(e instanceof Error?e.message:'No se pudo cambiar la etapa.')}finally{setBusy(false)}}
 
  async function sendWhatsappInvite(p:Prospect,campaignId=activeCampaignId||null){
   if(!p.telefono||p.no_contactar)throw new Error('El prospecto no tiene WhatsApp disponible o está bloqueado.')
@@ -119,13 +98,12 @@ export function ScoutCRM(){
 
  async function createCampaign(){
   if(!selectedRows.length){setError('Seleccioná prospectos antes de crear la campaña.');return}
-  const name=campaignName.trim()||`Campaña ${new Date().toLocaleDateString('es-AR')} ${CATEGORY_LABELS[categoryFilter]||''}`.trim()
+  const name=campaignName.trim()||('Campaña '+new Date().toLocaleDateString('es-AR')+' '+(CATEGORY_LABELS[categoryFilter]||'')).trim()
   setBusy(true);setError('')
   try{
    const{data:session}=await supabase.auth.getSession()
-   const{data:c,error}=await(supabase as any).from('scout_campaigns').insert({nombre:name,categoria:categoryFilter==='all'?null:categoryFilter,zona:null,canal:'mixto',asunto:subject,mensaje:message,estado:'activa',created_by:session.session?.user?.id||null}).select('id').single();if(error)throw error
-   const{error:me}=await(supabase as any).from('scout_campaign_members').insert(selectedRows.map(p=>({campaign_id:c.id,prospecto_id:p.id})));if(me)throw me
-   setActiveCampaignId(c.id);setCampaignName('');await load();setStatus(`Campaña creada con ${selectedRows.length} prospectos.`)
+   const id=await createScoutCampaign({nombre:name,categoria:categoryFilter==='all'?null:categoryFilter,subject,message,createdBy:session.session?.user?.id||null,prospectIds:selectedRows.map(p=>p.id)})
+   setActiveCampaignId(id);setCampaignName('');await load();setStatus('Campaña creada con '+selectedRows.length+' prospectos.')
   }catch(e){setError(e instanceof Error?e.message:'No se pudo crear la campaña.')}finally{setBusy(false)}
  }
 
@@ -136,7 +114,12 @@ export function ScoutCRM(){
  async function bulkUpdate(){
   if(!selectedIds.length){setError('Seleccioná prospectos.');return}
   setBusy(true);setError('')
-  try{const next=new Date(Date.now()+Math.max(1,followupDays)*86400000).toISOString(),patch:any={pipeline_etapa:bulkStage,estado:legacyState(bulkStage),proximo_contacto_at:bulkStage==='no_interesado'?null:next};if(bulkStage==='no_interesado')patch.no_contactar=true;const{error}=await(supabase as any).from('prospectos_scouts').update(patch).in('id',selectedIds);if(error)throw error;await load();setStatus(`${selectedIds.length} prospectos actualizados en masa.`)}catch(e){setError(e instanceof Error?e.message:'No se pudo aplicar la acción masiva.')}finally{setBusy(false)}
+  try{
+   const next=new Date(Date.now()+Math.max(1,followupDays)*86400000).toISOString()
+   const patch:Record<string,unknown>={pipeline_etapa:bulkStage,estado:legacyState(bulkStage),proximo_contacto_at:bulkStage==='no_interesado'?null:next}
+   if(bulkStage==='no_interesado')patch.no_contactar=true
+   await bulkUpdateScoutProspects(selectedIds,patch);await load();setStatus(selectedIds.length+' prospectos actualizados en masa.')
+  }catch(e){setError(e instanceof Error?e.message:'No se pudo aplicar la acción masiva.')}finally{setBusy(false)}
  }
 
  async function copyInvite(p:Prospect){setBusy(true);setError('');try{const url=await issueInvite(p);await navigator.clipboard?.writeText(url);await load();setStatus('Link de invitación copiado.')}catch(e){setError(e instanceof Error?e.message:'No se pudo generar el link.')}finally{setBusy(false)}}

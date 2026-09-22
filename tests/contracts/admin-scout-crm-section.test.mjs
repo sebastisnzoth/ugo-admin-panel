@@ -13,7 +13,8 @@ test('Admin navigation exposes CRM as a first-class section next to Scout',async
 
 test('CRM loads the complete Scout prospect base and subscribes to realtime changes',async()=>{
  const crm=await read('src/components/ScoutCRM.tsx')
- assert.match(crm,/\.range\(from,from\+pageSize-1\)/)
+ const service=await read('src/features/scout/services/scoutCrmService.ts')
+ assert.match(service,/\.range\(from,from\+pageSize-1\)/)
  assert.match(crm,/channel\('admin-scout-crm'\)/)
  assert.match(crm,/postgres_changes/)
  assert.match(crm,/table:'prospectos_scouts'/)
@@ -22,7 +23,8 @@ test('CRM loads the complete Scout prospect base and subscribes to realtime chan
 test('CRM provides funnel, demand, filtering, follow-up and prospect cards',async()=>{
  const crm=await read('src/components/ScoutCRM.tsx')
  assert.match(crm,/Embudo completo/)
- assert.match(crm,/scout_demanda_categorias/)
+ const service=await read('src/features/scout/services/scoutCrmService.ts')
+ assert.match(service,/scout_demanda_categorias/)
  assert.match(crm,/Seguimientos vencidos/)
  assert.match(crm,/recruitment_score/)
  assert.match(crm,/proximo_contacto_at/)

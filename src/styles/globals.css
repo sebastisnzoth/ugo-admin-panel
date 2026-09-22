@@ -1,0 +1,5 @@
+html{font-family:var(--ugo-font-sans);background:var(--ugo-color-page);color:var(--ugo-color-text)}
+body{margin:0}
+*,*::before,*::after{box-sizing:border-box}
+button,input,select,textarea{font:inherit}
+:focus-visible{outline:2px solid var(--ugo-color-brand-500);outline-offset:2px}

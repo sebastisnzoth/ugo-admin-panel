@@ -101,8 +101,9 @@ test('Scout persistence uses strong server-side dedupe before inserting candidat
 
 test('CRM final pass includes today inbox, campaigns, invite links, mass actions, pagination and timeline',async()=>{
  const crm=await read('src/components/ScoutCRM.tsx')
+ const service=await read('src/features/scout/services/scoutCrmService.ts')
  assert.match(crm,/PARA HACER HOY/)
- assert.match(crm,/scout_campaign_metrics/)
+ assert.match(service,/scout_campaign_metrics/)
  assert.match(crm,/admin_issue_scout_invitation/)
  assert.match(crm,/sendWhatsappCampaign/)
  assert.match(crm,/bulkUpdate/)
