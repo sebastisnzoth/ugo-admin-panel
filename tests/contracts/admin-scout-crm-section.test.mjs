@@ -41,3 +41,12 @@ test('CRM supports recontact and recruiting campaigns without exposing provider 
  assert.doesNotMatch(crm,/SCOUT_GMAIL_CLIENT_SECRET/)
  assert.doesNotMatch(crm,/TOMTOM_API_KEY/)
 })
+
+test('Admin exposes Gmail connection globally even outside Scout and CRM',async()=>{
+ const admin=await read('src/components/AdminPanel.tsx')
+ assert.match(admin,/✉ Conectar Gmail/)
+ assert.match(admin,/gmail-top/)
+ assert.match(admin,/\/api\/scout\/gmail/)
+ assert.match(admin,/connectScoutGmail/)
+ assert.match(admin,/Gmail · \$\{scoutGmail\.email/)
+})
