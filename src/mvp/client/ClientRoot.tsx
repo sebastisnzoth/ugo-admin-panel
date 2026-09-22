@@ -1,7 +1,7 @@
 import React from'react'
 import{DemoSebastianPaymentBridge}from'../DemoSebastianPaymentBridge'
 import{ClientOnboardingGate}from'../ClientOnboardingGate'
-import{ClientFlowActionsBridge}from'./ClientFlowActionsBridge'
+import{ClientFlowActionsBridge}from'../../features/client/actions/ClientFlowActionsBridge'
 import{ClientNeedScreen}from'./ClientNeedScreen'
 import{ClientHomeScreen}from'./ClientHomeScreen'
 import{ClientProfilePanel}from'./ClientProfilePanel'
