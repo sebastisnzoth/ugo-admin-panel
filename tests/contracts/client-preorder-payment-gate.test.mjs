@@ -7,7 +7,7 @@ const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 test('client can start a request without configuring payment on Home',async()=>{
  const [home,need,payment,summary,profile]=await Promise.all([
   read('src/mvp/client/ClientHomeScreen.tsx'),
-  read('src/mvp/client/ClientNeedScreen.tsx'),
+  read('src/features/client/request/ClientNeedScreen.tsx'),
   read('src/mvp/client/ClientPaymentScreen.tsx'),
   read('src/mvp/client/ClientSummaryScreen.tsx'),
   read('src/features/client/profile/ClientProfilePanel.tsx'),
