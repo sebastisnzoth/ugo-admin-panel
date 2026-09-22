@@ -51,14 +51,14 @@ function verifyState(value,secret){
   if(!payload?.uid||Number(payload.exp||0)<Date.now())throw Object.assign(new Error('OAuth state vencido.'),{status:400});
   return payload;
 }
-async function tokenExchange(config,params){
+async function tokenExchange(params){
   const response=await fetch('https://oauth2.googleapis.com/token',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(params),signal:AbortSignal.timeout(12000)});
   const payload=await response.json().catch(()=>({}));
   if(!response.ok||!payload?.access_token)throw Object.assign(new Error(payload?.error_description||payload?.error||'Google rechazó la autorización.'),{status:502});
   return payload;
 }
 async function accessToken(config,refreshToken){
-  const payload=await tokenExchange(config,{client_id:config.clientId,client_secret:config.clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'});
+  const payload=await tokenExchange({client_id:config.clientId,client_secret:config.clientSecret,refresh_token:refreshToken,grant_type:'refresh_token'});
   return String(payload.access_token);
 }
 async function connection(sb){
@@ -74,7 +74,7 @@ async function callback(req,res){
     const state=verifyState(req.query?.state,config.stateSecret);
     const code=String(req.query?.code||'').trim();if(!code)throw new Error('Google no devolvió código OAuth.');
     const sb=serviceClient();
-    const token=await tokenExchange(config,{code,client_id:config.clientId,client_secret:config.clientSecret,redirect_uri:config.redirectUri,grant_type:'authorization_code'});
+    const token=await tokenExchange({code,client_id:config.clientId,client_secret:config.clientSecret,redirect_uri:config.redirectUri,grant_type:'authorization_code'});
     const userResponse=await fetch('https://openidconnect.googleapis.com/v1/userinfo',{headers:{Authorization:`Bearer ${token.access_token}`},signal:AbortSignal.timeout(10000)});
     const userInfo=await userResponse.json().catch(()=>({}));
     const email=String(userInfo?.email||'').trim().toLowerCase();
@@ -117,10 +117,12 @@ async function sendGmail(config,refreshToken,to,subject,textBody){
   if(!response.ok)throw Object.assign(new Error(payload?.error?.message||`Gmail respondió HTTP ${response.status}`),{status:response.status||502});
   return payload;
 }
-function mailText(template,row,zona=''){
-  return String(template||'').replaceAll('{nombre}',row.nombre||'profissional').replaceAll('{categoria}',row.categoria||'serviços').replaceAll('{zona}',row.ciudad||zona||'sua região').slice(0,12000);
+function mailText(template,row,zona='',inviteUrl=''){
+  let text=String(template||'').replaceAll('{nombre}',row.nombre||'profissional').replaceAll('{categoria}',row.categoria||'serviços').replaceAll('{zona}',row.ciudad||zona||'sua região').replaceAll('{invite_url}',inviteUrl);
+  if(inviteUrl&&!text.includes(inviteUrl))text+=`\n\nCadastre-se na UGO: ${inviteUrl}`;
+  return text.slice(0,12000);
 }
-async function markContact(sb,row,userId){
+async function markContact(sb,row){
   const now=new Date(),next=new Date(now.getTime()+2*24*60*60*1000);
   const patch={
     estado:row.estado==='prospecto_pendiente'?'invitado':row.estado,
@@ -138,19 +140,28 @@ async function logSend(sb,{row,to,subject,userId,payload,error}){
     });
   }catch{}
 }
-async function sendProspect(sb,config,conn,row,subject,template,zona,userId){
+async function sendProspect(sb,config,conn,row,subject,template,zona,userId,baseUrl='',campaignId=null){
   const to=cleanEmail(row.email);
   if(!to)throw Object.assign(new Error('El prospecto no tiene un email válido.'),{status:400});
   if(row.no_contactar||row.estado==='rechazado')throw Object.assign(new Error('Este prospecto está marcado como no contactar.'),{status:409});
-  const text=mailText(template,row,zona);
+  if(campaignId){
+    const{data:member}=await sb.from('scout_campaign_members').select('ultimo_envio_at').eq('campaign_id',campaignId).eq('prospecto_id',row.id).maybeSingle();
+    if(member?.ultimo_envio_at&&Date.now()-new Date(member.ultimo_envio_at).getTime()<36*60*60*1000)return{ok:false,skipped:true,to};
+  }
+  const validInvite=row.invitation_token&&!row.invitation_revoked_at&&!row.invitation_claimed_at&&row.invitation_expires_at&&new Date(row.invitation_expires_at).getTime()>Date.now();
+  const inviteUrl=validInvite&&baseUrl?`${baseUrl}${baseUrl.includes('?')?'&':'?'}app=recruit&invite=${encodeURIComponent(row.invitation_token)}`:'';
+  const text=mailText(template,row,zona,inviteUrl);
   if(!text.trim())throw Object.assign(new Error('Falta el mensaje de reclutamiento.'),{status:400});
   try{
     const payload=await sendGmail(config,conn.refresh_token,to,subject,text);
-    await markContact(sb,row,userId);
+    await markContact(sb,row);
     await logSend(sb,{row,to,subject,userId,payload});
-    return{ok:true,id:payload?.id||null,threadId:payload?.threadId||null,to};
+    try{await sb.from('scout_contact_events').insert({prospecto_id:row.id,campaign_id:campaignId,canal:'email',tipo:'recruitment_sent',direccion:'out',estado:'sent',mensaje:text,metadata:{gmail_message_id:payload?.id||null,gmail_thread_id:payload?.threadId||null,invite_url:inviteUrl||null}})}catch{}
+    if(campaignId){try{await sb.from('scout_campaign_members').update({estado:'enviado',ultimo_envio_at:new Date().toISOString(),error:null}).eq('campaign_id',campaignId).eq('prospecto_id',row.id)}catch{}}
+    return{ok:true,id:payload?.id||null,threadId:payload?.threadId||null,to,inviteUrl:inviteUrl||null};
   }catch(error){
     await logSend(sb,{row,to,subject,userId,error:error instanceof Error?error.message:'Gmail error'});
+    if(campaignId){try{await sb.from('scout_campaign_members').update({estado:'error',error:String(error instanceof Error?error.message:error).slice(0,300)}).eq('campaign_id',campaignId).eq('prospecto_id',row.id)}catch{}}
     throw error;
   }
 }
@@ -185,25 +196,25 @@ export async function handleScoutGmail(req,res){
     if(!conn)throw Object.assign(new Error('Conectá una cuenta Gmail antes de enviar invitaciones.'),{status:409});
     if(!config.configured)throw Object.assign(new Error('Gmail OAuth no está configurado en el servidor.'),{status:503});
     const subject=String(body.subject||'UGO · Convite para profissionais').trim().slice(0,180);
-    const template=String(body.message||'').trim(),zona=String(body.zona||'');
+    const template=String(body.message||'').trim(),zona=String(body.zona||''),baseUrl=String(body.base_url||''),campaignId=body.campaign_id?String(body.campaign_id):null;
     if(action==='send'){
       const id=String(body.prospectId||'');if(!id)throw Object.assign(new Error('prospectId requerido.'),{status:400});
-      const{data:row,error}=await auth.sb.from('prospectos_scouts').select('id,nombre,categoria,email,ciudad,estado,pipeline_etapa,contactos_intentos,contactado_at,no_contactar').eq('id',id).maybeSingle();
+      const{data:row,error}=await auth.sb.from('prospectos_scouts').select('id,nombre,categoria,email,ciudad,estado,pipeline_etapa,contactos_intentos,contactado_at,no_contactar,invitation_token,invitation_expires_at,invitation_revoked_at,invitation_claimed_at').eq('id',id).maybeSingle();
       if(error)throw error;if(!row)throw Object.assign(new Error('Prospecto no encontrado.'),{status:404});
-      const result=await sendProspect(auth.sb,config,conn,row,subject,template,zona,auth.user.id);
+      const result=await sendProspect(auth.sb,config,conn,row,subject,template,zona,auth.user.id,baseUrl,campaignId);
       return res.status(200).json(result);
     }
     if(action==='send_campaign'){
       const ids=[...new Set((Array.isArray(body.ids)?body.ids:[]).map(String))].slice(0,20);
       if(!ids.length)throw Object.assign(new Error('Seleccioná al menos un prospecto con email.'),{status:400});
-      const{data:rows,error}=await auth.sb.from('prospectos_scouts').select('id,nombre,categoria,email,ciudad,estado,pipeline_etapa,contactos_intentos,contactado_at,no_contactar').in('id',ids);
+      const{data:rows,error}=await auth.sb.from('prospectos_scouts').select('id,nombre,categoria,email,ciudad,estado,pipeline_etapa,contactos_intentos,contactado_at,no_contactar,invitation_token,invitation_expires_at,invitation_revoked_at,invitation_claimed_at').in('id',ids);
       if(error)throw error;
-      let sent=0,failed=0;const errors=[];
+      let sent=0,failed=0,skipped=0;const errors=[];
       for(const row of rows||[]){
-        try{await sendProspect(auth.sb,config,conn,row,subject,template,zona,auth.user.id);sent++}
+        try{const result=await sendProspect(auth.sb,config,conn,row,subject,template,zona,auth.user.id,baseUrl,campaignId);if(result.skipped)skipped++;else sent++}
         catch(error){failed++;errors.push({id:row.id,error:error instanceof Error?error.message:'Gmail error'})}
       }
-      return res.status(200).json({sent,failed,total:ids.length,errors:errors.slice(0,10)});
+      return res.status(200).json({sent,failed,skipped,total:ids.length,errors:errors.slice(0,10)});
     }
     return res.status(400).json({error:'Acción Gmail Scout inválida.'});
   }catch(error){
