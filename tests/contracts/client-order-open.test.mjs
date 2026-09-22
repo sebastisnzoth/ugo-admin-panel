@@ -6,12 +6,15 @@ const root=fs.readFileSync('src/mvp/client/ClientRoot.tsx','utf8')
 const rootNavigation=fs.readFileSync('src/features/client/navigation/useClientRootNavigation.ts','utf8')
 const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
 const detail=fs.readFileSync('src/mvp/client/ClientServiceDetail.tsx','utf8')
+const detailBoundary=fs.readFileSync('src/features/client/ui/ClientOrderDetailBoundary.tsx','utf8')
 const map=fs.readFileSync('src/mvp/ClientActiveMap.tsx','utf8')
 
 test('Activity opens the exact serviceId under the CLIENT-ORDER-OPEN sentinel context',()=>{
  assert.match(history,/onClick=\{\(\)=>onOpenService\(r\.id\)\}>Abrir pedido y chat<\/button>/)
  assert.match(rootNavigation,/const openService=useCallback\(\(serviceId:string\)=>\{setSentinelContext\(\{role:'client',serviceId,action:'client\.activity\.open_order',checklistCode:'CLIENT-ORDER-OPEN',severity:'P0'\}\);setSelectedServiceId\(serviceId\)\}/)
- assert.match(root,/ClientServiceDetail serviceId=\{selectedServiceId\}/)
+ assert.match(root,/ClientOrderDetailBoundary serviceId=\{selectedServiceId\} onClose=\{closeService\}/)
+ assert.match(detailBoundary,/SentinelErrorBoundary role="client" serviceId=\{serviceId\} checklistCode="CLIENT-ORDER-OPEN" action="client\.activity\.open_order" severity="P0"/)
+ assert.match(detailBoundary,/ClientServiceDetail serviceId=\{serviceId\} onClose=\{onClose\}/)
 })
 
 test('order detail is scoped to the authenticated client and selected service',()=>{
