@@ -1,5 +1,5 @@
 import React, { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react'
-import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from '../../../mvp/client/clientTypes'
+import type { ClientActionHandlers, ClientHugoIntent, ClientScreen } from '../types/clientTypes'
 import { useClientCategoryShortcut } from '../hooks/useClientCategoryShortcut'
 
 const noop = () => {}

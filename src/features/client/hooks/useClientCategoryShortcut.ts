@@ -1,5 +1,5 @@
 import{useEffect}from'react'
-import type{ClientHugoIntent}from'../../../mvp/client/clientTypes'
+import type{ClientHugoIntent}from'../types/clientTypes'
 
 type PublishHugoIntent=(intent:Omit<ClientHugoIntent,'id'>)=>void
 
