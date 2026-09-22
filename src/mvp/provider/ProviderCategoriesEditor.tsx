@@ -1,5 +1,6 @@
 import React,{useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../lib/roleSupabase'
+import{Button,LoadingState,Select}from'../../shared/ui'
 
 type Category={id:string;nombre:string;emoji:string;slug:string}
 
@@ -10,12 +11,12 @@ export function ProviderCategoriesEditor({primaryId,onSaved}:{primaryId:string|n
  const toggle=(id:string)=>{if(id===primary)return;setSelected(current=>current.includes(id)?current.filter(value=>value!==id):[...current,id])}
  const changePrimary=(id:string)=>{setPrimary(id);setSelected(current=>Array.from(new Set([...current,id]))) }
  const save=async()=>{if(!primary){setMessage('Elegí tu rubro principal.');return}setBusy(true);setMessage('');try{const ids=Array.from(new Set([...selected,primary]));const{data,error}=await sb.rpc('guardar_categorias_proveedor',{p_categoria_principal_id:primary,p_categorias:ids});if(error)throw error;const persisted=Array.isArray(data)?data.filter((id):id is string=>typeof id==='string'):ids;setSelected(persisted);setMessage('Rubros actualizados. Ya podés recibir pedidos compatibles con cualquiera de ellos.');await onSaved?.()}catch(error){setMessage(error instanceof Error?error.message:'No pudimos guardar tus rubros.')}finally{setBusy(false)}}
- if(loading)return <p>Cargando tus rubros…</p>
+ if(loading)return <LoadingState label="Cargando tus rubros…"/>
  return <div className="provider-categories-editor">
-  <label>Rubro principal<select value={primary} onChange={event=>changePrimary(event.target.value)} disabled={busy||categories.length===0}><option value="">Elegir rubro…</option>{categories.map(category=><option key={category.id} value={category.id}>{category.emoji} {category.nombre}</option>)}</select></label>
+  <label>Rubro principal<Select value={primary} onChange={event=>changePrimary(event.target.value)} disabled={busy||categories.length===0}><option value="">Elegir rubro…</option>{categories.map(category=><option key={category.id} value={category.id}>{category.emoji} {category.nombre}</option>)}</Select></label>
   <div className="provider-profile-fields" aria-label="Otros rubros que realizás">{categories.map(category=>{const checked=selected.includes(category.id);return <label key={category.id}><span>{category.emoji} {category.nombre}{category.id===primary?' · principal':''}</span><input type="checkbox" checked={checked} disabled={category.id===primary||busy} onChange={()=>toggle(category.id)}/></label>})}</div>
   <small>Podés trabajar en varios rubros con una sola cuenta. El principal se usa para presentar tu perfil; todos los seleccionados entran al matching.</small>
   {message&&<p className="provider-profile-error" role="status">{message}</p>}
-  <button className="provider-primary provider-wide" type="button" disabled={busy||!primary||categories.length===0} onClick={()=>void save()}>{busy?'Guardando…':'Guardar rubros'}</button>
+  <Button variant="primary" className="provider-primary provider-wide" disabled={busy||!primary||categories.length===0} onClick={()=>void save()}>{busy?'Guardando…':'Guardar rubros'}</Button>
  </div>
 }
