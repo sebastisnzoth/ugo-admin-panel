@@ -4,7 +4,7 @@ import'maplibre-gl/dist/maplibre-gl.css'
 import{useRoleSession,type Category}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../../../mvp/uiEvents'
-import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../../../mvp/client/providerRadarStore'
+import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../radar/providerRadarStore'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
