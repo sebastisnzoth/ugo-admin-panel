@@ -43,12 +43,18 @@ export function SecScout(){
  const[selected,setSelected]=useState<Provider|null>(null),[loading,setLoading]=useState(false),[geoBusy,setGeoBusy]=useState(false),[busyId,setBusyId]=useState('')
  const[status,setStatus]=useState('Listo para buscar profesionales externos.'),[error,setError]=useState(''),[outreach,setOutreach]=useState('')
  const[checked,setChecked]=useState<string[]>([]),[campaignBusy,setCampaignBusy]=useState(false),[campaignProgress,setCampaignProgress]=useState('')
+ const[savedCategory,setSavedCategory]=useState('all')
  const[recruitmentText,setRecruitmentText]=useState('Olá {nombre}! Sou da equipe UGO. Estamos convidando profissionais de {categoria} em {zona} para conhecer a plataforma e receber oportunidades de clientes próximos. Se tiver interesse, responda esta mensagem e eu te explico como funciona. Se não quiser receber novos contatos, é só me avisar.')
 
  const loadProspects=useCallback(async()=>{
-  const{data,error}=await(supabase as any).from('prospectos_scouts').select('id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,latitud,longitud,fuente,score_confianza,estado,notas_hugo,created_at,contactado_at,aprobado_at').order('created_at',{ascending:false}).limit(100)
-  if(error)throw error
-  setProspects((data||[])as Prospect[])
+  const pageSize=500,all:Prospect[]=[]
+  for(let from=0;from<10000;from+=pageSize){
+   const{data,error}=await(supabase as any).from('prospectos_scouts').select('id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,latitud,longitud,fuente,score_confianza,estado,notas_hugo,created_at,contactado_at,aprobado_at').order('created_at',{ascending:false}).range(from,from+pageSize-1)
+   if(error)throw error
+   const page=(data||[])as Prospect[];all.push(...page)
+   if(page.length<pageSize)break
+  }
+  setProspects(all)
  },[])
 
  const loadDbProviders=useCallback(async()=>{
@@ -115,6 +121,8 @@ export function SecScout(){
  const selectedResults=useMemo(()=>results.filter(p=>checked.includes(p.id)),[results,checked])
  const selectedPhones=useMemo(()=>selectedResults.filter(p=>safePhone(p.phone).length>=10),[selectedResults])
  const selectedEmails=useMemo(()=>selectedResults.filter(p=>Boolean(p.email)),[selectedResults])
+ const categoryStats=useMemo(()=>CATEGORIES.map(([id,emoji,label])=>({id,emoji,label,total:prospects.filter(p=>p.categoria===id).length})).filter(x=>x.total>0),[prospects])
+ const visibleProspects=useMemo(()=>savedCategory==='all'?prospects:prospects.filter(p=>p.categoria===savedCategory),[prospects,savedCategory])
  const personalize=(p:Provider)=>recruitmentText.replaceAll('{nombre}',p.name||'profissional').replaceAll('{categoria}',category(categoryId)[2]).replaceAll('{zona}',locationLabel)
 
  async function authToken(forceRefresh=false){
@@ -292,6 +300,10 @@ export function SecScout(){
    <aside className="ugo-scout-outreach">{selected?<><small>PROFESIONAL SELECCIONADO</small><h3>{selected.name}</h3><p>{selected.address||locationLabel}</p><div className="ugo-scout-tags"><span>{fmtDistance(selected.dist)}</span><span>{sourceLabel(selected.source)}</span>{selected.subcategoria_label&&<span>{selected.subcategoria_label}</span>}</div>{selected.phone&&<b>📱 {selected.phone}</b>}{selected.email&&<b>✉ {selected.email}</b>}<div className="ugo-scout-actions"><button type="button" className="primary" onClick={()=>void saveProspect(selected)} disabled={busyId===selected.id}>{selectedSaved?'Actualizar prospecto':'+ Guardar en Scout'}</button><button type="button" onClick={()=>void generateOutreach()} disabled={busyId==='outreach'}>{busyId==='outreach'?'Generando…':'✦ Hugo'}</button></div>{outreach&&<div className="ugo-scout-message"><textarea readOnly value={outreach}/>{selected.phone&&<a href={`https://wa.me/${safePhone(selected.phone)}?text=${encodeURIComponent(outreach)}`} target="_blank" rel="noreferrer" onClick={()=>{if(selectedSaved)void setProspectState(selectedSaved,'invitado')}}>Abrir WhatsApp ↗</a>}</div>}</>:<div className="ugo-scout-empty">Seleccioná un resultado del mapa o de la lista para trabajar el contacto.</div>}</aside>
   </div>
   <section className="ugo-scout-results"><header><div><small>RESULTADOS DE BÚSQUEDA</small><strong>{results.length}</strong></div><span>{checked.length} seleccionados</span></header>{results.length?<div className="ugo-scout-result-grid">{results.map(p=><div key={p.id} className={`ugo-scout-result-card ${selected?.id===p.id?'active':''}`}><label className="ugo-scout-check"><input type="checkbox" checked={checked.includes(p.id)} onChange={e=>setChecked(current=>e.target.checked?[...current,p.id]:current.filter(id=>id!==p.id))}/><span>Seleccionar</span></label><button type="button" className="ugo-scout-result-open" onClick={()=>{setSelected(p);setOutreach('')}}><b>{p.name}</b><span>{p.phone||'Sin teléfono'}{p.email?` · ${p.email}`:''} · {fmtDistance(p.dist)}</span><small>{p.address||sourceLabel(p.source)}</small></button></div>)}</div>:<p>No hay resultados cargados. Elegí zona, categoría y radio y pulsá Buscar.</p>}</section>
-  <section className="ugo-scout-prospects"><header><div><small>PROSPECTOS GUARDADOS</small><strong>{prospects.length}</strong></div><button type="button" onClick={()=>void loadProspects()}>↻ Actualizar</button></header>{prospects.length?<div className="ugo-scout-prospect-list">{prospects.slice(0,30).map(p=><article key={p.id}><div><b>{p.nombre}</b><span>{p.telefono||'Sin teléfono'} · {p.categoria}</span><small>{p.ciudad||'—'} · {sourceLabel(p.fuente)} · {new Date(p.created_at).toLocaleString('es-AR')}</small></div><em className={p.estado}>{p.estado.replaceAll('_',' ')}</em><div className="ugo-scout-actions">{p.estado==='prospecto_pendiente'&&<button type="button" onClick={()=>void setProspectState(p,'invitado')} disabled={busyId===p.id}>Contactado</button>}{p.estado!=='aprobado'&&p.estado!=='rechazado'&&<button type="button" className="primary" onClick={()=>void setProspectState(p,'aprobado')} disabled={busyId===p.id}>Aprobar</button>}{p.estado!=='rechazado'&&p.estado!=='aprobado'&&<button type="button" className="danger" onClick={()=>void setProspectState(p,'rechazado')} disabled={busyId===p.id}>Descartar</button>}</div></article>)}</div>:<p>Todavía no hay prospectos guardados.</p>}</section>
+  <section className="ugo-scout-prospects">
+   <header><div><small>PROSPECTOS GUARDADOS POR CATEGORÍA</small><strong>{prospects.length} en Scout</strong></div><button type="button" onClick={()=>void loadProspects()}>↻ Actualizar</button></header>
+   <div className="ugo-scout-category-tabs"><button type="button" className={savedCategory==='all'?'active':''} onClick={()=>setSavedCategory('all')}>Todos <b>{prospects.length}</b></button>{categoryStats.map(c=><button type="button" key={c.id} className={savedCategory===c.id?'active':''} onClick={()=>setSavedCategory(c.id)}>{c.emoji} {c.label} <b>{c.total}</b></button>)}</div>
+   {visibleProspects.length?<div className="ugo-scout-prospect-list">{visibleProspects.map(p=><article key={p.id}><div><b>{p.nombre}</b><span>{p.telefono||'Sin teléfono'} · {category(p.categoria)[2]}</span><small>{p.ciudad||'—'} · {sourceLabel(p.fuente)} · {new Date(p.created_at).toLocaleString('es-AR')}</small></div><em className={p.estado}>{p.estado.replaceAll('_',' ')}</em><div className="ugo-scout-actions">{p.estado==='prospecto_pendiente'&&<button type="button" onClick={()=>void setProspectState(p,'invitado')} disabled={busyId===p.id}>Contactado</button>}{p.estado!=='aprobado'&&p.estado!=='rechazado'&&<button type="button" className="primary" onClick={()=>void setProspectState(p,'aprobado')} disabled={busyId===p.id}>Aprobar</button>}{p.estado!=='rechazado'&&p.estado!=='aprobado'&&<button type="button" className="danger" onClick={()=>void setProspectState(p,'rechazado')} disabled={busyId===p.id}>Descartar</button>}</div></article>)}</div>:<p>No hay prospectos guardados en esta categoría.</p>}
+  </section>
  </div>
 }

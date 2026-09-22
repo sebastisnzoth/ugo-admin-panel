@@ -44,3 +44,13 @@ test('WhatsApp recruitment updates Scout status even when optional invitation au
  assert.ok(insert>0&&update>insert)
  assert.match(api,/invitaciones_scout'[\s\S]*?catch\{\}try\{await sb\.from\('prospectos_scouts'\)\.update/)
 })
+
+test('Scout loads all saved prospects and separates them by category',async()=>{
+ const src=await read('src/components/ScoutSection.tsx')
+ assert.match(src,/\.range\(from,from\+pageSize-1\)/)
+ assert.doesNotMatch(src,/\.limit\(100\)/)
+ assert.match(src,/categoryStats/)
+ assert.match(src,/visibleProspects/)
+ assert.match(src,/PROSPECTOS GUARDADOS POR CATEGORÍA/)
+ assert.doesNotMatch(src,/prospects\.slice\(0,30\)/)
+})
