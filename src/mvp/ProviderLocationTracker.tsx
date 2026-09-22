@@ -10,6 +10,8 @@ const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progr
 const MIN_WRITE_MS=5_000
 const MIN_MOVE_M=5
 const ARRIVAL_RADIUS_M=200
+const MAX_ACCEPTABLE_ACCURACY_M=250
+const MAX_POSITION_AGE_MS=30_000
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
@@ -52,6 +54,9 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   const watchId=navigator.geolocation.watchPosition(async pos=>{
    setLocationError('')
    const point:[number,number]=[pos.coords.latitude,pos.coords.longitude]
+   const accuracy=Number(pos.coords.accuracy),age=Date.now()-Number(pos.timestamp||Date.now())
+   if(!Number.isFinite(accuracy)||accuracy>MAX_ACCEPTABLE_ACCURACY_M){setLocationError('La señal GPS todavía no es suficientemente precisa. UGO sigue buscando una ubicación mejor.');return}
+   if(age>MAX_POSITION_AGE_MS){setLocationError('La ubicación recibida es antigua. UGO está esperando una posición GPS nueva.');return}
    if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001))return
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
