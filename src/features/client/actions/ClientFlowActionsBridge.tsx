@@ -1,7 +1,7 @@
 import{useEffect}from'react'
-import{getDispatchProvider}from'../../lib/dispatch/provider'
-import{useRoleSession}from'../shared'
-import{useClientFlow}from'./clientFlow'
+import{getDispatchProvider}from'../../../lib/dispatch/provider'
+import{useRoleSession}from'../../../mvp/shared'
+import{useClientFlow}from'../../../mvp/client/clientFlow'
 
 const CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
 type OwnedServiceRow={id:string;estado:string;metadata?:Record<string,unknown>|null}

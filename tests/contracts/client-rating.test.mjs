@@ -102,7 +102,7 @@ test('client rating is immediately available after payment closes the selected s
 test('completed-service notification can land on home and still expose client rating',async()=>{
  const[nav,flow,surfaces]=await Promise.all([
   read('src/features/client/navigation/clientNavigation.ts'),
-  read('src/mvp/client/ClientFlowActionsBridge.tsx'),
+  read('src/features/client/actions/ClientFlowActionsBridge.tsx'),
   read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
  ])
  assert.match(nav,/notice\.tipo==='servicio_completado'/)
