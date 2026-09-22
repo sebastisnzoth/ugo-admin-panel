@@ -1,4 +1,4 @@
-.ugo-provider-root .provider-bottom-nav{grid-template-columns:repeat(4,minmax(0,1fr))}
+.ugo-provider-root .provider-bottom-nav{grid-template-columns:var(--provider-nav-columns)}
 /* Responsive layout for the canonical UGO Provider flow.
    Mobile keeps the bottom navigation; wider screens progressively become an operational web workspace. */
 
