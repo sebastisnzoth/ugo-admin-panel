@@ -34,12 +34,14 @@ test('Scout preserves public emails returned by discovery sources',async()=>{
  assert.match(api,/p\.extratags\?\.email/)
 })
 
-test('WhatsApp recruitment updates Scout status even when optional invitation audit table is missing',async()=>{
+test('WhatsApp recruitment updates Scout independently from optional legacy invitation audit',async()=>{
  const api=await read('api/whatsapp/send.js')
  const insert=api.indexOf("from('invitaciones_scout').insert")
- const update=api.indexOf("from('prospectos_scouts').update({estado:'invitado'})")
+ const update=api.indexOf("from('prospectos_scouts').update({estado:p?.estado==='prospecto_pendiente'?'invitado':p?.estado")
  assert.ok(insert>0&&update>insert)
- assert.match(api,/invitaciones_scout'[\s\S]*?catch\{\}try\{await sb\.from\('prospectos_scouts'\)\.update/)
+ assert.match(api,/invitaciones_scout'[\s\S]*?catch\{\}[\s\S]*?prospectos_scouts/)
+ assert.match(api,/ultimo_canal:'whatsapp'/)
+ assert.match(api,/contactos_intentos:Number\(p\?\.contactos_intentos\|\|0\)\+1/)
 })
 
 test('Scout loads all saved prospects and separates them by category',async()=>{

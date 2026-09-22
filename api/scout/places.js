@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 import { isIP } from 'node:net';
 import { lookup } from 'node:dns/promises';
+import { handleScoutGmail } from '../../src/server/scoutGmail.js';
 
 // api/scout/places.js — TomTom principal → Geoapify → OSM Overpass → Nominatim
 
@@ -268,6 +269,7 @@ async function emailCampaign(sb,body){
 }
 
 export default async function handler(req,res){
+  if(String(req.query?.ugo_scout_gmail||'')==='1')return handleScoutGmail(req,res);
   res.setHeader('Access-Control-Allow-Origin','*');res.setHeader('Access-Control-Allow-Headers','content-type,authorization');
   if(req.method==='OPTIONS')return res.status(200).end();if(req.method!=='POST')return res.status(405).json({error:'Method not allowed'});
   let auth;try{auth=await requireAdmin(req);}catch(e){const status=Number(e?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:e instanceof Error?e.message:'Scout authorization failed'});}

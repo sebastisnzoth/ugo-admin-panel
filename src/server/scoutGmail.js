@@ -155,7 +155,7 @@ async function sendProspect(sb,config,conn,row,subject,template,zona,userId){
   }
 }
 
-export default async function handler(req,res){
+export async function handleScoutGmail(req,res){
   res.setHeader('Cache-Control','no-store');
   if(req.method==='GET'&&(req.query?.code||req.query?.state||req.query?.error))return callback(req,res);
   let auth;try{auth=await requireAdmin(req);}catch(error){const status=Number(error?.status)||500;return res.status(status).json({error:error instanceof Error?error.message:'Scout Gmail authorization failed'});}

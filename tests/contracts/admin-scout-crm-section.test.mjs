@@ -21,7 +21,7 @@ test('CRM loads the complete Scout prospect base and subscribes to realtime chan
 
 test('CRM provides funnel, demand, filtering, follow-up and prospect cards',async()=>{
  const crm=await read('src/components/ScoutCRM.tsx')
- assert.match(crm,/Embudo de reclutamiento/)
+ assert.match(crm,/Embudo completo/)
  assert.match(crm,/scout_demanda_categorias/)
  assert.match(crm,/Seguimientos vencidos/)
  assert.match(crm,/recruitment_score/)
@@ -32,11 +32,10 @@ test('CRM provides funnel, demand, filtering, follow-up and prospect cards',asyn
 
 test('CRM supports recontact and recruiting campaigns without exposing provider secrets',async()=>{
  const crm=await read('src/components/ScoutCRM.tsx')
- assert.match(crm,/wa\.me/)
- assert.match(crm,/mailto:/)
+ assert.match(crm,/\/api\/whatsapp\/send/)
  assert.match(crm,/action:'enrich_emails'/)
  assert.match(crm,/action:'email_campaign'/)
- assert.match(crm,/Abrir BCC/)
+ assert.match(crm,/BCC/)
  assert.doesNotMatch(crm,/RESEND_API_KEY/)
  assert.doesNotMatch(crm,/TOMTOM_API_KEY/)
 })

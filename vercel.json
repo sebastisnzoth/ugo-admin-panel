@@ -56,6 +56,10 @@
       "destination": "/api/test?ugo_dispute_ai=1"
     },
     {
+      "source": "/api/scout/gmail",
+      "destination": "/api/scout/places?ugo_scout_gmail=1"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },
