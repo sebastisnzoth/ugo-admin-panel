@@ -3,7 +3,7 @@ import{DisputeDock}from'../../../mvp/DisputeDock'
 import{ClientCompletionReview}from'../../../mvp/ClientCompletionReview'
 import{ClientLiveTracking}from'../../../mvp/ClientLiveTracking'
 import{ServiceChat}from'../../../mvp/ServiceChat'
-import{ClientPaymentChoice}from'../../../mvp/client/ClientPaymentChoice'
+import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientProviderRadarBridge}from'../../../mvp/client/ClientProviderRadarBridge'
 import{ClientRatingPrompt}from'../../../mvp/client/ClientRatingPrompt'
 
