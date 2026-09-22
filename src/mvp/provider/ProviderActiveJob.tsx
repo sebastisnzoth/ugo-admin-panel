@@ -5,7 +5,7 @@ import{useProviderData,money}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
-import{Button,Card,EmptyState,SectionHeader,StatusPill}from'../../shared/ui'
+import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 
 const STATE_LABEL:Record<string,string>={asignado:'Listo para ir',en_camino:'Vas al cliente',llegado:'Ya estás en el lugar',en_progreso:'Resolvé el problema',esperando_aprobacion:'Trabajo listo',completado:'Completado'}
 const FLOW_STEPS=[{state:'asignado',label:'Ir'},{state:'llegado',label:'Llegar'},{state:'en_progreso',label:'Resolver'},{state:'esperando_aprobacion',label:'Listo'}] as const
@@ -48,7 +48,7 @@ export function ProviderActiveJob(){
    {s.estado==='en_progreso'&&evidence.final&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</Button>}
    {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Documentá el resultado y marcá “TRABAJO LISTO”. Primero confirma el cliente; el pago en efectivo viene después.</p>}
    {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Trabajo enviado al cliente</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span></div>}
-   {CANCELLABLE.has(s.estado)&&<button type="button" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</Button>}
+   {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</Button>}
   </Card>
 
   <Card className="provider-card provider-job-chat" aria-label="Chat con el cliente"><div className="provider-job-chat-head"><small>CHAT DEL PEDIDO</small><strong>Cliente ↔ Proveedor</strong></div><ServiceChat role="provider" serviceId={s.id} compact/></Card>
