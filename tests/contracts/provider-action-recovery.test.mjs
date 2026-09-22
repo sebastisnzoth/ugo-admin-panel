@@ -34,7 +34,7 @@ test('arrival location failure stays location-scoped instead of becoming lifecyc
  assert.ok(locationIndex>=0&&rpcIndex>locationIndex)
  const transitionSection=service.slice(locationIndex,rpcIndex)
  assert.doesNotMatch(transitionSection,/provider_service_state_error/)
- assert.match(service,/eventType:'provider_location_error'[\s\S]*severity:'P1'[\s\S]*action:'provider\.service\.location'/)
+ assert.match(service,/eventType:'provider_location_error'[\s\S]*severity:'P0'[\s\S]*action:'provider\.service\.location'/)
 })
 
 test('provider no longer confirms cash directly',()=>{

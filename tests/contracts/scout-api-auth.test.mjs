@@ -28,5 +28,5 @@ test('Scout authorizes with the UGO TEST publishable key before reading provider
 test('Scout refuses anonymous and non-Admin callers before search execution',()=>{
  assert.match(source,/if\(!token\)throw Object\.assign\(new Error\('Sesión Admin requerida\.'\),\{status:401\}\)/)
  assert.match(source,/throw Object\.assign\(new Error\('Acceso Admin requerido\.'\),\{status:403\}\)/)
- assert.match(source,/try\{await requireAdmin\(req\);\}catch\(e\)/)
+ assert.match(source,/try\{auth=await requireAdmin\(req\);\}catch\(e\)/)
 })
