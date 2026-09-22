@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../../../mvp/shared'
-import{ClientWhenScreen}from'../../../mvp/client/ClientWhenScreen'
+import{ClientWhenScreen}from'./ClientWhenScreen'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import'./clientLocationScreen.css'
 
