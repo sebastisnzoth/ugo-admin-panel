@@ -20,7 +20,7 @@
 Estas capas Cliente siguen existiendo por compatibilidad, pero no pueden ganar nuevas responsabilidades transversales:
 
 - `src/features/client/legacy/clientVisualPolish.css` (legacy: `client-visual-polish.css`)
-- `client-guided-request-redesign.css`
+- `src/features/client/legacy/request/clientGuidedRequestRedesign.css` (legacy: `client-guided-request-redesign.css`)
 - `client-ai-studio-production-lock.css`
 - `client-ai-studio-production-ops.css`
 - `client-ai-studio-final-lock.css`
@@ -52,7 +52,7 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 4. `./conversation/clientConversationalStage.css`
 5. `./conversation/clientWebConversational.css`
 6. `./legacy/clientVisualPolish.css`
-7. `../../mvp/client/client-guided-request-redesign.css`
+7. `./legacy/request/clientGuidedRequestRedesign.css`
 8. `../../mvp/client/client-guided-request-review.css`
 9. `../../mvp/client/client-redesign-2026.css`
 10. `../../mvp/client/client-ai-studio-flow.css`
