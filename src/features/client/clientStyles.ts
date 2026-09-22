@@ -1,5 +1,5 @@
 import'../../mvp/client/client-guided-request.css'
-import'../../mvp/client/client-payment-choice.css'
+import'./payments/clientPaymentChoice.css'
 import'../../mvp/client/client-responsive-layout.css'
 import'../../mvp/client/client-conversational-stage.css'
 import'../../mvp/client/client-web-conversational.css'
