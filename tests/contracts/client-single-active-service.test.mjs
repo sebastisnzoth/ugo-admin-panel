@@ -21,11 +21,13 @@ test('database corrective migration removes the obsolete one-active-service-per-
 
 test('client cancellation targets one explicit owned service instead of freeing a global active slot', async () => {
   const bridge = await read('src/features/client/actions/ClientFlowActionsBridge.tsx')
+  const service = await read('src/features/client/services/clientActionService.ts')
   const dispatch = await read('src/lib/dispatch/supabaseDispatch.ts')
 
-  assert.match(bridge, /if\(!serviceId\)return false/)
-  assert.match(bridge, /\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
-  assert.match(bridge, /getDispatchProvider\(\)\.cancel\(owned\.id\)/)
-  assert.doesNotMatch(bridge, /order\('created_at'.*limit\(1\)/)
+  assert.match(bridge, /cancelOwnedClientService\(supabase,userId,serviceId\)/)
+  assert.match(service, /if\(!serviceId\)return false/)
+  assert.match(service, /\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
+  assert.match(service, /getDispatchProvider\(\)\.cancel\(owned\.id\)/)
+  assert.doesNotMatch(service, /order\('created_at'.*limit\(1\)/)
   assert.match(dispatch, /rpc\('cancelar_servicio', \{ p_servicio_id: serviceId \}\)/)
 })
