@@ -120,3 +120,24 @@ GO-LIVE = blocked
 ```
 
 **No tocar Supabase PROD. No crear ramas. No Vercel para resolver QA Android.**
+
+## Checkpoint 22 de septiembre de 2026 — Admin + Hugo Proveedor
+
+Implementación validada por `UGO Core CI` sobre `76e63c8aeb4b8b9d6fb379be2323c4654e12a0f4`:
+
+- Admin Gate conserva autenticación/autorización y vuelve a montar el panel operativo real mediante `features/admin/screens/AdminShell.tsx → AdminPhase2`; se eliminó la regresión que mostraba sólo el placeholder de migración.
+- Test contractual agregado para impedir que el shell Admin vuelva a ocultar los módulos operativos durante la migración.
+- Hugo Proveedor ahora espera el arranque real de Gemini Live antes de declarar “Te escucho”.
+- Si Gemini Live falla durante setup, Proveedor cae al reconocimiento de voz del dispositivo cuando está disponible; el rechazo ya no queda como `unhandled_rejection`.
+- TTS de Proveedor tiene corte rápido y fallback de voz del dispositivo; una respuesta lenta/429 de Gemini no debe dejar el orbe mudo.
+- Un fallo de sesión Live resetea `voiceRunning` para permitir reintento con un solo toque.
+- Sentinel TEST confirmó como P0 recientes los errores `Gemini Live setup timeout` / `Gemini Live cerró antes de completar setup` en revisiones publicadas anteriores; el fix queda pendiente de prueba física/publicación.
+- `UGO Core CI`: SUCCESS para TypeScript, production build, core tests y lint.
+- `UGO Isolated RPC RLS`: el código/build y los contratos pasan; el gate requerido falla por ausencia de las 6 credenciales TEST aisladas (Cliente/Proveedor/Admin email+password), por diseño fail-closed.
+- Publicación automática Vercel: bloqueada por rate limit del plan. No confundir `main` validado con runtime publicado.
+
+Pendientes de salida:
+1. publicar un runtime que contenga este checkpoint cuando se libere el gate de hosting;
+2. prueba física de Hugo Proveedor (Gemini Live + fallback + audio);
+3. TWO-DEVICES / CHAT-REALTIME y FULL-E2E siguen requiriendo sesiones TEST reales;
+4. no promover GO-LIVE mientras Sentinel/checklist mantengan gates P0 bloqueados.
