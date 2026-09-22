@@ -5,12 +5,12 @@ import { readFile } from 'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client surfaces a persisted rating only after completed services',async()=>{
- const[prompt,root]=await Promise.all([
+ const[prompt,surfaces]=await Promise.all([
   read('src/mvp/client/ClientRatingPrompt.tsx'),
-  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
  ])
- assert.match(root,/import\{ClientRatingPrompt\}from'\.\/ClientRatingPrompt'/)
- assert.match(root,/<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/import\{ClientRatingPrompt\}from'\.\.\/\.\.\/\.\.\/mvp\/client\/ClientRatingPrompt'/)
+ assert.match(surfaces,/<ClientRatingPrompt\/>/)
  assert.match(prompt,/from\('servicios'\)/)
  assert.match(prompt,/\.eq\('estado','completado'\)/)
  assert.match(prompt,/from\('resenas'\)/)
@@ -88,26 +88,26 @@ test('ratings are bilateral: provider can rate the client and both directions sh
 
 
 test('client rating is immediately available after payment closes the selected service',async()=>{
- const[root,detail,prompt]=await Promise.all([
-  read('src/mvp/client/ClientRoot.tsx'),
+ const[surfaces,detail,prompt]=await Promise.all([
+  read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
   read('src/mvp/client/ClientRatingPrompt.tsx'),
  ])
- assert.match(await read('src/mvp/client/ClientRoot.tsx'),/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
  assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
  assert.match(prompt,/serviceId\?servicesQuery\.eq\('id',serviceId\)\.limit\(1\)/)
  assert.match(prompt,/embedded\?'is-embedded'/)
 })
 
 test('completed-service notification can land on home and still expose client rating',async()=>{
- const[nav,flow,root]=await Promise.all([
+ const[nav,flow,surfaces]=await Promise.all([
   read('src/features/client/navigation/clientNavigation.ts'),
   read('src/mvp/client/ClientFlowActionsBridge.tsx'),
-  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
  ])
  assert.match(nav,/notice\.tipo==='servicio_completado'/)
  assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
- assert.match(root,/flow\.screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
 })
 
 
