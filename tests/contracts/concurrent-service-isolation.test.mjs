@@ -5,11 +5,12 @@ import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client cancellation mutation boundary requires an explicit owned service id',async()=>{
- const bridge=await read('src/features/client/actions/ClientFlowActionsBridge.tsx')
+ const[bridge,service]=await Promise.all([read('src/features/client/actions/ClientFlowActionsBridge.tsx'),read('src/features/client/services/clientActionService.ts')])
  assert.match(bridge,/const cancelService=async\(serviceId:string\)/)
- assert.match(bridge,/if\(!serviceId\)return false/)
- assert.match(bridge,/\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
- assert.doesNotMatch(bridge,/order\('created_at'[\s\S]*limit\(1\)/)
+ assert.match(bridge,/cancelOwnedClientService\(supabase,userId,serviceId\)/)
+ assert.match(service,/if\(!serviceId\)return false/)
+ assert.match(service,/\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)/)
+ assert.doesNotMatch(service,/order\('created_at'[\s\S]*limit\(1\)/)
 })
 
 test('Hugo can create another request while services already exist',async()=>{
