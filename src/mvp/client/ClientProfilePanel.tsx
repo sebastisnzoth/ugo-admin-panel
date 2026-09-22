@@ -2,7 +2,7 @@ import React,{useCallback,useEffect,useState}from'react'
 import{useRoleSession}from'../shared'
 import{useClientFlow}from'./clientFlow'
 import{UGO_UI_EVENTS}from'../uiEvents'
-import'./client-profile-panel.css'
+import'../../features/client/profile/clientProfilePanel.css'
 
 type Detail={telefono?:string|null;direccion?:string|null;barrio?:string|null;ciudad?:string|null;idioma_preferido?:string|null;contacto_preferido?:string|null}
 type PaymentMethod='efectivo'|'pix'
