@@ -5,8 +5,10 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('provider recruitment invitation is routed before normal provider auth',async()=>{
  const app=await read('src/mvp/MvpApp.tsx')
+ const router=await read('src/app/router.ts')
+ assert.match(router,/if\(app==='recruit'\)return'recruit'/)
  assert.match(app,/ProviderRecruitmentLanding/)
- assert.match(app,/if\(app==='recruit'\)return/)
+ assert.match(app,/if\(route==='recruit'\)return/)
 })
 
 test('recruitment landing validates invite, creates provider account and continues into document onboarding',async()=>{

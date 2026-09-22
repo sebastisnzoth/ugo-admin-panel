@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const app=fs.readFileSync('src/mvp/MvpApp.tsx','utf8')
+const router=fs.readFileSync('src/app/router.ts','utf8')
 const dashboard=fs.readFileSync('src/mvp/DevelopmentDashboard.tsx','utf8')
 const landing=fs.readFileSync('public/landing/index.html','utf8')
 const migration=fs.readFileSync('supabase/migrations/20260915070000_development_readiness_dashboard.sql','utf8')
@@ -14,9 +15,11 @@ test('public landing exposes the requested Desarrollo entrypoint',()=>{
 })
 
 test('development dashboard is public while Admin remains gated',()=>{
- assert.match(app,/if\(app==='development'\)return <Deferred><DevelopmentDashboard\/><\/Deferred>/)
- assert.doesNotMatch(app,/if\(app==='development'\).*AdminGate/)
- assert.match(app,/if\(app==='admin'\)return <Deferred><AdminGate\/><\/Deferred>/)
+ assert.match(router,/if\(app==='development'\)return'development'/)
+ assert.match(router,/if\(app==='admin'\)return'admin'/)
+ assert.match(app,/if\(route==='development'\)return <Deferred><DevelopmentDashboard\/><\/Deferred>/)
+ assert.doesNotMatch(app,/if\(route==='development'\).*AdminGate/)
+ assert.match(app,/if\(route==='admin'\)return <Deferred><AdminGate\/><\/Deferred>/)
 })
 
 test('verified readiness counts only approved weighted checklist items',()=>{

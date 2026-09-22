@@ -104,7 +104,7 @@ test('CRM final pass includes today inbox, campaigns, invite links, mass actions
  const service=await read('src/features/scout/services/scoutCrmService.ts')
  assert.match(crm,/PARA HACER HOY/)
  assert.match(service,/scout_campaign_metrics/)
- assert.match(crm,/admin_issue_scout_invitation/)
+ assert.match(service,/admin_issue_scout_invitation/)
  assert.match(crm,/sendWhatsappCampaign/)
  assert.match(crm,/bulkUpdate/)
  assert.match(crm,/PAGE_SIZE=100/)
