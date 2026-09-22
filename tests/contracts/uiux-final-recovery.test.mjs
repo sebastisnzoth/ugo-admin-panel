@@ -23,7 +23,7 @@ test('provider active-job empty state keeps one simple exit and arrival has auto
 
 test('admin, client and provider expose final mobile recovery styles',async()=>{
  const admin=await read('src/mvp/admin-uiux-final.css')
- const payment=await read('src/mvp/client/client-payment-choice.css')
+ const payment=await read('src/features/client/payments/clientPaymentChoice.css')
  const provider=await read('src/mvp/provider/provider-flow.css')
  assert.match(admin,/display:flex!important;overflow-x:auto/)
  assert.match(admin,/flex:0 0 76px/)
