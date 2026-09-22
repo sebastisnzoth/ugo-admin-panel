@@ -1,6 +1,6 @@
 import{useEffect}from'react'
 import{useRoleSession}from'../../../mvp/shared'
-import{useClientFlow}from'../../../mvp/client/clientFlow'
+import{useClientFlow}from'../flow/clientFlow'
 import{approvePendingClientService,cancelOwnedClientService}from'../services/clientActionService'
 export function ClientFlowActionsBridge(){
  const{registerActions,navigate}=useClientFlow(),{session,supabase}=useRoleSession('client'),userId=session?.user.id||''

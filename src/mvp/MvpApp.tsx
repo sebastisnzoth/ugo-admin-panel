@@ -1,5 +1,5 @@
 import React,{Suspense,lazy,useEffect,useState}from'react'
-import{ClientFlowProvider}from'./client/clientFlow'
+import{ClientFlowProvider}from'../features/client/flow/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{resolveAppRoute}from'../app/router'
