@@ -24,6 +24,11 @@
   --ugo-color-inverse-text-muted:#7890a2;
   --ugo-color-accent-bright:#20f29a;
   --ugo-color-on-accent-bright:#04150f;
+  --ugo-color-inverse-page:#07111c;
+  --ugo-color-inverse-divider:#20364a;
+  --ugo-color-inverse-rail:#050d15;
+  --ugo-color-accent-bright-soft:rgba(32,242,154,.08);
+  --ugo-color-overlay-strong:rgba(3,10,16,.92);
   --ugo-space-1:4px;
   --ugo-space-2:8px;
   --ugo-space-3:12px;
@@ -41,6 +46,7 @@
   --ugo-shadow-sm:0 1px 3px rgba(16,24,40,.06);
   --ugo-shadow-md:0 8px 24px rgba(16,24,40,.10);
   --ugo-shadow-lg:0 18px 50px rgba(16,24,40,.12);
+  --ugo-shadow-overlay-strong:0 28px 80px rgba(0,0,0,.36);
   --ugo-z-dropdown:900;
   --ugo-z-overlay:1400;
   --ugo-z-toast:1800;
