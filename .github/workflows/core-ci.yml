@@ -90,7 +90,7 @@ jobs:
           src/mvp/MvpApp.tsx
           src/mvp/client/ClientRoot.tsx
           src/mvp/client/ClientGuidedRequest.tsx
-          src/mvp/client/ClientPaymentChoice.tsx
+          src/features/client/payments/ClientPaymentChoice.tsx
           src/mvp/client/ClientHugoBridge.tsx
           src/mvp/client/ClientVoiceHugoDock.tsx
           src/mvp/ClientCompletionReview.tsx
