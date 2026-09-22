@@ -141,7 +141,7 @@ test('client approval is scoped to its service and completed review keeps its ex
 test('client sees provider work evidence on the active assignment and exact service detail in realtime',async()=>{
  const [gallery,postConfirm,detail,rls]=await Promise.all([
   read('src/mvp/ClientEvidenceGallery.tsx'),
-  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
   read('supabase/migrations/20260911_service_evidence.sql'),
  ])
@@ -154,7 +154,7 @@ test('client sees provider work evidence on the active assignment and exact serv
 
 test('client and provider require cancellation confirmation before mutating an order',async()=>{
  const [postConfirm,detail,history,activeJob,providerData,providerService]=await Promise.all([
-  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
   read('src/mvp/ServiceHistoryPanel.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
