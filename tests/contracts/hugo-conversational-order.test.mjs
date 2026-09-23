@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const hugo = await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx', import.meta.url), 'utf8')
+const hugo = await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx', import.meta.url), 'utf8')
 const intent = await readFile(new URL('../../src/mvp/client/hugoVoiceIntent.ts', import.meta.url), 'utf8')
 const catalog = await readFile(new URL('../../src/mvp/voiceCatalog.ts', import.meta.url), 'utf8')
 const types = await readFile(new URL('../../src/features/client/types/clientTypes.ts', import.meta.url), 'utf8')
