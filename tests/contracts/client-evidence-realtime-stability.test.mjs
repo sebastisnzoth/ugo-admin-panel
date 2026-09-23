@@ -15,7 +15,7 @@ test('client evidence gallery isolates realtime topics per mounted instance and 
 })
 
 test('exact order detail also isolates its realtime topic and suppresses offline false positives',async()=>{
- const detail=await read('src/mvp/client/ClientServiceDetail.tsx')
+ const detail=await read('src/features/client/order/ClientServiceDetail.tsx')
  assert.match(detail,/channelGeneration=useRef\(0\)/)
  assert.match(detail,/topic=`client-service-detail-\$\{serviceId\}-\$\{instanceId\}-\$\{channelEpoch\}-\$\{generation\}`/)
  assert.match(detail,/document\.visibilityState==='visible'&&navigator\.onLine/)

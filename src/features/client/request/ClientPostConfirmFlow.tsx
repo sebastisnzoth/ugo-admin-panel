@@ -1,11 +1,11 @@
 import React,{useCallback,useEffect,useRef,useState}from'react'
-import{getDispatchProvider}from'../../lib/dispatch/provider'
-import{ClientEvidenceGallery}from'../ClientEvidenceGallery'
-import{ServiceChat}from'../ServiceChat'
-import{STATUS_LABELS,useRoleSession}from'../shared'
-import{ClientRatingPrompt}from'./ClientRatingPrompt'
-import{ClientServiceDetail}from'./ClientServiceDetail'
-import{useClientFlow}from'./clientFlow'
+import{getDispatchProvider}from'../../../lib/dispatch/provider'
+import{ClientEvidenceGallery}from'../../../mvp/ClientEvidenceGallery'
+import{ServiceChat}from'../../../mvp/ServiceChat'
+import{STATUS_LABELS,useRoleSession}from'../../../mvp/shared'
+import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
+import{ClientServiceDetail}from'../order/ClientServiceDetail'
+import{useClientFlow}from'../flow/clientFlow'
 import'./client-post-confirm.css'
 
 type Draft={description?:string;categoryId?:string;categoryName?:string;categorySlug?:string;address?:string;addressLabel?:string;complement?:string;zone?:string;tariffQuote?:{tarifa_id?:string;zona?:string;precio_base?:number;precio_hora?:number;precio_min?:number;precio_max?:number|null;precio_referencia?:number;moneda?:string}|null;when?:string;scheduleAt?:string;urgent?:boolean;amount?:number|null;paymentMethod?:'pix'|'cash';pickupLat?:number|null;pickupLng?:number|null;pickupSource?:'current'|'saved'|'manual'}

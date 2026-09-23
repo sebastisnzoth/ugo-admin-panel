@@ -144,7 +144,7 @@ test('client sees provider work evidence on the active assignment and exact serv
  const [gallery,postConfirm,detail,rls]=await Promise.all([
   read('src/mvp/ClientEvidenceGallery.tsx'),
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
   read('supabase/migrations/20260911_service_evidence.sql'),
  ])
  assert.match(postConfirm,/<ClientEvidenceGallery serviceId=\{service\.id\} hideWhenEmpty compact\/>/)
@@ -157,7 +157,7 @@ test('client sees provider work evidence on the active assignment and exact serv
 test('client and provider require cancellation confirmation before mutating an order',async()=>{
  const [postConfirm,detail,history,activeJob,providerData,providerService]=await Promise.all([
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
   read('src/mvp/ServiceHistoryPanel.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('src/mvp/provider/providerData.tsx'),
