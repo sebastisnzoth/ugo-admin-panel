@@ -34,8 +34,29 @@ function resample(input:Float32Array,fromRate:number){
  for(let i=0;i<length;i++){const position=i*ratio,left=Math.floor(position),right=Math.min(input.length-1,left+1),mix=position-left;output[i]=(input[left]||0)*(1-mix)+(input[right]||0)*mix}
  return output
 }
+type LiveFunctionDeclaration={name:string;description:string;parameters:{type:'OBJECT';properties:Record<string,{type:string;description?:string;enum?:string[]}>;required?:string[]}}
+const CLIENT_TOOLS:LiveFunctionDeclaration[]=[
+ {name:'get_current_location',description:'Obtiene la ubicación GPS real del cliente cuando el usuario pide usar donde está.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'set_request_category',description:'Actualiza la categoría del borrador del pedido.',parameters:{type:'OBJECT',properties:{category:{type:'STRING',description:'Categoría de servicio expresada por el usuario'}},required:['category']}},
+ {name:'set_request_description',description:'Actualiza qué trabajo necesita el cliente.',parameters:{type:'OBJECT',properties:{description:{type:'STRING'}},required:['description']}},
+ {name:'set_schedule',description:'Actualiza cuándo necesita el servicio.',parameters:{type:'OBJECT',properties:{when:{type:'STRING',description:'Expresión temporal confirmada por el usuario'}}},required:['when']}},
+ {name:'set_payment_method',description:'Actualiza el método de pago del pedido.',parameters:{type:'OBJECT',properties:{method:{type:'STRING',enum:['cash','pix']}},required:['method']}},
+ {name:'search_providers',description:'Busca profesionales reales disponibles para el borrador actual.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'create_service_request',description:'Crea el pedido real sólo después de confirmación explícita del cliente.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
+ {name:'get_service_status',description:'Consulta el estado real de un pedido activo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
+ {name:'cancel_service',description:'Cancela un pedido real después de confirmación cuando corresponda.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}}
+]
+const PROVIDER_TOOLS:LiveFunctionDeclaration[]=[
+ {name:'provider_set_online',description:'Pone al proveedor online usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'provider_set_offline',description:'Pone al proveedor offline usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'provider_list_opportunities',description:'Lista oportunidades reales disponibles para el proveedor.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'provider_accept_job',description:'Acepta una oportunidad real si las reglas UGO lo permiten.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
+ {name:'provider_reject_job',description:'Rechaza una oportunidad real.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
+ {name:'provider_update_service_status',description:'Actualiza el lifecycle de un servicio activo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},status:{type:'STRING'}},required:['service_id','status']}}
+]
+function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:[]}
 function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el asistente operativo de UGO. Conversá natural, breve y útil. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito.'}]}}}}
+function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el asistente operativo de UGO. Conversá natural, breve y útil. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito. Recordá los datos confirmados durante esta conversación y no los vuelvas a preguntar.'}]},tools:[{functionDeclarations:roleTools()}]}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
