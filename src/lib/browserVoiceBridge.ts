@@ -64,7 +64,6 @@ function installBrowserBridge(){
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
  let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0
  const conversationSources=new Set<AudioBufferSourceNode>()
- const speakerSources=new Set<AudioBufferSourceNode>()
 
  const clearReconnect=()=>{if(reconnectTimer){window.clearTimeout(reconnectTimer);reconnectTimer=0}}
  const resetAudioQueue=()=>{pendingSamples=[]}
@@ -93,6 +92,8 @@ function installBrowserBridge(){
   for(const part of content?.modelTurn?.parts||[]){if(part?.inlineData?.data)playConversationPcm(String(part.inlineData.data),String(part.inlineData.mimeType||'audio/pcm;rate=24000'))}
   const calls=data?.toolCall?.functionCalls||[]
   for(const call of calls){emit('ugo:native-voice-tool-call',{id:String(call?.id||''),name:String(call?.name||''),args:call?.args||{},engine:'gemini-live'})}
+  const outputText=String(content?.outputTranscription?.text||'').trim()
+  if(outputText)emit('ugo:native-voice-output',{text:outputText,engine:'gemini-live'})
   const interim=String(content?.interimInputTranscription?.text||'').trim()
   if(interim&&active&&!paused){emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'interim'});emit('ugo:native-voice-result',{text:interim,final:false,engine:'gemini-live'})}
   const finalText=String(content?.inputTranscription?.text||'').trim()
