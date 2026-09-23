@@ -109,56 +109,18 @@
 }
 
 /* Categories become fast tap targets instead of a long horizontal rail. */
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories{
-  display:grid!important;
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:7px!important;
-  overflow:visible!important;
-  padding:0!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories button{
-  min-width:0!important;
-  min-height:45px!important;
-  padding:8px 9px!important;
-  border:1px solid rgba(170,206,185,.14)!important;
-  border-radius:13px!important;
-  background:#0d231b!important;
-  color:#d9e9df!important;
-  font-size:11px!important;
-  font-weight:850!important;
-  line-height:1.15!important;
-  white-space:normal!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-categories button.selected{
-  border-color:rgba(36,226,138,.62)!important;
-  background:linear-gradient(180deg,#174831,#103a29)!important;
-  color:#effff6!important;
-  box-shadow:0 0 0 2px rgba(36,226,138,.07)!important;
-}
+
+
+
 
 /* Timing is a 3-choice segmented decision. */
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options{
-  grid-template-columns:repeat(3,minmax(0,1fr))!important;
-  gap:8px!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button{
-  min-height:64px!important;
-  padding:10px 11px!important;
-  border:1px solid rgba(170,206,185,.14)!important;
-  border-radius:14px!important;
-  background:#0d231b!important;
-  color:#eef8f2!important;
-  box-shadow:none!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options button.selected{
-  border-color:rgba(36,226,138,.65)!important;
-  background:linear-gradient(180deg,#174831,#103a29)!important;
-  box-shadow:0 0 0 2px rgba(36,226,138,.07)!important;
-}
+
+
+
 
 .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-options b{
   font-size:13px!important;
@@ -183,10 +145,7 @@
   box-shadow:none!important;
 }
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel header strong{
-  color:#eef8f2!important;
-  font-size:12px!important;
-}
+
 
 .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-panel header p{
   margin:4px 0 9px!important;
@@ -195,9 +154,7 @@
   line-height:1.4!important;
 }
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-upload-actions{
-  gap:7px!important;
-}
+
 
 .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-request-evidence-upload{
   padding:11px 8px!important;

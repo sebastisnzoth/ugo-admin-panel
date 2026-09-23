@@ -138,6 +138,8 @@ Representative repeated selectors:
 
 - 2026-09-23: pruned 10 base request field/layout/focus blocks from `legacy/request/clientGuidedRequestRedesign.css` after verifying complete ownership and equal-or-stronger `!important` priority in `legacy/ai/clientAiStudioGuidedComplete.css`; responsive rules remain untouched.
 
+- 2026-09-23: pruned the final 8 strictly redundant base category/option/evidence blocks from `legacy/request/clientGuidedRequestRedesign.css`; `legacy/ai/clientAiStudioGuidedComplete.css` owns every removed property with equal-or-stronger priority. Strict base redundancy for this pair is now zero.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
