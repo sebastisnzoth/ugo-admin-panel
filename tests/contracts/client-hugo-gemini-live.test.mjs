@@ -45,13 +45,13 @@ test('Hugo pauses and resumes the persistent Live session instead of reconnectin
 })
 
 
-test('Client and Provider use a persistent Gemini Live audio speaker before slower TTS fallbacks',()=>{
+test('Client and Provider require the persistent Gemini Live audio speaker and never mask failure with browser speech',()=>{
  assert.match(bridge,/responseModalities:\['AUDIO'\]/)
  assert.match(bridge,/outputAudioTranscription:\{\}/)
  assert.match(bridge,/voice_live_mode:mode/)
  assert.match(bridge,/speak:speakThroughLive/)
  assert.match(dock,/liveBridge\?\.speak/)
- assert.match(provider,/liveBridge\?\.speak/)
+ assert.match(provider,/liveBridge\?\.speak/)\n assert.doesNotMatch(dock,/speechSynthesis\.speak/)\n assert.doesNotMatch(provider,/speechSynthesis\.speak/)\n assert.doesNotMatch(dock,/\/api\/hugo\/chat/)\n assert.doesNotMatch(provider,/\/api\/hugo\/chat/)
  assert.match(api,/GEMINI_LIVE_VOICE_MODEL/)
  assert.match(api,/voice_live_mode==='speaker'/)
 })

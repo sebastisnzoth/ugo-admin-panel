@@ -109,30 +109,18 @@ export function ClientVoiceHugoDock({accessToken,service,services=[],clientActio
   stopSpeechPlayback();setAssistantTranscript(reply);conversation.current=[...conversation.current,{role:'assistant' as const,content:reply}].slice(-10);setError('')
   if(!running.current){setState('idle');return}
   pauseRecognition();setState('speaking')
-  const token=ttsSequence.current
-  const deviceFallback=async()=>{try{await playDeviceSpeech(voiceText,locale.current)}catch(fallbackError){console.warn('UGO device voice fallback unavailable',fallbackError)}}
-  const liveBridge=ugoWindow().UGOVoiceBridge
-  if(native.current&&liveBridge?.speak){try{await liveBridge.speak(voiceText,locale.current);if(token===ttsSequence.current&&running.current){setState('ready');resumeRecognition()}return}catch(liveVoiceError){console.warn('Gemini Live speaker no disponible; usando TTS de respaldo.',liveVoiceError)}}
-  if(Date.now()<ttsCooldownUntil.current){await deviceFallback();if(token===ttsSequence.current&&running.current){setState('ready');resumeRecognition()}return}
-  const controller=new AbortController();ttsAbortRef.current=controller;let timedOut=false
-  const timeout=window.setTimeout(()=>{timedOut=true;try{controller.abort()}catch(caught){ignoreError(caught)}},1800)
-  try{
-   const started=performance.now(),response=await fetch('/api/hugo/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tts:true,text:voiceText,locale:locale.current}),signal:controller.signal}),data=(await response.json().catch(()=>null))as GeminiTts|null
-   console.info('UGO TTS timing',{ms:Math.round(performance.now()-started),status:response.status,model:data?.model||null})
-   if(!response.ok||!data?.audio_base64){const failure=new Error(data?.error||data?.hugo_mensaje||'Gemini TTS no respondió') as StatusError;failure.status=response.status;if(response.status===429)ttsCooldownUntil.current=Date.now()+90000;throw failure}
-   if(controller.signal.aborted||token!==ttsSequence.current||!running.current)return
-   await playGeminiPcm(data.audio_base64,Number(data.sample_rate||24000))
-  }catch(ttsError:unknown){
-   const externallyStopped=controller.signal.aborted&&!timedOut
-   if(externallyStopped||token!==ttsSequence.current||!running.current)return
-   if(errorStatus(ttsError)===429)ttsCooldownUntil.current=Date.now()+90000
-   console.warn('Gemini TTS no disponible; usando voz del dispositivo.',ttsError)
-   await deviceFallback()
-  }finally{
-   window.clearTimeout(timeout);if(ttsAbortRef.current===controller)ttsAbortRef.current=null
-   if(token===ttsSequence.current&&running.current){setState('ready');resumeRecognition()}
+  const token=ttsSequence.current,liveBridge=ugoWindow().UGOVoiceBridge
+  if(!native.current||!liveBridge?.speak){
+   setState('error');setError('Gemini Live no está disponible. Hugo no va a reemplazarla por la voz del navegador.');return
   }
- },[pauseRecognition,playDeviceSpeech,playGeminiPcm,resumeRecognition,stopSpeechPlayback])
+  try{
+   await liveBridge.speak(voiceText,locale.current)
+   if(token===ttsSequence.current&&running.current){setState('ready');resumeRecognition()}
+  }catch(liveVoiceError){
+   console.error('UGO Gemini Live speaker unavailable',liveVoiceError)
+   if(token===ttsSequence.current&&running.current){setState('error');setError('La voz Gemini Live falló. Tocá el orbe para reconectar.')}
+  }
+ },[pauseRecognition,resumeRecognition,stopSpeechPlayback])
  const publish=useCallback((source:string,category:VoiceCategory|null,description:string|null)=>{if(category)onIntent?.({text:source,categoryHint:category.slug||category.nombre||'',urgent:urgency(source),description})},[onIntent])
  const syncDraft=useCallback((current:Draft)=>{
   const detail={category:current.category?{id:current.category.id,slug:current.category.slug,nombre:current.category.nombre,emoji:current.category.emoji}:null,description:current.description,address:current.address,addressLabel:current.addressLabel,pickupLat:current.pickupLat,pickupLng:current.pickupLng,pickupSource:current.pickupSource,when:current.when,scheduleAt:current.scheduleAt,whenLabel:current.whenLabel,paymentMethod:current.paymentMethod,urgent:current.urgent,voiceJourney:true}
