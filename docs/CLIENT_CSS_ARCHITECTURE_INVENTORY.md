@@ -134,6 +134,8 @@ Representative repeated selectors:
 
 - 2026-09-23: pruned 8 base request header/progress/orb blocks from `legacy/request/clientGuidedRequestRedesign.css` after verifying complete ownership and equal-or-stronger `!important` priority in `legacy/ai/clientAiStudioGuidedComplete.css`; responsive rules remain untouched.
 
+- 2026-09-23: pruned 9 base request content/form/voice blocks from `legacy/request/clientGuidedRequestRedesign.css` after verifying complete ownership and equal-or-stronger `!important` priority in `legacy/ai/clientAiStudioGuidedComplete.css`; responsive rules remain untouched.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:

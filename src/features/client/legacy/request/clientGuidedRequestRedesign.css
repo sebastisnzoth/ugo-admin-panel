@@ -56,88 +56,25 @@
 
 
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>h2{
-  margin:0 0 4px!important;
-  color:#fff!important;
-  font-size:clamp(27px,5vw,36px)!important;
-  line-height:1.02!important;
-  letter-spacing:-.045em!important;
-}
+
 
 /* Hugo prompt card: smaller and more conversational than the old full-width block. */
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1){
-  margin:4px 0 0!important;
-  padding:14px 15px!important;
-  border:1px solid rgba(36,226,138,.2)!important;
-  border-radius:18px!important;
-  background:
-    linear-gradient(135deg,rgba(36,226,138,.075),transparent 48%),
-    #0b211a!important;
-  box-shadow:0 12px 30px rgba(0,0,0,.13)!important;
-  line-height:1.45;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1)>b{
-  margin-bottom:4px!important;
-  color:var(--request-green)!important;
-  font-size:12px!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(1)>span{
-  color:#eaf4ee!important;
-  font-size:13px!important;
-}
+
+
+
 
 /* Composer */
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form{
-  display:grid!important;
-  grid-template-columns:minmax(0,1fr) auto!important;
-  gap:8px!important;
-  margin:0!important;
-  padding:6px!important;
-  border:1px solid var(--request-line)!important;
-  border-radius:18px!important;
-  background:#081812!important;
-  box-shadow:0 8px 24px rgba(0,0,0,.12)!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>input{
-  min-height:46px!important;
-  padding:0 12px!important;
-  border:0!important;
-  border-radius:13px!important;
-  background:transparent!important;
-  color:#fff!important;
-  box-shadow:none!important;
-  font-size:13px!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>input::placeholder{
-  color:#6f8579!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>form>.ugo-guided-primary{
-  min-width:76px!important;
-  min-height:46px!important;
-  margin:0!important;
-  padding:0 16px!important;
-  border-radius:13px!important;
-  background:linear-gradient(180deg,#31eb94,#1ed47f)!important;
-  color:#052416!important;
-  box-shadow:none!important;
-  font-size:13px!important;
-}
 
-.ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>.ugo-guided-voice{
-  min-height:46px!important;
-  margin:0!important;
-  border:1px solid var(--request-line)!important;
-  border-radius:15px!important;
-  background:#0b1d18!important;
-  color:#dfece5!important;
-  box-shadow:none!important;
-  font-size:13px!important;
-}
+
+
+
+
+
 
 /* The old form was one long stack. Turn every topic into a compact request card. */
 .ugo-client-root .ugo-guided-request[aria-label="Solicitud guiada por Hugo"] .ugo-guided-step>div:nth-of-type(2){
