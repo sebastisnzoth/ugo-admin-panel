@@ -1,7 +1,7 @@
 import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../shared'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../uiEvents'
-import{useClientFlow}from'./clientFlow'
+import{useClientFlow}from'../../features/client/flow/clientFlow'
 
 type ClientLocation={barrio?:string|null;ciudad?:string|null}
 

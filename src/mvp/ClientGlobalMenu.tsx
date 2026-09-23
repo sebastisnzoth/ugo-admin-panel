@@ -1,5 +1,5 @@
 import React,{useEffect,useState}from'react'
-import{useClientFlow}from'./client/clientFlow'
+import{useClientFlow}from'../features/client/flow/clientFlow'
 import{useRoleSession}from'./shared'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'./uiEvents'
 import'./client-reference.css'
