@@ -112,6 +112,8 @@ Representative repeated selectors:
 
 - 2026-09-23: removed 15 base Home declaration blocks from `legacy/home/clientHomeAppV3.css` after verifying complete property coverage by the later `legacy/premium/clientPremium2026.css`; responsive breakpoint rules remain untouched.
 
+- 2026-09-23: pruned 20 base Studio declarations from `ai/clientGoogleAiStudio.css` after verifying full property ownership by the later `ai/clientStudioReference.css`; variables and all responsive `@media` rules remain intact.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
