@@ -13,7 +13,7 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
  read('src/mvp/client/ClientServiceDetail.tsx'),
  read('src/mvp/ClientCompletionReview.tsx'),
  read('src/mvp/client/ClientRatingPrompt.tsx'),
- read('src/mvp/ClientRequestEvidence.tsx'),
+ read('src/features/client/request/ClientRequestEvidence.tsx'),
 ])
 
 test('canonical client request covers need, optional evidence, location, when, payment and summary',()=>{

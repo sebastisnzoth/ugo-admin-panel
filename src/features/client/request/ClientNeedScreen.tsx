@@ -1,6 +1,6 @@
 import React,{useEffect,useMemo,useRef,useState}from'react'
 import{useRoleSession,type Category}from'../../../mvp/shared'
-import{ClientRequestEvidence}from'../../../mvp/ClientRequestEvidence'
+import{ClientRequestEvidence}from'./ClientRequestEvidence'
 import{resolveVoiceCategoryFromCatalog}from'../../../mvp/voiceCatalog'
 import{useClientFlow}from'../flow/clientFlow'
 import{ClientLocationScreen}from'./ClientLocationScreen'
