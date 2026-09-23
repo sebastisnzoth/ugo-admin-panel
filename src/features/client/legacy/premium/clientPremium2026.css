@@ -495,20 +495,6 @@
 .ugo-client-root .ugo-client-screen-overlay{
   background:#f3f6f4!important;
 }
-.ugo-client-root .ugo-client-profile-panel{
-  background:#f3f6f4!important;
-}
-.ugo-client-root .ugo-client-profile-panel>header{
-  border-bottom:1px solid var(--cp-line)!important;
-  background:rgba(247,249,248,.94)!important;
-  color:#142219!important;
-}
-.ugo-client-root .ugo-client-profile-panel>header button,
-.ugo-client-root .ugo-client-profile-panel>header>span{
-  border:1px solid var(--cp-line)!important;
-  background:#fff!important;
-  color:#17251c!important;
-}
 .ugo-client-root .ugo-client-profile-identity{
   border:1px solid var(--cp-line)!important;
   background:
@@ -517,51 +503,10 @@
   color:#17251c!important;
   box-shadow:0 12px 34px rgba(17,39,26,.07)!important;
 }
-.ugo-client-root .ugo-client-profile-identity>span{
-  background:linear-gradient(145deg,#2af29c,#22d3ee)!important;
-  color:#052215!important;
-}
-.ugo-client-root .ugo-client-profile-identity small{
-  color:#6d7a72!important;
-}
-.ugo-client-root .ugo-client-profile-identity button{
-  border:1px solid #cfe2d7!important;
-  background:#fff!important;
-  color:#087a50!important;
-}
-.ugo-client-root .ugo-client-profile-shortcuts button,
-.ugo-client-root .ugo-client-profile-sections details{
-  border:1px solid var(--cp-line)!important;
-  background:#fff!important;
-  color:#17251c!important;
-  box-shadow:0 7px 20px rgba(17,39,26,.045)!important;
-}
 .ugo-client-root .ugo-client-profile-shortcuts span,
 .ugo-client-root .ugo-client-profile-sections summary>span{
   background:#edf8f2!important;
   color:#087a50!important;
-}
-.ugo-client-root .ugo-client-profile-shortcuts small,
-.ugo-client-root .ugo-client-profile-sections summary small,
-.ugo-client-root .ugo-client-profile-sections details>p{
-  color:#6d7b73!important;
-}
-.ugo-client-root .ugo-client-profile-form{
-  border:1px solid var(--cp-line)!important;
-  background:#fff!important;
-}
-.ugo-client-root .ugo-client-profile-form label{
-  color:#17251c!important;
-}
-.ugo-client-root .ugo-client-profile-form input,
-.ugo-client-root .ugo-client-profile-form select{
-  border:1px solid #dce5e0!important;
-  background:#f8faf9!important;
-  color:#17251c!important;
-}
-.ugo-client-root .ugo-client-profile-primary{
-  background:#0d2117!important;
-  color:#fff!important;
 }
 
 /* History */

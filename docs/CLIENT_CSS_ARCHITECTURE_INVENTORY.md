@@ -106,6 +106,10 @@ Representative repeated selectors:
 6. Do not combine CSS consolidation with request/matching/payment behavior changes.
 7. Do not remove `clientPremium2026.css`, `clientGoogleAiStudio.css`, or `clientStudioReference.css` as whole files until visual regression coverage exists for mobile and desktop.
 
+## Completed consolidation slices
+
+- 2026-09-23: removed 12 base Profile declaration blocks from `legacy/premium/clientPremium2026.css` after verifying every property is superseded by the later `profile/clientProfilePremium2026.css` owner in the same base context. No breakpoint rule was removed.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
