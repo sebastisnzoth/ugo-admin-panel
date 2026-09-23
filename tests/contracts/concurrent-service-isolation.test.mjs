@@ -15,7 +15,7 @@ test('client cancellation mutation boundary requires an explicit owned service i
 
 test('Hugo can create another request while services already exist',async()=>{
  const[dock,bridge,guided]=await Promise.all([
-  read('src/mvp/client/ClientVoiceHugoDock.tsx'),
+  read('src/features/client/hugo/ClientVoiceHugoDock.tsx'),
   read('src/features/client/hugo/ClientHugoBridge.tsx'),
   read('src/mvp/client/ClientGuidedRequest.tsx'),
  ])
@@ -65,7 +65,7 @@ test('client exact-order detail does not mix operational surfaces from another s
 })
 
 test('Hugo cancellation resolves one concrete service before mutation',async()=>{
- const dock=await read('src/mvp/client/ClientVoiceHugoDock.tsx')
+ const dock=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
  assert.match(dock,/resolveServiceCandidates\(source,services,true\)/)
  assert.match(dock,/pendingCancel\.current=\{kind:'service',serviceId:candidates\[0\]\.id/)
  assert.match(dock,/clientActions\?\.cancelService\(pending\.serviceId\)/)
