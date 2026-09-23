@@ -5,7 +5,7 @@ import{ClientLiveTracking}from'../../../mvp/ClientLiveTracking'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{ClientPaymentChoice}from'../../../mvp/client/ClientPaymentChoice'
 import{ClientProviderRadarBridge}from'../radar/ClientProviderRadarBridge'
-import{ClientRatingPrompt}from'../../../mvp/client/ClientRatingPrompt'
+import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 
 type Props={canonical:boolean;detailOpen:boolean;screen:string;openDispute:()=>void}
 export function ClientOperationalSurfaces({canonical,detailOpen,screen,openDispute}:Props){

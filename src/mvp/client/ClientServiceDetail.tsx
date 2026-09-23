@@ -11,7 +11,7 @@ import{ServiceChat}from'../ServiceChat'
 import{ServiceExpansionPanel}from'../ServiceExpansionPanel'
 import{STATUS_LABELS}from'../shared'
 import{ClientPaymentChoice}from'./ClientPaymentChoice'
-import{ClientRatingPrompt}from'./ClientRatingPrompt'
+import{ClientRatingPrompt}from'../../features/client/rating/ClientRatingPrompt'
 import{useClientFlow}from'./clientFlow'
 
 type DetailRow={id:string;numero:number|string|null;estado:string;categoria_id:string;descripcion:string|null;direccion_cliente:string|null;programado_para:string|null;created_at:string|null;tarifa:number|string|null;moneda:string|null;proveedor_id:string|null;categoria:{nombre?:string|null;emoji?:string|null}|null;proveedor:{nombre?:string|null;karma?:number|null}|null}

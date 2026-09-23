@@ -4,12 +4,23 @@ import { readFile } from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
+test('client rating lives behind the feature boundary with legacy compatibility',async()=>{
+ const[canonical,legacy,legacyCss]=await Promise.all([
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
+  read('src/mvp/client/ClientRatingPrompt.tsx'),
+  read('src/mvp/client/client-rating-prompt.css'),
+ ])
+ assert.match(canonical,/import'\.\/clientRatingPrompt\.css'/)
+ assert.match(legacy,/features\/client\/rating\/ClientRatingPrompt/)
+ assert.match(legacyCss,/features\/client\/rating\/clientRatingPrompt\.css/)
+})
+
 test('client surfaces a persisted rating only after completed services',async()=>{
  const[prompt,surfaces]=await Promise.all([
-  read('src/mvp/client/ClientRatingPrompt.tsx'),
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
   read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
  ])
- assert.match(surfaces,/import\{ClientRatingPrompt\}from'\.\.\/\.\.\/\.\.\/mvp\/client\/ClientRatingPrompt'/)
+ assert.match(surfaces,/import\{ClientRatingPrompt\}from'\.\.\/rating\/ClientRatingPrompt'/)
  assert.match(surfaces,/<ClientRatingPrompt\/>/)
  assert.match(prompt,/from\('servicios'\)/)
  assert.match(prompt,/\.eq\('estado','completado'\)/)
@@ -21,7 +32,7 @@ test('client surfaces a persisted rating only after completed services',async()=
 })
 
 test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',async()=>{
- const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
+ const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/\[1,2,3,4,5\]\.map/)
  assert.match(prompt,/role="radiogroup"/)
  assert.match(prompt,/maxLength=\{500\}/)
@@ -31,7 +42,7 @@ test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',a
 })
 
 test('ambiguous rating insert failure reconciles exact persisted service before Sentinel',async()=>{
- const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
+ const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  const insertIndex=prompt.indexOf("from('resenas').insert")
  const recoveryIndex=prompt.indexOf("from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).eq('autor_tipo','cliente').maybeSingle()",insertIndex)
  const reportIndex=prompt.indexOf("report('rating_submit_error'",recoveryIndex)
@@ -40,7 +51,7 @@ test('ambiguous rating insert failure reconciles exact persisted service before 
 })
 
 test('unverified rating recovery is sync telemetry, not a confirmed submit failure',async()=>{
- const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
+ const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/if\(recoveryError\)[\s\S]*rating_submit_recovery_unverified[\s\S]*return/)
  assert.match(prompt,/submit\?'client\.rating\.submit':'client\.rating\.sync'/)
  assert.match(prompt,/checklistCode:submit\?'RATING':undefined/)
@@ -50,13 +61,13 @@ test('unverified rating recovery is sync telemetry, not a confirmed submit failu
 })
 
 test('confirmed rating submit failures use server-classifiable Sentinel action',async()=>{
- const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
+ const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/const text=error\.message\|\|'No se pudo guardar la calificación\.'/)
  assert.match(prompt,/report\('rating_submit_error',text,error,serviceId\)/)
 })
 
 test('rating prompt resyncs after lifecycle changes and reports foreground failures to Sentinel',async()=>{
- const prompt=await read('src/mvp/client/ClientRatingPrompt.tsx')
+ const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/table:'servicios'/)
  assert.match(prompt,/addEventListener\('online'/)
  assert.match(prompt,/visibilitychange/)
@@ -91,7 +102,7 @@ test('client rating is immediately available after payment closes the selected s
  const[surfaces,detail,prompt]=await Promise.all([
   read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
   read('src/mvp/client/ClientServiceDetail.tsx'),
-  read('src/mvp/client/ClientRatingPrompt.tsx'),
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
  ])
  assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
  assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
