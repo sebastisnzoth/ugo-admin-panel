@@ -6,6 +6,7 @@ const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import
 const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const api=await readFile(new URL('../../api/test.ts',import.meta.url),'utf8')
 const provider=await readFile(new URL('../../src/mvp/provider/ProviderHugoBridge.tsx',import.meta.url),'utf8')
+const adminOrb=await readFile(new URL('../../src/components/ConversationalOrb.tsx',import.meta.url),'utf8')
 
 test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=>{
  assert.match(bridge,/BidiGenerateContentConstrained/)
@@ -83,4 +84,13 @@ test('Gemini Live declares bounded role tools in the same persistent session',()
  assert.match(bridge,/admin_get_operational_summary/)
  assert.match(bridge,/admin_find_service/)
  assert.match(bridge,/admin_find_user/)
+})
+
+test('Admin voice executes bounded reads through the same Gemini Live tool channel',()=>{
+ assert.match(adminOrb,/ugo:native-voice-tool-call/)
+ assert.match(adminOrb,/sendToolResponse/)
+ assert.match(adminOrb,/admin_get_operational_summary/)
+ assert.match(adminOrb,/admin_find_service/)
+ assert.match(adminOrb,/admin_find_user/)
+ assert.doesNotMatch(adminOrb,/speechSynthesis/)
 })
