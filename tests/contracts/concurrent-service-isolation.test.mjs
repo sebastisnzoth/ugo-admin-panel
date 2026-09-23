@@ -16,7 +16,7 @@ test('client cancellation mutation boundary requires an explicit owned service i
 test('Hugo can create another request while services already exist',async()=>{
  const[dock,bridge,guided]=await Promise.all([
   read('src/mvp/client/ClientVoiceHugoDock.tsx'),
-  read('src/mvp/client/ClientHugoBridge.tsx'),
+  read('src/features/client/hugo/ClientHugoBridge.tsx'),
   read('src/mvp/client/ClientGuidedRequest.tsx'),
  ])
  assert.match(bridge,/setServices\(active\)/)
