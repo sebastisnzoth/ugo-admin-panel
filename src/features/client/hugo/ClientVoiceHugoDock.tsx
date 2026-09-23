@@ -190,8 +190,9 @@ export function ClientVoiceHugoDock({accessToken,service,services=[],clientActio
   const picked=chooseHugoProvider(source,availability.current?.providers||[])
   if(picked){current.preferredProviderId=picked.id;current.preferredProviderName=picked.nombre||null;syncDraft(current);await askNext(source,current,pt?`Perfeito, escolhi ${picked.nombre}.`:`Perfecto, elegí a ${picked.nombre}.`);return true}
   let lead=await applyTurnSignals(current,source,null),companion:GeminiCompanionReply|null=null
-  const complexTurn=source.trim().split(/\s+/).length>=6
-  if(!current.category||!current.description||complexTurn){companion=await askGeminiCompanion(source);if(companion){const aiLead=await applyTurnSignals(current,source,companion);if(!lead)lead=aiLead}}
+  // Keep the hot voice path local. Gemini companion is only a semantic fallback
+  // when deterministic UGO parsing still cannot identify the service or task.
+  if(!current.category||!current.description){companion=await askGeminiCompanion(source);if(companion){const aiLead=await applyTurnSignals(current,source,companion);if(!lead)lead=aiLead}}
   if(current.category){publish(source,current.category,current.description||null);syncDraft(current);refreshAvailability(current.category)}else syncDraft(current)
   const missing=nextMissing(current)
   if(missing==='confirm'){if(isHugoNegative(source)){draft.current=null;availability.current=null;await speak(pt?'Perfeito, não confirmo o pedido.':'Perfecto, no confirmo el pedido.');return true}if(isHugoAffirmative(source)||Boolean(companion?.confirm)){await finishOrder(current,pt);return true}}
@@ -207,10 +208,12 @@ export function ClientVoiceHugoDock({accessToken,service,services=[],clientActio
    if(statusIntent(clean)){const candidates=await resolveServiceCandidates(clean,services,false);if(candidates.length===1){await speak(serviceSummary(candidates[0],locale.current==='pt-BR'));return}if(candidates.length>1){clientActions?.openHistory();await speak(locale.current==='pt-BR'?`Tenho ${candidates.length} pedidos que coincidem. Diga a categoria, o profissional ou o horário, ou escolha em Atividade.`:`Tengo ${candidates.length} pedidos que coinciden. Decime la categoría, el profesional o el horario, o elegilo en Actividad.`);return}}
    if(searchIntent(clean)&&!requestIntent(clean)){const category=await resolveVoiceCategory(clean).catch(()=>null);if(category){const current=emptyVoiceDraft(category);current.urgent=urgency(clean);draft.current=current;publish(clean,category,null);syncDraft(current);const result=await Promise.race([loadVoiceAvailability(category).catch(()=>null),new Promise<null>(resolve=>window.setTimeout(()=>resolve(null),1400))]);if(result){availability.current=result;await askNext(clean,current,voiceAvailabilityText(result,locale.current))}else{refreshAvailability(category);await askNext(clean,current,locale.current==='pt-BR'?`${category.nombre}, certo.`:`${category.nombre}, perfecto.`)}return}}
    const directCategory=await resolveVoiceCategory(clean).catch(()=>null)
+   const localRequest=Boolean(directCategory)||newRequestIntent(clean)||wantsGps(clean)
+   if(localRequest){const current=emptyVoiceDraft(directCategory),lead=await applyTurnSignals(current,clean,null);draft.current=current;if(current.category){publish(clean,current.category,current.description||null);refreshAvailability(current.category)}syncDraft(current);await askNext(clean,current,lead);return}
    const companion=await askGeminiCompanion(clean)
    let suggested=directCategory
    if(!suggested&&companion?.category_hint)suggested=await resolveVoiceCategory(companion.category_hint).catch(()=>null)
-   if(suggested||newRequestIntent(clean)||companion?.action==='prepare_request'||companion?.action==='search_provider'||wantsGps(clean)){const current=emptyVoiceDraft(suggested),lead=await applyTurnSignals(current,clean,companion);draft.current=current;if(current.category){publish(clean,current.category,current.description||null);refreshAvailability(current.category)}syncDraft(current);await askNext(clean,current,lead||(companion?.reply||''));return}
+   if(companion?.action==='prepare_request'||companion?.action==='search_provider'){const current=emptyVoiceDraft(suggested),lead=await applyTurnSignals(current,clean,companion);draft.current=current;if(current.category){publish(clean,current.category,current.description||null);refreshAvailability(current.category)}syncDraft(current);await askNext(clean,current,lead||(companion?.reply||''));return}
    if(companion){await speak(companion.reply||'Contame un poco más y lo resolvemos juntos.');return}
    await speak(locale.current==='pt-BR'?'Me conta o que você quer resolver. Eu te ajudo a encontrar a pessoa certa.':'Contame qué querés resolver. Yo te ayudo a encontrar a la persona indicada.')
   }catch(caught:unknown){setState('error');setError(errorMessage(caught,'No pude procesar el pedido.'))}
