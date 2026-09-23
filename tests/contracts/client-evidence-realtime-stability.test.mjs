@@ -24,7 +24,7 @@ test('exact order detail also isolates its realtime topic and suppresses offline
 })
 
 test('provider radar realtime channel is instance scoped and reconnect errors are only escalated while visible online',async()=>{
- const radar=await read('src/mvp/client/ClientProviderRadarBridge.tsx')
+ const radar=await read('src/features/client/radar/ClientProviderRadarBridge.tsx')
  assert.match(radar,/useId\(\)\.replace\(\/:\/g,''\)/)
  assert.match(radar,/client-provider-radar-\$\{session\.user\.id\}-\$\{instanceId\}-\$\{channelEpoch\}/)
  assert.match(radar,/document\.visibilityState==='visible'&&navigator\.onLine/)

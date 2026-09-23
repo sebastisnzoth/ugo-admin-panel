@@ -14,7 +14,7 @@ test('client provider radar reads only verified providers and category availabil
 })
 
 test('client provider radar resyncs and recreates its realtime channel after transport gaps',async()=>{
- const bridge=await read('src/mvp/client/ClientProviderRadarBridge.tsx')
+ const bridge=await read('src/features/client/radar/ClientProviderRadarBridge.tsx')
  assert.match(bridge,/const\[channelEpoch,setChannelEpoch\]=useState\(0\)/)
  assert.match(bridge,/table:'perfiles_proveedor'/)
  assert.match(bridge,/client-provider-radar-\$\{session\.user\.id\}-\$\{instanceId\}-\$\{channelEpoch\}/)
@@ -32,7 +32,7 @@ test('client provider radar resyncs and recreates its realtime channel after tra
 
 test('provider radar operational failures report to Sentinel without browser-owned readiness mutation',async()=>{
  const[bridge,migration]=await Promise.all([
-  read('src/mvp/client/ClientProviderRadarBridge.tsx'),
+  read('src/features/client/radar/ClientProviderRadarBridge.tsx'),
   read('supabase/migrations/20260916005000_sentinel_client_radar_classification.sql'),
  ])
  assert.match(bridge,/action:'client\.provider_radar\.sync'/)
