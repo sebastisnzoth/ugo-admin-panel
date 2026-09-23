@@ -60,9 +60,22 @@ test('Client and Provider require the persistent Gemini Live audio speaker and n
  assert.match(bridge,/voice_live_mode:'conversation'/)
 
 
-\n assert.doesNotMatch(dock,/speechSynthesis\.speak/)\n assert.doesNotMatch(provider,/speechSynthesis\.speak/)\n assert.doesNotMatch(dock,/\/api\/hugo\/chat/)\n assert.doesNotMatch(provider,/\/api\/hugo\/chat/)
+
+ assert.doesNotMatch(dock,/speechSynthesis\.speak/)
+ assert.doesNotMatch(provider,/speechSynthesis\.speak/)
+ assert.doesNotMatch(dock,/\/api\/hugo\/chat/)
+ assert.doesNotMatch(provider,/\/api\/hugo\/chat/)
  assert.match(api,/GEMINI_LIVE_VOICE_MODEL/)
  assert.match(api,/requestedLiveMode==='speaker'/)
  assert.doesNotMatch(bridge,/speakerSocket/)
  assert.doesNotMatch(bridge,/speakThroughLive/)
+})
+
+
+test('Gemini Live declares bounded role tools in the same persistent session',()=>{
+ assert.match(bridge,/functionDeclarations:roleTools\(\)/)
+ assert.match(bridge,/get_current_location/)
+ assert.match(bridge,/create_service_request/)
+ assert.match(bridge,/provider_set_online/)
+ assert.match(bridge,/provider_accept_job/)
 })
