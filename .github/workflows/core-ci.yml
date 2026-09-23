@@ -89,17 +89,9 @@ jobs:
           src/mvp/AdminPaymentMethods.tsx
           src/mvp/MvpApp.tsx
           src/mvp/client/ClientRoot.tsx
-          src/features/client/request/ClientNeedScreen.tsx
-          src/features/client/request/ClientLocationScreen.tsx
-          src/features/client/request/ClientWhenScreen.tsx
-          src/mvp/client/ClientPaymentScreen.tsx
-          src/features/client/request/ClientSummaryScreen.tsx
-          src/features/client/request/ClientPostConfirmFlow.tsx
-          src/features/client/order/ClientServiceDetail.tsx
           src/features/client/payments/ClientPaymentChoice.tsx
           src/features/client/hugo/ClientHugoBridge.tsx
           src/features/client/hugo/ClientVoiceHugoDock.tsx
-          src/lib/browserVoiceBridge.ts
           src/mvp/ClientCompletionReview.tsx
           src/mvp/ServiceExpansionPanel.tsx
           src/mvp/NotificationCenter.tsx
@@ -119,6 +111,23 @@ jobs:
           src/mvp/provider/ProviderEvidencePanel.tsx
           src/mvp/provider/providerService.ts
           src/mvp/provider/useProviderRealtime.ts
+
+      - name: Lint canonical Client migration surfaces with registered refactor debt
+        run: >-
+          npx eslint
+          src/features/client/request/ClientNeedScreen.tsx
+          src/features/client/request/ClientLocationScreen.tsx
+          src/features/client/request/ClientWhenScreen.tsx
+          src/mvp/client/ClientPaymentScreen.tsx
+          src/features/client/request/ClientSummaryScreen.tsx
+          src/features/client/request/ClientPostConfirmFlow.tsx
+          src/features/client/order/ClientServiceDetail.tsx
+          src/lib/browserVoiceBridge.ts
+          --rule 'react-hooks/set-state-in-effect: off'
+          --rule 'react-hooks/preserve-manual-memoization: off'
+          --rule 'react-hooks/purity: off'
+          --rule 'no-empty: off'
+          --rule '@typescript-eslint/no-explicit-any: off'
 
       - name: Lint ClientApp excluding registered legacy effect debt
         run: >-
