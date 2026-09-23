@@ -6,11 +6,11 @@ const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('scheduled client requests converge on servicios.programado_para with initial-market timezone semantics',async()=>{
  const[client,canonical,timezone]=await Promise.all([
-  read('src/mvp/client/ClientGuidedRequest.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('supabase/migrations/20260913141000_service_schedule_canonicalization.sql'),
   read('supabase/migrations/20260913143500_service_schedule_timezone_guard.sql'),
  ])
- assert.match(client,/scheduled_at:draft\.when==='programar'\?draft\.scheduleAt\|\|null:null/)
+ assert.match(client,/scheduled_at:draft\.scheduleAt\|\|null/)
  assert.match(canonical,/new\.programado_para := v_scheduled_at::timestamptz/)
  assert.match(canonical,/before insert or update of programado_para, metadata on public\.servicios/)
  assert.match(timezone,/v_scheduled_at ~ /)

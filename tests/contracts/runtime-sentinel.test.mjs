@@ -7,7 +7,7 @@ const service=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts
 const chat=fs.readFileSync(new URL('../../src/mvp/ServiceChat.tsx',import.meta.url),'utf8')
 const clientRoot=fs.readFileSync(new URL('../../src/mvp/client/ClientRoot.tsx',import.meta.url),'utf8')
 const clientRootNavigation=fs.readFileSync(new URL('../../src/features/client/navigation/useClientRootNavigation.ts',import.meta.url),'utf8')
-const detail=fs.readFileSync(new URL('../../src/mvp/client/ClientServiceDetail.tsx',import.meta.url),'utf8')
+const detail=fs.readFileSync(new URL('../../src/features/client/order/ClientServiceDetail.tsx',import.meta.url),'utf8')
 const dashboard=fs.readFileSync(new URL('../../src/mvp/DevelopmentDashboard.tsx',import.meta.url),'utf8')
 
 test('Sentinel carries build revision and sanitizes runtime payloads',()=>{

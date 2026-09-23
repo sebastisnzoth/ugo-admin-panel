@@ -5,7 +5,7 @@ import fs from 'node:fs'
 const root=fs.readFileSync('src/mvp/client/ClientRoot.tsx','utf8')
 const rootNavigation=fs.readFileSync('src/features/client/navigation/useClientRootNavigation.ts','utf8')
 const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
-const detail=fs.readFileSync('src/mvp/client/ClientServiceDetail.tsx','utf8')
+const detail=fs.readFileSync('src/features/client/order/ClientServiceDetail.tsx','utf8')
 const detailBoundary=fs.readFileSync('src/features/client/ui/ClientOrderDetailBoundary.tsx','utf8')
 const map=fs.readFileSync('src/mvp/ClientActiveMap.tsx','utf8')
 

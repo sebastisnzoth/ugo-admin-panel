@@ -101,7 +101,7 @@ test('ratings are bilateral: provider can rate the client and both directions sh
 test('client rating is immediately available after payment closes the selected service',async()=>{
  const[surfaces,detail,prompt]=await Promise.all([
   read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
   read('src/features/client/rating/ClientRatingPrompt.tsx'),
  ])
  assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)

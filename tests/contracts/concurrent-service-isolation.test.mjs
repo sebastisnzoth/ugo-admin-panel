@@ -13,11 +13,13 @@ test('client cancellation mutation boundary requires an explicit owned service i
  assert.doesNotMatch(service,/order\('created_at'[\s\S]*limit\(1\)/)
 })
 
+
 test('Hugo can create another request while services already exist',async()=>{
- const[dock,bridge,guided]=await Promise.all([
+ const[dock,bridge,need,postConfirm]=await Promise.all([
   read('src/features/client/hugo/ClientVoiceHugoDock.tsx'),
   read('src/features/client/hugo/ClientHugoBridge.tsx'),
-  read('src/mvp/client/ClientGuidedRequest.tsx'),
+  read('src/features/client/request/ClientNeedScreen.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
  ])
  assert.match(bridge,/setServices\(active\)/)
  assert.match(bridge,/services=\{services\}/)
@@ -25,21 +27,20 @@ test('Hugo can create another request while services already exist',async()=>{
  assert.match(dock,/if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
  assert.doesNotMatch(dock,/Ya tenés el pedido .* activo\. Seguilo o cancelalo antes de crear otro/)
  assert.doesNotMatch(dock,/Você já tem o pedido .* ativo/)
- assert.match(guided,/const nextDraftId=crypto\.randomUUID\(\);setDraftId\(nextDraftId\)/)
- assert.match(guided,/setCurrentCreatingServiceId\(''\)/)
- assert.match(guided,/setDraft\(emptyDraft\)/)
+ assert.match(need,/if\(!id\)\{id=crypto\.randomUUID\(\)/)
+ assert.match(postConfirm,/sessionStorage\.removeItem\(draftKey\)/)
+ assert.match(postConfirm,/sessionStorage\.removeItem\(requestKey\)/)
 })
 
-test('each guided request persists its own generated service id and matching scope',async()=>{
- const guided=await read('src/mvp/client/ClientGuidedRequest.tsx')
- assert.match(guided,/\.insert\(\{cliente_id:session\.user\.id[\s\S]*estado:'buscando'/)
- assert.match(guided,/\.select\('id'\)\.single\(\)/)
- assert.match(guided,/const serviceId=String\(data\.id\)/)
- assert.match(guided,/setCurrentCreatingServiceId\(serviceId\)/)
- assert.match(guided,/getDispatchProvider\(\)\.start\(\{serviceId,category:/)
- assert.match(guided,/filter:`id=eq\.\$\{serviceId\}`/)
+test('each canonical request persists its own generated service id and matching scope',async()=>{
+ const postConfirm=await read('src/features/client/request/ClientPostConfirmFlow.tsx')
+ assert.match(postConfirm,/requestDraftId=crypto\.randomUUID\(\)/)
+ assert.match(postConfirm,/supabase\.from\('servicios'\)\.insert\(\{cliente_id:session\.user\.id[\s\S]*estado:'buscando'/)
+ assert.match(postConfirm,/\.select\('id,numero,estado,proveedor_id'\)\.single\(\)/)
+ assert.match(postConfirm,/if\(!row\?\.id\)throw new Error/)
+ assert.match(postConfirm,/startDispatch\(row\.id,context\)/)
+ assert.match(postConfirm,/filter:\`id=eq\.\$\{id\}\`/)
 })
-
 test('Activity lists all owned orders and opens or cancels one exact service id',async()=>{
  const history=await read('src/mvp/ServiceHistoryPanel.tsx')
  assert.match(history,/\.eq\('cliente_id',userId\)/)
@@ -55,7 +56,7 @@ test('client exact-order detail does not mix operational surfaces from another s
   read('src/mvp/client/ClientRoot.tsx'),
   read('src/features/client/navigation/useClientRootNavigation.ts'),
   read('src/features/client/ui/ClientOrderDetailBoundary.tsx'),
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
  ])
  assert.match(nav,/setSelectedServiceId\(serviceId\)/)
  assert.match(root,/selectedServiceId&&<ClientOrderDetailBoundary serviceId=\{selectedServiceId\} onClose=\{closeService\}/)
@@ -76,7 +77,7 @@ test('participant disputes use the selected service or refuse ambiguity',async()
  const[hook,dock,detail]=await Promise.all([
   read('src/hooks/useDisputes.ts'),
   read('src/mvp/DisputeDock.tsx'),
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
  ])
  assert.match(hook,/useParticipantDispute\(role:UgoRole,serviceId\?:string\|null\)/)
  assert.match(hook,/if\(!serviceId&&rows\.length>1\)/)
