@@ -4,7 +4,7 @@ import {readFile} from 'node:fs/promises'
 const read=(path)=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client payment never hides a failed state load without recovery',async()=>{
- const src=await read('src/mvp/client/ClientPaymentChoice.tsx')
+ const src=await read('src/features/client/payments/ClientPaymentChoice.tsx')
  assert.match(src,/const text='No pudimos actualizar la forma de pago/)
  assert.match(src,/setLoadError\(text\)/)
  assert.match(src,/role="alert"/)

@@ -19,7 +19,7 @@ test('critical realtime consumers recover from missed events using persisted sta
   read('src/mvp/ServiceExpansionPanel.tsx'),
   read('src/hooks/useDisputes.ts'),
   read('src/mvp/provider/useProviderRealtime.ts'),
-  read('src/mvp/client/ClientPaymentChoice.tsx'),
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
   read('src/mvp/ClientLiveTracking.tsx'),
   read('src/mvp/ClientCompletionReview.tsx'),
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),

@@ -14,7 +14,7 @@ test('client service detail lives behind the order feature boundary',async()=>{
  assert.match(canonical,/export function ClientServiceDetail/)
  assert.match(canonical,/from'\.\.\/rating\/ClientRatingPrompt'/)
  assert.match(canonical,/from'\.\.\/flow\/clientFlow'/)
- assert.match(canonical,/from'\.\.\/\.\.\/\.\.\/mvp\/client\/ClientPaymentChoice'/)
+ assert.match(canonical,/from'..\/payments\/ClientPaymentChoice'/);
  assert.match(boundary,/from'\.\.\/order\/ClientServiceDetail'/)
  assert.doesNotMatch(boundary,/mvp\/client\/ClientServiceDetail/)
 })

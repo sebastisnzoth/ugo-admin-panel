@@ -10,7 +10,7 @@ import{SentinelErrorBoundary}from'../../../mvp/SentinelErrorBoundary'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{ServiceExpansionPanel}from'../../../mvp/ServiceExpansionPanel'
 import{STATUS_LABELS}from'../../../mvp/shared'
-import{ClientPaymentChoice}from'../../../mvp/client/ClientPaymentChoice'
+import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 import{useClientFlow}from'../flow/clientFlow'
 
