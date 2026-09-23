@@ -45,12 +45,11 @@ test('primary Gemini Live session owns streamed audio and tool responses',()=>{
  assert.match(bridge,/toolResponse:\{functionResponses/)
 })
 
-test('Hugo pauses and resumes the persistent Live session instead of reconnecting every spoken reply',()=>{
- assert.match(dock,/pauseListening/)
- assert.match(dock,/resumeListening/)
- assert.match(dock,/if\(detail\.final===false\)\{setState\('hearing'\);return\}/)
+test('Hugo keeps Gemini Live as the only voice path instead of falling back to browser recognition',()=>{
  assert.match(dock,/await nb\.startListening\(\)/)
- assert.match(dock,/Gemini Live no disponible; usando reconocimiento del dispositivo/)
+ assert.match(dock,/Gemini Live no está disponible\. Tocá el orbe para reconectar\./)
+ assert.doesNotMatch(dock,/usando reconocimiento del dispositivo/)
+ assert.doesNotMatch(provider,/usando reconocimiento del dispositivo/)
 })
 
 
@@ -66,7 +65,7 @@ test('Client and Provider require the persistent Gemini Live audio speaker and n
  assert.doesNotMatch(dock,/\/api\/hugo\/chat/)
  assert.doesNotMatch(provider,/\/api\/hugo\/chat/)
  assert.match(api,/GEMINI_LIVE_VOICE_MODEL/)
- assert.match(api,/requestedLiveMode==='speaker'/)
+ assert.match(api,/requestedLiveMode==='conversation'/)
  assert.doesNotMatch(bridge,/speakerSocket/)
  assert.doesNotMatch(bridge,/speakThroughLive/)
 })
@@ -78,4 +77,6 @@ test('Gemini Live declares bounded role tools in the same persistent session',()
  assert.match(bridge,/create_service_request/)
  assert.match(bridge,/provider_set_online/)
  assert.match(bridge,/provider_accept_job/)
+ assert.match(provider,/ugo:native-voice-tool-call/)
+ assert.match(provider,/sendToolResponse/)
 })
