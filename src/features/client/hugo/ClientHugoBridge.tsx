@@ -1,0 +1,24 @@
+import React,{useCallback,useEffect,useState}from'react'
+import{ClientVoiceHugoDock}from'../../../mvp/client/ClientVoiceHugoDock'
+import{useRoleSession,type Service}from'../../../mvp/shared'
+import{useClientFlow}from'../flow/clientFlow'
+import'../../../mvp/ugo-client-contrast.css'
+
+const HUGO_ACTIVE_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
+type PaymentStatus='none'|'cash'|'pending'|'confirmed'
+type PaymentRow={metodo?:string|null;estado?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
+type HugoService=Service&{programado_para?:string|null;created_at?:string|null}
+
+export function ClientHugoBridge(){
+ const auth=useRoleSession('client'),{supabase,session}=auth
+ const flow=useClientFlow()
+ const[service,setService]=useState<Service|null>(null)
+ const[services,setServices]=useState<HugoService[]>([])
+ const[offersPending,setOffersPending]=useState(0)
+ const[paymentStatus,setPaymentStatus]=useState<PaymentStatus>('none')
+ const load=useCallback(async()=>{if(!session){setService(null);setServices([]);setOffersPending(0);setPaymentStatus('none');return}const{data:rows}=await supabase.from('servicios').select('*,categoria:categorias(nombre,emoji),proveedor:usuarios!servicios_proveedor_id_fkey(nombre,karma)').eq('cliente_id',session.user.id).in('estado',HUGO_ACTIVE_STATES).order('created_at',{ascending:false}).limit(50);const active=((rows||[])as HugoService[]);setServices(active);const current=active.length===1?active[0]:null;setService(current);if(!current){setOffersPending(0);setPaymentStatus('none');return}if(['buscando','ofrecido'].includes(current.estado)){const{count}=await supabase.from('ofertas_servicio').select('id',{count:'exact',head:true}).eq('servicio_id',current.id).eq('estado','pendiente');setOffersPending(count||0)}else setOffersPending(0);const{data:p}=await supabase.from('pagos').select('metodo,estado,mp_payment_id,pago_externo_id,pix_e2e_id,created_at').eq('servicio_id',current.id).order('created_at',{ascending:false}).limit(1).maybeSingle();const payment=(p||null)as PaymentRow|null;if(!payment)setPaymentStatus('none');else if(payment.metodo==='efectivo')setPaymentStatus('cash');else if((payment.estado==='retenido'||payment.estado==='liberado')&&(payment.mp_payment_id||payment.pago_externo_id||payment.pix_e2e_id))setPaymentStatus('confirmed');else setPaymentStatus('pending')},[session,supabase])
+ useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
+ useEffect(()=>{if(!session)return;const ch=supabase.channel(`client-hugo-context-${session.user.id}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`cliente_id=eq.${session.user.id}`},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'ofertas_servicio'},()=>void load()).on('postgres_changes',{event:'*',schema:'public',table:'pagos'},()=>void load()).subscribe(status=>{if(status==='SUBSCRIBED')void load()});const onOnline=()=>void load();const onVisibility=()=>{if(document.visibilityState==='visible')void load()};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[load,session,supabase])
+ if(auth.loading||!session)return null
+ return <ClientVoiceHugoDock accessToken={session.access_token} service={service} services={services} availableOffers={offersPending} paymentStatus={paymentStatus} clientActions={flow.actions} onIntent={flow.publishHugoIntent} onNavigateHome={()=>flow.navigate('home')} requestComposerOpen={flow.screen==='request'}/>
+}

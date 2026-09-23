@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 
 const payout=await readFile(new URL('../../src/mvp/ProviderPayoutPanel.tsx',import.meta.url),'utf8')
-const clientHugo=await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx',import.meta.url),'utf8')
+const clientHugo=await readFile(new URL('../../src/features/client/hugo/ClientHugoBridge.tsx',import.meta.url),'utf8')
 const chat=await readFile(new URL('../../src/mvp/ServiceChat.tsx',import.meta.url),'utf8')
 const radarMigration=await readFile(new URL('../../supabase/migrations/20260914232234_provider_radar_security_invoker.sql',import.meta.url),'utf8')
 const evidenceMigration=await readFile(new URL('../../supabase/migrations/20260914232954_service_evidence_storage_integrity_guard.sql',import.meta.url),'utf8')

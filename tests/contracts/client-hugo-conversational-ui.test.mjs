@@ -4,7 +4,7 @@ import { readFile } from 'node:fs/promises'
 const root=await readFile(new URL('../../src/mvp/client/ClientRoot.tsx',import.meta.url),'utf8')
 const surfaces=await readFile(new URL('../../src/features/client/ui/ClientOperationalSurfaces.tsx',import.meta.url),'utf8')
 const globals=await readFile(new URL('../../src/features/client/ui/ClientGlobalSurfaces.tsx',import.meta.url),'utf8')
-const bridge=await readFile(new URL('../../src/mvp/client/ClientHugoBridge.tsx',import.meta.url),'utf8')
+const bridge=await readFile(new URL('../../src/features/client/hugo/ClientHugoBridge.tsx',import.meta.url),'utf8')
 const home=await readFile(new URL('../../src/mvp/client/ClientPremiumHome.tsx',import.meta.url),'utf8')
 const voice=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const guided=await readFile(new URL('../../src/mvp/client/ClientGuidedRequest.tsx',import.meta.url),'utf8')
