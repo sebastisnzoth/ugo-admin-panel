@@ -1,5 +1,5 @@
 import React,{useCallback,useEffect,useState}from'react'
-import{ClientVoiceHugoDock}from'../../../mvp/client/ClientVoiceHugoDock'
+import{ClientVoiceHugoDock}from'./ClientVoiceHugoDock'
 import{useRoleSession,type Service}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import'../../../mvp/ugo-client-contrast.css'
