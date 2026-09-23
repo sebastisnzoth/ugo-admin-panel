@@ -1,29 +1,23 @@
 import React,{useCallback,useEffect,useRef,useState}from'react'
-import{detectProviderVoiceLocale,type ProviderHugoLocale as Locale}from'../../features/provider/voice/providerVoiceHelpers'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData}from'./providerData'
 import'../voice.css'
 
 type VoiceState='idle'|'connecting'|'ready'|'hearing'|'speaking'|'error'
 type NativeBridge={startListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable?:()=>boolean;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
-type UgoWindow=Window&typeof globalThis&{UGOVoiceBridge?:NativeBridge;SpeechRecognition?:SpeechRecognitionConstructor;webkitSpeechRecognition?:SpeechRecognitionConstructor;webkitAudioContext?:typeof AudioContext}
-type TtsReply={audio_base64?:string;sample_rate?:number;error?:string;hugo_mensaje?:string}
-type CompanionReply={reply?:string;model?:string;error?:string}
-type StatusError=Error&{status?:number}
+type UgoWindow=Window&typeof globalThis&{UGOVoiceBridge?:NativeBridge}
 
 const LABELS:Record<VoiceState,string>={idle:'Toca para hablar',connecting:'Procesando...',ready:'Te escucho',hearing:'Escuchando...',speaking:'Hablando...',error:'Voz no disponible'}
 const ugoWindow=()=>window as UgoWindow
 const ignoreError=(value:unknown)=>{void value}
-const errorStatus=(value:unknown)=>typeof value==='object'&&value!==null&&'status'in value?Number((value as{status?:unknown}).status||0):0
 
 export function ProviderHugoBridge(){
  const flow=useProviderFlow(),data=useProviderData()
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[userTranscript,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
- const locale=useRef<Locale>('es-AR'),running=useRef(false),native=useRef(false)
+ const running=useRef(false),native=useRef(false)
 
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
  const stopSpeech=useCallback(()=>{try{ugoWindow().UGOVoiceBridge?.stopSpeaking?.()}catch(caught){ignoreError(caught)}},[])
- const handleText=useCallback(async(source:string)=>{const clean=source.trim();if(!clean)return;setUserTranscript(clean);locale.current=detectProviderVoiceLocale(clean)},[])
  const executeTool=useCallback(async(name:string,args:Record<string,unknown>)=>{
   if(name==='provider_set_online'){if(!data.online)await data.toggleOnline();return{ok:true,data:{online:true}}}
   if(name==='provider_set_offline'){if(data.online)await data.toggleOnline();return{ok:true,data:{online:false}}}
@@ -39,7 +33,7 @@ export function ProviderHugoBridge(){
  const start=useCallback(async()=>{setPanelOpen(true);setError('');setState('connecting');const bridge=ugoWindow().UGOVoiceBridge;if(!bridge||bridge.isAvailable?.()===false){setState('error');setError('Gemini Live no está disponible. Tocá el orbe para reconectar.');return}native.current=true;setRunning(true);try{await bridge.startListening();if(running.current)setState('ready')}catch(caught){console.warn('Gemini Live no disponible.',caught);try{bridge.stopListening()}catch(stopError){ignoreError(stopError)}native.current=false;setRunning(false);setState('error');setError('Gemini Live no está disponible. Tocá el orbe para reconectar.')}},[setRunning])
 
 
- useEffect(()=>{const result=(event:Event)=>{if(!running.current)return;const detail=(event as CustomEvent<{text?:string;final?:boolean}>).detail||{},value=String(detail.text||'').trim();if(value)setUserTranscript(value);if(value&&detail.final!==false)void handleText(value)};const tool=async(event:Event)=>{if(!running.current)return;const detail=(event as CustomEvent<{id?:string;name?:string;args?:Record<string,unknown>}>).detail||{},id=String(detail.id||''),name=String(detail.name||''),bridge=ugoWindow().UGOVoiceBridge;if(!id||!name||!bridge?.sendToolResponse)return;setState('connecting');try{const response=await executeTool(name,detail.args||{});bridge.sendToolResponse(id,name,response)}catch(error){bridge.sendToolResponse(id,name,{ok:false,code:'TOOL_FAILED',message:error instanceof Error?error.message:'La acción falló'})}};const output=(event:Event)=>{const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(text)setAssistantTranscript(text)};const stateEvent=(event:Event)=>{if(!running.current)return;const value=String((event as CustomEvent<{state?:string}>).detail?.state||'');if(value==='hearing'){stopSpeech();setState('hearing')}else if(value==='connecting')setState('connecting');else if(value==='speaking')setState('speaking');else if(value==='ready')setState('ready')};const voiceError=(event:Event)=>{const code=String((event as CustomEvent<{code?:string}>).detail?.code||'');native.current=false;setRunning(false);setState('error');setError(code==='not-allowed'?'Permití el micrófono para hablar con Hugo.':code==='session'?'Tu sesión venció. Volvé a iniciar sesión.':'Gemini Live no está disponible. Tocá el orbe para reconectar.')};window.addEventListener('ugo:native-voice-result',result);window.addEventListener('ugo:native-voice-tool-call',tool);window.addEventListener('ugo:native-voice-output',output);window.addEventListener('ugo:native-voice-state',stateEvent);window.addEventListener('ugo:native-voice-error',voiceError);return()=>{window.removeEventListener('ugo:native-voice-result',result);window.removeEventListener('ugo:native-voice-tool-call',tool);window.removeEventListener('ugo:native-voice-output',output);window.removeEventListener('ugo:native-voice-state',stateEvent);window.removeEventListener('ugo:native-voice-error',voiceError)}},[executeTool,handleText,setRunning,stopSpeech])
+ useEffect(()=>{const result=(event:Event)=>{if(!running.current)return;const detail=(event as CustomEvent<{text?:string;final?:boolean}>).detail||{},value=String(detail.text||'').trim();if(value)setUserTranscript(value)};const tool=async(event:Event)=>{if(!running.current)return;const detail=(event as CustomEvent<{id?:string;name?:string;args?:Record<string,unknown>}>).detail||{},id=String(detail.id||''),name=String(detail.name||''),bridge=ugoWindow().UGOVoiceBridge;if(!id||!name||!bridge?.sendToolResponse)return;setState('connecting');try{const response=await executeTool(name,detail.args||{});bridge.sendToolResponse(id,name,response)}catch(error){bridge.sendToolResponse(id,name,{ok:false,code:'TOOL_FAILED',message:error instanceof Error?error.message:'La acción falló'})}};const output=(event:Event)=>{const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(text)setAssistantTranscript(text)};const stateEvent=(event:Event)=>{if(!running.current)return;const value=String((event as CustomEvent<{state?:string}>).detail?.state||'');if(value==='hearing'){stopSpeech();setState('hearing')}else if(value==='connecting')setState('connecting');else if(value==='speaking')setState('speaking');else if(value==='ready')setState('ready')};const voiceError=(event:Event)=>{const code=String((event as CustomEvent<{code?:string}>).detail?.code||'');native.current=false;setRunning(false);setState('error');setError(code==='not-allowed'?'Permití el micrófono para hablar con Hugo.':code==='session'?'Tu sesión venció. Volvé a iniciar sesión.':'Gemini Live no está disponible. Tocá el orbe para reconectar.')};window.addEventListener('ugo:native-voice-result',result);window.addEventListener('ugo:native-voice-tool-call',tool);window.addEventListener('ugo:native-voice-output',output);window.addEventListener('ugo:native-voice-state',stateEvent);window.addEventListener('ugo:native-voice-error',voiceError);return()=>{window.removeEventListener('ugo:native-voice-result',result);window.removeEventListener('ugo:native-voice-tool-call',tool);window.removeEventListener('ugo:native-voice-output',output);window.removeEventListener('ugo:native-voice-state',stateEvent);window.removeEventListener('ugo:native-voice-error',voiceError)}},[executeTool,setRunning,stopSpeech])
 
  useEffect(()=>()=>stop(),[stop])
 
