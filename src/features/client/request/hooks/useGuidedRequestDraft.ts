@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useRoleSession } from '../../shared'
+import { useCallback, useEffect, useState } from 'react'
+
+export type GuidedRequestWhen = 'ahora' | 'hoy' | 'programar'
+export type GuidedRequestPickupSource = 'current' | 'saved' | 'manual' | null
 
 export type GuidedRequestDraft = {
   description: string
@@ -8,7 +10,7 @@ export type GuidedRequestDraft = {
   categorySlug: string
   address: string
   addressLabel: string
-  when: 'ahora' | 'hoy' | 'programar'
+  when: GuidedRequestWhen
   whenConfirmed: boolean
   scheduleAt: string
   urgent: boolean
@@ -16,72 +18,96 @@ export type GuidedRequestDraft = {
   preferences: string
   pickupLat: number | null
   pickupLng: number | null
-  pickupSource: 'current' | 'saved' | 'manual' | null
+  pickupSource: GuidedRequestPickupSource
 }
 
-export function useGuidedRequestDraft() {
-  const { session } = useRoleSession('client')
-  const [draft, setDraft] = useState<GuidedRequestDraft>(() => {
-    const emptyDraft: GuidedRequestDraft = {
-      description: '',
-      categoryId: '',
-      categoryName: '',
-      categorySlug: '',
-      address: '',
-      addressLabel: '',
-      when: 'hoy',
-      whenConfirmed: false,
-      scheduleAt: '',
-      urgent: false,
-      amount: null,
-      preferences: '',
-      pickupLat: null,
-      pickupLng: null,
-      pickupSource: null
-    }
-    
-    if (!session?.user.id) return emptyDraft
-    
+export const EMPTY_GUIDED_REQUEST_DRAFT: GuidedRequestDraft = {
+  description: '',
+  categoryId: '',
+  categoryName: '',
+  categorySlug: '',
+  address: '',
+  addressLabel: '',
+  when: 'hoy',
+  whenConfirmed: false,
+  scheduleAt: '',
+  urgent: false,
+  amount: null,
+  preferences: '',
+  pickupLat: null,
+  pickupLng: null,
+  pickupSource: null
+}
+
+function freshDraft(): GuidedRequestDraft {
+  return { ...EMPTY_GUIDED_REQUEST_DRAFT }
+}
+
+function readDraft(userId?: string | null): GuidedRequestDraft {
+  if (!userId) return freshDraft()
+  try {
+    const restored = JSON.parse(
+      sessionStorage.getItem(`ugo:guided-request-draft:${userId}`) || '{}'
+    ) as Partial<GuidedRequestDraft>
+    return { ...EMPTY_GUIDED_REQUEST_DRAFT, ...restored }
+  } catch (error) {
+    console.warn('No pudimos restaurar el borrador local.', error)
+    return freshDraft()
+  }
+}
+
+function readDraftId(userId?: string | null): string {
+  if (!userId) return ''
+  try {
+    const current = sessionStorage.getItem(`ugo:guided-request:${userId}`)
+    if (current) return current
+    const next = crypto.randomUUID()
+    sessionStorage.setItem(`ugo:guided-request:${userId}`, next)
+    return next
+  } catch (error) {
+    console.warn('No pudimos leer o guardar el id del borrador.', error)
+    return crypto.randomUUID()
+  }
+}
+
+export function useGuidedRequestDraft(userId?: string | null) {
+  const [draft, setDraft] = useState<GuidedRequestDraft>(() => readDraft(userId))
+  const [draftId, setDraftId] = useState(() => readDraftId(userId))
+
+  useEffect(() => {
+    setDraft(readDraft(userId))
+    setDraftId(readDraftId(userId))
+  }, [userId])
+
+  useEffect(() => {
+    if (!userId) return
     try {
-      const restored = JSON.parse(
-        sessionStorage.getItem(`ugo:guided-request-draft:${session.user.id}`) || '{}'
-      ) as Partial<GuidedRequestDraft>
-      return { ...emptyDraft, ...restored }
-    } catch (error) {
-      console.warn('No pudimos restaurar el borrador local.', error)
-      return emptyDraft
-    }
-  })
-  
-  const [draftId, setDraftId] = useState<string>(() => {
-    if (!session?.user.id) return ''
-    
-    try {
-      const id = sessionStorage.getItem(`ugo:guided-request:${session.user.id}`)
-      if (id) return id
-      
-      const newId = crypto.randomUUID()
-      sessionStorage.setItem(`ugo:guided-request:${session.user.id}`, newId)
-      return newId
-    } catch (error) {
-      console.warn('No pudimos leer o guardar el id del borrador.', error)
-      return crypto.randomUUID()
-    }
-  })
-  
-  const saveDraft = useCallback(() => {
-    if (!session?.user.id) return
-    
-    try {
-      sessionStorage.setItem(`ugo:guided-request-draft:${session.user.id}`, JSON.stringify(draft))
+      sessionStorage.setItem(`ugo:guided-request-draft:${userId}`, JSON.stringify(draft))
     } catch (error) {
       console.warn('No pudimos persistir el borrador local.', error)
     }
-  }, [draft, session?.user.id])
-  
+  }, [draft, userId])
+
+  const resetDraft = useCallback(() => {
+    const nextDraft = freshDraft()
+    setDraft(nextDraft)
+    if (!userId) {
+      setDraftId('')
+      return
+    }
+
+    const nextDraftId = crypto.randomUUID()
+    setDraftId(nextDraftId)
+    try {
+      sessionStorage.removeItem(`ugo:guided-request-draft:${userId}`)
+      sessionStorage.setItem(`ugo:guided-request:${userId}`, nextDraftId)
+    } catch (error) {
+      console.warn('No pudimos preparar el próximo borrador.', error)
+    }
+  }, [userId])
+
   const saveLastLocation = useCallback((latitude: number, longitude: number) => {
-    if (!session?.user.id) return
-    
+    if (!userId) return
     try {
       sessionStorage.setItem(
         'ugo:last-client-location',
@@ -90,60 +116,25 @@ export function useGuidedRequestDraft() {
     } catch (error) {
       console.warn('No pudimos persistir la última ubicación del cliente.', error)
     }
-  }, [session?.user.id])
-  
+  }, [userId])
+
   const loadLastLocation = useCallback(() => {
-    if (!session?.user.id) return null
-    
+    if (!userId) return null
     try {
-      const data = sessionStorage.getItem('ugo:last-client-location')
-      return data ? JSON.parse(data) : null
+      const value = sessionStorage.getItem('ugo:last-client-location')
+      return value ? JSON.parse(value) as { latitude: number; longitude: number; at: number } : null
     } catch (error) {
       console.warn('No pudimos leer la última ubicación del cliente.', error)
       return null
     }
-  }, [session?.user.id])
-  
-  // Save draft whenever it changes
-  useEffect(() => {
-    saveDraft()
-  }, [draft, saveDraft])
-  
-  // Reset to empty draft when session changes
-  useEffect(() => {
-    if (!session?.user.id) {
-      setDraft({
-        description: '',
-        categoryId: '',
-        categoryName: '',
-        categorySlug: '',
-        address: '',
-        addressLabel: '',
-        when: 'hoy',
-        whenConfirmed: false,
-        scheduleAt: '',
-        urgent: false,
-        amount: null,
-        preferences: '',
-        pickupLat: null,
-        pickupLng: null,
-        pickupSource: null
-      })
-      
-      try {
-        sessionStorage.removeItem(`ugo:guided-request-draft:${session.user.id}`)
-        sessionStorage.removeItem(`ugo:guided-request:${session.user.id}`)
-      } catch (error) {
-        console.warn('No pudimos limpiar el borrador local.', error)
-      }
-    }
-  }, [session?.user.id])
-  
+  }, [userId])
+
   return {
     draft,
     setDraft,
     draftId,
     setDraftId,
+    resetDraft,
     saveLastLocation,
     loadLastLocation
   }
