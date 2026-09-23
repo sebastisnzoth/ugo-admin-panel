@@ -7,7 +7,7 @@ import{resolveClientSavedAddress}from'../../../mvp/hugoDefaultAddress'
 import{loadVoiceAvailability,normalizeVoiceText,resolveVoiceCategory,voiceAvailabilityText,type VoiceAvailability,type VoiceCategory}from'../../../mvp/voiceCatalog'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import type{ClientActionHandlers,ClientHugoIntent}from'../types/clientTypes'
-import{chooseHugoProvider,isHugoAffirmative,isHugoNegative,isHugoRetry,parseHugoWhen,resolveHugoGlobalCommand}from'../../../mvp/client/hugoVoiceIntent'
+import{chooseHugoProvider,isHugoAffirmative,isHugoNegative,isHugoRetry,parseHugoWhen,resolveHugoGlobalCommand}from'./hugoVoiceIntent'
 import'../../../mvp/voice.css'
 
 type PaymentStatus='none'|'cash'|'pending'|'confirmed'

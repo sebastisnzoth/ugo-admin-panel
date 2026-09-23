@@ -4,12 +4,19 @@ import{readFile}from'node:fs/promises'
 import ts from'typescript'
 
 async function loadIntentModule(){
- const source=await readFile(new URL('../../src/mvp/client/hugoVoiceIntent.ts',import.meta.url),'utf8')
+ const source=await readFile(new URL('../../src/features/client/hugo/hugoVoiceIntent.ts',import.meta.url),'utf8')
  const js=ts.transpileModule(source,{compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.ES2022}}).outputText
  return import(`data:text/javascript;base64,${Buffer.from(js).toString('base64')}`)
 }
 
 const intent=await loadIntentModule()
+const legacyShim=await readFile(new URL('../../src/mvp/client/hugoVoiceIntent.ts',import.meta.url),'utf8')
+const dockSource=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
+
+test('Hugo voice intent lives behind the feature boundary with a legacy shim',()=>{
+ assert.match(legacyShim,/export \* from '\.\.\/\.\.\/features\/client\/hugo\/hugoVoiceIntent'/)
+ assert.match(dockSource,/from'\.\/hugoVoiceIntent'/)
+})
 
 test('tomorrow at ten variants all resolve to one scheduled time',()=>{
  const now=new Date(2026,8,14,19,0,0)
