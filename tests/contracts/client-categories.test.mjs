@@ -12,11 +12,12 @@ test('TEST catalog includes the additional client categories already understood 
  assert.match(migration,/where not exists/)
 })
 
-test('client home and guided request consume active categories from the database',async()=>{
- const[home,guided]=await Promise.all([read('src/mvp/client/ClientPremiumHome.tsx'),read('src/mvp/client/ClientGuidedRequest.tsx')])
+test('client home and canonical request consume active categories from the database',async()=>{
+ const[home,need,catalog]=await Promise.all([read('src/mvp/client/ClientPremiumHome.tsx'),read('src/features/client/request/ClientNeedScreen.tsx'),read('src/mvp/voiceCatalog.ts')])
  assert.match(home,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
  assert.match(home,/CORE_SERVICES\.map\(item=>\(\{item,category:categories\.find\(item\.matches\)\|\|null\}\)\)/)
  assert.match(home,/coreCategories\.map/)
- assert.match(guided,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
- assert.match(guided,/jardineria:\['jardinero'/)
+ assert.match(need,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
+ assert.match(need,/resolveVoiceCategoryFromCatalog/)
+ assert.match(catalog,/jardinero\|jardineria\|jardineiro\|jardinagem/)
 })

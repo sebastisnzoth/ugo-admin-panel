@@ -56,13 +56,15 @@ test('request evidence access expires with the opportunity unless provider is as
 })
 
 test('request photos are optional but any supplied evidence stays bound to its explicit draft',async()=>{
- const [client,binding]=await Promise.all([
-  read('src/mvp/client/ClientGuidedRequest.tsx'),
+ const [need,post,binding]=await Promise.all([
+  read('src/features/client/request/ClientNeedScreen.tsx'),
+  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
   read('supabase/migrations/20260911_request_evidence_draft_binding.sql'),
  ])
- assert.match(client,/request_draft_id:draftId/)
- assert.match(client,/Continuar sin foto/)
- assert.doesNotMatch(client,/disabled=\{busy\|\|photoCount<1\}/)
+ assert.match(post,/request_draft_id:requestDraftId/)
+ assert.match(need,/Podés continuar sin fotos/)
+ assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/)
+ assert.doesNotMatch(need,/photoCount<1/)
  assert.match(binding,/draft_id=v_draft_id/)
  assert.match(binding,/if v_draft_raw is null then[\s\S]*return new/)
 })

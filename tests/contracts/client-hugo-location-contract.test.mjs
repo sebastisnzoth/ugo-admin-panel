@@ -2,35 +2,38 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const client = await readFile(new URL('../../src/mvp/client/ClientGuidedRequest.tsx', import.meta.url), 'utf8')
+const voice = await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx', import.meta.url), 'utf8')
+const locationScreen = await readFile(new URL('../../src/features/client/request/ClientLocationScreen.tsx', import.meta.url), 'utf8')
+const savedAddress = await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts', import.meta.url), 'utf8')
+const orderVoice = await readFile(new URL('../../src/features/client/hugo/hugoOrderVoice.ts', import.meta.url), 'utf8')
 
-test('Hugo asks explicit consent before resolving current client location', () => {
-  assert.match(client, /type\s+Step='idle'\|'request'\|'review'\|'matching'/)
-  assert.match(client, /locationConsent/)
-  assert.match(client, /wantsCurrentLocation\(text\)[\s\S]*setLocationConsent\(true\)[\s\S]*Me autorizás a usar tu ubicación actual/i)
-  assert.match(client, /if\(locationConsent\)\{if\(affirmative\(text\)\)\{await resolveCurrentLocation\(\);return\}/)
-  assert.match(client, /if\(negative\(text\)\)\{setLocationConsent\(false\)/)
+test('Hugo only resolves current GPS after an explicit current-location intent', () => {
+  assert.match(voice, /function wantsGps\(text:string\)/)
+  assert.match(voice, /gpsRequested=wantsGps\(source\)\|\|Boolean\(companion\?\.use_current_location\)/)
+  assert.match(voice, /if\(gpsRequested\)\{const ok=await captureCurrentLocation\(current\)/)
+  assert.match(voice, /use_current_location\?:boolean/)
 })
 
-test('affirmed location uses browser geolocation and persists backend-compatible point order', () => {
-  assert.match(client, /navigator\.geolocation\.getCurrentPosition\(/)
-  assert.match(client, /const lat=position\.coords\.latitude,lng=position\.coords\.longitude/)
-  assert.match(client, /reverseGeocode\(lat,lng\)/)
-  assert.match(client, /ubicacion:`POINT\(\$\{lng\} \$\{lat\}\)`/)
-  assert.match(client, /sessionStorage\.setItem\('ugo:last-client-location'/)
+test('spoken or tapped current location uses browser geolocation and persists backend-compatible point order', () => {
+  assert.match(voice, /navigator\.geolocation\.getCurrentPosition/)
+  assert.match(voice, /reverseGeocode\(lat,lng\)/)
+  assert.match(voice, /ubicacion:\`POINT\(\$\{lng\} \$\{lat\}\)\`/)
+  assert.match(voice, /sessionStorage\.setItem\('ugo:last-client-location'/)
+  assert.match(locationScreen, /const useLocation=\(\)=>/)
+  assert.match(locationScreen, /savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/)
 })
 
-test('natural request resolves saved Casa and Trabajo addresses', () => {
-  assert.match(client, /function\s+resolveSavedAddress\(text:string\)/)
-  assert.match(client, /mi casa\|en casa\|casa\|hogar\|minha casa\|em casa/)
-  assert.match(client, /trabajo\|oficina\|mi trabajo\|meu trabalho\|escritorio/)
-  assert.match(client, /address:saved\.direccion,addressLabel:saved\.etiqueta/)
+test('natural request resolves saved Casa and Trabajo addresses through the canonical helper', () => {
+  assert.match(voice, /function savedLabel\(text:string\):'Casa'\|'Trabajo'\|null/)
+  assert.match(voice, /resolveClientSavedAddress\(label\)/)
+  assert.match(savedAddress, /place==='Casa'\?\/casa\|hogar\|residencia\/:\/trabajo\|oficina\|trabalho\|escritorio\//)
+  assert.match(locationScreen, /from\('direcciones_cliente'\)/)
+  assert.match(locationScreen, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
 })
 
 test('Hugo understands gardening aliases and scheduled natural language', () => {
-  assert.match(client, /jardineria:\['jardinero','jardineria','jardin','jardineiro','jardinagem'\]/)
-  assert.match(client, /function\s+parseTiming\(text:string\)/)
-  assert.match(client, /manana\|amanha/)
-  assert.match(client, /when:'programar',scheduleAt:localInputValue\(date\)/)
-  assert.match(client, /mañana a las 10/i)
+  assert.match(orderVoice, /jardineria:\['jardinero','jardineria','jardin','jardineiro','jardinagem'\]/)
+  assert.match(orderVoice, /export function hugoTiming\(text:string\)/)
+  assert.match(orderVoice, /manana\|amanha/)
+  assert.match(orderVoice, /urgency:'scheduled'/)
 })
