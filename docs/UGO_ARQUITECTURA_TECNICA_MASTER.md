@@ -253,14 +253,14 @@ Preferir serverless/managed y evitar infraestructura innecesaria; nunca ahorrar 
 
 ## 19. Hugo Voice · Gemini Live
 
-La voz del Cliente/Proveedor usa una sesión de transcripción **Gemini Live persistente**, no el ciclo `grabar archivo → subir → transcribir → volver a grabar`.
+Cliente y Proveedor comparten una capa de voz persistente inspirada en el patrón probado de `gods-eye-view`, pero el dominio UGO sigue siendo la autoridad de acciones, estado, dinero y permisos.
 
-Contrato:
+Contrato de entrada:
 
 ```text
 sesión UGO autenticada
-→ POST /api/test { voice_live_token: true }
-→ backend valida Auth/rol y emite token efímero restringido
+→ POST /api/test { voice_live_token: true, voice_live_mode: "transcribe" }
+→ backend valida Auth/rol y emite token efímero de un uso
 → navegador abre WebSocket Gemini Live directo
 → micrófono PCM16 mono 16 kHz en chunks ~100 ms
 → interimInputTranscription actualiza texto visible
@@ -268,17 +268,29 @@ sesión UGO autenticada
 → dominio UGO ejecuta la acción real
 ```
 
+Contrato de salida hablada de baja latencia para Cliente/Proveedor:
+
+```text
+respuesta ya resuelta por UGO
+→ sesión Gemini Live speaker persistente (voice_live_mode: "speaker")
+→ clientContent con el texto exacto a leer
+→ audio PCM incremental Gemini Live
+→ reproducción Web Audio en cola sin esperar un archivo TTS completo
+→ reanudar transcripción sobre la misma sesión de entrada
+```
+
 Seguridad y continuidad:
 
 - `GEMINI_API_KEY` permanece sólo server-side;
-- el navegador recibe únicamente un token efímero de un uso, corto y restringido a `gemini-3.5-transcribe-live` + salida TEXT;
-- `responseModalities` del WebSocket vive dentro de `setup.generationConfig`; el token usa `liveConnectConstraints` en la raíz del request de `auth_tokens`;
-- durante TTS, `pauseListening/resumeListening` conserva el WebSocket y el micrófono para no renegociar una sesión por turno;
-- ante cierre inesperado se solicita un token nuevo y se reconecta con backoff; si Live no inicia, la UI conserva fallback de reconocimiento del dispositivo/texto;
-- voz, teclado y botones siguen entrando al mismo flujo canónico; Gemini transcribe/interpreta, pero no se convierte en autoridad de servicio, dinero, disponibilidad ni permisos.
+- cada WebSocket recibe un token efímero de un uso; el request de `auth_tokens` evita campos de constraints rechazados por producción y el modelo/configuración se envían en el primer frame `setup`;
+- la sesión de entrada usa por defecto `gemini-3.5-transcribe-live` con salida TEXT; la sesión speaker usa `GEMINI_LIVE_VOICE_MODEL` / `GEMINI_LIVE_MODEL` o `gemini-3.8-live` con salida AUDIO;
+- el speaker sólo vocaliza texto ya decidido por la aplicación: no puede crear servicios, cambiar pagos, elegir disponibilidad ni saltar RPC/RLS;
+- durante la respuesta hablada, `pauseListening/resumeListening` conserva la sesión de transcripción y evita que Hugo se escuche a sí mismo;
+- si el speaker Live falla, Cliente/Proveedor conservan fallback al TTS HTTP existente y luego a `speechSynthesis` del dispositivo;
+- ante cierre inesperado de la sesión de entrada se solicita un token nuevo y se reconecta con backoff;
+- voz, teclado y botones siguen entrando al mismo flujo canónico.
 
-Madurez de esta pieza: código integrado y sujeto a CI; la promoción a `RUNTIME VALIDATED` exige smoke real con micrófono, permiso, ES/PT, interrupción/reanudación y recorrido Home → pedido.
-
+Madurez: implementación integrada sujeta a CI. `RUNTIME VALIDATED` exige smoke real en navegador/dispositivo con micrófono, ES/PT, primera respuesta, turnos sucesivos, interrupción/reanudación y recorrido Cliente/Proveedor.
 
 ---
 

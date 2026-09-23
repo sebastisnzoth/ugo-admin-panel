@@ -563,3 +563,15 @@ Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cli
 
 Implementado en `main` y con migración aplicada en UGO Arena/TEST: OAuth Gmail server-side, estado conectar/desconectar en Scout y CRM, envío individual y campañas de hasta 20 destinatarios por lote, link de onboarding UGO, cooldown de campaña, auditoría de envíos y convergencia con el embudo CRM. Pendiente externo para runtime: habilitar Gmail API en Google Cloud, registrar `/api/scout/gmail` como redirect URI del cliente OAuth, cargar las credenciales OAuth server-side y autorizar una cuenta Google desde el panel. No requiere deploy hasta que se autorice la etapa de publicación.
 
+
+
+---
+
+## Checkpoint · Hugo Voice baja latencia Cliente/Proveedor · 23/09/2026
+
+- Se comparó la implementación de voz de UGO con el patrón operativo de `gods-eye-view`.
+- Cliente y Proveedor conservan Gemini Live persistente para transcripción, pero ahora prefieren un segundo canal Gemini Live persistente para la respuesta de audio incremental.
+- La respuesta hablada ya no necesita esperar el ciclo completo `POST /api/hugo/chat → audio base64 completo` cuando el speaker Live está disponible; ese TTS queda como fallback.
+- El modelo speaker sólo vocaliza texto ya resuelto por el dominio UGO y no recibe autoridad sobre lifecycle, pagos, disponibilidad, permisos ni persistencia.
+- La clave Gemini continúa exclusivamente server-side y ambos canales usan tokens efímeros de un uso.
+- Estado de madurez al integrar: IMPLEMENTED. Requiere CI del SHA exacto y smoke real con micrófono para promover a CI/RUNTIME VALIDATED.

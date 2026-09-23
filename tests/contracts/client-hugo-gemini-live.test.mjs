@@ -5,6 +5,7 @@ import{readFile}from'node:fs/promises'
 const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const api=await readFile(new URL('../../api/test.ts',import.meta.url),'utf8')
+const provider=await readFile(new URL('../../src/mvp/provider/ProviderHugoBridge.tsx',import.meta.url),'utf8')
 
 test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=>{
  assert.match(bridge,/BidiGenerateContentConstrained/)
@@ -41,4 +42,16 @@ test('Hugo pauses and resumes the persistent Live session instead of reconnectin
  assert.match(dock,/if\(detail\.final===false\)\{setState\('hearing'\);return\}/)
  assert.match(dock,/await nb\.startListening\(\)/)
  assert.match(dock,/Gemini Live no disponible; usando reconocimiento del dispositivo/)
+})
+
+
+test('Client and Provider use a persistent Gemini Live audio speaker before slower TTS fallbacks',()=>{
+ assert.match(bridge,/responseModalities:\['AUDIO'\]/)
+ assert.match(bridge,/outputAudioTranscription:\{\}/)
+ assert.match(bridge,/voice_live_mode:mode/)
+ assert.match(bridge,/speak:speakThroughLive/)
+ assert.match(dock,/liveBridge\?\.speak/)
+ assert.match(provider,/liveBridge\?\.speak/)
+ assert.match(api,/GEMINI_LIVE_VOICE_MODEL/)
+ assert.match(api,/voice_live_mode==='speaker'/)
 })
