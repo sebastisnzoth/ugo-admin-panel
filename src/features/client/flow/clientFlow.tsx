@@ -4,8 +4,6 @@ import { useClientCategoryShortcut } from '../hooks/useClientCategoryShortcut'
 
 const noop = () => {}
 const unavailable = async () => false
-const GUIDED_TEXT_EVENT = 'ugo:client:focus-hugo-text'
-
 const emptyActions: ClientActionHandlers = {
   openSearch: noop, openProvider: noop, selectProvider: noop, createService: unavailable,
   startMatching: unavailable, cancelService: unavailable, openPayment: unavailable,
@@ -36,15 +34,11 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
     setProviderId(nextProviderId)
   }, [])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
+    // ClientNeedScreen reads hugoIntent directly from the flow context, so the
+    // canonical request path no longer needs the legacy guided-request DOM event.
     setHugoIntent({ ...intent, id: ++intentId.current })
-    // The guided request is the canonical order composer. Mount it first, then
-    // deliver the selected category/intent. This prevents Home from losing the
-    // event while ClientGuidedRequest is still unmounted.
     setScreen('request')
     setProviderId(null)
-    window.setTimeout(() => {
-      window.dispatchEvent(new CustomEvent(GUIDED_TEXT_EVENT, { detail: { text: intent.text, send: true } }))
-    }, 0)
   }, [])
   const registerActions = useCallback((next: Partial<ClientActionHandlers>) => {
     handlersRef.current = { ...handlersRef.current, ...next }
