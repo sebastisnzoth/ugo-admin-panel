@@ -2,7 +2,7 @@ import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 
-const dock=await readFile(new URL('../../src/mvp/client/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
+const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const api=await readFile(new URL('../../api/test.ts',import.meta.url),'utf8')
 const tts=await readFile(new URL('../../api/hugo/chat.ts',import.meta.url),'utf8')
 
