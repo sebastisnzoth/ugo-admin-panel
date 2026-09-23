@@ -122,6 +122,8 @@ Representative repeated selectors:
 
 - 2026-09-23: removed the final 6 grouped base blocks fully superseded by `ai/clientStudioReference.css`. No base Google→Reference rule remains eligible for deletion under the strict 100%-property-coverage rule; further cleanup requires breakpoint/visual regression analysis.
 
+- 2026-09-23: pruned 11 base payment/tracking/completion blocks from `legacy/clientRedesign2026.css` after verifying complete property ownership by the later `legacy/ai/clientAiStudioProductionOps.css`; responsive rules remain untouched.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
