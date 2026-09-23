@@ -124,6 +124,8 @@ Representative repeated selectors:
 
 - 2026-09-23: pruned 11 base payment/tracking/completion blocks from `legacy/clientRedesign2026.css` after verifying complete property ownership by the later `legacy/ai/clientAiStudioProductionOps.css`; responsive rules remain untouched.
 
+- 2026-09-23: pruned 23 base Profile blocks from `legacy/clientRedesign2026.css` after verifying full property ownership by the later `legacy/ai/clientAiStudioProductionOps.css`; mobile/desktop media rules remain untouched.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
