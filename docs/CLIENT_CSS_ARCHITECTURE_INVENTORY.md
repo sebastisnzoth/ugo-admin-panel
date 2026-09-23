@@ -130,6 +130,8 @@ Representative repeated selectors:
 
 - 2026-09-23: pruned 9 base Guided/Profile/History blocks from `legacy/clientRedesign2026.css` after verifying complete later ownership in `ai/clientGoogleAiStudio.css` with no `!important` priority regression; responsive rules remain untouched.
 
+- 2026-09-23: pruned 11 base guided-flow blocks from `ai/clientAiStudioFlow.css` after verifying complete ownership by the later `ai/clientGoogleAiStudio.css`, including no `!important` priority regression on guided inputs; responsive rules remain untouched.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
