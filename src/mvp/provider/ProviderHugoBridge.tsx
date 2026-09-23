@@ -1,17 +1,10 @@
-import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
-import{detectProviderVoiceLocale,findProviderVoiceOpportunity,providerVoiceContext,providerVoiceSummary,type ProviderHugoLocale as Locale}from'../../features/provider/voice/providerVoiceHelpers'
-import{runProviderVoiceCommand}from'../../features/provider/voice/providerVoiceCommands'
+import React,{useCallback,useEffect,useRef,useState}from'react'
+import{detectProviderVoiceLocale,type ProviderHugoLocale as Locale}from'../../features/provider/voice/providerVoiceHelpers'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData}from'./providerData'
 import'../voice.css'
 
 type VoiceState='idle'|'connecting'|'ready'|'hearing'|'speaking'|'error'
-type SpeechRecognitionAlternativeLike={transcript?:string}
-type SpeechRecognitionResultLike={0?:SpeechRecognitionAlternativeLike;isFinal?:boolean}
-type SpeechRecognitionEventLike={resultIndex?:number;results:ArrayLike<SpeechRecognitionResultLike>}
-type SpeechRecognitionErrorEventLike={error?:string}
-type SpeechRecognitionLike={lang:string;continuous:boolean;interimResults:boolean;onstart:(()=>void)|null;onspeechstart:(()=>void)|null;onresult:((event:SpeechRecognitionEventLike)=>void)|null;onerror:((event:SpeechRecognitionErrorEventLike)=>void)|null;onend:(()=>void)|null;start:()=>void;abort:()=>void}
-type SpeechRecognitionConstructor=new()=>SpeechRecognitionLike
 type NativeBridge={startListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable?:()=>boolean;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
 type UgoWindow=Window&typeof globalThis&{UGOVoiceBridge?:NativeBridge;SpeechRecognition?:SpeechRecognitionConstructor;webkitSpeechRecognition?:SpeechRecognitionConstructor;webkitAudioContext?:typeof AudioContext}
 type TtsReply={audio_base64?:string;sample_rate?:number;error?:string;hugo_mensaje?:string}
@@ -26,22 +19,11 @@ const errorStatus=(value:unknown)=>typeof value==='object'&&value!==null&&'statu
 export function ProviderHugoBridge(){
  const flow=useProviderFlow(),data=useProviderData()
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[userTranscript,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
- const locale=useRef<Locale>('es-AR'),running=useRef(false),busy=useRef(false),native=useRef(false),voicePaused=useRef(false),recognition=useRef<SpeechRecognitionLike|null>(null),ttsAbort=useRef<AbortController|null>(null),ttsSequence=useRef(0),ttsCooldownUntil=useRef(0),audioContext=useRef<AudioContext|null>(null),audioSource=useRef<AudioBufferSourceNode|null>(null),conversation=useRef<Array<{role:'user'|'assistant';content:string}>>([])
-
- const summary=useMemo(()=>providerVoiceSummary(data),[data.online,data.opportunities.length,data.service])
+ const locale=useRef<Locale>('es-AR'),running=useRef(false),native=useRef(false)
 
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
  const stopSpeech=useCallback(()=>{try{ugoWindow().UGOVoiceBridge?.stopSpeaking?.()}catch(caught){ignoreError(caught)}},[])
-
-
- const context=useCallback(()=>providerVoiceContext(data,flow.screen),[data.cashReceived,data.online,data.opportunities,data.released,data.service,data.ugoDebt,flow.screen])
-
- const findOpportunity=useCallback((source:string)=>findProviderVoiceOpportunity(source,data.opportunities),[data.opportunities])
-
- const localCommand=useCallback((source:string)=>runProviderVoiceCommand({source,locale:locale.current,summary,flow:flow.actions,data,findOpportunity,speak}),[data,findOpportunity,flow.actions,speak,summary])
-
  const handleText=useCallback(async(source:string)=>{const clean=source.trim();if(!clean)return;setUserTranscript(clean);locale.current=detectProviderVoiceLocale(clean)},[])
-
  const executeTool=useCallback(async(name:string,args:Record<string,unknown>)=>{
   if(name==='provider_set_online'){if(!data.online)await data.toggleOnline();return{ok:true,data:{online:true}}}
   if(name==='provider_set_offline'){if(data.online)await data.toggleOnline();return{ok:true,data:{online:false}}}
@@ -53,7 +35,7 @@ export function ProviderHugoBridge(){
  },[data,flow.actions])
 
 
- const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);busy.current=false;voicePaused.current=false;stopSpeech();try{recognition.current?.abort()}catch{}try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{}recognition.current=null;native.current=false;setState('idle');setError('')},[setRunning,stopSpeech])
+ const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);stopSpeech();try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{}native.current=false;setState('idle');setError('')},[setRunning,stopSpeech])
  const start=useCallback(async()=>{setPanelOpen(true);setError('');setState('connecting');const bridge=ugoWindow().UGOVoiceBridge;if(!bridge||bridge.isAvailable?.()===false){setState('error');setError('Gemini Live no está disponible. Tocá el orbe para reconectar.');return}native.current=true;setRunning(true);try{await bridge.startListening();if(running.current)setState('ready')}catch(caught){console.warn('Gemini Live no disponible.',caught);try{bridge.stopListening()}catch(stopError){ignoreError(stopError)}native.current=false;setRunning(false);setState('error');setError('Gemini Live no está disponible. Tocá el orbe para reconectar.')}},[setRunning])
 
 
