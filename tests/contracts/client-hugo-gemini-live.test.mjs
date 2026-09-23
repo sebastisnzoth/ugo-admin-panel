@@ -50,6 +50,7 @@ test('Hugo keeps Gemini Live as the only voice path instead of falling back to b
  assert.match(dock,/Gemini Live no está disponible\. Tocá el orbe para reconectar\./)
  assert.doesNotMatch(dock,/usando reconocimiento del dispositivo/)
  assert.doesNotMatch(provider,/usando reconocimiento del dispositivo/)
+ assert.doesNotMatch(dock,/void handleText\(value\)/)
 })
 
 
