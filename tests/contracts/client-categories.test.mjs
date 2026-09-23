@@ -13,10 +13,12 @@ test('TEST catalog includes the additional client categories already understood 
 })
 
 test('client home and canonical request consume active categories from the database',async()=>{
- const[home,need,catalog]=await Promise.all([read('src/mvp/client/ClientPremiumHome.tsx'),read('src/features/client/request/ClientNeedScreen.tsx'),read('src/mvp/voiceCatalog.ts')])
+ const[home,need,catalog]=await Promise.all([read('src/features/client/home/ClientHomeScreen.tsx'),read('src/features/client/request/ClientNeedScreen.tsx'),read('src/mvp/voiceCatalog.ts')])
  assert.match(home,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
- assert.match(home,/CORE_SERVICES\.map\(item=>\(\{item,category:categories\.find\(item\.matches\)\|\|null\}\)\)/)
- assert.match(home,/coreCategories\.map/)
+ assert.match(home,/const CORE=/)
+ assert.match(home,/const cards=useMemo\(\(\)=>CORE\.map/)
+ assert.match(home,/category:categories\.find/)
+ assert.match(home,/ugo-home-categories[\s\S]*cards\.map/)
  assert.match(need,/from\('categorias'\)[\s\S]*\.eq\('activa',true\)/)
  assert.match(need,/resolveVoiceCategoryFromCatalog/)
  assert.match(catalog,/jardinero\|jardineria\|jardineiro\|jardinagem/)
