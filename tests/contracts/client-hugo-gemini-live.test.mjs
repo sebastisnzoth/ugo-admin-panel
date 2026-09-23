@@ -18,7 +18,8 @@ test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=
 })
 
 test('Gemini Live websocket setup uses transcription, VAD and incremental results',()=>{
- assert.match(bridge,/generationConfig:\{responseModalities:\['TEXT'\]\}/)
+ assert.match(bridge,/generationConfig:\{responseModalities:\['AUDIO'\]/)
+ assert.match(bridge,/outputAudioTranscription:\{\}/)
  assert.match(bridge,/inputAudioTranscription:\{\}/)
  assert.match(bridge,/silenceDurationMs:500/)
  assert.match(bridge,/END_SENSITIVITY_HIGH/)
@@ -34,6 +35,14 @@ test('ephemeral token request uses a short one-use token without the production-
  assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
  assert.doesNotMatch(api,/liveConnectConstraints:\{model/)
  assert.doesNotMatch(api,/auth_token\s*:/)
+})
+
+test('primary Gemini Live session owns streamed audio and tool responses',()=>{
+ assert.match(bridge,/playConversationPcm/)
+ assert.match(bridge,/content\?\.interrupted/)
+ assert.match(bridge,/ugo:native-voice-tool-call/)
+ assert.match(bridge,/sendToolResponse/)
+ assert.match(bridge,/toolResponse:\{functionResponses/)
 })
 
 test('Hugo pauses and resumes the persistent Live session instead of reconnecting every spoken reply',()=>{
