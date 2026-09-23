@@ -116,6 +116,8 @@ Representative repeated selectors:
 
 - 2026-09-23: pruned 22 additional base Studio service/map declaration blocks from `ai/clientGoogleAiStudio.css`; every removed property is owned by the later `ai/clientStudioReference.css`, with responsive rules untouched.
 
+- 2026-09-23: pruned 17 more single-selector base Studio map/history blocks from `ai/clientGoogleAiStudio.css`; `ai/clientStudioReference.css` owns every removed property and responsive rules remain intact.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:
