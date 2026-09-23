@@ -4,7 +4,6 @@ import{supabase}from'../lib/supabase';
 type OrbState='idle'|'listening'|'thinking'|'speaking';
 type HugoRole='admin'|'superadmin';
 type Msg={role:'hugo'|'user';text:string};
-type HugoUiAction={type:'navigate'|'open_service'|'refresh'|'map_filter';target?:string;service_id?:string;service_number?:number;status?:'todos'|'online'|'offline'|'inactivo';category?:string|null;zone?:string|null;place?:string|null;radius_m?:number|null;show_providers?:boolean|null;show_clients?:boolean|null};
 
 const CSS=`
 @keyframes hugoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.025)}}
@@ -85,7 +84,6 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   generado_en:new Date().toISOString()
  });
 }
-function validUiAction(value:any):HugoUiAction|null{if(!value||typeof value!=='object')return null;const type=String(value.type||'');if(!['navigate','open_service','refresh','map_filter'].includes(type))return null;return value as HugoUiAction}
 
 export function ConversationalOrb({metrics,role='admin',section='dashboard',extraContext,onVoiceActiveChange}:{metrics?:any;role?:HugoRole;section?:string;extraContext?:any;onVoiceActiveChange?:(active:boolean)=>void}){
  const roleLabel=role==='superadmin'?'Super Admin':'Admin';
