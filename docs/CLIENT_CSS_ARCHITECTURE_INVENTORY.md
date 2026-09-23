@@ -110,6 +110,8 @@ Representative repeated selectors:
 
 - 2026-09-23: removed 12 base Profile declaration blocks from `legacy/premium/clientPremium2026.css` after verifying every property is superseded by the later `profile/clientProfilePremium2026.css` owner in the same base context. No breakpoint rule was removed.
 
+- 2026-09-23: removed 15 base Home declaration blocks from `legacy/home/clientHomeAppV3.css` after verifying complete property coverage by the later `legacy/premium/clientPremium2026.css`; responsive breakpoint rules remain untouched.
+
 ## Exit criteria for CSS refactor
 
 The Client CSS architecture can be considered structurally migrated when:

@@ -15,12 +15,6 @@
   color:#0b1b29!important;
 }
 
-.ugo-client-root .ugo-home-hero,
-.ugo-client-root .ugo-home-services{
-  background:#ffffff!important;
-  border:1px solid #dbe4e8!important;
-  box-shadow:0 18px 46px rgba(0,0,0,.18)!important;
-}
 
 .ugo-client-root .ugo-home-hero h1,
 .ugo-client-root .ugo-home-services h2,
@@ -57,10 +51,6 @@
   color:#00a86b!important;
 }
 
-.ugo-client-root .ugo-home-location>span{
-  background:#e9f9f2!important;
-  color:#00a86b!important;
-}
 
 .ugo-client-root .ugo-home-bell{
   background:#0b1b29!important;
@@ -84,24 +74,9 @@
   opacity:1!important;
 }
 
-.ugo-client-root .ugo-home-search>span{
-  color:#00a86b!important;
-}
 
-.ugo-client-root .ugo-home-hugo-cta{
-  background:linear-gradient(135deg,#18e08b,#11c975)!important;
-  color:#062318!important;
-  box-shadow:0 14px 30px rgba(18,205,121,.22)!important;
-}
 
-.ugo-client-root .ugo-home-hugo-cta strong,
-.ugo-client-root .ugo-home-hugo-cta>b{
-  color:#052218!important;
-}
 
-.ugo-client-root .ugo-home-hugo-cta small{
-  color:#0a5c3d!important;
-}
 
 .ugo-client-root .ugo-home-categories>button,
 .ugo-client-root .ugo-home-all-results button,
@@ -118,20 +93,8 @@
   border-color:#8fd8ba!important;
 }
 
-.ugo-client-root .ugo-home-category-icon{
-  background:#edf5f1!important;
-}
 
-.ugo-client-root .ugo-home-services-head>button{
-  background:#0b1b29!important;
-  color:#20e18c!important;
-}
 
-.ugo-client-root .ugo-home-map-card{
-  background:#091b28!important;
-  border:1px solid #274355!important;
-  box-shadow:0 18px 46px rgba(0,0,0,.24)!important;
-}
 
 .ugo-client-root .ugo-home-map-card>header{
   background:#0b1f2d!important;
@@ -139,13 +102,7 @@
   color:#ffffff!important;
 }
 
-.ugo-client-root .ugo-home-map-card>header strong{
-  color:#ffffff!important;
-}
 
-.ugo-client-root .ugo-home-map-card>header small{
-  color:#b9c7cf!important;
-}
 
 .ugo-client-root .ugo-home-map-card>header>b{
   background:#071720!important;
@@ -158,13 +115,7 @@
   color:#ffffff!important;
 }
 
-.ugo-client-root .ugo-home-map-card>footer strong{
-  color:#ffffff!important;
-}
 
-.ugo-client-root .ugo-home-map-card>footer small{
-  color:#b9c7cf!important;
-}
 
 .ugo-client-root .ugo-home-map-card>footer button{
   background:#18e08b!important;
@@ -181,18 +132,12 @@
   color:#0b1b29!important;
 }
 
-.ugo-client-root .ugo-home-map-label small{
-  color:#667681!important;
-}
 
 .ugo-client-root .ugo-home-map-label>span{
   background:#0b1f2d!important;
   color:#20e18c!important;
 }
 
-.ugo-client-root .ugo-home-map .maplibregl-canvas{
-  filter:saturate(.95) brightness(1.02) contrast(1)!important;
-}
 
 .ugo-client-root .ugo-home-mobile-nav{
   display:none;
