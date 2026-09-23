@@ -9,7 +9,7 @@ test('canonical client order never reuses stale browser GPS for a different addr
     read('src/lib/dispatch/types.ts'),
     read('src/lib/dispatch/supabaseDispatch.ts'),
     read('src/features/client/request/ClientLocationScreen.tsx'),
-    read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+    read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   ])
   assert.match(types, /pickupFallback\?: 'stored' \| 'none'/)
   assert.match(dispatch, /const pickup = request\.pickup \|\| \(request\.pickupFallback === 'stored' \? storedPickup\(\) : null\)/)
@@ -21,7 +21,7 @@ test('canonical client order never reuses stale browser GPS for a different addr
 })
 
 test('saved-place pickup is exact only when that place has coordinates', async () => {
-  const [location, post] = await Promise.all([read('src/features/client/request/ClientLocationScreen.tsx'), read('src/mvp/client/ClientPostConfirmFlow.tsx')])
+  const [location, post] = await Promise.all([read('src/features/client/request/ClientLocationScreen.tsx'), read('src/features/client/request/ClientPostConfirmFlow.tsx')])
   assert.match(location, /place\.latitud!=null&&place\.longitud!=null&&Number\.isFinite\(lat\)&&Number\.isFinite\(lng\)/)
   assert.match(post, /draft\.pickupLat==null\|\|draft\.pickupLng==null/)
   assert.match(location, /pickupLat/)

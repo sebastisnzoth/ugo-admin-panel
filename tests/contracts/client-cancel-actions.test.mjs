@@ -13,7 +13,7 @@ test('client cancellation is backed by an authenticated RPC', async () => {
 })
 
 test('matching cancel button reaches the real dispatch cancellation path for one explicit service id', async () => {
-  const matching = await read('src/mvp/client/ClientPostConfirmFlow.tsx')
+  const matching = await read('src/features/client/request/ClientPostConfirmFlow.tsx')
   const bridge = await read('src/features/client/actions/ClientFlowActionsBridge.tsx')
   const service = await read('src/features/client/services/clientActionService.ts')
   const dispatch = await read('src/lib/dispatch/supabaseDispatch.ts')

@@ -8,7 +8,7 @@ test('request photos stay optional and upload failures never block the canonical
  const[source,need,post]=await Promise.all([
   read('src/features/client/request/ClientRequestEvidence.tsx'),
   read('src/features/client/request/ClientNeedScreen.tsx'),
-  read('src/mvp/client/ClientPostConfirmFlow.tsx')
+  read('src/features/client/request/ClientPostConfirmFlow.tsx')
  ])
  assert.match(source,/Son opcionales/)
  assert.doesNotMatch(source,/Necesitás al menos una foto para enviar la solicitud/)

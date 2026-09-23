@@ -5,7 +5,7 @@ import { readFile } from 'node:fs/promises'
 const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 
 test('matching never traps the client and exposes background, retry and service-scoped cancel exits', async () => {
-  const matching = await read('src/mvp/client/ClientPostConfirmFlow.tsx')
+  const matching = await read('src/features/client/request/ClientPostConfirmFlow.tsx')
   assert.match(matching, /Seguir usando UGO/)
   assert.match(matching, /Reintentar búsqueda/)
   assert.match(matching, /Cancelar pedido/)
@@ -15,7 +15,7 @@ test('matching never traps the client and exposes background, retry and service-
 })
 
 test('client may start a new request while previous services remain active', async () => {
-  const matching = await read('src/mvp/client/ClientPostConfirmFlow.tsx')
+  const matching = await read('src/features/client/request/ClientPostConfirmFlow.tsx')
   const migration = await read('supabase/migrations/20260915014000_allow_multiple_client_active_services.sql')
   assert.doesNotMatch(matching, /hasActive/)
   assert.doesNotMatch(matching, /Ya tenés un servicio en curso/)

@@ -5,7 +5,7 @@ import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client matching can continue in background without trapping or blocking another request',async()=>{
- const source=await read('src/mvp/client/ClientPostConfirmFlow.tsx')
+ const source=await read('src/features/client/request/ClientPostConfirmFlow.tsx')
  assert.match(source,/const continueBackground=\(\)=>\{if\(service\)clearDraft\(\);onExit\(\)\}/)
  assert.match(source,/onClick=\{continueBackground\}>Seguir usando UGO/)
  assert.match(source,/Reintentar búsqueda/)

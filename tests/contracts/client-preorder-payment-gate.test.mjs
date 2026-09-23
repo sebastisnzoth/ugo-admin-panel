@@ -28,7 +28,7 @@ test('client can start a request without configuring payment on Home',async()=>{
 test('backend defaults to cash instead of rejecting service creation',async()=>{
  const [sql,postConfirm,paymentChoice]=await Promise.all([
   read('supabase/migrations/20260917230000_default_cash_nonblocking_preorder.sql'),
-  read('src/mvp/client/ClientPostConfirmFlow.tsx'),
+  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/mvp/client/ClientPaymentChoice.tsx'),
  ])
  assert.match(sql,/v_metodo := 'efectivo'/)
