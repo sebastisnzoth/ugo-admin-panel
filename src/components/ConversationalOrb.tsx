@@ -4,9 +4,7 @@ import{supabase}from'../lib/supabase';
 type OrbState='idle'|'listening'|'thinking'|'speaking';
 type HugoRole='admin'|'superadmin';
 type Msg={role:'hugo'|'user';text:string};
-type ScoutCandidate={id:string;name:string;phone?:string;address?:string;lat:number;lng:number;dist:number;website?:string;source?:string;score:number};
 type HugoUiAction={type:'navigate'|'open_service'|'refresh'|'map_filter';target?:string;service_id?:string;service_number?:number;status?:'todos'|'online'|'offline'|'inactivo';category?:string|null;zone?:string|null;place?:string|null;radius_m?:number|null;show_providers?:boolean|null;show_clients?:boolean|null};
-type GeminiTts={audio_base64?:string;mime_type?:string;sample_rate?:number;error?:string;hugo_mensaje?:string};
 
 const CSS=`
 @keyframes hugoFloat{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-8px) scale(1.025)}}
@@ -28,7 +26,6 @@ const CSS=`
 @media(max-width:720px){.hugo-free-trigger{right:16px;bottom:78px}.hugo-free-orb{width:112px;height:112px}.hugo-free-orb-wrap{width:124px;height:124px}}
 `;
 
-function extractText(result:any){const content=result?.message?.content;if(typeof content==='string')return content.trim();if(Array.isArray(content))return content.map((p:any)=>typeof p==='string'?p:p?.text||'').join(' ').trim();return typeof result==='string'?result.trim():''}
 function compactRows(rows:any[]|null|undefined,max=12){return rows?.length?rows.slice(0,max):[]}
 
 async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dashboard',extraContext?:any){
@@ -88,52 +85,20 @@ async function buildLiveContext(metrics?:any,role:HugoRole='admin',section='dash
   generado_en:new Date().toISOString()
  });
 }
-const CATEGORY_ALIASES:[RegExp,string][]=[[/electricista|eletricista/i,'electricista'],[/plomero|encanador|hidraul/i,'plomero'],[/gasista/i,'gasista'],[/limpieza|limpeza|faxina/i,'limpeza'],[/chaveiro|cerrajero|locksmith/i,'chaveiro'],[/pintor|pintura/i,'pintura'],[/carpinter|marcen/i,'carpintaria'],[/jardin|paisag/i,'jardinagem'],[/climat|aire acondicionado|hvac/i,'climatizacao'],[/informatic|comput|redes|\bti\b/i,'ti_redes'],[/reforma|construc/i,'reformas'],[/marido de aluguel|servicios generales|serviços gerais/i,'marido_aluguel'],[/mudanza|mudança|frete/i,'mudanca'],[/auto|mecanico|mecânico/i,'automotivo']];
-function parseScoutIntent(text:string){
- const lower=text.toLowerCase();
- const category=CATEGORY_ALIASES.find(([rx])=>rx.test(lower))?.[1];
- const scoutWord=/scout|busca(me|r)?|encontra(r)?|prospect|proveedores|profesionales/i.test(lower);
- if(!category||!scoutWord)return null;
- const placeMatch=text.match(/\ben\s+(.+?)(?:\s+(?:con|a|dentro|hasta|que)\b|$)/i);
- const place=(placeMatch?.[1]||'Florianópolis, SC').trim();
- const limitMatch=text.match(/\b(\d{1,2})\b/);const limit=Math.min(Math.max(Number(limitMatch?.[1]||10),1),20);
- const radiusMatch=text.match(/(\d+(?:[.,]\d+)?)\s*km/i);const radius=radiusMatch?Math.min(Number(radiusMatch[1].replace(',','.'))*1000,50000):5000;
- const withPhone=/con (?:tel[eé]fono|whatsapp)|que tengan? (?:tel[eé]fono|whatsapp)/i.test(text);
- return{category,place,limit,radius,withPhone};
-}
-async function geocodePlace(place:string){
- const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(place)}&format=json&limit=1`);if(!r.ok)throw new Error('No pude ubicar la zona.');const d=await r.json();if(!d?.[0])throw new Error(`No encontré la ubicación “${place}”.`);return{lat:Number(d[0].lat),lng:Number(d[0].lon),label:d[0].display_name||place};
-}
-function scoreCandidate(p:any,radius:number){
- let score=0;if(p.phone)score+=42;if(p.website)score+=18;if(p.address)score+=10;const dist=Number(p.dist||radius);score+=Math.max(0,30-Math.round((dist/Math.max(radius,1))*30));return Math.max(0,Math.min(100,score));
-}
-async function runScout(text:string){
- const intent=parseScoutIntent(text);if(!intent)return null;const loc=await geocodePlace(intent.place);
- const r=await fetch('/api/scout/places',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({lat:loc.lat,lng:loc.lng,radius:Math.round(intent.radius),categoria:intent.category})});
- const data=await r.json();if(!r.ok)throw new Error(data?.error||'Scout no pudo buscar proveedores.');
- let rows:ScoutCandidate[]=(data.results||[]).map((p:any)=>({id:p.id,name:p.name,phone:p.phone||undefined,address:p.address||undefined,lat:Number(p.lat),lng:Number(p.lng),dist:Number(p.dist||0),website:p.website||undefined,source:p.source,score:scoreCandidate(p,intent.radius)}));
- if(intent.withPhone)rows=rows.filter(p=>Boolean(p.phone));rows.sort((a,b)=>b.score-a.score||a.dist-b.dist);rows=rows.slice(0,intent.limit);
- if(!rows.length)return`Scout no encontró candidatos para ${intent.category} en ${intent.place}${intent.withPhone?' con teléfono':''}.`;
- const lines=rows.map((p,i)=>`${i+1}. ${p.name} — Score ${p.score}/100 — ${(p.dist/1000).toFixed(1)} km${p.phone?` — 📱 ${p.phone}`:''}${p.website?' — 🌐 web':''}`);
- return[`Scout encontró ${rows.length} candidatos en ${intent.place}.`,`Ranking UGO: teléfono 42 pts · web 18 · dirección 10 · cercanía hasta 30.`,...lines].join('\n');
-}
-
 function validUiAction(value:any):HugoUiAction|null{if(!value||typeof value!=='object')return null;const type=String(value.type||'');if(!['navigate','open_service','refresh','map_filter'].includes(type))return null;return value as HugoUiAction}
 
 export function ConversationalOrb({metrics,role='admin',section='dashboard',extraContext,onVoiceActiveChange}:{metrics?:any;role?:HugoRole;section?:string;extraContext?:any;onVoiceActiveChange?:(active:boolean)=>void}){
  const roleLabel=role==='superadmin'?'Super Admin':'Admin';
- const[open,setOpen]=useState(false),[orbState,setOrbState]=useState<OrbState>('idle'),[msgs,setMsgs]=useState<Msg[]>(()=>[{role:'hugo',text:`Hola. Soy Hugo ${roleLabel}. Puedo leer la operación autorizada de todo el panel, analizarla y también abrir módulos, servicios y filtros del mapa por voz.`}]),[input,setInput]=useState(''),[loading,setLoading]=useState(false);
- const endRef=useRef<HTMLDivElement>(null),msgsRef=useRef<Msg[]>(msgs),voiceSessionRef=useRef(false),openRef=useRef(false);
+ const[open,setOpen]=useState(false),[orbState,setOrbState]=useState<OrbState>('idle'),[msgs,setMsgs]=useState<Msg[]>(()=>[{role:'hugo',text:`Hola. Soy Hugo ${roleLabel}. Puedo leer la operación autorizada de todo el panel, analizarla y también abrir módulos, servicios y filtros del mapa por voz.`}]),[input,setInput]=useState('');
+ const endRef=useRef<HTMLDivElement>(null),voiceSessionRef=useRef(false),openRef=useRef(false);
  useEffect(()=>{openRef.current=open;onVoiceActiveChange?.(open)},[open,onVoiceActiveChange]);
- useEffect(()=>{msgsRef.current=msgs;endRef.current?.scrollIntoView({behavior:'smooth'})},[msgs,loading]);
+ useEffect(()=>{endRef.current?.scrollIntoView({behavior:'smooth'})},[msgs]);
  const stopAudio=useCallback(()=>{try{window.UGOVoiceBridge?.stopSpeaking?.()}catch{}},[])
- const resumeVoice=useCallback(()=>{if(!voiceSessionRef.current||!openRef.current)return;const bridge=window.UGOVoiceBridge;if(bridge?.isAvailable?.()){setOrbState('listening');Promise.resolve(bridge.resumeListening?.()??bridge.startListening()).catch(()=>{voiceSessionRef.current=false;setOrbState('idle')})}},[])
- const dispatchAction=useCallback((action:any)=>{const safe=validUiAction(action);if(!safe)return;window.dispatchEvent(new CustomEvent('ugo:admin:hugo-action',{detail:safe}))},[]);
  useEffect(()=>{const bridge=window.UGOVoiceBridge;const onNativeResult=(event:Event)=>{const detail=(event as CustomEvent<{text?:string;final?:boolean}>).detail||{},text=String(detail.text||'').trim();if(detail.final===false){if(text)setOrbState('listening');return}if(text)setInput(text)};const onNativeState=(event:Event)=>{const detail=(event as CustomEvent<{state?:string}>).detail||{};if(!voiceSessionRef.current)return;if(['connecting','ready','hearing'].includes(String(detail.state||'')))setOrbState('listening')};const onNativeOutput=(event:Event)=>{const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(text)setMsgs(p=>[...p,{role:'hugo',text}])};const onNativeTool=async(event:Event)=>{const detail=(event as CustomEvent<{id?:string;name?:string;args?:Record<string,unknown>}>).detail||{},id=String(detail.id||''),name=String(detail.name||''),args=detail.args||{};if(!id||!name||!bridge?.sendToolResponse)return;try{let response:any={ok:false,code:'UNKNOWN_TOOL',message:'Herramienta Admin no disponible'};if(name==='admin_get_operational_summary')response={ok:true,data:JSON.parse(await buildLiveContext(metrics,role,section,extraContext))};else if(name==='admin_find_service'){const key=String(args.service_id||''),{data,error}=await(supabase as any).from('servicios').select('id,numero,estado,zona,tarifa,created_at,descripcion,cliente_id,proveedor_id,categoria_id').or(`id.eq.${key},numero.eq.${Number(key)||-1}`).limit(5);response=error?{ok:false,code:'QUERY_FAILED',message:error.message}:{ok:true,data:{services:data||[]}}}else if(name==='admin_find_user'){const q=String(args.query||'').trim();const{data,error}=await(supabase as any).from('usuarios').select('id,nombre,apellido,email,tipo,activo,online,zona,pais').or(`id.eq.${q},email.ilike.%${q}%,nombre.ilike.%${q}%`).limit(10);response=error?{ok:false,code:'QUERY_FAILED',message:error.message}:{ok:true,data:{users:data||[]}}}bridge.sendToolResponse(id,name,response)}catch(error){bridge.sendToolResponse(id,name,{ok:false,code:'TOOL_FAILED',message:error instanceof Error?error.message:'La consulta falló'})}};const onNativeError=()=>{voiceSessionRef.current=false;setOrbState('idle')};window.addEventListener('ugo:native-voice-result',onNativeResult as EventListener);window.addEventListener('ugo:native-voice-state',onNativeState as EventListener);window.addEventListener('ugo:native-voice-output',onNativeOutput as EventListener);window.addEventListener('ugo:native-voice-tool-call',onNativeTool as EventListener);window.addEventListener('ugo:native-voice-error',onNativeError);return()=>{window.removeEventListener('ugo:native-voice-result',onNativeResult as EventListener);window.removeEventListener('ugo:native-voice-state',onNativeState as EventListener);window.removeEventListener('ugo:native-voice-output',onNativeOutput as EventListener);window.removeEventListener('ugo:native-voice-tool-call',onNativeTool as EventListener);window.removeEventListener('ugo:native-voice-error',onNativeError);if(voiceSessionRef.current)bridge?.stopListening?.();stopAudio()}},[extraContext,metrics,role,section,stopAudio]);
  const startConversation=useCallback(async()=>{stopAudio();voiceSessionRef.current=true;setOrbState('listening');const bridge=window.UGOVoiceBridge;if(bridge?.isAvailable?.()){try{await bridge.startListening();return}catch{}}voiceSessionRef.current=false;setOrbState('idle')},[stopAudio]);
  const openConversation=()=>{setOpen(true);window.setTimeout(()=>void startConversation(),60)};
  const toggleMic=()=>{stopAudio();const bridge=window.UGOVoiceBridge;if(bridge?.isAvailable?.()){if(voiceSessionRef.current){voiceSessionRef.current=false;bridge.stopListening();setOrbState('idle');return}voiceSessionRef.current=true;setOrbState('listening');Promise.resolve(bridge.startListening()).catch(()=>{voiceSessionRef.current=false;setOrbState('idle')});return}voiceSessionRef.current=false;setOrbState('idle')};
  const closeOrb=()=>{voiceSessionRef.current=false;window.UGOVoiceBridge?.stopListening?.();stopAudio();setOpen(false);setOrbState('idle')};
  const status=orbState==='listening'?'Te escucho. Hablame…':orbState==='thinking'?'Hugo está pensando…':orbState==='speaking'?'Hugo te está respondiendo…':voiceSessionRef.current?'Conversación activa':'Tocá el micrófono para conversar';
- return <><style>{CSS}</style><button className="hugo-free-trigger" aria-label={`Abrir Hugo ${roleLabel}`} title={`Hugo ${roleLabel} · Gemini + datos en vivo`} onClick={openConversation}><span><b>Hugo</b><small className="hugo-free-trigger-role">{roleLabel}</small></span></button>{open&&<div className="hugo-free-overlay"><div className="hugo-free-head"><div><strong>U.G.O. · HUGO</strong><small>{roleLabel.toUpperCase()} · GEMINI LIVE · CONTROL CENTER</small></div><button className="hugo-free-close" onClick={closeOrb}>×</button></div><div className="hugo-free-orb-area"><div className="hugo-free-orb-wrap"><div className={`hugo-free-ring ${orbState==='thinking'?'':'hidden'}`}/><button type="button" aria-label="Activar o pausar Hugo" className={`hugo-free-orb ${orbState}`} onClick={toggleMic}/></div><div className={`hugo-free-status ${orbState==='thinking'?'thinking':''}`}>{status}</div></div><div className="hugo-voice-caption">{loading?'Pensando…':(msgs[msgs.length-1]?.text||'Te escucho…')}</div><div ref={endRef}/></div>}</>;
+ return <><style>{CSS}</style><button className="hugo-free-trigger" aria-label={`Abrir Hugo ${roleLabel}`} title={`Hugo ${roleLabel} · Gemini + datos en vivo`} onClick={openConversation}><span><b>Hugo</b><small className="hugo-free-trigger-role">{roleLabel}</small></span></button>{open&&<div className="hugo-free-overlay"><div className="hugo-free-head"><div><strong>U.G.O. · HUGO</strong><small>{roleLabel.toUpperCase()} · GEMINI LIVE · CONTROL CENTER</small></div><button className="hugo-free-close" onClick={closeOrb}>×</button></div><div className="hugo-free-orb-area"><div className="hugo-free-orb-wrap"><div className={`hugo-free-ring ${orbState==='thinking'?'':'hidden'}`}/><button type="button" aria-label="Activar o pausar Hugo" className={`hugo-free-orb ${orbState}`} onClick={toggleMic}/></div><div className={`hugo-free-status ${orbState==='thinking'?'thinking':''}`}>{status}</div></div><div className="hugo-voice-caption">{msgs[msgs.length-1]?.text||input||'Te escucho…'}</div><div ref={endRef}/></div>}</>;
 }
