@@ -9,9 +9,10 @@ test('Hugo order voice helper lives behind the client Hugo feature boundary',asy
   read('src/mvp/client/hugoOrderVoice.ts'),
   read('src/features/client/hugo/hugoOrderVoice.ts')
  ])
- assert.equal(legacy,"export * from '../../features/client/hugo/hugoOrderVoice'\\n")
+ assert.equal(legacy,"export * from '../../features/client/hugo/hugoOrderVoice'
+")
  assert.match(canonical,/export type HugoDraft=/)
  assert.match(canonical,/export function hugoCategory/)
  assert.match(canonical,/export function hugoQuestion/)
- assert.match(canonical,/from'\.\.\/\.\.\/\.\.\/mvp\/shared'/)
+ assert.match(canonical,/from'../../../mvp/shared'/)
 })
