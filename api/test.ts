@@ -100,7 +100,7 @@ async function geminiHealth(res:any){const geminiKey=process.env.GEMINI_API_KEY?
 
 const GEMINI_LIVE_TRANSCRIBE_MODEL=String(process.env.GEMINI_LIVE_TRANSCRIBE_MODEL||'gemini-3.5-transcribe-live').replace(/^models\//,'')
 const GEMINI_LIVE_VOICE_MODEL=String(process.env.GEMINI_LIVE_VOICE_MODEL||process.env.GEMINI_LIVE_MODEL||'gemini-3.8-live').replace(/^models\//,'')
-async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker'='transcribe'){
+async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker'|'conversation'='conversation'){
  const now=Date.now(),expireTime=new Date(now+8*60*1000).toISOString(),newSessionExpireTime=new Date(now+45*1000).toISOString()
  // Production compatibility: AuthToken currently rejects liveConnectConstraints.
  // Keep the API key server-side with a one-use short-lived token; the model
@@ -110,7 +110,7 @@ async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker
  const payload:any=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(payload?.error?.message||'Gemini Live no pudo emitir un token temporal'),{status:response.status>=400&&response.status<600?response.status:502})
  const token=String(payload?.name||'').trim();if(!token)throw Object.assign(new Error('Gemini Live devolvió un token temporal vacío'),{status:502})
- return{token,model:mode==='speaker'?GEMINI_LIVE_VOICE_MODEL:GEMINI_LIVE_TRANSCRIBE_MODEL,expires_at:expireTime,mode}
+ return{token,model:mode==='transcribe'?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL,expires_at:expireTime,mode}
 }
 
 function safeText(v:any,max=180){return String(v??'').replace(/[\r\n|]+/g,' ').trim().slice(0,max)}
@@ -242,7 +242,7 @@ export default async function handler(req:any,res:any){
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})
   const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:authData,error:authError}=await authClient.auth.getUser(token);if(authError||!authData.user)return res.status(401).json({error:'Sesión inválida'})
   const rawRole=String(req.body?.role||'client').toLowerCase(),voiceRole=['client','provider','admin','superadmin'].includes(rawRole)?rawRole:'client';const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});const{data:profile}=await userClient.from('usuarios').select('tipo,activo').eq('id',authData.user.id).maybeSingle(),profileRole=String(profile?.tipo||'');
-  if(req.body?.voice_live_token===true){const allowed=Boolean(profile?.activo)&&(voiceRole==='admin'?['admin','superadmin'].includes(profileRole):voiceRole==='superadmin'?profileRole==='superadmin':voiceRole==='provider'?profileRole==='proveedor':profileRole==='cliente');if(!allowed)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'});const liveMode=req.body?.voice_live_mode==='speaker'?'speaker':'transcribe',liveToken=await createGeminiLiveToken(geminiKey,liveMode);return res.status(200).json(liveToken)}
+  if(req.body?.voice_live_token===true){const allowed=Boolean(profile?.activo)&&(voiceRole==='admin'?['admin','superadmin'].includes(profileRole):voiceRole==='superadmin'?profileRole==='superadmin':voiceRole==='provider'?profileRole==='proveedor':profileRole==='cliente');if(!allowed)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'});const requestedLiveMode=String(req.body?.voice_live_mode||'conversation'),liveMode=requestedLiveMode==='transcribe'?'transcribe':requestedLiveMode==='speaker'?'speaker':'conversation',liveToken=await createGeminiLiveToken(geminiKey,liveMode);return res.status(200).json(liveToken)}
   const requestedRole=voiceRole==='provider'?'provider':'client',expectedRole=requestedRole==='provider'?'proveedor':'cliente';if(!profile||profileRole!==expectedRole)return res.status(403).json({error:'El rol de la sesión no coincide con esta aplicación'})
   if(req.body?.voice_transcription===true){
    const audioBase64=String(req.body?.audio_base64||''),mimeType=String(req.body?.mime_type||'').split(';')[0].trim().toLowerCase()
