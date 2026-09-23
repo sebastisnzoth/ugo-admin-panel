@@ -1,7 +1,7 @@
 import{getRoleSupabase}from'./roleSupabase'
 import{supabase as adminSupabase}from'./supabase'
 
-type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean;speak?:(text:string,locale?:string)=>Promise<void>;stopSpeaking?:()=>void}
+type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean;speak?:(text:string,locale?:string)=>Promise<void>;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
 type LiveTokenResponse={token?:string;model?:string;expires_at?:string;error?:string}
 
 declare global{interface Window{UGOVoiceBridge?:BrowserVoiceBridge}}
@@ -35,14 +35,15 @@ function resample(input:Float32Array,fromRate:number){
  return output
 }
 function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['TEXT']},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{}}}}
+function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el asistente operativo de UGO. Conversá natural, breve y útil. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito.'}]}}}}
 function speakerSetupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos la voz de Hugo dentro de UGO. Tu única tarea en esta sesión es leer en voz alta exactamente el texto que la aplicación te envía. Hablá natural, breve y ágil, respetá el idioma indicado y no agregues, omitas, traduzcas ni expliques nada.'}]}}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
  let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
- let lastFinalText='',lastFinalAt=0
+ let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0
+ const conversationSources=new Set<AudioBufferSourceNode>()
  let speakerSocket:WebSocket|null=null,speakerSetupReady=false,speakerConnecting:Promise<void>|null=null,speakerContext:AudioContext|null=null,speakerNextPlaybackTime=0,speakerTurnComplete=false,speakerWaiter:{resolve:()=>void;reject:(error:Error)=>void;timer:number}|null=null
  const speakerSources=new Set<AudioBufferSourceNode>()
 
@@ -58,6 +59,8 @@ function installBrowserBridge(){
  const playSpeakerPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{const Ctor=audioCtor() as typeof AudioContext;if(!Ctor)throw new Error('AudioContext no disponible');if(!speakerContext)speakerContext=new Ctor({latencyHint:'interactive'});if(speakerContext.state==='suspended')void speakerContext.resume();const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=speakerContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=speakerContext.createBufferSource();item.buffer=buffer;item.connect(speakerContext.destination);const startAt=Math.max(speakerContext.currentTime+.02,speakerNextPlaybackTime);speakerNextPlaybackTime=startAt+buffer.duration;speakerSources.add(item);item.onended=()=>{speakerSources.delete(item);maybeFinishSpeaker()};item.start(startAt)}
  const sendSpeakerJson=(payload:Record<string,unknown>)=>{if(speakerSocket?.readyState===WebSocket.OPEN&&speakerSetupReady){try{speakerSocket.send(JSON.stringify(payload));return true}catch{}}return false}
  const sendJson=(payload:Record<string,unknown>)=>{if(socket?.readyState===WebSocket.OPEN&&setupReady){try{socket.send(JSON.stringify(payload));return true}catch{}}return false}
+ const stopConversationPlayback=()=>{for(const item of conversationSources){try{item.stop()}catch{}}conversationSources.clear();conversationNextPlaybackTime=0}
+ const playConversationPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{const Ctor=audioCtor() as typeof AudioContext;if(!Ctor)return;if(!conversationContext)conversationContext=new Ctor({latencyHint:'interactive'});if(conversationContext.state==='suspended')void conversationContext.resume();const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=conversationContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=conversationContext.createBufferSource();item.buffer=buffer;item.connect(conversationContext.destination);const startAt=Math.max(conversationContext.currentTime+.02,conversationNextPlaybackTime);conversationNextPlaybackTime=startAt+buffer.duration;conversationSources.add(item);item.onended=()=>conversationSources.delete(item);item.start(startAt);emit('ugo:native-voice-state',{state:'speaking',engine:'gemini-live',reason:'live-audio'})}
  const endAudioStream=()=>{resetAudioQueue();sendJson({realtimeInput:{audioStreamEnd:true}})}
  const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
 
@@ -93,6 +96,10 @@ function installBrowserBridge(){
   if(data?.error){console.warn('Gemini Live server error',data.error);failRuntime('unavailable');return false}
   if(data?.setupComplete){setupReady=true;reconnectAttempt=0;emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'connected'});return true}
   const content=data?.serverContent
+  if(content?.interrupted)stopConversationPlayback()
+  for(const part of content?.modelTurn?.parts||[]){if(part?.inlineData?.data)playConversationPcm(String(part.inlineData.data),String(part.inlineData.mimeType||'audio/pcm;rate=24000'))}
+  const calls=data?.toolCall?.functionCalls||[]
+  for(const call of calls){emit('ugo:native-voice-tool-call',{id:String(call?.id||''),name:String(call?.name||''),args:call?.args||{},engine:'gemini-live'})}
   const interim=String(content?.interimInputTranscription?.text||'').trim()
   if(interim&&active&&!paused){emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'interim'});emit('ugo:native-voice-result',{text:interim,final:false,engine:'gemini-live'})}
   const finalText=String(content?.inputTranscription?.text||'').trim()
@@ -157,7 +164,7 @@ function installBrowserBridge(){
  }
 
  const shutdown=(notify:boolean)=>{
-  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();cleanupSpeaker()
+  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();cleanupSpeaker();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
   if(notify)emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'stopped'})
  }
 
@@ -173,7 +180,8 @@ function installBrowserBridge(){
   resumeListening:async()=>{if(!active)return;paused=false;resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
   stopListening:()=>shutdown(true),
   speak:speakThroughLive,
-  stopSpeaking:()=>stopSpeakerPlayback(),
+  stopSpeaking:()=>{stopSpeakerPlayback();stopConversationPlayback()},
+  sendToolResponse:(id,name,response)=>sendJson({toolResponse:{functionResponses:[{id,name,response}]}}),
  }
 }
 
