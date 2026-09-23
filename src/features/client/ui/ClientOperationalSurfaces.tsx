@@ -4,7 +4,7 @@ import{ClientCompletionReview}from'../../../mvp/ClientCompletionReview'
 import{ClientLiveTracking}from'../../../mvp/ClientLiveTracking'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{ClientPaymentChoice}from'../../../mvp/client/ClientPaymentChoice'
-import{ClientProviderRadarBridge}from'../../../mvp/client/ClientProviderRadarBridge'
+import{ClientProviderRadarBridge}from'../radar/ClientProviderRadarBridge'
 import{ClientRatingPrompt}from'../../../mvp/client/ClientRatingPrompt'
 
 type Props={canonical:boolean;detailOpen:boolean;screen:string;openDispute:()=>void}
