@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{getDispatchProvider}from'../../lib/dispatch/provider'
-import{ClientRequestEvidence}from'../ClientRequestEvidence'
+import{ClientRequestEvidence}from'../../features/client/request/ClientRequestEvidence'
 import{UGO_CLIENT_GUIDED_REQUEST_OPEN}from'../ClientQuickOrder'
 import{UGO_UI_EVENTS}from'../uiEvents'
 import{useRoleSession,type Category}from'../shared'

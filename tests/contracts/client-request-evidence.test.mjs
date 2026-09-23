@@ -5,7 +5,7 @@ import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('request photos stay optional and upload failures never block the request contract',async()=>{
- const source=await read('src/mvp/ClientRequestEvidence.tsx')
+ const source=await read('src/features/client/request/ClientRequestEvidence.tsx')
  const guided=await read('src/mvp/client/ClientGuidedRequest.tsx')
  assert.match(source,/Son opcionales/)
  assert.doesNotMatch(source,/Necesitás al menos una foto para enviar la solicitud/)
@@ -26,4 +26,18 @@ test('request evidence repair migration restores draft binding and mobile image 
  assert.match(sql,/image\/heic/)
  assert.match(sql,/image\/heif/)
  assert.match(sql,/draft_id=v_draft_id/)
+})
+
+test('request evidence component and CSS live behind the request feature boundary',async()=>{
+ const [source,css,need,guided]=await Promise.all([
+  read('src/features/client/request/ClientRequestEvidence.tsx'),
+  read('src/features/client/request/clientRequestEvidence.css'),
+  read('src/features/client/request/ClientNeedScreen.tsx'),
+  read('src/mvp/client/ClientGuidedRequest.tsx')
+ ])
+ assert.match(source,/\.\/clientRequestEvidence\.css/)
+ assert.doesNotMatch(source,/mvp\/ClientRequestEvidence/)
+ assert.match(need,/\.\/ClientRequestEvidence/)
+ assert.match(guided,/features\/client\/request\/ClientRequestEvidence/)
+ assert.match(css,/\.ugo-request-evidence-panel/)
 })
