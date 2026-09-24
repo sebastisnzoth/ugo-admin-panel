@@ -19,7 +19,7 @@ test('tracking RPCs are scoped to the authenticated service participants',async(
 
 test('provider and client tracking UI consume the canonical backend RPCs',async()=>{
  const provider=await read('src/mvp/ProviderLocationTracker.tsx')
- const map=await read('src/mvp/ClientActiveMap.tsx')
+ const map=await read('src/features/client/order/ClientActiveMap.tsx')
  assert.match(provider,/rpc\('actualizar_ubicacion_y_distancia'/)
  assert.match(provider,/p_servicio_id:serviceId/)
  assert.match(map,/rpc\('obtener_tracking_servicio_cliente'/)

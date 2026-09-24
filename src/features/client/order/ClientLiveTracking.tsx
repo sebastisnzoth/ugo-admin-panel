@@ -3,7 +3,7 @@ import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import'../../../mvp/client-live-tracking.css'
 
-const ClientActiveMap=lazy(()=>import('../../../mvp/ClientActiveMap').then(module=>({default:module.ClientActiveMap})))
+const ClientActiveMap=lazy(()=>import('./ClientActiveMap').then(module=>({default:module.ClientActiveMap})))
 type TrackedService={id:string;numero:number|string;estado:'asignado'|'en_camino'|'llegado';proveedor_id:string|null}
 type TrackedPayment={metodo?:string|null;estado?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 const TRACKABLE_STATES=['asignado','en_camino','llegado']
