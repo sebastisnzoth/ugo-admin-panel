@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
-import{ClientEvidenceGallery}from'../../../mvp/ClientEvidenceGallery'
+import{ClientEvidenceGallery}from'../order/ClientEvidenceGallery'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{STATUS_LABELS,useRoleSession}from'../../../mvp/shared'
 import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
