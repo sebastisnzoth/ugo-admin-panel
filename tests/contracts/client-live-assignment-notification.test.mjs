@@ -31,7 +31,7 @@ test('assignment notification and active home card open the exact service id',as
  ])
  assert.match(root,/notice\.datos\?\.servicio_id/)
  assert.match(root,/kind:'service'/)
- assert.match(await read('src/mvp/client/ClientRoot.tsx'),/<ClientHomeScreen onOpenService=\{openService\}\/>/)
+ assert.match(await read('src/features/client/ClientRoot.tsx'),/<ClientHomeScreen onOpenService=\{openService\}\/>/)
  assert.match(home,/onClick=\{\(\)=>openOrder\(order\.id\)\}/)
  assert.match(home,/onOpenService\(serviceId\)/)
 })
