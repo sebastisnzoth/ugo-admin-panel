@@ -45,7 +45,7 @@ For the FCC wrapper, open `fcc-codex`, run `/mcp`, and verify that `ugo-actions`
 
 ## Runtime authentication for real reads/actions
 
-`ugo_get_current_job` uses the caller's real Supabase session and the database RLS boundary. It does not use `service_role`.
+UGO Actions reads and mutations use the caller's real Supabase session and the database RLS/RPC boundary. They do not use `service_role`.
 
 Runtime variables:
 
@@ -116,6 +116,30 @@ Location interpretation:
 - a provider ID returned by the RPC must match the provider assigned to the requested `serviceId`, otherwise the MCP rejects the response as a scope mismatch.
 
 No GPS update, state transition or other mutation occurs.
+
+### `ugo_get_current_user`
+
+Read-only identity and operational-profile lookup for the authenticated client/provider.
+
+The response is deliberately narrow. It can expose operational fields such as name, role, status, karma, onboarding state and provider availability/profile context, but it omits account/contact/payment secrets such as email, phone, CPF, PIX keys and external payment-account identifiers.
+
+### `ugo_get_provider_offers`
+
+Read-only provider opportunity feed.
+
+The tool requires `role=provider`, reuses the authorized `obtener_ofertas_proveedor` RPC and rejects any returned row whose `proveedor_id` does not match the authenticated provider. It preserves the RPC privacy contract: coarse client zone is allowed, exact client address is not returned.
+
+### `ugo_get_saved_places`
+
+Read-only saved-place lookup for the authenticated client.
+
+The tool requires `role=client`, queries `direcciones_cliente` with an explicit `usuario_id` ownership filter, and keeps database RLS authoritative. It can return the authenticated client's own saved address/coordinates because those are needed to choose a service location. It cannot read or modify another client's places and does not change the default place.
+
+### `ugo_get_job_history`
+
+Read-only recent service history for an authenticated client or provider.
+
+The query applies the corresponding ownership filter (`cliente_id` or `proveedor_id`) plus RLS, orders by recent update and accepts a bounded `limit` (maximum 50). The returned summary omits counterpart IDs, exact addresses and arbitrary service metadata.
 
 ### `ugo_mark_arrived`
 
@@ -194,13 +218,17 @@ Keep the action surface small and auditable. Add tools incrementally:
 2. real read-only `ugo_get_current_job` — implemented
 3. `ugo_get_service` — implemented
 4. `ugo_get_provider_location` — implemented
-5. device-owned GPS publication contract — implemented in Provider UI/backend migration
-6. `ugo_mark_arrived` — implemented, pending migration promotion
-7. accept job
-8. start route
-9. start work
-10. finish work
-11. cash-payment confirmation
-12. rating
+5. `ugo_get_current_user` — implemented
+6. `ugo_get_provider_offers` — implemented
+7. `ugo_get_saved_places` — implemented
+8. `ugo_get_job_history` — implemented
+9. device-owned GPS publication contract — implemented in Provider UI/backend migration
+10. `ugo_mark_arrived` — implemented in code, pending migration promotion
+11. accept job
+12. start route
+13. start work
+14. finish work
+15. cash-payment confirmation
+16. rating
 
 Do not open additional mutating actions until the current read/arrival authorization boundary is verified and the arrival migration is promoted through the normal environment pipeline.
