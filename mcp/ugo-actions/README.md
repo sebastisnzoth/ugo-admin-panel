@@ -131,6 +131,8 @@ There are **no lat/lng arguments**. Hugo/the model is not a GPS source.
 
 The device/provider UI captures a fresh high-accuracy position and publishes it through the dedicated application RPC `publicar_ubicacion_proveedor`, which stores a dedicated GPS capture timestamp and accuracy. The MCP then calls only `marcar_llegada_proveedor(serviceId)`.
 
+The dedicated migration also protects GPS provenance: direct provider-profile location updates and older location RPCs may still move the profile coordinate for compatibility, but they clear the dedicated `ubicacion_updated_at` / `ubicacion_accuracy_m` trust metadata. Only `publicar_ubicacion_proveedor` can preserve trusted arrival freshness for the authenticated provider transaction.
+
 The backend is authoritative and validates:
 
 - authenticated provider identity;
