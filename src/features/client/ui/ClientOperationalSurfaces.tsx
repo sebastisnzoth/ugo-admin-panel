@@ -1,7 +1,7 @@
 import{AppLocationButton}from'../../../mvp/AppLocationButton'
 import{DisputeDock}from'../../../mvp/DisputeDock'
 import{ClientCompletionReview}from'../order/ClientCompletionReview'
-import{ClientLiveTracking}from'../../../mvp/ClientLiveTracking'
+import{ClientLiveTracking}from'../order/ClientLiveTracking'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientProviderRadarBridge}from'../radar/ClientProviderRadarBridge'
