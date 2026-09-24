@@ -1,4 +1,5 @@
-import type { VercelRequest, VercelResponse } from '@vercel/node'
+type VercelRequest={method?:string;headers:Record<string,string|string[]|undefined>;query:Record<string,string|string[]|undefined>;body?:any}
+type VercelResponse={status:(code:number)=>VercelResponse;json:(body:unknown)=>VercelResponse;setHeader:(name:string,value:string)=>void;end:()=>void}
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
