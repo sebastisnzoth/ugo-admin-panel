@@ -1,0 +1,14 @@
+{
+  "name": "ugo-actions-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local MCP action layer for UGO. Deterministic, service-scoped tools for Codex/Hugo development.",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/server": "latest",
+    "zod": "latest"
+  }
+}
