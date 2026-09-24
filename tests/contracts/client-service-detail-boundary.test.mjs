@@ -5,12 +5,10 @@ import fs from'node:fs/promises'
 const read=path=>fs.readFile(new URL('../../'+path,import.meta.url),'utf8')
 
 test('client service detail lives behind the order feature boundary',async()=>{
- const[legacy,canonical,boundary]=await Promise.all([
-  read('src/mvp/client/ClientServiceDetail.tsx'),
+ const[canonical,boundary]=await Promise.all([
   read('src/features/client/order/ClientServiceDetail.tsx'),
   read('src/features/client/ui/ClientOrderDetailBoundary.tsx')
  ])
- assert.equal(legacy.trim(),"export {ClientServiceDetail as default,ClientServiceDetail} from '../../features/client/order/ClientServiceDetail'")
  assert.match(canonical,/export function ClientServiceDetail/)
  assert.match(canonical,/from'\.\/ClientCompletionReview'/)
  assert.match(canonical,/from'\.\/ClientEvidenceGallery'/)
