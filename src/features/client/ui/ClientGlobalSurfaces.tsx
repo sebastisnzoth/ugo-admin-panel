@@ -1,4 +1,4 @@
-import{ClientGlobalMenu}from'../../../mvp/ClientGlobalMenu'
+import{ClientGlobalMenu}from'./ClientGlobalMenu'
 import{NotificationCenter,type UgoNotification}from'../../../mvp/NotificationCenter'
 import{ClientHugoBridge}from'../hugo/ClientHugoBridge'
 
