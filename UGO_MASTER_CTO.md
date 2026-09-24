@@ -281,6 +281,7 @@ Hugo's MCP layer is an **internal action adapter for development and controlled 
 - Read-only capability is established before write capability. Do not enable mutating MCP tools until the corresponding backend/RPC authorization path is verified.
 - **GPS provenance rule:** Hugo/the model never supplies provider coordinates for arrival. Real device/app geolocation publishes the location through an authenticated backend path; `ugo_mark_arrived` receives only provider identity + explicit `serviceId` and consumes the latest persisted GPS.
 - Arrival validation uses a dedicated GPS capture timestamp/accuracy, not a generic provider-profile `updated_at`.
+- Direct profile writes and legacy location RPCs are **not trusted GPS provenance** for arrival. Any location write that does not pass through the dedicated device publication RPC must invalidate the dedicated freshness/accuracy metadata before arrival validation.
 - The current P0.1 arrival gate requires a persisted GPS capture no older than 30 seconds, acceptable reported accuracy, valid client location and a server-computed distance of **<= 200 m**.
 - Any GPS/geofence/ownership/state validation failure leaves the service in its prior authoritative state.
 - Arrival execution is idempotent: replaying `ugo_mark_arrived` after the service is already `llegado` must not duplicate the state transition or its notifications.
