@@ -93,6 +93,7 @@ export function ClientVoiceHugoDock({accessToken,service,services=[],clientActio
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
 
  const stopSpeechPlayback=useCallback(()=>{try{ugoWindow().UGOVoiceBridge?.stopSpeaking?.()}catch(caught){ignoreError(caught)}},[])
+ const speak=useCallback(async(primary:string,_short?:string)=>{setAssistantTranscript(primary)},[])
  const publish=useCallback((source:string,category:VoiceCategory|null,description:string|null)=>{if(category)onIntent?.({text:source,categoryHint:category.slug||category.nombre||'',urgent:urgency(source),description})},[onIntent])
  const syncDraft=useCallback((current:Draft)=>{
   const detail={category:current.category?{id:current.category.id,slug:current.category.slug,nombre:current.category.nombre,emoji:current.category.emoji}:null,description:current.description,address:current.address,addressLabel:current.addressLabel,pickupLat:current.pickupLat,pickupLng:current.pickupLng,pickupSource:current.pickupSource,when:current.when,scheduleAt:current.scheduleAt,whenLabel:current.whenLabel,paymentMethod:current.paymentMethod,urgent:current.urgent,voiceJourney:true}
