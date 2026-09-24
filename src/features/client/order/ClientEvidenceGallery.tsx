@@ -1,7 +1,7 @@
 import React,{useCallback,useEffect,useId,useMemo,useRef,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
-import'../../../mvp/client/client-service-evidence.css'
+import'./clientEvidenceGallery.css'
 
 type Evidence={id:string;tipo:'antes'|'durante'|'despues'|'documento';storage_path:string;descripcion:string|null;created_at:string;url?:string|null}
 type Props={serviceId:string;hideWhenEmpty?:boolean;compact?:boolean}

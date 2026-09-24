@@ -92,3 +92,6 @@ test('all active Client style composition resolves inside features/client',async
 
 
 test('client live tracking CSS stays local to the order feature with legacy compatibility',async()=>{const[tracking,css,legacy]=await Promise.all([read('src/features/client/order/ClientLiveTracking.tsx'),read('src/features/client/order/clientLiveTracking.css'),read('src/mvp/client-live-tracking.css')]);assert.match(tracking,/\.\/clientLiveTracking\.css/);assert.doesNotMatch(tracking,/mvp\/client-live-tracking\.css/);assert.match(css,/\.ugo-live-tracking\{/);assert.match(css,/\.ugo-active-map-wrap\{/);assert.match(legacy,/features\/client\/order\/clientLiveTracking\.css/)})
+
+
+test('client evidence gallery CSS stays local to the order feature with legacy compatibility',async()=>{const[gallery,css,legacy]=await Promise.all([read('src/features/client/order/ClientEvidenceGallery.tsx'),read('src/features/client/order/clientEvidenceGallery.css'),read('src/mvp/client/client-service-evidence.css')]);assert.match(gallery,/\.\/clientEvidenceGallery\.css/);assert.doesNotMatch(gallery,/mvp\/client\/client-service-evidence\.css/);assert.match(css,/\.ugo-client-evidence\{/);assert.match(css,/\.ugo-client-evidence-grid/);assert.match(legacy,/features\/client\/order\/clientEvidenceGallery\.css/)})
