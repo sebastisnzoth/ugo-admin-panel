@@ -114,7 +114,10 @@ function makeFetch({
       return response(
         rawTrackingResponse
           ? trackingRows
-          : trackingRows.filter((row) => row.service_id == null || row.service_id === requested)
+          : trackingRows.filter((row) => {
+              const rowServiceId = row.servicio_id ?? row.service_id;
+              return rowServiceId == null || rowServiceId === requested;
+            })
       );
     }
     return response({}, 404);
@@ -465,7 +468,7 @@ test("ugo_get_provider_location: RPC response from another serviceId is rejected
     profile: profileFor(CLIENT_A, "client"),
     services: [serviceA(), sameProviderOtherService],
     trackingRows: [{
-      service_id: SERVICE_B,
+      servicio_id: SERVICE_B,
       proveedor_id: PROVIDER_A,
       provider_lat: -27.59,
       provider_lng: -48.55,
