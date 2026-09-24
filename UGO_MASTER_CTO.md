@@ -8,7 +8,7 @@
 
 This document defines what UGO must do, how it must behave, how it must feel, and the technical contracts that must not be broken while applying the visual layer.
 
-- **Version:** 1.2 CTO Master — authenticated Hugo MCP read path
+- **Version:** 1.3 CTO Master — provider GPS / arrival execution boundary
 - **Date:** 24 September 2026
 - **Status:** Implementation baseline / production-readiness specification
 
@@ -279,10 +279,15 @@ Hugo's MCP layer is an **internal action adapter for development and controlled 
 - Read-only Hugo MCP calls use the caller's user-bound Supabase access token kept in the MCP runtime environment, never a `service_role` key and never a token passed through model tool arguments.
 - The runtime may enforce an expected Supabase project ref so UGO and isolated test projects cannot be confused silently.
 - Read-only capability is established before write capability. Do not enable mutating MCP tools until the corresponding backend/RPC authorization path is verified.
+- **GPS provenance rule:** Hugo/the model never supplies provider coordinates for arrival. Real device/app geolocation publishes the location through an authenticated backend path; `ugo_mark_arrived` receives only provider identity + explicit `serviceId` and consumes the latest persisted GPS.
+- Arrival validation uses a dedicated GPS capture timestamp/accuracy, not a generic provider-profile `updated_at`.
+- The current P0.1 arrival gate requires a persisted GPS capture no older than 30 seconds, acceptable reported accuracy, valid client location and a server-computed distance of **<= 200 m**.
+- Any GPS/geofence/ownership/state validation failure leaves the service in its prior authoritative state.
+- Arrival execution is idempotent: replaying `ugo_mark_arrived` after the service is already `llegado` must not duplicate the state transition or its notifications.
 
 **Canonical arrival example:**
 
-`Hugo intent -> ugo_mark_arrived -> serviceId + provider identity + fresh real GPS -> authorized backend/RPC -> ownership/state/geofence validation -> publish location -> ARRIVED -> Realtime -> Client/Provider/Admin`
+`Device GPS capture -> authenticated location publication -> persisted capture timestamp/accuracy -> Hugo intent -> ugo_mark_arrived(serviceId) -> authorized backend/RPC -> ownership/state/freshness/geofence validation -> ARRIVED -> Realtime -> Client/Provider/Admin`
 
 If any required validation fails, the tool returns a structured failure and the service remains in the previous authoritative state.
 
@@ -315,6 +320,8 @@ If any required validation fails, the tool returns a structured failure and the 
 - Client can use current location, saved places (e.g. Casa, Oficina, Mamá) or manual entry where supported.
 - Provider tracking shares only the minimum location required for the active job and authorized participants.
 - Location timestamps and freshness thresholds must be available to the business logic that validates arrival.
+- Provider arrival freshness is based on a dedicated GPS capture timestamp. Generic profile update timestamps are not valid evidence that the device position is recent.
+- Coordinates used for arrival originate from the device/app geolocation flow. The conversational model is never an accepted source of latitude/longitude.
 - Map UI must explain whether a marker is current, approximate, last-known or unavailable.
 - Never treat `0,0` as a valid fallback position.
 
@@ -541,7 +548,7 @@ Do not open new fronts while P0 is unstable. Sequence work so each block is inde
 | Core promise | "Un pedido. Un profesional. Sin vueltas." |
 | Visual reference | Google AI Studio/Stitch drives UX/UI quality, not backend truth. |
 | Multiple orders | Each order is independent and `serviceId`-scoped. |
-| Provider arrival | Real recent GPS + backend validation; never fake location. |
+| Provider arrival | Device-captured recent GPS persisted before arrival; Hugo passes no coordinates; backend validates freshness/accuracy + 200 m geofence; repeated arrival is idempotent. |
 | Geofence | 200 m target unless centrally reconfigured. |
 | Cash | Creates/reconciles UGO debt as applicable. |
 | Debt block | Provider cannot accept new work after 3 unpaid service obligations until paying UGO. |
