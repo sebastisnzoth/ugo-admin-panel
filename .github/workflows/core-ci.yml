@@ -118,7 +118,7 @@ jobs:
           src/features/client/request/ClientNeedScreen.tsx
           src/features/client/request/ClientLocationScreen.tsx
           src/features/client/request/ClientWhenScreen.tsx
-          src/mvp/client/ClientPaymentScreen.tsx
+          src/features/client/payments/ClientPaymentScreen.tsx
           src/features/client/request/ClientSummaryScreen.tsx
           src/features/client/request/ClientPostConfirmFlow.tsx
           src/features/client/order/ClientServiceDetail.tsx
