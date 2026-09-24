@@ -83,7 +83,7 @@ test('cash completion is approved and paid by the client after provider marks wo
  const [providerData,activeJob,clientReview,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
-  read('src/mvp/ClientCompletionReview.tsx'),
+  read('src/features/client/order/ClientCompletionReview.tsx'),
   read('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql'),
  ])
  const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
@@ -128,7 +128,7 @@ test('provider opportunity UI is problem-first and avoids exposing ranking burea
 
 test('client approval is scoped to its service and completed review keeps its exact service evidence visible',async()=>{
  const [client,backend]=await Promise.all([
-  read('src/mvp/ClientCompletionReview.tsx'),
+  read('src/features/client/order/ClientCompletionReview.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
  assert.match(client,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
@@ -187,7 +187,7 @@ test('scope changes stay inside the active service and paid deltas are reconcile
 test('provider and client observe critical service changes through realtime',async()=>{
  const [providerRealtime,clientReview]=await Promise.all([
   read('src/mvp/provider/useProviderRealtime.ts'),
-  read('src/mvp/ClientCompletionReview.tsx'),
+  read('src/features/client/order/ClientCompletionReview.tsx'),
  ])
  assert.match(providerRealtime,/table:'servicios'.*proveedor_id=eq\.\$\{userId\}/)
  assert.match(providerRealtime,/table:'pagos'.*proveedor_id=eq\.\$\{userId\}/)

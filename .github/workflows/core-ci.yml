@@ -92,7 +92,7 @@ jobs:
           src/features/client/payments/ClientPaymentChoice.tsx
           src/features/client/hugo/ClientHugoBridge.tsx
           src/features/client/hugo/ClientVoiceHugoDock.tsx
-          src/mvp/ClientCompletionReview.tsx
+          src/features/client/order/ClientCompletionReview.tsx
           src/mvp/ServiceExpansionPanel.tsx
           src/mvp/NotificationCenter.tsx
           src/mvp/PaymentTimeline.tsx

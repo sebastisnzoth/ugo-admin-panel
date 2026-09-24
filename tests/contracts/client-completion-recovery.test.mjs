@@ -2,7 +2,14 @@ import test from'node:test'
 import assert from'node:assert/strict'
 import fs from'node:fs'
 
-const source=fs.readFileSync(new URL('../../src/mvp/ClientCompletionReview.tsx',import.meta.url),'utf8')
+const source=fs.readFileSync(new URL('../../src/features/client/order/ClientCompletionReview.tsx',import.meta.url),'utf8')
+const shim=fs.readFileSync(new URL('../../src/mvp/ClientCompletionReview.tsx',import.meta.url),'utf8')
+
+test('completion review lives behind the order feature boundary with legacy compatibility',()=>{
+ assert.match(shim,/features\/client\/order\/ClientCompletionReview/)
+ assert.doesNotMatch(shim,/aprobar_servicio|confirmar_pago_efectivo_cliente/)
+ assert.match(source,/export function ClientCompletionReview/)
+})
 
 test('completion realtime scopes selected service and preserves authenticated-client fallback',()=>{
  assert.match(source,/serviceFilter=serviceId\?`id=eq\.\$\{serviceId\}`:`cliente_id=eq\.\$\{userId\}`/)
