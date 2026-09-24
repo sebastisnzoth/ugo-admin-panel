@@ -7,12 +7,7 @@ const locationScreen = await readFile(new URL('../../src/features/client/request
 const savedAddress = await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts', import.meta.url), 'utf8')
 const orderVoice = await readFile(new URL('../../src/features/client/hugo/hugoOrderVoice.ts', import.meta.url), 'utf8')
 
-test('Hugo only resolves current GPS after an explicit current-location intent', () => {
-  assert.match(voice, /function wantsGps\(text:string\)/)
-  assert.match(voice, /gpsRequested=wantsGps\(source\)\|\|Boolean\(companion\?\.use_current_location\)/)
-  assert.match(voice, /if\(gpsRequested\)\{const ok=await captureCurrentLocation\(current\)/)
-  assert.match(voice, /use_current_location\?:boolean/)
-})
+test('Hugo resolves current GPS only through the explicit Gemini Live location tool',()=>{assert.match(voice,/name==='get_current_location'/);assert.match(voice,/captureCurrentLocation\(current\)/);assert.match(voice,/sendToolResponse/);assert.match(voice,/navigator\.geolocation\.getCurrentPosition/)})
 
 test('spoken or tapped current location uses browser geolocation and persists backend-compatible point order', () => {
   assert.match(voice, /navigator\.geolocation\.getCurrentPosition/)

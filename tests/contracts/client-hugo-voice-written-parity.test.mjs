@@ -15,13 +15,7 @@ test('client voice follows the canonical ordered request fields without a text c
  assert.doesNotMatch(dock,/sendTyped|inputRef|\[typed,setTyped\]/)
 })
 
-test('voice uses explicit saved-place or GPS signals and persists the canonical draft',()=>{
- assert.match(dock,/savedLabel\(source\)\|\|companion\?\.address_label/)
- assert.match(dock,/resolveClientSavedAddress\(label\)/)
- assert.match(dock,/accessTokenUserId\(accessToken\)/)
- assert.match(dock,/ugo:guided-request-draft:/)
- assert.match(dock,/voiceJourney:true/)
-})
+test('voice persists the canonical Live request draft and authenticated client context',()=>{assert.match(dock,/accessTokenUserId\(accessToken\)/);assert.match(dock,/ugo:guided-request-draft:/);assert.match(dock,/voiceJourney:true/);assert.match(dock,/sendToolResponse/)})
 
 test('voice current location persists exact pickup coordinates into canonical request',()=>{
  assert.match(dock,/pickupLat=lat/)
@@ -42,20 +36,6 @@ test('saved voice places preserve coordinates when available',()=>{
 })
 
 
-test('spoken utilizar mi ubicación triggers GPS directly without requiring the location button',()=>{
- assert.match(dock,/utilizar\|utiliza/)
- assert.match(dock,/gpsRequested=wantsGps\(source\)\|\|Boolean\(companion\?\.use_current_location\)/)
- assert.match(dock,/navigator\.geolocation\.getCurrentPosition/)
- assert.match(dock,/ugo:last-client-location/)
- assert.match(dock,/current\.pickupSource='current'/)
- assert.match(dock,/Promise\.allSettled/)
-})
+test('Gemini Live current-location tool captures and persists exact GPS',()=>{assert.match(dock,/name==='get_current_location'/);assert.match(dock,/navigator\.geolocation\.getCurrentPosition/);assert.match(dock,/ugo:last-client-location/);assert.match(dock,/current\.pickupSource='current'/);assert.match(dock,/Promise\.allSettled/)})
 
-test('one natural turn can fill location time payment and exact dispatch pickup',()=>{
- assert.match(dock,/const applyTurnSignals=/)
- assert.match(dock,/const localWhen=parseHugoWhen\(source\),localPayment=parsePaymentMethod\(source\)/)
- assert.match(dock,/companion\?\.payment_method/)
- assert.match(dock,/pickupFallback:'none'/)
- assert.match(dock,/payment_method:current\.paymentMethod==='pix'\?'pix':'efectivo'/)
- assert.match(dock,/finishOrder/)
-})
+test('Live tools can fill schedule payment and create exact dispatch pickup',()=>{assert.match(dock,/name==='set_schedule'/);assert.match(dock,/name==='set_payment_method'/);assert.match(dock,/pickupFallback:'none'/);assert.match(dock,/payment_method:current\.paymentMethod==='pix'\?'pix':'efectivo'/);assert.match(dock,/name==='create_service_request'/)})
