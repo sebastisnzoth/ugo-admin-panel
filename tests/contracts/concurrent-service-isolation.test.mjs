@@ -14,23 +14,7 @@ test('client cancellation mutation boundary requires an explicit owned service i
 })
 
 
-test('Hugo can create another request while services already exist',async()=>{
- const[dock,bridge,need,postConfirm]=await Promise.all([
-  read('src/features/client/hugo/ClientVoiceHugoDock.tsx'),
-  read('src/features/client/hugo/ClientHugoBridge.tsx'),
-  read('src/features/client/request/ClientNeedScreen.tsx'),
-  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
- ])
- assert.match(bridge,/setServices\(active\)/)
- assert.match(bridge,/services=\{services\}/)
- assert.match(dock,/request_draft_id:current\.requestDraftId/)
- assert.match(dock,/if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
- assert.doesNotMatch(dock,/Ya tenés el pedido .* activo\. Seguilo o cancelalo antes de crear otro/)
- assert.doesNotMatch(dock,/Você já tem o pedido .* ativo/)
- assert.match(need,/if\(!id\)\{id=crypto\.randomUUID\(\)/)
- assert.match(postConfirm,/sessionStorage\.removeItem\(draftKey\)/)
- assert.match(postConfirm,/sessionStorage\.removeItem\(requestKey\)/)
-})
+test('Hugo can create another request while services already exist',()=>{assert.match(voice,/name==='set_request_category'/);assert.match(voice,/emptyVoiceDraft\(null\)/);assert.match(voice,/name==='create_service_request'/);assert.doesNotMatch(voice,/cancelarlo antes de crear otro/)})
 
 test('each canonical request persists its own generated service id and matching scope',async()=>{
  const postConfirm=await read('src/features/client/request/ClientPostConfirmFlow.tsx')

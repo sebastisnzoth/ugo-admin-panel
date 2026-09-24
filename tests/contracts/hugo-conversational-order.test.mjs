@@ -35,12 +35,7 @@ test('confirmed conversational orders are idempotent and start real dispatch', (
   assert.match(hugo, /dispatch\.start\(\{serviceId/)
 })
 
-test('canonical Hugo can create another request while active services exist', () => {
-  assert.match(hugo, /services=\[\]/)
-  assert.match(hugo, /if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
-  assert.doesNotMatch(hugo, /Ya tenés el pedido/)
-  assert.doesNotMatch(hugo, /cancelarlo antes de crear otro/)
-})
+test('canonical Hugo can create another request while active services exist',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/cancelarlo antes de crear otro/)})
 
 test('cancellation contract requires one resolved service id', () => {
   assert.match(types, /cancelService: \(serviceId: string\) => Promise<boolean>/)
@@ -50,25 +45,7 @@ test('cancellation contract requires one resolved service id', () => {
   assert.match(hugo, /Encontré \$\{candidates\.length\} pedidos que se pueden cancelar/)
 })
 
-test('Hugo orb uses authenticated Gemini as its conversational companion while UGO keeps action authority', () => {
-  assert.match(hugo, /companion_mode:true/)
-  assert.match(hugo, /Authorization:\`Bearer \${accessToken}\`/)
-  assert.match(hugo, /history:conversation\.current\.slice\(0,-1\)/)
-  assert.match(hugo, /const companion=await askGeminiCompanion\(clean\)/)
-  assert.match(hugo, /companion\.category_hint/)
-  assert.match(api, /el compañero de confianza del cliente dentro de U\.G\.O\./)
-  assert.match(api, /CATEGORIAS UGO REALES/)
-  assert.match(api, /action=prepare_request/)
-  assert.match(api, /Nunca digas que un pedido fue creado o una oferta enviada/)
-})
+test('Hugo orb uses authenticated Gemini Live while UGO keeps action authority',()=>{assert.match(hugo,/UGOVoiceBridge/);assert.match(hugo,/ugo:native-voice-tool-call/);assert.match(hugo,/sendToolResponse/);assert.doesNotMatch(hugo,/companion_mode:true|askGeminiCompanion/)})
 
-test('active assigned service does not hijack a new Hugo request', () => {
-  assert.match(hugo, /function newRequestIntent\(text:string\)/)
-  assert.match(hugo, /const directCategory=await resolveVoiceCategory\(clean\)/)
-  assert.match(hugo, /if\(suggested\|\|newRequestIntent\(clean\)\|\|companion\?\.action==='prepare_request'/)
-  assert.doesNotMatch(hugo, /statusIntent\(clean\)\|\|services\.length/)
-  assert.match(api, /REGLA MULTIPEDIDO/)
-  assert.match(api, /necesito un pintor/)
-  assert.match(api, /NO respondas con el estado del servicio activo/)
-})
+test('active assigned service does not hijack a new Hugo request',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/statusIntent\(clean\)\|\|services\.length/)})
 
