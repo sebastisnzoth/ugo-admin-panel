@@ -1,5 +1,5 @@
 import{useEffect}from'react'
-import{getRoleSupabase}from'../lib/roleSupabase'
+import{getRoleSupabase}from'../../../lib/roleSupabase'
 
 export function DemoSebastianPaymentBridge(){
  useEffect(()=>{

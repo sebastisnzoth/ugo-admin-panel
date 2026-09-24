@@ -1,5 +1,5 @@
 import React from'react'
-import{DemoSebastianPaymentBridge}from'../DemoSebastianPaymentBridge'
+import{DemoSebastianPaymentBridge}from'../../features/client/payments/DemoSebastianPaymentBridge'
 import{ClientOnboardingGate}from'../../features/client/onboarding/ClientOnboardingGate'
 import{ClientFlowActionsBridge}from'../../features/client/actions/ClientFlowActionsBridge'
 import{ClientNeedScreen}from'../../features/client/request/ClientNeedScreen'
