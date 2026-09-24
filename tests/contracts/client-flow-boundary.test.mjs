@@ -32,3 +32,6 @@ test('migrated client features consume the canonical flow boundary directly',asy
   assert.doesNotMatch(source,/mvp\/client\/clientFlow/)
  }
 })
+
+
+test('client global menu lives behind the client UI boundary',async()=>{const[legacy,menu,surfaces]=await Promise.all([read('src/mvp/ClientGlobalMenu.tsx'),read('src/features/client/ui/ClientGlobalMenu.tsx'),read('src/features/client/ui/ClientGlobalSurfaces.tsx')]);assert.match(legacy,/features\/client\/ui\/ClientGlobalMenu/);assert.match(menu,/\.\.\/flow\/clientFlow/);assert.match(menu,/mvp\/shared/);assert.match(menu,/mvp\/uiEvents/);assert.match(surfaces,/from'\.\/ClientGlobalMenu'/);assert.doesNotMatch(surfaces,/mvp\/ClientGlobalMenu/)})
