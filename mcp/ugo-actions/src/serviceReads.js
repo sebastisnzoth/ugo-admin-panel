@@ -45,7 +45,7 @@ export function validateServiceReadInput(input = {}) {
   };
 }
 
-async function authorizeActor(input, { env, fetchImpl }) {
+export async function authorizeActor(input, { env, fetchImpl }) {
   const parsed = validateServiceReadInput(input);
   const config = loadRuntimeConfig(env);
   const authenticatedUserId = await resolveAuthenticatedUser(fetchImpl, config);
@@ -104,7 +104,7 @@ function serviceFields(row) {
   };
 }
 
-async function readOwnedService(parsed, config, fetchImpl, select = SERVICE_READ_SELECT) {
+export async function readOwnedService(parsed, config, fetchImpl, select = SERVICE_READ_SELECT) {
   const ownerField = parsed.role === "client" ? "cliente_id" : "proveedor_id";
   const params = new URLSearchParams({
     select,

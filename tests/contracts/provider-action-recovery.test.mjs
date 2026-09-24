@@ -28,12 +28,18 @@ test('scheduled-too-early rejection is treated as expected business validation, 
  assert.match(service,/if\(!isExpectedProviderTransitionRejection\(transitionMessage\)\)void reportSentinelIncident/)
 })
 
-test('arrival location failure stays location-scoped instead of becoming lifecycle P0',()=>{
- const locationIndex=service.indexOf("if(state==='llegado')await publishProviderLocation(supabase,serviceId)")
- const rpcIndex=service.indexOf("const{error}=await supabase.rpc('avanzar_servicio'")
- assert.ok(locationIndex>=0&&rpcIndex>locationIndex)
- const transitionSection=service.slice(locationIndex,rpcIndex)
- assert.doesNotMatch(transitionSection,/provider_service_state_error/)
+test('arrival location failure stays GPS-scoped and cannot fall through to generic lifecycle mutation',()=>{
+ const helperStart=service.indexOf('async function markProviderArrived')
+ const publishIndex=service.indexOf('await publishProviderLocation(supabase,serviceId)',helperStart)
+ const arrivalRpcIndex=service.indexOf("supabase.rpc('marcar_llegada_proveedor'",helperStart)
+ const advanceStart=service.indexOf('export async function advanceProviderService')
+ const arrivalBranch=service.indexOf("if(state==='llegado')",advanceStart)
+ const genericRpcIndex=service.indexOf("supabase.rpc('avanzar_servicio'",advanceStart)
+ assert.ok(helperStart>=0&&publishIndex>helperStart&&arrivalRpcIndex>publishIndex)
+ assert.ok(arrivalBranch>=0&&genericRpcIndex>arrivalBranch)
+ const branchSection=service.slice(arrivalBranch,genericRpcIndex)
+ assert.match(branchSection,/markProviderArrived\(supabase,serviceId\)/)
+ assert.doesNotMatch(branchSection,/provider_service_state_error/)
  assert.match(service,/eventType:'provider_location_error'[\s\S]*severity:'P0'[\s\S]*action:'provider\.service\.location'/)
 })
 

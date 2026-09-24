@@ -3,6 +3,7 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
 import { getCurrentJob, UgoMcpError } from "./currentJob.js";
 import { getProviderLocation, getService } from "./serviceReads.js";
+import { markArrived } from "./arrival.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -14,7 +15,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.3.0",
+    version: "0.4.0",
   });
 
   server.registerTool(
@@ -111,6 +112,35 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo leer el tracking",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_mark_arrived",
+    {
+      description:
+        "Confirma YA LLEGUÉ para un serviceId exacto usando exclusivamente la última ubicación GPS real ya persistida y validación server-side. No acepta lat/lng del modelo.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("provider"),
+        serviceId: z.string().uuid(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await markArrived(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo confirmar la llegada",
           },
           true
         );
