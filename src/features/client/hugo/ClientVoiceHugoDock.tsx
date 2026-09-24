@@ -28,7 +28,6 @@ function accessTokenUserId(token?:string){try{const raw=String(token||'').split(
 function emptyVoiceDraft(category:VoiceCategory|null=null):Draft{return{category,description:'',address:'',addressLabel:'',pickupLat:null,pickupLng:null,pickupSource:null,when:null,scheduleAt:'',whenLabel:'',paymentMethod:null,urgent:false,preferredProviderId:null,preferredProviderName:null,serviceId:null,requestDraftId:newDraftId()}}
 function serviceMoment(service:HugoService){const raw=service.programado_para||service.created_at||null;if(!raw)return null;const value=new Date(raw);return Number.isNaN(value.getTime())?null:value}
 function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
-function dayMatches(text:string,service:HugoService){const value=norm(text),moment=serviceMoment(service);if(!moment)return !/\b(hoy|mañana|manana|hoje|amanha)\b/.test(value);const now=new Date(),tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);if(/\b(hoy|hoje)\b/.test(value))return sameDay(moment,now);if(/\b(mañana|manana|amanha)\b/.test(value))return sameDay(moment,tomorrow);return true}
 function serviceSummary(service:HugoService,pt:boolean){const category=service.categoria?.nombre||'servicio',state=STATUS_LABELS[service.estado]||service.estado,provider=service.proveedor?.nombre?`${pt?' com ':' con '}${service.proveedor.nombre}`:'',when=serviceMoment(service),schedule=when?`${pt?' para ':' para '}${when.toLocaleString(pt?'pt-BR':'es-AR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';return pt?`Seu pedido de ${category}${provider}${schedule} está ${state}.`:`Tu pedido de ${category}${provider}${schedule} está ${state}.`}
 function errorMessage(value:unknown,fallback:string){return value instanceof Error?value.message:fallback}
 function ignoreError(value:unknown){void value}
@@ -45,7 +44,7 @@ async function reverseGeocode(lat:number,lng:number){
 }
 
 export function ClientVoiceHugoDock({accessToken,services=[],clientActions,onNavigateHome,requestComposerOpen=false}:Props){
- const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
+ const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false)
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
 
