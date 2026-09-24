@@ -24,7 +24,7 @@ test('saved Casa and Trabajo remain canonical written-flow locations while Live 
   assert.match(locationScreen, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
   assert.match(voice, /name==='get_current_location'/)
   assert.match(voice, /function savedLabel\(text:string\):'Casa'\|'Trabajo'\|null/)
-  assert.match(voice, /resolveClientSavedAddress\(label\)/)
+  assert.match(voice, /import\{resolveClientSavedAddress\}from'\.\.\/\.\.\/\.\.\/mvp\/hugoDefaultAddress'/)
 })
 
 test('Hugo understands gardening aliases and scheduled natural language', () => {
