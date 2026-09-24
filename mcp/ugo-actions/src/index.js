@@ -3,6 +3,7 @@ import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
 import { getCurrentJob, UgoMcpError } from "./currentJob.js";
 import { getProviderLocation, getService } from "./serviceReads.js";
+import { getCurrentUser, getJobHistory, getProviderOffers, getSavedPlaces } from "./contextReads.js";
 import { markArrived } from "./arrival.js";
 
 function jsonToolResult(payload, isError = false) {
@@ -15,7 +16,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.4.0",
+    version: "0.5.0",
   });
 
   server.registerTool(
@@ -112,6 +113,118 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo leer el tracking",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_get_current_user",
+    {
+      description:
+        "Lee identidad y perfil operativo seguro del usuario autenticado. No expone email, teléfono, CPF, PIX ni credenciales.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.enum(["client", "provider"]),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await getCurrentUser(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo leer el usuario",
+          },
+          true
+        );
+      }
+    }
+  );
+
+  server.registerTool(
+    "ugo_get_provider_offers",
+    {
+      description:
+        "Lee ofertas vigentes del proveedor autenticado usando el RPC seguro de UGO. No expone la dirección exacta del cliente.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("provider"),
+        limit: z.number().int().min(1).max(50).optional(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await getProviderOffers(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo leer las ofertas",
+          },
+          true
+        );
+      }
+    }
+  );
+
+  server.registerTool(
+    "ugo_get_saved_places",
+    {
+      description:
+        "Lee los lugares guardados del cliente autenticado con ownership explícito y RLS. No escribe ni cambia el lugar principal.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("client"),
+        limit: z.number().int().min(1).max(50).optional(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await getSavedPlaces(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo leer los lugares guardados",
+          },
+          true
+        );
+      }
+    }
+  );
+
+  server.registerTool(
+    "ugo_get_job_history",
+    {
+      description:
+        "Lee el historial reciente del cliente o proveedor autenticado con filtro de ownership y RLS. Devuelve un resumen sin direcciones ni metadata arbitraria.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.enum(["client", "provider"]),
+        limit: z.number().int().min(1).max(50).optional(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await getJobHistory(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo leer el historial",
           },
           true
         );
