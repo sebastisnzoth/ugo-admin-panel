@@ -30,5 +30,7 @@ test('confirmed voice order persists one service and starts provider dispatch',(
  assert.match(dock,/from\('servicios'\)\.insert/)
  assert.match(dock,/estado:'buscando'/)
  assert.match(dock,/dispatch\.start\(\{serviceId/)
- assert.match(dock,/isHugoAffirmative/)
+ assert.match(dock,/name==='create_service_request'/)
+ assert.match(dock,/args\.confirmed!==true/)
+ assert.match(dock,/const serviceId=await createOrder\(current\)/)
 })
