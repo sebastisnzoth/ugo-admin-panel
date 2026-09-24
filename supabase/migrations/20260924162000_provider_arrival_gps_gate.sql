@@ -52,7 +52,6 @@ begin
   end if;
 
   if p_lat is null or p_lng is null
-     or not isfinite(p_lat) or not isfinite(p_lng)
      or p_lat < -90 or p_lat > 90
      or p_lng < -180 or p_lng > 180 then
     raise exception 'Coordenadas GPS inválidas';
@@ -72,7 +71,7 @@ begin
   end if;
 
   if p_accuracy_m is not null
-     and (not isfinite(p_accuracy_m) or p_accuracy_m <= 0 or p_accuracy_m > 250) then
+     and (p_accuracy_m <= 0 or p_accuracy_m > 250) then
     raise exception 'Precisión GPS insuficiente';
   end if;
 
