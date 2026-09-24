@@ -13,6 +13,7 @@ const ignoreError=(value:unknown)=>{void value}
 
 export function ProviderHugoBridge(){
  const flow=useProviderFlow(),data=useProviderData()
+ const{actions}=flow
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const running=useRef(false)
 
@@ -22,11 +23,11 @@ export function ProviderHugoBridge(){
   if(name==='provider_set_online'){if(data.online)return{ok:true,data:{online:true}};const ok=await data.toggleOnline();return ok?{ok:true,data:{online:true}}:{ok:false,code:'AVAILABILITY_FAILED',message:'UGO no pudo poner al proveedor Online'}}
   if(name==='provider_set_offline'){if(!data.online)return{ok:true,data:{online:false}};const ok=await data.toggleOnline();return ok?{ok:true,data:{online:false}}:{ok:false,code:'AVAILABILITY_FAILED',message:'UGO no pudo poner al proveedor Offline'}}
   if(name==='provider_list_opportunities')return{ok:true,data:{opportunities:data.opportunities.map(item=>({id:item.id,serviceId:item.serviceId,category:item.category,title:item.title,zone:item.zone,distanceKm:item.distanceKm,estimatedValue:item.estimatedValue,urgency:item.urgency,status:'ofrecido'}))}}
-  if(name==='provider_accept_job'){const serviceId=String(args.service_id||'');const item=data.opportunities.find(item=>String(item.id)===serviceId);if(!item)return{ok:false,code:'SERVICE_NOT_FOUND',message:'No encontré esa oportunidad'};const ok=await flow.actions.acceptOpportunity(item.id);return ok?{ok:true,data:{serviceId}}:{ok:false,code:'ACCEPT_FAILED',message:'UGO no permitió aceptar ese trabajo'}}
-  if(name==='provider_reject_job'){const serviceId=String(args.service_id||'');const item=data.opportunities.find(item=>String(item.id)===serviceId);if(!item)return{ok:false,code:'SERVICE_NOT_FOUND',message:'No encontré esa oportunidad'};const ok=await flow.actions.rejectOpportunity(item.id);return ok?{ok:true,data:{serviceId}}:{ok:false,code:'REJECT_FAILED',message:'UGO no permitió rechazar ese trabajo'}}
+  if(name==='provider_accept_job'){const serviceId=String(args.service_id||'');const item=data.opportunities.find(item=>String(item.id)===serviceId);if(!item)return{ok:false,code:'SERVICE_NOT_FOUND',message:'No encontré esa oportunidad'};const ok=await actions.acceptOpportunity(item.id);return ok?{ok:true,data:{serviceId}}:{ok:false,code:'ACCEPT_FAILED',message:'UGO no permitió aceptar ese trabajo'}}
+  if(name==='provider_reject_job'){const serviceId=String(args.service_id||'');const item=data.opportunities.find(item=>String(item.id)===serviceId);if(!item)return{ok:false,code:'SERVICE_NOT_FOUND',message:'No encontré esa oportunidad'};const ok=await actions.rejectOpportunity(item.id);return ok?{ok:true,data:{serviceId}}:{ok:false,code:'REJECT_FAILED',message:'UGO no permitió rechazar ese trabajo'}}
   if(name==='provider_update_service_status'){const serviceId=String(args.service_id||''),status=String(args.status||'');if(!data.service||String(data.service.id)!==serviceId)return{ok:false,code:'SERVICE_NOT_FOUND',message:'Ese no es el servicio activo'};const allowed:Record<string,string[]>= {asignado:['en_camino'],en_camino:['llegado'],llegado:['en_progreso'],en_progreso:['esperando_aprobacion']};if(!(allowed[String(data.service.estado)]||[]).includes(status))return{ok:false,code:'INVALID_TRANSITION',message:'Ese cambio de estado no está permitido por el flujo actual'};const ok=status==='esperando_aprobacion'?await data.completeService():await data.advance(status as 'en_camino'|'llegado'|'en_progreso');return ok?{ok:true,data:{serviceId,status}}:{ok:false,code:'STATUS_FAILED',message:'UGO no pudo actualizar el estado'}}
   return{ok:false,code:'UNKNOWN_TOOL',message:'Herramienta no disponible para Proveedor'}
- },[data,flow.actions])
+ },[actions,data])
 
 
  const stop=useCallback(()=>{setPanelOpen(false);setRunning(false);stopSpeech();try{ugoWindow().UGOVoiceBridge?.stopListening?.()}catch{}setState('idle');setError('')},[setRunning,stopSpeech])
