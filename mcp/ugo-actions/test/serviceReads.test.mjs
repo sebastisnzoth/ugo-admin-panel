@@ -451,3 +451,28 @@ test("ugo_get_provider_location: no existe fallback a current job sin serviceId"
     (error) => error?.code === "invalid_input"
   );
 });
+
+
+test("ugo_get_provider_location: RPC response from another serviceId is rejected even for the same provider", async () => {
+  const sameProviderOtherService = serviceB({ proveedor_id: PROVIDER_A, cliente_id: CLIENT_A });
+  const { fetchImpl } = makeFetch({
+    authId: CLIENT_A,
+    profile: profileFor(CLIENT_A, "client"),
+    services: [serviceA(), sameProviderOtherService],
+    trackingRows: [{
+      service_id: SERVICE_B,
+      proveedor_id: PROVIDER_A,
+      provider_lat: -27.59,
+      provider_lng: -48.55,
+      provider_updated_at: "2026-09-24T15:59:50Z",
+    }],
+  });
+
+  await assert.rejects(
+    () => getProviderLocation(
+      { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+      { env, fetchImpl, nowMs: NOW }
+    ),
+    (error) => error?.code === "tracking_scope_mismatch"
+  );
+});
