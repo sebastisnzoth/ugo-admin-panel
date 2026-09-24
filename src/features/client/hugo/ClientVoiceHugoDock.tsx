@@ -7,7 +7,7 @@ import{resolveClientSavedAddress}from'../../../mvp/hugoDefaultAddress'
 import{loadVoiceAvailability,normalizeVoiceText,resolveVoiceCategory,type VoiceAvailability,type VoiceCategory}from'../../../mvp/voiceCatalog'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import type{ClientActionHandlers,ClientHugoIntent}from'../types/clientTypes'
-import{parseHugoWhen}from'./hugoVoiceIntent'
+import{isHugoAffirmative,isHugoNegative,parseHugoWhen}from'./hugoVoiceIntent'
 import'../../../mvp/voice.css'
 
 type PaymentStatus='none'|'cash'|'pending'|'confirmed'
@@ -28,6 +28,33 @@ function ugoWindow(){return window as UgoWindow}
 function norm(value:string){return normalizeVoiceText(value)}
 function requestIntent(text:string){return/\b(necesito|quiero un|quiero una|quiero pedir|quiero contratar|preciso|quero um|quero uma|quero pedir|quero contratar|me hace falta|necesitaria)\b/.test(norm(text))}
 function newRequestIntent(text:string){const value=norm(text);return requestIntent(text)||/\b(otro servicio|otro pedido|otro trabajo|otra cosa|nuevo servicio|nueva solicitud|nuevo pedido|mais um servico|outro servico|outro pedido|outro trabalho|outra coisa)\b/.test(value)}
+function urgency(text:string){return/\b(urgente|urgencia|ahora mismo|ya mismo|agora|emergencia)\b/.test(norm(text))}
+function wantsGps(text:string){const value=norm(text);return/\b(mi ubicacion|ubicacion actual|mi direccion actual|donde estoy|aca|aqui|en este lugar|minha localizacao|minha localizacao atual|meu endereco atual|onde estou|aqui onde estou)\b/.test(value)||/\b(usar|usa|utilizar|utiliza|tomar|toma|agarrar|agarra|detectar|detecta|poner|pone|cargar|carga|usar|use|utilizar|utilize|pegar|pega)\b.*\b(ubicacion|localizacion|gps|localizacao)\b/.test(value)}
+function savedLabel(text:string):'Casa'|'Trabajo'|null{const value=norm(text);if(/\b(mi casa|en casa|casa|hogar|minha casa|em casa)\b/.test(value))return'Casa';if(/\b(mi trabajo|trabajo|oficina|meu trabajo|meu trabalho|trabalho|escritorio)\b/.test(value))return'Trabajo';return null}
+function parseDescription(text:string){
+ let raw=text.trim().replace(/^bueno[,.]?\s*/i,'').trim(),value=norm(raw)
+ if(!raw||/^(si|sí|sim|no|nao|não|dale|ok|okay|confirmo|confirmar|casa|trabajo|oficina|pix|efectivo|dinheiro|cash)$/.test(value))return''
+ raw=raw
+  .replace(/\b(?:y\s+)?(?:usar|usa|utilizar|utiliza|tomar|toma|agarrar|agarra|detectar|detecta|poner|pone|cargar|carga|use|utilize|pegar|pega)\s+(?:mi\s+|minha\s+)?(?:ubicaci[oó]n|localizaci[oó]n|localiza[cç][aã]o|gps)\b/gi,' ')
+  .replace(/\b(?:pago|pagar|pagamento)?\s*(?:en|con|por|em)?\s*(?:efectivo|dinero|cash|dinheiro|pix)\b/gi,' ')
+  .replace(/\b(?:ahora|agora|hoy|hoje|mañana|manana|amanhã|amanha)(?:\s+(?:a\s+las?|às?)\s+\d{1,2}(?::\d{2})?)?\b/gi,' ')
+  .replace(/\b(?:si|sí|sim)?\s*(?:confirmar|confirmo|confirma|confirmá)\b/gi,' ')
+  .replace(/\s+/g,' ').replace(/^[,.;:\s]+|[,.;:\s]+$/g,'').trim()
+ value=norm(raw)
+ if(raw.length<8)return''
+ if(/^(necesito|quiero|preciso|quero)\b/.test(value)&&value.split(' ').length<6)return''
+ return raw
+}
+function parsePaymentMethod(text:string):'cash'|'pix'|null{const value=norm(text);if(/\bpix\b/.test(value))return'pix';if(/\b(efectivo|dinero|en mano|cash|dinheiro)\b/.test(value))return'cash';return null}
+function nextMissing(current:Draft){if(!current.category)return'category';if(!current.description)return'description';if(!current.address)return'address';if(!current.when)return'when';if(!current.paymentMethod)return'payment';return'confirm'}
+function newDraftId(){try{return crypto.randomUUID()}catch{return`hugo-${Date.now()}-${Math.random().toString(36).slice(2)}`}}
+function accessTokenUserId(token?:string){try{const raw=String(token||'').split('.')[1];if(!raw)return'';const value=raw.replace(/-/g,'+').replace(/_/g,'/'),padded=value.padEnd(Math.ceil(value.length/4)*4,'='),payload=JSON.parse(atob(padded));return typeof payload?.sub==='string'?payload.sub:''}catch{return''}}
+function emptyVoiceDraft(category:VoiceCategory|null=null):Draft{return{category,description:'',address:'',addressLabel:'',pickupLat:null,pickupLng:null,pickupSource:null,when:null,scheduleAt:'',whenLabel:'',paymentMethod:null,urgent:false,preferredProviderId:null,preferredProviderName:null,serviceId:null,requestDraftId:newDraftId()}}
+function serviceMoment(service:HugoService){const raw=service.programado_para||service.created_at||null;if(!raw)return null;const value=new Date(raw);return Number.isNaN(value.getTime())?null:value}
+function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
+function dayMatches(text:string,service:HugoService){const value=norm(text),moment=serviceMoment(service);if(!moment)return !/\b(hoy|mañana|manana|hoje|amanha)\b/.test(value);const now=new Date(),tomorrow=new Date(now);tomorrow.setDate(now.getDate()+1);if(/\b(hoy|hoje)\b/.test(value))return sameDay(moment,now);if(/\b(mañana|manana|amanha)\b/.test(value))return sameDay(moment,tomorrow);return true}
+function serviceLabel(service:HugoService){const category=service.categoria?.nombre||'servicio',when=serviceMoment(service);return`${category}${when?` del ${when.toLocaleString('es-AR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}`:''}`}
+function serviceSummary(service:HugoService,pt:boolean){const category=service.categoria?.nombre||'servicio',state=STATUS_LABELS[service.estado]||service.estado,provider=service.proveedor?.nombre?`${pt?' com ':' con '}${service.proveedor.nombre}`:'',when=serviceMoment(service),schedule=when?`${pt?' para ':' para '}${when.toLocaleString(pt?'pt-BR':'es-AR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';return pt?`Seu pedido de ${category}${provider}${schedule} está ${state}.`:`Tu pedido de ${category}${provider}${schedule} está ${state}.`}
 function errorMessage(value:unknown,fallback:string){return value instanceof Error?value.message:fallback}
 function ignoreError(value:unknown){void value}
 
@@ -54,7 +81,7 @@ async function resolveServiceCandidates(source:string,services:HugoService[],onl
  return rows.filter(item=>dayMatches(source,item))
 }
 
-export function ClientVoiceHugoDock({accessToken,service,services=[],clientActions,onIntent,onNavigateHome,requestComposerOpen=false}:Props){
+export function ClientVoiceHugoDock({accessToken,services=[],clientActions,onIntent,onNavigateHome,requestComposerOpen=false}:Props){
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false),pendingCancel=useRef<PendingCancel|null>(null)
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
