@@ -442,3 +442,63 @@ Please confirm:
 **Status**: ⏳ AWAITING YOUR APPROVAL  
 **Next Step**: Review plan, ask questions, and I'll implement Phase 1
 
+
+
+---
+
+## 12. CURRENT VOICE OPERATING LAYER (2026-09-24)
+
+This section supersedes the old "Voice Layer (Future - Voiceflow/Twilio integration)" description for the current product runtime. The canonical browser voice path is Gemini Live with authenticated, role-scoped tool calls. Voiceflow/Twilio is not the authority for current UGO operations.
+
+### Canonical runtime
+
+```text
+user voice
+→ Gemini Live speech/input transcription
+→ role-specific structured tool call
+→ deterministic UI executor
+→ authenticated Supabase/RPC/backend validation
+→ structured tool result
+→ Gemini Live spoken response
+→ real UI/realtime state
+```
+
+The model proposes an intent/tool call. It never becomes the authority for role, ownership, service lifecycle, GPS, geofence, payment state, or persisted results.
+
+### Client voice contract
+
+- Request drafting uses explicit tools for category, description, schedule, payment and device geolocation.
+- "Mi pedido" resolves the authenticated active service before status/tracking reads.
+- Multiple active services return `AMBIGUOUS_SERVICE`; Hugo asks which one instead of inventing a `serviceId`.
+- Provider tracking uses the authenticated `obtener_tracking_servicio_cliente` RPC after client ownership is established.
+- Service creation and cancellation still require explicit confirmation and canonical backend/client actions.
+
+### Provider voice contract
+
+The Live model no longer chooses arbitrary lifecycle targets. It receives explicit commands:
+
+- `provider_get_current_job`
+- `provider_mark_en_route`
+- `provider_mark_arrived`
+- `provider_start_job`
+- `provider_complete_job`
+
+`provider_mark_arrived` delegates to the normal provider action, which obtains device GPS, publishes the trusted provider location and lets the backend validate freshness, accuracy and the 200 m geofence. Gemini never supplies latitude/longitude.
+
+### Admin voice contract
+
+Admin remains read-only in the Live voice happy path unless an audited mutation tool is explicitly added. Current exact reads include operational summary, service lookup, service history, open disputes and user lookup.
+
+### Runtime resilience
+
+Every Gemini Live function call has a bounded response timer. If a UI executor fails to answer, Hugo receives a structured `TOOL_TIMEOUT` result instead of hanging indefinitely. Tool completion clears the timer and returns the voice surface to a ready state. Stopping a conversation clears pending timers and client draft context.
+
+### Release rule
+
+Hugo Voice is not considered complete because the orb renders or Gemini speaks. A P0 voice flow is valid only when:
+
+```text
+VOICE → TOOL/COMMAND → REAL BACKEND RULES → PERSISTED RESULT → REAL UI → SPOKEN RESULT
+```
+
+This contract is the current reference for Client, Provider and Admin voice work.

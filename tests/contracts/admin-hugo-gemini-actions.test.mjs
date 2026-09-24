@@ -17,6 +17,10 @@ test('Admin Hugo uses the persistent Gemini Live audio session instead of a seco
  assert.match(orb,/Te escucho\. Hablame…/)
  assert.match(bridge,/playConversationPcm/)
  assert.match(bridge,/sendToolResponse/)
+ assert.match(bridge,/admin_get_service_history/)
+ assert.match(bridge,/admin_list_disputes/)
+ assert.match(orb,/admin_get_service_history/)
+ assert.match(orb,/admin_list_disputes/)
  assert.doesNotMatch(orb,/tts:true|audio_base64|speechSynthesis/)
 })
 
