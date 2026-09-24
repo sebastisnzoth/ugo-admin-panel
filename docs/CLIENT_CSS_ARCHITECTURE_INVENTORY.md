@@ -12,37 +12,36 @@ Baseline main: `8d6e5a7ae6d0f122409efc3f9f93acf5f5d8bd57`.
 import '../../features/client/clientStyles'
 ```
 
-The boundary currently composes **25 active layers**. The previous inventory referred to 26; main has already reduced that count.
+The boundary currently composes **20 active layers**. The original inventory referred to 26; main has already reduced that count through safe consolidation.
 
 ## Active layers in cascade order
 
+The live list below must mirror `src/features/client/clientStyles.ts`.
+
 | # | Layer | Owner | Classification |
 |---:|---|---|---|
-| 1 | `request/clientGuidedRequest.css` | request | canonical |
-| 2 | `payments/clientPaymentChoice.css` | payments | canonical |
-| 3 | `ui/clientResponsiveLayout.css` | ui | canonical responsive overrides |
-| 4 | `conversation/clientConversationalStage.css` | conversation | canonical |
-| 5 | `conversation/clientWebConversational.css` | conversation | canonical web |
-| 6 | `legacy/clientVisualPolish.css` | legacy | legacy override |
-| 7 | `legacy/request/clientGuidedRequestRedesign.css` | legacy/request | legacy override |
-| 8 | `request/clientGuidedRequestReview.css` | request | canonical |
-| 9 | `legacy/clientRedesign2026.css` | legacy | broad legacy theme |
-| 10 | `ai/clientAiStudioFlow.css` | ai | canonical feature style |
-| 11 | `ai/clientGoogleAiStudio.css` | ai | broad AI Studio theme |
-| 12 | `ai/clientStudioReference.css` | ai | reference/override |
-| 13 | `radar/clientStudioRadar.css` | radar | canonical radar |
-| 14 | `legacy/ai/clientAiStudioProductionLock.css` | legacy/ai | legacy lock |
-| 15 | `legacy/ai/clientAiStudioProductionOps.css` | legacy/ai | legacy ops override |
-| 16 | `legacy/ai/clientAiStudioFinalLock.css` | legacy/ai | legacy final lock |
-| 17 | `legacy/ai/clientAiStudioGuidedComplete.css` | legacy/ai | legacy guided override |
-| 18 | `../../mvp/client/client-real-test-fixes.css` | mvp legacy | last direct Client CSS dependency outside feature boundary |
-| 19 | `legacy/request/clientFlowReference2026.css` | legacy/request | legacy reference |
-| 20 | `ui/clientPersistentHeader.css` | ui | canonical |
-| 21 | `ui/clientDesktopShell.css` | ui | canonical desktop override |
-| 22 | `ui/clientHomeScreen.css` | ui | canonical home |
-| 23 | `legacy/home/clientHomeAppV3.css` | legacy/home | legacy home lock |
-| 24 | `legacy/premium/clientPremium2026.css` | legacy/premium | broad late theme override |
-| 25 | `profile/clientProfilePremium2026.css` | profile | canonical profile/premium override |
+| # | Layer | Owner | Classification |
+|---:|---|---|---|
+| 1 | `payments/clientPaymentChoice.css` | payments | canonical |
+| 2 | `ui/clientResponsiveLayout.css` | ui | canonical responsive overrides |
+| 3 | `conversation/clientConversationalStage.css` | conversation | canonical |
+| 4 | `conversation/clientWebConversational.css` | conversation | canonical web |
+| 5 | `legacy/clientVisualPolish.css` | legacy | legacy override |
+| 6 | `legacy/clientRedesign2026.css` | legacy | broad legacy theme |
+| 7 | `ai/clientAiStudioFlow.css` | ai | canonical feature style |
+| 8 | `ai/clientGoogleAiStudio.css` | ai | broad AI Studio theme |
+| 9 | `ai/clientStudioReference.css` | ai | reference/override |
+| 10 | `radar/clientStudioRadar.css` | radar | canonical radar |
+| 11 | `legacy/ai/clientAiStudioProductionLock.css` | legacy/ai | legacy lock |
+| 12 | `legacy/ai/clientAiStudioProductionOps.css` | legacy/ai | legacy ops override |
+| 13 | `legacy/ai/clientAiStudioFinalLock.css` | legacy/ai | legacy final lock |
+| 14 | `../../mvp/client/client-real-test-fixes.css` | mvp legacy | last direct Client CSS dependency outside feature boundary |
+| 15 | `legacy/request/clientFlowReference2026.css` | legacy/request | legacy reference |
+| 16 | `ui/clientPersistentHeader.css` | ui | canonical |
+| 17 | `ui/clientDesktopShell.css` | ui | canonical desktop override |
+| 18 | `ui/clientHomeScreen.css` | ui | canonical home |
+| 19 | `legacy/premium/clientPremium2026.css` | legacy/premium | broad late theme override |
+| 20 | `profile/clientProfilePremium2026.css` | profile | canonical profile/premium override |
 
 ## Measured overlap hotspots
 
@@ -139,6 +138,8 @@ Representative repeated selectors:
 - 2026-09-23: pruned 10 base request field/layout/focus blocks from `legacy/request/clientGuidedRequestRedesign.css` after verifying complete ownership and equal-or-stronger `!important` priority in `legacy/ai/clientAiStudioGuidedComplete.css`; responsive rules remain untouched.
 
 - 2026-09-23: pruned the final 8 strictly redundant base category/option/evidence blocks from `legacy/request/clientGuidedRequestRedesign.css`; `legacy/ai/clientAiStudioGuidedComplete.css` owns every removed property with equal-or-stronger priority. Strict base redundancy for this pair is now zero.
+
+- 2026-09-24: pruned the redundant base `.ugo-client-profile-form>div` grid block from `legacy/ai/clientAiStudioProductionOps.css`; the later `profile/clientProfilePremium2026.css` owns the same declarations with the same `!important` priority.
 
 ## Exit criteria for CSS refactor
 
