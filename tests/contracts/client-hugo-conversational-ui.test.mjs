@@ -1,7 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-const root=await readFile(new URL('../../src/mvp/client/ClientRoot.tsx',import.meta.url),'utf8')
+const root=await readFile(new URL('../../src/features/client/ClientRoot.tsx',import.meta.url),'utf8')
 const surfaces=await readFile(new URL('../../src/features/client/ui/ClientOperationalSurfaces.tsx',import.meta.url),'utf8')
 const globals=await readFile(new URL('../../src/features/client/ui/ClientGlobalSurfaces.tsx',import.meta.url),'utf8')
 const bridge=await readFile(new URL('../../src/features/client/hugo/ClientHugoBridge.tsx',import.meta.url),'utf8')
