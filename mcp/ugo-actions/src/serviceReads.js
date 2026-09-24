@@ -270,6 +270,14 @@ export async function getProviderLocation(
     };
   }
 
+  if (row.servicio_id && row.servicio_id !== parsed.serviceId) {
+    throw new UgoMcpError(
+      "tracking_scope_mismatch",
+      "El tracking recibido no pertenece al serviceId solicitado",
+      502
+    );
+  }
+
   if (row.proveedor_id && row.proveedor_id !== service.proveedor_id) {
     throw new UgoMcpError(
       "tracking_scope_mismatch",
