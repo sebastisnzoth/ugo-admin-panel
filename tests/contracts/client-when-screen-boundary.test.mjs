@@ -10,7 +10,8 @@ test('client when screen lives behind the request feature boundary with its CSS'
   read('src/features/client/request/ClientLocationScreen.tsx'),
   read('src/features/client/request/clientWhenScreen.css')
  ])
- assert.match(screen,/mvp\/client\/ClientPaymentScreen/)
+ assert.match(screen,/\.\.\/payments\/ClientPaymentScreen/)
+ assert.doesNotMatch(screen,/mvp\/client\/ClientPaymentScreen/)
  assert.match(screen,/\.\/clientWhenScreen\.css/)
  assert.match(shim,/features\/client\/request\/ClientWhenScreen/)
  assert.match(location,/\.\/ClientWhenScreen/)
