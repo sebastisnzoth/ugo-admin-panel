@@ -20,6 +20,7 @@ test('Hugo client has no secondary TTS or browser recognition fallback',()=>{
 test('voice confirmation creates the actual service with exact pickup and payment context',()=>{
  assert.match(dock,/pickupFallback:'none'/)
  assert.match(dock,/payment_method:current\.paymentMethod==='pix'\?'pix':'efectivo'/)
- assert.match(dock,/const id=await createOrder\(current\)/)
+ assert.match(dock,/const serviceId=await createOrder\(current\)/)
+ assert.match(dock,/args\.confirmed!==true/)
  assert.match(dock,/onNavigateHome\?\.\(\)/)
 })

@@ -7,7 +7,7 @@ const locationScreen = await readFile(new URL('../../src/features/client/request
 const savedAddress = await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts', import.meta.url), 'utf8')
 const orderVoice = await readFile(new URL('../../src/features/client/hugo/hugoOrderVoice.ts', import.meta.url), 'utf8')
 
-test('Hugo resolves current GPS only through the explicit Gemini Live location tool',()=>{assert.match(voice,/name==='get_current_location'/);assert.match(voice,/captureCurrentLocation\(current\)/);assert.match(voice,/sendToolResponse/);assert.match(voice,/navigator\.geolocation\.getCurrentPosition/)})
+test('Hugo resolves current GPS only through the explicit Gemini Live location tool',()=>{assert.match(voice,/name==='get_current_location'/);assert.match(voice,/captureCurrentLocation\(current!\)/);assert.match(voice,/sendToolResponse/);assert.match(voice,/navigator\.geolocation\.getCurrentPosition/)})
 
 test('spoken or tapped current location uses browser geolocation and persists backend-compatible point order', () => {
   assert.match(voice, /navigator\.geolocation\.getCurrentPosition/)
@@ -23,7 +23,8 @@ test('saved Casa and Trabajo remain canonical written-flow locations while Live 
   assert.match(locationScreen, /from\('direcciones_cliente'\)/)
   assert.match(locationScreen, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
   assert.match(voice, /name==='get_current_location'/)
-  assert.doesNotMatch(voice, /function savedLabel\(/)
+  assert.match(voice, /function savedLabel\(text:string\):'Casa'\|'Trabajo'\|null/)
+  assert.match(voice, /resolveClientSavedAddress\(label\)/)
 })
 
 test('Hugo understands gardening aliases and scheduled natural language', () => {
