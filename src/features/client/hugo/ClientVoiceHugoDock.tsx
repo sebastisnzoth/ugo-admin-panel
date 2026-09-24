@@ -20,24 +20,8 @@ type UgoWindow=Window&typeof globalThis&{UGOVoiceBridge?:NativeBridge}
 type ReverseGeocodeResponse={features?:Array<{properties?:Record<string,unknown>}>}
 
 const LABELS:Record<VoiceState,string>={idle:'Toca para hablar',connecting:'Procesando...',ready:'Te escucho',hearing:'Escuchando...',speaking:'Hablando...',error:'Voz no disponible'}
-const CANCELLABLE=['buscando','ofrecido','asignado','en_camino','llegado']
-
 function ugoWindow(){return window as UgoWindow}
 function norm(value:string){return normalizeVoiceText(value)}
-function requestIntent(text:string){return/\b(necesito|quiero un|quiero una|quiero pedir|quiero contratar|preciso|quero um|quero uma|quero pedir|quero contratar|me hace falta|necesitaria)\b/.test(norm(text))}
- let raw=text.trim().replace(/^bueno[,.]?\s*/i,'').trim(),value=norm(raw)
- if(!raw||/^(si|sí|sim|no|nao|não|dale|ok|okay|confirmo|confirmar|casa|trabajo|oficina|pix|efectivo|dinheiro|cash)$/.test(value))return''
- raw=raw
-  .replace(/\b(?:y\s+)?(?:usar|usa|utilizar|utiliza|tomar|toma|agarrar|agarra|detectar|detecta|poner|pone|cargar|carga|use|utilize|pegar|pega)\s+(?:mi\s+|minha\s+)?(?:ubicaci[oó]n|localizaci[oó]n|localiza[cç][aã]o|gps)\b/gi,' ')
-  .replace(/\b(?:pago|pagar|pagamento)?\s*(?:en|con|por|em)?\s*(?:efectivo|dinero|cash|dinheiro|pix)\b/gi,' ')
-  .replace(/\b(?:ahora|agora|hoy|hoje|mañana|manana|amanhã|amanha)(?:\s+(?:a\s+las?|às?)\s+\d{1,2}(?::\d{2})?)?\b/gi,' ')
-  .replace(/\b(?:si|sí|sim)?\s*(?:confirmar|confirmo|confirma|confirmá)\b/gi,' ')
-  .replace(/\s+/g,' ').replace(/^[,.;:\s]+|[,.;:\s]+$/g,'').trim()
- value=norm(raw)
- if(raw.length<8)return''
- if(/^(necesito|quiero|preciso|quero)\b/.test(value)&&value.split(' ').length<6)return''
- return raw
-}
 function nextMissing(current:Draft){if(!current.category)return'category';if(!current.description)return'description';if(!current.address)return'address';if(!current.when)return'when';if(!current.paymentMethod)return'payment';return'confirm'}
 function newDraftId(){try{return crypto.randomUUID()}catch{return`hugo-${Date.now()}-${Math.random().toString(36).slice(2)}`}}
 function accessTokenUserId(token?:string){try{const raw=String(token||'').split('.')[1];if(!raw)return'';const value=raw.replace(/-/g,'+').replace(/_/g,'/'),padded=value.padEnd(Math.ceil(value.length/4)*4,'='),payload=JSON.parse(atob(padded));return typeof payload?.sub==='string'?payload.sub:''}catch{return''}}
