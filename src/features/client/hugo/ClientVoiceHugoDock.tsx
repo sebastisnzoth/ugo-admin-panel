@@ -21,13 +21,11 @@ type ReverseGeocodeResponse={features?:Array<{properties?:Record<string,unknown>
 
 const LABELS:Record<VoiceState,string>={idle:'Toca para hablar',connecting:'Procesando...',ready:'Te escucho',hearing:'Escuchando...',speaking:'Hablando...',error:'Voz no disponible'}
 function ugoWindow(){return window as UgoWindow}
-function norm(value:string){return normalizeVoiceText(value)}
 function nextMissing(current:Draft){if(!current.category)return'category';if(!current.description)return'description';if(!current.address)return'address';if(!current.when)return'when';if(!current.paymentMethod)return'payment';return'confirm'}
 function newDraftId(){try{return crypto.randomUUID()}catch{return`hugo-${Date.now()}-${Math.random().toString(36).slice(2)}`}}
 function accessTokenUserId(token?:string){try{const raw=String(token||'').split('.')[1];if(!raw)return'';const value=raw.replace(/-/g,'+').replace(/_/g,'/'),padded=value.padEnd(Math.ceil(value.length/4)*4,'='),payload=JSON.parse(atob(padded));return typeof payload?.sub==='string'?payload.sub:''}catch{return''}}
 function emptyVoiceDraft(category:VoiceCategory|null=null):Draft{return{category,description:'',address:'',addressLabel:'',pickupLat:null,pickupLng:null,pickupSource:null,when:null,scheduleAt:'',whenLabel:'',paymentMethod:null,urgent:false,preferredProviderId:null,preferredProviderName:null,serviceId:null,requestDraftId:newDraftId()}}
 function serviceMoment(service:HugoService){const raw=service.programado_para||service.created_at||null;if(!raw)return null;const value=new Date(raw);return Number.isNaN(value.getTime())?null:value}
-function sameDay(a:Date,b:Date){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate()}
 function serviceSummary(service:HugoService,pt:boolean){const category=service.categoria?.nombre||'servicio',state=STATUS_LABELS[service.estado]||service.estado,provider=service.proveedor?.nombre?`${pt?' com ':' con '}${service.proveedor.nombre}`:'',when=serviceMoment(service),schedule=when?`${pt?' para ':' para '}${when.toLocaleString(pt?'pt-BR':'es-AR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}`:'';return pt?`Seu pedido de ${category}${provider}${schedule} está ${state}.`:`Tu pedido de ${category}${provider}${schedule} está ${state}.`}
 function errorMessage(value:unknown,fallback:string){return value instanceof Error?value.message:fallback}
 function ignoreError(value:unknown){void value}
