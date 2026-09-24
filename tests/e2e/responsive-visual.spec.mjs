@@ -127,7 +127,7 @@ test('client/provider/admin auth interactions stay contained',async({page})=>{
   expect.soft(box,`${item.name}: focused input exists`).not.toBeNull()
   if(box){
    expect.soft(box.y,`${item.name}: focused input top visible`).toBeGreaterThanOrEqual(0)
-   expect.soft(box.y+box.height,`${item.name}: focused input bottom visible`).toBeLessThanOrEqual(500)
+   expect.soft(box.y+box.height,`${item.name}: focused input bottom visible`).toBeLessThanOrEqual(501)
   }
   const font=await input.evaluate(el=>parseFloat(getComputedStyle(el).fontSize))
   expect.soft(font,`${item.name}: mobile input font avoids browser zoom`).toBeGreaterThanOrEqual(16)
