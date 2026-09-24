@@ -43,7 +43,7 @@ codex mcp add ugo-actions -- node "/Volumes/Armazenamento/developer/ugo-admin-pa
 
 For the FCC wrapper, open `fcc-codex`, run `/mcp`, and verify that `ugo-actions` is enabled.
 
-## Runtime authentication for real reads
+## Runtime authentication for real reads/actions
 
 `ugo_get_current_job` uses the caller's real Supabase session and the database RLS boundary. It does not use `service_role`.
 
@@ -117,6 +117,39 @@ Location interpretation:
 
 No GPS update, state transition or other mutation occurs.
 
+### `ugo_mark_arrived`
+
+First controlled mutation in the MCP surface.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+
+There are **no lat/lng arguments**. Hugo/the model is not a GPS source.
+
+The device/provider UI captures a fresh high-accuracy position and publishes it through the dedicated application RPC `publicar_ubicacion_proveedor`, which stores a dedicated GPS capture timestamp and accuracy. The MCP then calls only `marcar_llegada_proveedor(serviceId)`.
+
+The backend is authoritative and validates:
+
+- authenticated provider identity;
+- exact service ownership;
+- legal `en_camino -> llegado` state;
+- persisted GPS exists and is not `0,0`;
+- capture age is at most 30 seconds;
+- persisted accuracy is valid and at most 250 m;
+- client service location exists and is valid;
+- server-computed distance is at most 200 m.
+
+Expected operational rejections include `outside_geofence`, `gps_stale`, `gps_unavailable`, `gps_inaccurate`, `client_location_unavailable`, `invalid_state` and `unauthorized`.
+
+Repeated arrival is idempotent: when the same service is already `llegado`, the backend returns an arrived result without replaying the state update.
+
+The repository migration `20260924162000_provider_arrival_gps_gate.sql` also installs a database trigger that blocks any `en_camino -> llegado` update that did not pass the dedicated arrival validator. This prevents the older generic `avanzar_servicio` path from becoming a geofence bypass after the migration is promoted.
+
+`publicar_ubicacion_proveedor` is intentionally **not exposed as a Hugo MCP tool**. Coordinates must originate from the device/app geolocation flow, not from model-generated tool arguments.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -159,13 +192,13 @@ Keep the action surface small and auditable. Add tools incrementally:
 2. real read-only `ugo_get_current_job` — implemented
 3. `ugo_get_service` — implemented
 4. `ugo_get_provider_location` — implemented
-5. current-location capture contract for Hugo
-6. accept job
-7. start route
-8. mark arrived
+5. device-owned GPS publication contract — implemented in Provider UI/backend migration
+6. `ugo_mark_arrived` — implemented, pending migration promotion
+7. accept job
+8. start route
 9. start work
 10. finish work
 11. cash-payment confirmation
 12. rating
 
-Do not open mutating actions until the read path and authorization boundary are verified.
+Do not open additional mutating actions until the current read/arrival authorization boundary is verified and the arrival migration is promoted through the normal environment pipeline.
