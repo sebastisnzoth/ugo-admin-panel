@@ -30,11 +30,12 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/final:true/)
 })
 
-test('ephemeral token request uses a short one-use token without the production-rejected constraint field',()=>{
+test('ephemeral token request is one-use and constrained to the selected Live model and modality',()=>{
  assert.match(api,/voice_live_token===true/)
  assert.match(api,/generativelanguage\.googleapis\.com\/v1beta\/auth_tokens/)
- assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
- assert.doesNotMatch(api,/liveConnectConstraints:\{model/)
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:/)
+ assert.match(api,/model:`models\/\$\{model\}`/)
+ assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
  assert.doesNotMatch(api,/auth_token\s*:/)
 })
 
