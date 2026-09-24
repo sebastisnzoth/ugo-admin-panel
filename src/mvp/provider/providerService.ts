@@ -215,7 +215,7 @@ export async function advanceProviderService(supabase:SupabaseClient,serviceId:s
   catch(error){
    const transitionMessage=messageOf(error,'No se pudo confirmar la llegada.')
    void reportSentinelIncident({eventType:'provider_arrival_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.arrive',checklistCode:'MAP-GPS'})
-   throw new Error(transitionMessage)
+   throw new Error(transitionMessage,{cause:error})
   }
  }
  const{error}=await supabase.rpc('avanzar_servicio',{p_servicio_id:serviceId,p_estado:state})
