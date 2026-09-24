@@ -80,6 +80,7 @@ function makeFetch({
   services = [],
   trackingRows = [],
   failPath = null,
+  rawTrackingResponse = false,
 }) {
   const calls = [];
   const fetchImpl = async (url, options = {}) => {
@@ -110,7 +111,11 @@ function makeFetch({
     if (parsed.pathname === "/rest/v1/rpc/obtener_tracking_servicio_cliente") {
       const body = JSON.parse(String(options.body || "{}"));
       const requested = body.p_servicio_id;
-      return response(trackingRows.filter((row) => row.service_id == null || row.service_id === requested));
+      return response(
+        rawTrackingResponse
+          ? trackingRows
+          : trackingRows.filter((row) => row.service_id == null || row.service_id === requested)
+      );
     }
     return response({}, 404);
   };
@@ -466,6 +471,7 @@ test("ugo_get_provider_location: RPC response from another serviceId is rejected
       provider_lng: -48.55,
       provider_updated_at: "2026-09-24T15:59:50Z",
     }],
+    rawTrackingResponse: true,
   });
 
   await assert.rejects(
