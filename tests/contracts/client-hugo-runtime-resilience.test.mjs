@@ -6,8 +6,9 @@ const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHug
 const api=await readFile(new URL('../../api/test.ts',import.meta.url),'utf8')
 
 test('production Live token path avoids the rejected auth-token field',()=>{
- assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
- assert.doesNotMatch(api,/liveConnectConstraints:\{model/)
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:/)
+ assert.match(api,/model:`models\/\$\{model\}`/)
+ assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
 })
 
 test('Hugo client has no secondary TTS or browser recognition fallback',()=>{
