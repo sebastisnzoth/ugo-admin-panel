@@ -14,6 +14,8 @@ test('client flow state is canonical behind the client feature boundary',async()
  assert.match(root,/features\/client\/flow\/clientFlow/)
  assert.match(app,/features\/client\/flow\/clientFlow/)
  assert.doesNotMatch(root,/ClientStudioNavbar|ClientStudioProviderRadar/)
+ assert.match(root,/features\/client\/payments\/DemoSebastianPaymentBridge/)
+ assert.doesNotMatch(root,/\.\.\/DemoSebastianPaymentBridge/)
 })
 
 test('migrated client features consume the canonical flow boundary directly',async()=>{
