@@ -92,6 +92,31 @@ Authorization path:
 
 No write, state transition or privileged key is used by this tool.
 
+### `ugo_get_service`
+
+Exact, read-only service lookup. `serviceId` is mandatory.
+
+The tool validates caller identity and role, adds an explicit client/provider ownership filter, then lets the live `servicios_select` RLS policy remain authoritative. It never accepts service number as a substitute and never falls back to a "latest" service.
+
+The response intentionally omits arbitrary `metadata`, client address and unrelated internal fields.
+
+### `ugo_get_provider_location`
+
+Read-only provider tracking for one exact `serviceId`.
+
+The tool first verifies the caller against the exact owned service, then reuses the existing live UGO RPC `obtener_tracking_servicio_cliente(p_servicio_id)` instead of reading `perfiles_proveedor.ubicacion` directly. This preserves the backend's service-participant privacy boundary and avoids broadening `perfiles_proveedor` RLS.
+
+Current live UGO behavior only exposes tracking data from that RPC when its backend rules allow it. An empty result is therefore reported as `unavailable`; the MCP does not bypass the RPC by falling back to a direct location query.
+
+Location interpretation:
+
+- freshness threshold: **30 seconds**, matching `ProviderLocationTracker`;
+- `0,0`, null coordinates, non-finite values or coordinates outside valid latitude/longitude ranges are `unavailable`;
+- valid coordinates older than 30 seconds are returned as `stale`, never described as current;
+- a provider ID returned by the RPC must match the provider assigned to the requested `serviceId`, otherwise the MCP rejects the response as a scope mismatch.
+
+No GPS update, state transition or other mutation occurs.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -132,8 +157,8 @@ Keep the action surface small and auditable. Add tools incrementally:
 
 1. `ugo_ping`
 2. real read-only `ugo_get_current_job` — implemented
-3. `ugo_get_service`
-4. provider-location read
+3. `ugo_get_service` — implemented
+4. `ugo_get_provider_location` — implemented
 5. current-location capture contract for Hugo
 6. accept job
 7. start route
