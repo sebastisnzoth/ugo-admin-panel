@@ -18,12 +18,12 @@ test('spoken or tapped current location uses browser geolocation and persists ba
   assert.match(locationScreen, /savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/)
 })
 
-test('natural request resolves saved Casa and Trabajo addresses through the canonical helper', () => {
-  assert.match(voice, /function savedLabel\(text:string\):'Casa'\|'Trabajo'\|null/)
-  assert.match(voice, /resolveClientSavedAddress\(label\)/)
+test('saved Casa and Trabajo remain canonical written-flow locations while Live GPS stays explicit', () => {
   assert.match(savedAddress, /place==='Casa'\?\/casa\|hogar\|residencia\/:\/trabajo\|oficina\|trabalho\|escritorio\//)
   assert.match(locationScreen, /from\('direcciones_cliente'\)/)
   assert.match(locationScreen, /savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,'saved'\)/)
+  assert.match(voice, /name==='get_current_location'/)
+  assert.doesNotMatch(voice, /function savedLabel\(/)
 })
 
 test('Hugo understands gardening aliases and scheduled natural language', () => {

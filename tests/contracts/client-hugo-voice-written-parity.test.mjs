@@ -6,12 +6,14 @@ const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHug
 const location=await readFile(new URL('../../src/features/client/request/ClientLocationScreen.tsx',import.meta.url),'utf8')
 const address=await readFile(new URL('../../src/mvp/hugoDefaultAddress.ts',import.meta.url),'utf8')
 
-test('client voice follows the canonical ordered request fields without a text composer',()=>{
- assert.match(dock,/if\(missing==='description'\)return speak\([^\n]*¿Qué hay que hacer\?/)
- assert.match(dock,/if\(missing==='address'\)return speak\([^\n]*Casa, Trabajo o “usar mi ubicación”/)
- assert.match(dock,/if\(missing==='when'\)return speak/)
- assert.match(dock,/if\(missing==='payment'\)return speak/)
- assert.match(dock,/nextMissing\(current\)/)
+test('client Live tools enforce the canonical request fields before confirmed creation',()=>{
+ assert.match(dock,/name==='set_request_category'/)
+ assert.match(dock,/name==='set_request_description'/)
+ assert.match(dock,/name==='get_current_location'/)
+ assert.match(dock,/name==='set_schedule'/)
+ assert.match(dock,/name==='set_payment_method'/)
+ assert.match(dock,/const missing=nextMissing\(current\)/)
+ assert.match(dock,/missing!=='confirm'/)
  assert.doesNotMatch(dock,/sendTyped|inputRef|\[typed,setTyped\]/)
 })
 
