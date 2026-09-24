@@ -74,11 +74,9 @@ function roleInstruction(role:string){
  if(role==='provider')return base+' Proveedor: para consultar o actuar sobre el trabajo usá provider_get_current_job y las acciones explícitas. “Voy para allá” usa provider_mark_en_route. “Ya llegué” usa provider_mark_arrived; nunca propongas lat/lng. “Empezar” usa provider_start_job y “terminé” usa provider_complete_job. No elijas estados arbitrarios ni saltees el lifecycle.'
  return base+' Admin: sólo lectura operativa mediante herramientas declaradas. Para servicio concreto usá admin_find_service o admin_get_service_history; para disputas usá admin_list_disputes. No confirmes mutaciones administrativas si no existe herramienta autorizada.'
 }
-function roleTools()function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
+function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
 function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
 function setupMessage(model:string){const role=currentRole();return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:roleInstruction(role)}]},tools:[{functionDeclarations:roleTools()}]}}}
-
-function installBrowserBridge
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
