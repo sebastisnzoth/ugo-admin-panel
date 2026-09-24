@@ -32,7 +32,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path to 'public','private','pg_temp'
-as $
+as $$
 declare
   v_trusted_provider text := current_setting('ugo.trusted_provider_location',true);
 begin
@@ -40,27 +40,14 @@ begin
     return new;
   end if;
 
-  if tg_op='INSERT' then
-    if new.ubicacion is not null
-       or new.ubicacion_updated_at is not null
-       or new.ubicacion_accuracy_m is not null then
-      new.ubicacion_updated_at := null;
-      new.ubicacion_accuracy_m := null;
-    end if;
-    return new;
-  end if;
-
-  if new.ubicacion is distinct from old.ubicacion
-     or new.ubicacion_updated_at is distinct from old.ubicacion_updated_at
-     or new.ubicacion_accuracy_m is distinct from old.ubicacion_accuracy_m then
-    new.ubicacion_updated_at := null;
-    new.ubicacion_accuracy_m := null;
-  end if;
-
+  -- This trigger only runs on INSERT or when one of the location/trust columns
+  -- is explicitly targeted by UPDATE. Compatibility writes may keep the
+  -- coordinate, but they can never retain/manufacture trusted freshness.
+  new.ubicacion_updated_at := null;
+  new.ubicacion_accuracy_m := null;
   return new;
 end;
-$;
-
+$$;
 drop trigger if exists trg_guard_provider_location_trust_insert on public.perfiles_proveedor;
 create trigger trg_guard_provider_location_trust_insert
 before insert on public.perfiles_proveedor
