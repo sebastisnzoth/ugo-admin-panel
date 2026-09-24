@@ -7,7 +7,7 @@ const rootNavigation=fs.readFileSync('src/features/client/navigation/useClientRo
 const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
 const detail=fs.readFileSync('src/features/client/order/ClientServiceDetail.tsx','utf8')
 const detailBoundary=fs.readFileSync('src/features/client/ui/ClientOrderDetailBoundary.tsx','utf8')
-const map=fs.readFileSync('src/mvp/ClientActiveMap.tsx','utf8')
+const map=fs.readFileSync('src/features/client/order/ClientActiveMap.tsx','utf8')
 
 test('Activity opens the exact serviceId under the CLIENT-ORDER-OPEN sentinel context',()=>{
  assert.match(history,/onClick=\{\(\)=>onOpenService\(r\.id\)\}>Abrir pedido y chat<\/button>/)
