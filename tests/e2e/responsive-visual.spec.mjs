@@ -32,7 +32,7 @@ const surfaces=[
  {name:'ugo-web',path:'/?app=web',root:'.ugo-web',public:true},
  {name:'ugo-client-web',path:'/?app=stitch-client',root:'.ugo-client-web',public:true},
  {name:'development',path:'/?app=development',root:'.devdash',public:true},
- {name:'demo',path:'/?app=demo',root:'.ugo-test-demo',public:true},
+ {name:'demo',path:'/?demo=1',root:'.ugo-test-demo',public:true},
  {name:'recruit-invalid',path:'/?app=recruit',root:'.ugo-recruit',public:true},
 ]
 
@@ -152,7 +152,7 @@ test('client auth register and recovery states remain responsive',async({page})=
 
 test('demo role switching and service progression stay contained',async({page})=>{
  await page.setViewportSize({width:390,height:844})
- await waitForSurface(page,{path:'/?app=demo',root:'.ugo-test-demo'})
+ await waitForSurface(page,{path:'/?demo=1',root:'.ugo-test-demo'})
  const request=page.locator('#demo-request')
  if(await request.isVisible()){
   await page.getByRole('button',{name:'Encontrar profesionales'}).click()
