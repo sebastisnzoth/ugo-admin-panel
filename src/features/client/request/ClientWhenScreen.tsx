@@ -1,6 +1,6 @@
 import React,{useEffect,useState}from'react'
 import{useRoleSession}from'../../../mvp/shared'
-import{ClientPaymentScreen}from'../../../mvp/client/ClientPaymentScreen'
+import{ClientPaymentScreen}from'../payments/ClientPaymentScreen'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import'./clientWhenScreen.css'
 type When='ahora'|'hoy'|'manana'|'programar';type Period='manana'|'tarde'|'noche';type Draft={when?:When;whenConfirmed?:boolean;scheduleAt?:string;urgent?:boolean;timePeriod?:Period;paymentMethod?:'cash'|'pix';voiceJourney?:boolean}
