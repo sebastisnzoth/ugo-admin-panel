@@ -3,7 +3,7 @@ import{useClientFlow}from'../flow/clientFlow'
 import{useRoleSession}from'../../../mvp/shared'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../../../mvp/uiEvents'
 import'../../../mvp/client-reference.css'
-import'../../../mvp/client-global-menu.css'
+import'./clientGlobalMenu.css'
 
 export function ClientGlobalMenu(){
  const[open,setOpen]=useState(false),flow=useClientFlow(),{supabase}=useRoleSession('client')
