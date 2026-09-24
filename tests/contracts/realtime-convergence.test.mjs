@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
-const clientUrl = new URL('../../src/mvp/ClientLiveTracking.tsx', import.meta.url)
+const clientUrl = new URL('../../src/features/client/order/ClientLiveTracking.tsx', import.meta.url)
 const providerUrl = new URL('../../src/mvp/provider/useProviderRealtime.ts', import.meta.url)
 
 test('client realtime scopes selected service and resyncs after reconnect', async () => {
