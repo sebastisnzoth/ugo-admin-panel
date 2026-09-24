@@ -1,0 +1,134 @@
+/* Responsive hardening for every Client screen.
+   Loaded last inside clientStyles.ts so it fixes layout ownership without reopening legacy layers. */
+.ugo-client-root{
+  width:100%;
+  max-width:100vw;
+  min-width:0;
+  overflow-x:hidden;
+}
+.ugo-client-root *,
+.ugo-client-root *::before,
+.ugo-client-root *::after{box-sizing:border-box}
+.ugo-client-root img,
+.ugo-client-root svg,
+.ugo-client-root canvas,
+.ugo-client-root video{max-width:100%}
+.ugo-client-root input,
+.ugo-client-root select,
+.ugo-client-root textarea,
+.ugo-client-root button{max-width:100%}
+.ugo-client-root main,
+.ugo-client-root section,
+.ugo-client-root article,
+.ugo-client-root aside,
+.ugo-client-root nav,
+.ugo-client-root form{min-width:0}
+.ugo-client-root .ugo-client-screen-overlay,
+.ugo-client-root .ugo-guided-request,
+.ugo-client-root .ugo-history-panel,
+.ugo-client-root .ugo-request-sheet,
+.ugo-client-root .ugo-provider-drawer{
+  max-width:100vw;
+}
+
+@media(max-width:760px){
+  .ugo-client-root{
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    overscroll-behavior-y:contain;
+  }
+
+  .ugo-client-root .ugo-home-screen{
+    padding-bottom:calc(118px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-client-root .ugo-home-mobile-nav{
+    left:8px!important;
+    right:8px!important;
+    width:auto!important;
+    max-width:none!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-client-root .prototype-hugo{
+    bottom:calc(94px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-client-root .ugo-client-screen-overlay{
+    inset:0!important;
+    width:100%!important;
+    max-width:100vw!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    border-radius:0!important;
+  }
+
+  .ugo-client-root .ugo-guided-request{
+    left:0!important;
+    right:0!important;
+    top:0!important;
+    bottom:0!important;
+    width:100%!important;
+    max-width:100vw!important;
+    max-height:100dvh!important;
+    transform:none!important;
+    overflow-y:auto!important;
+  }
+
+  .ugo-client-root .ugo-history-backdrop,
+  .ugo-client-root .ugo-request-backdrop,
+  .ugo-client-root .ugo-drawer-backdrop{
+    max-width:100vw!important;
+    overflow-x:hidden!important;
+  }
+
+  .ugo-client-root .ugo-history-panel,
+  .ugo-client-root .ugo-request-sheet,
+  .ugo-client-root .ugo-provider-drawer{
+    width:min(100%,calc(100vw - 16px))!important;
+    max-width:calc(100vw - 16px)!important;
+    max-height:calc(100dvh - 16px)!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  .ugo-client-root .ugo-home-layout,
+  .ugo-client-root .ugo-home-hero,
+  .ugo-client-root .ugo-home-services,
+  .ugo-client-root .ugo-home-map-card{
+    max-width:100%!important;
+    min-width:0!important;
+  }
+}
+
+@media(max-width:480px){
+  .ugo-client-root input,
+  .ugo-client-root select,
+  .ugo-client-root textarea{font-size:16px}
+
+  .ugo-client-root .ugo-home-hero h1{
+    font-size:clamp(30px,9vw,36px)!important;
+  }
+
+  .ugo-client-root .ugo-history-panel,
+  .ugo-client-root .ugo-request-sheet,
+  .ugo-client-root .ugo-provider-drawer{
+    width:calc(100vw - 12px)!important;
+    max-width:calc(100vw - 12px)!important;
+  }
+}
+
+@media(min-width:761px) and (max-width:1100px){
+  .ugo-client-root .ugo-home-layout,
+  .ugo-client-root .ugo-history-panel,
+  .ugo-client-root .ugo-guided-request{
+    max-width:calc(100vw - 32px)!important;
+  }
+}
