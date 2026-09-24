@@ -238,3 +238,50 @@ test("ugo_mark_arrived: backend error is surfaced as controlled MCP error", asyn
     (error) => error?.code === "backend_error" && error?.status === 503
   );
 });
+
+
+test("ugo_mark_arrived: backend response for another serviceId is rejected", async () => {
+  const { fetchImpl } = makeFetch({
+    arrival: {
+      status: "arrived",
+      service_id: SERVICE_B,
+      previous_state: "en_camino",
+      state: "llegado",
+      distance_m: 100,
+      location_age_ms: 1000,
+      idempotent: false,
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      markArrived(
+        { userId: PROVIDER_A, role: "provider", serviceId: SERVICE_A },
+        { env, fetchImpl }
+      ),
+    (error) => error?.code === "arrival_scope_mismatch"
+  );
+});
+
+test("ugo_mark_arrived: arrived response must confirm state llegado", async () => {
+  const { fetchImpl } = makeFetch({
+    arrival: {
+      status: "arrived",
+      service_id: SERVICE_A,
+      previous_state: "en_camino",
+      state: "en_camino",
+      distance_m: 100,
+      location_age_ms: 1000,
+      idempotent: false,
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      markArrived(
+        { userId: PROVIDER_A, role: "provider", serviceId: SERVICE_A },
+        { env, fetchImpl }
+      ),
+    (error) => error?.code === "backend_invalid_response"
+  );
+});
