@@ -58,6 +58,18 @@
     linear-gradient(180deg,#07131d 0%,#06111a 100%)!important;
 }
 
+@media(max-width:760px){
+  .ugo-client-root.ugo-client-screen-home{
+    height:100dvh !important;
+    min-height:0 !important;
+    overflow-x:hidden !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    overscroll-behavior-y:contain;
+  }
+}
+
 .ugo-client-root .ugo-home-screen{
   min-height:100dvh!important;
   background:transparent!important;
