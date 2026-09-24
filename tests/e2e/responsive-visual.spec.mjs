@@ -50,6 +50,7 @@ async function metrics(page,rootSelector){
   const root=document.querySelector(selector)
   const html=document.documentElement
   const style=root?getComputedStyle(root):null
+  const wide=[...document.querySelectorAll('*')].map(el=>{const r=el.getBoundingClientRect();return{el,r,cs:getComputedStyle(el)}}).filter(({r,cs})=>cs.display!=='none'&&cs.visibility!=='hidden'&&Number(cs.opacity)!==0&&r.width>1&&(r.left<-2||r.right>window.innerWidth+2||r.width>window.innerWidth+2)).sort((a,b)=>Math.max(b.r.right-window.innerWidth,-b.r.left,b.r.width-window.innerWidth)-Math.max(a.r.right-window.innerWidth,-a.r.left,a.r.width-window.innerWidth)).slice(0,12).map(({el,r})=>({tag:el.tagName,className:String(el.className||'').slice(0,120),left:Math.round(r.left),right:Math.round(r.right),width:Math.round(r.width)}))
   const fixed=[...document.querySelectorAll('*')].filter(el=>{
    const cs=getComputedStyle(el)
    if(!['fixed','sticky'].includes(cs.position))return false
@@ -73,6 +74,7 @@ async function metrics(page,rootSelector){
    overflowX:style?.overflowX??null,
    overflowY:style?.overflowY??null,
    fixedHorizontalEscapes:fixed,
+   wideElements:wide,
   }
  },rootSelector)
 }
@@ -93,6 +95,9 @@ for(const surface of surfaces){
    const m=await metrics(page,surface.root)
    const row={surface:surface.name,viewport:viewport.name,path:surface.path,...m}
    report.push(row)
+   if((m.rootScrollWidth??0)>(m.rootClientWidth??0)+1||m.docScrollWidth>m.innerWidth+1){
+    console.log('RESPONSIVE_OVERFLOW',JSON.stringify({surface:surface.name,viewport:viewport.name,doc:[m.docClientWidth,m.docScrollWidth],root:[m.rootClientWidth,m.rootScrollWidth],wideElements:m.wideElements}))
+   }
 
    expect.soft(m.rootExists,`${surface.name} ${viewport.name}: root exists`).toBe(true)
    expect.soft(m.docScrollWidth,`${surface.name} ${viewport.name}: global horizontal overflow`).toBeLessThanOrEqual(m.innerWidth+1)
