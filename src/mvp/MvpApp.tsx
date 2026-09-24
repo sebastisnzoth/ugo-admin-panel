@@ -19,7 +19,7 @@ import'./browser-role-shell.css'
 
 const AdminGate=lazy(()=>import('./AdminGate').then(module=>({default:module.AdminGate})))
 const DevelopmentDashboard=lazy(()=>import('./DevelopmentDashboard').then(module=>({default:module.DevelopmentDashboard})))
-const ClientRoot=lazy(()=>import('./client/ClientRoot').then(module=>({default:module.ClientRoot})))
+const ClientRoot=lazy(()=>import('../features/client/ClientRoot').then(module=>({default:module.ClientRoot})))
 const ProviderRoot=lazy(()=>import('./provider/ProviderRoot').then(module=>({default:module.ProviderRoot})))
 const UgoLanding=lazy(()=>import('./UgoLanding').then(module=>({default:module.UgoLanding})))
 const UgoWeb=lazy(()=>import('./UgoWeb').then(module=>({default:module.UgoWeb})))
