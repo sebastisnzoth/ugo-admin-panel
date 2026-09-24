@@ -105,12 +105,13 @@ async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker
  // Production compatibility: AuthToken currently rejects liveConnectConstraints.
  // Keep the API key server-side with a one-use short-lived token; the model
  // and transcription configuration are sent in the first WebSocket setup.
- const request={uses:1,expireTime,newSessionExpireTime}
+ const model=mode==='transcribe'?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL
+ const request={uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:{model:`models/${model}`,config:{responseModalities:[mode==='transcribe'?'TEXT':'AUDIO']}}}
  const response=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':geminiKey},body:JSON.stringify(request),signal:AbortSignal.timeout(8000)})
  const payload:any=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(payload?.error?.message||'Gemini Live no pudo emitir un token temporal'),{status:response.status>=400&&response.status<600?response.status:502})
  const token=String(payload?.name||'').trim();if(!token)throw Object.assign(new Error('Gemini Live devolvió un token temporal vacío'),{status:502})
- return{token,model:mode==='transcribe'?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL,expires_at:expireTime,mode}
+ return{token,model,expires_at:expireTime,mode}
 }
 
 function safeText(v:any,max=180){return String(v??'').replace(/[\r\n|]+/g,' ').trim().slice(0,max)}
