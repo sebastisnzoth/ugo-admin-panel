@@ -71,6 +71,41 @@ jobs:
       - name: Verify repository environment guard
         run: npm run verify:test-env
 
+      - name: Require human TEST credentials before expensive validation
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          required=(
+            UGO_TEST_CLIENT_EMAIL
+            UGO_TEST_CLIENT_PASSWORD
+            UGO_TEST_PROVIDER_EMAIL
+            UGO_TEST_PROVIDER_PASSWORD
+            UGO_TEST_ADMIN_EMAIL
+            UGO_TEST_ADMIN_PASSWORD
+          )
+
+          missing=()
+          for name in "${required[@]}"; do
+            if [[ -z "${!name}" ]]; then
+              missing+=("$name")
+            fi
+          done
+
+          if (( ${#missing[@]} > 0 )); then
+            echo "Required UGO TEST GitHub Secrets are missing:"
+            printf ' - %s\n' "${missing[@]}"
+            exit 1
+          fi
+
+          if [[ "$UGO_TEST_CLIENT_EMAIL" != "cliente@ugo.com.ar" ]]; then
+            echo "UGO_TEST_CLIENT_EMAIL must identify the designated TEST client account cliente@ugo.com.ar."
+            exit 1
+          fi
+
+          echo "All six human UGO TEST credential secrets are present."
+          echo "Designated TEST client identity matches cliente@ugo.com.ar."
+
       - name: TypeScript and production build
         run: npm run build
 
