@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useRef,useState}from'react';
+import{useCallback,useEffect,useRef,useState}from'react';
 import{supabase}from'../lib/supabase';
 
 type OrbState='idle'|'listening'|'thinking'|'speaking';
