@@ -1,8 +1,8 @@
 # Client CSS architecture inventory
 
-Status: active refactor inventory for `src/features/client/clientStyles.ts`.
+Status: structural Client CSS boundary complete; legacy consolidation remains incremental.
 
-Baseline main: `15c09efbc00bc2a5b8b354918545837f354f27e7`.
+Baseline main: `d596c690ba25541cb27998d57d75d694d89ee961`.
 
 ## Boundary
 
