@@ -35,7 +35,6 @@ Estas capas Cliente siguen existiendo por compatibilidad, pero no pueden ganar n
 - `src/features/client/legacy/ai/clientAiStudioGuidedComplete.css` (legacy: `client-ai-studio-guided-complete.css`)
 - `client-real-test-fixes.css`
 - `src/features/client/legacy/request/clientFlowReference2026.css` (legacy: `client-flow-reference-2026.css`)
-- `src/features/client/legacy/home/clientHomeAppV3.css` (legacy: `client-home-app-v3.css`)
 - `src/features/client/legacy/premium/clientPremium2026.css` (legacy: `client-premium-2026.css`)
 
 ## Gate de retiro
@@ -54,34 +53,29 @@ No se retiran varias capas históricas en un commit de limpieza ciega. Cada reti
 
 ## Inventario de composición Cliente
 
-`src/features/client/clientStyles.ts` mantiene **25 capas** en orden de cascada. El orden es contrato y no debe reordenarse durante retiros incrementales:
+`src/features/client/clientStyles.ts` mantiene **20 capas** en orden de cascada. El orden es contrato y no debe reordenarse durante retiros incrementales:
 
-1. `./request/clientGuidedRequest.css`
-2. `./payments/clientPaymentChoice.css`
-3. `./ui/clientResponsiveLayout.css`
-4. `./conversation/clientConversationalStage.css`
-5. `./conversation/clientWebConversational.css`
-6. `./legacy/clientVisualPolish.css`
-7. `./legacy/request/clientGuidedRequestRedesign.css`
-8. `./request/clientGuidedRequestReview.css`
-9. `./legacy/clientRedesign2026.css`
-10. `./ai/clientAiStudioFlow.css`
-11. `./ai/clientGoogleAiStudio.css`
-12. `./ai/clientStudioReference.css`
-13. `./radar/clientStudioRadar.css`
-14. `./legacy/ai/clientAiStudioProductionLock.css`
-15. `./legacy/ai/clientAiStudioProductionOps.css`
-16. `./legacy/ai/clientAiStudioFinalLock.css`
-17. `./legacy/ai/clientAiStudioGuidedComplete.css`
-18. `../../mvp/client/client-real-test-fixes.css`
-19. `./legacy/request/clientFlowReference2026.css`
-20. `./ui/clientPersistentHeader.css`
-21. `./ui/clientDesktopShell.css`
-22. `./ui/clientHomeScreen.css`
-23. `./legacy/home/clientHomeAppV3.css`
-24. `./legacy/premium/clientPremium2026.css`
-25. `./profile/clientProfilePremium2026.css`
+1. `./payments/clientPaymentChoice.css`
+2. `./ui/clientResponsiveLayout.css`
+3. `./conversation/clientConversationalStage.css`
+4. `./conversation/clientWebConversational.css`
+5. `./legacy/clientVisualPolish.css`
+6. `./legacy/clientRedesign2026.css`
+7. `./ai/clientAiStudioFlow.css`
+8. `./ai/clientGoogleAiStudio.css`
+9. `./ai/clientStudioReference.css`
+10. `./radar/clientStudioRadar.css`
+11. `./legacy/ai/clientAiStudioProductionLock.css`
+12. `./legacy/ai/clientAiStudioProductionOps.css`
+13. `./legacy/ai/clientAiStudioFinalLock.css`
+14. `../../mvp/client/client-real-test-fixes.css`
+15. `./legacy/request/clientFlowReference2026.css`
+16. `./ui/clientPersistentHeader.css`
+17. `./ui/clientDesktopShell.css`
+18. `./ui/clientHomeScreen.css`
+19. `./legacy/premium/clientPremium2026.css`
+20. `./profile/clientProfilePremium2026.css`
 
-## Hotspot de solapamiento confirmado
+## Retiro Home v3
 
-La auditoría actual detectó **51 entradas de selector compartidas** entre `client-home-app-v3.css` y `client-premium-2026.css`. Ambas capas siguen activas y su orden actual se conserva: no se elimina ninguna hasta contar con comparación de declaraciones, contratos verdes, build de producción e inspección visual del Home.
+`client-home-app-v3.css` dejó de ser una capa independiente. Sus declaraciones se consolidaron al final de `src/features/client/ui/clientHomeScreen.css`, exactamente en el antiguo slot pre-Premium, y `clientPremium2026.css` conserva su posición posterior. El contrato de estilos prohíbe reintroducir el import legacy separado.
