@@ -43,6 +43,7 @@ export function SecMapaOperativo(){
   React.useEffect(()=>{load()},[load]);
   React.useEffect(()=>{if(!auto)return;const t=setInterval(load,15000);return()=>clearInterval(t)},[auto,load]);
   React.useEffect(()=>{if(mapRef.current||!mapEl.current)return;const init=()=>{if(mapRef.current||!mapEl.current)return;const map=L.map(mapEl.current,{zoomControl:true,attributionControl:false}).setView([-27.5969,-48.5495],12);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);mapRef.current=map;[100,400,800].forEach(t=>setTimeout(()=>map.invalidateSize(),t))};if((window as any).L)init();else{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=init;document.head.appendChild(js)}},[]);
+  React.useEffect(()=>{const node=mapEl.current;if(!node)return;const resize=()=>window.requestAnimationFrame(()=>mapRef.current?.invalidateSize(false));const observer=typeof ResizeObserver!=='undefined'?new ResizeObserver(resize):null;observer?.observe(node);window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);return()=>{observer?.disconnect();window.removeEventListener('resize',resize);window.removeEventListener('orientationchange',resize)}},[]);
 
   const catEmoji=React.useMemo(()=>Object.fromEntries(cats.map(c=>[c.slug,c.emoji||'🔧'])),[cats]);
   const visible=React.useMemo(()=>users.filter(u=>{
