@@ -12,6 +12,7 @@ test('client service detail lives behind the order feature boundary',async()=>{
  ])
  assert.equal(legacy.trim(),"export {ClientServiceDetail as default,ClientServiceDetail} from '../../features/client/order/ClientServiceDetail'")
  assert.match(canonical,/export function ClientServiceDetail/)
+ assert.match(canonical,/from'\.\/ClientCompletionReview'/)
  assert.match(canonical,/from'\.\.\/rating\/ClientRatingPrompt'/)
  assert.match(canonical,/from'\.\.\/flow\/clientFlow'/)
  assert.match(canonical,/from'..\/payments\/ClientPaymentChoice'/);
