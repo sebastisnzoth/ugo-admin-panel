@@ -39,10 +39,11 @@ test('canonical Hugo can create another request while active services exist',()=
 
 test('cancellation contract requires one resolved service id', () => {
   assert.match(types, /cancelService: \(serviceId: string\) => Promise<boolean>/)
-  assert.match(hugo, /resolveServiceCandidates\(source,services,true\)/)
-  assert.match(hugo, /kind:'service',serviceId:candidates\[0\]\.id/)
-  assert.match(hugo, /cancelService\(pending\.serviceId\)/)
-  assert.match(hugo, /Encontré \$\{candidates\.length\} pedidos que se pueden cancelar/)
+  assert.match(hugo, /name==='cancel_service'/)
+  assert.match(hugo, /String\(args\.service_id\|\|''\)/)
+  assert.match(hugo, /args\.confirmed!==true/)
+  assert.match(hugo, /cancelService\(serviceId\)/)
+  assert.doesNotMatch(hugo, /cancelService\(\)/)
 })
 
 test('Hugo orb uses authenticated Gemini Live while UGO keeps action authority',()=>{assert.match(hugo,/UGOVoiceBridge/);assert.match(hugo,/ugo:native-voice-tool-call/);assert.match(hugo,/sendToolResponse/);assert.doesNotMatch(hugo,/companion_mode:true|askGeminiCompanion/)})
