@@ -62,11 +62,15 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
    writing=true
    const serviceId=service?.estado==='en_camino'?service.id:null
-   const{data,error}=await rpc.rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:serviceId})
+   const capturedAt=new Date(Number(pos.timestamp||Date.now())).toISOString()
+   const{data,error}=serviceId
+    ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
+    :await rpc.rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:null})
    writing=false
    if(!error){
     lastWrite=Date.now();lastPoint=point
-    const meters=data==null?null:Number(data),validMeters=Number.isFinite(meters)?meters:null
+    const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
+    const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
     setDistanceToClient(validMeters)
     if(serviceId&&validMeters!=null&&validMeters<=ARRIVAL_RADIUS_M&&autoArrivalRef.current&&attemptedServiceRef.current!==serviceId){
      attemptedServiceRef.current=serviceId
