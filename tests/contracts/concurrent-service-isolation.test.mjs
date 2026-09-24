@@ -38,7 +38,7 @@ test('Activity lists all owned orders and opens or cancels one exact service id'
 
 test('client exact-order detail does not mix operational surfaces from another service',async()=>{
  const[root,nav,boundary,detail]=await Promise.all([
-  read('src/mvp/client/ClientRoot.tsx'),
+  read('src/features/client/ClientRoot.tsx'),
   read('src/features/client/navigation/useClientRootNavigation.ts'),
   read('src/features/client/ui/ClientOrderDetailBoundary.tsx'),
   read('src/features/client/order/ClientServiceDetail.tsx'),
