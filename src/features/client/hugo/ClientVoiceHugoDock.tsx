@@ -44,18 +44,6 @@ async function reverseGeocode(lat:number,lng:number){
  }catch{return null}
 }
 
-async function resolveServiceCandidates(source:string,services:HugoService[],onlyCancellable=false){
- let rows=services.filter(item=>!onlyCancellable||CANCELLABLE.includes(item.estado))
- if(rows.length<=1)return rows
- const value=norm(source),number=value.match(/(?:servicio|pedido|#)\s*#?\s*(\d+)/)?.[1]
- if(number){const exact=rows.filter(item=>String(item.numero||'')===number||String(item.id).startsWith(number));if(exact.length)return exact}
- const category=await resolveVoiceCategory(source).catch(()=>null)
- if(category){const categoryName=norm(category.nombre||category.slug||'');const filtered=rows.filter(item=>String(item.categoria_id||'')===String(category.id||'')||norm(item.categoria?.nombre||'')===categoryName||value.includes(norm(item.categoria?.nombre||'')));if(filtered.length)rows=filtered}
- const providerMatches=rows.filter(item=>{const name=norm(item.proveedor?.nombre||'');if(!name)return false;return name.split(/\s+/).filter(token=>token.length>=4).some(token=>value.includes(token))})
- if(providerMatches.length)rows=providerMatches
- return rows.filter(item=>dayMatches(source,item))
-}
-
 export function ClientVoiceHugoDock({accessToken,services=[],clientActions,onNavigateHome,requestComposerOpen=false}:Props){
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false)
