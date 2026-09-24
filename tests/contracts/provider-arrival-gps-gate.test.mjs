@@ -73,7 +73,7 @@ test('tracking freshness is sourced from ubicacion_updated_at rather than generi
 
 test('direct or legacy provider-location writes cannot preserve trusted arrival freshness',async()=>{
  const sql=await read('supabase/migrations/20260924162000_provider_arrival_gps_gate.sql')
- assert.match(sql,/create or replace function private\.guard_provider_location_trust/i)
+ assert.match(sql,/create or replace function private\.guard_provider_location_trust[\s\S]*as \$\$/i)
  assert.match(sql,/current_setting\('ugo\.trusted_provider_location',true\)/i)
  assert.match(sql,/new\.ubicacion_updated_at := null/i)
  assert.match(sql,/new\.ubicacion_accuracy_m := null/i)
