@@ -98,7 +98,7 @@ jobs:
           src/mvp/PaymentTimeline.tsx
           src/features/client/order/ClientLiveTracking.tsx
           src/features/client/order/ClientActiveMap.tsx
-          src/mvp/ClientGlobalMenu.tsx
+          src/features/client/ui/ClientGlobalMenu.tsx
           src/mvp/AppLocationButton.tsx
           src/mvp/uiEvents.ts
           src/mvp/ProviderLocationTracker.tsx
