@@ -95,3 +95,6 @@ test('client live tracking CSS stays local to the order feature with legacy comp
 
 
 test('client evidence gallery CSS stays local to the order feature with legacy compatibility',async()=>{const[gallery,css,legacy]=await Promise.all([read('src/features/client/order/ClientEvidenceGallery.tsx'),read('src/features/client/order/clientEvidenceGallery.css'),read('src/mvp/client/client-service-evidence.css')]);assert.match(gallery,/\.\/clientEvidenceGallery\.css/);assert.doesNotMatch(gallery,/mvp\/client\/client-service-evidence\.css/);assert.match(css,/\.ugo-client-evidence\{/);assert.match(css,/\.ugo-client-evidence-grid/);assert.match(legacy,/features\/client\/order\/clientEvidenceGallery\.css/)})
+
+
+test('client global menu CSS stays local to the UI feature with legacy compatibility',async()=>{const[menu,css,legacy]=await Promise.all([read('src/features/client/ui/ClientGlobalMenu.tsx'),read('src/features/client/ui/clientGlobalMenu.css'),read('src/mvp/client-global-menu.css')]);assert.match(menu,/\.\/clientGlobalMenu\.css/);assert.doesNotMatch(menu,/mvp\/client-global-menu\.css/);assert.match(css,/\.ugo-client-global-trigger/);assert.match(css,/\.ugo-client-global-drawer/);assert.match(legacy,/features\/client\/ui\/clientGlobalMenu\.css/)})
