@@ -270,7 +270,14 @@ export async function getProviderLocation(
     };
   }
 
-  if (row.servicio_id && row.servicio_id !== parsed.serviceId) {
+  const responseServiceId =
+    typeof row.servicio_id === "string"
+      ? row.servicio_id
+      : typeof row.service_id === "string"
+        ? row.service_id
+        : null;
+
+  if (responseServiceId && responseServiceId !== parsed.serviceId) {
     throw new UgoMcpError(
       "tracking_scope_mismatch",
       "El tracking recibido no pertenece al serviceId solicitado",
