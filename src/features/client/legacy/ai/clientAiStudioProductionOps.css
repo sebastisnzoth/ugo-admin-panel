@@ -95,7 +95,6 @@
   grid-column:1/-1!important;display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;
   margin:0!important;padding:18px!important;border:1px solid #e5eeff!important;border-radius:20px!important;background:#fff!important;box-shadow:none!important
 }
-.ugo-client-root .ugo-client-profile-form>div{display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important}
 .ugo-client-root .ugo-client-profile-form label{display:grid!important;gap:6px!important;color:#39464e!important;font-size:10px!important;font-weight:850!important}
 .ugo-client-root .ugo-client-profile-form input,
 .ugo-client-root .ugo-client-profile-form select{
