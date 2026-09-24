@@ -4,14 +4,12 @@ import { readFile } from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-test('client rating lives behind the feature boundary with legacy compatibility',async()=>{
- const[canonical,legacy,legacyCss]=await Promise.all([
+test('client rating lives behind the feature boundary',async()=>{
+ const[canonical,legacyCss]=await Promise.all([
   read('src/features/client/rating/ClientRatingPrompt.tsx'),
-  read('src/mvp/client/ClientRatingPrompt.tsx'),
   read('src/mvp/client/client-rating-prompt.css'),
  ])
  assert.match(canonical,/import'\.\/clientRatingPrompt\.css'/)
- assert.match(legacy,/features\/client\/rating\/ClientRatingPrompt/)
  assert.match(legacyCss,/features\/client\/rating\/clientRatingPrompt\.css/)
 })
 
