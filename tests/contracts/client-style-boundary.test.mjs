@@ -89,3 +89,6 @@ test('late profile owns profile form grid declarations pruned from production op
 
 
 test('all active Client style composition resolves inside features/client',async()=>{const styles=await read('src/features/client/clientStyles.ts');assert.equal(styles.includes('../../mvp/client'),false);for(const specifier of styles.matchAll(/import'([^']+\.css)'/g))assert.ok(specifier[1].startsWith('./'),specifier[1])})
+
+
+test('client live tracking CSS stays local to the order feature with legacy compatibility',async()=>{const[tracking,css,legacy]=await Promise.all([read('src/features/client/order/ClientLiveTracking.tsx'),read('src/features/client/order/clientLiveTracking.css'),read('src/mvp/client-live-tracking.css')]);assert.match(tracking,/\.\/clientLiveTracking\.css/);assert.doesNotMatch(tracking,/mvp\/client-live-tracking\.css/);assert.match(css,/\.ugo-live-tracking\{/);assert.match(css,/\.ugo-active-map-wrap\{/);assert.match(legacy,/features\/client\/order\/clientLiveTracking\.css/)})

@@ -1,7 +1,7 @@
 import React,{Suspense,lazy,useCallback,useEffect,useMemo,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
-import'../../../mvp/client-live-tracking.css'
+import'./clientLiveTracking.css'
 
 const ClientActiveMap=lazy(()=>import('./ClientActiveMap').then(module=>({default:module.ClientActiveMap})))
 type TrackedService={id:string;numero:number|string;estado:'asignado'|'en_camino'|'llegado';proveedor_id:string|null}
