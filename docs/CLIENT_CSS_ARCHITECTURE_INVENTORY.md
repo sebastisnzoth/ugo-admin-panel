@@ -33,7 +33,7 @@ The live list below must mirror `src/features/client/clientStyles.ts`.
 | 11 | `legacy/ai/clientAiStudioProductionLock.css` | legacy/ai | legacy lock |
 | 12 | `legacy/ai/clientAiStudioProductionOps.css` | legacy/ai | legacy ops override |
 | 13 | `legacy/ai/clientAiStudioFinalLock.css` | legacy/ai | legacy final lock |
-| 14 | `../../mvp/client/client-real-test-fixes.css` | mvp legacy | last direct Client CSS dependency outside feature boundary |
+| 14 | `legacy/clientRealTestFixes.css` | legacy | migrated compatibility layer inside feature boundary |
 | 15 | `legacy/request/clientFlowReference2026.css` | legacy/request | legacy reference |
 | 16 | `ui/clientPersistentHeader.css` | ui | canonical |
 | 17 | `ui/clientDesktopShell.css` | ui | canonical desktop override |
@@ -89,14 +89,14 @@ Representative repeated selectors:
 
 1. The CSS composition entry point is already centralized in `clientStyles.ts`; `ClientRoot` does not own the legacy import list anymore.
 2. Active style count is 25, not 26.
-3. The only direct CSS dependency still reaching back into `src/mvp/client` is `client-real-test-fixes.css`.
-4. That file is currently touched by open PR **#92** (`refactor(client): reuse tokens in real-test fixes`), so this refactor must not move or rewrite it until that PR is integrated or closed.
+3. No active Client CSS dependency reaches back into `src/mvp/client`; all composition now resolves under `src/features/client/**`.
+4. PR **#92** is obsolete for this file: its blob is byte-for-byte identical to `main`, so the compatibility stylesheet can be relocated without value changes.
 5. Large visual layers cannot be deleted based on selector counts alone. Their order is behavior.
 
 ## Incremental migration order
 
 1. Keep `clientStyles.ts` as the only root composition boundary.
-2. After PR #92 is resolved, move `client-real-test-fixes.css` behind `features/client/legacy` with a compatibility shim; do not change values during the move.
+2. Keep `clientRealTestFixes.css` under `features/client/legacy`; do not change values during ownership-only moves.
 3. Consolidate one ownership area at a time, beginning with canonical-vs-legacy rules that have identical declaration blocks in identical media contexts.
 4. Preserve late-layer cascade order while extracting feature-owned rules.
 5. For every deletion, add/update a contract that pins the surviving owner and run build + Core CI.
@@ -138,6 +138,8 @@ Representative repeated selectors:
 - 2026-09-23: pruned the final 8 strictly redundant base category/option/evidence blocks from `legacy/request/clientGuidedRequestRedesign.css`; `legacy/ai/clientAiStudioGuidedComplete.css` owns every removed property with equal-or-stronger priority. Strict base redundancy for this pair is now zero.
 
 - 2026-09-24: pruned the redundant base `.ugo-client-profile-form>div` grid block from `legacy/ai/clientAiStudioProductionOps.css`; the later `profile/clientProfilePremium2026.css` owns the same declarations with the same `!important` priority.
+
+- 2026-09-24: moved the final active Client stylesheet from `src/mvp/client/client-real-test-fixes.css` to `src/features/client/legacy/clientRealTestFixes.css` without changing declarations, closing the Client CSS composition boundary.
 
 ## Exit criteria for CSS refactor
 
