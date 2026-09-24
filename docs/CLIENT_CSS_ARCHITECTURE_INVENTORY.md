@@ -2,7 +2,7 @@
 
 Status: active refactor inventory for `src/features/client/clientStyles.ts`.
 
-Baseline main: `8d6e5a7ae6d0f122409efc3f9f93acf5f5d8bd57`.
+Baseline main: `15c09efbc00bc2a5b8b354918545837f354f27e7`.
 
 ## Boundary
 
@@ -18,8 +18,6 @@ The boundary currently composes **20 active layers**. The original inventory ref
 
 The live list below must mirror `src/features/client/clientStyles.ts`.
 
-| # | Layer | Owner | Classification |
-|---:|---|---|---|
 | # | Layer | Owner | Classification |
 |---:|---|---|---|
 | 1 | `payments/clientPaymentChoice.css` | payments | canonical |
