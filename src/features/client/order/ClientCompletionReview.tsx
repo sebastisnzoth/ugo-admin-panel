@@ -1,6 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
-import{ClientEvidenceGallery}from'../../../mvp/ClientEvidenceGallery'
+import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
 
 type ReviewService={
  id:string
