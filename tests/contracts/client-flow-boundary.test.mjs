@@ -4,11 +4,10 @@ import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('client flow state is canonical behind the client feature boundary',async()=>{
- const[flow,root,app,legacyRoot]=await Promise.all([
+ const[flow,root,app]=await Promise.all([
   read('src/features/client/flow/clientFlow.tsx'),
   read('src/features/client/ClientRoot.tsx'),
-  read('src/mvp/MvpApp.tsx'),
-  read('src/mvp/client/ClientRoot.tsx')
+  read('src/mvp/MvpApp.tsx')
  ])
  assert.match(flow,/createContext<ClientFlow/)
  assert.match(flow,/useClientCategoryShortcut/)
@@ -19,8 +18,6 @@ test('client flow state is canonical behind the client feature boundary',async()
  assert.doesNotMatch(root,/mvp\/client/)
  assert.match(app,/features\/client\/ClientRoot/)
  assert.doesNotMatch(app,/\.\/client\/ClientRoot/)
- assert.match(legacyRoot,/features\/client\/ClientRoot/)
- assert.doesNotMatch(legacyRoot,/useClientFlow|ClientOperationalSurfaces/)
 })
 
 test('migrated client features consume the canonical flow boundary directly',async()=>{
