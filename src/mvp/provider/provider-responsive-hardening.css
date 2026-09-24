@@ -1,0 +1,134 @@
+/* Responsive hardening for every Provider screen.
+   Loaded after the provider visual layers so mobile/tablet behavior remains authoritative. */
+.ugo-provider-root{
+  width:100%;
+  max-width:100vw;
+  min-width:0;
+  overflow-x:hidden;
+}
+.ugo-provider-root *,
+.ugo-provider-root *::before,
+.ugo-provider-root *::after{box-sizing:border-box}
+.ugo-provider-root img,
+.ugo-provider-root svg,
+.ugo-provider-root canvas,
+.ugo-provider-root video{max-width:100%}
+.ugo-provider-root input,
+.ugo-provider-root select,
+.ugo-provider-root textarea,
+.ugo-provider-root button{max-width:100%}
+.ugo-provider-root .provider-screen,
+.ugo-provider-root .provider-card,
+.ugo-provider-root .provider-offer-sheet,
+.ugo-provider-root .provider-job-summary,
+.ugo-provider-root .provider-job-detail-sheet{min-width:0}
+
+@media(max-width:760px){
+  .ugo-provider-root{
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    touch-action:pan-y;
+    overscroll-behavior-y:contain;
+    padding-bottom:0!important;
+  }
+
+  .ugo-provider-root .provider-screen{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:16px 12px calc(118px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-provider-root .provider-bottom-nav{
+    left:8px!important;
+    right:8px!important;
+    bottom:max(8px,env(safe-area-inset-bottom))!important;
+    transform:none!important;
+    width:auto!important;
+    max-width:none!important;
+  }
+
+  .ugo-provider-root .provider-global-hugo{
+    bottom:calc(96px + env(safe-area-inset-bottom))!important;
+    max-width:calc(100vw - 20px)!important;
+  }
+
+  .ugo-provider-root .provider-arrival-toast{
+    bottom:calc(100px + env(safe-area-inset-bottom))!important;
+    width:calc(100vw - 20px)!important;
+    max-width:460px!important;
+  }
+
+  .ugo-provider-root .provider-job-detail-sheet{
+    width:calc(100vw - 12px)!important;
+    max-width:calc(100vw - 12px)!important;
+    max-height:calc(100dvh - 12px)!important;
+    overflow-y:auto!important;
+  }
+
+  .ugo-provider-root .provider-top,
+  .ugo-provider-root .provider-section-head,
+  .ugo-provider-root .provider-evidence-head{
+    min-width:0;
+  }
+}
+
+@media(max-width:560px){
+  .ugo-provider-root .provider-top,
+  .ugo-provider-root .provider-section-head{
+    align-items:stretch!important;
+    flex-direction:column!important;
+  }
+
+  .ugo-provider-root .provider-status,
+  .ugo-provider-root .provider-top .provider-primary,
+  .ugo-provider-root .provider-section-head .provider-primary{
+    width:100%!important;
+  }
+
+  .ugo-provider-root .provider-grid,
+  .ugo-provider-root .provider-home-grid,
+  .ugo-provider-root .provider-facts,
+  .ugo-provider-root .provider-actions,
+  .ugo-provider-root .provider-decision-facts,
+  .ugo-provider-root .provider-opportunity-facts,
+  .ugo-provider-root .provider-balance-grid{
+    grid-template-columns:1fr!important;
+  }
+
+  .ugo-provider-root .provider-home-grid>:last-child,
+  .ugo-provider-root .provider-decision-facts>div:nth-child(3){
+    grid-column:auto!important;
+  }
+
+  .ugo-provider-root .provider-opportunity{
+    align-items:stretch!important;
+    flex-direction:column!important;
+  }
+
+  .ugo-provider-root .provider-opportunity .provider-primary,
+  .ugo-provider-root .provider-main-action,
+  .ugo-provider-root .provider-wide{
+    width:100%!important;
+  }
+
+  .ugo-provider-root .provider-evidence-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+
+  .ugo-provider-root input,
+  .ugo-provider-root select,
+  .ugo-provider-root textarea{font-size:16px}
+}
+
+@media(min-width:761px) and (max-width:999px){
+  .ugo-provider-root .provider-screen{
+    width:min(100%,820px)!important;
+    max-width:100%!important;
+    padding-inline:24px!important;
+  }
+}

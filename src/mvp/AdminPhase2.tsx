@@ -21,6 +21,7 @@ import{
 import'./admin-phase2.css'
 import'./admin-operations-menu.css'
 import'./admin-uiux-final.css'
+import'./admin-responsive-hardening.css'
 
 type Section='home'|'operations'|'people'|'finance'|'settings'|'superadmin'
 type OperationView='overview'|'map'|'services'|'alerts'|'disputes'|'scout'|'history'|'messages'
