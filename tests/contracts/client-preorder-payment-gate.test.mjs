@@ -41,4 +41,4 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
 })
 
 
-test('client payment screen implementation lives behind the payments feature boundary',async()=>{const[shim,screen,css]=await Promise.all([read('src/mvp/client/ClientPaymentScreen.tsx'),read('src/features/client/payments/ClientPaymentScreen.tsx'),read('src/features/client/payments/clientPaymentScreen.css')]);assert.match(shim,/features\/client\/payments\/ClientPaymentScreen/);assert.doesNotMatch(shim,/useState<Method>/);assert.match(screen,/useState<Method>\('cash'\)/);assert.match(screen,/clientPaymentScreen\.css/);assert.match(css,/\.ugo-payment-screen/);assert.ok(css.length>3000)})
+test('client payment screen implementation lives behind the payments feature boundary',async()=>{const[screen,css]=await Promise.all([read('src/features/client/payments/ClientPaymentScreen.tsx'),read('src/features/client/payments/clientPaymentScreen.css')]);assert.match(screen,/useState<Method>\('cash'\)/);assert.doesNotMatch(screen,/mvp\/client\/ClientPaymentScreen/);assert.match(screen,/clientPaymentScreen\.css/);assert.match(css,/\.ugo-payment-screen/);assert.ok(css.length>3000)})
