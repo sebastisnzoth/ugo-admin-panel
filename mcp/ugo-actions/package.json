@@ -1,12 +1,12 @@
 {
   "name": "ugo-actions-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Local MCP action layer for UGO. Deterministic, service-scoped tools for Codex/Hugo development.",
   "scripts": {
     "start": "node src/index.js",
-    "check": "node --check src/index.js && node --check src/currentJob.js && node --check src/serviceReads.js",
+    "check": "node --check src/index.js && node --check src/currentJob.js && node --check src/serviceReads.js && node --check src/arrival.js",
     "test": "node --test test/*.test.mjs",
     "validate": "npm run check && npm test"
   },
