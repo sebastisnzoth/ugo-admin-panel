@@ -3,3 +3,38 @@
 @media (max-width:1024px){.uw-header{height:64px;border-radius:12px;padding:0 24px}.uw-brand{color:#17211f;font-size:21px;font-weight:600}.uw-search,.uw-avatar,.uw-crumb{display:none}.uw-home{display:block;padding:28px 24px}.uw-home>.uw-map{height:330px;border-radius:12px}.uw-side{display:block}.uw-side>.uw-card:first-child,.uw-side>.uw-card:nth-child(n+3),.uw-hugo{display:none}.uw-side>.uw-card:nth-child(2){height:130px;border-radius:12px;margin-top:24px;padding:22px 20px}.uw-side>.uw-card:nth-child(2) h2{font-size:14px}.uw-side>.uw-card:nth-child(2) .uw-verified{display:inline;margin:0 10px}.uw-mobile-nav{display:none}}
 @media (max-width:768px){.uw-header{padding:0 24px}.uw-brand{color:var(--green)}.uw-home{padding:28px 24px 84px}.uw-home>.uw-map{height:300px}.uw-side>.uw-card:nth-child(2){margin-top:24px;height:130px}.uw-mobile-nav{display:none}}
 @media (max-width:480px){.uw-header{height:64px;padding:0 24px}.uw-home{padding:28px 24px 84px}.uw-home>.uw-map{height:220px;border-radius:12px}.uw-side>.uw-card:nth-child(2){height:110px;margin-top:24px;padding:20px}.uw-side>.uw-card:nth-child(2) h2{font-size:14px;margin:0 0 4px}.uw-side>.uw-card:nth-child(2) p{font-size:14px;margin:0}.uw-side>.uw-card:nth-child(2) .uw-verified,.uw-side>.uw-card:nth-child(2) .uw-link{display:none}.uw-mobile-nav{position:fixed;z-index:10;display:flex;left:0;right:0;bottom:0;height:62px;border-radius:12px 12px 0 0;background:#fff;justify-content:space-around;align-items:center}.uw-mobile-nav button{border:0;background:none;color:var(--muted);font:600 11px inherit}.uw-mobile-nav button:first-child{color:var(--green)}}
+
+
+/* The global runtime locks document scroll on narrow screens, so UgoWeb must own it. */
+@media(max-width:760px){
+ .ugo-web{width:100%;max-width:100vw;height:100dvh;min-height:0;max-height:100dvh;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;scroll-padding-bottom:82px}
+ .ugo-web>*{min-width:0;max-width:100%}
+ .uw-header{position:sticky;top:0;z-index:30;max-width:100vw}
+ .uw-home,.uw-results,.uw-profile,.uw-request,.uw-active,.uw-close,.uw-payment,.uw-receipt,.uw-rating,.uw-history,.uw-special,.uw-client-profile{max-width:100%;min-width:0;padding-bottom:calc(84px + env(safe-area-inset-bottom))}
+ .uw-profile-grid,.uw-request-grid,.uw-close-grid,.uw-payment-grid,.uw-special-grid,.uw-client-profile,.uw-client-cards,.uw-active{min-width:0}
+ .uw-card,.uw-person,.uw-map,.uw-search-overlay,.uw-tracking-panel{max-width:100%;min-width:0}
+ .uw-map,.uw-map-full{overflow:hidden}
+ .uw-mobile-nav{bottom:0;padding-bottom:env(safe-area-inset-bottom);height:calc(62px + env(safe-area-inset-bottom));max-width:100vw}
+ .uw-search-overlay{max-height:calc(100dvh - 86px);overflow-y:auto}
+ .uw-input,.ugo-web input,.ugo-web textarea,.ugo-web select{font-size:16px}
+ .uw-tracking{height:calc(100dvh - 64px);min-height:0;overflow:hidden}
+}
+@media(max-width:360px){
+ .uw-header{padding-inline:12px}
+ .uw-home,.uw-results,.uw-profile,.uw-request,.uw-active,.uw-close,.uw-payment,.uw-receipt,.uw-rating,.uw-history,.uw-special,.uw-client-profile{padding-left:12px;padding-right:12px}
+ .uw-search-overlay{width:calc(100% - 20px);top:12px;padding:20px 16px}
+ .uw-person{padding:14px}
+ .uw-client-summary{padding-left:96px}
+ .uw-client-avatar{left:16px}
+}
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+ .ugo-web{height:100dvh;min-height:0;overflow-x:hidden;overflow-y:auto;scroll-padding-bottom:64px}
+ .uw-header{height:56px;padding:0 14px}
+ .uw-search,.uw-avatar{display:none}
+ .uw-home,.uw-results,.uw-profile,.uw-request,.uw-active,.uw-close,.uw-payment,.uw-receipt,.uw-rating,.uw-history,.uw-special,.uw-client-profile{padding:12px 14px 66px}
+ .uw-home,.uw-results,.uw-profile-grid,.uw-request-grid,.uw-active,.uw-close-grid,.uw-payment-grid,.uw-special-grid,.uw-client-profile,.uw-client-cards{grid-template-columns:1fr}
+ .uw-map,.uw-results .uw-map,.uw-active .uw-map,.uw-request-grid .uw-map{height:220px}
+ .uw-tracking{height:calc(100dvh - 56px)}
+ .uw-search-overlay{top:10px;width:min(640px,calc(100% - 20px));min-height:0;max-height:calc(100dvh - 76px);padding:18px 20px;overflow-y:auto}
+ .uw-mobile-nav{display:flex;height:56px;padding-bottom:env(safe-area-inset-bottom)}
+}
