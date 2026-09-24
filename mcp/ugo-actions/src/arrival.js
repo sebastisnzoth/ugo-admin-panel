@@ -22,11 +22,28 @@ function normalizeArrivalResponse(value, serviceId) {
     );
   }
 
+  const responseServiceId =
+    typeof value.service_id === "string" ? value.service_id : serviceId;
+  if (responseServiceId !== serviceId) {
+    throw new UgoMcpError(
+      "arrival_scope_mismatch",
+      "El backend devolvió una llegada para otro serviceId",
+      502
+    );
+  }
+
   const status = String(value.status ?? "");
   if (status === "arrived") {
+    if (value.state != null && value.state !== "llegado") {
+      throw new UgoMcpError(
+        "backend_invalid_response",
+        "El backend confirmó llegada con un estado incompatible",
+        502
+      );
+    }
     return {
       status: "arrived",
-      service_id: String(value.service_id ?? serviceId),
+      service_id: responseServiceId,
       previous_state: value.previous_state ?? null,
       state: value.state ?? "llegado",
       distance_m: value.distance_m == null ? null : Number(value.distance_m),
@@ -40,7 +57,7 @@ function normalizeArrivalResponse(value, serviceId) {
     return {
       status: "rejected",
       code: String(value.code ?? "backend_rejected"),
-      service_id: String(value.service_id ?? serviceId),
+      service_id: responseServiceId,
       state: value.state ?? null,
       distance_m: value.distance_m == null ? null : Number(value.distance_m),
       location_age_ms:
