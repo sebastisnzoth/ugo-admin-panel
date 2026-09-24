@@ -23,6 +23,54 @@ comment on column public.perfiles_proveedor.ubicacion_updated_at is
 comment on column public.perfiles_proveedor.ubicacion_accuracy_m is
   'Precisión reportada por Geolocation API para la última ubicación GPS persistida; máximo P0.1 = 250m.';
 
+-- Existing authenticated users can update their own provider profile. Keep that
+-- compatibility, but never let a direct/legacy location write manufacture a
+-- trusted GPS freshness clock. Only publicar_ubicacion_proveedor sets the
+-- transaction-local guard that preserves capture timestamp + accuracy.
+create or replace function private.guard_provider_location_trust()
+returns trigger
+language plpgsql
+security definer
+set search_path to 'public','private','pg_temp'
+as $
+declare
+  v_trusted_provider text := current_setting('ugo.trusted_provider_location',true);
+begin
+  if v_trusted_provider is not distinct from new.usuario_id::text then
+    return new;
+  end if;
+
+  if tg_op='INSERT' then
+    if new.ubicacion is not null
+       or new.ubicacion_updated_at is not null
+       or new.ubicacion_accuracy_m is not null then
+      new.ubicacion_updated_at := null;
+      new.ubicacion_accuracy_m := null;
+    end if;
+    return new;
+  end if;
+
+  if new.ubicacion is distinct from old.ubicacion
+     or new.ubicacion_updated_at is distinct from old.ubicacion_updated_at
+     or new.ubicacion_accuracy_m is distinct from old.ubicacion_accuracy_m then
+    new.ubicacion_updated_at := null;
+    new.ubicacion_accuracy_m := null;
+  end if;
+
+  return new;
+end;
+$;
+
+drop trigger if exists trg_guard_provider_location_trust_insert on public.perfiles_proveedor;
+create trigger trg_guard_provider_location_trust_insert
+before insert on public.perfiles_proveedor
+for each row execute function private.guard_provider_location_trust();
+
+drop trigger if exists trg_guard_provider_location_trust_update on public.perfiles_proveedor;
+create trigger trg_guard_provider_location_trust_update
+before update of ubicacion,ubicacion_updated_at,ubicacion_accuracy_m on public.perfiles_proveedor
+for each row execute function private.guard_provider_location_trust();
+
 create or replace function public.publicar_ubicacion_proveedor(
   p_servicio_id uuid,
   p_lat double precision,
@@ -87,6 +135,8 @@ begin
     raise exception 'Servicio no asignado al proveedor o estado no habilitado para tracking de llegada';
   end if;
 
+  perform set_config('ugo.trusted_provider_location',v_uid::text,true);
+
   update public.perfiles_proveedor
      set ubicacion=extensions.st_setsrid(extensions.st_makepoint(p_lng,p_lat),4326)::extensions.geography,
          ubicacion_updated_at=p_captured_at,
@@ -100,6 +150,8 @@ begin
     end if;
     raise exception 'La posición GPS es anterior a la última ubicación persistida';
   end if;
+
+  perform set_config('ugo.trusted_provider_location','',true);
 
   update public.usuarios
      set lat=p_lat,lng=p_lng,updated_at=now()
