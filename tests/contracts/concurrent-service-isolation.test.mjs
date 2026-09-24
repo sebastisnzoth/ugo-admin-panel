@@ -14,7 +14,7 @@ test('client cancellation mutation boundary requires an explicit owned service i
 })
 
 
-test('Hugo can create another request while services already exist',()=>{assert.match(voice,/name==='set_request_category'/);assert.match(voice,/emptyVoiceDraft\(null\)/);assert.match(voice,/name==='create_service_request'/);assert.doesNotMatch(voice,/cancelarlo antes de crear otro/)})
+test('Hugo can create another request while services already exist',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/cancelarlo antes de crear otro/)})
 
 test('each canonical request persists its own generated service id and matching scope',async()=>{
  const postConfirm=await read('src/features/client/request/ClientPostConfirmFlow.tsx')

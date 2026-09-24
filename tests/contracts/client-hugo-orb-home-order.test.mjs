@@ -22,9 +22,9 @@ test('Hugo stays voice-only: the orb opens the controller without restoring a te
  assert.doesNotMatch(dock,/sendTyped|inputRef|\[typed,setTyped\]/)
 })
 
-test('spoken category/problem begins an order through the Live category and description tools',()=>{assert.match(voice,/name==='set_request_category'/);assert.match(voice,/resolveVoiceCategory\(String\(args\.category\|\|''\)\)/);assert.match(voice,/name==='set_request_description'/);assert.match(voice,/emptyVoiceDraft\(null\)/)})
+test('spoken category/problem begins an order through the Live category and description tools',()=>{assert.match(dock,/name==='set_request_category'/);assert.match(dock,/resolveVoiceCategory\(String\(args\.category\|\|''\)\)/);assert.match(dock,/name==='set_request_description'/);assert.match(dock,/emptyVoiceDraft\(null\)/)})
 
-test('voice becomes text through authenticated Gemini Live input transcription',()=>{assert.match(voice,/ugo:native-voice-transcript/);assert.match(voice,/setUserTranscript\(value\)/);assert.match(browserVoice,/inputAudioTranscription:\{\}/);assert.match(browserVoice,/voice_live_token:true/)})
+test('voice becomes text through authenticated Gemini Live input transcription',()=>{assert.match(dock,/ugo:native-voice-transcript/);assert.match(dock,/setUserTranscript\(value\)/);assert.match(bridge,/inputAudioTranscription:\{\}/);assert.match(bridge,/voice_live_token:true/)})
 
 test('confirmed voice order persists one service and starts provider dispatch',()=>{
  assert.match(dock,/from\('servicios'\)\.insert/)

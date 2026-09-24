@@ -13,7 +13,7 @@ test('Gemini Live is the canonical browser transcription path and keeps one stre
 test('client Hugo output is owned by the persistent Gemini Live audio session',()=>{assert.match(browserVoice,/responseModalities:\['AUDIO'\]/);assert.match(browserVoice,/playConversationPcm/);assert.match(dock,/stopSpeechPlayback/);assert.doesNotMatch(dock,/playDeviceSpeech|SpeechSynthesisUtterance|speechSynthesis|ttsCooldownUntil/)})
 test('stop voice keeps the orb reusable and navigation is wired to ClientFlow',()=>{assert.match(dock,/onNavigateHome/);assert.match(dock,/ugo-hugo-voice-controller/);assert.doesNotMatch(dock,/inputRef|placeholder="Escribile a Hugo…"|sendTyped/);assert.doesNotMatch(dock,/disabled=\{state==='connecting'\}/);assert.match(bridge,/onNavigateHome=\{\(\)=>flow\.navigate\('home'\)\}/)})
 
-test('new category requests are isolated in the Live request draft',()=>{assert.match(dock,/name==='set_request_category'/);assert.match(dock,/emptyVoiceDraft\(null\)/);assert.match(dock,/current\.category=category/);assert.doesNotMatch(dock,/companion\?\.action==='prepare_request'/)})
+test('new category requests are isolated in the Live request draft',()=>{assert.match(dock,/name==='set_request_category'/);assert.match(dock,/current=emptyVoiceDraft\(null\)/);assert.match(dock,/current\.category=category/);assert.doesNotMatch(dock,/companion\?\.action==='prepare_request'/)})
 
 test('painter aliases remain resolvable through the real voice catalog used by the Live category tool',()=>{assert.match(catalog,/pintor\|pintura/);assert.match(catalog,/\['pintura','reparaciones','reparacao','manutencao'\]/);assert.match(dock,/resolveVoiceCategory\(String\(args\.category\|\|''\)\)/)})
 
