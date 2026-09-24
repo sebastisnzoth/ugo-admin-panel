@@ -8,7 +8,7 @@
 
 This document defines what UGO must do, how it must behave, how it must feel, and the technical contracts that must not be broken while applying the visual layer.
 
-- **Version:** 1.0 CTO Master
+- **Version:** 1.1 CTO Master — Hugo MCP / CI architecture update
 - **Date:** 24 September 2026
 - **Status:** Implementation baseline / production-readiness specification
 
@@ -255,6 +255,36 @@ Hugo is not a decorative chatbot. It is a conversational controller that can und
 | Long latency | Show listening/thinking/executing states; support cancel; timeout cleanly. |
 | Duplicate command | Use idempotency/deduplication for execution-sensitive actions where applicable. |
 
+
+### 7.5 Hugo MCP execution architecture
+
+Hugo's MCP layer is an **internal action adapter for development and controlled execution**, not a replacement for UGO's backend, Supabase, RLS, RPC/Edge Functions, Realtime or application authorization.
+
+**Repository location:** `mcp/ugo-actions/`
+
+**Current implementation baseline (24 September 2026):**
+- `ugo_ping` verifies that the MCP server is reachable.
+- `ugo_get_current_job` is intentionally a safe read-only stub until the real authenticated query path is connected.
+- Runtime is plain Node.js ESM so the MCP can run on the current Catalina development machine without depending on `tsx` / `esbuild`.
+- The MCP is versioned in GitHub, but GitHub is not the runtime. Codex or another authorized MCP client starts/connects to the server; a future hosted runtime may replace the local process without changing the security contract.
+
+**Binding execution rules:**
+- Prefer small, typed, auditable tools such as `ugo_get_service`, `ugo_accept_job`, `ugo_start_route`, `ugo_mark_arrived`, `ugo_start_work`, `ugo_finish_work`, `ugo_confirm_cash_payment` and `ugo_rate_service`; do not create a generic privileged `ugo_do_anything`.
+- Every service-scoped tool receives or deterministically resolves the correct `serviceId`.
+- The model proposes intent; a deterministic executor validates authenticated user, role, ownership, legal lifecycle transition, required confirmation, GPS freshness/geofence and financial rules before mutation.
+- MCP must never become a backdoor around RLS or backend authorization.
+- Mutating tools require idempotency/deduplication where repeated execution could duplicate state, evidence, notifications or financial effects.
+- Privileged credentials remain server-side. No service-role or secret key is exposed to the model, browser or repository.
+- Supabase MCP used by developers/agents is **separate** from `ugo-actions`. It is tooling for inspecting/developing the project and does not define Hugo's production authorization boundary.
+- Read-only capability is established before write capability. Do not enable mutating MCP tools until the corresponding backend/RPC authorization path is verified.
+
+**Canonical arrival example:**
+
+`Hugo intent -> ugo_mark_arrived -> serviceId + provider identity + fresh real GPS -> authorized backend/RPC -> ownership/state/geofence validation -> publish location -> ARRIVED -> Realtime -> Client/Provider/Admin`
+
+If any required validation fails, the tool returns a structured failure and the service remains in the previous authoritative state.
+
+
 ---
 
 ## 8. Realtime, Notifications and Synchronization
@@ -445,6 +475,24 @@ Payment state is financial state. UI must describe it precisely and only after t
 | Observability | Failures and state transitions are diagnosable from logs/events. |
 | Deploy | Deploy only after local/preview validation; avoid consuming production/deploy quota for unvalidated iterations. |
 
+
+### 17.4 MCP and GitHub Actions gate
+
+Changes under `mcp/ugo-actions/**` require an isolated CI gate before integration.
+
+Minimum MCP CI evidence:
+- dependencies install successfully in a clean runner;
+- `src/index.js` passes JavaScript syntax validation;
+- the MCP process starts successfully under Node and reaches the expected startup signal;
+- failures stop the check instead of being treated as success;
+- MCP validation does **not** require production Supabase write access or privileged secrets;
+- production deploys are not a prerequisite for validating MCP code.
+
+GitHub Actions is the **verification layer**, not the Hugo runtime. The MCP process executes in the authorized client/runtime; GitHub stores/version-controls the source and automatically validates changes.
+
+The repository currently has an isolated `UGO Actions MCP CI` workflow prepared through PR #176. Its first dedicated MCP validation run passed successfully. Merge remains subject to the repository's wider CI checks and normal integration discipline.
+
+
 ---
 
 ## 18. Implementation Order — CTO Priority
@@ -496,6 +544,9 @@ Do not open new fronts while P0 is unstable. Sequence work so each block is inde
 | Cash | Creates/reconciles UGO debt as applicable. |
 | Debt block | Provider cannot accept new work after 3 unpaid service obligations until paying UGO. |
 | Hugo | Voice-first controller that executes real authorized app actions. |
+| Hugo MCP | Small typed service-scoped tools; deterministic backend validation; never a Supabase/RLS bypass. |
+| Supabase MCP | Developer/agent tooling only; separate from Hugo's production execution boundary. |
+| GitHub Actions | CI gate validates MCP startup/syntax and core repository checks before integration; it is not the MCP runtime. |
 | Realtime | Operational state changes should not require manual refresh. |
 | Deploy discipline | Validate before consuming production/Vercel deployments. |
 
@@ -508,6 +559,9 @@ Do not open new fronts while P0 is unstable. Sequence work so each block is inde
 - [ ] Client and Provider can complete the real lifecycle end to end.
 - [ ] GPS arrival cannot advance on invalid/unavailable data.
 - [ ] Hugo can complete the same request flow as typed UI, including real location capture.
+- [ ] Hugo MCP tools are explicit, typed, service-scoped and cannot bypass backend authorization/RLS.
+- [ ] MCP read paths are verified before mutating tools are enabled; mutation paths enforce role, ownership, lifecycle, idempotency and required GPS/payment checks.
+- [ ] MCP changes pass the dedicated GitHub Actions validation gate before integration.
 - [ ] Admin receives operational updates without refresh.
 - [ ] Cash/debt and provider blocking rule are enforced server-side.
 - [ ] Client rating works after completion; provider rating path is consistent with policy.
