@@ -1,11 +1,19 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { serveStdio } from "@modelcontextprotocol/server/stdio";
 import * as z from "zod/v4";
+import { getCurrentJob, UgoMcpError } from "./currentJob.js";
+
+function jsonToolResult(payload, isError = false) {
+  return {
+    ...(isError ? { isError: true } : {}),
+    content: [{ type: "text", text: JSON.stringify(payload) }],
+  };
+}
 
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.1.0",
+    version: "0.2.0",
   });
 
   server.registerTool(
@@ -28,19 +36,28 @@ serveStdio(() => {
     "ugo_get_current_job",
     {
       description:
-        "Stub seguro de lectura. Devuelve una respuesta de prueba hasta conectar el backend real de UGO.",
+        "Lee un servicio real autorizado del usuario usando su sesión Supabase. Si hay más de un servicio activo, exige serviceId explícito.",
       inputSchema: z.object({
-        userId: z.string().min(1),
+        userId: z.string().uuid(),
+        role: z.enum(["client", "provider"]),
+        serviceId: z.string().uuid().optional(),
       }),
     },
-    async ({ userId }) => ({
-      content: [
-        {
-          type: "text",
-          text: `Consulta preparada para usuario ${userId}. Backend real todavía no conectado.`,
-        },
-      ],
-    })
+    async (input) => {
+      try {
+        return jsonToolResult(await getCurrentJob(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo completar la lectura",
+          },
+          true
+        );
+      }
+    }
   );
 
   return server;

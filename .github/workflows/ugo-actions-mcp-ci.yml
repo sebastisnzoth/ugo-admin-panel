@@ -1,0 +1,57 @@
+name: UGO Actions MCP CI
+
+on:
+  push:
+    paths:
+      - "mcp/ugo-actions/**"
+      - ".github/workflows/ugo-actions-mcp-ci.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "mcp/ugo-actions/**"
+      - ".github/workflows/ugo-actions-mcp-ci.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-mcp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    defaults:
+      run:
+        working-directory: mcp/ugo-actions
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install MCP dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate MCP code and tests
+        run: npm run validate
+
+      - name: Smoke-test MCP startup
+        shell: bash
+        run: |
+          set +e
+          timeout 3s node src/index.js >mcp.out 2>mcp.err
+          code=$?
+          set -e
+
+          cat mcp.err
+
+          if [ "$code" -ne 0 ] && [ "$code" -ne 124 ]; then
+            echo "UGO Actions MCP exited with unexpected code: $code"
+            exit "$code"
+          fi
+
+          grep -q "UGO Actions MCP iniciado" mcp.err
+          echo "UGO Actions MCP startup smoke test passed"
