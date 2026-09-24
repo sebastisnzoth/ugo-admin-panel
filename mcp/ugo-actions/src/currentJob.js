@@ -20,7 +20,7 @@ export class UgoMcpError extends Error {
   }
 }
 
-function requiredString(value, field) {
+export function requiredString(value, field) {
   const text = String(value ?? "").trim();
   if (!text) throw new UgoMcpError("invalid_input", `${field} requerido`, 400);
   return text;
@@ -32,7 +32,7 @@ function requiredConfig(value, field) {
   return text;
 }
 
-function assertUuid(value, field) {
+export function assertUuid(value, field) {
   const text = requiredString(value, field);
   if (!UUID_RE.test(text)) {
     throw new UgoMcpError("invalid_input", `${field} debe ser UUID`, 400);
@@ -82,7 +82,7 @@ export function loadRuntimeConfig(env = process.env) {
   return { supabaseUrl, publishableKey, accessToken, projectRef };
 }
 
-function requestHeaders(config) {
+export function requestHeaders(config) {
   return {
     accept: "application/json",
     apikey: config.publishableKey,
@@ -90,10 +90,20 @@ function requestHeaders(config) {
   };
 }
 
-async function fetchJson(fetchImpl, url, config) {
+export async function fetchJson(fetchImpl, url, config, options = {}) {
   let response;
   try {
-    response = await fetchImpl(url, { method: "GET", headers: requestHeaders(config) });
+    const method = options.method || "GET";
+    const hasBody = options.body !== undefined;
+    response = await fetchImpl(url, {
+      method,
+      headers: {
+        ...requestHeaders(config),
+        ...(hasBody ? { "content-type": "application/json" } : {}),
+        ...(options.headers || {}),
+      },
+      ...(hasBody ? { body: JSON.stringify(options.body) } : {}),
+    });
   } catch {
     throw new UgoMcpError("backend_unavailable", "No se pudo contactar Supabase", 503);
   }
@@ -112,7 +122,7 @@ async function fetchJson(fetchImpl, url, config) {
   }
 }
 
-async function resolveAuthenticatedUser(fetchImpl, config) {
+export async function resolveAuthenticatedUser(fetchImpl, config) {
   const user = await fetchJson(fetchImpl, `${config.supabaseUrl}/auth/v1/user`, config);
   const id = typeof user?.id === "string" ? user.id : "";
   if (!UUID_RE.test(id)) {
@@ -121,7 +131,7 @@ async function resolveAuthenticatedUser(fetchImpl, config) {
   return id;
 }
 
-async function verifyRole(fetchImpl, config, userId, role) {
+export async function verifyRole(fetchImpl, config, userId, role) {
   const params = new URLSearchParams({
     select: "id,tipo,activo",
     id: `eq.${userId}`,
@@ -143,7 +153,7 @@ async function verifyRole(fetchImpl, config, userId, role) {
   );
 }
 
-const SERVICE_SELECT = [
+export const SERVICE_SELECT = [
   "id",
   "numero",
   "cliente_id",
@@ -163,7 +173,7 @@ const SERVICE_SELECT = [
   "cancelado_at",
 ].join(",");
 
-function sanitizeService(row) {
+export function sanitizeService(row) {
   if (!row || typeof row !== "object") return null;
   return {
     id: row.id ?? null,
