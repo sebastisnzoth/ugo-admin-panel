@@ -1,0 +1,38 @@
+import React,{useCallback,useEffect,useId,useMemo,useRef,useState}from'react'
+import type{RealtimeChannel}from'@supabase/supabase-js'
+import{getRoleSupabase}from'../../../lib/roleSupabase'
+import'../../../mvp/client/client-service-evidence.css'
+
+type Evidence={id:string;tipo:'antes'|'durante'|'despues'|'documento';storage_path:string;descripcion:string|null;created_at:string;url?:string|null}
+type Props={serviceId:string;hideWhenEmpty?:boolean;compact?:boolean}
+const LABELS:Record<Evidence['tipo'],string>={antes:'Inicio del trabajo',durante:'Durante el trabajo',despues:'Resultado final',documento:'Documento'}
+
+export function ClientEvidenceGallery({serviceId,hideWhenEmpty=false,compact=false}:Props){
+ const supabase=useMemo(()=>getRoleSupabase('client'),[]),instanceId=useId().replace(/:/g,''),channelGeneration=useRef(0)
+ const[items,setItems]=useState<Evidence[]>([])
+ const[loading,setLoading]=useState(true)
+ const[error,setError]=useState('')
+ const load=useCallback(async()=>{
+  setError('')
+  const{data,error}=await (supabase as any).from('evidencias_servicio').select('id,tipo,storage_path,descripcion,created_at').eq('servicio_id',serviceId).order('created_at',{ascending:true})
+  if(error){setError(error.message);setLoading(false);return}
+  const rows=(data||[])as Evidence[]
+  const signed=await Promise.all(rows.map(async row=>{const{data:signedData,error:signedError}=await supabase.storage.from('service-evidence').createSignedUrl(row.storage_path,900);return{...row,url:signedError?null:signedData?.signedUrl||null}}))
+  setItems(signed);setLoading(false)
+ },[serviceId,supabase])
+ useEffect(()=>{
+  let alive=true
+  const refresh=()=>{if(alive)void load().catch(()=>setLoading(false))}
+  refresh()
+  const generation=++channelGeneration.current,topic=`client-evidence-${serviceId}-${instanceId}-${generation}`
+  const ch:RealtimeChannel=supabase.channel(topic).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()})
+  const onOnline=()=>refresh(),onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+  const refreshSignedUrls=window.setInterval(refresh,10*60*1000)
+  window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
+  return()=>{alive=false;window.clearInterval(refreshSignedUrls);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+ },[instanceId,load,serviceId,supabase])
+ if(loading&&!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state loading">Cargando evidencias del trabajo…</div>
+ if(error&&!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state error">No se pudieron cargar las evidencias: {error}</div>
+ if(!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state">El proveedor todavía no subió evidencias visibles.</div>
+ return <section className={`ugo-client-evidence${compact?' compact':''}`} aria-label="Evidencias del trabajo"><div className="ugo-client-evidence-head"><div><h3>Evidencias del trabajo</h3><p>El profesional comparte el registro del servicio y se actualiza automáticamente.</p></div><span aria-hidden="true">{items.length}</span></div>{error&&<div className="ugo-evidence-state error">No pudimos renovar una vista previa. Reintentaremos automáticamente.</div>}<div className="ugo-client-evidence-grid">{items.map(item=><figure key={item.id}>{item.url?<a href={item.url} target="_blank" rel="noreferrer" aria-label={`Abrir ${LABELS[item.tipo]}`}><img src={item.url} alt={`Evidencia: ${LABELS[item.tipo]}`}/></a>:<div className="ugo-evidence-preview-empty">Sin vista previa</div>}<figcaption><strong>{LABELS[item.tipo]}</strong>{item.descripcion&&<span>{item.descripcion}</span>}</figcaption></figure>)}</div></section>
+}

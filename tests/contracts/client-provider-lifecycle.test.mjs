@@ -142,7 +142,7 @@ test('client approval is scoped to its service and completed review keeps its ex
 
 test('client sees provider work evidence on the active assignment and exact service detail in realtime',async()=>{
  const [gallery,postConfirm,detail,rls]=await Promise.all([
-  read('src/mvp/ClientEvidenceGallery.tsx'),
+  read('src/features/client/order/ClientEvidenceGallery.tsx'),
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/features/client/order/ClientServiceDetail.tsx'),
   read('supabase/migrations/20260911_service_evidence.sql'),

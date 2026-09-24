@@ -5,7 +5,7 @@ import {readFile} from 'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('client evidence gallery isolates realtime topics per mounted instance and effect generation',async()=>{
- const gallery=await read('src/mvp/ClientEvidenceGallery.tsx')
+ const gallery=await read('src/features/client/order/ClientEvidenceGallery.tsx')
  assert.match(gallery,/useId\(\)\.replace\(\/:\/g,''\)/)
  assert.match(gallery,/channelGeneration=useRef\(0\)/)
  assert.match(gallery,/generation=\+\+channelGeneration\.current/)
