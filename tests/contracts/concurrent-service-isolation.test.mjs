@@ -3,6 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
+const hugo=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
 
 test('client cancellation mutation boundary requires an explicit owned service id',async()=>{
  const[bridge,service]=await Promise.all([read('src/features/client/actions/ClientFlowActionsBridge.tsx'),read('src/features/client/services/clientActionService.ts')])
@@ -49,13 +50,7 @@ test('client exact-order detail does not mix operational surfaces from another s
  assert.match(detail,/ServiceChat role="client" serviceId=\{service\.id\}/)
 })
 
-test('Hugo cancellation resolves one concrete service before mutation',async()=>{
- const dock=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
- assert.match(dock,/resolveServiceCandidates\(source,services,true\)/)
- assert.match(dock,/pendingCancel\.current=\{kind:'service',serviceId:candidates\[0\]\.id/)
- assert.match(dock,/clientActions\?\.cancelService\(pending\.serviceId\)/)
- assert.doesNotMatch(dock,/clientActions\?\.cancelService\(\)/)
-})
+test('Hugo cancellation requires an explicit service id and confirmation before the owned cancellation action',()=>{assert.match(hugo,/name==='cancel_service'/);assert.match(hugo,/String\(args\.service_id\|\|''\)/);assert.match(hugo,/args\.confirmed!==true/);assert.match(hugo,/clientActions\?\.cancelService\(serviceId\)/);assert.doesNotMatch(hugo,/clientActions\?\.cancelService\(\)/)})
 
 test('participant disputes use the selected service or refuse ambiguity',async()=>{
  const[hook,dock,detail]=await Promise.all([

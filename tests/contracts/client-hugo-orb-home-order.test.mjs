@@ -24,7 +24,7 @@ test('Hugo stays voice-only: the orb opens the controller without restoring a te
 
 test('spoken category/problem begins an order through the Live category and description tools',()=>{assert.match(dock,/name==='set_request_category'/);assert.match(dock,/resolveVoiceCategory\(String\(args\.category\|\|''\)\)/);assert.match(dock,/name==='set_request_description'/);assert.match(dock,/emptyVoiceDraft\(null\)/)})
 
-test('voice becomes text through authenticated Gemini Live input transcription',()=>{assert.match(dock,/ugo:native-voice-transcript/);assert.match(dock,/setUserTranscript\(value\)/);assert.match(bridge,/inputAudioTranscription:\{\}/);assert.match(bridge,/voice_live_token:true/)})
+test('voice becomes text through authenticated Gemini Live input transcription',()=>{assert.match(dock,/ugo:native-voice-result/);assert.match(dock,/setUserTranscript\(value\)/);assert.match(bridge,/inputAudioTranscription:\{\}/);assert.match(bridge,/voice_live_token:true/)})
 
 test('confirmed voice order persists one service and starts provider dispatch',()=>{
  assert.match(dock,/from\('servicios'\)\.insert/)

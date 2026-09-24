@@ -9,9 +9,8 @@ test('Hugo is mounted and named on the current Admin control center',async()=>{
   read('src/components/ConversationalOrb.tsx'),
  ])
  assert.match(src,/import\{ConversationalOrb\}from'\.\.\/components\/ConversationalOrb'/)
- assert.match(src,/role="admin"/)
+ assert.match(src,/role=\{isSuperAdmin\?'superadmin':'admin'\}/)
  assert.match(src,/section=\{hugoSection\}/)
- assert.match(src,/section!=='superadmin'/)
  assert.match(orb,/>Hugo<\/b>/)
  assert.match(orb,/Hugo Admin/)
  assert.match(src,/operations:\$\{operationView\}/)
@@ -40,7 +39,8 @@ test('Hugo live context covers operational and financial control-center data',as
  }
  assert.match(orb,/deuda_ugo_efectivo/)
  assert.match(orb,/saldo_pendiente_muestra/)
- assert.match(orb,/\/api\/hugo\/chat/)
+ assert.match(orb,/ugo:native-voice-tool-call/)
+ assert.match(orb,/sendToolResponse/)
 })
 
 test('Hugo server endpoint accepts role and active surface context',async()=>{
