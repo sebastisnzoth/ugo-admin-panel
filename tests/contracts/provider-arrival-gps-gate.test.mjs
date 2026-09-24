@@ -69,3 +69,28 @@ test('tracking freshness is sourced from ubicacion_updated_at rather than generi
  assert.match(sql,/pp\.ubicacion_updated_at/)
  assert.doesNotMatch(sql,/pp\.updated_at\s*\n\s*from public\.perfiles_proveedor/)
 })
+
+
+test('direct or legacy provider-location writes cannot preserve trusted arrival freshness',async()=>{
+ const sql=await read('supabase/migrations/20260924162000_provider_arrival_gps_gate.sql')
+ assert.match(sql,/create or replace function private\.guard_provider_location_trust/i)
+ assert.match(sql,/current_setting\('ugo\.trusted_provider_location',true\)/i)
+ assert.match(sql,/new\.ubicacion_updated_at := null/i)
+ assert.match(sql,/new\.ubicacion_accuracy_m := null/i)
+ assert.match(sql,/before insert on public\.perfiles_proveedor/i)
+ assert.match(sql,/before update of ubicacion,ubicacion_updated_at,ubicacion_accuracy_m on public\.perfiles_proveedor/i)
+ assert.match(sql,/set_config\('ugo\.trusted_provider_location',v_uid::text,true\)/i)
+ assert.match(sql,/set_config\('ugo\.trusted_provider_location','',true\)/i)
+})
+
+test('trusted GPS metadata is scoped to the authenticated provider publication transaction',async()=>{
+ const sql=await read('supabase/migrations/20260924162000_provider_arrival_gps_gate.sql')
+ const publishStart=sql.indexOf('create or replace function public.publicar_ubicacion_proveedor')
+ const trackingStart=sql.indexOf('create or replace function public.obtener_tracking_servicio_cliente')
+ const publish=sql.slice(publishStart,trackingStart)
+ assert.ok(publishStart>=0&&trackingStart>publishStart)
+ assert.match(publish,/v_uid uuid := auth\.uid\(\)/)
+ assert.match(publish,/s\.proveedor_id=v_uid/)
+ assert.match(publish,/set_config\('ugo\.trusted_provider_location',v_uid::text,true\)/)
+ assert.match(publish,/where usuario_id=v_uid/)
+})
