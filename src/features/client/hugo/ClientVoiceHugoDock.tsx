@@ -41,7 +41,7 @@ async function reverseGeocode(lat:number,lng:number){
  }catch{return null}
 }
 
-export function ClientVoiceHugoDock({accessToken,services=[],clientActions,onNavigateHome,requestComposerOpen=false}:Props){
+export function ClientVoiceHugoDock({accessToken,clientActions,onNavigateHome,requestComposerOpen=false}:Props){
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
  const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false)
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
