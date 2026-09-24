@@ -1,5 +1,5 @@
 import React from'react'
-import{ClientRoot}from'./client/ClientRoot'
+import{ClientRoot}from'../features/client/ClientRoot'
 
 /**
  * Legacy compatibility entrypoint.
