@@ -10,7 +10,7 @@ test('client review stays editable without restarting the request', async () => 
     read('src/features/client/request/ClientNeedScreen.tsx'),
     read('src/features/client/request/ClientLocationScreen.tsx'),
     read('src/features/client/request/ClientWhenScreen.tsx'),
-    read('src/mvp/client/ClientPaymentScreen.tsx'),
+    read('src/features/client/payments/ClientPaymentScreen.tsx'),
     read('src/features/client/request/ClientSummaryScreen.tsx'),
   ])
   assert.match(need, /<ClientLocationScreen onBack=\{\(\)=>setStage\('need'\)\}/)

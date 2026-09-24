@@ -8,7 +8,7 @@ test('client can start a request without configuring payment on Home',async()=>{
  const [home,need,payment,summary,profile]=await Promise.all([
   read('src/features/client/home/ClientHomeScreen.tsx'),
   read('src/features/client/request/ClientNeedScreen.tsx'),
-  read('src/mvp/client/ClientPaymentScreen.tsx'),
+  read('src/features/client/payments/ClientPaymentScreen.tsx'),
   read('src/features/client/request/ClientSummaryScreen.tsx'),
   read('src/features/client/profile/ClientProfilePanel.tsx'),
  ])
@@ -39,3 +39,6 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
  assert.match(paymentChoice,/seleccionar_pago_efectivo/)
  assert.match(paymentChoice,/requested_payment_method/)
 })
+
+
+test('client payment screen implementation lives behind the payments feature boundary',async()=>{const[shim,screen,css]=await Promise.all([read('src/mvp/client/ClientPaymentScreen.tsx'),read('src/features/client/payments/ClientPaymentScreen.tsx'),read('src/features/client/payments/clientPaymentScreen.css')]);assert.match(shim,/features\/client\/payments\/ClientPaymentScreen/);assert.doesNotMatch(shim,/useState<Method>/);assert.match(screen,/useState<Method>\('cash'\)/);assert.match(screen,/clientPaymentScreen\.css/);assert.match(css,/\.ugo-payment-screen/);assert.ok(css.length>3000)})
