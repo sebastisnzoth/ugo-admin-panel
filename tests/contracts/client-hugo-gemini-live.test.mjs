@@ -68,7 +68,7 @@ test('Client and Provider require the persistent Gemini Live audio speaker and n
  assert.doesNotMatch(dock,/\/api\/hugo\/chat/)
  assert.doesNotMatch(provider,/\/api\/hugo\/chat/)
  assert.match(api,/GEMINI_LIVE_VOICE_MODEL/)
- assert.match(api,/requestedLiveMode==='conversation'/)
+ assert.match(api,/const mode=String\(body\.voice_live_mode\|\|'conversation'\)==='transcribe'\?'transcribe':'conversation'/)
  assert.doesNotMatch(bridge,/speakerSocket/)
  assert.doesNotMatch(bridge,/speakThroughLive/)
 })
