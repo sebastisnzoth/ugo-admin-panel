@@ -43,6 +43,19 @@ codex mcp add ugo-actions -- node "/Volumes/Armazenamento/developer/ugo-admin-pa
 
 For the FCC wrapper, open `fcc-codex`, run `/mcp`, and verify that `ugo-actions` is enabled.
 
+## Runtime authentication for real reads
+
+`ugo_get_current_job` uses the caller's real Supabase session and the database RLS boundary. It does not use `service_role`.
+
+Runtime variables:
+
+- `UGO_MCP_SUPABASE_URL`: Supabase URL for the intended UGO project.
+- `UGO_MCP_SUPABASE_PUBLISHABLE_KEY`: browser-safe publishable key for that project.
+- `UGO_MCP_USER_ACCESS_TOKEN`: authenticated user's session access token. Keep it in the MCP process environment; never commit it and never paste it into model prompts/tool arguments.
+- `UGO_MCP_EXPECTED_PROJECT_REF`: optional project-ref guard. For the current UGO target use `trfsjuseqjxlhrxuvdsm`.
+
+The current application test target in `src/lib/supabaseProject.ts` is UGO Arena (`tmossnqfwfwjrtzwcbmm`). The MCP read path therefore requires its own explicit runtime target and must not silently inherit that application test target when the intended backend is UGO (`trfsjuseqjxlhrxuvdsm`).
+
 ## Current tools
 
 ### `ugo_ping`
@@ -57,7 +70,47 @@ UGO Actions MCP OK
 
 ### `ugo_get_current_job`
 
-Safe stub only. It validates `userId` and returns a placeholder response. It does **not** read Supabase yet.
+Real, read-only, RLS-bound service lookup.
+
+Input:
+
+- `userId`: explicit authenticated user UUID.
+- `role`: `client` or `provider`.
+- `serviceId`: optional exact service UUID.
+
+Authorization path:
+
+1. Validate input shape.
+2. Resolve the authenticated Supabase user from the runtime session token.
+3. Require that authenticated user ID equals `userId`.
+4. Read the user's own `usuarios` row and require the declared role to match the real account type.
+5. Query `servicios` through the publishable key + caller JWT so production RLS remains authoritative.
+6. Add an explicit ownership filter (`cliente_id` for client, `proveedor_id` for provider).
+7. If `serviceId` is supplied, return only that exact authorized service.
+8. If no `serviceId` is supplied and more than one active service exists, return `ambiguous` with minimal candidate identifiers instead of guessing a global current order.
+9. If no active service exists, return `none`.
+
+No write, state transition or privileged key is used by this tool.
+
+## Current service states verified in UGO
+
+The production UGO schema currently exposes:
+
+`borrador`, `buscando`, `ofrecido`, `asignado`, `en_camino`, `llegado`, `en_progreso`, `esperando_aprobacion`, `completado`, `cancelado`, `disputado`.
+
+The MCP treats all except `completado`, `cancelado` and `disputado` as active for the unresolved-job query. Do not rename these states from the CTO conceptual names without an explicit database migration/compatibility plan.
+
+## Validation
+
+Run:
+
+```bash
+npm run validate
+```
+
+This performs JavaScript syntax checks and the MCP unit tests.
+
+GitHub Actions also runs the isolated `UGO Actions MCP CI` workflow for changes under `mcp/ugo-actions/**`. The workflow does not require production secrets or write access.
 
 ## Architecture rules
 
@@ -71,13 +124,14 @@ Before adding real actions:
 6. Mutating tools must be idempotent where repeated execution is possible.
 7. Realtime and audit events must remain scoped to the correct service.
 8. Do not expose privileged keys in this package or the frontend.
+9. Supabase MCP for developers is separate from the Hugo runtime action boundary.
 
 ## Planned sequence
 
 Keep the action surface small and auditable. Add tools incrementally:
 
 1. `ugo_ping`
-2. real read-only `ugo_get_current_job`
+2. real read-only `ugo_get_current_job` — implemented
 3. `ugo_get_service`
 4. provider-location read
 5. current-location capture contract for Hugo

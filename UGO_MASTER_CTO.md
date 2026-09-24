@@ -8,7 +8,7 @@
 
 This document defines what UGO must do, how it must behave, how it must feel, and the technical contracts that must not be broken while applying the visual layer.
 
-- **Version:** 1.1 CTO Master — Hugo MCP / CI architecture update
+- **Version:** 1.2 CTO Master — authenticated Hugo MCP read path
 - **Date:** 24 September 2026
 - **Status:** Implementation baseline / production-readiness specification
 
@@ -264,7 +264,7 @@ Hugo's MCP layer is an **internal action adapter for development and controlled 
 
 **Current implementation baseline (24 September 2026):**
 - `ugo_ping` verifies that the MCP server is reachable.
-- `ugo_get_current_job` is intentionally a safe read-only stub until the real authenticated query path is connected.
+- `ugo_get_current_job` is a real read-only path bound to the caller's Supabase session and database RLS. It validates explicit `userId` + role, can target an exact `serviceId`, and refuses to guess when multiple active services exist.
 - Runtime is plain Node.js ESM so the MCP can run on the current Catalina development machine without depending on `tsx` / `esbuild`.
 - The MCP is versioned in GitHub, but GitHub is not the runtime. Codex or another authorized MCP client starts/connects to the server; a future hosted runtime may replace the local process without changing the security contract.
 
@@ -276,6 +276,8 @@ Hugo's MCP layer is an **internal action adapter for development and controlled 
 - Mutating tools require idempotency/deduplication where repeated execution could duplicate state, evidence, notifications or financial effects.
 - Privileged credentials remain server-side. No service-role or secret key is exposed to the model, browser or repository.
 - Supabase MCP used by developers/agents is **separate** from `ugo-actions`. It is tooling for inspecting/developing the project and does not define Hugo's production authorization boundary.
+- Read-only Hugo MCP calls use the caller's user-bound Supabase access token kept in the MCP runtime environment, never a `service_role` key and never a token passed through model tool arguments.
+- The runtime may enforce an expected Supabase project ref so UGO and isolated test projects cannot be confused silently.
 - Read-only capability is established before write capability. Do not enable mutating MCP tools until the corresponding backend/RPC authorization path is verified.
 
 **Canonical arrival example:**
@@ -560,7 +562,8 @@ Do not open new fronts while P0 is unstable. Sequence work so each block is inde
 - [ ] GPS arrival cannot advance on invalid/unavailable data.
 - [ ] Hugo can complete the same request flow as typed UI, including real location capture.
 - [ ] Hugo MCP tools are explicit, typed, service-scoped and cannot bypass backend authorization/RLS.
-- [ ] MCP read paths are verified before mutating tools are enabled; mutation paths enforce role, ownership, lifecycle, idempotency and required GPS/payment checks.
+- [x] `ugo_get_current_job` implements a user-session/RLS-bound read path with explicit role/ownership and multi-service ambiguity handling.
+- [ ] Remaining MCP read paths are verified before mutating tools are enabled; mutation paths enforce role, ownership, lifecycle, idempotency and required GPS/payment checks.
 - [ ] MCP changes pass the dedicated GitHub Actions validation gate before integration.
 - [ ] Admin receives operational updates without refresh.
 - [ ] Cash/debt and provider blocking rule are enforced server-side.
