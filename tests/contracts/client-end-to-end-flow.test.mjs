@@ -7,7 +7,7 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
  read('src/features/client/request/ClientNeedScreen.tsx'),
  read('src/features/client/request/ClientLocationScreen.tsx'),
  read('src/features/client/request/ClientWhenScreen.tsx'),
- read('src/mvp/client/ClientPaymentScreen.tsx'),
+ read('src/features/client/payments/ClientPaymentScreen.tsx'),
  read('src/features/client/request/ClientSummaryScreen.tsx'),
  read('src/features/client/request/ClientPostConfirmFlow.tsx'),
  read('src/features/client/order/ClientServiceDetail.tsx'),
