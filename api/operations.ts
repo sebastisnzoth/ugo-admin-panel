@@ -321,6 +321,42 @@ async function createAdminManagedUser(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+async function resetAdminManagedUserPassword(req: VercelRequest, res: VercelResponse) {
+  const userId = clean(req.body?.userId, 80)
+  const password = String(req.body?.password ?? '')
+  if (!userId) return res.status(400).json({ error: 'Usuario requerido.' })
+  if (password.length < 8 || password.length > 128) return res.status(400).json({ error: 'La contraseña debe tener entre 8 y 128 caracteres.' })
+
+  try {
+    const { sb, user, role: actorRole } = await requireAdmin(req)
+    const { data: target, error: targetError } = await sb.from('usuarios').select('id,nombre,tipo,activo').eq('id', userId).maybeSingle()
+    if (targetError) throw targetError
+    if (!target) return res.status(404).json({ error: 'Usuario no encontrado.' })
+    if (PRIVILEGED_USER_ROLES.has(String(target.tipo)) && actorRole !== 'superadmin') {
+      return res.status(403).json({ error: 'Solo Super Admin puede restablecer contraseñas de cuentas administrativas.' })
+    }
+    if (user.id === userId && actorRole !== 'superadmin') {
+      return res.status(403).json({ error: 'Usá el flujo de cambio de contraseña de tu propia cuenta.' })
+    }
+
+    const { data: updated, error: updateError } = await sb.auth.admin.updateUserById(userId, { password })
+    if (updateError || !updated.user) throw updateError || new Error('Auth no confirmó el cambio de contraseña.')
+
+    const { error: auditError } = await sb.from('audit_log').insert({
+      evento: 'admin_usuario_password_reset',
+      actor_id: user.id,
+      entidad_tipo: 'usuario',
+      entidad_id: userId,
+      detalles: { target_role: String(target.tipo), password_exported: false },
+    })
+    if (auditError) throw auditError
+    return res.status(200).json({ success: true, userId })
+  } catch (error) {
+    console.error('Admin password reset error:', error)
+    return adminErrorResponse(res, error, 'No se pudo restablecer la contraseña.')
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   switch (operation(req)) {
@@ -329,6 +365,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'kyc-verify': return verifyKyc(req, res)
     case 'provider-verification': return changeProviderVerification(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
+    case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
     default: return res.status(404).json({ error: 'Operación no encontrada.' })
   }
 }
