@@ -255,6 +255,31 @@ Repeated calls are safe: `esperando_aprobacion` returns idempotent success. `com
 
 **Environment gate:** `ugo_finish_work` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the full promoted P0 lifecycle contract used by the guarded MCP sequence, so the tool returns `backend_contract_not_ready` before mutation there.
 
+### `ugo_approve_work`
+
+Controlled client work-approval mutation for one exact `serviceId`.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=client`
+- exact `serviceId`
+
+The tool validates the caller's real Supabase session, active client role and exact client ownership before mutation. It accepts no payment confirmation, evidence payload, rating, provider ID, service number or arbitrary metadata.
+
+The mutation reuses the Client UI contract exactly:
+
+`aprobar_servicio(p_servicio_id)`
+
+The backend remains authoritative for final provider evidence and payment readiness. There are two valid outcomes:
+
+- electronic payment: the approval completes the service and releases the protected retained payment;
+- cash payment: the approval records `metadata.trabajo_aprobado_at` and intentionally keeps the service in `esperando_aprobacion`; the separate client `YA PAGUÉ` action is still required to close the service.
+
+Repeated calls are safe. A cash service already carrying `trabajo_aprobado_at` returns idempotent approval without replaying the RPC. A completed service is reported as already advanced and is never moved backward. Ambiguous network/RPC failures are reconciled by re-reading the same client-owned `serviceId`; only a persisted completed service or a persisted cash work-approval marker counts as proven success.
+
+**Environment gate:** `ugo_approve_work` is enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO remains blocked because its migration history has not yet been verified to include the later client cash-close hardening equivalent to `fix_client_cash_close_sensitive_counter`.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -274,7 +299,7 @@ Repository and UGO Arena TEST audit on 2026-09-25 established that `esperando_ap
 - both paths remain backend-authoritative for ownership, final provider evidence and payment state;
 - the latest closure hardening must not update another user's protected `usuarios` counters from a client-owned RPC.
 
-This audit does **not** add a new MCP mutation. Keep the MCP at version 0.9.0 until one of these client boundaries is implemented and validated independently.
+The audit itself added no mutation and kept the MCP at 0.9.0. `ugo_approve_work` now implements only the client work-approval boundary in version 0.10.0; cash `YA PAGUÉ` remains a separate future mutation.
 
 Production must remain blocked for future client-closing MCP mutations until its live migration/function state is verified to include the closure hardening represented by `fix_client_cash_close_sensitive_counter` (or an equivalent newer contract). Repository code alone is not proof that PROD is ready.
 
@@ -322,8 +347,8 @@ Keep the action surface small and auditable. Add tools incrementally:
 12. `ugo_start_route` — implemented and TEST-gated pending PROD P0 contract promotion
 13. `ugo_start_work` — implemented and TEST-gated pending PROD P0 contract promotion
 14. `ugo_finish_work` — implemented and TEST-gated pending PROD P0 contract promotion
-15. client work approval — boundary audited; no MCP mutation implemented yet
-16. cash-payment confirmation — separate boundary after cash work approval; no MCP mutation implemented yet
+15. `ugo_approve_work` — implemented and TEST-gated pending PROD client-close hardening
+16. cash-payment confirmation — separate boundary after cash work approval; not implemented yet
 17. rating
 
 Do not open the next mutating action until its exact client-owned service boundary is independently audited, TEST-validated and the required backend contracts are promoted through the normal environment pipeline.

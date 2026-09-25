@@ -9,6 +9,7 @@ import { acceptJob } from "./acceptJob.js";
 import { startRoute } from "./startRoute.js";
 import { startWork } from "./startWork.js";
 import { finishWork } from "./finishWork.js";
+import { approveWork } from "./approveWork.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -20,7 +21,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.9.0",
+    version: "0.10.0",
   });
 
   server.registerTool(
@@ -374,6 +375,35 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo finalizar el trabajo",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_approve_work",
+    {
+      description:
+        "Aprueba el trabajo como cliente para un serviceId exacto mediante aprobar_servicio. En pago electrónico completa y libera; en efectivo sólo aprueba el trabajo y deja YA PAGUÉ como boundary separado. TEST-only hasta promover y validar el hardening de cierre en PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("client"),
+        serviceId: z.string().uuid(),
+      }).strict(),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await approveWork(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo aprobar el trabajo",
           },
           true
         );
