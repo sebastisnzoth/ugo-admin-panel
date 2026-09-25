@@ -263,6 +263,21 @@ The production UGO schema currently exposes:
 
 The MCP treats all except `completado`, `cancelado` and `disputado` as active for the unresolved-job query. Do not rename these states from the CTO conceptual names without an explicit database migration/compatibility plan.
 
+## Audited client closure boundary (no MCP mutation yet)
+
+Repository and UGO Arena TEST audit on 2026-09-25 established that `esperando_aprobacion -> cierre` is not one universal mutation:
+
+- the Client UI calls `aprobar_servicio(p_servicio_id)` for the exact client-owned service;
+- electronic approval requires protected retained payment with a real processor reference, then completes the service and releases the payment;
+- cash approval records `metadata.trabajo_aprobado_at` and intentionally keeps the service in `esperando_aprobacion`;
+- only the later client action `confirmar_pago_efectivo_cliente(p_servicio_id)` marks the cash payment released and moves that same service to `completado`;
+- both paths remain backend-authoritative for ownership, final provider evidence and payment state;
+- the latest closure hardening must not update another user's protected `usuarios` counters from a client-owned RPC.
+
+This audit does **not** add a new MCP mutation. Keep the MCP at version 0.9.0 until one of these client boundaries is implemented and validated independently.
+
+Production must remain blocked for future client-closing MCP mutations until its live migration/function state is verified to include the closure hardening represented by `fix_client_cash_close_sensitive_counter` (or an equivalent newer contract). Repository code alone is not proof that PROD is ready.
+
 ## Validation
 
 Run:
@@ -307,7 +322,8 @@ Keep the action surface small and auditable. Add tools incrementally:
 12. `ugo_start_route` — implemented and TEST-gated pending PROD P0 contract promotion
 13. `ugo_start_work` — implemented and TEST-gated pending PROD P0 contract promotion
 14. `ugo_finish_work` — implemented and TEST-gated pending PROD P0 contract promotion
-15. cash-payment confirmation
-16. rating
+15. client work approval — boundary audited; no MCP mutation implemented yet
+16. cash-payment confirmation — separate boundary after cash work approval; no MCP mutation implemented yet
+17. rating
 
-Do not open the next mutating action until the current work-finish boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
+Do not open the next mutating action until its exact client-owned service boundary is independently audited, TEST-validated and the required backend contracts are promoted through the normal environment pipeline.
