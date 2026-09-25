@@ -6,6 +6,7 @@ import { getProviderLocation, getService } from "./serviceReads.js";
 import { getCurrentUser, getJobHistory, getProviderOffers, getSavedPlaces } from "./contextReads.js";
 import { markArrived } from "./arrival.js";
 import { acceptJob } from "./acceptJob.js";
+import { startRoute } from "./startRoute.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -17,7 +18,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.6.0",
+    version: "0.7.0",
   });
 
   server.registerTool(
@@ -256,6 +257,35 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo aceptar el trabajo",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_start_route",
+    {
+      description:
+        "Inicia el traslado de un proveedor para un serviceId exacto mediante el RPC canónico avanzar_servicio(..., en_camino). TEST-only hasta promover y validar el contrato P0 equivalente en PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("provider"),
+        serviceId: z.string().uuid(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await startRoute(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo iniciar el traslado",
           },
           true
         );
