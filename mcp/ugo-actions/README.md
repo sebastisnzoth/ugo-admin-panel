@@ -45,7 +45,7 @@ For the FCC wrapper, open `fcc-codex`, run `/mcp`, and verify that `ugo-actions`
 
 ## Runtime authentication for real reads/actions
 
-`ugo_get_current_job` uses the caller's real Supabase session and the database RLS boundary. It does not use `service_role`.
+UGO Actions reads and mutations use the caller's real Supabase session and the database RLS/RPC boundary. They do not use `service_role`.
 
 Runtime variables:
 
@@ -117,6 +117,69 @@ Location interpretation:
 
 No GPS update, state transition or other mutation occurs.
 
+### `ugo_get_current_user`
+
+Read-only identity and operational-profile lookup for the authenticated client/provider.
+
+The response is deliberately narrow. It can expose operational fields such as name, role, status, karma, onboarding state and provider availability/profile context, but it omits account/contact/payment secrets such as email, phone, CPF, PIX keys and external payment-account identifiers.
+
+### `ugo_get_provider_offers`
+
+Read-only provider opportunity feed.
+
+The tool requires `role=provider`, reuses the authorized `obtener_ofertas_proveedor` RPC and rejects any returned row whose `proveedor_id` does not match the authenticated provider. It preserves the RPC privacy contract: coarse client zone is allowed, exact client address is not returned.
+
+### `ugo_get_saved_places`
+
+Read-only saved-place lookup for the authenticated client.
+
+The tool requires `role=client`, queries `direcciones_cliente` with an explicit `usuario_id` ownership filter, and keeps database RLS authoritative. It can return the authenticated client's own saved address/coordinates because those are needed to choose a service location. It cannot read or modify another client's places and does not change the default place.
+
+### `ugo_get_job_history`
+
+Read-only recent service history for an authenticated client or provider.
+
+The query applies the corresponding ownership filter (`cliente_id` or `proveedor_id`) plus RLS, orders by recent update and accepts a bounded `limit` (maximum 50). The returned summary omits counterpart IDs, exact addresses and arbitrary service metadata.
+
+### `ugo_accept_job`
+
+Controlled provider-offer acceptance using the same canonical backend RPC as the Provider UI.
+
+Input is explicit and non-inferential:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+- exact `offerId`
+
+The tool validates the real Supabase session and provider role before reading the provider-owned offer. It refuses cross-provider and cross-service scope, never guesses a latest offer, calls only `aceptar_oferta(p_oferta_id)`, returns a minimal sanitized result, and reconciles ambiguous network/RPC failures by re-reading the exact persisted offer + service assignment.
+
+Business rules remain backend-authoritative. TEST already enforces atomic assignment, offer expiry, provider readiness, the three-unpaid-UGO-services block and schedule-conflict rules, including valid future jobs while another job is live.
+
+**Environment gate:** this mutation is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) does not yet have the debt/schedule contract promoted, so the tool returns `backend_contract_not_ready` before mutation there. Remove or extend that gate only after those production migrations are promoted and verified.
+
+### `ugo_start_route`
+
+Controlled provider route-start mutation for one exact `serviceId`.
+
+Input:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+
+The tool validates the caller's real Supabase session, active provider role and exact service ownership before mutation. It never accepts coordinates, offer IDs, service numbers or a "latest job" shortcut.
+
+The mutation reuses the Provider UI contract exactly:
+
+`avanzar_servicio(p_servicio_id, 'en_camino')`
+
+The backend remains authoritative for the legal `asignado -> en_camino` transition. In TEST it also enforces the scheduled-job start window (up to 60 minutes before `programado_para`) and requires a valid client payment path: either protected retained electronic payment with a real processor reference, or the canonical in-person cash payment state.
+
+Repeated calls are safe: `en_camino` returns idempotent success; later states such as `llegado`, `en_progreso`, `esperando_aprobacion` and `completado` are reported as already advanced and are never moved backward. Ambiguous network failures are reconciled by re-reading the same provider-owned `serviceId`.
+
+**Environment gate:** `ugo_start_route` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the equivalent complete P0 contract (including the TEST scheduled-start rule and other pending P0 promotions), so the tool returns `backend_contract_not_ready` before mutation there.
+
 ### `ugo_mark_arrived`
 
 First controlled mutation in the MCP surface.
@@ -151,6 +214,26 @@ Repeated arrival is idempotent: when the same service is already `llegado`, the 
 The repository migration `20260924162000_provider_arrival_gps_gate.sql` also installs a database trigger that blocks any `en_camino -> llegado` update that did not pass the dedicated arrival validator. This prevents the older generic `avanzar_servicio` path from becoming a geofence bypass after the migration is promoted.
 
 `publicar_ubicacion_proveedor` is intentionally **not exposed as a Hugo MCP tool**. Coordinates must originate from the device/app geolocation flow, not from model-generated tool arguments.
+
+### `ugo_start_work`
+
+Controlled provider work-start mutation for one exact `serviceId`.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+
+The tool rejects extra action payload such as coordinates, offer IDs, service numbers, evidence paths, files or arbitrary metadata. It validates the caller's real Supabase session, active provider role and exact service ownership, then reuses the Provider UI contract:
+
+`avanzar_servicio(p_servicio_id, 'en_progreso')`
+
+The backend is authoritative for the legal `llegado -> en_progreso` transition. In TEST the canonical backend requires at least one real provider-owned initial evidence row (`tipo='antes'`) with a non-empty storage path before work can start. The MCP does not upload, generate, insert or fabricate evidence and preserves the backend rejection when that evidence is missing.
+
+Repeated calls are safe: `en_progreso` returns idempotent success. `esperando_aprobacion` and `completado` are reported as already advanced and are never moved backward. Ambiguous network failures are reconciled by re-reading the same provider-owned `serviceId`; a persisted `en_progreso` or later valid state prevents a blind retry.
+
+**Environment gate:** `ugo_start_work` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the full promoted P0 lifecycle contract used by the guarded MCP sequence, so the tool returns `backend_contract_not_ready` before mutation there.
 
 ## Current service states verified in UGO
 
@@ -194,13 +277,17 @@ Keep the action surface small and auditable. Add tools incrementally:
 2. real read-only `ugo_get_current_job` — implemented
 3. `ugo_get_service` — implemented
 4. `ugo_get_provider_location` — implemented
-5. device-owned GPS publication contract — implemented in Provider UI/backend migration
-6. `ugo_mark_arrived` — implemented, pending migration promotion
-7. accept job
-8. start route
-9. start work
-10. finish work
-11. cash-payment confirmation
-12. rating
+5. `ugo_get_current_user` — implemented
+6. `ugo_get_provider_offers` — implemented
+7. `ugo_get_saved_places` — implemented
+8. `ugo_get_job_history` — implemented
+9. device-owned GPS publication contract — implemented in Provider UI/backend migration
+10. `ugo_mark_arrived` — implemented in code, pending migration promotion
+11. `ugo_accept_job` — implemented and TEST-gated pending PROD debt/agenda promotion
+12. `ugo_start_route` — implemented and TEST-gated pending PROD P0 contract promotion
+13. `ugo_start_work` — implemented and TEST-gated pending PROD P0 contract promotion
+14. finish work
+15. cash-payment confirmation
+16. rating
 
-Do not open additional mutating actions until the current read/arrival authorization boundary is verified and the arrival migration is promoted through the normal environment pipeline.
+Do not open the next mutating action until the current work-start boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
