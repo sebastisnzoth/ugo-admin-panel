@@ -7,7 +7,7 @@ const unavailable = async () => false
 const emptyActions: ClientActionHandlers = {
   openSearch: noop, openProvider: noop, selectProvider: noop, createService: unavailable,
   startMatching: unavailable, cancelService: unavailable, openPayment: unavailable,
-  approveService: unavailable, confirmCashPayment: unavailable,
+  approveService: unavailable, confirmCashPayment: unavailable, rateService: unavailable,
   openReview: noop, openHistory: noop, openProfile: noop, openDispute: noop,
 }
 

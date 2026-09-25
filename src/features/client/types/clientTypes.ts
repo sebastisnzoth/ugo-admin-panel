@@ -21,6 +21,8 @@ export type ClientActionHandlers = {
   approveService: (serviceId: string) => Promise<boolean>
   /** YA PAGUÉ is a separate service-scoped boundary after cash work approval. */
   confirmCashPayment: (serviceId: string) => Promise<boolean>
+  /** Rating is irreversible and always tied to one completed service. */
+  rateService: (serviceId: string, score: number, comment?: string) => Promise<boolean>
   openReview: () => void
   openHistory: () => void
   openProfile: () => void

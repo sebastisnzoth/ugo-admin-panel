@@ -26,3 +26,5 @@ test('request description can correct a stale Hugo category before the client co
 
 
 test('need step has responsive premium desktop layout and description-gated continuation',()=>{assert.match(need,/canContinue=Boolean\(category&&description\.trim\(\)\.length>=8\)/);assert.match(need,/disabled=\{!canContinue\|\|photoBusy\}/);assert.match(need,/ugo-need-field-label/);assert.match(need,/aria-pressed=\{description\.trim\(\)===option\}/);assert.match(need,/Object\.entries\(QUICK\)\.find\(\(\[name\]\)=>key\.includes\(name\)\)/)})
+
+test('Hugo closure tools stay service-scoped and require explicit confirmation',()=>{assert.match(voice,/name==='approve_work'/);assert.match(voice,/clientActions\?\.approveService\(serviceId\)/);assert.match(voice,/name==='confirm_cash_payment'/);assert.match(voice,/clientActions\?\.confirmCashPayment\(serviceId\)/);assert.match(voice,/name==='rate_service'/);assert.match(voice,/clientActions\?\.rateService\(serviceId,score,comment\)/);assert.match(voice,/args\.confirmed!==true/);assert.match(voice,/Number\.isInteger\(score\)/)})

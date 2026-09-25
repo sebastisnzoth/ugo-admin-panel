@@ -44,7 +44,10 @@ const CLIENT_TOOLS:LiveFunctionDeclaration[]=[
  {name:'search_providers',description:'Busca profesionales reales disponibles para el borrador actual.',parameters:{type:'OBJECT',properties:{}}},
  {name:'create_service_request',description:'Crea el pedido real sólo después de confirmación explícita del cliente.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
  {name:'get_service_status',description:'Consulta el estado real de un pedido activo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
- {name:'cancel_service',description:'Cancela un pedido real después de confirmación cuando corresponda.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}}
+ {name:'cancel_service',description:'Cancela un pedido real después de confirmación cuando corresponda.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
+ {name:'approve_work',description:'Confirma que el trabajo de un service_id exacto quedó bien. Requiere confirmación explícita y nunca confirma por sí solo un pago en efectivo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
+ {name:'confirm_cash_payment',description:'Confirma YA PAGUÉ para un service_id exacto después de que el trabajo en efectivo ya fue aprobado. Requiere confirmación explícita.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
+ {name:'rate_service',description:'Califica un service_id exacto ya completado. Requiere puntuación de 1 a 5 y confirmación explícita.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},score:{type:'NUMBER'},comment:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','score','confirmed']}}
 ]
 const PROVIDER_TOOLS:LiveFunctionDeclaration[]=[
  {name:'provider_set_online',description:'Pone al proveedor online usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
