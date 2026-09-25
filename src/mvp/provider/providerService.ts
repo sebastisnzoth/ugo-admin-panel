@@ -202,8 +202,11 @@ function providerArrivalError(result:ProviderArrivalResult){
  if(code==='invalid_state')return arrivalFailure(code,'El servicio ya no está en un estado que permita confirmar llegada.')
  return arrivalFailure(code,'UGO no pudo validar la llegada con el backend.')
 }
-async function markProviderArrived(supabase:SupabaseClient,serviceId:string,options:ProviderAdvanceOptions={}){
- if(!options.locationAlreadyPublished)await publishProviderLocation(supabase,serviceId)
+async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
+ await publishProviderLocation(supabase,serviceId)
+ return confirmProviderArrival(supabase,serviceId)
+}
+async function confirmProviderArrival(supabase:SupabaseClient,serviceId:string){
  const{data,error}=await supabase.rpc('marcar_llegada_proveedor',{p_servicio_id:serviceId})
  if(!error){
   const result=(data||{}) as ProviderArrivalResult
@@ -217,7 +220,7 @@ async function markProviderArrived(supabase:SupabaseClient,serviceId:string,opti
 
 export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:ProviderTransitionState,options:ProviderAdvanceOptions={}){
  if(state==='llegado'){
-  try{return await markProviderArrived(supabase,serviceId,options)}
+  try{return options.locationAlreadyPublished?await confirmProviderArrival(supabase,serviceId):await markProviderArrived(supabase,serviceId)}
   catch(error){
    const transitionMessage=messageOf(error,'No se pudo confirmar la llegada.')
    if(!isExpectedProviderArrivalRejection(error))void reportSentinelIncident({eventType:'provider_arrival_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.arrive',checklistCode:'MAP-GPS',metadata:{arrivalCode:providerArrivalCode(error)}})

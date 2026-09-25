@@ -27,6 +27,6 @@ test('automatic arrival reuses the GPS fix already published by the live tracker
  const[service,root,tracker]=await Promise.all([read('src/mvp/provider/providerService.ts'),read('src/mvp/provider/ProviderRoot.tsx'),read('src/mvp/ProviderLocationTracker.tsx')])
  assert.match(tracker,/rpc\.rpc\('publicar_ubicacion_proveedor'/)
  assert.match(root,/data\.advance\('llegado',\{locationAlreadyPublished:true\}\)/)
- assert.match(service,/if\(!options\.locationAlreadyPublished\)await publishProviderLocation/)
- assert.match(service,/markProviderArrived\(supabase,serviceId,options\)/)
+ assert.match(service,/async function markProviderArrived\(supabase:SupabaseClient,serviceId:string\)\{[\s\S]*await publishProviderLocation\(supabase,serviceId\)[\s\S]*confirmProviderArrival\(supabase,serviceId\)/)
+ assert.match(service,/options\.locationAlreadyPublished\?await confirmProviderArrival\(supabase,serviceId\):await markProviderArrived\(supabase,serviceId\)/)
 })
