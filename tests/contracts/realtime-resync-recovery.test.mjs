@@ -13,7 +13,7 @@ const recoveryAssertions=(source,label)=>{
 }
 
 test('critical realtime consumers recover from missed events using persisted state',async()=>{
- const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm,history,providerHistory]=await Promise.all([
+ const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm,history,providerHistory,providerAgenda]=await Promise.all([
   read('src/mvp/NotificationCenter.tsx'),
   read('src/mvp/ServiceChat.tsx'),
   read('src/mvp/ServiceExpansionPanel.tsx'),
@@ -25,6 +25,7 @@ test('critical realtime consumers recover from missed events using persisted sta
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/mvp/ServiceHistoryPanel.tsx'),
   read('src/mvp/ProviderHistoryDetail.tsx'),
+  read('src/mvp/provider/ProviderAgenda.tsx'),
  ])
  recoveryAssertions(notifications,'NotificationCenter')
  recoveryAssertions(chat,'ServiceChat')
@@ -37,6 +38,7 @@ test('critical realtime consumers recover from missed events using persisted sta
  recoveryAssertions(postConfirm,'ClientPostConfirmFlow')
  recoveryAssertions(history,'ServiceHistoryPanel')
  recoveryAssertions(providerHistory,'ProviderHistoryDetail')
+ recoveryAssertions(providerAgenda,'ProviderAgenda')
  assert.match(notifications,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(notifications,/setChannelEpoch\(value=>value\+1\)/)
  assert.match(completion,/CHANNEL_ERROR|TIMED_OUT/)
@@ -46,6 +48,9 @@ test('critical realtime consumers recover from missed events using persisted sta
  assert.match(providerHistory,/table:'pagos'/)
  assert.match(providerHistory,/CHANNEL_ERROR|TIMED_OUT|CLOSED/)
  assert.match(providerHistory,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(providerAgenda,/CHANNEL_ERROR|TIMED_OUT|CLOSED/)
+ assert.match(providerAgenda,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(providerAgenda,/provider-agenda-\$\{id\}-\$\{channelEpoch\}/)
 })
 
 test('chat and expansion resync when the parent service changes',async()=>{
