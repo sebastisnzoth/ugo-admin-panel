@@ -188,6 +188,9 @@ test("ugo_approve_work: provider role se rechaza antes del backend", () => {
 
 for (const extra of [
   { payment: "cash" },
+  { paymentId: "fake-payment" },
+  { paymentMethod: "cash" },
+  { providerId: PROVIDER_A },
   { paid: true },
   { evidence: { fake: true } },
   { rating: 5 },
@@ -213,6 +216,19 @@ test("ugo_approve_work: servicio de otro cliente queda oculto y no muta", async 
       { id: SERVICE_A, cliente_id: CLIENT_B, estado: "esperando_aprobacion", metadata: {} },
     ],
   });
+
+  const result = await approveWork(
+    { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+    { env: testEnv, fetchImpl }
+  );
+
+  assert.equal(result.status, "rejected");
+  assert.equal(result.code, "not_found_or_unauthorized");
+  assert.equal(rpcCalls(calls).length, 0);
+});
+
+test("ugo_approve_work: serviceId inexistente se rechaza de forma segura y no muta", async () => {
+  const { fetchImpl, calls } = makeFetch({ services: [] });
 
   const result = await approveWork(
     { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
@@ -318,6 +334,46 @@ test("ugo_approve_work: conserva rechazo exacto por falta de evidencia final", a
   );
 });
 
+test("ugo_approve_work: conserva rechazo exacto si falta forma de pago confirmada", async () => {
+  const message = "El servicio todavía no tiene una forma de pago confirmada";
+  const { fetchImpl } = makeFetch({
+    rpcStatus: 400,
+    rpcMessage: message,
+  });
+
+  await assert.rejects(
+    () =>
+      approveWork(
+        { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+        { env: testEnv, fetchImpl }
+      ),
+    (error) =>
+      error?.code === "backend_rejected" &&
+      error?.status === 400 &&
+      error?.message === message
+  );
+});
+
+test("ugo_approve_work: conserva rechazo exacto si el efectivo está en estado inválido", async () => {
+  const message = "El pago en efectivo no está en un estado válido";
+  const { fetchImpl } = makeFetch({
+    rpcStatus: 400,
+    rpcMessage: message,
+  });
+
+  await assert.rejects(
+    () =>
+      approveWork(
+        { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+        { env: testEnv, fetchImpl }
+      ),
+    (error) =>
+      error?.code === "backend_rejected" &&
+      error?.status === 400 &&
+      error?.message === message
+  );
+});
+
 test("ugo_approve_work: conserva rechazo exacto si el pago electrónico no está protegido", async () => {
   const message = "El pago todavía no está confirmado y protegido";
   const { fetchImpl } = makeFetch({
@@ -375,6 +431,43 @@ test("ugo_approve_work: fallo de red después de aprobación cash se reconcilia 
   assert.equal(result.requires_cash_confirmation, true);
   assert.equal(result.idempotent, true);
   assert.equal(result.reconciled, true);
+});
+
+test("ugo_approve_work: fallo de red sin commit no afirma éxito y conserva error original", async () => {
+  const { fetchImpl } = makeFetch({
+    rpcThrows: true,
+  });
+
+  await assert.rejects(
+    () =>
+      approveWork(
+        { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+        { env: testEnv, fetchImpl }
+      ),
+    (error) =>
+      error?.code === "backend_unavailable" &&
+      error?.status === 503
+  );
+});
+
+test("ugo_approve_work: waiting sin trabajo_aprobado_at es respuesta backend inválida", async () => {
+  const { fetchImpl } = makeFetch({
+    rpcResponse: {
+      id: SERVICE_A,
+      cliente_id: CLIENT_A,
+      estado: "esperando_aprobacion",
+      metadata: {},
+    },
+  });
+
+  await assert.rejects(
+    () =>
+      approveWork(
+        { userId: CLIENT_A, role: "client", serviceId: SERVICE_A },
+        { env: testEnv, fetchImpl }
+      ),
+    (error) => error?.code === "backend_invalid_response"
+  );
 });
 
 test("ugo_approve_work: respuesta backend para otro serviceId se rechaza scope_mismatch", async () => {
