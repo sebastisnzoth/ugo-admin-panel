@@ -64,3 +64,16 @@ test.skip('legacy HTTP Hugo UI-action bus is outside the Gemini Live voice happy
  assert.match(map,/setShowCli\(command\.show_clients\)/)
  assert.match(map,/setGeoRadius/)
 })
+
+
+test('Admin Hugo exact lookups avoid raw mixed-type OR filters',async()=>{
+ const orb=await read('src/components/ConversationalOrb.tsx')
+ assert.match(orb,/function adminServiceLookup/)
+ assert.match(orb,/query\.eq\(lookup\.field,lookup\.value\)/)
+ assert.doesNotMatch(orb,/\.or\(`id\.eq\.\$\{key\}/)
+ assert.doesNotMatch(orb,/\.or\(`id\.eq\.\$\{q\}/)
+ assert.match(orb,/\.ilike\('nombre'/)
+ assert.match(orb,/\.ilike\('apellido'/)
+ assert.match(orb,/\.ilike\('email'/)
+ assert.match(orb,/uniqueAdminUsers/)
+})

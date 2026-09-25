@@ -1,0 +1,305 @@
+import {
+  UgoMcpError,
+  requestHeaders,
+} from "./currentJob.js";
+import {
+  authorizeActor,
+  readOwnedService,
+  validateServiceReadInput,
+} from "./serviceReads.js";
+
+export const FINISH_WORK_VALIDATED_PROJECT_REFS = new Set([
+  "tmossnqfwfwjrtzwcbmm",
+]);
+
+const FINISH_WORK_LATER_STATES = new Set([
+  "completado",
+]);
+
+const ALLOWED_INPUT_KEYS = new Set([
+  "userId",
+  "role",
+  "serviceId",
+]);
+
+export function validateFinishWorkInput(input = {}) {
+  for (const key of Object.keys(input)) {
+    if (!ALLOWED_INPUT_KEYS.has(key)) {
+      throw new UgoMcpError(
+        "invalid_input",
+        `ugo_finish_work no acepta el campo ${key}`,
+        400
+      );
+    }
+  }
+
+  const parsed = validateServiceReadInput(input);
+  if (parsed.role !== "provider") {
+    throw new UgoMcpError(
+      "invalid_input",
+      "ugo_finish_work requiere role=provider",
+      400
+    );
+  }
+
+  return parsed;
+}
+
+function finishResult(parsed, state, {
+  idempotent = false,
+  reconciled = false,
+  alreadyAdvanced = false,
+} = {}) {
+  return {
+    status: alreadyAdvanced ? "already_advanced" : "finished_work",
+    service_id: parsed.serviceId,
+    state,
+    idempotent: Boolean(idempotent),
+    reconciled: Boolean(reconciled),
+  };
+}
+
+async function readFinishService(parsed, config, fetchImpl) {
+  return await readOwnedService(
+    parsed,
+    config,
+    fetchImpl,
+    "id,proveedor_id,estado,updated_at"
+  );
+}
+
+function validateOwnedService(row, parsed) {
+  if (!row) return null;
+
+  if (row.id !== parsed.serviceId || row.proveedor_id !== parsed.userId) {
+    throw new UgoMcpError(
+      "scope_mismatch",
+      "El servicio recibido no coincide con el proveedor/serviceId solicitado",
+      502
+    );
+  }
+
+  return row;
+}
+
+function reconcileFinishState(row, parsed) {
+  const service = validateOwnedService(row, parsed);
+  if (!service) return null;
+
+  const state = String(service.estado ?? "");
+
+  if (state === "esperando_aprobacion") {
+    return finishResult(parsed, state, {
+      idempotent: true,
+      reconciled: true,
+    });
+  }
+
+  if (FINISH_WORK_LATER_STATES.has(state)) {
+    return finishResult(parsed, state, {
+      idempotent: true,
+      reconciled: true,
+      alreadyAdvanced: true,
+    });
+  }
+
+  return null;
+}
+
+async function callFinishWorkRpc(parsed, config, fetchImpl) {
+  let response;
+
+  try {
+    response = await fetchImpl(
+      `${config.supabaseUrl}/rest/v1/rpc/avanzar_servicio`,
+      {
+        method: "POST",
+        headers: {
+          ...requestHeaders(config),
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          p_servicio_id: parsed.serviceId,
+          p_estado: "esperando_aprobacion",
+        }),
+      }
+    );
+  } catch {
+    throw new UgoMcpError(
+      "backend_unavailable",
+      "No se pudo contactar Supabase",
+      503
+    );
+  }
+
+  let body = null;
+
+  try {
+    body = await response.json();
+  } catch {
+    if (!response?.ok) {
+      throw new UgoMcpError(
+        "backend_error",
+        `Supabase respondió HTTP ${Number(response?.status) || 502}`,
+        Number(response?.status) || 502
+      );
+    }
+
+    throw new UgoMcpError(
+      "backend_invalid_response",
+      "Supabase devolvió una respuesta inválida",
+      502
+    );
+  }
+
+  if (!response?.ok) {
+    const status = Number(response.status) || 502;
+    const backendMessage =
+      typeof body?.message === "string" && body.message.trim()
+        ? body.message.trim()
+        : `Supabase respondió HTTP ${status}`;
+
+    throw new UgoMcpError(
+      status === 401 || status === 403
+        ? "authentication_failed"
+        : "backend_rejected",
+      backendMessage,
+      status
+    );
+  }
+
+  return body;
+}
+
+function normalizeFinishWorkRpcResponse(value, parsed) {
+  const row = Array.isArray(value) ? value[0] ?? null : value;
+  if (!row || typeof row !== "object") return null;
+
+  if (row.id !== parsed.serviceId) {
+    throw new UgoMcpError(
+      "scope_mismatch",
+      "El backend devolvió la transición para otro serviceId",
+      502
+    );
+  }
+
+  if (row.proveedor_id !== parsed.userId) {
+    throw new UgoMcpError(
+      "scope_mismatch",
+      "El backend devolvió la transición para otro proveedor",
+      502
+    );
+  }
+
+  if (row.estado !== "esperando_aprobacion") {
+    throw new UgoMcpError(
+      "backend_invalid_response",
+      "El backend no confirmó el estado esperando_aprobacion",
+      502
+    );
+  }
+
+  return finishResult(parsed, "esperando_aprobacion");
+}
+
+export async function finishWork(
+  input,
+  { env = process.env, fetchImpl = globalThis.fetch } = {}
+) {
+  if (typeof fetchImpl !== "function") {
+    throw new UgoMcpError("runtime_error", "fetch no está disponible", 500);
+  }
+
+  const validated = validateFinishWorkInput(input);
+  const { parsed, config, denied } = await authorizeActor(validated, {
+    env,
+    fetchImpl,
+  });
+
+  if (denied) {
+    return {
+      status: "rejected",
+      code: "unauthorized",
+      service_id: parsed.serviceId,
+      state: null,
+    };
+  }
+
+  if (!FINISH_WORK_VALIDATED_PROJECT_REFS.has(config.projectRef)) {
+    throw new UgoMcpError(
+      "backend_contract_not_ready",
+      `ugo_finish_work está bloqueado para ${config.projectRef}: el contrato P0 completo todavía no fue promovido y validado en ese backend`,
+      409
+    );
+  }
+
+  const current = validateOwnedService(
+    await readFinishService(parsed, config, fetchImpl),
+    parsed
+  );
+
+  if (!current) {
+    return {
+      status: "rejected",
+      code: "not_found_or_unauthorized",
+      service_id: parsed.serviceId,
+      state: null,
+    };
+  }
+
+  const currentState = String(current.estado ?? "");
+
+  if (currentState === "esperando_aprobacion") {
+    return finishResult(parsed, currentState, { idempotent: true });
+  }
+
+  if (FINISH_WORK_LATER_STATES.has(currentState)) {
+    return finishResult(parsed, currentState, {
+      idempotent: true,
+      alreadyAdvanced: true,
+    });
+  }
+
+  if (currentState !== "en_progreso") {
+    return {
+      status: "rejected",
+      code: "invalid_state",
+      service_id: parsed.serviceId,
+      state: currentState || null,
+    };
+  }
+
+  let response;
+
+  try {
+    response = await callFinishWorkRpc(parsed, config, fetchImpl);
+  } catch (error) {
+    try {
+      const persisted = reconcileFinishState(
+        await readFinishService(parsed, config, fetchImpl),
+        parsed
+      );
+      if (persisted) return persisted;
+    } catch {
+      // Preserve the original mutation failure when recovery cannot be proven.
+    }
+
+    throw error;
+  }
+
+  const normalized = normalizeFinishWorkRpcResponse(response, parsed);
+  if (normalized) return normalized;
+
+  const persisted = reconcileFinishState(
+    await readFinishService(parsed, config, fetchImpl),
+    parsed
+  );
+
+  if (persisted) return persisted;
+
+  throw new UgoMcpError(
+    "backend_invalid_response",
+    "El backend no confirmó la finalización del trabajo",
+    502
+  );
+}

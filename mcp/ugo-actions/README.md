@@ -235,6 +235,26 @@ Repeated calls are safe: `en_progreso` returns idempotent success. `esperando_ap
 
 **Environment gate:** `ugo_start_work` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the full promoted P0 lifecycle contract used by the guarded MCP sequence, so the tool returns `backend_contract_not_ready` before mutation there.
 
+### `ugo_finish_work`
+
+Controlled provider work-finish mutation for one exact `serviceId`.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+
+The tool rejects extra action payload such as coordinates, offer IDs, service numbers, evidence paths, photos, files or arbitrary metadata. It validates the caller's real Supabase session, active provider role and exact service ownership, then reuses the Provider UI contract:
+
+`avanzar_servicio(p_servicio_id, 'esperando_aprobacion')`
+
+The backend is authoritative for the legal `en_progreso -> esperando_aprobacion` transition. In TEST the canonical backend requires at least one real provider-owned final evidence row (`tipo='despues'`) with a non-empty storage path before approval can be requested. The MCP does not upload, generate, insert or fabricate evidence and preserves the backend rejection `Agregá al menos una foto final antes de pedir aprobación` when final evidence is missing.
+
+Repeated calls are safe: `esperando_aprobacion` returns idempotent success. `completado` is reported as already advanced and is never moved backward. Ambiguous network failures are reconciled by re-reading the same provider-owned `serviceId`; a persisted `esperando_aprobacion` or `completado` state prevents a blind retry.
+
+**Environment gate:** `ugo_finish_work` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the full promoted P0 lifecycle contract used by the guarded MCP sequence, so the tool returns `backend_contract_not_ready` before mutation there.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -286,8 +306,8 @@ Keep the action surface small and auditable. Add tools incrementally:
 11. `ugo_accept_job` — implemented and TEST-gated pending PROD debt/agenda promotion
 12. `ugo_start_route` — implemented and TEST-gated pending PROD P0 contract promotion
 13. `ugo_start_work` — implemented and TEST-gated pending PROD P0 contract promotion
-14. finish work
+14. `ugo_finish_work` — implemented and TEST-gated pending PROD P0 contract promotion
 15. cash-payment confirmation
 16. rating
 
-Do not open the next mutating action until the current work-start boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
+Do not open the next mutating action until the current work-finish boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
