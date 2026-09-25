@@ -27,3 +27,5 @@ test('saved-place pickup is exact only when that place has coordinates', async (
   assert.match(location, /pickupLat/)
   assert.match(location, /pickupLng/)
 })
+
+test('client address step resolves coordinates before continuing and GPS survives reverse-geocoder failure',async()=>{const location=await read('src/features/client/request/ClientLocationScreen.tsx');const geo=await read('src/lib/clientGeocoding.ts');assert.match(location,/savePickup\(pos\.coords\.latitude,pos\.coords\.longitude,'current'\)/);assert.match(location,/persistCoordinates\(pos\.coords\.latitude,pos\.coords\.longitude\)/);assert.match(location,/if\(!hasPickup\)[\s\S]*geocodeClientAddress\(clean,zone\)/);assert.match(location,/No pudimos ubicar esa dirección en el mapa/);assert.match(geo,/photon\.komoot\.io\/reverse/);assert.match(geo,/nominatim\.openstreetmap\.org\/reverse/)})
