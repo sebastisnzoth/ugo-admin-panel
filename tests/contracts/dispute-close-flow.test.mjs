@@ -11,7 +11,7 @@ test('client closure exposes exact-service dispute action without duplicating ev
  assert.doesNotMatch(review,/ClientEvidenceGallery/)
  assert.match(detail,/ClientEvidenceGallery serviceId=\{service\.id\} hideWhenEmpty/)
  assert.match(detail,/ClientCompletionReview serviceId=\{service\.id\}[\s\S]*onOpenDispute=\{openExactDispute\}/)
- assert.match(detail,/DisputeDock key=\{`client-dispute-\$\{service\.id\}`\} role="client" serviceId=\{service\.id\} openRequestKey=\{disputeOpenKey\}/)
+ assert.match(detail,/DisputeDock role="client" serviceId=\{service\.id\} key=\{`client-dispute-\$\{service\.id\}`\} openRequestKey=\{disputeOpenKey\}/)
  assert.match(detail,/VER DISPUTA/)
 })
 
@@ -37,7 +37,7 @@ test('provider closure opens the exact service dispute and preserves it in provi
  assert.match(flow,/disputeServiceId:string\|null/)
  assert.match(flow,/setDisputeServiceId\(next==='dispute'\?id:null\)/)
  assert.match(root,/openDispute:serviceId=>flow\.navigate\('dispute',serviceId\|\|data\.service\?\.id\|\|null\)/)
- assert.match(root,/DisputeDock key=\{`provider-dispute-\$\{flow\.disputeServiceId\|\|'general'\}`\} role="provider" serviceId=\{flow\.disputeServiceId\}/)
+ assert.match(root,/DisputeDock role="provider" serviceId=\{flow\.disputeServiceId\} key=\{`provider-dispute-\$\{flow\.disputeServiceId\|\|'general'\}`\}/)
 })
 
 test('dispute backend stays participant-scoped, idempotent and server-authoritative',async()=>{
@@ -63,8 +63,8 @@ test('switching exact services remounts dispute state instead of leaking the pre
  const detail=await read('src/features/client/order/ClientServiceDetail.tsx')
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  const hook=await read('src/hooks/useDisputes.ts')
- assert.match(detail,/key=\{`client-dispute-\$\{service\.id\}`\}/)
- assert.match(root,/key=\{`provider-dispute-\$\{flow\.disputeServiceId\|\|'general'\}`\}/)
+ assert.match(detail,/serviceId=\{service\.id\} key=\{`client-dispute-\$\{service\.id\}`\}/)
+ assert.match(root,/serviceId=\{flow\.disputeServiceId\} key=\{`provider-dispute-\$\{flow\.disputeServiceId\|\|'general'\}`\}/)
  assert.match(hook,/q=serviceId\?q\.eq\('id',serviceId\)/)
 })
 
@@ -76,9 +76,9 @@ test('general provider help never forwards a click event as a service id',async(
  ])
  assert.match(types,/openDispute: \(serviceId\?: string\) => void/)
  assert.match(profile,/onClick=\{\(\)=>flow\.actions\.openDispute\(\)\}/)
- assert.match(sidebar,/onClick=\{\(\)=>flow\.actions\.openDispute\(\)\}/)
+ assert.match(sidebar,/onClick=\{\(\)=>f\.actions\.openDispute\(\)\}/)
  assert.doesNotMatch(profile,/onClick=\{flow\.actions\.openDispute\}/)
- assert.doesNotMatch(sidebar,/onClick=\{flow\.actions\.openDispute\}/)
+ assert.doesNotMatch(sidebar,/onClick=\{f\.actions\.openDispute\}/)
 })
 
 test('disputed client and provider surfaces expose only dispute continuation for closure',async()=>{
