@@ -7,6 +7,7 @@ import { getCurrentUser, getJobHistory, getProviderOffers, getSavedPlaces } from
 import { markArrived } from "./arrival.js";
 import { acceptJob } from "./acceptJob.js";
 import { startRoute } from "./startRoute.js";
+import { startWork } from "./startWork.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -18,7 +19,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.7.0",
+    version: "0.8.0",
   });
 
   server.registerTool(
@@ -321,6 +322,35 @@ serveStdio(() => {
       }
     }
   );
+
+  server.registerTool(
+    "ugo_start_work",
+    {
+      description:
+        "Inicia el trabajo de un proveedor para un serviceId exacto mediante el RPC canónico avanzar_servicio(..., en_progreso). La evidencia inicial sigue siendo obligatoria y backend-authoritative. TEST-only hasta promover el contrato P0 completo a PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("provider"),
+        serviceId: z.string().uuid(),
+      }).strict(),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await startWork(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo iniciar el trabajo",
+          },
+          true
+        );
+      }
+    }
+  );
+
 
   return server;
 });
