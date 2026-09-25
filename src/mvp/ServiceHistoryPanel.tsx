@@ -42,13 +42,26 @@ const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[esta
 
 export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpenService}:Props){
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
- const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null)
+ const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
  useEffect(()=>{let alive=true;sb.auth.getSession().then(({data})=>{if(alive)setUserId(data.session?.user?.id||null)});const{data:l}=sb.auth.onAuthStateChange((_e,s)=>setUserId(s?.user?.id||null));return()=>{alive=false;l.subscription.unsubscribe()}},[sb])
  useEffect(()=>{if(embedded)setOpen(true)},[embedded])
  useEffect(()=>{if(openRequest)setOpen(true)},[openRequest])
  const load=useCallback(async()=>{if(!userId)return;setLoading(true);setError('');try{let q=(sb as any).from('servicios').select('id,numero,estado,descripcion,tarifa,created_at,updated_at,programado_para,completado_at,direccion_cliente,cliente_id,proveedor_id,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre),proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').order('created_at',{ascending:false}).limit(role==='admin'?200:80);if(role==='client')q=q.eq('cliente_id',userId);if(role==='provider')q=q.eq('proveedor_id',userId);const{data,error}=await q;if(error)throw error;setRows((data||[]) as Row[])}catch(e:any){setError(e?.message||'No se pudo cargar la actividad.')}finally{setLoading(false)}},[role,sb,userId])
  useEffect(()=>{if(open)load()},[open,load])
- useEffect(()=>{if(!userId)return;const realtimeFilter=role==='client'?`cliente_id=eq.${userId}`:role==='provider'?`proveedor_id=eq.${userId}`:undefined;const change={event:'*' as const,schema:'public' as const,table:'servicios' as const,...(realtimeFilter?{filter:realtimeFilter}:{})};const ch=(sb as any).channel(`ugo-history-${role}-${userId}`).on('postgres_changes',change,()=>{if(open)void load()}).subscribe();return()=>{sb.removeChannel(ch)}},[load,open,role,sb,userId])
+ useEffect(()=>{
+  if(!userId)return
+  let alive=true,reconnectTimer:number|undefined
+  const sync=()=>{if(alive&&open)void load()}
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)}
+  const onOnline=()=>{sync();reconnect()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
+  window.addEventListener('online',onOnline)
+  document.addEventListener('visibilitychange',onVisibility)
+  const realtimeFilter=role==='client'?`cliente_id=eq.${userId}`:role==='provider'?`proveedor_id=eq.${userId}`:undefined
+  const change={event:'*' as const,schema:'public' as const,table:'servicios' as const,...(realtimeFilter?{filter:realtimeFilter}:{})}
+  const ch=(sb as any).channel(`ugo-history-${role}-${userId}-${channelEpoch}`).on('postgres_changes',change,sync).subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
+ },[channelEpoch,load,open,role,sb,userId])
  const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setCancellingId(serviceId);setActionNotice('');try{const owned=rows.find(row=>row.id===serviceId&&row.cliente_id===userId);if(!owned)throw new Error('No encontramos este pedido dentro de tu actividad actual.');await getDispatchProvider().cancel(serviceId);setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,rows,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
