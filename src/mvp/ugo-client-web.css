@@ -33,8 +33,10 @@
  .ucw-dashboard,.ucw-dashboard:has(.ucw-filter),.ucw-home-hero,.ucw-service-active,.ucw-matching-layout,.ucw-chat-layout{grid-template-columns:1fr}
  .ucw-filter,.ucw-right{grid-template-columns:1fr 1fr}
  .ucw-map,.ucw-radar-map,.ucw-route-map{height:240px}
- .ucw-mobile-nav{display:flex;position:fixed;left:8px;right:8px;bottom:max(6px,env(safe-area-inset-bottom));z-index:70;height:58px;padding:5px}
- .ucw-mobile-nav button{min-height:46px}
+ .ucw-mobile-nav{display:flex;position:fixed;left:8px;right:8px;bottom:max(6px,env(safe-area-inset-bottom));z-index:70;height:58px;padding:5px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:0 14px 36px rgba(11,28,48,.18)}
+ .ucw-mobile-nav button{flex:1;min-width:0;min-height:46px;border:0;border-radius:11px;background:transparent;color:var(--sub);display:flex;align-items:center;justify-content:center;gap:6px;padding:0 8px;font-size:10px}
+ .ucw-mobile-nav button b{font-size:15px}
+ .ucw-mobile-nav button.active{background:var(--primary2);color:#001f27;font-weight:950}
 }
 
 
