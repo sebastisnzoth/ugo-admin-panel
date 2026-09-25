@@ -41,7 +41,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
    {!awaitingApproval&&!disputeActive&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.payment" checklistCode="PAYMENT-CLOSE" severity="P0" title="Pago temporalmente no disponible" compact><ClientPaymentChoice serviceId={service.id}/></SentinelErrorBoundary>}
    {!awaitingApproval&&!disputeActive&&service.estado!=='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.expansion" title="Cambios del servicio temporalmente no disponibles" compact><ServiceExpansionPanel role="client" serviceId={service.id} compact/></SentinelErrorBoundary>}
    {service.estado==='completado'&&<SentinelErrorBoundary role="client" serviceId={service.id} action="client.rating.submit" checklistCode="RATING" severity="P1" title="Calificación temporalmente no disponible" compact><ClientRatingPrompt serviceId={service.id} embedded/></SentinelErrorBoundary>}
-   <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title="Ayuda temporalmente no disponible" compact><DisputeDock key={`client-dispute-${service.id}`} role="client" serviceId={service.id} openRequestKey={disputeOpenKey} showLauncher={!awaitingApproval&&!disputeActive}/></SentinelErrorBoundary>
+   <SentinelErrorBoundary role="client" serviceId={service.id} action="client.order.dispute" title="Ayuda temporalmente no disponible" compact><DisputeDock role="client" serviceId={service.id} key={`client-dispute-${service.id}`} openRequestKey={disputeOpenKey} showLauncher={!awaitingApproval&&!disputeActive}/></SentinelErrorBoundary>
   </>}
  </div></div>
 }
