@@ -22,6 +22,8 @@ jobs:
       UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
       UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
       UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+      UGO_TEST_SUPERADMIN_EMAIL: ${{ secrets.UGO_TEST_SUPERADMIN_EMAIL }}
+      UGO_TEST_SUPERADMIN_PASSWORD: ${{ secrets.UGO_TEST_SUPERADMIN_PASSWORD }}
       UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
       UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
     steps:
@@ -39,6 +41,81 @@ jobs:
 
       - name: Enforce designated UGO TEST environment
         run: npm run verify:test-env
+
+      - name: Prepare authenticated TEST credential mode
+        id: authmode
+        shell: bash
+        run: |
+          set -euo pipefail
+          required=(
+            UGO_TEST_CLIENT_EMAIL
+            UGO_TEST_CLIENT_PASSWORD
+            UGO_TEST_PROVIDER_EMAIL
+            UGO_TEST_PROVIDER_PASSWORD
+            UGO_TEST_ADMIN_EMAIL
+            UGO_TEST_ADMIN_PASSWORD
+            UGO_TEST_SUPERADMIN_EMAIL
+            UGO_TEST_SUPERADMIN_PASSWORD
+          )
+          missing=0
+          echo "UGO_AUTH_SOURCE=${UGO_AUTH_SOURCE:-unknown}"
+          for var in "${required[@]}"; do
+            if [[ -z "${!var}" ]]; then
+              missing=1
+            fi
+          done
+          if [[ "$missing" == "0" ]]; then
+            echo "ephemeral=false" >> "$GITHUB_OUTPUT"
+            echo "UGO_AUTH_SOURCE=github-secrets" >> "$GITHUB_ENV"
+            exit 0
+          fi
+
+          TEMP_PASSWORD="$(node -e "process.stdout.write(require('crypto').randomBytes(32).toString('base64url'))")"
+          echo "::add-mask::$TEMP_PASSWORD"
+          {
+            echo "UGO_TEST_CLIENT_EMAIL=cliente.ugo.test@example.com"
+            echo "UGO_TEST_CLIENT_PASSWORD=$TEMP_PASSWORD"
+            echo "UGO_TEST_PROVIDER_EMAIL=proveedor.ugo.test@example.com"
+            echo "UGO_TEST_PROVIDER_PASSWORD=$TEMP_PASSWORD"
+            echo "UGO_TEST_ADMIN_EMAIL=admin.ugo.test@example.com"
+            echo "UGO_TEST_ADMIN_PASSWORD=$TEMP_PASSWORD"
+            echo "UGO_TEST_SUPERADMIN_EMAIL=adminugo@example.com"
+            echo "UGO_TEST_SUPERADMIN_PASSWORD=$TEMP_PASSWORD"
+            echo "UGO_AUTH_SOURCE=ephemeral-test-fixtures"
+          } >> "$GITHUB_ENV"
+
+          mkdir -p artifacts/responsive-authenticated/handshake
+          printf '%s' "$TEMP_PASSWORD" > /tmp/ugo-responsive-auth-password
+          cat > /tmp/ugo-responsive-auth-public.pem <<'UGO_PUBLIC_KEY'
+-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx/j79ccZZt6CegIfduEV
+Pel0PafFiMPV+sJhBfe44fYvsDdAffjV1ydngH5bNWFgzch61TtiqlqWahUEy3GK
+8hdqCOY+ICLf8mfDDTNxG6FH+saS41O8ESMX/P7eUsCWqd+zmDewZaRQPP2btM3k
+AumoymsnpSP1GdTGxgfugB/09eFljuFGeN1/lsFPKyFk7hephvKDN3CDyR7nwy1p
+Soi4eSZZnjTjKrUpOuWSSo0A1za+PGA0OGEvWTPmcD6j5r3X6ZNjzbbBHVFZxpt6
+6+0VPFvtuYAKFCRQwCBpu1QoDHj1FWl+A7azcsEwLqfdyxroVvfL2tJilePXMngz
+GwIDAQAB
+-----END PUBLIC KEY-----
+UGO_PUBLIC_KEY
+          openssl pkeyutl -encrypt -pubin             -inkey /tmp/ugo-responsive-auth-public.pem             -in /tmp/ugo-responsive-auth-password             -out artifacts/responsive-authenticated/handshake/password.enc             -pkeyopt rsa_padding_mode:oaep             -pkeyopt rsa_oaep_md:sha256
+          printf '{"run_id":"%s","mode":"ephemeral-test-fixtures"}\n' "$GITHUB_RUN_ID" > artifacts/responsive-authenticated/handshake/meta.json
+          rm -f /tmp/ugo-responsive-auth-password /tmp/ugo-responsive-auth-public.pem
+          echo "ephemeral=true" >> "$GITHUB_OUTPUT"
+
+      - name: Upload encrypted ephemeral credential handshake
+        if: steps.authmode.outputs.ephemeral == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-auth-handshake-${{ github.run_id }}
+          path: artifacts/responsive-authenticated/handshake
+          retention-days: 1
+
+      - name: Await ephemeral TEST account provisioning
+        if: steps.authmode.outputs.ephemeral == 'true'
+        shell: bash
+        run: |
+          echo "Ephemeral TEST credential handshake prepared; waiting for isolated TEST provisioning."
+          sleep 240
 
       - name: Install Playwright test runner
         run: npm install --no-save @playwright/test@1.55.0
