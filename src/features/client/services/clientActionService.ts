@@ -14,12 +14,12 @@ export async function cancelOwnedClientService(supabase:SupabaseClient,userId:st
  return true
 }
 
-export async function approvePendingClientService(supabase:SupabaseClient,userId:string){
- const{data,error}=await supabase.from('servicios').select('id,estado,metadata').eq('cliente_id',userId).eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(2)
+export async function approvePendingClientService(supabase:SupabaseClient,userId:string,serviceId:string){
+ if(!serviceId)return false
+ const{data,error}=await supabase.from('servicios').select('id,estado,metadata').eq('id',serviceId).eq('cliente_id',userId).eq('estado','esperando_aprobacion').maybeSingle()
  if(error)throw error
- const rows=(data||[])as OwnedServiceRow[]
- if(rows.length!==1)return false
- const row=rows[0]
+ const row=(data||null)as OwnedServiceRow|null
+ if(!row?.id)return false
  const workApproved=Boolean(row.metadata?.trabajo_aprobado_at)
  const rpc=workApproved?'confirmar_pago_efectivo_cliente':'aprobar_servicio'
  const result=await supabase.rpc(rpc,{p_servicio_id:row.id})

@@ -15,6 +15,18 @@ test('client cancellation mutation boundary requires an explicit owned service i
 })
 
 
+test('client approval mutation boundary requires an explicit owned service id',async()=>{
+ const[types,bridge,service]=await Promise.all([read('src/features/client/types/clientTypes.ts'),read('src/features/client/actions/ClientFlowActionsBridge.tsx'),read('src/features/client/services/clientActionService.ts')])
+ assert.match(types,/approveService: \(serviceId: string\) => Promise<boolean>/)
+ assert.match(bridge,/const approveService=async\(serviceId:string\)/)
+ assert.match(bridge,/approvePendingClientService\(supabase,userId,serviceId\)/)
+ assert.match(service,/approvePendingClientService\(supabase:SupabaseClient,userId:string,serviceId:string\)/)
+ assert.match(service,/\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)\.eq\('estado','esperando_aprobacion'\)\.maybeSingle\(\)/)
+ assert.doesNotMatch(service,/eq\('estado','esperando_aprobacion'\)[\s\S]*order\('created_at'/)
+ assert.match(service,/rpc\(rpc,\{p_servicio_id:row\.id\}\)/)
+})
+
+
 test('Hugo can create another request while services already exist',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/cancelarlo antes de crear otro/)})
 
 test('each canonical request persists its own generated service id and matching scope',async()=>{
