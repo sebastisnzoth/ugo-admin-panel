@@ -119,3 +119,16 @@ test('provider rating recovers after realtime interruption and foreground resume
  assert.match(prompt,/removeEventListener\('visibilitychange'/)
  assert.match(prompt,/removeChannel/)
 })
+
+test('bilateral rating prompts converge immediately when a review is persisted elsewhere',async()=>{
+ const[client,provider]=await Promise.all([
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
+  read('src/mvp/ProviderRatingPrompt.tsx'),
+ ])
+ assert.match(client,/table:'resenas',filter:`cliente_id=eq\.\$\{userId\}`/)
+ assert.match(provider,/table:'resenas',filter:`proveedor_id=eq\.\$\{userId\}`/)
+ assert.match(client,/channelEpoch/)
+ assert.match(provider,/channelEpoch/)
+ assert.match(client,/CHANNEL_ERROR/)
+ assert.match(provider,/CHANNEL_ERROR/)
+})
