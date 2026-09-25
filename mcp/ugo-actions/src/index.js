@@ -11,6 +11,7 @@ import { startWork } from "./startWork.js";
 import { finishWork } from "./finishWork.js";
 import { approveWork } from "./approveWork.js";
 import { confirmCashPayment } from "./confirmCashPayment.js";
+import { rateService } from "./rateService.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -22,7 +23,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.11.0",
+    version: "0.12.0",
   });
 
   server.registerTool(
@@ -434,6 +435,37 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo confirmar el pago en efectivo",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_rate_service",
+    {
+      description:
+        "Guarda una calificación bilateral para un serviceId exacto ya completado. El cliente califica al proveedor y el proveedor al cliente; identidad del objetivo y autor_tipo se derivan del servicio real. TEST-only hasta promover el contrato bilateral a PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.enum(["client", "provider"]),
+        serviceId: z.string().uuid(),
+        score: z.number().int().min(1).max(5),
+        comment: z.string().max(500).optional(),
+      }).strict(),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await rateService(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo guardar la calificación",
           },
           true
         );
