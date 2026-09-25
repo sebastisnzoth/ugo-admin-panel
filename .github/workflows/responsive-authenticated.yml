@@ -86,17 +86,7 @@ jobs:
 
           mkdir -p artifacts/responsive-authenticated/handshake
           printf '%s' "$TEMP_PASSWORD" > /tmp/ugo-responsive-auth-password
-          cat > /tmp/ugo-responsive-auth-public.pem <<'UGO_PUBLIC_KEY'
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAx/j79ccZZt6CegIfduEV
-Pel0PafFiMPV+sJhBfe44fYvsDdAffjV1ydngH5bNWFgzch61TtiqlqWahUEy3GK
-8hdqCOY+ICLf8mfDDTNxG6FH+saS41O8ESMX/P7eUsCWqd+zmDewZaRQPP2btM3k
-AumoymsnpSP1GdTGxgfugB/09eFljuFGeN1/lsFPKyFk7hephvKDN3CDyR7nwy1p
-Soi4eSZZnjTjKrUpOuWSSo0A1za+PGA0OGEvWTPmcD6j5r3X6ZNjzbbBHVFZxpt6
-6+0VPFvtuYAKFCRQwCBpu1QoDHj1FWl+A7azcsEwLqfdyxroVvfL2tJilePXMngz
-GwIDAQAB
------END PUBLIC KEY-----
-UGO_PUBLIC_KEY
+          printf '%s' 'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4L2o3OWNjWlp0NkNlZ0lmZHVFVgpQZWwwUGFmRmlNUFYrc0poQmZlNDRmWXZzRGRBZmZqVjF5ZG5nSDViTldGZ3pjaDYxVHRpcWxxV2FoVUV5M0dLCjhoZHFDT1krSUNMZjhtZkREVE54RzZGSCtzYVM0MU84RVNNWC9QN2VVc0NXcWQrem1EZXdaYVJRUFAyYnRNM2sKQXVtb3ltc25wU1AxR2RUR3hnZnVnQi8wOWVGbGp1RkdlTjEvbHNGUEt5Rms3aGVwaHZLRE4zQ0R5Ujdud3kxcApTb2k0ZVNaWm5qVGpLclVwT3VXU1NvMEExemErUEdBME9HRXZXVFBtY0Q2ajVyM1g2Wk5qemJiQkhWRlp4cHQ2CjYrMFZQRnZ0dVlBS0ZDUlF3Q0JwdTFRb0RIajFGV2wrQTdhemNzRXdMcWZkeXhyb1Z2ZkwydEppbGVQWE1uZ3oKR3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==' | base64 -d > /tmp/ugo-responsive-auth-public.pem
           openssl pkeyutl -encrypt -pubin             -inkey /tmp/ugo-responsive-auth-public.pem             -in /tmp/ugo-responsive-auth-password             -out artifacts/responsive-authenticated/handshake/password.enc             -pkeyopt rsa_padding_mode:oaep             -pkeyopt rsa_oaep_md:sha256
           printf '{"run_id":"%s","mode":"ephemeral-test-fixtures"}\n' "$GITHUB_RUN_ID" > artifacts/responsive-authenticated/handshake/meta.json
           rm -f /tmp/ugo-responsive-auth-password /tmp/ugo-responsive-auth-public.pem
