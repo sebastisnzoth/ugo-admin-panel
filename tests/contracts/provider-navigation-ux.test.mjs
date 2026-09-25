@@ -25,7 +25,7 @@ test('provider bottom navigation exposes four real mobile destinations', async (
 
 test('provider history is a screen instead of a floating launcher', async () => {
   const root = await read('src/mvp/provider/ProviderRoot.tsx')
-  assert.match(root, /screen==='history'&&<div className="provider-screen"><ServiceHistoryPanel role="provider" embedded\/><\/div>/)
+  assert.match(root, /screen==='history'&&<div className="provider-screen"><ServiceHistoryPanel role="provider" embedded initialServiceId=\{flow\.historyServiceId\}\/><\/div>/)
   assert.doesNotMatch(root, /<ServiceHistoryPanel role="provider" openRequest=/)
 })
 
