@@ -321,6 +321,51 @@ async function createAdminManagedUser(req: VercelRequest, res: VercelResponse) {
   }
 }
 
+async function importAdminManagedUsers(req: VercelRequest, res: VercelResponse) {
+  const rows = Array.isArray(req.body?.users) ? req.body.users.slice(0, 500) : []
+  if (!rows.length) return res.status(400).json({ error: 'No hay usuarios para importar.' })
+  try {
+    const { sb, user, role: actorRole } = await requireAdmin(req)
+    const results: Array<{ row: number; email: string; status: string; error?: string }> = []
+    for (let index = 0; index < rows.length; index += 1) {
+      const raw = rows[index] || {}
+      const nombre = clean(raw.nombre, 80), apellido = clean(raw.apellido, 80)
+      const email = clean(raw.email, 254).toLowerCase(), role = clean(raw.tipo || raw.role, 30) || 'cliente'
+      const password = String(raw.password ?? '')
+      if (!nombre || !validEmail(email) || !USER_ROLES.has(role)) {
+        results.push({ row: index + 2, email, status: 'error', error: 'Nombre, email o rol inválido.' }); continue
+      }
+      if (PRIVILEGED_USER_ROLES.has(role) && actorRole !== 'superadmin') {
+        results.push({ row: index + 2, email, status: 'error', error: 'Solo Super Admin puede importar cuentas administrativas.' }); continue
+      }
+      const generatedPassword = password === '' || password === 'NO_EXPORTABLE'
+      const initialPassword = generatedPassword ? crypto.randomUUID() + 'Aa1!' : password
+      if (initialPassword.length < 8 || initialPassword.length > 128) {
+        results.push({ row: index + 2, email, status: 'error', error: 'Contraseña inválida.' }); continue
+      }
+      const { data: created, error: createError } = await sb.auth.admin.createUser({
+        email, password: initialPassword, email_confirm: true,
+        user_metadata: { nombre, apellido: apellido || null, tipo: role, imported_by_admin: true },
+      })
+      if (createError || !created.user) {
+        results.push({ row: index + 2, email, status: 'error', error: /already|registered|duplicate/i.test(createError?.message || '') ? 'El email ya está registrado.' : (createError?.message || 'No se pudo crear Auth.') }); continue
+      }
+      const id = created.user.id
+      const { error: userError } = await sb.from('usuarios').upsert({ id, nombre, apellido: apellido || null, email, tipo: role, activo: String(raw.activo ?? 'si').toLowerCase() !== 'no', updated_at: new Date().toISOString() }, { onConflict: 'id' })
+      if (userError) { await sb.auth.admin.deleteUser(id); results.push({ row: index + 2, email, status: 'error', error: userError.message }); continue }
+      if (role === 'cliente') await sb.from('perfiles_cliente').upsert({ usuario_id: id, telefono: clean(raw.telefono, 40) || null }, { onConflict: 'usuario_id' })
+      if (role === 'proveedor') await sb.from('perfiles_proveedor').upsert({ usuario_id: id, telefono_profesional: clean(raw.telefono, 40) || null, estado_verificacion: 'registrado', online: false, disponible: false }, { onConflict: 'usuario_id' })
+      await sb.from('audit_log').insert({ evento: 'admin_usuario_importado', actor_id: user.id, entidad_tipo: 'usuario', entidad_id: id, detalles: { email, role, generated_password: generatedPassword } })
+      results.push({ row: index + 2, email, status: generatedPassword ? 'creado_requiere_reset' : 'creado' })
+    }
+    const created = results.filter(item => item.status.startsWith('creado')).length
+    return res.status(200).json({ success: true, created, failed: results.length - created, results })
+  } catch (error) {
+    console.error('Admin user import error:', error)
+    return adminErrorResponse(res, error, 'No se pudieron importar los usuarios.')
+  }
+}
+
 async function resetAdminManagedUserPassword(req: VercelRequest, res: VercelResponse) {
   const userId = clean(req.body?.userId, 80)
   const password = String(req.body?.password ?? '')
@@ -366,6 +411,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     case 'provider-verification': return changeProviderVerification(req, res)
     case 'admin-create-user': return createAdminManagedUser(req, res)
     case 'admin-reset-password': return resetAdminManagedUserPassword(req, res)
+    case 'admin-import-users': return importAdminManagedUsers(req, res)
     default: return res.status(404).json({ error: 'Operación no encontrada.' })
   }
 }
