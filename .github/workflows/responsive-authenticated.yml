@@ -22,6 +22,8 @@ jobs:
       UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
       UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
       UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,6 +37,9 @@ jobs:
       - name: Install app dependencies
         run: npm ci --include=dev
 
+      - name: Enforce designated UGO TEST environment
+        run: npm run verify:test-env
+
       - name: Install Playwright test runner
         run: npm install --no-save @playwright/test@1.55.0
 
@@ -45,8 +50,15 @@ jobs:
         shell: bash
         run: |
           set +x
-          for var in             UGO_TEST_CLIENT_EMAIL             UGO_TEST_CLIENT_PASSWORD             UGO_TEST_PROVIDER_EMAIL             UGO_TEST_PROVIDER_PASSWORD             UGO_TEST_ADMIN_EMAIL             UGO_TEST_ADMIN_PASSWORD
-          do
+          required=(
+            UGO_TEST_CLIENT_EMAIL
+            UGO_TEST_CLIENT_PASSWORD
+            UGO_TEST_PROVIDER_EMAIL
+            UGO_TEST_PROVIDER_PASSWORD
+            UGO_TEST_ADMIN_EMAIL
+            UGO_TEST_ADMIN_PASSWORD
+          )
+          for var in "${required[@]}"; do
             if [[ -n "${!var}" ]]; then
               echo "${var}: present"
             else
