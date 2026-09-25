@@ -11,6 +11,7 @@ type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:str
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
 type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
+export type ProviderAdvanceOptions={locationAlreadyPublished?:boolean}
 type SnapshotPart='profile'|'offers'|'services'|'payments'|'debts'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
@@ -201,8 +202,8 @@ function providerArrivalError(result:ProviderArrivalResult){
  if(code==='invalid_state')return arrivalFailure(code,'El servicio ya no está en un estado que permita confirmar llegada.')
  return arrivalFailure(code,'UGO no pudo validar la llegada con el backend.')
 }
-async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
- await publishProviderLocation(supabase,serviceId)
+async function markProviderArrived(supabase:SupabaseClient,serviceId:string,options:ProviderAdvanceOptions={}){
+ if(!options.locationAlreadyPublished)await publishProviderLocation(supabase,serviceId)
  const{data,error}=await supabase.rpc('marcar_llegada_proveedor',{p_servicio_id:serviceId})
  if(!error){
   const result=(data||{}) as ProviderArrivalResult
@@ -214,9 +215,9 @@ async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
  throw error
 }
 
-export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:ProviderTransitionState){
+export async function advanceProviderService(supabase:SupabaseClient,serviceId:string,state:ProviderTransitionState,options:ProviderAdvanceOptions={}){
  if(state==='llegado'){
-  try{return await markProviderArrived(supabase,serviceId)}
+  try{return await markProviderArrived(supabase,serviceId,options)}
   catch(error){
    const transitionMessage=messageOf(error,'No se pudo confirmar la llegada.')
    if(!isExpectedProviderArrivalRejection(error))void reportSentinelIncident({eventType:'provider_arrival_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.arrive',checklistCode:'MAP-GPS',metadata:{arrivalCode:providerArrivalCode(error)}})

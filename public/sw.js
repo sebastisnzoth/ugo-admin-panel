@@ -3,6 +3,11 @@ self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
 self.addEventListener('push',event=>{
   let payload={};
   try{payload=event.data?event.data.json():{}}catch{payload={body:event.data?.text()||''}}
+  const expiresAt=payload?.data?.expira_at;
+  if(payload.type==='nueva_oferta'&&typeof expiresAt==='string'){
+    const expiry=Date.parse(expiresAt);
+    if(Number.isFinite(expiry)&&expiry<=Date.now())return;
+  }
   const title=payload.title||'U.GO';
   const role=payload?.data?.role;
   const serviceId=payload?.data?.servicio_id;

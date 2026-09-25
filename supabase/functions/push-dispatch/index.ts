@@ -6,6 +6,13 @@ type Subscription={endpoint:string;p256dh:string;auth:string;activa:boolean};
 type Delivery={id:string;suscripcion_id:string;suscripcion:Subscription|Subscription[]|null};
 type Config={vapid_public:string;vapid_private:string;dispatch_token:string;edge_url:string;vapid_subject:string};
 const HIGH_URGENCY_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_cancelado','aprobacion_pendiente','trabajo_aprobado','pago_efectivo_pendiente','pago_efectivo_confirmado']);
+function offerExpiryMs(data:unknown){
+  if(!data||typeof data!=="object")return null;
+  const value=(data as Record<string,unknown>).expira_at;
+  if(typeof value!=="string")return null;
+  const parsed=Date.parse(value);
+  return Number.isFinite(parsed)?parsed:null;
+}
 
 Deno.serve(async(req:Request)=>{
   if(req.method!=="POST")return new Response("method not allowed",{status:405});
@@ -30,6 +37,13 @@ Deno.serve(async(req:Request)=>{
     if(deliveryError)throw deliveryError;
     const deliveries=(rows||[]) as Delivery[];
     if(!deliveries.length)return Response.json({ok:true,sent:0});
+    const offerExpiry=notice.tipo==="nueva_oferta"?offerExpiryMs(notice.datos):null;
+    if(offerExpiry!==null&&offerExpiry<=Date.now()){
+      const{error:omitError}=await sb.from("push_entregas").update({estado:"omitido",ultimo_error:"Oferta expirada antes del envío"}).in("id",deliveries.map(item=>item.id));
+      if(omitError)throw omitError;
+      return Response.json({ok:true,sent:0,failed:0,reason:"offer expired"});
+    }
+    const pushTtl=offerExpiry===null?300:Math.max(1,Math.min(300,Math.ceil((offerExpiry-Date.now())/1000)));
 
     webpush.setVapidDetails(cfg.vapid_subject||"mailto:admin@ugo.app",cfg.vapid_public,cfg.vapid_private);
     let sent=0,failed=0;
@@ -41,7 +55,7 @@ Deno.serve(async(req:Request)=>{
       }
       try{
         const payload=JSON.stringify({title:notice.titulo,body:notice.cuerpo||"Tenés una actualización en UGO.",notificationId:notice.id,type:notice.tipo,data:notice.datos||{}});
-        await webpush.sendNotification({endpoint:relation.endpoint,keys:{p256dh:relation.p256dh,auth:relation.auth}},payload,{TTL:300,urgency:HIGH_URGENCY_TYPES.has(notice.tipo)?"high":"normal"});
+        await webpush.sendNotification({endpoint:relation.endpoint,keys:{p256dh:relation.p256dh,auth:relation.auth}},payload,{TTL:pushTtl,urgency:HIGH_URGENCY_TYPES.has(notice.tipo)?"high":"normal"});
         await sb.from("push_entregas").update({estado:"enviado",ultimo_error:null}).eq("id",delivery.id);
         sent++;
       }catch(error:any){

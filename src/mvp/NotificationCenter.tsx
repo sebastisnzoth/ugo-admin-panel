@@ -13,6 +13,14 @@ function b64(buffer:ArrayBuffer|null){if(!buffer)return'';const bytes=new Uint8A
 const PROVIDER_CALL_TYPES=new Set(['nueva_oferta','trabajo_asignado'])
 const PROVIDER_ATTENTION_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','servicio_completado','servicio_cancelado','servicio_disputado','pago_liberado','trabajo_aprobado','pago_efectivo_confirmado','agenda_recordatorio','agenda_salida'])
 const CLIENT_ATTENTION_TYPES=new Set(['proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','servicio_cancelado','servicio_disputado','chat_mensaje','pago_efectivo_pendiente'])
+const LEGACY_PROVIDER_OFFER_MAX_AGE_MS=6*60*1000
+function providerOfferNoticeActive(notice:UgoNotification,now=Date.now()){
+ if(notice.tipo!=='nueva_oferta')return true
+ const rawExpiry=notice.datos.expira_at
+ if(typeof rawExpiry==='string'){const expiry=Date.parse(rawExpiry);if(Number.isFinite(expiry))return expiry>now}
+ const created=Date.parse(notice.created_at)
+ return Number.isFinite(created)&&now-created<=LEGACY_PROVIDER_OFFER_MAX_AGE_MS
+}
 type AudioWindow=Window&typeof globalThis&{webkitAudioContext?:typeof AudioContext}
 let providerAudioContext:AudioContext|null=null
 function providerAudio(){
@@ -45,7 +53,7 @@ function playClientTone(){const ctx=clientAudio();if(!ctx)return;if(ctx.state===
 export function NotificationCenter({role,onOpenNotice,attentionEnabled=true}:Props){
  const db=useMemo(()=>getRoleSupabase(role),[role])
  const[uid,setUid]=useState<string|null>(null),[rows,setRows]=useState<UgoNotification[]>([]),[open,setOpen]=useState(false),[error,setError]=useState(''),[pushState,setPushState]=useState<'unsupported'|'off'|'on'|'blocked'|'loading'>('off'),[liveNotice,setLiveNotice]=useState<UgoNotification|null>(null),[channelEpoch,setChannelEpoch]=useState(0),providerAlertSeen=useRef<Set<string>>(new Set()),clientAlertSeen=useRef<Set<string>>(new Set())
- const signalProviderAlert=useCallback((notice:UgoNotification)=>{if(role!=='provider'||!PROVIDER_ATTENTION_TYPES.has(notice.tipo)||providerAlertSeen.current.has(notice.id))return;if(PROVIDER_CALL_TYPES.has(notice.tipo)&&!attentionEnabled)return;providerAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.(PROVIDER_CALL_TYPES.has(notice.tipo)?[180,80,180,80,340]:[120,60,220]);playProviderTone()},[attentionEnabled,role])
+ const signalProviderAlert=useCallback((notice:UgoNotification)=>{if(role!=='provider'||!PROVIDER_ATTENTION_TYPES.has(notice.tipo)||!providerOfferNoticeActive(notice)||providerAlertSeen.current.has(notice.id))return;if(PROVIDER_CALL_TYPES.has(notice.tipo)&&!attentionEnabled)return;providerAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.(PROVIDER_CALL_TYPES.has(notice.tipo)?[180,80,180,80,340]:[120,60,220]);playProviderTone()},[attentionEnabled,role])
  const signalClientAlert=useCallback((notice:UgoNotification)=>{if(role!=='client'||!attentionEnabled||!CLIENT_ATTENTION_TYPES.has(notice.tipo)||clientAlertSeen.current.has(notice.id))return;clientAlertSeen.current.add(notice.id);setLiveNotice(notice);navigator.vibrate?.([120,60,220]);playClientTone()},[attentionEnabled,role])
  useEffect(()=>{const arm=()=>{const ctx=role==='provider'?providerAudio():clientAudio();if(ctx?.state==='suspended')void ctx.resume().catch(()=>{})};window.addEventListener('pointerdown',arm,true);window.addEventListener('keydown',arm,true);return()=>{window.removeEventListener('pointerdown',arm,true);window.removeEventListener('keydown',arm,true)}},[role])
  const load=useCallback(async(userId:string)=>{const{data,error}=await db.from('notificaciones').select('id,tipo,titulo,cuerpo,datos,leida_at,created_at').eq('usuario_id',userId).order('created_at',{ascending:false}).limit(30);if(error)throw error;const next=(data||[])as UgoNotification[];setRows(next);if(role==='provider'){const pending=next.find(notice=>!notice.leida_at&&PROVIDER_ATTENTION_TYPES.has(notice.tipo));if(pending)signalProviderAlert(pending)}else if(role==='client'){const pending=next.find(notice=>!notice.leida_at&&CLIENT_ATTENTION_TYPES.has(notice.tipo));if(pending)signalClientAlert(pending)}},[db,role,signalClientAlert,signalProviderAlert])
