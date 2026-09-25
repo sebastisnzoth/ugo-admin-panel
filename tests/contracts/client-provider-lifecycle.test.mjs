@@ -80,10 +80,11 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
 })
 
 test('cash completion is approved and paid by the client after provider marks work ready',async()=>{
- const [providerData,activeJob,clientReview,backend]=await Promise.all([
+ const [providerData,activeJob,clientReview,clientActions,backend]=await Promise.all([
   read('src/mvp/provider/providerData.tsx'),
   read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('src/features/client/order/ClientCompletionReview.tsx'),
+  read('src/features/client/services/clientActionService.ts'),
   read('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql'),
  ])
  const completeService=providerData.slice(providerData.indexOf('const completeService'),providerData.indexOf('const cancelService'))
@@ -92,8 +93,10 @@ test('cash completion is approved and paid by the client after provider marks wo
  assert.doesNotMatch(activeJob,/confirmCash/)
  assert.doesNotMatch(providerData,/confirmCash/)
  assert.match(completeService,/advanceProviderService\(supabase,serviceId,'esperando_aprobacion'\)/)
- assert.match(clientReview,/rpc\('aprobar_servicio'/)
- assert.match(clientReview,/rpc\('confirmar_pago_efectivo_cliente'/)
+ assert.match(clientReview,/approvePendingClientService/)
+ assert.match(clientReview,/confirmApprovedCashClientService/)
+ assert.match(clientActions,/rpc\('aprobar_servicio'/)
+ assert.match(clientActions,/rpc\('confirmar_pago_efectivo_cliente'/)
  assert.match(clientReview,/YA PAGUÉ/)
  assert.match(backend,/create or replace function public\.confirmar_pago_efectivo_cliente/)
  assert.match(backend,/'pago_efectivo_confirmado'/)
@@ -127,15 +130,17 @@ test('provider opportunity UI is problem-first and avoids exposing ranking burea
 })
 
 test('client approval is scoped to its service and completed review keeps its exact service evidence visible',async()=>{
- const [client,backend]=await Promise.all([
+ const [client,clientActions,backend]=await Promise.all([
   read('src/features/client/order/ClientCompletionReview.tsx'),
+  read('src/features/client/services/clientActionService.ts'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
  assert.match(client,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
  assert.match(client,/else query=query\.eq\('estado','esperando_aprobacion'\)/)
  assert.match(client,/completed=service\.estado==='completado'/)
  assert.match(client,/<ClientEvidenceGallery serviceId=\{service\.id\}\/>/)
- assert.match(client,/rpc\('aprobar_servicio'/)
+ assert.match(client,/approvePendingClientService/)
+ assert.match(clientActions,/rpc\('aprobar_servicio'/)
  assert.match(backend,/v_servicio\.cliente_id<>auth\.uid\(\)/)
  assert.match(backend,/e\.usuario_id=v_servicio\.proveedor_id/)
 })
