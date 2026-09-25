@@ -92,15 +92,17 @@ test('client rating is immediately available after payment closes the selected s
  assert.match(prompt,/embedded\?'is-embedded'/)
 })
 
-test('completed-service notification can land on home and still expose client rating',async()=>{
- const[nav,flow,surfaces]=await Promise.all([
+test('completed-service notification opens its exact service before falling back to generic review',async()=>{
+ const[nav,detail,prompt]=await Promise.all([
   read('src/features/client/navigation/clientNavigation.ts'),
-  read('src/features/client/actions/ClientFlowActionsBridge.tsx'),
-  read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
  ])
- assert.match(nav,/notice\.tipo==='servicio_completado'/)
- assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
- assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(nav,/const serviceId=typeof notice\.datos\?\.servicio_id==='string'/)
+ assert.match(nav,/if\(serviceId\)return\{kind:'service',serviceId\}/)
+ assert.match(nav,/if\(notice\.tipo==='servicio_completado'\)return\{kind:'review'\}/)
+ assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
+ assert.match(prompt,/serviceId\?servicesQuery\.eq\('id',serviceId\)\.limit\(1\)/)
 })
 
 test('provider rating recovers after realtime interruption and foreground resume',async()=>{
