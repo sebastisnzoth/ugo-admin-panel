@@ -29,7 +29,7 @@ const method=(value?:string|null)=>value==='efectivo'?'Efectivo':value==='pix'||
 
 export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=>void}){
  const db=useMemo(()=>getRoleSupabase('provider'),[])
- const[evidence,setEvidence]=useState<Evidence[]>([]),[requestEvidence,setRequestEvidence]=useState<RequestEvidence[]>([]),[events,setEvents]=useState<Event[]>([]),[payment,setPayment]=useState<Payment|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState('')
+ const[evidence,setEvidence]=useState<Evidence[]>([]),[requestEvidence,setRequestEvidence]=useState<RequestEvidence[]>([]),[events,setEvents]=useState<Event[]>([]),[payment,setPayment]=useState<Payment|null>(null),[loading,setLoading]=useState(true),[error,setError]=useState(''),[channelEpoch,setChannelEpoch]=useState(0)
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
@@ -47,7 +47,21 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
    setEvidence(signedEvidence);setRequestEvidence(signedRequest);setEvents((eventResult.data||[])as Event[]);setPayment(paymentResult.error?null:(paymentResult.data as Payment|null))
   }catch(e){setError(e instanceof Error?e.message:'No pudimos reconstruir este trabajo.')}finally{setLoading(false)}
  },[db,service.id])
- useEffect(()=>{void load();const refresh=()=>void load();const channel=db.channel(`provider-history-detail-${service.id}`).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${service.id}`},refresh).on('postgres_changes',{event:'*',schema:'public',table:'servicio_estado_eventos',filter:`servicio_id=eq.${service.id}`},refresh).subscribe();return()=>{void db.removeChannel(channel)}},[db,load,service.id])
+ useEffect(()=>{
+  let alive=true,reconnectTimer:number|undefined
+  const refresh=()=>{if(alive)void load()}
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)}
+  const onOnline=()=>{refresh();reconnect()}
+  const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+  window.addEventListener('online',onOnline)
+  document.addEventListener('visibilitychange',onVisibility)
+  const channel=db.channel(`provider-history-detail-${service.id}-${channelEpoch}`)
+   .on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${service.id}`},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'servicio_estado_eventos',filter:`servicio_id=eq.${service.id}`},refresh)
+   .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`servicio_id=eq.${service.id}`},refresh)
+   .subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void db.removeChannel(channel)}
+ },[channelEpoch,db,load,service.id])
  const grouped=(kind:EvidenceKind)=>evidence.filter(item=>item.tipo===kind)
  const gallery=(items:(Evidence|RequestEvidence)[],label:string)=>items.length?<div className="ugo-provider-history-gallery">{items.map(item=><figure key={item.id}>{item.url?<a href={item.url} target="_blank" rel="noreferrer" aria-label={`Abrir foto ${label}`}><img src={item.url} alt={`Foto ${label}`}/></a>:<div className="ugo-provider-history-photo-missing">Sin vista previa</div>}<figcaption>{'tipo'in item?<strong>{EVIDENCE[item.tipo]}</strong>:<strong>{label}</strong>}{item.descripcion&&<span>{item.descripcion}</span>}<time>{when(item.created_at)}</time></figcaption></figure>)}</div>:<p className="ugo-provider-history-empty-block">No hay fotos registradas en esta etapa.</p>
  return <div className="ugo-provider-history-detail-backdrop" onClick={onClose}>

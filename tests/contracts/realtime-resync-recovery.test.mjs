@@ -13,7 +13,7 @@ const recoveryAssertions=(source,label)=>{
 }
 
 test('critical realtime consumers recover from missed events using persisted state',async()=>{
- const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm,history]=await Promise.all([
+ const[notifications,chat,expansions,disputes,provider,clientPayment,clientTracking,completion,postConfirm,history,providerHistory]=await Promise.all([
   read('src/mvp/NotificationCenter.tsx'),
   read('src/mvp/ServiceChat.tsx'),
   read('src/mvp/ServiceExpansionPanel.tsx'),
@@ -24,6 +24,7 @@ test('critical realtime consumers recover from missed events using persisted sta
   read('src/features/client/order/ClientCompletionReview.tsx'),
   read('src/features/client/request/ClientPostConfirmFlow.tsx'),
   read('src/mvp/ServiceHistoryPanel.tsx'),
+  read('src/mvp/ProviderHistoryDetail.tsx'),
  ])
  recoveryAssertions(notifications,'NotificationCenter')
  recoveryAssertions(chat,'ServiceChat')
@@ -35,12 +36,16 @@ test('critical realtime consumers recover from missed events using persisted sta
  recoveryAssertions(completion,'ClientCompletionReview')
  recoveryAssertions(postConfirm,'ClientPostConfirmFlow')
  recoveryAssertions(history,'ServiceHistoryPanel')
+ recoveryAssertions(providerHistory,'ProviderHistoryDetail')
  assert.match(notifications,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(notifications,/setChannelEpoch\(value=>value\+1\)/)
  assert.match(completion,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(postConfirm,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(history,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(history,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(providerHistory,/table:'pagos'/)
+ assert.match(providerHistory,/CHANNEL_ERROR|TIMED_OUT|CLOSED/)
+ assert.match(providerHistory,/setChannelEpoch\(value=>value\+1\)/)
 })
 
 test('chat and expansion resync when the parent service changes',async()=>{
