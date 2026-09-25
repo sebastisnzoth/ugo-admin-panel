@@ -112,10 +112,10 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>Pagá {amount} a {providerName}</strong><span>Después de entregar el efectivo, tocá “YA PAGUÉ”. UGO avisará al proveedor y cerrará el servicio.</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(isCash?'Primero confirmá que el trabajo quedó bien. Después UGO te muestra cuánto pagar al proveedor.':'El trabajo está listo para confirmar. Al aprobar, UGO libera el pago electrónico protegido.')}</span></div>}
   {!completed&&<div className="ugo-completion-actions">
-   {onOpenDispute&&<button type="button" onClick={onOpenDispute} disabled={busy}>ABRIR DISPUTA</button>}
    {isCash&&workApproved
-    ?<button type="button" onClick={confirmCashPaid} disabled={busy||!canConfirmCash}>{busy?'Procesando…':`YA PAGUÉ ${amount}`}</button>
-    :<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'CONFIRMAR TRABAJO':'CONFIRMAR Y LIBERAR PAGO'}</button>}
+    ?<button type="button" className="ugo-completion-primary" onClick={confirmCashPaid} disabled={busy||!canConfirmCash}>{busy?'Procesando…':`YA PAGUÉ ${amount}`}</button>
+    :<button type="button" className="ugo-completion-primary" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'CONFIRMAR TRABAJO':'CONFIRMAR Y LIBERAR PAGO'}</button>}
+   {onOpenDispute&&<button type="button" className="ugo-completion-dispute" onClick={onOpenDispute} disabled={busy}>ABRIR DISPUTA</button>}
   </div>}
  </section>
 }
