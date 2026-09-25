@@ -9,9 +9,15 @@ const SERVICE_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const SERVICE_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
 
 const env = {
-  UGO_MCP_SUPABASE_URL: "https://trfsjuseqjxlhrxuvdsm.supabase.co",
+  UGO_MCP_SUPABASE_URL: "https://tmossnqfwfwjrtzwcbmm.supabase.co",
   UGO_MCP_SUPABASE_PUBLISHABLE_KEY: "publishable-test-key",
   UGO_MCP_USER_ACCESS_TOKEN: "user-session-token",
+  UGO_MCP_EXPECTED_PROJECT_REF: "tmossnqfwfwjrtzwcbmm",
+};
+
+const prodEnv = {
+  ...env,
+  UGO_MCP_SUPABASE_URL: "https://trfsjuseqjxlhrxuvdsm.supabase.co",
   UGO_MCP_EXPECTED_PROJECT_REF: "trfsjuseqjxlhrxuvdsm",
 };
 
@@ -283,5 +289,30 @@ test("ugo_mark_arrived: arrived response must confirm state llegado", async () =
         { env, fetchImpl }
       ),
     (error) => error?.code === "backend_invalid_response"
+  );
+});
+
+
+test("ugo_mark_arrived: PROD queda bloqueado antes de consultar servicio o mutar", async () => {
+  const { fetchImpl, calls } = makeFetch({});
+
+  await assert.rejects(
+    () =>
+      markArrived(
+        { userId: PROVIDER_A, role: "provider", serviceId: SERVICE_A },
+        { env: prodEnv, fetchImpl }
+      ),
+    (error) =>
+      error?.code === "backend_contract_not_ready" &&
+      error?.status === 409
+  );
+
+  assert.equal(
+    calls.some(({ url }) => url.includes("/rest/v1/servicios")),
+    false
+  );
+  assert.equal(
+    calls.some(({ url }) => url.includes("/rpc/marcar_llegada_proveedor")),
+    false
   );
 });
