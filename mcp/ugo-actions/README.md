@@ -158,6 +158,28 @@ Business rules remain backend-authoritative. TEST already enforces atomic assign
 
 **Environment gate:** this mutation is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) does not yet have the debt/schedule contract promoted, so the tool returns `backend_contract_not_ready` before mutation there. Remove or extend that gate only after those production migrations are promoted and verified.
 
+### `ugo_start_route`
+
+Controlled provider route-start mutation for one exact `serviceId`.
+
+Input:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+
+The tool validates the caller's real Supabase session, active provider role and exact service ownership before mutation. It never accepts coordinates, offer IDs, service numbers or a "latest job" shortcut.
+
+The mutation reuses the Provider UI contract exactly:
+
+`avanzar_servicio(p_servicio_id, 'en_camino')`
+
+The backend remains authoritative for the legal `asignado -> en_camino` transition. In TEST it also enforces the scheduled-job start window (up to 60 minutes before `programado_para`) and requires a valid client payment path: either protected retained electronic payment with a real processor reference, or the canonical in-person cash payment state.
+
+Repeated calls are safe: `en_camino` returns idempotent success; later states such as `llegado`, `en_progreso`, `esperando_aprobacion` and `completado` are reported as already advanced and are never moved backward. Ambiguous network failures are reconciled by re-reading the same provider-owned `serviceId`.
+
+**Environment gate:** `ugo_start_route` is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) still lacks the equivalent complete P0 contract (including the TEST scheduled-start rule and other pending P0 promotions), so the tool returns `backend_contract_not_ready` before mutation there.
+
 ### `ugo_mark_arrived`
 
 First controlled mutation in the MCP surface.
@@ -242,10 +264,10 @@ Keep the action surface small and auditable. Add tools incrementally:
 9. device-owned GPS publication contract — implemented in Provider UI/backend migration
 10. `ugo_mark_arrived` — implemented in code, pending migration promotion
 11. `ugo_accept_job` — implemented and TEST-gated pending PROD debt/agenda promotion
-12. start route
+12. `ugo_start_route` — implemented and TEST-gated pending PROD P0 contract promotion
 13. start work
 14. finish work
 15. cash-payment confirmation
 16. rating
 
-Do not open the next mutating action until the current acceptance boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
+Do not open the next mutating action until the current route-start boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
