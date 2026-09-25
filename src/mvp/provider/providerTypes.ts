@@ -45,5 +45,5 @@ export type ProviderActionHandlers = {
   openEarnings: () => void
   openProfile: () => void
   openHistory: () => void
-  openDispute: () => void
+  openDispute: (serviceId?: string) => void
 }

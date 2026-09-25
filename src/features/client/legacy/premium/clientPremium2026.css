@@ -486,7 +486,7 @@
   color:#17251c!important;
 }
 .ugo-client-root .ugo-client-pix-box button,
-.ugo-client-root .ugo-completion-actions button:last-child{
+.ugo-client-root .ugo-completion-actions .ugo-completion-primary{
   background:#0d2117!important;
   color:#fff!important;
 }

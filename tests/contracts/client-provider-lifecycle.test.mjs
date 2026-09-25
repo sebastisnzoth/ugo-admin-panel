@@ -129,16 +129,19 @@ test('provider opportunity UI is problem-first and avoids exposing ranking burea
  assert.doesNotMatch(opportunities,/TU VISITA BASE/)
 })
 
-test('client approval is scoped to its service and completed review keeps its exact service evidence visible',async()=>{
- const [client,clientActions,backend]=await Promise.all([
+test('client approval is scoped to its service and exact detail owns one evidence gallery',async()=>{
+ const [client,detail,clientActions,backend]=await Promise.all([
   read('src/features/client/order/ClientCompletionReview.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
   read('src/features/client/services/clientActionService.ts'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
  assert.match(client,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
  assert.match(client,/else query=query\.eq\('estado','esperando_aprobacion'\)/)
  assert.match(client,/completed=service\.estado==='completado'/)
- assert.match(client,/<ClientEvidenceGallery serviceId=\{service\.id\}\/>/)
+ assert.doesNotMatch(client,/ClientEvidenceGallery/)
+ assert.match(detail,/<ClientEvidenceGallery serviceId=\{service\.id\} hideWhenEmpty\/>/)
+ assert.match(detail,/ClientCompletionReview serviceId=\{service\.id\}[\s\S]*onOpenDispute=\{openExactDispute\}/)
  assert.match(client,/approvePendingClientService/)
  assert.match(clientActions,/rpc\('aprobar_servicio'/)
  assert.match(backend,/v_servicio\.cliente_id<>auth\.uid\(\)/)
