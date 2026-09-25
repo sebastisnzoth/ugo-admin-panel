@@ -9,5 +9,7 @@ import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 
 type Props={canonical:boolean;detailOpen:boolean;screen:string;openDispute:()=>void}
 export function ClientOperationalSurfaces({canonical,detailOpen,screen,openDispute}:Props){
- return <>{!canonical&&!detailOpen&&<ClientPaymentChoice/>}{!canonical&&!detailOpen&&<ClientLiveTracking/>}{!canonical&&!detailOpen&&<ClientCompletionReview onOpenDispute={openDispute}/>}{screen!=='request'&&!detailOpen&&<ClientRatingPrompt/>}{!canonical&&!detailOpen&&<ServiceChat role="client"/>}{!canonical&&!detailOpen&&<DisputeDock role="client" openRequest={screen==='dispute'}/>}{!canonical&&!detailOpen&&<AppLocationButton role="client"/>}{!canonical&&<ClientProviderRadarBridge/>}</>
+ const legacyOperational=!canonical&&(screen==='service'||screen==='payment'||screen==='review'||screen==='matching')
+ const legacyRadar=screen==='search'||screen==='provider'
+ return <>{legacyOperational&&!detailOpen&&<ClientPaymentChoice/>}{legacyOperational&&!detailOpen&&<ClientLiveTracking/>}{legacyOperational&&!detailOpen&&<ClientCompletionReview onOpenDispute={openDispute}/>}{screen!=='request'&&!detailOpen&&<ClientRatingPrompt/>}{legacyOperational&&!detailOpen&&<ServiceChat role="client"/>}{screen==='dispute'&&!detailOpen&&<DisputeDock role="client" openRequest/>}{legacyOperational&&!detailOpen&&<AppLocationButton role="client"/>}{legacyRadar&&<ClientProviderRadarBridge/>}</>
 }
