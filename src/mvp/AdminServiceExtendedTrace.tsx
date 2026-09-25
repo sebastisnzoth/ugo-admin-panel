@@ -13,7 +13,7 @@ const providerName=(s:Service)=>[s.proveedor?.nombre,s.proveedor?.apellido].filt
 const evidenceCount=(value:unknown)=>Array.isArray(value)?value.length:0
 
 export function AdminServiceExtendedTrace({service}:{service:Service}){
- const[loading,setLoading]=useState(true),[error,setError]=useState(''),[warnings,setWarnings]=useState<string[]>([]),[messages,setMessages]=useState<ChatMessage[]>([]),[disputes,setDisputes]=useState<Dispute[]>([]),[disputeMessages,setDisputeMessages]=useState<DisputeMessage[]>([]),[location,setLocation]=useState<Location|null>(null),[actors,setActors]=useState<Record<string,string>>({})
+ const[loading,setLoading]=useState(true),[error,setError]=useState(''),[warnings,setWarnings]=useState<string[]>([]),[messages,setMessages]=useState<ChatMessage[]>([]),[disputes,setDisputes]=useState<Dispute[]>([]),[disputeMessages,setDisputeMessages]=useState<DisputeMessage[]>([]),[location,setLocation]=useState<Location|null>(null),[actors,setActors]=useState<Record<string,string>>({}),[channelEpoch,setChannelEpoch]=useState(0)
  const load=useCallback(async()=>{
   setLoading(true);setError('');setWarnings([])
   try{
@@ -39,23 +39,24 @@ export function AdminServiceExtendedTrace({service}:{service:Service}){
  },[service.id,service.cliente_id,service.proveedor_id])
  useEffect(()=>{void load()},[load])
  useEffect(()=>{
-  let alive=true
+  let alive=true,reconnectTimer:number|undefined
   const sync=()=>{if(alive)void load()}
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1200)}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
-  const onOnline=()=>sync()
+  const onOnline=()=>{sync();reconnect()}
   window.addEventListener('online',onOnline)
   document.addEventListener('visibilitychange',onVisibility)
-  let channel:any=supabase.channel(`admin-extended-live-${service.id}-${Date.now()}`)
+  let channel:any=supabase.channel(`admin-extended-live-${service.id}-${channelEpoch}`)
   channel=channel
    .on('postgres_changes',{event:'*',schema:'public',table:'mensajes',filter:`servicio_id=eq.${service.id}`},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'disputas',filter:`servicio_id=eq.${service.id}`},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'disputa_mensajes'},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
    .on('postgres_changes',{event:'*',schema:'public',table:'perfiles_proveedor'},sync)
-   .subscribe((status:string)=>{if(status==='SUBSCRIBED')sync();if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(sync,1200)})
+   .subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
   const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
-  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
- },[load,service.id])
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+ },[channelEpoch,load,service.id])
  return <div className="ugo-admin-extended-trace">
   <div className="ugo-admin-extended-trace-head"><strong>Comunicación, ubicación y reclamos</strong><button type="button" onClick={()=>void load()} disabled={loading}>{loading?'Actualizando…':'↻ Actualizar'}</button></div>
   {error&&<div className="ugo-admin-service-trace-error">{error}</div>}{!!warnings.length&&<div className="ugo-admin-service-trace-warning">{warnings.join(' ')}</div>}

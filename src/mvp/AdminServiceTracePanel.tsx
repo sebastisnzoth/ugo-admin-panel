@@ -19,7 +19,7 @@ const money=(v:number|null,currency:string|null)=>{try{return new Intl.NumberFor
 const name=(p?:{nombre?:string|null;apellido?:string|null}|null)=>[p?.nombre,p?.apellido].filter(Boolean).join(' ')||'—'
 
 export function AdminServiceTracePanel({service}:{service:Service}){
- const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[legacyEvents,setLegacyEvents]=useState<LegacyEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[debts,setDebts]=useState<CashDebt[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({})
+ const[loading,setLoading]=useState(true),[error,setError]=useState(''),[evidence,setEvidence]=useState<Evidence[]>([]),[events,setEvents]=useState<StateEvent[]>([]),[legacyEvents,setLegacyEvents]=useState<LegacyEvent[]>([]),[payments,setPayments]=useState<Payment[]>([]),[debts,setDebts]=useState<CashDebt[]>([]),[reviews,setReviews]=useState<Review[]>([]),[actors,setActors]=useState<Record<string,string>>({}),[channelEpoch,setChannelEpoch]=useState(0)
  const load=useCallback(async()=>{
   setLoading(true);setError('')
   try{
@@ -45,20 +45,21 @@ export function AdminServiceTracePanel({service}:{service:Service}){
  },[service.id])
  useEffect(()=>{void load()},[load])
  useEffect(()=>{
-  let alive=true
+  let alive=true,reconnectTimer:number|undefined
   const sync=()=>{if(alive)void load()}
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1200)}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
-  const onOnline=()=>sync()
+  const onOnline=()=>{sync();reconnect()}
   window.addEventListener('online',onOnline)
   document.addEventListener('visibilitychange',onVisibility)
-  let channel:any=supabase.channel(`admin-trace-live-${service.id}-${Date.now()}`)
+  let channel:any=supabase.channel(`admin-trace-live-${service.id}-${channelEpoch}`)
   const scoped=['servicio_estado_eventos','eventos_servicio','pagos','deudas_ugo_proveedor','resenas','evidencias_solicitud','evidencias_servicio']
   for(const table of scoped)channel=channel.on('postgres_changes',{event:'*',schema:'public',table,filter:`servicio_id=eq.${service.id}`},sync)
   channel=channel.on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${service.id}`},sync)
-  channel.subscribe((status:string)=>{if(status==='SUBSCRIBED')sync();if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(sync,1200)})
+  channel.subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
   const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},15000)
-  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
- },[load,service.id])
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+ },[channelEpoch,load,service.id])
 
  const timeline=useMemo(()=>{
   const rows:{key:string;at:string;title:string;detail:string;role?:string}[]=[]

@@ -91,3 +91,21 @@ test('admin deep-links alerts and home activity to the exact 360 service sheet',
  assert.match(services,/initialServiceId/)
  assert.match(alerts,/Abrir ficha 360°/)
 })
+
+test('admin 360 service trace rebuilds both realtime channels after failure',async()=>{
+ const[trace,extended]=await Promise.all([
+  read('src/mvp/AdminServiceTracePanel.tsx'),
+  read('src/mvp/AdminServiceExtendedTrace.tsx'),
+ ])
+ for(const source of[trace,extended]){
+  assert.match(source,/channelEpoch/)
+  assert.match(source,/setChannelEpoch\(value=>value\+1\)/)
+  assert.match(source,/CHANNEL_ERROR/)
+  assert.match(source,/TIMED_OUT/)
+  assert.match(source,/CLOSED/)
+  assert.match(source,/const onOnline=\(\)=>\{sync\(\);reconnect\(\)\}/)
+  assert.match(source,/clearTimeout\(reconnectTimer\)/)
+ }
+ assert.match(trace,/admin-trace-live-\$\{service\.id\}-\$\{channelEpoch\}/)
+ assert.match(extended,/admin-extended-live-\$\{service\.id\}-\$\{channelEpoch\}/)
+})
