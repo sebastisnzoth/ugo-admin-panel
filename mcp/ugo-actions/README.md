@@ -280,6 +280,28 @@ Repeated calls are safe. A cash service already carrying `trabajo_aprobado_at` r
 
 **Environment gate:** `ugo_approve_work` is enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO remains blocked because its migration history has not yet been verified to include the later client cash-close hardening equivalent to `fix_client_cash_close_sensitive_counter`.
 
+### `ugo_confirm_cash_payment`
+
+Controlled client `YA PAGUÉ` mutation for an exact service already approved for cash payment.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=client`
+- exact `serviceId`
+
+The tool reads only the exact client-owned service and its latest payment, verifies the canonical cash shape (`metodo=efectivo`, `procesador=efectivo`, `modelo_pago=presencial`), requires `metadata.trabajo_aprobado_at`, and then reuses the Client UI RPC exactly:
+
+`confirmar_pago_efectivo_cliente(p_servicio_id)`
+
+No amount, payment ID, external reference, provider ID or debt value can be supplied by the model. The backend owns those values and the state transition.
+
+A successful call is not accepted from the RPC response alone: the MCP re-reads the same client-owned `serviceId` and latest payment and requires both `servicios.estado=completado` and `pagos.estado=liberado`. Ambiguous network failures are reconciled with the same persisted proof.
+
+The payment liberation also remains connected to UGO's backend commission ledger. The canonical TEST triggers create/update `deudas_ugo_proveedor` for released cash commissions and enforce the 3-pending-debt provider block (offline + pending offers expired). This MCP does not write that ledger or provider availability directly.
+
+**Environment gate:** `ugo_confirm_cash_payment` is enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO remains blocked until the later cash-close sensitive-profile/debt hardening is promoted and verified live.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -348,7 +370,7 @@ Keep the action surface small and auditable. Add tools incrementally:
 13. `ugo_start_work` — implemented and TEST-gated pending PROD P0 contract promotion
 14. `ugo_finish_work` — implemented and TEST-gated pending PROD P0 contract promotion
 15. `ugo_approve_work` — implemented and TEST-gated pending PROD client-close hardening
-16. cash-payment confirmation — separate boundary after cash work approval; not implemented yet
+16. `ugo_confirm_cash_payment` — implemented and TEST-gated pending PROD cash-close/debt hardening
 17. rating
 
 Do not open the next mutating action until its exact client-owned service boundary is independently audited, TEST-validated and the required backend contracts are promoted through the normal environment pipeline.

@@ -82,5 +82,5 @@ test('multi-job cash ordering explicitly defers cash confirmation until after cl
 
 test('MCP plan keeps approval and cash confirmation as separate mutation boundaries',()=>{
  assert.match(readme,/15\. \`ugo_approve_work\` — implemented and TEST-gated pending PROD client-close hardening/)
- assert.match(readme,/16\. cash-payment confirmation — separate boundary after cash work approval; not implemented yet/)
+ assert.match(readme,/16\. \`ugo_confirm_cash_payment\` — implemented and TEST-gated pending PROD cash-close\/debt hardening/)
 })

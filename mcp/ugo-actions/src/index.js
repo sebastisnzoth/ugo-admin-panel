@@ -10,6 +10,7 @@ import { startRoute } from "./startRoute.js";
 import { startWork } from "./startWork.js";
 import { finishWork } from "./finishWork.js";
 import { approveWork } from "./approveWork.js";
+import { confirmCashPayment } from "./confirmCashPayment.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -21,7 +22,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.10.0",
+    version: "0.11.0",
   });
 
   server.registerTool(
@@ -404,6 +405,35 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo aprobar el trabajo",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_confirm_cash_payment",
+    {
+      description:
+        "Confirma YA PAGUÉ para un pago presencial en efectivo de un serviceId exacto del cliente. Sólo corre después de la aprobación del trabajo y verifica que servicio+pago queden cerrados. La deuda/comisión UGO permanece backend-authoritative. TEST-only hasta promover el hardening de cierre a PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("client"),
+        serviceId: z.string().uuid(),
+      }).strict(),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await confirmCashPayment(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo confirmar el pago en efectivo",
           },
           true
         );
