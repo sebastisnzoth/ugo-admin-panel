@@ -5,7 +5,26 @@ import {
   validateServiceReadInput,
 } from "./serviceReads.js";
 
+export const ARRIVAL_VALIDATED_PROJECT_REFS = new Set([
+  "tmossnqfwfwjrtzwcbmm",
+]);
+
+const ALLOWED_INPUT_KEYS = new Set([
+  "userId",
+  "role",
+  "serviceId",
+]);
+
 export function validateArrivalInput(input = {}) {
+  for (const key of Object.keys(input)) {
+    if (!ALLOWED_INPUT_KEYS.has(key)) {
+      throw new UgoMcpError(
+        "invalid_input",
+        `ugo_mark_arrived no acepta el campo ${key}`,
+        400
+      );
+    }
+  }
   const parsed = validateServiceReadInput(input);
   if (parsed.role !== "provider") {
     throw new UgoMcpError("invalid_input", "ugo_mark_arrived requiere role=provider", 400);
@@ -94,6 +113,14 @@ export async function markArrived(
       state: null,
       distance_m: null,
     };
+  }
+
+  if (!ARRIVAL_VALIDATED_PROJECT_REFS.has(config.projectRef)) {
+    throw new UgoMcpError(
+      "backend_contract_not_ready",
+      `ugo_mark_arrived está bloqueado para ${config.projectRef}: el contrato GPS/geofence de llegada todavía no fue promovido y validado en ese backend`,
+      409
+    );
   }
 
   const service = await readOwnedService(
