@@ -165,6 +165,13 @@ revoke all on function public.publicar_ubicacion_proveedor(uuid,double precision
 revoke all on function public.publicar_ubicacion_proveedor(uuid,double precision,double precision,timestamptz,double precision) from anon;
 grant execute on function public.publicar_ubicacion_proveedor(uuid,double precision,double precision,timestamptz,double precision) to authenticated;
 
+-- TEST historically exposed an older 6-column return shape for this same
+-- signature. PostgreSQL cannot change a function return row type with
+-- CREATE OR REPLACE, so drop the old signature transactionally before
+-- recreating the canonical 7-column contract below. No dependent database
+-- objects exist in the validated TEST schema.
+drop function if exists public.obtener_tracking_servicio_cliente(uuid);
+
 create or replace function public.obtener_tracking_servicio_cliente(
   p_servicio_id uuid
 )
