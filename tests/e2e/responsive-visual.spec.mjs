@@ -150,6 +150,21 @@ test('client auth register and recovery states remain responsive',async({page})=
  await screenshot(page,'client-auth-recovery','320x568')
 })
 
+test('UgoClientWeb landscape navigation keeps app styling',async({page})=>{
+ await page.setViewportSize({width:844,height:390})
+ await waitForSurface(page,{path:'/?app=stitch-client',root:'.ugo-client-web'})
+ const nav=page.locator('.ucw-mobile-nav')
+ await expect(nav).toBeVisible()
+ const first=nav.locator('button').first()
+ const styles=await first.evaluate(el=>{
+  const cs=getComputedStyle(el)
+  return {borderStyle:cs.borderStyle,display:cs.display,fontSize:parseFloat(cs.fontSize),backgroundColor:cs.backgroundColor}
+ })
+ expect.soft(styles.borderStyle,'landscape bottom-nav buttons must not fall back to browser default').toBe('none')
+ expect.soft(['flex','grid']).toContain(styles.display)
+ expect.soft(styles.fontSize).toBeGreaterThanOrEqual(9)
+})
+
 test('demo role switching and service progression stay contained',async({page})=>{
  await page.setViewportSize({width:390,height:844})
  await waitForSurface(page,{path:'/?demo=1',root:'.ugo-test-demo'})
