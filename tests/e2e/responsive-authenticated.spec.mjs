@@ -10,6 +10,7 @@ const creds={
   client:{email:process.env.UGO_TEST_CLIENT_EMAIL||'',password:process.env.UGO_TEST_CLIENT_PASSWORD||''},
   provider:{email:process.env.UGO_TEST_PROVIDER_EMAIL||'',password:process.env.UGO_TEST_PROVIDER_PASSWORD||''},
   admin:{email:process.env.UGO_TEST_ADMIN_EMAIL||'',password:process.env.UGO_TEST_ADMIN_PASSWORD||''},
+  superadmin:{email:process.env.UGO_TEST_SUPERADMIN_EMAIL||'',password:process.env.UGO_TEST_SUPERADMIN_PASSWORD||''},
 }
 
 const viewports=[
@@ -106,14 +107,14 @@ async function loginProvider(page){
  return await page.locator('.ugo-provider-root').isVisible()?'.ugo-provider-root':'.ugo-provider-onboarding'
 }
 
-async function loginAdmin(page){
+async function loginAdmin(page,credential=creds.admin,label='Admin'){
  await page.goto(baseURL+'/?app=admin',{waitUntil:'domcontentloaded',timeout:30000})
- await page.getByPlaceholder('Usuario o email').fill(creds.admin.email)
- await page.getByPlaceholder('Contraseña').fill(creds.admin.password)
+ await page.getByPlaceholder('Usuario o email').fill(credential.email)
+ await page.getByPlaceholder('Contraseña').fill(credential.password)
  await page.getByRole('button',{name:'Ingresar'}).click()
  await page.locator('.ugo-admin2,.mvp-error').first().waitFor({state:'visible',timeout:20000})
  const error=page.locator('.mvp-error')
- if(await error.isVisible())throw new Error('Admin TEST login failed: '+await error.innerText())
+ if(await error.isVisible())throw new Error(label+' TEST login failed: '+await error.innerText())
  return '.ugo-admin2'
 }
 
@@ -220,10 +221,24 @@ test('authenticated admin and superadmin responsive audit',async({page})=>{
    const button=page.locator('.ugo-admin2-sidebar button').filter({hasText:label})
    report.roles.admin.screens.push(await safeClickAndCapture(page,{role:'admin',name:label,locator:()=>button,rootSelector:root}))
  }
- const superText=await page.locator('body').innerText()
- const superAvailable=/super\s*admin/i.test(superText)
- report.roles.superadmin.status=superAvailable?'available_in_admin_session':'not_available_with_admin_test_account'
  report.roles.admin.status='pass_available_states'
+})
+
+test('authenticated superadmin responsive audit',async({page})=>{
+ test.skip(!(creds.superadmin.email&&creds.superadmin.password),'Missing UGO_TEST_SUPERADMIN_EMAIL or UGO_TEST_SUPERADMIN_PASSWORD')
+ report.roles.superadmin.status='running'
+ await page.setViewportSize({width:390,height:844})
+ const root=await loginAdmin(page,creds.superadmin,'Super Admin')
+ report.roles.superadmin.screens.push({screen:'home',status:'pass',sweep:await viewportSweep(page,'superadmin',root)})
+ await page.setViewportSize({width:390,height:844})
+ const labels=['Inicio','Operaciones','Personas','Finanzas','Configuración']
+ for(const label of labels){
+   await page.goto(baseURL+'/?app=admin',{waitUntil:'domcontentloaded'})
+   await page.locator(root).waitFor({state:'visible',timeout:15000})
+   const button=page.locator('.ugo-admin2-sidebar button').filter({hasText:label})
+   report.roles.superadmin.screens.push(await safeClickAndCapture(page,{role:'superadmin',name:label,locator:()=>button,rootSelector:root}))
+ }
+ report.roles.superadmin.status='pass_available_states'
 })
 
 test.afterAll(async()=>{
