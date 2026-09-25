@@ -6,7 +6,7 @@ type Subscription={endpoint:string;p256dh:string;auth:string;activa:boolean};
 type Delivery={id:string;suscripcion_id:string;suscripcion:Subscription|Subscription[]|null};
 type Config={vapid_public:string;vapid_private:string;dispatch_token:string;edge_url:string;vapid_subject:string};
 const HIGH_URGENCY_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_cancelado','aprobacion_pendiente','trabajo_aprobado','pago_efectivo_pendiente','pago_efectivo_confirmado']);
-const SERVICE_NOTICE_EXPECTED_STATE:Record<string,string>={proveedor_asignado:'asignado',trabajo_asignado:'asignado',proveedor_en_camino:'en_camino',proveedor_llego:'llegado',servicio_iniciado:'en_progreso',aprobacion_pendiente:'esperando_aprobacion',servicio_completado:'completado',trabajo_aprobado:'completado',servicio_cancelado:'cancelado',servicio_disputado:'disputado'};
+const SERVICE_NOTICE_EXPECTED_STATE:Record<string,string>={proveedor_asignado:'asignado',trabajo_asignado:'asignado',proveedor_en_camino:'en_camino',proveedor_llego:'llegado',servicio_iniciado:'en_progreso',aprobacion_pendiente:'esperando_aprobacion',servicio_completado:'completado',trabajo_aprobado:'esperando_aprobacion',servicio_cancelado:'cancelado',servicio_disputado:'disputado'};
 function serviceIdFromNotice(data:unknown){if(!data||typeof data!=="object")return null;const value=(data as Record<string,unknown>).servicio_id;return typeof value==="string"&&/^[0-9a-f-]{36}$/i.test(value)?value:null;}
 function offerExpiryMs(data:unknown){
   if(!data||typeof data!=="object")return null;

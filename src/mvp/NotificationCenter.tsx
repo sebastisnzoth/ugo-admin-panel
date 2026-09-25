@@ -13,7 +13,7 @@ function b64(buffer:ArrayBuffer|null){if(!buffer)return'';const bytes=new Uint8A
 const PROVIDER_CALL_TYPES=new Set(['nueva_oferta','trabajo_asignado'])
 const PROVIDER_ATTENTION_TYPES=new Set(['nueva_oferta','trabajo_asignado','chat_mensaje','servicio_completado','servicio_cancelado','servicio_disputado','pago_liberado','trabajo_aprobado','pago_efectivo_confirmado','agenda_recordatorio','agenda_salida'])
 const CLIENT_ATTENTION_TYPES=new Set(['proveedor_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','servicio_cancelado','servicio_disputado','chat_mensaje','pago_efectivo_pendiente'])
-const SERVICE_NOTICE_EXPECTED_STATE:Record<string,string>={proveedor_asignado:'asignado',trabajo_asignado:'asignado',proveedor_en_camino:'en_camino',proveedor_llego:'llegado',servicio_iniciado:'en_progreso',aprobacion_pendiente:'esperando_aprobacion',servicio_completado:'completado',trabajo_aprobado:'completado',servicio_cancelado:'cancelado',servicio_disputado:'disputado'}
+const SERVICE_NOTICE_EXPECTED_STATE:Record<string,string>={proveedor_asignado:'asignado',trabajo_asignado:'asignado',proveedor_en_camino:'en_camino',proveedor_llego:'llegado',servicio_iniciado:'en_progreso',aprobacion_pendiente:'esperando_aprobacion',servicio_completado:'completado',trabajo_aprobado:'esperando_aprobacion',servicio_cancelado:'cancelado',servicio_disputado:'disputado'}
 const noticeServiceId=(notice:UgoNotification)=>typeof notice.datos.servicio_id==='string'&&notice.datos.servicio_id.trim()?notice.datos.servicio_id.trim():null
 const LEGACY_PROVIDER_OFFER_MAX_AGE_MS=6*60*1000
 function providerOfferNoticeActive(notice:UgoNotification,now=Date.now()){
