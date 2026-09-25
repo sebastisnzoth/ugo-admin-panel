@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const root=fs.readFileSync('src/mvp/client/ClientRoot.tsx','utf8')
+const root=fs.readFileSync('src/features/client/ClientRoot.tsx','utf8')
 const rootNavigation=fs.readFileSync('src/features/client/navigation/useClientRootNavigation.ts','utf8')
 const history=fs.readFileSync('src/mvp/ServiceHistoryPanel.tsx','utf8')
 const detail=fs.readFileSync('src/features/client/order/ClientServiceDetail.tsx','utf8')
