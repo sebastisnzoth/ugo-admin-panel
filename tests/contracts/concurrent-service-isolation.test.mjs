@@ -27,6 +27,13 @@ test('client approval mutation boundary requires an explicit owned service id',a
 })
 
 
+test('global client surfaces never mount service-scoped operations without an explicit service id',async()=>{
+ const surfaces=await read('src/features/client/ui/ClientOperationalSurfaces.tsx')
+ for(const legacy of['ClientPaymentChoice','ClientLiveTracking','ClientCompletionReview','ServiceChat','AppLocationButton'])assert.doesNotMatch(surfaces,new RegExp(legacy))
+ assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/screen==='dispute'&&!detailOpen&&<DisputeDock role="client" openRequest\/>/)
+})
+
 test('Hugo can create another request while services already exist',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/cancelarlo antes de crear otro/)})
 
 test('each canonical request persists its own generated service id and matching scope',async()=>{
