@@ -33,6 +33,8 @@ test('critical realtime consumers recover from missed events using persisted sta
  recoveryAssertions(clientTracking,'ClientLiveTracking')
  recoveryAssertions(completion,'ClientCompletionReview')
  recoveryAssertions(postConfirm,'ClientPostConfirmFlow')
+ assert.match(notifications,/CHANNEL_ERROR|TIMED_OUT/)
+ assert.match(notifications,/setChannelEpoch\(value=>value\+1\)/)
  assert.match(completion,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(postConfirm,/CHANNEL_ERROR|TIMED_OUT/)
 })

@@ -42,3 +42,14 @@ test('client recovers an unread service alert after reopening the app',async()=>
  assert.match(center,/else if\(role==='client'\)\{const pending=next\.find\(notice=>!notice\.leida_at&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\);if\(pending\)signalClientAlert\(pending\)\}/)
  assert.match(center,/\[db,role,signalClientAlert,signalProviderAlert\]/)
 })
+
+test('notification realtime recreates its channel after error, timeout or network recovery',async()=>{
+ const center=await read('src/mvp/NotificationCenter.tsx')
+ assert.match(center,/channelEpoch/)
+ assert.match(center,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(center,/CHANNEL_ERROR/)
+ assert.match(center,/TIMED_OUT/)
+ assert.match(center,/const onOnline=\(\)=>\{resync\(\);reconnect\(\)\}/)
+ assert.match(center,/clearTimeout\(reconnectTimer\)/)
+ assert.match(center,/ugo-notices-\$\{role\}-\$\{id\}-\$\{channelEpoch\}/)
+})
