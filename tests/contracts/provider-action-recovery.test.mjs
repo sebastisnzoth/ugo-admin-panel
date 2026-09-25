@@ -28,6 +28,13 @@ test('scheduled-too-early rejection is treated as expected business validation, 
  assert.match(service,/if\(!isExpectedProviderTransitionRejection\(transitionMessage\)\)void reportSentinelIncident/)
 })
 
+test('expected arrival geofence and stale-state rejections do not create false Sentinel P0 incidents',()=>{
+ assert.match(service,/isExpectedProviderArrivalRejection=.*outside_geofence.*invalid_state/)
+ assert.match(service,/if\(!isExpectedProviderArrivalRejection\(error\)\)void reportSentinelIncident\(\{eventType:'provider_arrival_error'/)
+ assert.match(service,/metadata:\{arrivalCode:providerArrivalCode\(error\)\}/)
+ assert.match(service,/throw error/)
+})
+
 test('arrival location failure stays GPS-scoped and cannot fall through to generic lifecycle mutation',()=>{
  const helperStart=service.indexOf('async function markProviderArrived')
  const publishIndex=service.indexOf('await publishProviderLocation(supabase,serviceId)',helperStart)

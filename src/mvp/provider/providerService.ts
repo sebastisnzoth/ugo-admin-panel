@@ -187,14 +187,19 @@ async function persistedProviderTransition(supabase:SupabaseClient,serviceId:str
 }
 
 type ProviderArrivalResult={status?:string;code?:string;state?:string|null;distance_m?:number|null;location_age_ms?:number|null;idempotent?:boolean}
+type ProviderArrivalFailure=Error&{ugoArrivalCode?:string}
+const arrivalFailure=(code:string,message:string)=>Object.assign(new Error(message),{ugoArrivalCode:code}) as ProviderArrivalFailure
+const providerArrivalCode=(error:unknown)=>{const code=errorRecord(error)?.ugoArrivalCode;return typeof code==='string'?code:null}
+const isExpectedProviderArrivalRejection=(error:unknown)=>{const code=providerArrivalCode(error);return code==='outside_geofence'||code==='invalid_state'}
 function providerArrivalError(result:ProviderArrivalResult){
- if(result.code==='outside_geofence')return new Error(result.distance_m!=null?`Todavía estás a ${Math.round(result.distance_m)} m del punto del servicio. Acercate a 200 m o menos para confirmar llegada.`:'Todavía estás demasiado lejos del punto del servicio para confirmar llegada.')
- if(result.code==='gps_stale')return new Error('Tu última ubicación ya no es reciente. UGO necesita una posición GPS nueva para confirmar la llegada.')
- if(result.code==='gps_unavailable')return new Error('No hay una ubicación GPS válida publicada. Activá Ubicación precisa y reintentá.')
- if(result.code==='gps_inaccurate')return new Error('La precisión GPS todavía no es suficiente para confirmar la llegada.')
- if(result.code==='client_location_unavailable')return new Error('El punto del servicio no tiene una ubicación válida para verificar la llegada.')
- if(result.code==='invalid_state')return new Error('El servicio ya no está en un estado que permita confirmar llegada.')
- return new Error('UGO no pudo validar la llegada con el backend.')
+ const code=String(result.code||'backend_invalid_response')
+ if(code==='outside_geofence')return arrivalFailure(code,result.distance_m!=null?`Todavía estás a ${Math.round(result.distance_m)} m del punto del servicio. Acercate a 200 m o menos para confirmar llegada.`:'Todavía estás demasiado lejos del punto del servicio para confirmar llegada.')
+ if(code==='gps_stale')return arrivalFailure(code,'Tu última ubicación ya no es reciente. UGO necesita una posición GPS nueva para confirmar la llegada.')
+ if(code==='gps_unavailable')return arrivalFailure(code,'No hay una ubicación GPS válida publicada. Activá Ubicación precisa y reintentá.')
+ if(code==='gps_inaccurate')return arrivalFailure(code,'La precisión GPS todavía no es suficiente para confirmar la llegada.')
+ if(code==='client_location_unavailable')return arrivalFailure(code,'El punto del servicio no tiene una ubicación válida para verificar la llegada.')
+ if(code==='invalid_state')return arrivalFailure(code,'El servicio ya no está en un estado que permita confirmar llegada.')
+ return arrivalFailure(code,'UGO no pudo validar la llegada con el backend.')
 }
 async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
  await publishProviderLocation(supabase,serviceId)
@@ -214,7 +219,7 @@ export async function advanceProviderService(supabase:SupabaseClient,serviceId:s
   try{return await markProviderArrived(supabase,serviceId)}
   catch(error){
    const transitionMessage=messageOf(error,'No se pudo confirmar la llegada.')
-   void reportSentinelIncident({eventType:'provider_arrival_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.arrive',checklistCode:'MAP-GPS'})
+   if(!isExpectedProviderArrivalRejection(error))void reportSentinelIncident({eventType:'provider_arrival_error',message:transitionMessage,error,role:'provider',severity:'P0',serviceId,action:'provider.service.arrive',checklistCode:'MAP-GPS',metadata:{arrivalCode:providerArrivalCode(error)}})
    throw error
   }
  }
