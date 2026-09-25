@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useMemo,useState}from'react'
+import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{getDispatchProvider}from'../lib/dispatch/provider'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
@@ -11,7 +11,7 @@ type Person={nombre?:string|null}
 type Row={id:string;numero?:number|null;estado:string;descripcion?:string|null;tarifa?:number|string|null;created_at?:string|null;updated_at?:string|null;programado_para?:string|null;completado_at?:string|null;direccion_cliente?:string|null;cliente_id?:string|null;proveedor_id?:string|null;categoria?:{nombre?:string|null;emoji?:string|null}|null;cliente?:Person|null;proveedor?:Person|null}
 type ClientFilter='todos'|'curso'|'proximos'|'finalizados'
 type GenericFilter='todos'|'completado'|'activo'|'cancelado'
-type Props={role:Role;embedded?:boolean;openRequest?:boolean;onOpenService?:(serviceId:string)=>void}
+type Props={role:Role;embedded?:boolean;openRequest?:boolean;onOpenService?:(serviceId:string)=>void;initialServiceId?:string|null}
 type ClientStateCopy={title:string;detail:string;tone:'waiting'|'live'|'done'|'alert'}
 
 const LABELS:Record<string,string>={borrador:'En preparación',buscando:'Buscando proveedor',ofrecido:'Oferta enviada',asignado:'Asignado',en_camino:'En camino',llegado:'Proveedor llegó',en_progreso:'En curso',esperando_aprobacion:'Esperando aprobación',completado:'Completado',cancelado:'Cancelado',disputado:'En disputa'}
@@ -40,9 +40,10 @@ const isCurrent=(row:Row)=>ACTIVE_STATES.has(row.estado)&&!isUpcoming(row)
 const isFinal=(row:Row)=>FINAL_STATES.has(row.estado)
 const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[estado]||estado,detail:'Abrí el pedido para ver el estado completo.',tone:'waiting' as const}
 
-export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpenService}:Props){
+export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpenService,initialServiceId=null}:Props){
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
  const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
+ const openedInitialService=useRef<string|null>(null)
  useEffect(()=>{let alive=true;sb.auth.getSession().then(({data})=>{if(alive)setUserId(data.session?.user?.id||null)});const{data:l}=sb.auth.onAuthStateChange((_e,s)=>setUserId(s?.user?.id||null));return()=>{alive=false;l.subscription.unsubscribe()}},[sb])
  useEffect(()=>{if(embedded)setOpen(true)},[embedded])
  useEffect(()=>{if(openRequest)setOpen(true)},[openRequest])
@@ -62,6 +63,19 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   const ch=(sb as any).channel(`ugo-history-${role}-${userId}-${channelEpoch}`).on('postgres_changes',change,sync).subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
   return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
  },[channelEpoch,load,open,role,sb,userId])
+ useEffect(()=>{
+  if(role!=='provider'||!userId||!initialServiceId||openedInitialService.current===initialServiceId)return
+  let alive=true
+  ;(async()=>{
+   const local=rows.find(row=>row.id===initialServiceId&&row.proveedor_id===userId)
+   if(local){if(alive){openedInitialService.current=initialServiceId;setProviderDetail(local)};return}
+   const{data,error:detailError}=await(sb as any).from('servicios').select('id,numero,estado,descripcion,tarifa,created_at,updated_at,programado_para,completado_at,direccion_cliente,cliente_id,proveedor_id,categoria:categorias(nombre,emoji),cliente:usuarios!servicios_cliente_id_fkey(nombre),proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').eq('id',initialServiceId).eq('proveedor_id',userId).maybeSingle()
+   if(!alive)return
+   if(detailError){setActionNotice('No pudimos abrir el trabajo de esta notificación. Podés buscarlo en tu historial.');return}
+   if(data){openedInitialService.current=initialServiceId;setProviderDetail(data as Row)}
+  })()
+  return()=>{alive=false}
+ },[initialServiceId,role,rows,sb,userId])
  const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setCancellingId(serviceId);setActionNotice('');try{const owned=rows.find(row=>row.id===serviceId&&row.cliente_id===userId);if(!owned)throw new Error('No encontramos este pedido dentro de tu actividad actual.');await getDispatchProvider().cancel(serviceId);setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,rows,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
