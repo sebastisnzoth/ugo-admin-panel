@@ -39,10 +39,10 @@ test('service message content is immutable while read receipt stays writable',as
 })
 
 test('client and provider surfaces use one canonical chat component with realtime',async()=>{
- const client=await read('src/features/client/ui/ClientOperationalSurfaces.tsx')
+ const client=await read('src/features/client/order/ClientServiceDetail.tsx')
  const provider=await read('src/mvp/provider/ProviderActiveJob.tsx')
  const component=await read('src/mvp/ServiceChat.tsx')
- assert.match(client,/<ServiceChat role="client"\/>/)
+ assert.match(client,/<ServiceChat role="client" serviceId=\{service\.id\} compact\/>/)
  assert.match(provider,/<ServiceChat role="provider" serviceId=\{s\.id\} compact\/>/)
  assert.match(component,/table:'mensajes'/)
  assert.match(component,/postgres_changes/)
