@@ -1,0 +1,95 @@
+name: UGO Authenticated Responsive Audit
+
+on:
+  push:
+    branches:
+      - fix/responsive-full-audit
+  workflow_dispatch:
+
+concurrency:
+  group: ugo-responsive-authenticated-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  authenticated:
+    name: Chromium · Authenticated Responsive Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
+      UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+      UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
+      UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+      UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
+      UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci --include=dev
+
+      - name: Install Playwright test runner
+        run: npm install --no-save @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Report credential availability
+        shell: bash
+        run: |
+          set +x
+          for var in             UGO_TEST_CLIENT_EMAIL             UGO_TEST_CLIENT_PASSWORD             UGO_TEST_PROVIDER_EMAIL             UGO_TEST_PROVIDER_PASSWORD             UGO_TEST_ADMIN_EMAIL             UGO_TEST_ADMIN_PASSWORD
+          do
+            if [[ -n "${!var}" ]]; then
+              echo "${var}: present"
+            else
+              echo "${var}: missing"
+            fi
+          done
+
+      - name: Start UGO Vite
+        shell: bash
+        run: |
+          mkdir -p artifacts/responsive-authenticated
+          npm run dev -- --host 127.0.0.1 --port 5173 > artifacts/responsive-authenticated/vite.log 2>&1 &
+          echo $! > /tmp/ugo-vite.pid
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5173/ >/dev/null; then
+              echo "UGO Vite ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "UGO Vite did not become ready"
+          cat artifacts/responsive-authenticated/vite.log
+          exit 1
+
+      - name: Run authenticated responsive browser audit
+        env:
+          RESPONSIVE_BASE_URL: http://127.0.0.1:5173
+          RESPONSIVE_AUTH_ARTIFACT_DIR: artifacts/responsive-authenticated
+        run: npx playwright test tests/e2e/responsive-authenticated.spec.mjs --browser=chromium --workers=1 --reporter=line
+
+      - name: Upload authenticated responsive artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-authenticated-audit
+          path: artifacts/responsive-authenticated
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop UGO Vite
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/ugo-vite.pid ]]; then
+            kill "$(cat /tmp/ugo-vite.pid)" || true
+          fi
