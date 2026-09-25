@@ -18,7 +18,8 @@ test('provider assignment creates a deduplicated client notification from the se
 test('client receives inserted notifications in realtime and shows a visible live alert',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
  assert.match(center,/event:'INSERT',schema:'public',table:'notificaciones'/)
- assert.match(center,/setLiveNotice\(notice\)/)
+ assert.match(center,/resync\(\)/)
+ assert.match(center,/SERVICE_NOTICE_EXPECTED_STATE/)
  assert.match(center,/aria-live="assertive"/)
  assert.match(center,/UGO · ACTUALIZACIÓN EN VIVO/)
  assert.match(center,/Ver pedido →/)
@@ -39,7 +40,7 @@ test('assignment notification and active home card open the exact service id',as
 
 test('client recovers an unread service alert after reopening the app',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
- assert.match(center,/else if\(role==='client'\)\{const pending=next\.find\(notice=>!notice\.leida_at&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\);if\(pending\)signalClientAlert\(pending\)\}/)
+ assert.match(center,/role==='client'[\s\S]*pending=next\.find\(notice=>!notice\.leida_at&&actionable\.has\(notice\.id\)&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\)/)
  assert.match(center,/\[db,role,signalClientAlert,signalProviderAlert\]/)
 })
 

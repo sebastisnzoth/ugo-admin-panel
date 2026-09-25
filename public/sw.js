@@ -13,11 +13,13 @@ self.addEventListener('push',event=>{
   const serviceId=payload?.data?.servicio_id;
   const serviceSuffix=serviceId?`&serviceId=${encodeURIComponent(serviceId)}`:'';
   const roleUrl=role==='provider'?`/?app=provider${serviceSuffix}`:role==='client'?`/?app=client${serviceSuffix}`:(payload.url||'/');
+  const serviceLifecycleTypes=new Set(['proveedor_asignado','trabajo_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','trabajo_aprobado','servicio_cancelado','servicio_disputado']);
+  const lifecycleTag=serviceId&&serviceLifecycleTypes.has(payload.type)?`ugo-service-${serviceId}`:null;
   const options={
     body:payload.body||'Tenés una actualización en U.GO.',
     icon:'/favicon.svg',
     badge:'/favicon.svg',
-    tag:payload.notificationId||payload.type||'ugo',
+    tag:lifecycleTag||payload.notificationId||payload.type||'ugo',
     renotify:true,
     vibrate:[160,70,220],
     data:{...(payload.data||{}),url:roleUrl}
