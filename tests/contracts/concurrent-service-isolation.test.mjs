@@ -15,15 +15,16 @@ test('client cancellation mutation boundary requires an explicit owned service i
 })
 
 
-test('client approval mutation boundary requires an explicit owned service id',async()=>{
+test('client approval and YA PAGUÉ are distinct exact-service mutation boundaries',async()=>{
  const[types,bridge,service]=await Promise.all([read('src/features/client/types/clientTypes.ts'),read('src/features/client/actions/ClientFlowActionsBridge.tsx'),read('src/features/client/services/clientActionService.ts')])
  assert.match(types,/approveService: \(serviceId: string\) => Promise<boolean>/)
- assert.match(bridge,/const approveService=async\(serviceId:string\)/)
+ assert.match(types,/confirmCashPayment: \(serviceId: string\) => Promise<boolean>/)
  assert.match(bridge,/approvePendingClientService\(supabase,userId,serviceId\)/)
- assert.match(service,/approvePendingClientService\(supabase:SupabaseClient,userId:string,serviceId:string\)/)
- assert.match(service,/\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)\.eq\('estado','esperando_aprobacion'\)\.maybeSingle\(\)/)
- assert.doesNotMatch(service,/eq\('estado','esperando_aprobacion'\)[\s\S]*order\('created_at'/)
- assert.match(service,/rpc\(rpc,\{p_servicio_id:row\.id\}\)/)
+ assert.match(bridge,/confirmApprovedCashClientService\(supabase,userId,serviceId\)/)
+ assert.match(service,/readOwnedClosureService[\s\S]*\.eq\('id',serviceId\)\.eq\('cliente_id',userId\)\.maybeSingle\(\)/)
+ assert.match(service,/approvePendingClientService[\s\S]*if\(hasWorkApproval\(row\)\)return true[\s\S]*rpc\('aprobar_servicio',\{p_servicio_id:row\.id\}\)/)
+ assert.match(service,/confirmApprovedCashClientService[\s\S]*!hasWorkApproval\(row\)[\s\S]*rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:row\.id\}\)/)
+ assert.doesNotMatch(service,/workApproved\?'confirmar_pago_efectivo_cliente':'aprobar_servicio'/)
 })
 
 

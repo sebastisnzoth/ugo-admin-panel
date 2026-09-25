@@ -17,8 +17,10 @@ export type ClientActionHandlers = {
   /** Cancellation is always service-scoped. Callers must resolve and pass the exact serviceId. */
   cancelService: (serviceId: string) => Promise<boolean>
   openPayment: () => Promise<boolean>
-  /** Approval and cash close are always service-scoped. Callers must pass the exact serviceId. */
+  /** Work approval is service-scoped and never confirms a cash handoff. */
   approveService: (serviceId: string) => Promise<boolean>
+  /** YA PAGUÉ is a separate service-scoped boundary after cash work approval. */
+  confirmCashPayment: (serviceId: string) => Promise<boolean>
   openReview: () => void
   openHistory: () => void
   openProfile: () => void

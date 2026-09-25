@@ -7,7 +7,8 @@ const unavailable = async () => false
 const emptyActions: ClientActionHandlers = {
   openSearch: noop, openProvider: noop, selectProvider: noop, createService: unavailable,
   startMatching: unavailable, cancelService: unavailable, openPayment: unavailable,
-  approveService: unavailable, openReview: noop, openHistory: noop, openProfile: noop, openDispute: noop,
+  approveService: unavailable, confirmCashPayment: unavailable,
+  openReview: noop, openHistory: noop, openProfile: noop, openDispute: noop,
 }
 
 type ClientFlow = {
@@ -34,8 +35,6 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
     setProviderId(nextProviderId)
   }, [])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
-    // ClientNeedScreen reads hugoIntent directly from the flow context, so the
-    // canonical request path no longer needs the legacy guided-request DOM event.
     setHugoIntent({ ...intent, id: ++intentId.current })
     setScreen('request')
     setProviderId(null)

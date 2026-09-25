@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
+import{approvePendingClientService,confirmApprovedCashClientService}from'../services/clientActionService'
 import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
 
 type ReviewService={
@@ -48,7 +49,6 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   setHasFinalEvidence(!evidenceError&&Boolean(evidence?.length))
   setPayment((paymentRow||null)as ReviewPayment|null)
  },[serviceId,supabase])
- const closurePersisted=useCallback(async(id:string)=>{const{data:auth}=await supabase.auth.getUser();const uid=auth.user?.id||'';if(!uid)return false;const{data}=await supabase.from('servicios').select('id,estado').eq('id',id).eq('cliente_id',uid).maybeSingle();return data?.estado==='completado'},[supabase])
  useEffect(()=>{const timer=window.setTimeout(()=>void load(),0);return()=>window.clearTimeout(timer)},[load])
  useEffect(()=>{if(!userId)return;let alive=true,reconnectTimer:number|undefined;const refresh=()=>{if(alive)void load().catch(()=>{})},reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)};const serviceFilter=serviceId?`id=eq.${serviceId}`:`cliente_id=eq.${userId}`;const ch=supabase.channel(`client-completion-review-${serviceId||userId}-${channelEpoch}`).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:serviceFilter},refresh).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',...(serviceId?{filter:`servicio_id=eq.${serviceId}`}:{})},refresh).on('postgres_changes',{event:'*',schema:'public',table:'pagos',...(serviceId?{filter:`servicio_id=eq.${serviceId}`}:{filter:`cliente_id=eq.${userId}`})},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){refresh();reconnect()}});const onOnline=()=>{refresh();reconnect()};const onVisibility=()=>{if(document.visibilityState==='visible'){refresh();reconnect()}};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[channelEpoch,load,serviceId,supabase,userId])
  useEffect(()=>{if(serviceId)return;document.body.classList.toggle('ugo-client-awaiting-review',service?.estado==='esperando_aprobacion');return()=>document.body.classList.remove('ugo-client-awaiting-review')},[service,serviceId])
@@ -65,15 +65,11 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  const canConfirmCash=!completed&&isCash&&workApproved&&!cashConfirmed&&service.estado==='esperando_aprobacion'
 
  async function approve(){
-  if(!canApprove)return
+  if(!canApprove||!userId)return
   setBusy(true);setNotice('')
   try{
-   const id=service.id
-   const{error}=await supabase.rpc('aprobar_servicio',{p_servicio_id:id})
-   if(error){
-    if(!isCash&&await closurePersisted(id)){setNotice('Trabajo aprobado. El pago protegido fue liberado.');await load();await onCompleted?.();return}
-    await load();throw error
-   }
+   const ok=await approvePendingClientService(supabase,userId,service.id)
+   if(!ok)throw new Error('El servicio ya no está listo para aprobarse.')
    setNotice(isCash?`Trabajo aprobado. Ahora pagá ${amount} a ${providerName}.`:'Trabajo aprobado. El pago protegido fue liberado.')
    await load()
    if(!isCash)await onCompleted?.()
@@ -84,15 +80,11 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
  }
 
  async function confirmCashPaid(){
-  if(!canConfirmCash)return
+  if(!canConfirmCash||!userId)return
   setBusy(true);setNotice('')
   try{
-   const id=service.id
-   const{error}=await supabase.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:id})
-   if(error){
-    if(await closurePersisted(id)){setNotice('Pago confirmado. UGO avisó al proveedor y cerró el servicio.');await load();await onCompleted?.();return}
-    await load();throw error
-   }
+   const ok=await confirmApprovedCashClientService(supabase,userId,service.id)
+   if(!ok)throw new Error('El pago en efectivo todavía no está listo para confirmarse.')
    setNotice('Pago confirmado. UGO avisó al proveedor y cerró el servicio.')
    await load()
    await onCompleted?.()
@@ -114,27 +106,18 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
 
  return <section aria-live="polite" className="ugo-completion-review">
   <header><div><h2>{title}</h2><p>{completed?`Servicio #${service.numero} · El pedido quedó cerrado y las fotos siguen disponibles en su historial.`:isCash&&workApproved?`Servicio #${service.numero} · Trabajo aprobado. Falta completar el pago en efectivo.`:`Servicio #${service.numero} · Revisá el registro final antes de confirmar el trabajo.`}</p></div><span aria-hidden="true">✓</span></header>
-
   {!completed&&!hasFinalEvidence&&<div className="ugo-completion-warning">Todavía no hay una foto final “Después” del proveedor asignado. UGO no habilita la aprobación hasta poder revisarla.</div>}
   {!completed&&!payment&&<div className="ugo-completion-warning">UGO todavía no encuentra una forma de pago confirmada para este servicio.</div>}
   {!completed&&!isCash&&payment&&!electronicReady&&<div className="ugo-completion-warning">El pago electrónico todavía no está protegido. Cuando se confirme, vas a poder aprobar el trabajo.</div>}
-
   {notice&&<div className="ugo-completion-notice">{notice}</div>}
-
-  {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision">
-    <strong>Pagá {amount} a {providerName}</strong>
-    <span>Después de entregar el efectivo, tocá “YA PAGUÉ”. UGO avisará al proveedor y cerrará el servicio.</span>
-  </div>}
-
+  {!completed&&isCash&&workApproved&&<div className="ugo-completion-decision"><strong>Pagá {amount} a {providerName}</strong><span>Después de entregar el efectivo, tocá “YA PAGUÉ”. UGO avisará al proveedor y cerrará el servicio.</span></div>}
   {!completed&&!workApproved&&<div className="ugo-completion-decision"><span>{blockedReason||(isCash?'Primero confirmá que el trabajo quedó bien. Después UGO te muestra cuánto pagar al proveedor.':'El trabajo está listo para confirmar. Al aprobar, UGO libera el pago electrónico protegido.')}</span></div>}
-
   {!completed&&<div className="ugo-completion-actions">
    {onOpenDispute&&<button type="button" onClick={onOpenDispute} disabled={busy}>Tengo un problema</button>}
    {isCash&&workApproved
     ?<button type="button" onClick={confirmCashPaid} disabled={busy||!canConfirmCash}>{busy?'Procesando…':`YA PAGUÉ ${amount}`}</button>
     :<button type="button" onClick={approve} disabled={busy||!canApprove}>{busy?'Procesando…':isCash?'CONFIRMAR TRABAJO':'CONFIRMAR Y LIBERAR PAGO'}</button>}
   </div>}
-
   <ClientEvidenceGallery serviceId={service.id}/>
  </section>
 }

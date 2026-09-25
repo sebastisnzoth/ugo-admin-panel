@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-const [need,location,when,payment,summary,post,detail,completion,rating,evidence]=await Promise.all([
+const [need,location,when,payment,summary,post,detail,completion,rating,evidence,actions]=await Promise.all([
  read('src/features/client/request/ClientNeedScreen.tsx'),
  read('src/features/client/request/ClientLocationScreen.tsx'),
  read('src/features/client/request/ClientWhenScreen.tsx'),
@@ -14,6 +14,7 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
  read('src/features/client/order/ClientCompletionReview.tsx'),
  read('src/features/client/rating/ClientRatingPrompt.tsx'),
  read('src/features/client/request/ClientRequestEvidence.tsx'),
+ read('src/features/client/services/clientActionService.ts'),
 ])
 
 test('canonical client request covers need, optional evidence, location, when, payment and summary',()=>{
@@ -54,8 +55,10 @@ test('matching remains visible, can run in background and can be retried after d
 
 test('payment and closure remain service-scoped from assignment through rating',()=>{
  assert.match(detail,/ClientPaymentChoice serviceId=\{service\.id\}/)
- assert.match(completion,/aprobar_servicio/)
- assert.match(completion,/confirmar_pago_efectivo_cliente/)
+ assert.match(completion,/approvePendingClientService/)
+ assert.match(completion,/confirmApprovedCashClientService/)
+ assert.match(actions,/rpc\('aprobar_servicio'/)
+ assert.match(actions,/rpc\('confirmar_pago_efectivo_cliente'/)
  assert.match(completion,/Primero confirmá que el trabajo quedó bien/)
  assert.match(completion,/YA PAGUÉ/)
  assert.match(rating,/autor_tipo:'cliente'/)
