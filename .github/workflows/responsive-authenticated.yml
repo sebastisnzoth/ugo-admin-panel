@@ -42,71 +42,6 @@ jobs:
       - name: Enforce designated UGO TEST environment
         run: npm run verify:test-env
 
-      - name: Prepare authenticated TEST credential mode
-        id: authmode
-        shell: bash
-        run: |
-          set -euo pipefail
-          required=(
-            UGO_TEST_CLIENT_EMAIL
-            UGO_TEST_CLIENT_PASSWORD
-            UGO_TEST_PROVIDER_EMAIL
-            UGO_TEST_PROVIDER_PASSWORD
-            UGO_TEST_ADMIN_EMAIL
-            UGO_TEST_ADMIN_PASSWORD
-            UGO_TEST_SUPERADMIN_EMAIL
-            UGO_TEST_SUPERADMIN_PASSWORD
-          )
-          missing=0
-          echo "UGO_AUTH_SOURCE=${UGO_AUTH_SOURCE:-unknown}"
-          for var in "${required[@]}"; do
-            if [[ -z "${!var}" ]]; then
-              missing=1
-            fi
-          done
-          if [[ "$missing" == "0" ]]; then
-            echo "ephemeral=false" >> "$GITHUB_OUTPUT"
-            echo "UGO_AUTH_SOURCE=github-secrets" >> "$GITHUB_ENV"
-            exit 0
-          fi
-
-          TEMP_PASSWORD="$(node -e "process.stdout.write(require('crypto').randomBytes(32).toString('base64url'))")"
-          echo "::add-mask::$TEMP_PASSWORD"
-          {
-            echo "UGO_TEST_CLIENT_EMAIL=cliente.ugo.test@example.com"
-            echo "UGO_TEST_CLIENT_PASSWORD=$TEMP_PASSWORD"
-            echo "UGO_TEST_PROVIDER_EMAIL=proveedor.ugo.test@example.com"
-            echo "UGO_TEST_PROVIDER_PASSWORD=$TEMP_PASSWORD"
-            echo "UGO_TEST_ADMIN_EMAIL=admin.ugo.test@example.com"
-            echo "UGO_TEST_ADMIN_PASSWORD=$TEMP_PASSWORD"
-            echo "UGO_TEST_SUPERADMIN_EMAIL=adminugo@example.com"
-            echo "UGO_TEST_SUPERADMIN_PASSWORD=$TEMP_PASSWORD"
-            echo "UGO_AUTH_SOURCE=ephemeral-test-fixtures"
-          } >> "$GITHUB_ENV"
-
-          mkdir -p artifacts/responsive-authenticated/handshake
-          printf '%s' "$TEMP_PASSWORD" > /tmp/ugo-responsive-auth-password
-          printf '%s' 'LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUF4L2o3OWNjWlp0NkNlZ0lmZHVFVgpQZWwwUGFmRmlNUFYrc0poQmZlNDRmWXZzRGRBZmZqVjF5ZG5nSDViTldGZ3pjaDYxVHRpcWxxV2FoVUV5M0dLCjhoZHFDT1krSUNMZjhtZkREVE54RzZGSCtzYVM0MU84RVNNWC9QN2VVc0NXcWQrem1EZXdaYVJRUFAyYnRNM2sKQXVtb3ltc25wU1AxR2RUR3hnZnVnQi8wOWVGbGp1RkdlTjEvbHNGUEt5Rms3aGVwaHZLRE4zQ0R5Ujdud3kxcApTb2k0ZVNaWm5qVGpLclVwT3VXU1NvMEExemErUEdBME9HRXZXVFBtY0Q2ajVyM1g2Wk5qemJiQkhWRlp4cHQ2CjYrMFZQRnZ0dVlBS0ZDUlF3Q0JwdTFRb0RIajFGV2wrQTdhemNzRXdMcWZkeXhyb1Z2ZkwydEppbGVQWE1uZ3oKR3dJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg==' | base64 -d > /tmp/ugo-responsive-auth-public.pem
-          openssl pkeyutl -encrypt -pubin             -inkey /tmp/ugo-responsive-auth-public.pem             -in /tmp/ugo-responsive-auth-password             -out artifacts/responsive-authenticated/handshake/password.enc             -pkeyopt rsa_padding_mode:oaep             -pkeyopt rsa_oaep_md:sha256
-          printf '{"run_id":"%s","mode":"ephemeral-test-fixtures"}\n' "$GITHUB_RUN_ID" > artifacts/responsive-authenticated/handshake/meta.json
-          rm -f /tmp/ugo-responsive-auth-password /tmp/ugo-responsive-auth-public.pem
-          echo "ephemeral=true" >> "$GITHUB_OUTPUT"
-
-      - name: Upload encrypted ephemeral credential handshake
-        if: steps.authmode.outputs.ephemeral == 'true'
-        uses: actions/upload-artifact@v4
-        with:
-          name: responsive-auth-handshake-${{ github.run_id }}
-          path: artifacts/responsive-authenticated/handshake
-          retention-days: 1
-
-      - name: Await ephemeral TEST account provisioning
-        if: steps.authmode.outputs.ephemeral == 'true'
-        shell: bash
-        run: |
-          echo "Ephemeral TEST credential handshake prepared; waiting for isolated TEST provisioning."
-          sleep 240
-
       - name: Install Playwright test runner
         run: npm install --no-save @playwright/test@1.55.0
 
@@ -125,11 +60,22 @@ jobs:
             UGO_TEST_ADMIN_EMAIL
             UGO_TEST_ADMIN_PASSWORD
           )
+          optional=(
+            UGO_TEST_SUPERADMIN_EMAIL
+            UGO_TEST_SUPERADMIN_PASSWORD
+          )
           for var in "${required[@]}"; do
             if [[ -n "${!var}" ]]; then
               echo "${var}: present"
             else
               echo "${var}: missing"
+            fi
+          done
+          for var in "${optional[@]}"; do
+            if [[ -n "${!var}" ]]; then
+              echo "${var}: present (optional)"
+            else
+              echo "${var}: missing (optional)"
             fi
           done
 
