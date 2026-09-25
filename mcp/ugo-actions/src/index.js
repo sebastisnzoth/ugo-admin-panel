@@ -5,6 +5,7 @@ import { getCurrentJob, UgoMcpError } from "./currentJob.js";
 import { getProviderLocation, getService } from "./serviceReads.js";
 import { getCurrentUser, getJobHistory, getProviderOffers, getSavedPlaces } from "./contextReads.js";
 import { markArrived } from "./arrival.js";
+import { acceptJob } from "./acceptJob.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -16,7 +17,7 @@ function jsonToolResult(payload, isError = false) {
 serveStdio(() => {
   const server = new McpServer({
     name: "ugo-actions",
-    version: "0.5.0",
+    version: "0.6.0",
   });
 
   server.registerTool(
@@ -225,6 +226,36 @@ serveStdio(() => {
             status: "error",
             code: known ? error.code : "internal_error",
             message: known ? error.message : "UGO Actions MCP no pudo leer el historial",
+          },
+          true
+        );
+      }
+    }
+  );
+
+
+  server.registerTool(
+    "ugo_accept_job",
+    {
+      description:
+        "Acepta una oferta exacta del proveedor usando serviceId + offerId explícitos y el RPC canónico aceptar_oferta. TEST-only hasta promover el contrato deuda/agenda a PROD.",
+      inputSchema: z.object({
+        userId: z.string().uuid(),
+        role: z.literal("provider"),
+        serviceId: z.string().uuid(),
+        offerId: z.string().uuid(),
+      }),
+    },
+    async (input) => {
+      try {
+        return jsonToolResult(await acceptJob(input));
+      } catch (error) {
+        const known = error instanceof UgoMcpError;
+        return jsonToolResult(
+          {
+            status: "error",
+            code: known ? error.code : "internal_error",
+            message: known ? error.message : "UGO Actions MCP no pudo aceptar el trabajo",
           },
           true
         );
