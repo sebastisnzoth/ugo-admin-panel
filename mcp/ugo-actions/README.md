@@ -302,6 +302,31 @@ The payment liberation also remains connected to UGO's backend commission ledger
 
 **Environment gate:** `ugo_confirm_cash_payment` is enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO remains blocked until the later cash-close sensitive-profile/debt hardening is promoted and verified live.
 
+### `ugo_rate_service`
+
+Controlled bilateral rating mutation for one exact completed `serviceId`.
+
+Input is deliberately limited to:
+
+- `userId`
+- `role=client|provider`
+- exact `serviceId`
+- integer `score` from 1 through 5
+- optional `comment` up to 500 characters
+
+The model cannot provide `cliente_id`, `proveedor_id` or `autor_tipo`. The MCP reads the exact role-owned completed service and derives those fields from the persisted service:
+
+- `role=client` -> `autor_tipo=cliente`; target is the service provider;
+- `role=provider` -> `autor_tipo=proveedor`; target is the service client.
+
+The tool inserts only into `public.resenas` through the caller's authenticated Supabase session. TEST RLS independently requires the service to be completed, the client/provider IDs to match the service, and the authenticated user to be the author for that direction.
+
+There is exactly one rating per `(servicio_id, autor_tipo)`. Repeating the exact same score/comment is idempotent. If that side already rated the service with different content, the MCP returns `already_rated` and never updates or overwrites the existing review. Ambiguous insert failures are reconciled by re-reading the exact service + author direction.
+
+The MCP never claims or writes reputation/karma. The earlier automatic rating-to-`usuarios.karma` trigger was intentionally removed because that protected profile field has a separate authorization boundary.
+
+**Environment gate:** `ugo_rate_service` is enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO remains blocked until the bilateral rating schema, unique index and RLS policy are promoted and verified live.
+
 ## Current service states verified in UGO
 
 The production UGO schema currently exposes:
@@ -310,7 +335,7 @@ The production UGO schema currently exposes:
 
 The MCP treats all except `completado`, `cancelado` and `disputado` as active for the unresolved-job query. Do not rename these states from the CTO conceptual names without an explicit database migration/compatibility plan.
 
-## Audited client closure boundary (no MCP mutation yet)
+## Audited client closure boundary
 
 Repository and UGO Arena TEST audit on 2026-09-25 established that `esperando_aprobacion -> cierre` is not one universal mutation:
 
@@ -321,7 +346,7 @@ Repository and UGO Arena TEST audit on 2026-09-25 established that `esperando_ap
 - both paths remain backend-authoritative for ownership, final provider evidence and payment state;
 - the latest closure hardening must not update another user's protected `usuarios` counters from a client-owned RPC.
 
-The audit itself added no mutation and kept the MCP at 0.9.0. `ugo_approve_work` now implements only the client work-approval boundary in version 0.10.0; cash `YA PAGUÉ` remains a separate future mutation.
+The audit itself added no mutation and kept the MCP at 0.9.0. `ugo_approve_work` implemented the work-approval boundary in 0.10.0, and `ugo_confirm_cash_payment` followed in 0.11.0 as a separate independently validated cash-close boundary.
 
 Production must remain blocked for future client-closing MCP mutations until its live migration/function state is verified to include the closure hardening represented by `fix_client_cash_close_sensitive_counter` (or an equivalent newer contract). Repository code alone is not proof that PROD is ready.
 
@@ -371,6 +396,6 @@ Keep the action surface small and auditable. Add tools incrementally:
 14. `ugo_finish_work` — implemented and TEST-gated pending PROD P0 contract promotion
 15. `ugo_approve_work` — implemented and TEST-gated pending PROD client-close hardening
 16. `ugo_confirm_cash_payment` — implemented and TEST-gated pending PROD cash-close/debt hardening
-17. rating
+17. `ugo_rate_service` — implemented and TEST-gated pending PROD bilateral-rating promotion
 
-Do not open the next mutating action until its exact client-owned service boundary is independently audited, TEST-validated and the required backend contracts are promoted through the normal environment pipeline.
+Do not open the next mutating action until its exact role-owned service boundary is independently audited, TEST-validated and the required backend contracts are promoted through the normal environment pipeline.
