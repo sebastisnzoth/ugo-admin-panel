@@ -141,6 +141,23 @@ Read-only recent service history for an authenticated client or provider.
 
 The query applies the corresponding ownership filter (`cliente_id` or `proveedor_id`) plus RLS, orders by recent update and accepts a bounded `limit` (maximum 50). The returned summary omits counterpart IDs, exact addresses and arbitrary service metadata.
 
+### `ugo_accept_job`
+
+Controlled provider-offer acceptance using the same canonical backend RPC as the Provider UI.
+
+Input is explicit and non-inferential:
+
+- `userId`
+- `role=provider`
+- exact `serviceId`
+- exact `offerId`
+
+The tool validates the real Supabase session and provider role before reading the provider-owned offer. It refuses cross-provider and cross-service scope, never guesses a latest offer, calls only `aceptar_oferta(p_oferta_id)`, returns a minimal sanitized result, and reconciles ambiguous network/RPC failures by re-reading the exact persisted offer + service assignment.
+
+Business rules remain backend-authoritative. TEST already enforces atomic assignment, offer expiry, provider readiness, the three-unpaid-UGO-services block and schedule-conflict rules, including valid future jobs while another job is live.
+
+**Environment gate:** this mutation is currently enabled only for UGO Arena TEST (`tmossnqfwfwjrtzwcbmm`). Production UGO (`trfsjuseqjxlhrxuvdsm`) does not yet have the debt/schedule contract promoted, so the tool returns `backend_contract_not_ready` before mutation there. Remove or extend that gate only after those production migrations are promoted and verified.
+
 ### `ugo_mark_arrived`
 
 First controlled mutation in the MCP surface.
@@ -224,11 +241,11 @@ Keep the action surface small and auditable. Add tools incrementally:
 8. `ugo_get_job_history` — implemented
 9. device-owned GPS publication contract — implemented in Provider UI/backend migration
 10. `ugo_mark_arrived` — implemented in code, pending migration promotion
-11. accept job
+11. `ugo_accept_job` — implemented and TEST-gated pending PROD debt/agenda promotion
 12. start route
 13. start work
 14. finish work
 15. cash-payment confirmation
 16. rating
 
-Do not open additional mutating actions until the current read/arrival authorization boundary is verified and the arrival migration is promoted through the normal environment pipeline.
+Do not open the next mutating action until the current acceptance boundary is validated in TEST and the required backend contracts are promoted through the normal environment pipeline.
