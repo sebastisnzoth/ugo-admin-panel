@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
-const [need,location,when,payment,summary,post,detail,completion,rating,evidence,actions]=await Promise.all([
+const [need,location,when,payment,summary,post,detail,completion,rating,evidence,actions,ratingService]=await Promise.all([
  read('src/features/client/request/ClientNeedScreen.tsx'),
  read('src/features/client/request/ClientLocationScreen.tsx'),
  read('src/features/client/request/ClientWhenScreen.tsx'),
@@ -15,6 +15,7 @@ const [need,location,when,payment,summary,post,detail,completion,rating,evidence
  read('src/features/client/rating/ClientRatingPrompt.tsx'),
  read('src/features/client/request/ClientRequestEvidence.tsx'),
  read('src/features/client/services/clientActionService.ts'),
+ read('src/features/ratings/serviceRatingService.ts'),
 ])
 
 test('canonical client request covers need, optional evidence, location, when, payment and summary',()=>{
@@ -61,6 +62,7 @@ test('payment and closure remain service-scoped from assignment through rating',
  assert.match(actions,/rpc\('confirmar_pago_efectivo_cliente'/)
  assert.match(completion,/Primero confirmá que el trabajo quedó bien/)
  assert.match(completion,/YA PAGUÉ/)
- assert.match(rating,/autor_tipo:'cliente'/)
+ assert.match(rating,/submitServiceRating/)
+ assert.match(ratingService,/autor_tipo:authorType\(role\)/)
  assert.match(post,/ClientRatingPrompt serviceId=\{service\.id\} embedded/)
 })

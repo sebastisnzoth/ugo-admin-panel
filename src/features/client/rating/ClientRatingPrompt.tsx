@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{reportSentinelIncident}from'../../../lib/sentinel'
 import{useRoleSession}from'../../../mvp/shared'
+import{ServiceRatingError,submitServiceRating}from'../../ratings/serviceRatingService'
 import'./clientRatingPrompt.css'
 
 type CompletedService={id:string;numero:number|string|null;proveedor_id:string;descripcion:string|null;completado_at:string|null;updated_at:string|null}
@@ -69,14 +70,19 @@ export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
   if(!userId||!target||score<1||score>5||busy)return
   setBusy(true);setMessage('')
   const serviceId=target.service.id
-  const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:userId,proveedor_id:target.service.proveedor_id,autor_tipo:'cliente',puntuacion:score,comentario:comment.trim()||null})
-  if(!error){setBusy(false);markSaved();return}
-  const{data:persisted,error:recoveryError}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).eq('autor_tipo','cliente').maybeSingle()
-  setBusy(false)
-  if(persisted){markSaved(error.code==='23505'?'Este servicio ya fue calificado.':'Gracias. Tu calificación quedó guardada.');return}
-  if(recoveryError){const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.';setMessage(text);report('rating_submit_recovery_unverified',text,recoveryError,serviceId);return}
-  const text=error.message||'No se pudo guardar la calificación.'
-  setMessage(text);report('rating_submit_error',text,error,serviceId)
+  try{
+   const result=await submitServiceRating(supabase,{userId,role:'client',serviceId,score,comment})
+   setBusy(false)
+   markSaved(result.status==='already_rated'?'Este servicio ya fue calificado.':'Gracias. Tu calificación quedó guardada.')
+  }catch(error){
+   setBusy(false)
+   if(error instanceof ServiceRatingError&&error.code==='recovery_unverified'){
+    const text='No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.'
+    setMessage(text);report('rating_submit_recovery_unverified',text,error,serviceId);return
+   }
+   const text=error instanceof Error?error.message:'No se pudo guardar la calificación.'
+   setMessage(text);report('rating_submit_error',text,error,serviceId)
+  }
  }
 
  if(!target||target.service.id===dismissed)return null

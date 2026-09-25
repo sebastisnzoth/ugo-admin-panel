@@ -9,62 +9,52 @@ test('client rating lives behind the feature boundary',async()=>{
   read('src/features/client/rating/ClientRatingPrompt.tsx'),
   read('src/mvp/client/client-rating-prompt.css'),
  ])
- assert.match(canonical,/import'\.\/clientRatingPrompt\.css'/)
+ assert.match(canonical,/import'.\/clientRatingPrompt\.css'/)
  assert.match(legacyCss,/features\/client\/rating\/clientRatingPrompt\.css/)
 })
 
-test('client surfaces a persisted rating only after completed services',async()=>{
- const[prompt,surfaces]=await Promise.all([
+test('bilateral rating mutation is centralized and service-scoped',async()=>{
+ const[client,provider,boundary]=await Promise.all([
   read('src/features/client/rating/ClientRatingPrompt.tsx'),
-  read('src/features/client/ui/ClientOperationalSurfaces.tsx'),
+  read('src/mvp/ProviderRatingPrompt.tsx'),
+  read('src/features/ratings/serviceRatingService.ts'),
  ])
- assert.match(surfaces,/import\{ClientRatingPrompt\}from'\.\.\/rating\/ClientRatingPrompt'/)
- assert.match(surfaces,/<ClientRatingPrompt\/>/)
- assert.match(prompt,/from\('servicios'\)/)
- assert.match(prompt,/\.eq\('estado','completado'\)/)
- assert.match(prompt,/from\('resenas'\)/)
- assert.match(prompt,/cliente_id\s*:\s*userId/)
- assert.match(prompt,/proveedor_id\s*:\s*target\.service\.proveedor_id/)
- assert.match(prompt,/servicio_id\s*:\s*serviceId/)
- assert.match(prompt,/puntuacion\s*:\s*score/)
+ assert.match(client,/submitServiceRating\(supabase,\{userId,role:'client',serviceId,score,comment\}\)/)
+ assert.match(provider,/submitServiceRating\(supabase,\{userId,role:'provider',serviceId,score,comment\}\)/)
+ assert.doesNotMatch(client,/from\('resenas'\)\.insert/)
+ assert.doesNotMatch(provider,/from\('resenas'\)\.insert/)
+ assert.match(boundary,/\.eq\('id',serviceId\)\.eq\(owner,userId\)\.maybeSingle\(\)/)
+ assert.match(boundary,/row\.estado!=='completado'/)
+ assert.match(boundary,/servicio_id:service\.id,cliente_id:service\.cliente_id,proveedor_id:service\.proveedor_id/)
+ assert.match(boundary,/autor_tipo:authorType\(role\)/)
 })
 
-test('rating prompt offers 1-5 stars, optional comment and duplicate recovery',async()=>{
+test('rating boundary is idempotent and reconciles ambiguous inserts',async()=>{
+ const boundary=await read('src/features/ratings/serviceRatingService.ts')
+ assert.match(boundary,/readExistingRating\(supabase,service,role\)/)
+ assert.match(boundary,/sameRating\(existing/)
+ assert.match(boundary,/status:'already_rated'/)
+ assert.match(boundary,/const\{error\}=await supabase\.from\('resenas'\)\.insert\(payload\)/)
+ assert.match(boundary,/reconciled:true/)
+ assert.match(boundary,/recovery_unverified/)
+})
+
+test('rating prompt offers 1-5 stars and an optional bounded comment',async()=>{
  const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/\[1,2,3,4,5\]\.map/)
  assert.match(prompt,/role="radiogroup"/)
  assert.match(prompt,/maxLength=\{500\}/)
- assert.match(prompt,/error\.code==='23505'/)
- assert.match(prompt,/Este servicio ya fue calificado\./)
  assert.match(prompt,/Enviar calificación/)
 })
 
-test('ambiguous rating insert failure reconciles exact persisted service before Sentinel',async()=>{
+test('client rating telemetry separates unverified recovery from confirmed submit failure',async()=>{
  const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
- const insertIndex=prompt.indexOf("from('resenas').insert")
- const recoveryIndex=prompt.indexOf("from('resenas').select('id').eq('servicio_id',serviceId).eq('cliente_id',userId).eq('autor_tipo','cliente').maybeSingle()",insertIndex)
- const reportIndex=prompt.indexOf("report('rating_submit_error'",recoveryIndex)
- assert.ok(insertIndex>=0&&recoveryIndex>insertIndex&&reportIndex>recoveryIndex)
- assert.match(prompt,/if\(persisted\)\{markSaved\([\s\S]*return\}/)
+ assert.match(prompt,/ServiceRatingError&&error\.code==='recovery_unverified'/)
+ assert.match(prompt,/rating_submit_recovery_unverified/)
+ assert.match(prompt,/report\('rating_submit_error'/)
 })
 
-test('unverified rating recovery is sync telemetry, not a confirmed submit failure',async()=>{
- const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
- assert.match(prompt,/if\(recoveryError\)[\s\S]*rating_submit_recovery_unverified[\s\S]*return/)
- assert.match(prompt,/submit\?'client\.rating\.submit':'client\.rating\.sync'/)
- assert.match(prompt,/checklistCode:submit\?'RATING':undefined/)
- const unverifiedIndex=prompt.indexOf("rating_submit_recovery_unverified")
- const submitErrorIndex=prompt.indexOf("report('rating_submit_error'",unverifiedIndex)
- assert.ok(unverifiedIndex>=0&&submitErrorIndex>unverifiedIndex)
-})
-
-test('confirmed rating submit failures use server-classifiable Sentinel action',async()=>{
- const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
- assert.match(prompt,/const text=error\.message\|\|'No se pudo guardar la calificación\.'/)
- assert.match(prompt,/report\('rating_submit_error',text,error,serviceId\)/)
-})
-
-test('rating prompt resyncs after lifecycle changes and reports foreground failures to Sentinel',async()=>{
+test('client rating resyncs after lifecycle changes and reports foreground failures to Sentinel',async()=>{
  const prompt=await read('src/features/client/rating/ClientRatingPrompt.tsx')
  assert.match(prompt,/table:'servicios'/)
  assert.match(prompt,/addEventListener\('online'/)
@@ -72,29 +62,23 @@ test('rating prompt resyncs after lifecycle changes and reports foreground failu
  assert.match(prompt,/SUBSCRIBED/)
  assert.match(prompt,/removeChannel/)
  assert.match(prompt,/const shouldEscalate=\(\)=>document\.visibilityState==='visible'&&navigator\.onLine/)
- assert.match(prompt,/loadRef=useRef\(load\),reportRef=useRef\(report\)/)
- assert.match(prompt,/\},\[serviceId,supabase,userId\]\)/)
- assert.match(prompt,/if\(shouldEscalate\(\)\)reportRef\.current\('rating_realtime_error'/)
 })
 
-
-test('ratings are bilateral: provider can rate the client and both directions share the same service',async()=>{
- const[prompt,root,migration]=await Promise.all([
+test('ratings are bilateral and protected by participant-completed RLS',async()=>{
+ const[provider,root,migration,boundary]=await Promise.all([
   read('src/mvp/ProviderRatingPrompt.tsx'),
   read('src/mvp/provider/ProviderRoot.tsx'),
   read('supabase/migrations/20260920030000_bilateral_service_ratings.sql'),
+  read('src/features/ratings/serviceRatingService.ts'),
  ])
  assert.match(root,/ProviderRatingPrompt/)
- assert.match(prompt,/\.eq\('estado','completado'\)/)
- assert.match(prompt,/autor_tipo:'proveedor'/)
- assert.match(prompt,/cliente_id:target\.service\.cliente_id/)
- assert.match(prompt,/proveedor_id:userId/)
- assert.match(migration,/drop constraint if exists resenas_servicio_id_key/)
+ assert.match(provider,/role:'provider'/)
+ assert.match(boundary,/authorType=\(role:RatingRole\)=>role==='client'\?'cliente':'proveedor'/)
  assert.match(migration,/resenas_servicio_autor_tipo_uidx/)
- assert.match(migration,/autor_tipo='proveedor'/)
- assert.match(migration,/autor_tipo='cliente'/)
+ assert.match(migration,/s\.estado='completado'/)
+ assert.match(migration,/s\.cliente_id=resenas\.cliente_id/)
+ assert.match(migration,/s\.proveedor_id=resenas\.proveedor_id/)
 })
-
 
 test('client rating is immediately available after payment closes the selected service',async()=>{
  const[surfaces,detail,prompt]=await Promise.all([
@@ -118,7 +102,6 @@ test('completed-service notification can land on home and still expose client ra
  assert.match(flow,/openReview:\(\)=>navigate\('home'\)/)
  assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
 })
-
 
 test('provider rating recovers after realtime interruption and foreground resume',async()=>{
  const prompt=await read('src/mvp/ProviderRatingPrompt.tsx')

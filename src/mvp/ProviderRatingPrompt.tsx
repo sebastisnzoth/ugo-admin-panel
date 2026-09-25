@@ -1,6 +1,7 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{reportSentinelIncident}from'../lib/sentinel'
+import{ServiceRatingError,submitServiceRating}from'../features/ratings/serviceRatingService'
 
 type CompletedService={id:string;numero:number|string|null;cliente_id:string;descripcion:string|null;completado_at:string|null}
 type Target={service:CompletedService;clientName:string}
@@ -36,13 +37,14 @@ export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
   e.preventDefault();if(!userId||!target||score<1||score>5||busy)return
   setBusy(true);setMessage('')
   const serviceId=target.service.id
-  const{error}=await supabase.from('resenas').insert({servicio_id:serviceId,cliente_id:target.service.cliente_id,proveedor_id:userId,autor_tipo:'proveedor',puntuacion:score,comentario:comment.trim()||null})
-  if(!error){setBusy(false);setScore(0);setComment('');setMessage('Gracias. La calificación del cliente quedó guardada.');window.setTimeout(()=>{setMessage('');void load()},900);return}
-  const{data:persisted}=await supabase.from('resenas').select('id').eq('servicio_id',serviceId).eq('proveedor_id',userId).eq('autor_tipo','proveedor').maybeSingle()
-  setBusy(false)
-  if(persisted){setScore(0);setComment('');setMessage('Este servicio ya fue calificado.');window.setTimeout(()=>void load(),900);return}
-  const text=error.message||'No se pudo guardar la calificación.'
-  setMessage(text);void reportSentinelIncident({eventType:'provider_rating_submit_error',message:text,error,role:'provider',severity:'P1',serviceId,action:'provider.rating.submit',checklistCode:'RATING'})
+  try{
+   const result=await submitServiceRating(supabase,{userId,role:'provider',serviceId,score,comment})
+   setBusy(false);setScore(0);setComment('');setMessage(result.status==='already_rated'?'Este servicio ya fue calificado.':'Gracias. La calificación del cliente quedó guardada.');window.setTimeout(()=>{setMessage('');void load()},900)
+  }catch(error){
+   setBusy(false)
+   const text=error instanceof ServiceRatingError&&error.code==='recovery_unverified'?'No pudimos confirmar si la calificación quedó guardada. Volvé a intentar más tarde.':error instanceof Error?error.message:'No se pudo guardar la calificación.'
+   setMessage(text);void reportSentinelIncident({eventType:error instanceof ServiceRatingError&&error.code==='recovery_unverified'?'provider_rating_recovery_unverified':'provider_rating_submit_error',message:text,error,role:'provider',severity:'P1',serviceId,action:error instanceof ServiceRatingError&&error.code==='recovery_unverified'?'provider.rating.sync':'provider.rating.submit',checklistCode:error instanceof ServiceRatingError&&error.code==='recovery_unverified'?undefined:'RATING'})
+  }
  }
 
  if(suspended||!target||target.service.id===dismissed)return null
