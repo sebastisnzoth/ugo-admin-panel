@@ -36,3 +36,319 @@
  .ucw-mobile-nav{display:flex;position:fixed;left:8px;right:8px;bottom:max(6px,env(safe-area-inset-bottom));z-index:70;height:58px;padding:5px}
  .ucw-mobile-nav button{min-height:46px}
 }
+
+
+/* UgoClientWeb component styles: keep the demo surface visually complete across viewports. */
+.ucw-card{
+ background:#fff;
+ border:1px solid rgba(188,201,206,.65);
+ border-radius:18px;
+ padding:16px;
+ box-shadow:0 1px 5px rgba(11,28,48,.04);
+ min-width:0;
+ max-width:100%;
+}
+.ucw-card-head{
+ display:flex;
+ align-items:flex-start;
+ justify-content:space-between;
+ gap:14px;
+ margin-bottom:14px;
+}
+.ucw-card-head>div{min-width:0}
+.ucw-card-head small{
+ display:block;
+ color:var(--primary);
+ font-size:10px;
+ font-weight:950;
+ text-transform:uppercase;
+ letter-spacing:.1em;
+}
+.ucw-card-head h2{
+ margin:2px 0 0;
+ font-size:18px;
+ letter-spacing:-.03em;
+ overflow-wrap:anywhere;
+}
+.ucw-card-head>button{
+ border:0;
+ background:var(--low);
+ color:var(--primary);
+ border-radius:12px;
+ min-height:36px;
+ padding:0 12px;
+ font-size:12px;
+ font-weight:900;
+}
+.ucw-home{min-width:0}
+.ucw-map-panel{
+ position:relative;
+ min-height:352px;
+ overflow:hidden;
+ background:
+  radial-gradient(circle at 56% 46%,rgba(0,180,216,.16),transparent 5.5rem),
+  linear-gradient(145deg,#d8eff4,#b9dde7 38%,#dcefdc 72%,#f5f8ea);
+ isolation:isolate;
+}
+.ucw-map-panel:before{
+ content:"";
+ position:absolute;
+ inset:-18%;
+ background:
+  linear-gradient(35deg,transparent 48%,rgba(255,255,255,.8) 49% 50%,transparent 51%),
+  linear-gradient(125deg,transparent 48%,rgba(255,255,255,.58) 49% 50%,transparent 51%);
+ background-size:96px 96px;
+ opacity:.75;
+ z-index:-1;
+}
+.ucw-map-panel.compact{min-height:430px}
+.ucw-mapbar{
+ position:absolute;
+ top:12px;
+ left:12px;
+ z-index:6;
+ display:flex;
+ gap:4px;
+ padding:4px;
+ border:1px solid rgba(188,201,206,.8);
+ border-radius:12px;
+ background:rgba(255,255,255,.94);
+ box-shadow:0 8px 20px rgba(11,28,48,.09);
+}
+.ucw-mapbar button{
+ min-height:30px;
+ padding:0 10px;
+ border:0;
+ border-radius:8px;
+ background:transparent;
+ color:var(--muted);
+ font-size:11px;
+ font-weight:850;
+}
+.ucw-mapbar button:first-child{background:var(--primary);color:#fff}
+.ucw-user-pin{
+ position:absolute;
+ left:18%;
+ top:46%;
+ z-index:5;
+ padding:8px 11px;
+ border-radius:999px;
+ background:#213145;
+ color:#fff;
+ font-size:11px;
+ font-weight:900;
+ box-shadow:0 8px 18px rgba(11,28,48,.16);
+}
+.ucw-map-panel .ring{
+ position:absolute;
+ left:50%;
+ top:51%;
+ transform:translate(-50%,-50%);
+ border:1px dashed rgba(0,103,125,.28);
+ border-radius:50%;
+ z-index:1;
+}
+.ucw-map-panel .ring.r1{width:120px;height:120px}
+.ucw-map-panel .ring.r2{width:220px;height:220px}
+.ucw-map-panel .ring.r3{width:320px;height:320px}
+.ucw-hub{
+ position:absolute;
+ left:50%;
+ top:51%;
+ transform:translate(-50%,-50%);
+ z-index:5;
+ width:50px;
+ height:50px;
+ display:grid;
+ place-items:center;
+ border-radius:17px;
+ background:linear-gradient(135deg,var(--primary2),var(--green2));
+ color:#002830;
+ font-size:11px;
+ font-weight:950;
+ box-shadow:0 10px 25px rgba(0,103,125,.25);
+}
+.ucw-hub.pulse{box-shadow:0 0 0 10px rgba(0,180,216,.11),0 10px 25px rgba(0,103,125,.25)}
+.ucw-marker{
+ position:absolute;
+ z-index:5;
+ display:flex;
+ align-items:center;
+ gap:7px;
+ max-width:150px;
+ padding:5px 8px 5px 5px;
+ border:1px solid rgba(188,201,206,.8);
+ border-radius:16px;
+ background:#fff;
+ color:var(--ink);
+ box-shadow:0 9px 22px rgba(11,28,48,.13);
+ text-align:left;
+}
+.ucw-marker b{
+ flex:0 0 auto;
+ width:30px;
+ height:30px;
+ display:grid;
+ place-items:center;
+ border-radius:10px;
+ background:#e6faff;
+ color:var(--primary);
+ font-size:9px;
+}
+.ucw-marker span{display:grid;font-size:10px;font-weight:900;line-height:1.05}
+.ucw-marker small{font-size:8px;color:var(--sub);font-weight:700}
+.ucw-marker.m1{left:60%;top:24%}
+.ucw-marker.m2{left:16%;top:31%}
+.ucw-marker.m3{right:12%;bottom:20%}
+.ucw-map-panel>footer{
+ position:absolute;
+ left:0;
+ right:0;
+ bottom:0;
+ z-index:6;
+ display:flex;
+ align-items:center;
+ justify-content:space-between;
+ gap:12px;
+ padding:12px 14px;
+ background:rgba(255,255,255,.93);
+ border-top:1px solid rgba(188,201,206,.7);
+ font-size:11px;
+ color:var(--sub);
+}
+.ucw-map-panel>footer strong{color:var(--green);white-space:nowrap}
+.ucw-provider-card{
+ min-width:0;
+ border:1px solid rgba(188,201,206,.7);
+ border-radius:16px;
+ background:#fff;
+ padding:12px;
+ display:grid;
+ gap:7px;
+ box-shadow:0 1px 4px rgba(11,28,48,.04);
+}
+.ucw-provider-card.compact{grid-template-columns:48px minmax(0,1fr);align-items:center}
+.ucw-provider-card.compact .ucw-provider-photo{grid-row:1/6}
+.ucw-provider-card.compact>button{grid-column:2}
+.ucw-provider-photo{
+ position:relative;
+ width:48px;
+ height:48px;
+ display:grid;
+ place-items:center;
+ border-radius:15px;
+ background:linear-gradient(135deg,#dce9ff,#b7dde6);
+ color:var(--primary);
+ font-weight:950;
+}
+.ucw-provider-photo i{
+ position:absolute;
+ right:-4px;
+ bottom:-4px;
+ width:18px;
+ height:18px;
+ display:grid;
+ place-items:center;
+ border-radius:50%;
+ background:var(--green2);
+ color:#fff;
+ font-size:10px;
+ font-style:normal;
+ border:2px solid #fff;
+}
+.ucw-provider-photo em{
+ position:absolute;
+ left:-6px;
+ top:-6px;
+ padding:3px 5px;
+ border-radius:999px;
+ background:#213145;
+ color:#fff;
+ font-size:8px;
+ font-style:normal;
+}
+.ucw-provider-card h3{margin:0;font-size:14px;line-height:1.1}
+.ucw-provider-card p{margin:0;color:var(--sub);font-size:11px}
+.ucw-provider-score,.ucw-provider-meta{
+ display:flex;
+ flex-wrap:wrap;
+ justify-content:space-between;
+ gap:6px;
+ font-size:10px;
+}
+.ucw-provider-score b{color:#8a6200}
+.ucw-provider-score span,.ucw-provider-meta span{color:var(--sub)}
+.ucw-provider-card>button{
+ min-height:34px;
+ border:0;
+ border-radius:10px;
+ background:var(--primary);
+ color:#fff;
+ font-size:11px;
+ font-weight:900;
+}
+.ucw-result-card{
+ min-width:0;
+ display:grid;
+ grid-template-columns:58px minmax(0,1fr) auto;
+ gap:12px;
+ align-items:center;
+ padding:12px;
+ border:1px solid rgba(188,201,206,.7);
+ border-radius:16px;
+ background:#fff;
+}
+.ucw-result-avatar,.ucw-profile-avatar{
+ display:grid;
+ place-items:center;
+ background:linear-gradient(135deg,#dce9ff,#b7dde6);
+ color:var(--primary);
+ font-weight:950;
+}
+.ucw-result-avatar{width:58px;height:58px;border-radius:16px}
+.ucw-result-card>div:nth-child(2){min-width:0}
+.ucw-result-card small{color:var(--green);font-size:9px;font-weight:950}
+.ucw-result-card h3{margin:2px 0;font-size:14px}
+.ucw-result-card p{margin:0 0 4px;color:var(--sub);font-size:10px;overflow-wrap:anywhere}
+.ucw-result-card b{font-size:10px;overflow-wrap:anywhere}
+.ucw-result-card>button{
+ min-height:34px;
+ padding:0 11px;
+ border:0;
+ border-radius:10px;
+ background:var(--primary);
+ color:#fff;
+ font-size:11px;
+ font-weight:900;
+}
+.ucw-profile-avatar{width:96px;height:96px;border-radius:22px;font-size:24px}
+
+@media(max-width:760px){
+ .ucw-card{padding:14px}
+ .ucw-card-head{gap:10px}
+ .ucw-map-panel{min-height:330px}
+ .ucw-map-panel.compact{min-height:360px}
+ .ucw-map-panel .ring.r3{width:270px;height:270px}
+ .ucw-marker{max-width:122px}
+ .ucw-marker.m1{left:auto;right:8%;top:26%}
+ .ucw-marker.m2{left:7%;top:36%}
+ .ucw-marker.m3{right:8%;bottom:22%}
+ .ucw-result-card{grid-template-columns:48px minmax(0,1fr)}
+ .ucw-result-avatar{width:48px;height:48px;border-radius:14px}
+ .ucw-result-card>button{grid-column:1/-1;width:100%}
+ .ucw-provider-card.compact{grid-template-columns:42px minmax(0,1fr)}
+ .ucw-provider-photo{width:42px;height:42px;border-radius:13px}
+ .ucw-profile-avatar{width:76px;height:76px;border-radius:18px}
+}
+@media(max-width:360px){
+ .ucw-mapbar{top:8px;left:8px}
+ .ucw-mapbar button{padding-inline:7px}
+ .ucw-marker{transform:scale(.92);transform-origin:center}
+ .ucw-map-panel>footer{padding:10px;font-size:10px}
+}
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+ .ucw-map-panel,.ucw-map-panel.compact{min-height:240px}
+ .ucw-map-panel .ring.r3{width:230px;height:230px}
+ .ucw-marker{max-width:110px}
+ .ucw-map-panel>footer{padding-block:8px}
+}
