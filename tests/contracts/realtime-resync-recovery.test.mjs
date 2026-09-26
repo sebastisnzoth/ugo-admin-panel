@@ -39,7 +39,7 @@ test('critical realtime consumers recover from missed events using persisted sta
  recoveryAssertions(history,'ServiceHistoryPanel')
  recoveryAssertions(providerHistory,'ProviderHistoryDetail')
  recoveryAssertions(providerAgenda,'ProviderAgenda')
- assert.match(notifications,/CHANNEL_ERROR|TIMED_OUT/)
+ assert.match(notifications,/CHANNEL_ERROR\|TIMED_OUT\|CLOSED/)\n assert.match(provider,/CHANNEL_ERROR\|TIMED_OUT\|CLOSED/)
  assert.match(notifications,/setChannelEpoch\(value=>value\+1\)/)
  assert.match(completion,/CHANNEL_ERROR|TIMED_OUT/)
  assert.match(postConfirm,/CHANNEL_ERROR|TIMED_OUT/)
