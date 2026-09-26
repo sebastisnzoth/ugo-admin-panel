@@ -18,7 +18,7 @@ export function useProviderRealtime(supabase:SupabaseClient,userId:string|null,o
    .on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'pagos',filter:`proveedor_id=eq.${userId}`},resync)
    .on('postgres_changes',{event:'*',schema:'public',table:'deudas_ugo_proveedor',filter:`proveedor_id=eq.${userId}`},resync)
-   .subscribe(status=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){resync();reconnect()}})
+   .subscribe(status=>{if(status==='SUBSCRIBED')resync();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){resync();reconnect()}})
   return()=>{
    alive=false
    if(reconnectTimer)window.clearTimeout(reconnectTimer)
