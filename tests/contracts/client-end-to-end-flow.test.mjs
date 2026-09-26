@@ -41,7 +41,7 @@ test('confirm is idempotent per draft and never blocks a second independent orde
  assert.match(post,/code\|\|'\'\)==='23505'/)
  assert.doesNotMatch(post,/canonical-active-service/)
  assert.doesNotMatch(post,/Ya tenés/)
- assert.match(post,/clearDraft\(\);setSeconds\(0\)/)
+ assert.match(post,/clearDraft\(\);await load\(row\.id\);setNow\(Date\.now\(\)\)/)
 })
 
 test('matching remains visible, can run in background and can be retried after draft cleanup',()=>{
