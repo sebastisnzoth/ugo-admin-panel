@@ -13,6 +13,7 @@ import { approveWork } from "./approveWork.js";
 import { confirmCashPayment } from "./confirmCashPayment.js";
 import { rateService } from "./rateService.js";
 import { getHugoCapabilities, validateHugoCapability } from "./hugoCapabilities.js";
+import { createServiceRequest } from "./createServiceRequest.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -46,6 +47,21 @@ serveStdio(() => {
       const result = validateHugoCapability(input);
       return jsonToolResult(result, result.status === "error");
     }
+  );
+
+  server.registerTool(
+    "ugo_create_service_request",
+    {
+      description: "Crea un pedido REAL de Cliente confirmado, persiste GPS real y dispara el matching canónico. Rechaza 0,0 y no inventa disponibilidad.",
+      inputSchema: z.object({
+        userId:z.string().uuid(), role:z.literal("client"), categoryId:z.string().uuid(),
+        description:z.string().min(1).max(1200), address:z.string().min(1).max(500),
+        latitude:z.number().min(-90).max(90), longitude:z.number().min(-180).max(180),
+        paymentMethod:z.enum(["cash","pix"]), requestDraftId:z.string().uuid().optional(),
+        confirmed:z.literal(true),
+      }).strict(),
+    },
+    async(input)=>{try{return jsonToolResult(await createServiceRequest(input))}catch(error){const known=error instanceof UgoMcpError;return jsonToolResult({status:"error",code:known?error.code:"internal_error",message:known?error.message:"UGO Actions MCP no pudo crear el pedido"},true)}}
   );
 
   server.registerTool(
