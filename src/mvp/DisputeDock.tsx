@@ -6,10 +6,10 @@ import'./dispute-dock.css'
 const label=(s:string)=>s==='abierta'?'Abierta':s==='en_revision'?'En revisión':s==='resuelta_cliente'?'Resuelta a favor del cliente':s==='resuelta_proveedor'?'Resuelta a favor del proveedor':s==='cerrada'?'Cerrada':s
 const agreementLabel=(type:PreAgreement['tipo'])=>type==='retrabajo'?'Corregir o repetir parte del trabajo':type==='ajuste_precio'?'Ajustar el precio':type==='reagendar'?'Reagendar':'Otro acuerdo'
 
-export function DisputeDock({role,openRequest=false,serviceId=null}:{role:UgoRole;openRequest?:boolean;serviceId?:string|null}){
+export function DisputeDock({role,openRequest=false,openRequestKey=0,serviceId=null,showLauncher=true}:{role:UgoRole;openRequest?:boolean;openRequestKey?:number;serviceId?:string|null;showLauncher?:boolean}){
  const{userId,service,dispute,messages,agreements,reasons,loading,error,ambiguous,uploadEvidence,open,reply,proposeAgreement,respondAgreement}=useParticipantDispute(role,serviceId)
  const[visible,setVisible]=useState(false),[text,setText]=useState(''),[reasonCode,setReasonCode]=useState(''),[files,setFiles]=useState<File[]>([]),[busy,setBusy]=useState(false),[notice,setNotice]=useState<string|null>(null),[proposalType,setProposalType]=useState<PreAgreement['tipo']>('retrabajo'),[proposalText,setProposalText]=useState(''),[proposalAmount,setProposalAmount]=useState('')
- useEffect(()=>{if(openRequest)setVisible(true)},[openRequest])
+ useEffect(()=>{if(openRequest||openRequestKey>0)setVisible(true)},[openRequest,openRequestKey])
  useEffect(()=>{if(!reasonCode&&reasons[0])setReasonCode(reasons[0].codigo)},[reasonCode,reasons])
  const pending=useMemo(()=>agreements.find(item=>item.estado==='propuesto')||null,[agreements])
  if(!service&&!dispute&&!ambiguous)return null
@@ -19,7 +19,7 @@ export function DisputeDock({role,openRequest=false,serviceId=null}:{role:UgoRol
  const answerAgreement=async(accept:boolean)=>{if(!pending)return;setBusy(true);setNotice(null);try{await respondAgreement(pending.id,accept);setNotice(accept?'Acuerdo aceptado. Si el problema queda resuelto, no hace falta abrir una disputa.':'Propuesta rechazada. Podés continuar con una disputa formal.')}catch(e){setNotice(e instanceof Error?e.message:'No se pudo responder la propuesta.')}finally{setBusy(false)}}
  const reason=reasons.find(item=>item.codigo===reasonCode)
  return <>
-  <button className={'ugo-dispute-launch '+(unresolved?'open-case':'')} onClick={()=>setVisible(true)}>{unresolved?'⚖ Caso abierto':ambiguous?'⚖ Elegir servicio':'⚖ Ayuda / disputa'}</button>
+  {showLauncher&&<button className={'ugo-dispute-launch '+(unresolved?'open-case':'')} onClick={()=>setVisible(true)}>{unresolved?'⚖ Caso abierto':ambiguous?'⚖ Elegir servicio':'⚖ Ayuda / disputa'}</button>}
   {visible&&<div className="ugo-dispute-backdrop" onClick={()=>setVisible(false)}><section className="ugo-dispute-sheet" onClick={e=>e.stopPropagation()}><header><div><small>UGO · PROTECCIÓN DEL SERVICIO</small><h3>{dispute?'Disputa #'+(dispute.numero||String(dispute.id).slice(0,8)):service?'Servicio #'+service.numero:'Elegí un servicio'}</h3></div><button onClick={()=>setVisible(false)}>×</button></header>
    {loading&&<p>Cargando caso…</p>}{error&&<div className="ugo-dispute-note error">{error}</div>}
    {ambiguous&&!service&&<div className="ugo-dispute-note"><b>Tenés más de un servicio elegible.</b><span>Entrá a Actividad, abrí el servicio exacto y usá “Ayuda / disputa” desde ese pedido.</span></div>}

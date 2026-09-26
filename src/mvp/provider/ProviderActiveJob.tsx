@@ -7,9 +7,9 @@ import{ProviderEvidencePanel}from'./ProviderEvidencePanel'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import{Button,Card,EmptyState,SectionHeader}from'../../shared/ui'
 
-const STATE_LABEL:Record<string,string>={asignado:'Listo para ir',en_camino:'Vas al cliente',llegado:'Ya estás en el lugar',en_progreso:'Resolvé el problema',esperando_aprobacion:'Trabajo listo',completado:'Completado'}
+const STATE_LABEL:Record<string,string>={asignado:'Listo para ir',en_camino:'Vas al cliente',llegado:'Ya estás en el lugar',en_progreso:'Resolvé el problema',esperando_aprobacion:'Trabajo listo',disputado:'En disputa',completado:'Completado'}
 const FLOW_STEPS=[{state:'asignado',label:'Ir'},{state:'llegado',label:'Llegar'},{state:'en_progreso',label:'Resolver'},{state:'esperando_aprobacion',label:'Listo'}] as const
-const FLOW_ORDER:Record<string,number>={asignado:0,en_camino:0,llegado:1,en_progreso:2,esperando_aprobacion:3,completado:3}
+const FLOW_ORDER:Record<string,number>={asignado:0,en_camino:0,llegado:1,en_progreso:2,esperando_aprobacion:3,disputado:3,completado:3}
 const CANCELLABLE=new Set(['asignado','en_camino','llegado'])
 function scheduledLabel(value:string){const date=new Date(value);return Number.isNaN(date.getTime())?'Horario programado':date.toLocaleString('es-AR',{weekday:'long',day:'2-digit',month:'long',hour:'2-digit',minute:'2-digit'})}
 
@@ -47,7 +47,8 @@ export function ProviderActiveJob(){
    {s.estado==='en_progreso'&&!evidence.final&&<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>} 
    {s.estado==='en_progreso'&&evidence.final&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</Button>}
    {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Documentá el resultado y marcá “TRABAJO LISTO”. Primero confirma el cliente; el pago en efectivo viene después.</p>}
-   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Trabajo enviado al cliente</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span></div>}
+   {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Trabajo enviado al cliente</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>ABRIR DISPUTA</Button></div>}
+   {s.estado==='disputado'&&<div className="provider-simple-done" role="status"><strong>⚖ Servicio en disputa</strong><span>UGO pausó el cierre normal mientras revisa el caso.</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>VER DISPUTA</Button></div>}
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</Button>}
   </Card>
 
