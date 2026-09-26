@@ -1,4 +1,5 @@
 export const UGO_UI_EVENTS={
+ globalVoiceStop:'ugo:voice:stop',
  clientLocation:'ugo:client:capture-location',
  clientHugo:'ugo:open-hugo',
  clientHugoText:'ugo:client:focus-hugo-text',
