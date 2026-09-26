@@ -17,6 +17,7 @@ export type ProviderOpportunity = {
   preferences?: string | null
   urgency: 'normal' | 'urgent'
   matchScore?: number
+  expiresAt?: string | null
 }
 
 export type DemandSignal = {
