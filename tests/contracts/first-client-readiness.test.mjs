@@ -10,7 +10,7 @@ test('matching never traps the client and exposes background, retry and service-
   assert.match(matching, /Reintentar pedido/)
   assert.match(matching, /Cancelar pedido/)
   assert.match(matching, /flow\.actions\.cancelService\(service\.id\)/)
-  assert.match(matching, /Todavía no encontramos un profesional\./)
+  assert.match(matching, /No encontramos un profesional disponible\./)
   assert.match(matching, /No pudimos reintentar\. El pedido sigue guardado\./)
 })
 
