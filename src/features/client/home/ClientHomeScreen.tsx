@@ -4,6 +4,7 @@ import'maplibre-gl/dist/maplibre-gl.css'
 import{useRoleSession,type Category}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../../../mvp/uiEvents'
+import{useUgoI18n}from'../../../i18n/i18n'
 import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../radar/providerRadarStore'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
@@ -18,6 +19,7 @@ type ClientPlace={barrio?:string|null;ciudad?:string|null}
 type Props={onOpenService?:(serviceId:string)=>void}
 
 export function ClientHomeScreen({onOpenService}:Props){
+ const{locale}=useUgoI18n(),pt=locale==='pt-BR'
  const flow=useClientFlow(),{supabase,session,profile}=useRoleSession('client')
  const[categories,setCategories]=useState<Category[]>([]),[orders,setOrders]=useState<ActiveOrder[]>([]),[query,setQuery]=useState(''),[showAll,setShowAll]=useState(false)
  const[place,setPlace]=useState('Florianópolis'),[providers,setProviders]=useState<ProviderRadarRow[]>([]),[radarError,setRadarError]=useState(''),[userPos,setUserPos]=useState<[number,number]>(FLORIPA),[locating,setLocating]=useState(false),[channelEpoch,setChannelEpoch]=useState(0),[now,setNow]=useState(()=>Date.now()),[retryingId,setRetryingId]=useState<string|null>(null)
@@ -57,44 +59,44 @@ export function ClientHomeScreen({onOpenService}:Props){
  const firstName=String(profile?.nombre||'').trim().split(/\s+/)[0]||'Hola'
  if(!session)return null
 
- return <main className="ugo-home-screen" aria-label="Inicio UGO Cliente">
+ return <main className="ugo-home-screen" aria-label={pt?'Início UGO Cliente':'Inicio UGO Cliente'}>
   <section className="ugo-home-layout">
    <div className="ugo-home-hero">
     <div className="ugo-home-topline">
-     <button type="button" className="ugo-home-location" onClick={()=>emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)} aria-label="Cambiar ubicación"><span>⌖</span><div><small>TU ZONA</small><strong>{place}</strong></div><b>Cambiar</b></button>
-     <button type="button" className="ugo-home-bell" onClick={()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()} aria-label="Notificaciones">◇</button>
+     <button type="button" className="ugo-home-location" onClick={()=>emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)} aria-label={pt?'Alterar localização':'Cambiar ubicación'}><span>⌖</span><div><small>{pt?'SUA REGIÃO':'TU ZONA'}</small><strong>{place}</strong></div><b>{pt?'Alterar':'Cambiar'}</b></button>
+     <button type="button" className="ugo-home-bell" onClick={()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()} aria-label={pt?'Notificações':'Notificaciones'}>◇</button>
     </div>
-    <span className="ugo-home-kicker"><i/> UGO CERCA TUYO</span>
-    <h1>{firstName==='Hola'?'¿Qué necesitás hoy?':`Hola, ${firstName}.\n¿Qué necesitás hoy?`}</h1>
-    <p>Contale a Hugo qué necesitás o elegí una categoría. Buscamos profesionales verificados cerca tuyo.</p>
+    <span className="ugo-home-kicker"><i/> UGO {pt?'PERTO DE VOCÊ':'CERCA TUYO'}</span>
+    <h1>{firstName==='Hola'?pt?'Do que você precisa hoje?':'¿Qué necesitás hoy?':pt?`Olá, ${firstName}.\nDo que você precisa hoje?`:`Hola, ${firstName}.\n¿Qué necesitás hoy?`}</h1>
+    <p>{pt?'Conte ao Hugo do que você precisa ou escolha uma categoria. Buscamos profissionais verificados perto de você.':'Contale a Hugo qué necesitás o elegí una categoría. Buscamos profesionales verificados cerca tuyo.'}</p>
     {orders.length>0&&<div className="ugo-home-active-orders" aria-label="Pedidos activos">{orders.map(order=>{const matching=['buscando','ofrecido'].includes(order.estado)&&!order.proveedor_id,parsedDeadline=order.matching_expires_at?new Date(order.matching_expires_at).getTime():NaN,deadline=Number.isFinite(parsedDeadline)?parsedDeadline:null,remaining=deadline===null?0:Math.max(0,deadline-now),expired=matching&&deadline!==null&&remaining<=0;return <button type="button" key={order.id} className={order.proveedor_id?'is-assigned':'is-searching'} onClick={()=>openOrder(order.id)}><span className="ugo-home-order-icon">{order.proveedor_id?'✓':'⌁'}</span><span className="ugo-home-order-copy"><small>PEDIDO #{order.numero??String(order.id).slice(0,8)}</small><b>{order.proveedor_id?'Profesional asignado':expired?'No encontramos un profesional disponible':matching&&deadline!==null?`Buscando profesional · ${formatCountdown(remaining)}`:(STATE_LABEL[order.estado]||'Pedido activo')}</b><strong>{order.proveedor_id?(order.proveedor?.nombre||'Profesional UGO'):(order.categoria?.nombre||'UGO está buscando')}</strong><em>{expired?(retryingId===order.id?'Reintentando…':'Reintentar pedido →'):`${order.categoria?.emoji||'🧰'} ${order.categoria?.nombre||'Servicio'} · Abrir pedido →`}</em></span>{expired&&<span className="ugo-home-order-retry" role="button" tabIndex={0} onClick={event=>{event.stopPropagation();void retryOrder(order.id)}} onKeyDown={event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();event.stopPropagation();void retryOrder(order.id)}}}>{retryingId===order.id?'Reintentando…':'Reintentar pedido'}</span>}</button>})}</div>}
     <div className="ugo-home-search-wrap">
-     <label className="ugo-home-search"><span>⌕</span><input ref={searchRef} value={query} onChange={e=>{setQuery(e.target.value);setShowAll(false)}} placeholder="¿Qué servicio necesitás?" aria-label="Buscar servicio"/>{query&&<button type="button" className="ugo-home-search-clear" aria-label="Limpiar búsqueda" onClick={e=>{e.preventDefault();setQuery('');setShowAll(false);window.setTimeout(()=>searchRef.current?.focus(),0)}}>×</button>}</label>
+     <label className="ugo-home-search"><span>⌕</span><input ref={searchRef} value={query} onChange={e=>{setQuery(e.target.value);setShowAll(false)}} placeholder={pt?'De qual serviço você precisa?':'¿Qué servicio necesitás?'} aria-label={pt?'Buscar serviço':'Buscar servicio'}/>{query&&<button type="button" className="ugo-home-search-clear" aria-label="Limpiar búsqueda" onClick={e=>{e.preventDefault();setQuery('');setShowAll(false);window.setTimeout(()=>searchRef.current?.focus(),0)}}>×</button>}</label>
      {filtered.length>0&&<div className="ugo-home-results">{filtered.slice(0,8).map(c=><button type="button" key={c.id} onClick={()=>choose(c)}>{c.emoji||'🧰'} <span>{c.nombre}</span><b>→</b></button>)}</div>}
     </div>
-    <button type="button" className="ugo-home-hugo-cta" onClick={()=>flow.navigate('request')}><span className="ugo-home-orb" aria-hidden="true">✦</span><span><strong>Pedíselo a Hugo</strong><small>Escribí o hablá. Hugo arma el pedido con vos.</small></span><b>→</b></button>
+    <button type="button" className="ugo-home-hugo-cta" onClick={()=>flow.navigate('request')}><span className="ugo-home-orb" aria-hidden="true">✦</span><span><strong>{pt?'Peça ao Hugo':'Pedíselo a Hugo'}</strong><small>{pt?'Escreva ou fale. Hugo monta o pedido com você.':'Escribí o hablá. Hugo arma el pedido con vos.'}</small></span><b>→</b></button>
    </div>
 
    <aside className="ugo-home-map-card" aria-label="Mapa de profesionales cerca">
-    <header><div><span className="ugo-home-live-dot"/><strong>Mapa en vivo</strong><small>Profesionales cerca de tu zona</small></div><b>{onlineProviders.length} online</b></header>
+    <header><div><span className="ugo-home-live-dot"/><strong>{pt?'Mapa ao vivo':'Mapa en vivo'}</strong><small>{pt?'Profissionais perto da sua região':'Profesionales cerca de tu zona'}</small></div><b>{onlineProviders.length} online</b></header>
     <div className="ugo-home-map">
      <div ref={mapEl}/>
      <div className="ugo-home-map-shade"/>
-     <div className="ugo-home-map-label"><span>⌖</span><div><b>Tu ubicación</b><small>{place}</small></div></div><button type="button" className="ugo-home-map-recenter" onClick={locateUser} disabled={locating}>{locating?'Ubicando…':'⌖ Mi ubicación'}</button>
-     {radarError&&<div className="ugo-home-map-warning">Mapa temporalmente limitado · el pedido sigue disponible</div>}
+     <div className="ugo-home-map-label"><span>⌖</span><div><b>{pt?'Sua localização':'Tu ubicación'}</b><small>{place}</small></div></div><button type="button" className="ugo-home-map-recenter" onClick={locateUser} disabled={locating}>{locating?(pt?'Localizando…':'Ubicando…'):(pt?'⌖ Minha localização':'⌖ Mi ubicación')}</button>
+     {radarError&&<div className="ugo-home-map-warning">{pt?'Mapa temporariamente limitado · o pedido continua disponível':'Mapa temporalmente limitado · el pedido sigue disponible'}</div>}
     </div>
     <footer><div><strong>{onlineProviders.length>0?`${onlineProviders.length} profesionales disponibles ahora`:'Buscando profesionales disponibles'}</strong><small>La disponibilidad se confirma al crear el pedido.</small></div><button type="button" onClick={()=>flow.navigate('request')}>Pedir servicio <span>→</span></button></footer>
    </aside>
 
    <div className="ugo-home-services">
-    <div className="ugo-home-services-head"><div><span>SERVICIOS</span><h2>Elegí una categoría</h2></div><button type="button" onClick={()=>setShowAll(v=>!v)}>{showAll?'Ver menos':'Ver todas'} <span>{showAll?'↑':'→'}</span></button></div>
+    <div className="ugo-home-services-head"><div><span>{pt?'SERVIÇOS':'SERVICIOS'}</span><h2>{pt?'Escolha uma categoria':'Elegí una categoría'}</h2></div><button type="button" onClick={()=>setShowAll(v=>!v)}>{showAll?(pt?'Ver menos':'Ver menos'):(pt?'Ver todas':'Ver todas')} <span>{showAll?'↑':'→'}</span></button></div>
     <div className="ugo-home-categories">{cards.map(({key,label,emoji,sub,category})=><button type="button" key={key} disabled={!category} onClick={()=>choose(category)}><span className="ugo-home-category-icon">{category?.emoji||emoji}</span><div><b>{label}</b><small>{sub}</small></div><em>→</em></button>)}</div>
     {showAll&&<div className="ugo-home-all-results" aria-label="Todas las categorías">{categories.map(c=><button type="button" key={c.id} onClick={()=>choose(c)}><span>{c.emoji||'🧰'}</span><strong>{c.nombre}</strong><b>→</b></button>)}</div>}
    </div>
    <nav className="ugo-home-mobile-nav" aria-label="Navegación principal">
-    <button type="button" className="active" onClick={()=>flow.navigate('home')}><span>⌂</span><small>Inicio</small></button>
-    <button type="button" onClick={()=>{setShowAll(true);window.setTimeout(()=>document.querySelector('.ugo-home-services')?.scrollIntoView({behavior:'smooth',block:'start'}),0)}}><span>▦</span><small>Servicios</small></button>
-    <button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><small>Actividad</small></button>
+    <button type="button" className="active" onClick={()=>flow.navigate('home')}><span>⌂</span><small>{pt?'Início':'Inicio'}</small></button>
+    <button type="button" onClick={()=>{setShowAll(true);window.setTimeout(()=>document.querySelector('.ugo-home-services')?.scrollIntoView({behavior:'smooth',block:'start'}),0)}}><span>▦</span><small>{pt?'Serviços':'Servicios'}</small></button>
+    <button type="button" onClick={()=>flow.navigate('history')}><span>◷</span><small>{pt?'Atividade':'Actividad'}</small></button>
     <button type="button" onClick={()=>flow.navigate('profile')}><span>◉</span><small>Perfil</small></button>
    </nav>
   </section>
