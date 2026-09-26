@@ -35,3 +35,35 @@ test('provider root mounts global voice commands and keeps transactional job mut
  assert.doesNotMatch(src,/rejectOpportunity/)
  assert.doesNotMatch(src,/data\.advance/)
 })
+
+
+test('voice command hardening supports back home, stop listening, and direct pedido/payment shortcuts',async()=>{
+ const client=await read('src/features/client/hugo/ClientGlobalVoiceCommands.tsx')
+ const provider=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
+ const events=await read('src/mvp/uiEvents.ts')
+ assert.match(events,/globalVoiceStop:'ugo:voice:stop'/)
+ assert.match(client,/UGO_UI_EVENTS\.globalVoiceStop/)
+ assert.match(client,/volver\|voltar/)
+ assert.match(client,/mis pedidos\|meus pedidos/)
+ assert.match(client,/pagos/)
+ assert.match(provider,/UGO_UI_EVENTS\.globalVoiceStop/)
+ assert.match(provider,/volver\|voltar/)
+ assert.match(provider,/mis pedidos\|meus pedidos/)
+})
+
+test('client and provider voice surfaces obey the global stop event',async()=>{
+ const client=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
+ const provider=await read('src/mvp/provider/ProviderHugoBridge.tsx')
+ assert.match(client,/addEventListener\(UGO_UI_EVENTS\.globalVoiceStop/)
+ assert.match(provider,/addEventListener\(UGO_UI_EVENTS\.globalVoiceStop/)
+})
+
+test('android native recognition stays active across utterances but stops explicitly',async()=>{
+ const src=await read('android-apk/app/src/main/java/com/ugo/mobile/MainActivity.java')
+ assert.match(src,/nativeVoiceActive = true/)
+ assert.match(src,/scheduleNativeRecognitionRestart\(\)/)
+ assert.match(src,/postDelayed/)
+ assert.match(src,/ERROR_NO_MATCH/)
+ assert.match(src,/ERROR_SPEECH_TIMEOUT/)
+ assert.match(src,/nativeVoiceActive = false;\s*stopNativeRecognition\(\)/)
+})
