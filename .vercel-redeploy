@@ -1,4 +1,4 @@
-UGO deploy trigger
+UGO deploy integration probe
 2026-09-26
-TARGET=hugo-live-e2e
-SOURCE_HEAD=70d54fb65b812d1652f350a0ef6509459a73444d
+TARGET=hugo-live-production-gate
+BASE_HEAD=c9cc3a5035d435445ec68c945f4301a06ddaf92d
