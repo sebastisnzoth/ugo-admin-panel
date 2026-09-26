@@ -1,23 +1,10 @@
-import test from 'node:test'
-import assert from 'node:assert/strict'
-import {readFile} from 'node:fs/promises'
-
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('client searching state follows backend deadline before offering retry',async()=>{const source=await read('src/features/client/order/ClientServiceDetail.tsx');assert.match(source,/matching_expires_at/);assert.match(source,/Buscando profesional/);assert.match(source,/No encontramos un profesional disponible/);assert.match(source,/Reintentar pedido/);assert.match(source,/matchingDeadline/);assert.match(source,/remainingMs<=0/);assert.doesNotMatch(source,/matching-start|MATCHING_WINDOW_MS/)})
+test('retry asks backend for a fresh matching cycle then reloads its deadline',async()=>{const source=await read('src/features/client/order/ClientServiceDetail.tsx');assert.match(source,/await getDispatchProvider\(\)\.start/);assert.match(source,/await load\(\)/);assert.match(source,/setNotice\('Buscando profesional\. UGO volvió a avisar a profesionales disponibles\.'\)/)})
 
-test('client searching state waits five minutes before offering retry',async()=>{
- const source=await read('src/features/client/order/ClientServiceDetail.tsx')
- assert.match(source,/MATCHING_WINDOW_MS=5\*60\*1000/)
- assert.match(source,/Buscando profesional/)
- assert.match(source,/No encontramos un profesional disponible/)
- assert.match(source,/Reintentar pedido/)
- assert.match(source,/matchingDeadline/)
- assert.match(source,/remainingMs<=0/)
- assert.doesNotMatch(source,/\['buscando','ofrecido'\]\.includes\(service\.estado\)&&<div className="ugo-history-row-actions"><button[^>]+onClick=\{\(\)=>void retryMatching\(\)\}/)
-})
+test('post-confirm matching screen shows canonical countdown and retry only after expiry',async()=>{const source=await read('src/features/client/request/ClientPostConfirmFlow.tsx');assert.match(source,/matching_expires_at/);assert.match(source,/Buscando tu profesional/);assert.match(source,/ugo-matching-countdown/);assert.match(source,/No encontramos un profesional disponible/);assert.match(source,/Reintentar pedido/);assert.match(source,/remainingMs/);assert.match(source,/expired/);assert.doesNotMatch(source,/seconds>=90|Reintentar búsqueda/)})
 
-test('retry starts a fresh five minute client search cycle',async()=>{
- const source=await read('src/features/client/order/ClientServiceDetail.tsx')
- assert.match(source,/setMatchingStartedAt\(Date\.now\(\)\)/)
- assert.match(source,/await getDispatchProvider\(\)\.start/)
- assert.match(source,/setNotice\('Buscando profesional\. UGO volvió a avisar a profesionales disponibles\.'\)/)
-})
+test('home active order visibly carries countdown and retry state beside the order',async()=>{const source=await read('src/features/client/home/ClientHomeScreen.tsx');assert.match(source,/matching_expires_at/);assert.match(source,/Buscando profesional/);assert.match(source,/formatCountdown\(remaining\)/);assert.match(source,/No encontramos un profesional disponible/);assert.match(source,/Reintentar pedido/);assert.match(source,/remaining<=0/);assert.match(source,/setInterval\(\(\)=>setNow\(Date\.now\(\)\),1000\)/)})

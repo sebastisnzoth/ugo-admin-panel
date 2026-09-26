@@ -41,7 +41,7 @@ test('each canonical request persists its own generated service id and matching 
  const postConfirm=await read('src/features/client/request/ClientPostConfirmFlow.tsx')
  assert.match(postConfirm,/requestDraftId=crypto\.randomUUID\(\)/)
  assert.match(postConfirm,/supabase\.from\('servicios'\)\.insert\(\{cliente_id:session\.user\.id[\s\S]*estado:'buscando'/)
- assert.match(postConfirm,/\.select\('id,numero,estado,proveedor_id'\)\.single\(\)/)
+ assert.match(postConfirm,/\.select\('id,numero,estado,matching_expires_at,proveedor_id'\)\.single\(\)/)
  assert.match(postConfirm,/if\(!row\?\.id\)throw new Error/)
  assert.match(postConfirm,/startDispatch\(row\.id,context\)/)
  assert.match(postConfirm,/filter:\`id=eq\.\$\{id\}\`/)

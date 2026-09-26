@@ -1,0 +1,8 @@
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('client home and detail use the canonical backend matching deadline',async()=>{const[home,detail,migration]=await Promise.all([read('src/features/client/home/ClientHomeScreen.tsx'),read('src/features/client/order/ClientServiceDetail.tsx'),read('supabase/migrations/20260926063000_matching_cycle_deadline.sql')]);for(const source of[home,detail]){assert.match(source,/matching_expires_at/);assert.doesNotMatch(source,/created_at\)\.getTime\(\)\+MATCHING_WINDOW_MS|matching-start|sessionStorage\.setItem\(matchingKey/)}assert.match(migration,/add column if not exists matching_expires_at/);assert.match(migration,/v_deadline/);assert.match(migration,/sync_offer_matching_deadline/)})
+test('client deadline resyncs through its own service realtime stream',async()=>{const[home,detail]=await Promise.all([read('src/features/client/home/ClientHomeScreen.tsx'),read('src/features/client/order/ClientServiceDetail.tsx')]);assert.match(home,/table:'servicios'/);assert.match(detail,/table:'servicios'/);assert.doesNotMatch(home,/from\('ofertas_servicio'\)/);assert.doesNotMatch(detail,/from\('ofertas_servicio'\)/)})
+
+test('matching RPC owns the deadline even when candidate count is zero and guards service ownership',async()=>{const migration=await read('supabase/migrations/20260926063000_matching_cycle_deadline.sql');assert.match(migration,/matching_expires_at=v_deadline/);assert.match(migration,/cliente_id=auth\.uid\(\) or private\.is_admin\(auth\.uid\(\)\)/);assert.match(migration,/security definer/);assert.match(migration,/if not found then raise exception 'No autorizado'/)})
