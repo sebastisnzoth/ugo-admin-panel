@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
-import{getRoleSupabase}from'../lib/roleSupabase'\nimport{capturePhotoFromCamera}from'../lib/cameraCapture'
+import{getRoleSupabase}from'../lib/roleSupabase'
+import{capturePhotoFromCamera}from'../lib/cameraCapture'
 import type{Service}from'./shared'
 
 type EvidenceType='antes'|'durante'|'despues'
@@ -51,7 +52,8 @@ export function ProviderEvidencePanel({service}:Props){
   }catch(e){setError(e instanceof Error?e.message:'No se pudo subir la evidencia.')}
   finally{setBusy(false)}
  }
- async function takePhoto(){setError('');setSuccess('');const result=await capturePhotoFromCamera();if(result.error){setError(result.error);return}await upload(result.file)}\n const finalRequired=service.estado==='en_progreso'&&!hasFinal
+ async function takePhoto(){setError('');setSuccess('');const result=await capturePhotoFromCamera();if(result.error){setError(result.error);return}await upload(result.file)}
+ const finalRequired=service.estado==='en_progreso'&&!hasFinal
  return <div style={{position:'fixed',left:12,top:'max(78px, calc(env(safe-area-inset-top) + 68px))',zIndex:79}}>
   <button type="button" onClick={()=>setOpen(v=>!v)} style={{minHeight:44,border:finalRequired?'2px solid #f79009':0,borderRadius:16,padding:'10px 13px',background:'#fff',boxShadow:'0 8px 28px rgba(0,0,0,.16)',fontWeight:800,color:'#101828'}}>{finalRequired?'📷 Subir foto final':'📷 Evidencias'} {hasFinal?'✓':hasInitial?'•':''}</button>
   {open&&<div style={{position:'absolute',left:0,top:52,width:320,maxWidth:'calc(100vw - 24px)',maxHeight:'calc(100dvh - 150px)',overflowY:'auto',background:'#fff',borderRadius:20,padding:14,boxShadow:'0 14px 40px rgba(0,0,0,.2)',color:'#101828'}}>
