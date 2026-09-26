@@ -52,7 +52,8 @@ export function ClientHomeScreen({onOpenService}:Props){
  const cards=useMemo(()=>CORE.map(([key,label,emoji,sub])=>({key,label,emoji,sub,category:categories.find(c=>norm(`${c.slug} ${c.nombre}`).includes(key))||null})),[categories])
  const filtered=query.trim()?categories.filter(c=>norm(c.nombre).includes(norm(query.trim()))):[]
  const choose=(category:Category|null)=>{if(!category)return;flow.publishHugoIntent({text:`Necesito ${category.nombre}`,categoryHint:category.slug||category.id,urgent:false,description:null})}
- const openOrder=(serviceId:string)=>{if(onOpenService){onOpenService(serviceId);return}flow.navigate('history')}\n const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId)return;setRetryingId(serviceId);try{const{error}=await supabase.rpc('iniciar_matching',{p_servicio_id:serviceId});if(error)throw error;await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,retryingId,supabase])
+ const openOrder=(serviceId:string)=>{if(onOpenService){onOpenService(serviceId);return}flow.navigate('history')}
+ const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId)return;setRetryingId(serviceId);try{const{error}=await supabase.rpc('iniciar_matching',{p_servicio_id:serviceId});if(error)throw error;await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,retryingId,supabase])
  const firstName=String(profile?.nombre||'').trim().split(/\s+/)[0]||'Hola'
  if(!session)return null
 
