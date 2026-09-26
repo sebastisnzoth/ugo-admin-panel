@@ -26,8 +26,10 @@ jobs:
       - name: Build three APKs
         working-directory: android-apk
         run: |
-          chmod +x gradlew
-          ./gradlew --no-daemon clean assembleClientDebug assembleProviderDebug assembleAdminDebug
+          GRADLE_VERSION=8.11.1
+          curl -fsSL "https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip" -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+          /tmp/gradle-${GRADLE_VERSION}/bin/gradle --no-daemon clean assembleClientDebug assembleProviderDebug assembleAdminDebug
       - name: Stage APKs
         run: |
           mkdir -p apk-artifacts
