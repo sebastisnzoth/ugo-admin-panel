@@ -2,7 +2,9 @@ export type CameraCaptureResult={file:File|null;error?:string}
 
 function cameraErrorMessage(error:unknown){const name=error instanceof DOMException?error.name:'';if(name==='NotAllowedError'||name==='SecurityError')return'Permiso de cámara bloqueado. Habilitá Cámara para este sitio en el navegador y probá otra vez.';if(name==='NotFoundError'||name==='DevicesNotFoundError')return'No encontramos una cámara disponible en este dispositivo.';if(name==='NotReadableError'||name==='TrackStartError')return'La cámara está siendo usada por otra aplicación o no está disponible.';return'No pudimos abrir la cámara. Revisá el permiso de Cámara del navegador y probá otra vez.'}
 
-function pickCameraFile():Promise<CameraCaptureResult>{return new Promise(resolve=>{const input=document.createElement('input');input.type='file';input.accept='image/*';input.setAttribute('capture','environment');input.style.position='fixed';input.style.left='-9999px';input.onchange=()=>{const file=input.files?.[0]||null;input.remove();resolve({file})};input.oncancel=()=>{input.remove();resolve({file:null})};document.body.appendChild(input);input.click()})}\n\nexport async function capturePhotoFromCamera():Promise<CameraCaptureResult>{
+function pickCameraFile():Promise<CameraCaptureResult>{return new Promise(resolve=>{const input=document.createElement('input');input.type='file';input.accept='image/*';input.setAttribute('capture','environment');input.style.position='fixed';input.style.left='-9999px';input.onchange=()=>{const file=input.files?.[0]||null;input.remove();resolve({file})};input.oncancel=()=>{input.remove();resolve({file:null})};document.body.appendChild(input);input.click()})}
+
+export async function capturePhotoFromCamera():Promise<CameraCaptureResult>{
  if(!window.isSecureContext)return{file:null,error:'La cámara requiere una conexión segura HTTPS.'}
  if(/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||!navigator.mediaDevices?.getUserMedia)return pickCameraFile()
  let stream:MediaStream|null=null
