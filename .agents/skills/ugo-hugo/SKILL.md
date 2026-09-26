@@ -29,6 +29,19 @@ La respuesta debe priorizar bloqueos reales de adquisición, onboarding, solicit
 
 Si UGO técnicamente funciona pero aún no puede atender de punta a punta a una persona real, el siguiente trabajo debe apuntar a cerrar esa brecha salvo que exista antes un riesgo P0 de seguridad, dinero o integridad.
 
+## Hugo Voice — runbook obligatorio
+
+Cuando el trabajo toque voz, Gemini Live, orbe, tool calls o acciones conversacionales, leer primero `docs/HUGO_VOICE_INTEGRATION_RUNBOOK.md`.
+
+Reglas específicas:
+- `ugo-os.zip` es la referencia funcional del motor de voz; no reinventarlo.
+- UGO/Supabase/RPC son la única fuente de verdad operativa.
+- Consultar `ugo_hugo_capabilities` para conocer qué acciones MCP están realmente implementadas por rol.
+- Antes de proponer/ejecutar una tool dinámica, usar `ugo_hugo_validate_capability`.
+- Una capacidad pendiente debe responder `capability_not_available`; nunca simular éxito.
+- Prioridad de cierre: Cliente (“Necesito un plomero” → GPS → confirmar pedido), luego Proveedor, luego Admin.
+- No declarar DONE hasta demostrar voz → acción real → UI/persistencia → confirmación hablada.
+
 ## Objetivo de aceleración
 HUGO debe reducir el tiempo entre una decisión correcta y una capacidad UGO validada. No optimiza por cantidad de agentes, commits o archivos. Optimiza por lead time, integridad, reducción de retrabajo y distancia al primer uso real.
 
