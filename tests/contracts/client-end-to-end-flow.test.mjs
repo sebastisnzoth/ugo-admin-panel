@@ -46,7 +46,7 @@ test('confirm is idempotent per draft and never blocks a second independent orde
 
 test('matching remains visible, can run in background and can be retried after draft cleanup',()=>{
  assert.match(post,/Seguir usando UGO/)
- assert.match(post,/Reintentar búsqueda/)
+ assert.match(post,/Reintentar pedido/)
  assert.match(post,/dispatchContext/)
  assert.match(post,/startDispatch\(service\.id,context\)/)
  assert.doesNotMatch(post,/clearDraft\(\);onExit\(\)\}catch/)
