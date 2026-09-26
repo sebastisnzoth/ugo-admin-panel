@@ -101,3 +101,13 @@ test('Admin voice executes bounded reads through the same Gemini Live tool chann
  assert.match(adminOrb,/admin_find_user/)
  assert.doesNotMatch(adminOrb,/speechSynthesis/)
 })
+
+
+test('Live audio is primed from the user activation and client surfaces model output',()=>{
+ assert.match(bridge,/primeConversationAudio\(\)/)
+ assert.match(bridge,/startListening:async\(\)=>\{\n   primeConversationAudio\(\)/)
+ assert.match(dock,/ugo:native-voice-output/)
+ assert.match(dock,/setAssistantTranscript/)
+ assert.match(bridge,/no-microphone/)
+ assert.match(bridge,/microphone-busy/)
+})
