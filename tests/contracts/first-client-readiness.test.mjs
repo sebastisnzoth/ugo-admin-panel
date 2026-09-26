@@ -7,7 +7,7 @@ const read = path => readFile(new URL(`../../${path}`, import.meta.url), 'utf8')
 test('matching never traps the client and exposes background, retry and service-scoped cancel exits', async () => {
   const matching = await read('src/features/client/request/ClientPostConfirmFlow.tsx')
   assert.match(matching, /Seguir usando UGO/)
-  assert.match(matching, /Reintentar búsqueda/)
+  assert.match(matching, /Reintentar pedido/)
   assert.match(matching, /Cancelar pedido/)
   assert.match(matching, /flow\.actions\.cancelService\(service\.id\)/)
   assert.match(matching, /Todavía no encontramos un profesional\./)
