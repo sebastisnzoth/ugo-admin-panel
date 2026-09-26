@@ -1,6 +1,7 @@
 import{useCallback,useEffect,useRef,useState}from'react'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData}from'./providerData'
+import{UGO_UI_EVENTS}from'../uiEvents'
 import'../voice.css'
 
 type VoiceState='idle'|'connecting'|'ready'|'hearing'|'speaking'|'error'
@@ -36,6 +37,7 @@ export function ProviderHugoBridge(){
 
  useEffect(()=>{const tool=async(event:Event)=>{if(!running.current)return;const detail=(event as CustomEvent<{id?:string;name?:string;args?:Record<string,unknown>}>).detail||{},id=String(detail.id||''),name=String(detail.name||''),bridge=ugoWindow().UGOVoiceBridge;if(!id||!name||!bridge?.sendToolResponse)return;setState('connecting');try{const response=await executeTool(name,detail.args||{});bridge.sendToolResponse(id,name,response)}catch(error){bridge.sendToolResponse(id,name,{ok:false,code:'TOOL_FAILED',message:error instanceof Error?error.message:'La acción falló'})}};const output=(event:Event)=>{const text=String((event as CustomEvent<{text?:string}>).detail?.text||'').trim();if(text)setAssistantTranscript(text)};const stateEvent=(event:Event)=>{if(!running.current)return;const value=String((event as CustomEvent<{state?:string}>).detail?.state||'');if(value==='hearing'){stopSpeech();setState('hearing')}else if(value==='connecting')setState('connecting');else if(value==='speaking')setState('speaking');else if(value==='ready')setState('ready')};const voiceError=(event:Event)=>{const code=String((event as CustomEvent<{code?:string}>).detail?.code||'');setRunning(false);setState('error');setError(code==='not-allowed'?'Permití el micrófono para hablar con Hugo.':code==='no-microphone'?'No encontré un micrófono disponible en este dispositivo.':code==='microphone-busy'?'El micrófono está ocupado por otra aplicación.':code==='session'?'Tu sesión venció. Volvé a iniciar sesión.':'Gemini Live no está disponible. Tocá el orbe para reconectar.')};window.addEventListener('ugo:native-voice-tool-call',tool);window.addEventListener('ugo:native-voice-output',output);window.addEventListener('ugo:native-voice-state',stateEvent);window.addEventListener('ugo:native-voice-error',voiceError);return()=>{window.removeEventListener('ugo:native-voice-tool-call',tool);window.removeEventListener('ugo:native-voice-output',output);window.removeEventListener('ugo:native-voice-state',stateEvent);window.removeEventListener('ugo:native-voice-error',voiceError)}},[executeTool,setRunning,stopSpeech])
 
+ useEffect(()=>{const stopGlobal=()=>stop();window.addEventListener(UGO_UI_EVENTS.globalVoiceStop,stopGlobal);return()=>window.removeEventListener(UGO_UI_EVENTS.globalVoiceStop,stopGlobal)},[stop])
  useEffect(()=>()=>stop(),[stop])
 
  const visual=state==='speaking'?'speaking':state==='connecting'?'thinking':state==='hearing'?'listening':state==='ready'?'ready':state==='error'?'error':'idle'
