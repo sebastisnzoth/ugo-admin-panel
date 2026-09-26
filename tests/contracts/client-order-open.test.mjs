@@ -23,12 +23,12 @@ test('order detail is scoped to the authenticated client and selected service',(
  assert.match(detail,/eventType:'client_order_load_error'/)
 })
 
-test('chat remains ahead of embedded tracking and each module is isolated',()=>{
+test('embedded tracking stays ahead of chat and each module is isolated',()=>{
  const chat=detail.indexOf('<ServiceChat role="client" serviceId={service.id} compact/>')
  const tracking=detail.indexOf('<ClientLiveTracking serviceId={service.id} embedded/>')
  assert.ok(chat>=0,'service chat must be mounted in order detail')
  assert.ok(tracking>=0,'embedded tracking must be mounted in order detail')
- assert.ok(chat<tracking,'chat must render before tracking so map failures cannot hide it')
+ assert.ok(tracking<chat,'tracking must render before chat so the client sees the provider journey first')
  assert.match(detail,/SentinelErrorBoundary role="client" serviceId=\{service\.id\} action="client\.order\.chat"/)
  assert.match(detail,/SentinelErrorBoundary role="client" serviceId=\{service\.id\} action="client\.order\.tracking"/)
 })
