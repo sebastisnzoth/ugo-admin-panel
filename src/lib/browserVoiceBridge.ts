@@ -174,6 +174,7 @@ function installBrowserBridge(){
  window.UGOVoiceBridge={
   isAvailable:()=>canStream(),
   startListening:async()=>{
+   primeConversationAudio()
    if(active){paused=false;await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'});return}
    active=true;paused=false;emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'starting'})
    try{await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'listening'})}
