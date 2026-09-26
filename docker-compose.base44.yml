@@ -9,6 +9,9 @@ services:
     environment:
       - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS
       - VITE_APP_REVISION=base44-dev
+    env_file:
+      - ./.env.base44-defaults
+      - /run/base44/app.env
     command: sh -c "npm install && npx vite --host 0.0.0.0 --port 3000"
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
