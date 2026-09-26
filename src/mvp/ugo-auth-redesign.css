@@ -745,3 +745,46 @@
   .ugo-splash-mark i,.ugo-splash-progress span{animation:none!important}
   .ugo-splash-progress span{width:70%}
 }
+
+
+/* Admin/recovery auth is rendered without role-client/role-provider. On mobile it must own scrolling too. */
+@media(max-width:760px){
+  .mvp-auth-page:not(.role-client):not(.role-provider){
+    width:100%;
+    height:100dvh;
+    min-height:0!important;
+    max-height:100dvh;
+    overflow-x:hidden;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-y:contain;
+    padding:
+      max(16px,env(safe-area-inset-top))
+      max(14px,env(safe-area-inset-right))
+      max(18px,env(safe-area-inset-bottom))
+      max(14px,env(safe-area-inset-left))!important;
+  }
+
+  .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card{
+    width:min(440px,100%)!important;
+    max-width:100%!important;
+    margin:auto;
+  }
+
+  .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card input{
+    font-size:16px!important;
+  }
+}
+
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .mvp-auth-page:not(.role-client):not(.role-provider){
+    min-height:100dvh!important;
+    place-items:start center;
+    padding-block:10px!important;
+    scroll-padding-bottom:24px;
+  }
+
+  .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card{
+    padding:20px!important;
+  }
+}
