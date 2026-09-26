@@ -7,6 +7,7 @@ import{loadVoiceAvailability,resolveVoiceCategory,type VoiceAvailability,type Vo
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import type{ClientActionHandlers,ClientHugoIntent}from'../types/clientTypes'
 import{parseHugoWhen}from'./hugoVoiceIntent'
+import{currentHugoLocale}from'../../hugo/core/hugoContract'
 import'../../../mvp/voice.css'
 
 type PaymentStatus='none'|'cash'|'pending'|'confirmed'
@@ -43,9 +44,10 @@ async function reverseGeocode(lat:number,lng:number){
 
 export function ClientVoiceHugoDock({accessToken,clientActions,onNavigateHome,requestComposerOpen=false}:Props){
  const[state,setState]=useState<VoiceState>('idle'),[error,setError]=useState(''),[,setUserTranscript]=useState(''),[assistantTranscript,setAssistantTranscript]=useState(''),[voiceRunning,setVoiceRunning]=useState(false),[panelOpen,setPanelOpen]=useState(false)
- const locale=useRef<Locale>('es-AR'),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false)
+ const locale=useRef<Locale>(currentHugoLocale()),draft=useRef<Draft|null>(null),availability=useRef<VoiceAvailability|null>(null),running=useRef(false),busy=useRef(false)
  const setRunning=useCallback((value:boolean)=>{running.current=value;setVoiceRunning(value)},[])
 
+ useEffect(()=>{const syncLocale=()=>{locale.current=currentHugoLocale()};syncLocale();window.addEventListener('storage',syncLocale);window.addEventListener('ugo:locale-changed',syncLocale as EventListener);return()=>{window.removeEventListener('storage',syncLocale);window.removeEventListener('ugo:locale-changed',syncLocale as EventListener)}},[])
  const stopSpeechPlayback=useCallback(()=>{try{ugoWindow().UGOVoiceBridge?.stopSpeaking?.()}catch(caught){ignoreError(caught)}},[])
  const syncDraft=useCallback((current:Draft)=>{
   const detail={category:current.category?{id:current.category.id,slug:current.category.slug,nombre:current.category.nombre,emoji:current.category.emoji}:null,description:current.description,address:current.address,addressLabel:current.addressLabel,pickupLat:current.pickupLat,pickupLng:current.pickupLng,pickupSource:current.pickupSource,when:current.when,scheduleAt:current.scheduleAt,whenLabel:current.whenLabel,paymentMethod:current.paymentMethod,urgent:current.urgent,voiceJourney:true}
