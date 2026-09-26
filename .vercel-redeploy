@@ -1,4 +1,4 @@
-UGO production deploy trigger
+UGO Hugo current-main verification
 2026-09-26
-TARGET=hugo-live-production
-BASE_HEAD=e6642132d66df34e1a58a7e7dcf4bc3275f4bd88
+BASE_HEAD=7554ab68aeef56af5f49ca8e7ee1ab718da84492
+PURPOSE=preview-e2e-gate
