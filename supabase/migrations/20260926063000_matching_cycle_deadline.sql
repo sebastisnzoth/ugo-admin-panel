@@ -3,7 +3,7 @@ alter table public.servicios add column if not exists matching_expires_at timest
 
 create or replace function public.iniciar_matching(p_servicio_id uuid)
 returns table(oferta_id uuid, proveedor_id uuid, proveedor_nombre text, karma numeric, distancia_km numeric, tarifa_ofrecida numeric, ranking integer)
-language plpgsql security definer
+language plpgsql
 set search_path to 'public','private','pg_temp'
 as $$
 declare
@@ -34,6 +34,8 @@ drop trigger if exists trg_offer_matching_deadline on public.ofertas_servicio;
 create trigger trg_offer_matching_deadline
 before insert or update of expira_at,estado on public.ofertas_servicio
 for each row execute function private.sync_offer_matching_deadline();
+
+revoke execute on function private.sync_offer_matching_deadline() from public, anon, authenticated;
 
 comment on column public.servicios.matching_expires_at is 'Backend source of truth for the current five-minute matching cycle.';
 notify pgrst,'reload schema';
