@@ -12,6 +12,7 @@ import { finishWork } from "./finishWork.js";
 import { approveWork } from "./approveWork.js";
 import { confirmCashPayment } from "./confirmCashPayment.js";
 import { rateService } from "./rateService.js";
+import { getHugoCapabilities, validateHugoCapability } from "./hugoCapabilities.js";
 
 function jsonToolResult(payload, isError = false) {
   return {
@@ -25,6 +26,34 @@ serveStdio(() => {
     name: "ugo-actions",
     version: "0.12.0",
   });
+
+  server.registerTool(
+    "ugo_hugo_capabilities",
+    {
+      description:
+        "Devuelve la allowlist operativa de Hugo por rol según docs/HUGO_VOICE_INTEGRATION_RUNBOOK.md. Distingue herramientas reales de capacidades pendientes; nunca presenta una capacidad pendiente como ejecutable.",
+      inputSchema: z.object({
+        role: z.enum(["client", "provider", "admin"]),
+      }).strict(),
+    },
+    async (input) => jsonToolResult(getHugoCapabilities(input))
+  );
+
+  server.registerTool(
+    "ugo_hugo_validate_capability",
+    {
+      description:
+        "Valida si una tool concreta está habilitada para el rol de Hugo. Las capacidades no mapeadas a operaciones reales devuelven capability_not_available.",
+      inputSchema: z.object({
+        role: z.enum(["client", "provider", "admin"]),
+        tool: z.string().min(1).max(100),
+      }).strict(),
+    },
+    async (input) => {
+      const result=validateHugoCapability(input);
+      return jsonToolResult(result,result.status==="error");
+    }
+  );
 
   server.registerTool(
     "ugo_ping",
