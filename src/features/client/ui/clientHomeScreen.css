@@ -403,3 +403,6 @@
     grid-area:map!important;
   }
 }
+
+.ugo-home-order-retry{margin-left:auto;align-self:center;padding:8px 10px;border-radius:10px;background:#071c13;color:#fff;font-size:11px;font-weight:900;white-space:nowrap;box-shadow:0 6px 16px rgba(7,28,19,.12)}
+.ugo-home-active-orders>button.is-searching .ugo-home-order-copy>b{font-variant-numeric:tabular-nums}
