@@ -23,7 +23,6 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: gradle
-      - uses: android-actions/setup-android@v3
       - name: Build three APKs
         working-directory: android-apk
         run: |
