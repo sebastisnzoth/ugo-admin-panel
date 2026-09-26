@@ -1,5 +1,6 @@
 import{getRoleSupabase}from'./roleSupabase'
 import{supabase as adminSupabase}from'./supabase'
+import{currentHugoLocale,hugoSystemInstruction,isHugoActionAllowed,type HugoRole}from'../features/hugo/core/hugoContract'
 
 type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
 type LiveTokenResponse={token?:string;model?:string;expires_at?:string;error?:string}
@@ -63,8 +64,8 @@ const ADMIN_TOOLS:LiveFunctionDeclaration[]=[
  {name:'admin_find_user',description:'Busca un cliente o proveedor real por id, email o nombre.',parameters:{type:'OBJECT',properties:{query:{type:'STRING'}},required:['query']}}
 ]
 function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
-function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el asistente operativo de UGO. Conversá natural, breve y útil. En Admin sólo podés consultar mediante las herramientas declaradas; no confirmes cambios administrativos si no existe una herramienta autorizada. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito. Recordá los datos confirmados durante esta conversación y no los vuelvas a preguntar.'}]},tools:[{functionDeclarations:roleTools()}]}}}
+function currentRole():HugoRole{const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('superadmin'))return'superadmin';if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
+function setupMessage(model:string){const role=currentRole(),locale=currentHugoLocale();return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:hugoSystemInstruction(role,locale)}]},tools:[{functionDeclarations:roleTools()}]}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
@@ -184,7 +185,7 @@ function installBrowserBridge(){
   resumeListening:async()=>{if(!active)return;paused=false;resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
   stopListening:()=>shutdown(true),
   stopSpeaking:()=>stopConversationPlayback(),
-  sendToolResponse:(id,name,response)=>sendJson({toolResponse:{functionResponses:[{id,name,response}]}}),
+  sendToolResponse:(id,name,response)=>{const role=currentRole();if(!isHugoActionAllowed(role,name))return sendJson({toolResponse:{functionResponses:[{id,name,response:{ok:false,code:'ACTION_NOT_ALLOWED',message:'Acción no autorizada para este rol'}}]}});return sendJson({toolResponse:{functionResponses:[{id,name,response}]}})},
  }
 }
 
