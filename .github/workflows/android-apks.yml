@@ -1,6 +1,10 @@
 name: UGO Android APKs
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/android-apks.yml'
   push:
     branches: [main]
     paths:
