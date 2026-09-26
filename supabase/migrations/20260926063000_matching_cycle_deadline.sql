@@ -3,7 +3,7 @@ alter table public.servicios add column if not exists matching_expires_at timest
 
 create or replace function public.iniciar_matching(p_servicio_id uuid)
 returns table(oferta_id uuid, proveedor_id uuid, proveedor_nombre text, karma numeric, distancia_km numeric, tarifa_ofrecida numeric, ranking integer)
-language plpgsql
+language plpgsql security definer
 set search_path to 'public','private','pg_temp'
 as $$
 declare
