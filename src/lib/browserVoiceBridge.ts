@@ -63,7 +63,7 @@ const ADMIN_TOOLS:LiveFunctionDeclaration[]=[
  {name:'admin_find_service',description:'Busca un servicio real por id o número para inspeccionarlo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
  {name:'admin_find_user',description:'Busca un cliente o proveedor real por id, email o nombre.',parameters:{type:'OBJECT',properties:{query:{type:'STRING'}},required:['query']}}
 ]
-function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
+function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'||role==='superadmin'?ADMIN_TOOLS:[]}
 function currentRole():HugoRole{const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('superadmin'))return'superadmin';if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
 function setupMessage(model:string){const role=currentRole(),locale=currentHugoLocale();return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:hugoSystemInstruction(role,locale)}]},tools:[{functionDeclarations:roleTools()}]}}}
 
@@ -86,7 +86,7 @@ function installBrowserBridge(){
  const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
 
  const issueToken=async()=>{
-  const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
+  const role=currentRole(),sb=role==='admin'||role==='superadmin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
   if(!accessToken)throw Object.assign(new Error('Sesión no disponible para voz'),{status:401})
   const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true,voice_live_mode:'conversation'})})
   const data=await response.json().catch(()=>({})) as LiveTokenResponse
