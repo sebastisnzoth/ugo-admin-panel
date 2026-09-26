@@ -1,0 +1,50 @@
+name: UGO Android APKs
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'android-apk/**'
+      - '.github/workflows/android-apks.yml'
+permissions:
+  contents: read
+jobs:
+  build-apks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: android-actions/setup-android@v3
+      - name: Build three APKs
+        working-directory: android-apk
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon clean assembleClientDebug assembleProviderDebug assembleAdminDebug
+      - name: Stage APKs
+        run: |
+          mkdir -p apk-artifacts
+          cp android-apk/app/build/outputs/apk/client/debug/app-client-debug.apk apk-artifacts/UGO-Cliente.apk
+          cp android-apk/app/build/outputs/apk/provider/debug/app-provider-debug.apk apk-artifacts/UGO-Proveedor.apk
+          cp android-apk/app/build/outputs/apk/admin/debug/app-admin-debug.apk apk-artifacts/UGO-Admin.apk
+          sha256sum apk-artifacts/*.apk | tee apk-artifacts/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UGO-Cliente
+          path: apk-artifacts/UGO-Cliente.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UGO-Proveedor
+          path: apk-artifacts/UGO-Proveedor.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UGO-Admin
+          path: apk-artifacts/UGO-Admin.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UGO-APK-SHA256
+          path: apk-artifacts/SHA256SUMS.txt
