@@ -1,8 +1,8 @@
 const CAPABILITIES={
  client:{
   reads:['ugo_get_current_user','ugo_get_current_job','ugo_get_service','ugo_get_provider_location','ugo_get_saved_places','ugo_get_job_history'],
-  actions:['ugo_approve_work','ugo_confirm_cash_payment','ugo_rate_service'],
-  pending:['search_service','select_category','use_current_location','create_request','open_active_order','show_provider','show_map','cancel_request','select_payment'],
+  actions:['ugo_create_service_request','ugo_approve_work','ugo_confirm_cash_payment','ugo_rate_service'],
+  pending:['search_service','select_category','use_current_location','open_active_order','show_provider','show_map','cancel_request','select_payment'],
  },
  provider:{
   reads:['ugo_get_current_user','ugo_get_current_job','ugo_get_service','ugo_get_provider_location','ugo_get_provider_offers','ugo_get_job_history'],
