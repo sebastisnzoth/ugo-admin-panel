@@ -9,11 +9,12 @@ export function ClientGlobalVoiceCommands(){
  const handle=useCallback(async(source:string)=>{
   const value=normalizeVoiceText(source)
   if(!value)return false
-  if(/\b(inicio|home|principal|volver al inicio|voltar ao inicio)\b/.test(value)){flow.navigate('home');return true}
+  if(/\b(parar voz|detener voz|cerrar hugo|cancelar escucha|parar escuta|fechar hugo)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.globalVoiceStop);return true}
+  if(/\b(inicio|home|principal|volver al inicio|voltar ao inicio|volver|voltar|atras|atrás)\b/.test(value)){flow.navigate('home');return true}
   if(/\b(perfil|mi cuenta|meu perfil|minha conta)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|lleva|levame|leva)\b/.test(value)){flow.actions.openProfile();return true}
-  if(/\b(historial|actividad|atividade|mis pedidos|meus pedidos)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|lleva|levame|leva)\b/.test(value)){flow.actions.openHistory();return true}
+  if(/\b(mis pedidos|meus pedidos|mostrar pedidos|ver pedidos)\b/.test(value)||(/\b(historial|actividad|atividade)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|lleva|levame|leva)\b/.test(value))){flow.actions.openHistory();return true}
   if(/\b(disputa|problema|soporte|suporte|ayuda|ajuda)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|necesito|preciso)\b/.test(value)){flow.actions.openDispute();return true}
-  if(/\b(pago|forma de pago|metodo de pago|pagamento|forma de pagamento)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|cambiar|trocar|ir)\b/.test(value)){flow.actions.openProfile();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientProfilePayment),0);return true}
+  if(/\b(pago|pagos|forma de pago|metodo de pago|pagamento|pagamentos|forma de pagamento)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|cambiar|trocar|ir|lleva|levame|leva)\b/.test(value)){flow.actions.openProfile();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientProfilePayment),0);return true}
   if(/\b(direcciones|lugares guardados|enderecos|locais salvos|casa|oficina)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|editar)\b/.test(value)){flow.actions.openProfile();window.setTimeout(()=>emitUgoUiEvent(UGO_UI_EVENTS.clientProfileAddresses),0);return true}
   if(/\b(hugo|asistente|assistente)\b/.test(value)&&/\b(abrir|abre|hablar|falar|escuchar|ouvir)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.clientHugo);return true}
   if(/\b(nuevo pedido|nuevo servicio|pedir servicio|novo pedido|novo servico|solicitar servico)\b/.test(value)){flow.navigate('request');return true}

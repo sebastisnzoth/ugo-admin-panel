@@ -38,6 +38,7 @@ public class MainActivity extends Activity {
     private String pendingGeolocationOrigin;
     private SpeechRecognizer speechRecognizer;
     private boolean pendingNativeVoiceStart = false;
+    private boolean nativeVoiceActive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -212,13 +213,20 @@ public class MainActivity extends Activity {
             @Override public void onBufferReceived(byte[] buffer) {}
             @Override public void onEndOfSpeech() {}
             @Override public void onError(int error) {
-                String code = error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT ? "no-speech" : "native-" + error;
+                if (nativeVoiceActive && (error == SpeechRecognizer.ERROR_NO_MATCH || error == SpeechRecognizer.ERROR_SPEECH_TIMEOUT)) {
+                    emitVoiceEvent("ugo:native-voice-state", "{\"state\":\"ready\"}");
+                    scheduleNativeRecognitionRestart();
+                    return;
+                }
+                nativeVoiceActive = false;
+                String code = "native-" + error;
                 emitVoiceEvent("ugo:native-voice-error", "{\"code\":" + JSONObject.quote(code) + "}");
             }
             @Override public void onResults(Bundle results) {
                 ArrayList<String> matches = results.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
                 String text = matches != null && !matches.isEmpty() ? matches.get(0) : "";
                 emitVoiceEvent("ugo:native-voice-result", "{\"text\":" + JSONObject.quote(text) + ",\"final\":true}");
+                if (nativeVoiceActive) scheduleNativeRecognitionRestart();
             }
             @Override public void onPartialResults(Bundle partialResults) {
                 ArrayList<String> matches = partialResults.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
@@ -236,6 +244,15 @@ public class MainActivity extends Activity {
         speechRecognizer.startListening(intent);
     }
 
+    private void scheduleNativeRecognitionRestart() {
+        if (!nativeVoiceActive || webView == null) return;
+        webView.postDelayed(() -> {
+            if (nativeVoiceActive && checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                startNativeRecognition();
+            }
+        }, 250);
+    }
+
     private void stopNativeRecognition() {
         if (speechRecognizer != null) {
             try { speechRecognizer.cancel(); } catch (Exception ignored) {}
@@ -249,6 +266,7 @@ public class MainActivity extends Activity {
         public void startListening() {
             runOnUiThread(() -> {
                 if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+                    nativeVoiceActive = true;
                     startNativeRecognition();
                 } else {
                     pendingNativeVoiceStart = true;
@@ -261,6 +279,7 @@ public class MainActivity extends Activity {
         public void stopListening() {
             runOnUiThread(() -> {
                 pendingNativeVoiceStart = false;
+                nativeVoiceActive = false;
                 stopNativeRecognition();
             });
         }
@@ -293,8 +312,13 @@ public class MainActivity extends Activity {
             if (pendingWebPermissionRequest != null) resolvePendingWebPermissionRequest();
             if (pendingNativeVoiceStart) {
                 pendingNativeVoiceStart = false;
-                if (granted) startNativeRecognition();
-                else emitVoiceEvent("ugo:native-voice-error", "{\"code\":\"not-allowed\"}");
+                if (granted) {
+                    nativeVoiceActive = true;
+                    startNativeRecognition();
+                } else {
+                    nativeVoiceActive = false;
+                    emitVoiceEvent("ugo:native-voice-error", "{\"code\":\"not-allowed\"}");
+                }
             }
         }
     }
@@ -307,6 +331,7 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onDestroy() {
+        nativeVoiceActive = false;
         stopNativeRecognition();
         if (pendingWebPermissionRequest != null) {
             pendingWebPermissionRequest.deny();
