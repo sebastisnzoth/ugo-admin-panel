@@ -1,4 +1,4 @@
-import React from'react'
+import React,{useEffect,useState}from'react'
 import{useProviderFlow}from'./providerFlow'
 import{useProviderData,money}from'./providerData'
 import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
@@ -6,6 +6,7 @@ import type{ProviderOpportunity}from'./providerTypes'
 import{Button,Card,EmptyState,SectionHeader,StatusPill}from'../../shared/ui'
 
 function rankOpportunity(item:ProviderOpportunity){const urgent=item.urgency==='urgent'?1000:0,match=Number(item.matchScore||0)*4,value=Math.min(Number(item.estimatedValue||0),1000)/20,distance=Math.min(Math.max(item.distanceKm,0),50)*6;return urgent+match+value-distance}
+const formatCountdown=(ms:number)=>{const total=Math.max(0,Math.ceil(ms/1000)),minutes=Math.floor(total/60),seconds=total%60;return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
 function scheduleLabel(item:ProviderOpportunity){if(item.urgency==='urgent'&&!item.scheduledAt)return'Lo antes posible';if(!item.scheduledAt)return'A coordinar';const date=new Date(item.scheduledAt);return Number.isNaN(date.getTime())?'A coordinar':date.toLocaleString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderOpportunities(){
@@ -26,12 +27,15 @@ export function ProviderOpportunities(){
 }
 
 export function ProviderOpportunityDetail({id}:{id:string|null}){
- const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id)
+ const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id),[now,setNow]=useState(()=>Date.now())
+ useEffect(()=>{if(!item?.expiresAt)return;setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[item?.id,item?.expiresAt])
+ const expiry=item?.expiresAt?new Date(item.expiresAt).getTime():Number.POSITIVE_INFINITY,remainingMs=expiry-now,expired=remainingMs<=0
  if(d.debtBlocked)return <section className="provider-screen provider-opportunity-detail"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><span className="provider-kicker">COMISIONES UGO</span><h1>Pagá a UGO para aceptar otro trabajo</h1><p>Tenés {d.pendingDebtCount} servicios con comisión pendiente. El límite es 3.</p><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></section>
  if(!item)return <section className="provider-screen"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><h1>Este pedido ya no está disponible</h1><p>Puede haber sido tomado, cancelado o actualizado.</p></section>
  return <section className="provider-screen provider-opportunity-detail provider-opportunity-decision">
   <Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button>
   <span className="provider-kicker">NUEVO PEDIDO</span><h1>¿Lo podés resolver?</h1>
+  <Card className="provider-card provider-offer-countdown" aria-live="polite">{expired?<><strong>Esta oportunidad venció</strong><span>El cliente puede volver a intentar el pedido.</span></>:<><strong>Nuevo pedido · {formatCountdown(remainingMs)}</strong><span>Tenés este tiempo para aceptar o rechazar.</span></>}</Card>
   <Card className="provider-card provider-offer-sheet">
    <div className="provider-opportunity-meta"><span className="provider-chip">{item.category}</span>{item.urgency==='urgent'&&<span className="provider-chip is-urgent">Urgente</span>}</div>
    <div className="provider-offer-problem"><small>EL PROBLEMA</small><p>{item.description||item.title}</p></div>
@@ -45,8 +49,8 @@ export function ProviderOpportunityDetail({id}:{id:string|null}){
   </Card>
   <div className="provider-decision provider-decision-bar">
    {d.service&&<p className="provider-action-note">{item.scheduledAt?'Ya tenés otro trabajo. UGO validará que este horario no se superponga; si entra, lo agrega a tu agenda sin interrumpir el actual.':'Ya tenés otro trabajo. Este pedido no tiene un horario futuro confirmado; UGO verificará si podés tomarlo sin superponer trabajos.'}</p>}
-   <Button variant="primary" size="lg" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':'ACEPTAR TRABAJO'}</Button>
-   <Button variant="ghost" className="provider-reject provider-wide" disabled={d.busy} onClick={()=>flow.actions.rejectOpportunity(item.id)}>No puedo tomarlo</Button>
+   <Button variant="primary" size="lg" className="provider-primary provider-main-action" disabled={d.busy||expired} onClick={()=>flow.actions.acceptOpportunity(item.id)}>{d.busy?'Procesando…':'ACEPTAR TRABAJO'}</Button>
+   <Button variant="ghost" className="provider-reject provider-wide" disabled={d.busy||expired} onClick={()=>flow.actions.rejectOpportunity(item.id)}>No puedo tomarlo</Button>
   </div>
  </section>
 }
