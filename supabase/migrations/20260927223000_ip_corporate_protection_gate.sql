@@ -37,7 +37,8 @@ create table if not exists public.ip_evidence_ledger (
   author_id uuid default auth.uid(),
   metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now(),
-  unique (innovation_id, evidence_type, reference, coalesce(evidence_hash,''))
+  evidence_key text generated always as (coalesce(evidence_hash,'')) stored,
+  unique (innovation_id, evidence_type, reference, evidence_key)
 );
 
 create table if not exists public.ip_gate_decisions (
@@ -110,8 +111,9 @@ begin
  if auth.uid() is null or not private.is_superadmin() then raise exception 'SUPERADMIN_REQUIRED' using errcode='42501'; end if;
  insert into public.ip_evidence_ledger(innovation_id,evidence_type,reference,evidence_hash,version,author_id,metadata)
  values(p_innovation_id,btrim(p_evidence_type),btrim(p_reference),p_evidence_hash,p_version,auth.uid(),coalesce(p_metadata,'{}'))
- on conflict (innovation_id,evidence_type,reference,coalesce(evidence_hash,'')) do update set innovation_id=excluded.innovation_id
+ on conflict (innovation_id,evidence_type,reference,evidence_key) do nothing
  returning * into v;
+ if v.id is null then select * into v from public.ip_evidence_ledger where innovation_id=p_innovation_id and evidence_type=btrim(p_evidence_type) and reference=btrim(p_reference) and evidence_key=coalesce(p_evidence_hash,''); end if;
  return v;
 end $$;
 revoke all on function public.ip_add_evidence(uuid,text,text,text,text,jsonb) from public;
@@ -130,7 +132,8 @@ begin
  else d:='REVIEW_REQUIRED';r:='IP review is required before sensitive disclosure.'; end if;
  insert into public.ip_gate_decisions(innovation_id,intended_action,decision,reason,evidence,evaluated_by,idempotency_key)
  values(i.id,p_intended_action,d,r,jsonb_build_array(jsonb_build_object('innovation_version',i.version,'status',i.status,'confidentiality',i.confidentiality,'possible_protection',i.possible_protection)),auth.uid(),p_idempotency_key)
- on conflict (innovation_id,intended_action,idempotency_key) do update set innovation_id=excluded.innovation_id returning * into v;
+ on conflict (innovation_id,intended_action,idempotency_key) do nothing returning * into v;
+ if v.id is null then select * into v from public.ip_gate_decisions where innovation_id=i.id and intended_action=p_intended_action and idempotency_key=p_idempotency_key; end if;
  return v;
 end $$;
 revoke all on function public.evaluate_ip_gate(uuid,text,text) from public;
@@ -159,13 +162,13 @@ grant execute on function public.ip_set_legal_status(uuid,text,text) to authenti
 
 create or replace function public.ip_audit_innovation(p_innovation_id uuid)
 returns setof public.ip_audit_findings language plpgsql security definer set search_path=public,private,auth as $$
-declare i public.ip_innovations%rowtype;
+declare i public.ip_innovations%rowtype; v public.ip_audit_findings%rowtype;
 begin
  if auth.uid() is null or not private.is_superadmin() then raise exception 'SUPERADMIN_REQUIRED' using errcode='42501'; end if;
  select * into i from public.ip_innovations where id=p_innovation_id;
  if not found then raise exception 'INNOVATION_NOT_FOUND' using errcode='P0002'; end if;
  if i.legal_protection_status in ('FILED','REGISTERED','GRANTED') and not private.ip_has_verified_legal_evidence(i.id) then
-  insert into public.ip_audit_findings(innovation_id,finding_type,severity,description,detected_by) values(i.id,'UNVERIFIED_LEGAL_CLAIM','CRITICAL','Legal protection status lacks verified legal evidence.',auth.uid()) returning * into i;
+  insert into public.ip_audit_findings(innovation_id,finding_type,severity,description,detected_by) values(i.id,'UNVERIFIED_LEGAL_CLAIM','CRITICAL','Legal protection status lacks verified legal evidence.',auth.uid()) returning * into v;
  end if;
  return query select * from public.ip_audit_findings where innovation_id=p_innovation_id order by created_at desc;
 end $$;
