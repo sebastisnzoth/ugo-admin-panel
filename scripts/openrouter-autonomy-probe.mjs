@@ -11,8 +11,8 @@ const preferred=[process.env.UGO_OPENROUTER_MODEL,'openrouter/free',...free].fil
 let last=''
 for(const model of preferred.slice(0,5)){
  if(model!=='openrouter/free'&&!free.includes(model)&&!model.endsWith(':free'))continue
- const response=await fetch(base+'/chat/completions',{method:'POST',headers,signal:AbortSignal.timeout(5000),body:JSON.stringify({model,messages:[{role:'system',content:'You are the UGO model-router health probe. Reply only UGO_OPENROUTER_OK.'},{role:'user',content:'health check'}],temperature:0,max_tokens:24})})
- const payload=await response.json().catch(()=>({}))
+ let response,payload
+ try{response=await fetch(base+'/chat/completions',{method:'POST',headers,signal:AbortSignal.timeout(5000),body:JSON.stringify({model,messages:[{role:'system',content:'You are the UGO model-router health probe. Reply only UGO_OPENROUTER_OK.'},{role:'user',content:'health check'}],temperature:0,max_tokens:24})});payload=await response.json().catch(()=>({}))}catch(error){last='model='+model+' transport='+String(error?.name||'error');continue}
  if(response.ok&&payload?.choices?.[0]?.message?.content){
    console.log(JSON.stringify({connected:true,provider:'openrouter',model:payload.model||model,freeRouteAvailable:true,freeCandidates:free.length}))
    process.exit(0)
