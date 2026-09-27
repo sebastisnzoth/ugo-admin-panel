@@ -19,6 +19,8 @@ test('chat realtime probe retries transport loss but still requires an observed 
  assert.match(src,/const event = await signal\.promise/)
  assert.match(src,/primer evento Realtime no observado/)
  assert.match(src,/reintentando con canal y mensaje nuevos/)
+ assert.match(src,/signal\.cancel\(\)/)
+ assert.match(src,/cancel: \(\) => clearTimeout\(timer\)/)
  assert.doesNotMatch(src,/return row/)
  assert.doesNotMatch(src,/\\n  const \{ data, error \} = await sb/)
 })
