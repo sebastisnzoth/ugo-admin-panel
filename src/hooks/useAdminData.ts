@@ -3,11 +3,22 @@ import { supabase } from '../lib/supabase';
 import type { AdminDashboard, Servicio, Disputa, Documento, Usuario, MetricasDia } from '../lib/database.types';
 
 let globalChannel: any = null;
+let realtimeRecoveryBound = false;
 const listeners: Record<string, Set<() => void>> = {};
 const eventListeners: Array<(event: {table: string, type: string, row: any}) => void> = [];
 
+function bindRealtimeRecovery() {
+  if (realtimeRecoveryBound || typeof window === 'undefined' || typeof document === 'undefined') return;
+  realtimeRecoveryBound = true;
+  window.addEventListener('online', () => resetRealtimeChannel());
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') resetRealtimeChannel();
+  });
+}
+
 function initChannel() {
   if (globalChannel) return;
+  bindRealtimeRecovery();
   const TABLES = ['servicios','servicio_estado_eventos','disputas','pagos','retiros','documentos','usuarios','perfiles_proveedor','deudas_ugo_proveedor','audit_log','categorias','tarifas','notificaciones'];
   const ch = (supabase as any).channel('ugo-admin-rt-' + Date.now());
   TABLES.forEach(table => {
@@ -16,12 +27,16 @@ function initChannel() {
       eventListeners.forEach(f => f({ table, type: payload.eventType, row: payload.new || payload.old }));
     });
   });
-  globalChannel = ch.subscribe((status: string) => { console.log('[RT] status:', status); if(status==='CHANNEL_ERROR'||status==='TIMED_OUT')window.setTimeout(()=>resetRealtimeChannel(),1500); });
+  globalChannel = ch.subscribe((status: string) => {
+    console.log('[RT] status:', status);
+    if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')window.setTimeout(()=>resetRealtimeChannel(),1500);
+  });
 }
 
 export function resetRealtimeChannel() {
   if (globalChannel) { (supabase as any).removeChannel(globalChannel); globalChannel = null; }
   initChannel();
+  Object.values(listeners).forEach(set => set.forEach(listener => listener()));
 }
 
 export function onRealtimeEvent(cb: (e: {table: string, type: string, row: any}) => void) {
