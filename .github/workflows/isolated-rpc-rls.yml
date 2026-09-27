@@ -12,6 +12,7 @@ on:
       - 'tests/integration/**'
       - 'tests/contracts/**'
       - 'scripts/assert-test-environment.mjs'
+      - 'scripts/bootstrap-test-auth.mjs'
       - 'scripts/chat-realtime-probe.mjs'
       - 'package.json'
       - 'package-lock.json'
