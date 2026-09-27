@@ -95,6 +95,8 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.equal(redReject.data.authorization_decision,'DENIED')
  const offAfterApproval=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'authority approval probe complete'})
  if(offAfterApproval.error)throw offAfterApproval.error
+ const shadowAgain=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'containment probe setup'})
+ if(shadowAgain.error)throw shadowAgain.error
 
  const kill=await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:true,p_reason:'runtime containment probe'})
  if(kill.error)throw kill.error
