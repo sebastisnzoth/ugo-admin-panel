@@ -21,7 +21,12 @@ test('exact order detail also isolates its realtime topic and suppresses offline
  assert.match(detail,/channelGeneration=useRef\(0\)/)
  assert.match(detail,/topic=`client-service-detail-\$\{serviceId\}-\$\{instanceId\}-\$\{channelEpoch\}-\$\{generation\}`/)
  assert.match(detail,/document\.visibilityState==='visible'&&navigator\.onLine/)
+ assert.match(detail,/CHANNEL_ERROR/)
+ assert.match(detail,/TIMED_OUT/)
+ assert.match(detail,/CLOSED/)
  assert.match(detail,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(detail,/const onOnline=\(\)=>\{resync\(\);reconnect\(\)\}/)
+ assert.match(detail,/visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
  assert.match(detail,/void supabase\.removeChannel\(ch\)/)
 })
 
