@@ -62,12 +62,15 @@ test('manual arrival cannot bypass the fresh GPS publication path',()=>{
  assert.match(activeJob,/d\.advance\('llegado'\)/)
 })
 
-test('provider background tracking and profile location both request fresh GPS',()=>{
+test('provider background tracking and profile location both request fresh trusted GPS',()=>{
  assert.match(tracker,/MIN_WRITE_MS=5_000/)
  assert.match(tracker,/MIN_MOVE_M=5/)
  assert.match(tracker,/maximumAge:0/)
- assert.match(locationButton,/rpc\('actualizar_ubicacion_y_distancia'/)
- assert.match(locationButton,/p_servicio_id:null/)
+ assert.match(locationButton,/rpc\('publicar_ubicacion_disponibilidad_proveedor'/)
+ assert.match(locationButton,/p_captured_at:capturedAt/)
+ assert.match(locationButton,/p_accuracy_m:accuracy/)
+ assert.match(locationButton,/providerProfile\?\.online&&providerProfile\?\.disponible/)
+ assert.doesNotMatch(locationButton,/rpc\('actualizar_ubicacion_y_distancia'/)
  assert.match(locationButton,/maximumAge:0/)
 })
 
