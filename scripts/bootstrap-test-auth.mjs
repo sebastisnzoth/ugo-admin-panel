@@ -26,6 +26,8 @@ const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshT
 const {data:list,error:listError}=await admin.auth.admin.listUsers({page:1,perPage:1000})
 if(listError)throw listError
 
+const resolvedIds={}
+
 for(const identity of identities){
  let user=list.users.find(candidate=>candidate.email?.toLowerCase()===identity.email.toLowerCase())
  let repairingEmail=false
@@ -50,7 +52,28 @@ for(const identity of identities){
 
  const {error:updateError}=await admin.auth.admin.updateUserById(user.id,updatePayload)
  if(updateError)throw updateError
+ resolvedIds[identity.role]=user.id
  console.log('UGO TEST auth bootstrap OK role='+identity.role+(repairingEmail?' email=REPAIRED':''))
+}
+
+const {data:staleServices,error:staleServicesError}=await admin
+ .from('servicios')
+ .select('id')
+ .eq('metadata->>integration_test','true')
+ .in('estado',['borrador','buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
+ .or('cliente_id.eq.'+resolvedIds.cliente+',proveedor_id.eq.'+resolvedIds.proveedor)
+if(staleServicesError)throw staleServicesError
+
+if(staleServices?.length){
+ const ids=staleServices.map(row=>row.id)
+ const {error:cleanupError}=await admin
+   .from('servicios')
+   .update({estado:'cancelado',cancelado_at:new Date().toISOString()})
+   .in('id',ids)
+ if(cleanupError)throw cleanupError
+ console.log('UGO TEST integration cleanup OK count='+ids.length)
+}else{
+ console.log('UGO TEST integration cleanup OK count=0')
 }
 
 console.log('UGO TEST auth bootstrap completed for 3 existing identities')
