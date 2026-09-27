@@ -31,6 +31,7 @@ jobs:
       UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
       UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
       UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,6 +47,16 @@ jobs:
 
       - name: Dependency security gate
         run: npm audit --audit-level=high
+
+      - name: Require OpenRouter secret for autonomous company
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$OPENROUTER_API_KEY" ]]; then
+            echo "OPENROUTER_API_KEY GitHub Actions secret is required for UGO Autonomous Company."
+            exit 1
+          fi
+          echo "OpenRouter secret is configured (value intentionally hidden)."
 
       - name: TypeScript and production build
         run: npm run build
