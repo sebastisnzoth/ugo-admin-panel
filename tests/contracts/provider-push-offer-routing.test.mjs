@@ -11,7 +11,7 @@ test('provider offer push click preserves offerId and opens opportunity detail',
  assert.match(sw,/const offerId=payload\?\.data\?\.oferta_id/)
  assert.match(sw,/payload\.type==='nueva_oferta'/)
  assert.match(sw,/offerId=\$\{encodeURIComponent\(offerId\)\}/)
- assert.match(sw,/offerSuffix\|\|serviceSuffix/)
+ assert.match(sw,/offerSuffix\|\|providerHistorySuffix\|\|providerScreenSuffix\|\|serviceSuffix/)
  assert.match(root,/offerId=params\.get\('offerId'\)/)
  assert.match(root,/else if\(offerId\)flow\.navigate\('opportunity-detail',offerId\)/)
 })
