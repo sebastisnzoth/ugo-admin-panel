@@ -51,8 +51,8 @@ const CLIENT_TOOLS:LiveFunctionDeclaration[]=[
  {name:'rate_service',description:'Califica un service_id exacto ya completado. Requiere puntuación de 1 a 5 y confirmación explícita.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},score:{type:'NUMBER'},comment:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','score','confirmed']}}
 ]
 const PROVIDER_TOOLS:LiveFunctionDeclaration[]=[
- {name:'provider_set_online',description:'Pone al proveedor online usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
- {name:'provider_set_offline',description:'Pone al proveedor offline usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'provider_set_online',description:'Pone al proveedor online sólo después de una instrucción explícita del proveedor, usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
+ {name:'provider_set_offline',description:'Pone al proveedor offline sólo después de una instrucción explícita del proveedor, usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
  {name:'provider_list_opportunities',description:'Lista oportunidades reales disponibles para el proveedor.',parameters:{type:'OBJECT',properties:{}}},
  {name:'provider_get_active_service',description:'Consulta el trabajo activo real del proveedor y devuelve service_id y estado. Usala antes de cambiar estado cuando el usuario no conoce el service_id.',parameters:{type:'OBJECT',properties:{}}},
  {name:'provider_accept_job',description:'Acepta una oportunidad real sólo después de una confirmación explícita del proveedor y si las reglas UGO lo permiten.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
