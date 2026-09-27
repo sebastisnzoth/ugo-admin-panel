@@ -85,7 +85,7 @@ create table if not exists public.autonomous_decision_ledger (
   authority_class text not null check(authority_class in ('GREEN','YELLOW','RED')),
   policy_version text not null,
   evidence_refs jsonb not null default '[]'::jsonb,
-  authorization text not null,
+  authorization_result text not null,
   correlation_id uuid not null,
   created_at timestamptz not null default now()
 );
