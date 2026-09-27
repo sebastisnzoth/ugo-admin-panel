@@ -1,0 +1,44 @@
+name: Repair UGO TEST Auth
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+  UGO_REQUIRE_ISOLATED_INTEGRATION: '1'
+
+jobs:
+  repair-and-verify:
+    name: Repair TEST identities and verify RPC/RLS
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Refuse missing privileged TEST key
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY" ]]; then
+            echo "Missing GitHub Secret UGO_TEST_SUPABASE_SERVICE_ROLE_KEY."
+            exit 1
+          fi
+      - name: Repair existing TEST identities
+        run: npm run bootstrap:test-auth
+      - name: Verify authenticated isolated lifecycle
+        run: npm run test:integration
