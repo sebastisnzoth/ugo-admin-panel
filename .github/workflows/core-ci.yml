@@ -58,6 +58,9 @@ jobs:
           fi
           echo "OpenRouter secret is configured (value intentionally hidden)."
 
+      - name: Validate OpenRouter free-first route
+        run: node scripts/openrouter-autonomy-probe.mjs
+
       - name: TypeScript and production build
         run: npm run build
 
