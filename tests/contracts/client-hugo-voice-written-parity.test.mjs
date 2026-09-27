@@ -28,7 +28,9 @@ test('voice current location persists exact pickup coordinates into canonical re
  assert.match(location,/pickupLat/)
  assert.match(location,/pickupLng/)
  assert.match(location,/pickupSource/)
- assert.match(location,/savePickup\(hasCoords\?lat:null,hasCoords\?lng:null,source\)/)
+ assert.match(location,/hasCoords=lat!=null&&lng!=null&&validClientCoordinates\(lat,lng\)/)
+ assert.match(location,/savePickup\(pickupLat,pickupLng,pickupSource\)/)
+ assert.match(location,/geocodeClientAddress\(nextAddress,zone\)/)
 })
 
 test('saved voice places preserve coordinates when available',()=>{
