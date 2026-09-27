@@ -54,3 +54,14 @@ test('notification realtime recreates its channel after error, timeout or networ
  assert.match(center,/clearTimeout\(reconnectTimer\)/)
  assert.match(center,/ugo-notices-\$\{role\}-\$\{id\}-\$\{channelEpoch\}/)
 })
+
+
+test('client matching realtime rebuilds after CLOSED as well as error and timeout',async()=>{
+ const src=await read('src/features/client/request/ClientPostConfirmFlow.tsx')
+ assert.match(src,/CHANNEL_ERROR/)
+ assert.match(src,/TIMED_OUT/)
+ assert.match(src,/CLOSED/)
+ assert.match(src,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(src,/const onOnline=\(\)=>\{refresh\(\);reconnect\(\)\}/)
+ assert.match(src,/document\.visibilityState==='visible'/)
+})
