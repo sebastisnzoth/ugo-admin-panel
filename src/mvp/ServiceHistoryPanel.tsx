@@ -5,6 +5,7 @@ import{supabase as adminSupabase}from'../lib/supabase'
 import'./service-history.css'
 import'./provider-history.css'
 import{ProviderHistoryDetail}from'./ProviderHistoryDetail'
+import{ClientEvidenceGallery}from'../features/client/order/ClientEvidenceGallery'
 
 type Role='client'|'provider'|'admin'
 type Person={nombre?:string|null}
@@ -42,7 +43,7 @@ const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[esta
 
 export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpenService,initialServiceId=null}:Props){
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
- const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
+ const[userId,setUserId]=useState<string|null>(null),[open,setOpen]=useState(embedded),[rows,setRows]=useState<Row[]>([]),[loading,setLoading]=useState(false),[error,setError]=useState(''),[filter,setFilter]=useState<ClientFilter|GenericFilter>('todos'),[cancellingId,setCancellingId]=useState(''),[actionNotice,setActionNotice]=useState(''),[providerDetail,setProviderDetail]=useState<Row|null>(null),[clientEvidenceServiceId,setClientEvidenceServiceId]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
  const openedInitialService=useRef<string|null>(null)
  useEffect(()=>{let alive=true;sb.auth.getSession().then(({data})=>{if(alive)setUserId(data.session?.user?.id||null)});const{data:l}=sb.auth.onAuthStateChange((_e,s)=>setUserId(s?.user?.id||null));return()=>{alive=false;l.subscription.unsubscribe()}},[sb])
  useEffect(()=>{if(embedded)setOpen(true)},[embedded])
@@ -116,7 +117,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
     {role==='client'&&<div className={`ugo-history-state-focus tone-${state.tone}`}><span className="ugo-history-state-dot">●</span><div><small>ESTADO DEL PEDIDO</small><strong>{state.title}</strong><p>{state.detail}</p></div></div>}
     {r.descripcion&&<p className="ugo-history-description">{r.descripcion}</p>}
     <div className="ugo-history-meta"><div><small>{r.programado_para?'PROGRAMADO':'CREADO'}</small><b>{date(r.programado_para||r.created_at)}</b></div><div><small>IMPORTE</small><b>{money(r.tarifa)}</b></div>{role!=='client'&&<div><small>CLIENTE</small><b>{person(r.cliente)}</b></div>}{role!=='provider'&&<div><small>PROVEEDOR</small><b>{person(r.proveedor)}</b></div>}</div>
-    {role==='client'&&<div className="ugo-history-row-actions">{onOpenService&&<button type="button" className="ugo-history-open-button" onClick={()=>onOpenService(r.id)}>Abrir pedido y chat</button>}{CLIENT_CANCELLABLE_STATES.has(r.estado)&&<button type="button" className="ugo-history-cancel-button" disabled={Boolean(cancellingId)} onClick={()=>void cancelClientService(r.id)}>{cancellingId===r.id?'Cancelando…':'Cancelar pedido'}</button>}</div>}{role==='provider'&&<div className="ugo-history-row-actions"><button type="button" className="ugo-history-open-button" onClick={()=>setProviderDetail(r)}>Abrir trabajo</button></div>}
+    {role==='client'&&<><div className="ugo-history-row-actions">{onOpenService&&<button type="button" className="ugo-history-open-button" onClick={()=>onOpenService(r.id)}>Abrir pedido y chat</button>}{r.estado==='completado'&&<button type="button" className="ugo-history-open-button secondary" aria-expanded={clientEvidenceServiceId===r.id} onClick={()=>setClientEvidenceServiceId(current=>current===r.id?null:r.id)}>{clientEvidenceServiceId===r.id?'Ocultar fotos':'Ver fotos'}</button>}{CLIENT_CANCELLABLE_STATES.has(r.estado)&&<button type="button" className="ugo-history-cancel-button" disabled={Boolean(cancellingId)} onClick={()=>void cancelClientService(r.id)}>{cancellingId===r.id?'Cancelando…':'Cancelar pedido'}</button>}</div>{r.estado==='completado'&&clientEvidenceServiceId===r.id&&<div className="ugo-client-history-evidence"><ClientEvidenceGallery serviceId={r.id} compact hideWhenEmpty/></div>}</>}{role==='provider'&&<div className="ugo-history-row-actions"><button type="button" className="ugo-history-open-button" onClick={()=>setProviderDetail(r)}>Abrir trabajo</button></div>}
    </article>})}</div>
   </section>
  if(embedded)return <>{panel}{role==='provider'&&providerDetail&&<ProviderHistoryDetail service={providerDetail} onClose={()=>setProviderDetail(null)}/>}</>
