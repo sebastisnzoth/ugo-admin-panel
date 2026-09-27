@@ -46,13 +46,13 @@ export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
   let alive=true,reconnectScheduled=false
   const resync=()=>{if(alive)void loadRef.current().catch(error=>{if(shouldEscalate())reportRef.current('rating_resync_error',error instanceof Error?error.message:'No pudimos sincronizar la calificación.',error)})}
   const reconnect=()=>{if(!alive||reconnectScheduled)return;reconnectScheduled=true;window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)}
-  const onVisibility=()=>{if(document.visibilityState==='visible')resync()}
+  const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}}
   const onOnline=()=>{resync();reconnect()}
   window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
   const timer=window.setInterval(()=>{if(shouldEscalate())resync()},15000)
   const channel=supabase.channel(`client-rating-${userId.slice(0,6)}-${channelEpoch}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'resenas',filter:`cliente_id=eq.${userId}`},resync).subscribe(status=>{
    if(status==='SUBSCRIBED')resync()
-   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'){
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
     resync();reconnect()
     if(shouldEscalate())reportRef.current('rating_realtime_error',`Canal rating: ${status}`,undefined,targetIdRef.current||undefined)
    }

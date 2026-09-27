@@ -114,6 +114,7 @@ test('provider rating recovers after realtime interruption and foreground resume
  assert.match(prompt,/SUBSCRIBED/)
  assert.match(prompt,/CHANNEL_ERROR/)
  assert.match(prompt,/TIMED_OUT/)
+ assert.match(prompt,/CLOSED/)
  assert.match(prompt,/setChannelEpoch/)
  assert.match(prompt,/removeEventListener\('online'/)
  assert.match(prompt,/removeEventListener\('visibilitychange'/)
@@ -131,4 +132,19 @@ test('bilateral rating prompts converge immediately when a review is persisted e
  assert.match(provider,/channelEpoch/)
  assert.match(client,/CHANNEL_ERROR/)
  assert.match(provider,/CHANNEL_ERROR/)
+})
+
+
+test('client and provider ratings rebuild channels on CLOSED and foreground recovery',async()=>{
+ const[client,provider]=await Promise.all([
+  read('src/features/client/rating/ClientRatingPrompt.tsx'),
+  read('src/mvp/ProviderRatingPrompt.tsx'),
+ ])
+ for(const source of[client,provider]){
+  assert.match(source,/CLOSED/)
+  assert.match(source,/setChannelEpoch\(value=>value\+1\)/)
+  assert.match(source,/visibilityState==='visible'/)
+ }
+ assert.match(client,/if\(document\.visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
+ assert.match(provider,/if\(document\.visibilityState==='visible'\)\{refresh\(\);reconnect\(\)\}/)
 })
