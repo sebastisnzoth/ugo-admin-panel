@@ -309,7 +309,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     assert.ok(awaitingApproval.metadata?.trabajo_aprobado_at, 'La aprobación del trabajo debe quedar persistida antes del pago')
 
     const pendingCashPayment = await getPayment(c, serviceId)
-    assert.equal(pendingCashPayment.id, payment.data?.id)
+    assert.equal(pendingCashPayment.id, expandedPayment.id)
     assert.equal(pendingCashPayment.estado, 'pendiente')
     assert.equal(pendingCashPayment.metodo, 'efectivo')
     assert.equal(pendingCashPayment.modelo_pago, 'presencial')
@@ -322,7 +322,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     if (clientCash.error) throw clientCash.error
 
     const confirmedPayment = await getPayment(c, serviceId)
-    assert.equal(confirmedPayment.id, payment.data?.id)
+    assert.equal(confirmedPayment.id, expandedPayment.id)
     assert.equal(confirmedPayment.estado, 'liberado')
     assert.equal(confirmedPayment.metodo, 'efectivo')
     assert.equal(confirmedPayment.modelo_pago, 'presencial')
