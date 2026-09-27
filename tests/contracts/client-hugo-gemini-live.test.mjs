@@ -111,3 +111,15 @@ test('Live audio is primed from the user activation and client surfaces model ou
  assert.match(bridge,/no-microphone/)
  assert.match(bridge,/microphone-busy/)
 })
+
+
+test('Client Hugo can enumerate multiple active services before exact service actions',()=>{
+ assert.match(bridge,/client_list_services/)
+ assert.match(bridge,/Lista los pedidos activos reales del cliente/)
+ assert.match(bridge,/si el usuario habla de un pedido pero no conoce el service_id o tiene varios pedidos activos, usá client_list_services/)
+ assert.match(dock,/ClientVoiceHugoDock\(\{accessToken,services=\[\]/)
+ assert.match(dock,/if\(name==='client_list_services'\)/)
+ assert.match(dock,/serviceId:String\(candidate\.id\)/)
+ assert.match(dock,/number:candidate\.numero\?\?null/)
+ assert.match(dock,/summary:serviceSummary\(candidate,pt\)/)
+})
