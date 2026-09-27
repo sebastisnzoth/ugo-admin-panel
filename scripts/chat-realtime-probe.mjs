@@ -45,7 +45,7 @@ function deferred(label, timeoutMs = 20000) {
     }
     timer = setTimeout(() => reject(new Error(`${label}: timeout sin evento Realtime`)), timeoutMs)
   })
-  return { promise, resolve: resolvePromise }
+  return { promise, resolve: resolvePromise, cancel: () => clearTimeout(timer) }
 }
 
 function subscribe(channel, label) {
@@ -132,6 +132,7 @@ async function probeDirection({
         await sleep(1000)
       }
     } finally {
+      signal.cancel()
       await receiver.removeChannel(channel).catch(() => {})
     }
   }
