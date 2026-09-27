@@ -1,0 +1,45 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import fs from 'node:fs'
+
+const sql=fs.readFileSync('supabase/migrations/20260927234500_autonomous_corporation_foundation.sql','utf8')
+const ui=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')
+
+test('corporate control plane persists the 13 active numbered departments without Department 13',()=>{
+ for(const id of [1,2,3,4,5,6,7,8,9,10,11,12,14])assert.match(sql,new RegExp('\\('+id+",'"))
+ assert.doesNotMatch(sql,/\(13,'/)
+ assert.match(sql,/check \(department_id in \(1,2,3,4,5,6,7,8,9,10,11,12,14\)\)/)
+})
+
+test('autonomy modes and kill switches are deterministic persisted controls',()=>{
+ for(const mode of ['OFF','SHADOW','ON','SAFE_MODE'])assert.match(sql,new RegExp("'"+mode+"'"))
+ assert.match(sql,/autonomous_kill_switches/)
+ assert.match(sql,/AUTONOMY_NOT_EXECUTABLE/)
+})
+
+test('RED work cannot auto-enter executable queue',()=>{
+ assert.match(sql,/if p_authority_class='RED'/)
+ assert.match(sql,/'WAITING_APPROVAL'/)
+})
+
+test('decision and evidence ledgers are append-only',()=>{
+ assert.match(sql,/autonomous_decision_immutable/)
+ assert.match(sql,/autonomous_evidence_immutable/)
+ assert.match(sql,/AUTONOMOUS_LEDGER_APPEND_ONLY/)
+})
+
+test('corporate governance is backend protected by Super Admin checks and RLS',()=>{
+ assert.ok((sql.match(/private\.is_superadmin\(\)/g)||[]).length>=10)
+ assert.match(sql,/enable row level security/)
+ assert.match(sql,/revoke all on public\.autonomous_company_state/)
+})
+
+test('Super Admin exposes Empresa Autónoma from persisted state only',()=>{
+ assert.match(ui,/Empresa Autónoma/)
+ assert.match(ui,/Centro de Control Corporativo/)
+ assert.match(ui,/from\('autonomous_company_state'\)/)
+ assert.match(ui,/from\('autonomous_departments'\)/)
+ assert.match(ui,/from\('autonomous_agents'\)/)
+ assert.match(ui,/from\('autonomous_jobs'\)/)
+ assert.match(ui,/No se muestra actividad simulada/)
+})
