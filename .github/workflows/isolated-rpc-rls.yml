@@ -110,7 +110,9 @@ jobs:
         run: npm run build
 
       - name: Core contract regression suite
-        run: npm test
+        # Keep repository contracts independent from remote TEST credentials.
+        # The authenticated RPC/RLS harness runs in the dedicated next step.
+        run: node --test tests/contracts/*.test.mjs
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration
