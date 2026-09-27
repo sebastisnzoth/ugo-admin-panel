@@ -28,7 +28,7 @@ export function ProviderOpportunities(){
 
 export function ProviderOpportunityDetail({id}:{id:string|null}){
  const flow=useProviderFlow(),d=useProviderData(),item=d.opportunities.find(opportunity=>opportunity.id===id),[now,setNow]=useState(()=>Date.now())
- useEffect(()=>{if(!item?.expiresAt)return;setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[item?.id,item?.expiresAt])
+ useEffect(()=>{if(!item?.expiresAt)return;queueMicrotask(()=>setNow(Date.now()));const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[item?.id,item?.expiresAt])
  const expiry=item?.expiresAt?new Date(item.expiresAt).getTime():Number.POSITIVE_INFINITY,remainingMs=expiry-now,expired=remainingMs<=0
  if(d.debtBlocked)return <section className="provider-screen provider-opportunity-detail"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><span className="provider-kicker">COMISIONES UGO</span><h1>Pagá a UGO para aceptar otro trabajo</h1><p>Tenés {d.pendingDebtCount} servicios con comisión pendiente. El límite es 3.</p><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></section>
  if(!item)return <section className="provider-screen"><Button variant="ghost" className="provider-back" onClick={flow.actions.openOpportunities}>← Pedidos</Button><h1>Este pedido ya no está disponible</h1><p>Puede haber sido tomado, cancelado o actualizado.</p></section>
