@@ -65,7 +65,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    const capturedAt=new Date(Number(pos.timestamp||Date.now())).toISOString()
    const{data,error}=serviceId
     ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
-    :await rpc.rpc('actualizar_ubicacion_y_distancia',{p_lat:point[0],p_lng:point[1],p_servicio_id:null})
+    :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
    writing=false
    if(!error){
     lastWrite=Date.now();lastPoint=point
