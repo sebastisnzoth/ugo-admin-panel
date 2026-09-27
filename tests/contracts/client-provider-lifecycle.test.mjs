@@ -200,3 +200,15 @@ test('provider and client observe critical service changes through realtime',asy
  assert.match(clientReview,/table:'servicios'.*cliente_id=eq\.\$\{userId\}/)
  assert.match(clientReview,/table:'pagos'/)
 })
+
+
+test('provider realtime rebuilds on CLOSED, network recovery and foreground resume',async()=>{
+ const source=await read('src/mvp/provider/useProviderRealtime.ts')
+ assert.match(source,/CHANNEL_ERROR/)
+ assert.match(source,/TIMED_OUT/)
+ assert.match(source,/CLOSED/)
+ assert.match(source,/setChannelEpoch\(value=>value\+1\)/)
+ assert.match(source,/const onOnline=\(\)=>\{resync\(\);reconnect\(\)\}/)
+ assert.match(source,/visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
+ assert.match(source,/removeEventListener\('online',onOnline\)/)
+})
