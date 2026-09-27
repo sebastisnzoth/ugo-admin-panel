@@ -53,3 +53,15 @@ test('cash close directly refreshes the parent detail so rating can appear witho
  assert.match(source,/onCompleted\?:\(\)=>void\|Promise<void>/)
  assert.match(source,/confirmApprovedCashClientService[\s\S]*await load\(\)[\s\S]*await onCompleted\?\.\(\)/)
 })
+
+
+test('generic completion review stays visible when multiple services await client approval',()=>{
+ assert.match(source,/eq\('estado','esperando_aprobacion'\)\.order\('created_at',\{ascending:false\}\)\.limit\(1\)/)
+ assert.doesNotMatch(source,/rows\.length!==1/)
+ assert.match(source,/const next=rows\[0\]\|\|null/)
+})
+
+test('after closing one generic service, load can advance to the next pending closure',()=>{
+ assert.match(source,/approvePendingClientService[\s\S]*await load\(\)/)
+ assert.match(source,/confirmApprovedCashClientService[\s\S]*await load\(\)/)
+})
