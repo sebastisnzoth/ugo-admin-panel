@@ -3,10 +3,12 @@ package com.ugo.mobile;
 import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.speech.RecognitionListener;
 import android.speech.RecognizerIntent;
 import android.speech.SpeechRecognizer;
@@ -31,8 +33,11 @@ public class MainActivity extends Activity {
     private static final int LOCATION_REQUEST = 702;
     private static final int MICROPHONE_REQUEST = 703;
     private static final int CAMERA_REQUEST = 704;
+    private static final int FILE_CHOOSER_CAMERA_PERMISSION_REQUEST = 705;
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
+    private WebChromeClient.FileChooserParams pendingFileChooserParams;
+    private Uri pendingCameraUri;
     private PermissionRequest pendingWebPermissionRequest;
     private GeolocationPermissions.Callback pendingGeolocationCallback;
     private String pendingGeolocationOrigin;
@@ -158,21 +163,81 @@ public class MainActivity extends Activity {
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (fileCallback != null) fileCallback.onReceiveValue(null);
                 fileCallback = filePathCallback;
-                Intent intent;
-                try {
-                    intent = fileChooserParams.createIntent();
-                } catch (Exception e) {
-                    intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    intent.setType("*/*");
+                pendingFileChooserParams = fileChooserParams;
+
+                if (acceptsImage(fileChooserParams) &&
+                        checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                    requestPermissions(new String[]{Manifest.permission.CAMERA}, FILE_CHOOSER_CAMERA_PERMISSION_REQUEST);
+                    return true;
                 }
-                startActivityForResult(intent, FILE_CHOOSER_REQUEST);
+
+                launchFileChooser(fileChooserParams, acceptsImage(fileChooserParams));
                 return true;
             }
         });
 
         if (savedInstanceState == null) webView.loadUrl(BuildConfig.UGO_URL);
         else webView.restoreState(savedInstanceState);
+    }
+
+    private boolean acceptsImage(WebChromeClient.FileChooserParams params) {
+        String[] acceptTypes = params != null ? params.getAcceptTypes() : null;
+        if (acceptTypes == null || acceptTypes.length == 0) return false;
+        for (String type : acceptTypes) {
+            if (type != null && (type.startsWith("image/") || type.equals("image/*"))) return true;
+        }
+        return false;
+    }
+
+    private Intent buildFilePickerIntent(WebChromeClient.FileChooserParams params) {
+        try {
+            return params.createIntent();
+        } catch (Exception e) {
+            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            intent.setType("*/*");
+            return intent;
+        }
+    }
+
+    private Intent buildCameraIntent() {
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (cameraIntent.resolveActivity(getPackageManager()) == null) return null;
+
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.DISPLAY_NAME, "ugo-evidencia-" + System.currentTimeMillis() + ".jpg");
+        values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
+        pendingCameraUri = getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+        if (pendingCameraUri == null) return null;
+
+        cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, pendingCameraUri);
+        cameraIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        return cameraIntent;
+    }
+
+    private void launchFileChooser(WebChromeClient.FileChooserParams params, boolean includeCamera) {
+        Intent pickerIntent = buildFilePickerIntent(params);
+        if (!includeCamera) {
+            startActivityForResult(pickerIntent, FILE_CHOOSER_REQUEST);
+            return;
+        }
+
+        Intent cameraIntent = buildCameraIntent();
+        if (cameraIntent == null) {
+            startActivityForResult(pickerIntent, FILE_CHOOSER_REQUEST);
+            return;
+        }
+
+        Intent chooser = new Intent(Intent.ACTION_CHOOSER);
+        chooser.putExtra(Intent.EXTRA_INTENT, pickerIntent);
+        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{cameraIntent});
+        startActivityForResult(chooser, FILE_CHOOSER_REQUEST);
+    }
+
+    private void clearUnusedCameraUri() {
+        if (pendingCameraUri == null) return;
+        try { getContentResolver().delete(pendingCameraUri, null, null); } catch (Exception ignored) {}
+        pendingCameraUri = null;
     }
 
     private void resolvePendingWebPermissionRequest() {
@@ -307,6 +372,13 @@ public class MainActivity extends Activity {
             resolvePendingWebPermissionRequest();
             return;
         }
+        if (requestCode == FILE_CHOOSER_CAMERA_PERMISSION_REQUEST) {
+            boolean granted = checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
+            WebChromeClient.FileChooserParams params = pendingFileChooserParams;
+            pendingFileChooserParams = null;
+            if (fileCallback != null && params != null) launchFileChooser(params, granted && acceptsImage(params));
+            return;
+        }
         if (requestCode == MICROPHONE_REQUEST) {
             boolean granted = checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED;
             if (pendingWebPermissionRequest != null) resolvePendingWebPermissionRequest();
@@ -337,6 +409,11 @@ public class MainActivity extends Activity {
             pendingWebPermissionRequest.deny();
             pendingWebPermissionRequest = null;
         }
+        if (fileCallback != null) {
+            fileCallback.onReceiveValue(null);
+            fileCallback = null;
+        }
+        clearUnusedCameraUri();
         super.onDestroy();
     }
 
@@ -345,9 +422,20 @@ public class MainActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == FILE_CHOOSER_REQUEST && fileCallback != null) {
             Uri[] result = null;
-            if (resultCode == RESULT_OK && data != null && data.getData() != null) result = new Uri[]{data.getData()};
+            if (resultCode == RESULT_OK) {
+                result = WebChromeClient.FileChooserParams.parseResult(resultCode, data);
+                if ((result == null || result.length == 0) && pendingCameraUri != null) {
+                    result = new Uri[]{pendingCameraUri};
+                    pendingCameraUri = null;
+                } else {
+                    clearUnusedCameraUri();
+                }
+            } else {
+                clearUnusedCameraUri();
+            }
             fileCallback.onReceiveValue(result);
             fileCallback = null;
+            pendingFileChooserParams = null;
         }
     }
 
