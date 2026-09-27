@@ -11,8 +11,12 @@ test('client payment realtime scopes selected service and preserves authenticate
 
 test('client payment rehydrates persisted state after reconnect and visibility recovery',()=>{
  assert.match(source,/status==='SUBSCRIBED'/)
+ assert.match(source,/CHANNEL_ERROR/)
+ assert.match(source,/TIMED_OUT/)
+ assert.match(source,/CLOSED/)
  assert.match(source,/addEventListener\('online',onOnline\)/)
  assert.match(source,/visibilityState==='visible'/)
+ assert.match(source,/if\(document\.visibilityState==='visible'\)\{refresh\(\);reconnect\(\)\}/)
 })
 
 test('ambiguous cash selection re-reads persisted state before surfacing failure',()=>{
