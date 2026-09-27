@@ -30,7 +30,7 @@ test('provider root mounts global voice commands and keeps transactional job mut
  assert.match(root,/<ProviderGlobalVoiceCommands\/>/)
  assert.match(src,/flow\.actions\.openOpportunities\(\)/)
  assert.match(src,/flow\.actions\.openEarnings\(\)/)
- assert.match(src,/data\.toggleOnline\(\)/)
+ assert.doesNotMatch(src,/data\.toggleOnline\(\)/)
  assert.doesNotMatch(src,/acceptOpportunity/)
  assert.doesNotMatch(src,/rejectOpportunity/)
  assert.doesNotMatch(src,/data\.advance/)
@@ -66,4 +66,18 @@ test('android native recognition stays active across utterances but stops explic
  assert.match(src,/ERROR_NO_MATCH/)
  assert.match(src,/ERROR_SPEECH_TIMEOUT/)
  assert.match(src,/nativeVoiceActive = false;\s*stopNativeRecognition\(\)/)
+})
+
+
+test('persistent provider availability changes stay on guarded Gemini tools',async()=>{
+ const[global,provider,live]=await Promise.all([
+  read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx'),
+  read('src/mvp/provider/ProviderHugoBridge.tsx'),
+  read('src/lib/browserVoiceBridge.ts'),
+ ])
+ assert.doesNotMatch(global,/toggleOnline\(\)/)
+ assert.match(live,/provider_set_online[^\n]+required:\['confirmed'\]/)
+ assert.match(live,/provider_set_offline[^\n]+required:\['confirmed'\]/)
+ assert.match(provider,/provider_set_online'\)\{if\(args\.confirmed!==true\)/)
+ assert.match(provider,/provider_set_offline'\)\{if\(args\.confirmed!==true\)/)
 })
