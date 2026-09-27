@@ -23,18 +23,18 @@ No production publication is implied.
 | D14 six independent agents | six named D14 agents persisted | RUNTIME VALIDATED / TEST |
 | Corporate agents | canonical D1-D12 agents plus six D14 agents | RUNTIME VALIDATED / TEST |
 | OFF / SHADOW / ON / SAFE_MODE | persisted global state + Super Admin control | RUNTIME VALIDATED / TEST |
-| GREEN / YELLOW / RED authority | authority persisted; RED human approval/rejection RPC | RUNTIME VALIDATED / TEST for RED approval foundation |
-| Decision/Evidence ledgers | append-only persisted ledgers | IMPLEMENTED; richer action/model/cost/verification lifecycle remains |
+| GREEN / YELLOW / RED authority | authority persisted; RED human approval/rejection; YELLOW independent dual control | IMPLEMENTED; runtime dual-control validation pending |
+| Decision/Evidence ledgers | append-only persisted ledgers + complete action envelope + hashed verification evidence | IMPLEMENTED; end-to-end worker evidence validation remains |
 | Scoped kill switches | GLOBAL / DEPARTMENT / AGENT / CAPABILITY | RUNTIME VALIDATED foundation; recovery re-audit remains |
 | Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation | RUNTIME VALIDATED schema/RPC in TEST; persistent event worker remains |
 | Data Quality Gate | freshness, provenance, completeness, consistency; independent reconciliation for YELLOW/RED; hashed evidence | RUNTIME VALIDATED schema/RPC in TEST |
 | QA Lab persistence | scenarios, runs, chaos profiles, deterministic judges, coverage map, release gate | RUNTIME VALIDATED schema in TEST |
 | QA actors | Client, Provider, Admin/System simulators persisted | RUNTIME VALIDATED registration in TEST; real P0 execution binding remains |
-| Meta-QA | seeded-defect scenario persisted | IMPLEMENTED; detection run must be runtime validated |
+| Meta-QA | seeded-defect scenario + governed calibration RPC | IMPLEMENTED; required runtime CI calibration added |
 | Customer #1 Release Gate | persisted gate with QA, critical finding and stale-job blockers | IMPLEMENTED; full acceptance journey remains |
-| OpenRouter free-first | CI-side authenticated free-first probe | CI VALIDATED; runtime Model Router persistence/benchmark/fallback telemetry remains |
+| OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics and benchmark gate | IMPLEMENTED; runtime candidate benchmark/fallback execution remains |
 | IP Gate | persisted corporate protection gate + Super Admin visibility | RUNTIME VALIDATED foundation / TEST; remaining Master evidence/audit closure controls tracked below |
-| Super Admin Empresa Autónoma | real persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches | IMPLEMENTED; dedicated QA Lab / Model Router / Launch Gate views remain |
+| Super Admin Empresa Autónoma | real persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate | IMPLEMENTED; searchable correlation timeline and UGO Empresas readiness remain |
 | Consultar Agente | evidence-grounded deterministic consultation | IMPLEMENTED; protected server-side model route remains |
 | UGO Empresas | Master product definition, D12 owner | NOT YET IMPLEMENTED as autonomous product readiness flow |
 
@@ -48,6 +48,12 @@ No production publication is implied.
 - `20260928170000_autonomous_job_resilience.sql`
 - `20260928173000_autonomous_data_quality_evidence.sql`
 - `20260928180000_autonomous_qa_simulators.sql`
+- `20260928184500_autonomous_action_envelope.sql`
+- `20260928193000_autonomous_yellow_dual_control.sql`
+- `20260928200000_autonomous_d14_assurance.sql`
+- `20260928203000_autonomous_voice_signals.sql`
+- `20260928213000_autonomous_model_router.sql`
+- `20260928220000_autonomous_qa_meta_gate.sql`
 
 IP governance is implemented by the existing corporate IP migrations and is a permanent control independent from QA release approval.
 
@@ -71,8 +77,6 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 ## 5. Remaining Master work — blocking DONE
 
 ### Phase B
-- Complete YELLOW dual-control/configured-approval semantics rather than treating it as GREEN.
-- Persist complete action envelope: `action_id`, trigger, target/serviceId, policy/version, risk, evidence refs, model/provider/model id, estimated/actual cost, authorization, execution, verification and correlation.
 - Add browser-independent event/schedule worker and prove it operates with autonomy ON.
 - Complete Safe Mode/circuit-breaker recovery verification and re-audit.
 - Implement runtime Model Router: free candidate discovery, UGO benchmark threshold, primary/fallback, quality/latency/failure/availability/cost metrics and periodic reevaluation.
@@ -80,7 +84,6 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 ### Phase C
 - Bind QA simulators to actual UGO TEST Client/Provider/Admin actions, not merely persisted assertions.
 - Execute chaos/fault injection against the real P0 path.
-- Prove Meta-QA detects seeded defects.
 - Generate remediation request, rerun and permanent regression automatically.
 - Keep Release Gate deterministic and blocking.
 
@@ -92,24 +95,12 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 - Evaluate Customer #1 Launch Gate from persisted evidence.
 
 ### D14 corporate governance
-- Enterprise Risk Map.
-- Control Coverage Map.
-- Corporate Digital Twin.
-- Corporate Red Team scenarios.
-- Meta-audit seeded anomalies.
-- Founder Challenge Protocol.
-- Independent critical-finding closure workflow with remediation deadline and re-audit evidence.
 
 ### Voice of Client & Provider
-- Persist privacy-gated signal → pattern → hypothesis → TEST reproduction → QA → correction → post-change measurement loop.
 
 ### Super Admin
 Expose real persisted dedicated views for:
 - searchable Decision/Evidence correlation timeline;
-- Risk & Audit;
-- QA Lab;
-- Model Router;
-- Launch Gate;
 - UGO Empresas readiness.
 
 ### IP remaining controls
