@@ -3,6 +3,7 @@ import{ClientFlowProvider}from'../features/client/flow/clientFlow'
 import{ProviderFlowProvider}from'./provider/providerFlow'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{resolveAppRoute}from'../app/router'
+import{BrowserVoiceBridgeBootstrap}from'../shared/voice/BrowserVoiceBridgeBootstrap'
 import{Button,Input,LoadingScreen}from'./shared'
 import'./mvp.css'
 import'./ugo-design-system.css'
@@ -31,8 +32,8 @@ const ProviderRecruitmentLanding=lazy(()=>import('./ProviderRecruitmentLanding')
 function RouteLoading(){return <LoadingScreen label="Abriendo UGO…"/>}
 function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
 function BrowserShell({children}:{children:React.ReactNode}){return <div className="ugo-browser-role-shell"><div className="ugo-browser-role-app">{children}</div></div>}
-function ClientApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
-function ProviderApp({web=false}:{web?:boolean}){const app=<RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate>;return web?<BrowserShell>{app}</BrowserShell>:app}
+function ClientApp({web=false}:{web?:boolean}){const app=<><BrowserVoiceBridgeBootstrap/><RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
+function ProviderApp({web=false}:{web?:boolean}){const app=<><BrowserVoiceBridgeBootstrap/><RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
 
 export function MvpApp(){
  const route=resolveAppRoute(window.location.search)
