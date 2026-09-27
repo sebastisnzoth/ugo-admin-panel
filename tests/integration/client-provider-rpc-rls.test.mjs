@@ -355,9 +355,17 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     assert.deepEqual(await getService(a, serviceId), service, 'Admin observa el mismo cierre persistido del serviceId E2E')
     assert.deepEqual(await getPayment(a, serviceId), confirmedPayment, 'Admin observa el mismo pago persistido del serviceId E2E')
 
-    const { data: ratingsBefore, error: ratingsReadError } = await c.from('calificaciones').select('*').eq('servicio_id', serviceId)
+    const { data: ratingsBefore, error: ratingsReadError } = await c.from('resenas').select('*').eq('servicio_id', serviceId)
     if (ratingsReadError && ratingsReadError.code !== '42P01') throw ratingsReadError
     if (!ratingsReadError) assert.equal(ratingsBefore.length, 0, 'El fixture nuevo no debe heredar ratings de otro serviceId')
+
+    const clientRating = await c.from('resenas').insert({servicio_id:serviceId,cliente_id:clientId,proveedor_id:providerId,puntuacion:5,comentario:'UGO E2E cliente',autor_tipo:'cliente'}).select('id,autor_tipo,puntuacion').single()
+    if (clientRating.error) throw clientRating.error
+    const providerRating = await p.from('resenas').insert({servicio_id:serviceId,cliente_id:clientId,proveedor_id:providerId,puntuacion:5,comentario:'UGO E2E proveedor',autor_tipo:'proveedor'}).select('id,autor_tipo,puntuacion').single()
+    if (providerRating.error) throw providerRating.error
+    const {data: bilateralRatings,error: bilateralRatingsError}=await a.from('resenas').select('autor_tipo,puntuacion').eq('servicio_id',serviceId)
+    if(bilateralRatingsError)throw bilateralRatingsError
+    assert.deepEqual(bilateralRatings.map(x=>x.autor_tipo).sort(),['cliente','proveedor'],'El P0 debe cerrar con rating bilateral persistido por serviceId')
 
     const { data: adminEvidence, error: adminEvidenceError } = await a.from('evidencias_servicio').select('tipo,storage_path').eq('servicio_id', serviceId).order('created_at')
     if (adminEvidenceError) throw adminEvidenceError
