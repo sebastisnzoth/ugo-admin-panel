@@ -120,6 +120,8 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
   const runId = crypto.randomUUID()
   let serviceId = null
   const evidencePaths = []
+  const testLat = -27.4167917
+  const testLng = -48.4242297
 
   try {
     const { data: created, error: createError } = await c.from('servicios').insert({
@@ -133,6 +135,13 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     }).select('id').single()
     if (createError) throw createError
     serviceId = created.id
+
+    const clientLocation = await c.rpc('guardar_ubicacion_servicio_cliente', {
+      p_servicio_id: serviceId,
+      p_lat: testLat,
+      p_lng: testLng,
+    })
+    if (clientLocation.error) throw clientLocation.error
 
     const { error: directedError } = await c.rpc('iniciar_matching_dirigido', {
       p_servicio_id: serviceId,
@@ -201,10 +210,24 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
       assert.equal(service.metadata?.requested_payment_method, 'efectivo', 'El pago preseleccionado del fixture TEST debe ser efectivo')
     }
 
-    for (const state of ['en_camino', 'llegado']) {
-      const step = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: state })
-      if (step.error) throw step.error
-    }
+    const enCamino = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_camino' })
+    if (enCamino.error) throw enCamino.error
+
+    const publishedGps = await p.rpc('publicar_ubicacion_proveedor', {
+      p_servicio_id: serviceId,
+      p_lat: testLat,
+      p_lng: testLng,
+      p_captured_at: new Date().toISOString(),
+      p_accuracy_m: 10,
+    })
+    if (publishedGps.error) throw publishedGps.error
+    assert.equal(publishedGps.data?.status, 'published')
+
+    const arrival = await p.rpc('marcar_llegada_proveedor', { p_servicio_id: serviceId })
+    if (arrival.error) throw arrival.error
+    assert.equal(arrival.data?.status, 'arrived')
+    assert.equal(arrival.data?.state, 'llegado')
+    assert.ok(Number(arrival.data?.distance_m) <= 200)
 
     const beforeInitialEvidence = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_progreso' })
     expectDomainError(beforeInitialEvidence, /foto inicial/)
