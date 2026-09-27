@@ -73,8 +73,9 @@ export function BrowserVoiceBridgeBootstrap(){
    isAvailable:()=>Boolean(Ctor),
    stopSpeaking:()=>{try{window.speechSynthesis?.cancel()}catch{}},
   }
-  target.UGOVoiceBridge=bridge
-  return()=>{if(target.UGOVoiceBridge===bridge)delete target.UGOVoiceBridge;active=false;cleanup()}
+  const bridgeHost=target as unknown as{UGOVoiceBridge?:NativeBridge}
+  bridgeHost.UGOVoiceBridge=bridge
+  return()=>{if(bridgeHost.UGOVoiceBridge===bridge)delete bridgeHost.UGOVoiceBridge;active=false;cleanup()}
  },[])
  return null
 }
