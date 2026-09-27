@@ -27,8 +27,8 @@ const cashClose=migration.slice(cashCloseStart)
 test('client closure UI exposes approval and cash-paid as separate exact-service RPCs',()=>{
  assert.match(ui,/rpc\('aprobar_servicio',\{p_servicio_id:id\}\)/)
  assert.match(ui,/rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:id\}\)/)
- assert.match(ui,/\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
  assert.match(ui,/\.eq\('cliente_id',uid\)/)
+ assert.match(ui,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
 })
 
 test('approval is client-owned and requires waiting state plus real final provider evidence',()=>{
