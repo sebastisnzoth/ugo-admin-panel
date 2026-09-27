@@ -1,7 +1,7 @@
 import{supabase}from'../../../lib/supabase'
 import{legacyState,type Campaign,type DemandRow,type DuplicateGroup,type EventRow,type Prospect}from'../model'
 
-export const SCOUT_CRM_SELECT_FIELDS='id,external_id,nombre,categoria,telefono,email,website,direccion,ciudad,pais,fuente,score_confianza,estado,notas_hugo,created_at,updated_at,contactado_at,aprobado_at,pipeline_etapa,recruitment_score,contactos_intentos,ultimo_canal,ultimo_contacto_at,proximo_contacto_at,no_contactar,invitation_token,invitation_expires_at,invitation_revoked_at,invitation_opened_at,invitation_claimed_at,converted_user_id,source_campaign_id'
+export const SCOUT_CRM_SELECT_FIELDS='id,external_id,nombre,categoria,telefono,email,email_source,email_verified,email_last_seen_at,website,direccion,ciudad,pais,fuente,score_confianza,estado,notas_hugo,created_at,updated_at,contactado_at,aprobado_at,pipeline_etapa,recruitment_score,contactos_intentos,ultimo_canal,ultimo_contacto_at,proximo_contacto_at,no_contactar,invitation_token,invitation_expires_at,invitation_revoked_at,invitation_opened_at,invitation_claimed_at,converted_user_id,source_campaign_id'
 
 export async function loadScoutCrmDashboard(){
  const prospects:Prospect[]=[]
