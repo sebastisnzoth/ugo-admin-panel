@@ -37,6 +37,42 @@ jobs:
           cp android-apk/app/build/outputs/apk/provider/debug/app-provider-debug.apk apk-artifacts/UGO-Proveedor.apk
           cp android-apk/app/build/outputs/apk/admin/debug/app-admin-debug.apk apk-artifacts/UGO-Admin.apk
           sha256sum apk-artifacts/*.apk | tee apk-artifacts/SHA256SUMS.txt
+          ls -lh apk-artifacts/*.apk
+
+      - name: Verify APK integrity and package IDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          AAPT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}/build-tools/35.0.0/aapt"
+          test -x "$AAPT"
+
+          declare -A expected=(
+            [UGO-Cliente.apk]="com.ugo.client"
+            [UGO-Proveedor.apk]="com.ugo.provider"
+            [UGO-Admin.apk]="com.ugo.admin"
+          )
+
+          for apk in UGO-Cliente.apk UGO-Proveedor.apk UGO-Admin.apk; do
+            path="apk-artifacts/$apk"
+            test -s "$path"
+            unzip -tq "$path" >/dev/null
+            unzip -l "$path" | grep -q 'AndroidManifest.xml'
+            unzip -l "$path" | grep -q 'classes.dex'
+
+            badging="$("$AAPT" dump badging "$path")"
+            package="$(printf '%s\n' "$badging" | sed -n "s/^package: name='\([^']*\)'.*/\1/p" | head -1)"
+            if [[ "$package" != "${expected[$apk]}" ]]; then
+              echo "Unexpected package for $apk: $package (expected ${expected[$apk]})"
+              exit 1
+            fi
+            printf '%s package=%s bytes=%s\n' "$apk" "$package" "$(stat -c%s "$path")"
+          done
+
+          unique_hashes="$(sha256sum apk-artifacts/UGO-*.apk | awk '{print $1}' | sort -u | wc -l)"
+          if [[ "$unique_hashes" -ne 3 ]]; then
+            echo "The three role APKs must have distinct binary hashes."
+            exit 1
+          fi
       - uses: actions/upload-artifact@v4
         with:
           name: UGO-Cliente
