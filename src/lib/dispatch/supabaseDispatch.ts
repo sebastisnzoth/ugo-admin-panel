@@ -65,7 +65,20 @@ function consumeStoredPreferredProvider(category: string): string | null {
 }
 
 async function persistPickup(serviceId: string, pickup: Coordinates | null) {
-  if (!pickup) return
+  if (!pickup) {
+    const error = new Error('Falta una ubicación válida para buscar profesionales. Volvé a “Dónde es el servicio” y confirmá la dirección o usá tu GPS.')
+    void reportSentinelIncident({
+      eventType: 'client_request_location_missing',
+      message: error.message,
+      error,
+      role: 'client',
+      severity: 'P1',
+      serviceId,
+      action: 'client.request.location',
+      checklistCode: 'MAP-GPS',
+    })
+    throw error
+  }
   try {
     const { error } = await bounded<RpcResponse>(
       (supabase as any).rpc('guardar_ubicacion_servicio_cliente', {
@@ -84,11 +97,12 @@ async function persistPickup(serviceId: string, pickup: Coordinates | null) {
       message: incidentMessage(error, 'No se pudo persistir la ubicación del pedido.'),
       error,
       role: 'client',
-      severity: 'P2',
+      severity: 'P1',
       serviceId,
       action: 'client.request.location',
       checklistCode: 'MAP-GPS',
     })
+    throw error
   }
 }
 

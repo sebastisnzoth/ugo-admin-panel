@@ -17,6 +17,8 @@ test('client dispatch persists pickup on the exact service before matching', asy
   assert.match(guided, /const draftPickup=/)
   assert.match(guided, /pickup_source:draft\.pickupSource\|\|null/)
   assert.match(dispatch, /await persistPickup\(request\.serviceId, pickup\)/)
+  assert.match(dispatch, /if \(!pickup\) \{[\s\S]*client_request_location_missing[\s\S]*throw error/)
+  assert.match(dispatch, /client_request_location_error[\s\S]*throw error/)
   assert.match(dispatch, /await persistPickup[\s\S]*rpc\('iniciar_matching'/)
   assert.match(sql, /create or replace function public\.guardar_ubicacion_servicio_cliente/)
   assert.match(sql, /s\.cliente_id = v_uid/)
