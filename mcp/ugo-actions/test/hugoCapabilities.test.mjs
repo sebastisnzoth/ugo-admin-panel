@@ -5,7 +5,8 @@ import{getHugoCapabilities,validateHugoCapability}from'../src/hugoCapabilities.j
 test('client exposes only implemented Hugo MCP actions as executable',()=>{
  const c=getHugoCapabilities({role:'client'})
  assert.ok(c.actions.includes('ugo_approve_work'))
- assert.ok(c.pending.includes('create_request'))
+ assert.ok(c.actions.includes('ugo_create_service_request'))
+ assert.equal(validateHugoCapability({role:'client',tool:'ugo_create_service_request'}).allowed,true)
  assert.equal(validateHugoCapability({role:'client',tool:'create_request'}).code,'capability_not_available')
 })
 
