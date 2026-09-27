@@ -41,6 +41,20 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.equal(departments.data.length,13)
  assert.equal(departments.data.some(x=>x.department_id===13),false)
 
+ const agents=await db.from('autonomous_agents').select('id,department_id,name')
+ if(agents.error)throw agents.error
+ assert.equal(agents.data.filter(x=>x.department_id===14).length,6,'D14 must expose exactly six independent agents')
+ const sims=await db.from('autonomous_qa_simulators').select('role,status')
+ if(sims.error)throw sims.error
+ assert.equal(sims.data.filter(x=>x.status==='ACTIVE').length,3,'QA Lab must expose three active simulator actors')
+ const coverage=await db.from('autonomous_quality_coverage').select('coverage_key,status')
+ if(coverage.error)throw coverage.error
+ assert.ok(coverage.data.length>=7,'QA coverage map must be persisted')
+ const routes=await db.from('autonomous_model_routes').select('task_class,status,max_cost')
+ if(routes.error)throw routes.error
+ assert.ok(routes.data.some(x=>x.task_class==='AGENT_CONSULTATION'))
+ assert.ok(routes.data.every(x=>Number(x.max_cost)===0),'pre-production model routes must not silently spend')
+
  const shadow=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'isolated runtime validation'})
  if(shadow.error)throw shadow.error
  assert.equal(shadow.data.mode,'SHADOW')
