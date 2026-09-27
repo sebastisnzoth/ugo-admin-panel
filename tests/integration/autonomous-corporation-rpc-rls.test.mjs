@@ -81,6 +81,21 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(retry.error)throw retry.error
  assert.equal(retry.data.id,red.data.id)
 
+ const onForApproval=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'ON',p_reason:'isolated authority approval validation'})
+ if(onForApproval.error)throw onForApproval.error
+ const redApprove=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:red.data.id,p_approve:true,p_reason:'isolated RED human approval'})
+ if(redApprove.error)throw redApprove.error
+ assert.equal(redApprove.data.status,'QUEUED')
+ assert.equal(redApprove.data.authorization_decision,'AUTHORIZED_HUMAN')
+ const redRejectSeed=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:null,p_objective:'Runtime RED rejection probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test-reject',p_service_id:null,p_authority_class:'RED',p_idempotency_key:'ugo-autonomy-red-reject-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
+ if(redRejectSeed.error)throw redRejectSeed.error
+ const redReject=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:redRejectSeed.data.id,p_approve:false,p_reason:'isolated RED rejection'})
+ if(redReject.error)throw redReject.error
+ assert.equal(redReject.data.status,'CANCELLED')
+ assert.equal(redReject.data.authorization_decision,'DENIED')
+ const offAfterApproval=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'authority approval probe complete'})
+ if(offAfterApproval.error)throw offAfterApproval.error
+
  const kill=await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:true,p_reason:'runtime containment probe'})
  if(kill.error)throw kill.error
  const blocked=await db.rpc('autonomous_enqueue_job',{p_department_id:8,p_agent_id:null,p_objective:'Must be contained',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'GREEN',p_idempotency_key:'ugo-autonomy-kill-'+crypto.randomUUID(),p_input_evidence:[]})
