@@ -9,6 +9,7 @@ type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{
 const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=5_000
 const MIN_MOVE_M=5
+const AVAILABILITY_HEARTBEAT_MS=20_000
 const ARRIVAL_RADIUS_M=200
 const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
@@ -59,7 +60,8 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    if(age>MAX_POSITION_AGE_MS){setLocationError('La ubicación recibida es antigua. UGO está esperando una posición GPS nueva.');return}
    if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001))return
    const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
-   if(writing||now-lastWrite<MIN_WRITE_MS||!moved)return
+   const heartbeatDue=lastWrite===0||now-lastWrite>=AVAILABILITY_HEARTBEAT_MS
+   if(writing||now-lastWrite<MIN_WRITE_MS||(!moved&&!heartbeatDue))return
    writing=true
    const serviceId=service?.estado==='en_camino'?service.id:null
    const capturedAt=new Date(Number(pos.timestamp||Date.now())).toISOString()
