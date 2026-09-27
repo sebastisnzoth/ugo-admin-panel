@@ -30,3 +30,14 @@ test('manual repair workflow keeps privileged key in GitHub Secrets',async()=>{
  assert.match(yml,/npm run test:integration/)
  assert.doesNotMatch(yml,/service_role.*sb_/i)
 })
+
+
+test('isolated RPC/RLS workflow self-repairs TEST identities when privileged TEST key is available',async()=>{
+ const yml=await read('.github/workflows/isolated-rpc-rls.yml')
+ assert.match(yml,/UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: \$\{\{ secrets\.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY \}\}/)
+ assert.match(yml,/Repair isolated TEST identities from GitHub Secrets/)
+ assert.match(yml,/npm run bootstrap:test-auth/)
+ assert.match(yml,/env\.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != ''/)
+ assert.match(yml,/env\.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY == ''/)
+ assert.doesNotMatch(yml,/UGO_TEST_SUPABASE_SERVICE_ROLE_KEY:\s*sb_/)
+})
