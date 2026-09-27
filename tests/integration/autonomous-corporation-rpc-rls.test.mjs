@@ -25,6 +25,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(profile.data.tipo!=='superadmin'){
   const denied=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'authorization probe'})
   assert.ok(denied.error,'non-superadmin admin must not change corporate autonomy')
+  const hidden=await db.from('autonomous_departments').select('department_id')
+  assert.equal(hidden.error,null)
+  assert.equal(hidden.data?.length,0,'ordinary Admin must not read autonomous governance state')
   return
  }
  const departments=await db.from('autonomous_departments').select('department_id,name')
