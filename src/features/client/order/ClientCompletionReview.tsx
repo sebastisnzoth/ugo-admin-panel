@@ -33,11 +33,10 @@ export function ClientCompletionReview({onOpenDispute,serviceId=null,onCompleted
   if(!uid){setService(null);setPayment(null);setHasFinalEvidence(false);return}
   let query=supabase.from('servicios').select('id,numero,estado,proveedor_id,tarifa,moneda,metadata,proveedor:usuarios!servicios_proveedor_id_fkey(nombre)').eq('cliente_id',uid)
   if(serviceId)query=query.eq('id',serviceId).in('estado',['esperando_aprobacion','completado'])
-  else query=query.eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(2)
+  else query=query.eq('estado','esperando_aprobacion').order('created_at',{ascending:false}).limit(1)
   const{data,error}=await query
   if(error){setNotice('No pudimos actualizar el cierre. Reintentaremos sin perder el servicio.');return}
   const rows=(data||[])as unknown as ReviewService[]
-  if(!serviceId&&rows.length!==1){setService(null);setPayment(null);setHasFinalEvidence(false);return}
   const next=rows[0]||null
   setService(next)
   if(!next){setHasFinalEvidence(false);setPayment(null);return}
