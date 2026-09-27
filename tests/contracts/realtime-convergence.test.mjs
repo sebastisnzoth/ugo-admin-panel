@@ -12,7 +12,8 @@ test('client realtime scopes selected service and resyncs after reconnect', asyn
   assert.match(source, /filter:`servicio_id=eq\.\$\{serviceId\}`/)
   assert.match(source, /filter:`cliente_id=eq\.\$\{data\.user\.id\}`/)
   assert.match(source, /status==='SUBSCRIBED'/)
-  assert.match(source, /window\.addEventListener\('online',resync\)/)
+  assert.match(source, /const onOnline=\(\)=>\{resync\(\);reconnect\(\)\}/)
+  assert.match(source, /window\.addEventListener\('online',onOnline\)/)
   assert.match(source, /document\.addEventListener\('visibilitychange',onVisibility\)/)
 })
 
