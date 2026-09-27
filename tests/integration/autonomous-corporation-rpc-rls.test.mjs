@@ -34,6 +34,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
   else assert.equal(hidden.data?.length,0,'ordinary Admin must not read autonomous governance state')
   const promoted=await service.from('usuarios').update({tipo:'superadmin'}).eq('id',signed.data.user.id)
   if(promoted.error)throw promoted.error
+  const refreshed=await db.auth.refreshSession()
+  if(refreshed.error)throw refreshed.error
+  await new Promise(resolve=>setTimeout(resolve,150))
  }
  try{
  const departments=await db.from('autonomous_departments').select('department_id,name')
