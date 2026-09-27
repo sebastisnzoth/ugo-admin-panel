@@ -26,8 +26,8 @@ const electronicApproval=approval.slice(electronicApprovalStart)
 const cashClose=migration.slice(cashCloseStart)
 
 test('client closure UI exposes approval and cash-paid as separate exact-service RPCs',()=>{
- assert.match(ui,/approvePendingClientService\(supabase,userId,id\)/)
- assert.match(ui,/confirmApprovedCashClientService\(supabase,userId,id\)/)
+ assert.match(ui,/approvePendingClientService\\(supabase,userId,service\\.id\\)/)
+ assert.match(ui,/confirmApprovedCashClientService\\(supabase,userId,service\\.id\\)/)
  assert.match(clientActions,/rpc\('aprobar_servicio',\{p_servicio_id:row\.id\}\)/)
  assert.match(clientActions,/rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:row\.id\}\)/)
  assert.match(ui,/\.eq\('cliente_id',uid\)/)
