@@ -1,6 +1,6 @@
 # UGO — Autonomous Corporation Blueprint
 
-**Version:** 1.0 · 27 September 2026  
+**Version:** 1.1 · 27 September 2026  
 **Status:** implementation contract  
 **Branch of truth:** `main`
 
@@ -36,7 +36,7 @@ Department 13 is intentionally unused.
 | 7 | Finance | controller, payments, reconciliation, provider balance, refunds, treasury/security |
 | 8 | Technology & Security | engineering, debugging, review, security, DevOps, observability, radar, R&D |
 | 9 | Quality, QA & Excellence | autonomous QA lab, scenarios, simulators, chaos, regression, release gate |
-| 10 | Legal, Compliance & Policy | legal intelligence, contracts, privacy, consumer, labor risk, policy, compliance audit |
+| 10 | Legal, Compliance & Policy | legal intelligence, contracts, privacy, consumer, labor risk, intellectual property, corporate protection, policy, compliance audit |
 | 11 | Marketing, Brand & Communication | brand, creative, community, experiments, PR/reputation, localization |
 | 12 | Product, Design, UI/UX & Experience | product strategy, UX research, design, design system, accessibility, analytics |
 | 14 | Corporate Audit, Governance & Control | internal audit, enterprise risk, controls, cross-department audit, AI governance, executive assurance |
@@ -177,6 +177,56 @@ Department 8 Technology Radar/R&D discovers and evaluates candidates; Department
 Before an autonomous decision, validate applicable source freshness, provenance, completeness and consistency. High-risk decisions require independent reconciliation where possible.
 
 Bad data must produce `DATA_UNTRUSTED` / escalation, not confident automation.
+
+## 10.1 Intellectual Property & Corporate Protection — mandatory IP Gate
+
+Department 10 owns UGO's **Intellectual Property & Corporate Protection** function. Its purpose is to identify, preserve and protect the company's protectable assets before avoidable public disclosure, while recognizing that generic business ideas or marketplace concepts are not automatically exclusive rights.
+
+Scope includes:
+- UGO trademarks, names, logos and brand assets;
+- source code, software versions, technical documentation and authorship/titularity evidence;
+- original UX/UI assets, written materials and other copyrightable works;
+- inventions or technical implementations that may justify a formal patentability assessment;
+- confidential algorithms, operational know-how, business rules, datasets and processes suitable for trade-secret treatment;
+- NDAs, confidentiality clauses, IP assignment/licensing and contributor/contractor ownership controls;
+- jurisdiction-specific protection strategy for Brazil, Argentina, Uruguay and future markets.
+
+### Mandatory IP Gate
+
+Any material innovation created by Product, Technology, Operations, Finance, Trust, Growth or another UGO department must pass an IP assessment **before unnecessary public disclosure, publication, external demonstration or broad release** when disclosure could reduce or destroy a protection option.
+
+The gate records:
+
+```text
+innovation_id
+creator/contributors
+creation date + evidence
+technical/business description
+existing public disclosure status
+potential protection: trademark / copyright / software registration /
+patentability review / trade secret / contract / none
+target jurisdictions
+confidentiality requirements
+legal owner
+recommended action
+approval/escalation
+evidence references
+```
+
+Rules:
+- Department 10 performs or coordinates the legal/IP assessment; it does not invent technical novelty.
+- Department 8 provides code history, architecture, technical evidence and secure secret handling.
+- Department 12 documents product/design innovation and intended disclosure.
+- Department 14 independently audits whether the IP Gate is being followed and whether evidence of ownership/protection exists.
+- High-impact, novel, ambiguous or jurisdiction-sensitive matters escalate to the Administrator General and qualified external IP counsel/agent when appropriate.
+- The system must never claim that a generic idea, workflow or business model is patented, registered or exclusive without verified legal evidence.
+- Public release approval and IP protection are separate decisions: passing QA does not automatically pass the IP Gate.
+
+### IP evidence and secrecy controls
+
+UGO preserves provenance using repository history, dated design/product records, Decision/Evidence Ledger references and executed agreements where applicable. Sensitive trade-secret material must use least-privilege access and must not be copied into public issues, logs, screenshots, prompts, commits or documentation intended for public distribution.
+
+The IP Gate is a permanent corporate control, not a one-time registration task.
 
 ## 11. Kill Switch and Safe Mode
 
