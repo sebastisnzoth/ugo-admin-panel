@@ -25,6 +25,14 @@ test('provider Hugo accepts either real service id or offer id for opportunity d
 })
 
 
+test('provider Hugo lifecycle Live tool is constrained to canonical states and documents GPS/evidence guards',async()=>{
+ const live=await read('src/lib/browserVoiceBridge.ts')
+ assert.match(live,/provider_update_service_status/)
+ assert.match(live,/enum:\['en_camino','llegado','en_progreso','esperando_aprobacion'\]/)
+ assert.match(live,/GPS reciente, preciso y geofence válido/)
+ assert.match(live,/barreras de evidencia/)
+})
+
 test('provider Hugo can resolve the active service before lifecycle voice actions',async()=>{
  const[provider,live]=await Promise.all([
   read('src/mvp/provider/ProviderHugoBridge.tsx'),
