@@ -6,7 +6,9 @@ const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const email=process.env.UGO_TEST_ADMIN_EMAIL||''
 const password=process.env.UGO_TEST_ADMIN_PASSWORD||''
-const enabled=Boolean(url&&anon&&email&&password)
+const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
+const enabled=Boolean(url&&anon&&email&&password&&serviceKey)
+const privileged=()=>createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const client=()=>createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 
 test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
@@ -23,11 +25,15 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  const profile=await db.from('usuarios').select('tipo,activo').eq('id',signed.data.user.id).single()
  if(profile.error)throw profile.error
  assert.equal(profile.data.activo,true)
- if(profile.data.tipo!=='superadmin'){
+ const originalRole=profile.data.tipo
+ const service=privileged()
+ if(originalRole!=='superadmin'){
    const deniedCreate=await db.rpc('ip_create_innovation',{p_title:'UGO_TEST_IP_DENIED',p_description:'authorization probe',p_department_id:8,p_innovation_type:'TECHNICAL',p_possible_protection:'TRADE_SECRET',p_confidentiality:'CONFIDENTIAL',p_target_jurisdictions:['BR']})
    assert.ok(deniedCreate.error,'non-superadmin admin must not govern IP')
-   return
+   const promoted=await service.from('usuarios').update({tipo:'superadmin'}).eq('id',signed.data.user.id)
+   if(promoted.error)throw promoted.error
  }
+ try{
  const marker='UGO_TEST_IP_GATE_'+crypto.randomUUID()
  const created=await db.rpc('ip_create_innovation',{p_title:marker,p_description:'isolated IP gate runtime fixture',p_department_id:8,p_innovation_type:'TECHNICAL',p_possible_protection:'TRADE_SECRET',p_confidentiality:'CONFIDENTIAL',p_target_jurisdictions:['BR'],p_repository:'sebastisnzoth/ugo-admin-panel'})
  if(created.error)throw created.error
@@ -46,5 +52,11 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  assert.ok(legal.error,'REGISTERED without verified legal evidence must be rejected')
  const updateAttempt=await db.from('ip_evidence_ledger').update({reference:'tampered'}).eq('id',evidence.data.id)
  assert.ok(updateAttempt.error,'evidence ledger update must be rejected')
- await db.auth.signOut()
+ } finally {
+  if(originalRole!=='superadmin'){
+   const restored=await service.from('usuarios').update({tipo:originalRole}).eq('id',signed.data.user.id)
+   if(restored.error)throw restored.error
+  }
+  await db.auth.signOut()
+ }
 })
