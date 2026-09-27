@@ -366,9 +366,10 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     const {data: bilateralRatings,error: bilateralRatingsError}=await a.from('resenas').select('autor_tipo,puntuacion').eq('servicio_id',serviceId)
     if(bilateralRatingsError)throw bilateralRatingsError
     assert.deepEqual(bilateralRatings.map(x=>x.autor_tipo).sort(),['cliente','proveedor'],'El P0 debe cerrar con rating bilateral persistido por serviceId')
-    const qaLifecycle=await a.from('autonomous_qa_scenarios').select('id').eq('scenario_key','service-lifecycle').maybeSingle()
-    if(!qaLifecycle.error&&qaLifecycle.data?.id){
-      const qaRun=await a.rpc('superadmin_run_qa_scenario',{p_scenario_id:qaLifecycle.data.id,p_simulator_results:{service_id_isolated:true,request_created:true,provider_accepted:true,arrival_verified:true,start_evidence:true,finish_evidence:true,client_approved:true,payment_recorded:true,completed:true,bilateral_rating:true},p_chaos_result:{unexpected_failure:false,source:'real-isolated-p0',service_id:serviceId}})
+    const qaDb=adminProfile.tipo==='superadmin'?a:null
+    const qaLifecycle=qaDb?await qaDb.from('autonomous_qa_scenarios') .select('id').eq('scenario_key','service-lifecycle').maybeSingle():null
+    if(qaDb&&qaLifecycle&&!qaLifecycle.error&&qaLifecycle.data?.id){
+      const qaRun=await qaDb.rpc('superadmin_run_qa_scenario',{p_scenario_id:qaLifecycle.data.id,p_simulator_results:{service_id_isolated:true,request_created:true,provider_accepted:true,arrival_verified:true,start_evidence:true,finish_evidence:true,client_approved:true,payment_recorded:true,completed:true,bilateral_rating:true},p_chaos_result:{unexpected_failure:false,source:'real-isolated-p0',service_id:serviceId}})
       if(qaRun.error)throw qaRun.error
       assert.equal(qaRun.data.status,'PASSED','QA Lab debe convertir el P0 real en cobertura determinística')
     }
