@@ -1,16 +1,11 @@
-name: Build UGO Android APKs
+name: Manual UGO Android APK Bundle
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'android-apk/**'
-      - '.github/workflows/build-ugo-apks.yml'
 
 # Rebuild marker: native Hugo voice for Cliente + Proveedor
 jobs:
-  build-apks:
+  build-apks-manual:
     runs-on: ubuntu-latest
     timeout-minutes: 25
 
@@ -39,22 +34,23 @@ jobs:
         with:
           gradle-version: '8.11.1'
 
-      - name: Build Cliente y Proveedor
+      - name: Build Cliente, Proveedor y Admin
         working-directory: android-apk
-        run: gradle :app:assembleClientDebug :app:assembleProviderDebug --no-daemon --stacktrace
+        run: gradle :app:assembleClientDebug :app:assembleProviderDebug :app:assembleAdminDebug --no-daemon --stacktrace
 
       - name: Prepare APK files
         run: |
           mkdir -p apk-output
           cp android-apk/app/build/outputs/apk/client/debug/app-client-debug.apk apk-output/UGO-Cliente.apk
           cp android-apk/app/build/outputs/apk/provider/debug/app-provider-debug.apk apk-output/UGO-Proveedor.apk
+          cp android-apk/app/build/outputs/apk/admin/debug/app-admin-debug.apk apk-output/UGO-Admin.apk
           sha256sum apk-output/*.apk > apk-output/SHA256SUMS.txt
           ls -lh apk-output
 
       - name: Upload APKs
         uses: actions/upload-artifact@v4
         with:
-          name: UGO-Android-APKs
+          name: UGO-Android-APKs-Manual
           path: apk-output/*
           if-no-files-found: error
           retention-days: 30
