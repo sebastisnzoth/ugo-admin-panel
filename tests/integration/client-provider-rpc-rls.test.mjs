@@ -189,12 +189,17 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     if (adminChatError) throw adminChatError
     assert.equal(adminChat.length, 2, 'Admin debe poder auditar el chat del mismo serviceId')
 
-    const beforePay = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_camino' })
-    expectDomainError(beforePay, /forma de pago habilitada/)
-    assert.deepEqual(await getService(c, serviceId), service)
+    const paymentPreselected = service.metadata?.payment_selected_before_order === true
+    if (!paymentPreselected) {
+      const beforePay = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'en_camino' })
+      expectDomainError(beforePay, /forma de pago habilitada/)
+      assert.deepEqual(await getService(c, serviceId), service)
 
-    const payment = await c.rpc('seleccionar_pago_efectivo', { p_servicio_id: serviceId })
-    if (payment.error) throw payment.error
+      const payment = await c.rpc('seleccionar_pago_efectivo', { p_servicio_id: serviceId })
+      if (payment.error) throw payment.error
+    } else {
+      assert.equal(service.metadata?.requested_payment_method, 'efectivo', 'El pago preseleccionado del fixture TEST debe ser efectivo')
+    }
 
     for (const state of ['en_camino', 'llegado']) {
       const step = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: state })
