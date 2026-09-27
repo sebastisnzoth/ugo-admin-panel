@@ -69,3 +69,16 @@ test('provider Hugo lifecycle mutations reject missing explicit confirmation',as
  assert.match(provider,/CONFIRMATION_REQUIRED/)
  assert.match(provider,/confirmes explícitamente el cambio de estado/)
 })
+
+
+test('provider Hugo availability mutations require explicit confirmation',async()=>{
+ const[provider,live]=await Promise.all([
+  read('src/mvp/provider/ProviderHugoBridge.tsx'),
+  read('src/lib/browserVoiceBridge.ts'),
+ ])
+ assert.match(live,/provider_set_online[^\n]+required:\['confirmed'\]/)
+ assert.match(live,/provider_set_offline[^\n]+required:\['confirmed'\]/)
+ assert.match(provider,/provider_set_online'\)\{if\(args\.confirmed!==true\)/)
+ assert.match(provider,/provider_set_offline'\)\{if\(args\.confirmed!==true\)/)
+ assert.match(provider,/CONFIRMATION_REQUIRED/)
+})
