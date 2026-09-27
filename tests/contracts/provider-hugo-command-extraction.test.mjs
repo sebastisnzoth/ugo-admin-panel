@@ -42,6 +42,8 @@ test('provider Hugo lifecycle Live tool is constrained to canonical states and d
  const live=await read('src/lib/browserVoiceBridge.ts')
  assert.match(live,/provider_update_service_status/)
  assert.match(live,/enum:\['en_camino','llegado','en_progreso','esperando_aprobacion'\]/)
+ assert.match(live,/required:\['service_id','status','confirmed'\]/)
+ assert.match(live,/instrucción explícita del proveedor/)
  assert.match(live,/GPS reciente, preciso y geofence válido/)
  assert.match(live,/barreras de evidencia/)
 })
@@ -58,4 +60,12 @@ test('provider Hugo can resolve the active service before lifecycle voice action
  assert.match(provider,/serviceId:data\.service\.id/)
  assert.match(provider,/state:data\.service\.estado/)
  assert.match(provider,/No tenés un trabajo activo en este momento/)
+})
+
+
+test('provider Hugo lifecycle mutations reject missing explicit confirmation',async()=>{
+ const provider=await read('src/mvp/provider/ProviderHugoBridge.tsx')
+ assert.match(provider,/provider_update_service_status'\)\{const serviceId=.*args\.confirmed!==true/)
+ assert.match(provider,/CONFIRMATION_REQUIRED/)
+ assert.match(provider,/confirmes explícitamente el cambio de estado/)
 })
