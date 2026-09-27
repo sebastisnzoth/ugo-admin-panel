@@ -46,7 +46,7 @@ test('Super Admin exposes Empresa Autónoma from persisted state only',()=>{
 
 
 test('Department 14 has exactly six independent assurance agents',()=>{
- const d14=read('supabase/migrations/20260928004500_department14_independent_auditors.sql')
+ const d14=fs.readFileSync('supabase/migrations/20260928004500_department14_independent_auditors.sql','utf8')
  for(const name of ['UGO Internal Auditor','UGO Enterprise Risk Officer','UGO Internal Control Inspector','UGO Cross-Department Auditor','UGO AI Governance Auditor','UGO Executive Assurance & Challenge']) assert.match(d14,new RegExp(name.replace(/[&]/g,'\\&')))
  assert.match(d14,/department_id=14\) <> 6/)
  assert.match(d14,/DEPARTMENT_14_REQUIRES_EXACTLY_SIX_INDEPENDENT_AGENTS/)
