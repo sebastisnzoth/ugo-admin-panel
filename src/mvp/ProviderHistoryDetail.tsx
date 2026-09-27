@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useMemo,useState}from'react'
 import{getRoleSupabase}from'../lib/roleSupabase'
+import{ProviderRatingPrompt}from'./ProviderRatingPrompt'
 
 type Row={
  id:string
@@ -84,6 +85,7 @@ export function ProviderHistoryDetail({service,onClose}:{service:Row;onClose:()=
     <section className="ugo-provider-history-block"><div className="ugo-provider-history-block-head"><div><small>EVIDENCIA DEL TRABAJO</small><strong>Resultado final</strong></div><span>{grouped('despues').length}</span></div>{gallery(grouped('despues'),'después')}</section>
     {payment&&<section className="ugo-provider-history-payment"><div><small>PAGO</small><strong>{method(payment.metodo)} · {STATE[payment.estado]||payment.estado}</strong></div><div><span>Total</span><b>{money(payment.monto_bruto,payment.moneda||'BRL')}</b></div><div><span>Comisión UGO</span><b>{money(payment.comision_ugo,payment.moneda||'BRL')}</b></div><div><span>Tu ganancia</span><strong>{money(payment.ganancia_proveedor,payment.moneda||'BRL')}</strong></div></section>}
     <section className="ugo-provider-history-timeline"><div className="ugo-provider-history-block-head"><div><small>RECORRIDO</small><strong>Cómo se hizo</strong></div><span>{events.length}</span></div>{events.length?<ol>{events.map(item=><li key={item.id}><span></span><div><strong>{STATE[item.estado_nuevo]||item.estado_nuevo}</strong><time>{when(item.created_at)} · {item.actor_role}</time>{item.motivo&&<p>{item.motivo}</p>}</div></li>)}</ol>:<p className="ugo-provider-history-empty-block">No hay eventos históricos disponibles para este servicio.</p>}</section>
+    {service.estado==='completado'&&<ProviderRatingPrompt serviceId={service.id} embedded/>}
    </>}
    <footer><span>serviceId</span><code>{service.id}</code><button type="button" className="ugo-history-open-button" onClick={onClose}>Cerrar trabajo</button></footer>
   </section>

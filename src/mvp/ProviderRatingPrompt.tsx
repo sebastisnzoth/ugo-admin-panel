@@ -6,7 +6,7 @@ import{ServiceRatingError,submitServiceRating}from'../features/ratings/serviceRa
 type CompletedService={id:string;numero:number|string|null;cliente_id:string;descripcion:string|null;completado_at:string|null}
 type Target={service:CompletedService;clientName:string}
 
-export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
+export function ProviderRatingPrompt({suspended=false,serviceId=null,embedded=false}:{suspended?:boolean;serviceId?:string|null;embedded?:boolean}={}){
  const supabase=useMemo(()=>getRoleSupabase('provider'),[])
  const[userId,setUserId]=useState(''),[target,setTarget]=useState<Target|null>(null),[score,setScore]=useState(0),[comment,setComment]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[dismissed,setDismissed]=useState<string|null>(null),[channelEpoch,setChannelEpoch]=useState(0)
  const loadRef=useRef<()=>Promise<void>>(async()=>{})
@@ -14,7 +14,9 @@ export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
  const load=useCallback(async()=>{
   const{data:{user}}=await supabase.auth.getUser();const uid=user?.id||'';setUserId(uid)
   if(!uid){setTarget(null);return}
-  const{data:services,error:serviceError}=await supabase.from('servicios').select('id,numero,cliente_id,descripcion,completado_at').eq('proveedor_id',uid).eq('estado','completado').order('completado_at',{ascending:false,nullsFirst:false}).limit(12)
+  let servicesQuery=supabase.from('servicios').select('id,numero,cliente_id,descripcion,completado_at').eq('proveedor_id',uid).eq('estado','completado')
+  servicesQuery=serviceId?servicesQuery.eq('id',serviceId).limit(1):servicesQuery.order('completado_at',{ascending:false,nullsFirst:false}).limit(12)
+  const{data:services,error:serviceError}=await servicesQuery
   if(serviceError)throw serviceError
   const rows=(services||[])as CompletedService[]
   if(!rows.length){setTarget(null);return}
@@ -27,7 +29,7 @@ export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
   const{data:client,error:clientError}=await supabase.from('usuarios').select('nombre').eq('id',service.cliente_id).maybeSingle()
   if(clientError)throw clientError
   setTarget({service,clientName:String(client?.nombre||'el cliente')})
- },[supabase])
+ },[serviceId,supabase])
 
  useEffect(()=>{loadRef.current=load},[load])
  useEffect(()=>{void load().catch(error=>{const text=error instanceof Error?error.message:'No pudimos cargar la calificación.';setMessage(text);void reportSentinelIncident({eventType:'provider_rating_load_error',message:text,error,role:'provider',severity:'P1',action:'provider.rating.sync',checklistCode:'RATING'})})},[load])
@@ -49,7 +51,7 @@ export function ProviderRatingPrompt({suspended=false}:{suspended?:boolean}={}){
 
  if(suspended||!target||target.service.id===dismissed)return null
  const number=target.service.numero??target.service.id.slice(0,8)
- return <aside className="ugo-provider-rating" aria-label={`Calificar cliente del servicio ${number}`}>
+ return <aside className={`ugo-provider-rating${embedded?' is-embedded':''}`} aria-label={`Calificar cliente del servicio ${number}`}>
   <button type="button" className="ugo-provider-rating-close" onClick={()=>setDismissed(target.service.id)} aria-label="Calificar más tarde">×</button>
   <small>SERVICIO FINALIZADO · #{number}</small>
   <h2>¿Cómo fue trabajar con {target.clientName}?</h2>
