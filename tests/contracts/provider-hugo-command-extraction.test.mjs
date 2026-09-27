@@ -16,6 +16,19 @@ test('provider Hugo executes declared operational tools through guarded provider
 })
 
 
+test('provider Hugo requires explicit confirmation before accepting or rejecting opportunities',async()=>{
+ const[provider,live]=await Promise.all([
+  read('src/mvp/provider/ProviderHugoBridge.tsx'),
+  read('src/lib/browserVoiceBridge.ts'),
+ ])
+ assert.match(live,/provider_accept_job[^\n]+confirmed/)
+ assert.match(live,/provider_reject_job[^\n]+confirmed/)
+ assert.match(live,/required:\['service_id','confirmed'\]/)
+ assert.match(provider,/provider_accept_job'\)\{const requestedId=.*args\.confirmed!==true/)
+ assert.match(provider,/provider_reject_job'\)\{const requestedId=.*args\.confirmed!==true/)
+ assert.match(provider,/CONFIRMATION_REQUIRED/)
+})
+
 test('provider Hugo accepts either real service id or offer id for opportunity decisions',async()=>{
  const bridge=await read('src/mvp/provider/ProviderHugoBridge.tsx')
  assert.match(bridge,/String\(item\.id\)===requestedId\|\|String\(item\.serviceId\)===requestedId/)
