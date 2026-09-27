@@ -32,6 +32,9 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
    assert.ok(deniedCreate.error,'non-superadmin admin must not govern IP')
    const promoted=await service.from('usuarios').update({tipo:'superadmin'}).eq('id',signed.data.user.id)
    if(promoted.error)throw promoted.error
+   const refreshed=await db.auth.refreshSession()
+   if(refreshed.error)throw refreshed.error
+   await new Promise(resolve=>setTimeout(resolve,150))
  }
  try{
  const marker='UGO_TEST_IP_GATE_'+crypto.randomUUID()
