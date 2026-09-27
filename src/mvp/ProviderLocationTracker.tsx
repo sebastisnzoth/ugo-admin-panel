@@ -6,7 +6,6 @@ import type{Service}from'./shared'
 type Props={service?:Service|null;onAutoArrival?:()=>Promise<boolean>|boolean|void}
 type TrackingProfile={online?:boolean|null;disponible?:boolean|null}
 type LocationRpcClient={rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:unknown}>}
-const ACTIVE_TRACKING_STATES=new Set(['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
 const MIN_WRITE_MS=5_000
 const MIN_MOVE_M=5
 const AVAILABILITY_HEARTBEAT_MS=20_000
@@ -26,7 +25,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
  const[locationError,setLocationError]=useState('')
- const serviceActive=Boolean(service&&ACTIVE_TRACKING_STATES.has(service.estado))
+ const enRoute=service?.estado==='en_camino'
  const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
  useEffect(()=>{if(service?.estado!=='en_camino')attemptedServiceRef.current=null},[service?.estado,service?.id])
@@ -39,17 +38,17 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    const userId=data.user.id
    const{data:profile}=await supabase.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',userId).maybeSingle()
    const trackingProfile=profile as TrackingProfile|null
-   if(alive)setAvailable(Boolean(trackingProfile&&(trackingProfile.online||trackingProfile.disponible)))
+   if(alive)setAvailable(Boolean(trackingProfile&&trackingProfile.online&&trackingProfile.disponible))
    channel=supabase.channel(`provider-tracking-status-${userId}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${userId}`},payload=>{
     const row=(payload.new||{}) as TrackingProfile
-    if(alive)setAvailable(Boolean(row.online||row.disponible))
+    if(alive)setAvailable(Boolean(row.online&&row.disponible))
    }).subscribe()
   }).catch(()=>{})
   return()=>{alive=false;if(channel)supabase.removeChannel(channel)}
  },[supabase])
 
  useEffect(()=>{
-  if(!navigator.geolocation||(!available&&!serviceActive))return
+  if(!navigator.geolocation||(!available&&!enRoute))return
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false
   const rpc=supabase as unknown as LocationRpcClient
   const watchId=navigator.geolocation.watchPosition(async pos=>{
@@ -69,7 +68,12 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
     :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
    writing=false
-   if(!error){
+   if(error){
+    const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):''
+    if(enRoute)setLocationError(rpcMessage||'No pudimos publicar tu GPS reciente. UGO sigue reintentando.')
+    return
+   }
+   {
     lastWrite=Date.now();lastPoint=point
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
@@ -81,7 +85,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    }
   },error=>{setLocationError(error.code===1?'UGO necesita permiso de ubicación precisa para seguir el servicio.':error.code===2?'No pudimos obtener tu GPS. Revisá que la ubicación del dispositivo esté activada.':'El GPS tardó demasiado en responder. Reintentando…')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
- },[available,serviceActive,service?.id,service?.estado,supabase])
+ },[available,enRoute,service?.id,service?.estado,supabase])
 
  if(service?.estado!=='en_camino')return null
  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert">📍 {locationError}</div>
