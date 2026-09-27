@@ -6,8 +6,10 @@ const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const email=process.env.UGO_TEST_ADMIN_EMAIL||''
 const password=process.env.UGO_TEST_ADMIN_PASSWORD||''
-const enabled=Boolean(url&&anon&&email&&password)
+const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
+const enabled=Boolean(url&&anon&&email&&password&&serviceKey)
 const sb=()=>createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+const privileged=()=>createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 
 test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, async()=>{
  assert.ok(url.includes('tmossnqfwfwjrtzwcbmm'))
@@ -22,14 +24,18 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const profile=await db.from('usuarios').select('tipo,activo').eq('id',signed.data.user.id).single()
  if(profile.error)throw profile.error
  assert.equal(profile.data.activo,true)
- if(profile.data.tipo!=='superadmin'){
+ const originalRole=profile.data.tipo
+ const service=privileged()
+ if(originalRole!=='superadmin'){
   const denied=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'authorization probe'})
   assert.ok(denied.error,'non-superadmin admin must not change corporate autonomy')
   const hidden=await db.from('autonomous_departments').select('department_id')
-  if (hidden.error) assert.equal(hidden.error.code,'42501','ordinary Admin governance read must be denied')
+  if(hidden.error)assert.equal(hidden.error.code,'42501','ordinary Admin governance read must be denied')
   else assert.equal(hidden.data?.length,0,'ordinary Admin must not read autonomous governance state')
-  return
+  const promoted=await service.from('usuarios').update({tipo:'superadmin'}).eq('id',signed.data.user.id)
+  if(promoted.error)throw promoted.error
  }
+ try{
  const departments=await db.from('autonomous_departments').select('department_id,name')
  if(departments.error)throw departments.error
  assert.equal(departments.data.length,13)
@@ -57,5 +63,13 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const off=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime validation complete; safe default restored'})
  if(off.error)throw off.error
  assert.equal(off.data.mode,'OFF')
- await db.auth.signOut()
+ } finally {
+  await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:false,p_reason:'runtime cleanup'})
+  await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime cleanup; safe default'})
+  if(originalRole!=='superadmin'){
+   const restored=await service.from('usuarios').update({tipo:originalRole}).eq('id',signed.data.user.id)
+   if(restored.error)throw restored.error
+  }
+  await db.auth.signOut()
+ }
 })
