@@ -14,7 +14,11 @@ self.addEventListener('push',event=>{
   const offerId=payload?.data?.oferta_id;
   const serviceSuffix=serviceId?`&serviceId=${encodeURIComponent(serviceId)}`:'';
   const offerSuffix=payload.type==='nueva_oferta'&&typeof offerId==='string'&&offerId?`&offerId=${encodeURIComponent(offerId)}`:'';
-  const roleUrl=role==='provider'?`/?app=provider${offerSuffix||serviceSuffix}`:role==='client'?`/?app=client${serviceSuffix}`:(payload.url||'/');
+  const providerHistoryTypes=new Set(['pago_efectivo_confirmado','servicio_completado','servicio_cancelado']);
+  const providerHistorySuffix=providerHistoryTypes.has(payload.type)&&serviceId?`&historyServiceId=${encodeURIComponent(serviceId)}`:'';
+  const providerScreenSuffix=payload.type==='pago_liberado'?'&providerScreen=earnings':'';
+  const providerRoute=offerSuffix||providerHistorySuffix||providerScreenSuffix||serviceSuffix;
+  const roleUrl=role==='provider'?`/?app=provider${providerRoute}`:role==='client'?`/?app=client${serviceSuffix}`:(payload.url||'/');
   const serviceLifecycleTypes=new Set(['proveedor_asignado','trabajo_asignado','proveedor_en_camino','proveedor_llego','servicio_iniciado','aprobacion_pendiente','servicio_completado','trabajo_aprobado','servicio_cancelado','servicio_disputado']);
   const lifecycleTag=serviceId&&serviceLifecycleTypes.has(payload.type)?`ugo-service-${serviceId}`:null;
   const options={
