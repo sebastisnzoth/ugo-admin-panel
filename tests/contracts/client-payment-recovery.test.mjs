@@ -35,3 +35,12 @@ test('payment Sentinel declares P0 only when persistence check confirms failure'
  assert.match(source,/action:confirmed\?'client\.order\.payment':'client\.order\.payment\.recovery'/)
  assert.match(source,/checklistCode:confirmed\?'PAYMENT-CLOSE':undefined/)
 })
+
+
+test('cash payment timeline reflects client confirmation authority',()=>{
+ const timeline=fs.readFileSync(new URL('../../src/mvp/PaymentTimeline.tsx',import.meta.url),'utf8')
+ assert.match(timeline,/El cliente confirmó/)
+ assert.match(timeline,/YA PAGUÉ/)
+ assert.doesNotMatch(timeline,/proveedor confirmó la recepción/)
+ assert.doesNotMatch(timeline,/cuando el proveedor confirma la recepción/)
+})

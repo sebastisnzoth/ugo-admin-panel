@@ -44,7 +44,7 @@ export function PaymentTimeline({payment,serviceState,compact=false}:Props){
   ]
  }
  const summary=isCash
-  ?cashConfirmed?'El proveedor confirmó la recepción y UGO registró el cobro en efectivo.':'Efectivo seleccionado. UGO registra el cobro cuando el proveedor confirma la recepción; no custodia este dinero.'
+  ?cashConfirmed?'El cliente confirmó “YA PAGUÉ” y UGO registró el cobro en efectivo.':'Efectivo seleccionado. Después de aprobar el trabajo y entregar el dinero, el cliente confirma “YA PAGUÉ”; UGO registra el cobro, no custodia este dinero.'
   :failed?payment?.estado==='reembolsado'?'Pago reembolsado.':'El pago falló. Podés intentarlo nuevamente.'
   :electronicReleased?'Pago electrónico liberado.':protectedElectronic?'Pago electrónico protegido por UGO.':payment?'Pago electrónico pendiente de confirmación.':'Todavía falta elegir o iniciar la forma de pago.'
  return <section className={`ugo-payment-timeline${compact?' compact':''}`} aria-label="Estado del pago">
