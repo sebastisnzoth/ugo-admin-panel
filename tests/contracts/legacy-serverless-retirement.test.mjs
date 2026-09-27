@@ -2,15 +2,12 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const cascade=fs.readFileSync('api/cascade.js','utf8')
 const proxy=fs.readFileSync('api/proxy.js','utf8')
 const dispatch=fs.readFileSync('src/lib/dispatch/supabaseDispatch.ts','utf8')
 const vercel=fs.readFileSync('vercel.json','utf8')
 
-test('legacy cascade cannot reach Supabase, WhatsApp or matching mutations',()=>{
- assert.doesNotMatch(cascade,/byajcqrgetloavrgyqak|config_backend|graph\.facebook\.com|notificar_nuevo_pedido/)
- assert.match(cascade,/status\(410\)/)
- assert.match(cascade,/UGO_LEGACY_CASCADE_RETIRED/)
+test('legacy cascade serverless endpoint is fully retired and matching stays canonical',()=>{
+ assert.equal(fs.existsSync('api/cascade.js'),false,'retired cascade must not consume a Vercel Hobby function slot')
  assert.match(dispatch,/rpc\('iniciar_matching'/)
  assert.match(dispatch,/rpc\('iniciar_matching_dirigido'/)
 })
