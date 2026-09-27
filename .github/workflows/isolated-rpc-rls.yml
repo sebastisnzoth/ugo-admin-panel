@@ -113,6 +113,13 @@ jobs:
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY == '' }}
         run: echo "UGO_TEST_SUPABASE_SERVICE_ROLE_KEY is not configured; integration will validate the current TEST credentials without automatic repair."
 
+      - name: Apply pending IP Gate migration to UGO TEST
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/apply-ip-gate-test-migration.mjs
+
       - name: TypeScript and production build
         run: npm run build
 
@@ -123,6 +130,10 @@ jobs:
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration
+
+      - name: Intellectual Property Gate runtime RPC/RLS
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node --test tests/integration/ip-corporate-protection-rpc-rls.test.mjs
 
       - name: Realtime chat Cliente ↔ Proveedor without refresh
         run: node scripts/chat-realtime-probe.mjs
