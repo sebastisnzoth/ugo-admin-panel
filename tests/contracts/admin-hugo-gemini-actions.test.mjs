@@ -60,3 +60,27 @@ test.skip('legacy HTTP Hugo UI-action bus is outside the Gemini Live voice happy
  assert.match(map,/setShowCli\(command\.show_clients\)/)
  assert.match(map,/setGeoRadius/)
 })
+
+
+test('Admin Hugo Gemini Live exposes only bounded safe UI actions',async()=>{
+ const[bridge,orb,phase]=await Promise.all([
+  read('src/lib/browserVoiceBridge.ts'),
+  read('src/components/ConversationalOrb.tsx'),
+  read('src/mvp/AdminPhase2.tsx'),
+ ])
+ for(const tool of ['admin_navigate','admin_open_service','admin_refresh'])assert.match(bridge,new RegExp(tool))
+ assert.match(bridge,/Abre un módulo autorizado del panel Admin sin modificar datos/)
+ assert.match(bridge,/No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz/)
+ assert.match(orb,/ADMIN_NAV_TARGETS/)
+ assert.match(orb,/INVALID_TARGET/)
+ assert.match(orb,/SERVICE_NOT_FOUND/)
+ assert.match(orb,/ugo:admin:hugo-action/)
+ assert.match(orb,/type:'navigate'/)
+ assert.match(orb,/type:'open_service'/)
+ assert.match(orb,/type:'refresh'/)
+ assert.match(phase,/addEventListener\('ugo:admin:hugo-action'/)
+ assert.match(phase,/action\.type==='navigate'/)
+ assert.match(phase,/action\.type==='open_service'/)
+ assert.match(phase,/action\.type==='refresh'/)
+ assert.doesNotMatch(bridge,/admin_update_service|admin_set_status|admin_transfer|admin_delete/)
+})
