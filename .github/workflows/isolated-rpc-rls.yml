@@ -30,6 +30,7 @@ env:
   UGO_REQUIRE_ISOLATED_INTEGRATION: '1'
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
   UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
   UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
@@ -105,6 +106,14 @@ jobs:
 
           echo "All six human UGO TEST credential secrets are present."
           echo "Designated TEST client identity matches cliente@ugo.com.ar."
+
+      - name: Repair isolated TEST identities from GitHub Secrets
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: npm run bootstrap:test-auth
+
+      - name: Explain unavailable automatic TEST credential repair
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY == '' }}
+        run: echo "UGO_TEST_SUPABASE_SERVICE_ROLE_KEY is not configured; integration will validate the current TEST credentials without automatic repair."
 
       - name: TypeScript and production build
         run: npm run build
