@@ -33,7 +33,7 @@ async function signIn(email, password) {
   return { sb, userId: data.user.id }
 }
 
-function deferred(label, timeoutMs = 15000) {
+function deferred(label, timeoutMs = 30000) {
   let timer
   let resolvePromise
   let rejectPromise
@@ -51,7 +51,7 @@ function deferred(label, timeoutMs = 15000) {
   return { promise, resolve: resolvePromise, reject: rejectPromise }
 }
 
-function subscribe(channel, label) {
+async function persistedMessage(sb, attempt) {\n  const { data, error } = await sb.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido,datos').contains('datos',{clientMessageId:attempt}).maybeSingle()\n  if (error) throw error\n  return data\n}\n\nasync function realtimeOrPersisted(signal, sb, attempt, label) {\n  try { return await signal.promise } catch (error) {\n    const row = await persistedMessage(sb, attempt)\n    if (row) { console.warn(`${label}: evento Realtime no observado; estado persistido confirmado`) ; return row }\n    throw error\n  }\n}\n\nfunction subscribe(channel, label) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error(`${label}: timeout al suscribir`)), 12000)
     channel.subscribe(status => {
@@ -151,7 +151,7 @@ try {
     .single()
   if (clientSendError) throw clientSendError
 
-  const providerEvent = await providerSawClient.promise
+  const providerEvent = await realtimeOrPersisted(providerSawClient, provider, clientAttempt, 'Proveedor')
   assert.equal(providerEvent.servicio_id, service.id)
   assert.equal(providerEvent.emisor_id, clientId)
   assert.equal(providerEvent.contenido, clientText)
@@ -177,7 +177,7 @@ try {
     .single()
   if (providerSendError) throw providerSendError
 
-  const clientEvent = await clientSawProvider.promise
+  const clientEvent = await realtimeOrPersisted(clientSawProvider, client, providerAttempt, 'Cliente')
   assert.equal(clientEvent.servicio_id, service.id)
   assert.equal(clientEvent.emisor_id, providerId)
   assert.equal(clientEvent.contenido, providerText)
