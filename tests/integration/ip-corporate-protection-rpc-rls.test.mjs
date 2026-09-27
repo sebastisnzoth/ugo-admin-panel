@@ -14,8 +14,8 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  assert.ok(!url.includes('trfsjuseqjxlhrxuvdsm'))
  const unauth=client()
  const denied=await unauth.from('ip_innovations').select('id').limit(1)
- assert.equal(denied.error,null)
- assert.equal(denied.data?.length,0,'anon must not see IP innovations')
+ if (denied.error) assert.equal(denied.error.code,'42501','anon IP read must be denied by table privilege/RLS')
+ else assert.equal(denied.data?.length,0,'anon must not see IP innovations')
 
  const db=client()
  const signed=await db.auth.signInWithPassword({email,password})
