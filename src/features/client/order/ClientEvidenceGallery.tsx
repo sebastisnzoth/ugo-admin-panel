@@ -1,4 +1,4 @@
-import React,{useCallback,useEffect,useId,useMemo,useRef,useState}from'react'
+import React,{useCallback,useEffect,useId,useMemo,useState}from'react'
 import type{RealtimeChannel}from'@supabase/supabase-js'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import'./clientEvidenceGallery.css'
@@ -8,8 +8,8 @@ type Props={serviceId:string;hideWhenEmpty?:boolean;compact?:boolean}
 const LABELS:Record<Evidence['tipo'],string>={antes:'Inicio del trabajo',durante:'Durante el trabajo',despues:'Resultado final',documento:'Documento'}
 
 export function ClientEvidenceGallery({serviceId,hideWhenEmpty=false,compact=false}:Props){
- const supabase=useMemo(()=>getRoleSupabase('client'),[]),instanceId=useId().replace(/:/g,''),channelGeneration=useRef(0)
- const[items,setItems]=useState<Evidence[]>([])
+ const supabase=useMemo(()=>getRoleSupabase('client'),[]),instanceId=useId().replace(/:/g,'')
+ const[items,setItems]=useState<Evidence[]>([]),[channelEpoch,setChannelEpoch]=useState(0)
  const[loading,setLoading]=useState(true)
  const[error,setError]=useState('')
  const load=useCallback(async()=>{
@@ -21,16 +21,17 @@ export function ClientEvidenceGallery({serviceId,hideWhenEmpty=false,compact=fal
   setItems(signed);setLoading(false)
  },[serviceId,supabase])
  useEffect(()=>{
-  let alive=true
+  let alive=true,reconnectTimer:number|undefined
   const refresh=()=>{if(alive)void load().catch(()=>setLoading(false))}
+  const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)}
   refresh()
-  const generation=++channelGeneration.current,topic=`client-evidence-${serviceId}-${instanceId}-${generation}`
-  const ch:RealtimeChannel=supabase.channel(topic).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh()})
-  const onOnline=()=>refresh(),onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+  const topic=`client-evidence-${serviceId}-${instanceId}-${channelEpoch}`
+  const ch:RealtimeChannel=supabase.channel(topic).on('postgres_changes',{event:'*',schema:'public',table:'evidencias_servicio',filter:`servicio_id=eq.${serviceId}`},refresh).subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
+  const onOnline=()=>{refresh();reconnect()},onVisibility=()=>{if(document.visibilityState==='visible'){refresh();reconnect()}}
   const refreshSignedUrls=window.setInterval(refresh,10*60*1000)
   window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
-  return()=>{alive=false;window.clearInterval(refreshSignedUrls);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
- },[instanceId,load,serviceId,supabase])
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.clearInterval(refreshSignedUrls);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+ },[channelEpoch,instanceId,load,serviceId,supabase])
  if(loading&&!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state loading">Cargando evidencias del trabajo…</div>
  if(error&&!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state error">No se pudieron cargar las evidencias: {error}</div>
  if(!items.length)return hideWhenEmpty?null:<div className="ugo-evidence-state">El proveedor todavía no subió evidencias visibles.</div>
