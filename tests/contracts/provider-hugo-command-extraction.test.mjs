@@ -23,3 +23,18 @@ test('provider Hugo accepts either real service id or offer id for opportunity d
  assert.match(bridge,/actions\.rejectOpportunity\(item\.id\)/)
  assert.match(bridge,/serviceId:item\.serviceId,opportunityId:item\.id/)
 })
+
+
+test('provider Hugo can resolve the active service before lifecycle voice actions',async()=>{
+ const[provider,live]=await Promise.all([
+  read('src/mvp/provider/ProviderHugoBridge.tsx'),
+  read('src/lib/browserVoiceBridge.ts'),
+ ])
+ assert.match(live,/provider_get_active_service/)
+ assert.match(live,/Usala antes de cambiar estado cuando el usuario no conoce el service_id/)
+ assert.match(live,/usá provider_get_active_service antes de provider_update_service_status/)
+ assert.match(provider,/if\(name==='provider_get_active_service'\)/)
+ assert.match(provider,/serviceId:data\.service\.id/)
+ assert.match(provider,/state:data\.service\.estado/)
+ assert.match(provider,/No tenés un trabajo activo en este momento/)
+})
