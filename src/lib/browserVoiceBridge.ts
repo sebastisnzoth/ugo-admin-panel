@@ -55,8 +55,8 @@ const PROVIDER_TOOLS:LiveFunctionDeclaration[]=[
  {name:'provider_set_offline',description:'Pone al proveedor offline usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{}}},
  {name:'provider_list_opportunities',description:'Lista oportunidades reales disponibles para el proveedor.',parameters:{type:'OBJECT',properties:{}}},
  {name:'provider_get_active_service',description:'Consulta el trabajo activo real del proveedor y devuelve service_id y estado. Usala antes de cambiar estado cuando el usuario no conoce el service_id.',parameters:{type:'OBJECT',properties:{}}},
- {name:'provider_accept_job',description:'Acepta una oportunidad real si las reglas UGO lo permiten.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
- {name:'provider_reject_job',description:'Rechaza una oportunidad real.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
+ {name:'provider_accept_job',description:'Acepta una oportunidad real sólo después de una confirmación explícita del proveedor y si las reglas UGO lo permiten.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
+ {name:'provider_reject_job',description:'Rechaza una oportunidad real sólo después de una confirmación explícita del proveedor.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','confirmed']}},
  {name:'provider_update_service_status',description:'Actualiza el lifecycle de un servicio activo respetando las reglas reales de UGO. Para llegado, UGO exige GPS reciente, preciso y geofence válido; para iniciar o finalizar trabajo siguen vigentes las barreras de evidencia.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},status:{type:'STRING',enum:['en_camino','llegado','en_progreso','esperando_aprobacion']}},required:['service_id','status']}}
 ]
 const ADMIN_TOOLS:LiveFunctionDeclaration[]=[
