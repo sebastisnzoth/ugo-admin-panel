@@ -4,8 +4,9 @@ import {readFile} from 'node:fs/promises'
 
 const read=path=>readFile(new URL(`../../../${path}`,import.meta.url),'utf8')
 
-const [ui,migration,multiJobFlow,readme]=await Promise.all([
+const [ui,clientActions,migration,multiJobFlow,readme]=await Promise.all([
  read('src/features/client/order/ClientCompletionReview.tsx'),
+ read('src/features/client/services/clientActionService.ts'),
  read('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql'),
  read('supabase/migrations/20260918_provider_multi_jobs_cash_close_flow.sql'),
  read('mcp/ugo-actions/README.md'),
@@ -25,8 +26,10 @@ const electronicApproval=approval.slice(electronicApprovalStart)
 const cashClose=migration.slice(cashCloseStart)
 
 test('client closure UI exposes approval and cash-paid as separate exact-service RPCs',()=>{
- assert.match(ui,/rpc\('aprobar_servicio',\{p_servicio_id:id\}\)/)
- assert.match(ui,/rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:id\}\)/)
+ assert.match(ui,/approvePendingClientService\(supabase,userId,id\)/)
+ assert.match(ui,/confirmApprovedCashClientService\(supabase,userId,id\)/)
+ assert.match(clientActions,/rpc\('aprobar_servicio',\{p_servicio_id:row\.id\}\)/)
+ assert.match(clientActions,/rpc\('confirmar_pago_efectivo_cliente',\{p_servicio_id:row\.id\}\)/)
  assert.match(ui,/\.eq\('cliente_id',uid\)/)
  assert.match(ui,/if\(serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',\['esperando_aprobacion','completado'\]\)/)
 })
