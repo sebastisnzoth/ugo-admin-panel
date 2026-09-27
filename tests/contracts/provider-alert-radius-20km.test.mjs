@@ -61,3 +61,12 @@ test('arrival geofence remains a separate 200m rule',async()=>{
  assert.match(tracker,/const ARRIVAL_RADIUS_M=200/)
  assert.match(arrival,/if v_distance_m > 200 then/)
 })
+
+
+test('database boundary hardening uses only a sub-centimeter numeric epsilon',async()=>{
+ const sql=await read('supabase/migrations/20260927152000_provider_alert_radius_boundary_tolerance.sql')
+ assert.match(sql,/v_geo_epsilon_m constant double precision := 0\.01/)
+ assert.match(sql,/st_dwithin\(v_servicio\.ubicacion_cliente,pp\.ubicacion,v_alert_radius_m\+v_geo_epsilon_m\)/i)
+ assert.match(sql,/st_dwithin\(v_client_location,v_provider_location,v_alert_radius_m\+v_geo_epsilon_m\)/i)
+ assert.match(sql,/exactly 20,000 m is eligible/i)
+})
