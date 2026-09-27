@@ -52,9 +52,24 @@ export function SuccessState(props:GlobalStateProps){return <GlobalState kind="s
 export function OfflineState({onAction,className}:{onAction?:()=>void;className?:string}){return <div className={joinClasses('ugo-ds-offline',className)} role="status"><span aria-hidden="true">⌁</span><span>Estás sin conexión. Guardamos los cambios para sincronizarlos al volver.</span>{onAction&&<button type="button" onClick={onAction}>Reintentar</button>}</div>}
 
 export function useRoleSession(role:UgoRole){
-  const supabase=useMemo(()=>getRoleSupabase(role),[role]);const[session,setSession]=useState<Session|null>(null);const[profile,setProfile]=useState<UgoUser|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('')
+  const supabase=useMemo(()=>getRoleSupabase(role),[role]);const[session,setSession]=useState<Session|null>(null);const[profile,setProfile]=useState<UgoUser|null>(null);const[loading,setLoading]=useState(true);const[error,setError]=useState('');const[profileChannelEpoch,setProfileChannelEpoch]=useState(0)
   const loadProfile=useCallback(async(next:Session|null)=>{if(!next){setProfile(null);return}let{data,error:e}=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).maybeSingle();if(e)throw e;if(!data)throw new Error('No se encontró el perfil conectado a esta cuenta.');if(!data.activo){await supabase.auth.signOut();throw new Error('Esta cuenta está desactivada. Contactá a UGO si necesitás revisión.')}const expected=role==='client'?'cliente':'proveedor';const pendingRole=window.localStorage.getItem(OAUTH_ROLE_KEY);const isFreshOAuthUser=Date.now()-new Date(next.user.created_at).getTime()<120000;if(role==='provider'&&data.tipo==='cliente'&&pendingRole==='proveedor'&&isFreshOAuthUser){const{error:updateError}=await supabase.from('usuarios').update({tipo:'proveedor'}).eq('id',next.user.id);if(updateError)throw updateError;const{error:providerError}=await supabase.from('perfiles_proveedor').upsert({usuario_id:next.user.id},{onConflict:'usuario_id'});if(providerError)throw providerError;const refreshed=await supabase.from('usuarios').select('id,nombre,tipo,activo,karma,servicios_completados').eq('id',next.user.id).single();if(refreshed.error)throw refreshed.error;data=refreshed.data}if(data.tipo!==expected){window.localStorage.removeItem(OAUTH_ROLE_KEY);await supabase.auth.signOut();throw new Error(`Esta cuenta está registrada como ${data.tipo}. Abrí la aplicación correspondiente.`)}window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(data as UgoUser)},[role,supabase])
   useEffect(()=>{let active=true;const failSafe=window.setTimeout(()=>{if(!active)return;setError(current=>current||'La sesión tardó demasiado en responder. Podés ingresar nuevamente.');setSession(null);setProfile(null);setLoading(false)},8000);supabase.auth.getSession().then(async({data})=>{if(!active)return;try{setSession(data.session);await loadProfile(data.session)}catch(e){setError(e instanceof Error?e.message:'No se pudo cargar la sesión.');setSession(null);setProfile(null)}finally{window.clearTimeout(failSafe);if(active)setLoading(false)}}).catch(e=>{window.clearTimeout(failSafe);if(!active)return;setError(e instanceof Error?e.message:'No se pudo validar la sesión.');setSession(null);setProfile(null);setLoading(false)});const{data:l}=supabase.auth.onAuthStateChange((_event,next)=>{if(!active)return;setSession(next);loadProfile(next).catch((e:Error)=>setError(e.message))});return()=>{active=false;window.clearTimeout(failSafe);l.subscription.unsubscribe()}},[loadProfile,supabase])
+  useEffect(()=>{
+    const userId=session?.user.id
+    if(!userId)return
+    let alive=true,reconnectTimer:number|undefined
+    const refresh=()=>{if(alive)void loadProfile(session).catch(e=>{if(alive)setError(e instanceof Error?e.message:'No pudimos actualizar tu perfil.')})}
+    const reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setProfileChannelEpoch(value=>value+1)},1200)}
+    const onOnline=()=>{refresh();reconnect()}
+    const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
+    window.addEventListener('online',onOnline)
+    document.addEventListener('visibilitychange',onVisibility)
+    const channel=supabase.channel(`ugo-profile-${role}-${userId.slice(0,8)}-${profileChannelEpoch}`)
+      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
+      .subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
+    return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
+  },[loadProfile,profileChannelEpoch,role,session,supabase])
   const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);return{supabase,session,profile,loading,error,setError,signOut}
 }
 
