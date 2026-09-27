@@ -32,11 +32,11 @@ env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
-  UGO_TEST_CLIENT_EMAIL: ${{ secrets.UGO_TEST_CLIENT_EMAIL }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
-  UGO_TEST_PROVIDER_EMAIL: ${{ secrets.UGO_TEST_PROVIDER_EMAIL }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
   UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
-  UGO_TEST_ADMIN_EMAIL: ${{ secrets.UGO_TEST_ADMIN_EMAIL }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
   UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
 
 jobs:
@@ -79,11 +79,8 @@ jobs:
           set -euo pipefail
 
           required=(
-            UGO_TEST_CLIENT_EMAIL
             UGO_TEST_CLIENT_PASSWORD
-            UGO_TEST_PROVIDER_EMAIL
             UGO_TEST_PROVIDER_PASSWORD
-            UGO_TEST_ADMIN_EMAIL
             UGO_TEST_ADMIN_PASSWORD
           )
 
@@ -105,7 +102,7 @@ jobs:
             exit 1
           fi
 
-          echo "All six human UGO TEST credential secrets are present."
+          echo "All three UGO TEST password secrets are present."
           echo "Designated TEST client identity matches cliente@ugo.com.ar."
 
       - name: Repair isolated TEST identities from GitHub Secrets
