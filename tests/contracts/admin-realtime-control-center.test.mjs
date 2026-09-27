@@ -109,3 +109,13 @@ test('admin 360 service trace rebuilds both realtime channels after failure',asy
  assert.match(trace,/admin-trace-live-\$\{service\.id\}-\$\{channelEpoch\}/)
  assert.match(extended,/admin-extended-live-\$\{service\.id\}-\$\{channelEpoch\}/)
 })
+
+
+test('admin global realtime channel rebuilds on CLOSED, online and visibility recovery',async()=>{
+ const src=await read('src/hooks/useAdminData.ts')
+ assert.match(src,/status==='CHANNEL_ERROR'\|\|status==='TIMED_OUT'\|\|status==='CLOSED'/)
+ assert.match(src,/addEventListener\('online', \(\) => resetRealtimeChannel\(\)\)/)
+ assert.match(src,/addEventListener\('visibilitychange'/)
+ assert.match(src,/document\.visibilityState === 'visible'/)
+ assert.match(src,/Object\.values\(listeners\)\.forEach\(set => set\.forEach\(listener => listener\(\)\)\)/)
+})
