@@ -31,3 +31,13 @@ test('Hugo understands gardening aliases and scheduled natural language', () => 
   assert.match(orderVoice, /manana\|amanha/)
   assert.match(orderVoice, /urgency:'scheduled'/)
 })
+
+
+test('Hugo voice address cannot advance without resolved pickup coordinates', () => {
+  assert.match(locationScreen, /geocodeClientAddress\(nextAddress,zone\)/)
+  assert.match(locationScreen, /No pudimos ubicar la dirección indicada por Hugo/)
+  assert.match(locationScreen, /savePickup\(pickupLat,pickupLng,pickupSource\)/)
+  const voiceBlock=locationScreen.match(/const onVoiceDraft=[\s\S]*?window\.addEventListener\(UGO_UI_EVENTS\.clientHugoDraft/)?.[0]||''
+  assert.match(voiceBlock, /if\(pickupLat==null\|\|pickupLng==null\)[\s\S]*geocodeClientAddress/)
+  assert.match(voiceBlock, /savePickup\(pickupLat,pickupLng,pickupSource\)[\s\S]*setStage\('when'\)/)
+})
