@@ -47,36 +47,15 @@ jobs:
       - name: Dependency security gate
         run: npm audit --audit-level=high
 
-      - name: Isolated E2E credential readiness
-        shell: bash
-        run: |
-          required=(
-            UGO_TEST_CLIENT_EMAIL
-            UGO_TEST_CLIENT_PASSWORD
-            UGO_TEST_PROVIDER_EMAIL
-            UGO_TEST_PROVIDER_PASSWORD
-            UGO_TEST_ADMIN_EMAIL
-            UGO_TEST_ADMIN_PASSWORD
-          )
-          missing=()
-          for name in "${required[@]}"; do
-            if [[ -z "${!name}" ]]; then
-              missing+=("$name")
-            fi
-          done
-
-          if (( ${#missing[@]} > 0 )); then
-            echo "Isolated authenticated E2E will be skipped; missing GitHub Secrets:"
-            printf ' - %s\n' "${missing[@]}"
-          else
-            echo "All six human TEST credentials are present; authenticated Cliente ↔ Proveedor ↔ Admin E2E is enabled."
-          fi
-
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Core lifecycle, market and isolated RPC/RLS tests
-        run: npm test
+      - name: Core lifecycle and contract regression tests
+        # Remote authenticated integration is intentionally owned by
+        # .github/workflows/isolated-rpc-rls.yml, where it is strict and
+        # UGO_REQUIRE_ISOLATED_INTEGRATION=1. Core CI must not turn stale
+        # external TEST passwords into a false code-regression failure.
+        run: node --test tests/contracts/*.test.mjs
 
       - name: Lint critical operational surfaces
         run: >-
