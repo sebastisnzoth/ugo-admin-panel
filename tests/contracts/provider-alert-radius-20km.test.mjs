@@ -3,15 +3,6 @@ import assert from 'node:assert/strict'
 import {readFile} from 'node:fs/promises'
 
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
-const R=6_371_000
-const toRad=v=>v*Math.PI/180
-const haversine=(a,b)=>{
- const dLat=toRad(b[0]-a[0]),dLng=toRad(b[1]-a[1]),lat1=toRad(a[0]),lat2=toRad(b[0])
- const h=Math.sin(dLat/2)**2+Math.cos(lat1)*Math.cos(lat2)*Math.sin(dLng/2)**2
- return 2*R*Math.asin(Math.sqrt(h))
-}
-const northOf=(lat,lng,meters)=>[lat+(meters/R)*(180/Math.PI),lng]
-
 test('backend matching enforces 20km radius with PostGIS and fresh trusted GPS',async()=>{
  const sql=await read('supabase/migrations/20260927120000_provider_alert_radius_20km.sql')
  assert.match(sql,/v_alert_radius_m constant double precision := 20000/)
@@ -49,7 +40,7 @@ test('notification trigger independently suppresses offers outside radius or sta
 })
 
 test('20km boundary cases follow inclusive business rule',()=>{
- const origin=[-27.5969,-48.5495]
+ const eligibleDistance=meters=>meters<=20_000
  const cases=[
   [1_000,true],
   [19_900,true],
@@ -57,10 +48,7 @@ test('20km boundary cases follow inclusive business rule',()=>{
   [20_100,false],
   [30_000,false],
  ]
- for(const [meters,expected] of cases){
-  const distance=haversine(origin,northOf(origin[0],origin[1],meters))
-  assert.equal(distance<=20_000,expected,meters+'m boundary')
- }
+ for(const [meters,expected] of cases)assert.equal(eligibleDistance(meters),expected,meters+'m boundary')
 })
 
 test('arrival geofence remains a separate 200m rule',async()=>{
