@@ -31,6 +31,7 @@ test('Scout recruitment supports explicit multi-select WhatsApp and email action
 
 test('Scout preserves public emails returned by discovery sources',async()=>{
  const api=await read('api/scout/places.js')
+ assert.match(api,/p\.poi\?\.email/)
  assert.match(api,/p\.contact\?\.email/)
  assert.match(api,/t\['contact:email'\]/)
  assert.match(api,/p\.extratags\?\.email/)
@@ -91,6 +92,25 @@ test('Scout recruitment migration adds CRM stages without removing legacy estado
  assert.match(sql,/add column if not exists no_contactar/)
  assert.match(sql,/create or replace view public\.scout_demanda_categorias/)
  assert.match(sql,/private\.is_admin\(auth\.uid\(\)\)/)
+})
+
+test('Scout tracks email provenance and never lets automated discovery replace an existing email',async()=>{
+ const sql=await read('supabase/migrations/20260927224000_scout_email_provenance.sql')
+ const ui=await read('src/components/ScoutSection.tsx')
+ const crm=await read('src/components/ScoutCRM.tsx')
+ const api=await read('api/scout/places.js')
+ assert.match(sql,/add column if not exists email_source text/)
+ assert.match(sql,/add column if not exists email_verified boolean not null default false/)
+ assert.match(sql,/add column if not exists email_last_seen_at timestamptz/)
+ assert.match(sql,/email=case when coalesce\(btrim\(p\.email\),' '\)=''|email=case when coalesce\(btrim\(p\.email\),''\)='' and v_email<>'' then v_email else p\.email end/)
+ assert.match(sql,/else p\.email_verified/)
+ assert.match(ui,/email_source:p\.email\?\(p\.source\|\|'scout'\):null/)
+ assert.match(ui,/email_verified:false/)
+ assert.match(ui,/nextEmail\?'manual':null/)
+ assert.match(crm,/nextEmail\?'manual':null/)
+ assert.match(api,/email_source:'website'/)
+ assert.match(api,/email_verified:false/)
+ assert.match(api,/\.is\('email',null\)/)
 })
 
 test('Scout persistence uses strong server-side dedupe before inserting candidates',async()=>{
