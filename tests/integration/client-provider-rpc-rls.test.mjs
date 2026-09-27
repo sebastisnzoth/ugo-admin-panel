@@ -169,7 +169,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
       serviceId,
       userId: clientId,
       role: 'cliente',
-      text: `UGO E2E cliente ${Date.now()}`,
+      text: 'UGO E2E cliente prueba aislada',
     })
     const { data: providerSawClient, error: providerChatReadError } = await p.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido').eq('id', clientMessage.id).single()
     if (providerChatReadError) throw providerChatReadError
@@ -179,7 +179,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
       serviceId,
       userId: providerId,
       role: 'proveedor',
-      text: `UGO E2E proveedor ${Date.now()}`,
+      text: 'UGO E2E proveedor respuesta aislada',
     })
     const { data: clientSawProvider, error: clientChatReadError } = await c.from('mensajes').select('id,servicio_id,emisor_id,emisor_rol,contenido').eq('id', providerMessage.id).single()
     if (clientChatReadError) throw clientChatReadError
