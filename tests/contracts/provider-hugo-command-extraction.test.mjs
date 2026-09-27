@@ -14,3 +14,12 @@ test('provider Hugo executes declared operational tools through guarded provider
  assert.match(live,/PROVIDER_TOOLS/)
  assert.doesNotMatch(bridge,/SpeechRecognition|webkitSpeechRecognition|\/api\/hugo\/chat/)
 })
+
+
+test('provider Hugo accepts either real service id or offer id for opportunity decisions',async()=>{
+ const bridge=await read('src/mvp/provider/ProviderHugoBridge.tsx')
+ assert.match(bridge,/String\(item\.id\)===requestedId\|\|String\(item\.serviceId\)===requestedId/)
+ assert.match(bridge,/actions\.acceptOpportunity\(item\.id\)/)
+ assert.match(bridge,/actions\.rejectOpportunity\(item\.id\)/)
+ assert.match(bridge,/serviceId:item\.serviceId,opportunityId:item\.id/)
+})
