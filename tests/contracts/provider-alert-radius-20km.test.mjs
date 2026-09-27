@@ -35,6 +35,8 @@ test('provider availability publishes trusted fresh GPS before matching',async()
  assert.match(tracker,/rpc\.rpc\('publicar_ubicacion_disponibilidad_proveedor'/)
  assert.match(tracker,/p_captured_at:capturedAt/)
  assert.match(tracker,/p_accuracy_m:accuracy/)
+ assert.match(tracker,/AVAILABILITY_HEARTBEAT_MS=20_000/)
+ assert.match(tracker,/!moved&&!heartbeatDue/)
 })
 
 test('notification trigger independently suppresses offers outside radius or stale GPS',async()=>{
