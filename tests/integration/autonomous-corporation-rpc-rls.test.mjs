@@ -14,8 +14,8 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.ok(!url.includes('trfsjuseqjxlhrxuvdsm'))
  const unauth=sb()
  const anonRead=await unauth.from('autonomous_company_state').select('*')
- assert.equal(anonRead.error,null)
- assert.equal(anonRead.data?.length,0)
+ if (anonRead.error) assert.equal(anonRead.error.code,'42501','anon read must be denied by table privilege/RLS')
+ else assert.equal(anonRead.data?.length,0,'anon must not see autonomous company state')
 
  const db=sb(),signed=await db.auth.signInWithPassword({email,password})
  if(signed.error)throw signed.error
@@ -26,8 +26,8 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
   const denied=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'authorization probe'})
   assert.ok(denied.error,'non-superadmin admin must not change corporate autonomy')
   const hidden=await db.from('autonomous_departments').select('department_id')
-  assert.equal(hidden.error,null)
-  assert.equal(hidden.data?.length,0,'ordinary Admin must not read autonomous governance state')
+  if (hidden.error) assert.equal(hidden.error.code,'42501','ordinary Admin governance read must be denied')
+  else assert.equal(hidden.data?.length,0,'ordinary Admin must not read autonomous governance state')
   return
  }
  const departments=await db.from('autonomous_departments').select('department_id,name')
