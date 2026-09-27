@@ -128,5 +128,9 @@ jobs:
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node --test tests/integration/ip-corporate-protection-rpc-rls.test.mjs
 
+      - name: Autonomous Corporation runtime RPC/RLS
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node --test tests/integration/autonomous-corporation-rpc-rls.test.mjs
+
       - name: Realtime chat Cliente ↔ Proveedor without refresh
         run: node scripts/chat-realtime-probe.mjs
