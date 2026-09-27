@@ -48,13 +48,13 @@ async function firstCategory(supabase) {
 }
 
 async function getService(supabase, serviceId) {
-  const { data, error } = await supabase.from('servicios').select('id,estado,cliente_id,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,aceptado_at,completado_at').eq('id', serviceId).single()
+  const { data, error } = await supabase.from('servicios').select('id,estado,cliente_id,proveedor_id,tarifa,comision_ugo,ganancia_proveedor,aceptado_at,completado_at,metadata,ambiente').eq('id', serviceId).single()
   if (error) throw error
   return data
 }
 
 async function getPayment(supabase, serviceId) {
-  const { data, error } = await supabase.from('pagos').select('id,servicio_id,estado,metodo,modelo_pago,monto_bruto,comision_ugo,ganancia_proveedor,pago_externo_id,fecha_confirmacion,liberado_at').eq('servicio_id', serviceId).single()
+  const { data, error } = await supabase.from('pagos').select('id,servicio_id,estado,metodo,modelo_pago,monto_bruto,comision_ugo,ganancia_proveedor,pago_externo_id,fecha_confirmacion,liberado_at,ambiente').eq('servicio_id', serviceId).single()
   if (error) throw error
   return data
 }
@@ -128,6 +128,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
       estado: 'buscando',
       descripcion: `UGO integration ${Date.now()}`,
       urgencia: false,
+      ambiente: 'demo',
       metadata: { integration_test: true, source: 'rpc-rls-harness', e2e_run_id: runId, preserve_e2e_evidence: true },
     }).select('id').single()
     if (createError) throw createError
@@ -257,39 +258,61 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     assert.deepEqual(await getService(c, serviceId), expandedService)
     assert.deepEqual(await getPayment(c, serviceId), expandedPayment)
 
-    const beforeFinalEvidence = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
+    const beforeFinalEvidence = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'esperando_aprobacion' })
     expectDomainError(beforeFinalEvidence, /foto final/)
     evidencePaths.push(await uploadEvidence(p, serviceId, providerId, 'despues'))
+
     const review = await p.rpc('avanzar_servicio', { p_servicio_id: serviceId, p_estado: 'esperando_aprobacion' })
-    expectDomainError(review, /recepción del efectivo/)
-    assert.equal((await getService(c, serviceId)).estado, 'en_progreso')
+    if (review.error) throw review.error
+    let awaitingApproval = await getService(c, serviceId)
+    assert.equal(awaitingApproval.estado, 'esperando_aprobacion')
+    assert.equal(awaitingApproval.ambiente, 'demo')
 
-    const cash = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
-    if (cash.error) throw cash.error
-    const confirmedPayment = await getPayment(c, serviceId)
-    assert.equal(confirmedPayment.id, payment.data?.id)
-    assert.equal(confirmedPayment.estado, 'liberado')
-    assert.equal(confirmedPayment.metodo, 'efectivo')
-    assert.equal(confirmedPayment.modelo_pago, 'presencial')
-    for (const field of ['monto_bruto', 'comision_ugo', 'ganancia_proveedor']) {
-      assert.equal(confirmedPayment[field], expandedPayment[field], 'Confirmar efectivo conserva los importes aprobados')
-    }
-    assert.ok(confirmedPayment.pago_externo_id)
-    assert.ok(confirmedPayment.fecha_confirmacion)
-    assert.ok(confirmedPayment.liberado_at)
-    assert.equal((await getService(c, serviceId)).estado, 'esperando_aprobacion')
-
-    const duplicateCash = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
-    if (duplicateCash.error) throw duplicateCash.error
-    assert.deepEqual(duplicateCash.data, cash.data, 'Retry devuelve el mismo recibo sin modificar importes ni timestamps')
-    assert.deepEqual(await getPayment(c, serviceId), confirmedPayment)
+    const providerCannotConfirmCash = await p.rpc('confirmar_pago_efectivo', { p_servicio_id: serviceId })
+    expectDomainError(providerCannotConfirmCash, /Primero el cliente aprueba el trabajo y confirma el pago en UGO/)
 
     const providerCannotApprove = await p.rpc('aprobar_servicio', { p_servicio_id: serviceId })
     expectDomainError(providerCannotApprove, /No autorizado/)
 
     const approve = await c.rpc('aprobar_servicio', { p_servicio_id: serviceId })
     if (approve.error) throw approve.error
+    awaitingApproval = await getService(c, serviceId)
+    assert.equal(awaitingApproval.estado, 'esperando_aprobacion', 'Aprobar trabajo en efectivo no completa el servicio antes de pagar')
+    assert.ok(awaitingApproval.metadata?.trabajo_aprobado_at, 'La aprobación del trabajo debe quedar persistida antes del pago')
+
+    const pendingCashPayment = await getPayment(c, serviceId)
+    assert.equal(pendingCashPayment.id, payment.data?.id)
+    assert.equal(pendingCashPayment.estado, 'pendiente')
+    assert.equal(pendingCashPayment.metodo, 'efectivo')
+    assert.equal(pendingCashPayment.modelo_pago, 'presencial')
+    assert.equal(pendingCashPayment.ambiente, 'demo')
+    for (const field of ['monto_bruto', 'comision_ugo', 'ganancia_proveedor']) {
+      assert.equal(pendingCashPayment[field], expandedPayment[field], 'Aprobar trabajo conserva los importes aprobados')
+    }
+
+    const clientCash = await c.rpc('confirmar_pago_efectivo_cliente', { p_servicio_id: serviceId })
+    if (clientCash.error) throw clientCash.error
+
+    const confirmedPayment = await getPayment(c, serviceId)
+    assert.equal(confirmedPayment.id, payment.data?.id)
+    assert.equal(confirmedPayment.estado, 'liberado')
+    assert.equal(confirmedPayment.metodo, 'efectivo')
+    assert.equal(confirmedPayment.modelo_pago, 'presencial')
+    assert.equal(confirmedPayment.ambiente, 'demo')
+    for (const field of ['monto_bruto', 'comision_ugo', 'ganancia_proveedor']) {
+      assert.equal(confirmedPayment[field], expandedPayment[field], 'YA PAGUÉ conserva los importes aprobados')
+    }
+    assert.ok(confirmedPayment.pago_externo_id)
+    assert.ok(confirmedPayment.fecha_confirmacion)
+    assert.ok(confirmedPayment.liberado_at)
+
     const completedService = await getService(c, serviceId)
+    assert.equal(completedService.estado, 'completado')
+
+    const duplicateClientCash = await c.rpc('confirmar_pago_efectivo_cliente', { p_servicio_id: serviceId })
+    if (duplicateClientCash.error) throw duplicateClientCash.error
+    assert.equal(duplicateClientCash.data?.id, serviceId, 'Retry de YA PAGUÉ devuelve el mismo servicio completado')
+    assert.deepEqual(await getPayment(c, serviceId), confirmedPayment)
 
     const duplicateApprove = await c.rpc('aprobar_servicio', { p_servicio_id: serviceId })
     expectDomainError(duplicateApprove, /todavía no puede aprobarse/)

@@ -77,16 +77,29 @@ test('acceptance retries verify persisted identity and amounts instead of requir
   assert.doesNotMatch(source, /assert.ok\(duplicateAccept.error/)
 })
 
-test('cash confirmation opens review and repeated receipt preserves the same payment', async () => {
+test('cash close follows provider ready -> client approval -> client YA PAGUE', async () => {
   const [source, sql] = await Promise.all([
     readFile(harnessUrl, 'utf8'),
-    read('supabase/migrations/20260911200500_cash_close_ordering_guard.sql'),
+    read('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql'),
   ])
-  assert.match(sql, /v_pago.estado = 'liberado'[\s\S]*return v_pago/)
-  assert.match(source, /const review = [\s\S]*expectDomainError\(review, \/recepción del efectivo\/\)[\s\S]*const cash = [\s\S]*estado, 'esperando_aprobacion'/)
-  assert.match(source, /assert.deepEqual\(duplicateCash.data, cash.data/)
+  assert.match(sql, /trabajo_aprobado_at/)
+  assert.match(sql, /confirmar_pago_efectivo_cliente/)
+  assert.match(source, /const beforeFinalEvidence = [\s\S]*p_estado: 'esperando_aprobacion'[\s\S]*expectDomainError\(beforeFinalEvidence, \/foto final\//)
+  assert.match(source, /const review = [\s\S]*if \(review.error\) throw review.error[\s\S]*estado, 'esperando_aprobacion'/)
+  assert.match(source, /const approve = await c\.rpc\('aprobar_servicio'/)
+  assert.match(source, /Aprobar trabajo en efectivo no completa el servicio antes de pagar/)
+  assert.match(source, /const clientCash = await c\.rpc\('confirmar_pago_efectivo_cliente'/)
+  assert.match(source, /const duplicateClientCash = await c\.rpc\('confirmar_pago_efectivo_cliente'/)
   assert.match(source, /assert.deepEqual\(await getPayment\(c, serviceId\), confirmedPayment\)/)
-  assert.doesNotMatch(source, /assert.ok\(duplicateCash.error/)
+  assert.doesNotMatch(source, /expectDomainError\(review, \/recepción del efectivo\//)
+})
+
+test('isolated lifecycle uses demo business environment so repeated runs cannot create real provider debt lock', async () => {
+  const source = await readFile(harnessUrl, 'utf8')
+  assert.match(source, /ambiente: 'demo'/)
+  assert.match(source, /assert.equal\(awaitingApproval\.ambiente, 'demo'\)/)
+  assert.match(source, /assert.equal\(pendingCashPayment\.ambiente, 'demo'\)/)
+  assert.match(source, /assert.equal\(confirmedPayment\.ambiente, 'demo'\)/)
 })
 
 test('expansion and final closure assertions compare persisted money and all roles', async () => {
