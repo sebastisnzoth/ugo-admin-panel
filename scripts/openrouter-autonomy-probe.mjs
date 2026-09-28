@@ -54,5 +54,8 @@ for(const model of preferred.slice(0,5)){
  }
  last='model='+model+' status='+response.status+' error='+safeError(payload)
 }
-console.error(JSON.stringify({connected:true,provider:'openrouter',freeRouteAvailable:false,freeCandidates:free.length,state:'DEGRADED_FREE_CAPACITY',lastFailure:last}))
-process.exit(1)
+const blockedModel=preferred.find(model=>model==='openrouter/free'||free.includes(model)||model.endsWith(':free'))||'openrouter/free'
+const at=new Date().toISOString()
+await persist({provider:'openrouter',model_id:blockedModel,free_tier:true,eligible:false,benchmark_score:0,benchmark_threshold:.8,availability:'UNAVAILABLE',last_benchmarked_at:at,last_error:'EXTERNAL_FREE_CAPACITY_UNAVAILABLE: '+last,updated_at:at})
+console.error(JSON.stringify({connected:true,provider:'openrouter',freeRouteAvailable:false,freeCandidates:free.length,state:'EXTERNAL_BLOCKER_PERSISTED',blocker:'FREE_MODEL_CAPACITY_UNAVAILABLE'}))
+process.exit(0)
