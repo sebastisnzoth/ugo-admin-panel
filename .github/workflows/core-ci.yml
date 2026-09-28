@@ -65,12 +65,8 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Core lifecycle and contract regression tests
-        # Remote authenticated integration is intentionally owned by
-        # .github/workflows/isolated-rpc-rls.yml, where it is strict and
-        # UGO_REQUIRE_ISOLATED_INTEGRATION=1. Core CI must not turn stale
-        # external TEST passwords into a false code-regression failure.
-        run: node --test tests/contracts/*.test.mjs
+      - name: Full repository test suite
+        run: npm test
 
       - name: Lint critical operational surfaces
         run: >-
@@ -124,6 +120,5 @@ jobs:
           --rule 'no-empty: off'
           --rule '@typescript-eslint/no-explicit-any: off'
 
-      - name: Full repository lint debt report
-        continue-on-error: true
+      - name: Full repository lint gate
         run: npm run lint
