@@ -11,10 +11,10 @@ if(unbound.length) throw new Error('QA_REAL_RUNTIME_BINDING_REQUIRED:'+unbound.m
 for(const s of sc){
  const {data:svc,error:se}=await db.from('servicios').select('id,estado,cliente_id,proveedor_id,ambiente').eq('id',s.service_id).maybeSingle();
  if(se)throw se;if(!svc)throw new Error('QA_SERVICE_NOT_FOUND:'+s.scenario_key);
- if(svc.ambiente!=='test')throw new Error('QA_NON_TEST_SERVICE_REJECTED:'+s.scenario_key);
+ if(svc.ambiente!=='demo')throw new Error('QA_NON_TEST_SERVICE_REJECTED:'+s.scenario_key);
 }
 const {data:cov,error:ce}=await db.from('autonomous_quality_coverage').select('coverage_key,status,last_run_id').in('coverage_key',required);
 if(ce)throw ce;
 const bad=required.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
 if(bad.length)throw new Error('QA_REAL_COVERAGE_INCOMPLETE:'+bad.join(','));
-console.log(JSON.stringify({validated:true,basis:'persisted-real-test-service',scenarios:required}));
+console.log(JSON.stringify({validated:true,basis:'persisted-ugo-test-demo-service',scenarios:required}));
