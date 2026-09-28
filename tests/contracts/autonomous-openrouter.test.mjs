@@ -12,7 +12,8 @@ test('autonomous AI uses OpenRouter from GitHub Actions secret, never frontend',
 test('zero-budget-first routing discovers free models and degrades honestly when capacity is unavailable',()=>{
  assert.match(worker,/openrouter\/free/)
  assert.match(worker,/:free/)
- assert.match(worker,/DEGRADED_FREE_CAPACITY/)
+ assert.match(worker,/EXTERNAL_BLOCKER_PERSISTED/)
+ assert.match(worker,/FREE_MODEL_CAPACITY_UNAVAILABLE/)
 })
 test('GitHub Actions gates and probes OpenRouter without exposing its credential',()=>{
  assert.match(ci,/OPENROUTER_API_KEY: \$\{\{ secrets\.OPENROUTER_API_KEY \}\}/)
