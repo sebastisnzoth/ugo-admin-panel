@@ -65,9 +65,10 @@ export function useRoleSession(role:UgoRole){
     const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
     window.addEventListener('online',onOnline)
     document.addEventListener('visibilitychange',onVisibility)
-    const channel=supabase.channel(`ugo-profile-${role}-${userId.slice(0,8)}-${profileChannelEpoch}`)
-      .on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
-      .subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
+    const channelName=`ugo-profile-${role}-${userId}-${profileChannelEpoch}-${Math.random().toString(36).slice(2,8)}`
+    const channel=supabase.channel(channelName)
+    channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
+    channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
   },[loadProfile,profileChannelEpoch,role,session,supabase])
   const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut()}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,signOut,clearAccess}
