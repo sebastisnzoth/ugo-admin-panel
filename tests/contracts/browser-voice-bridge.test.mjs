@@ -24,9 +24,4 @@ test('browser voice bridge restarts listening across phrases and supports explic
  assert.match(src,/active=false/)
 })
 
-test('client and provider apps mount the browser voice bridge before role surfaces',async()=>{
- const src=await read('src/mvp/MvpApp.tsx')
- assert.match(src,/BrowserVoiceBridgeBootstrap/)
- assert.match(src,/const app=<><BrowserVoiceBridgeBootstrap\/><RecoveryGate role="client"/)
- assert.match(src,/const app=<><BrowserVoiceBridgeBootstrap\/><RecoveryGate role="provider"/)
-})
+test('browser voice bridge self-installs without a boot-critical React bootstrap',async()=>{\n const src=await read('src/lib/browserVoiceBridge.ts')\n const app=await read('src/mvp/MvpApp.tsx')\n assert.match(src,/if\(typeof window!==\'undefined\'\)installBrowserBridge\(\)/)\n assert.doesNotMatch(app,/BrowserVoiceBridgeBootstrap/)\n})\n
