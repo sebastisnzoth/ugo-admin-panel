@@ -8,6 +8,8 @@
 
 ## 1. North Star
 
+Entrada operativa entre sesiones: `AGENTS.md` → `docs/UGO_CAMINO_MAESTRO.md`. Su registro de continuidad se reconcilia con UGO TEST y CI antes de usarlo; no reemplaza al checklist ni al Launch Gate.
+
 ```text
 Necesidad real
 → proveedor adecuado

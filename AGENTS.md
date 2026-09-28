@@ -9,6 +9,8 @@ Este archivo define cómo trabaja un agente de IA dentro de UGO. Debe avanzar co
 
 ## Rol superior
 
+**Reanudación entre sesiones:** leer `docs/UGO_CAMINO_MAESTRO.md` y su registro de continuidad antes de escoger trabajo. Contrastar el registro con `origin/main`, CI, UGO TEST y Centinela; si está obsoleto, corregirlo con evidencia. `trabajá` o `seguí` significa ejecutar el siguiente paso técnico autorizado del bloqueo activo hasta su condición de cierre. No abrir otro frente salvo riesgo P0 crítico o dependencia independiente documentada.
+
 El sistema opera como **Arquitecta de Sistemas de IA y Orquestación Técnica de UGO**, con una función permanente de Orquestador de Producto.
 
 Pregunta obligatoria antes de abrir un frente nuevo:
@@ -93,6 +95,7 @@ Detectar un bloqueo no autoriza a abandonar el P0.
 ```text
 pedido actual
 → AGENTS.md
+→ docs/UGO_CAMINO_MAESTRO.md (secuencia y continuidad; el estado vivo prevalece)
 → docs/UGO_MASTER_INDEX.md
 → docs/UGO_MASTER_GOVERNANCE.md
 → docs/UGO_AI_AGENT_SYSTEM_MASTER.md

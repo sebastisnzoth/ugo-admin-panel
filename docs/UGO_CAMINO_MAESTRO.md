@@ -122,3 +122,18 @@ DORA documenta trabajo en lotes pequeños, límite al trabajo en curso, integrac
 - Uber Engineering, *Building Automated Feature Rollouts on Robust Regression Analysis*: https://www.uber.com/au/en/blog/autonomous-rollouts-regression-analysis/
 
 **Primera acción de ejecución:** etapa 0. Obtener HEAD/CI/runtime actuales y una ejecución canónica del recorrido que identifique el primer fallo; después corregir ese fallo. Este documento es una dirección auditada, no una afirmación de que las etapas estén cerradas.
+
+## Registro de continuidad entre sesiones
+
+Este registro indica dónde retomar, pero nunca certifica un estado vivo por sí mismo. Actualizarlo al cerrar cada bloque con fecha, SHA, entorno, identificador de ejecución y evidencia verificable; no publicar secretos, datos personales ni un `serviceId` sensible. Si otra sesión avanzó `main` o TEST, reconciliar primero. Mantener explícito `por verificar` cuando falte evidencia.
+
+| Campo | Estado inicial |
+| --- | --- |
+| Bloqueo activo | Etapa 0: identificar en UGO TEST el primer paso fallido del recorrido canónico |
+| Criterio de cierre | Ejecución identificada por SHA, entorno y servicio; primer fallo y evidencia registrados |
+| SHA/CI/runtime actuales | Por verificar al iniciar la próxima sesión |
+| Evidencia | Estado auditado al corte arriba; revalidar antes de usar |
+| Próxima acción | Verificar `origin/main`, CI y TEST; ejecutar el recorrido disponible y registrar la primera falla |
+| Dependencia humana | Sólo la que surja de la ejecución; aceptación Customer #1 requiere evidencia humana real |
+
+Al cerrar un bloqueo, registrar el resultado y el siguiente fallo exacto. Si CI o TEST fallan, conservarlo abierto. No cambiar `approved` ni el Launch Gate para reflejar avances que aún carecen de su verificador requerido.
