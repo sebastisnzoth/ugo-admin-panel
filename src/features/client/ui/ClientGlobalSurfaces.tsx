@@ -5,5 +5,5 @@ import{ClientGlobalVoiceCommands}from'../hugo/ClientGlobalVoiceCommands'
 
 type Props={onOpenNotice:(notice:UgoNotification)=>void}
 export function ClientGlobalSurfaces({onOpenNotice}:Props){
- return <><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={onOpenNotice}/><ClientHugoBridge/><ClientGlobalVoiceCommands/></>
+ return <><ClientGlobalMenu/><NotificationCenter role="client" onOpenNotice={onOpenNotice}/><ClientHugoBridge/></>
 }
