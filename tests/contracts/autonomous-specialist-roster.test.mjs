@@ -24,3 +24,12 @@ test('new specialists cannot execute or claim unverified model access', () => {
   assert.match(connector, /agent\.status==='DISABLED'/)
   assert.match(connector, /\.neq\('status','DISABLED'\)/)
 })
+
+test('D9 regression and release-gate specialists remain disabled during validation', () => {
+  const guard = readFileSync('supabase/migrations/20260929123000_specialist_validation_state_guard.sql', 'utf8')
+  assert.match(guard, /agent_key in \('regression-agent','release-gate-agent'\)/)
+  assert.match(guard, /set status='DISABLED'/)
+  assert.match(guard, /SPECIALIST_MUST_REMAIN_DISABLED_DURING_VALIDATION/)
+  assert.match(guard, /revoke all on function public\.autonomous_validate_specialist\(text\) from public,anon,authenticated/)
+  assert.match(guard, /grant execute on function public\.autonomous_validate_specialist\(text\) to service_role/)
+})
