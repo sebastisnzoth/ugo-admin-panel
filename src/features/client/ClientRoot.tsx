@@ -11,7 +11,8 @@ import{ClientPersistentHeader}from'./ui/ClientPersistentHeader'
 import{ClientHistoryOverlay}from'./ui/ClientHistoryOverlay'
 import{ClientOrderDetailBoundary}from'./ui/ClientOrderDetailBoundary'
 import{ClientOperationalSurfaces}from'./ui/ClientOperationalSurfaces'
-import{ClientGlobalSurfaces}from'./ui/ClientGlobalSurfaces'\nimport{ClientGlobalVoiceCommands}from'./hugo/ClientGlobalVoiceCommands'
+import{ClientGlobalSurfaces}from'./ui/ClientGlobalSurfaces'
+import{ClientGlobalVoiceCommands}from'./hugo/ClientGlobalVoiceCommands'
 import'./clientStyles'
 type Props={demo:boolean}
 export function ClientRoot({demo}:Props){
