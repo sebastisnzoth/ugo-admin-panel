@@ -19,4 +19,4 @@ test('agent UI never embeds OpenRouter credentials',()=>{
  assert.doesNotMatch(ui,/VITE_OPENROUTER_API_KEY|Bearer \$\{.*OPENROUTER/)
 })
 
-test('agent consultation is evidence grounded and honest when unsupported',()=>{assert.match(ui,/Consultar agente/);assert.match(ui,/DATOS PERSISTIDOS/);assert.match(ui,/INTERPRETACIÓN/);assert.match(ui,/NO HAY EVIDENCIA SUFICIENTE/);assert.doesNotMatch(ui,/fetch\(['\"]\/api\/autonomy\/openrouter/)})
+test('agent consultation is evidence grounded and honest when unsupported',()=>{assert.match(ui,/Consultar agente/);assert.match(ui,/Evidencia autorizada/);assert.match(ui,/NO HAY EVIDENCIA SUFICIENTE/);assert.match(ui,/ugo_autonomy_model=1/);assert.match(ui,/correlation_id/)})
