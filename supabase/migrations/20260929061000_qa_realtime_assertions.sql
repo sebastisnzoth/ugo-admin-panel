@@ -1,0 +1,1 @@
+update public.autonomous_qa_scenarios set deterministic_judge=jsonb_build_object('required_assertions',jsonb_build_array('client_realtime','provider_realtime','subscription_established','event_received','payload_validated','timeout_false','cleanup_completed')) where scenario_key='realtime';
