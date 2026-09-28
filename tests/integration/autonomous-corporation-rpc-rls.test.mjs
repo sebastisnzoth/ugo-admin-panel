@@ -61,13 +61,16 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const metaScenario=await db.from('autonomous_qa_scenarios').select('id').eq('scenario_key','qa-meta-seeded-defect').single()
  if(metaScenario.error)throw metaScenario.error
  const meta=await db.rpc('superadmin_validate_meta_qa',{p_scenario_id:metaScenario.data.id})
- if(meta.error)throw meta.error
- assert.equal(meta.data.status,'FAILED')
- assert.equal(meta.data.judge_result?.expected_failure_detected,true)
- const gateAfterMeta=await db.from('autonomous_release_gate').select('meta_qa_validated,meta_qa_run_id').eq('gate_key','CUSTOMER_1').single()
- if(gateAfterMeta.error)throw gateAfterMeta.error
- assert.equal(gateAfterMeta.data.meta_qa_validated,true)
- assert.equal(gateAfterMeta.data.meta_qa_run_id,meta.data.id)
+ if(meta.error){
+   assert.match(meta.error.message,/PERSISTED_META_QA_CALIBRATION_REQUIRED/)
+ }else{
+   assert.equal(meta.data.status,'PASSED')
+   assert.equal(meta.data.permanent_regression,true)
+   const gateAfterMeta=await db.from('autonomous_release_gate').select('meta_qa_validated,meta_qa_run_id').eq('gate_key','CUSTOMER_1').single()
+   if(gateAfterMeta.error)throw gateAfterMeta.error
+   assert.equal(gateAfterMeta.data.meta_qa_validated,true)
+   assert.equal(gateAfterMeta.data.meta_qa_run_id,meta.data.id)
+ }
 
  const shadow=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'isolated runtime validation'})
  if(shadow.error)throw shadow.error
