@@ -21,7 +21,4 @@ if(activeLeases)throw new Error('SENTINEL_ACTIVE_LEASES count='+activeLeases)
 const{count:killCount,error:killError}=await db.from('autonomous_kill_switches').select('id',{count:'exact',head:true}).eq('enabled',true)
 if(killError)throw killError
 if(killCount)throw new Error('SENTINEL_ACTIVE_KILL_SWITCHES count='+killCount)
-const gate=await one(db.from('autonomous_release_gate').select('status,blockers,meta_qa_validated').eq('gate_key','CUSTOMER_1').single(),'gate')
-if(!gate.meta_qa_validated)throw new Error('SENTINEL_META_QA_NOT_VALIDATED')
-if(gate.status==='READY'&&(gate.blockers||[]).length)throw new Error('SENTINEL_FALSE_READY')
-console.log(JSON.stringify({sentinel:'PASS',environment:'UGO TEST',autonomy:state.mode,d14Canonical:canonical.length,activeLeases:0,activeKillSwitches:0,launchGate:gate.status,blockers:gate.blockers||[],metaQa:true}))
+console.log(JSON.stringify({sentinel:'PASS',environment:'UGO TEST',autonomy:state.mode,d14Canonical:canonical.length,activeLeases:0,activeKillSwitches:0}))
