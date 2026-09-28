@@ -13,7 +13,12 @@ values
 (10,'legal-policy-agent','Legal, Compliance & Policy Agent','Legal, privacy, compliance, policy and IP triage','RED','IDLE','openrouter','FREE_FIRST','["legal_review","compliance","ip_triage","escalate"]'::jsonb),
 (11,'marketing-brand-agent','Marketing, Brand & Communication Agent','Brand and communication proposals within policy','YELLOW','IDLE','openrouter','FREE_FIRST','["marketing","brand","communication"]'::jsonb),
 (12,'product-design-agent','Product, Design & UX Agent','Product, design, UX and analytics proposals','YELLOW','IDLE','openrouter','FREE_FIRST','["product","design","ux","analytics"]'::jsonb),
-(14,'corporate-audit-agent','Corporate Audit Agent','Independent governance, risk and control audit','RED','IDLE','openrouter','FREE_FIRST','["audit","governance","risk","control_review"]'::jsonb)
+(14,'internal-auditor','UGO Internal Auditor','Audit any department against policy and evidence','RED','IDLE','openrouter','FREE_FIRST','["audit","evidence_review","remediation"]'::jsonb),
+(14,'enterprise-risk-officer','UGO Enterprise Risk Officer','Maintain the enterprise risk map','YELLOW','IDLE','openrouter','FREE_FIRST','["risk","risk_map","escalate"]'::jsonb),
+(14,'internal-control-inspector','UGO Internal Control Inspector','Verify controls operate with evidence','YELLOW','IDLE','openrouter','FREE_FIRST','["control_review","evidence_verification"]'::jsonb),
+(14,'cross-department-auditor','UGO Cross-Department Auditor','Audit complete cross-department journeys','RED','IDLE','openrouter','FREE_FIRST','["cross_department_audit","journey_audit"]'::jsonb),
+(14,'ai-governance-auditor','UGO AI Governance Auditor','Audit agents models routing permissions autonomy cost and anomalies','RED','IDLE','openrouter','FREE_FIRST','["ai_governance","model_router_audit","cost_audit","permission_audit"]'::jsonb),
+(14,'executive-assurance-challenge','UGO Executive Assurance & Challenge','Independent executive assurance and Founder Challenge','RED','IDLE','openrouter','FREE_FIRST','["executive_assurance","founder_challenge","escalate"]'::jsonb)
 on conflict(agent_key) do update set
  department_id=excluded.department_id,name=excluded.name,capability=excluded.capability,
  authority_class=excluded.authority_class,model_provider=excluded.model_provider,
