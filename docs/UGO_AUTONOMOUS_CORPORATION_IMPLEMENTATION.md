@@ -1,6 +1,6 @@
 # UGO Autonomous Corporation — Implementation Record
 
-**Governing contract:** `docs/UGO_AUTONOMOUS_CORPORATION_MASTER.md` v1.1  
+**Governing contract:** `docs/UGO_AUTONOMOUS_CORPORATION_MASTER.md` v1.2  
 **Branch of truth:** `main`  
 **Validation environment:** UGO TEST only (`tmossnqfwfwjrtzwcbmm`)  
 **Production:** protected; this implementation record does not authorize production deployment.
@@ -24,9 +24,9 @@ No production publication is implied.
 | Corporate agents | canonical D1-D12 agents plus six D14 agents | RUNTIME VALIDATED / TEST |
 | OFF / SHADOW / ON / SAFE_MODE | persisted global state + Super Admin control | RUNTIME VALIDATED / TEST |
 | GREEN / YELLOW / RED authority | GREEN policy authorization; YELLOW WAITING_APPROVAL + independent dual control; RED human approval/rejection | IMPLEMENTED; second independent YELLOW approver runtime proof pending |
-| Decision/Evidence ledgers | append-only persisted ledgers + complete action envelope + hashed verification evidence | IMPLEMENTED; end-to-end worker evidence validation remains |
+| Decision/Evidence ledgers | append-only persisted ledgers + complete action envelope + hashed verification evidence | RUNTIME VALIDATED / TEST for governed GREEN executor |
 | Scoped kill switches | GLOBAL / DEPARTMENT / AGENT / CAPABILITY + evidence-backed recovery re-audit | IMPLEMENTED; runtime recovery proof in CI pending |
-| Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation + scheduled TEST worker | IMPLEMENTED; worker runtime validation pending |
+| Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation + scheduled TEST worker + allowlisted GREEN executor | RUNTIME VALIDATED / TEST for worker and GREEN executor; broader capability coverage remains |
 | Data Quality Gate | freshness, provenance, completeness, consistency; independent reconciliation for YELLOW/RED; hashed evidence | RUNTIME VALIDATED schema/RPC in TEST |
 | QA Lab persistence | scenarios, runs, chaos profiles, deterministic judges, coverage map, release gate | RUNTIME VALIDATED schema in TEST |
 | QA actors | Client, Provider, Admin/System simulators persisted | RUNTIME VALIDATED registration in TEST; real P0 execution binding remains |
@@ -65,7 +65,7 @@ No production publication is implied.
 - `20260929014500_autonomous_finding_reaudit.sql`
 - `20260929020000_autonomous_ip_evidence_links.sql`
 - `20260929021500_autonomous_p0_event_binding.sql`
-- `20260929023000_autonomous_qa_remediation.sql`
+- `20260929023000_autonomous_qa_remediation.sql`\n- `20260929034500_autonomous_green_capability_executor.sql`\n- `20260929040000_autonomous_service_role_claim_guard.sql`\n- `20260929040500_autonomous_worker_status_ambiguity.sql`
 
 IP governance is implemented by the existing corporate IP migrations and is a permanent control independent from QA release approval.
 
@@ -138,3 +138,4 @@ Before every implementation block:
 6. never touch production;
 7. validate in UGO TEST;
 8. leave autonomy in a safe state after probes.
+\n## 8. Governed executor runtime evidence\n\nUGO TEST runtime validation executed the allowlisted `qa.green.echo` capability through the governed worker. Persisted result: GREEN `SUCCEEDED` with `verification_result.passed=true`, one Decision Ledger row and one Evidence Ledger row. Negative authority probes remained non-executable: YELLOW -> `WAITING_APPROVAL` / `YELLOW_DUAL_CONTROL_REQUIRED`; RED -> `WAITING_APPROVAL` / `RED_HUMAN_APPROVAL_REQUIRED`. Autonomy was restored to `OFF` after validation. This is RUNTIME VALIDATED in TEST, not PUBLISHED.\n
