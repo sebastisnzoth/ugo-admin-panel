@@ -20,7 +20,9 @@ for(const s of sc.filter(s=>persisted.includes(s.scenario_key))){
 }
 const {data:cov,error:ce}=await db.from('autonomous_quality_coverage').select('coverage_key,status,last_run_id').in('coverage_key',required);
 if(ce)throw ce;
-const bad=required.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
+const bad=persisted.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
 if(bad.length)throw new Error('QA_REAL_COVERAGE_INCOMPLETE:'+bad.join(','));
-console.log(JSON.stringify({validated:true,basis:'persisted-and-runtime-ugo-test-evidence',scenarios:required}));
-
+const external=required.filter(k=>!persisted.includes(k));
+const unguarded=external.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='UNCOVERED'&&x.last_run_id));
+if(unguarded.length)throw new Error('QA_EXTERNAL_OBSERVATION_INCORRECTLY_GREEN:'+unguarded.join(','));
+console.log(JSON.stringify({validated:true,basis:'persisted-and-runtime-ugo-test-evidence',persistedScenarios:persisted,externalObservationsUnverified:external}));
