@@ -10,8 +10,15 @@ async function persist(candidate){if(!db)return;const{error}=await db.from('auto
 function safeError(p){return String(p?.error?.message||p?.message||'unknown').replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,200)}
 
 if(gemini){
- let geminiLast=''
- for(const model of ['gemini-3.8-flash','gemini-3.8-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash']){
+ let geminiLast='',models=[]
+ try{
+  const lr=await fetch('https://generativelanguage.googleapis.com/v1beta/models',{headers:{'x-goog-api-key':gemini},signal:AbortSignal.timeout(6000)})
+  const lp=await lr.json().catch(()=>({}))
+  if(lr.ok)models=(lp.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent')&&/gemini.*flash/i.test(m.name||'')).map(m=>String(m.name).replace(/^models\//,''))
+  else geminiLast='catalog status='+lr.status+' error='+safeError(lp)
+ }catch(error){geminiLast='catalog transport='+String(error?.name||'error')}
+ const preferred=['gemini-3.8-flash','gemini-3.8-flash-lite',...models].filter((v,i,a)=>v&&a.indexOf(v)===i)
+ for(const model of preferred.slice(0,8)){
   try{
    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'x-goog-api-key':gemini,'content-type':'application/json'},signal:AbortSignal.timeout(6000),body:JSON.stringify({contents:[{parts:[{text:'Reply only UGO_GEMINI_OK'}]}],generationConfig:{temperature:0,maxOutputTokens:24}})})
    const p=await r.json().catch(()=>({}))
@@ -19,13 +26,14 @@ if(gemini){
    if(r.ok&&content.includes('UGO_GEMINI_OK')){
     const score=1,threshold=.8,at=new Date().toISOString()
     await persist({provider:'gemini',model_id:model,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at})
-    console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated',benchmarkScore:score,threshold,failover:'openrouter'}))
+    console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated-catalog',benchmarkScore:score,threshold,failover:'openrouter'}))
     process.exit(0)
    }
    geminiLast='model='+model+' status='+r.status+' error='+safeError(p)
-  }catch(error){geminiLast='model='+model+' transport='+String(error?.name||'error')}
+   console.error(JSON.stringify({connected:false,provider:'gemini',model,status:r.status,state:'CANDIDATE_FAILED',error:safeError(p)}))
+  }catch(error){geminiLast='model='+model+' transport='+String(error?.name||'error');console.error(JSON.stringify({connected:false,provider:'gemini',model,state:'CANDIDATE_FAILED',error:String(error?.name||'error')}))}
  }
- console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',lastFailure:geminiLast,failover:'openrouter'}))
+ console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',catalogCandidates:models.length,lastFailure:geminiLast,failover:'openrouter'}))
 }
 if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
 const catalog=await fetch(base+'/models',{headers})
