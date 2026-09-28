@@ -11,7 +11,7 @@ function safeError(p){return String(p?.error?.message||p?.message||'unknown').re
 
 if(gemini){
  let geminiLast=''
- for(const model of ['gemini-2.5-flash-lite','gemini-2.5-flash']){
+ for(const model of ['gemini-3.8-flash','gemini-3.8-flash-lite','gemini-2.5-flash-lite','gemini-2.5-flash']){
   try{
    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'x-goog-api-key':gemini,'content-type':'application/json'},signal:AbortSignal.timeout(6000),body:JSON.stringify({contents:[{parts:[{text:'Reply only UGO_GEMINI_OK'}]}],generationConfig:{temperature:0,maxOutputTokens:24}})})
    const p=await r.json().catch(()=>({}))
