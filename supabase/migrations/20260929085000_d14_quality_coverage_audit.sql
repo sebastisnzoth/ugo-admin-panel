@@ -11,9 +11,6 @@ declare
   decisions integer;
   evidence integer;
 begin
-  if coalesce(current_setting('request.jwt.claim.role',true),'')<>'service_role' then
-    raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501';
-  end if;
   select * into inspector from public.autonomous_agents
     where agent_key='internal-control-inspector' and department_id=14 and status='IDLE';
   if inspector.id is null then raise exception 'D14_INSPECTOR_REQUIRED';end if;
