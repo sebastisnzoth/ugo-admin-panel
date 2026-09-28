@@ -1,0 +1,1 @@
+update public.autonomous_qa_scenarios set deterministic_judge=jsonb_build_object('required_assertions',jsonb_build_array('zero_zero_rejected','stale_gps_rejected','inaccurate_gps_rejected','arrival_inside_200m','arrival_outside_200m_rejected','state_unchanged_on_rejection','recent_location_required')) where scenario_key='gps-geofence';
