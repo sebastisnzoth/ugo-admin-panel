@@ -73,7 +73,7 @@ export function useRoleSession(role:UgoRole){
   const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut()}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,signOut,clearAccess}
 }
 
-export function AuthScreen({role,supabase,error,onError}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void}){
+export function AuthScreen({role,supabase,error,onError,onResetAccess}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void;onResetAccess?:()=>Promise<void>}){
   const[mode,setMode]=useState<'login'|'register'|'recovery'>('login')
   const[name,setName]=useState('')
   const[email,setEmail]=useState('')
@@ -133,7 +133,7 @@ export function AuthScreen({role,supabase,error,onError}:{role:UgoRole;supabase:
           <label><span>Email</span><Input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" inputMode="email" placeholder="tu@email.com" required/></label>
           {mode!=='recovery'&&<label><span>Contraseña</span><div className="mvp-password-field"><Input type={showPassword?'text':'password'} value={password} onChange={e=>setPassword(e.target.value)} autoComplete={mode==='login'?'current-password':'new-password'} minLength={6} placeholder="Mínimo 6 caracteres" required/><button type="button" onClick={()=>setShowPassword(value=>!value)} aria-label={showPassword?'Ocultar contraseña':'Mostrar contraseña'}>{showPassword?'Ocultar':'Ver'}</button></div></label>}
           {mode==='login'&&<button type="button" className="mvp-auth-text-action" onClick={()=>changeMode('recovery')}>¿Olvidaste tu contraseña?</button>}
-          {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error||notice}</div>}
+          {(error||notice)&&<div className={error?'mvp-form-error':'mvp-form-notice'} role={error?'alert':'status'} aria-live="polite">{error||notice}</div>}{error&&onResetAccess&&<button type="button" className="mvp-auth-text-action" onClick={()=>void onResetAccess()}>Limpiar sesión y volver a ingresar</button>}
           <Button className="mvp-primary" loading={busy}>{mode==='login'?'Ingresar a UGO':mode==='register'?'Crear cuenta':'Enviar enlace'}</Button>
           {mode==='recovery'&&<button type="button" className="mvp-auth-recovery-back" onClick={()=>changeMode('login')}>← Volver a ingresar</button>}
         </form>
