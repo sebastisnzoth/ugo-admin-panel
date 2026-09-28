@@ -32,7 +32,7 @@ const ProviderRecruitmentLanding=lazy(()=>import('./ProviderRecruitmentLanding')
 function RouteLoading(){return <LoadingScreen label="Abriendo UGO…"/>}
 function Deferred({children}:{children:React.ReactNode}){return <Suspense fallback={<RouteLoading/>}>{children}</Suspense>}
 function BrowserShell({children}:{children:React.ReactNode}){return <div className="ugo-browser-role-shell"><div className="ugo-browser-role-app">{children}</div></div>}
-function ClientApp({web=false}:{web?:boolean}){const app=<><BrowserVoiceBridgeBootstrap/><RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
+function ClientApp({web=false}:{web?:boolean}){const app=<><RecoveryGate role="client"><ClientFlowProvider><Deferred><ClientRoot demo={false}/></Deferred></ClientFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
 function ProviderApp({web=false}:{web?:boolean}){const app=<><BrowserVoiceBridgeBootstrap/><RecoveryGate role="provider"><ProviderFlowProvider><Deferred><ProviderRoot/></Deferred></ProviderFlowProvider></RecoveryGate></>;return web?<BrowserShell>{app}</BrowserShell>:app}
 
 export function MvpApp(){
