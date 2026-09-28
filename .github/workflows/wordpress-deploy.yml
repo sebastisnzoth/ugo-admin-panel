@@ -1,19 +1,7 @@
 name: Deploy UGO to WordPress
-# Triggered after FTP secrets were configured.
+# Production WordPress deployment requires an explicit manual dispatch.
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "src/**"
-      - "wordpress/**"
-      - "public/**"
-      - "index.html"
-      - "package.json"
-      - "package-lock.json"
-      - "vite.config.ts"
-      - "tsconfig*.json"
-      - ".github/workflows/wordpress-deploy.yml"
   workflow_dispatch:
 
 concurrency:
