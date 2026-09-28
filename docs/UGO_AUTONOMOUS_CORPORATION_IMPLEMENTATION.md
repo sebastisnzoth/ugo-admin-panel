@@ -232,3 +232,12 @@ D9 `Regression Agent` now has a deterministic persisted-state reconciler. It der
 ## 14. Release Gate Agent implementation (28 September 2026)
 
 D9 `Release Gate Agent` now verifies the authoritative persisted Customer #1 gate without changing its status or criteria. Its UGO TEST probe observed the real `BLOCKED` state with `QA_COVERAGE_INCOMPLETE`, `QA_RUN_FAILURE` and `CUSTOMER_ACCEPTANCE_NOT_APPROVED`, and persisted a governed job plus Decision/Evidence Ledger correlation. A rollback-only negative probe temporarily asserted `READY` with empty blockers while persisted QA evidence remained blocking; the specialist correctly returned `passed=false`. The authenticated service-role consumer is wired into `UGO Autonomous Worker TEST`, but same-SHA workflow proof remains pending. Therefore the specialist is IMPLEMENTED only; it is not yet CI VALIDATED or RUNTIME VALIDATED.
+
+
+## 15. Super Admin autonomous corporation control surface (28 September 2026)
+
+The real Super Admin `Empresa Autónoma` surface is split into dedicated views for command overview, departments, AI agents, executive inbox, Decision/Evidence ledgers, risk and audit, QA Lab, Model Router, Customer #1 Launch Gate, UGO Empresas and kill-switch/autonomy controls. The surface consumes the existing persisted autonomous tables and governed RPCs; it does not introduce mock corporate state.
+
+The AI workforce detail preserves governed execution, audited approvals, kill-switch controls and server-side `Consultar agente`. Agent consultation sends only `agent_id` plus the operator question to the protected server route; persisted evidence is resolved and sanitized server-side. The autonomous shell now has responsive navigation for desktop/tablet/mobile without changing the Admin shell or backend authority rules.
+
+Validation remains verification-first. This section is IMPLEMENTED at source level; CI/runtime maturity must be assigned only from the final same-SHA workflows and UGO TEST evidence. A blocked Customer #1 gate remains BLOCKED and must not be represented as READY.
