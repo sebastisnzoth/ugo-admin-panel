@@ -137,3 +137,10 @@ Este registro indica dónde retomar, pero nunca certifica un estado vivo por sí
 | Dependencia humana | Sólo la que surja de la ejecución; aceptación Customer #1 requiere evidencia humana real |
 
 Al cerrar un bloqueo, registrar el resultado y el siguiente fallo exacto. Si CI o TEST fallan, conservarlo abierto. No cambiar `approved` ni el Launch Gate para reflejar avances que aún carecen de su verificador requerido.
+
+### Avance del bloque GPS · 28 de septiembre de 2026
+
+- Base verificada al iniciar: `6b91f3a1b4ef457b17f70f707987f2801a96133e` en `main`.
+- El harness P0 de UGO TEST ahora comprueba en su propio servicio demo `en_camino` los rechazos de 0,0, GPS vencido, precisión insuficiente y llegada fuera de 200 m. Comprueba que la llegada rechazada no cambia el estado ni crea un evento `llegado`, y luego acepta una ubicación válida dentro del radio.
+- La ejecución de prueba terminó dentro de una transacción con `ROLLBACK`; el servicio temporal no persistió. La migración está aplicada en UGO TEST. El SHA final de GitHub y su CI siguen por verificar.
+- **Bloqueo activo:** falta persistir y verificar independientemente el resultado de este probe para `gps-geofence`; la cobertura permanece `UNCOVERED`. GPS físico en dos dispositivos tiene su propio criterio y tampoco está demostrado.
