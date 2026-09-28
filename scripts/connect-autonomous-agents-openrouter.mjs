@@ -2,7 +2,7 @@ import{createClient}from'@supabase/supabase-js';
 const key=process.env.OPENROUTER_API_KEY||process.env.UGO_OPENROUTER_API_KEY,url=process.env.UGO_TEST_SUPABASE_URL||'',sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'';
 if(!key)throw new Error('OPENROUTER_API_KEY_REQUIRED');if(!url.includes('tmossnqfwfwjrtzwcbmm.supabase.co')||!sk)throw new Error('UGO_TEST_CREDENTIALS_REQUIRED');
 const db=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false}});
-const{data:agents,error}=await db.from('autonomous_agents').select('id,agent_key,name,capability,model_provider').order('department_id');if(error)throw error;if(!agents?.length)throw new Error('NO_AUTONOMOUS_AGENTS');
+const{data:agents,error}=await db.from('autonomous_agents').select('id,agent_key,name,capability,model_provider').order('department_id');if(error){if(error.code==='42501')throw new Error('UGO_TEST_MIGRATION_REQUIRED autonomous_worker_agent_grants');throw error}if(!agents?.length)throw new Error('NO_AUTONOMOUS_AGENTS');
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'};
 const catalog=await fetch('https://openrouter.ai/api/v1/models',{headers,signal:AbortSignal.timeout(7000)});if(!catalog.ok)throw new Error('OPENROUTER_AUTH_OR_CATALOG_FAILED_'+catalog.status);
 const body=await catalog.json(),free=(body.data||[]).filter(m=>String(m?.pricing?.prompt)==='0'&&String(m?.pricing?.completion)==='0').map(m=>m.id);
