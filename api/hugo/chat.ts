@@ -7,12 +7,19 @@ const TTS_MODELS=Array.from(new Set([
 ].filter(Boolean)as string[]))
 const TTS_VOICE=process.env.GEMINI_TTS_VOICE||'Puck'
 
-function sameOrigin(req:any){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
-function clean(v:any,max=4000){return String(v??'').trim().slice(0,max)}
-function extractJson(text:string){try{return JSON.parse(text)}catch{}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{}}return null}
+type RequestLike={headers?:Record<string,string|undefined>;method?:string;body?:unknown}
+type ResponseLike={setHeader:(name:string,value:string)=>void;status:(code:number)=>ResponseLike;json:(body:unknown)=>unknown;end:()=>unknown}
+type JsonRecord=Record<string,unknown>
+const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
+const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((item,key)=>Array.isArray(item)?item[Number(key)]:asRecord(item)[key],value)
+const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
+function sameOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
+function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
+function extractJson(text:string){try{return JSON.parse(text)}catch{/* Gemini may wrap JSON in prose. */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* Return null for an invalid embedded object. */}}return null}
 const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
-function uiAction(raw:any,role:'admin'|'superadmin'){
- if(!raw||typeof raw!=='object')return null
+function uiAction(value:unknown,role:'admin'|'superadmin'){
+ if(!value||typeof value!=='object')return null
+ const raw=asRecord(value)
  const type=clean(raw.type,30)
  if(type==='refresh')return{type:'refresh'}
  if(type==='navigate'){const target=clean(raw.target,80);if(!NAV_TARGETS.has(target)||target==='superadmin'&&role!=='superadmin')return null;return{type:'navigate',target}}
@@ -22,12 +29,12 @@ function uiAction(raw:any,role:'admin'|'superadmin'){
 }
 function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw Object.assign(new Error('GEMINI_API_KEY no configurada'),{status:503});return key}
 
-async function askGemini(message:string,history:any[],system:string,jsonMode=false){
+async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
  const key=geminiKey()
- const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((m:any)=>({role:m?.role==='assistant'?'model':'user',parts:[{text:clean(m?.content,1200)}]})),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
- const payload:any=await response.json().catch(()=>({}))
- if(!response.ok)throw Object.assign(new Error(payload?.error?.message||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
- const text=clean(payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join(''),5000)
+ const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:clean(m.content,1200)}]}}),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
+ const payload:unknown=await response.json().catch(()=>({}))
+ if(!response.ok)throw Object.assign(new Error(clean(nested(payload,'error','message'))||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
+ const text=clean(parts(nested(payload,'candidates','0','content','parts')).map(p=>p.text||'').join(''),5000)
  if(!text)throw Object.assign(new Error('Gemini no devolvió contenido'),{status:502})
  return{text,model:MODEL}
 }
@@ -41,19 +48,19 @@ async function askGeminiTts(text:string,locale:string){
   const started=Date.now()
   try{
    const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{languageCode,voiceConfig:{prebuiltVoiceConfig:{voiceName:TTS_VOICE}}}}}),signal:AbortSignal.timeout(6500)})
-   const payload:any=await response.json().catch(()=>({})),elapsed=Date.now()-started
+   const payload:unknown=await response.json().catch(()=>({})),elapsed=Date.now()-started
    console.info('Hugo TTS timing',{model,ms:elapsed,status:response.status})
-   if(response.ok){const part=payload?.candidates?.[0]?.content?.parts?.find((item:any)=>item?.inlineData?.data),audioBase64=clean(part?.inlineData?.data,4_500_000),mimeType=clean(part?.inlineData?.mimeType||'audio/L16;codec=pcm;rate=24000',120);if(audioBase64)return{audio_base64:audioBase64,mime_type:mimeType,sample_rate:sampleRateFromMime(mimeType),model,voice:TTS_VOICE};lastError='Gemini TTS no devolvió audio';lastStatus=502;continue}
-   lastStatus=response.status;lastError=payload?.error?.message||`Gemini TTS ${response.status}`;lastRetryAfter=String(response.headers.get('retry-after')||'')
+   if(response.ok){const part=parts(nested(payload,'candidates','0','content','parts')).find(item=>nested(item,'inlineData','data')),audioBase64=clean(nested(part,'inlineData','data'),4_500_000),mimeType=clean(nested(part,'inlineData','mimeType')||'audio/L16;codec=pcm;rate=24000',120);if(audioBase64)return{audio_base64:audioBase64,mime_type:mimeType,sample_rate:sampleRateFromMime(mimeType),model,voice:TTS_VOICE};lastError='Gemini TTS no devolvió audio';lastStatus=502;continue}
+   lastStatus=response.status;lastError=clean(nested(payload,'error','message'))||`Gemini TTS ${response.status}`;lastRetryAfter=String(response.headers.get('retry-after')||'')
    if(response.status===429)break
-   const retryable=[404,500,502,503].includes(response.status)||/overloaded|temporar|not found|unavailable/i.test(lastError)
+   const retryable=[404,500,502,503].includes(response.status)||/overloaded|temporar|not found|unavailable/i.test(String(lastError))
    if(!retryable)break
-  }catch(error:any){const elapsed=Date.now()-started;console.warn('Hugo TTS timing',{model,ms:elapsed,status:'transport',message:error instanceof Error?error.message:String(error)});lastError=error instanceof Error?error.message:'Gemini TTS no disponible';lastStatus=504}
+  }catch(error:unknown){const elapsed=Date.now()-started;console.warn('Hugo TTS timing',{model,ms:elapsed,status:'transport',message:error instanceof Error?error.message:String(error)});lastError=error instanceof Error?error.message:'Gemini TTS no disponible';lastStatus=504}
  }
  throw Object.assign(new Error(lastError),{status:lastStatus,retryAfter:lastRetryAfter})
 }
 
-export default async function handler(req:any,res:any){
+export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Cache-Control','no-store')
  res.setHeader('Access-Control-Allow-Headers','content-type')
  const origin=String(req.headers?.origin||'')
@@ -62,7 +69,7 @@ export default async function handler(req:any,res:any){
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
-  const body=typeof req.body==='string'?JSON.parse(req.body):(req.body||{})
+  const body=asRecord(typeof req.body==='string'?JSON.parse(req.body):req.body)
   if(body.tts===true){
    const text=clean(body.text||body.message,360)
    if(!text)return res.status(400).json({error:'Texto requerido para voz.'})
@@ -117,12 +124,12 @@ export default async function handler(req:any,res:any){
    `SUPERFICIE ACTUAL: ${surface}`,
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
-  const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(parsed?.reply,1800),action=clientMode?null:uiAction(parsed?.ui_action,adminRole)
+  const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
   return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model})
- }catch(error:any){
+ }catch(error:unknown){
   console.error('Hugo chat failed',error)
-  const status=Number(error?.status)||502
-  if(error?.retryAfter)res.setHeader('Retry-After',String(error.retryAfter))
+  const info=asRecord(error),status=Number(info.status)||502
+  if(info.retryAfter)res.setHeader('Retry-After',String(info.retryAfter))
   return res.status(status>=400&&status<600?status:502).json({error:error instanceof Error?error.message:'Hugo no pudo responder ahora.',hugo_mensaje:'Hugo no pudo responder ahora. Podés seguir usando el texto.',accion:null,ui_action:null,datos:null})
  }
 }
