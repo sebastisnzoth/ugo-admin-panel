@@ -47,7 +47,8 @@ The follow-up gate additionally excludes demo client/provider identities and req
 
 - `20260929060000_autonomous_customer_one_real_gate.sql` (applied to UGO TEST)
 - `20260929061000_autonomous_customer_acceptance_proof.sql` (applied to UGO TEST)
-- `20260929062000_autonomous_release_gate_current_qa.sql` (applied to UGO TEST)
+- `20260929062000_autonomous_release_gate_current_qa.sql` (superseded: ambiguous PL/pgSQL alias)
+- `20260929063000_autonomous_release_gate_alias_fix.sql` (applied to UGO TEST)
 
 - `20260927234500_autonomous_corporation_foundation.sql`
 - `20260928000500_autonomous_corporate_agents.sql`
