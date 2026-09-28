@@ -12,10 +12,10 @@ const identities=[
   {role:'Admin',email:process.env.UGO_TEST_ADMIN_EMAIL,password:process.env.UGO_TEST_ADMIN_PASSWORD},
 ]
 
-test('isolated TEST auth identities report role-only status',async()=>{
+const missing=identities.filter(item=>!item.email||!item.password).map(item=>item.role)
+test('isolated TEST auth identities report role-only status',{skip:!url||!key||missing.length>0?'Isolated UGO TEST credentials unavailable in this runner':false},async()=>{
   assert.ok(url.includes(TEST_REF),'Auth diagnostic must target designated UGO TEST')
   assert.ok(!url.includes(PROD_REF),'Auth diagnostic refuses production')
-  const missing=identities.filter(item=>!item.email||!item.password).map(item=>item.role)
   assert.deepEqual(missing,[],'Faltan credenciales TEST para uno o más roles')
 
   const results=[]
