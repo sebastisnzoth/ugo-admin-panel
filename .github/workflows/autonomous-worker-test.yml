@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: '17 * * * *'
 concurrency:
-  group: ugo-test-runtime-exclusive
+  group: ugo-autonomous-worker-test
   cancel-in-progress: false
 jobs:
   cycle:
