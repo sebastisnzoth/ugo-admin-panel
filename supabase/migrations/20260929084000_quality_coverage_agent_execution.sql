@@ -53,7 +53,9 @@ begin
       and aj.agent_id=j.id and aj.status='SUCCEEDED'
       and aj.verification_result->>'passed'='true');
   if cardinality(invalid_green)>0 then
-    raise exception 'QUALITY_COVERAGE_UNVERIFIED_GREEN:%',array_to_string(invalid_green,',');
+    update public.autonomous_quality_coverage
+    set status='UNCOVERED',updated_at=now()
+    where coverage_key=any(invalid_green);
   end if;
 
   select count(*) filter(where status='COVERED'),count(*) filter(where status<>'COVERED')
