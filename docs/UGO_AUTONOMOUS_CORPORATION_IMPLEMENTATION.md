@@ -189,3 +189,33 @@ The Quality Coverage Map now explicitly separates database demo P0 coverage from
 An audit of the authenticated Client/Provider/Admin, GPS and Realtime QA scripts found that `autonomous_record_external_qa_probe` previously accepted boolean observations supplied by its caller and promoted their scenarios to `COVERED`. The scripts still execute actual authenticated requests and fail CI if their assertions fail; their booleans are now stored only as observations. The backend marks these four scenarios `BLOCKED`/`UNCOVERED` until independently checkable persisted evidence exists. UGO TEST rollback probe confirmed that even `{client_isolated:true}` cannot make the roles scenario green. The overall Launch Gate remains blocked on these evidence gaps.
 
 `Consultar Agente` now resolves the selected agent server-side under Super Admin authentication, refuses disabled agents and active kill switches, and supplies the model only sanitized summaries of that agent's persisted jobs, decisions and evidence types. Caller-supplied evidence text is ignored. A new append-only UGO TEST consultation audit stores actor, agent, correlation ID, model, response hashes, counts and zero cost without copying raw questions, answers or private service data. The UI sends only agent ID and question. This is implemented and locally testable; Preview/TEST HTTP runtime validation remains necessary before calling it runtime validated. No production deploy was made.
+
+
+## 12. Specialist execution wave status (28 September 2026)
+
+This table is evidence-based. `DISABLED` remains the correct state for a catalogued specialist whose complete execution chain has not been proven. Registration, model routing or UI presence alone never promotes maturity.
+
+| Wave | Specialist | Implemented | CI validated | Runtime UGO TEST | D14 / independent control | Status / blocker |
+|---|---|---:|---:|---:|---:|---|
+| 1 | Deterministic Judge | yes | yes | yes | deterministic persisted-state recomputation | RUNTIME VALIDATED on `cab579e272ef9002e60d1250b3b851341acb6ba7` |
+| 1 | P0 Journey Tester | yes | yes | yes | persisted-state verifier + ledgers | RUNTIME VALIDATED on `cab579e272ef9002e60d1250b3b851341acb6ba7`; demo scope only |
+| 1 | Meta-QA Agent | yes | yes | yes | seeded defect must fail before remediation | RUNTIME VALIDATED on `cb8472b17b3937679fa85aa35c3d23fead36879a` |
+| 1 | Regression Agent | no | no | no | pending | DISABLED — no independent execution chain |
+| 1 | Release Gate Agent | no | no | no | release criteria remain deterministic | DISABLED — release gate exists, specialist executor not proven |
+| 1 | Quality Coverage Agent | no | no | no | coverage fails closed | DISABLED — coverage state exists, specialist executor not proven |
+| 1 | QA Director | no | no | no | pending | DISABLED |
+| 1 | Client Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
+| 1 | Provider Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
+| 1 | Admin/System Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
+| 1 | Chaos Agent | partial | no | no | Meta-QA seed exists, standalone agent chain absent | DISABLED |
+| 2 | D2 Operations specialists | catalogued | no | no | pending | DISABLED — wire after Wave 1 |
+| 3 | D3/D4 Client + Provider specialists | catalogued | no | no | pending | DISABLED |
+| 4 | D6/D7 Trust + Finance specialists | catalogued | no | no | pending | DISABLED |
+| 5 | D8 Technology specialists | catalogued | no | no | pending | DISABLED |
+| 6 | D1/D5/D10/D11/D12 specialists | catalogued | no | no | pending | DISABLED |
+
+Same-SHA validation for `cb8472b17b3937679fa85aa35c3d23fead36879a` completed GREEN for UGO Core CI, UGO Autonomous Worker TEST and UGO Isolated RPC RLS. The worker persisted a Meta-QA Agent job with Decision/Evidence Ledger correlation, left autonomy `OFF`, kept exactly six enabled D14 auditors and ended with Sentinel `PASS`. The Launch Gate remained correctly `BLOCKED`; after fail-closed coverage hardening its blockers included `QA_COVERAGE_INCOMPLETE`, `QA_RUN_FAILURE` and `CUSTOMER_ACCEPTANCE_NOT_APPROVED`.
+
+The current Wave 1 rule is therefore strict: only Deterministic Judge, P0 Journey Tester and Meta-QA Agent may be described as runtime-validated specialists. The remaining Wave 1 identities stay disabled until their own trigger, input provenance, Data Quality Gate, governed authority path, executor, independent verifier, ledgers, regression and UGO TEST runtime evidence are all present.
+
+`Consultar Agente` is implemented with server-side agent resolution and append-only consultation audit, and the repository-wide CI for its source SHA is green. It is not yet marked runtime validated because the protected HTTP path still needs an authenticated TEST/Preview execution proving the deployed consumer and audit record on the same source SHA.
