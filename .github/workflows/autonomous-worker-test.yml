@@ -22,8 +22,9 @@ jobs:
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
         run: node scripts/assert-test-environment.mjs
-      - name: Validate OpenRouter credential and free-first route
+      - name: Validate Gemini-first model route with OpenRouter fallback
         env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
