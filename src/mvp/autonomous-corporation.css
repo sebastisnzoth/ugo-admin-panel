@@ -1,0 +1,21 @@
+.ugo-autonomous-corporation{width:100%;min-width:0}
+.ugo-autonomous-nav{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto}
+.ugo-autonomous-nav button{min-height:40px;border-radius:9px}
+.ugo-autonomous-content{min-width:0}
+.ugo-autonomous-content table{border-collapse:collapse}
+.ugo-autonomous-content th,.ugo-autonomous-content td{padding:8px;text-align:left;vertical-align:top}
+.ugo-autonomous-content input,.ugo-autonomous-content select,.ugo-autonomous-content textarea{max-width:100%;box-sizing:border-box}
+@media(max-width:900px){
+ .ugo-autonomous-corporation{grid-template-columns:1fr!important}
+ .ugo-autonomous-nav{position:sticky;top:0;z-index:12;display:flex!important;overflow-x:auto;overflow-y:hidden;max-height:none;gap:6px!important;padding:8px!important;scrollbar-width:thin}
+ .ugo-autonomous-nav>small{display:none}
+ .ugo-autonomous-nav button{flex:0 0 auto;white-space:nowrap;text-align:center!important;min-height:44px}
+}
+@media(max-width:640px){
+ .ugo-autonomous-content{gap:9px!important}
+ .ugo-autonomous-content .ugo-admin2-module-card{padding:12px}
+ .ugo-autonomous-content table{min-width:680px}
+ .ugo-autonomous-content button{min-height:44px}
+ .ugo-autonomous-content input,.ugo-autonomous-content select,.ugo-autonomous-content textarea{font-size:16px;min-height:44px}
+}
+@media(prefers-reduced-motion:reduce){.ugo-autonomous-corporation *{scroll-behavior:auto!important;transition:none!important}}
