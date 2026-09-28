@@ -32,13 +32,18 @@ No production publication is implied.
 | QA actors | Client, Provider, Admin/System simulators persisted | RUNTIME VALIDATED registration in TEST; real P0 execution binding remains |
 | Meta-QA | seeded-defect scenario + governed calibration RPC | IMPLEMENTED; required runtime CI calibration added |
 | Customer #1 Release Gate | persisted gate with QA, critical finding and stale-job blockers | IMPLEMENTED; full acceptance journey remains |
+
 | OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics + protected server runtime primary/fallback | IMPLEMENTED; Preview runtime validation pending |
 | IP Gate | persisted corporate protection gate + Super Admin visibility | RUNTIME VALIDATED foundation / TEST; remaining Master evidence/audit closure controls tracked below |
 | Super Admin Empresa Autónoma | persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate + correlation timeline + UGO Empresas | IMPLEMENTED; runtime UI validation remains |
 | Consultar Agente | evidence-gated protected server-side OpenRouter consultation with correlation id | IMPLEMENTED; Preview runtime validation pending |
 | UGO Empresas | D12-owned readiness + multi-worker demand/slot persistence | IMPLEMENTED foundation; gated behind customer #1 stability |
 
+Customer #1 evaluation now also blocks when coverage is empty or no completed, non-simulated `ambiente='real'` service has accepted matching, initial/final evidence, confirmed payment and bilateral ratings. A `demo` P0 harness run cannot satisfy this gate. This migration requires application to UGO TEST and a real customer acceptance run before runtime validation; its presence in source is only implementation evidence.
+
 ## 3. Implemented migrations
+
+- `20260929060000_autonomous_customer_one_real_gate.sql` (source only; TEST application pending)
 
 - `20260927234500_autonomous_corporation_foundation.sql`
 - `20260928000500_autonomous_corporate_agents.sql`
