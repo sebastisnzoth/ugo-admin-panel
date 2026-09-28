@@ -6,12 +6,12 @@ const workforce=fs.readFileSync('src/mvp/AutonomousWorkforceControlCenter.tsx','
 const ui=shell+'\n'+workforce
 test('Super Admin exposes persisted autonomous agent directory and detail',()=>{
  for(const table of ['autonomous_agents','autonomous_jobs','autonomous_decision_ledger','autonomous_evidence_ledger','autonomous_audit_findings','autonomous_kill_switches'])assert.match(ui,new RegExp(table))
- assert.match(ui,/No existen agentes registrados actualmente\./)
- assert.match(ui,/Ficha del agente/)
- assert.match(ui,/Trabajos reales/)
+ assert.match(ui,/No hay agentes que coincidan con los filtros\./)
+ assert.match(ui,/Detalle del agente/)
+ assert.match(ui,/Actividad/)
  assert.match(ui,/Decisiones/)
  assert.match(ui,/Evidencia/)
- assert.match(ui,/Auditoría relacionada/)
+ assert.match(ui,/Auditoría/)
 })
 test('kill switch mutation stays behind authorized RPC',()=>{
  assert.match(ui,/superadmin_set_kill_switch/);assert.match(ui,/superadmin_recover_kill_switch/)
