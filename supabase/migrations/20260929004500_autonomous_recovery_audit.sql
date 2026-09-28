@@ -1,0 +1,13 @@
+-- Recovery from containment requires explicit verification and independent D14 re-audit evidence.
+create table if not exists public.autonomous_recovery_audits(id uuid primary key default gen_random_uuid(),scope_type text not null,scope_key text not null,verification jsonb not null,re_audited_by uuid not null,decision text not null check(decision in('RECOVER','KEEP_CONTAINED')),reason text not null,evidence_hash text not null,created_at timestamptz not null default now());
+alter table public.autonomous_recovery_audits enable row level security;
+do $$begin create policy recovery_audits_superadmin_read on public.autonomous_recovery_audits for select to authenticated using(private.is_superadmin());exception when duplicate_object then null;end$$;grant select on public.autonomous_recovery_audits to authenticated;
+create or replace function public.superadmin_recover_kill_switch(p_scope_type text,p_scope_key text,p_verification jsonb,p_reason text)
+returns public.autonomous_recovery_audits language plpgsql security definer set search_path=public,private,auth as $$
+declare r public.autonomous_recovery_audits%rowtype;payload text;begin if auth.uid() is null or not private.is_superadmin() then raise exception 'SUPERADMIN_REQUIRED' using errcode='42501';end if;if coalesce(jsonb_array_length(coalesce(p_verification->'evidence_refs','[]'::jsonb)),0)=0 then raise exception 'RECOVERY_EVIDENCE_REQUIRED';end if;if nullif(btrim(p_reason),'')is null then raise exception 'AUDIT_REASON_REQUIRED';end if;
+ if not exists(select 1 from public.autonomous_kill_switches where scope_type=p_scope_type and scope_key=p_scope_key and enabled=true)then raise exception 'ACTIVE_KILL_SWITCH_REQUIRED';end if;
+ payload:=p_scope_type||':'||p_scope_key||':'||p_verification::text||':'||p_reason;
+ insert into public.autonomous_recovery_audits(scope_type,scope_key,verification,re_audited_by,decision,reason,evidence_hash)values(p_scope_type,p_scope_key,p_verification,auth.uid(),'RECOVER',btrim(p_reason),encode(digest(payload,'sha256'),'hex'))returning * into r;
+ update public.autonomous_kill_switches set enabled=false,reason='RECOVERED AFTER VERIFIED RE-AUDIT: '||btrim(p_reason),updated_at=now(),updated_by=auth.uid() where scope_type=p_scope_type and scope_key=p_scope_key;
+ return r;end$$;
+revoke all on function public.superadmin_recover_kill_switch(text,text,jsonb,text) from public;grant execute on function public.superadmin_recover_kill_switch(text,text,jsonb,text) to authenticated;
