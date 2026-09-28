@@ -10,5 +10,5 @@ test('job lifecycle RPCs are Super Admin guarded',()=>{assert.ok((sql.match(/pri
 test('RED work requires explicit audited Super Admin approval before queueing',()=>{
  const approval=fs.readFileSync('supabase/migrations/20260928005500_autonomous_authority_approval.sql','utf8')
  assert.match(approval,/SUPERADMIN_REQUIRED/);assert.match(approval,/WAITING_APPROVAL/);assert.match(approval,/AUTONOMY_NOT_EXECUTABLE/);assert.match(approval,/HUMAN_APPROVED/);assert.match(approval,/HUMAN_REJECTED/);assert.match(approval,/autonomous_decision_ledger/)
- const shell=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8'),dashboard=fs.readFileSync('src/mvp/AutonomousCorporationDashboard.tsx','utf8'),ui=shell+'\\n'+dashboard;assert.match(ui,/superadmin_decide_autonomous_job/);assert.match(ui,/>Aprobar</);assert.match(ui,/>Rechazar</)
+ const shell=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8'),dashboard=fs.readFileSync('src/mvp/AutonomousCorporationDashboard.tsx','utf8'),ui=shell+'\\n'+dashboard;assert.match(ui,/superadmin_decide_autonomous_job/);assert.match(ui,/Aprobar 1\/2|Aprobar 2\/2|:'Aprobar'/);assert.match(ui,/className="ugo-autonomous-reject"[^>]*>Rechazar</)
 })
