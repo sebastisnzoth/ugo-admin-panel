@@ -23,3 +23,4 @@ if(ce)throw ce;
 const bad=required.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
 if(bad.length)throw new Error('QA_REAL_COVERAGE_INCOMPLETE:'+bad.join(','));
 console.log(JSON.stringify({validated:true,basis:'persisted-and-runtime-ugo-test-evidence',scenarios:required}));
+
