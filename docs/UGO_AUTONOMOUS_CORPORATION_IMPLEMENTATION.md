@@ -201,7 +201,7 @@ This table is evidence-based. `DISABLED` remains the correct state for a catalog
 | 1 | P0 Journey Tester | yes | yes | yes | persisted-state verifier + ledgers | RUNTIME VALIDATED on `cab579e272ef9002e60d1250b3b851341acb6ba7`; demo scope only |
 | 1 | Meta-QA Agent | yes | yes | yes | seeded defect must fail before remediation | RUNTIME VALIDATED on `cb8472b17b3937679fa85aa35c3d23fead36879a` |
 | 1 | Regression Agent | yes | no | no | persisted-state reconciliation + negative rollback probe | IMPLEMENTED — authenticated same-SHA CI/runtime workflow proof pending |
-| 1 | Release Gate Agent | no | no | no | release criteria remain deterministic | DISABLED — release gate exists, specialist executor not proven |
+| 1 | Release Gate Agent | yes | no | no | authoritative gate remains deterministic and read-only to specialist | IMPLEMENTED — authenticated same-SHA CI/runtime workflow proof pending |
 | 1 | Quality Coverage Agent | yes | yes | yes | D14 Internal Control Inspector: `qa-release-gate` EFFECTIVE | RUNTIME VALIDATED — independent coverage reconciliation, Decision/Evidence Ledger and D14 runtime audit; protected physical/human coverage remains UNCOVERED |
 | 1 | QA Director | no | no | no | pending | DISABLED |
 | 1 | Client Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
@@ -227,3 +227,8 @@ Wave 1 update: Quality Coverage Agent is now independently wired and runtime-val
 ## 13. Regression Agent implementation (28 September 2026)
 
 D9 `Regression Agent` now has a deterministic persisted-state reconciler. It derives the protected scenario set only from QA runs already marked as permanent regressions, inspects the latest persisted run for each scenario, and records a governed job plus Decision/Evidence Ledger correlation. It accepts no caller-supplied pass/fail assertion and does not mutate QA verdicts. A UGO TEST execution verified four current permanent regressions with zero detected regressions; a rollback-only negative probe temporarily removed the latest permanent marker and the agent correctly returned `passed=false` with one detected regression. Autonomy remained `OFF`, exactly six D14 auditors remained enabled, and no RUNNING job was left behind. The authenticated service-role runtime consumer is wired into `UGO Autonomous Worker TEST`; same-SHA workflow proof is still pending, so this specialist is IMPLEMENTED but is not yet claimed CI VALIDATED or RUNTIME VALIDATED.
+
+
+## 14. Release Gate Agent implementation (28 September 2026)
+
+D9 `Release Gate Agent` now verifies the authoritative persisted Customer #1 gate without changing its status or criteria. Its UGO TEST probe observed the real `BLOCKED` state with `QA_COVERAGE_INCOMPLETE`, `QA_RUN_FAILURE` and `CUSTOMER_ACCEPTANCE_NOT_APPROVED`, and persisted a governed job plus Decision/Evidence Ledger correlation. A rollback-only negative probe temporarily asserted `READY` with empty blockers while persisted QA evidence remained blocking; the specialist correctly returned `passed=false`. The authenticated service-role consumer is wired into `UGO Autonomous Worker TEST`, but same-SHA workflow proof remains pending. Therefore the specialist is IMPLEMENTED only; it is not yet CI VALIDATED or RUNTIME VALIDATED.
