@@ -152,3 +152,14 @@ Before every implementation block:
 ## 9. Verification-first QA hardening
 
 The previous worker QA helper could accept caller-supplied assertion booleans. That path is no longer accepted as proof: `autonomous_run_qa_service_scenario` now requires a bound `ambiente='test'` service and derives supported verdicts from persisted service/offers/events/evidence/payments/ratings. The CI runtime gate fails closed when scenarios lack real TEST service bindings. At the time of this hardening UGO TEST contained no `servicios` rows with `ambiente='test'`; therefore Customer #1 remains correctly BLOCKED rather than manufacturing coverage. Unsupported deterministic probes fail explicitly instead of becoming green.
+
+
+## 10. 2026-09-28 pre-production closure evidence
+
+The scheduled UGO TEST worker now executes the real persisted P0 harness, authenticated Client/Provider/Admin probes, GPS/geofence rejection probes, a real Realtime event, deterministic QA coverage, Meta-QA seeded-defect detection/remediation/permanent regression, Customer #1 gate evaluation and the deterministic Sentinel Gate. The model probe discovers Gemini models from the authenticated API catalog before OpenRouter fallback; a fresh runtime selected `gemini-flash-lite-latest` and connected the canonical autonomous agents without exposing credentials. OpenRouter remains the zero-budget fallback required by the Master.
+
+The Sentinel Gate fails closed unless UGO TEST autonomy is `OFF`, the six canonical D14 agents are the only enabled D14 auditors, the legacy `corporate-audit-agent` is disabled, there are no RUNNING autonomous jobs, no active leases and no enabled kill switches. Customer #1 remains a separate persisted Launch Gate and is not made green by Sentinel.
+
+The repository-wide final gate executes `npm run build`, `npm test` and `npm run lint`; legacy lint debt remains visible as warnings while critical operational surfaces retain dedicated blocking lint steps. The isolated RPC/RLS workflow remains the authoritative authenticated lifecycle gate.
+
+The remaining non-simulatable Master success criterion is intentionally not manufactured: `CUSTOMER_1` remains `BLOCKED` with `CUSTOMER_ACCEPTANCE_NOT_APPROVED`, and `FULL-E2E` / `TWO-DEVICES` remain blocked until a real human customer acceptance run is completed on two devices. This is an external acceptance dependency, not permission to publish or touch production.
