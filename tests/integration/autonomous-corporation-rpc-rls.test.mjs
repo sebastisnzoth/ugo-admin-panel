@@ -77,6 +77,13 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(yellow.error)throw yellow.error
  assert.equal(yellow.data.status,'WAITING_APPROVAL')
  assert.equal(yellow.data.blocked_reason,'YELLOW_DUAL_CONTROL_REQUIRED')
+ const yellowFirst=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'isolated YELLOW first approval'})
+ if(yellowFirst.error)throw yellowFirst.error
+ assert.equal(yellowFirst.data.status,'WAITING_APPROVAL')
+ assert.equal(yellowFirst.data.authorization_decision,'DUAL_CONTROL_PENDING')
+ const yellowSameActor=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'same actor must fail'})
+ assert.ok(yellowSameActor.error)
+ assert.match(yellowSameActor.error.message,/INDEPENDENT_SECOND_APPROVER_REQUIRED/)
 
  const redKey='ugo-autonomy-red-'+crypto.randomUUID()
  const red=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:null,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
