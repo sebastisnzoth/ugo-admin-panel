@@ -12,7 +12,7 @@ test('Super Admin exposes persisted autonomous agent directory and detail',()=>{
  assert.match(ui,/Auditoría relacionada/)
 })
 test('kill switch mutation stays behind authorized RPC',()=>{
- assert.match(ui,/superadmin_set_kill_switch/)
+ assert.match(ui,/superadmin_set_kill_switch/);assert.match(ui,/superadmin_recover_kill_switch/)
  assert.doesNotMatch(ui,/from\('autonomous_kill_switches'\)\.update/)
 })
 test('agent UI never embeds OpenRouter credentials',()=>{
