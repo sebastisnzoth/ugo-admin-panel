@@ -39,11 +39,14 @@ No production publication is implied.
 | Consultar Agente | evidence-gated protected server-side OpenRouter consultation with correlation id | IMPLEMENTED; Preview runtime validation pending |
 | UGO Empresas | D12-owned readiness + multi-worker demand/slot persistence | IMPLEMENTED foundation; gated behind customer #1 stability |
 
-Customer #1 evaluation now also blocks when coverage is empty or no completed, non-simulated `ambiente='real'` service has accepted matching, initial/final evidence, confirmed payment and bilateral ratings. A `demo` P0 harness run cannot satisfy this gate. This migration requires application to UGO TEST and a real customer acceptance run before runtime validation; its presence in source is only implementation evidence.
+Customer #1 evaluation now also blocks when coverage is empty or no completed, non-simulated `ambiente='real'` service has accepted matching, initial/final evidence, confirmed payment and bilateral ratings. A `demo` P0 harness run cannot satisfy this gate. The gate is applied in UGO TEST; the real customer acceptance run remains pending.
+
+The follow-up gate additionally excludes demo client/provider identities and requires `FULL-E2E` and `TWO-DEVICES` checklist items to be **approved**. This prevents a technically completed fixture from becoming commercial acceptance.
 
 ## 3. Implemented migrations
 
-- `20260929060000_autonomous_customer_one_real_gate.sql` (source only; TEST application pending)
+- `20260929060000_autonomous_customer_one_real_gate.sql` (applied to UGO TEST)
+- `20260929061000_autonomous_customer_acceptance_proof.sql` (applied to UGO TEST)
 
 - `20260927234500_autonomous_corporation_foundation.sql`
 - `20260928000500_autonomous_corporate_agents.sql`
