@@ -200,7 +200,7 @@ This table is evidence-based. `DISABLED` remains the correct state for a catalog
 | 1 | Deterministic Judge | yes | yes | yes | deterministic persisted-state recomputation | RUNTIME VALIDATED on `cab579e272ef9002e60d1250b3b851341acb6ba7` |
 | 1 | P0 Journey Tester | yes | yes | yes | persisted-state verifier + ledgers | RUNTIME VALIDATED on `cab579e272ef9002e60d1250b3b851341acb6ba7`; demo scope only |
 | 1 | Meta-QA Agent | yes | yes | yes | seeded defect must fail before remediation | RUNTIME VALIDATED on `cb8472b17b3937679fa85aa35c3d23fead36879a` |
-| 1 | Regression Agent | no | no | no | pending | DISABLED — no independent execution chain |
+| 1 | Regression Agent | yes | no | no | persisted-state reconciliation + negative rollback probe | IMPLEMENTED — authenticated same-SHA CI/runtime workflow proof pending |
 | 1 | Release Gate Agent | no | no | no | release criteria remain deterministic | DISABLED — release gate exists, specialist executor not proven |
 | 1 | Quality Coverage Agent | yes | yes | yes | D14 Internal Control Inspector: `qa-release-gate` EFFECTIVE | RUNTIME VALIDATED — independent coverage reconciliation, Decision/Evidence Ledger and D14 runtime audit; protected physical/human coverage remains UNCOVERED |
 | 1 | QA Director | no | no | no | pending | DISABLED |
@@ -222,3 +222,8 @@ The current Wave 1 rule is therefore strict: only Deterministic Judge, P0 Journe
 
 
 Wave 1 update: Quality Coverage Agent is now independently wired and runtime-validated in UGO TEST. Its reconciler can promote only coverage backed by a successful Deterministic Judge job and demotes stale/unverified greens. D14 `internal-control-inspector` independently verified the latest specialist job, its Decision/Evidence Ledger chain and the protected UNCOVERED requirements, then marked the existing `qa-release-gate` control `EFFECTIVE`. Physical GPS, uploaded media bytes and human customer acceptance remain explicitly UNCOVERED.
+
+
+## 13. Regression Agent implementation (28 September 2026)
+
+D9 `Regression Agent` now has a deterministic persisted-state reconciler. It derives the protected scenario set only from QA runs already marked as permanent regressions, inspects the latest persisted run for each scenario, and records a governed job plus Decision/Evidence Ledger correlation. It accepts no caller-supplied pass/fail assertion and does not mutate QA verdicts. A UGO TEST execution verified four current permanent regressions with zero detected regressions; a rollback-only negative probe temporarily removed the latest permanent marker and the agent correctly returned `passed=false` with one detected regression. Autonomy remained `OFF`, exactly six D14 auditors remained enabled, and no RUNNING job was left behind. The authenticated service-role runtime consumer is wired into `UGO Autonomous Worker TEST`; same-SHA workflow proof is still pending, so this specialist is IMPLEMENTED but is not yet claimed CI VALIDATED or RUNTIME VALIDATED.
