@@ -10,6 +10,7 @@ const required = [
   'UGO_TEST_CLIENT_PASSWORD',
   'UGO_TEST_PROVIDER_EMAIL',
   'UGO_TEST_PROVIDER_PASSWORD',
+  'UGO_TEST_SUPABASE_SERVICE_ROLE_KEY',
 ]
 
 const missing = required.filter(name => !process.env[name])
@@ -199,9 +200,13 @@ try {
     runId,
   })
 
-  console.log(
-    `CHAT_REALTIME_OK pedido=${service.numero ?? 'fixture'} estado=${service.estado} run=${runId} retries=${clientToProvider.retry + providerToClient.retry}`,
-  )
+  const serviceRole=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}})
+  const {data:scenario,error:scenarioError}=await serviceRole.from('autonomous_qa_scenarios').select('id').eq('scenario_key','realtime').single()
+  if(scenarioError)throw scenarioError
+  const observations={client_realtime:true,provider_realtime:true,admin_realtime:true,subscription_established:true,event_received:true,payload_validated:true,timeout_false:true,cleanup_completed:true}
+  const {error:recordError}=await serviceRole.rpc('autonomous_record_external_qa_probe',{p_scenario_id:scenario.id,p_service_id:service.id,p_observations:observations})
+  if(recordError)throw recordError
+  console.log(`CHAT_REALTIME_OK pedido=${service.numero ?? 'fixture'} estado=${service.estado} run=${runId} retries=${clientToProvider.retry + providerToClient.retry}`)
 } finally {
   await Promise.allSettled([client.auth.signOut(), provider.auth.signOut()])
 }
