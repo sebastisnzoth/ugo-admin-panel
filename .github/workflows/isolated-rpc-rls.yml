@@ -15,6 +15,8 @@ on:
       - 'scripts/assert-test-environment.mjs'
       - 'scripts/bootstrap-test-auth.mjs'
       - 'scripts/chat-realtime-probe.mjs'
+      - 'scripts/autonomous-launch-gate-runtime.mjs'
+      - 'docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
       - 'package.json'
       - 'package-lock.json'
       - '.github/workflows/isolated-rpc-rls.yml'
