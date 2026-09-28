@@ -449,7 +449,9 @@ UGO Core CI `e424766f36e497b079a173e5d6dae2d1906fe48e` quedó verde con build, 4
 
 ---
 
-## Checkpoint 20/09/2026 · WordPress pull updater desde GitHub
+## Checkpoint 20/09/2026 · WordPress pull updater desde GitHub (histórico; retirado el 28/09/2026)
+
+Este checkpoint describe una integración histórica. Por pedido del propietario se retiraron del repositorio el workflow de publicación, los MU plugins, el contrato de pruebas y la guía de despliegue WordPress. La eliminación remota de archivos previamente publicados requiere verificación independiente; este cambio no acredita borrado del servidor WordPress ni de la release existente.
 
 - GitHub Actions genera `ugo-wordpress-build.zip` desde el SHA exacto de `main`;
 - la release fija `wordpress-latest` publica manifest + ZIP + SHA-256;
