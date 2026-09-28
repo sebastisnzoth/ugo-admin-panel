@@ -135,3 +135,7 @@ jobs:
 
       - name: Realtime chat Cliente ↔ Proveedor without refresh
         run: node scripts/chat-realtime-probe.mjs
+
+      - name: Verify Customer #1 gate with designated TEST Super Admin
+        if: always()
+        run: node scripts/autonomous-launch-gate-runtime.mjs
