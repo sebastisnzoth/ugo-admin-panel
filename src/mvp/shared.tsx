@@ -70,7 +70,7 @@ export function useRoleSession(role:UgoRole){
       .subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
     return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(channel)}
   },[loadProfile,profileChannelEpoch,role,session,supabase])
-  const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);return{supabase,session,profile,loading,error,setError,signOut}
+  const signOut=useCallback(async()=>{await supabase.auth.signOut();setProfile(null);setSession(null)},[supabase]);const clearAccess=useCallback(async()=>{try{await supabase.auth.signOut()}finally{window.localStorage.removeItem(OAUTH_ROLE_KEY);setProfile(null);setSession(null);setError('')}},[supabase]);return{supabase,session,profile,loading,error,setError,signOut,clearAccess}
 }
 
 export function AuthScreen({role,supabase,error,onError}:{role:UgoRole;supabase:SupabaseClient;error:string;onError:(v:string)=>void}){
