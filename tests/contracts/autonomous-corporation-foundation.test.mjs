@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const sql=fs.readFileSync('supabase/migrations/20260927234500_autonomous_corporation_foundation.sql','utf8')
-const ui=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')
+const shell=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')\nconst dashboard=fs.readFileSync('src/mvp/AutonomousCorporationDashboard.tsx','utf8')\nconst ui=shell+'\\n'+dashboard
 
 test('corporate control plane persists the 13 active numbered departments without Department 13',()=>{
  for(const id of [1,2,3,4,5,6,7,8,9,10,11,12,14])assert.match(sql,new RegExp('\\('+id+",'"))
@@ -41,7 +41,7 @@ test('Super Admin exposes Empresa Autónoma from persisted state only',()=>{
  assert.match(ui,/from\('autonomous_departments'\)/)
  assert.match(ui,/from\('autonomous_agents'\)/)
  assert.match(ui,/from\('autonomous_jobs'\)/)
- assert.match(ui,/No se muestra actividad simulada/)
+ assert.match(ui,/No se muestran departamentos ficticios|Ninguna actividad se inventa/)
 })
 
 
