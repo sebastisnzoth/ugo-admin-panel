@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 
 const sql = readFileSync('supabase/migrations/20260929071000_persisted_qa_judge_agent_execution.sql', 'utf8')
 const acl = readFileSync('supabase/migrations/20260929072000_persisted_qa_judge_acl_guard.sql', 'utf8')
+const workerGrant = readFileSync('supabase/migrations/20260929074000_qa_judge_worker_read_grant.sql', 'utf8')
 const runtime = readFileSync('scripts/autonomous-qa-judge-runtime.mjs', 'utf8')
 const workflow = readFileSync('.github/workflows/autonomous-worker-test.yml', 'utf8')
 
@@ -14,6 +15,7 @@ test('judge independently recomputes persisted verdict and rejects invented evid
   assert.match(sql, /count\(distinct autor_tipo\)>=2/)
   assert.match(sql, /distancia_km<=20/)
   assert.match(acl, /revoke insert, update, delete on public\.autonomous_qa_runs from public, anon, authenticated/)
+  assert.match(workerGrant, /grant select on public\.autonomous_qa_runs to service_role/)
 })
 
 test('judge execution links agent, job, evidence, decision and correlation', () => {
