@@ -19,3 +19,11 @@
  .ugo-autonomous-content input,.ugo-autonomous-content select,.ugo-autonomous-content textarea{font-size:16px;min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){.ugo-autonomous-corporation *{scroll-behavior:auto!important;transition:none!important}}
+
+.ugo-autonomous-inbox-job{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:14px 0;border-top:1px solid rgba(127,127,127,.22)}
+.ugo-autonomous-decision-actions{display:flex;gap:8px;align-items:center}
+.ugo-autonomous-decision-actions button{min-width:104px;min-height:42px;border-radius:9px;font-weight:700}
+.ugo-autonomous-approve:not(:disabled){background:#179b58;color:#fff;border-color:#179b58}
+.ugo-autonomous-reject{background:transparent}
+.ugo-autonomous-decision-actions button:disabled{cursor:not-allowed;opacity:.5}
+@media(max-width:640px){.ugo-autonomous-inbox-job{grid-template-columns:1fr}.ugo-autonomous-decision-actions{display:grid;grid-template-columns:1fr 1fr}.ugo-autonomous-decision-actions button{width:100%}}
