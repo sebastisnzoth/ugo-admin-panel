@@ -21,4 +21,4 @@ for(const model of preferred.slice(0,5)){
  }
  last='model='+model+' status='+response.status+' error='+String(payload?.error?.message||'unknown').slice(0,160)
 }
-console.log(JSON.stringify({connected:true,provider:'openrouter',freeRouteAvailable:false,freeCandidates:free.length,state:'DEGRADED_FREE_CAPACITY',lastFailure:last}))
+console.error(JSON.stringify({connected:true,provider:'openrouter',freeRouteAvailable:false,freeCandidates:free.length,state:'DEGRADED_FREE_CAPACITY',lastFailure:last}))\nprocess.exit(1)
