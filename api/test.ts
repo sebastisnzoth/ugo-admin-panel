@@ -228,7 +228,70 @@ async function googleCalendar(req:any,res:any,action:string){try{
  }catch(error:any){console.error('UGO Google Calendar failed',error);const status=Number(error?.status)||500;if(action==='callback')return res.redirect(302,baseUrl(req)+'/?app=provider&calendar=error');return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'Google Calendar no disponible'})}}
 
 async function authenticatedSuperadmin(req:any){const token=bearer(req);if(!token)throw Object.assign(new Error('Autenticación requerida.'),{status:401});const sb=serviceClient(),{data,error}=await sb.auth.getUser(token);if(error||!data.user)throw Object.assign(new Error('Sesión inválida.'),{status:401});const{data:profile}=await sb.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle();if(profile?.tipo!=='superadmin'||profile?.activo!==true)throw Object.assign(new Error('SUPERADMIN_REQUIRED'),{status:403});return{sb,user:data.user}}
-async function autonomyOpenRouter(req:any,res:any){try{if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'});const key=String(process.env.OPENROUTER_API_KEY||'').trim();if(!key)return res.status(503).json({error:'OPENROUTER_API_KEY no configurada en runtime'});const{sb,user}=await authenticatedSuperadmin(req),taskClass=String(req.body?.task_class||'AGENT_CONSULTATION').trim(),question=safeText(req.body?.question,1200);if(!question)return res.status(400).json({error:'question requerida'});const{data:route,error:routeError}=await sb.from('autonomous_model_routes').select('id,status,max_cost,primary_candidate_id,fallback_candidate_id').eq('task_class',taskClass).maybeSingle();if(routeError)throw routeError;if(!route||route.status!=='READY')return res.status(409).json({error:'MODEL_ROUTE_NOT_READY'});const ids=[route.primary_candidate_id,route.fallback_candidate_id].filter(Boolean),{data:candidates,error:candidateError}=await sb.from('autonomous_model_candidates').select('id,provider,model_id,free_tier,eligible,availability').in('id',ids);if(candidateError)throw candidateError;const ordered=ids.map((id:any)=>(candidates||[]).find((x:any)=>x.id===id)).filter((x:any)=>x&&x.eligible&&x.availability==='AVAILABLE'&&x.free_tier);if(!ordered.length)return res.status(409).json({error:'NO_ELIGIBLE_FREE_MODEL'});let lastError:any=null;for(const candidate of ordered){const started=Date.now(),correlationId=crypto.randomUUID();try{const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json','x-title':'UGO Autonomous Company'},body:JSON.stringify({model:candidate.model_id,messages:[{role:'system',content:'Sos un agente corporativo UGO. Respondé sólo con conclusiones sustentadas por el contexto autorizado. No inventes evidencia, permisos, estados ni acciones.'},{role:'user',content:question}],temperature:.1,max_tokens:500}),signal:AbortSignal.timeout(15000)}),payload:any=await response.json().catch(()=>null);if(!response.ok)throw new Error(payload?.error?.message||`OpenRouter ${response.status}`);const answer=safeText(payload?.choices?.[0]?.message?.content,4000);if(!answer)throw new Error('EMPTY_MODEL_RESPONSE');await sb.from('autonomous_model_metrics').insert({candidate_id:candidate.id,task_class:taskClass,correlation_id:correlationId,quality_score:null,latency_ms:Date.now()-started,success:true,cost:0});return res.status(200).json({answer,model:candidate.model_id,provider:candidate.provider,correlation_id:correlationId,cost:0})}catch(error:any){lastError=error;await sb.from('autonomous_model_metrics').insert({candidate_id:candidate.id,task_class:taskClass,correlation_id:correlationId,latency_ms:Date.now()-started,success:false,cost:0,failure_code:safeText(error?.message,200)})}}throw Object.assign(new Error(lastError?.message||'MODEL_FALLBACK_EXHAUSTED'),{status:502})}catch(error:any){const status=Number(error?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'Model Router no disponible'})}}
+async function autonomyOpenRouter(req:any,res:any){
+ try{
+  if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
+  const{sb,user}=await authenticatedSuperadmin(req)
+  const agentId=String(req.body?.agent_id||'').trim()
+  const question=safeText(req.body?.question,1200)
+  if(!/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(agentId)||!question)return res.status(400).json({error:'agent_id y question requeridos'})
+  const{data:agent,error:agentError}=await sb.from('autonomous_agents').select('id,department_id,name,capability,status,authority_class').eq('id',agentId).maybeSingle()
+  if(agentError)throw agentError
+  if(!agent||agent.status==='DISABLED')return res.status(409).json({error:'AGENT_NOT_OPERATIONAL'})
+  const{data:switches,error:switchError}=await sb.from('autonomous_kill_switches').select('scope_type,scope_key').eq('enabled',true)
+  if(switchError)throw switchError
+  if((switches||[]).some((x:any)=>x.scope_type==='GLOBAL'||x.scope_type==='DEPARTMENT'&&x.scope_key===String(agent.department_id)||x.scope_type==='AGENT'&&x.scope_key===agent.id||x.scope_type==='CAPABILITY'&&x.scope_key==='AGENT_CONSULTATION'))return res.status(409).json({error:'AGENT_CONSULTATION_PAUSED'})
+  const[{data:jobs,error:jobsError},{data:decisions,error:decisionsError}]=await Promise.all([
+   sb.from('autonomous_jobs').select('id,status,capability').eq('agent_id',agent.id).order('created_at',{ascending:false}).limit(20),
+   sb.from('autonomous_decision_ledger').select('decision,authorization_result').eq('agent_id',agent.id).order('created_at',{ascending:false}).limit(20)
+  ])
+  if(jobsError)throw jobsError;if(decisionsError)throw decisionsError
+  const ids=(jobs||[]).map((j:any)=>j.id)
+  const{data:evidence,error:evidenceError}=ids.length?await sb.from('autonomous_evidence_ledger').select('evidence_type').in('job_id',ids).limit(20):{data:[],error:null}
+  if(evidenceError)throw evidenceError
+  const summary={jobs:(jobs||[]).map((j:any)=>({status:j.status,capability:j.capability||null})),decisions:(decisions||[]).map((d:any)=>({decision:d.decision,authorization_result:d.authorization_result})),evidence_types:(evidence||[]).map((e:any)=>e.evidence_type)}
+  const correlationId=crypto.randomUUID(),questionHash=createHash('sha256').update(question).digest('hex')
+  const audit=async(success:boolean,answer:string|null,provider:string|null,model:string|null,failureCode:string|null,latency:number|null)=>{
+   const{error}=await sb.from('autonomous_agent_consultations').insert({agent_id:agent.id,actor_id:user.id,correlation_id:correlationId,task_class:'AGENT_CONSULTATION',question_hash:questionHash,answer_hash:answer?createHash('sha256').update(answer).digest('hex'):null,evidence_summary:{job_count:summary.jobs.length,decision_count:summary.decisions.length,evidence_count:summary.evidence_types.length},provider,model_id:model,success,failure_code:failureCode,latency_ms:latency,cost:0})
+   if(error)throw error
+  }
+  if(!summary.jobs.length&&!summary.decisions.length&&!summary.evidence_types.length){await audit(false,null,null,null,'NO_PERSISTED_AGENT_EVIDENCE',null);return res.status(409).json({error:'NO HAY EVIDENCIA SUFICIENTE',correlation_id:correlationId})}
+  const key=String(process.env.OPENROUTER_API_KEY||'').trim()
+  if(!key){await audit(false,null,null,null,'MODEL_CREDENTIAL_UNAVAILABLE',null);return res.status(503).json({error:'Model Router no disponible',correlation_id:correlationId})}
+  const taskClass='AGENT_CONSULTATION'
+  const{data:route,error:routeError}=await sb.from('autonomous_model_routes').select('status,max_cost,primary_candidate_id,fallback_candidate_id').eq('task_class',taskClass).maybeSingle()
+  if(routeError)throw routeError
+  if(!route||route.status!=='READY'||Number(route.max_cost)!==0){await audit(false,null,null,null,'MODEL_ROUTE_NOT_READY',null);return res.status(409).json({error:'MODEL_ROUTE_NOT_READY',correlation_id:correlationId})}
+  const idsToTry=[route.primary_candidate_id,route.fallback_candidate_id].filter(Boolean)
+  if(!idsToTry.length){await audit(false,null,null,null,'NO_FREE_MODEL',null);return res.status(409).json({error:'NO_ELIGIBLE_FREE_MODEL',correlation_id:correlationId})}
+  const{data:candidates,error:candidateError}=await sb.from('autonomous_model_candidates').select('id,provider,model_id,free_tier,eligible,availability,last_benchmarked_at').in('id',idsToTry)
+  if(candidateError)throw candidateError
+  const cutoff=Date.now()-15*60*1000
+  const ordered=idsToTry.map((id:any)=>(candidates||[]).find((x:any)=>x.id===id)).filter((x:any)=>x&&x.provider==='openrouter'&&x.eligible&&x.availability==='AVAILABLE'&&x.free_tier&&x.last_benchmarked_at&&Date.parse(x.last_benchmarked_at)>=cutoff)
+  if(!ordered.length){await audit(false,null,null,null,'NO_FRESH_FREE_MODEL',null);return res.status(409).json({error:'NO_ELIGIBLE_FREE_MODEL',correlation_id:correlationId})}
+  let lastError:any=null
+  for(const candidate of ordered){
+   const started=Date.now()
+   try{
+    const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json','x-title':'UGO Autonomous Company'},body:JSON.stringify({model:candidate.model_id,messages:[{role:'system',content:`Sos ${agent.name} de UGO. Función declarada: ${agent.capability}. Respondé sólo a partir de estos conteos, estados y tipos de evidencia. No afirmes haber ejecutado acciones ni visto datos personales. No interpretes esta consulta como autorización para mutar, pagar, desplegar o aprobar. Si faltan datos, decilo.`},{role:'user',content:JSON.stringify({question,verified_summary:summary})}],temperature:.1,max_tokens:500}),signal:AbortSignal.timeout(15000)})
+    const payload:any=await response.json().catch(()=>null)
+    if(!response.ok)throw new Error(payload?.error?.message||`OpenRouter ${response.status}`)
+    const answer=safeText(payload?.choices?.[0]?.message?.content,4000)
+    if(!answer)throw new Error('EMPTY_MODEL_RESPONSE')
+    const latency=Date.now()-started
+    const{error:metricError}=await sb.from('autonomous_model_metrics').insert({candidate_id:candidate.id,task_class:taskClass,correlation_id:correlationId,quality_score:null,latency_ms:latency,success:true,cost:0})
+    if(metricError)throw metricError
+    await audit(true,answer,candidate.provider,candidate.model_id,null,latency)
+    return res.status(200).json({answer,model:candidate.model_id,provider:candidate.provider,correlation_id:correlationId,cost:0})
+   }catch(error:any){
+    lastError=error
+    await sb.from('autonomous_model_metrics').insert({candidate_id:candidate.id,task_class:taskClass,correlation_id:correlationId,latency_ms:Date.now()-started,success:false,cost:0,failure_code:safeText(error?.message,200)})
+   }
+  }
+  await audit(false,null,null,null,'MODEL_FALLBACK_EXHAUSTED',null)
+  throw Object.assign(new Error(lastError?.message||'MODEL_FALLBACK_EXHAUSTED'),{status:502})
+ }catch(error:any){const status=Number(error?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'Model Router no disponible'})}
+}
 async function authenticatedAdmin(req:any){const token=bearer(req);if(!token)throw Object.assign(new Error('Autenticación requerida.'),{status:401});const sb=serviceClient(),{data,error}=await sb.auth.getUser(token);if(error||!data.user)throw Object.assign(new Error('Sesión inválida.'),{status:401});const{data:profile}=await sb.from('usuarios').select('tipo').eq('id',data.user.id).maybeSingle();if(!['admin','superadmin'].includes(String(profile?.tipo||'')))throw Object.assign(new Error('Solo Admin puede analizar disputas.'),{status:403});return{sb,user:data.user}}
 function disputeAttachmentPaths(value:any){return Array.isArray(value)?value.map(item=>item&&typeof item==='object'?String(item.path||''):'').filter(Boolean):[]}
 function disputeImageMime(path:string){return /\.png$/i.test(path)?'image/png':/\.webp$/i.test(path)?'image/webp':/\.jpe?g$/i.test(path)?'image/jpeg':null}
