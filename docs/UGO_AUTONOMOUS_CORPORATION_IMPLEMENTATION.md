@@ -202,7 +202,7 @@ This table is evidence-based. `DISABLED` remains the correct state for a catalog
 | 1 | Meta-QA Agent | yes | yes | yes | seeded defect must fail before remediation | RUNTIME VALIDATED on `cb8472b17b3937679fa85aa35c3d23fead36879a` |
 | 1 | Regression Agent | no | no | no | pending | DISABLED — no independent execution chain |
 | 1 | Release Gate Agent | no | no | no | release criteria remain deterministic | DISABLED — release gate exists, specialist executor not proven |
-| 1 | Quality Coverage Agent | no | no | no | coverage fails closed | DISABLED — coverage state exists, specialist executor not proven |
+| 1 | Quality Coverage Agent | yes | yes | yes | D14 Internal Control Inspector: `qa-release-gate` EFFECTIVE | RUNTIME VALIDATED — independent coverage reconciliation, Decision/Evidence Ledger and D14 runtime audit; protected physical/human coverage remains UNCOVERED |
 | 1 | QA Director | no | no | no | pending | DISABLED |
 | 1 | Client Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
 | 1 | Provider Simulator | partial | no | no | observations cannot self-certify | DISABLED — authenticated observation is not independent proof |
@@ -219,3 +219,6 @@ Same-SHA validation for `cb8472b17b3937679fa85aa35c3d23fead36879a` completed GRE
 The current Wave 1 rule is therefore strict: only Deterministic Judge, P0 Journey Tester and Meta-QA Agent may be described as runtime-validated specialists. The remaining Wave 1 identities stay disabled until their own trigger, input provenance, Data Quality Gate, governed authority path, executor, independent verifier, ledgers, regression and UGO TEST runtime evidence are all present.
 
 `Consultar Agente` is implemented with server-side agent resolution and append-only consultation audit, and the repository-wide CI for its source SHA is green. It is not yet marked runtime validated because the protected HTTP path still needs an authenticated TEST/Preview execution proving the deployed consumer and audit record on the same source SHA.
+
+
+Wave 1 update: Quality Coverage Agent is now independently wired and runtime-validated in UGO TEST. Its reconciler can promote only coverage backed by a successful Deterministic Judge job and demotes stale/unverified greens. D14 `internal-control-inspector` independently verified the latest specialist job, its Decision/Evidence Ledger chain and the protected UNCOVERED requirements, then marked the existing `qa-release-gate` control `EFFECTIVE`. Physical GPS, uploaded media bytes and human customer acceptance remain explicitly UNCOVERED.
