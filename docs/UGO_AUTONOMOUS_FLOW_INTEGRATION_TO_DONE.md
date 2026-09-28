@@ -258,6 +258,34 @@ RED    → irreversible/high impact → humano autorizado
 - [ ] RED jamás entra en ejecución autónoma;
 - [ ] Decision Ledger registra autorización/rechazo.
 
+### F4.1 — UX del modo global de autonomía
+
+El control de Super Admin debe traducir los valores internos sin cambiar su semántica de backend:
+
+| Valor persistido | Etiqueta UI | Significado |
+|---|---|---|
+| `OFF` | OFF | observa; no ejecuta mutaciones autónomas |
+| `SHADOW` | SHADOW | analiza/simula; no ejecuta mutaciones |
+| `ON` | ON | ejecuta únicamente acciones autorizadas por policy/authority |
+| `SAFE_MODE` | MODO SEGURO | contiene automatizaciones afectadas sin fingir apagado global |
+
+Reglas de UX/gobernanza:
+- mostrar siempre el **estado actual persistido**;
+- el modo activo no vuelve a enviarse al RPC;
+- un cambio requiere motivo auditable no vacío;
+- el motivo es una justificación administrativa, no una contraseña;
+- la UI no cambia optimistamente: después del RPC se resincroniza desde Supabase;
+- si el RPC falla, mostrar el error y resincronizar; nunca fingir el nuevo modo;
+- cambiar la etiqueta visual `SAFE_MODE` a “MODO SEGURO” no cambia el valor persistido ni contratos SQL;
+- `ON` no elimina GREEN/YELLOW/RED, Data Quality Gate, Kill Switches, RLS/RPC, QA ni auditoría.
+
+**DONE**
+- [ ] estado actual inequívoco;
+- [ ] cuatro modos entendibles en desktop/móvil;
+- [ ] motivo auditable registrado por backend;
+- [ ] fallo de RPC deja visible el estado autoritativo;
+- [ ] contrato automático evita degradar estas garantías.
+
 ### F5 — Model Router
 
 La IA sólo se invoca cuando aporta valor. Orden:
