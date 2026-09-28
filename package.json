@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "test": "npm run verify:test-env && node --test tests/**/*.test.mjs",
     "test:p0": "npm run verify:test-env && node --test tests/contracts/first-client-readiness.test.mjs tests/contracts/client-cancel-actions.test.mjs tests/contracts/client-provider-lifecycle.test.mjs tests/contracts/client-live-assignment-notification.test.mjs tests/contracts/client-evidence-realtime-stability.test.mjs",
-    "test:integration": "npm run verify:test-env && node --test tests/integration/**/*.test.mjs",
+    "test:integration": "npm run verify:test-env && node --test --test-concurrency=1 tests/integration/**/*.test.mjs",
     "preview": "vite preview",
     "bootstrap:test-auth": "node scripts/bootstrap-test-auth.mjs"
   },
