@@ -1,11 +1,32 @@
-const gemini=process.env.GEMINI_API_KEY||'';
+const gemini=process.env.GEMINI_API_KEY||''
 import{createClient}from'@supabase/supabase-js'
 const key=process.env.OPENROUTER_API_KEY||process.env.UGO_OPENROUTER_API_KEY
 if(!key&&!gemini)throw new Error('MODEL_PROVIDER_API_KEY_REQUIRED')
 const base=process.env.OPENROUTER_BASE_URL||'https://openrouter.ai/api/v1'
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'}
+const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
+const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false}}):null
+async function persist(candidate){if(!db)return;const{error}=await db.from('autonomous_model_candidates').upsert(candidate,{onConflict:'provider,model_id'});if(error)throw new Error('MODEL_ROUTE_PERSIST_FAILED '+error.message)}
+function safeError(p){return String(p?.error?.message||p?.message||'unknown').replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,200)}
 
-if(gemini){for(const model of ['gemini-2.5-flash-lite','gemini-2.5-flash']){try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'x-goog-api-key':gemini,'content-type':'application/json'},signal:AbortSignal.timeout(6000),body:JSON.stringify({contents:[{parts:[{text:'Reply only UGO_GEMINI_OK'}]}],generationConfig:{temperature:0,maxOutputTokens:24}})});const p=await r.json().catch(()=>({}));if(r.ok&&p?.candidates?.[0]?.content){const score=1,threshold=.8;console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated',benchmarkScore:score,threshold,failover:'openrouter'}));const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY;if(su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')){const db=createClient(su,sk,{auth:{persistSession:false}}),at=new Date().toISOString();const{error}=await db.from('autonomous_model_candidates').upsert({provider:'gemini',model_id:model,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at},{onConflict:'provider,model_id'});if(error)throw new Error('GEMINI_ROUTE_PERSIST_FAILED '+error.message)}process.exit(0)}}catch{}}}
+if(gemini){
+ let geminiLast=''
+ for(const model of ['gemini-2.5-flash-lite','gemini-2.5-flash']){
+  try{
+   const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'x-goog-api-key':gemini,'content-type':'application/json'},signal:AbortSignal.timeout(6000),body:JSON.stringify({contents:[{parts:[{text:'Reply only UGO_GEMINI_OK'}]}],generationConfig:{temperature:0,maxOutputTokens:24}})})
+   const p=await r.json().catch(()=>({}))
+   const content=p?.candidates?.[0]?.content?.parts?.map(x=>x?.text||'').join('').trim()||''
+   if(r.ok&&content.includes('UGO_GEMINI_OK')){
+    const score=1,threshold=.8,at=new Date().toISOString()
+    await persist({provider:'gemini',model_id:model,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at})
+    console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated',benchmarkScore:score,threshold,failover:'openrouter'}))
+    process.exit(0)
+   }
+   geminiLast='model='+model+' status='+r.status+' error='+safeError(p)
+  }catch(error){geminiLast='model='+model+' transport='+String(error?.name||'error')}
+ }
+ console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',lastFailure:geminiLast,failover:'openrouter'}))
+}
 if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
 const catalog=await fetch(base+'/models',{headers})
 if(!catalog.ok)throw new Error('OPENROUTER_CONNECTION_FAILED status='+catalog.status)
@@ -18,11 +39,12 @@ for(const model of preferred.slice(0,5)){
  let response,payload
  try{response=await fetch(base+'/chat/completions',{method:'POST',headers,signal:AbortSignal.timeout(5000),body:JSON.stringify({model,messages:[{role:'system',content:'You are the UGO model-router health probe. Reply only UGO_OPENROUTER_OK.'},{role:'user',content:'health check'}],temperature:0,max_tokens:24})});payload=await response.json().catch(()=>({}))}catch(error){last='model='+model+' transport='+String(error?.name||'error');continue}
  if(response.ok&&payload?.choices?.[0]?.message?.content){
-   const selected=payload.model||model,score=1,threshold=.8;console.log(JSON.stringify({connected:true,provider:'openrouter',model:selected,freeRouteAvailable:true,freeCandidates:free.length,benchmarkScore:score,threshold}))
-   const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY;if(su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')){const db=createClient(su,sk,{auth:{persistSession:false}});const persistedAt=new Date().toISOString();const{error:persistError}=await db.from('autonomous_model_candidates').upsert({provider:'openrouter',model_id:selected,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:persistedAt,last_error:null,updated_at:persistedAt},{onConflict:'provider,model_id'});if(persistError)throw new Error('OPENROUTER_ROUTE_PERSIST_FAILED '+persistError.message)}
+   const selected=payload.model||model,score=1,threshold=.8,at=new Date().toISOString()
+   await persist({provider:'openrouter',model_id:selected,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at})
+   console.log(JSON.stringify({connected:true,provider:'openrouter',model:selected,freeRouteAvailable:true,freeCandidates:free.length,benchmarkScore:score,threshold}))
    process.exit(0)
  }
- last='model='+model+' status='+response.status+' error='+String(payload?.error?.message||'unknown').slice(0,160)
+ last='model='+model+' status='+response.status+' error='+safeError(payload)
 }
 console.error(JSON.stringify({connected:true,provider:'openrouter',freeRouteAvailable:false,freeCandidates:free.length,state:'DEGRADED_FREE_CAPACITY',lastFailure:last}))
 process.exit(1)
