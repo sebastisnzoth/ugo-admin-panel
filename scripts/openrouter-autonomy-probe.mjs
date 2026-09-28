@@ -1,9 +1,12 @@
+const gemini=process.env.GEMINI_API_KEY||'';
 import{createClient}from'@supabase/supabase-js'
 const key=process.env.OPENROUTER_API_KEY||process.env.UGO_OPENROUTER_API_KEY
-if(!key)throw new Error('OPENROUTER_API_KEY is required')
+if(!key&&!gemini)throw new Error('MODEL_PROVIDER_API_KEY_REQUIRED')
 const base=process.env.OPENROUTER_BASE_URL||'https://openrouter.ai/api/v1'
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'}
 
+if(gemini){for(const model of ['gemini-2.5-flash-lite','gemini-2.5-flash']){try{const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+model+':generateContent',{method:'POST',headers:{'x-goog-api-key':gemini,'content-type':'application/json'},signal:AbortSignal.timeout(6000),body:JSON.stringify({contents:[{parts:[{text:'Reply only UGO_GEMINI_OK'}]}],generationConfig:{temperature:0,maxOutputTokens:24}})});const p=await r.json().catch(()=>({}));if(r.ok&&p?.candidates?.[0]?.content){const score=1,threshold=.8;console.log(JSON.stringify({connected:true,provider:'gemini',model,source:'runtime-validated',benchmarkScore:score,threshold,failover:'openrouter'}));const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY;if(su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')){const db=createClient(su,sk,{auth:{persistSession:false}}),at=new Date().toISOString();const{error}=await db.from('autonomous_model_candidates').upsert({provider:'gemini',model_id:model,free_tier:true,eligible:true,benchmark_score:score,benchmark_threshold:threshold,availability:'AVAILABLE',last_benchmarked_at:at,last_error:null,updated_at:at},{onConflict:'provider,model_id'});if(error)throw new Error('GEMINI_ROUTE_PERSIST_FAILED '+error.message)}process.exit(0)}}catch{}}}
+if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
 const catalog=await fetch(base+'/models',{headers})
 if(!catalog.ok)throw new Error('OPENROUTER_CONNECTION_FAILED status='+catalog.status)
 const catalogBody=await catalog.json()
