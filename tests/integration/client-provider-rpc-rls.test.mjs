@@ -366,6 +366,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     const {data: bilateralRatings,error: bilateralRatingsError}=await a.from('resenas').select('autor_tipo,puntuacion').eq('servicio_id',serviceId)
     if(bilateralRatingsError)throw bilateralRatingsError
     assert.deepEqual(bilateralRatings.map(x=>x.autor_tipo).sort(),['cliente','proveedor'],'El P0 debe cerrar con rating bilateral persistido por serviceId')
+    if(adminProfile.tipo==='superadmin'){const binding=await a.rpc('superadmin_bind_service_event',{p_service_id:serviceId,p_event_type:'P0_COMPLETED_BILATERAL_RATING',p_department_id:2,p_source_reference:`integration-run:${runId}`});if(binding.error)throw binding.error;assert.equal(binding.data.service_id,serviceId,'Corporate audit binding must preserve exact serviceId')}
     const qaDb=adminProfile.tipo==='superadmin'?a:null
     const qaLifecycle=qaDb?await qaDb.from('autonomous_qa_scenarios') .select('id').eq('scenario_key','service-lifecycle').maybeSingle():null
     if(qaDb&&qaLifecycle&&!qaLifecycle.error&&qaLifecycle.data?.id){
