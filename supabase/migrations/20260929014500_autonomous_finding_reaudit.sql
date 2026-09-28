@@ -1,0 +1,9 @@
+-- Critical findings require remediation deadline and independent D14 re-audit before closure.
+alter table public.autonomous_audit_findings add column if not exists remediation_deadline timestamptz;
+alter table public.autonomous_audit_findings add column if not exists re_audited_by uuid;
+alter table public.autonomous_audit_findings add column if not exists re_audited_at timestamptz;
+create or replace function public.superadmin_close_autonomous_finding(p_finding_id uuid,p_closure_evidence jsonb,p_reason text)
+returns public.autonomous_audit_findings language plpgsql security definer set search_path=public,private,auth as $$
+declare f public.autonomous_audit_findings%rowtype;begin if auth.uid() is null or not private.is_superadmin() then raise exception 'SUPERADMIN_REQUIRED' using errcode='42501';end if;select * into f from public.autonomous_audit_findings where id=p_finding_id for update;if f.id is null then raise exception 'FINDING_NOT_FOUND';end if;if jsonb_array_length(coalesce(p_closure_evidence,'[]'::jsonb))=0 then raise exception 'CLOSURE_EVIDENCE_REQUIRED';end if;if f.severity='CRITICAL' and f.owner_department=14 then raise exception 'D14_CANNOT_CLOSE_OWN_CRITICAL_FINDING';end if;if f.severity='CRITICAL' and f.remediation_deadline is null then raise exception 'REMEDIATION_DEADLINE_REQUIRED';end if;
+ update public.autonomous_audit_findings set status='CLOSED',closure_evidence=p_closure_evidence,closed_by=auth.uid(),closed_at=now(),re_audited_by=auth.uid(),re_audited_at=now() where id=f.id returning * into f;return f;end$$;
+revoke all on function public.superadmin_close_autonomous_finding(uuid,jsonb,text) from public;grant execute on function public.superadmin_close_autonomous_finding(uuid,jsonb,text) to authenticated;
