@@ -93,7 +93,7 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 - Runtime-validate protected OpenRouter primary/fallback and periodic reevaluation in Preview/TEST.
 
 ### Phase C
-- Bind QA simulators to actual UGO TEST Client/Provider/Admin actions, not merely persisted assertions.
+- Bind QA simulators to actual UGO TEST Client/Provider/Admin actions. Synthetic caller-supplied booleans are now explicitly rejected as authoritative runtime evidence; scenarios require a persisted `service_id` in UGO TEST and deterministic persisted-state judges.
 - Execute chaos/fault injection against the real P0 path.
 - Generate remediation request, rerun and permanent regression automatically.
 - Keep Release Gate deterministic and blocking.
@@ -139,3 +139,6 @@ Before every implementation block:
 7. validate in UGO TEST;
 8. leave autonomy in a safe state after probes.
 \n## 8. Governed executor runtime evidence\n\nUGO TEST runtime validation executed the allowlisted `qa.green.echo` capability through the governed worker. Persisted result: GREEN `SUCCEEDED` with `verification_result.passed=true`, one Decision Ledger row and one Evidence Ledger row. Negative authority probes remained non-executable: YELLOW -> `WAITING_APPROVAL` / `YELLOW_DUAL_CONTROL_REQUIRED`; RED -> `WAITING_APPROVAL` / `RED_HUMAN_APPROVAL_REQUIRED`. Autonomy was restored to `OFF` after validation. This is RUNTIME VALIDATED in TEST, not PUBLISHED.\n
+## 9. Verification-first QA hardening
+
+The previous worker QA helper could accept caller-supplied assertion booleans. That path is no longer accepted as proof: `autonomous_run_qa_service_scenario` now requires a bound `ambiente='test'` service and derives supported verdicts from persisted service/offers/events/evidence/payments/ratings. The CI runtime gate fails closed when scenarios lack real TEST service bindings. At the time of this hardening UGO TEST contained no `servicios` rows with `ambiente='test'`; therefore Customer #1 remains correctly BLOCKED rather than manufacturing coverage. Unsupported deterministic probes fail explicitly instead of becoming green.
