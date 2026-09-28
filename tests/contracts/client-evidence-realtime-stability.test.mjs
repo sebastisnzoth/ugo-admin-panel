@@ -50,3 +50,14 @@ test('provider evidence panel rebuilds realtime after CLOSED and network recover
  assert.ok(provider.includes('const onOnline=()=>{refresh();reconnect()}'))
  assert.ok(provider.includes("document.visibilityState==='visible'"))
 })
+
+
+test('role session profile realtime is isolated per hook instance before subscribe',async()=>{
+ const shared=await read('src/mvp/shared.tsx')
+ assert.match(shared,/useId\(\)\.replace\(\/:\/g,''\)/)
+ assert.match(shared,/channelName=`ugo-profile-\$\{role\}-\$\{userId\}-\$\{profileChannelInstance\}-\$\{profileChannelEpoch\}`/)
+ const onIndex=shared.indexOf("channel.on('postgres_changes'")
+ const subscribeIndex=shared.indexOf('channel.subscribe(')
+ assert.ok(onIndex>=0&&subscribeIndex>onIndex,'postgres_changes must be registered before subscribe')
+ assert.match(shared,/void supabase\.removeChannel\(channel\)/)
+})
