@@ -73,6 +73,11 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(shadow.error)throw shadow.error
  assert.equal(shadow.data.mode,'SHADOW')
 
+ const yellow=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:null,p_objective:'Runtime YELLOW dual control probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-yellow',p_service_id:null,p_authority_class:'YELLOW',p_idempotency_key:'ugo-autonomy-yellow-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
+ if(yellow.error)throw yellow.error
+ assert.equal(yellow.data.status,'WAITING_APPROVAL')
+ assert.equal(yellow.data.blocked_reason,'YELLOW_DUAL_CONTROL_REQUIRED')
+
  const redKey='ugo-autonomy-red-'+crypto.randomUUID()
  const red=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:null,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
  if(red.error)throw red.error
