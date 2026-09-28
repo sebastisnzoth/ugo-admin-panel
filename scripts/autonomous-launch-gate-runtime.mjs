@@ -14,7 +14,7 @@ try{
  const {data:profile,error:profileError}=await db.from('usuarios').select('tipo').eq('id',login.user.id).single();
  if(profileError||profile?.tipo!=='superadmin')throw new Error('UGO_TEST_SUPERADMIN_REQUIRED');
  const {data:gate,error}=await db.rpc('superadmin_evaluate_release_gate',{p_gate_key:'CUSTOMER_1'});
- if(error||!gate)throw new Error('UGO_TEST_GATE_EVALUATION_FAILED');
+ if(error||!gate)throw new Error('UGO_TEST_GATE_EVALUATION_FAILED:'+String(error?.code||'NO_RESULT'));
  const {data:acceptance,error:acceptanceError}=await db.from('development_checklist').select('code,status').in('code',['FULL-E2E','TWO-DEVICES']);
  if(acceptanceError)throw new Error('UGO_TEST_ACCEPTANCE_READ_FAILED');
  const approved=['FULL-E2E','TWO-DEVICES'].every(code=>acceptance?.some(item=>item.code===code&&item.status==='approved'));
