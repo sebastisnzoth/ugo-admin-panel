@@ -25,7 +25,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-runtime-exclusive
+  group: ugo-isolated-rpc-rls
   cancel-in-progress: false
 
 env:
@@ -123,6 +123,9 @@ jobs:
         # Keep repository contracts independent from remote TEST credentials.
         # The authenticated RPC/RLS harness runs in the dedicated next step.
         run: node --test tests/contracts/*.test.mjs
+
+      - name: Wait for concurrent autonomous TEST fixture to settle
+        run: sleep 90
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration
