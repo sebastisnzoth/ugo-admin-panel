@@ -1,10 +1,49 @@
 # UGO — Autonomous Corporation Blueprint
 
-**Version:** 1.1 · 27 September 2026  
+**Version:** 1.2 · 27 September 2026  
 **Status:** implementation contract  
 **Branch of truth:** `main`
 
 > This document turns the corporate architecture agreed for UGO into an executable implementation contract. It does not replace product/data/testing masters; when they conflict, `UGO_MASTER_GOVERNANCE.md` wins.
+
+## 0. Verification-first execution contract
+
+This Master is an execution contract, not a feature wishlist. An item is **not complete** because code, schema, UI, a secret, a workflow, an agent, or documentation exists.
+
+For every requirement, the implementation agent must proactively close the whole chain without waiting for the Administrator General to point out missing links:
+
+```text
+requirement
+→ implementation
+→ integration/wiring
+→ required credential/secret availability
+→ actual consumer of that credential
+→ execution
+→ persisted evidence
+→ deterministic verification
+→ CI validation
+→ runtime validation in UGO TEST
+→ regression protection
+```
+
+Mandatory rules:
+- Never mark a capability implemented when its required secret exists but no executable path consumes it.
+- Never mark a workflow operational merely because its YAML exists; prove a real run reaches the intended code path.
+- Never mark an API integration operational without a successful authenticated probe or an explicit persisted external-blocker result.
+- Never infer GREEN, DONE, READY, coverage, model availability, agent activity, or execution from configuration alone.
+- Every claimed completion must identify evidence from the same tested SHA when the requirement depends on source code.
+- Before stopping, audit this Master for **wiring gaps**: configured-but-unused secrets, registered-but-unexecuted agents, persisted-but-unread state, UI without authoritative backing data, tests that do not exercise runtime, migrations not applied to UGO TEST, workflows that cannot dispatch, and fallbacks never exercised.
+- Internal implementation gaps, test failures, TypeScript/lint errors, SQL/RLS failures, migration failures, merge conflicts, missing wiring and CI failures are work to fix, not external blockers.
+- An external blocker is valid only when completion requires an unavailable third-party credential/authorization, a legally required external actor, a real human customer/pilot, or an explicitly prohibited production action.
+- Secrets must never be printed, committed, copied into evidence, screenshots, issues, logs, prompts, or responses.
+
+Maturity is strictly:
+
+```text
+IMPLEMENTED → CI VALIDATED → RUNTIME VALIDATED → PUBLISHED
+```
+
+A later maturity level may not be claimed without evidence for all prior levels.
 
 ## 1. Objective
 
@@ -171,6 +210,24 @@ task classification
 Paid models require an explicit future budget policy/authorization. "Free" is not sufficient if it fails UGO quality/safety gates.
 
 Department 8 Technology Radar/R&D discovers and evaluates candidates; Department 9 validates on UGO benchmarks; Department 14 audits routing, permissions and cost.
+
+### OpenRouter execution proof
+
+The GitHub Actions secret `OPENROUTER_API_KEY` (or the canonical repository secret name adopted by the implementation) is only credential storage; its existence is **not** proof of integration. The autonomous company must prove the complete path:
+
+```text
+GitHub Actions secret
+→ workflow env injection
+→ protected Model Router / worker consumer
+→ authenticated OpenRouter request
+→ free-model primary/fallback selection
+→ response validation
+→ quality/latency/failure/cost telemetry
+→ persisted evidence in UGO TEST
+→ deterministic CI assertion
+```
+
+The secret value must never be exposed. A missing, unused or misnamed secret, a workflow that does not pass it, or a router that never consumes it is a blocking implementation gap and must be repaired automatically before this capability can be called runtime validated. Fallback must be exercised, not merely configured.
 
 ## 10. Data Quality Gate
 
