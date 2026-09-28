@@ -241,3 +241,12 @@ The real Super Admin `Empresa Autónoma` surface is split into dedicated views f
 The AI workforce detail preserves governed execution, audited approvals, kill-switch controls and server-side `Consultar agente`. Agent consultation sends only `agent_id` plus the operator question to the protected server route; persisted evidence is resolved and sanitized server-side. The autonomous shell now has responsive navigation for desktop/tablet/mobile without changing the Admin shell or backend authority rules.
 
 Validation remains verification-first. This section is IMPLEMENTED at source level; CI/runtime maturity must be assigned only from the final same-SHA workflows and UGO TEST evidence. A blocked Customer #1 gate remains BLOCKED and must not be represented as READY.
+
+
+## 16. Autonomy mode control UX hardening (28 September 2026)
+
+The Super Admin autonomy control now exposes the persisted mode as an explicit current state and translates the internal `SAFE_MODE` value to the human-facing label **MODO SEGURO** without changing backend semantics. OFF, SHADOW, ON and SAFE_MODE remain the only canonical persisted values.
+
+Each mode explains its operational effect before selection. A mode transition continues to require a non-empty auditable reason through `superadmin_set_autonomy_mode`; the reason is governance evidence, not authentication. The UI does not optimistically claim a new mode: after the governed RPC it reloads authoritative Supabase state, and on RPC failure it reports the failure and also resynchronizes. Selecting the already-active mode is a no-op.
+
+This UX change does not widen autonomous authority. ON still executes only what policy permits; GREEN/YELLOW/RED, Data Quality Gate, RLS/RPC, Kill Switches, QA and D14 remain mandatory. Source implementation and regression contract are present; CI/runtime maturity must be proven on the final same SHA.
