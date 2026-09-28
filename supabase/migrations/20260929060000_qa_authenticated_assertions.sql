@@ -1,0 +1,3 @@
+-- Authenticated runtime probes must prove concrete isolation and spoof rejection, not generic booleans.
+update public.autonomous_qa_scenarios set deterministic_judge=jsonb_build_object('required_assertions',jsonb_build_array('client_isolated','provider_isolated','admin_isolated','superadmin_governed','client_cannot_publish_provider_gps','spoofed_rating_rejected')) where scenario_key='roles';
+update public.autonomous_qa_scenarios set deterministic_judge=jsonb_build_object('required_assertions',jsonb_build_array('client_isolated','provider_isolated','client_cannot_publish_provider_gps','spoofed_rating_rejected')) where scenario_key='permissions-rls';
