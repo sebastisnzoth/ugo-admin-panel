@@ -12,8 +12,9 @@ const active=d14.filter(x=>x.status!=='DISABLED').map(x=>x.agent_key).sort()
 if(JSON.stringify(active)!==JSON.stringify([...canonical].sort()))throw new Error('SENTINEL_D14_CANONICAL_MISMATCH')
 const legacy=d14.find(x=>x.agent_key==='corporate-audit-agent')
 if(legacy?.status!=='DISABLED')throw new Error('SENTINEL_LEGACY_AUDITOR_NOT_DISABLED')
-const running=await one(db.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('status','RUNNING'),'jobs')
-if((running?.length||0)>0)throw new Error('SENTINEL_RUNNING_JOBS')
+const{count:runningCount,error:runningError}=await db.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('status','RUNNING')
+if(runningError)throw runningError
+if(runningCount)throw new Error('SENTINEL_RUNNING_JOBS count='+runningCount)
 const{count:activeLeases,error:leaseError}=await db.from('autonomous_jobs').select('id',{count:'exact',head:true}).not('lease_owner','is',null).gt('lease_expires_at',new Date().toISOString())
 if(leaseError)throw leaseError
 if(activeLeases)throw new Error('SENTINEL_ACTIVE_LEASES count='+activeLeases)
