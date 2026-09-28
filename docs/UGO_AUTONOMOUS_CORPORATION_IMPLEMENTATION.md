@@ -26,17 +26,17 @@ No production publication is implied.
 | GREEN / YELLOW / RED authority | authority persisted; RED human approval/rejection; YELLOW independent dual control | IMPLEMENTED; runtime dual-control validation pending |
 | Decision/Evidence ledgers | append-only persisted ledgers + complete action envelope + hashed verification evidence | IMPLEMENTED; end-to-end worker evidence validation remains |
 | Scoped kill switches | GLOBAL / DEPARTMENT / AGENT / CAPABILITY | RUNTIME VALIDATED foundation; recovery re-audit remains |
-| Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation | RUNTIME VALIDATED schema/RPC in TEST; persistent event worker remains |
+| Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation + scheduled TEST worker | IMPLEMENTED; worker runtime validation pending |
 | Data Quality Gate | freshness, provenance, completeness, consistency; independent reconciliation for YELLOW/RED; hashed evidence | RUNTIME VALIDATED schema/RPC in TEST |
 | QA Lab persistence | scenarios, runs, chaos profiles, deterministic judges, coverage map, release gate | RUNTIME VALIDATED schema in TEST |
 | QA actors | Client, Provider, Admin/System simulators persisted | RUNTIME VALIDATED registration in TEST; real P0 execution binding remains |
 | Meta-QA | seeded-defect scenario + governed calibration RPC | IMPLEMENTED; required runtime CI calibration added |
 | Customer #1 Release Gate | persisted gate with QA, critical finding and stale-job blockers | IMPLEMENTED; full acceptance journey remains |
-| OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics and benchmark gate | IMPLEMENTED; runtime candidate benchmark/fallback execution remains |
+| OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics + protected server runtime primary/fallback | IMPLEMENTED; Preview runtime validation pending |
 | IP Gate | persisted corporate protection gate + Super Admin visibility | RUNTIME VALIDATED foundation / TEST; remaining Master evidence/audit closure controls tracked below |
 | Super Admin Empresa Autónoma | real persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate | IMPLEMENTED; searchable correlation timeline and UGO Empresas readiness remain |
-| Consultar Agente | evidence-grounded deterministic consultation | IMPLEMENTED; protected server-side model route remains |
-| UGO Empresas | Master product definition, D12 owner | NOT YET IMPLEMENTED as autonomous product readiness flow |
+| Consultar Agente | evidence-gated protected server-side OpenRouter consultation with correlation id | IMPLEMENTED; Preview runtime validation pending |
+| UGO Empresas | D12-owned readiness + multi-worker demand/slot persistence | IMPLEMENTED foundation; gated behind customer #1 stability |
 
 ## 3. Implemented migrations
 
@@ -54,6 +54,13 @@ No production publication is implied.
 - `20260928203000_autonomous_voice_signals.sql`
 - `20260928213000_autonomous_model_router.sql`
 - `20260928220000_autonomous_qa_meta_gate.sql`
+- `20260928223000_autonomous_governance_table_grants.sql`
+- `20260928231500_autonomous_release_gate_hardening.sql`
+- `20260928233000_autonomous_model_router_bootstrap.sql`
+- `20260928234500_autonomous_worker_cycle.sql`
+- `20260929001500_ugo_empresas_readiness.sql`
+- `20260929004500_autonomous_recovery_audit.sql`
+- `20260929011500_autonomous_qa_p0_coverage.sql`
 
 IP governance is implemented by the existing corporate IP migrations and is a permanent control independent from QA release approval.
 
@@ -77,9 +84,9 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 ## 5. Remaining Master work — blocking DONE
 
 ### Phase B
-- Add browser-independent event/schedule worker and prove it operates with autonomy ON.
+- Prove the browser-independent scheduled TEST worker operates with autonomy ON.
 - Complete Safe Mode/circuit-breaker recovery verification and re-audit.
-- Implement runtime Model Router: free candidate discovery, UGO benchmark threshold, primary/fallback, quality/latency/failure/availability/cost metrics and periodic reevaluation.
+- Runtime-validate protected OpenRouter primary/fallback and periodic reevaluation in Preview/TEST.
 
 ### Phase C
 - Bind QA simulators to actual UGO TEST Client/Provider/Admin actions, not merely persisted assertions.
@@ -99,9 +106,7 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 ### Voice of Client & Provider
 
 ### Super Admin
-Expose real persisted dedicated views for:
-- searchable Decision/Evidence correlation timeline;
-- UGO Empresas readiness.
+Dedicated persisted QA, Model Router, Risk & Audit, Launch Gate, correlation timeline and UGO Empresas readiness surfaces are implemented; runtime UI validation remains.
 
 ### IP remaining controls
 - Finish independent critical-finding closure enforcement.
