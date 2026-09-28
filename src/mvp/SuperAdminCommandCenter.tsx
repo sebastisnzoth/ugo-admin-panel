@@ -1,4 +1,4 @@
-import React,{useEffect,useMemo,useState}from'react'
+import React,{useEffect,useId,useMemo,useRef,useState}from'react'
 import{supabase}from'../lib/supabase'
 import{ConversationalOrb}from'../components/ConversationalOrb'
 import{AutonomousCorporationDashboard}from'./AutonomousCorporationDashboard'
@@ -9,6 +9,7 @@ type Integration={id:string;label:string;category:string;configured:boolean;enab
 const tabs:[Tab,string][]=[['command','Command Center'],['autonomy','Empresa Autónoma'],['flags','Feature Flags'],['audit','Audit Log'],['integrations','Integraciones'],['metrics','Métricas globales'],['roles','Roles y permisos'],['ip','Legal / IP Protection']]
 
 export function SuperAdminCommandCenter(){
+ const realtimeInstance=useId().replace(/:/g,''),reloadTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
  const[tab,setTab]=useState<Tab>('command'),[loading,setLoading]=useState(true),[error,setError]=useState(''),[authorized,setAuthorized]=useState(false)
  const[metrics,setMetrics]=useState<Metric[]>([]),[flags,setFlags]=useState<Record<string,boolean>>({})
  const[audit,setAudit]=useState<any[]>([]),[integrations,setIntegrations]=useState<Integration[]>([]),[integrationsError,setIntegrationsError]=useState('')
@@ -32,6 +33,7 @@ export function SuperAdminCommandCenter(){
   setIntegrationsError('');if(session){try{const response=await fetch('/api/admin/integrations-status',{headers:{Authorization:`Bearer ${session.access_token}`}});const payload=await response.json().catch(()=>({}));if(response.ok)setIntegrations(payload.integrations||[]);else setIntegrationsError(payload.error||'No se pudo consultar el estado de integraciones.')}catch{setIntegrationsError('No se pudo consultar el estado de integraciones.')}}
  }catch(e){setError(e instanceof Error?e.message:'No se pudo cargar el Command Center.')}finally{setLoading(false)}}
  useEffect(()=>{void load()},[])
+ useEffect(()=>{if(!authorized)return;const db=supabase as any;const refresh=()=>{if(reloadTimer.current)clearTimeout(reloadTimer.current);reloadTimer.current=setTimeout(()=>void load(),250)};const channel=db.channel(`ugo-superadmin-autonomy-${realtimeInstance}`);for(const table of ['autonomous_company_state','autonomous_departments','autonomous_agents','autonomous_jobs','autonomous_decision_ledger','autonomous_evidence_ledger','autonomous_audit_findings','autonomous_kill_switches','autonomous_qa_runs','autonomous_quality_coverage','autonomous_release_gate','autonomous_model_routes','autonomous_enterprise_risks','autonomous_control_coverage','autonomous_challenges','ugo_empresas_readiness'])channel.on('postgres_changes',{event:'*',schema:'public',table},refresh);channel.subscribe();return()=>{if(reloadTimer.current)clearTimeout(reloadTimer.current);void db.removeChannel(channel)}},[authorized,realtimeInstance])
  const auditRows=useMemo(()=>audit.map((row:any)=>({id:row.id,action:row.evento||row.action||row.tipo||'Evento administrativo',actor:row.actor_email||row.usuario_email||row.actor_id||row.usuario_id||'Sistema',at:row.created_at})),[audit])
  const selectedAgent=agents.find((a:any)=>a.id===selectedAgentId)||null
  const selectedJobs=selectedAgent?jobs.filter((j:any)=>j.agent_id===selectedAgent.id):[]
