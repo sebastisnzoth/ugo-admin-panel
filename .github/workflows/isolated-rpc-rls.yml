@@ -1,5 +1,5 @@
 name: UGO Isolated RPC RLS
-# Same-SHA final gate: touching this workflow schedules isolated RLS together with the final Core, Worker and Sentinel validation gates.
+# Same-SHA final gate: touching this workflow schedules isolated RLS together with Core, Worker and Sentinel validation on the final SHA.
 
 on:
   workflow_dispatch:
