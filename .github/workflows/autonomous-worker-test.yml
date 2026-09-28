@@ -89,6 +89,11 @@ jobs:
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-launch-gate-runtime.mjs
+      - name: Execute Sentinel Gate
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-sentinel-gate.mjs
       - name: Run governed worker cycle
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
