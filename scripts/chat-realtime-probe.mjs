@@ -203,7 +203,8 @@ try {
   const serviceRole=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}})
   const {data:scenario,error:scenarioError}=await serviceRole.from('autonomous_qa_scenarios').select('id').eq('scenario_key','realtime').single()
   if(scenarioError)throw scenarioError
-  const observations={client_realtime:true,provider_realtime:true,admin_realtime:true,subscription_established:true,event_received:true,payload_validated:true,timeout_false:true,cleanup_completed:true}
+  // This script probes Client↔Provider only. Admin and cleanup are not asserted here.
+  const observations={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true}
   const {error:recordError}=await serviceRole.rpc('autonomous_record_external_qa_probe',{p_scenario_id:scenario.id,p_service_id:service.id,p_observations:observations})
   if(recordError)throw recordError
   console.log(`CHAT_REALTIME_OK pedido=${service.numero ?? 'fixture'} estado=${service.estado} run=${runId} retries=${clientToProvider.retry + providerToClient.retry}`)

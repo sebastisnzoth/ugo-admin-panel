@@ -10,7 +10,9 @@ try{
  const stale=await p.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:-27.4167917,p_lng:-48.4242297,p_captured_at:new Date(Date.now()-60000).toISOString(),p_accuracy_m:10})
  const inaccurate=await p.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:-27.4167917,p_lng:-48.4242297,p_captured_at:new Date().toISOString(),p_accuracy_m:999})
  assert.ok(zero.error);assert.ok(stale.error);assert.ok(inaccurate.error)
- const observations={zero_zero_rejected:true,stale_gps_rejected:true,inaccurate_gps_rejected:true,arrival_inside_200m:true,arrival_outside_200m_rejected:true,state_unchanged_on_rejection:true,recent_location_required:true}
+ // Report only assertions executed above. Arrival/geofence and persisted state
+ // require separate probes and must remain uncovered until independently judged.
+ const observations={zero_zero_rejected:true,stale_gps_rejected:true,inaccurate_gps_rejected:true}
  const {data:sc,error:sce}=await service.from('autonomous_qa_scenarios').select('id').eq('scenario_key','gps-geofence').single();if(sce)throw sce
  const {error:re}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:sc.id,p_service_id:svc.id,p_observations:observations});if(re)throw re
  console.log(JSON.stringify({gpsGeofence:true,zero:zero.error.code,stale:stale.error.code,inaccurate:inaccurate.error.code}))

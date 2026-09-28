@@ -19,7 +19,8 @@ try{
  const {data:svc,error:svce}=await service.from('servicios').select('id').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(svce)throw svce
  const fakeRating=await c.sb.from('resenas').insert({servicio_id:svc.id,cliente_id:c.id,proveedor_id:p.id,puntuacion:5,comentario:'QA spoof probe',autor_tipo:'proveedor'});assert.ok(fakeRating.error)
  const providerAsClient=await p.sb.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:svc.id});assert.ok(providerAsClient.error)
- const observations={client_isolated:true,provider_isolated:true,admin_isolated:true,superadmin_governed:true,admin_governance_denied:true,superadmin_governance_allowed:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
+ // These observations describe assertions above, not an independent QA verdict.
+ const observations={client_role_verified:true,provider_role_verified:true,admin_role_verified:true,superadmin_role_verified:true,client_governance_denied:true,admin_governance_denied:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
  const {data:sc,error:se}=await service.from('autonomous_qa_scenarios').select('id,scenario_key').in('scenario_key',['roles','permissions-rls']);if(se)throw se
  for(const s of sc){const {error}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:s.id,p_service_id:svc.id,p_observations:observations});if(error)throw error}
  console.log(JSON.stringify({authenticated:true,roles:[cr.data.tipo,pr.data.tipo,adr.data.tipo,sar.data.tipo],observations}))
