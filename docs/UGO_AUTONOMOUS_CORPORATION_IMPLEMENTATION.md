@@ -23,9 +23,9 @@ No production publication is implied.
 | D14 six independent agents | six named D14 agents persisted | RUNTIME VALIDATED / TEST |
 | Corporate agents | canonical D1-D12 agents plus six D14 agents | RUNTIME VALIDATED / TEST |
 | OFF / SHADOW / ON / SAFE_MODE | persisted global state + Super Admin control | RUNTIME VALIDATED / TEST |
-| GREEN / YELLOW / RED authority | authority persisted; RED human approval/rejection; YELLOW independent dual control | IMPLEMENTED; runtime dual-control validation pending |
+| GREEN / YELLOW / RED authority | GREEN policy authorization; YELLOW WAITING_APPROVAL + independent dual control; RED human approval/rejection | IMPLEMENTED; second independent YELLOW approver runtime proof pending |
 | Decision/Evidence ledgers | append-only persisted ledgers + complete action envelope + hashed verification evidence | IMPLEMENTED; end-to-end worker evidence validation remains |
-| Scoped kill switches | GLOBAL / DEPARTMENT / AGENT / CAPABILITY | RUNTIME VALIDATED foundation; recovery re-audit remains |
+| Scoped kill switches | GLOBAL / DEPARTMENT / AGENT / CAPABILITY + evidence-backed recovery re-audit | IMPLEMENTED; runtime recovery proof in CI pending |
 | Job engine | queue, idempotency, SKIP LOCKED claim, leases, heartbeat, retry, max attempts, stale recovery, dead-letter, cancellation + scheduled TEST worker | IMPLEMENTED; worker runtime validation pending |
 | Data Quality Gate | freshness, provenance, completeness, consistency; independent reconciliation for YELLOW/RED; hashed evidence | RUNTIME VALIDATED schema/RPC in TEST |
 | QA Lab persistence | scenarios, runs, chaos profiles, deterministic judges, coverage map, release gate | RUNTIME VALIDATED schema in TEST |
@@ -85,7 +85,6 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 
 ### Phase B
 - Prove the browser-independent scheduled TEST worker operates with autonomy ON.
-- Complete Safe Mode/circuit-breaker recovery verification and re-audit.
 - Runtime-validate protected OpenRouter primary/fallback and periodic reevaluation in Preview/TEST.
 
 ### Phase C
@@ -102,6 +101,7 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 - Evaluate Customer #1 Launch Gate from persisted evidence.
 
 ### D14 corporate governance
+Enterprise Risk Map, Control Coverage Map, Digital Twin, Red Team, Founder Challenge and critical finding re-audit controls are persisted; final runtime corporate audit remains.
 
 ### Voice of Client & Provider
 
@@ -114,7 +114,7 @@ Dedicated persisted QA, Model Router, Risk & Audit, Launch Gate, correlation tim
 - Keep legal claims evidence-backed; never infer patent/registration/exclusivity.
 
 ### UGO Empresas
-After customer #1 core stability, implement the Master multi-worker flow under D12 ownership and validate it in UGO TEST.
+D12 readiness, company demand and individual multi-worker slot persistence are implemented in UGO TEST. Execution remains intentionally blocked behind customer #1 core stability per Master Phase E.
 
 ## 6. DONE rule
 
