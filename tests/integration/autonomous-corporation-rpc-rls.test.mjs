@@ -103,8 +103,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const blocked=await db.rpc('autonomous_enqueue_job',{p_department_id:8,p_agent_id:null,p_objective:'Must be contained',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'GREEN',p_idempotency_key:'ugo-autonomy-kill-'+crypto.randomUUID(),p_input_evidence:[]})
  assert.ok(blocked.error)
  assert.match(blocked.error.message,/AUTONOMY_NOT_EXECUTABLE/)
- const unkill=await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:false,p_reason:'runtime probe complete'})
- if(unkill.error)throw unkill.error
+ const recovered=await db.rpc('superadmin_recover_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_verification:{evidence_refs:['integration-runtime-containment']},p_reason:'isolated verified recovery'})
+ if(recovered.error)throw recovered.error
+ assert.equal(recovered.data.decision,'RECOVER')
  const off=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime validation complete; safe default restored'})
  if(off.error)throw off.error
  assert.equal(off.data.mode,'OFF')
