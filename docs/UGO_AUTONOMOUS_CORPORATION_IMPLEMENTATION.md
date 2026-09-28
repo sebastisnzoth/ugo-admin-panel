@@ -34,7 +34,7 @@ No production publication is implied.
 | Customer #1 Release Gate | persisted gate with QA, critical finding and stale-job blockers | IMPLEMENTED; full acceptance journey remains |
 | OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics + protected server runtime primary/fallback | IMPLEMENTED; Preview runtime validation pending |
 | IP Gate | persisted corporate protection gate + Super Admin visibility | RUNTIME VALIDATED foundation / TEST; remaining Master evidence/audit closure controls tracked below |
-| Super Admin Empresa Autónoma | real persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate | IMPLEMENTED; searchable correlation timeline and UGO Empresas readiness remain |
+| Super Admin Empresa Autónoma | persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate + correlation timeline + UGO Empresas | IMPLEMENTED; runtime UI validation remains |
 | Consultar Agente | evidence-gated protected server-side OpenRouter consultation with correlation id | IMPLEMENTED; Preview runtime validation pending |
 | UGO Empresas | D12-owned readiness + multi-worker demand/slot persistence | IMPLEMENTED foundation; gated behind customer #1 stability |
 
@@ -61,6 +61,11 @@ No production publication is implied.
 - `20260929001500_ugo_empresas_readiness.sql`
 - `20260929004500_autonomous_recovery_audit.sql`
 - `20260929011500_autonomous_qa_p0_coverage.sql`
+- `20260929013000_autonomous_yellow_routing.sql`
+- `20260929014500_autonomous_finding_reaudit.sql`
+- `20260929020000_autonomous_ip_evidence_links.sql`
+- `20260929021500_autonomous_p0_event_binding.sql`
+- `20260929023000_autonomous_qa_remediation.sql`
 
 IP governance is implemented by the existing corporate IP migrations and is a permanent control independent from QA release approval.
 
@@ -94,7 +99,7 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 - Keep Release Gate deterministic and blocking.
 
 ### Phase D
-- Bind P0 service events/actions to corporate jobs and evidence.
+- Runtime-validate P0 service event binding to corporate audit evidence.
 - Execute complete TEST journey by one explicit `serviceId`.
 - Verify normal exceptions can recover without raw Supabase/GitHub edits.
 - Run D14 independent corporate audit and close findings with independent re-audit evidence.
@@ -109,8 +114,6 @@ Enterprise Risk Map, Control Coverage Map, Digital Twin, Red Team, Founder Chall
 Dedicated persisted QA, Model Router, Risk & Audit, Launch Gate, correlation timeline and UGO Empresas readiness surfaces are implemented; runtime UI validation remains.
 
 ### IP remaining controls
-- Finish independent critical-finding closure enforcement.
-- Ensure D8 technical and D12 product/design evidence feeds the IP Gate.
 - Keep legal claims evidence-backed; never infer patent/registration/exclusivity.
 
 ### UGO Empresas
