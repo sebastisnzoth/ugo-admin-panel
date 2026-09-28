@@ -65,7 +65,7 @@ export function useRoleSession(role:UgoRole){
     const onVisibility=()=>{if(document.visibilityState==='visible')refresh()}
     window.addEventListener('online',onOnline)
     document.addEventListener('visibilitychange',onVisibility)
-    const channelName=`ugo-profile-${role}-${userId}-${profileChannelEpoch}-${Math.random().toString(36).slice(2,8)}`
+    const channelName=`ugo-profile-${role}-${userId}-${profileChannelEpoch}`
     const channel=supabase.channel(channelName)
     channel.on('postgres_changes',{event:'UPDATE',schema:'public',table:'usuarios',filter:`id=eq.${userId}`},refresh)
     channel.subscribe(status=>{if(status==='SUBSCRIBED')refresh();else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){refresh();reconnect()}})
