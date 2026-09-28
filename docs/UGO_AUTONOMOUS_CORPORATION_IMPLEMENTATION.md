@@ -41,12 +41,13 @@ No production publication is implied.
 
 Customer #1 evaluation now also blocks when coverage is empty or no completed, non-simulated `ambiente='real'` service has accepted matching, initial/final evidence, confirmed payment and bilateral ratings. A `demo` P0 harness run cannot satisfy this gate. The gate is applied in UGO TEST; the real customer acceptance run remains pending.
 
-The follow-up gate additionally excludes demo client/provider identities and requires `FULL-E2E` and `TWO-DEVICES` checklist items to be **approved**. This prevents a technically completed fixture from becoming commercial acceptance. The scheduled UGO TEST workflow now re-evaluates the persisted gate with the Super Admin test identity, including after an earlier step fails, and asserts that missing acceptance cannot appear READY. A successful workflow run for the same SHA is still required for runtime proof.
+The follow-up gate additionally excludes demo client/provider identities and requires `FULL-E2E` and `TWO-DEVICES` checklist items to be **approved**. This prevents a technically completed fixture from becoming commercial acceptance. The scheduled UGO TEST workflow now re-evaluates the persisted gate with the Super Admin test identity, including after an earlier step fails, and asserts that missing acceptance cannot appear READY. The release gate checks the latest persisted QA verdict per scenario and does not keep a remediated historical failure open forever. A successful workflow run for the same SHA is still required for runtime proof.
 
 ## 3. Implemented migrations
 
 - `20260929060000_autonomous_customer_one_real_gate.sql` (applied to UGO TEST)
 - `20260929061000_autonomous_customer_acceptance_proof.sql` (applied to UGO TEST)
+- `20260929062000_autonomous_release_gate_current_qa.sql` (applied to UGO TEST)
 
 - `20260927234500_autonomous_corporation_foundation.sql`
 - `20260928000500_autonomous_corporate_agents.sql`
