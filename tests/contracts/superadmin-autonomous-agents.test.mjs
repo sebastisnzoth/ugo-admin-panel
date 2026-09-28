@@ -1,7 +1,9 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
-const ui=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')
+const shell=fs.readFileSync('src/mvp/SuperAdminCommandCenter.tsx','utf8')
+const workforce=fs.readFileSync('src/mvp/AutonomousWorkforceControlCenter.tsx','utf8')
+const ui=shell+'\n'+workforce
 test('Super Admin exposes persisted autonomous agent directory and detail',()=>{
  for(const table of ['autonomous_agents','autonomous_jobs','autonomous_decision_ledger','autonomous_evidence_ledger','autonomous_audit_findings','autonomous_kill_switches'])assert.match(ui,new RegExp(table))
  assert.match(ui,/No existen agentes registrados actualmente\./)
