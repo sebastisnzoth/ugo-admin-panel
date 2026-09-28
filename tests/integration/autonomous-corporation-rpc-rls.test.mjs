@@ -44,9 +44,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.equal(departments.data.length,13)
  assert.equal(departments.data.some(x=>x.department_id===13),false)
 
- const agents=await db.from('autonomous_agents').select('id,department_id,name')
+ const agents=await db.from('autonomous_agents').select('id,department_id,name,status')
  if(agents.error)throw agents.error
- assert.equal(agents.data.filter(x=>x.department_id===14).length,6,'D14 must expose exactly six independent agents')
+ assert.equal(agents.data.filter(x=>x.department_id===14&&x.status!=='DISABLED').length,6,'D14 must expose exactly six active independent agents')
  const sims=await db.from('autonomous_qa_simulators').select('role,status')
  if(sims.error)throw sims.error
  assert.equal(sims.data.filter(x=>x.status==='ACTIVE').length,3,'QA Lab must expose three active simulator actors')
