@@ -24,4 +24,9 @@ test('browser voice bridge restarts listening across phrases and supports explic
  assert.match(src,/active=false/)
 })
 
-test('browser voice bridge self-installs without a boot-critical React bootstrap',async()=>{\n const src=await read('src/lib/browserVoiceBridge.ts')\n const app=await read('src/mvp/MvpApp.tsx')\n assert.match(src,/if\(typeof window!==\'undefined\'\)installBrowserBridge\(\)/)\n assert.doesNotMatch(app,/BrowserVoiceBridgeBootstrap/)\n})\n
+test('browser voice bridge self-installs without a boot-critical React bootstrap',async()=>{
+ const src=await read('src/lib/browserVoiceBridge.ts')
+ const app=await read('src/mvp/MvpApp.tsx')
+ assert.match(src,/if\(typeof window!==\'undefined\'\)installBrowserBridge\(\)/)
+ assert.doesNotMatch(app,/BrowserVoiceBridgeBootstrap/)
+})
