@@ -38,7 +38,7 @@ test('corporate governance is backend protected by Super Admin checks and RLS',(
 
 test('Super Admin exposes Empresa Autónoma from persisted state only',()=>{
  assert.match(ui,/Empresa Autónoma/)
- assert.match(ui,/Centro de Control Corporativo/)
+ assert.match(ui,/SUPER ADMIN · CONTROL CORPORATIVO|UGO Empresa Autónoma/)
  assert.match(ui,/from\('autonomous_company_state'\)/)
  assert.match(ui,/from\('autonomous_departments'\)/)
  assert.match(ui,/from\('autonomous_agents'\)/)
