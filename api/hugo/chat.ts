@@ -1,3 +1,5 @@
+import{createClient}from'@supabase/supabase-js'
+import{decideHugoAuthority,normalizeHugoRequestedRole}from'./authority'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
@@ -8,6 +10,24 @@ const TTS_MODELS=Array.from(new Set([
 const TTS_VOICE=process.env.GEMINI_TTS_VOICE||'Puck'
 
 type RequestLike={headers?:Record<string,string|undefined>;method?:string;body?:unknown}
+const SUPABASE_URL=process.env.SUPABASE_URL
+const SUPABASE_ANON_KEY=process.env.SUPABASE_ANON_KEY
+function bearer(req:RequestLike){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
+async function authorizeHugo(req:RequestLike,body:JsonRecord){
+ const token=bearer(req)
+ if(!token)throw Object.assign(new Error('Autenticación requerida para usar Hugo.'),{status:401,code:'AUTH_REQUIRED'})
+ if(!SUPABASE_URL||!SUPABASE_ANON_KEY)throw Object.assign(new Error('Backend Supabase TEST no configurado.'),{status:503,code:'AUTH_BACKEND_UNAVAILABLE'})
+ const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
+ const{data,error}=await authClient.auth.getUser(token)
+ if(error||!data.user)throw Object.assign(new Error('Sesión inválida o vencida.'),{status:401,code:'INVALID_SESSION'})
+ const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
+ const{data:profile,error:profileError}=await userClient.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle()
+ if(profileError)throw Object.assign(new Error('No se pudo verificar la autoridad de la sesión.'),{status:403,code:'PROFILE_LOOKUP_FAILED'})
+ const requestedRole=normalizeHugoRequestedRole(body.role)
+ const decision=decideHugoAuthority(requestedRole,String(profile?.tipo||''),Boolean(profile?.activo))
+ if(!decision.allowed)throw Object.assign(new Error(decision.reason),{status:403,code:decision.code,authority:decision})
+ return{user:data.user,profile,requestedRole,decision}
+}
 type ResponseLike={setHeader:(name:string,value:string)=>void;status:(code:number)=>ResponseLike;json:(body:unknown)=>unknown;end:()=>unknown}
 type JsonRecord=Record<string,unknown>
 const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
@@ -70,6 +90,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
  if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
   const body=asRecord(typeof req.body==='string'?JSON.parse(req.body):req.body)
+  const authority=await authorizeHugo(req,body)
   if(body.tts===true){
    const text=clean(body.text||body.message,360)
    if(!text)return res.status(400).json({error:'Texto requerido para voz.'})
@@ -80,7 +101,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
   const message=clean(body.message,1800),context=clean(body.context,60000),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const clientMode=body.mode==='client_voice'
-  const requestedRole=clean(body.role,20).toLowerCase()
+  const requestedRole=authority.requestedRole
   const adminRole=requestedRole==='superadmin'?'superadmin':'admin'
   const surface=clean(body.surface,80)||'panel de control'
   const adminSystem=adminRole==='superadmin'?[
@@ -125,11 +146,11 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
   const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
-  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model})
+  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
   console.error('Hugo chat failed',error)
   const info=asRecord(error),status=Number(info.status)||502
   if(info.retryAfter)res.setHeader('Retry-After',String(info.retryAfter))
-  return res.status(status>=400&&status<600?status:502).json({error:error instanceof Error?error.message:'Hugo no pudo responder ahora.',hugo_mensaje:'Hugo no pudo responder ahora. Podés seguir usando el texto.',accion:null,ui_action:null,datos:null})
+  return res.status(status>=400&&status<600?status:502).json({error:error instanceof Error?error.message:'Hugo no pudo responder ahora.',error_code:clean(info.code,80)||undefined,authority:info.authority||undefined,hugo_mensaje:status===403?(error instanceof Error?error.message:'Acción no autorizada.'):'Hugo no pudo responder ahora. Podés seguir usando el texto.',accion:null,ui_action:null,datos:null})
  }
 }
