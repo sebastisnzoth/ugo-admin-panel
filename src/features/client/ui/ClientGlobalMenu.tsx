@@ -16,7 +16,7 @@ export function ClientGlobalMenu(){
  const categories=()=>{close();flow.navigate('home');after(UGO_UI_EVENTS.clientShowCategories)}
  const addresses=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfileAddresses)}
  const payment=()=>{close();flow.navigate('profile');after(UGO_UI_EVENTS.clientProfilePayment)}
- const hugo=()=>go('search')
+ const hugo=()=>{close();flow.navigate('request');after(UGO_UI_EVENTS.clientHugo)}
  const notifications=()=>{close();window.setTimeout(()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click(),60)}
  const logout=async()=>{close();await supabase.auth.signOut();window.location.reload()}
  return <>
