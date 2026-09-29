@@ -83,8 +83,8 @@ try{
     value:JSON.stringify(login.session)
   });
   await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
-  await page.getByRole('button',{name:'Super Admin',exact:false}).waitFor({state:'visible',timeout:20000});
-  await page.getByRole('button',{name:'Super Admin',exact:false}).click();
+  await page.getByRole('button',{name:'◉ Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
+  await page.getByRole('button',{name:'◉ Super Admin',exact:true}).click();
   await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByLabel('UGO ambiente de prueba').waitFor({state:'visible'});
 
