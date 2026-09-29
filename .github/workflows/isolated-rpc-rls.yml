@@ -11,8 +11,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-isolated-rpc-rls-${{ github.event.workflow_run.head_sha || github.sha }}
-  cancel-in-progress: true
+  # Both workflows mutate the same designated UGO TEST provider fixture.
+  # Serialize them across workflow boundaries to avoid false P0 conflicts.
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
 
 env:
   # UGO TEST is the only allowed remote integration target. These are
