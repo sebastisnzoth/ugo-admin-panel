@@ -1,0 +1,25 @@
+{
+  "task_id": "readiness-hugo-authority",
+  "readiness_id": "hugo-authority",
+  "job_id": "UGO-READINESS-HUGO-AUTHORITY",
+  "title": "Verify Hugo permissions and authority across role/authority/policy boundaries",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T21:30:00Z",
+  "heartbeat_at": "2026-09-29T21:30:00Z",
+  "lease_expires_at": "2026-09-29T22:15:00Z",
+  "started_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Authority Engineer",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "hugo-authority"
+  ],
+  "correlation_id": "ugo-hugo-authority-20260929T213000Z-a668c242",
+  "current_step": "INSPECT",
+  "attempt": 1,
+  "evidence_ids": []
+}
