@@ -29,3 +29,25 @@ test('test environment is enforced by persisted service binding',()=>{
  assert.match(migration,/ambiente='demo'/)
  assert.match(migration,/UGO_TEST_SERVICE_REQUIRED/)
 })
+
+test('RLS proof remains authenticated-user evidence, not service-role substitution',()=>{
+ const auth=fs.readFileSync('scripts/autonomous-qa-auth-runtime.mjs','utf8')
+ assert.match(auth,/signInWithPassword/)
+ assert.match(auth,/client_governance_denied:true/)
+ assert.match(auth,/admin_governance_denied:true/)
+ assert.match(auth,/provider_cannot_act_as_client:true/)
+})
+
+test('realtime proof uses channel subscription and not polling',()=>{
+ const rt=fs.readFileSync('scripts/chat-realtime-probe.mjs','utf8')
+ assert.match(rt,/\.channel\(/)
+ assert.match(rt,/postgres_changes/)
+ assert.match(rt,/event_received:true/)
+ assert.doesNotMatch(rt,/setInterval\(/)
+})
+
+test('no physical or customer coverage can be certified by this migration',()=>{
+ assert.doesNotMatch(migration,/qa-independent:physical-gps-device/)
+ assert.doesNotMatch(migration,/qa-independent:uploaded-media-bytes/)
+ assert.doesNotMatch(migration,/qa-independent:real-customer-acceptance/)
+})
