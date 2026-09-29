@@ -176,6 +176,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
     HUMAN_REQUIRED:'REQUIERE SERGIO'
   }[step.gate_state] || step.gate_state || 'PENDIENTE')
+  const canOpenUgoMaster = step => ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK'].includes(step.gate_state)
   const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
     step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
     step.gate_state === 'HUMAN_REQUIRED' ? 'Requiere Sergio' :
@@ -207,7 +208,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <details><summary>Qué evidencia lo convierte en DONE</summary><p>${esc(step.done_evidence)}</p></details>
         <div class="cta-row">
           ${step.direct_action && step.gate_state === 'AVAILABLE' ? '<a class="btn cta github" target="_blank" rel="noopener" data-github-step-id="' + esc(step.id) + '" href="' + esc(step.direct_action.url) + '">' + esc(step.direct_action.label || 'Resolver en GitHub') + '</a>' : ''}
-          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}" ${step.gate_state === 'AVAILABLE' ? '' : 'disabled'}>${esc(step.direct_action && step.gate_state === 'AVAILABLE' ? 'Analizar con UGO Maestro' : buttonLabel(step))}</button>
+          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}" ${canOpenUgoMaster(step) ? '' : 'disabled'}>${esc(step.direct_action && step.gate_state === 'AVAILABLE' ? 'Analizar con UGO Maestro' : buttonLabel(step))}</button>
           <span class="pill" data-lifecycle-id="${esc(step.id)}">PENDIENTE</span>
           ${step.evidence_url ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(step.evidence_url) + '">Ver evidencia</a>' : ''}
         </div>
@@ -543,9 +544,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       document.getElementById('nextResolve').textContent = next.resolve
       const nextButton = document.getElementById('nextUgoMaster')
       const nextGitHub = document.getElementById('nextGitHubAction')
-      nextButton.disabled = next.gate_state !== 'AVAILABLE'
+      nextButton.disabled = !canOpenUgoMaster(next)
       nextButton.textContent = next.direct_action && next.gate_state === 'AVAILABLE' ? 'Analizar con UGO Maestro' : buttonLabel(next)
-      nextButton.onclick = next.gate_state === 'AVAILABLE' ? () => openUgoMasterForStep(next) : null
+      nextButton.onclick = canOpenUgoMaster(next) ? () => openUgoMasterForStep(next) : null
       if (next.direct_action && next.gate_state === 'AVAILABLE') {
         nextGitHub.hidden = false
         nextGitHub.textContent = next.direct_action.label || 'Resolver en GitHub'
@@ -560,7 +561,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     const allSteps = [...(s.implementation_steps || []), ...(s.final_gate_steps || [])]
     document.querySelectorAll('[data-step-id]').forEach(button => {
       const step = allSteps.find(x => x.id === button.dataset.stepId)
-      if (step && step.gate_state === 'AVAILABLE' && !button.disabled) button.onclick = () => openUgoMasterForStep(step)
+      if (step && canOpenUgoMaster(step) && !button.disabled) button.onclick = () => openUgoMasterForStep(step)
     })
     document.querySelectorAll('[data-github-step-id]').forEach(link => {
       const step = allSteps.find(x => x.id === link.dataset.githubStepId)
