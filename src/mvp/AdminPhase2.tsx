@@ -74,7 +74,20 @@ export function AdminPhase2(){
  },[])
  useEffect(()=>{
   let alive=true
-  const sync=()=>{if(alive)void load({silent:true})}
+  const reconcileTimers=new Set<number>()
+  const scheduleReconcile=(delay:number)=>{
+   const timer=window.setTimeout(()=>{
+    reconcileTimers.delete(timer)
+    if(alive)void load({silent:true})
+   },delay)
+   reconcileTimers.add(timer)
+  }
+  const sync=()=>{
+   if(!alive)return
+   void load({silent:true})
+   scheduleReconcile(250)
+   scheduleReconcile(1000)
+  }
   const onOnline=()=>{setLiveStatus('connecting');sync()}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
   window.addEventListener('online',onOnline)
@@ -93,7 +106,7 @@ export function AdminPhase2(){
     if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){setLiveStatus('degraded');window.setTimeout(()=>{if(alive)setChannelEpoch(v=>v+1)},1500)}
    })
   const fallback=window.setInterval(()=>{if(document.visibilityState==='visible')sync()},10000)
-  return()=>{alive=false;window.clearInterval(fallback);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
+  return()=>{alive=false;window.clearInterval(fallback);reconcileTimers.forEach(timer=>window.clearTimeout(timer));reconcileTimers.clear();window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}
  },[channelEpoch,load])
  const adminToken=useCallback(async(force=false)=>{const result=force?await supabase.auth.refreshSession():await supabase.auth.getSession(),token=result.data.session?.access_token;if(result.error||!token)throw new Error('Sesión Admin vencida.');return token},[])
  const loadGmail=useCallback(async()=>{try{const token=await adminToken(),r=await fetch('/api/scout/gmail',{headers:{Authorization:`Bearer ${token}`}}),p=await r.json().catch(()=>({}));if(!r.ok)throw new Error(p.error||'No se pudo consultar Gmail.');setGmail({configured:Boolean(p.configured),connected:Boolean(p.connected),email:p.email||null,updatedAt:p.updatedAt||null})}catch(error){setGmailMessage(error instanceof Error?error.message:'No se pudo consultar Gmail.')}},[adminToken])
