@@ -1,1 +1,30 @@
-import assert from 'node:assert/strict'\nimport fs from 'node:fs/promises'\nconst evidence=JSON.parse(await fs.readFile('artifacts/admin-realtime-runtime.json','utf8'))\nassert.equal(evidence.environment,'UGO TEST')\nassert.equal(evidence.result,'PASS')\nassert.equal(evidence.ui?.live_indicator,'PASS')\nassert.equal(evidence.realtime?.beat_fallback,true)\nassert.equal(evidence.refresh?.manual_refresh_used,false)\nassert.equal(evidence.refresh?.top_level_navigations,1)\nassert.equal(evidence.reconciliation?.restored,true)\nassert.equal(evidence.production_touched,false)\nassert.deepEqual(evidence.page_errors,[])\nconst verdict={validator:'Judge',readiness_id:'admin-realtime',sha:evidence.sha,result:'PASS',basis:['runtime KPI changed without refresh','change observed before polling fallback','fixture reconciled'],checked_at:new Date().toISOString()}\nawait fs.writeFile('artifacts/admin-realtime-judge.json',JSON.stringify(verdict,null,2)+'\\n')\nconsole.log(JSON.stringify(verdict))\n
+import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
+
+const evidence = JSON.parse(await fs.readFile('artifacts/admin-realtime-runtime.json', 'utf8'))
+
+assert.equal(evidence.environment, 'UGO TEST')
+assert.equal(evidence.result, 'PASS')
+assert.equal(evidence.ui?.live_indicator, 'PASS')
+assert.equal(evidence.realtime?.beat_fallback, true)
+assert.equal(evidence.refresh?.manual_refresh_used, false)
+assert.equal(evidence.refresh?.top_level_navigations, 1)
+assert.equal(evidence.reconciliation?.restored, true)
+assert.equal(evidence.production_touched, false)
+assert.deepEqual(evidence.page_errors, [])
+
+const verdict = {
+  validator: 'Judge',
+  readiness_id: 'admin-realtime',
+  sha: evidence.sha,
+  result: 'PASS',
+  basis: [
+    'runtime KPI changed without refresh',
+    'change observed before polling fallback',
+    'fixture reconciled',
+  ],
+  checked_at: new Date().toISOString(),
+}
+
+await fs.writeFile('artifacts/admin-realtime-judge.json', JSON.stringify(verdict, null, 2) + '\n')
+console.log(JSON.stringify(verdict))
