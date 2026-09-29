@@ -112,6 +112,25 @@ Si un documento contradice la integridad ejecutable o el estado persistido real,
 
 ## Routing mínimo de Skills
 
+Todo job pertenece a **Empresa Autónoma** y conserva `job_id`, departamento, agente asignado, Skills, recursos/locks y validadores. GitHub es un **canal de ejecución**, no un agente: cuando una acción es determinista y ya existe un workflow seguro, UGO debe preferir ejecución directa en GitHub antes que abrir una conversación GPT.
+
+Canales:
+
+```text
+GitHub-determinista      → GITHUB_DIRECT → workflow_dispatch → evidencia de run/artifact → Judge → Sentinel
+análisis/código/decisión → UGO_MAESTRO → especialista asignado → evidencia → Judge → Sentinel
+humano/irreversible      → HUMAN_REQUIRED
+```
+
+Reglas de GITHUB_DIRECT:
+- sólo workflows explícitamente allowlisted por el Command Center;
+- siempre UGO TEST salvo autorización separada;
+- nunca tokens/PAT en GitHub Pages;
+- GitHub registra actor, workflow, run_id, SHA e inputs;
+- el workflow sube un artefacto de auditoría y mantiene Decision/Evidence Ledger;
+- si hay lock incompatible, dependencia pendiente o producción involucrada, fail closed;
+- una ejecución directa no cambia la regla de DONE: Judge y Sentinel siguen siendo obligatorios.
+
 ```text
 visual/UI             → ugo-design-system + ugo-qa
 Cliente               → ugo-client + ugo-qa
