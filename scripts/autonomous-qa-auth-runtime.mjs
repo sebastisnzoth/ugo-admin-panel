@@ -17,7 +17,13 @@ try{
  const deniedClientGov=await c.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA unauthorized client probe'});assert.ok(deniedClientGov.error)
  const deniedAdminGov=await admin.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA admin privilege-boundary probe'});assert.ok(deniedAdminGov.error)
  const allowedSuperadminGov=await sa.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA superadmin privilege-boundary probe'});if(allowedSuperadminGov.error)throw allowedSuperadminGov.error
- const {data:svc,error:svce}=await service.from('servicios').select('id').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(svce)throw svce
+ const {data:svc,error:svce}=await service.from('servicios').select('id,cliente_id,proveedor_id').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(svce)throw svce
+ assert.equal(svc.cliente_id,c.id);assert.equal(svc.proveedor_id,p.id)
+ for(const [actor,simulator] of [[c,'qa-client-simulator'],[p,'qa-provider-simulator'],[sa,'qa-admin-system-simulator']]){
+  const {data:bound,error:be}=await actor.sb.rpc('autonomous_qa_record_actor_action',{p_service_id:svc.id,p_simulator_key:simulator,p_action_key:'observe_service'})
+  if(be)throw be
+  assert.equal(bound.service_id,svc.id);assert.equal(bound.simulator_key,simulator);assert.equal(bound.action_key,'observe_service')
+ }
  const fakeRating=await c.sb.from('resenas').insert({servicio_id:svc.id,cliente_id:c.id,proveedor_id:p.id,puntuacion:5,comentario:'QA spoof probe',autor_tipo:'proveedor'});assert.ok(fakeRating.error)
  const providerAsClient=await p.sb.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:svc.id});assert.ok(providerAsClient.error)
  // These observations describe assertions above, not an independent QA verdict.
