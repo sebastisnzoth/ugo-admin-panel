@@ -78,8 +78,10 @@ async function waitForKpi(expected,timeout=7000){
 
 let restored=false
 try{
- await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),login.session)
  await page.goto(base+'/?app=admin',{waitUntil:'networkidle'})
+ await page.getByPlaceholder(/Usuario o email/i).fill(email)
+ await page.getByPlaceholder(/Contraseña/i).fill(password)
+ await page.getByRole('button',{name:/Ingresar/i}).click()
  await page.getByText(/Sistema en vivo/).waitFor({state:'visible',timeout:20000})
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
