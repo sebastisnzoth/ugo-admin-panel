@@ -104,3 +104,13 @@ test('GPS independent QA run writes only columns present in autonomous_qa_runs',
  assert.doesNotMatch(gpsFn,/autonomous_qa_runs\(scenario_id,service_id/)
  assert.match(gpsFn,/'BLOCKED'/)
 })
+
+
+test('realtime independent evidence uses isolated non-refreshing privileged clients',()=>{
+ const rt=fs.readFileSync('scripts/chat-realtime-probe.mjs','utf8')
+ assert.match(rt,/const privilegedClient=\(\)=>createClient/)
+ assert.match(rt,/autoRefreshToken:false/)
+ assert.match(rt,/detectSessionInUrl:false/)
+ assert.match(rt,/await privilegedClient\(\)\.rpc\('autonomous_record_independent_qa_evidence'/)
+ assert.match(rt,/await privilegedClient\(\)\.rpc\('autonomous_judge_independent_runtime_coverage'/)
+})
