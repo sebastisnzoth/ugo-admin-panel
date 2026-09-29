@@ -4,8 +4,8 @@
   "title": "Verify normal exceptions can recover without raw Supabase/GitHub edits",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T19:01:00Z",
-  "heartbeat_at": "2026-09-29T19:01:00Z",
-  "lease_expires_at": "2026-09-29T19:46:00Z",
+  "heartbeat_at": "2026-09-29T19:15:00Z",
+  "lease_expires_at": "2026-09-29T20:00:00Z",
   "started_sha": "a47b9b57fc66feb86b1bb9d04912292ae5103cfd",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -28,7 +28,7 @@
     "shared-provider-fixture"
   ],
   "correlation_id": "ugo-exception-recovery-20260929T190100Z",
-  "current_step": "CLAIMED_REVALIDATING_RECOVERY_PATH",
+  "current_step": "RUNTIME_TRIGGERED_AWAITING_PERSISTED_PROOF",
   "attempt": 1,
   "dependencies": [
     "complete-test-journey"
