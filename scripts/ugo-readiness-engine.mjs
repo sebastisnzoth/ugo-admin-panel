@@ -38,6 +38,7 @@ const validatorPass = lock => {
 export function evaluateFunctionalReadiness({
   functionalReadiness,
   locks = [],
+  pullRequests = [],
   maxParallel = 5,
   now = new Date(),
 }) {
@@ -47,6 +48,15 @@ export function evaluateFunctionalReadiness({
   )
   const byId = new Map(items.map(item => [item.id,item]))
   const lockById = latestReadinessLocks(locks)
+  const readinessPrById = new Map()
+  for (const pr of pullRequests || []) {
+    const readinessId = pr.readiness_id || null
+    if (!readinessId || !byId.has(readinessId)) continue
+    const previous = readinessPrById.get(readinessId)
+    const currentTime = parseTime(pr.updated_at) || 0
+    const previousTime = previous ? (parseTime(previous.updated_at) || 0) : -1
+    if (!previous || currentTime >= previousTime) readinessPrById.set(readinessId, pr)
+  }
   const nowMs = now.getTime()
 
   for (const item of items) {
@@ -74,6 +84,27 @@ export function evaluateFunctionalReadiness({
     if (lock?.status === 'FAILED') {
       item.status = 'FAILED_REQUIRES_REVIEW'
       item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    const pr = readinessPrById.get(item.id) || null
+    if (pr) {
+      item.pull_request = pr
+      item.evidence_source = 'OPEN_PULL_REQUEST'
+      const finalStatus = String(pr.evidence_status || '').toUpperCase()
+      const runtimeStatus = String(pr.runtime_status || '').toUpperCase()
+      const judge = String(pr.judge || '').toUpperCase()
+      const sentinel = String(pr.sentinel || '').toUpperCase()
+
+      if (runtimeStatus === 'NOT_AVAILABLE' || finalStatus === 'NEEDS_RUNTIME_PROOF') {
+        item.status = 'WAITING_RUNTIME'
+      } else if (judge && judge !== 'PASS') {
+        item.status = 'JUDGE_PENDING'
+      } else if (sentinel && sentinel !== 'PASS') {
+        item.status = 'SENTINEL_PENDING'
+      } else {
+        item.status = 'FIXED_IN_PR'
+      }
     }
   }
 
@@ -129,6 +160,18 @@ export function evaluateFunctionalReadiness({
     } else if (item.status === 'FAILED_REQUIRES_REVIEW') {
       item.gate_state = 'FAILED_REQUIRES_REVIEW'
       item.gate_reason = 'La última ejecución falló y requiere revisión antes de reintentar.'
+    } else if (item.status === 'WAITING_RUNTIME') {
+      item.gate_state = 'WAITING_RUNTIME'
+      item.gate_reason = 'Corrección persistida en PR #' + item.pull_request.number + '; falta runtime same-SHA antes de Judge/Sentinel.'
+    } else if (item.status === 'JUDGE_PENDING') {
+      item.gate_state = 'JUDGE_PENDING'
+      item.gate_reason = 'PR #' + item.pull_request.number + ' tiene evidencia runtime; falta Judge PASS.'
+    } else if (item.status === 'SENTINEL_PENDING') {
+      item.gate_state = 'SENTINEL_PENDING'
+      item.gate_reason = 'PR #' + item.pull_request.number + ' pasó Judge; falta Sentinel PASS.'
+    } else if (item.status === 'FIXED_IN_PR') {
+      item.gate_state = 'FIXED_IN_PR'
+      item.gate_reason = 'Existe corrección abierta en PR #' + item.pull_request.number + '; falta completar el cierre autoritativo.'
     } else if (item.status === 'IN_PROGRESS') {
       item.gate_state = 'IN_PROGRESS'
       item.gate_reason = 'Existe un lock persistido activo para este control.'
@@ -175,6 +218,10 @@ export function evaluateFunctionalReadiness({
     queued_capacity:items.filter(x => x.gate_state === 'QUEUED_CAPACITY').length,
     stale_locks:items.filter(x => x.gate_state === 'STALE_LOCK').length,
     failed_review:items.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
+    fixed_in_pr:items.filter(x => x.gate_state === 'FIXED_IN_PR').length,
+    waiting_runtime:items.filter(x => x.gate_state === 'WAITING_RUNTIME').length,
+    judge_pending:items.filter(x => x.gate_state === 'JUDGE_PENDING').length,
+    sentinel_pending:items.filter(x => x.gate_state === 'SENTINEL_PENDING').length,
     human_deferred:items.filter(x => x.gate_state === 'HUMAN_DEFERRED').length,
     human_required:items.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
     runnable_ids:items.filter(x => x.gate_state === 'AVAILABLE').map(x => x.id),
