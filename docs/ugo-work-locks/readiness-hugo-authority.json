@@ -5,8 +5,8 @@
   "title": "Verify Hugo permissions and authority across role/authority/policy boundaries",
   "status": "DONE",
   "started_at": "2026-09-29T21:30:00Z",
-  "heartbeat_at": "2026-09-29T21:48:00Z",
-  "lease_expires_at": "2026-09-29T22:27:00Z",
+  "heartbeat_at": "2026-09-29T21:37:09Z",
+  "lease_expires_at": "2026-09-29T22:22:09Z",
   "started_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -40,7 +40,7 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "completed_at": "2026-09-29T21:48:00Z",
+  "completed_at": "2026-09-29T21:37:09Z",
   "runtime_validated_sha": "899518a9397983a81636bd381c9e15eb9a4cd3a6",
   "evidence_path": "docs/evidence/readiness-hugo-authority-20260929.json",
   "validators_result": {
