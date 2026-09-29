@@ -1,0 +1,73 @@
+{
+  "task_id": "chaos-p0",
+  "job_id": "UGO-CHAOS-P0",
+  "status": "DONE",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "6c1835657b7f5c83bdfc52bfbc0ac7a2fcb6b9a8",
+  "claim_commit_sha": "277b934a33897281f23f619976fe7551b95fb768",
+  "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
+  "task_correlation_id": "ugo-chaos-p0-20260929T185000Z",
+  "qa_run_id": "a79c45f2-ee09-4196-b22d-2f356c941c3f",
+  "qa_correlation_id": "0e6bba1c-4fe5-423a-ac0e-7ab71a859c8a",
+  "judge_job_id": "edc13750-848c-453c-9e57-63f3ff2b62eb",
+  "fault_injection": {
+    "far_gps": {
+      "contained": true,
+      "distance_m": 14854.6,
+      "result": "outside_geofence",
+      "state_preserved": "en_camino"
+    },
+    "missing_initial_evidence": {
+      "contained": true,
+      "error": "Agregá al menos una foto inicial antes de iniciar el servicio",
+      "state_preserved": "llegado"
+    },
+    "missing_final_evidence": {
+      "contained": true,
+      "error": "Agregá al menos una foto final antes de pedir aprobación",
+      "state_preserved": "en_progreso"
+    },
+    "wrong_actor_approval": {
+      "contained": true,
+      "error": "No autorizado",
+      "state_preserved": "esperando_aprobacion"
+    },
+    "duplicate_cash_confirmation": {
+      "contained": true,
+      "idempotent": true,
+      "payment_id": "f5b9fb55-228a-42a4-ae99-e627af056a61"
+    }
+  },
+  "recovery": {
+    "recovered": true,
+    "final_state": "completado",
+    "payment_confirmed": true,
+    "rating_sides": 2,
+    "corruption_detected": false
+  },
+  "judge": {
+    "result": "PASS",
+    "source": "PERSISTED_TEST_STATE",
+    "missing_assertions": [],
+    "permanent_regression": true,
+    "decision_ledger_count": 1,
+    "evidence_ledger_count": 1
+  },
+  "sentinel": {
+    "result": "PASS",
+    "autonomy": "OFF",
+    "running_jobs": 0,
+    "active_leases": 0,
+    "active_kill_switches": 0,
+    "d14_canonical": 6,
+    "legacy_auditor_active": 0
+  },
+  "notes": [
+    "Initial manual QA-run insertion was rejected fail-closed by PERSISTED_TEST_JUDGE_OBSERVATIONS_MISMATCH; no PASS was accepted from caller-authored observations.",
+    "The successful run was persisted through the authoritative autonomous_run_qa_service_scenario Judge using persisted UGO TEST state.",
+    "No production environment was touched."
+  ],
+  "verified_at": "2026-09-29T19:00:00Z"
+}
