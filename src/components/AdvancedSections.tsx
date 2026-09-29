@@ -4,6 +4,7 @@ import {
   useOnboarding, useAdminRoles, useRatings, useAdvancedConfig,
 } from '../hooks/useAdvancedData';
 import { useCategorias } from '../hooks/useAdminData';
+import { supabase } from '../lib/supabase';
 
 
 
@@ -510,28 +511,33 @@ function TabReferidos() {
   );
 }
 
-const SBv_URL = 'https://byajcqrgetloavrgyqak.supabase.co';
-const SBv_KEY = 'sb_publishable_wAkmRZHwX9ddcZ-zNZSyXw_EH1f1iGZ';
-
 export function SecValidacionPaises() {
   const [paises, setPaises] = React.useState<any[]>([]);
   const [sel, setSel] = React.useState<any>(null);
+  const [kycError,setKycError] = React.useState('');
 
   React.useEffect(() => {
-    fetch(`${SBv_URL}/rest/v1/config_validacion_pais?select=*&order=pais`,
-      {headers:{apikey:SBv_KEY,Authorization:`Bearer ${SBv_KEY}`}})
-      .then(r=>r.json()).then(data => { if(Array.isArray(data)) setPaises(data); });
+    let alive=true;
+    void (async()=>{
+      const {data,error}=await (supabase as any).from('config_validacion_pais').select('*').order('pais');
+      if(!alive)return;
+      if(error){setKycError('No se pudo cargar la configuración KYC.');setPaises([]);return}
+      setKycError('');
+      setPaises(Array.isArray(data)?data:[]);
+    })();
+    return()=>{alive=false};
   }, []);
 
   const toggle = async (id: string, activo: boolean) => {
-    await fetch(`${SBv_URL}/rest/v1/config_validacion_pais?id=eq.${id}`,
-      {method:'PATCH',headers:{apikey:SBv_KEY,Authorization:`Bearer ${SBv_KEY}`,'Content-Type':'application/json','Prefer':'return=minimal'},body:JSON.stringify({activo})});
+    setKycError('');
+    const {error}=await (supabase as any).from('config_validacion_pais').update({activo}).eq('id',id);
+    if(error){setKycError('No se pudo actualizar la configuración KYC.');return}
     setPaises(p => p.map(x => x.id===id ? {...x,activo} : x));
   };
 
   return (
     <div className="pad">
-      <div className="st">🌎 Validación KYC por País</div>
+      <div className="st">🌎 Validación KYC por País</div>{kycError&&<div role="alert" style={{marginBottom:8,color:"#b00020",fontSize:11}}>{kycError}</div>}
       <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:'12px',height:'calc(100% - 60px)'}}>
         {/* Lista de países */}
         <div className="tw" style={{height:'fit-content'}}>
