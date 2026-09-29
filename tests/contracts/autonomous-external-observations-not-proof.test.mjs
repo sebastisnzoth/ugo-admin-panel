@@ -17,5 +17,7 @@ test('authenticated probe booleans remain observations without independent proof
 
 test('worker asserts only persisted judges yield COVERED', () => {
   assert.match(runtime, /const bad=persisted\.filter/)
-  assert.match(runtime, /QA_EXTERNAL_OBSERVATION_INCORRECTLY_GREEN/)
+  assert.match(runtime, /QA_INDEPENDENT_JUDGE_REQUIRED/)
+  assert.match(runtime, /QA_INDEPENDENT_LEDGER_REQUIRED/)
+  assert.doesNotMatch(runtime, /p_observations.*COVERED/)
 })
