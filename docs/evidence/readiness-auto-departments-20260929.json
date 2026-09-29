@@ -1,0 +1,274 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "auto-departments",
+  "task_id": "readiness-auto-departments",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
+  "final_status": "VERIFIED",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "source_reference_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
+  "runtime_proof": {
+    "status": "PASS",
+    "runtime_sha": "86a642fa25856df6e35beec75a8c6596feeb9003",
+    "workflow": "UGO Readiness Auto Departments TEST",
+    "run_id": 36630030506,
+    "job_id": 109616633354,
+    "artifact_id": 11061827187,
+    "artifact_digest": "sha256:9d6c2f78f80fb2566d15b4ba5acd83107ce4bbfd9d9650fa2b510a194aff6bc6",
+    "canonical_departments": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      14
+    ],
+    "department_count": 13
+  },
+  "defects_closed": [
+    {
+      "code": "42501",
+      "issue": "service_role lacked table privilege for autonomous_departments",
+      "remediation": "minimal TEST runtime grants persisted in migration 20260929205500_autonomous_departments_readiness_service_grants.sql"
+    },
+    {
+      "code": "AUTONOMOUS_AGENT_AUTHORITY_DOWNGRADE",
+      "issue": "readiness proof attempted GREEN authority for higher-authority responsible agents",
+      "remediation": "proof now preserves each agent authority_class; owner-integrity guard remains enforced"
+    }
+  ],
+  "ui": {
+    "status": "PASS",
+    "change": "Departments view now exposes responsible agent and persisted maturity from health.auto_departments_readiness; no inferred VERIFIED state.",
+    "regression": "tests/contracts/autonomous-departments-readiness.test.mjs"
+  },
+  "tests": [
+    {
+      "name": "UGO Core CI",
+      "result": "PASS",
+      "run_id": 36629273792,
+      "sha": "e681626d611656daf0be1db677e973063f0d8107"
+    },
+    {
+      "name": "Permanent auto-departments contract regression",
+      "result": "PASS",
+      "tests": 4,
+      "sha": "86a642fa25856df6e35beec75a8c6596feeb9003"
+    },
+    {
+      "name": "Runtime proof per department",
+      "result": "PASS",
+      "sha": "86a642fa25856df6e35beec75a8c6596feeb9003"
+    },
+    {
+      "name": "Independent Judge",
+      "result": "PASS",
+      "sha": "86a642fa25856df6e35beec75a8c6596feeb9003"
+    },
+    {
+      "name": "Sentinel",
+      "result": "PASS",
+      "sha": "86a642fa25856df6e35beec75a8c6596feeb9003"
+    }
+  ],
+  "departments": [
+    {
+      "department_id": 1,
+      "department_name": "Executive AI Direction",
+      "agent_key": "executive-orchestrator",
+      "agent_name": "Executive Orchestrator",
+      "authority_class": "RED",
+      "maturity": "CONNECTED",
+      "job_id": "18da6342-c8c9-4364-8477-e48afadb0b85",
+      "evidence_id": "a0fb0b69-ceb7-4543-bc77-e9b727d2b56e",
+      "correlation_id": "34e8f982-9088-47c2-aaf1-f76a50eed2d3",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 2,
+      "department_name": "Operations",
+      "agent_key": "operations-agent",
+      "agent_name": "Operations Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "45cc5433-a529-4708-82b7-5615be238363",
+      "evidence_id": "1b1a9a88-1e11-4dc6-be1a-9066f54eba52",
+      "correlation_id": "a62ada56-e7a8-4999-bf70-bed7ddea4fa5",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 3,
+      "department_name": "Client Experience",
+      "agent_key": "client-experience-agent",
+      "agent_name": "Client Experience Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "eef855e9-5f73-4766-8b4c-74fc632125c7",
+      "evidence_id": "8d7b5e12-2e91-4c50-b930-d8c6d4a41128",
+      "correlation_id": "e5264aca-6a15-4ba0-a613-4eb46da4400e",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 4,
+      "department_name": "Providers",
+      "agent_key": "provider-agent",
+      "agent_name": "Provider Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "2cfcf4f7-58e4-42d5-911b-65ac0c488103",
+      "evidence_id": "61efbe3f-db13-4b33-b5bd-134115d447b7",
+      "correlation_id": "23734385-25c4-4173-a223-9310e1d5effa",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 5,
+      "department_name": "Growth & Expansion",
+      "agent_key": "growth-expansion-agent",
+      "agent_name": "Growth & Expansion Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "f780d295-4965-4388-99ad-55420bd65071",
+      "evidence_id": "47d41507-fb51-415d-8820-77bfcb1ceb45",
+      "correlation_id": "1eae9847-92ba-48dc-8f77-cc996e736f33",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 6,
+      "department_name": "Trust & Resolution",
+      "agent_key": "trust-resolution-agent",
+      "agent_name": "Trust & Resolution Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "6ce4656b-98db-46f5-a228-79ec1b35896f",
+      "evidence_id": "6bca84b4-06d2-4a18-a41a-99732a88b653",
+      "correlation_id": "bcf5e1a7-866e-4f5b-b6b0-2f0a3bd2da68",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 7,
+      "department_name": "Finance",
+      "agent_key": "finance-agent",
+      "agent_name": "Finance Agent",
+      "authority_class": "RED",
+      "maturity": "CONNECTED",
+      "job_id": "64a0ecb9-412a-45ce-9e8c-37cfe79a0b16",
+      "evidence_id": "af05e7af-8caf-4c83-9fa1-c23a4da27edd",
+      "correlation_id": "850c33f2-9493-449f-a2af-5482f0574a68",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 8,
+      "department_name": "Technology & Security",
+      "agent_key": "technology-security-agent",
+      "agent_name": "Technology & Security Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "ccd247e4-3b30-4981-bbbd-5346b40e70ff",
+      "evidence_id": "eb1d5e80-6ade-4d3b-a1c6-c5d6db1a0bf7",
+      "correlation_id": "1fbcd8b5-2037-41d0-8e3a-4643741b3db8",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 9,
+      "department_name": "Quality, QA & Excellence",
+      "agent_key": "deterministic-judge",
+      "agent_name": "Deterministic Judge",
+      "authority_class": "GREEN",
+      "maturity": "CONNECTED",
+      "job_id": "c491abdc-8172-4652-b71c-966cd555abff",
+      "evidence_id": "cc34b679-6cbe-4ccd-b1f8-d4236efb633e",
+      "correlation_id": "0e9c9be3-17b1-42ef-bd6d-1425516053c6",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 10,
+      "department_name": "Legal, Compliance & Policy",
+      "agent_key": "legal-policy-agent",
+      "agent_name": "Legal, Compliance & Policy Agent",
+      "authority_class": "RED",
+      "maturity": "CONNECTED",
+      "job_id": "216045d8-7148-48dc-b1c1-f84ab41b1acc",
+      "evidence_id": "b6cf8314-6c47-4041-a0bd-96d6afab1479",
+      "correlation_id": "3dce38cf-95df-4376-95e9-fe1cbe302187",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 11,
+      "department_name": "Marketing, Brand & Communication",
+      "agent_key": "marketing-brand-agent",
+      "agent_name": "Marketing, Brand & Communication Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "1d7bb804-3424-4ced-a85f-b0bdebe24068",
+      "evidence_id": "ed9d9b22-2ccb-4c54-8cd4-c26f27208a62",
+      "correlation_id": "9651be3d-24a9-4bd8-9842-82eef825b233",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 12,
+      "department_name": "Product, Design, UI/UX & Experience",
+      "agent_key": "product-design-agent",
+      "agent_name": "Product, Design & UX Agent",
+      "authority_class": "YELLOW",
+      "maturity": "CONNECTED",
+      "job_id": "e384252e-7fec-4e1f-998f-1151b8b4236f",
+      "evidence_id": "94f38449-e57c-4f8b-9e52-0b1dcbf88495",
+      "correlation_id": "7d596152-d567-4e96-af79-f8b39e8b44dc",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    },
+    {
+      "department_id": 14,
+      "department_name": "Corporate Audit, Governance & Control",
+      "agent_key": "ai-governance-auditor",
+      "agent_name": "UGO AI Governance Auditor",
+      "authority_class": "RED",
+      "maturity": "CONNECTED",
+      "job_id": "ceaeee0d-c31c-4433-ba95-60ffeb867ab5",
+      "evidence_id": "7c1f714d-50a0-4d53-96f8-08bfb18e3757",
+      "correlation_id": "2fd640a5-059d-4a0f-9f1d-6882cc093602",
+      "input_count": 1,
+      "output_present": true,
+      "job_status": "SUCCEEDED"
+    }
+  ],
+  "independent_validation": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "advisor_check": {
+    "status": "REVIEWED",
+    "note": "Supabase advisors were run after the DDL grant change. Findings are pre-existing broader project advisories; this change grants only the listed server-side service_role privileges and does not grant anon/authenticated access."
+  },
+  "created_at": "2026-09-29T20:59:00Z"
+}
