@@ -1,0 +1,31 @@
+{
+  "task_id": "qa-simulator-binding",
+  "job_id": "UGO-QA-SIMULATOR-BINDING",
+  "title": "Bind QA simulators to actual UGO TEST Client/Provider/Admin actions",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T17:34:30Z",
+  "heartbeat_at": "2026-09-29T17:34:30Z",
+  "lease_expires_at": "2026-09-29T18:19:30Z",
+  "started_sha": "0e230d21acb3e17382dd8bcc33aedb6e519ca250",
+  "owner": "UGO",
+  "department": "Calidad",
+  "assigned_agent": "QA Engineer",
+  "skills": [
+    "integration-testing",
+    "simulation",
+    "regression"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "qa-simulators",
+    "shared-provider-fixture",
+    "ugo-test-p0"
+  ],
+  "correlation_id": "9c28e381-794f-4f73-a0ca-7b693d5929e2",
+  "current_step": "INSPECT_RUNTIME_BINDINGS",
+  "attempt": 1,
+  "evidence_ids": []
+}
