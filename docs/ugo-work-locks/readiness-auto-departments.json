@@ -1,0 +1,23 @@
+{
+  "readiness_id": "auto-departments",
+  "task_id": "readiness-auto-departments",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T20:41:00Z",
+  "heartbeat_at": "2026-09-29T20:41:00Z",
+  "lease_expires_at": "2026-09-29T21:26:00Z",
+  "started_sha": "a7ac4da421b4edf064c408a504021a55a6bedd28",
+  "owner": "UGO",
+  "assigned_agent": "Autonomy Registry Operator",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-registry"
+  ],
+  "correlation_id": "readiness-auto-departments-20260929T204100Z",
+  "current_step": "inventory_departments_and_runtime_evidence",
+  "attempt": 1,
+  "evidence_ids": []
+}
