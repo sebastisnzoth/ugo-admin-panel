@@ -65,11 +65,10 @@ jobs:
       - name: TypeScript and production build
         run: npm run build
 
-      - name: Repair isolated TEST identities before full suite
-        run: npm run bootstrap:test-auth
-
-      - name: Full repository test suite
-        run: npm test
+      - name: Core contract suite
+        # Remote authenticated/mutating TEST coverage is owned by the chained
+        # UGO Isolated RPC RLS workflow. Core must not compete for that fixture.
+        run: node --test --test-concurrency=1 tests/contracts/*.test.mjs
 
       - name: Lint critical operational surfaces
         run: >-
