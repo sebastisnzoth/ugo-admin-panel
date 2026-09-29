@@ -107,3 +107,4 @@ try{
  await browser.close()
  await user.auth.signOut()
 }
+\n// readiness verified PR trigger 2026-09-29T23:16Z\n
