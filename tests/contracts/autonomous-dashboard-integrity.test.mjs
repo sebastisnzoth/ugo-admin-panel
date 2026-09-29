@@ -35,3 +35,12 @@ test('department view distinguishes active jobs from historical jobs and shows l
  assert.match(dashboard,/Sin jobs persistidos/)
  assert.match(dashboard,/Sin evidencia persistida/)
 })
+
+
+test('department jobs UX supports filters history freshness and divergence alerts',()=>{
+ for(const text of ['Filtrar departamento','Filtrar estado de job','Ver historial','Historial del departamento','Frescura','actualizado hace','ALERTA · inconsistencia UI/backend detectada'])assert.ok(dashboard.includes(text),text)
+ assert.match(command,/recent_jobs/)
+ assert.match(command,/recent_evidence/)
+ assert.match(command,/loaded_at/)
+ assert.match(command,/\.limit\(10\)/)
+})
