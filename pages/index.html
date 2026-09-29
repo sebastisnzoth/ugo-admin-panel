@@ -168,11 +168,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
           <span class="pill ${pillClass(step.owner)}">${esc(step.owner)}</span>
           <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : 'blocked'}">${esc(gateLabel(step))}</span>
           <span class="pill">${esc(step.phase)}</span>
+          ${step.department ? '<span class="pill">Depto: ' + esc(step.department) + '</span>' : ''}
+          ${step.assigned_agent ? '<span class="pill accent">Agente: ' + esc(step.assigned_agent) + '</span>' : ''}
           ${step.depends_on?.length ? '<span class="pill">depende de ' + esc(step.depends_on.join(', ')) + '</span>' : ''}
           ${step.resources?.length ? '<span class="pill">recursos: ' + esc(step.resources.join(', ')) + '</span>' : ''}
         </div>
         <p><b>Por qué falta:</b> ${esc(step.why)}</p>
         <p><b>Estado operativo:</b> ${esc(step.gate_reason || gateLabel(step))}</p>
+        <p><b>Job:</b> ${esc(step.job_id || step.id)} · <b>Skills:</b> ${esc((step.skills || []).join(', ') || 'según UGO Maestro')} · <b>Valida:</b> ${esc((step.validators || []).join(' → ') || 'Judge → Sentinel')}</p>
         <div class="resolve"><b>Cómo resolverlo:</b> ${esc(step.resolve)}</div>
         <details><summary>Qué evidencia lo convierte en DONE</summary><p>${esc(step.done_evidence)}</p></details>
         <div class="cta-row">
@@ -208,6 +211,18 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'RESPONSABLE:',
     step.owner,
     '',
+    'JOB_ID:',
+    step.job_id || step.id,
+    '',
+    'DEPARTAMENTO / AGENTE:',
+    (step.department || 'Dirección / Orquestación') + ' / ' + (step.assigned_agent || 'UGO Maestro'),
+    '',
+    'SKILLS:',
+    (step.skills || []).join(', ') || 'según UGO Maestro',
+    '',
+    'VALIDACIÓN INDEPENDIENTE:',
+    (step.validators || ['Judge','Sentinel']).join(' → '),
+    '',
     'DEPENDENCIAS:',
     (step.depends_on || []).join(', ') || 'ninguna',
     '',
@@ -216,7 +231,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     '',
     'INSTRUCCIONES DE EJECUCIÓN:',
     '- Revalidar main, status del Command Center y docs/ugo-work-locks antes de modificar nada.',
-    '- Antes de trabajar, crear o actualizar docs/ugo-work-locks/' + step.id + '.json con status IN_PROGRESS, started_at, started_sha, owner, resources y correlation_id.',
+    '- Antes de trabajar, crear o actualizar docs/ugo-work-locks/' + step.id + '.json con status IN_PROGRESS, started_at, started_sha, owner, department, assigned_agent, skills, validators, resources, correlation_id y current_step.',
     '- No tomar la tarea si existe un lock activo incompatible sobre alguno de los mismos resources.',
     '- Al terminar, actualizar ese lock a DONE o FAILED con evidencia verificable; no borrar el historial útil.',
     '- No repetir trabajo ya DONE.',
@@ -323,7 +338,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     if (workLocks.length) {
       document.getElementById('liveState').textContent = 'UGO TRABAJANDO'
       document.getElementById('liveState').className = 'state-big accent'
-      document.getElementById('liveDetail').textContent = workLocks.map(l => (l.title || l.task_id) + ' · ' + (l.status || 'IN_PROGRESS')).join(' / ')
+      document.getElementById('liveDetail').textContent = workLocks.map(l => (l.assigned_agent || 'UGO') + ' · ' + (l.title || l.task_id) + ' · ' + (l.status || 'IN_PROGRESS') + (l.current_step ? ' · ' + l.current_step : '')).join(' / ')
     } else if (active.length) {
       document.getElementById('liveState').textContent = 'EN PROCESO'
       document.getElementById('liveState').className = 'state-big accent'

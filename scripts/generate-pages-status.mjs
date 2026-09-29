@@ -205,6 +205,46 @@ const dependencyMap = {
   'super-admin-ui': ['model-router-runtime'],
   'ugo-empresas': ['customer1-gate'],
 }
+const agentRegistry = {
+  'ugo-maestro': { department: 'Dirección / Orquestación', agent: 'UGO Maestro', skills: ['planning','dependency-routing','job-control'] },
+  'autonomy-worker': { department: 'Plataforma Autónoma', agent: 'Autonomy Worker', skills: ['scheduled-worker','job-execution','decision-ledger'] },
+  'model-router': { department: 'IA / Plataforma', agent: 'Model Router', skills: ['model-routing','fallback','telemetry'] },
+  'qa-engineer': { department: 'Calidad', agent: 'QA Engineer', skills: ['integration-testing','simulation','regression'] },
+  'recovery-engineer': { department: 'Confiabilidad', agent: 'Recovery Engineer', skills: ['remediation','rollback','incident-recovery'] },
+  'audit-agent': { department: 'Auditoría', agent: 'Audit Agent', skills: ['event-binding','ledger-audit','traceability'] },
+  'journey-operator': { department: 'Operaciones', agent: 'Journey Operator', skills: ['p0-journey','matching','payments-ratings'] },
+  'release-manager': { department: 'Release / Riesgo', agent: 'Release Manager', skills: ['release-gate','same-sha','launch-control'] },
+  'frontend-operator': { department: 'Producto / Frontend', agent: 'Super Admin Operator', skills: ['runtime-ui','admin-actions','backend-consistency'] },
+  'enterprise-operator': { department: 'UGO Empresas', agent: 'Enterprise Operator', skills: ['enterprise-ops','demand-slots','customer-readiness'] },
+  'judge': { department: 'Control Independiente', agent: 'Judge', skills: ['independent-verification','acceptance-criteria'] },
+  'sentinel': { department: 'Seguridad / Riesgo', agent: 'Sentinel', skills: ['safety-gate','invariants','fail-closed'] },
+}
+const assignmentMap = {
+  'worker-autonomy': ['autonomy-worker'],
+  'model-router-runtime': ['model-router'],
+  'qa-simulator-binding': ['qa-engineer'],
+  'chaos-p0': ['qa-engineer'],
+  'remediation-regression': ['recovery-engineer'],
+  'release-gate': ['release-manager'],
+  'audit-event-binding': ['audit-agent'],
+  'complete-test-journey': ['journey-operator'],
+  'exception-recovery': ['recovery-engineer'],
+  'd14-audit': ['audit-agent'],
+  'customer1-gate': ['release-manager'],
+  'super-admin-ui': ['frontend-operator'],
+  'ugo-empresas': ['enterprise-operator'],
+}
+const assignJob = step => {
+  const key = (assignmentMap[step.id] || ['ugo-maestro'])[0]
+  const profile = agentRegistry[key] || agentRegistry['ugo-maestro']
+  step.job_id = 'UGO-' + step.id.toUpperCase()
+  step.department = profile.department
+  step.assigned_agent = profile.agent
+  step.skills = profile.skills
+  step.validators = ['Judge','Sentinel']
+  return step
+}
+
 const resourceMap = {
   'worker-autonomy': ['ugo-test-worker','autonomy-state','shared-provider-fixture'],
   'model-router-runtime': ['model-router','openrouter','preview-runtime'],
@@ -227,6 +267,7 @@ for (const [index, step] of implementationSteps.entries()) {
   step.depends_on = dependencyMap[step.id] || []
   step.resources = resourceMap[step.id] || [step.id]
   step.evidence_url = evidenceUrl
+  assignJob(step)
 }
 
 const blockerDetails = {
@@ -269,6 +310,8 @@ const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
     owner: 'UGO',
   }),
 }))
+
+for (const step of finalGateSteps) assignJob(step)
 
 const allWork = [...implementationSteps, ...finalGateSteps]
 const activeLocks = []
@@ -336,6 +379,12 @@ const status = {
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
   implementation_steps: implementationSteps,
   final_gate_steps: finalGateSteps,
+  organization: {
+    orchestrator: agentRegistry['ugo-maestro'],
+    validators: [agentRegistry.judge, agentRegistry.sentinel],
+    agents: Object.values(agentRegistry),
+    operating_model: 'ORCHESTRATOR → ASSIGNED JOB → SPECIALIST → QA/EVIDENCE → JUDGE → SENTINEL → DONE',
+  },
   active_locks: activeLocks,
   runnable_steps: runnable.map(x => x.id),
   counts: {
