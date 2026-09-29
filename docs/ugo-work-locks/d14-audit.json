@@ -2,9 +2,9 @@
   "task_id": "d14-audit",
   "job_id": "UGO-D14-AUDIT",
   "title": "Run D14 independent corporate audit and close findings with independent re-audit evidence",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T19:35:00Z",
-  "heartbeat_at": "2026-09-29T19:35:00Z",
+  "heartbeat_at": "2026-09-29T19:42:00Z",
   "lease_expires_at": "2026-09-29T20:20:00Z",
   "started_sha": "dfe70fe0c7ba82752e697bc47c02ab63ba8f3392",
   "owner": "UGO",
@@ -14,12 +14,43 @@
   "validators": ["Judge","Sentinel"],
   "resources": ["d14-audit","audit-ledger"],
   "correlation_id": "ugo-d14-audit-20260929T193500Z",
-  "current_step": "INDEPENDENT_AUDIT",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": ["exception-recovery","release-gate"],
+  "completed_at": "2026-09-29T19:42:00Z",
+  "completed_main_sha_before_lock_close": "52da6306659483cdaab23fdefdf563d97d510ed1",
+  "evidence_path": "docs/evidence/d14-audit-20260929.json",
+  "evidence_commit_sha": "52da6306659483cdaab23fdefdf563d97d510ed1",
+  "findings": [
+    {
+      "finding_id": "D14-F-001",
+      "type": "STALE_WORK_LOCK",
+      "status": "CLOSED",
+      "remediation_commit_sha": "adfaf45a8e546420b1ae40390fe67ad4f878d944"
+    }
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "reaudit": {
+    "qa_release_gate": "EFFECTIVE",
+    "open_database_findings": 0,
+    "running_jobs": 0,
+    "enabled_kill_switches": 0,
+    "corporate_final_audit": "BLOCKED"
+  },
+  "external_blockers": [
+    "FOUNDER_CHALLENGE_PENDING",
+    "PHYSICAL_GPS_DEVICE_UNVERIFIED",
+    "REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED"
+  ],
+  "result": "DONE_WITH_EXTERNAL_BLOCKERS",
+  "production_touched": false,
   "notes": [
-    "Dependencies verified DONE before acquisition.",
-    "No active incompatible lock holds d14-audit or audit-ledger.",
-    "UGO TEST only; production must not be touched."
+    "Dependencies exception-recovery and release-gate were DONE before acquisition.",
+    "D14-F-001 was remediated without continuing an expired lease.",
+    "Independent D14 re-audit kept qa-release-gate EFFECTIVE.",
+    "Corporate final audit remains fail-closed only on explicit human/physical evidence blockers."
   ]
 }
