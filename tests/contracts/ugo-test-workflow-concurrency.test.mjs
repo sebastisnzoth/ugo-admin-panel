@@ -38,8 +38,10 @@ test('autonomous integration recovers only the explicit OFF-mode fixture race be
 })
 
 
-test('isolated RPC gate is SHA-deduplicated without timing sleeps',()=>{
- assert.match(isolated,/group: ugo-isolated-rpc-rls-/)
- assert.match(isolated,/cancel-in-progress: true/)
+test('isolated RPC gate shares the TEST fixture concurrency group without timing sleeps',()=>{
+ assert.match(isolated,/group: ugo-test-shared-provider-fixture/)
+ assert.match(worker,/group: ugo-test-shared-provider-fixture/)
+ assert.match(isolated,/cancel-in-progress: false/)
+ assert.match(worker,/cancel-in-progress: false/)
  assert.doesNotMatch(isolated,/sleep 90/)
 })
