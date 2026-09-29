@@ -11,3 +11,5 @@ Contenido estático y sanitizado para GitHub Pages.
 - Cada publicación muestra el SHA de GitHub que la generó.
 
 El workflow `.github/workflows/github-pages.yml` publica esta carpeta cuando sus archivos cambian en `main`, y también permite ejecución manual.
+
+Pages fue habilitado para usar GitHub Actions; esta actualización fuerza el primer registro/publicación posterior a la activación.
