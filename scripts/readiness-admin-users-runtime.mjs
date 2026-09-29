@@ -11,18 +11,9 @@ const admin=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:f
 const {error:signError}=await admin.auth.signInWithPassword({email:adminEmail,password:adminPassword});if(signError)throw signError
 const {data:users,error:usersError}=await admin.from('usuarios').select('id,nombre,tipo,created_at,updated_at').order('created_at',{ascending:false}).limit(25);if(usersError)throw usersError
 if(!users?.length)throw new Error('NO_TEST_USERS')
-let target=null
-for(const candidate of users){
- if(candidate.tipo!=='proveedor')continue
- const [{count:serviceCount,error:serviceCountError},{count:docCount,error:docCountError},{count:auditCount,error:auditCountError}]=await Promise.all([
-  root.from('servicios').select('id',{count:'exact',head:true}).or(`cliente_id.eq.${candidate.id},proveedor_id.eq.${candidate.id}`),
-  root.from('documentos').select('id',{count:'exact',head:true}).eq('usuario_id',candidate.id),
-  root.from('audit_log').select('id',{count:'exact',head:true}).or(`entidad_id.eq.${candidate.id},actor_id.eq.${candidate.id}`)
- ])
- if(serviceCountError||docCountError||auditCountError)throw serviceCountError||docCountError||auditCountError
- if((serviceCount||0)>0&&(docCount||0)>0&&(auditCount||0)>0){target=candidate;break}
-}
-if(!target)throw new Error('NO_COMPLETE_TEST_USER_FIXTURE')
+const fixtureId=process.env.UGO_TEST_ADMIN_USERS_FIXTURE_ID||'eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1'
+const target=users.find(u=>u.id===fixtureId)
+if(!target||target.tipo!=='proveedor')throw new Error('COMPLETE_TEST_USER_FIXTURE_MISSING:'+fixtureId)
 const [{data:services,error:se},{data:docs,error:de},{data:audits,error:ae}]=await Promise.all([
  admin.from('servicios').select('id,estado,created_at,programado_para,aceptado_at,iniciado_at,completado_at,cancelado_at,cliente_id,proveedor_id').or(`cliente_id.eq.${target.id},proveedor_id.eq.${target.id}`).order('created_at',{ascending:false}).limit(50),
  target.tipo==='proveedor'?admin.from('documentos').select('id,tipo,estado,created_at,usuario_id').eq('usuario_id',target.id).limit(50):Promise.resolve({data:[],error:null}),
