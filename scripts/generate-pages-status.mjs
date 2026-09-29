@@ -368,6 +368,31 @@ const plan = scheduleTasks({
 })
 const runnable = plan.runnable
 
+const latestCompletedLock = [...workLocks]
+  .filter(lock => lock.status === 'DONE' && lock.completed_at)
+  .sort((a,b) => (Date.parse(b.completed_at) || 0) - (Date.parse(a.completed_at) || 0))[0] || null
+
+const autonomousCompany = {
+  mode: 'OFF',
+  mode_reason: 'Estado seguro entre ejecuciones; GitHub Pages no enciende autonomía ni toca producción.',
+  policy: schedulerPolicy.version,
+  launch: 'BLOCKED',
+  working: allWork.filter(x => x.gate_state === 'IN_PROGRESS').length,
+  queued: allWork.filter(x => ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY','RETRY_BACKOFF'].includes(x.gate_state)).length,
+  approval: allWork.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
+  blocked: allWork.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
+  error: allWork.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
+  runnable: runnable.length,
+  completed: completedImplementation.length,
+  latest_completed: latestCompletedLock ? {
+    task_id: latestCompletedLock.task_id,
+    job_id: latestCompletedLock.job_id || null,
+    completed_at: latestCompletedLock.completed_at,
+    validators_result: latestCompletedLock.validators_result || null,
+  } : null,
+  source: 'REPO_LOCKS_AND_SCHEDULER',
+}
+
 const status = {
   title: 'UGO Implementation Command Center',
   source: sourcePath,
@@ -395,6 +420,7 @@ const status = {
   },
   customer_1: 'BLOCKED',
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
+  autonomous_company: autonomousCompany,
   implementation_steps: pendingImplementation,
   completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
   final_gate_steps: finalGateSteps,
