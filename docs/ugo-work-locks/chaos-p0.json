@@ -2,10 +2,10 @@
   "task_id": "chaos-p0",
   "job_id": "UGO-CHAOS-P0",
   "title": "Execute chaos/fault injection against the real P0 path",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T18:50:00Z",
-  "heartbeat_at": "2026-09-29T18:50:00Z",
-  "lease_expires_at": "2026-09-29T19:35:00Z",
+  "heartbeat_at": "2026-09-29T19:00:00Z",
+  "lease_expires_at": "2026-09-29T19:45:00Z",
   "started_sha": "6c1835657b7f5c83bdfc52bfbc0ac7a2fcb6b9a8",
   "owner": "UGO",
   "department": "Calidad",
@@ -20,7 +20,38 @@
   "validators": ["Judge", "Sentinel"],
   "resources": ["ugo-test-p0", "shared-provider-fixture", "qa-lab"],
   "correlation_id": "ugo-chaos-p0-20260929T185000Z",
-  "current_step": "CLAIMED_REVALIDATING_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
-  "dependencies": ["qa-simulator-binding"]
+  "dependencies": ["qa-simulator-binding"],
+  "completed_at": "2026-09-29T19:00:00Z",
+  "completed_main_sha": "aca34f9b8cb0e42b16f82ad63bfa952e54efafe9",
+  "runtime_validated_sha": "277b934a33897281f23f619976fe7551b95fb768",
+  "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
+  "qa_run_id": "a79c45f2-ee09-4196-b22d-2f356c941c3f",
+  "qa_correlation_id": "0e6bba1c-4fe5-423a-ac0e-7ab71a859c8a",
+  "evidence_ids": [
+    "ugo-test:service:ea823649-670e-47a2-a547-312dfaa19f42",
+    "ugo-test:qa-run:a79c45f2-ee09-4196-b22d-2f356c941c3f",
+    "ugo-test:qa-correlation:0e6bba1c-4fe5-423a-ac0e-7ab71a859c8a",
+    "ugo-test:judge-job:edc13750-848c-453c-9e57-63f3ff2b62eb",
+    "repo:docs/evidence/chaos-p0-20260929.json",
+    "github:aca34f9b8cb0e42b16f82ad63bfa952e54efafe9"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "safe_final_state": {
+    "autonomy": "OFF",
+    "running_jobs": 0,
+    "active_leases": 0,
+    "active_kill_switches": 0
+  },
+  "notes": [
+    "Controlled faults: outside-geofence GPS, missing initial evidence, missing final evidence, wrong-actor approval, duplicate cash confirmation.",
+    "All four blocking faults were contained with state preserved; duplicate cash confirmation was idempotent.",
+    "Recovery completed the same serviceId with persisted payment and bilateral ratings.",
+    "Authoritative persisted-state Judge PASSED and marked permanent_regression=true.",
+    "Sentinel checks passed; production untouched."
+  ]
 }
