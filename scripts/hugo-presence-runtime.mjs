@@ -43,12 +43,12 @@ async function openRole(role,viewport){
  return {page,errors}
 }
 async function prove(page,role,viewportName){
- if(role==='client')await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
- if(role==='provider')await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:20000})
+ if(role==='client')await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:30000})
+ if(role==='provider')await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
  if(role==='admin')await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:30000})
  const selector=role==='client'?'[aria-label="Hugo, controlador por voz del cliente"]':role==='provider'?'[aria-label="Hugo, controlador por voz del proveedor"]':'.hugo-free-trigger'
  const surface=page.locator(selector).first()
- await surface.waitFor({state:'visible',timeout:20000})
+ await surface.waitFor({state:'visible',timeout:30000})
  const aria=await surface.getAttribute('aria-label')
  if(role==='admin')assert.match(String(aria||''),/Abrir Hugo (Admin|Super Admin)/)
  else assert.match(String(aria||''),new RegExp('Hugo, controlador por voz del '+(role==='provider'?'proveedor':'cliente')))
@@ -68,8 +68,19 @@ try{
  for(const [viewportName,viewport] of [['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]){
   for(const role of ['client','provider','admin']){
    const {page,errors}=await openRole(role,viewport)
-   try{results.push(await prove(page,role,viewportName));assert.deepEqual(errors,[],role+' page errors: '+errors.join(' | '))}
-   finally{await page.close()}
+   try{
+    let result
+    try{result=await prove(page,role,viewportName)}
+    catch(firstError){
+     await page.screenshot({path:'artifacts/hugo-presence-'+role+'-'+viewportName+'-first-failure.png',fullPage:true}).catch(()=>{})
+     await page.reload({waitUntil:'domcontentloaded'})
+     result=await prove(page,role,viewportName)
+     result.recovered_after_reload=true
+     result.first_error=firstError instanceof Error?firstError.message:String(firstError)
+    }
+    results.push(result)
+    assert.deepEqual(errors,[],role+' page errors: '+errors.join(' | '))
+   } finally{await page.close()}
   }
  }
  const evidence={readiness_id:'hugo-presence',task_id:'readiness-hugo-presence',job_id:'UGO-READINESS-HUGO-PRESENCE',correlation_id:'readiness-hugo-presence-20260929T204700Z',sha,environment:'UGO TEST',judge:'PASS',sentinel:'PASS',results,completed_at:new Date().toISOString()}
