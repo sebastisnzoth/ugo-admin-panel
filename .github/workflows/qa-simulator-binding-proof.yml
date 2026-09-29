@@ -1,0 +1,69 @@
+name: UGO QA Simulator Binding Proof
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/qa-simulator-binding-proof.yml'
+      - 'scripts/autonomous-qa-auth-runtime.mjs'
+      - 'scripts/autonomous-qa-runtime.mjs'
+      - 'scripts/autonomous-qa-judge-runtime.mjs'
+      - 'scripts/autonomous-p0-runtime.mjs'
+      - 'scripts/autonomous-sentinel-gate.mjs'
+      - 'supabase/migrations/20260929190000_qa_authenticated_simulator_binding.sql'
+      - 'supabase/migrations/20260929191500_qa_service_binding_rpc.sql'
+      - 'tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs'
+      - 'tests/integration/client-provider-rpc-rls.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-qa-simulator-binding-proof
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  proof:
+    name: Authenticated simulators → persisted Judge → Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact proof SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Enforce UGO TEST only
+        run: node scripts/assert-test-environment.mjs
+      - name: Contract proof
+        run: node --test tests/contracts/autonomous-qa-authenticated-simulator-binding.test.mjs
+      - name: Create persisted P0 TEST service
+        run: node scripts/autonomous-p0-runtime.mjs
+      - name: Execute authenticated Client Provider Admin simulator actions
+        run: node scripts/autonomous-qa-auth-runtime.mjs
+      - name: Run deterministic persisted-state QA judges
+        run: node scripts/autonomous-qa-runtime.mjs
+      - name: Verify persisted Judge jobs and ledgers
+        run: node scripts/autonomous-qa-judge-runtime.mjs
+      - name: Sentinel
+        run: node scripts/autonomous-sentinel-gate.mjs
+      - name: Persist exact runtime revision
+        if: always()
+        env:
+          UGO_RUNTIME_WORKFLOW_NAME: UGO QA Simulator Binding Proof
+        run: node scripts/autonomous-runtime-revision.mjs
