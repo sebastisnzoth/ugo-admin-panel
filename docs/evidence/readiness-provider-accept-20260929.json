@@ -1,0 +1,63 @@
+{
+  "readiness_id": "provider-accept",
+  "task_id": "readiness-provider-accept",
+  "job_id": "UGO-READINESS-PROVIDER-ACCEPT",
+  "correlation_id": "readiness-provider-accept-20260929T221300Z",
+  "environment": "UGO Arena TEST",
+  "validated_main_sha": "121329b4fba33676066a8549ab8c2ce023d41780",
+  "source_changes": [
+    "supabase/migrations/20260929222000_provider_offer_reject_execute_hardening.sql",
+    "tests/contracts/provider-offer-reject-hardening.test.mjs",
+    "src/mvp/provider/providerService.ts"
+  ],
+  "findings": [
+    "rechazar_oferta(uuid) and private.rechazar_oferta_impl(uuid) were executable by anon in TEST",
+    "backend reject retry raised after an already-rejected offer instead of being idempotent"
+  ],
+  "remediation": [
+    "revoked public/anon EXECUTE from public and private reject RPC surfaces",
+    "added auth.uid ownership validation, row lock FOR UPDATE, and backend-idempotent reject retry",
+    "kept frontend persisted-state reconciliation for ambiguous transport failures"
+  ],
+  "runtime": {
+    "executed_at": "2026-09-29T22:18:42Z",
+    "assertions": {
+      "accept_retry_same_assignment": true,
+      "single_winner_persisted": true,
+      "competing_provider_cannot_take_over": true,
+      "reject_retry_persisted": true,
+      "reject_never_assigns_service": true,
+      "wrong_provider_offer_unchanged": true,
+      "anon_accept_denied": true,
+      "anon_reject_denied": true
+    },
+    "concurrency_proof": "aceptar_oferta serializes service and offer rows with FOR UPDATE; competing provider offer closed without takeover; exactly one persisted provider assignment.",
+    "production_touched": false
+  },
+  "tests": {
+    "github_actions_run_id": 36638856860,
+    "build": "PASS",
+    "scoped_contract_tests": [
+      "provider acceptance reconciles exact persisted opportunity: PASS",
+      "provider acceptance retry exact accepted service: PASS",
+      "acceptance recovery cannot confuse another assignment: PASS",
+      "provider acceptance Sentinel persistence classification: PASS",
+      "provider reject authenticated-only surfaces: PASS",
+      "provider reject serialized/ownership/idempotent: PASS",
+      "provider reject frontend recovery: PASS"
+    ],
+    "suite_summary": "942 PASS, 1 unrelated failure, 2 skipped",
+    "unrelated_failure": "tests/contracts/readiness-admin-model-router.test.mjs syntax error from parallel admin-model-router work; provider-accept tests all passed and production build passed."
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "basis": "Acceptance and rejection are authorized and idempotent; persisted state and single-winner conflict behavior verified in UGO Arena."
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "basis": "Anon mutation surface closed; auth.uid ownership enforced; row locks serialize responses; no production access; target regressions all PASS."
+    }
+  },
+  "result": "VERIFIED"
+}
