@@ -38,7 +38,8 @@
     "customer1-device-test": 1,
     "physical-gps": 1,
     "founder-challenge": 1,
-    "ugo-empresas": 1
+    "ugo-empresas": 1,
+    "qa-simulators": 1
   },
   "task_policies": {
     "worker-autonomy": {
