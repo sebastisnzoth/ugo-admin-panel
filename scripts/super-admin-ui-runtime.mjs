@@ -119,6 +119,18 @@ try{
       if(summary.last_evidence)assert.ok(rowText.includes(String(summary.last_evidence.evidence_type||summary.last_evidence.reference)),'DEPARTMENT_LAST_EVIDENCE_UI_BACKEND_MISMATCH D'+summary.department_id);
     }
   }
+  const departmentFilter=page.getByLabel('Filtrar departamento');
+  const firstDepartment=before.departmentJobs[0];
+  assert.ok(firstDepartment,'DEPARTMENT_RUNTIME_FIXTURE_REQUIRED');
+  await departmentFilter.selectOption(String(firstDepartment.department_id));
+  await page.waitForTimeout(150);
+  assert.equal(await departmentTable.locator('tbody tr').count(),1,'DEPARTMENT_FILTER_COUNT_MISMATCH');
+  await departmentFilter.selectOption('ALL');
+  await departmentTable.getByRole('button',{name:'Ver historial'}).first().click();
+  const historyDialog=page.getByRole('dialog',{name:'Historial del departamento'});
+  await historyDialog.waitFor({state:'visible'});
+  assert.ok(/actualizado hace/i.test((await historyDialog.textContent())||''),'DEPARTMENT_FRESHNESS_MISSING');
+  await page.getByRole('button',{name:'Cerrar historial'}).click();
   await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
   await page.getByRole('button',{name:'QA Lab',exact:true}).click();
