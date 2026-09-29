@@ -21,5 +21,11 @@
   "correlation_id": "readiness-admin-auth-20260929T204700Z-1c6d04b",
   "current_step": "INSPECT",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [],
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-admin",
+    "ugo-backend",
+    "ugo-qa"
+  ]
 }
