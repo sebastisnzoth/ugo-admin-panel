@@ -451,6 +451,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'CÓMO RESOLVERLO:',
     item.resolve || 'Resolver implementación, wiring, runtime, regresión y evidencia hasta cumplir el criterio de cierre.',
     '',
+    'CANAL DE EJECUCIÓN:',
+    item.execution_route || (item.real_test_required ? 'HUMAN_REQUIRED · pedir sólo la acción física/humana final imprescindible.' : 'AUTO_SELECT · usar UGO Maestro/ChatGPT para análisis, código y decisiones; usar GitHub Direct para workflows deterministas, CI, runtime y artifacts cuando exista un workflow seguro.'),
+    'execution_mode: ' + (item.execution_mode || (item.real_test_required ? 'HUMAN_REQUIRED' : 'AUTO_SELECT')),
+    '',
     'EVIDENCIA OBLIGATORIA PARA VERIFIED:',
     item.done_evidence || 'Evidencia runtime verificable del mismo SHA.',
     '',
@@ -820,6 +824,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Responsable:</b> ' + esc(item.owner || 'UGO') + (item.real_test_required ? ' · prueba física/humana final cuando corresponda' : '') + '</p>' +
             '<p class="sub"><b>Qué se verifica:</b> ' + esc(item.verify || '—') + '</p>' +
             '<p class="sub"><b>Cómo resolverlo:</b> ' + esc(item.resolve || 'Resolver implementación, wiring, runtime y evidencia hasta cumplir el criterio de cierre.') + '</p>' +
+            '<p class="sub"><b>Canal de resolución:</b> ' + esc(item.execution_route || (item.real_test_required ? 'HUMAN_REQUIRED · Sergio sólo al final.' : 'AUTO_SELECT · UGO Maestro elige ChatGPT/UGO o GitHub Direct según si requiere razonamiento/código o ejecución determinista.')) + '</p>' +
             '<p class="sub"><b>Evidencia para cerrar:</b> ' + esc(item.done_evidence || '—') + '</p>' +
             '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
             '<p class="sub"><b>Prioridad:</b> ' + esc(item.priority || 'NORMAL') + ' · <b>Dependencias:</b> ' + esc((item.depends_on || []).join(', ') || 'ninguna') + ' · <b>Recursos:</b> ' + esc((item.resources || []).join(', ') || '—') + '</p>' +
