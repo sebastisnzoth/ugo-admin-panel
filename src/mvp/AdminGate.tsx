@@ -24,7 +24,7 @@ export function AdminGate({children}:AdminGateProps={}){
   const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[identifier,setIdentifier]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
   const appName=new URLSearchParams(window.location.search).get('app')==='development'?'development':'admin'
   async function getAdminProfile(uid:string){const{data,error}=await (supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle();return{profile:(data||null)as AdminProfile|null,error}} 
-  async function authorizeSession(session:any){if(!session)return false;const{profile,error}=await getAdminProfile(session.user.id);return Boolean(!error&&profile&&profile.activo&&['admin','superadmin'].includes(profile.tipo))}
+  async function authorizeSession(session:any){if(!session)return false;const{profile,error}=await getAdminProfile(session.user.id);const allowed=Boolean(!error&&profile&&profile.activo&&['admin','superadmin'].includes(profile.tipo));if(allowed)await supabase.realtime.setAuth(session.access_token);return allowed}
   async function verify(){
    const params=new URLSearchParams(window.location.search),code=params.get('code')
    if(code){const{error:exchangeError}=await supabase.auth.exchangeCodeForSession(code);if(exchangeError){setError(exchangeError.message)}else{setRecovery(true);setNotice('Enlace validado. Definí una nueva contraseña para continuar.')}}
