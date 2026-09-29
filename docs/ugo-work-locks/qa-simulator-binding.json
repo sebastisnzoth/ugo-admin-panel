@@ -4,8 +4,8 @@
   "title": "Bind QA simulators to actual UGO TEST Client/Provider/Admin actions",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T17:34:30Z",
-  "heartbeat_at": "2026-09-29T17:34:30Z",
-  "lease_expires_at": "2026-09-29T18:19:30Z",
+  "heartbeat_at": "2026-09-29T17:46:00Z",
+  "lease_expires_at": "2026-09-29T18:31:00Z",
   "started_sha": "0e230d21acb3e17382dd8bcc33aedb6e519ca250",
   "owner": "UGO",
   "department": "Calidad",
@@ -25,7 +25,10 @@
     "ugo-test-p0"
   ],
   "correlation_id": "9c28e381-794f-4f73-a0ca-7b693d5929e2",
-  "current_step": "INSPECT_RUNTIME_BINDINGS",
+  "current_step": "RUN_SAME_SHA_CI_AND_RUNTIME_JUDGE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "supabase:migration:qa_authenticated_simulator_binding",
+    "github:5bce3d0996fa89fe9096c5853d112f861ce463da"
+  ]
 }
