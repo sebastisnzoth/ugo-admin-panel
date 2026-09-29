@@ -87,6 +87,8 @@ export function AdminPhase2(){
    void load({silent:true})
    scheduleReconcile(250)
    scheduleReconcile(1000)
+   scheduleReconcile(2500)
+   scheduleReconcile(5000)
   }
   const onOnline=()=>{setLiveStatus('connecting');sync()}
   const onVisibility=()=>{if(document.visibilityState==='visible')sync()}
