@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 const required = [
   'UGO_TEST_SUPABASE_URL',
   'UGO_TEST_SUPABASE_ANON_KEY',
+  'UGO_TEST_SUPABASE_SERVICE_ROLE_KEY',
   'UGO_TEST_CLIENT_EMAIL',
   'UGO_TEST_CLIENT_PASSWORD',
   'UGO_TEST_PROVIDER_EMAIL',
@@ -386,13 +387,40 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     if(bilateralRatingsError)throw bilateralRatingsError
     assert.deepEqual(bilateralRatings.map(x=>x.autor_tipo).sort(),['cliente','proveedor'],'El P0 debe cerrar con rating bilateral persistido por serviceId')
     if(adminProfile.tipo==='superadmin'){const binding=await a.rpc('superadmin_bind_service_event',{p_service_id:serviceId,p_event_type:'P0_COMPLETED_BILATERAL_RATING',p_department_id:2,p_source_reference:`integration-run:${runId}`});if(binding.error)throw binding.error;assert.equal(binding.data.service_id,serviceId,'Corporate audit binding must preserve exact serviceId')}
-    const qaDb=adminProfile.tipo==='superadmin'?a:null
-    const qaLifecycle=qaDb?await qaDb.from('autonomous_qa_scenarios') .select('id').eq('scenario_key','service-lifecycle').maybeSingle():null
-    if(qaDb&&qaLifecycle&&!qaLifecycle.error&&qaLifecycle.data?.id){
-      const qaRun=await qaDb.rpc('superadmin_run_qa_scenario',{p_scenario_id:qaLifecycle.data.id,p_simulator_results:{service_id_isolated:true,request_created:true,provider_accepted:true,arrival_verified:true,start_evidence:true,finish_evidence:true,client_approved:true,payment_recorded:true,completed:true,bilateral_rating:true},p_chaos_result:{unexpected_failure:false,source:'real-isolated-p0',service_id:serviceId}})
-      if(qaRun.error)throw qaRun.error
-      assert.equal(qaRun.data.status,'PASSED','QA Lab debe convertir el P0 real en cobertura determinística')
+    const actorBindings=[
+      [c,'qa-client-simulator'],
+      [p,'qa-provider-simulator'],
+      [a,'qa-admin-system-simulator'],
+    ]
+    for(const [actor,simulatorKey] of actorBindings){
+      const bound=await actor.rpc('autonomous_qa_record_actor_action',{
+        p_service_id:serviceId,
+        p_simulator_key:simulatorKey,
+        p_action_key:'observe_service',
+      })
+      if(bound.error)throw bound.error
+      assert.equal(bound.data?.service_id,serviceId,'Cada simulador debe quedar ligado al mismo serviceId persistido')
+      assert.equal(bound.data?.simulator_key,simulatorKey)
     }
+
+    const serviceRole=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{
+      auth:{persistSession:false,autoRefreshToken:false},
+    })
+    const qaLifecycle=await serviceRole.from('autonomous_qa_scenarios')
+      .select('id').eq('scenario_key','service-lifecycle').single()
+    if(qaLifecycle.error)throw qaLifecycle.error
+    const bindScenario=await serviceRole.from('autonomous_qa_scenarios')
+      .update({service_id:serviceId,updated_at:new Date().toISOString()})
+      .eq('id',qaLifecycle.data.id)
+    if(bindScenario.error)throw bindScenario.error
+    const qaRun=await serviceRole.rpc('autonomous_run_qa_service_scenario',{
+      p_scenario_id:qaLifecycle.data.id,
+      p_simulator_results:{caller_supplied_booleans_are_not_authoritative:true},
+      p_chaos_result:{source:'real-isolated-p0',service_id:serviceId},
+    })
+    if(qaRun.error)throw qaRun.error
+    assert.equal(qaRun.data.status,'PASSED','QA Lab sólo debe cubrir tras Judge de estado persistido')
+    assert.equal(qaRun.data.judge_result?.source,'PERSISTED_TEST_STATE')
 
     const { data: adminEvidence, error: adminEvidenceError } = await a.from('evidencias_servicio').select('tipo,storage_path').eq('servicio_id', serviceId).order('created_at')
     if (adminEvidenceError) throw adminEvidenceError
