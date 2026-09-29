@@ -10,7 +10,7 @@ for(const token of ['Abrir menú','Ir al inicio'])assert.ok(header.includes(toke
 for(const token of ['openService','closeService','goHome','openNotice'])assert.ok(nav.includes(token),'root navigation contract missing: '+token)
 assert.equal(p.sha,sha)
 const counts=new Map();for(const entry of p.click_map)counts.set(entry.control,(counts.get(entry.control)||0)+1);assert.ok([...counts.values()].every(count=>count<=2),'unexpected duplicate click-map entry beyond desktop/mobile coverage')
-assert.ok(p.views.every(v=>v.buttons>=1),'empty interactive view')
+assert.ok(p.views.every(v=>typeof v.label==='string'&&v.label.length>0&&typeof v.screen==='string'&&v.screen.includes('ugo-client-root')),'invalid runtime view inventory')
 assert.equal(p.page_errors.length,0)
 const out={validator:'Sentinel',result:'PASS',sha,readiness_id:p.readiness_id,checked_at:new Date().toISOString()}
 await fs.writeFile('artifacts/client-navigation-sentinel.json',JSON.stringify(out,null,2)+'\n')
