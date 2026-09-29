@@ -2,9 +2,9 @@
   "task_id": "qa-simulator-binding",
   "job_id": "UGO-QA-SIMULATOR-BINDING",
   "title": "Bind QA simulators to actual UGO TEST Client/Provider/Admin actions",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T17:34:30Z",
-  "heartbeat_at": "2026-09-29T17:54:00Z",
+  "heartbeat_at": "2026-09-29T18:00:31Z",
   "lease_expires_at": "2026-09-29T18:39:00Z",
   "started_sha": "0e230d21acb3e17382dd8bcc33aedb6e519ca250",
   "owner": "UGO",
@@ -25,10 +25,22 @@
     "ugo-test-p0"
   ],
   "correlation_id": "9c28e381-794f-4f73-a0ca-7b693d5929e2",
-  "current_step": "DISPATCH_SAME_SHA_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
     "supabase:migration:qa_authenticated_simulator_binding",
-    "github:5bce3d0996fa89fe9096c5853d112f861ce463da"
-  ]
+    "github:5bce3d0996fa89fe9096c5853d112f861ce463da",
+    "github-actions:run:36608010711",
+    "github-actions:job:109541913670",
+    "ugo-test:service:2fd9a0c1-0bed-47d7-bbba-e287d3d59adb",
+    "ugo-test:runtime-revision:69654ee0-60d1-4d92-a1f7-0baf7b2b8fe6",
+    "repo:docs/evidence/qa-simulator-binding-20260929.json"
+  ],
+  "completed_at": "2026-09-29T18:00:31Z",
+  "completed_main_sha": "f7d60b878e7701de2744733a6dbb33c38ce64188",
+  "runtime_validated_sha": "d940c3d164e581d26be4f1f8633954ea14ba968d",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
