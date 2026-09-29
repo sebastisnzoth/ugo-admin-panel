@@ -20,11 +20,13 @@ if (existsSync(locksDir)) {
       errors.push(`${path}: invalid JSON: ${error.message}`)
       continue
     }
-    for (const field of ['task_id','title','status','started_at','started_sha','owner','resources','correlation_id','attempt']) {
+    for (const field of ['task_id','job_id','title','status','started_at','started_sha','owner','department','assigned_agent','skills','validators','resources','correlation_id','current_step','attempt']) {
       if (lock[field] === undefined || lock[field] === null || lock[field] === '') errors.push(`${path}: missing ${field}`)
     }
     if (!validStatuses.has(lock.status)) errors.push(`${path}: invalid status ${lock.status}`)
     if (!Array.isArray(lock.resources) || !lock.resources.length) errors.push(`${path}: resources must be a non-empty array`)
+    if (!Array.isArray(lock.skills) || !lock.skills.length) errors.push(`${path}: skills must be a non-empty array`)
+    if (!Array.isArray(lock.validators) || !lock.validators.includes('Judge') || !lock.validators.includes('Sentinel')) errors.push(`${path}: validators must include Judge and Sentinel`)
     if (!Number.isInteger(lock.attempt) || lock.attempt < 1) errors.push(`${path}: attempt must be >= 1`)
     if (['QUEUED','IN_PROGRESS','WAITING_EVIDENCE'].includes(lock.status)) {
       if (!lock.heartbeat_at) errors.push(`${path}: active lock requires heartbeat_at`)
