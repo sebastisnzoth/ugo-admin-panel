@@ -1,0 +1,89 @@
+{
+  "task_id": "exception-recovery",
+  "job_id": "UGO-EXCEPTION-RECOVERY",
+  "status": "DONE",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "a47b9b57fc66feb86b1bb9d04912292ae5103cfd",
+  "claim_commit_sha": "feb9eb7a04845329d43b521d1b348c65593d7289",
+  "migration_commit_sha": "4911b9347a9102d9565c2ab55e05417e387f802d",
+  "runtime_commit_sha": "3f502fc22614c3bf6665df56787f0b34d116d876",
+  "observed_main_after_validation": "393693dd4261ac239a1466b3fc89d89a96670da6",
+  "correlation_id": "b4f6631e-9c84-4c1e-93cd-8a4fa1ee2c77",
+  "incident": {
+    "id": "2dd2e8f1-b7eb-453a-b910-43e576e82d9d",
+    "event_type": "AUTONOMOUS_LEASE_TIMEOUT",
+    "severity": "P1",
+    "status": "resolved",
+    "resolved_at": "2026-09-29T19:14:23.971425Z"
+  },
+  "recovery": {
+    "exception": "LEASE_TIMEOUT",
+    "action": "autonomous_worker_cycle",
+    "job_id": "fb288b7e-9a05-46f4-9d2d-796bae33a7be",
+    "job_status": "SUCCEEDED",
+    "attempt_count": 1,
+    "max_attempts": 3,
+    "authorization_decision": "AUTHORIZED_POLICY",
+    "verification_passed": true,
+    "recovery_audit_id": "bc4db663-14b7-4a1b-9638-54b7cfb623c8",
+    "recovery_decision": "RECOVER",
+    "evidence_hash": "ac9c2e0a4f8f122c24f9eefe7e37196532002717b2526d54118725510b71ab67",
+    "manual_sql_state_edit": false,
+    "manual_github_state_edit": false
+  },
+  "audit_trail": {
+    "decision_ledger_count": 2,
+    "decisions": [
+      "EXCEPTION_DETECTED",
+      "WORKER_EXECUTED"
+    ],
+    "evidence_ledger_count": 2,
+    "evidence_types": [
+      "CAPABILITY_VERIFICATION",
+      "EXCEPTION_RECOVERY_VERIFICATION"
+    ],
+    "audit_log_event": "autonomy.exception_recovery.completed",
+    "audit_log_id": 5470,
+    "same_correlation_id": true
+  },
+  "independent_judge": {
+    "result": "PASS",
+    "basis": "persisted UGO TEST state",
+    "assertions": {
+      "incident_persisted_and_resolved": true,
+      "authorized_recovery_action": true,
+      "recovered_job_succeeded": true,
+      "verification_passed": true,
+      "recovery_audit_persisted": true,
+      "complete_correlated_audit_trail": true
+    }
+  },
+  "sentinel": {
+    "result": "PASS",
+    "final_mode": "OFF",
+    "running_jobs": 0,
+    "active_kill_switches": 0
+  },
+  "access_control": {
+    "recovery_runtime_execute_grantees": [
+      "postgres",
+      "service_role"
+    ],
+    "public_execute": false,
+    "anon_execute": false,
+    "authenticated_execute": false
+  },
+  "advisors": {
+    "checked_at": "2026-09-29T19:16:00Z",
+    "new_issue_attributed_to_exception_recovery": false,
+    "note": "Existing project-wide security/performance advisor findings remain outside this task; the new recovery function is not exposed to anon/authenticated."
+  },
+  "invocation": {
+    "mechanism": "protected UGO TEST recovery function",
+    "raw_business_state_edit": false,
+    "note": "The runtime was invoked through the protected UGO recovery mechanism; no direct service/job state UPDATE/INSERT was used to repair the exception."
+  },
+  "verified_at": "2026-09-29T19:16:00Z"
+}
