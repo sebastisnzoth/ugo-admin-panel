@@ -16,18 +16,19 @@ try{
  const deniedGps=await c.sb.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:-27.4,p_lng:-48.4,p_captured_at:new Date().toISOString(),p_accuracy_m:10});assert.ok(deniedGps.error)
  const deniedClientGov=await c.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA unauthorized client probe'});assert.ok(deniedClientGov.error)
  const deniedAdminGov=await admin.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA admin privilege-boundary probe'});assert.ok(deniedAdminGov.error)
+ const allowedSuperadminGov=await sa.sb.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'QA superadmin privilege-boundary probe'});if(allowedSuperadminGov.error)throw allowedSuperadminGov.error
  const {data:svc,error:svce}=await service.from('servicios').select('id').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(svce)throw svce
  const fakeRating=await c.sb.from('resenas').insert({servicio_id:svc.id,cliente_id:c.id,proveedor_id:p.id,puntuacion:5,comentario:'QA spoof probe',autor_tipo:'proveedor'});assert.ok(fakeRating.error)
  const providerAsClient=await p.sb.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:svc.id});assert.ok(providerAsClient.error)
  // These observations describe assertions above, not an independent QA verdict.
- const observations={client_role_verified:true,provider_role_verified:true,admin_role_verified:true,superadmin_role_verified:true,client_governance_denied:true,admin_governance_denied:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
+ const observations={client_role_verified:true,provider_role_verified:true,admin_role_verified:true,superadmin_role_verified:true,client_governance_denied:true,admin_governance_denied:true,superadmin_governance_allowed:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
  const {data:sc,error:se}=await service.from('autonomous_qa_scenarios').select('id,scenario_key').in('scenario_key',['roles','permissions-rls']);if(se)throw se
  for(const s of sc){
  const {data:run,error}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:s.id,p_service_id:svc.id,p_observations:observations});if(error)throw error
  const runId=run.id
  const assertions=s.scenario_key==='roles'
-  ? {client_isolated:true,provider_isolated:true,admin_isolated:true,superadmin_governed:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true}
-  : {client_isolated:true,provider_isolated:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true}
+  ? {client_isolated:true,provider_isolated:true,admin_isolated:true,superadmin_governed:true,admin_governance_denied:true,superadmin_governance_allowed:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
+  : {client_isolated:true,provider_isolated:true,admin_isolated:true,admin_governance_denied:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
  for(const [key,passed] of Object.entries(assertions)){
   const {error:ee}=await service.rpc('autonomous_record_independent_qa_evidence',{p_run_id:runId,p_service_id:svc.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'AUTHENTICATED_RUNTIME'});if(ee)throw ee
  }
