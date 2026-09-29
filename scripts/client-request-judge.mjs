@@ -1,0 +1,25 @@
+import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
+const sha=process.env.UGO_RUNTIME_SHA||''
+const p=JSON.parse(await fs.readFile('artifacts/client-request-runtime.json','utf8'))
+assert.equal(p.readiness_id,'client-request')
+assert.equal(p.task_id,'readiness-client-request')
+assert.equal(p.sha,sha,'same-SHA runtime evidence required')
+assert.equal(p.environment,'UGO TEST')
+assert.equal(p.result,'PASS')
+assert.ok(p.service_id,'serviceId TEST required')
+assert.ok(p.request_draft_id,'request draft id required')
+for(const [name,value] of Object.entries(p.assertions||{}))assert.equal(value,true,name+' must pass')
+assert.deepEqual(p.page_errors,[])
+assert.equal(p.ui.category,'Plomería')
+assert.equal(p.backend.categoria_nombre,'Plomería')
+assert.equal(p.backend.descripcion,p.ui.description)
+assert.ok(String(p.backend.direccion_cliente).includes('Rua das Flores 321'))
+assert.equal(p.backend.metadata.request_draft_id,p.request_draft_id)
+assert.equal(p.backend.metadata.requested_when,'ahora')
+assert.equal(p.backend.metadata.payment_method,'efectivo')
+assert.equal(p.backend.metadata.pickup_source,'current')
+assert.ok(p.backend.ubicacion_cliente)
+const out={validator:'Judge',result:'PASS',sha,readiness_id:p.readiness_id,service_id:p.service_id,checked_at:new Date().toISOString()}
+await fs.writeFile('artifacts/client-request-judge.json',JSON.stringify(out,null,2)+'\n')
+console.log(JSON.stringify(out))
