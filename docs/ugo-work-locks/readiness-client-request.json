@@ -4,21 +4,35 @@
   "job_id": "UGO-READINESS-CLIENT-REQUEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T23:14:30Z",
-  "heartbeat_at": "2026-09-29T23:20:00Z",
-  "lease_expires_at": "2026-09-30T00:05:00Z",
+  "heartbeat_at": "2026-09-29T23:25:00Z",
+  "lease_expires_at": "2026-09-30T00:10:00Z",
   "started_sha": "f1fa5a5844f915ad70ff800a107cedb155719e1e",
   "owner": "UGO",
   "assigned_agent": "Client Request Runtime Agent",
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["client-request-flow"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "client-request-flow"
+  ],
   "correlation_id": "readiness-client-request-20260929T231430Z-f1fa5a58",
-  "current_step": "RUNTIME_FAILURE_DIAGNOSED_CATEGORY_FIX",
-  "attempt": 2,
+  "current_step": "RUNTIME_UI_RACE_HARDENING",
+  "attempt": 3,
   "evidence_ids": [
     "github-actions-run-36644351920",
-    "github-actions-run-36644351920-failed-category-assumption"
+    "github-actions-run-36644351920-failed-category-assumption",
+    "github-actions-run-36644624361",
+    "github-actions-run-36644632066",
+    "github-actions-run-36644763117",
+    "runtime-ui-race-before-location"
   ],
   "title": "Verify complete Client request creation and persistence in UGO TEST",
   "department": "App Cliente",
-  "skills": ["ugo-readiness-orchestrator", "ugo-client", "ugo-runtime-validation", "ugo-evidence-judge"]
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
