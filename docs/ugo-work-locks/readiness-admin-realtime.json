@@ -60,5 +60,11 @@
     "production_touched": false,
     "reconciliation": "PASS"
   },
-  "evidence_commit_sha": "279013cf39b42a2d74b4dd72d7702efee8af9a60"
+  "evidence_commit_sha": "279013cf39b42a2d74b4dd72d7702efee8af9a60",
+  "title": "Verify Admin realtime operational states in UGO TEST",
+  "skills": [
+    "admin-realtime",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
