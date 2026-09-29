@@ -38,7 +38,7 @@ async function snapshot(){
   const [
     company, gate, qaSimulators, qaScenarios, qaRuns, qaCoverage,
     modelCandidates, modelRoutes, modelMetrics, risks, controls, challenges,
-    empresasReadiness, empresasDemands, empresasSlots, jobs
+    empresasReadiness, empresasDemands, empresasSlots, jobs, departments
   ]=await Promise.all([
     reader.from('autonomous_company_state').select('*').maybeSingle(),
     reader.from('autonomous_release_gate').select('*').eq('gate_key','CUSTOMER_1').maybeSingle(),
@@ -48,9 +48,11 @@ async function snapshot(){
     reader.from('ugo_empresas_readiness').select('*').eq('product_key','UGO_EMPRESAS').maybeSingle(),
     reader.from('ugo_empresas_demands').select('id,company_ref,status,quantity').order('created_at',{ascending:false}).limit(20),
     reader.from('ugo_empresas_slots').select('id,demand_id,status,validated_minutes').order('slot_index').limit(100),
-    reader.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100)
+    reader.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100),
+    reader.from('autonomous_departments').select('department_id,name').order('department_id')
   ]);
-  for(const r of [company,gate,empresasReadiness,empresasDemands,empresasSlots,jobs]) assert.ifError(r.error);
+  for(const r of [company,gate,empresasReadiness,empresasDemands,empresasSlots,jobs,departments]) assert.ifError(r.error);
+  const departmentJobs=await Promise.all((departments.data||[]).map(async d=>{const[{count:total,error:totalError},{count:active,error:activeError},{data:lastRows,error:lastError}]=await Promise.all([reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',d.department_id),reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',d.department_id).in('status',['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED']),reader.from('autonomous_jobs').select('id,status,objective,correlation_id,created_at').eq('department_id',d.department_id).order('created_at',{ascending:false}).limit(1)]);assert.ifError(totalError);assert.ifError(activeError);assert.ifError(lastError);const lastJob=lastRows?.[0]||null;let lastEvidence=null;if(lastJob?.id){const evidenceResult=await reader.from('autonomous_evidence_ledger').select('id,evidence_type,reference,correlation_id,created_at').eq('job_id',lastJob.id).order('created_at',{ascending:false}).limit(1);assert.ifError(evidenceResult.error);lastEvidence=evidenceResult.data?.[0]||null}return{department_id:d.department_id,name:d.name,total_jobs:total||0,active_jobs:active||0,last_job:lastJob,last_evidence:lastEvidence}}));
   const correlated=(jobs.data||[]).find(j=>j.correlation_id);
   assert.ok(correlated,'CORRELATED_JOB_REQUIRED_FOR_TIMELINE_RUNTIME_PROOF');
   return {
@@ -60,6 +62,7 @@ async function snapshot(){
     models:{candidates:modelCandidates,routes:modelRoutes,metrics:modelMetrics},
     risk:{risks,controls,challenges},
     empresas:{readiness:empresasReadiness.data||null,demands:empresasDemands.data||[],slots:empresasSlots.data||[]},
+    departmentJobs,
     correlated
   };
 }
@@ -99,6 +102,24 @@ try{
   assert.ok((autonomyText||'').includes('Modo: '+before.mode),'AUTONOMY_MODE_UI_BACKEND_MISMATCH');
   assert.ok((autonomyText||'').includes('Launch: '+before.launch),'LAUNCH_HEADER_UI_BACKEND_MISMATCH');
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
+
+  await page.getByRole('button',{name:'Departamentos',exact:true}).click();
+  await page.getByText('Departamentos corporativos',{exact:true}).waitFor({state:'visible'});
+  const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
+  await departmentTable.waitFor({state:'visible'});
+  for(const summary of before.departmentJobs){
+    const row=departmentTable.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first();
+    await row.waitFor({state:'visible'});
+    const rowText=(await row.textContent())||'';
+    assert.ok(rowText.includes(String(summary.active_jobs)),'DEPARTMENT_ACTIVE_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id);
+    assert.ok(rowText.includes(String(summary.total_jobs)),'DEPARTMENT_TOTAL_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id);
+    if(summary.last_job){
+      assert.ok(rowText.includes(String(summary.last_job.status)),'DEPARTMENT_LAST_JOB_STATUS_MISMATCH D'+summary.department_id);
+      assert.ok(rowText.includes(String(summary.last_job.correlation_id||'—')),'DEPARTMENT_CORRELATION_UI_BACKEND_MISMATCH D'+summary.department_id);
+      if(summary.last_evidence)assert.ok(rowText.includes(String(summary.last_evidence.evidence_type||summary.last_evidence.reference)),'DEPARTMENT_LAST_EVIDENCE_UI_BACKEND_MISMATCH D'+summary.department_id);
+    }
+  }
+  await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
   await page.getByRole('button',{name:'QA Lab',exact:true}).click();
   await assertCardCount('SIMULADORES',before.qa.simulators);
@@ -150,7 +171,7 @@ try{
     tested_url:base+'/?app=admin',
     actor_role:profile.tipo,
     runtime_checks:{
-      authenticated_session:'PASS',super_admin_authorization:'PASS',autonomy:'PASS',qa_lab:'PASS',
+      authenticated_session:'PASS',super_admin_authorization:'PASS',autonomy:'PASS',department_job_visibility:'PASS',qa_lab:'PASS',
       model_router:'PASS',risk_audit:'PASS',ugo_empresas:'PASS',launch_gate_action:'PASS',correlation_timeline:'PASS'
     },
     backend_before:before,
