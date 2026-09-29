@@ -2,10 +2,10 @@
   "task_id": "model-router-runtime",
   "job_id": "UGO-MODEL-ROUTER-RUNTIME",
   "title": "Runtime-validate protected OpenRouter primary/fallback and periodic reevaluation in Preview/TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T17:35:00Z",
-  "heartbeat_at": "2026-09-29T17:35:00Z",
-  "lease_expires_at": "2026-09-29T18:20:00Z",
+  "heartbeat_at": "2026-09-29T17:40:00Z",
+  "lease_expires_at": "2026-09-29T18:25:00Z",
   "started_sha": "002f69b0070b35b0811e938910eaec466eb35d48",
   "owner": "UGO",
   "department": "IA / Plataforma",
@@ -25,7 +25,20 @@
     "preview-runtime"
   ],
   "correlation_id": "c4b9d9b9-e4a7-4f12-8e5b-0c8f99673d41",
-  "current_step": "REVALIDATE_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "github-actions:run:36605386580",
+    "github-actions:job:109532966482",
+    "ugo-test:correlation:52b2112e-d64b-459c-87db-e1a9d28fe0c9",
+    "ugo-test:correlation:73483050-e180-4564-ac8b-bcdc692dabd3",
+    "repo:docs/evidence/model-router-runtime-20260929.json"
+  ],
+  "completed_at": "2026-09-29T17:40:00Z",
+  "completed_main_sha": "ba1ef57f83284109a3b634e81ccd6b158448370c",
+  "runtime_validated_sha": "d26df3d10021af3dc999f508aecf01789770f0a4",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
