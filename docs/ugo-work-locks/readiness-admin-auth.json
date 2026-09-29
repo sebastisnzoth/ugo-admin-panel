@@ -5,7 +5,7 @@
   "title": "Verify Admin / Super Admin authentication and role restrictions with positive and negative runtime evidence",
   "status": "DONE",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T20:55:00Z",
+  "heartbeat_at": "2026-09-29T20:56:00Z",
   "lease_expires_at": "2026-09-29T20:55:00Z",
   "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
   "owner": "UGO",
@@ -41,5 +41,9 @@
   "sentinel": {
     "result": "PASS",
     "validated_at": "2026-09-29T20:54:08.147Z"
+  },
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   }
 }
