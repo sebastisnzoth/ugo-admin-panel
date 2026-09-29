@@ -1,0 +1,31 @@
+{
+  "task_id": "command-center-live-sync",
+  "job_id": "UGO-COMMAND-CENTER-LIVE-SYNC",
+  "title": "Sincronizar Command Center publicado con HEAD real de main",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:10:00Z",
+  "heartbeat_at": "2026-09-29T18:10:00Z",
+  "lease_expires_at": "2026-09-29T18:55:00Z",
+  "started_sha": "3f649ac3b41c9ac9bf1376239de8282540ffaef6",
+  "owner": "UGO",
+  "department": "Plataforma Autónoma / Observabilidad",
+  "assigned_agent": "Command Center Operator",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-github-ops",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "github-pages-command-center",
+    "scheduler-observability"
+  ],
+  "correlation_id": "ugo-command-center-live-sync-20260929T181000Z",
+  "current_step": "IMPLEMENT_LIVE_SHA_SYNC",
+  "attempt": 1,
+  "evidence_ids": []
+}
