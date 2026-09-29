@@ -64,5 +64,12 @@
     "Recorrer Inicio, Servicios, Actividad, Perfil, Notificaciones, Hugo, Ayuda/Disputa y retorno desde overlays sin botón muerto, loop o pantalla inaccesible.",
     "Registrar Judge PASS y Sentinel PASS sobre el mismo SHA.",
     "Recién entonces actualizar docs/UGO_FUNCTIONAL_READINESS.json a VERIFIED."
-  ]
+  ],
+  "runtime_request": {
+    "requested_at": "2026-09-29T20:59:03.998Z",
+    "workflow": "role-ui-runtime.yml",
+    "mode": "pull_request_head_sha",
+    "target": "UGO TEST",
+    "note": "Triggered after base workflow gained PR-head runtime validation; this commit exists only to synchronize PR runtime proof."
+  }
 }
