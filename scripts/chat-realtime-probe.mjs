@@ -204,7 +204,8 @@ try {
     runId,
   })
 
-  const serviceRole=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false}})
+  const privilegedClient=()=>createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
+  const serviceRole=privilegedClient()
   const {data:scenario,error:scenarioError}=await serviceRole.from('autonomous_qa_scenarios').select('id').eq('scenario_key','realtime').single()
   if(scenarioError)throw scenarioError
   // This script probes Client↔Provider only. Admin and cleanup are not asserted here.
@@ -229,10 +230,10 @@ try {
   }
   for(const [key,passed] of Object.entries(rtAssertions)){
     const observed={passed,...realtimeDetail}
-    const {error:evidenceError}=await serviceRole.rpc('autonomous_record_independent_qa_evidence',{p_run_id:qaRun.id,p_service_id:service.id,p_assertion_key:key,p_expected:{passed:true},p_observed:observed,p_passed:passed,p_source:'REALTIME_RUNTIME'})
+    const {error:evidenceError}=await privilegedClient().rpc('autonomous_record_independent_qa_evidence',{p_run_id:qaRun.id,p_service_id:service.id,p_assertion_key:key,p_expected:{passed:true},p_observed:observed,p_passed:passed,p_source:'REALTIME_RUNTIME'})
     if(evidenceError)throw evidenceError
   }
-  const {error:judgeError}=await serviceRole.rpc('autonomous_judge_independent_runtime_coverage',{p_scenario_key:'realtime'})
+  const {error:judgeError}=await privilegedClient().rpc('autonomous_judge_independent_runtime_coverage',{p_scenario_key:'realtime'})
   if(judgeError)throw judgeError
   console.log(`CHAT_REALTIME_OK pedido=${service.numero ?? 'fixture'} estado=${service.estado} run=${runId} retries=${clientToProvider.retry + providerToClient.retry}`)
 } finally {
