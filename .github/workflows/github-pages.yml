@@ -124,6 +124,26 @@ jobs:
             ]
           }' /tmp/ugo-activity-runs.json > _site/activity.json
 
+      - name: Build main HEAD snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          GENERATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/commits/main" \
+            > /tmp/ugo-main-head.json
+          jq --arg generated_at "$GENERATED_AT" '{
+            generated_at_utc: $generated_at,
+            source: "GITHUB_ACTIONS_SERVER_SIDE",
+            branch: "main",
+            sha: .sha,
+            html_url: .html_url,
+            committed_at: .commit.committer.date
+          }' /tmp/ugo-main-head.json > _site/main-head.json
+
       - name: Verify public artifact is sanitized
         shell: bash
         run: |
