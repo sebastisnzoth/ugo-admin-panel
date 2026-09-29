@@ -2,7 +2,7 @@ name: UGO GitHub Pages
 
 on:
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   push:
     branches: [main]
     paths:
