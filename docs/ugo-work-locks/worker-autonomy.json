@@ -2,10 +2,10 @@
   "task_id": "worker-autonomy",
   "job_id": "UGO-WORKER-AUTONOMY",
   "title": "Prove the browser-independent scheduled TEST worker operates with autonomy ON",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T18:40:00Z",
-  "heartbeat_at": "2026-09-29T18:40:00Z",
-  "lease_expires_at": "2026-09-29T19:25:00Z",
+  "heartbeat_at": "2026-09-29T18:46:18Z",
+  "lease_expires_at": "2026-09-29T19:31:18Z",
   "started_sha": "2f4684d21478b3796d2ac2c5414ddb96f70a6c1d",
   "owner": "UGO",
   "department": "Plataforma Autónoma",
@@ -14,10 +14,36 @@
   "validators": ["Judge","Sentinel"],
   "resources": ["ugo-test-worker","autonomy-state","shared-provider-fixture"],
   "correlation_id": "ugo-worker-autonomy-20260929T184000Z",
-  "current_step": "REVALIDATE_AND_RUN_SCHEDULED_PROOF",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": [],
+  "completed_at": "2026-09-29T18:46:18Z",
+  "completed_main_sha": "4ca3c4d8b502e7ea7afb60b5a05b3ad3edb25e10",
+  "runtime_validated_sha": "b1f29b654b448667e599644d273922e6a7da89b0",
+  "runtime_correlation_id": "042ca321-692b-457d-8135-edd24aa1a5f7",
   "evidence_ids": [
-    "github-actions:run:36613236063:FAILED_AUTHENTICATED_CLIENT_SIMULATOR_ACTION_REQUIRED"
+    "github-actions:run:36613236063:FAILED_AUTHENTICATED_CLIENT_SIMULATOR_ACTION_REQUIRED",
+    "github-actions:run:36614235816:SUCCESS",
+    "github-actions:job:109563581599:SUCCESS",
+    "ugo-test:job:4eec3b12-a4f0-494d-844f-995718005e3d",
+    "ugo-test:correlation:042ca321-692b-457d-8135-edd24aa1a5f7",
+    "ugo-test:decision-ledger:1",
+    "ugo-test:evidence-ledger:1",
+    "repo:docs/evidence/worker-autonomy-20260929.json",
+    "github:4ca3c4d8b502e7ea7afb60b5a05b3ad3edb25e10"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "safe_final_state": {
+    "autonomy": "OFF",
+    "active_leases": 0,
+    "active_kill_switches": 0
+  },
+  "notes": [
+    "Dedicated scheduled-worker proof is authoritative for TASK worker-autonomy.",
+    "The broader Autonomous Worker TEST #570 failure remains a separate QA simulator-binding issue and was not weakened or bypassed.",
+    "No production environment was touched."
   ]
 }
