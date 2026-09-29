@@ -122,3 +122,10 @@ test('admin global realtime channel rebuilds on CLOSED, online and visibility re
  assert.match(src,/document\.visibilityState === 'visible'/)
  assert.match(src,/Object\.values\(listeners\)\.forEach\(set => set\.forEach\(listener => listener\(\)\)\)/)
 })
+
+
+test('admin authenticates Realtime with the authorized session before mounting subscriptions',async()=>{
+ const gate=await read('src/mvp/AdminGate.tsx')
+ assert.match(gate,/await supabase\.realtime\.setAuth\(session\.access_token\)/)
+ assert.match(gate,/if\(allowed\)await supabase\.realtime\.setAuth\(session\.access_token\);return allowed/)
+})
