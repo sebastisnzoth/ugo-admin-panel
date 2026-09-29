@@ -3,10 +3,10 @@
   "task_id": "readiness-admin-users",
   "job_id": "UGO-READINESS-ADMIN-USERS",
   "title": "Verify Admin user profile and audited history in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T23:34:00Z",
-  "heartbeat_at": "2026-09-29T23:41:00Z",
-  "lease_expires_at": "2026-09-30T00:26:00Z",
+  "heartbeat_at": "2026-09-29T23:42:00Z",
+  "lease_expires_at": "2026-09-29T23:42:00Z",
   "started_sha": "daab889acc40c9b8cd8519b53ab719b5c9b1e550",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,16 +19,54 @@
     "admin-users"
   ],
   "correlation_id": "readiness-admin-users-20260929T233400Z-daab889a",
-  "current_step": "HARDEN_RUNTIME_PROOF",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
-    "github-actions:run:36646142554",
-    "github-actions:job:109669447876"
+    "github-actions:run:36646409920",
+    "github-actions:job:109670308372",
+    "github-actions:artifact:11068209835",
+    "sha256:451506950ecde017e0e35b9cfb0972e133355e1e1478a9a441334f5c8a116915",
+    "repo:docs/evidence/readiness-admin-users-20260929.json"
   ],
   "production_touched": false,
   "skills": [
     "admin-users",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-29T23:42:00Z",
+  "finished_at": "2026-09-29T23:42:00Z",
+  "verified_sha": "b27c4fad8d7065fb84762b3d88d4b162941aa227",
+  "runtime_validated_sha": "b27c4fad8d7065fb84762b3d88d4b162941aa227",
+  "verified_runtime_sha": "b27c4fad8d7065fb84762b3d88d4b162941aa227",
+  "evidence_path": "docs/evidence/readiness-admin-users-20260929.json",
+  "evidence_commit_sha": "3aad2bc1e17a012ecdded4f8823c24a3b2e036d8",
+  "artifact_digest": "sha256:451506950ecde017e0e35b9cfb0972e133355e1e1478a9a441334f5c8a116915",
+  "result": "VERIFIED",
+  "result_summary": "UGO TEST verified Admin user profile/history with 44 linked services, 1 provider document, 13 audited actions, 44 timeline rows with timestamps, negative non-admin audit isolation and non-owner document isolation. Judge PASS and Sentinel PASS on the same runtime SHA. Production untouched.",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-29T23:40:35.033Z",
+    "basis": [
+      "positive services history",
+      "provider document history",
+      "positive audited actions",
+      "service timeline timestamps",
+      "admin permissions"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-29T23:40:35.075Z",
+    "production_touched": false,
+    "reconciliation": "PASS"
+  }
 }
