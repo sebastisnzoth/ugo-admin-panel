@@ -4,9 +4,9 @@
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
   "status": "DONE",
   "started_at": "2026-09-29T23:04:00Z",
-  "heartbeat_at": "2026-09-29T23:28:30Z",
-  "lease_expires_at": "2026-09-29T23:28:30Z",
-  "completed_at": "2026-09-29T23:28:30Z",
+  "heartbeat_at": "2026-09-29T23:27:00Z",
+  "lease_expires_at": "2026-09-29T23:27:00Z",
+  "completed_at": "2026-09-29T23:27:00Z",
   "started_sha": "15bef1e7d6beeeaeb166a5c2d65bbf4f33be9232",
   "verified_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
   "runtime_validated_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
@@ -28,16 +28,37 @@
   "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
-    "github-actions-run-36645017774",
-    "github-actions-job-109665861416",
-    "github-actions-artifact-11068686285",
-    "judge-pass-b438e779",
-    "sentinel-pass-b438e779",
-    "docs/evidence/readiness-admin-realtime-20260929.json"
+    "github-actions:run:36645017774",
+    "github-actions:job:109665861416",
+    "github-actions:artifact:11068686285",
+    "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
+    "repo:docs/evidence/readiness-admin-realtime-20260929.json"
   ],
   "evidence_path": "docs/evidence/readiness-admin-realtime-20260929.json",
   "artifact_digest": "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
   "production_touched": false,
   "result": "VERIFIED",
-  "result_summary": "UGO TEST Admin operational KPI updated from authenticated Realtime without manual refresh, beat fallback polling, fixture reconciled, Judge PASS, Sentinel PASS."
+  "result_summary": "UGO TEST verified Admin operational state convergence without manual refresh: realtime transport active, KPI changed from 2 to 3 in 957 ms, fixture restored to 2 in 2297 ms, reconciliation beat the 8 s fallback, Judge PASS and Sentinel PASS. Production untouched.",
+  "finished_at": "2026-09-29T23:27:00Z",
+  "verified_runtime_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-29T23:26:32.935Z",
+    "basis": [
+      "runtime KPI changed without refresh",
+      "change observed before polling fallback",
+      "fixture reconciled"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-29T23:26:32.980Z",
+    "production_touched": false,
+    "reconciliation": "PASS"
+  },
+  "evidence_commit_sha": "279013cf39b42a2d74b4dd72d7702efee8af9a60"
 }
