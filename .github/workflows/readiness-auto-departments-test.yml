@@ -7,6 +7,7 @@ on:
       - "scripts/autonomous-departments-readiness-*.mjs"
       - "tests/contracts/autonomous-departments-readiness.test.mjs"
       - "src/mvp/AutonomousCorporationDashboard.tsx"
+      - "supabase/migrations/20260929205500_autonomous_departments_readiness_service_grants.sql"
       - ".github/workflows/readiness-auto-departments-test.yml"
   workflow_dispatch:
 
