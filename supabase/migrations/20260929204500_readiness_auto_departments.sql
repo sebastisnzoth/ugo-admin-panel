@@ -84,7 +84,7 @@ begin
     ) values(
       v_job,'DEPARTMENT_REGISTRY_RUNTIME_PROOF',
       'autonomous_departments/'||d.department_id::text||'/readiness',
-      encode(digest((v_inputs||v_outputs)::text,'sha256'),'hex'),
+      encode(extensions.digest((v_inputs||v_outputs)::text,'sha256'),'hex'),
       jsonb_build_object('readiness_id',p_readiness_id,'inputs',v_inputs,'outputs',v_outputs,'passed',v_pass),
       v_correlation
     ) returning id into v_evidence;
