@@ -2,10 +2,10 @@
   "task_id": "audit-event-binding",
   "job_id": "UGO-AUDIT-EVENT-BINDING",
   "title": "Runtime-validate P0 service event binding to corporate audit evidence",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T18:20:30Z",
-  "heartbeat_at": "2026-09-29T18:20:30Z",
-  "lease_expires_at": "2026-09-29T19:05:30Z",
+  "heartbeat_at": "2026-09-29T18:27:30Z",
+  "lease_expires_at": "2026-09-29T19:12:30Z",
   "started_sha": "c5d2c206c1c542d7f2357b9c8ebbd8c03976ab28",
   "owner": "UGO",
   "department": "Auditoría",
@@ -25,9 +25,25 @@
     "shared-provider-fixture"
   ],
   "correlation_id": "3d44f4c0-3898-4c66-aaf6-dff3f27c5e84",
-  "current_step": "ACQUIRE_LOCK_AND_REVALIDATE_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": [
     "qa-simulator-binding"
-  ]
+  ],
+  "completed_at": "2026-09-29T18:27:30Z",
+  "completed_main_sha": "a1b681d77f6a94d988c08833fe43678e398e9312",
+  "runtime_validated_sha": "935696f9b9f85f0f72347d44e9f08356737398be",
+  "evidence_ids": [
+    "ugo-test:service:2fd9a0c1-0bed-47d7-bbba-e287d3d59adb",
+    "ugo-test:correlation:3d44f4c0-3898-4c66-aaf6-dff3f27c5e84",
+    "github:43d17ca82726523d10ea8c059fde258a7c1d3c1d",
+    "github:935696f9b9f85f0f72347d44e9f08356737398be",
+    "github-actions:run:36611873701",
+    "github-actions:job:109555060616",
+    "repo:docs/evidence/audit-event-binding-20260929.json"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
