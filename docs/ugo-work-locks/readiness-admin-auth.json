@@ -3,10 +3,10 @@
   "readiness_id": "admin-auth",
   "job_id": "UGO-READINESS-ADMIN-AUTH",
   "title": "Verify Admin / Super Admin authentication and role restrictions with positive and negative runtime evidence",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T20:47:00Z",
-  "lease_expires_at": "2026-09-29T21:32:00Z",
+  "heartbeat_at": "2026-09-29T20:55:00Z",
+  "lease_expires_at": "2026-09-29T20:55:00Z",
   "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,13 +19,27 @@
     "admin-auth"
   ],
   "correlation_id": "readiness-admin-auth-20260929T204700Z-1c6d04b",
-  "current_step": "INSPECT",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "docs/evidence/admin-auth-20260929.json",
+    "github-actions:36629502370",
+    "github-artifact:11062560796"
+  ],
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-admin",
     "ugo-backend",
     "ugo-qa"
-  ]
+  ],
+  "completed_at": "2026-09-29T20:55:00Z",
+  "validated_sha": "eca1f674576eaec378c5f5f20a224f0454dbc362",
+  "judge": {
+    "result": "PASS",
+    "validated_at": "2026-09-29T20:54:08.127Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "validated_at": "2026-09-29T20:54:08.147Z"
+  }
 }
