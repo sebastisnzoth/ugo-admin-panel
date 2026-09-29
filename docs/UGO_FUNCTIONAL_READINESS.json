@@ -1,0 +1,736 @@
+{
+  "version": "UGO_FUNCTIONAL_READINESS_V1",
+  "title": "Mapa funcional completo UGO",
+  "rule": "Todo requisito visible debe tener estado, responsable, verificación, evidencia y mejora. Nada se marca VERIFIED por existir en código. Las pruebas físicas/humanas quedan al final.",
+  "statuses": [
+    "VERIFIED",
+    "NEEDS_RUNTIME_PROOF",
+    "IN_PROGRESS",
+    "BLOCKED",
+    "HUMAN_FINAL"
+  ],
+  "groups": [
+    {
+      "id": "client",
+      "title": "App Cliente",
+      "items": [
+        {
+          "id": "client-navigation",
+          "title": "Navegación, menús y rutas",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Recorrer todas las rutas y acciones; ningún botón muerto, loop o pantalla inaccesible.",
+          "done_evidence": "Runtime UI del mismo SHA + rutas/acciones verificadas.",
+          "improvement_focus": "Simplificar pasos y eliminar navegación duplicada.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-request",
+          "title": "Crear solicitud completa",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Categoría, descripción, ubicación, condiciones y envío deben persistir correctamente.",
+          "done_evidence": "serviceId TEST creado desde UI + backend concordante.",
+          "improvement_focus": "Reducir fricción y campos innecesarios.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-location",
+          "title": "Mi ubicación y mapa",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Ubicación válida completa formulario/mapa; manejar permiso, timeout y coordenadas inválidas.",
+          "done_evidence": "TEST automatizable + errores fail-closed; GPS físico queda al final.",
+          "improvement_focus": "Mensajes claros y fallback de dirección.",
+          "real_test_required": true
+        },
+        {
+          "id": "client-saved-places",
+          "title": "Lugares guardados",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Guardar/editar/elegir casa, oficina y otros.",
+          "done_evidence": "CRUD TEST persistido + UI reflejada.",
+          "improvement_focus": "Atajos y selección más rápida.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-camera",
+          "title": "Cámara y subida de foto",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Sacar foto/subir archivo, cancelación y errores.",
+          "done_evidence": "Runtime browser + persistencia de evidencia; hardware final si aplica.",
+          "improvement_focus": "Preview, compresión y feedback de carga.",
+          "real_test_required": true
+        },
+        {
+          "id": "client-multiple-orders",
+          "title": "Pedidos activos y programados",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Permitir futuros programados sin romper reglas de pedido activo.",
+          "done_evidence": "Escenarios TEST de coexistencia.",
+          "improvement_focus": "Explicar bloqueos y disponibilidad.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-status",
+          "title": "Seguimiento del profesional",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Asignado→aceptado→en camino→llegó→trabajando→finalizado.",
+          "done_evidence": "Estados UI/backend concordantes por serviceId.",
+          "improvement_focus": "Timeline más legible.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-payment",
+          "title": "Pago / YA PAGUÉ / efectivo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Pago digital/efectivo sin doble cobro; efectivo genera deuda UGO cuando corresponda.",
+          "done_evidence": "Pruebas TEST + ledger/auditoría.",
+          "improvement_focus": "Claridad de monto, estado y recibo.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-rating",
+          "title": "Calificación Cliente→Proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Calificar una sola vez tras cierre.",
+          "done_evidence": "Rating persistido + UI.",
+          "improvement_focus": "Recordatorio post-servicio.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-dispute",
+          "title": "Disputas Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Abrir disputa, adjuntar evidencia, ver estado y cierre.",
+          "done_evidence": "Disputa TEST completa + audit trail.",
+          "improvement_focus": "Explicar SLA y próximos pasos.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-history",
+          "title": "Historial y evidencias",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Mostrar servicios, pagos, ratings y fotos autorizadas.",
+          "done_evidence": "Historial TEST concordante.",
+          "improvement_focus": "Filtros y búsqueda.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-notifications",
+          "title": "Notificaciones Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Asignado, en camino, llegó, cambios y cierre.",
+          "done_evidence": "Push/web TEST o evidencia del canal soportado.",
+          "improvement_focus": "Preferencias y fallback.",
+          "real_test_required": false
+        },
+        {
+          "id": "client-responsive",
+          "title": "Responsive Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Móvil/tablet/desktop sin overflow, botones tapados ni acciones inaccesibles.",
+          "done_evidence": "Matriz de viewports + revisión visual.",
+          "improvement_focus": "Accesibilidad táctil y tipografía.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "provider",
+      "title": "App Proveedor",
+      "items": [
+        {
+          "id": "provider-offers",
+          "title": "Recepción de ofertas",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Ofertas elegibles ≤20 km al proveedor correcto.",
+          "done_evidence": "Matching TEST + aislamiento.",
+          "improvement_focus": "Priorizar distancia, valor y urgencia.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-alerts",
+          "title": "Alerta/sonido de oferta",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Oferta nueva debe notificar según capacidades.",
+          "done_evidence": "Runtime TEST del canal soportado.",
+          "improvement_focus": "Fallback visible si sonido bloqueado.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-accept",
+          "title": "Aceptar/rechazar oferta",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Aceptar/rechazar de forma idempotente y autorizada.",
+          "done_evidence": "Estado persistido + concurrencia controlada.",
+          "improvement_focus": "Feedback inmediato.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-gps",
+          "title": "GPS reciente y publicación de ubicación",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Rechazar 0,0/fake/stale; publicar antes de llegada.",
+          "done_evidence": "Prueba TEST + GPS físico final.",
+          "improvement_focus": "Indicador de frescura GPS.",
+          "real_test_required": true
+        },
+        {
+          "id": "provider-arrival",
+          "title": "YA LLEGUÉ / geofence 200 m",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "No avanzar fuera del geofence ni ante fallo GPS.",
+          "done_evidence": "Backend TEST + geofence PASS/FAIL; físico final.",
+          "improvement_focus": "Mostrar distancia restante y motivo.",
+          "real_test_required": true
+        },
+        {
+          "id": "provider-evidence",
+          "title": "Evidencia inicial/final",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Capturar/subir evidencia en etapas correctas.",
+          "done_evidence": "Rows/bytes persistidos + UI.",
+          "improvement_focus": "Checklist visual.",
+          "real_test_required": true
+        },
+        {
+          "id": "provider-workflow",
+          "title": "Comenzar/finalizar trabajo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Transiciones autorizadas y secuenciales.",
+          "done_evidence": "Máquina de estados TEST.",
+          "improvement_focus": "Botón principal contextual.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-debt",
+          "title": "Regla deuda 3 servicios",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Bloquear nuevas aceptaciones al alcanzar deuda definida.",
+          "done_evidence": "Escenarios TEST + deuda UGO.",
+          "improvement_focus": "Mostrar deuda y botón Pagar UGO.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-jobs",
+          "title": "Mis trabajos / historial",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Historial, fotos, pagos, fechas y estados.",
+          "done_evidence": "Datos TEST concordantes.",
+          "improvement_focus": "Filtros por estado/fecha.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-rating",
+          "title": "Calificación Proveedor→Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Rating bilateral tras cierre.",
+          "done_evidence": "Rating persistido + regla de unicidad.",
+          "improvement_focus": "UX simétrica.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-dispute",
+          "title": "Disputas Proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Apertura, evidencia, estado y cierre.",
+          "done_evidence": "Disputa TEST completa.",
+          "improvement_focus": "Acceso visible desde servicio.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-notifications",
+          "title": "Notificaciones Proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Oferta, asignación, cambios y mensajes.",
+          "done_evidence": "Push/web TEST.",
+          "improvement_focus": "Sonido configurable.",
+          "real_test_required": false
+        },
+        {
+          "id": "provider-responsive",
+          "title": "Responsive Proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Todas las acciones utilizables en móvil/tablet/desktop.",
+          "done_evidence": "Matriz de viewports + revisión visual.",
+          "improvement_focus": "Optimizar uso con una mano.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "hugo",
+      "title": "Hugo / IA / Voz",
+      "items": [
+        {
+          "id": "hugo-presence",
+          "title": "Hugo visible por rol",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cliente, Proveedor y Admin muestran Hugo donde corresponde.",
+          "done_evidence": "Runtime por rol.",
+          "improvement_focus": "Posición consistente y no invasiva.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-intent",
+          "title": "Reconocimiento de intención",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Entender pedidos como pintor/plomero y acciones del flujo.",
+          "done_evidence": "Suite de intents TEST.",
+          "improvement_focus": "Sinónimos y lenguaje natural.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-authority",
+          "title": "Permisos y autoridad",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cada acción pasa por rol/authority/policy.",
+          "done_evidence": "Pruebas positivas y negativas.",
+          "improvement_focus": "Explicar por qué una acción fue negada.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-action",
+          "title": "Acciones reales sobre UI/backend",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "No chat decorativo: INTENT→ACTION→EFFECT.",
+          "done_evidence": "Efecto persistido + audit trail.",
+          "improvement_focus": "Confirmación breve del efecto.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-continuity",
+          "title": "Conversación continua",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Mantener contexto útil sin repetir ni perder estado.",
+          "done_evidence": "Sesiones TEST multi-turn.",
+          "improvement_focus": "Menos latencia y respuestas más cortas.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-voice",
+          "title": "Voz / orbe conversacional",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Entrada/salida de voz y fallback textual.",
+          "done_evidence": "Runtime browser; hardware/micrófono final si aplica.",
+          "improvement_focus": "Estados escuchar/pensar/actuar claros.",
+          "real_test_required": true
+        },
+        {
+          "id": "hugo-timeout",
+          "title": "Timeout/fallback/error",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Gemini/OpenRouter timeout/fallback sin congelar UI.",
+          "done_evidence": "Fault injection + telemetría.",
+          "improvement_focus": "Mensaje y retry claros.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-audit",
+          "title": "Auditoría completa de Hugo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE trazable.",
+          "done_evidence": "correlation_id + ledgers.",
+          "improvement_focus": "Vista de auditoría legible.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-privacy",
+          "title": "Privacidad y sanitización",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "No enviar secretos ni evidencia cruda innecesaria al modelo.",
+          "done_evidence": "Pruebas de sanitización + permisos.",
+          "improvement_focus": "Minimizar datos enviados.",
+          "real_test_required": false
+        },
+        {
+          "id": "hugo-responsive",
+          "title": "Responsive de Hugo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Orbe/panel no tapa controles ni rompe layout.",
+          "done_evidence": "Viewports + teclado móvil.",
+          "improvement_focus": "Tamaño y posición adaptativos.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "admin",
+      "title": "Admin / Super Admin",
+      "items": [
+        {
+          "id": "admin-auth",
+          "title": "Autenticación y roles",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Rutas y acciones restringidas por rol.",
+          "done_evidence": "Pruebas positivas/negativas.",
+          "improvement_focus": "Mensajes de acceso claros.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-navigation",
+          "title": "Todos los menús y botones",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cada pestaña/acción carga y actúa.",
+          "done_evidence": "Runtime crawl + click map.",
+          "improvement_focus": "Eliminar acciones duplicadas.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-realtime",
+          "title": "Estados en tiempo real",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cambios operativos aparecen sin refresh manual cuando aplica.",
+          "done_evidence": "Realtime TEST + reconciliación.",
+          "improvement_focus": "Indicador de sincronización.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-users",
+          "title": "Ficha e historial de usuarios",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Documentos, fechas, horarios, servicios y acciones auditadas.",
+          "done_evidence": "Datos TEST + permisos.",
+          "improvement_focus": "Filtros y búsqueda.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-risk",
+          "title": "Riesgo & Auditoría",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Findings, ledgers, blockers y evidence links coherentes.",
+          "done_evidence": "Runtime + same-SHA evidence.",
+          "improvement_focus": "Resumen ejecutivo accionable.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-qa",
+          "title": "QA Lab",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Simuladores, resultados, Meta-QA y regresiones sin autocertificación.",
+          "done_evidence": "Persisted-state judge.",
+          "improvement_focus": "Drill-down por escenario.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-model-router",
+          "title": "Model Router",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Primary/fallback/telemetría/costo visibles y funcionales.",
+          "done_evidence": "Runtime primary+fallback.",
+          "improvement_focus": "Latencia y calidad comparables.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-launch",
+          "title": "Launch Gate",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Bloquea/libera determinísticamente desde evidencia.",
+          "done_evidence": "Casos positivo/negativo.",
+          "improvement_focus": "Explicar cada blocker.",
+          "real_test_required": false
+        },
+        {
+          "id": "admin-responsive",
+          "title": "Responsive Admin/Super Admin",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Panel completo utilizable móvil/tablet/desktop.",
+          "done_evidence": "Viewports + revisión visual.",
+          "improvement_focus": "Tablas adaptativas y navegación compacta.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "autonomous",
+      "title": "UGO Empresa Autónoma",
+      "items": [
+        {
+          "id": "auto-departments",
+          "title": "Departamentos conectados",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cada departamento visible, con agente responsable y entradas/salidas.",
+          "done_evidence": "Registro + job/evidence por departamento.",
+          "improvement_focus": "Mostrar madurez por departamento.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-agents",
+          "title": "Agentes y especialistas conectados",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Distinguir catalogado, habilitado, ejecutado y verificado.",
+          "done_evidence": "Trigger+executor+Judge+Sentinel por agente.",
+          "improvement_focus": "Filtro por estado/madurez.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-scheduler",
+          "title": "Scheduler y paralelismo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Hasta 5 trabajos compatibles, locks y recursos correctos.",
+          "done_evidence": "Pruebas de concurrencia/conflicto.",
+          "improvement_focus": "Vista de recursos y dependencia.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-worker",
+          "title": "Worker autónomo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Trabaja sin navegador, respeta policy y vuelve a estado seguro.",
+          "done_evidence": "Scheduled worker same-SHA + evidence.",
+          "improvement_focus": "Mostrar heartbeat/lease.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-recovery",
+          "title": "Recuperación automática",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Excepciones normales sin SQL/GitHub manual.",
+          "done_evidence": "Incidente→recovery→verify→audit.",
+          "improvement_focus": "Playbooks visibles.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-inbox",
+          "title": "Inbox ejecutivo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Aprobaciones/escalaciones ordenadas, deduplicadas y auditadas.",
+          "done_evidence": "Escenarios TEST.",
+          "improvement_focus": "Prioridad y SLA.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-ledgers",
+          "title": "Decision/Evidence Ledgers",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Append-only, correlacionados, consultables.",
+          "done_evidence": "Integridad + correlation_id.",
+          "improvement_focus": "Búsqueda por job/serviceId.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-killswitch",
+          "title": "Kill switches y modo seguro",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cortar ejecución y fail-closed sin corrupción.",
+          "done_evidence": "Prueba TEST de stop/recovery.",
+          "improvement_focus": "Estado muy visible.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-enterprise",
+          "title": "UGO Empresas",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Demanda, slots, navegación, acciones, permisos y evidencia funcionales en TEST.",
+          "done_evidence": "Journey empresarial TEST.",
+          "improvement_focus": "Dashboard operativo claro.",
+          "real_test_required": false
+        },
+        {
+          "id": "auto-audit",
+          "title": "Auditoría continua D14",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Judge/Sentinel independientes, findings y re-audit.",
+          "done_evidence": "Audit + remediation + re-audit.",
+          "improvement_focus": "Tendencias y reincidencias.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "cross",
+      "title": "Flujo transversal / Seguridad / Calidad",
+      "items": [
+        {
+          "id": "cross-p0",
+          "title": "Journey P0 completo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cliente→matching→proveedor→GPS→evidencias→pago→ratings.",
+          "done_evidence": "Un serviceId TEST completo.",
+          "improvement_focus": "Timeline única.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-rls",
+          "title": "RLS/RPC y aislamiento",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Roles no pueden leer/escribir fuera de autoridad.",
+          "done_evidence": "Workflow aislado RLS/RPC same-SHA.",
+          "improvement_focus": "Mantener tests negativos permanentes.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-idempotency",
+          "title": "Idempotencia y concurrencia",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Sin doble aceptación/pago/cierre/rating.",
+          "done_evidence": "Pruebas concurrentes.",
+          "improvement_focus": "Feedback ante conflicto.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-errors",
+          "title": "Errores y estados vacíos",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Toda falla comunica causa y próximo paso.",
+          "done_evidence": "Fault injection UI/API.",
+          "improvement_focus": "Mensajes consistentes.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-performance",
+          "title": "Rendimiento percibido",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Acciones críticas no quedan colgadas; loaders correctos.",
+          "done_evidence": "Métricas y pruebas de latencia.",
+          "improvement_focus": "Optimizar cargas pesadas.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-accessibility",
+          "title": "Accesibilidad básica",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Teclado, foco, contraste, labels y targets táctiles.",
+          "done_evidence": "Audit automatizable + revisión.",
+          "improvement_focus": "Corregir WCAG básicos.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-visual",
+          "title": "Consistencia visual",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Design tokens, jerarquía y componentes coherentes.",
+          "done_evidence": "Revisión visual multi-ruta.",
+          "improvement_focus": "Consolidar estilos duplicados.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-security",
+          "title": "Secretos, logs y privacidad",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "No secretos en cliente/logs; datos mínimos.",
+          "done_evidence": "Scan + pruebas de sanitización.",
+          "improvement_focus": "Redacción automática.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-observability",
+          "title": "Observabilidad y auditoría",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Eventos críticos con correlation_id y evidencia.",
+          "done_evidence": "Logs/ledgers por serviceId/job.",
+          "improvement_focus": "Dashboard de trazabilidad.",
+          "real_test_required": false
+        },
+        {
+          "id": "cross-regression",
+          "title": "Regresión permanente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Todo bug corregido deja test que falla antes y pasa después.",
+          "done_evidence": "Regression suite same-SHA.",
+          "improvement_focus": "Cobertura por incidente.",
+          "real_test_required": false
+        }
+      ]
+    },
+    {
+      "id": "final",
+      "title": "Pruebas reales finales",
+      "items": [
+        {
+          "id": "final-gps",
+          "title": "GPS físico real",
+          "owner": "SERGIO + UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Permisos, frescura, hardware y geofence real.",
+          "done_evidence": "serviceId + timestamps + geofence PASS + audit trail.",
+          "improvement_focus": "Dejar instrucciones paso a paso.",
+          "real_test_required": true
+        },
+        {
+          "id": "final-two-devices",
+          "title": "Cliente y Proveedor en dos dispositivos",
+          "owner": "SERGIO + UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Ejecutar flujo real simultáneo.",
+          "done_evidence": "FULL-E2E/TWO-DEVICES PASS.",
+          "improvement_focus": "Checklist corto y capturas mínimas.",
+          "real_test_required": true
+        },
+        {
+          "id": "final-customer",
+          "title": "Customer #1 real",
+          "owner": "SERGIO + UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Aceptación humana real del servicio.",
+          "done_evidence": "Aceptación persistida + Launch Gate reevaluado.",
+          "improvement_focus": "Instrucciones exactas para Sergio.",
+          "real_test_required": true
+        }
+      ]
+    }
+  ]
+}
