@@ -61,7 +61,14 @@ const safeClick=async(page,locator,label)=>{
  await page.waitForTimeout(250)
  assert.ok(await page.locator('body').isVisible(),label+' body missing')
 }
-const reopenClientMenu=async page=>safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
+const closeClientOverlay=async page=>{
+ const backdrop=page.locator('.ugo-dispute-backdrop').first()
+ if(await backdrop.count()&&await backdrop.isVisible())await backdrop.click({position:{x:5,y:5}})
+}
+const reopenClientMenu=async page=>{
+ await closeClientOverlay(page)
+ await safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
+}
 
 async function testClient(viewport,name){
  const {page,errors}=await openRole('client',viewport)
