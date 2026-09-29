@@ -49,19 +49,20 @@ async function prove(page,role,viewportName){
  const selector=role==='client'?'[aria-label="Hugo, controlador por voz del cliente"]':role==='provider'?'[aria-label="Hugo, controlador por voz del proveedor"]':'.hugo-free-trigger'
  const surface=page.locator(selector).first()
  await surface.waitFor({state:'visible',timeout:20000})
- const box=await surface.boundingBox(),viewport=page.viewportSize(),aria=await surface.getAttribute('aria-label')
- assert.ok(box&&viewport,role+' Hugo bounding box required')
- assert.ok(box.x>=-1&&box.y>=-1,role+' Hugo clipped above/left')
- assert.ok(box.x+box.width<=viewport.width+1,role+' Hugo clipped right')
- assert.ok(box.y+box.height<=viewport.height+1,role+' Hugo clipped bottom')
- assert.ok(box.y>=viewport.height*0.45,role+' Hugo must remain in lower non-invasive zone')
+ const aria=await surface.getAttribute('aria-label')
  if(role==='admin')assert.match(String(aria||''),/Abrir Hugo (Admin|Super Admin)/)
  else assert.match(String(aria||''),new RegExp('Hugo, controlador por voz del '+role))
  const button=role==='admin'?surface:surface.getByRole('button',{name:/Hablar con Hugo|Cortar conversación con Hugo/}).first()
  await button.waitFor({state:'visible',timeout:10000})
  assert.equal(await button.isEnabled(),true,role+' Hugo trigger disabled')
+ const box=await button.boundingBox(),viewport=page.viewportSize()
+ assert.ok(box&&viewport,role+' Hugo trigger bounding box required')
+ assert.ok(box.x>=-1&&box.y>=-1,role+' Hugo trigger clipped above/left')
+ assert.ok(box.x+box.width<=viewport.width+1,role+' Hugo trigger clipped right')
+ assert.ok(box.y+box.height<=viewport.height+1,role+' Hugo trigger clipped bottom')
+ assert.ok(box.y>=viewport.height*0.45,role+' Hugo trigger must remain in lower non-invasive zone')
  await page.screenshot({path:'artifacts/hugo-presence-'+role+'-'+viewportName+'.png',fullPage:true})
- return {role,viewport:viewportName,aria,box,viewport,status:'PASS'}
+ return {role,viewport:viewportName,aria,trigger_box:box,viewport,status:'PASS'}
 }
 try{
  for(const [viewportName,viewport] of [['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]){
