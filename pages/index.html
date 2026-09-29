@@ -456,8 +456,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'RESPONSABLE:',
     item.owner || 'UGO',
     '',
+    'LOCK PERSISTENTE OBLIGATORIO:',
+    'Ruta: docs/ugo-work-locks/readiness-' + item.id + '.json',
+    'task_id: readiness-' + item.id,
+    'readiness_id: ' + item.id,
+    'resources: ' + ((item.resources || []).join(', ') || item.id),
+    '',
     'REGLAS:',
-    '- Revalidar main antes de modificar nada.',
+    '- Revalidar main, status.json y docs/ugo-work-locks antes de modificar nada.',
+    '- Antes de tocar código, crear o actualizar docs/ugo-work-locks/readiness-' + item.id + '.json con readiness_id, task_id, job_id, status IN_PROGRESS, started_at, heartbeat_at, lease_expires_at, started_sha, owner, assigned_agent, validators, resources, correlation_id, current_step, attempt y evidence_ids.',
+    '- Si ya existe un lock activo incompatible o este control dejó de estar HABILITADO, no duplicar trabajo: revalidar y devolver el estado correcto.',
+    '- Renovar heartbeat/lease durante la ejecución y reconciliar STALE_LOCK antes de reintentar.',
     '- No asumir que funciona porque exista código, UI o configuración.',
     '- Inspeccionar código, rutas, estados, permisos y dependencias relacionadas con este control.',
     '- Resolver todo lo delegable por ChatGPT/UGO ahora: código, diseño, usabilidad, responsive, tests, wiring, permisos y errores.',
@@ -469,7 +478,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     '- Si encontrás defectos, corregirlos y dejar regresión permanente.',
     '- Persistir evidencia verificable y correlation_id/serviceId/job_id cuando aplique.',
     '- Judge y Sentinel deben validar antes de marcar VERIFIED.',
-    '- Actualizar docs/UGO_FUNCTIONAL_READINESS.json a VERIFIED sólo si existe evidencia suficiente; si no, mantener el estado exacto y explicar qué falta.',
+    '- El estado VERIFIED es autoritativo por lock: status DONE + evidencia persistida + Judge PASS + Sentinel PASS. No depende de editar manualmente el catálogo.',
+    '- Al cerrar, actualizar docs/ugo-work-locks/readiness-' + item.id + '.json a DONE o FAILED con evidencia verificable. El Centro de Comando derivará el estado automáticamente.',
     '- Revalidar el panel/Pages después del cambio para que el estado quede reflejado.',
     '',
     'AL TERMINAR DEVOLVÉ:',
@@ -547,19 +557,19 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openReadinessWithUgoMaster = async (item, group) => {
-    if (!item || !['AVAILABLE','HUMAN_DEFERRED'].includes(item.gate_state)) return
+    if (!item || !['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state)) return
     saveDispatch({
       id: item.id,
       title: item.title,
       resources: ['functional-readiness', group?.id || 'readiness']
     }, 'UGO_MAESTRO_READINESS')
-    const prompt = item.status === 'HUMAN_FINAL'
+    const prompt = item.gate_state === 'HUMAN_REQUIRED'
       ? buildReadinessHumanPrompt(item, group)
       : buildReadinessPrompt(item, group)
     const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
     try {
       await navigator.clipboard.writeText(prompt)
-      alert(item.status === 'HUMAN_FINAL'
+      alert(item.gate_state === 'HUMAN_REQUIRED'
         ? 'Prompt copiado. Se abrió UGO Maestro para darte las instrucciones humanas finales paso a paso.'
         : 'Prompt copiado. Se abrió UGO Maestro: pegalo y enviá para resolver este control hasta VERIFIED.')
     } catch (_) {
@@ -729,6 +739,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     WAITING_RESOURCE_CAPACITY:'ESPERANDO RECURSO',
     QUEUED_CAPACITY:'EN COLA',
     HUMAN_DEFERRED:'PRUEBA REAL DIFERIDA',
+    HUMAN_REQUIRED:'REQUIERE SERGIO',
+    STALE_LOCK:'LOCK VENCIDO',
+    FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
     VERIFIED:'VERIFIED'
   }[gate] || gate || 'UNVERIFIED')
 
@@ -763,8 +776,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Prioridad:</b> ' + esc(item.priority || 'NORMAL') + ' · <b>Dependencias:</b> ' + esc((item.depends_on || []).join(', ') || 'ninguna') + ' · <b>Recursos:</b> ' + esc((item.resources || []).join(', ') || '—') + '</p>' +
             '<p class="sub"><b>Estado de ejecución:</b> ' + esc(item.gate_reason || readinessGateLabel(item.gate_state)) + '</p>' +
             '<div class="cta-row">' +
-              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (item.gate_state === 'AVAILABLE' || item.gate_state === 'HUMAN_DEFERRED' ? '' : 'disabled') + '>' +
-                (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_DEFERRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : 'Resolver con UGO Maestro') +
+              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state) ? '' : 'disabled') + '>' +
+                (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'HUMAN_DEFERRED' ? 'Dejada para el final' : item.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' : item.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : 'Resolver con UGO Maestro') +
               '</button>' +
               '<span class="pill ' + (item.gate_state === 'AVAILABLE' ? 'ugo' : item.gate_state === 'VERIFIED' ? 'ugo' : item.gate_state === 'IN_PROGRESS' ? 'accent' : item.gate_state === 'HUMAN_DEFERRED' ? 'human' : 'pending') + '">' + esc(readinessGateLabel(item.gate_state)) + '</span>' +
             '</div>' +
@@ -943,7 +956,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-readiness-id]').forEach(button => {
       const group = (s.functional_readiness?.groups || []).find(g => g.id === button.dataset.readinessGroup)
       const item = group?.items?.find(x => x.id === button.dataset.readinessId)
-      if (item && ['AVAILABLE','HUMAN_DEFERRED'].includes(item.gate_state) && !button.disabled) {
+      if (item && ['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state) && !button.disabled) {
         button.onclick = () => openReadinessWithUgoMaster(item, group)
       }
     })
