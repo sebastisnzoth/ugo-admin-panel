@@ -3,10 +3,10 @@
   "readiness_id": "auto-departments",
   "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
   "title": "Verify every autonomous department is registered, visibly mapped to a responsible agent, and has persisted job/evidence I/O",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:48:00Z",
-  "heartbeat_at": "2026-09-29T20:52:00Z",
-  "lease_expires_at": "2026-09-29T21:37:00Z",
+  "heartbeat_at": "2026-09-29T21:00:00Z",
+  "lease_expires_at": "2026-09-29T21:45:00Z",
   "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
   "owner": "UGO",
   "department": "Plataforma Autónoma",
@@ -25,7 +25,38 @@
     "autonomy-registry"
   ],
   "correlation_id": "ugo-auto-departments-20260929T204800Z",
-  "current_step": "WAIT_CORE_CI_AND_ISOLATED_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "github-actions:run:36630030506:SUCCESS",
+    "github-actions:job:109616633354:SUCCESS",
+    "github-actions:artifact:11061827187:sha256:9d6c2f78f80fb2566d15b4ba5acd83107ce4bbfd9d9650fa2b510a194aff6bc6",
+    "ugo-test:auto-departments:departments:13",
+    "ugo-test:auto-departments:jobs:13",
+    "ugo-test:auto-departments:evidence:13",
+    "repo:docs/evidence/readiness-auto-departments-20260929.json",
+    "github:3af0a0e0200464523cbdfdfd325557baa40bc05f"
+  ],
+  "completed_at": "2026-09-29T21:00:00Z",
+  "completed_main_sha": "3af0a0e0200464523cbdfdfd325557baa40bc05f",
+  "runtime_validated_sha": "86a642fa25856df6e35beec75a8c6596feeb9003",
+  "runtime_correlation_id": "ugo-auto-departments-20260929T204800Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-auto-departments-20260929.json",
+  "evidence_commit_sha": "3af0a0e0200464523cbdfdfd325557baa40bc05f",
+  "safe_final_state": {
+    "environment": "UGO TEST",
+    "production_touched": false,
+    "departments_connected": 13,
+    "maturity": "CONNECTED"
+  },
+  "notes": [
+    "Each canonical department D1-D12 and D14 has a persisted responsible agent, SUCCEEDED readiness job, input evidence, output result, correlation_id, and evidence ledger row.",
+    "The proof preserves each responsible agent authority_class; owner-integrity protections were not weakened.",
+    "Minimal service_role grants were applied only to UGO Arena TEST and persisted as a repository migration.",
+    "No production environment was touched."
+  ]
 }
