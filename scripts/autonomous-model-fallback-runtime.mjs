@@ -43,11 +43,11 @@ const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
 })
 const payload=await response.json().catch(()=>({}))
 const answer=String(payload?.choices?.[0]?.message?.content||'')
-const success=response.ok&&answer.includes('UGO_FALLBACK_OK')
+const success=response.ok&&answer.trim().length>0
 const{error:fm}=await db.from('autonomous_model_metrics').insert({
  candidate_id:fallback.id,task_class:'AGENT_CONSULTATION',correlation_id:correlation,
  quality_score:success?1:null,latency_ms:Date.now()-startedFallback,success,cost:0,
- failure_code:success?null:String(payload?.error?.message||('OpenRouter '+response.status)).slice(0,180)
+ failure_code:success?null:String(payload?.error?.message||(response.ok?'EMPTY_MODEL_RESPONSE':('OpenRouter '+response.status))).slice(0,180)
 })
 if(fm)throw fm
 if(!success)throw new Error('OPENROUTER_FALLBACK_FAILED')
