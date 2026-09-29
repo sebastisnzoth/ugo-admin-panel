@@ -5,7 +5,6 @@ import { createClient } from '@supabase/supabase-js'
 const required = [
   'UGO_TEST_SUPABASE_URL',
   'UGO_TEST_SUPABASE_ANON_KEY',
-  'UGO_TEST_SUPABASE_SERVICE_ROLE_KEY',
   'UGO_TEST_CLIENT_EMAIL',
   'UGO_TEST_CLIENT_PASSWORD',
   'UGO_TEST_PROVIDER_EMAIL',
