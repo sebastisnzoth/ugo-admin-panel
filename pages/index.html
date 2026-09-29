@@ -77,6 +77,11 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     </details>
   </section>
 
+  <section class="card" style="margin-top:14px">
+    <div class="row"><span><b>Capacidad segura ahora</b></span><span class="pill ugo" id="runnableNow">— habilitados</span></div>
+    <p class="sub" id="parallelHint">Calculando dependencias y conflictos…</p>
+  </section>
+
   <section class="metrics" aria-label="Resumen ejecutivo">
     <div class="metric"><strong class="warn" id="pendingValue">—</strong><span>trabajos verificables pendientes</span></div>
     <div class="metric"><strong class="bad" id="blockersValue">—</strong><span>bloqueos del gate final</span></div>
@@ -373,6 +378,15 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return r.json()
   }).then(s => {
     statusSnapshot = s
+    const currentIds = new Set([...(s.implementation_steps || []), ...(s.final_gate_steps || [])].map(x => x.id))
+    const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
+    localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
+    document.getElementById('runnableNow').textContent = (s.counts.runnable_now ?? 0) + ' habilitado(s)'
+    document.getElementById('parallelHint').textContent = (s.counts.runnable_now ?? 0) > 1
+      ? 'Hay varios pasos independientes que pueden resolverse en paralelo sin compartir recursos bloqueados.'
+      : (s.counts.runnable_now ?? 0) === 1
+        ? 'Hay un paso seguro habilitado ahora. Los demás esperan dependencias o recursos.'
+        : 'No hay pasos nuevos habilitados: hay trabajo en proceso, dependencias pendientes o conflictos de recursos.'
     document.getElementById('prodState').textContent = s.production_ready ? 'PRODUCTION-READY' : 'NO PRODUCTION-READY'
     document.getElementById('objectiveTitle').textContent = s.objective
     document.getElementById('objectivePath').textContent = s.objective_path
