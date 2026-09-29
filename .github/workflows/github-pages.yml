@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "pages/**"
+      - "docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
 
@@ -36,8 +37,14 @@ jobs:
         run: |
           mkdir -p _site
           cp -a pages/. _site/
-          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
-          sed -i "s/__UGO_PUBLISHED_AT__/$(date -u +'%Y-%m-%dT%H:%M:%SZ')/g" _site/index.html
+          PUBLISHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html _site/status.json
+          sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html _site/status.json
+
+      - name: Verify public artifact is sanitized
+        shell: bash
+        run: |
+          ! grep -R -E 'SUPABASE_SERVICE_ROLE|OPENROUTER_API_KEY|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY' _site
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3

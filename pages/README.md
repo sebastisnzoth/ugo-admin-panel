@@ -1,6 +1,17 @@
 # UGO GitHub Pages
 
-Contenido estático y sanitizado para GitHub Pages.
+Contenido público, estático y sanitizado para UGO Observatory.
+
+## Qué muestra
+
+- snapshot de resultados verificables de UGO TEST;
+- Quality Coverage;
+- assurance checks;
+- bloqueos finales explícitos;
+- estado de Customer #1;
+- SHA y fecha UTC de cada publicación.
+
+La fuente de evidencia es `docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md`.
 
 ## Límites de seguridad
 
@@ -8,8 +19,7 @@ Contenido estático y sanitizado para GitHub Pages.
 - No incluir datos personales de clientes o proveedores.
 - No conectar esta superficie directamente a producción.
 - No usar Pages como sustituto de Supabase, APIs, pagos, GPS o Realtime.
-- Cada publicación muestra el SHA de GitHub que la generó.
+- No convertir resultados TEST en autorización de producción.
+- El workflow valida patrones sensibles antes de publicar.
 
-El workflow `.github/workflows/github-pages.yml` publica esta carpeta cuando sus archivos cambian en `main`, y también permite ejecución manual.
-
-Pages fue habilitado para usar GitHub Actions; esta actualización fuerza el primer registro/publicación posterior a la activación.
+El workflow `.github/workflows/github-pages.yml` publica esta carpeta cuando cambian Pages, la fuente de implementación o el propio workflow.
