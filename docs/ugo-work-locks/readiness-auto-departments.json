@@ -2,10 +2,10 @@
   "readiness_id": "auto-departments",
   "task_id": "readiness-auto-departments",
   "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:41:00Z",
-  "heartbeat_at": "2026-09-29T20:47:00Z",
-  "lease_expires_at": "2026-09-29T21:32:00Z",
+  "heartbeat_at": "2026-09-29T20:49:10Z",
+  "lease_expires_at": "2026-09-29T21:34:10Z",
   "started_sha": "a7ac4da421b4edf064c408a504021a55a6bedd28",
   "owner": "UGO",
   "assigned_agent": "Autonomy Registry Operator",
@@ -17,7 +17,7 @@
     "autonomy-registry"
   ],
   "correlation_id": "readiness-auto-departments-20260929T204100Z",
-  "current_step": "persist_runtime_evidence_and_validate_ci",
+  "current_step": "verified",
   "attempt": 1,
   "evidence_ids": [
     "11762f8a-1ba5-437f-aa7e-6d9a0407d088",
@@ -32,6 +32,15 @@
     "dfb11158-23d5-4636-ae8c-f2dbb6997eb4",
     "8348097e-f1a8-47b8-8afd-d3a3936de7fa",
     "6cacc7d8-445e-4807-8c96-668938a47a60",
-    "02249c87-f4b7-48a1-8bd8-22d578ba4e27"
-  ]
+    "02249c87-f4b7-48a1-8bd8-22d578ba4e27",
+    "docs/evidence/auto-departments-20260929.json",
+    "github-actions:36628851324"
+  ],
+  "completed_at": "2026-09-29T20:49:10Z",
+  "validation": {
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "runtime": "PASS",
+    "ci": "PASS"
+  }
 }
