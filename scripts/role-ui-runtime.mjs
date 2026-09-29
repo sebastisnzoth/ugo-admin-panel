@@ -59,7 +59,7 @@ const safeClick=async(page,locator,label)=>{
  await locator.waitFor({state:'visible',timeout:20000})
  await locator.click()
  await page.waitForTimeout(250)
- assert.ok(await page.locator('body').isVisible(),label+' body missing')
+ assert.ok(page.url().startsWith(base),label+' left local TEST runtime unexpectedly')
 }
 const closeClientOverlay=async page=>{
  const backdrop=page.locator('.ugo-dispute-backdrop').first()
