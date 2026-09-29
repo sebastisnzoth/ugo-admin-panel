@@ -563,7 +563,9 @@ Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cli
 - pendiente de madurez: smoke autenticado por voz en Admin real verificando Gemini Live → consulta de datos → navegación/filtrado → Gemini TTS.
 ## QA evidence binding (2026-09-29)
 
-The independent QA evidence path now has a migration that binds each assertion to the scenario's current demo service and invalidates coverage after a service change. The migration and positive/negative runtime probes remain pending in UGO TEST; Customer #1 stays blocked until independent coverage and physical acceptance are proven.
+The independent QA evidence path now binds each assertion to the scenario's current demo service and invalidates coverage after a service change. The migration was applied in UGO TEST and a rollback-only positive and negative probe passed. Customer #1 remains blocked pending the remaining coverage and physical acceptance.
+
+The next GPS worker gate found a legacy JWT claim guard on a service-role-only QA RPC. `20260929150000_qa_gps_service_role_claim_compat.sql` preserves the ACL and removes that redundant check; UGO TEST migration and same-SHA Worker verification are required before this blockage closes.
 
 ## Scout CRM · Gmail outreach (2026-09-22)
 

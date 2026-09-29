@@ -4,6 +4,15 @@ import fs from 'node:fs'
 
 const migration=fs.readFileSync('supabase/migrations/20260929143000_qa_independent_runtime_evidence_judge.sql','utf8')
 const binding=fs.readFileSync('supabase/migrations/20260929144500_qa_evidence_service_binding.sql','utf8')
+const gpsClaimFix=fs.readFileSync('supabase/migrations/20260929150000_qa_gps_service_role_claim_compat.sql','utf8')
+
+test('GPS worker accepts secret-key service_role without exposing the RPC to other roles',()=>{
+ assert.doesNotMatch(gpsClaimFix,/request\.jwt\.claim\.role|auth\.jwt\(\)/)
+ assert.match(gpsClaimFix,/revoke all on function public\.autonomous_qa_run_gps_independent_evidence\(\) from public,anon,authenticated/)
+ assert.match(gpsClaimFix,/grant execute on function public\.autonomous_qa_run_gps_independent_evidence\(\) to service_role/)
+ assert.match(gpsClaimFix,/autonomous_record_independent_qa_evidence/)
+ assert.match(gpsClaimFix,/autonomous_judge_independent_runtime_coverage/)
+})
 
 test('a QA run cannot borrow evidence from a different service or scenario',()=>{
  assert.match(binding,/new\.scenario_id is distinct from run_scenario/)

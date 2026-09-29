@@ -15,7 +15,9 @@ Maturity is tracked as:
 
 No production publication is implied.
 
-**29 September QA evidence binding:** `20260929144500_qa_evidence_service_binding.sql` adds service/scenario association checks to independent QA evidence and invalidates coverage when a scenario is rebound. Source-level implementation and local contract checks do not establish migration application or runtime validation in UGO TEST. Keep this control unverified until positive and negative TEST probes pass.
+**29 September QA evidence binding:** `20260929144500_qa_evidence_service_binding.sql` adds service/scenario association checks to independent QA evidence and invalidates coverage when a scenario is rebound. Applied in UGO TEST; a rollback-only positive and negative probe confirmed correct binding, cross-service/scenario rejection, and coverage invalidation. Physical GPS and Customer #1 acceptance remain separate unverified gates.
+
+**29 September GPS worker follow-up:** same-SHA Core and isolated RPC/RLS passed on `ecbe9121`, while the Autonomous Worker failed at the GPS QA RPC with `SERVICE_ROLE_REQUIRED`. The RPC's EXECUTE ACL already restricts it to `service_role`; a legacy JWT role-claim check rejected current Supabase secret-key calls. Migration `20260929150000_qa_gps_service_role_claim_compat.sql` replaces only that function guard and preserves the ACL and independent judge. Apply and rerun the Worker in UGO TEST before claiming this fix runtime validated.
 
 ## 2. Master requirement matrix
 

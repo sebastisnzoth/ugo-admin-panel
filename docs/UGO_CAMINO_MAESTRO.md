@@ -148,4 +148,9 @@ Al cerrar un bloqueo, registrar el resultado y el siguiente fallo exacto. Si CI 
 ### Control de asociación de evidencia QA · 29 de septiembre de 2026
 
 - La migración `20260929144500_qa_evidence_service_binding.sql` impide registrar evidencia independiente de otro servicio o escenario. Al cambiar el servicio de un escenario, invalida su cobertura anterior; la promoción exige que la evidencia corresponda al servicio vinculado.
-- Estado: implementado en código y con contrato local; **aplicación y pruebas positivas/negativas en UGO TEST pendientes**. No contar este control como cobertura QA validada ni como cierre de Customer #1 hasta observar la migración y su comportamiento en TEST.
+- Estado: migración aplicada en UGO TEST; prueba reversible positiva y negativa superada, sin filas de prueba persistidas. No confundir este control con GPS físico o cierre de Customer #1.
+
+### Bloqueo Worker GPS · 29 de septiembre de 2026
+
+- En `ecbe9121`, Core CI y RPC/RLS pasaron; Autonomous Worker TEST falló en GPS con `SERVICE_ROLE_REQUIRED`. La ACL real de UGO TEST permite ejecutar la RPC sólo a `service_role`; el claim JWT redundante no existe en llamadas con secret key.
+- Cambio preparado: `20260929150000_qa_gps_service_role_claim_compat.sql` preserva la función y su ACL, quitando únicamente ese guard incompatible. Cierre pendiente: migración TEST aplicada, rechazo `anon`/`authenticated`, ejecución GPS independiente y Worker/Sentinel del mismo SHA verdes.
