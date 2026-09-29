@@ -408,10 +408,12 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     const qaLifecycle=await serviceRole.from('autonomous_qa_scenarios')
       .select('id').eq('scenario_key','service-lifecycle').single()
     if(qaLifecycle.error)throw qaLifecycle.error
-    const bindScenario=await serviceRole.from('autonomous_qa_scenarios')
-      .update({service_id:serviceId,updated_at:new Date().toISOString()})
-      .eq('id',qaLifecycle.data.id)
+    const bindScenario=await serviceRole.rpc('autonomous_bind_qa_scenario_service',{
+      p_scenario_id:qaLifecycle.data.id,
+      p_service_id:serviceId,
+    })
     if(bindScenario.error)throw bindScenario.error
+    assert.equal(bindScenario.data?.service_id,serviceId,'El escenario QA debe quedar ligado al serviceId TEST persistido')
     const qaRun=await serviceRole.rpc('autonomous_run_qa_service_scenario',{
       p_scenario_id:qaLifecycle.data.id,
       p_simulator_results:{caller_supplied_booleans_are_not_authoritative:true},
