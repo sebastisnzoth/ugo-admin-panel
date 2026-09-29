@@ -393,7 +393,8 @@ const status = {
   },
   customer_1: 'BLOCKED',
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
-  implementation_steps: pendingImplementation,\n  completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
+  implementation_steps: pendingImplementation,
+  completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
   final_gate_steps: finalGateSteps,
   organization: {
     orchestrator: agentRegistry['ugo-maestro'],
