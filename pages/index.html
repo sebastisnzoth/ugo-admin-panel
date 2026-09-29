@@ -101,7 +101,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <h3 id="nextTitle">Esperando evidencia…</h3>
     <p class="sub" id="nextWhy">—</p>
     <div class="resolve"><b>Cómo resolverlo:</b> <span id="nextResolve">—</span></div>
-    <div class="cta-row"><a class="btn cta github" id="nextGitHubAction" target="_blank" rel="noopener" hidden>Resolver en GitHub</a><button class="btn cta chatgpt" id="nextUgoMaster" type="button" disabled>Resolver con UGO Maestro</button><button class="btn cta" id="revalidateNow" type="button">Revalidar ahora</button></div>
+    <div class="cta-row"><button class="btn cta github" id="nextGitHubAction" type="button" hidden>Resolver en GitHub</button><button class="btn cta chatgpt" id="nextUgoMaster" type="button" disabled>Resolver con UGO Maestro</button><button class="btn cta" id="revalidateNow" type="button">Revalidar ahora</button></div>
   </section>
 
   <h2>Trabajo de implementación pendiente</h2>
@@ -291,6 +291,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTask').innerHTML = active.map(d => '<div><b>' + esc(d.title || d.step_id) + '</b></div>').join('')
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
+  const openGitHubActionForStep = step => {
+    if (!step?.direct_action?.url) {
+      alert('No hay una acción de GitHub configurada para este trabajo.')
+      return
+    }
+    saveDispatch(step, 'GITHUB_DIRECT')
+    const message = document.getElementById('sentTaskMeta')
+    if (message) message.textContent = 'Abriendo GitHub Actions…'
+    window.location.assign(step.direct_action.url)
+  }
+
   const openUgoMasterForStep = async step => {
     saveDispatch(step, 'UGO_MAESTRO')
     const prompt = buildChatGPTPrompt(step)
@@ -460,12 +471,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       nextButton.onclick = next.gate_state === 'AVAILABLE' ? () => openUgoMasterForStep(next) : null
       if (next.direct_action && next.gate_state === 'AVAILABLE') {
         nextGitHub.hidden = false
-        nextGitHub.href = next.direct_action.url
         nextGitHub.textContent = next.direct_action.label || 'Resolver en GitHub'
-        nextGitHub.onclick = () => saveDispatch(next, 'GITHUB_DIRECT')
+        nextGitHub.onclick = () => openGitHubActionForStep(next)
       } else {
         nextGitHub.hidden = true
-        nextGitHub.removeAttribute('href')
         nextGitHub.onclick = null
       }
     }
@@ -478,7 +487,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     })
     document.querySelectorAll('[data-github-step-id]').forEach(link => {
       const step = allSteps.find(x => x.id === link.dataset.githubStepId)
-      if (step && step.direct_action && step.gate_state === 'AVAILABLE') link.onclick = () => saveDispatch(step, 'GITHUB_DIRECT')
+      if (step && step.direct_action && step.gate_state === 'AVAILABLE') link.onclick = () => openGitHubActionForStep(step)
     })
     const assurance = Object.fromEntries((s.assurance || []).map(x=>[x.name,x.status]))
     document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
