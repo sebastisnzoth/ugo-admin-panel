@@ -1,0 +1,79 @@
+name: UGO Hugo Authority Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api/hugo/chat.ts"
+      - "api/hugo/authority.ts"
+      - "api/test.ts"
+      - "src/lib/browserVoiceBridge.ts"
+      - "src/components/ConversationalOrb.tsx"
+      - "src/mvp/AdminPhase2.tsx"
+      - "tests/contracts/hugo-authority-readiness.test.mjs"
+      - "scripts/hugo-authority-*.mjs"
+      - ".github/workflows/hugo-authority-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-hugo-authority-runtime
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  verify:
+    name: Positive/negative authority · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Permanent authority regression
+        run: node --test tests/contracts/hugo-authority-readiness.test.mjs tests/contracts/admin-hugo-role-context.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Execute UGO TEST authority proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          node scripts/hugo-authority-runtime.mjs
+          node scripts/hugo-authority-judge.mjs
+          node scripts/hugo-authority-sentinel.mjs
+      - name: Upload authority evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: hugo-authority-runtime-${{ github.sha }}
+          path: artifacts/hugo-authority-*.json
+          if-no-files-found: error
+          retention-days: 90
