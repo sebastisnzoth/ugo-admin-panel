@@ -69,7 +69,7 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
-          sed -i "s/pageErrors.push(String(error?.message||error))/pageErrors.push(String(error?.stack||error)); console.error('ADMIN_NAV_PAGEERROR', String(error?.stack||error))/" scripts/admin-navigation-runtime.mjs
+          sed -i "s|page.on('pageerror',error=>pageErrors.push(String(error?.message||error)));|page.on('pageerror',error=>{const message=String(error?.stack||error);pageErrors.push(message);console.error('ADMIN_NAV_PAGEERROR',message)});|" scripts/admin-navigation-runtime.mjs
           node scripts/admin-navigation-runtime.mjs
       - name: Judge
         env:
