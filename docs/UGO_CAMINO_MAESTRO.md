@@ -144,3 +144,8 @@ Al cerrar un bloqueo, registrar el resultado y el siguiente fallo exacto. Si CI 
 - El harness P0 de UGO TEST ahora comprueba en su propio servicio demo `en_camino` los rechazos de 0,0, GPS vencido, precisión insuficiente y llegada fuera de 200 m. Comprueba que la llegada rechazada no cambia el estado ni crea un evento `llegado`, y luego acepta una ubicación válida dentro del radio.
 - La ejecución de prueba terminó dentro de una transacción con `ROLLBACK`; el servicio temporal no persistió. La migración está aplicada en UGO TEST. El SHA final de GitHub y su CI siguen por verificar.
 - **Bloqueo activo:** falta persistir y verificar independientemente el resultado de este probe para `gps-geofence`; la cobertura permanece `UNCOVERED`. GPS físico en dos dispositivos tiene su propio criterio y tampoco está demostrado.
+
+### Control de asociación de evidencia QA · 29 de septiembre de 2026
+
+- La migración `20260929144500_qa_evidence_service_binding.sql` impide registrar evidencia independiente de otro servicio o escenario. Al cambiar el servicio de un escenario, invalida su cobertura anterior; la promoción exige que la evidencia corresponda al servicio vinculado.
+- Estado: implementado en código y con contrato local; **aplicación y pruebas positivas/negativas en UGO TEST pendientes**. No contar este control como cobertura QA validada ni como cierre de Customer #1 hasta observar la migración y su comportamiento en TEST.

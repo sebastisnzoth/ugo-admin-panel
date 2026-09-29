@@ -15,6 +15,8 @@ Maturity is tracked as:
 
 No production publication is implied.
 
+**29 September QA evidence binding:** `20260929144500_qa_evidence_service_binding.sql` adds service/scenario association checks to independent QA evidence and invalidates coverage when a scenario is rebound. Source-level implementation and local contract checks do not establish migration application or runtime validation in UGO TEST. Keep this control unverified until positive and negative TEST probes pass.
+
 ## 2. Master requirement matrix
 
 | Master capability | Current implementation | Maturity |

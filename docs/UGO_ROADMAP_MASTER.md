@@ -561,6 +561,10 @@ Madurez: cobertura estática/CI de punta a punta; la prueba física completa Cli
 - el mapa acepta comandos de Hugo para estado, categoría, zona, localidad, radio y visibilidad Cliente/Proveedor;
 - cambios sensibles de usuarios, dinero, permisos, KYC, disputas o configuración siguen pasando por los controles auditados y confirmaciones existentes del panel;
 - pendiente de madurez: smoke autenticado por voz en Admin real verificando Gemini Live → consulta de datos → navegación/filtrado → Gemini TTS.
+## QA evidence binding (2026-09-29)
+
+The independent QA evidence path now has a migration that binds each assertion to the scenario's current demo service and invalidates coverage after a service change. The migration and positive/negative runtime probes remain pending in UGO TEST; Customer #1 stays blocked until independent coverage and physical acceptance are proven.
+
 ## Scout CRM · Gmail outreach (2026-09-22)
 
 Implementado en `main` y con migración aplicada en UGO Arena/TEST: OAuth Gmail server-side, estado conectar/desconectar en Scout y CRM, envío individual y campañas de hasta 20 destinatarios por lote, link de onboarding UGO, cooldown de campaña, auditoría de envíos y convergencia con el embudo CRM. Pendiente externo para runtime: habilitar Gmail API en Google Cloud, registrar `/api/scout/gmail` como redirect URI del cliente OAuth, cargar las credenciales OAuth server-side y autorizar una cuenta Google desde el panel. No requiere deploy hasta que se autorice la etapa de publicación.

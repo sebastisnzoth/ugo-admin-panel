@@ -3,6 +3,21 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
 const migration=fs.readFileSync('supabase/migrations/20260929143000_qa_independent_runtime_evidence_judge.sql','utf8')
+const binding=fs.readFileSync('supabase/migrations/20260929144500_qa_evidence_service_binding.sql','utf8')
+
+test('a QA run cannot borrow evidence from a different service or scenario',()=>{
+ assert.match(binding,/new\.scenario_id is distinct from run_scenario/)
+ assert.match(binding,/new\.service_id is distinct from bound_service/)
+ assert.match(binding,/qa_evidence_service_binding before insert or update/)
+ assert.match(binding,/QA_EVIDENCE_SERVICE_MISMATCH/)
+})
+
+test('reassigning a QA scenario removes its old coverage before another verdict',()=>{
+ assert.match(binding,/old\.service_id is distinct from new\.service_id/)
+ assert.match(binding,/set status='UNCOVERED',last_run_id=null/)
+ assert.match(binding,/qa_scenario_rebind_invalidates_coverage after update of service_id/)
+ assert.match(binding,/QA_COVERAGE_SERVICE_MISMATCH/)
+})
 
 test('independent runtime coverage requires persisted evidence and deterministic judge',()=>{
  assert.match(migration,/autonomous_qa_assertion_evidence/)
