@@ -1,5 +1,5 @@
 {
-  "version": "UGO_FUNCTIONAL_READINESS_V1",
+  "version": "UGO_FUNCTIONAL_READINESS_V2",
   "title": "Mapa funcional completo UGO",
   "rule": "Todo requisito visible debe tener estado, responsable, verificación, evidencia y mejora. Nada se marca VERIFIED por existir en código. Las pruebas físicas/humanas quedan al final.",
   "statuses": [
@@ -22,7 +22,12 @@
           "verify": "Recorrer todas las rutas y acciones; ningún botón muerto, loop o pantalla inaccesible.",
           "done_evidence": "Runtime UI del mismo SHA + rutas/acciones verificadas.",
           "improvement_focus": "Simplificar pasos y eliminar navegación duplicada.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-request",
@@ -32,7 +37,14 @@
           "verify": "Categoría, descripción, ubicación, condiciones y envío deben persistir correctamente.",
           "done_evidence": "serviceId TEST creado desde UI + backend concordante.",
           "improvement_focus": "Reducir fricción y campos innecesarios.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-navigation"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-location",
@@ -42,7 +54,14 @@
           "verify": "Ubicación válida completa formulario/mapa; manejar permiso, timeout y coordenadas inválidas.",
           "done_evidence": "TEST automatizable + errores fail-closed; GPS físico queda al final.",
           "improvement_focus": "Mensajes claros y fallback de dirección.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "client-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-saved-places",
@@ -52,7 +71,14 @@
           "verify": "Guardar/editar/elegir casa, oficina y otros.",
           "done_evidence": "CRUD TEST persistido + UI reflejada.",
           "improvement_focus": "Atajos y selección más rápida.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-camera",
@@ -62,7 +88,14 @@
           "verify": "Sacar foto/subir archivo, cancelación y errores.",
           "done_evidence": "Runtime browser + persistencia de evidencia; hardware final si aplica.",
           "improvement_focus": "Preview, compresión y feedback de carga.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "client-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-multiple-orders",
@@ -72,7 +105,14 @@
           "verify": "Permitir futuros programados sin romper reglas de pedido activo.",
           "done_evidence": "Escenarios TEST de coexistencia.",
           "improvement_focus": "Explicar bloqueos y disponibilidad.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-request"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-status",
@@ -82,7 +122,14 @@
           "verify": "Asignado→aceptado→en camino→llegó→trabajando→finalizado.",
           "done_evidence": "Estados UI/backend concordantes por serviceId.",
           "improvement_focus": "Timeline más legible.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-request"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-payment",
@@ -92,7 +139,14 @@
           "verify": "Pago digital/efectivo sin doble cobro; efectivo genera deuda UGO cuando corresponda.",
           "done_evidence": "Pruebas TEST + ledger/auditoría.",
           "improvement_focus": "Claridad de monto, estado y recibo.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-status"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-rating",
@@ -102,7 +156,14 @@
           "verify": "Calificar una sola vez tras cierre.",
           "done_evidence": "Rating persistido + UI.",
           "improvement_focus": "Recordatorio post-servicio.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-payment"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-dispute",
@@ -112,7 +173,14 @@
           "verify": "Abrir disputa, adjuntar evidencia, ver estado y cierre.",
           "done_evidence": "Disputa TEST completa + audit trail.",
           "improvement_focus": "Explicar SLA y próximos pasos.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-status"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-history",
@@ -122,7 +190,14 @@
           "verify": "Mostrar servicios, pagos, ratings y fotos autorizadas.",
           "done_evidence": "Historial TEST concordante.",
           "improvement_focus": "Filtros y búsqueda.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-request"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-notifications",
@@ -132,7 +207,14 @@
           "verify": "Asignado, en camino, llegó, cambios y cierre.",
           "done_evidence": "Push/web TEST o evidencia del canal soportado.",
           "improvement_focus": "Preferencias y fallback.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-status"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         },
         {
           "id": "client-responsive",
@@ -142,7 +224,14 @@
           "verify": "Móvil/tablet/desktop sin overflow, botones tapados ni acciones inaccesibles.",
           "done_evidence": "Matriz de viewports + revisión visual.",
           "improvement_focus": "Accesibilidad táctil y tipografía.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "client-ui"
+          ]
         }
       ]
     },
@@ -158,7 +247,12 @@
           "verify": "Ofertas elegibles ≤20 km al proveedor correcto.",
           "done_evidence": "Matching TEST + aislamiento.",
           "improvement_focus": "Priorizar distancia, valor y urgencia.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-alerts",
@@ -168,7 +262,14 @@
           "verify": "Oferta nueva debe notificar según capacidades.",
           "done_evidence": "Runtime TEST del canal soportado.",
           "improvement_focus": "Fallback visible si sonido bloqueado.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-offers"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-accept",
@@ -178,7 +279,14 @@
           "verify": "Aceptar/rechazar de forma idempotente y autorizada.",
           "done_evidence": "Estado persistido + concurrencia controlada.",
           "improvement_focus": "Feedback inmediato.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-offers"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-gps",
@@ -188,7 +296,14 @@
           "verify": "Rechazar 0,0/fake/stale; publicar antes de llegada.",
           "done_evidence": "Prueba TEST + GPS físico final.",
           "improvement_focus": "Indicador de frescura GPS.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "provider-accept"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-arrival",
@@ -198,7 +313,14 @@
           "verify": "No avanzar fuera del geofence ni ante fallo GPS.",
           "done_evidence": "Backend TEST + geofence PASS/FAIL; físico final.",
           "improvement_focus": "Mostrar distancia restante y motivo.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "provider-gps"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-evidence",
@@ -208,7 +330,14 @@
           "verify": "Capturar/subir evidencia en etapas correctas.",
           "done_evidence": "Rows/bytes persistidos + UI.",
           "improvement_focus": "Checklist visual.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "provider-arrival"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-workflow",
@@ -218,7 +347,15 @@
           "verify": "Transiciones autorizadas y secuenciales.",
           "done_evidence": "Máquina de estados TEST.",
           "improvement_focus": "Botón principal contextual.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-arrival",
+            "provider-evidence"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-debt",
@@ -228,7 +365,14 @@
           "verify": "Bloquear nuevas aceptaciones al alcanzar deuda definida.",
           "done_evidence": "Escenarios TEST + deuda UGO.",
           "improvement_focus": "Mostrar deuda y botón Pagar UGO.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-accept"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-jobs",
@@ -238,7 +382,14 @@
           "verify": "Historial, fotos, pagos, fechas y estados.",
           "done_evidence": "Datos TEST concordantes.",
           "improvement_focus": "Filtros por estado/fecha.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-workflow"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-rating",
@@ -248,7 +399,14 @@
           "verify": "Rating bilateral tras cierre.",
           "done_evidence": "Rating persistido + regla de unicidad.",
           "improvement_focus": "UX simétrica.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-workflow"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-dispute",
@@ -258,7 +416,14 @@
           "verify": "Apertura, evidencia, estado y cierre.",
           "done_evidence": "Disputa TEST completa.",
           "improvement_focus": "Acceso visible desde servicio.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-accept"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-notifications",
@@ -268,7 +433,14 @@
           "verify": "Oferta, asignación, cambios y mensajes.",
           "done_evidence": "Push/web TEST.",
           "improvement_focus": "Sonido configurable.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-offers"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         },
         {
           "id": "provider-responsive",
@@ -278,7 +450,14 @@
           "verify": "Todas las acciones utilizables en móvil/tablet/desktop.",
           "done_evidence": "Matriz de viewports + revisión visual.",
           "improvement_focus": "Optimizar uso con una mano.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "provider-offers"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-ui"
+          ]
         }
       ]
     },
@@ -294,7 +473,12 @@
           "verify": "Cliente, Proveedor y Admin muestran Hugo donde corresponde.",
           "done_evidence": "Runtime por rol.",
           "improvement_focus": "Posición consistente y no invasiva.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-intent",
@@ -304,7 +488,14 @@
           "verify": "Entender pedidos como pintor/plomero y acciones del flujo.",
           "done_evidence": "Suite de intents TEST.",
           "improvement_focus": "Sinónimos y lenguaje natural.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-presence"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-authority",
@@ -314,7 +505,14 @@
           "verify": "Cada acción pasa por rol/authority/policy.",
           "done_evidence": "Pruebas positivas y negativas.",
           "improvement_focus": "Explicar por qué una acción fue negada.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-presence"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-action",
@@ -324,7 +522,15 @@
           "verify": "No chat decorativo: INTENT→ACTION→EFFECT.",
           "done_evidence": "Efecto persistido + audit trail.",
           "improvement_focus": "Confirmación breve del efecto.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-intent",
+            "hugo-authority"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-continuity",
@@ -334,7 +540,14 @@
           "verify": "Mantener contexto útil sin repetir ni perder estado.",
           "done_evidence": "Sesiones TEST multi-turn.",
           "improvement_focus": "Menos latencia y respuestas más cortas.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-action"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-voice",
@@ -344,7 +557,14 @@
           "verify": "Entrada/salida de voz y fallback textual.",
           "done_evidence": "Runtime browser; hardware/micrófono final si aplica.",
           "improvement_focus": "Estados escuchar/pensar/actuar claros.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-continuity"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-timeout",
@@ -354,7 +574,14 @@
           "verify": "Gemini/OpenRouter timeout/fallback sin congelar UI.",
           "done_evidence": "Fault injection + telemetría.",
           "improvement_focus": "Mensaje y retry claros.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-action"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-audit",
@@ -364,7 +591,15 @@
           "verify": "INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE trazable.",
           "done_evidence": "correlation_id + ledgers.",
           "improvement_focus": "Vista de auditoría legible.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-action",
+            "hugo-authority"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-privacy",
@@ -374,7 +609,14 @@
           "verify": "No enviar secretos ni evidencia cruda innecesaria al modelo.",
           "done_evidence": "Pruebas de sanitización + permisos.",
           "improvement_focus": "Minimizar datos enviados.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-authority"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         },
         {
           "id": "hugo-responsive",
@@ -384,7 +626,14 @@
           "verify": "Orbe/panel no tapa controles ni rompe layout.",
           "done_evidence": "Viewports + teclado móvil.",
           "improvement_focus": "Tamaño y posición adaptativos.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-presence"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "hugo-runtime"
+          ]
         }
       ]
     },
@@ -400,7 +649,12 @@
           "verify": "Rutas y acciones restringidas por rol.",
           "done_evidence": "Pruebas positivas/negativas.",
           "improvement_focus": "Mensajes de acceso claros.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-navigation",
@@ -410,7 +664,14 @@
           "verify": "Cada pestaña/acción carga y actúa.",
           "done_evidence": "Runtime crawl + click map.",
           "improvement_focus": "Eliminar acciones duplicadas.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-auth"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-realtime",
@@ -420,7 +681,14 @@
           "verify": "Cambios operativos aparecen sin refresh manual cuando aplica.",
           "done_evidence": "Realtime TEST + reconciliación.",
           "improvement_focus": "Indicador de sincronización.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-users",
@@ -430,7 +698,14 @@
           "verify": "Documentos, fechas, horarios, servicios y acciones auditadas.",
           "done_evidence": "Datos TEST + permisos.",
           "improvement_focus": "Filtros y búsqueda.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-risk",
@@ -440,7 +715,14 @@
           "verify": "Findings, ledgers, blockers y evidence links coherentes.",
           "done_evidence": "Runtime + same-SHA evidence.",
           "improvement_focus": "Resumen ejecutivo accionable.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-qa",
@@ -450,7 +732,14 @@
           "verify": "Simuladores, resultados, Meta-QA y regresiones sin autocertificación.",
           "done_evidence": "Persisted-state judge.",
           "improvement_focus": "Drill-down por escenario.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-model-router",
@@ -460,7 +749,14 @@
           "verify": "Primary/fallback/telemetría/costo visibles y funcionales.",
           "done_evidence": "Runtime primary+fallback.",
           "improvement_focus": "Latencia y calidad comparables.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-auth"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-launch",
@@ -470,7 +766,16 @@
           "verify": "Bloquea/libera determinísticamente desde evidencia.",
           "done_evidence": "Casos positivo/negativo.",
           "improvement_focus": "Explicar cada blocker.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-risk",
+            "admin-qa",
+            "admin-model-router"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         },
         {
           "id": "admin-responsive",
@@ -480,7 +785,14 @@
           "verify": "Panel completo utilizable móvil/tablet/desktop.",
           "done_evidence": "Viewports + revisión visual.",
           "improvement_focus": "Tablas adaptativas y navegación compacta.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "admin-ui"
+          ]
         }
       ]
     },
@@ -496,7 +808,12 @@
           "verify": "Cada departamento visible, con agente responsable y entradas/salidas.",
           "done_evidence": "Registro + job/evidence por departamento.",
           "improvement_focus": "Mostrar madurez por departamento.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-agents",
@@ -506,7 +823,14 @@
           "verify": "Distinguir catalogado, habilitado, ejecutado y verificado.",
           "done_evidence": "Trigger+executor+Judge+Sentinel por agente.",
           "improvement_focus": "Filtro por estado/madurez.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-departments"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-scheduler",
@@ -516,7 +840,14 @@
           "verify": "Hasta 5 trabajos compatibles, locks y recursos correctos.",
           "done_evidence": "Pruebas de concurrencia/conflicto.",
           "improvement_focus": "Vista de recursos y dependencia.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-agents"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-worker",
@@ -526,7 +857,14 @@
           "verify": "Trabaja sin navegador, respeta policy y vuelve a estado seguro.",
           "done_evidence": "Scheduled worker same-SHA + evidence.",
           "improvement_focus": "Mostrar heartbeat/lease.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-scheduler"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-recovery",
@@ -536,7 +874,14 @@
           "verify": "Excepciones normales sin SQL/GitHub manual.",
           "done_evidence": "Incidente→recovery→verify→audit.",
           "improvement_focus": "Playbooks visibles.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-worker"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-inbox",
@@ -546,7 +891,14 @@
           "verify": "Aprobaciones/escalaciones ordenadas, deduplicadas y auditadas.",
           "done_evidence": "Escenarios TEST.",
           "improvement_focus": "Prioridad y SLA.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-departments"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-ledgers",
@@ -556,7 +908,14 @@
           "verify": "Append-only, correlacionados, consultables.",
           "done_evidence": "Integridad + correlation_id.",
           "improvement_focus": "Búsqueda por job/serviceId.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-departments"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-killswitch",
@@ -566,7 +925,14 @@
           "verify": "Cortar ejecución y fail-closed sin corrupción.",
           "done_evidence": "Prueba TEST de stop/recovery.",
           "improvement_focus": "Estado muy visible.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-scheduler"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-enterprise",
@@ -576,7 +942,15 @@
           "verify": "Demanda, slots, navegación, acciones, permisos y evidencia funcionales en TEST.",
           "done_evidence": "Journey empresarial TEST.",
           "improvement_focus": "Dashboard operativo claro.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-departments",
+            "auto-scheduler"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         },
         {
           "id": "auto-audit",
@@ -586,7 +960,15 @@
           "verify": "Judge/Sentinel independientes, findings y re-audit.",
           "done_evidence": "Audit + remediation + re-audit.",
           "improvement_focus": "Tendencias y reincidencias.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-agents",
+            "auto-ledgers"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "autonomous-company"
+          ]
         }
       ]
     },
@@ -602,7 +984,22 @@
           "verify": "Cliente→matching→proveedor→GPS→evidencias→pago→ratings.",
           "done_evidence": "Un serviceId TEST completo.",
           "improvement_focus": "Timeline única.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-request",
+            "client-status",
+            "client-payment",
+            "client-rating",
+            "provider-accept",
+            "provider-arrival",
+            "provider-evidence",
+            "provider-workflow",
+            "provider-rating"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-rls",
@@ -612,7 +1009,12 @@
           "verify": "Roles no pueden leer/escribir fuera de autoridad.",
           "done_evidence": "Workflow aislado RLS/RPC same-SHA.",
           "improvement_focus": "Mantener tests negativos permanentes.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "security"
+          ]
         },
         {
           "id": "cross-idempotency",
@@ -622,7 +1024,16 @@
           "verify": "Sin doble aceptación/pago/cierre/rating.",
           "done_evidence": "Pruebas concurrentes.",
           "improvement_focus": "Feedback ante conflicto.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-request",
+            "provider-accept",
+            "client-payment"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-errors",
@@ -632,7 +1043,16 @@
           "verify": "Toda falla comunica causa y próximo paso.",
           "done_evidence": "Fault injection UI/API.",
           "improvement_focus": "Mensajes consistentes.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-navigation",
+            "provider-offers",
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-performance",
@@ -642,7 +1062,16 @@
           "verify": "Acciones críticas no quedan colgadas; loaders correctos.",
           "done_evidence": "Métricas y pruebas de latencia.",
           "improvement_focus": "Optimizar cargas pesadas.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-navigation",
+            "provider-offers",
+            "admin-navigation"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-accessibility",
@@ -652,7 +1081,17 @@
           "verify": "Teclado, foco, contraste, labels y targets táctiles.",
           "done_evidence": "Audit automatizable + revisión.",
           "improvement_focus": "Corregir WCAG básicos.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-responsive",
+            "provider-responsive",
+            "admin-responsive",
+            "hugo-responsive"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-visual",
@@ -662,7 +1101,17 @@
           "verify": "Design tokens, jerarquía y componentes coherentes.",
           "done_evidence": "Revisión visual multi-ruta.",
           "improvement_focus": "Consolidar estilos duplicados.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "client-responsive",
+            "provider-responsive",
+            "admin-responsive",
+            "hugo-responsive"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-security",
@@ -672,7 +1121,15 @@
           "verify": "No secretos en cliente/logs; datos mínimos.",
           "done_evidence": "Scan + pruebas de sanitización.",
           "improvement_focus": "Redacción automática.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "cross-rls",
+            "hugo-privacy"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "security"
+          ]
         },
         {
           "id": "cross-observability",
@@ -682,7 +1139,15 @@
           "verify": "Eventos críticos con correlation_id y evidencia.",
           "done_evidence": "Logs/ledgers por serviceId/job.",
           "improvement_focus": "Dashboard de trazabilidad.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "auto-ledgers",
+            "hugo-audit"
+          ],
+          "priority": "NORMAL",
+          "resources": [
+            "cross-system"
+          ]
         },
         {
           "id": "cross-regression",
@@ -692,7 +1157,17 @@
           "verify": "Todo bug corregido deja test que falla antes y pasa después.",
           "done_evidence": "Regression suite same-SHA.",
           "improvement_focus": "Cobertura por incidente.",
-          "real_test_required": false
+          "real_test_required": false,
+          "depends_on": [
+            "cross-p0",
+            "cross-rls",
+            "cross-idempotency",
+            "cross-errors"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "cross-system"
+          ]
         }
       ]
     },
@@ -708,7 +1183,16 @@
           "verify": "Permisos, frescura, hardware y geofence real.",
           "done_evidence": "serviceId + timestamps + geofence PASS + audit trail.",
           "improvement_focus": "Dejar instrucciones paso a paso.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "client-location",
+            "provider-gps",
+            "provider-arrival"
+          ],
+          "priority": "FINAL",
+          "resources": [
+            "human-final"
+          ]
         },
         {
           "id": "final-two-devices",
@@ -718,7 +1202,15 @@
           "verify": "Ejecutar flujo real simultáneo.",
           "done_evidence": "FULL-E2E/TWO-DEVICES PASS.",
           "improvement_focus": "Checklist corto y capturas mínimas.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "cross-p0",
+            "final-gps"
+          ],
+          "priority": "FINAL",
+          "resources": [
+            "human-final"
+          ]
         },
         {
           "id": "final-customer",
@@ -728,9 +1220,23 @@
           "verify": "Aceptación humana real del servicio.",
           "done_evidence": "Aceptación persistida + Launch Gate reevaluado.",
           "improvement_focus": "Instrucciones exactas para Sergio.",
-          "real_test_required": true
+          "real_test_required": true,
+          "depends_on": [
+            "final-two-devices"
+          ],
+          "priority": "FINAL",
+          "resources": [
+            "human-final"
+          ]
         }
       ]
     }
-  ]
+  ],
+  "execution_policy": {
+    "max_parallel": 5,
+    "fairness": "priority_then_dependency_order",
+    "block_conflicting_resources": true,
+    "defer_human_final": true,
+    "rule": "Sólo se habilitan simultáneamente controles con dependencias satisfechas y sin recursos incompatibles. Máximo 5."
+  }
 }
