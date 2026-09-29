@@ -21,6 +21,8 @@ No production publication is implied.
 
 **Upstream follow-up:** on `85986f5f` the GPS RPC passed its own guard but its nested `autonomous_qa_run_p0_test_service()` rejected the same secret-key call with `SERVICE_ROLE_REQUIRED`. `20260929151500_qa_p0_harness_secret_key_compat.sql` removes that redundant claim gate from the P0 harness while preserving the whole GPS negative/positive lifecycle and service-role-only EXECUTE ACL. Same-SHA Worker/Sentinel proof is still required.
 
+**29 September protected media + model-route closure:** UGO TEST executed the protected Storage runtime probe against a completed demo service with real initial/final objects. Signed downloads returned non-zero bytes, SHA-256 was recorded, public bucket access was denied, and `uploaded-media-bytes` moved to `COVERED`. Quality Coverage is now 8/10; only `physical-gps-device` and `real-customer-acceptance` remain UNCOVERED. The zero-cost model routes were also reconciled from fresh runtime benchmarks: all three READY task classes now point to an AVAILABLE/eligible free primary and AVAILABLE free fallback with max_cost=0; READY no longer survives when no fresh validated free primary exists.
+
 ## 2. Master requirement matrix
 
 | Master capability | Current implementation | Maturity |
