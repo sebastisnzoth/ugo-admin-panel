@@ -59,3 +59,26 @@ test('human final remains deferred until autonomous controls are VERIFIED', () =
   const {readiness}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
   assert.equal(readiness.groups[0].items.find(x=>x.id==='human').gate_state,'HUMAN_REQUIRED')
 })
+
+
+test('open PR with runtime blocker is visible as WAITING_RUNTIME', () => {
+  const pullRequests=[{
+    number:283,
+    title:'fix(client): close navigation readiness gaps',
+    head_ref:'fix/a-readiness-20260929',
+    head_sha:'abc',
+    readiness_id:'a',
+    evidence_status:'NEEDS_RUNTIME_PROOF',
+    runtime_status:'NOT_AVAILABLE',
+    judge:'PENDING_RUNTIME_PROOF',
+    sentinel:'PENDING_RUNTIME_PROOF',
+    updated_at:'2026-09-29T19:50:00Z',
+    html_url:'https://github.com/example/pr/283'
+  }]
+  const {readiness,summary}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks:[],pullRequests,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const item=readiness.groups[0].items.find(x=>x.id==='a')
+  assert.equal(item.gate_state,'WAITING_RUNTIME')
+  assert.equal(item.pull_request.number,283)
+  assert.equal(summary.waiting_runtime,1)
+  assert.equal(readiness.groups[0].items.find(x=>x.id==='b').gate_state,'BLOCKED_DEPENDENCY')
+})
