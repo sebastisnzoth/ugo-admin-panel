@@ -1,0 +1,36 @@
+name: UGO Exception Recovery TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'supabase/migrations/20260929190746_autonomous_exception_recovery_runtime.sql'
+      - 'scripts/autonomous-exception-recovery-runtime.mjs'
+      - 'scripts/autonomous-exception-recovery-judge.mjs'
+      - 'tests/contracts/autonomous-exception-recovery.test.mjs'
+      - '.github/workflows/ugo-exception-recovery-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  exception-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      UGO_TEST_SUPABASE_URL: ${{ secrets.UGO_TEST_SUPABASE_URL }}
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - name: Contract
+        run: node --test tests/contracts/autonomous-exception-recovery.test.mjs
+      - name: Execute recoverable exception through UGO runtime
+        run: node scripts/autonomous-exception-recovery-runtime.mjs
+      - name: Independent Judge and Sentinel
+        run: node scripts/autonomous-exception-recovery-judge.mjs
