@@ -9,6 +9,7 @@
   "completed_at": "2026-09-29T21:31:00Z",
   "started_sha": "6c13b3ea4566d618d0b8b7a41dadd382fda2e017",
   "verified_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
+  "runtime_validated_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Intent Runtime Agent",
@@ -26,6 +27,10 @@
     "Judge": "PASS",
     "Sentinel": "PASS"
   },
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
   "resources": [
     "hugo-intent"
   ],
@@ -38,5 +43,7 @@
     "github-actions-job-109628438124",
     "github-actions-artifact-11063771893",
     "docs/ugo-readiness-evidence/readiness-hugo-intent-a668c242.json"
-  ]
+  ],
+  "evidence_path": "docs/ugo-readiness-evidence/readiness-hugo-intent-a668c242.json",
+  "result_summary": "Production intent resolver verified against active UGO TEST categories: 10 natural-language category cases and 6 flow-action cases PASS; exact-SHA build and Core CI PASS; Judge and Sentinel PASS."
 }
