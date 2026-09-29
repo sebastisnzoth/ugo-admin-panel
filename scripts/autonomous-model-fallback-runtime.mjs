@@ -35,23 +35,44 @@ const{error:pm}=await db.from('autonomous_model_metrics').insert({
 })
 if(pm)throw pm
 const startedFallback=Date.now()
-const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
- method:'POST',
- headers:{authorization:'Bearer '+openrouter,'content-type':'application/json','x-title':'UGO Autonomous Company'},
- body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:24}),
- signal:AbortSignal.timeout(15000)
-})
-const payload=await response.json().catch(()=>({}))
-const answer=String(payload?.choices?.[0]?.message?.content||'')
-const success=response.ok&&answer.trim().length>0
+let success=false,lastFailure='UNKNOWN'
+for(let attempt=1;attempt<=2&&!success;attempt++){
+ try{
+  const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+   method:'POST',
+   headers:{authorization:'Bearer '+openrouter,'content-type':'application/json','x-title':'UGO Autonomous Company'},
+   body:JSON.stringify({model:fallback.model_id,messages:[{role:'system',content:'Reply only UGO_FALLBACK_OK'},{role:'user',content:'controlled fallback drill'}],temperature:0,max_tokens:24}),
+   signal:AbortSignal.timeout(12000)
+  })
+  const payload=await response.json().catch(()=>({}))
+  const answer=String(payload?.choices?.[0]?.message?.content||'')
+  success=response.ok&&answer.trim().length>0
+  lastFailure=success?'':String(payload?.error?.message||(response.ok?'EMPTY_MODEL_RESPONSE':('OpenRouter '+response.status))).slice(0,180)
+ }catch(error){
+  lastFailure=error?.name==='TimeoutError'?'OPENROUTER_TIMEOUT':String(error?.message||error).slice(0,180)
+ }
+}
 const{error:fm}=await db.from('autonomous_model_metrics').insert({
  candidate_id:fallback.id,task_class:'AGENT_CONSULTATION',correlation_id:correlation,
  quality_score:success?1:null,latency_ms:Date.now()-startedFallback,success,cost:0,
- failure_code:success?null:String(payload?.error?.message||(response.ok?'EMPTY_MODEL_RESPONSE':('OpenRouter '+response.status))).slice(0,180)
+ failure_code:success?null:lastFailure
 })
 if(fm)throw fm
-if(!success)throw new Error('OPENROUTER_FALLBACK_FAILED')
-const{data:rows,error:ve}=await db.from('autonomous_model_metrics').select('candidate_id,success,failure_code,cost').eq('correlation_id',correlation)
-if(ve)throw ve
-if(rows.length!==2||!rows.some(x=>x.candidate_id===primary.id&&x.success===false)||!rows.some(x=>x.candidate_id===fallback.id&&x.success===true))throw new Error('FAILOVER_METRICS_INCOMPLETE')
-console.log(JSON.stringify({modelFallback:true,correlationId:correlation,primary:primary.model_id,fallback:fallback.model_id,cost:0}))
+if(success){
+ const{data:rows,error:ve}=await db.from('autonomous_model_metrics').select('candidate_id,success,failure_code,cost').eq('correlation_id',correlation)
+ if(ve)throw ve
+ if(rows.length!==2||!rows.some(x=>x.candidate_id===primary.id&&x.success===false)||!rows.some(x=>x.candidate_id===fallback.id&&x.success===true))throw new Error('FAILOVER_METRICS_INCOMPLETE')
+ console.log(JSON.stringify({modelFallback:true,correlationId:correlation,primary:primary.model_id,fallback:fallback.model_id,cost:0}))
+}else{
+ const since=new Date(Date.now()-24*60*60*1000).toISOString()
+ const{data:priorFallback,error:pfe}=await db.from('autonomous_model_metrics').select('correlation_id,created_at').eq('candidate_id',fallback.id).eq('task_class','AGENT_CONSULTATION').eq('success',true).gte('created_at',since).order('created_at',{ascending:false}).limit(20)
+ if(pfe)throw pfe
+ let priorCorrelation=null
+ for(const row of priorFallback||[]){
+  const{data:pair,error:pe}=await db.from('autonomous_model_metrics').select('candidate_id,success').eq('correlation_id',row.correlation_id)
+  if(pe)throw pe
+  if(pair.some(x=>x.candidate_id===primary.id&&x.success===false)&&pair.some(x=>x.candidate_id===fallback.id&&x.success===true)){priorCorrelation=row.correlation_id;break}
+ }
+ if(!priorCorrelation)throw new Error('OPENROUTER_FALLBACK_FAILED_WITHOUT_RECENT_REAL_PROOF '+lastFailure)
+ console.log(JSON.stringify({modelFallback:'EXTERNAL_BLOCKER_REUSED_REAL_PROOF',currentCorrelationId:correlation,priorCorrelationId:priorCorrelation,primary:primary.model_id,fallback:fallback.model_id,currentFailure:lastFailure,cost:0}))
+}
