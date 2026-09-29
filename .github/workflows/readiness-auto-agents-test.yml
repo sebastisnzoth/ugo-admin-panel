@@ -1,0 +1,60 @@
+name: UGO Readiness Auto Agents TEST
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/autonomous-agents-readiness-*.mjs"
+      - "tests/contracts/autonomous-agents-readiness.test.mjs"
+      - "src/mvp/AutonomousWorkforceControlCenter.tsx"
+      - ".github/workflows/readiness-auto-agents-test.yml"
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-readiness-auto-agents-test
+  cancel-in-progress: false
+jobs:
+  verify:
+    name: Catalog · Enable · Execute · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: test
+    env:
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - run: npm ci --include=dev
+      - name: Enforce UGO TEST only
+        run: node scripts/assert-test-environment.mjs
+      - name: Permanent contract regression
+        run: node --test tests/contracts/autonomous-agents-readiness.test.mjs tests/contracts/superadmin-autonomous-agents.test.mjs
+      - name: Runtime trigger + executor proof per enabled agent
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-agents-readiness-runtime.mjs
+      - name: Independent Judge per agent
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-agents-readiness-judge.mjs
+      - name: Sentinel per agent
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-agents-readiness-sentinel.mjs
+      - name: Upload immutable readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-agents-readiness-${{ github.sha }}
+          path: |
+            artifacts/auto-agents-runtime.json
+            artifacts/auto-agents-judge.json
+            artifacts/auto-agents-sentinel.json
+          if-no-files-found: warn
+          retention-days: 90
