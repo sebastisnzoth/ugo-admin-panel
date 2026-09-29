@@ -75,7 +75,7 @@ try{
  await page.addInitScript(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)});
  await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
  await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:20000});
- await page.getByRole('button',{name:'Super Admin',exact:false}).waitFor({state:'visible',timeout:20000});
+ await page.getByRole('navigation',{name:'Navegación Admin'}).getByRole('button',{name:'Super Admin',exact:false}).waitFor({state:'visible',timeout:20000});
 
  for(const section of sections){
    await clickNamed(section.name,null);
