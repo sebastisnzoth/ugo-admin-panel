@@ -103,13 +103,7 @@ try{
     await clickMenu(page,item)
     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
     await snap(page,name+' '+item)
-    const dispute=page.locator('.ugo-dispute-backdrop').first()
-    if(await dispute.count()&&await dispute.isVisible()){const close=page.locator('.ugo-dispute-sheet header button').first();if(await close.count()&&await close.isVisible())await close.click();else await dispute.click({position:{x:2,y:2},force:true});await dispute.waitFor({state:'hidden',timeout:5000}).catch(()=>{})}
-    const notificationClose=page.getByRole('button',{name:'Cerrar notificaciones'}).first()
-    if(await notificationClose.count()&&await notificationClose.isVisible())await notificationClose.click()
-    const home=page.getByRole('button',{name:/Ir al inicio|Volver al inicio|Volver/}).first()
-    if(await home.count()&&await home.isVisible())await home.click()
-    else await page.evaluate(()=>location.reload())
+    await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
     await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:10000})
    }
 
