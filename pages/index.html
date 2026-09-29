@@ -55,6 +55,18 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       <div><span class="live-dot"></span><strong>MONITOR DE TRABAJO</strong></div>
       <div class="tiny" id="activitySource">Actividad GitHub · cargando snapshot seguro…</div>
     </div>
+    <div class="monitor-grid" style="grid-template-columns:1fr 1fr">
+      <div class="monitor-box" style="min-height:140px">
+        <strong>UGO ESTÁ HACIENDO AHORA</strong>
+        <div class="state-big" id="nowDoingTitle">REVALIDANDO…</div>
+        <div class="sub" id="nowDoingDetail">Buscando locks y ejecución observable.</div>
+      </div>
+      <div class="monitor-box" style="min-height:140px">
+        <strong>LO SIGUIENTE QUE HAY QUE HACER</strong>
+        <div class="state-big" id="nextDoingTitle">REVALIDANDO…</div>
+        <div class="sub" id="nextDoingDetail">Calculando el próximo paso seguro.</div>
+      </div>
+    </div>
     <div class="monitor-grid">
       <div class="monitor-box">
         <strong>Ahora mismo</strong>
@@ -497,6 +509,45 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     })
   }
 
+  const renderOperationalNow = s => {
+    const locks = s?.active_locks || []
+    const next = s?.next_movement || null
+    const nowTitle = document.getElementById('nowDoingTitle')
+    const nowDetail = document.getElementById('nowDoingDetail')
+    const nextTitle = document.getElementById('nextDoingTitle')
+    const nextDetail = document.getElementById('nextDoingDetail')
+
+    if (locks.length) {
+      const primary = locks[0]
+      nowTitle.textContent = primary.title || primary.task_id || 'UGO trabajando'
+      nowTitle.className = 'state-big accent'
+      nowDetail.textContent = [
+        primary.assigned_agent || primary.owner || 'UGO',
+        primary.status || 'IN_PROGRESS',
+        primary.current_step || null,
+        primary.job_id || null
+      ].filter(Boolean).join(' · ')
+    } else {
+      nowTitle.textContent = 'SIN JOB ACTIVO PERSISTIDO'
+      nowTitle.className = 'state-big'
+      nowDetail.textContent = 'No hay un lock activo en el snapshot actual. Si GitHub Actions está ejecutando algo, se muestra abajo en actividad observable.'
+    }
+
+    if (next) {
+      nextTitle.textContent = next.title || next.id || 'Próximo paso'
+      nextTitle.className = 'state-big ' + (next.gate_state === 'HUMAN_REQUIRED' ? 'warn' : next.gate_state === 'AVAILABLE' ? 'accent' : '')
+      nextDetail.textContent = [
+        gateLabel(next),
+        next.assigned_agent || next.owner || 'UGO',
+        next.resolve || null
+      ].filter(Boolean).join(' · ')
+    } else {
+      nextTitle.textContent = 'SIN PASO PENDIENTE'
+      nextTitle.className = 'state-big ok'
+      nextDetail.textContent = 'No hay un próximo paso publicado en el snapshot actual.'
+    }
+  }
+
   const loadLiveMonitor = () => fetch('activity.json?ts=' + Date.now(), {cache:'no-store'})
     .then(r => {
       if (!r.ok) throw new Error('activity.json HTTP ' + r.status)
@@ -590,6 +641,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   }).then(s => {
     statusSnapshot = s
     renderSyncState()
+    renderOperationalNow(s)
     const currentIds = new Set([...(s.implementation_steps || []), ...(s.final_gate_steps || [])].map(x => x.id))
     const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
@@ -700,7 +752,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       button.textContent = '↻ Actualizar página y flujo'
     }
   })
-  setInterval(() => Promise.allSettled([loadStatus(), loadCi()]), 60000)
+  setInterval(loadStatus, 15000)
+  setInterval(() => Promise.allSettled([loadCi(), loadMainHead()]), 60000)
   setInterval(loadLiveMonitor, 45000)
   setInterval(loadMainHead, 90000)
 })()
