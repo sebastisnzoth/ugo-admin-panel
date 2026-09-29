@@ -38,6 +38,7 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
   if(refreshed.error)throw refreshed.error
   await new Promise(resolve=>setTimeout(resolve,150))
  }
+ const fixtureJobIds=[]
  try{
  const departments=await db.from('autonomous_departments').select('department_id,name')
  if(departments.error)throw departments.error
@@ -47,6 +48,8 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const agents=await db.from('autonomous_agents').select('id,department_id,name,status')
  if(agents.error)throw agents.error
  assert.equal(agents.data.filter(x=>x.department_id===14&&x.status!=='DISABLED').length,6,'D14 must expose exactly six active independent agents')
+ const governanceAgent=agents.data.find(x=>x.department_id===14&&x.status!=='DISABLED')
+ assert.ok(governanceAgent?.id,'D14 governance fixture requires a persisted owner')
  const sims=await db.from('autonomous_qa_simulators').select('role,status')
  if(sims.error)throw sims.error
  assert.equal(sims.data.filter(x=>x.status==='ACTIVE').length,3,'QA Lab must expose three active simulator actors')
@@ -88,8 +91,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const onForYellow=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'ON',p_reason:'isolated YELLOW approval validation'})
  if(onForYellow.error)throw onForYellow.error
 
- const yellow=await enqueueExecutable({p_department_id:14,p_agent_id:null,p_objective:'Runtime YELLOW dual control probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-yellow',p_service_id:null,p_authority_class:'YELLOW',p_idempotency_key:'ugo-autonomy-yellow-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
+ const yellow=await enqueueExecutable({p_department_id:14,p_agent_id:governanceAgent.id,p_objective:'Runtime YELLOW dual control probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-yellow',p_service_id:null,p_authority_class:'YELLOW',p_idempotency_key:'ugo-autonomy-yellow-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
  if(yellow.error)throw yellow.error
+ fixtureJobIds.push(yellow.data.id)
  assert.equal(yellow.data.status,'WAITING_APPROVAL')
  assert.equal(yellow.data.blocked_reason,'YELLOW_DUAL_CONTROL_REQUIRED')
  const yellowFirst=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'isolated YELLOW first approval'})
@@ -101,10 +105,11 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.match(yellowSameActor.error.message,/INDEPENDENT_SECOND_APPROVER_REQUIRED/)
 
  const redKey='ugo-autonomy-red-'+crypto.randomUUID()
- const red=await enqueueExecutable({p_department_id:14,p_agent_id:null,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
+ const red=await enqueueExecutable({p_department_id:14,p_agent_id:governanceAgent.id,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
  if(red.error)throw red.error
+ fixtureJobIds.push(red.data.id)
  assert.equal(red.data.status,'WAITING_APPROVAL')
- const retry=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:null,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
+ const retry=await db.rpc('autonomous_enqueue_job',{p_department_id:14,p_agent_id:governanceAgent.id,p_objective:'Runtime governance approval probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:'RED',p_idempotency_key:redKey,p_input_evidence:[{type:'integration_test'}]})
  if(retry.error)throw retry.error
  assert.equal(retry.data.id,red.data.id)
 
@@ -112,8 +117,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(redApprove.error)throw redApprove.error
  assert.equal(redApprove.data.status,'QUEUED')
  assert.equal(redApprove.data.authorization_decision,'AUTHORIZED_HUMAN')
- const redRejectSeed=await enqueueExecutable({p_department_id:14,p_agent_id:null,p_objective:'Runtime RED rejection probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test-reject',p_service_id:null,p_authority_class:'RED',p_idempotency_key:'ugo-autonomy-red-reject-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
+ const redRejectSeed=await enqueueExecutable({p_department_id:14,p_agent_id:governanceAgent.id,p_objective:'Runtime RED rejection probe',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test-reject',p_service_id:null,p_authority_class:'RED',p_idempotency_key:'ugo-autonomy-red-reject-'+crypto.randomUUID(),p_input_evidence:[{type:'integration_test'}]})
  if(redRejectSeed.error)throw redRejectSeed.error
+ fixtureJobIds.push(redRejectSeed.data.id)
  const redReject=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:redRejectSeed.data.id,p_approve:false,p_reason:'isolated RED rejection'})
  if(redReject.error)throw redReject.error
  assert.equal(redReject.data.status,'CANCELLED')
@@ -135,6 +141,10 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(off.error)throw off.error
  assert.equal(off.data.mode,'OFF')
  } finally {
+  for(const id of fixtureJobIds){
+   const row=await service.from('autonomous_jobs').select('status').eq('id',id).maybeSingle()
+   if(row.data&&['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED'].includes(row.data.status)) await db.rpc('superadmin_cancel_autonomous_job',{p_job_id:id,p_reason:'isolated governance fixture cleanup'})
+  }
   await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:false,p_reason:'runtime cleanup'})
   await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime cleanup; safe default'})
   if(originalRole!=='superadmin'){

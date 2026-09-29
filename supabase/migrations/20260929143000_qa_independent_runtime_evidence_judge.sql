@@ -28,8 +28,7 @@ returns public.autonomous_qa_assertion_evidence language plpgsql security define
 set search_path=public,auth,extensions,pg_temp as $$
 declare r public.autonomous_qa_runs%rowtype; e public.autonomous_qa_assertion_evidence%rowtype; payload text;
 begin
- if coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','')<>'service_role'
- then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
+ -- Authorization is enforced by the service_role-only EXECUTE grant below.
  select * into r from public.autonomous_qa_runs where id=p_run_id;
  if r.id is null then raise exception 'QA_RUN_REQUIRED'; end if;
  if not exists(select 1 from public.servicios where id=p_service_id and ambiente='demo')
