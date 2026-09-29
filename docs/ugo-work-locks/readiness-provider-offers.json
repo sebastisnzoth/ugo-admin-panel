@@ -19,5 +19,13 @@
   "correlation_id": "readiness-provider-offers-20260929T204500Z",
   "current_step": "inspect_matching_and_runtime_tests",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [],
+  "title": "Verify eligible provider offers within 20 km reach the correct provider",
+  "department": "App Proveedor",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-qa",
+    "ugo-runtime-validation"
+  ]
 }
