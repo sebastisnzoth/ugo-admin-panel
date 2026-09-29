@@ -2,10 +2,10 @@
   "readiness_id": "admin-navigation",
   "task_id": "readiness-admin-navigation",
   "job_id": "UGO-READINESS-ADMIN-NAVIGATION",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T21:20:00Z",
-  "heartbeat_at": "2026-09-29T21:27:00Z",
-  "lease_expires_at": "2026-09-29T22:12:00Z",
+  "heartbeat_at": "2026-09-29T21:44:00Z",
+  "lease_expires_at": "2026-09-29T21:44:00Z",
   "started_sha": "d68ed824835a654584d8613121cb37e29513d499",
   "owner": "UGO",
   "assigned_agent": "Admin Runtime Navigation Agent",
@@ -17,11 +17,13 @@
     "admin-shell"
   ],
   "correlation_id": "readiness-admin-navigation-20260929T212000Z-d68ed824",
-  "current_step": "runtime_workflow_in_progress",
+  "current_step": "closed_verified",
   "attempt": 1,
   "evidence_ids": [
-    "github-actions-run-36633047077",
-    "github-actions-job-109626762674"
+    "github-actions-run-36634933628",
+    "github-actions-job-109633133223",
+    "artifact-11063459086",
+    "sha256:3a0a7be8153b3839322f12b8f553f56e803fba5c0ff49907a6457576f75c0732"
   ],
   "title": "Verify Admin and Super Admin navigation, menus and actions in runtime",
   "department": "Admin / Super Admin",
@@ -30,5 +32,21 @@
     "ugo-admin",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-29T21:44:00Z",
+  "runtime_validated_sha": "320b476b9e7b23af8dcfbbfb75589d78db0423eb",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-admin-navigation-20260929.json",
+  "result_summary": {
+    "runtime_crawl": "PASS",
+    "controls_clicked": "34/34",
+    "views_crawled": 29,
+    "duplicate_navigation_actions": "NONE",
+    "page_errors": 0,
+    "judge": "PASS",
+    "sentinel": "PASS"
+  }
 }
