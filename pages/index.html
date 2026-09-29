@@ -39,37 +39,33 @@
       <h1>Resultados verificables.</h1>
       <p class="lead">Snapshot público y sanitizado del estado de UGO. Sólo muestra evidencia persistida en el repositorio y resultados declarados para UGO TEST. No expone secretos, datos personales ni acceso al runtime.</p>
     </div>
-    <span class="state">NO PRODUCTION-READY</span>
+    <span class="state" id="prodState">UNVERIFIED</span>
   </div>
 
   <section class="metrics" aria-label="Resumen">
-    <div class="metric"><strong class="ok">8/10</strong><span>Quality Coverage</span></div>
-    <div class="metric"><strong class="ok">3</strong><span>Assurance checks PASSED</span></div>
-    <div class="metric"><strong class="bad">3</strong><span>bloqueos finales explícitos</span></div>
-    <div class="metric"><strong class="warn">BLOCKED</strong><span>Customer #1</span></div>
+    <div class="metric"><strong class="ok" id="coverageValue">—</strong><span>Quality Coverage</span></div>
+    <div class="metric"><strong class="ok" id="assuranceValue">—</strong><span>Assurance checks PASSED</span></div>
+    <div class="metric"><strong class="bad" id="blockersValue">—</strong><span>bloqueos finales explícitos</span></div>
+    <div class="metric"><strong class="warn" id="customerValue">UNVERIFIED</strong><span>Customer #1</span></div>
   </section>
 
   <h2>Assurance y auditoría</h2>
   <section class="grid">
     <article class="card">
       <h3>Controles deterministas</h3>
-      <div class="row"><span>META_AUDIT</span><span class="pill ok">PASSED</span></div>
-      <div class="row"><span>RED_TEAM</span><span class="pill ok">PASSED</span></div>
-      <div class="row"><span>DIGITAL_TWIN</span><span class="pill ok">PASSED</span></div>
+      <div class="row"><span>META_AUDIT</span><span class="pill ok" id="metaAuditStatus">UNVERIFIED</span></div>
+      <div class="row"><span>RED_TEAM</span><span class="pill ok" id="redTeamStatus">UNVERIFIED</span></div>
+      <div class="row"><span>DIGITAL_TWIN</span><span class="pill ok" id="digitalTwinStatus">UNVERIFIED</span></div>
     </article>
     <article class="card">
       <h3>Auditoría corporativa final</h3>
       <p>Falla cerrado mientras existan dependencias no verificadas.</p>
-      <ul>
-        <li>Founder Challenge pendiente</li>
-        <li>GPS físico no verificado</li>
-        <li>Aceptación real Customer #1 no verificada</li>
-      </ul>
+      <ul id="blockerList"><li>Esperando snapshot verificable…</li></ul>
     </article>
     <article class="card">
       <h3>Customer #1</h3>
-      <p><span class="pill bad">BLOCKED</span></p>
-      <p>Motivo persistido: <code>CUSTOMER_ACCEPTANCE_NOT_APPROVED</code>. Un demo o fixture no puede satisfacer este gate.</p>
+      <p><span class="pill bad" id="customerPill">UNVERIFIED</span></p>
+      <p>Motivo persistido: <code id="customerReason">UNVERIFIED</code>. Un demo o fixture no puede satisfacer este gate.</p>
     </article>
   </section>
 
@@ -95,5 +91,36 @@
 
   <footer>UGO Observatory es informativo. No convierte un resultado de TEST en autorización de producción y no reemplaza los gates de lanzamiento.</footer>
 </main>
+
+<script>
+(async function(){
+  const fail = (message) => {
+    document.getElementById('prodState').textContent = 'EVIDENCE UNAVAILABLE'
+    document.getElementById('prodState').className = 'state bad'
+    console.error(message)
+  }
+  try {
+    const response = await fetch('status.json', { cache: 'no-store' })
+    if (!response.ok) throw new Error('status.json HTTP ' + response.status)
+    const s = await response.json()
+    const assurance = Object.fromEntries((s.assurance || []).map(x => [x.name, x.status]))
+    document.getElementById('coverageValue').textContent = s.quality_coverage.covered + '/' + s.quality_coverage.total
+    document.getElementById('assuranceValue').textContent = String((s.assurance || []).filter(x => x.status === 'PASSED').length)
+    document.getElementById('blockersValue').textContent = String((s.corporate_final_audit.blockers || []).length)
+    document.getElementById('customerValue').textContent = s.customer_1
+    document.getElementById('customerPill').textContent = s.customer_1
+    document.getElementById('customerReason').textContent = s.customer_1_reason
+    document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
+    document.getElementById('redTeamStatus').textContent = assurance.RED_TEAM || 'UNVERIFIED'
+    document.getElementById('digitalTwinStatus').textContent = assurance.DIGITAL_TWIN || 'UNVERIFIED'
+    document.getElementById('prodState').textContent = s.production_ready ? 'PRODUCTION-READY' : 'NO PRODUCTION-READY'
+    document.getElementById('blockerList').innerHTML = (s.corporate_final_audit.blockers || [])
+      .map(x => '<li>' + x.replaceAll('_',' ') + '</li>').join('')
+  } catch (error) {
+    fail(error)
+  }
+})()
+</script>
+
 </body>
 </html>
