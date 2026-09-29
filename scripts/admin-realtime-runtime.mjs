@@ -35,6 +35,22 @@ if(!original.disponible){
 }
 const targetOnline=!original.online
 
+function subscribed(channel,label){
+ return new Promise((resolve,reject)=>{
+  const timer=setTimeout(()=>reject(new Error(label+' subscription timeout')),12000)
+  channel.subscribe(status=>{
+   if(status==='SUBSCRIBED'){clearTimeout(timer);resolve()}
+   else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){clearTimeout(timer);reject(new Error(label+' '+status))}
+  })
+ })
+}
+function eventSignal(timeout=7000){
+ let resolveSignal,rejectSignal
+ const promise=new Promise((resolve,reject)=>{resolveSignal=resolve;rejectSignal=reject})
+ const timer=setTimeout(()=>rejectSignal(new Error('DIRECT_ADMIN_REALTIME_TIMEOUT')),timeout)
+ return {promise,resolve:value=>{clearTimeout(timer);resolveSignal(value)}}
+}
+
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:1440,height:1000}})
@@ -67,10 +83,21 @@ try{
  await page.getByText(/Sistema en vivo/).waitFor({state:'visible',timeout:20000})
  const before=await readOnlineKpi()
  const expected=before+(targetOnline?1:-1)
+ const direct=eventSignal()
+ const directChannel=user.channel('admin-realtime-direct-'+Date.now())
+  .on('postgres_changes',{event:'UPDATE',schema:'public',table:'perfiles_proveedor',filter:`usuario_id=eq.${fixture.usuario_id}`},payload=>direct.resolve(payload.new))
+ await subscribed(directChannel,'DIRECT_ADMIN_REALTIME')
  const mutationStarted=Date.now()
- const {error:updateError}=await root.from('perfiles_proveedor').update({online:targetOnline,disponible:true}).eq('usuario_id',fixture.usuario_id)
+ const uiPromise=waitForKpi(expected,7000)
+ const {data:updatedRows,error:updateError}=await root.from('perfiles_proveedor').update({online:targetOnline,disponible:true}).eq('usuario_id',fixture.usuario_id).select('usuario_id,online,disponible')
  assert.ifError(updateError)
- const forwardLatencyMs=await waitForKpi(expected,7000)
+ assert.equal(updatedRows?.length,1,'FIXTURE_UPDATE_ROW_REQUIRED')
+ assert.equal(Boolean(updatedRows?.[0]?.online),targetOnline,'FIXTURE_UPDATE_NOT_PERSISTED')
+ const [directRow,forwardLatencyMs]=await Promise.all([direct.promise,uiPromise])
+ assert.equal(Boolean(directRow?.online),targetOnline,'DIRECT_REALTIME_PAYLOAD_MISMATCH')
+ console.log('DIRECT_ADMIN_REALTIME_OK')
+ await user.removeChannel(directChannel)
+
  assert.ok(forwardLatencyMs<7000,'Realtime must beat 8s fallback polling window')
  const {error:restoreError}=await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id)
  assert.ifError(restoreError)
