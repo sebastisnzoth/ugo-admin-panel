@@ -90,6 +90,7 @@ try{
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
   await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
+  await page.waitForTimeout(2500);
   const autonomyText=await page.locator('.ugo-autonomous-content').textContent();
   assert.ok((autonomyText||'').includes('Modo: '+before.mode),'AUTONOMY_MODE_UI_BACKEND_MISMATCH');
   assert.ok((autonomyText||'').includes('Launch: '+before.launch),'LAUNCH_HEADER_UI_BACKEND_MISMATCH');
