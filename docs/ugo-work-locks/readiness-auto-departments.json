@@ -1,0 +1,31 @@
+{
+  "task_id": "readiness-auto-departments",
+  "readiness_id": "auto-departments",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
+  "title": "Verify every autonomous department is registered, visibly mapped to a responsible agent, and has persisted job/evidence I/O",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T20:48:00Z",
+  "heartbeat_at": "2026-09-29T20:48:00Z",
+  "lease_expires_at": "2026-09-29T21:33:00Z",
+  "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
+  "owner": "UGO",
+  "department": "Plataforma Autónoma",
+  "assigned_agent": "Autonomy Registry Engineer",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-registry"
+  ],
+  "correlation_id": "ugo-auto-departments-20260929T204800Z",
+  "current_step": "AUDIT_REGISTRY",
+  "attempt": 1,
+  "evidence_ids": []
+}
