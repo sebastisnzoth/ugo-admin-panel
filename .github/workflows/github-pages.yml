@@ -8,8 +8,11 @@ on:
     paths:
       - "pages/**"
       - "docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md"
+      - "docs/UGO_SCHEDULER_POLICY.json"
       - "docs/ugo-work-locks/**"
       - "scripts/generate-pages-status.mjs"
+      - "scripts/ugo-scheduler-engine.mjs"
+      - "scripts/validate-ugo-scheduler.mjs"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
 
@@ -36,6 +39,10 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
+
+      - name: Validate scheduler policy and locks
+        shell: bash
+        run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
 
       - name: Prepare static site
         shell: bash
