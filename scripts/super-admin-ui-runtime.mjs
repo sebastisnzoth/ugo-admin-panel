@@ -25,12 +25,13 @@ assert.ifError(profileError);
 assert.equal(profile?.tipo,'superadmin','UGO_TEST_SUPERADMIN_REQUIRED');
 assert.equal(profile?.activo,true,'UGO_TEST_SUPERADMIN_ACTIVE_REQUIRED');
 
+const reader=user;
 async function count(table){
-  const {count,error}=await admin.from(table).select('*',{count:'exact',head:true});
+  const {count,error}=await reader.from(table).select('*',{count:'exact',head:true});
   assert.ifError(error); return count||0;
 }
 async function visibleCount(table,limit){
-  const {data,error}=await admin.from(table).select('id').limit(limit);
+  const {data,error}=await reader.from(table).select('id').limit(limit);
   assert.ifError(error); return (data||[]).length;
 }
 async function snapshot(){
@@ -39,12 +40,12 @@ async function snapshot(){
     modelCandidates, modelRoutes, modelMetrics, risks, controls, challenges,
     jobs
   ]=await Promise.all([
-    admin.from('autonomous_company_state').select('*').maybeSingle(),
-    admin.from('autonomous_release_gate').select('*').eq('gate_key','CUSTOMER_1').maybeSingle(),
+    reader.from('autonomous_company_state').select('*').maybeSingle(),
+    reader.from('autonomous_release_gate').select('*').eq('gate_key','CUSTOMER_1').maybeSingle(),
     count('autonomous_qa_simulators'), count('autonomous_qa_scenarios'), visibleCount('autonomous_qa_runs',50), count('autonomous_quality_coverage'),
     count('autonomous_model_candidates'), count('autonomous_model_routes'), visibleCount('autonomous_model_metrics',50),
     count('autonomous_enterprise_risks'), count('autonomous_control_coverage'), count('autonomous_challenges'),
-    admin.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100)
+    reader.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100)
   ]);
   for(const r of [company,gate,jobs]) assert.ifError(r.error);
   const correlated=(jobs.data||[]).find(j=>j.correlation_id);
