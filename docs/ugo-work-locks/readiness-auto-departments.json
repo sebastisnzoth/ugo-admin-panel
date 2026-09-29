@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:41:00Z",
-  "heartbeat_at": "2026-09-29T20:41:00Z",
-  "lease_expires_at": "2026-09-29T21:26:00Z",
+  "heartbeat_at": "2026-09-29T20:47:00Z",
+  "lease_expires_at": "2026-09-29T21:32:00Z",
   "started_sha": "a7ac4da421b4edf064c408a504021a55a6bedd28",
   "owner": "UGO",
   "assigned_agent": "Autonomy Registry Operator",
@@ -17,7 +17,21 @@
     "autonomy-registry"
   ],
   "correlation_id": "readiness-auto-departments-20260929T204100Z",
-  "current_step": "inventory_departments_and_runtime_evidence",
+  "current_step": "persist_runtime_evidence_and_validate_ci",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "11762f8a-1ba5-437f-aa7e-6d9a0407d088",
+    "04cb202c-0a74-4cdd-b686-cae6372eb27b",
+    "2f39875f-9c88-4a25-996f-5e4001820dd0",
+    "1bcb10c9-f3ad-4714-acbc-3a30fab37618",
+    "ae2ebbed-afcb-4a39-b174-29099df86e0e",
+    "22f15f76-3756-43f9-b451-f287bf597b9d",
+    "7726bbe2-b7b5-49ff-91b8-c9d0938435af",
+    "f1120f40-88ab-478f-862d-5df9f942dead",
+    "9c6e55d8-6fe5-463d-80b7-509f2abdf3de",
+    "dfb11158-23d5-4636-ae8c-f2dbb6997eb4",
+    "8348097e-f1a8-47b8-8afd-d3a3936de7fa",
+    "6cacc7d8-445e-4807-8c96-668938a47a60",
+    "02249c87-f4b7-48a1-8bd8-22d578ba4e27"
+  ]
 }
