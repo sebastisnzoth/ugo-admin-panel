@@ -106,6 +106,11 @@ try{
   assert.ok(requestDraftId,'request draft id required before confirm')
   await page.getByRole('button',{name:/Confirmar y buscar profesional/}).click()
   await page.locator('.ugo-matching-screen, .ugo-assigned-screen').first().waitFor({state:'visible',timeout:20000})
+  await page.waitForFunction(()=>{
+    if(document.querySelector('.ugo-assigned-screen'))return true
+    const cancel=document.querySelector('.ugo-matching-screen button.cancel')
+    return cancel instanceof HTMLButtonElement&&!cancel.disabled
+  },null,{timeout:30000})
 
   const {data:rows,error:rowError}=await auth.from('servicios')
     .select('id,cliente_id,categoria_id,estado,descripcion,direccion_cliente,zona,tarifa,urgencia,metadata,ubicacion_cliente,created_at')
