@@ -1,0 +1,23 @@
+{
+  "task_id": "worker-autonomy",
+  "job_id": "UGO-WORKER-AUTONOMY",
+  "title": "Prove the browser-independent scheduled TEST worker operates with autonomy ON",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:40:00Z",
+  "heartbeat_at": "2026-09-29T18:40:00Z",
+  "lease_expires_at": "2026-09-29T19:25:00Z",
+  "started_sha": "2f4684d21478b3796d2ac2c5414ddb96f70a6c1d",
+  "owner": "UGO",
+  "department": "Plataforma Autónoma",
+  "assigned_agent": "Autonomy Worker",
+  "skills": ["ugo-job-execution","ugo-github-ops","ugo-runtime-validation","ugo-evidence-judge"],
+  "validators": ["Judge","Sentinel"],
+  "resources": ["ugo-test-worker","autonomy-state","shared-provider-fixture"],
+  "correlation_id": "ugo-worker-autonomy-20260929T184000Z",
+  "current_step": "REVALIDATE_AND_RUN_SCHEDULED_PROOF",
+  "attempt": 1,
+  "dependencies": [],
+  "evidence_ids": [
+    "github-actions:run:36613236063:FAILED_AUTHENTICATED_CLIENT_SIMULATOR_ACTION_REQUIRED"
+  ]
+}
