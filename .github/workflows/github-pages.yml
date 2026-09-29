@@ -53,6 +53,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          mkdir -p _site
           curl -fsSL \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Accept: application/vnd.github+json" \
@@ -144,11 +145,7 @@ jobs:
             evidence_path="$(jq -r '[.[] | select(.filename | test("^docs/evidence/.*\\.json$"))][0].filename // empty' "/tmp/ugo-pr-files-${number}.json")"
 
             if [ -n "$evidence_path" ]; then
-              encoded_path="$(python - <<'PY' "$evidence_path"
-import sys, urllib.parse
-print(urllib.parse.quote(sys.argv[1], safe="/"))
-PY
-)"
+              encoded_path="$evidence_path"
               if curl -fsSL \
                 -H "Authorization: Bearer ${GH_TOKEN}" \
                 -H "Accept: application/vnd.github+json" \
