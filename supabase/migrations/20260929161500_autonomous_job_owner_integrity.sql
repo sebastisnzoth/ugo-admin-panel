@@ -37,3 +37,13 @@ where agent_id is null
   and status in('QUEUED','WAITING_APPROVAL');
 
 revoke all on function private.autonomous_guard_job_agent() from public,anon,authenticated;
+
+-- Negative authority QA fixtures are assertions, not real human approvals.
+update public.autonomous_jobs
+set status='CANCELLED',
+    failure_reason='CANCELLED: completed negative authority QA fixture',
+    blocked_reason='QA_NEGATIVE_FIXTURE_COMPLETE',
+    finished_at=coalesce(finished_at,now())
+where idempotency_key in('qa-red-negative-20260929','qa-yellow-negative-20260929')
+  and trigger_type='QA'
+  and status='WAITING_APPROVAL';
