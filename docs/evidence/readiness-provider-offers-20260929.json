@@ -1,0 +1,74 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-offers",
+  "task_id": "readiness-provider-offers",
+  "job_id": "UGO-READINESS-PROVIDER-OFFERS",
+  "correlation_id": "readiness-provider-offers-20260929T204500Z",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
+  "implementation": {
+    "pr": 285,
+    "merge_sha": "7d4fcc5b16d4b6f9ff520c2382398a6cdf2a78d3",
+    "integration_test_sha": "a9fa5f2eed407a7e6fe573172fc993158650d990",
+    "migration": "supabase/migrations/20260929205500_directed_provider_offer_radius_guard.sql",
+    "changes": [
+      "Automatic matching confirmed to enforce fresh trusted GPS and <=20 km.",
+      "Directed matching now enforces the same <=20 km, fresh GPS, category, debt and schedule eligibility gates.",
+      "Provider opportunities are prioritized by urgency, shorter distance, higher value, then canonical backend rank.",
+      "Isolated integration harness publishes fresh provider availability GPS before directed matching."
+    ]
+  },
+  "runtime_proof": {
+    "mode": "UGO TEST transactional proof; fixture changes rolled back after assertions",
+    "near_service_id": "f4eea946-32a4-48d6-8ee4-4794f89aa094",
+    "near_offer_id": "8b11293d-1e51-4766-b54a-a2fc3f942056",
+    "near_distance_km": 0,
+    "provider_visible_offer_count": 1,
+    "client_visible_offer_count": 0,
+    "far_service_id": "f275a217-15fa-4f4b-a5cb-2b77a3a85153",
+    "far_rejected": true,
+    "far_error": "El proveedor está fuera del radio máximo de 20 km para este pedido",
+    "far_pending_offer_count": 0
+  },
+  "regression": {
+    "contract_file": "tests/contracts/provider-offers-readiness.test.mjs",
+    "core_ci_run_id": 36629487924,
+    "core_ci_result": "SUCCESS",
+    "build": "PASS",
+    "contract_suite": "PASS",
+    "critical_lint": "PASS",
+    "full_lint": "PASS"
+  },
+  "isolation": {
+    "provider_rpc": "public.obtener_ofertas_proveedor() filters o.proveedor_id = auth.uid()",
+    "runtime_provider_visible_count": 1,
+    "runtime_client_visible_count": 0,
+    "verdict": "PASS"
+  },
+  "judge": {
+    "validator": "Judge",
+    "result": "PASS",
+    "basis": [
+      "near directed offer persisted during TEST transaction at 0 km",
+      "far directed request rejected above 20 km with zero pending offers",
+      "offer RPC returned the offer to the intended provider and none to the client identity",
+      "permanent contract regression passed in Core CI"
+    ]
+  },
+  "sentinel": {
+    "validator": "Sentinel",
+    "result": "PASS",
+    "basis": [
+      "UGO Arena TEST only",
+      "production project trfsjuseqjxlhrxuvdsm untouched",
+      "no secrets exposed",
+      "no force push/reset/revert",
+      "transactional runtime fixture changes rolled back",
+      "security/performance advisor review produced no control-specific blocker"
+    ]
+  },
+  "evidence_id": "provider-offers-runtime-20260929T205600Z",
+  "verified_at": "2026-09-29T20:56:00Z"
+}
