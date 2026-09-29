@@ -121,6 +121,26 @@ async function testProvider(viewport,name){
  } finally {await page.close()}
 }
 
+async function testAdminAuthBoundary(viewport,name){
+ const cases=[
+   {actor:'anonymous',session:null,expectsError:false},
+   {actor:'client',session:client.session,expectsError:true},
+   {actor:'provider',session:provider.session,expectsError:true},
+ ]
+ for(const item of cases){
+   const page=await browser.newPage({viewport})
+   try{
+     if(item.session)await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),item.session)
+     await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
+     await page.getByRole('heading',{name:/Panel de control|Desarrollo UGO/}).waitFor({state:'visible',timeout:20000})
+     assert.equal(await page.getByRole('navigation',{name:'Navegación Admin'}).count(),0,item.actor+' must not receive Admin navigation')
+     if(item.expectsError)await page.getByRole('alert').filter({hasText:/Acceso denegado/}).waitFor({state:'visible',timeout:10000})
+     await assertResponsive(page,'admin auth denied '+item.actor+' '+name)
+     results.push({role:'admin-auth',actor:item.actor,viewport:name,status:'PASS',access:'DENIED'})
+   } finally {await page.close()}
+ }
+}
+
 async function testAdmin(viewport,name){
  const {page,errors}=await openRole('admin',viewport)
  try{
@@ -173,6 +193,7 @@ try{
  for(const [name,viewport] of viewports){
    await testClient(viewport,name)
    await testProvider(viewport,name)
+   await testAdminAuthBoundary(viewport,name)
    await testAdmin(viewport,name)
  }
  await fs.writeFile('artifacts/role-ui-runtime.json',JSON.stringify({task:'role-ui-runtime',sha,environment:'UGO TEST',results,page_errors:0,completed_at:new Date().toISOString()},null,2)+'\n')
