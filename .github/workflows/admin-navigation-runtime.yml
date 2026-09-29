@@ -1,0 +1,87 @@
+name: UGO Admin Navigation Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/admin-navigation-runtime.mjs"
+      - "scripts/admin-navigation-judge.mjs"
+      - "scripts/admin-navigation-sentinel.mjs"
+      - ".github/workflows/admin-navigation-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-admin-navigation-runtime
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  runtime-proof:
+    name: Admin menus and buttons ↔ UGO TEST
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: TypeScript and build
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Install browser harness
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Runtime crawl and click map
+        shell: bash
+        run: |
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-admin-nav-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
+          node scripts/admin-navigation-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/admin-navigation-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/admin-navigation-sentinel.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: admin-navigation-runtime-${{ github.sha }}
+          path: artifacts/admin-navigation-*
+          if-no-files-found: warn
+          retention-days: 90
