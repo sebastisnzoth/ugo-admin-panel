@@ -17,3 +17,8 @@ test('UGO TEST mutating gates are chained instead of competing for one pending c
  assert.doesNotMatch(isolated,/group: ugo-test-runtime-/)
  assert.doesNotMatch(worker,/group: ugo-test-runtime-/)
 })
+
+
+test('Core CI skips the synthetic push emitted when a technical branch is created',()=>{
+ assert.match(core,/github\.event_name != 'push' \|\| github\.event\.created == false/)
+})
