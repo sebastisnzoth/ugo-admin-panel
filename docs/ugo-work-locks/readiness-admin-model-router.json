@@ -2,11 +2,13 @@
   "readiness_id": "admin-model-router",
   "task_id": "readiness-admin-model-router",
   "job_id": "UGO-READINESS-ADMIN-MODEL-ROUTER",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T22:15:00Z",
-  "heartbeat_at": "2026-09-29T22:17:22Z",
-  "lease_expires_at": "2026-09-29T23:02:22Z",
+  "heartbeat_at": "2026-09-29T22:23:20Z",
+  "lease_expires_at": "2026-09-29T22:23:20Z",
+  "finished_at": "2026-09-29T22:23:20Z",
   "started_sha": "d1f3e90dc09f159ff842095694025d462f2888d9",
+  "verified_runtime_sha": "bc96fb8fea184404e52972b3d164047b46a3ac0a",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Model Router Runtime Agent",
@@ -24,8 +26,23 @@
     "model-router"
   ],
   "correlation_id": "readiness-admin-model-router-20260929T221500Z-d1f3e90d",
-  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME_PATHS",
+  "current_step": "VERIFIED",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "docs/evidence/readiness-admin-model-router-20260929.json",
+    "github-actions-run:36639082280",
+    "github-actions-job:109647073069",
+    "github-actions-artifact:11065279324"
+  ],
+  "judge": {
+    "verdict": "PASS",
+    "checked_at": "2026-09-29T22:22:49.659Z"
+  },
+  "sentinel": {
+    "verdict": "PASS",
+    "checked_at": "2026-09-29T22:22:49.711Z",
+    "production_touched": false
+  },
+  "result": "VERIFIED",
   "title": "Verify Admin Model Router primary, fallback, telemetry and cost in runtime"
 }
