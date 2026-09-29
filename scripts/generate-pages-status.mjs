@@ -327,7 +327,6 @@ const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
 
 for (const step of finalGateSteps) assignJob(step)
 
-const allWork = [...implementationSteps, ...finalGateSteps]
 const workLocks = []
 const workLocksDir = 'docs/ugo-work-locks'
 if (existsSync(workLocksDir)) {
@@ -340,6 +339,25 @@ if (existsSync(workLocksDir)) {
     }
   }
 }
+
+const latestLockByTask = new Map()
+for (const lock of workLocks) {
+  const previous = latestLockByTask.get(lock.task_id)
+  const currentStarted = Date.parse(lock.started_at || '') || 0
+  const previousStarted = previous ? (Date.parse(previous.started_at || '') || 0) : -1
+  if (!previous || currentStarted >= previousStarted) latestLockByTask.set(lock.task_id, lock)
+}
+const isAuthoritativeDone = taskId => {
+  const lock = latestLockByTask.get(taskId)
+  if (!lock || lock.status !== 'DONE') return false
+  const result = lock.validators_result || {}
+  const judge = result.Judge || result.judge
+  const sentinel = result.Sentinel || result.sentinel
+  return judge === 'PASS' && sentinel === 'PASS' && Array.isArray(lock.evidence_ids) && lock.evidence_ids.length > 0
+}
+const completedImplementation = implementationSteps.filter(step => isAuthoritativeDone(step.id))
+const pendingImplementation = implementationSteps.filter(step => !isAuthoritativeDone(step.id))
+const allWork = [...pendingImplementation, ...finalGateSteps]
 const plan = scheduleTasks({
   tasks: allWork,
   locks: workLocks,
@@ -375,7 +393,7 @@ const status = {
   },
   customer_1: 'BLOCKED',
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
-  implementation_steps: implementationSteps,
+  implementation_steps: pendingImplementation,\n  completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
   final_gate_steps: finalGateSteps,
   organization: {
     orchestrator: agentRegistry['ugo-maestro'],
@@ -395,7 +413,7 @@ const status = {
   },
   runnable_steps: runnable.map(x => x.id),
   counts: {
-    implementation_pending: implementationSteps.length,
+    implementation_pending: pendingImplementation.length,
     final_gate_blockers: finalGateSteps.length,
     total_visible_work_items: allWork.length,
     human_involved: allWork.filter(x => x.owner.includes('SERGIO')).length,
