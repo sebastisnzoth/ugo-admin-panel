@@ -1,0 +1,78 @@
+{
+  "schema_version": "UGO_READINESS_ADMIN_USERS_EVIDENCE_V1",
+  "readiness_id": "admin-users",
+  "task_id": "readiness-admin-users",
+  "job_id": "UGO-READINESS-ADMIN-USERS",
+  "environment": "UGO TEST",
+  "test_project": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "runtime_validated_sha": "b27c4fad8d7065fb84762b3d88d4b162941aa227",
+  "generated_at": "2026-09-29T23:40:35.075Z",
+  "correlation_id": "readiness-admin-users-20260929T233400Z-daab889a",
+  "criterion": "Documentos, fechas, horarios, servicios y acciones auditadas con datos TEST y permisos.",
+  "implementation": {
+    "user_trace": "src/mvp/AdminUserTracePanel.tsx",
+    "audit_source": "public.audit_log",
+    "filters_search": "src/mvp/AdminUsersPanel.tsx",
+    "regression": "tests/contracts/readiness-admin-users.test.mjs"
+  },
+  "runtime": {
+    "fixture_user_id": "eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1",
+    "fixture_role": "proveedor",
+    "users_visible_to_admin": 10,
+    "services": 44,
+    "documents": 1,
+    "audited_actions": 13,
+    "timeline_rows": 44,
+    "timestamps_verified": [
+      "created_at",
+      "aceptado_at",
+      "iniciado_at",
+      "completado_at",
+      "cancelado_at"
+    ],
+    "permissions": {
+      "non_admin_audit_rows": 0,
+      "non_owner_document_rows": 0,
+      "admin_sensitive_reads": "PASS"
+    }
+  },
+  "ci": {
+    "workflow": "UGO Readiness Admin Users TEST",
+    "run_id": 36646409920,
+    "job_id": 109670308372,
+    "head_sha": "b27c4fad8d7065fb84762b3d88d4b162941aa227",
+    "conclusion": "success",
+    "artifact_id": 11068209835,
+    "artifact_name": "readiness-admin-users-b27c4fad8d7065fb84762b3d88d4b162941aa227",
+    "artifact_digest": "sha256:451506950ecde017e0e35b9cfb0972e133355e1e1478a9a441334f5c8a116915",
+    "checks": [
+      "UGO TEST environment guard",
+      "5 contract tests",
+      "TypeScript",
+      "runtime TEST",
+      "Judge",
+      "Sentinel"
+    ]
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T23:40:35.033Z"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T23:40:35.075Z",
+      "production_touched": false
+    }
+  },
+  "hardening_history": {
+    "note": "The first green probe was rejected as insufficient because the selected fixture had documents but no linked services/audit rows. Runtime was strengthened to require positive services, documents, audited actions and timeline rows before certification.",
+    "failed_probe_runs": [
+      36646324472,
+      36646328619
+    ],
+    "final_probe_run": 36646409920
+  },
+  "main_before_evidence": "b27c4fad8d7065fb84762b3d88d4b162941aa227"
+}
