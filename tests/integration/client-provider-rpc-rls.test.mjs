@@ -162,6 +162,15 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     })
     if (clientLocation.error) throw clientLocation.error
 
+    const availabilityGps = await p.rpc('publicar_ubicacion_disponibilidad_proveedor', {
+      p_lat: testLat,
+      p_lng: testLng,
+      p_captured_at: new Date().toISOString(),
+      p_accuracy_m: 10,
+    })
+    if (availabilityGps.error) throw availabilityGps.error
+    assert.equal(availabilityGps.data?.status, 'published', 'Matching dirigido requiere GPS de disponibilidad fresco')
+
     const { error: directedError } = await c.rpc('iniciar_matching_dirigido', {
       p_servicio_id: serviceId,
       p_proveedor_id: providerId,
