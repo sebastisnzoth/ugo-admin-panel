@@ -63,7 +63,12 @@ const safeClick=async(page,locator,label)=>{
 }
 const closeClientOverlay=async page=>{
  const backdrop=page.locator('.ugo-dispute-backdrop').first()
- if(await backdrop.count()&&await backdrop.isVisible())await backdrop.click({position:{x:5,y:5}})
+ if(await backdrop.count()&&await backdrop.isVisible()){
+   const close=page.locator('.ugo-dispute-sheet header button').first()
+   if(await close.count()&&await close.isVisible())await close.click()
+   else await backdrop.click({position:{x:2,y:2},force:true})
+   await backdrop.waitFor({state:'hidden',timeout:5000}).catch(()=>{})
+ }
 }
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
