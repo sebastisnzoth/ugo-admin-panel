@@ -134,6 +134,14 @@ jobs:
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/autonomous-qa-gps-runtime.mjs
 
+      - name: UGO Empresas TEST demand slots runtime
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/ugo-empresas-runtime.mjs
+
       - name: Realtime chat Cliente ↔ Proveedor without refresh
         run: node scripts/chat-realtime-probe.mjs
 
@@ -172,6 +180,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: super-admin-ui-runtime-${{ github.event.workflow_run.head_sha || github.sha }}
-          path: artifacts/super-admin-ui-runtime.*
+          path: |
+            artifacts/super-admin-ui-runtime.*
+            artifacts/ugo-empresas-runtime.png
           if-no-files-found: warn
           retention-days: 90
