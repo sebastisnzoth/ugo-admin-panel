@@ -5,8 +5,8 @@
   "title": "Verify Hugo permissions and authority across role/authority/policy boundaries",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T21:30:00Z",
-  "heartbeat_at": "2026-09-29T21:30:00Z",
-  "lease_expires_at": "2026-09-29T22:15:00Z",
+  "heartbeat_at": "2026-09-29T21:42:00Z",
+  "lease_expires_at": "2026-09-29T22:27:00Z",
   "started_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,9 +19,12 @@
     "hugo-authority"
   ],
   "correlation_id": "ugo-hugo-authority-20260929T213000Z-a668c242",
-  "current_step": "INSPECT",
+  "current_step": "RUNTIME_VALIDATION",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github:899518a9397983a81636bd381c9e15eb9a4cd3a6",
+    "github-actions:36634140195"
+  ],
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-hugo",
