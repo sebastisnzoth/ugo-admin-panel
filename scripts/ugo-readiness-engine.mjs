@@ -1,0 +1,192 @@
+const ACTIVE_LOCK_STATUSES = new Set(['QUEUED','IN_PROGRESS','WAITING_EVIDENCE'])
+const PRIORITY_SCORE = {CRITICAL:100,HIGH:80,NORMAL:50,LOW:20,FINAL:0}
+
+const parseTime = value => {
+  const n = Date.parse(value || '')
+  return Number.isFinite(n) ? n : null
+}
+
+const readinessIdFromLock = lock => {
+  if (lock?.readiness_id) return lock.readiness_id
+  const task = String(lock?.task_id || '')
+  if (task.startsWith('readiness-')) return task.slice('readiness-'.length)
+  return null
+}
+
+const latestReadinessLocks = locks => {
+  const map = new Map()
+  for (const lock of locks || []) {
+    const readinessId = readinessIdFromLock(lock)
+    if (!readinessId) continue
+    const previous = map.get(readinessId)
+    const currentTime = parseTime(lock.started_at) || 0
+    const previousTime = previous ? (parseTime(previous.started_at) || 0) : -1
+    if (!previous || currentTime >= previousTime) map.set(readinessId, lock)
+  }
+  return map
+}
+
+const validatorPass = lock => {
+  const result = lock?.validators_result || {}
+  const judge = result.Judge || result.judge
+  const sentinel = result.Sentinel || result.sentinel
+  const evidence = (Array.isArray(lock?.evidence_ids) && lock.evidence_ids.length > 0)
+    || Boolean(lock?.evidence_path && lock?.evidence_commit_sha)
+  return lock?.status === 'DONE' && judge === 'PASS' && sentinel === 'PASS' && evidence
+}
+
+export function evaluateFunctionalReadiness({
+  functionalReadiness,
+  locks = [],
+  maxParallel = 5,
+  now = new Date(),
+}) {
+  const readiness = structuredClone(functionalReadiness)
+  const items = readiness.groups.flatMap(group =>
+    group.items.map(item => ({...item, group_id:group.id, group_title:group.title}))
+  )
+  const byId = new Map(items.map(item => [item.id,item]))
+  const lockById = latestReadinessLocks(locks)
+  const nowMs = now.getTime()
+
+  for (const item of items) {
+    const lock = lockById.get(item.id) || null
+    item.lock = lock
+    item.declared_status = item.status
+
+    if (validatorPass(lock)) {
+      item.status = 'VERIFIED'
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    if (lock && ACTIVE_LOCK_STATUSES.has(lock.status)) {
+      const leaseMs = parseTime(lock.lease_expires_at)
+      if (leaseMs !== null && leaseMs <= nowMs) {
+        item.status = 'STALE_LOCK'
+      } else {
+        item.status = 'IN_PROGRESS'
+      }
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    if (lock?.status === 'FAILED') {
+      item.status = 'FAILED_REQUIRES_REVIEW'
+      item.evidence_source = 'READINESS_LOCK'
+    }
+  }
+
+  const done = id => byId.get(id)?.status === 'VERIFIED'
+  const active = items.filter(item => item.status === 'IN_PROGRESS')
+  const usedResources = new Set(active.flatMap(item => item.resources || []))
+  const globalActiveLocks = (locks || []).filter(lock => {
+    if (!ACTIVE_LOCK_STATUSES.has(lock.status)) return false
+    const leaseMs = parseTime(lock.lease_expires_at)
+    return leaseMs === null || leaseMs > nowMs
+  })
+  const slots = Math.max(0, Number(maxParallel || 5) - globalActiveLocks.length)
+
+  const candidates = items
+    .filter(item => item.status === 'NEEDS_RUNTIME_PROOF')
+    .map(item => ({
+      ...item,
+      unresolved_dependencies:(item.depends_on || []).filter(id => !done(id)),
+    }))
+    .filter(item => item.unresolved_dependencies.length === 0)
+    .sort((a,b) =>
+      (PRIORITY_SCORE[b.priority] || 0) - (PRIORITY_SCORE[a.priority] || 0)
+      || a.id.localeCompare(b.id)
+    )
+
+  const selected = []
+  const selectedResources = new Set(usedResources)
+  let remainingSlots = slots
+
+  for (const item of candidates) {
+    if (remainingSlots <= 0) break
+    const conflict = (item.resources || []).some(resource => selectedResources.has(resource))
+    if (conflict) continue
+    selected.push(item.id)
+    for (const resource of item.resources || []) selectedResources.add(resource)
+    remainingSlots -= 1
+  }
+
+  const remainingAutonomousBeforeHuman = items.filter(
+    item => item.status !== 'VERIFIED' && item.declared_status !== 'HUMAN_FINAL'
+  ).length
+
+  for (const item of items) {
+    const unresolved = (item.depends_on || []).filter(id => !done(id))
+    item.unresolved_dependencies = unresolved
+
+    if (item.status === 'VERIFIED') {
+      item.gate_state = 'VERIFIED'
+      item.gate_reason = 'Judge + Sentinel PASS con evidencia persistida.'
+    } else if (item.status === 'STALE_LOCK') {
+      item.gate_state = 'STALE_LOCK'
+      item.gate_reason = 'El lease del control venció y debe reconciliarse antes de reintentar.'
+    } else if (item.status === 'FAILED_REQUIRES_REVIEW') {
+      item.gate_state = 'FAILED_REQUIRES_REVIEW'
+      item.gate_reason = 'La última ejecución falló y requiere revisión antes de reintentar.'
+    } else if (item.status === 'IN_PROGRESS') {
+      item.gate_state = 'IN_PROGRESS'
+      item.gate_reason = 'Existe un lock persistido activo para este control.'
+    } else if (item.declared_status === 'HUMAN_FINAL') {
+      if (remainingAutonomousBeforeHuman > 0) {
+        item.gate_state = 'HUMAN_DEFERRED'
+        item.gate_reason = 'Prueba humana/física diferida hasta completar todo el trabajo autónomo verificable.'
+      } else {
+        item.gate_state = 'HUMAN_REQUIRED'
+        item.gate_reason = 'Todo el trabajo autónomo verificable está cerrado; este paso requiere evidencia humana/física real.'
+      }
+    } else if (unresolved.length) {
+      item.gate_state = 'BLOCKED_DEPENDENCY'
+      item.gate_reason = 'Debe completarse antes: ' + unresolved.join(', ')
+    } else if (selected.includes(item.id)) {
+      item.gate_state = 'AVAILABLE'
+      item.gate_reason = 'Dependencias satisfechas, prioridad aplicable y recursos libres.'
+    } else if ((item.resources || []).some(resource => selectedResources.has(resource))) {
+      item.gate_state = 'WAITING_RESOURCE_CAPACITY'
+      item.gate_reason = 'Recurso compartido reservado por otro control habilitado o activo.'
+    } else {
+      item.gate_state = 'QUEUED_CAPACITY'
+      item.gate_reason = 'Espera un slot del máximo global de ' + maxParallel + ' trabajos paralelos.'
+    }
+  }
+
+  for (const group of readiness.groups) {
+    group.items = group.items.map(original => {
+      const evaluated = byId.get(original.id)
+      return evaluated ? {...evaluated} : original
+    })
+  }
+
+  const summary = {
+    total:items.length,
+    verified:items.filter(x => x.status === 'VERIFIED').length,
+    remaining_total:items.filter(x => x.status !== 'VERIFIED').length,
+    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.declared_status !== 'HUMAN_FINAL').length,
+    human_final:items.filter(x => x.declared_status === 'HUMAN_FINAL' && x.status !== 'VERIFIED').length,
+    available_now:items.filter(x => x.gate_state === 'AVAILABLE').length,
+    in_progress:items.filter(x => x.gate_state === 'IN_PROGRESS').length,
+    blocked_dependency:items.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
+    waiting_resource:items.filter(x => x.gate_state === 'WAITING_RESOURCE_CAPACITY').length,
+    queued_capacity:items.filter(x => x.gate_state === 'QUEUED_CAPACITY').length,
+    stale_locks:items.filter(x => x.gate_state === 'STALE_LOCK').length,
+    failed_review:items.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
+    human_deferred:items.filter(x => x.gate_state === 'HUMAN_DEFERRED').length,
+    human_required:items.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
+    runnable_ids:items.filter(x => x.gate_state === 'AVAILABLE').map(x => x.id),
+    groups:readiness.groups.map(group => ({
+      id:group.id,
+      title:group.title,
+      total:group.items.length,
+      verified:group.items.filter(x => x.status === 'VERIFIED').length,
+      remaining:group.items.filter(x => x.status !== 'VERIFIED').length,
+      available_now:group.items.filter(x => x.gate_state === 'AVAILABLE').length,
+    })),
+  }
+
+  return {readiness, summary}
+}
