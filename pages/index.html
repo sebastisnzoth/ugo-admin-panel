@@ -401,6 +401,99 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     '',
     'Ejecutá este paso ahora y continuá con trabajo independiente si aparece un bloqueo externo.'
   ].join('\n')
+  const buildReadinessPrompt = (item, group) => [
+    'UGO — RESOLVER CONTROL FUNCIONAL HASTA VERIFIED',
+    '',
+    'Repositorio obligatorio: sebastisnzoth/ugo-admin-panel',
+    'Rama objetivo: main',
+    'SHA de referencia publicado: ' + (statusSnapshot?.source_sha || 'verificar main actual antes de actuar'),
+    '',
+    'READINESS_ID:',
+    item.id,
+    '',
+    'ÁREA:',
+    group?.title || item.group_title || 'Mapa funcional UGO',
+    '',
+    'CONTROL A RESOLVER:',
+    item.title,
+    '',
+    'ESTADO ACTUAL:',
+    item.status || 'UNVERIFIED',
+    '',
+    'QUÉ SE DEBE VERIFICAR:',
+    item.verify || 'Verificar funcionalidad real de punta a punta.',
+    '',
+    'EVIDENCIA OBLIGATORIA PARA VERIFIED:',
+    item.done_evidence || 'Evidencia runtime verificable del mismo SHA.',
+    '',
+    'MEJORA A CONSIDERAR:',
+    item.improvement_focus || 'Corregir cualquier problema de UX, robustez o claridad que aparezca durante la validación.',
+    '',
+    'RESPONSABLE:',
+    item.owner || 'UGO',
+    '',
+    'REGLAS:',
+    '- Revalidar main antes de modificar nada.',
+    '- No asumir que funciona porque exista código, UI o configuración.',
+    '- Inspeccionar código, rutas, estados, permisos y dependencias relacionadas con este control.',
+    '- Resolver todo lo delegable por ChatGPT/UGO ahora: código, diseño, usabilidad, responsive, tests, wiring, permisos y errores.',
+    '- Ejecutar pruebas automáticas y runtime en UGO TEST/Preview cuando sea posible.',
+    '- No tocar producción.',
+    '- No reset, no force push, no revertir trabajo válido ajeno.',
+    '- No exponer secretos.',
+    '- Si el control requiere hardware o una prueba humana real, completar primero toda la parte automatizable y dejar únicamente esa prueba física para el final.',
+    '- Si encontrás defectos, corregirlos y dejar regresión permanente.',
+    '- Persistir evidencia verificable y correlation_id/serviceId/job_id cuando aplique.',
+    '- Judge y Sentinel deben validar antes de marcar VERIFIED.',
+    '- Actualizar docs/UGO_FUNCTIONAL_READINESS.json a VERIFIED sólo si existe evidencia suficiente; si no, mantener el estado exacto y explicar qué falta.',
+    '- Revalidar el panel/Pages después del cambio para que el estado quede reflejado.',
+    '',
+    'AL TERMINAR DEVOLVÉ:',
+    '1. MAIN SHA.',
+    '2. Qué se corrigió o verificó.',
+    '3. Pruebas ejecutadas y resultado.',
+    '4. Evidencia persistida.',
+    '5. Estado final exacto del control.',
+    '6. Qué queda, si queda algo.',
+    '',
+    'Ejecutá este control ahora y lleválo hasta VERIFIED en todo lo que sea delegable.'
+  ].join('\n')
+
+  const buildReadinessHumanPrompt = (item, group) => [
+    'UGO — INSTRUCCIONES HUMANAS FINALES PARA SERGIO',
+    '',
+    'Repositorio: sebastisnzoth/ugo-admin-panel',
+    'Rama objetivo: main',
+    'SHA de referencia publicado: ' + (statusSnapshot?.source_sha || 'verificar main actual'),
+    '',
+    'READINESS_ID:',
+    item.id,
+    '',
+    'ÁREA:',
+    group?.title || item.group_title || 'Prueba real final',
+    '',
+    'CONTROL:',
+    item.title,
+    '',
+    'QUÉ HAY QUE VERIFICAR:',
+    item.verify || '—',
+    '',
+    'EVIDENCIA PARA CERRAR:',
+    item.done_evidence || '—',
+    '',
+    'REGLA:',
+    'Este control quedó reservado para la fase humana/física final. No simules la prueba ni marques VERIFIED sin evidencia real.',
+    '',
+    'RESPONDÉ CON PASOS NUMERADOS Y PRECISOS PARA SERGIO:',
+    '1. Dónde entrar.',
+    '2. Qué dispositivo/pantalla usar.',
+    '3. Qué botón tocar y en qué orden.',
+    '4. Qué NO tocar.',
+    '5. Qué resultado debe verse.',
+    '6. Qué captura/ID/serviceId/evidencia traer de vuelta.',
+    '7. Cómo confirmar que quedó correctamente cerrado.'
+  ].join('\n')
+
   const dispatchKey = 'ugo-command-center-dispatches'
   const getDispatches = () => {
     try {
@@ -426,6 +519,28 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTask').innerHTML = active.map(d => '<div><b>' + esc(d.title || d.step_id) + '</b></div>').join('')
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
+  const openReadinessWithUgoMaster = async (item, group) => {
+    if (!item || item.status === 'VERIFIED') return
+    saveDispatch({
+      id: item.id,
+      title: item.title,
+      resources: ['functional-readiness', group?.id || 'readiness']
+    }, 'UGO_MAESTRO_READINESS')
+    const prompt = item.status === 'HUMAN_FINAL'
+      ? buildReadinessHumanPrompt(item, group)
+      : buildReadinessPrompt(item, group)
+    const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
+    try {
+      await navigator.clipboard.writeText(prompt)
+      alert(item.status === 'HUMAN_FINAL'
+        ? 'Prompt copiado. Se abrió UGO Maestro para darte las instrucciones humanas finales paso a paso.'
+        : 'Prompt copiado. Se abrió UGO Maestro: pegalo y enviá para resolver este control hasta VERIFIED.')
+    } catch (_) {
+      window.prompt('Copiá este prompt y pegalo en UGO Maestro Autónomo:', prompt)
+    }
+    if (!chatWindow) console.warn('El navegador bloqueó la apertura de UGO Maestro Autónomo.')
+  }
+
   const openGitHubActionForStep = step => {
     if (!step?.direct_action?.url) {
       alert('No hay una acción de GitHub configurada para este trabajo.')
@@ -602,6 +717,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Qué se verifica:</b> ' + esc(item.verify || '—') + '</p>' +
             '<p class="sub"><b>Evidencia para cerrar:</b> ' + esc(item.done_evidence || '—') + '</p>' +
             '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
+            '<div class="cta-row">' +
+              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (item.status === 'VERIFIED' ? 'disabled' : '') + '>' +
+                (item.status === 'VERIFIED' ? 'VERIFIED' : item.status === 'HUMAN_FINAL' ? 'Ver instrucciones para Sergio' : 'Resolver con UGO Maestro') +
+              '</button>' +
+              '<span class="pill ' + readinessPill(item.status) + '">' + esc(readinessStatusLabel(item.status)) + '</span>' +
+            '</div>' +
           '</div>'
         ).join('') + '</div></article>'
     }).join('') || '<div class="card">Mapa funcional no disponible.</div>'
@@ -702,7 +823,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     renderSyncState()
     renderOperationalNow(s)
     renderReadiness(s)
-    const currentIds = new Set([...(s.implementation_steps || []), ...(s.final_gate_steps || [])].map(x => x.id))
+    const readinessIds = (s.functional_readiness?.groups || []).flatMap(group => (group.items || []).map(item => item.id))
+    const currentIds = new Set([
+      ...(s.implementation_steps || []).map(x => x.id),
+      ...(s.final_gate_steps || []).map(x => x.id),
+      ...readinessIds
+    ])
     const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
     document.getElementById('runnableNow').textContent = (s.counts.runnable_now ?? 0) + ' habilitado(s)'
@@ -768,6 +894,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-step-id]').forEach(button => {
       const step = allSteps.find(x => x.id === button.dataset.stepId)
       if (step && canOpenUgoMaster(step) && !button.disabled) button.onclick = () => openUgoMasterForStep(step)
+    })
+    document.querySelectorAll('[data-readiness-id]').forEach(button => {
+      const group = (s.functional_readiness?.groups || []).find(g => g.id === button.dataset.readinessGroup)
+      const item = group?.items?.find(x => x.id === button.dataset.readinessId)
+      if (item && item.status !== 'VERIFIED' && !button.disabled) {
+        button.onclick = () => openReadinessWithUgoMaster(item, group)
+      }
     })
     document.querySelectorAll('[data-github-step-id]').forEach(link => {
       const step = allSteps.find(x => x.id === link.dataset.githubStepId)
