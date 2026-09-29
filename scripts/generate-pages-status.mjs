@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { scheduleTasks } from './ugo-scheduler-engine.mjs'
+import { evaluateFunctionalReadiness } from './ugo-readiness-engine.mjs'
 
 const [sourcePath, outPath, sourceSha, publishedAt] = process.argv.slice(2)
 if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
@@ -10,89 +11,29 @@ if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
 const source = readFileSync(sourcePath, 'utf8')
 const evidenceUrl = 'https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
 const schedulerPolicy = JSON.parse(readFileSync('docs/UGO_SCHEDULER_POLICY.json','utf8'))
-const functionalReadiness = JSON.parse(readFileSync('docs/UGO_FUNCTIONAL_READINESS.json','utf8'))
-const readinessItems = functionalReadiness.groups.flatMap(group => group.items.map(item => ({...item, group_id: group.id, group_title: group.title})))
-const readinessPriorityScore = {CRITICAL:100,HIGH:80,NORMAL:50,LOW:20,FINAL:0}
-const readinessById = new Map(readinessItems.map(item => [item.id,item]))
-const readinessDone = id => readinessById.get(id)?.status === 'VERIFIED'
-const readinessActive = readinessItems.filter(item => item.status === 'IN_PROGRESS')
-const readinessUsedResources = new Set(readinessActive.flatMap(item => item.resources || []))
-const readinessCandidates = readinessItems
-  .filter(item => item.status === 'NEEDS_RUNTIME_PROOF')
-  .map(item => ({
-    ...item,
-    unresolved_dependencies: (item.depends_on || []).filter(id => !readinessDone(id)),
-  }))
-  .filter(item => item.unresolved_dependencies.length === 0)
-  .sort((a,b) =>
-    (readinessPriorityScore[b.priority] || 0) - (readinessPriorityScore[a.priority] || 0) ||
-    a.id.localeCompare(b.id)
-  )
-
-let readinessSlots = Math.max(0, Number(functionalReadiness.execution_policy?.max_parallel || 5) - readinessActive.length)
-const readinessSelected = []
-const readinessSelectedResources = new Set(readinessUsedResources)
-for (const item of readinessCandidates) {
-  if (readinessSlots <= 0) break
-  const conflict = (item.resources || []).some(resource => readinessSelectedResources.has(resource))
-  if (conflict) continue
-  readinessSelected.push(item.id)
-  for (const resource of item.resources || []) readinessSelectedResources.add(resource)
-  readinessSlots -= 1
-}
-
-for (const item of readinessItems) {
-  const unresolved = (item.depends_on || []).filter(id => !readinessDone(id))
-  item.unresolved_dependencies = unresolved
-  if (item.status === 'VERIFIED') {
-    item.gate_state = 'VERIFIED'
-    item.gate_reason = 'Cerrado con evidencia suficiente.'
-  } else if (item.status === 'HUMAN_FINAL') {
-    item.gate_state = 'HUMAN_DEFERRED'
-    item.gate_reason = 'Prueba física/humana reservada para la fase final.'
-  } else if (item.status === 'IN_PROGRESS') {
-    item.gate_state = 'IN_PROGRESS'
-    item.gate_reason = 'Control tomado y en ejecución.'
-  } else if (unresolved.length) {
-    item.gate_state = 'BLOCKED_DEPENDENCY'
-    item.gate_reason = 'Debe completarse antes: ' + unresolved.join(', ')
-  } else if (readinessSelected.includes(item.id)) {
-    item.gate_state = 'AVAILABLE'
-    item.gate_reason = 'Dependencias satisfechas y recurso libre.'
-  } else if ((item.resources || []).some(resource => readinessSelectedResources.has(resource))) {
-    item.gate_state = 'WAITING_RESOURCE_CAPACITY'
-    item.gate_reason = 'Recurso compartido reservado por otro control habilitado o activo.'
-  } else {
-    item.gate_state = 'QUEUED_CAPACITY'
-    item.gate_reason = 'Espera un slot del máximo de ' + (functionalReadiness.execution_policy?.max_parallel || 5) + ' trabajos paralelos.'
+const functionalReadinessSource = JSON.parse(readFileSync('docs/UGO_FUNCTIONAL_READINESS.json','utf8'))
+const workLocks = []
+const workLocksDir = 'docs/ugo-work-locks'
+if (existsSync(workLocksDir)) {
+  for (const name of readdirSync(workLocksDir)) {
+    if (!name.endsWith('.json')) continue
+    try {
+      workLocks.push(JSON.parse(readFileSync(join(workLocksDir, name), 'utf8')))
+    } catch (error) {
+      if (schedulerPolicy.fail_closed_on_invalid_lock) throw new Error(`Invalid scheduler lock ${name}: ${error.message}`)
+    }
   }
 }
 
-const readinessSummary = {
-  total: readinessItems.length,
-  verified: readinessItems.filter(x => x.status === 'VERIFIED').length,
-  pending: readinessItems.filter(x => ['NEEDS_RUNTIME_PROOF','IN_PROGRESS','BLOCKED'].includes(x.status)).length,
-  human_final: readinessItems.filter(x => x.status === 'HUMAN_FINAL').length,
-  remaining_total: readinessItems.filter(x => x.status !== 'VERIFIED').length,
-  remaining_autonomous: readinessItems.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_FINAL').length,
-  available_now: readinessItems.filter(x => x.gate_state === 'AVAILABLE').length,
-  in_progress: readinessItems.filter(x => x.gate_state === 'IN_PROGRESS').length,
-  blocked_dependency: readinessItems.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
-  waiting_resource: readinessItems.filter(x => x.gate_state === 'WAITING_RESOURCE_CAPACITY').length,
-  queued_capacity: readinessItems.filter(x => x.gate_state === 'QUEUED_CAPACITY').length,
-  human_deferred: readinessItems.filter(x => x.gate_state === 'HUMAN_DEFERRED').length,
-  runnable_ids: readinessItems.filter(x => x.gate_state === 'AVAILABLE').map(x => x.id),
-  groups: functionalReadiness.groups.map(group => ({
-    id: group.id,
-    title: group.title,
-    total: group.items.length,
-    verified: group.items.filter(x => x.status === 'VERIFIED').length,
-    pending: group.items.filter(x => ['NEEDS_RUNTIME_PROOF','IN_PROGRESS','BLOCKED'].includes(x.status)).length,
-    human_final: group.items.filter(x => x.status === 'HUMAN_FINAL').length,
-    remaining: group.items.filter(x => x.status !== 'VERIFIED').length,
-    available_now: group.items.filter(x => x.gate_state === 'AVAILABLE').length,
-  })),
-}
+const {
+  readiness: functionalReadiness,
+  summary: readinessSummary,
+} = evaluateFunctionalReadiness({
+  functionalReadiness: functionalReadinessSource,
+  locks: workLocks,
+  maxParallel: schedulerPolicy.max_parallel_tasks,
+  now: new Date(publishedAt),
+})
 
 const must = (re, label) => {
   const match = source.match(re)
@@ -409,19 +350,6 @@ const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
 }))
 
 for (const step of finalGateSteps) assignJob(step)
-
-const workLocks = []
-const workLocksDir = 'docs/ugo-work-locks'
-if (existsSync(workLocksDir)) {
-  for (const name of readdirSync(workLocksDir)) {
-    if (!name.endsWith('.json')) continue
-    try {
-      workLocks.push(JSON.parse(readFileSync(join(workLocksDir, name), 'utf8')))
-    } catch (error) {
-      if (schedulerPolicy.fail_closed_on_invalid_lock) throw new Error(`Invalid scheduler lock ${name}: ${error.message}`)
-    }
-  }
-}
 
 const latestLockByTask = new Map()
 for (const lock of workLocks) {
