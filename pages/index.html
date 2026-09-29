@@ -118,7 +118,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="metrics" style="margin-top:14px">
       <div class="metric"><strong id="companyWorking">—</strong><span>trabajando</span></div>
       <div class="metric"><strong id="companyQueued">—</strong><span>en cola</span></div>
-      <div class="metric"><strong id="companyApproval">—</strong><span>requiere Sergio</span></div>
+      <div class="metric"><strong id="companyApproval">—</strong><span>requiere Sergio ahora</span></div>
+      <div class="metric"><strong id="companyDeferred">—</strong><span>pruebas reales diferidas</span></div>
       <div class="metric"><strong id="companyBlocked">—</strong><span>bloqueados</span></div>
       <div class="metric"><strong id="companyError">—</strong><span>error</span></div>
     </div>
@@ -148,8 +149,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   <p class="sub">Son requisitos del Master que todavía necesitan evidencia completa. UGO debe resolverlos antes de declarar DONE, aunque el audit final tenga sólo tres blockers.</p>
   <section class="steps" id="implementationSteps"><div class="step"><div class="step-index">…</div><div>Cargando pasos…</div></div></section>
 
-  <h2>Bloqueos del gate final</h2>
-  <p class="sub">Estos son los blockers explícitos del audit corporativo final. No se mezclan con el trabajo técnico pendiente.</p>
+  <h2>Pruebas reales finales</h2>
+  <p class="sub">Se dejan para el final: GPS físico, dos dispositivos, Customer #1 real y aceptación humana. Mientras quede trabajo autónomo verificable, estos gates aparecen diferidos y no frenan a ChatGPT/UGO.</p>
   <section class="steps" id="finalGateSteps"><div class="step"><div class="step-index">…</div><div>Cargando blockers…</div></div></section>
 
   <h2>CI del mismo SHA</h2>
@@ -205,12 +206,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     STALE_LOCK:'LOCK VENCIDO',
     RETRY_BACKOFF:'REINTENTO EN ESPERA',
     FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
-    HUMAN_REQUIRED:'REQUIERE SERGIO'
+    HUMAN_REQUIRED:'REQUIERE SERGIO',
+    HUMAN_DEFERRED:'PRUEBA REAL DIFERIDA'
   }[step.gate_state] || step.gate_state || 'PENDIENTE')
   const canOpenUgoMaster = step => ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK','HUMAN_REQUIRED'].includes(step.gate_state)
   const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
     step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
     step.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' :
+    step.gate_state === 'HUMAN_DEFERRED' ? 'Dejada para el final' :
     step.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' :
     step.gate_state === 'RETRY_BACKOFF' ? 'Esperando reintento' :
     step.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' :
@@ -224,7 +227,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <h3>${esc(step.title)}</h3>
         <div class="meta-line">
           <span class="pill ${pillClass(step.owner)}">${esc(step.owner)}</span>
-          <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY','RETRY_BACKOFF'].includes(step.gate_state) ? 'pending' : 'blocked'}">${esc(gateLabel(step))}</span>
+          <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY','RETRY_BACKOFF','HUMAN_DEFERRED'].includes(step.gate_state) ? 'pending' : 'blocked'}">${esc(gateLabel(step))}</span>
           <span class="pill">${esc(step.phase)}</span>
           ${step.department ? '<span class="pill">Depto: ' + esc(step.department) + '</span>' : ''}
           ${step.assigned_agent ? '<span class="pill accent">Agente: ' + esc(step.assigned_agent) + '</span>' : ''}
@@ -489,6 +492,11 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         el.className = 'pill blocked'
         return
       }
+      if (step.gate_state === 'HUMAN_DEFERRED') {
+        el.textContent = 'PRUEBA REAL DIFERIDA'
+        el.className = 'pill pending'
+        return
+      }
       if (step.gate_state === 'RETRY_BACKOFF') {
         el.textContent = 'REINTENTO EN ESPERA'
         el.className = 'pill pending'
@@ -535,7 +543,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 
     if (next) {
       nextTitle.textContent = next.title || next.id || 'Próximo paso'
-      nextTitle.className = 'state-big ' + (next.gate_state === 'HUMAN_REQUIRED' ? 'warn' : next.gate_state === 'AVAILABLE' ? 'accent' : '')
+      nextTitle.className = 'state-big ' + (['HUMAN_REQUIRED','HUMAN_DEFERRED'].includes(next.gate_state) ? 'warn' : next.gate_state === 'AVAILABLE' ? 'accent' : '')
       nextDetail.textContent = [
         gateLabel(next),
         next.assigned_agent || next.owner || 'UGO',
@@ -647,12 +655,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
     document.getElementById('runnableNow').textContent = (s.counts.runnable_now ?? 0) + ' habilitado(s)'
     document.getElementById('schedulerVersion').textContent = s.scheduler?.policy_version || s.scheduler_policy?.version || 'UNVERIFIED'
-    document.getElementById('schedulerPolicySummary').textContent = 'Máx. paralelo ' + (s.scheduler_policy?.max_parallel_tasks ?? '—') + ' · lease ' + (s.scheduler_policy?.default_lease_minutes ?? '—') + ' min · intentos ' + (s.scheduler_policy?.max_attempts ?? '—') + ' · ' + (s.scheduler_policy?.fairness || '—')
+    document.getElementById('schedulerPolicySummary').textContent = 'Máx. paralelo ' + (s.scheduler_policy?.max_parallel_tasks ?? '—') + ' · ' + (s.scheduler_policy?.execution_strategy || 'AUTONOMOUS_FIRST') + ' · lease ' + (s.scheduler_policy?.default_lease_minutes ?? '—') + ' min · intentos ' + (s.scheduler_policy?.max_attempts ?? '—')
     document.getElementById('activeLeases').textContent = s.scheduler?.active_leases ?? 0
     document.getElementById('staleLeases').textContent = s.scheduler?.stale_leases ?? 0
     document.getElementById('retryBackoff').textContent = s.counts.retry_backoff ?? 0
     document.getElementById('failedReview').textContent = s.counts.failed_review ?? 0
-    document.getElementById('humanRequired').textContent = s.counts.human_required ?? 0
+    document.getElementById('humanRequired').textContent = (s.counts.human_required ?? 0) + ' ahora / ' + (s.counts.human_deferred ?? 0) + ' diferido(s)'
     document.getElementById('parallelHint').textContent = (s.counts.runnable_now ?? 0) > 1
       ? 'Hay varios pasos independientes que pueden resolverse en paralelo sin compartir recursos bloqueados.'
       : (s.counts.runnable_now ?? 0) === 1
@@ -674,6 +682,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('companyWorking').textContent = company.working ?? '—'
     document.getElementById('companyQueued').textContent = company.queued ?? '—'
     document.getElementById('companyApproval').textContent = company.approval ?? '—'
+    document.getElementById('companyDeferred').textContent = company.deferred_real_tests ?? '—'
     document.getElementById('companyBlocked').textContent = company.blocked ?? '—'
     document.getElementById('companyError').textContent = company.error ?? '—'
     document.getElementById('companyRunnable').textContent = company.runnable ?? '—'
