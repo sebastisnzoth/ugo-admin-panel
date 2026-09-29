@@ -1,0 +1,57 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "hugo-intent",
+  "task_id": "readiness-hugo-intent",
+  "job_id": "UGO-READINESS-HUGO-INTENT",
+  "correlation_id": "readiness-hugo-intent-20260929T212200Z-6c13b3ea",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "tested_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
+  "workflow": {
+    "name": "UGO Hugo Intent Runtime TEST",
+    "run_id": 36633538777,
+    "run_number": 2,
+    "conclusion": "success",
+    "job_id": 109628438124
+  },
+  "regression": {
+    "tests_passed": 20,
+    "category_cases": 10,
+    "action_cases": 6,
+    "active_categories": 7
+  },
+  "judge": {
+    "result": "PASS",
+    "validated_at": "2026-09-29T21:29:20.792Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "validated_at": "2026-09-29T21:29:20.827Z"
+  },
+  "artifact": {
+    "id": 11063771893,
+    "name": "hugo-intent-runtime-a668c24207c51008fcda18ee3447ab1f3eba2e3d",
+    "retention_days": 90
+  },
+  "coverage": {
+    "service_intents": [
+      "plomería/plumbing ES/PT",
+      "pintura/painting ES/PT",
+      "electricidad/electricity ES/PT"
+    ],
+    "negative_intents": [
+      "ver actividad",
+      "volver al inicio",
+      "cancelar pedido"
+    ],
+    "flow_actions": [
+      "home",
+      "activity",
+      "cancel",
+      "schedule",
+      "confirm",
+      "retry"
+    ]
+  },
+  "verified_at": "2026-09-29T21:29:20.827Z"
+}
