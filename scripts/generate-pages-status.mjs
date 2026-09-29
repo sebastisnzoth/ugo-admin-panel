@@ -3,15 +3,18 @@ import { join } from 'node:path'
 import { scheduleTasks } from './ugo-scheduler-engine.mjs'
 import { evaluateFunctionalReadiness } from './ugo-readiness-engine.mjs'
 
-const [sourcePath, outPath, sourceSha, publishedAt] = process.argv.slice(2)
+const [sourcePath, outPath, sourceSha, publishedAt, pullRequestsPath] = process.argv.slice(2)
 if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
-  throw new Error('usage: node generate-pages-status.mjs <source> <out> <sha> <published-at>')
+  throw new Error('usage: node generate-pages-status.mjs <source> <out> <sha> <published-at> [pull-requests-json]')
 }
 
 const source = readFileSync(sourcePath, 'utf8')
 const evidenceUrl = 'https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
 const schedulerPolicy = JSON.parse(readFileSync('docs/UGO_SCHEDULER_POLICY.json','utf8'))
 const functionalReadinessSource = JSON.parse(readFileSync('docs/UGO_FUNCTIONAL_READINESS.json','utf8'))
+const pullRequests = pullRequestsPath && existsSync(pullRequestsPath)
+  ? (JSON.parse(readFileSync(pullRequestsPath,'utf8')).pull_requests || [])
+  : []
 const workLocks = []
 const workLocksDir = 'docs/ugo-work-locks'
 if (existsSync(workLocksDir)) {
@@ -31,6 +34,7 @@ const {
 } = evaluateFunctionalReadiness({
   functionalReadiness: functionalReadinessSource,
   locks: workLocks,
+  pullRequests,
   maxParallel: schedulerPolicy.max_parallel_tasks,
   now: new Date(publishedAt),
 })
