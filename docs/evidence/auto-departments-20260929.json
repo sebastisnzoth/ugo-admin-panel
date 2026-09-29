@@ -7,7 +7,7 @@
   "project_ref": "tmossnqfwfwjrtzwcbmm",
   "source_main_sha": "a7ac4da421b4edf064c408a504021a55a6bedd28",
   "runtime_code_sha": "dafa2a8ae1d8f023c8a52bce2bddaa642f41121d",
-  "final_status": "IN_PROGRESS",
+  "final_status": "VERIFIED",
   "runtime_proof": {
     "status": "PASS",
     "executed_at": "2026-09-29T20:44:31.253227Z",
@@ -137,7 +137,8 @@
       "io_contract_present": 13,
       "verification_passed": 13,
       "distinct_departments": 13
-    }
+    },
+    "validated_at": "2026-09-29T20:49:00Z"
   },
   "defect_remediation": {
     "defect": "Initial verifier used unqualified digest() and UGO TEST rejected it.",
@@ -163,5 +164,21 @@
     }
   ],
   "ui_improvement": "Departments view now shows responsible agent, declared inputs/outputs, and maturity derived from persisted proof.",
-  "production_touched": false
+  "production_touched": false,
+  "ci": {
+    "workflow": "UGO Core CI",
+    "run_id": 36628851324,
+    "event": "pull_request",
+    "tested_head_sha": "8d8a9d19093bddf1f049dd013fcb9b691e5d9c01",
+    "conclusion": "success",
+    "gates": [
+      "Dependency security gate",
+      "OpenRouter free-first route",
+      "TypeScript and production build",
+      "Core contract suite",
+      "Critical operational lint",
+      "Client migration lint",
+      "Full repository lint"
+    ]
+  }
 }
