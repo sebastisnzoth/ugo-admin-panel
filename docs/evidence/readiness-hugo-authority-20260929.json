@@ -1,0 +1,79 @@
+{
+  "task_id": "readiness-hugo-authority",
+  "readiness_id": "hugo-authority",
+  "job_id": "UGO-READINESS-HUGO-AUTHORITY",
+  "correlation_id": "hugo-authority-899518a93979-1790717674811",
+  "environment": "UGO TEST",
+  "started_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
+  "implementation_commits": [
+    "bda40e194f7603b8368534317126fd30b465f9b4",
+    "0dffd0c5590c921c510f1c922c2210daae93f026",
+    "899518a9397983a81636bd381c9e15eb9a4cd3a6"
+  ],
+  "runtime_proof": {
+    "status": "PASS",
+    "validated_sha": "899518a9397983a81636bd381c9e15eb9a4cd3a6",
+    "workflow_name": "UGO Hugo Authority Runtime TEST",
+    "run_id": 36634140195,
+    "job_id": 109630540331,
+    "artifact_id": 11062883444,
+    "artifact_name": "hugo-authority-runtime-899518a9397983a81636bd381c9e15eb9a4cd3a6",
+    "same_sha": true,
+    "tests": {
+      "authority_contracts": {
+        "pass": 8,
+        "fail": 0
+      },
+      "build": "PASS",
+      "ugo_test_runtime": "PASS"
+    },
+    "positive": [
+      "client->client ALLOW",
+      "provider->provider ALLOW",
+      "admin->admin ALLOW"
+    ],
+    "negative": [
+      "client->admin ROLE_MISMATCH",
+      "provider->admin ROLE_MISMATCH",
+      "inactive-client->client INACTIVE_PROFILE",
+      "admin->superadmin denied when fixture role is admin; otherwise superadmin self-authority is validated"
+    ],
+    "denial_reason_present": true
+  },
+  "remediation": {
+    "issue": "api/hugo/chat.ts trusted body.role without authenticating the caller, allowing role-context escalation at the endpoint boundary.",
+    "fixes": [
+      "Centralized explicit Hugo authority policy.",
+      "JWT is verified with Supabase before chat/TTS handling.",
+      "usuarios.tipo and activo are checked under the caller token.",
+      "Requested role is compared with verified profile authority.",
+      "403 denials expose safe reason codes and human-readable explanations.",
+      "Admin Live voice retains exact-role validation and mutation tools remain unavailable."
+    ]
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "judge_basis": "real UGO TEST role profiles + positive/negative authority matrix",
+    "sentinel_checks": [
+      "test-only-target",
+      "no-production",
+      "role-escalation-denied",
+      "denial-reason-present",
+      "same-sha"
+    ]
+  },
+  "unrelated_ci": {
+    "core_run_id": 36634140146,
+    "conclusion": "failure",
+    "blocker_for_this_control": false,
+    "reason": "Unrelated autonomous-dashboard-integrity contract expected an older autonomous_evidence_ledger select shape; dedicated authority suite and exact-SHA build passed."
+  },
+  "post_validation_drift": {
+    "checked_against_main": "1beb0329b040749018f40c039f06ea5affe2cf7b",
+    "authority_implementation_changed_after_validated_sha": false,
+    "note": "Only readiness lock metadata changed among hugo-authority-related paths after the validated SHA."
+  },
+  "production_touched": false,
+  "final_status": "VERIFIED"
+}

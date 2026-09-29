@@ -3,9 +3,9 @@
   "readiness_id": "hugo-authority",
   "job_id": "UGO-READINESS-HUGO-AUTHORITY",
   "title": "Verify Hugo permissions and authority across role/authority/policy boundaries",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T21:30:00Z",
-  "heartbeat_at": "2026-09-29T21:42:00Z",
+  "heartbeat_at": "2026-09-29T21:48:00Z",
   "lease_expires_at": "2026-09-29T22:27:00Z",
   "started_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
   "owner": "UGO",
@@ -18,17 +18,55 @@
   "resources": [
     "hugo-authority"
   ],
-  "correlation_id": "ugo-hugo-authority-20260929T213000Z-a668c242",
-  "current_step": "RUNTIME_VALIDATION",
+  "correlation_id": "hugo-authority-899518a93979-1790717674811",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
+    "repo:api/hugo/authority.ts",
+    "repo:api/hugo/chat.ts",
+    "repo:tests/contracts/hugo-authority-readiness.test.mjs",
+    "repo:scripts/hugo-authority-runtime.mjs",
+    "github:bda40e194f7603b8368534317126fd30b465f9b4",
+    "github:0dffd0c5590c921c510f1c922c2210daae93f026",
     "github:899518a9397983a81636bd381c9e15eb9a4cd3a6",
-    "github-actions:36634140195"
+    "github-actions:36634140195",
+    "github-actions:job:109630540331",
+    "github-artifact:11062883444",
+    "repo:docs/evidence/readiness-hugo-authority-20260929.json"
   ],
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-hugo",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
+  ],
+  "completed_at": "2026-09-29T21:48:00Z",
+  "runtime_validated_sha": "899518a9397983a81636bd381c9e15eb9a4cd3a6",
+  "evidence_path": "docs/evidence/readiness-hugo-authority-20260929.json",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": "real UGO TEST role profiles + positive/negative authority matrix"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checks": [
+      "test-only-target",
+      "no-production",
+      "role-escalation-denied",
+      "denial-reason-present",
+      "same-sha"
+    ]
+  },
+  "production_touched": false,
+  "notes": [
+    "Hugo chat now authenticates bearer JWT and authorizes requested role against usuarios.tipo/activo.",
+    "Denied actions return safe reason codes and explanations.",
+    "Dedicated same-SHA UGO TEST runtime, build, Judge and Sentinel all passed.",
+    "Core CI failure on the evidence SHA was unrelated to Hugo authority and came from autonomous-dashboard-integrity.",
+    "No production environment was touched."
   ]
 }
