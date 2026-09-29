@@ -2,10 +2,10 @@
   "task_id": "complete-test-journey",
   "job_id": "UGO-COMPLETE-TEST-JOURNEY",
   "title": "Execute complete TEST journey by one explicit serviceId",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T18:30:00Z",
-  "heartbeat_at": "2026-09-29T18:34:00Z",
-  "lease_expires_at": "2026-09-29T19:19:00Z",
+  "heartbeat_at": "2026-09-29T18:36:00Z",
+  "lease_expires_at": "2026-09-29T19:21:00Z",
   "started_sha": "daf71e9f56e839e837a1659b8b21308acb78f2b9",
   "owner": "UGO",
   "department": "Operaciones",
@@ -26,9 +26,31 @@
     "ratings"
   ],
   "correlation_id": "8bb91123-cda9-4d25-8a22-9de72c7e2b66",
-  "current_step": "EXECUTE_RUNTIME_P0_JOURNEY",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": [
     "audit-event-binding"
+  ],
+  "completed_at": "2026-09-29T18:36:00Z",
+  "completed_main_sha": "ea2b52e8f226a9a62ea0ebd75d74ff6cf10ba233",
+  "runtime_validated_sha": "e523862f6913cc3f3ee02f84de09e7cbaa71e27f",
+  "service_id": "83bb7314-c75e-4c41-82fb-0d9b4492ca41",
+  "evidence_ids": [
+    "ugo-test:service:83bb7314-c75e-4c41-82fb-0d9b4492ca41",
+    "ugo-test:journey-job:a2743ae9-5e08-4024-82a3-e36845e54131",
+    "ugo-test:journey-correlation:e158fdf6-3a80-4ee9-89fd-e51820765db8",
+    "ugo-test:audit-correlation:8bb91123-cda9-4d25-8a22-9de72c7e2b66",
+    "ugo-test:audit-evidence:6a648214-16aa-4603-9a06-5ec08d62c4a3",
+    "repo:docs/evidence/complete-test-journey-20260929.json",
+    "github:ea2b52e8f226a9a62ea0ebd75d74ff6cf10ba233"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "notes": [
+    "Executed through protected UGO TEST runtime function; no manual service-state DB edits.",
+    "Independent persisted-state judge passed all P0 demo assertions.",
+    "Automated TEST client approval is persisted; physical GPS, uploaded media, and real-human customer acceptance remain separate final-gate evidence."
   ]
 }
