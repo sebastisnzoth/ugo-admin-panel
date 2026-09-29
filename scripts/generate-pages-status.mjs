@@ -353,7 +353,9 @@ const isAuthoritativeDone = taskId => {
   const result = lock.validators_result || {}
   const judge = result.Judge || result.judge
   const sentinel = result.Sentinel || result.sentinel
-  return judge === 'PASS' && sentinel === 'PASS' && Array.isArray(lock.evidence_ids) && lock.evidence_ids.length > 0
+  const hasEvidenceIds = Array.isArray(lock.evidence_ids) && lock.evidence_ids.length > 0
+  const hasCommittedEvidence = Boolean(lock.evidence_path && lock.evidence_commit_sha)
+  return judge === 'PASS' && sentinel === 'PASS' && (hasEvidenceIds || hasCommittedEvidence)
 }
 const completedImplementation = implementationSteps.filter(step => isAuthoritativeDone(step.id))
 const pendingImplementation = implementationSteps.filter(step => !isAuthoritativeDone(step.id))
