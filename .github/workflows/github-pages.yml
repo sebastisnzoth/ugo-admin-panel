@@ -9,9 +9,11 @@ on:
       - "pages/**"
       - "docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md"
       - "docs/UGO_SCHEDULER_POLICY.json"
+      - "docs/UGO_FUNCTIONAL_READINESS.json"
       - "docs/ugo-work-locks/**"
       - "scripts/generate-pages-status.mjs"
       - "scripts/ugo-scheduler-engine.mjs"
+      - "scripts/ugo-readiness-engine.mjs"
       - "scripts/validate-ugo-scheduler.mjs"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
@@ -123,6 +125,34 @@ jobs:
               }
             ]
           }' /tmp/ugo-activity-runs.json > _site/activity.json
+
+      - name: Build open PR snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          GENERATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" \
+            > /tmp/ugo-open-prs.json
+          jq --arg generated_at "$GENERATED_AT" '{
+            generated_at_utc: $generated_at,
+            source: "GITHUB_PULL_REQUESTS_SERVER_SIDE",
+            pull_requests: [
+              .[] | {
+                number,
+                title,
+                draft,
+                html_url,
+                updated_at,
+                head_ref: .head.ref,
+                head_sha: .head.sha,
+                base_ref: .base.ref
+              }
+            ]
+          }' /tmp/ugo-open-prs.json > _site/pull-requests.json
 
       - name: Build main HEAD snapshot
         env:
