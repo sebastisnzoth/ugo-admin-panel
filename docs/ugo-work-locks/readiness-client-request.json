@@ -2,10 +2,10 @@
   "readiness_id": "client-request",
   "task_id": "readiness-client-request",
   "job_id": "UGO-READINESS-CLIENT-REQUEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T23:14:30Z",
-  "heartbeat_at": "2026-09-29T23:27:00Z",
-  "lease_expires_at": "2026-09-30T00:12:00Z",
+  "heartbeat_at": "2026-09-29T23:29:00Z",
+  "lease_expires_at": "2026-09-29T23:29:00Z",
   "started_sha": "f1fa5a5844f915ad70ff800a107cedb155719e1e",
   "owner": "UGO",
   "assigned_agent": "Client Request Runtime Agent",
@@ -17,7 +17,7 @@
     "client-request-flow"
   ],
   "correlation_id": "readiness-client-request-20260929T231430Z-f1fa5a58",
-  "current_step": "RUNTIME_WAIT_FOR_PERSISTED_SERVICE",
+  "current_step": "VERIFIED",
   "attempt": 4,
   "evidence_ids": [
     "github-actions-run-36644351920",
@@ -27,7 +27,14 @@
     "github-actions-run-36644763117",
     "runtime-ui-race-before-location",
     "github-actions-run-36645056998",
-    "runtime-query-before-service-persisted"
+    "runtime-query-before-service-persisted",
+    "github-actions-run-36645245760",
+    "github-actions-job-109666580833",
+    "github-actions-artifact-11068317496",
+    "docs/evidence/readiness-client-request-20260929.json",
+    "service-e4fada2e-5260-4466-8fa3-efb736df70b9",
+    "judge-pass-710d7c36",
+    "sentinel-pass-710d7c36"
   ],
   "title": "Verify complete Client request creation and persistence in UGO TEST",
   "department": "App Cliente",
@@ -36,5 +43,17 @@
     "ugo-client",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-29T23:29:00Z",
+  "verified_sha": "710d7c3624d9f48d2c2f92a0f189800525021e08",
+  "validator_results": {
+    "Judge": {
+      "status": "PASS",
+      "sha": "710d7c3624d9f48d2c2f92a0f189800525021e08"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "sha": "710d7c3624d9f48d2c2f92a0f189800525021e08"
+    }
+  }
 }
