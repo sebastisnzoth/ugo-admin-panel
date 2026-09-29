@@ -67,9 +67,9 @@ if (/Execution remains intentionally blocked behind customer #1 core stability/i
   implementationSteps.push({
     id: `implementation-${implementationSteps.length + 1}`,
     phase: 'UGO Empresas',
-    status: 'WAITING_DEPENDENCY',
+    status: 'PENDING',
     owner: 'UGO',
-    title: 'Habilitar y validar UGO Empresas después de la estabilidad de Customer #1.',
+    title: 'Habilitar y validar UGO Empresas en TEST antes de las pruebas reales finales.',
   })
 }
 
@@ -161,9 +161,9 @@ function resolutionFor(title) {
   }
 
   if (t.includes('ugo empresas')) return {
-    why: 'Está deliberadamente detrás de la estabilidad del núcleo y Customer #1.',
-    resolve: 'Primero cerrar Customer #1 y el núcleo; luego habilitar UGO Empresas y validar demanda/slots en TEST.',
-    done_evidence: 'Customer #1 estable + UGO Empresas habilitado + operación TEST verificada.',
+    why: 'La validación de software de UGO Empresas debe completarse antes de pedir pruebas humanas reales.',
+    resolve: 'Habilitar UGO Empresas en UGO TEST, validar demanda/slots, navegación, acciones, permisos, estados y evidencia sin depender de Customer #1 real.',
+    done_evidence: 'UGO Empresas habilitado en TEST + operación funcional verificada + acciones/permisos validados + evidencia persistida del mismo SHA.',
     owner: 'UGO',
   }
 
@@ -205,7 +205,7 @@ const dependencyMap = {
   'd14-audit': ['exception-recovery','release-gate'],
   'customer1-gate': ['d14-audit','complete-test-journey','release-gate'],
   'super-admin-ui': ['model-router-runtime'],
-  'ugo-empresas': ['customer1-gate'],
+  'ugo-empresas': ['d14-audit','super-admin-ui'],
 }
 const agentRegistry = {
   'ugo-maestro': { department: 'Dirección / Orquestación', agent: 'UGO Maestro', skills: ['planning','dependency-routing','job-control'] },
@@ -380,6 +380,7 @@ const autonomousCompany = {
   working: allWork.filter(x => x.gate_state === 'IN_PROGRESS').length,
   queued: allWork.filter(x => ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY','RETRY_BACKOFF'].includes(x.gate_state)).length,
   approval: allWork.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
+  deferred_real_tests: allWork.filter(x => x.gate_state === 'HUMAN_DEFERRED').length,
   blocked: allWork.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
   error: allWork.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
   runnable: runnable.length,
@@ -439,6 +440,8 @@ const status = {
     default_lease_minutes: schedulerPolicy.default_lease_minutes,
     max_attempts: schedulerPolicy.max_attempts,
     fairness: schedulerPolicy.fairness,
+    execution_strategy: schedulerPolicy.execution_strategy || 'AUTONOMOUS_FIRST',
+    defer_human_gates_until_autonomous_exhausted: Boolean(schedulerPolicy.defer_human_gates_until_autonomous_exhausted),
   },
   runnable_steps: runnable.map(x => x.id),
   counts: {
@@ -452,13 +455,16 @@ const status = {
     waiting_conflict: allWork.filter(x => ['WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY'].includes(x.gate_state)).length,
     stale_locks: plan.staleLocks.length,
     human_required: allWork.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
+    human_deferred: allWork.filter(x => x.gate_state === 'HUMAN_DEFERRED').length,
     retry_backoff: allWork.filter(x => x.gate_state === 'RETRY_BACKOFF').length,
     failed_review: allWork.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
   },
   next_movement: runnable[0]
     || allWork.find(x => x.gate_state === 'IN_PROGRESS')
     || allWork.find(x => ['FAILED_REQUIRES_REVIEW','STALE_LOCK','RETRY_BACKOFF'].includes(x.gate_state))
+    || allWork.find(x => x.scheduler?.human_gate === false && ['BLOCKED_DEPENDENCY','WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY'].includes(x.gate_state))
     || allWork.find(x => x.gate_state === 'HUMAN_REQUIRED')
+    || allWork.find(x => x.gate_state === 'HUMAN_DEFERRED')
     || allWork[0]
     || null,
   refresh_policy: {
@@ -468,7 +474,8 @@ const status = {
   needs_sergio_now:
     runnable.length === 0
     && !allWork.some(x => ['IN_PROGRESS','FAILED_REQUIRES_REVIEW','STALE_LOCK','RETRY_BACKOFF'].includes(x.gate_state))
-    && allWork.some(x => x.gate_state === 'HUMAN_REQUIRED'),
+    && allWork.some(x => x.gate_state === 'HUMAN_REQUIRED')
+    && !allWork.some(x => x.scheduler?.human_gate === false),
 }
 
 writeFileSync(outPath, JSON.stringify(status, null, 2) + '\n')
