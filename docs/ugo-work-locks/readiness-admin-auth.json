@@ -1,0 +1,25 @@
+{
+  "task_id": "readiness-admin-auth",
+  "readiness_id": "admin-auth",
+  "job_id": "UGO-READINESS-ADMIN-AUTH",
+  "title": "Verify Admin / Super Admin authentication and role restrictions with positive and negative runtime evidence",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T20:47:00Z",
+  "heartbeat_at": "2026-09-29T20:47:00Z",
+  "lease_expires_at": "2026-09-29T21:32:00Z",
+  "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Admin Security Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-auth"
+  ],
+  "correlation_id": "readiness-admin-auth-20260929T204700Z-1c6d04b",
+  "current_step": "INSPECT",
+  "attempt": 1,
+  "evidence_ids": []
+}
