@@ -2,10 +2,10 @@
   "task_id": "exception-recovery",
   "job_id": "UGO-EXCEPTION-RECOVERY",
   "title": "Verify normal exceptions can recover without raw Supabase/GitHub edits",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T19:01:00Z",
-  "heartbeat_at": "2026-09-29T19:15:00Z",
-  "lease_expires_at": "2026-09-29T20:00:00Z",
+  "heartbeat_at": "2026-09-29T19:17:00Z",
+  "lease_expires_at": "2026-09-29T19:17:00Z",
   "started_sha": "a47b9b57fc66feb86b1bb9d04912292ae5103cfd",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -27,10 +27,29 @@
     "recovery",
     "shared-provider-fixture"
   ],
-  "correlation_id": "ugo-exception-recovery-20260929T190100Z",
-  "current_step": "RUNTIME_TRIGGERED_AWAITING_PERSISTED_PROOF",
+  "correlation_id": "b4f6631e-9c84-4c1e-93cd-8a4fa1ee2c77",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": [
     "complete-test-journey"
-  ]
+  ],
+  "completed_at": "2026-09-29T19:17:00Z",
+  "runtime_validated_sha": "3f502fc22614c3bf6665df56787f0b34d116d876",
+  "evidence_commit_sha": "0511986a1439ea4fdde88c1ed984f6bf1a700491",
+  "evidence_path": "docs/evidence/exception-recovery-20260929.json",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "safe_final_state": {
+    "autonomy": "OFF",
+    "running_jobs": 0,
+    "active_kill_switches": 0
+  },
+  "result": {
+    "incident_id": "2dd2e8f1-b7eb-453a-b910-43e576e82d9d",
+    "recovery_job_id": "fb288b7e-9a05-46f4-9d2d-796bae33a7be",
+    "recovery_audit_id": "bc4db663-14b7-4a1b-9638-54b7cfb623c8",
+    "audit_log_id": 5470
+  }
 }
