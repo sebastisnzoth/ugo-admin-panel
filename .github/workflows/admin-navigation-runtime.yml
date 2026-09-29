@@ -8,6 +8,7 @@ on:
       - "scripts/admin-navigation-judge.mjs"
       - "scripts/admin-navigation-sentinel.mjs"
       - "src/mvp/ServiceHistoryPanel.tsx"
+      - "src/components/ScoutSection.tsx"
       - ".github/workflows/admin-navigation-runtime.yml"
   workflow_dispatch:
 
