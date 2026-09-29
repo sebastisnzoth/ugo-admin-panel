@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+const sha=process.env.UGO_RUNTIME_SHA||'';
+const p=JSON.parse(await fs.readFile('artifacts/admin-navigation-runtime.json','utf8'));
+assert.equal(p.readiness_id,'admin-navigation');
+assert.equal(p.task_id,'readiness-admin-navigation');
+assert.equal(p.sha,sha,'same-SHA runtime evidence required');
+assert.equal(p.environment,'UGO TEST');
+assert.equal(p.result,'PASS');
+assert.equal(p.actor_role,'superadmin');
+assert.equal(p.expected_navigation_controls,34);
+assert.equal(p.clicked_navigation_controls,34);
+assert.equal(p.duplicate_navigation_actions,'NONE');
+assert.deepEqual(p.page_errors,[]);
+assert.ok(Array.isArray(p.button_inventory)&&p.button_inventory.length>=29,'full view crawl required');
+const out={validator:'Judge',result:'PASS',sha,readiness_id:p.readiness_id,checked_at:new Date().toISOString()};
+await fs.writeFile('artifacts/admin-navigation-judge.json',JSON.stringify(out,null,2)+'\n');
+console.log(JSON.stringify(out));
