@@ -1,0 +1,46 @@
+{
+  "schema_version": "UGO_AUTO_AGENTS_READINESS_EVIDENCE_V1",
+  "readiness_id": "auto-agents",
+  "task_id": "readiness-auto-agents",
+  "job_id": "UGO-READINESS-AUTO-AGENTS",
+  "correlation_id": "readiness-auto-agents-20260929T221500Z-19a1d71b",
+  "environment": "UGO TEST",
+  "runtime_validated_sha": "d8106f13bd672ca5d155283ba2a65fe57e556bfe",
+  "workflow_run_id": 36638974305,
+  "workflow_job_id": 109646448905,
+  "workflow_conclusion": "success",
+  "artifact": {
+    "id": 11066175673,
+    "name": "auto-agents-readiness-d8106f13bd672ca5d155283ba2a65fe57e556bfe",
+    "digest": "sha256:52292e24df514d429d0b4fd8b2860ea79d2ae5f4dea2871a00e4ec4e32be46a1",
+    "retention_days": 90
+  },
+  "counts": {
+    "cataloged": 118,
+    "enabled": 22,
+    "executed": 22,
+    "verified_enabled": 22,
+    "disabled_cataloged_only": 96
+  },
+  "proof_contract": {
+    "enabled_agents": [
+      "READINESS_AGENT_TRIGGER",
+      "UGO_TEST_DETERMINISTIC_EXECUTOR",
+      "AGENT_EXECUTION_PROOF",
+      "AGENT_JUDGE_PROOF",
+      "AGENT_SENTINEL_PROOF"
+    ],
+    "disabled_agents": [
+      "CATALOGED",
+      "NOT_EXECUTED",
+      "Judge PASS",
+      "Sentinel PASS"
+    ]
+  },
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "ui_improvement": "Operational status is now separate from maturity; Super Admin can filter Catalogado/Habilitado/Ejecutado/Verificado.",
+  "result": "PASS",
+  "created_at": "2026-09-29T22:22:00Z"
+}
