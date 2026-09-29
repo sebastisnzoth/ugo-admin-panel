@@ -91,6 +91,39 @@ jobs:
             ]
           ' /tmp/ugo-runs.json > _site/ci-status.json
 
+      - name: Build GitHub activity snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          GENERATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?branch=main&per_page=30" \
+            > /tmp/ugo-activity-runs.json
+          jq --arg generated_at "$GENERATED_AT" '{
+            generated_at_utc: $generated_at,
+            source: "GITHUB_ACTIONS_SERVER_SIDE",
+            branch: "main",
+            workflow_runs: [
+              .workflow_runs[] |
+              {
+                id,
+                name,
+                status,
+                conclusion,
+                run_number,
+                head_sha,
+                event,
+                created_at,
+                updated_at,
+                html_url,
+                display_title
+              }
+            ]
+          }' /tmp/ugo-activity-runs.json > _site/activity.json
+
       - name: Verify public artifact is sanitized
         shell: bash
         run: |
