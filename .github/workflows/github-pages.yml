@@ -8,6 +8,7 @@ on:
     paths:
       - "pages/**"
       - "docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md"
+      - "docs/ugo-work-locks/**"
       - "scripts/generate-pages-status.mjs"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
