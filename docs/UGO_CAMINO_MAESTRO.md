@@ -154,3 +154,4 @@ Al cerrar un bloqueo, registrar el resultado y el siguiente fallo exacto. Si CI 
 
 - En `ecbe9121`, Core CI y RPC/RLS pasaron; Autonomous Worker TEST falló en GPS con `SERVICE_ROLE_REQUIRED`. La ACL real de UGO TEST permite ejecutar la RPC sólo a `service_role`; el claim JWT redundante no existe en llamadas con secret key.
 - Cambio preparado: `20260929150000_qa_gps_service_role_claim_compat.sql` preserva la función y su ACL, quitando únicamente ese guard incompatible. Cierre pendiente: migración TEST aplicada, rechazo `anon`/`authenticated`, ejecución GPS independiente y Worker/Sentinel del mismo SHA verdes.
+- Resultado `85986f5f`: la primera función ya acepta secret key, pero el harness P0 anidado conserva el mismo guard antiguo y falla antes del juez. La corrección aditiva `20260929151500_qa_p0_harness_secret_key_compat.sql` conserva toda la lógica P0 y el permiso exclusivo `service_role`; aún requiere ejecución y gate completo en TEST.

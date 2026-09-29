@@ -5,6 +5,14 @@ import fs from 'node:fs'
 const migration=fs.readFileSync('supabase/migrations/20260929143000_qa_independent_runtime_evidence_judge.sql','utf8')
 const binding=fs.readFileSync('supabase/migrations/20260929144500_qa_evidence_service_binding.sql','utf8')
 const gpsClaimFix=fs.readFileSync('supabase/migrations/20260929150000_qa_gps_service_role_claim_compat.sql','utf8')
+const p0ClaimFix=fs.readFileSync('supabase/migrations/20260929151500_qa_p0_harness_secret_key_compat.sql','utf8')
+
+test('upstream P0 harness keeps the GPS negative path and service role ACL without legacy claim gate',()=>{
+ assert.doesNotMatch(p0ClaimFix,/if initial_role<>'service_role'/)
+ assert.match(p0ClaimFix,/revoke all on function public\.autonomous_qa_run_p0_test_service\(\) from public,anon,authenticated/)
+ assert.match(p0ClaimFix,/grant execute on function public\.autonomous_qa_run_p0_test_service\(\) to service_role/)
+ for(const assertion of ['P0_ZERO_GPS_ACCEPTED','P0_STALE_GPS_ACCEPTED','P0_INACCURATE_GPS_ACCEPTED','P0_OUTSIDE_GEOFENCE_NOT_REJECTED','P0_REJECTED_ARRIVAL_CHANGED_STATE','P0_ARRIVAL_FAILED']) assert.ok(p0ClaimFix.includes(assertion))
+})
 
 test('GPS worker accepts secret-key service_role without exposing the RPC to other roles',()=>{
  assert.doesNotMatch(gpsClaimFix,/request\.jwt\.claim\.role|auth\.jwt\(\)/)

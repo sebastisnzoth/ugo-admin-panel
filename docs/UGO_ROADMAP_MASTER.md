@@ -567,6 +567,8 @@ The independent QA evidence path now binds each assertion to the scenario's curr
 
 The next GPS worker gate found a legacy JWT claim guard on a service-role-only QA RPC. `20260929150000_qa_gps_service_role_claim_compat.sql` preserves the ACL and removes that redundant check; UGO TEST migration and same-SHA Worker verification are required before this blockage closes.
 
+The following Worker run on `85986f5f` exposed the same obsolete guard in the nested P0 harness. `20260929151500_qa_p0_harness_secret_key_compat.sql` replaces that function with identical lifecycle checks and service-role-only ACL, removing only the incompatible entry claim check. Runtime verification remains pending.
+
 ## Scout CRM · Gmail outreach (2026-09-22)
 
 Implementado en `main` y con migración aplicada en UGO Arena/TEST: OAuth Gmail server-side, estado conectar/desconectar en Scout y CRM, envío individual y campañas de hasta 20 destinatarios por lote, link de onboarding UGO, cooldown de campaña, auditoría de envíos y convergencia con el embudo CRM. Pendiente externo para runtime: habilitar Gmail API en Google Cloud, registrar `/api/scout/gmail` como redirect URI del cliente OAuth, cargar las credenciales OAuth server-side y autorizar una cuenta Google desde el panel. No requiere deploy hasta que se autorice la etapa de publicación.

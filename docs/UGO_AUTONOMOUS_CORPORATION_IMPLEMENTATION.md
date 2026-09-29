@@ -19,6 +19,8 @@ No production publication is implied.
 
 **29 September GPS worker follow-up:** same-SHA Core and isolated RPC/RLS passed on `ecbe9121`, while the Autonomous Worker failed at the GPS QA RPC with `SERVICE_ROLE_REQUIRED`. The RPC's EXECUTE ACL already restricts it to `service_role`; a legacy JWT role-claim check rejected current Supabase secret-key calls. Migration `20260929150000_qa_gps_service_role_claim_compat.sql` replaces only that function guard and preserves the ACL and independent judge. Apply and rerun the Worker in UGO TEST before claiming this fix runtime validated.
 
+**Upstream follow-up:** on `85986f5f` the GPS RPC passed its own guard but its nested `autonomous_qa_run_p0_test_service()` rejected the same secret-key call with `SERVICE_ROLE_REQUIRED`. `20260929151500_qa_p0_harness_secret_key_compat.sql` removes that redundant claim gate from the P0 harness while preserving the whole GPS negative/positive lifecycle and service-role-only EXECUTE ACL. Same-SHA Worker/Sentinel proof is still required.
+
 ## 2. Master requirement matrix
 
 | Master capability | Current implementation | Maturity |
