@@ -1,4 +1,5 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 const [sourcePath, outPath, sourceSha, publishedAt] = process.argv.slice(2)
 if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
@@ -172,10 +173,59 @@ function resolutionFor(title) {
   }
 }
 
+const keyFor = title => {
+  const t = title.toLowerCase()
+  if (t.includes('browser-independent') || t.includes('scheduled test worker')) return 'worker-autonomy'
+  if (t.includes('openrouter')) return 'model-router-runtime'
+  if (t.includes('bind qa simulators')) return 'qa-simulator-binding'
+  if (t.includes('chaos')) return 'chaos-p0'
+  if (t.includes('remediation')) return 'remediation-regression'
+  if (t.includes('release gate')) return 'release-gate'
+  if (t.includes('event binding')) return 'audit-event-binding'
+  if (t.includes('complete test journey')) return 'complete-test-journey'
+  if (t.includes('recover without raw')) return 'exception-recovery'
+  if (t.includes('d14 independent')) return 'd14-audit'
+  if (t.includes('customer #1 launch gate')) return 'customer1-gate'
+  if (t.includes('super admin')) return 'super-admin-ui'
+  if (t.includes('ugo empresas')) return 'ugo-empresas'
+  return 'task-' + title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'').slice(0,44)
+}
+const dependencyMap = {
+  'worker-autonomy': [],
+  'model-router-runtime': [],
+  'qa-simulator-binding': [],
+  'chaos-p0': ['qa-simulator-binding'],
+  'remediation-regression': ['chaos-p0'],
+  'release-gate': ['remediation-regression'],
+  'audit-event-binding': ['qa-simulator-binding'],
+  'complete-test-journey': ['audit-event-binding'],
+  'exception-recovery': ['complete-test-journey'],
+  'd14-audit': ['exception-recovery','release-gate'],
+  'customer1-gate': ['d14-audit','complete-test-journey','release-gate'],
+  'super-admin-ui': ['model-router-runtime'],
+  'ugo-empresas': ['customer1-gate'],
+}
+const resourceMap = {
+  'worker-autonomy': ['ugo-test-worker','autonomy-state','shared-provider-fixture'],
+  'model-router-runtime': ['model-router','openrouter','preview-runtime'],
+  'qa-simulator-binding': ['qa-simulators','shared-provider-fixture','ugo-test-p0'],
+  'chaos-p0': ['ugo-test-p0','shared-provider-fixture','qa-lab'],
+  'remediation-regression': ['qa-lab','regression'],
+  'release-gate': ['launch-gate','qa-lab'],
+  'audit-event-binding': ['ugo-test-p0','audit-ledger','shared-provider-fixture'],
+  'complete-test-journey': ['ugo-test-p0','shared-provider-fixture','payments','ratings'],
+  'exception-recovery': ['ugo-test-p0','recovery','shared-provider-fixture'],
+  'd14-audit': ['d14-audit','audit-ledger'],
+  'customer1-gate': ['launch-gate','customer1'],
+  'super-admin-ui': ['super-admin-ui','preview-runtime'],
+  'ugo-empresas': ['ugo-empresas'],
+}
 for (const [index, step] of implementationSteps.entries()) {
   Object.assign(step, resolutionFor(step.title))
+  step.id = keyFor(step.title)
   step.order = index + 1
-  step.depends_on = index === 0 ? [] : [implementationSteps[index - 1].id]
+  step.depends_on = dependencyMap[step.id] || []
+  step.resources = resourceMap[step.id] || [step.id]
   step.evidence_url = evidenceUrl
 }
 
@@ -204,11 +254,13 @@ const blockerDetails = {
 }
 
 const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
-  id: `final-gate-${index + 1}`,
+  id: code === 'FOUNDER_CHALLENGE_PENDING' ? 'founder-challenge' : code === 'PHYSICAL_GPS_DEVICE_UNVERIFIED' ? 'physical-gps' : code === 'REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED' ? 'real-customer-acceptance' : `final-gate-${index + 1}`,
   phase: 'Final Gate',
   status: 'BLOCKED',
   code,
   evidence_url: evidenceUrl,
+  depends_on: code === 'FOUNDER_CHALLENGE_PENDING' ? ['d14-audit'] : code === 'PHYSICAL_GPS_DEVICE_UNVERIFIED' ? ['complete-test-journey'] : code === 'REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED' ? ['customer1-gate','physical-gps'] : [],
+  resources: code === 'FOUNDER_CHALLENGE_PENDING' ? ['founder-challenge'] : code === 'PHYSICAL_GPS_DEVICE_UNVERIFIED' ? ['physical-gps','customer1-device-test'] : code === 'REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED' ? ['customer1','customer1-device-test'] : ['final-audit'],
   ...(blockerDetails[code] || {
     title: code,
     why: 'Bloqueo persistido del audit final.',
@@ -219,6 +271,41 @@ const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
 }))
 
 const allWork = [...implementationSteps, ...finalGateSteps]
+const activeLocks = []
+const workLocksDir = 'docs/ugo-work-locks'
+if (existsSync(workLocksDir)) {
+  for (const name of readdirSync(workLocksDir)) {
+    if (!name.endsWith('.json')) continue
+    try {
+      const lock = JSON.parse(readFileSync(join(workLocksDir, name), 'utf8'))
+      if (['IN_PROGRESS','QUEUED','WAITING_EVIDENCE'].includes(lock.status)) activeLocks.push(lock)
+    } catch {}
+  }
+}
+const pendingIds = new Set(allWork.map(x => x.id))
+const intersects = (a=[], b=[]) => a.some(x => b.includes(x))
+for (const step of allWork) {
+  const unresolvedDeps = (step.depends_on || []).filter(id => pendingIds.has(id))
+  const ownLock = activeLocks.find(lock => lock.task_id === step.id)
+  const conflict = activeLocks.find(lock => lock.task_id !== step.id && intersects(step.resources || [], lock.resources || []))
+  if (ownLock) {
+    step.gate_state = 'IN_PROGRESS'
+    step.gate_reason = 'Trabajo activo persistido en el repo.'
+    step.active_lock = ownLock
+  } else if (unresolvedDeps.length) {
+    step.gate_state = 'BLOCKED_DEPENDENCY'
+    step.gate_reason = 'Debe completarse antes: ' + unresolvedDeps.join(', ')
+    step.blocked_by = unresolvedDeps
+  } else if (conflict) {
+    step.gate_state = 'WAITING_CONFLICT'
+    step.gate_reason = 'Recurso compartido en uso por ' + conflict.task_id
+    step.blocked_by = [conflict.task_id]
+  } else {
+    step.gate_state = 'AVAILABLE'
+    step.gate_reason = 'Puede ejecutarse ahora sin dependencias pendientes ni conflicto de recursos.'
+  }
+}
+const runnable = allWork.filter(x => x.gate_state === 'AVAILABLE')
 
 const status = {
   title: 'UGO Implementation Command Center',
@@ -249,16 +336,22 @@ const status = {
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
   implementation_steps: implementationSteps,
   final_gate_steps: finalGateSteps,
+  active_locks: activeLocks,
+  runnable_steps: runnable.map(x => x.id),
   counts: {
     implementation_pending: implementationSteps.length,
     final_gate_blockers: finalGateSteps.length,
     total_visible_work_items: allWork.length,
     human_involved: allWork.filter(x => x.owner.includes('SERGIO')).length,
+    runnable_now: runnable.length,
+    in_progress: allWork.filter(x => x.gate_state === 'IN_PROGRESS').length,
+    blocked_dependency: allWork.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
+    waiting_conflict: allWork.filter(x => x.gate_state === 'WAITING_CONFLICT').length,
   },
-  next_movement: implementationSteps[0] || finalGateSteps[0] || null,
+  next_movement: runnable[0] || allWork.find(x => x.gate_state === 'IN_PROGRESS') || allWork[0] || null,
   refresh_policy: {
     mode: 'EVENT_PLUS_SCHEDULE',
-    minutes: 15,
+    minutes: 5,
   },
   needs_sergio_now: allWork.some(x => x.owner.includes('SERGIO')),
 }
