@@ -1,0 +1,62 @@
+{
+  "readiness_id": "admin-navigation",
+  "task_id": "readiness-admin-navigation",
+  "job_id": "UGO-READINESS-ADMIN-NAVIGATION",
+  "correlation_id": "readiness-admin-navigation-20260929T212000Z-d68ed824",
+  "environment": "UGO TEST",
+  "validated_sha": "320b476b9e7b23af8dcfbbfb75589d78db0423eb",
+  "runtime": {
+    "workflow": "UGO Admin Navigation Runtime TEST",
+    "run_id": 36634933628,
+    "job_id": 109633133223,
+    "conclusion": "success",
+    "expected_navigation_controls": 34,
+    "clicked_navigation_controls": 34,
+    "views_crawled": 29,
+    "duplicate_navigation_actions": "NONE",
+    "page_errors": [],
+    "artifact_id": 11063459086,
+    "artifact_name": "admin-navigation-runtime-320b476b9e7b23af8dcfbbfb75589d78db0423eb",
+    "artifact_digest": "sha256:3a0a7be8153b3839322f12b8f553f56e803fba5c0ff49907a6457576f75c0732"
+  },
+  "fixes": [
+    {
+      "component": "src/components/ScoutSection.tsx",
+      "defect": "Leaflet resize timers survived Scout unmount and called invalidateSize() on a removed map.",
+      "fix": "Cancel resize timers on cleanup and only invalidate the currently mounted map.",
+      "commit": "b2e6d682a9cadc8fce0fedd16564f72e4f33956f"
+    },
+    {
+      "component": "src/components/AdvancedSections.tsx",
+      "defect": "KYC country validation fetched a stale hardcoded Supabase endpoint and let network failure escape as a pageerror.",
+      "fix": "Use the active Supabase client and render fail-safe KYC load/update errors.",
+      "commit": "eaf284a8d97ea7ebc5e7029301314686873982d8"
+    },
+    {
+      "component": "src/mvp/ServiceHistoryPanel.tsx",
+      "defect": "Realtime history cleanup did not contain removeChannel rejection.",
+      "fix": "Contain asynchronous channel cleanup errors during view transitions.",
+      "commit": "7eb3a0db20bfa0b2e723831cfe0a9beb8be67a29"
+    }
+  ],
+  "permanent_regression": [
+    "scripts/admin-navigation-runtime.mjs",
+    "scripts/admin-navigation-judge.mjs",
+    "scripts/admin-navigation-sentinel.mjs",
+    ".github/workflows/admin-navigation-runtime.yml"
+  ],
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T21:42:39.865Z",
+      "sha": "320b476b9e7b23af8dcfbbfb75589d78db0423eb"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T21:42:39.922Z",
+      "sha": "320b476b9e7b23af8dcfbbfb75589d78db0423eb"
+    }
+  },
+  "result": "PASS",
+  "completed_at": "2026-09-29T21:42:40Z"
+}
