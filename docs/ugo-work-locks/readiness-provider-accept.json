@@ -2,10 +2,10 @@
   "readiness_id": "provider-accept",
   "task_id": "readiness-provider-accept",
   "job_id": "UGO-READINESS-PROVIDER-ACCEPT",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T22:13:00Z",
-  "heartbeat_at": "2026-09-29T22:20:00Z",
-  "lease_expires_at": "2026-09-29T23:05:00Z",
+  "heartbeat_at": "2026-09-29T22:22:00Z",
+  "lease_expires_at": "2026-09-29T23:07:00Z",
   "started_sha": "80a2637b2bef456aded9e51b7b89c976a6c51b08",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -24,8 +24,17 @@
     "provider-demand"
   ],
   "correlation_id": "readiness-provider-accept-20260929T221300Z",
-  "current_step": "FIX_REJECT_RPC_PERMISSIONS",
+  "current_step": "validated_and_closed",
   "attempt": 1,
-  "evidence_ids": [],
-  "title": "Verify provider offer accept/reject is authorized, idempotent and concurrency-safe"
+  "evidence_ids": [
+    "provider-accept-runtime-20260929T221842Z"
+  ],
+  "title": "Verify provider offer accept/reject is authorized, idempotent and concurrency-safe",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-accept-20260929.json",
+  "completed_at": "2026-09-29T22:22:00Z",
+  "result_summary": "UGO Arena TEST verified accept/reject authorization, idempotent retries, persisted state and single-winner concurrency. Reject anon execution surface hardened; scoped regressions PASS."
 }
