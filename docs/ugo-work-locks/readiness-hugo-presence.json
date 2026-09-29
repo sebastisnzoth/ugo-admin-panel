@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-HUGO-PRESENCE",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T20:47:00Z",
-  "lease_expires_at": "2026-09-29T21:32:00Z",
+  "heartbeat_at": "2026-09-29T20:53:00Z",
+  "lease_expires_at": "2026-09-29T21:38:00Z",
   "started_sha": "d27e7047d64a8816dfe38b79769adbc0a15ab4bc",
   "owner": "UGO",
   "assigned_agent": "Hugo Runtime Presence Agent",
@@ -17,7 +17,7 @@
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-presence-20260929T204700Z",
-  "current_step": "inspect_role_surfaces",
+  "current_step": "add_dedicated_runtime_proof",
   "attempt": 1,
   "evidence_ids": []
 }
