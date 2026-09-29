@@ -4,16 +4,21 @@
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T23:04:00Z",
-  "heartbeat_at": "2026-09-29T23:04:00Z",
-  "lease_expires_at": "2026-09-29T23:49:00Z",
+  "heartbeat_at": "2026-09-29T23:18:00Z",
+  "lease_expires_at": "2026-09-30T00:03:00Z",
   "started_sha": "15bef1e7d6beeeaeb166a5c2d65bbf4f33be9232",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Admin Realtime Runtime Agent",
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["admin-realtime"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-realtime"
+  ],
   "correlation_id": "readiness-admin-realtime-20260929T230400Z-15bef1e7",
-  "current_step": "INSPECT_REALTIME_RUNTIME",
+  "current_step": "REVALIDATE_AND_INSPECT_REALTIME",
   "attempt": 1,
   "evidence_ids": [],
   "title": "Verify Admin operational state updates without manual refresh in UGO TEST"
