@@ -134,3 +134,5 @@ try{
  await browser.close()
  await user.auth.signOut()
 }
+
+// diagnostic trigger 2026-09-29T23:31Z
