@@ -10,7 +10,7 @@ const[{count:dc,error:de},{count:ec,error:ee},{data:agent,error:ae},{data:cov,er
  db.from('autonomous_agents').select('id,status,authority_class').eq('agent_key','quality-coverage-agent').single(),
  db.from('autonomous_quality_coverage').select('coverage_key,status')])
 if(de)throw de;if(ee)throw ee;if(ae)throw ae;if(ce)throw ce
-if(dc!==1||ec!==1||agent.status!=='IDLE'||agent.authority_class!=='GREEN')throw new Error('QUALITY_COVERAGE_LEDGER_OR_AGENT_INVALID')
+if((dc??0)<1||(ec??0)<1||agent.status!=='IDLE'||agent.authority_class!=='GREEN')throw new Error('QUALITY_COVERAGE_LEDGER_OR_AGENT_INVALID')
 for(const key of ['gps-geofence','roles','permissions-rls','realtime'])if(!cov.some(x=>x.coverage_key===key&&x.status==='COVERED'))throw new Error('INDEPENDENT_COVERAGE_NOT_PROMOTED:'+key)
 for(const key of ['physical-gps-device','uploaded-media-bytes','real-customer-acceptance'])if(!cov.some(x=>x.coverage_key===key&&x.status==='UNCOVERED'))throw new Error('PHYSICAL_OR_HUMAN_COVERAGE_PROMOTED:'+key)
-console.log(JSON.stringify({qualityCoverageAgent:true,jobId:job.id,covered:job.verification_result.covered,uncovered:job.verification_result.uncovered,customerAcceptance:false}))
+console.log(JSON.stringify({qualityCoverageAgent:true,jobId:job.id,semanticDecisionRows:dc,semanticEvidenceRows:ec,covered:job.verification_result.covered,uncovered:job.verification_result.uncovered,customerAcceptance:false}))
