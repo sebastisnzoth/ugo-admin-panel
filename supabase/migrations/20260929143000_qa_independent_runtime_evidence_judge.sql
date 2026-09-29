@@ -15,6 +15,8 @@ create table if not exists public.autonomous_qa_assertion_evidence(
   unique(run_id,assertion_key)
 );
 alter table public.autonomous_qa_assertion_evidence enable row level security;
+revoke all on public.autonomous_qa_assertion_evidence from public,anon,authenticated;
+grant select on public.autonomous_qa_assertion_evidence to authenticated,service_role;
 do $$ begin
  create policy qa_assertion_evidence_superadmin_read on public.autonomous_qa_assertion_evidence
  for select to authenticated using(private.is_superadmin());
