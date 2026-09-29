@@ -1,0 +1,31 @@
+{
+  "readiness_id": "provider-accept",
+  "task_id": "readiness-provider-accept",
+  "job_id": "UGO-READINESS-PROVIDER-ACCEPT",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T22:13:00Z",
+  "heartbeat_at": "2026-09-29T22:13:00Z",
+  "lease_expires_at": "2026-09-29T22:58:00Z",
+  "started_sha": "80a2637b2bef456aded9e51b7b89c976a6c51b08",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Offer State Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-qa",
+    "ugo-runtime-validation"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-demand"
+  ],
+  "correlation_id": "readiness-provider-accept-20260929T221300Z",
+  "current_step": "REVALIDATE",
+  "attempt": 1,
+  "evidence_ids": [],
+  "title": "Verify provider offer accept/reject is authorized, idempotent and concurrency-safe"
+}
