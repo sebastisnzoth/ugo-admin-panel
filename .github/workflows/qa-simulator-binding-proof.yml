@@ -19,7 +19,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-qa-simulator-binding-proof
+  group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
 
 env:
