@@ -2,10 +2,10 @@
   "readiness_id": "provider-offers",
   "task_id": "readiness-provider-offers",
   "job_id": "UGO-READINESS-PROVIDER-OFFERS",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:45:00Z",
-  "heartbeat_at": "2026-09-29T20:45:00Z",
-  "lease_expires_at": "2026-09-29T21:30:00Z",
+  "heartbeat_at": "2026-09-29T20:56:30Z",
+  "lease_expires_at": "2026-09-29T21:41:30Z",
   "started_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
   "owner": "UGO",
   "assigned_agent": "Provider Matching Agent",
@@ -17,9 +17,11 @@
     "provider-demand"
   ],
   "correlation_id": "readiness-provider-offers-20260929T204500Z",
-  "current_step": "inspect_matching_and_runtime_tests",
+  "current_step": "validated_and_closed",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "provider-offers-runtime-20260929T205600Z"
+  ],
   "title": "Verify eligible provider offers within 20 km reach the correct provider",
   "department": "App Proveedor",
   "skills": [
@@ -27,5 +29,12 @@
     "ugo-provider",
     "ugo-qa",
     "ugo-runtime-validation"
-  ]
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-offers-20260929.json",
+  "completed_at": "2026-09-29T20:56:30Z",
+  "result_summary": "UGO TEST verified: eligible provider receives directed offer inside 20 km; >20 km is rejected; provider offer RPC isolates to auth.uid(); permanent regression passed."
 }
