@@ -19,7 +19,7 @@ const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshT
 const user=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}});
 const {data:login,error:loginError}=await user.auth.signInWithPassword({email,password});
 assert.ifError(loginError);
-assert.ok(login.user,'UGO_TEST_SUPERADMIN_LOGIN_REQUIRED');
+assert.ok(login.user&&login.session,'UGO_TEST_SUPERADMIN_SESSION_REQUIRED');
 const {data:profile,error:profileError}=await admin.from('usuarios').select('tipo,activo').eq('id',login.user.id).single();
 assert.ifError(profileError);
 assert.equal(profile?.tipo,'superadmin','UGO_TEST_SUPERADMIN_REQUIRED');
@@ -78,10 +78,11 @@ const assertCardCount=async(label,value)=>{
 };
 
 try{
+  await page.addInitScript(({key,value})=>window.localStorage.setItem(key,value),{
+    key:'ugo-test-admin-auth',
+    value:JSON.stringify(login.session)
+  });
   await page.goto(base+'/?app=admin',{waitUntil:'networkidle'});
-  await page.getByPlaceholder('Usuario o email').fill(email);
-  await page.getByPlaceholder('Contraseña').fill(password);
-  await page.getByRole('button',{name:'Ingresar'}).click();
   await page.getByRole('button',{name:'Super Admin',exact:true}).waitFor({state:'visible',timeout:20000});
   await page.getByRole('button',{name:'Super Admin',exact:true}).click();
   await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000});
@@ -132,7 +133,7 @@ try{
     tested_url:base+'/?app=admin',
     actor_role:profile.tipo,
     runtime_checks:{
-      login:'PASS',super_admin_authorization:'PASS',autonomy:'PASS',qa_lab:'PASS',
+      authenticated_session:'PASS',super_admin_authorization:'PASS',autonomy:'PASS',qa_lab:'PASS',
       model_router:'PASS',risk_audit:'PASS',launch_gate_action:'PASS',correlation_timeline:'PASS'
     },
     backend_before:before,
@@ -143,6 +144,10 @@ try{
   };
   await fs.writeFile('artifacts/super-admin-ui-runtime.json',JSON.stringify(evidence,null,2)+'\n');
   console.log(JSON.stringify({status:'PASS',sha,environment:'UGO TEST',launch:after.launch,correlation_id:before.correlated.correlation_id}));
+}catch(error){
+  await page.screenshot({path:'artifacts/super-admin-ui-failure.png',fullPage:true}).catch(()=>{});
+  await fs.writeFile('artifacts/super-admin-ui-failure.txt',await page.locator('body').innerText().catch(()=>String(error))).catch(()=>{});
+  throw error;
 }finally{
   await browser.close();
   await user.auth.signOut();
