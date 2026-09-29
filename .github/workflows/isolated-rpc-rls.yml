@@ -142,7 +142,7 @@ jobs:
         run: node scripts/autonomous-launch-gate-runtime.mjs
 
       - name: Install transient browser runtime for Super Admin proof
-        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        if: ${{ always() && env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         shell: bash
         run: |
           set -euo pipefail
@@ -150,7 +150,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Runtime-validate Super Admin UI against authoritative UGO TEST backend
-        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        if: ${{ always() && env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         shell: bash
         run: |
           set -euo pipefail
