@@ -116,6 +116,25 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
   assert.equal(adminProfile.activo, true, 'Admin TEST debe estar activo')
   assert.ok(['admin', 'superadmin'].includes(adminProfile.tipo), 'La tercera identidad debe ser Admin/Super Admin')
 
+  // Keep this remote TEST fixture deterministic without weakening the one-active-job rule.
+  // Close only stale services created by this same integration harness.
+  const { data: staleHarnessServices, error: staleHarnessError } = await a
+    .from('servicios')
+    .select('id,estado,metadata')
+    .eq('proveedor_id', providerId)
+    .eq('ambiente', 'demo')
+    .in('estado', ['asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
+  if (staleHarnessError) throw staleHarnessError
+  for (const stale of staleHarnessServices || []) {
+    if (stale.metadata?.integration_test === true && stale.metadata?.source === 'rpc-rls-harness') {
+      const { error: closeError } = await a.from('servicios').update({
+        estado: 'cancelado',
+        metadata: { ...stale.metadata, fixture_recovered_at: new Date().toISOString() },
+      }).eq('id', stale.id)
+      if (closeError) throw closeError
+    }
+  }
+
   const category = await firstCategory(c)
   const runId = crypto.randomUUID()
   let serviceId = null

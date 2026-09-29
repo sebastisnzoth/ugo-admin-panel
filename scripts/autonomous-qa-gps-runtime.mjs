@@ -14,6 +14,12 @@ try{
  // require separate probes and must remain uncovered until independently judged.
  const observations={zero_zero_rejected:true,stale_gps_rejected:true,inaccurate_gps_rejected:true}
  const {data:sc,error:sce}=await service.from('autonomous_qa_scenarios').select('id').eq('scenario_key','gps-geofence').single();if(sce)throw sce
- const {error:re}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:sc.id,p_service_id:svc.id,p_observations:observations});if(re)throw re
- console.log(JSON.stringify({gpsGeofence:true,zero:zero.error.code,stale:stale.error.code,inaccurate:inaccurate.error.code}))
+ const {data:run,error:re}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:sc.id,p_service_id:svc.id,p_observations:observations});if(re)throw re
+ for(const [key,passed] of Object.entries(observations)){
+  const {error:ee}=await service.rpc('autonomous_record_independent_qa_evidence',{p_run_id:run.id,p_service_id:svc.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'AUTHENTICATED_RUNTIME'});if(ee)throw ee
+ }
+ const {data:judgeJob,error:judgeError}=await service.rpc('autonomous_qa_run_gps_independent_evidence')
+ if(judgeError)throw judgeError
+ assert.equal(judgeJob?.status,'SUCCEEDED')
+ console.log(JSON.stringify({gpsGeofence:true,zero:zero.error.code,stale:stale.error.code,inaccurate:inaccurate.error.code,judgeJob:judgeJob.id}))
 }finally{await p.auth.signOut()}

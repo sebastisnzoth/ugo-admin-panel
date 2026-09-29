@@ -15,6 +15,8 @@ on:
       - 'scripts/assert-test-environment.mjs'
       - 'scripts/bootstrap-test-auth.mjs'
       - 'scripts/chat-realtime-probe.mjs'
+      - 'scripts/autonomous-qa-auth-runtime.mjs'
+      - 'scripts/autonomous-qa-gps-runtime.mjs'
       - 'scripts/autonomous-launch-gate-runtime.mjs'
       - 'docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
       - 'package.json'
@@ -25,7 +27,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-isolated-rpc-rls
+  group: ugo-test-runtime-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: false
 
 env:
@@ -137,6 +139,14 @@ jobs:
       - name: Autonomous Corporation runtime RPC/RLS
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node --test tests/integration/autonomous-corporation-rpc-rls.test.mjs
+
+      - name: Authenticated roles and permissions independent QA evidence
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/autonomous-qa-auth-runtime.mjs
+
+      - name: GPS geofence independent QA evidence
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        run: node scripts/autonomous-qa-gps-runtime.mjs
 
       - name: Realtime chat Cliente ↔ Proveedor without refresh
         run: node scripts/chat-realtime-probe.mjs

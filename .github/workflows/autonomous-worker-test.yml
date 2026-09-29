@@ -6,7 +6,7 @@ on:
   schedule:
     - cron: '17 * * * *'
 concurrency:
-  group: ugo-autonomous-worker-test
+  group: ugo-test-runtime-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: false
 jobs:
   cycle:
