@@ -11,8 +11,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-isolated-rpc-rls
-  cancel-in-progress: false
+  group: ugo-isolated-rpc-rls-${{ github.event.workflow_run.head_sha || github.sha }}
+  cancel-in-progress: true
 
 env:
   # UGO TEST is the only allowed remote integration target. These are
@@ -112,9 +112,6 @@ jobs:
         # Keep repository contracts independent from remote TEST credentials.
         # The authenticated RPC/RLS harness runs in the dedicated next step.
         run: node --test tests/contracts/*.test.mjs
-
-      - name: Wait for concurrent autonomous TEST fixture to settle
-        run: sleep 90
 
       - name: Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness
         run: npm run test:integration

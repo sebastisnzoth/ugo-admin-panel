@@ -20,8 +20,8 @@ test('UGO TEST mutating gates are chained instead of competing for one pending c
  assert.doesNotMatch(worker,/group: ugo-test-runtime-/)
 })
 
-test('Core CI skips synthetic branch-creation pushes and deduplicates the candidate SHA',()=>{
- assert.match(core,/github\.event_name != 'push' \|\| github\.event\.created == false/)
+test('Core CI validates configured pushes and deduplicates the candidate SHA',()=>{
+ assert.doesNotMatch(core,/github\.event\.created == false/)
  assert.match(core,/cancel-in-progress: true/)
 })
 
@@ -34,4 +34,11 @@ test('full suite serializes shared UGO TEST integration fixtures',()=>{
 test('autonomous integration recovers only the explicit OFF-mode fixture race before enqueue',()=>{
  assert.match(autonomousIntegration,/result\.error\?\.message\?\.includes\('AUTONOMY_NOT_EXECUTABLE'\)/)
  assert.match(autonomousIntegration,/isolated runtime fixture recovery before enqueue/)
+})
+
+
+test('isolated RPC gate is SHA-deduplicated without timing sleeps',()=>{
+ assert.match(isolated,/group: ugo-isolated-rpc-rls-/)
+ assert.match(isolated,/cancel-in-progress: true/)
+ assert.doesNotMatch(isolated,/sleep 90/)
 })

@@ -17,7 +17,6 @@ concurrency:
 
 jobs:
   validate:
-    if: ${{ github.event_name != 'push' || github.event.created == false }}
     name: TypeScript · Build · Core Lint
     runs-on: ubuntu-latest
     timeout-minutes: 15
