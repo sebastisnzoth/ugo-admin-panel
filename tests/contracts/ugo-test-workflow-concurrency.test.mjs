@@ -2,12 +2,18 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const workflows=['.github/workflows/core-ci.yml','.github/workflows/isolated-rpc-rls.yml','.github/workflows/autonomous-worker-test.yml']
+const core=fs.readFileSync('.github/workflows/core-ci.yml','utf8')
+const isolated=fs.readFileSync('.github/workflows/isolated-rpc-rls.yml','utf8')
+const worker=fs.readFileSync('.github/workflows/autonomous-worker-test.yml','utf8')
 
-test('all UGO TEST mutating workflows share one non-cancelling runtime lock',()=>{
- for(const file of workflows){
-  const yml=fs.readFileSync(file,'utf8')
-  assert.match(yml,/group: ugo-test-runtime-\$\{\{ github\.head_ref \|\| github\.ref_name \}\}/,file)
-  assert.match(yml,/cancel-in-progress: false/,file)
- }
+test('UGO TEST mutating gates are chained instead of competing for one pending concurrency slot',()=>{
+ assert.match(core,/group: ugo-test-runtime-\$\{\{ github\.head_ref \|\| github\.ref_name \}\}/)
+ assert.match(isolated,/workflows: \["UGO Core CI"\]/)
+ assert.match(isolated,/github\.event\.workflow_run\.head_sha/)
+ assert.match(isolated,/head_branch == 'main'/)
+ assert.match(worker,/workflows: \["UGO Isolated RPC RLS"\]/)
+ assert.match(worker,/github\.event\.workflow_run\.head_sha/)
+ assert.match(worker,/head_branch == 'main'/)
+ assert.doesNotMatch(isolated,/group: ugo-test-runtime-/)
+ assert.doesNotMatch(worker,/group: ugo-test-runtime-/)
 })
