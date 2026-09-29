@@ -55,5 +55,10 @@
       "status": "PASS",
       "sha": "710d7c3624d9f48d2c2f92a0f189800525021e08"
     }
-  }
+  },
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED"
 }
