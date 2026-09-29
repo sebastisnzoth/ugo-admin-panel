@@ -2,10 +2,10 @@
   "task_id": "release-gate",
   "job_id": "UGO-RELEASE-GATE",
   "title": "Keep Release Gate deterministic and blocking",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T19:06:00Z",
-  "heartbeat_at": "2026-09-29T19:15:00Z",
-  "lease_expires_at": "2026-09-29T20:00:00Z",
+  "heartbeat_at": "2026-09-29T19:16:00Z",
+  "lease_expires_at": "2026-09-29T20:01:00Z",
   "started_sha": "77dcf1d32703ca038a63bdd1dc384d66ca93c96d",
   "owner": "UGO",
   "department": "Release / Riesgo",
@@ -26,9 +26,50 @@
     "qa-lab"
   ],
   "correlation_id": "ugo-release-gate-20260929T190600Z",
-  "current_step": "IMPLEMENTED_DETERMINISTIC_EVALUATOR_APPLYING_TO_UGO_TEST",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": [
     "remediation-regression"
-  ]
+  ],
+  "completed_at": "2026-09-29T19:16:00Z",
+  "completed_main_sha": "19e8fa8dee65c7b5433662283eaed98afe024d94",
+  "runtime_source_sha": "7a3e9b7c5242bf79d5ae76ee289abd3a901a3e3a",
+  "autonomous_job_id": "29bb02e4-e136-4a05-bb5a-ceb7fb09911b",
+  "evidence_ids": [
+    "ugo-test:correlation:a4d1f0d2-7e41-4ef6-9c5b-1a6b7d2f1906",
+    "ugo-test:job:29bb02e4-e136-4a05-bb5a-ceb7fb09911b",
+    "ugo-test:gate:CUSTOMER_1:BLOCKED",
+    "repo:docs/evidence/release-gate-20260929.json",
+    "github:7a3e9b7c5242bf79d5ae76ee289abd3a901a3e3a",
+    "github:19e8fa8dee65c7b5433662283eaed98afe024d94"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "actual_gate": {
+    "status": "BLOCKED",
+    "blockers": [
+      "QA_COVERAGE_INCOMPLETE",
+      "CUSTOMER_ACCEPTANCE_NOT_APPROVED"
+    ]
+  },
+  "controlled_negative": {
+    "status": "BLOCKED",
+    "blockers": [
+      "QA_COVERAGE_INCOMPLETE"
+    ]
+  },
+  "controlled_positive": {
+    "status": "READY",
+    "blockers": []
+  },
+  "safe_final_state": {
+    "release_gate_agent": "DISABLED",
+    "deterministic_judge": "IDLE",
+    "correlation_running_jobs": 0,
+    "enabled_kill_switches": 0,
+    "autonomy": "OFF",
+    "production_touched": false
+  }
 }
