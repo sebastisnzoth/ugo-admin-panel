@@ -1,4 +1,5 @@
 -- Final D14 corporate audit persisted as a control, not an executable RED job.
+drop function if exists public.autonomous_run_final_corporate_audit();
 -- This preserves agent authority guards while keeping the audit read-only.
 create or replace function public.autonomous_run_final_corporate_audit()
 returns public.autonomous_control_coverage
