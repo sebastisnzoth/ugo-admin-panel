@@ -1,0 +1,32 @@
+{
+  "task_id": "readiness-auto-department-job-visibility",
+  "readiness_id": "auto-department-job-visibility",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENT-JOB-VISIBILITY",
+  "title": "Expose active and historical autonomous jobs per department in Super Admin",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T21:05:00Z",
+  "heartbeat_at": "2026-09-29T21:05:00Z",
+  "lease_expires_at": "2026-09-29T21:50:00Z",
+  "started_sha": "e7bfe362cdcc214b594aa8183e6478488f9ae81b",
+  "owner": "UGO",
+  "department": "Producto / Frontend / Empresa Autónoma",
+  "assigned_agent": "Super Admin Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-admin",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "super-admin-ui"
+  ],
+  "correlation_id": "ugo-auto-department-job-visibility-20260929T210500Z",
+  "current_step": "IMPLEMENT_UI_AND_DATA_WIRING",
+  "attempt": 1,
+  "evidence_ids": []
+}
