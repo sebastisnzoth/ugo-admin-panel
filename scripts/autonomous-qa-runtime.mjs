@@ -27,7 +27,7 @@ const unverified=independent.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.statu
 if(unverified.length)throw new Error('QA_INDEPENDENT_COVERAGE_INCOMPLETE:'+unverified.join(','));
 for(const k of independent){
  const row=cov.find(x=>x.coverage_key===k);
- const {data:job,error:je}=await db.from('autonomous_jobs').select('id,status,trigger_type').eq('qa_run_id',row.last_run_id).eq('trigger_type','QA_INDEPENDENT_JUDGE').maybeSingle();
+ const {data:job,error:je}=await db.from('autonomous_jobs').select('id,status,trigger_type,target_type,target_id,idempotency_key').eq('idempotency_key','qa-independent:'+row.last_run_id).eq('target_type','QA_RUN').eq('target_id',row.last_run_id).maybeSingle();
  if(je)throw je;if(!job||job.status!=='SUCCEEDED')throw new Error('QA_INDEPENDENT_JUDGE_REQUIRED:'+k);
  const [{count:eCount,error:ee},{count:dCount,error:de}]=await Promise.all([
   db.from('autonomous_evidence_ledger').select('id',{count:'exact',head:true}).eq('job_id',job.id),
