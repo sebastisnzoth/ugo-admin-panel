@@ -4,24 +4,25 @@
   "title": "Generate remediation request, rerun and permanent regression automatically",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T18:59:00Z",
-  "heartbeat_at": "2026-09-29T18:59:00Z",
-  "lease_expires_at": "2026-09-29T19:44:00Z",
+  "heartbeat_at": "2026-09-29T19:04:00Z",
+  "lease_expires_at": "2026-09-29T19:49:00Z",
   "started_sha": "8bb00afa5baaef2aa4045eaa3a7d638a922e9b2f",
   "owner": "UGO",
   "department": "Confiabilidad",
   "assigned_agent": "Recovery Engineer",
-  "skills": [
-    "remediation",
-    "rollback",
-    "incident-recovery",
-    "ugo-recovery",
-    "ugo-job-execution",
-    "ugo-evidence-judge"
-  ],
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["qa-lab", "regression"],
-  "correlation_id": "ugo-remediation-regression-20260929T185900Z",
-  "current_step": "CLAIMED_REVALIDATING_RUNTIME",
+  "skills": ["remediation","rollback","incident-recovery","ugo-recovery","ugo-job-execution","ugo-evidence-judge"],
+  "validators": ["Judge","Sentinel"],
+  "resources": ["qa-lab","regression"],
+  "correlation_id": "3f0a4a0e-0f7f-4bcf-9d2e-8edc1f01c929",
+  "current_step": "RUNTIME_PASS_PERSISTING_REPO_EVIDENCE",
   "attempt": 1,
-  "dependencies": ["chaos-p0"]
+  "dependencies": ["chaos-p0"],
+  "runtime": {
+    "environment": "UGO TEST",
+    "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
+    "failed_run_id": "317f51fd-6db2-4858-991d-3d62add71a27",
+    "remediation_id": "b798325b-bf53-40c5-84a3-4c371b323ce2",
+    "rerun_id": "cbb4193f-f38f-4522-a6bd-6aa48a324142",
+    "job_id": "376731b3-8c6b-425a-bb01-d45a2c50b88e"
+  }
 }
