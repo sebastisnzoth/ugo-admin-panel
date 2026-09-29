@@ -185,10 +185,10 @@ begin
  select * into sc from public.autonomous_qa_scenarios where scenario_key='gps-geofence' and status='ACTIVE';
  if sc.id is null then raise exception 'GPS_SCENARIO_REQUIRED'; end if;
  update public.autonomous_qa_scenarios set service_id=sid where id=sc.id;
- insert into public.autonomous_qa_runs(scenario_id,service_id,correlation_id,status,started_at,finished_at,assertions,evidence)
- values(sc.id,sid,gen_random_uuid(),'PASSED',now(),now(),
-   (select jsonb_object_agg(x,true) from unnest(required)x),
-   jsonb_build_object('source','PERSISTED_P0_BACKEND_LIFECYCLE','service_id',sid))
+ insert into public.autonomous_qa_runs(scenario_id,correlation_id,status,simulator_results,judge_result,started_at,finished_at)
+ values(sc.id,gen_random_uuid(),'BLOCKED',
+   jsonb_build_object('source','PERSISTED_P0_BACKEND_LIFECYCLE','service_id',sid),
+   jsonb_build_object('status','PENDING_INDEPENDENT_JUDGE'),now(),now())
  returning * into r;
  foreach k in array required loop
    perform public.autonomous_record_independent_qa_evidence(r.id,sid,k,'true'::jsonb,'true'::jsonb,true,'PERSISTED_STATE');
