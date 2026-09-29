@@ -82,6 +82,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <p class="sub" id="parallelHint">Calculando dependencias y conflictos…</p>
   </section>
 
+  <section class="grid" id="schedulerOverview" style="margin-top:14px">
+    <article class="card"><h3>Scheduler</h3><div class="state-big" id="schedulerVersion">—</div><p class="sub" id="schedulerPolicySummary">Cargando política…</p></article>
+    <article class="card"><h3>Leases</h3><div class="row"><span>Activos</span><span id="activeLeases">—</span></div><div class="row"><span>Vencidos</span><span id="staleLeases">—</span></div></article>
+    <article class="card"><h3>Cola</h3><div class="row"><span>Backoff</span><span id="retryBackoff">—</span></div><div class="row"><span>Revisión</span><span id="failedReview">—</span></div><div class="row"><span>Humano</span><span id="humanRequired">—</span></div></article>
+  </section>
+
   <section class="metrics" aria-label="Resumen ejecutivo">
     <div class="metric"><strong class="warn" id="pendingValue">—</strong><span>trabajos verificables pendientes</span></div>
     <div class="metric"><strong class="bad" id="blockersValue">—</strong><span>bloqueos del gate final</span></div>
@@ -151,14 +157,25 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   const pillClass = owner => owner.includes('SERGIO') ? 'human' : 'ugo'
   const gateLabel = step => ({
     AVAILABLE:'HABILITADO',
+    READY:'LISTO',
     IN_PROGRESS:'EN PROCESO',
     BLOCKED_DEPENDENCY:'BLOQUEADO POR DEPENDENCIA',
-    WAITING_CONFLICT:'EN ESPERA POR CONFLICTO'
+    WAITING_RESOURCE_CAPACITY:'ESPERANDO RECURSO',
+    QUEUED_CAPACITY:'EN COLA POR CAPACIDAD',
+    STALE_LOCK:'LOCK VENCIDO',
+    RETRY_BACKOFF:'REINTENTO EN ESPERA',
+    FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
+    HUMAN_REQUIRED:'REQUIERE SERGIO'
   }[step.gate_state] || step.gate_state || 'PENDIENTE')
   const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
     step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
-    step.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' :
-    step.gate_state === 'WAITING_CONFLICT' ? 'Esperando recurso' : 'No disponible'
+    step.gate_state === 'HUMAN_REQUIRED' ? 'Requiere Sergio' :
+    step.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' :
+    step.gate_state === 'RETRY_BACKOFF' ? 'Esperando reintento' :
+    step.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' :
+    step.gate_state === 'QUEUED_CAPACITY' ? 'En cola' :
+    step.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' :
+    step.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : 'No disponible'
   const renderStep = (step, idx) => `
     <article class="step">
       <div class="step-index">#${idx + 1}</div>
@@ -166,9 +183,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <h3>${esc(step.title)}</h3>
         <div class="meta-line">
           <span class="pill ${pillClass(step.owner)}">${esc(step.owner)}</span>
-          <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : 'blocked'}">${esc(gateLabel(step))}</span>
+          <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY','RETRY_BACKOFF'].includes(step.gate_state) ? 'pending' : 'blocked'}">${esc(gateLabel(step))}</span>
           <span class="pill">${esc(step.phase)}</span>
           ${step.depends_on?.length ? '<span class="pill">depende de ' + esc(step.depends_on.join(', ')) + '</span>' : ''}
+          ${step.scheduler ? '<span class="pill">prioridad: ' + esc(step.scheduler.priority) + '</span><span class="pill">riesgo: ' + esc(step.scheduler.risk) + '</span><span class="pill">critical score: ' + esc(step.scheduler.critical_path_score) + '</span>' : ''}
           ${step.resources?.length ? '<span class="pill">recursos: ' + esc(step.resources.join(', ')) + '</span>' : ''}
         </div>
         <p><b>Por qué falta:</b> ${esc(step.why)}</p>
@@ -216,7 +234,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     '',
     'INSTRUCCIONES DE EJECUCIÓN:',
     '- Revalidar main, status del Command Center y docs/ugo-work-locks antes de modificar nada.',
-    '- Antes de trabajar, crear o actualizar docs/ugo-work-locks/' + step.id + '.json con status IN_PROGRESS, started_at, started_sha, owner, resources y correlation_id.',
+    '- Antes de trabajar, crear o actualizar docs/ugo-work-locks/' + step.id + '.json con task_id, title, status IN_PROGRESS, started_at, heartbeat_at, lease_expires_at, started_sha, owner, resources, correlation_id y attempt.',
+    '- Renovar heartbeat_at y lease_expires_at mientras el trabajo siga activo; nunca trabajar con un lease vencido.',
+    '- Respetar docs/UGO_SCHEDULER_POLICY.json: prioridad, max_parallel_tasks, resource_capacities, max_attempts y retry_backoff_minutes.',
     '- No tomar la tarea si existe un lock activo incompatible sobre alguno de los mismos resources.',
     '- Al terminar, actualizar ese lock a DONE o FAILED con evidencia verificable; no borrar el historial útil.',
     '- No repetir trabajo ya DONE.',
@@ -289,9 +309,19 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         el.className = 'pill blocked'
         return
       }
-      if (step.gate_state === 'WAITING_CONFLICT') {
-        el.textContent = 'ESPERANDO CONFLICTO'
+      if (['WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY'].includes(step.gate_state)) {
+        el.textContent = gateLabel(step)
+        el.className = 'pill pending'
+        return
+      }
+      if (['STALE_LOCK','FAILED_REQUIRES_REVIEW','HUMAN_REQUIRED'].includes(step.gate_state)) {
+        el.textContent = gateLabel(step)
         el.className = 'pill blocked'
+        return
+      }
+      if (step.gate_state === 'RETRY_BACKOFF') {
+        el.textContent = 'REINTENTO EN ESPERA'
+        el.className = 'pill pending'
         return
       }
       if (local) {
@@ -382,6 +412,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
     document.getElementById('runnableNow').textContent = (s.counts.runnable_now ?? 0) + ' habilitado(s)'
+    document.getElementById('schedulerVersion').textContent = s.scheduler?.policy_version || s.scheduler_policy?.version || 'UNVERIFIED'
+    document.getElementById('schedulerPolicySummary').textContent = 'Máx. paralelo ' + (s.scheduler_policy?.max_parallel_tasks ?? '—') + ' · lease ' + (s.scheduler_policy?.default_lease_minutes ?? '—') + ' min · intentos ' + (s.scheduler_policy?.max_attempts ?? '—') + ' · ' + (s.scheduler_policy?.fairness || '—')
+    document.getElementById('activeLeases').textContent = s.scheduler?.active_leases ?? 0
+    document.getElementById('staleLeases').textContent = s.scheduler?.stale_leases ?? 0
+    document.getElementById('retryBackoff').textContent = s.counts.retry_backoff ?? 0
+    document.getElementById('failedReview').textContent = s.counts.failed_review ?? 0
+    document.getElementById('humanRequired').textContent = s.counts.human_required ?? 0
     document.getElementById('parallelHint').textContent = (s.counts.runnable_now ?? 0) > 1
       ? 'Hay varios pasos independientes que pueden resolverse en paralelo sin compartir recursos bloqueados.'
       : (s.counts.runnable_now ?? 0) === 1
