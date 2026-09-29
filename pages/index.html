@@ -94,7 +94,7 @@
     <div><strong>REVISIÓN PUBLICADA:</strong> __UGO_SHA__</div>
     <div><strong>PUBLICADO UTC:</strong> __UGO_PUBLISHED_AT__</div>
     <div><strong>ENTORNO:</strong> UGO TEST / GitHub Pages</div>
-    <div><strong>REFRESH UI:</strong> cada 30 segundos</div><div><strong>SNAPSHOT BACKEND:</strong> por evento + cada 5 minutos</div>
+    <div><strong>REFRESH:</strong> por evento + cada 5 minutos</div>
   </div>
 
   <div class="actions">
@@ -243,7 +243,7 @@
       button.textContent = 'Revalidar ahora'
     })
   })
-  setInterval(revalidate, 30000)
+  setInterval(revalidate, 300000)
 })()
 </script>
 </body>
