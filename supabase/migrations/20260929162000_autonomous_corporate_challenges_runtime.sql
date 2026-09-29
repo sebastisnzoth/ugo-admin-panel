@@ -10,7 +10,7 @@ declare
   meta_ok boolean:=false;
   red_ok boolean:=false;
   twin_service uuid;
-  result jsonb;
+  summary jsonb;
 begin
   -- META_AUDIT: requires a persisted calibration whose governed job verified
   -- seeded defect detection and permanent regression.
@@ -99,13 +99,13 @@ begin
       finished_at=now()
   where challenge_type='DIGITAL_TWIN';
 
-  select jsonb_object_agg(challenge_type,jsonb_build_object('status',status,'result',result))
-  into result
-  from public.autonomous_challenges
+  select jsonb_object_agg(c.challenge_type,jsonb_build_object('status',c.status,'result',c.result))
+  into summary
+  from public.autonomous_challenges c
   where challenge_type in('META_AUDIT','RED_TEAM','DIGITAL_TWIN','FOUNDER_CHALLENGE');
 
-  return result;
-end$$;
+  return summary;
+end$;
 
 revoke all on function public.autonomous_execute_corporate_challenges() from public,anon,authenticated;
 grant execute on function public.autonomous_execute_corporate_challenges() to service_role;
