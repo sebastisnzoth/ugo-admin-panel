@@ -97,6 +97,25 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <article class="card"><h3>Cola</h3><div class="row"><span>Backoff</span><span id="retryBackoff">—</span></div><div class="row"><span>Revisión</span><span id="failedReview">—</span></div><div class="row"><span>Humano</span><span id="humanRequired">—</span></div></article>
   </section>
 
+  <h2>Empresa Autónoma</h2>
+  <section class="card" id="autonomousCompany">
+    <div class="row"><span><b>Modo</b></span><span class="pill" id="companyMode">—</span></div>
+    <div class="row"><span><b>Policy</b></span><span id="companyPolicy">—</span></div>
+    <div class="row"><span><b>Launch</b></span><span class="pill blocked" id="companyLaunch">—</span></div>
+    <p class="sub" id="companyModeReason">Cargando estado seguro…</p>
+    <div class="metrics" style="margin-top:14px">
+      <div class="metric"><strong id="companyWorking">—</strong><span>trabajando</span></div>
+      <div class="metric"><strong id="companyQueued">—</strong><span>en cola</span></div>
+      <div class="metric"><strong id="companyApproval">—</strong><span>requiere Sergio</span></div>
+      <div class="metric"><strong id="companyBlocked">—</strong><span>bloqueados</span></div>
+      <div class="metric"><strong id="companyError">—</strong><span>error</span></div>
+    </div>
+    <div class="row"><span>Habilitados ahora</span><span id="companyRunnable">—</span></div>
+    <div class="row"><span>Implementaciones cerradas</span><span id="companyCompleted">—</span></div>
+    <div class="row"><span>Último DONE</span><span id="companyLatestDone">—</span></div>
+    <p class="tiny">Fuente: locks persistidos + scheduler del repositorio. GitHub Pages no simula Supabase Realtime.</p>
+  </section>
+
   <section class="metrics" aria-label="Resumen ejecutivo">
     <div class="metric"><strong class="warn" id="pendingValue">—</strong><span>trabajos verificables pendientes</span></div>
     <div class="metric"><strong class="bad" id="blockersValue">—</strong><span>bloqueos del gate final</span></div>
@@ -595,6 +614,22 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('totalValue').textContent = s.counts.total_visible_work_items
     document.getElementById('coverageValue').textContent = s.quality_coverage.covered + '/' + s.quality_coverage.total
     document.getElementById('sergioValue').textContent = s.counts.human_involved
+    const company = s.autonomous_company || {}
+    document.getElementById('companyMode').textContent = company.mode || 'UNVERIFIED'
+    document.getElementById('companyPolicy').textContent = company.policy || '—'
+    document.getElementById('companyLaunch').textContent = company.launch || 'UNVERIFIED'
+    document.getElementById('companyModeReason').textContent = company.mode_reason || 'Sin evidencia de modo.'
+    document.getElementById('companyWorking').textContent = company.working ?? '—'
+    document.getElementById('companyQueued').textContent = company.queued ?? '—'
+    document.getElementById('companyApproval').textContent = company.approval ?? '—'
+    document.getElementById('companyBlocked').textContent = company.blocked ?? '—'
+    document.getElementById('companyError').textContent = company.error ?? '—'
+    document.getElementById('companyRunnable').textContent = company.runnable ?? '—'
+    document.getElementById('companyCompleted').textContent = company.completed ?? '—'
+    const latestDone = company.latest_completed
+    document.getElementById('companyLatestDone').textContent = latestDone
+      ? ((latestDone.task_id || latestDone.job_id || 'DONE') + (latestDone.completed_at ? ' · ' + latestDone.completed_at : ''))
+      : '—'
     const next = s.next_movement
     if(next){
       document.getElementById('nextTitle').textContent = next.title
