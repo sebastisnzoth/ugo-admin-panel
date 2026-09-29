@@ -145,6 +145,26 @@ transversal grande    → ugo-hugo + ugo-core + especialistas necesarios
 
 No activar todas las Skills ni crear nuevas por cantidad.
 
+### Capacidades operativas de Empresa Autónoma
+
+Estas Skills son transversales y se activan por necesidad del job:
+
+```text
+tomar/ejecutar/cerrar job  → ugo-job-execution
+Actions/Pages/workflow     → ugo-github-ops
+prueba TEST/Preview real   → ugo-runtime-validation
+evidencia/Judge/DONE       → ugo-evidence-judge
+stale lock/fallo/retry     → ugo-recovery
+```
+
+Routing obligatorio:
+- todo job autónomo usa `ugo-job-execution`;
+- todo DONE verificable usa `ugo-evidence-judge`;
+- si depende de runtime, sumar `ugo-runtime-validation`;
+- si GitHub ejecuta/publica, sumar `ugo-github-ops`;
+- si hay fallo, stale lock, rollback o retry, sumar `ugo-recovery`.
+
+
 ## Invariantes UGO
 
 - un único `serviceId` transversal por pedido;
