@@ -448,6 +448,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'QUÉ SE DEBE VERIFICAR:',
     item.verify || 'Verificar funcionalidad real de punta a punta.',
     '',
+    'CÓMO RESOLVERLO:',
+    item.resolve || 'Resolver implementación, wiring, runtime, regresión y evidencia hasta cumplir el criterio de cierre.',
+    '',
     'EVIDENCIA OBLIGATORIA PARA VERIFIED:',
     item.done_evidence || 'Evidencia runtime verificable del mismo SHA.',
     '',
@@ -816,6 +819,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<div class="row"><b>' + esc(item.title) + '</b><span class="pill ' + readinessPill(item.status) + '">' + esc(readinessStatusLabel(item.status)) + '</span></div>' +
             '<p class="sub"><b>Responsable:</b> ' + esc(item.owner || 'UGO') + (item.real_test_required ? ' · prueba física/humana final cuando corresponda' : '') + '</p>' +
             '<p class="sub"><b>Qué se verifica:</b> ' + esc(item.verify || '—') + '</p>' +
+            '<p class="sub"><b>Cómo resolverlo:</b> ' + esc(item.resolve || 'Resolver implementación, wiring, runtime y evidencia hasta cumplir el criterio de cierre.') + '</p>' +
             '<p class="sub"><b>Evidencia para cerrar:</b> ' + esc(item.done_evidence || '—') + '</p>' +
             '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
             '<p class="sub"><b>Prioridad:</b> ' + esc(item.priority || 'NORMAL') + ' · <b>Dependencias:</b> ' + esc((item.depends_on || []).join(', ') || 'ninguna') + ' · <b>Recursos:</b> ' + esc((item.resources || []).join(', ') || '—') + '</p>' +
