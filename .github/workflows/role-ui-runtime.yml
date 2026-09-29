@@ -10,6 +10,16 @@ on:
       - "src/mvp/**"
       - "src/components/**"
       - "src/hooks/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/role-ui-runtime.mjs"
+      - "src/features/client/**"
+      - "src/mvp/**"
+      - "src/components/**"
+      - "src/hooks/**"
+      - "tests/contracts/client-navigation-readiness.test.mjs"
+      - "docs/evidence/client-navigation-readiness-*.json"
   workflow_dispatch:
 
 permissions:
@@ -37,7 +47,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -54,7 +64,7 @@ jobs:
       - run: npm run verify:test-env
       - name: Build exact SHA
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
       - name: Install Chromium
         run: |
@@ -64,8 +74,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
-          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_RUNTIME_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          export VITE_APP_REVISION="${{ github.event.pull_request.head.sha || github.sha }}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
           npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-role-ui-vite.log 2>&1 &
           vite_pid=$!
@@ -80,7 +90,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: role-ui-runtime-${{ github.sha }}
+          name: role-ui-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/role-ui-*
           if-no-files-found: warn
           retention-days: 90
