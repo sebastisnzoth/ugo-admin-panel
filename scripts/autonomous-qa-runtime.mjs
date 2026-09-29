@@ -22,7 +22,17 @@ const {data:cov,error:ce}=await db.from('autonomous_quality_coverage').select('c
 if(ce)throw ce;
 const bad=persisted.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
 if(bad.length)throw new Error('QA_REAL_COVERAGE_INCOMPLETE:'+bad.join(','));
-const external=required.filter(k=>!persisted.includes(k));
-const unguarded=external.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='UNCOVERED'&&x.last_run_id));
-if(unguarded.length)throw new Error('QA_EXTERNAL_OBSERVATION_INCORRECTLY_GREEN:'+unguarded.join(','));
-console.log(JSON.stringify({validated:true,basis:'persisted-and-runtime-ugo-test-evidence',persistedScenarios:persisted,externalObservationsUnverified:external}));
+const independent=required.filter(k=>!persisted.includes(k));
+const unverified=independent.filter(k=>!cov?.some(x=>x.coverage_key===k&&x.status==='COVERED'&&x.last_run_id));
+if(unverified.length)throw new Error('QA_INDEPENDENT_COVERAGE_INCOMPLETE:'+unverified.join(','));
+for(const k of independent){
+ const row=cov.find(x=>x.coverage_key===k);
+ const {data:job,error:je}=await db.from('autonomous_jobs').select('id,status,trigger_type').eq('qa_run_id',row.last_run_id).eq('trigger_type','QA_INDEPENDENT_JUDGE').maybeSingle();
+ if(je)throw je;if(!job||job.status!=='SUCCEEDED')throw new Error('QA_INDEPENDENT_JUDGE_REQUIRED:'+k);
+ const [{count:eCount,error:ee},{count:dCount,error:de}]=await Promise.all([
+  db.from('autonomous_evidence_ledger').select('id',{count:'exact',head:true}).eq('job_id',job.id),
+  db.from('autonomous_decision_ledger').select('id',{count:'exact',head:true}).eq('job_id',job.id),
+ ]);
+ if(ee)throw ee;if(de)throw de;if(!eCount||!dCount)throw new Error('QA_INDEPENDENT_LEDGER_REQUIRED:'+k);
+}
+console.log(JSON.stringify({validated:true,basis:'persisted-runtime-and-independent-judge-evidence',persistedScenarios:persisted,independentScenarios:independent}));
