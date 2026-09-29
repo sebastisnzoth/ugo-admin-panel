@@ -12,8 +12,8 @@ on:
       - 'security/**'
 
 concurrency:
-  group: ugo-test-runtime-${{ github.head_ref || github.ref_name }}
-  cancel-in-progress: false
+  group: ugo-core-ci-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
 
 jobs:
   validate:
