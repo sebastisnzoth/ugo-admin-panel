@@ -24,5 +24,11 @@
   "evidence_ids": [
     "repo:tests/integration/cross-role-rls-rpc.test.mjs",
     "github:c091182dae350f966252cecabdccb590758ea1e4"
+  ],
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-backend",
+    "ugo-qa",
+    "ugo-evidence-judge"
   ]
 }
