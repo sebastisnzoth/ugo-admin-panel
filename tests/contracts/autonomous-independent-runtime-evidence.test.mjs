@@ -51,3 +51,25 @@ test('no physical or customer coverage can be certified by this migration',()=>{
  assert.doesNotMatch(migration,/qa-independent:uploaded-media-bytes/)
  assert.doesNotMatch(migration,/qa-independent:real-customer-acceptance/)
 })
+
+
+test('independent judge owns promotion and writes both evidence and decision ledgers',()=>{
+ assert.match(migration,/status not in\('BLOCKED','PASSED'\)/)
+ assert.match(migration,/set status='PASSED',judge_result=verification/)
+ assert.match(migration,/autonomous_evidence_ledger/)
+ assert.match(migration,/autonomous_decision_ledger/)
+ assert.match(migration,/QA_INDEPENDENT_JUDGE_PASSED/)
+})
+
+test('realtime cleanup is observed only after channel removal and judge is executed',()=>{
+ const rt=fs.readFileSync('scripts/chat-realtime-probe.mjs','utf8')
+ assert.match(rt,/await receiver\.removeChannel\(channel\)[\s\S]*cleanupCompleted = true/)
+ assert.match(rt,/cleanup_completed:clientToProvider\.cleanupCompleted&&providerToClient\.cleanupCompleted/)
+ assert.match(rt,/autonomous_judge_independent_runtime_coverage.*realtime/s)
+})
+
+test('GPS runtime invokes the complete persisted independent lifecycle judge',()=>{
+ const gps=fs.readFileSync('scripts/autonomous-qa-gps-runtime.mjs','utf8')
+ assert.match(gps,/autonomous_qa_run_gps_independent_evidence/)
+ assert.match(gps,/judgeJob\?\.status,'SUCCEEDED'/)
+})
