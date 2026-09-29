@@ -1,0 +1,60 @@
+name: UGO Scheduled Worker Proof TEST
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["UGO Core CI"]
+    types: [completed]
+  schedule:
+    - cron: '23 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-scheduled-worker-proof-test
+  cancel-in-progress: false
+
+jobs:
+  proof:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event.workflow_run.event == 'push' && github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - name: Checkout exact source SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Enforce UGO TEST only
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: node scripts/assert-test-environment.mjs
+
+      - name: Prove scheduled worker autonomy ON
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-scheduled-worker-on-proof.mjs
+
+      - name: Execute Sentinel Gate
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-sentinel-gate.mjs
+
+      - name: Persist exact runtime revision
+        if: always()
+        env:
+          UGO_RUNTIME_WORKFLOW_NAME: UGO Scheduled Worker Proof TEST
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-runtime-revision.mjs
