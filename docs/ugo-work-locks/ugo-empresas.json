@@ -2,11 +2,11 @@
   "task_id": "ugo-empresas",
   "job_id": "UGO-UGO-EMPRESAS",
   "title": "Habilitar y validar UGO Empresas en TEST antes de las pruebas reales finales",
-  "status": "FAILED",
-  "started_at": "2026-09-29T20:09:00Z",
-  "heartbeat_at": "2026-09-29T20:22:00Z",
-  "lease_expires_at": "2026-09-29T21:07:00Z",
-  "started_sha": "72a269834564ca8cb40266d1f4aac4a92146d868",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T21:05:30Z",
+  "heartbeat_at": "2026-09-29T21:05:30Z",
+  "lease_expires_at": "2026-09-29T21:50:30Z",
+  "started_sha": "c0aec67d113c3fb9808eb63e19d0ae7e6877447b",
   "owner": "UGO",
   "department": "UGO Empresas",
   "assigned_agent": "Enterprise Operator",
@@ -22,28 +22,18 @@
   "resources": [
     "ugo-empresas"
   ],
-  "correlation_id": "ugo-empresas-20260929T200900Z",
-  "current_step": "FAILED_EXTERNAL_RUNTIME_EVIDENCE",
-  "attempt": 1,
+  "correlation_id": "ugo-empresas-20260929T210530Z",
+  "current_step": "REVALIDATE_RUNTIME_AND_SAME_SHA_EVIDENCE",
+  "attempt": 2,
   "dependencies": [
     "d14-audit",
     "super-admin-ui"
   ],
   "production_touched": false,
-  "completed_at": "2026-09-29T20:22:00Z",
-  "evidence_path": "docs/evidence/ugo-empresas-20260929.json",
-  "evidence_commit_sha": "ad17892204baeee5523e874d28a34a8780bdce58",
-  "failure": {
-    "category": "EXTERNAL_RUNTIME_EVIDENCE",
-    "code": "GITHUB_ACTIONS_RUNTIME_RESULT_NOT_OBSERVABLE",
-    "reason": "UGO Empresas implementation, TEST-only probe, UI binding and CI binding are on main, but the required final GitHub Actions runtime result cannot be observed through the available connector in this session. DONE is not declared without execution evidence.",
-    "manual_action_required": false,
-    "next_automatic_step": "UGO Core CI push run succeeds, then chained UGO Isolated RPC RLS executes 'UGO Empresas TEST demand slots runtime' and Super Admin UI proof on the same SHA."
-  },
-  "remaining_verifiable_steps": [
-    "Observe UGO Core CI PASS for the final main SHA.",
-    "Observe UGO Isolated RPC RLS PASS for the same SHA.",
-    "Verify persisted ugo_empresas_readiness = QA_GATE/READY with metrics.runtime_sha equal to that SHA.",
-    "Verify Super Admin UI opens UGO Empresas and displays the persisted demand plus all validated slots for that runtime evidence."
-  ]
+  "prior_attempt": {
+    "attempt": 1,
+    "status": "FAILED",
+    "evidence_path": "docs/evidence/ugo-empresas-20260929.json",
+    "failure_code": "GITHUB_ACTIONS_RUNTIME_RESULT_NOT_OBSERVABLE"
+  }
 }
