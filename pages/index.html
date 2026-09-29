@@ -137,6 +137,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="metric"><strong class="warn" id="sergioValue">—</strong><span>ítems con intervención de Sergio</span></div>
   </section>
 
+  <h2>Mapa funcional completo</h2>
+  <p class="sub">Acá se ve TODO lo necesario para dejar UGO listo de verdad: Cliente, Proveedor, Hugo, Admin/Super Admin, Empresa Autónoma, flujo transversal, seguridad, visual, responsive, auditoría y las pruebas reales finales. Nada aparece como VERIFIED sin evidencia.</p>
+  <section class="metrics" aria-label="Readiness funcional">
+    <div class="metric"><strong class="accent" id="readinessTotal">—</strong><span>controles funcionales</span></div>
+    <div class="metric"><strong class="ok" id="readinessVerified">—</strong><span>verificados</span></div>
+    <div class="metric"><strong class="warn" id="readinessPending">—</strong><span>pendientes de prueba/cierre</span></div>
+    <div class="metric"><strong class="warn" id="readinessHuman">—</strong><span>pruebas reales finales</span></div>
+    <div class="metric"><strong class="accent" id="readinessGroupsCount">—</strong><span>áreas auditadas</span></div>
+  </section>
+  <section class="steps" id="readinessGroups"><div class="card">Cargando mapa funcional…</div></section>
+
   <h2>Próximo movimiento</h2>
   <section class="card">
     <h3 id="nextTitle">Esperando evidencia…</h3>
@@ -556,6 +567,46 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     }
   }
 
+  const readinessStatusLabel = status => ({
+    VERIFIED:'VERIFIED',
+    NEEDS_RUNTIME_PROOF:'FALTA PRUEBA RUNTIME',
+    IN_PROGRESS:'EN PROCESO',
+    BLOCKED:'BLOQUEADO',
+    HUMAN_FINAL:'PRUEBA REAL FINAL'
+  }[status] || status || 'UNVERIFIED')
+
+  const readinessPill = status =>
+    status === 'VERIFIED' ? 'ugo' :
+    status === 'HUMAN_FINAL' ? 'human' :
+    status === 'IN_PROGRESS' ? 'accent' :
+    status === 'BLOCKED' ? 'blocked' : 'pending'
+
+  const renderReadiness = s => {
+    const readiness = s.functional_readiness || {groups:[]}
+    const summary = s.functional_readiness_summary || {}
+    const groups = readiness.groups || []
+    document.getElementById('readinessTotal').textContent = summary.total ?? groups.reduce((n,g)=>n+(g.items?.length||0),0)
+    document.getElementById('readinessVerified').textContent = summary.verified ?? 0
+    document.getElementById('readinessPending').textContent = summary.pending ?? 0
+    document.getElementById('readinessHuman').textContent = summary.human_final ?? 0
+    document.getElementById('readinessGroupsCount').textContent = groups.length
+    document.getElementById('readinessGroups').innerHTML = groups.map(group => {
+      const items = group.items || []
+      const verified = items.filter(x => x.status === 'VERIFIED').length
+      return '<article class="card">' +
+        '<div class="row"><h3>' + esc(group.title) + '</h3><span class="pill">' + verified + '/' + items.length + ' VERIFIED</span></div>' +
+        '<div class="steps">' + items.map(item =>
+          '<div class="resolve" style="margin-top:8px">' +
+            '<div class="row"><b>' + esc(item.title) + '</b><span class="pill ' + readinessPill(item.status) + '">' + esc(readinessStatusLabel(item.status)) + '</span></div>' +
+            '<p class="sub"><b>Responsable:</b> ' + esc(item.owner || 'UGO') + (item.real_test_required ? ' · prueba física/humana final cuando corresponda' : '') + '</p>' +
+            '<p class="sub"><b>Qué se verifica:</b> ' + esc(item.verify || '—') + '</p>' +
+            '<p class="sub"><b>Evidencia para cerrar:</b> ' + esc(item.done_evidence || '—') + '</p>' +
+            '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
+          '</div>'
+        ).join('') + '</div></article>'
+    }).join('') || '<div class="card">Mapa funcional no disponible.</div>'
+  }
+
   const loadLiveMonitor = () => fetch('activity.json?ts=' + Date.now(), {cache:'no-store'})
     .then(r => {
       if (!r.ok) throw new Error('activity.json HTTP ' + r.status)
@@ -650,6 +701,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     statusSnapshot = s
     renderSyncState()
     renderOperationalNow(s)
+    renderReadiness(s)
     const currentIds = new Set([...(s.implementation_steps || []), ...(s.final_gate_steps || [])].map(x => x.id))
     const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
