@@ -4,8 +4,8 @@
   "title": "Execute complete TEST journey by one explicit serviceId",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T18:30:00Z",
-  "heartbeat_at": "2026-09-29T18:30:00Z",
-  "lease_expires_at": "2026-09-29T19:15:00Z",
+  "heartbeat_at": "2026-09-29T18:34:00Z",
+  "lease_expires_at": "2026-09-29T19:19:00Z",
   "started_sha": "daf71e9f56e839e837a1659b8b21308acb78f2b9",
   "owner": "UGO",
   "department": "Operaciones",
@@ -26,7 +26,7 @@
     "ratings"
   ],
   "correlation_id": "8bb91123-cda9-4d25-8a22-9de72c7e2b66",
-  "current_step": "ACQUIRE_LOCK_AND_REVALIDATE_RUNTIME",
+  "current_step": "EXECUTE_RUNTIME_P0_JOURNEY",
   "attempt": 1,
   "dependencies": [
     "audit-event-binding"
