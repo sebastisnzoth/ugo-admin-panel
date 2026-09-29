@@ -89,3 +89,16 @@ El agente ejecutor no autocertifica DONE:
 - Nunca incluir secretos, tokens ni datos personales.
 - Los locks coordinan ejecución; no sustituyen evidencia.
 - Producción queda fuera de este scheduler.
+
+## GitHub Direct Action
+
+Para trabajos deterministas que ya tienen workflow seguro, el Command Center puede exponer un CTA **Resolver en GitHub**.
+
+Contrato:
+- GitHub es canal de ejecución, no reemplaza al agente asignado.
+- El CTA nunca contiene secretos ni PAT.
+- El workflow debe usar `workflow_dispatch`, UGO TEST y producción protegida.
+- Cada run registra actor, `run_id`, SHA, `task_id`, `job_id`, motivo y resultado.
+- Cada ejecución produce el artefacto `ugo-execution-audit-<run_id>` con retención de 90 días.
+- El CTA conserva el mismo `job_id`/task y no autoriza trabajo duplicado; scheduler/locks siguen mandando.
+- DONE requiere evidencia persistida + Judge + Sentinel; un workflow lanzado no equivale a DONE.
