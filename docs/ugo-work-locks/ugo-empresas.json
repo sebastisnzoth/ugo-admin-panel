@@ -1,0 +1,33 @@
+{
+  "task_id": "ugo-empresas",
+  "job_id": "UGO-UGO-EMPRESAS",
+  "title": "Habilitar y validar UGO Empresas en TEST antes de las pruebas reales finales",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T20:09:00Z",
+  "heartbeat_at": "2026-09-29T20:09:00Z",
+  "lease_expires_at": "2026-09-29T20:54:00Z",
+  "started_sha": "72a269834564ca8cb40266d1f4aac4a92146d868",
+  "owner": "UGO",
+  "department": "UGO Empresas",
+  "assigned_agent": "Enterprise Operator",
+  "skills": [
+    "enterprise-ops",
+    "demand-slots",
+    "customer-readiness"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-empresas"
+  ],
+  "correlation_id": "ugo-empresas-20260929T200900Z",
+  "current_step": "DISCOVERY_AND_TEST_ENABLEMENT",
+  "attempt": 1,
+  "dependencies": [
+    "d14-audit",
+    "super-admin-ui"
+  ],
+  "production_touched": false
+}
