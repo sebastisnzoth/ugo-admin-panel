@@ -80,3 +80,19 @@ test('authenticated role proof covers the complete configured privilege boundary
  for(const assertion of ['admin_governance_denied','superadmin_governance_allowed','provider_cannot_act_as_client']) assert.match(auth,new RegExp(assertion+':true'))
  assert.match(auth,/allowedSuperadminGov/)
 })
+
+
+test('fail-closed regression matrix protects all nine forbidden certification shortcuts',()=>{
+ const rt=fs.readFileSync('scripts/chat-realtime-probe.mjs','utf8')
+ const auth=fs.readFileSync('scripts/autonomous-qa-auth-runtime.mjs','utf8')
+ assert.match(migration,/INDEPENDENT_EVIDENCE_INCOMPLETE/)
+ assert.match(migration,/bad_hash/)
+ assert.match(migration,/evidence_hash<>encode\(extensions\.digest/)
+ assert.match(migration,/qa-independent:/)
+ assert.match(auth,/signInWithPassword/)
+ assert.doesNotMatch(rt,/setInterval\(/)
+ assert.match(migration,/protected text\[\]:=array\['physical-gps-device','uploaded-media-bytes','real-customer-acceptance'\]/)
+ assert.doesNotMatch(migration,/qa-independent:physical-gps-device/)
+ assert.doesNotMatch(migration,/qa-independent:uploaded-media-bytes/)
+ assert.doesNotMatch(migration,/qa-independent:real-customer-acceptance/)
+})
