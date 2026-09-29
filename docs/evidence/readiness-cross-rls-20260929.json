@@ -1,0 +1,73 @@
+{
+  "task_id": "readiness-cross-rls",
+  "readiness_id": "cross-rls",
+  "job_id": "UGO-READINESS-CROSS-RLS",
+  "correlation_id": "readiness-cross-rls-20260929T205000Z-b92f288",
+  "status": "VERIFIED",
+  "runtime_validated_sha": "24ec61d201be36bca5a15f099adc8f5aa272fa48",
+  "main_sha_at_evidence_write": "527f3ef54ad7c220b3912951b9f1526d97937081",
+  "environment": "UGO TEST",
+  "production_project_ref": "trfsjuseqjxlhrxuvdsm",
+  "test_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "defect_found": {
+    "rpc": "public.obtener_ofertas_proveedor()",
+    "issue": "authenticated Cliente could invoke provider-only SECURITY DEFINER RPC and receive an empty result instead of an authorization error",
+    "remediation_migration": "supabase/migrations/20260929205900_harden_provider_offer_rpc_cross_role.sql",
+    "remediation": "explicit active-provider authorization guard plus permanent negative runtime/contract regressions"
+  },
+  "regressions": [
+    "tests/integration/cross-role-rls-rpc.test.mjs",
+    "tests/contracts/matching-rpc-execute-grants.test.mjs"
+  ],
+  "runtime": {
+    "core_ci": {
+      "run_id": 36630244665,
+      "conclusion": "success",
+      "sha": "24ec61d201be36bca5a15f099adc8f5aa272fa48"
+    },
+    "isolated_rpc_rls": {
+      "run_id": 36630426605,
+      "job_id": 109618549528,
+      "checkout_sha": "24ec61d201be36bca5a15f099adc8f5aa272fa48",
+      "scoped_step": "Required isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS harness",
+      "scoped_step_conclusion": "success",
+      "integration_summary": {
+        "tests": 9,
+        "pass": 6,
+        "fail": 0,
+        "skipped": 3
+      },
+      "service_id": "67593d1a-e171-46ed-b30e-b10bf0a1b820",
+      "run_id_marker": "fae59f24-448c-4a8a-b495-df3cc5c76826",
+      "note": "The containing multi-control workflow concluded failure later because unrelated UGO Empresas and Super Admin UI checks failed; the cross-rls authoritative harness itself passed on the exact checkout SHA."
+    }
+  },
+  "assertions": [
+    "unassigned provider cannot read the private service row",
+    "unassigned provider cannot update the service row",
+    "unassigned provider cannot inject chat into an unrelated service",
+    "provider cannot invoke client-only location RPC",
+    "client cannot invoke provider-only location RPC",
+    "client is rejected by provider-only obtener_ofertas_proveedor RPC",
+    "provider cannot invoke client-only approval RPC",
+    "authorized admin can audit the TEST service",
+    "UGO TEST lifecycle completed with fresh provider availability GPS"
+  ],
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "basis": "same-SHA Core CI success plus isolated cross-role negative/runtime suite with 0 failures and persisted TEST service evidence"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "basis": "workflow TEST-project guard passed, production ref refused by harness, role boundary fails closed, production untouched"
+    }
+  },
+  "security_advisor": {
+    "checked": true,
+    "control_specific_result": "provider RPC guard present; no new anonymous EXECUTE grant",
+    "unrelated_preexisting_findings": "recorded by Supabase advisor but not used to block this scoped readiness control"
+  },
+  "created_at": "2026-09-29T21:07:00Z"
+}
