@@ -24,7 +24,8 @@
   "evidence_ids": [
     "docs/evidence/admin-auth-20260929.json",
     "github-actions:36629502370",
-    "github-artifact:11062560796"
+    "github-artifact:11062560796",
+    "docs/evidence/admin-auth-closure-20260929.md"
   ],
   "skills": [
     "ugo-readiness-orchestrator",
