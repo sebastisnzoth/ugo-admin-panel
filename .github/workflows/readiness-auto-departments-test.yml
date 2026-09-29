@@ -1,0 +1,69 @@
+name: UGO Readiness Auto Departments TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/autonomous-departments-readiness-*.mjs"
+      - "tests/contracts/autonomous-departments-readiness.test.mjs"
+      - "src/mvp/AutonomousCorporationDashboard.tsx"
+      - ".github/workflows/readiness-auto-departments-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-auto-departments-test
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Registry · I/O · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: test
+    env:
+      UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Enforce UGO TEST only
+        run: node scripts/assert-test-environment.mjs
+      - name: Permanent contract regression
+        run: node --test tests/contracts/autonomous-departments-readiness.test.mjs
+      - name: Runtime proof per department
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-departments-readiness-runtime.mjs
+      - name: Independent Judge
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-departments-readiness-judge.mjs
+      - name: Sentinel
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-departments-readiness-sentinel.mjs
+      - name: Upload immutable readiness evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-departments-readiness-${{ github.sha }}
+          path: |
+            artifacts/auto-departments-runtime.json
+            artifacts/auto-departments-judge.json
+            artifacts/auto-departments-sentinel.json
+          if-no-files-found: warn
+          retention-days: 90
