@@ -5,12 +5,12 @@ import{ProviderRequestEvidence}from'./ProviderRequestEvidence'
 import type{ProviderOpportunity}from'./providerTypes'
 import{Button,Card,EmptyState,SectionHeader,StatusPill}from'../../shared/ui'
 
-function rankOpportunity(item:ProviderOpportunity){const urgent=item.urgency==='urgent'?1000:0,match=Number(item.matchScore||0)*4,value=Math.min(Number(item.estimatedValue||0),1000)/20,distance=Math.min(Math.max(item.distanceKm,0),50)*6;return urgent+match+value-distance}
+function compareOpportunityPriority(a:ProviderOpportunity,b:ProviderOpportunity){const urgency=(b.urgency==='urgent'?1:0)-(a.urgency==='urgent'?1:0);if(urgency)return urgency;const distance=Math.max(a.distanceKm,0)-Math.max(b.distanceKm,0);if(distance)return distance;const value=Number(b.estimatedValue||0)-Number(a.estimatedValue||0);if(value)return value;return Number(a.matchScore??Number.MAX_SAFE_INTEGER)-Number(b.matchScore??Number.MAX_SAFE_INTEGER)}
 const formatCountdown=(ms:number)=>{const total=Math.max(0,Math.ceil(ms/1000)),minutes=Math.floor(total/60),seconds=total%60;return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
 function scheduleLabel(item:ProviderOpportunity){if(item.urgency==='urgent'&&!item.scheduledAt)return'Lo antes posible';if(!item.scheduledAt)return'A coordinar';const date=new Date(item.scheduledAt);return Number.isNaN(date.getTime())?'A coordinar':date.toLocaleString('es-AR',{weekday:'short',day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}
 
 export function ProviderOpportunities(){
- const flow=useProviderFlow(),d=useProviderData(),items=[...d.opportunities].sort((a,b)=>rankOpportunity(b)-rankOpportunity(a))
+ const flow=useProviderFlow(),d=useProviderData(),items=[...d.opportunities].sort(compareOpportunityPriority)
  return <section className="provider-screen provider-opportunities-simple" aria-labelledby="provider-opportunities-title">
   <SectionHeader eyebrow="PEDIDOS PARA VOS" title="Elegí qué resolver" description="Primero el problema. Después dónde, cuándo y cuánto." actions={<Button variant="ghost" type="button" onClick={flow.actions.openDemand}>Radar</Button>}/>
   {d.debtBlocked?<Card className="provider-card provider-debt-lock"><StatusPill tone="danger">Nuevos pedidos pausados</StatusPill><span>Tenés {d.pendingDebtCount} servicios con comisión UGO pendiente. Pagá a UGO para volver a recibir y aceptar trabajos.</span><Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openEarnings}>PAGAR UGO</Button></Card>:<div className="provider-list">{items.length===0?<Card className="provider-card provider-empty"><EmptyState title="No hay pedidos ahora" description={d.online?'UGO te avisa apenas aparezca uno compatible.':'Ponete Online desde Inicio para recibir pedidos.'}/></Card>:items.map(item=><Card className="provider-card provider-opportunity-simple" key={item.id}>
