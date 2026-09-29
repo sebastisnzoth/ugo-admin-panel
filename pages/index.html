@@ -176,10 +176,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
     HUMAN_REQUIRED:'REQUIERE SERGIO'
   }[step.gate_state] || step.gate_state || 'PENDIENTE')
-  const canOpenUgoMaster = step => ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK'].includes(step.gate_state)
+  const canOpenUgoMaster = step => ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK','HUMAN_REQUIRED'].includes(step.gate_state)
   const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
     step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
-    step.gate_state === 'HUMAN_REQUIRED' ? 'Requiere Sergio' :
+    step.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' :
     step.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' :
     step.gate_state === 'RETRY_BACKOFF' ? 'Esperando reintento' :
     step.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' :
@@ -259,6 +259,42 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       console.error(err)
       return null
     })
+  const buildHumanPrompt = step => [
+    'UGO — INSTRUCCIONES HUMANAS PRECISAS PARA SERGIO',
+    '',
+    'Repositorio: sebastisnzoth/ugo-admin-panel',
+    'Rama objetivo: main',
+    'SHA de referencia publicado: ' + (statusSnapshot?.source_sha || 'verificar main actual antes de responder'),
+    '',
+    'TASK_ID:',
+    step.id,
+    '',
+    'PASO / BLOQUEO:',
+    step.title,
+    '',
+    'POR QUÉ REQUIERE A SERGIO:',
+    step.why,
+    '',
+    'ACCIÓN ESPERADA:',
+    step.resolve,
+    '',
+    'EVIDENCIA NECESARIA PARA CONTINUAR:',
+    step.done_evidence,
+    '',
+    'REGLA:',
+    'Este estado requiere una acción humana. No ejecutes cambios, no modifiques GitHub, Supabase, producción ni secretos en nombre de Sergio.',
+    '',
+    'RESPONDÉ ÚNICAMENTE CON INSTRUCCIONES OPERATIVAS PASO A PASO PARA SERGIO:',
+    '1. Decime exactamente dónde entrar (sitio, pantalla, menú o URL si existe).',
+    '2. Decime exactamente qué botón/opción tocar.',
+    '3. Decime exactamente qué dato elegir, escribir o confirmar.',
+    '4. Marcá claramente qué NO debo tocar o cambiar.',
+    '5. Decime qué captura, texto, ID, resultado o evidencia debo traer de vuelta.',
+    '6. Decime cómo sé visualmente que el paso quedó correctamente realizado.',
+    '7. Si falta un dato para dar instrucciones seguras, pedime sólo ese dato y nada más.',
+    '',
+    'Usá lenguaje simple, numerado y concreto. No me des teoría ni un diagnóstico general.'
+  ].join('\\n')
   const buildChatGPTPrompt = step => [
     'UGO — RESOLVER PASO DEL CAMINO HASTA DONE',
     '',
@@ -358,11 +394,11 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 
   const openUgoMasterForStep = async step => {
     saveDispatch(step, 'UGO_MAESTRO')
-    const prompt = buildChatGPTPrompt(step)
+    const prompt = step.gate_state === 'HUMAN_REQUIRED' ? buildHumanPrompt(step) : buildChatGPTPrompt(step)
     const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
     try {
       await navigator.clipboard.writeText(prompt)
-      alert('Prompt copiado. Se abrió UGO Maestro Autónomo: pegalo y enviá para ejecutar este paso.')
+      alert(step.gate_state === 'HUMAN_REQUIRED' ? 'Prompt copiado. Se abrió UGO Maestro Autónomo: pegalo y enviá para recibir instrucciones precisas paso a paso.' : 'Prompt copiado. Se abrió UGO Maestro Autónomo: pegalo y enviá para ejecutar este paso.')
     } catch (_) {
       window.prompt('Copiá este prompt y pegalo en UGO Maestro Autónomo:', prompt)
     }
