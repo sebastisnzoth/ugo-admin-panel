@@ -4,17 +4,30 @@
   "title": "Runtime-validar la UI de Super Admin en el entorno aplicable",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T17:44:45Z",
-  "heartbeat_at": "2026-09-29T17:44:45Z",
-  "lease_expires_at": "2026-09-29T18:29:45Z",
+  "heartbeat_at": "2026-09-29T17:49:00Z",
+  "lease_expires_at": "2026-09-29T18:34:00Z",
   "started_sha": "c796b4ec42c75c7dce8d6474ae1de5cb2b0ab1fb",
   "owner": "UGO",
   "department": "Producto / Frontend",
   "assigned_agent": "Super Admin Operator",
-  "skills": ["runtime-ui", "admin-actions", "backend-consistency"],
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["super-admin-ui", "preview-runtime"],
+  "skills": [
+    "runtime-ui",
+    "admin-actions",
+    "backend-consistency"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "super-admin-ui",
+    "preview-runtime"
+  ],
   "correlation_id": "6b754ec7-c53f-48dc-bd3e-8fe51eb5687d",
-  "current_step": "DISCOVER_RUNTIME",
+  "current_step": "WAITING_SAME_SHA_CI",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "repo:scripts/super-admin-ui-runtime.mjs",
+    "repo:.github/workflows/isolated-rpc-rls.yml"
+  ]
 }
