@@ -61,6 +61,7 @@ begin
  select * into r from public.autonomous_qa_runs where scenario_id=s.id order by finished_at desc nulls last,created_at desc limit 1;
  if r.id is null or r.status<>'PASSED' then raise exception 'LATEST_PASSED_QA_RUN_REQUIRED'; end if;
  select * into judge from public.autonomous_agents where agent_key='deterministic-judge' and department_id=9 and status='IDLE';
+ if not exists(select 1 from public.servicios where id=s.service_id and ambiente='demo') then raise exception 'UGO_TEST_SERVICE_REQUIRED'; end if;
  if judge.id is null then raise exception 'DETERMINISTIC_JUDGE_NOT_READY'; end if;
  select coalesce(array_agg(x),'{}') into required from jsonb_array_elements_text(coalesce(s.deterministic_judge->'required_assertions','[]')) x;
  select coalesce(array_agg(x),'{}') into missing from unnest(required)x
@@ -71,6 +72,22 @@ begin
  e.evidence_hash<>encode(extensions.digest(jsonb_build_object('run_id',e.run_id,'service_id',e.service_id,
  'assertion_key',e.assertion_key,'expected',e.expected,'observed',e.observed,'passed',e.passed,'source',e.source)::text,'sha256'),'hex');
  if cardinality(missing)>0 or cardinality(bad_hash)>0 then raise exception 'INDEPENDENT_EVIDENCE_INCOMPLETE'; end if;
+ if p_scenario_key in('roles','permissions-rls') then
+   if not exists(select 1 from public.usuarios where tipo='cliente' and es_demo is true)
+      or not exists(select 1 from public.usuarios where tipo='proveedor' and es_demo is true)
+      or not exists(select 1 from public.usuarios where tipo='admin' and es_demo is true)
+      or not exists(select 1 from public.usuarios where tipo='superadmin' and es_demo is true)
+   then raise exception 'PERSISTED_TEST_ROLES_INCOMPLETE'; end if;
+ end if;
+ if p_scenario_key='realtime' and not exists(
+   select 1 from public.mensajes m where m.servicio_id=s.service_id
+   and m.datos->>'source'='realtime_ci_probe'
+   and exists(select 1 from public.servicios sv where sv.id=m.servicio_id
+     and m.emisor_id in(sv.cliente_id,sv.proveedor_id))
+ ) then raise exception 'PERSISTED_REALTIME_MESSAGE_REQUIRED'; end if;
+ if p_scenario_key='gps-geofence' and (
+   not exists(select 1 from public.servicio_estado_eventos where servicio_id=s.service_id and estado_nuevo='llegado')
+ ) then raise exception 'PERSISTED_GPS_ARRIVAL_REQUIRED'; end if;
  select jsonb_agg(jsonb_build_object('assertion',assertion_key,'source',source,'hash',evidence_hash)
    order by assertion_key) into evidence_snapshot from public.autonomous_qa_assertion_evidence where run_id=r.id;
  verification:=jsonb_build_object('passed',true,'source','INDEPENDENT_PERSISTED_EVIDENCE','qa_run_id',r.id,
