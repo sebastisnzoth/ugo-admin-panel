@@ -1,0 +1,31 @@
+{
+  "readiness_id": "admin-model-router",
+  "task_id": "readiness-admin-model-router",
+  "job_id": "UGO-READINESS-ADMIN-MODEL-ROUTER",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T22:15:00Z",
+  "heartbeat_at": "2026-09-29T22:15:00Z",
+  "lease_expires_at": "2026-09-29T23:00:00Z",
+  "started_sha": "d1f3e90dc09f159ff842095694025d462f2888d9",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Model Router Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-admin",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "model-router"
+  ],
+  "correlation_id": "readiness-admin-model-router-20260929T221500Z-d1f3e90d",
+  "current_step": "REVALIDATE_AND_REUSE_PRIOR_PROOF",
+  "attempt": 1,
+  "evidence_ids": [],
+  "title": "Verify Admin Model Router primary, fallback, telemetry and cost in runtime"
+}
