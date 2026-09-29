@@ -10,6 +10,7 @@ on:
       - "src/mvp/AdminPhase2.tsx"
       - "src/hooks/useAdminActiveServices.ts"
       - "src/hooks/useAdminData.ts"
+      - "tests/contracts/admin-realtime-control-center.test.mjs"
       - ".github/workflows/admin-realtime-runtime.yml"
   pull_request:
     branches: [main]
@@ -20,6 +21,7 @@ on:
       - "src/mvp/AdminPhase2.tsx"
       - "src/hooks/useAdminActiveServices.ts"
       - "src/hooks/useAdminData.ts"
+      - "tests/contracts/admin-realtime-control-center.test.mjs"
       - ".github/workflows/admin-realtime-runtime.yml"
   workflow_dispatch:
 
