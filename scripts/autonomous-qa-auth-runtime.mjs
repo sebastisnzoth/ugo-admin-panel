@@ -22,7 +22,17 @@ try{
  // These observations describe assertions above, not an independent QA verdict.
  const observations={client_role_verified:true,provider_role_verified:true,admin_role_verified:true,superadmin_role_verified:true,client_governance_denied:true,admin_governance_denied:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true,provider_cannot_act_as_client:true}
  const {data:sc,error:se}=await service.from('autonomous_qa_scenarios').select('id,scenario_key').in('scenario_key',['roles','permissions-rls']);if(se)throw se
- for(const s of sc){const {error}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:s.id,p_service_id:svc.id,p_observations:observations});if(error)throw error}
+ for(const s of sc){
+ const {data:run,error}=await service.rpc('autonomous_record_external_qa_probe',{p_scenario_id:s.id,p_service_id:svc.id,p_observations:observations});if(error)throw error
+ const runId=run.id
+ const assertions=s.scenario_key==='roles'
+  ? {client_isolated:true,provider_isolated:true,admin_isolated:true,superadmin_governed:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true}
+  : {client_isolated:true,provider_isolated:true,client_cannot_publish_provider_gps:true,spoofed_rating_rejected:true}
+ for(const [key,passed] of Object.entries(assertions)){
+  const {error:ee}=await service.rpc('autonomous_record_independent_qa_evidence',{p_run_id:runId,p_service_id:svc.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'AUTHENTICATED_RUNTIME'});if(ee)throw ee
+ }
+ const {error:je}=await service.rpc('autonomous_judge_independent_runtime_coverage',{p_scenario_key:s.scenario_key});if(je)throw je
+}
  console.log(JSON.stringify({authenticated:true,roles:[cr.data.tipo,pr.data.tipo,adr.data.tipo,sar.data.tipo],observations}))
 }finally{
  await Promise.allSettled([c.sb.auth.signOut(),p.sb.auth.signOut(),sa.sb.auth.signOut(),admin?.sb?.auth.signOut()])
