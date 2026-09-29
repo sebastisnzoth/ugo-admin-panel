@@ -4,8 +4,8 @@
   "title": "Runtime-validar la UI de Super Admin en el entorno aplicable",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T17:44:45Z",
-  "heartbeat_at": "2026-09-29T17:56:00Z",
-  "lease_expires_at": "2026-09-29T18:41:00Z",
+  "heartbeat_at": "2026-09-29T18:00:00Z",
+  "lease_expires_at": "2026-09-29T18:45:00Z",
   "started_sha": "c796b4ec42c75c7dce8d6474ae1de5cb2b0ab1fb",
   "owner": "UGO",
   "department": "Producto / Frontend",
@@ -24,11 +24,12 @@
     "preview-runtime"
   ],
   "correlation_id": "6b754ec7-c53f-48dc-bd3e-8fe51eb5687d",
-  "current_step": "RETRY_RUNTIME_AUTHORIZED_BACKEND_READS",
-  "attempt": 2,
+  "current_step": "FINAL_RUNTIME_ATTEMPT",
+  "attempt": 3,
   "evidence_ids": [
     "repo:scripts/super-admin-ui-runtime.mjs",
     "repo:.github/workflows/isolated-rpc-rls.yml",
-    "github-actions:run:36608117553:FAILED_PRE_UI_BACKEND_READ"
+    "github-actions:run:36608117553:FAILED_PRE_UI_BACKEND_READ",
+    "github-actions:run:36608363909:FAILED_UI_SESSION_MOUNT"
   ]
 }
