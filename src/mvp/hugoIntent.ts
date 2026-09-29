@@ -8,13 +8,13 @@ export type HugoClientIntent = {
 }
 
 const ALIASES: Record<string, string[]> = {
-  electricidad: ['electricista','electricidad','electrico','eléctrico','luz','enchufe','tomacorriente','cortocircuito'],
-  plomeria: ['plomero','plomería','plomeria','cañeria','cañería','agua','canilla','ducha','perdida','pérdida'],
-  pintura: ['pintor','pintura','pintar','pared','paredes'],
-  limpieza: ['limpieza','limpiar','limpiador','limpiadora'],
+  electricidad: ['electricista','electricidad','electrico','eléctrico','luz','sin luz','sem luz','enchufe','tomacorriente','cortocircuito'],
+  plomeria: ['plomero','plomería','plomeria','fontanero','encanador','hidraulico','hidráulico','sanitarista','cañeria','cañería','tuberia','tubería','canilla','ducha','fuga','vazamento','perdida','pérdida'],
+  pintura: ['pintor','pintura','pintar','repintar','pared','paredes','retoque','tinta'],
+  limpieza: ['limpieza','limpiar','limpiador','limpiadora','limpeza','faxina','diarista'],
   carpinteria: ['carpintero','carpintería','carpinteria','mueble','madera'],
   cerrajeria: ['cerrajero','cerrajería','cerrajeria','cerradura','llave'],
-  aire_acondicionado: ['aire acondicionado','split','climatizacion','climatización','refrigeracion','refrigeración'],
+  aire_acondicionado: ['aire acondicionado','ar condicionado','split','climatizacion','climatización','refrigeracion','refrigeración'],
   montaje: ['montaje','armar mueble','instalar','instalacion','instalación'],
 }
 

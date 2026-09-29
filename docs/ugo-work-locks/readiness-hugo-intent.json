@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-HUGO-INTENT",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T21:22:00Z",
-  "heartbeat_at": "2026-09-29T21:22:00Z",
-  "lease_expires_at": "2026-09-29T22:07:00Z",
+  "heartbeat_at": "2026-09-29T21:25:00Z",
+  "lease_expires_at": "2026-09-29T22:10:00Z",
   "started_sha": "6c13b3ea4566d618d0b8b7a41dadd382fda2e017",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -24,7 +24,7 @@
     "hugo-intent"
   ],
   "correlation_id": "readiness-hugo-intent-20260929T212200Z-6c13b3ea",
-  "current_step": "inspect_intent_contracts_and_runtime_suite",
+  "current_step": "runtime_suite_committed_waiting_same_sha_ci",
   "attempt": 1,
   "evidence_ids": []
 }

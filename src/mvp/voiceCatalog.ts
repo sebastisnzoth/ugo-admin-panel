@@ -6,11 +6,11 @@ export type VoiceProvider={id:string;nombre:string|null;karma:number|string|null
 export type VoiceAvailability={category:VoiceCategory;providers:VoiceProvider[]}
 
 const commonAliases:Array<[RegExp,string[]]>=[
- [/\b(electricista|electricidad|eletricista|eletrica|enchufe|tomacorriente)\b/,['electricidad','eletrica']],
- [/\b(plomero|plomeria|fontanero|encanador|encanamento|canilla|grifo|perdida de agua|fuga de agua|fuga|cano|caño|caneria|cañeria|desague|vazamento)\b/,['plomeria','encanamento','hidraulica']],
+ [/\b(electricista|electricidad|eletricista|eletrica|enchufe|tomacorriente|sin luz|sem luz|cortocircuito|curto circuito)\b/,['electricidad','eletrica']],
+ [/\b(plomero|plomeria|fontanero|encanador|encanamento|hidraulico|hidraulica|sanitarista|canilla|grifo|perdida de agua|fuga de agua|fuga|cano|caño|caneria|cañeria|tuberia|tubo roto|cano roto|desague|vazamento)\b/,['plomeria','encanamento','hidraulica']],
  [/\b(jardinero|jardineria|jardineiro|jardinagem|pasto|cesped)\b/,['jardineria','jardinagem']],
- [/\b(limpieza|limpiador|faxina|limpeza|diarista)\b/,['limpieza','limpeza','faxina']],
- [/\b(pintor|pintura)\b/,['pintura','reparaciones','reparacao','manutencao']],
+ [/\b(limpieza|limpiar|limpiador|limpiadora|faxina|limpeza|diarista)\b/,['limpieza','limpeza','faxina']],
+ [/\b(pintor|pintura|pintar|repintar|pared|paredes|retoque|tinta)\b/,['pintura','reparaciones','reparacao','manutencao']],
  [/\b(cerrajero|cerrajeria|chaveiro)\b/,['cerrajeria','chaveiro']],
  [/\b(carpintero|carpinteria|marceneiro|marcenaria)\b/,['carpinteria','marcenaria']],
  [/\b(mueble|muebles|puerta de cocina|puertas de cocina|bisagra|bisagras|movel|moveis|dobradica|dobradicas)\b/,['reparaciones','reparacao','manutencao','carpinteria','marcenaria']],
