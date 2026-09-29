@@ -1,0 +1,43 @@
+{
+  "task_id": "ugo-empresas",
+  "job_id": "UGO-UGO-EMPRESAS",
+  "correlation_id": "ugo-empresas-20260929T200900Z",
+  "environment": "UGO TEST",
+  "reference_sha": "72a269834564ca8cb40266d1f4aac4a92146d868",
+  "implementation_sha": "73afb9b56df880dd8e68e87970d2e4a09150bf44",
+  "status": "PENDING_RUNTIME_EVIDENCE",
+  "implemented": {
+    "runtime_probe": "scripts/ugo-empresas-runtime.mjs",
+    "ui_source": "src/mvp/AutonomousCorporationDashboard.tsx",
+    "data_binding": "src/mvp/SuperAdminCommandCenter.tsx",
+    "workflow": ".github/workflows/isolated-rpc-rls.yml",
+    "contract": "tests/contracts/ugo-empresas-readiness.test.mjs"
+  },
+  "static_revalidation": {
+    "dependencies": {
+      "d14_audit": "DONE",
+      "super_admin_ui": "DONE"
+    },
+    "exclusive_resource_lock": "ugo-empresas",
+    "test_only_guard": "PASS",
+    "demand_slots_binding": "PASS",
+    "ui_navigation_binding": "PASS",
+    "rls_assertions_present": "PASS",
+    "same_sha_runtime_binding": "PASS"
+  },
+  "required_runtime_result": {
+    "workflow": "UGO Isolated RPC RLS",
+    "step": "UGO Empresas TEST demand slots runtime",
+    "expected": "PASS",
+    "expected_persisted_readiness": {
+      "stage": "QA_GATE",
+      "status": "READY"
+    },
+    "expected_ui_check": "super-admin-ui-runtime must open UGO Empresas and observe the same demand_id/runtime_sha"
+  },
+  "external_blocker": {
+    "code": "GITHUB_ACTIONS_RUNTIME_RESULT_NOT_OBSERVABLE",
+    "detail": "The available GitHub connector exposes no push-run listing/check-run action for the final main SHA; fetch_commit_workflow_runs returns only pull-request-triggered runs. Vercel status is unrelated and currently fails due to build rate limit.",
+    "production_touched": false
+  }
+}
