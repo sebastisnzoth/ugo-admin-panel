@@ -6,6 +6,7 @@ const url=process.env.UGO_TEST_SUPABASE_URL||''
 const key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 if(url!=='https://tmossnqfwfwjrtzwcbmm.supabase.co'||!key)throw new Error('UGO_TEST_SERVICE_ROLE_REQUIRED')
 
+// Trigger proof after scheduler resources are quiet.
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
 const correlationId=process.env.UGO_EXCEPTION_RECOVERY_CORRELATION_ID||randomUUID()
 const {data,error}=await db.rpc('autonomous_execute_exception_recovery',{p_correlation_id:correlationId})
