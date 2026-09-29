@@ -1,0 +1,26 @@
+{
+  "task_id": "chaos-p0",
+  "job_id": "UGO-CHAOS-P0",
+  "title": "Execute chaos/fault injection against the real P0 path",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:50:00Z",
+  "heartbeat_at": "2026-09-29T18:50:00Z",
+  "lease_expires_at": "2026-09-29T19:35:00Z",
+  "started_sha": "6c1835657b7f5c83bdfc52bfbc0ac7a2fcb6b9a8",
+  "owner": "UGO",
+  "department": "Calidad",
+  "assigned_agent": "QA Engineer",
+  "skills": [
+    "integration-testing",
+    "simulation",
+    "regression",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": ["Judge", "Sentinel"],
+  "resources": ["ugo-test-p0", "shared-provider-fixture", "qa-lab"],
+  "correlation_id": "ugo-chaos-p0-20260929T185000Z",
+  "current_step": "CLAIMED_REVALIDATING_RUNTIME",
+  "attempt": 1,
+  "dependencies": ["qa-simulator-binding"]
+}
