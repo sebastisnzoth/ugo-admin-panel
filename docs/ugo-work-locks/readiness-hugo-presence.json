@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-HUGO-PRESENCE",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T21:12:00Z",
-  "lease_expires_at": "2026-09-29T21:57:00Z",
+  "heartbeat_at": "2026-09-29T21:16:00Z",
+  "lease_expires_at": "2026-09-29T22:01:00Z",
   "started_sha": "d27e7047d64a8816dfe38b79769adbc0a15ab4bc",
   "owner": "UGO",
   "assigned_agent": "Hugo Runtime Presence Agent",
@@ -17,7 +17,7 @@
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-presence-20260929T204700Z",
-  "current_step": "admin_session_race_fixed_runtime_pending",
+  "current_step": "judge_sentinel_runtime_pending",
   "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36629086885",
@@ -29,7 +29,10 @@
     "github-actions-artifact-11062117246-partial",
     "github-actions-artifact-11061597569-partial",
     "github-actions-run-36630455068-failed-admin-auth-race",
-    "github-actions-artifact-11061378231-admin-failure-screenshot"
+    "github-actions-artifact-11061378231-admin-failure-screenshot",
+    "github-actions-run-36630898063-success-runtime",
+    "github-actions-artifact-11062143730-runtime-pass",
+    "runtime-sha-cc382d6163ae6174c71cc228ff04a8d418a351ab"
   ],
   "title": "Verify Hugo presence across Client, Provider and Admin roles with runtime evidence",
   "department": "Hugo / IA / Voz",
