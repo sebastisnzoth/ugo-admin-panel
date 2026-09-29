@@ -1,0 +1,34 @@
+{
+  "task_id": "complete-test-journey",
+  "job_id": "UGO-COMPLETE-TEST-JOURNEY",
+  "title": "Execute complete TEST journey by one explicit serviceId",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:30:00Z",
+  "heartbeat_at": "2026-09-29T18:30:00Z",
+  "lease_expires_at": "2026-09-29T19:15:00Z",
+  "started_sha": "daf71e9f56e839e837a1659b8b21308acb78f2b9",
+  "owner": "UGO",
+  "department": "Operaciones",
+  "assigned_agent": "Journey Operator",
+  "skills": [
+    "p0-journey",
+    "matching",
+    "payments-ratings"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-test-p0",
+    "shared-provider-fixture",
+    "payments",
+    "ratings"
+  ],
+  "correlation_id": "8bb91123-cda9-4d25-8a22-9de72c7e2b66",
+  "current_step": "ACQUIRE_LOCK_AND_REVALIDATE_RUNTIME",
+  "attempt": 1,
+  "dependencies": [
+    "audit-event-binding"
+  ]
+}
