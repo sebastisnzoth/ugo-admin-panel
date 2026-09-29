@@ -1,0 +1,74 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "admin-model-router",
+  "task_id": "readiness-admin-model-router",
+  "job_id": "UGO-READINESS-ADMIN-MODEL-ROUTER",
+  "environment": "UGO TEST",
+  "verified_runtime_sha": "bc96fb8fea184404e52972b3d164047b46a3ac0a",
+  "workflow": {
+    "name": "UGO Readiness Admin Model Router TEST",
+    "run_id": 36639082280,
+    "job_id": 109647073069,
+    "conclusion": "success",
+    "artifact_id": 11065279324,
+    "artifact_name": "readiness-admin-model-router-bc96fb8fea184404e52972b3d164047b46a3ac0a",
+    "artifact_expires_at": "2026-12-28T22:21:28Z"
+  },
+  "runtime": {
+    "routes_ready": 3,
+    "primary": {
+      "provider": "gemini",
+      "model": "gemini-flash-lite-latest",
+      "correlation_id": "a53b130e-c6a8-40d1-8e9d-f32a9d2cc1a1",
+      "latency_ms": 609,
+      "cost": 0,
+      "success": true
+    },
+    "fallback": {
+      "provider": "openrouter",
+      "model": "stealth/space-bunny-alpha",
+      "correlation_id": "8e1eb66f-90a5-4c46-a6f2-b0d3286a5ba9",
+      "cost": 0,
+      "success": true
+    },
+    "telemetry": {
+      "rows": 35,
+      "all_zero_cost": true,
+      "has_quality": true,
+      "has_latency": true
+    },
+    "max_route_cost": 0
+  },
+  "ui": {
+    "implementation_commit": "5fbae7b3d9e2f38e3e14506879e095d3b2a7f3e5",
+    "visible_fields": [
+      "Primary",
+      "Fallback",
+      "Telemetría reciente",
+      "Latencia media",
+      "Calidad media",
+      "Costo reciente",
+      "Correlation ID"
+    ]
+  },
+  "regression": {
+    "contract_regression": "PASS",
+    "typescript": "PASS",
+    "test_environment_guard": "PASS",
+    "primary_probe": "PASS",
+    "route_reconciliation": "PASS",
+    "controlled_fallback": "PASS",
+    "runtime_capture": "PASS"
+  },
+  "judge": {
+    "verdict": "PASS",
+    "checked_at": "2026-09-29T22:22:49.659Z"
+  },
+  "sentinel": {
+    "verdict": "PASS",
+    "checked_at": "2026-09-29T22:22:49.711Z",
+    "production_touched": false
+  },
+  "production_touched": false,
+  "notes": "Latency and quality are visible/comparable in the Admin Model Router. Primary measured latency was 609 ms in this run; fallback quality/latency are retained in the immutable workflow artifact and persisted model telemetry."
+}
