@@ -57,6 +57,11 @@ Seleccionar automáticamente según el alcance; combinar sólo las necesarias:
 - `ugo-admin`: Admin, Super Admin y Scout.
 - `ugo-deploy`: build, Vercel, entornos y observabilidad.
 - `ugo-design-system`: UX/UI, tokens, componentes y accesibilidad.
+- `ugo-job-execution`: lifecycle de jobs, leases, heartbeat, retries y cierre auditable.
+- `ugo-github-ops`: Actions/Pages/workflow_dispatch/runs/artifacts y same-SHA.
+- `ugo-runtime-validation`: prueba real UGO TEST/Preview con backend autoritativo.
+- `ugo-evidence-judge`: Decision/Evidence Ledger, criterios DONE y Judge independiente.
+- `ugo-recovery`: stale locks, fallos, rollback y recuperación segura.
 
 No crear una nueva Skill salvo que tenga reutilización real, reglas propias y reduzca coordinación o errores. Ver criterios en `docs/UGO_AI_AGENT_SYSTEM_MASTER.md`.
 
