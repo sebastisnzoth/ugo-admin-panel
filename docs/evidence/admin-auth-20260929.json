@@ -1,0 +1,51 @@
+{
+  "task_id": "readiness-admin-auth",
+  "readiness_id": "admin-auth",
+  "job_id": "UGO-READINESS-ADMIN-AUTH",
+  "correlation_id": "readiness-admin-auth-20260929T204700Z-1c6d04b",
+  "environment": "UGO TEST",
+  "reference_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
+  "validated_sha": "eca1f674576eaec378c5f5f20a224f0454dbc362",
+  "status": "DONE",
+  "workflow": {
+    "name": "UGO Admin Auth Runtime TEST",
+    "run_id": 36629502370,
+    "job_id": 109614828814,
+    "conclusion": "success",
+    "artifact_id": 11062560796,
+    "artifact_name": "admin-auth-runtime-eca1f674576eaec378c5f5f20a224f0454dbc362",
+    "artifact_sha256": "9f3c969ff598411a01a524a023c127143dfea8ba794a9a988c8fe4cb5128f736",
+    "same_sha_checkout": true
+  },
+  "runtime_evidence": {
+    "anonymous": "DENIED",
+    "client": "DENIED",
+    "provider": "DENIED",
+    "admin": "ALLOWED",
+    "browser": "Chromium",
+    "route": "?app=admin"
+  },
+  "regressions": {
+    "dedicated_runtime": "scripts/admin-auth-runtime.mjs",
+    "contract": "tests/contracts/admin-auth-ux.test.mjs",
+    "workflow": ".github/workflows/admin-auth-runtime.yml",
+    "privilege_escalation_guard": "supabase/migrations/20260916094000_usuarios_privilege_escalation_guard.sql",
+    "clearer_auth_errors": true
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": "dedicated positive/negative browser runtime",
+    "validated_at": "2026-09-29T20:54:08.127Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checks": [
+      "active-role-gate",
+      "privilege-escalation-guard",
+      "test-only-target"
+    ],
+    "validated_at": "2026-09-29T20:54:08.147Z"
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-29T20:54:09Z"
+}
