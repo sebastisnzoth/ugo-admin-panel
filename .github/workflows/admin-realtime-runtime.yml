@@ -11,7 +11,17 @@ on:
       - "src/hooks/useAdminActiveServices.ts"
       - "src/hooks/useAdminData.ts"
       - ".github/workflows/admin-realtime-runtime.yml"
-  pull_request:\n    branches: [main]\n    paths:\n      - \"scripts/admin-realtime-runtime.mjs\"\n      - \"scripts/admin-realtime-judge.mjs\"\n      - \"scripts/admin-realtime-sentinel.mjs\"\n      - \"src/mvp/AdminPhase2.tsx\"\n      - \"src/hooks/useAdminActiveServices.ts\"\n      - \"src/hooks/useAdminData.ts\"\n      - \".github/workflows/admin-realtime-runtime.yml\"\n  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/admin-realtime-runtime.mjs"
+      - "scripts/admin-realtime-judge.mjs"
+      - "scripts/admin-realtime-sentinel.mjs"
+      - "src/mvp/AdminPhase2.tsx"
+      - "src/hooks/useAdminActiveServices.ts"
+      - "src/hooks/useAdminData.ts"
+      - ".github/workflows/admin-realtime-runtime.yml"
+  workflow_dispatch:
 
 permissions:
   contents: read
