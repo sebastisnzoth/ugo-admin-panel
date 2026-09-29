@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-HUGO-PRESENCE",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T20:55:00Z",
-  "lease_expires_at": "2026-09-29T21:40:00Z",
+  "heartbeat_at": "2026-09-29T21:01:00Z",
+  "lease_expires_at": "2026-09-29T21:46:00Z",
   "started_sha": "d27e7047d64a8816dfe38b79769adbc0a15ab4bc",
   "owner": "UGO",
   "assigned_agent": "Hugo Runtime Presence Agent",
@@ -17,10 +17,11 @@
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-presence-20260929T204700Z",
-  "current_step": "runtime_run_36629086885_in_progress",
+  "current_step": "runtime_regression_rerun",
   "attempt": 1,
   "evidence_ids": [
-    "github-actions-run-36629086885"
+    "github-actions-run-36629086885",
+    "github-actions-run-36629086885-failed-regression"
   ],
   "title": "Verify Hugo presence across Client, Provider and Admin roles with runtime evidence",
   "department": "Hugo / IA / Voz",
