@@ -2,10 +2,10 @@
   "task_id": "ugo-empresas",
   "job_id": "UGO-UGO-EMPRESAS",
   "title": "Habilitar y validar UGO Empresas en TEST antes de las pruebas reales finales",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T21:05:30Z",
-  "heartbeat_at": "2026-09-29T21:13:00Z",
-  "lease_expires_at": "2026-09-29T21:58:00Z",
+  "heartbeat_at": "2026-09-29T21:14:00Z",
+  "lease_expires_at": "2026-09-29T21:14:00Z",
   "started_sha": "c0aec67d113c3fb9808eb63e19d0ae7e6877447b",
   "owner": "UGO",
   "department": "UGO Empresas",
@@ -23,7 +23,7 @@
     "ugo-empresas"
   ],
   "correlation_id": "ugo-empresas-20260929T210530Z",
-  "current_step": "RERUN_SAME_SHA_RUNTIME_AFTER_MAIN_ADVANCE",
+  "current_step": "DONE",
   "attempt": 2,
   "dependencies": [
     "d14-audit",
@@ -36,5 +36,17 @@
     "evidence_path": "docs/evidence/ugo-empresas-20260929.json",
     "failure_code": "GITHUB_ACTIONS_RUNTIME_RESULT_NOT_OBSERVABLE"
   },
-  "revalidated_main_sha": "b1f232a8ce8aef8670c02235b84d0612dd531159"
+  "revalidated_main_sha": "b1f232a8ce8aef8670c02235b84d0612dd531159",
+  "readiness_id": "auto-enterprise",
+  "completed_at": "2026-09-29T21:14:00Z",
+  "runtime_validated_sha": "52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
+  "evidence_path": "docs/evidence/ugo-empresas-20260929.json",
+  "evidence_commit_sha": "2f170f343b7c83da4993688dbafbe03bcf62c8fc",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "DONE",
+  "failure": null,
+  "remaining_verifiable_steps": []
 }
