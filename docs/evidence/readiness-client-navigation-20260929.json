@@ -1,0 +1,47 @@
+{
+  "readiness_id": "client-navigation",
+  "task_id": "readiness-client-navigation",
+  "job_id": "UGO-READINESS-CLIENT-NAVIGATION",
+  "correlation_id": "readiness-client-navigation-20260929T220300Z-ff633eb5",
+  "environment": "UGO TEST",
+  "tested_sha": "5ff1059a4436b87064c3eb99a051d3409ec80e1d",
+  "workflow_run_id": 36642753786,
+  "workflow_name": "UGO Client Navigation Runtime TEST",
+  "workflow_result": "PASS",
+  "artifact_id": 11066764092,
+  "artifact_name": "client-navigation-runtime-5ff1059a4436b87064c3eb99a051d3409ec80e1d",
+  "artifact_digest": "sha256:978ebe05e3d8ce488b452d7d5957d6dc1da15c69b88034d73db9c50e9569741e",
+  "artifact_expires_at": "2026-12-28T22:59:46Z",
+  "runtime": {
+    "result": "PASS",
+    "click_map_entries": 28,
+    "responsive_views": 22,
+    "viewports": [
+      "desktop",
+      "mobile"
+    ],
+    "page_errors": 0
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T23:01:24.529Z"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-29T23:01:24.580Z"
+    }
+  },
+  "regression": {
+    "test_environment": "PASS",
+    "typescript_build": "PASS",
+    "contract_regressions": "PASS",
+    "browser_runtime": "PASS"
+  },
+  "prior_failure": {
+    "workflow_run_id": 36637534778,
+    "cause": "runtime harness expected obsolete service-search placeholder; corrected by current main before successful rerun"
+  },
+  "control_result": "VERIFIED",
+  "persisted_at": "2026-09-29T23:02:00Z"
+}
