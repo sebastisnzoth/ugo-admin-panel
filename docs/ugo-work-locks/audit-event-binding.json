@@ -1,0 +1,33 @@
+{
+  "task_id": "audit-event-binding",
+  "job_id": "UGO-AUDIT-EVENT-BINDING",
+  "title": "Runtime-validate P0 service event binding to corporate audit evidence",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:20:30Z",
+  "heartbeat_at": "2026-09-29T18:20:30Z",
+  "lease_expires_at": "2026-09-29T19:05:30Z",
+  "started_sha": "c5d2c206c1c542d7f2357b9c8ebbd8c03976ab28",
+  "owner": "UGO",
+  "department": "Auditoría",
+  "assigned_agent": "Audit Agent",
+  "skills": [
+    "event-binding",
+    "ledger-audit",
+    "traceability"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-test-p0",
+    "audit-ledger",
+    "shared-provider-fixture"
+  ],
+  "correlation_id": "3d44f4c0-3898-4c66-aaf6-dff3f27c5e84",
+  "current_step": "ACQUIRE_LOCK_AND_REVALIDATE_RUNTIME",
+  "attempt": 1,
+  "dependencies": [
+    "qa-simulator-binding"
+  ]
+}
