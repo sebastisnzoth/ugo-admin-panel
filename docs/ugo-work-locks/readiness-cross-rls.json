@@ -5,8 +5,8 @@
   "title": "Verify cross-role RLS/RPC isolation with same-SHA runtime evidence",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:50:00Z",
-  "heartbeat_at": "2026-09-29T20:56:00Z",
-  "lease_expires_at": "2026-09-29T21:41:00Z",
+  "heartbeat_at": "2026-09-29T21:00:00Z",
+  "lease_expires_at": "2026-09-29T21:45:00Z",
   "started_sha": "b92f2887c2bdb0e90271c5bf1695d2db897bc8ef",
   "owner": "UGO",
   "department": "Seguridad / Calidad",
@@ -19,11 +19,14 @@
     "security-rls"
   ],
   "correlation_id": "readiness-cross-rls-20260929T205000Z-b92f288",
-  "current_step": "WAIT_CORE_AND_ISOLATED_RUNTIME",
+  "current_step": "RERUN_SAME_SHA_AFTER_RPC_GUARD",
   "attempt": 1,
   "evidence_ids": [
     "repo:tests/integration/cross-role-rls-rpc.test.mjs",
-    "github:c091182dae350f966252cecabdccb590758ea1e4"
+    "github:c091182dae350f966252cecabdccb590758ea1e4",
+    "supabase-test:migration:harden_provider_offer_rpc_cross_role",
+    "github:09ce7e0734bde1787aa4117747df244b18115d67",
+    "github:f9196eb74cc12f2a0ca10abd3a7c08a34da245e6"
   ],
   "skills": [
     "ugo-readiness-orchestrator",
