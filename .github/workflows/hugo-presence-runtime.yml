@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "scripts/hugo-presence-runtime.mjs"
+      - "scripts/hugo-presence-judge.mjs"
+      - "scripts/hugo-presence-sentinel.mjs"
       - ".github/workflows/hugo-presence-runtime.yml"
       - "src/features/client/**"
       - "src/mvp/provider/**"
@@ -76,6 +78,8 @@ jobs:
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
           node scripts/hugo-presence-runtime.mjs
+          node scripts/hugo-presence-judge.mjs
+          node scripts/hugo-presence-sentinel.mjs
       - name: Upload Hugo presence evidence
         if: always()
         uses: actions/upload-artifact@v4
