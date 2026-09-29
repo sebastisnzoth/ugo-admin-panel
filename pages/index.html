@@ -55,7 +55,7 @@
     <h3 id="nextTitle">Esperando evidencia…</h3>
     <p class="sub" id="nextWhy">—</p>
     <div class="resolve"><b>Cómo resolverlo:</b> <span id="nextResolve">—</span></div>
-    <div class="cta-row"><button class="btn cta chatgpt" id="nextChatGPT" type="button" disabled>Resolver con ChatGPT</button></div>
+    <div class="cta-row"><button class="btn cta chatgpt" id="nextUgoMaster" type="button" disabled>Resolver con UGO Maestro</button><button class="btn cta" id="revalidateNow" type="button">Revalidar ahora</button></div>
   </section>
 
   <h2>Trabajo de implementación pendiente</h2>
@@ -65,6 +65,10 @@
   <h2>Bloqueos del gate final</h2>
   <p class="sub">Estos son los blockers explícitos del audit corporativo final. No se mezclan con el trabajo técnico pendiente.</p>
   <section class="steps" id="finalGateSteps"><div class="step"><div class="step-index">…</div><div>Cargando blockers…</div></div></section>
+
+  <h2>CI del mismo SHA</h2>
+  <p class="sub">Sólo se muestran workflows completados para la misma revisión publicada. Si no existe evidencia same-SHA, queda UNVERIFIED.</p>
+  <section class="steps" id="ciStatus"><div class="card">Cargando CI…</div></section>
 
   <h2>Estado técnico verificado</h2>
   <section class="grid">
@@ -90,6 +94,7 @@
     <div><strong>REVISIÓN PUBLICADA:</strong> __UGO_SHA__</div>
     <div><strong>PUBLICADO UTC:</strong> __UGO_PUBLISHED_AT__</div>
     <div><strong>ENTORNO:</strong> UGO TEST / GitHub Pages</div>
+    <div><strong>REFRESH:</strong> evento + cada 15 minutos</div>
   </div>
 
   <div class="actions">
@@ -113,11 +118,15 @@
           <span class="pill ${pillClass(step.owner)}">${esc(step.owner)}</span>
           <span class="pill ${step.status === 'BLOCKED' ? 'blocked' : 'pending'}">${esc(step.status)}</span>
           <span class="pill">${esc(step.phase)}</span>
+          ${step.depends_on?.length ? '<span class="pill">depende de ' + esc(step.depends_on.join(', ')) + '</span>' : ''}
         </div>
         <p><b>Por qué falta:</b> ${esc(step.why)}</p>
         <div class="resolve"><b>Cómo resolverlo:</b> ${esc(step.resolve)}</div>
         <details><summary>Qué evidencia lo convierte en DONE</summary><p>${esc(step.done_evidence)}</p></details>
-        <div class="cta-row"><button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}">Resolver con ChatGPT</button></div>
+        <div class="cta-row">
+          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}">Resolver con UGO Maestro</button>
+          ${step.evidence_url ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(step.evidence_url) + '">Ver evidencia</a>' : ''}
+        </div>
       </div>
     </article>`
   let statusSnapshot = null
@@ -156,23 +165,37 @@
     '',
     'Ejecutá este paso ahora y continuá con trabajo independiente si aparece un bloqueo externo.'
   ].join('\n')
-  const openChatGPTForStep = async step => {
+  const openUgoMasterForStep = async step => {
     const prompt = buildChatGPTPrompt(step)
-    const chatWindow = window.open('https://chatgpt.com/', '_blank', 'noopener')
+    const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
     try {
       await navigator.clipboard.writeText(prompt)
-      alert('Prompt copiado. Se abrió ChatGPT: pegalo y enviá para ejecutar este paso.')
+      alert('Prompt copiado. Se abrió UGO Maestro Autónomo: pegalo y enviá para ejecutar este paso.')
     } catch (_) {
-      window.prompt('Copiá este prompt y pegalo en ChatGPT:', prompt)
+      window.prompt('Copiá este prompt y pegalo en UGO Maestro Autónomo:', prompt)
     }
-    if (!chatWindow) console.warn('El navegador bloqueó la apertura de ChatGPT.')
+    if (!chatWindow) console.warn('El navegador bloqueó la apertura de UGO Maestro Autónomo.')
   }
   const fail = message => {
     document.getElementById('prodState').textContent = 'EVIDENCE UNAVAILABLE'
     document.getElementById('prodState').className = 'state bad'
     console.error(message)
   }
-  fetch('status.json', {cache:'no-store'}).then(r => {
+  const loadCi = () => fetch('ci-status.json?ts=' + Date.now(), {cache:'no-store'})
+    .then(r => r.ok ? r.json() : [])
+    .then(runs => {
+      const root = document.getElementById('ciStatus')
+      if (!runs.length) {
+        root.innerHTML = '<div class="card"><span class="pill pending">UNVERIFIED</span> No hay workflows completados para este SHA.</div>'
+        return
+      }
+      root.innerHTML = runs.map(run => '<article class="card"><div class="row"><span>' + esc(run.name) + '</span><span class="pill ' + (run.conclusion === 'success' ? 'ugo' : 'blocked') + '">' + esc((run.conclusion || run.status || 'UNVERIFIED').toUpperCase()) + '</span></div><p class="sub">run #' + esc(run.run_number) + ' · ' + esc(run.head_sha?.slice(0,12) || '') + '</p><a class="btn" target="_blank" rel="noopener" href="' + esc(run.html_url) + '">Ver workflow</a></article>').join('')
+    })
+    .catch(() => {
+      document.getElementById('ciStatus').innerHTML = '<div class="card"><span class="pill pending">UNVERIFIED</span> No se pudo cargar ci-status.json.</div>'
+    })
+
+  const loadStatus = () => fetch('status.json?ts=' + Date.now(), {cache:'no-store'}).then(r => {
     if(!r.ok) throw new Error('status.json HTTP ' + r.status)
     return r.json()
   }).then(s => {
@@ -190,16 +213,16 @@
       document.getElementById('nextTitle').textContent = next.title
       document.getElementById('nextWhy').textContent = next.why
       document.getElementById('nextResolve').textContent = next.resolve
-      const nextButton = document.getElementById('nextChatGPT')
+      const nextButton = document.getElementById('nextUgoMaster')
       nextButton.disabled = false
-      nextButton.addEventListener('click', () => openChatGPTForStep(next))
+      nextButton.onclick = () => openUgoMasterForStep(next)
     }
     document.getElementById('implementationSteps').innerHTML = (s.implementation_steps || []).map(renderStep).join('') || '<div class="card">Sin trabajo técnico pendiente.</div>'
     document.getElementById('finalGateSteps').innerHTML = (s.final_gate_steps || []).map(renderStep).join('') || '<div class="card">Sin blockers finales.</div>'
     const allSteps = [...(s.implementation_steps || []), ...(s.final_gate_steps || [])]
     document.querySelectorAll('[data-step-id]').forEach(button => {
       const step = allSteps.find(x => x.id === button.dataset.stepId)
-      if (step) button.addEventListener('click', () => openChatGPTForStep(step))
+      if (step) button.addEventListener('click', () => openUgoMasterForStep(step))
     })
     const assurance = Object.fromEntries((s.assurance || []).map(x=>[x.name,x.status]))
     document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
@@ -207,7 +230,17 @@
     document.getElementById('digitalTwinStatus').textContent = assurance.DIGITAL_TWIN || 'UNVERIFIED'
     document.getElementById('customerPill').textContent = s.customer_1
     document.getElementById('customerReason').textContent = s.customer_1_reason
+    return s
   }).catch(fail)
+
+  loadStatus()
+  loadCi()
+  document.getElementById('revalidateNow').addEventListener('click', () => {
+    document.getElementById('revalidateNow').textContent = 'Revalidando…'
+    Promise.allSettled([loadStatus(), loadCi()]).finally(() => {
+      document.getElementById('revalidateNow').textContent = 'Revalidar ahora'
+    })
+  })
 })()
 </script>
 </body>
