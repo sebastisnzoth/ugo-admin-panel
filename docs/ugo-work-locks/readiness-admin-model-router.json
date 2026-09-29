@@ -26,7 +26,7 @@
     "model-router"
   ],
   "correlation_id": "readiness-admin-model-router-20260929T221500Z-d1f3e90d",
-  "current_step": "validated_and_closed",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "github-actions:run:36639082280",
@@ -54,5 +54,6 @@
   "evidence_path": "docs/evidence/readiness-admin-model-router-20260929.json",
   "runtime_validated_sha": "bc96fb8fea184404e52972b3d164047b46a3ac0a",
   "completed_at": "2026-09-29T22:23:30Z",
-  "result_summary": "UGO TEST verified 3 READY zero-cost routes, Gemini primary runtime, controlled OpenRouter fallback, persisted telemetry, Admin visibility, contract/TypeScript regressions, Judge PASS and Sentinel PASS. Production untouched."
+  "result_summary": "UGO TEST verified 3 READY zero-cost routes, Gemini primary runtime, controlled OpenRouter fallback, persisted telemetry, Admin visibility, contract/TypeScript regressions, Judge PASS and Sentinel PASS. Production untouched.",
+  "evidence_commit_sha": "75d1f8a97ab7ecab6795fb788a22ba3406b4547b"
 }
