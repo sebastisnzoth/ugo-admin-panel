@@ -11,6 +11,10 @@ on:
       - 'tests/contracts/autonomous-exception-recovery.test.mjs'
       - '.github/workflows/ugo-exception-recovery-test.yml'
 
+concurrency:
+  group: ugo-exception-recovery-test
+  cancel-in-progress: false
+
 permissions:
   contents: read
 
