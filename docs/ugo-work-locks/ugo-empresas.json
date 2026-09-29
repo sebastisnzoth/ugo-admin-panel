@@ -4,8 +4,8 @@
   "title": "Habilitar y validar UGO Empresas en TEST antes de las pruebas reales finales",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:09:00Z",
-  "heartbeat_at": "2026-09-29T20:09:00Z",
-  "lease_expires_at": "2026-09-29T20:54:00Z",
+  "heartbeat_at": "2026-09-29T20:18:00Z",
+  "lease_expires_at": "2026-09-29T21:03:00Z",
   "started_sha": "72a269834564ca8cb40266d1f4aac4a92146d868",
   "owner": "UGO",
   "department": "UGO Empresas",
@@ -23,7 +23,7 @@
     "ugo-empresas"
   ],
   "correlation_id": "ugo-empresas-20260929T200900Z",
-  "current_step": "DISCOVERY_AND_TEST_ENABLEMENT",
+  "current_step": "CI_RUNTIME_AND_UI_REVALIDATION",
   "attempt": 1,
   "dependencies": [
     "d14-audit",
