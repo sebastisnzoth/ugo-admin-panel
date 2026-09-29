@@ -47,3 +47,12 @@ set status='CANCELLED',
 where idempotency_key in('qa-red-negative-20260929','qa-yellow-negative-20260929')
   and trigger_type='QA'
   and status='WAITING_APPROVAL';
+
+update public.autonomous_jobs
+set status='CANCELLED',
+    failure_reason='CANCELLED: completed isolated governance fixture',
+    blocked_reason='QA_FIXTURE_COMPLETE',
+    finished_at=coalesce(finished_at,now())
+where trigger_type='TEST'
+  and idempotency_key like 'ugo-autonomy-%'
+  and status in('QUEUED','WAITING_APPROVAL');
