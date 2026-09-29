@@ -1,43 +1,97 @@
 {
   "task_id": "ugo-empresas",
+  "readiness_id": "auto-enterprise",
   "job_id": "UGO-UGO-EMPRESAS",
-  "correlation_id": "ugo-empresas-20260929T200900Z",
+  "correlation_id": "ugo-empresas-20260929T210530Z",
   "environment": "UGO TEST",
-  "reference_sha": "72a269834564ca8cb40266d1f4aac4a92146d868",
-  "implementation_sha": "73afb9b56df880dd8e68e87970d2e4a09150bf44",
-  "status": "PENDING_RUNTIME_EVIDENCE",
-  "implemented": {
+  "test_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_project_ref": "trfsjuseqjxlhrxuvdsm",
+  "production_touched": false,
+  "runtime_sha": "52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
+  "status": "PASS",
+  "dependencies": {
+    "d14_audit": "DONE",
+    "super_admin_ui": "DONE"
+  },
+  "implementation": {
     "runtime_probe": "scripts/ugo-empresas-runtime.mjs",
     "ui_source": "src/mvp/AutonomousCorporationDashboard.tsx",
     "data_binding": "src/mvp/SuperAdminCommandCenter.tsx",
     "workflow": ".github/workflows/isolated-rpc-rls.yml",
     "contract": "tests/contracts/ugo-empresas-readiness.test.mjs"
   },
-  "static_revalidation": {
-    "dependencies": {
-      "d14_audit": "DONE",
-      "super_admin_ui": "DONE"
-    },
-    "exclusive_resource_lock": "ugo-empresas",
-    "test_only_guard": "PASS",
-    "demand_slots_binding": "PASS",
-    "ui_navigation_binding": "PASS",
-    "rls_assertions_present": "PASS",
-    "same_sha_runtime_binding": "PASS"
-  },
-  "required_runtime_result": {
-    "workflow": "UGO Isolated RPC RLS",
-    "step": "UGO Empresas TEST demand slots runtime",
-    "expected": "PASS",
-    "expected_persisted_readiness": {
+  "runtime": {
+    "readiness": {
       "stage": "QA_GATE",
-      "status": "READY"
+      "status": "READY",
+      "blockers": []
     },
-    "expected_ui_check": "super-admin-ui-runtime must open UGO Empresas and observe the same demand_id/runtime_sha"
+    "demand_id": "32ed41c9-7c69-4223-be42-5a89f4766d61",
+    "demand_status": "VALIDATED",
+    "quantity": 3,
+    "slots": 3,
+    "validated_slots": 3,
+    "transitions": [
+      "DRAFT",
+      "MATCHED",
+      "RECONFIRMED",
+      "CHECKED_IN",
+      "VALIDATED"
+    ],
+    "permissions": {
+      "client_read_rows": 0,
+      "provider_read_rows": 0,
+      "superadmin_readiness_rows": 1,
+      "superadmin_demand_rows": 1,
+      "superadmin_slot_rows": 3,
+      "authenticated_select": true,
+      "authenticated_insert": false,
+      "authenticated_update": false,
+      "authenticated_delete": false
+    }
   },
-  "external_blocker": {
-    "code": "GITHUB_ACTIONS_RUNTIME_RESULT_NOT_OBSERVABLE",
-    "detail": "The available GitHub connector exposes no push-run listing/check-run action for the final main SHA; fetch_commit_workflow_runs returns only pull-request-triggered runs. Vercel status is unrelated and currently fails due to build rate limit.",
-    "production_touched": false
-  }
+  "navigation_and_ui": {
+    "empresas_view_registered": true,
+    "label": "UGO Empresas",
+    "reads": [
+      "ugo_empresas_readiness",
+      "ugo_empresas_demands",
+      "ugo_empresas_slots"
+    ],
+    "persisted_runtime_sha_visible": true,
+    "persisted_demand_and_slots_visible": true,
+    "evidence_type": "SOURCE_BINDING_PLUS_BACKEND_RUNTIME",
+    "note": "No production deployment was used. The browser-specific dedicated Super Admin runtime had already closed its dependency; this task revalidated the UGO Empresas navigation/data binding in source and the authoritative backend journey in UGO TEST."
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checks": [
+        "readiness_pass",
+        "same_sha_pass",
+        "demand_pass",
+        "slots_pass"
+      ]
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checks": [
+        "demand_slots_pass",
+        "state_transitions_pass",
+        "permissions_pass",
+        "client_isolation_pass",
+        "provider_isolation_pass",
+        "superadmin_read_pass",
+        "mutation_boundary_pass",
+        "environment_pass"
+      ]
+    }
+  },
+  "prior_attempt": {
+    "attempt": 1,
+    "status": "FAILED",
+    "reason": "GitHub Actions push-run result was not observable through the connector."
+  },
+  "attempt": 2,
+  "completed_at": "2026-09-29T21:12:23Z"
 }
