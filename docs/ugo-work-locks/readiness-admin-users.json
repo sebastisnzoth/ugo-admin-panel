@@ -5,8 +5,8 @@
   "title": "Verify Admin user profile and audited history in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T23:34:00Z",
-  "heartbeat_at": "2026-09-29T23:38:00Z",
-  "lease_expires_at": "2026-09-30T00:23:00Z",
+  "heartbeat_at": "2026-09-29T23:41:00Z",
+  "lease_expires_at": "2026-09-30T00:26:00Z",
   "started_sha": "daab889acc40c9b8cd8519b53ab719b5c9b1e550",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,7 +19,7 @@
     "admin-users"
   ],
   "correlation_id": "readiness-admin-users-20260929T233400Z-daab889a",
-  "current_step": "RUNTIME_VALIDATION",
+  "current_step": "HARDEN_RUNTIME_PROOF",
   "attempt": 1,
   "evidence_ids": [
     "github-actions:run:36646142554",
