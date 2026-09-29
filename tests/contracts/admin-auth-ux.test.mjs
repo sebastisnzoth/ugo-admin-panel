@@ -10,6 +10,10 @@ test('admin auth exposes loading, recovery and error semantics', async () => {
   assert.match(gate, /role="alert"/)
   assert.match(gate, /No pudimos validar tu sesión de administrador/)
   assert.match(gate, /inputMode="email"/)
+  assert.match(gate, /invalid_credentials/)
+  assert.match(gate, /Usuario\/email o contraseña incorrectos/)
+  assert.match(gate, /Demasiados intentos seguidos/)
+  assert.doesNotMatch(gate, /setError\(err\?\.message/)
 })
 
 test('admin feature shell keeps the operational panel mounted during migration', async () => {
