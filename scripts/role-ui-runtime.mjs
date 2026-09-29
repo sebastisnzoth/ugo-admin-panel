@@ -31,6 +31,7 @@ const admin=await login(adminEmail,adminPassword)
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const results=[]
+const pageContext=new WeakMap()
 const sessions={client:client.session,provider:provider.session,admin:admin.session}
 
 async function assertResponsive(page,label){
@@ -47,7 +48,9 @@ async function assertResponsive(page,label){
 async function openRole(role,viewport){
  const page=await browser.newPage({viewport})
  const errors=[]
- page.on('pageerror',error=>errors.push(String(error?.message||error)))
+ const trace={step:role+' load'}
+ pageContext.set(page,trace)
+ page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
    localStorage.setItem(key,JSON.stringify(session))
@@ -56,6 +59,8 @@ async function openRole(role,viewport){
  return {page,errors}
 }
 const safeClick=async(page,locator,label)=>{
+ const trace=pageContext.get(page)
+ if(trace)trace.step=label
  await locator.waitFor({state:'visible',timeout:20000})
  await locator.click()
  await page.waitForTimeout(250)
