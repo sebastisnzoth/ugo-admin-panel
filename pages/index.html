@@ -558,7 +558,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openReadinessWithUgoMaster = async (item, group) => {
-    if (!item || !['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state)) return
+    if (!item || !['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state)) return
     saveDispatch({
       id: item.id,
       title: item.title,
@@ -759,7 +759,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     NEEDS_RUNTIME_PROOF:'FALTA PRUEBA RUNTIME',
     IN_PROGRESS:'EN PROCESO',
     BLOCKED:'BLOQUEADO',
-    HUMAN_FINAL:'PRUEBA REAL FINAL'
+    HUMAN_FINAL:'PRUEBA REAL FINAL',
+    FIXED_IN_PR:'CORREGIDO EN PR',
+    WAITING_RUNTIME:'ESPERANDO RUNTIME',
+    JUDGE_PENDING:'ESPERANDO JUDGE',
+    SENTINEL_PENDING:'ESPERANDO SENTINEL',
+    FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
+    STALE_LOCK:'LOCK VENCIDO'
   }[status] || status || 'UNVERIFIED')
 
   const readinessPill = status =>
@@ -777,6 +783,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     HUMAN_REQUIRED:'REQUIERE SERGIO',
     STALE_LOCK:'LOCK VENCIDO',
     FAILED_REQUIRES_REVIEW:'REQUIERE REVISIÓN',
+    FIXED_IN_PR:'CORREGIDO EN PR',
+    WAITING_RUNTIME:'ESPERANDO RUNTIME',
+    JUDGE_PENDING:'ESPERANDO JUDGE',
+    SENTINEL_PENDING:'ESPERANDO SENTINEL',
     VERIFIED:'VERIFIED'
   }[gate] || gate || 'UNVERIFIED')
 
@@ -810,8 +820,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
             '<p class="sub"><b>Prioridad:</b> ' + esc(item.priority || 'NORMAL') + ' · <b>Dependencias:</b> ' + esc((item.depends_on || []).join(', ') || 'ninguna') + ' · <b>Recursos:</b> ' + esc((item.resources || []).join(', ') || '—') + '</p>' +
             '<p class="sub"><b>Estado de ejecución:</b> ' + esc(item.gate_reason || readinessGateLabel(item.gate_state)) + '</p>' +
+            (item.pull_request ? '<p class="sub"><b>PR:</b> <a target="_blank" rel="noopener" href="' + esc(item.pull_request.html_url) + '">#' + esc(item.pull_request.number) + '</a> · ' + esc(item.pull_request.head_ref || '') + ' · evidencia: ' + esc(item.pull_request.evidence_status || 'pendiente') + ' · runtime: ' + esc(item.pull_request.runtime_status || 'pendiente') + '</p>' : '') +
             '<div class="cta-row">' +
-              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state) ? '' : 'disabled') + '>' +
+              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state) ? '' : 'disabled') + '>' +
                 (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'HUMAN_DEFERRED' ? 'Dejada para el final' : item.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' : item.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : 'Resolver con UGO Maestro') +
               '</button>' +
               '<span class="pill ' + (item.gate_state === 'AVAILABLE' ? 'ugo' : item.gate_state === 'VERIFIED' ? 'ugo' : item.gate_state === 'IN_PROGRESS' ? 'accent' : item.gate_state === 'HUMAN_DEFERRED' ? 'human' : 'pending') + '">' + esc(readinessGateLabel(item.gate_state)) + '</span>' +
@@ -996,7 +1007,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-readiness-id]').forEach(button => {
       const group = (s.functional_readiness?.groups || []).find(g => g.id === button.dataset.readinessGroup)
       const item = group?.items?.find(x => x.id === button.dataset.readinessId)
-      if (item && ['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW'].includes(item.gate_state) && !button.disabled) {
+      if (item && ['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state) && !button.disabled) {
         button.onclick = () => openReadinessWithUgoMaster(item, group)
       }
     })
