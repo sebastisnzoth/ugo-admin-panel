@@ -10,6 +10,22 @@ if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
 const source = readFileSync(sourcePath, 'utf8')
 const evidenceUrl = 'https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
 const schedulerPolicy = JSON.parse(readFileSync('docs/UGO_SCHEDULER_POLICY.json','utf8'))
+const functionalReadiness = JSON.parse(readFileSync('docs/UGO_FUNCTIONAL_READINESS.json','utf8'))
+const readinessItems = functionalReadiness.groups.flatMap(group => group.items.map(item => ({...item, group_id: group.id, group_title: group.title})))
+const readinessSummary = {
+  total: readinessItems.length,
+  verified: readinessItems.filter(x => x.status === 'VERIFIED').length,
+  pending: readinessItems.filter(x => ['NEEDS_RUNTIME_PROOF','IN_PROGRESS','BLOCKED'].includes(x.status)).length,
+  human_final: readinessItems.filter(x => x.status === 'HUMAN_FINAL').length,
+  groups: functionalReadiness.groups.map(group => ({
+    id: group.id,
+    title: group.title,
+    total: group.items.length,
+    verified: group.items.filter(x => x.status === 'VERIFIED').length,
+    pending: group.items.filter(x => ['NEEDS_RUNTIME_PROOF','IN_PROGRESS','BLOCKED'].includes(x.status)).length,
+    human_final: group.items.filter(x => x.status === 'HUMAN_FINAL').length,
+  })),
+}
 
 const must = (re, label) => {
   const match = source.match(re)
@@ -422,6 +438,8 @@ const status = {
   customer_1: 'BLOCKED',
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
   autonomous_company: autonomousCompany,
+  functional_readiness: functionalReadiness,
+  functional_readiness_summary: readinessSummary,
   implementation_steps: pendingImplementation,
   completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
   final_gate_steps: finalGateSteps,
