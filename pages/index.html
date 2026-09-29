@@ -215,7 +215,7 @@
       document.getElementById('nextResolve').textContent = next.resolve
       const nextButton = document.getElementById('nextUgoMaster')
       nextButton.disabled = false
-      nextButton.addEventListener('click', () => openUgoMasterForStep(next))
+      nextButton.onclick = () => openUgoMasterForStep(next)
     }
     document.getElementById('implementationSteps').innerHTML = (s.implementation_steps || []).map(renderStep).join('') || '<div class="card">Sin trabajo técnico pendiente.</div>'
     document.getElementById('finalGateSteps').innerHTML = (s.final_gate_steps || []).map(renderStep).join('') || '<div class="card">Sin blockers finales.</div>'
