@@ -2,19 +2,41 @@
   "readiness_id": "hugo-intent",
   "task_id": "readiness-hugo-intent",
   "job_id": "UGO-READINESS-HUGO-INTENT",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T21:22:00Z",
-  "heartbeat_at": "2026-09-29T21:28:00Z",
-  "lease_expires_at": "2026-09-29T22:13:00Z",
+  "heartbeat_at": "2026-09-29T21:31:00Z",
+  "lease_expires_at": "2026-09-29T21:31:00Z",
+  "completed_at": "2026-09-29T21:31:00Z",
   "started_sha": "6c13b3ea4566d618d0b8b7a41dadd382fda2e017",
+  "verified_sha": "a668c24207c51008fcda18ee3447ab1f3eba2e3d",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Intent Runtime Agent",
-  "skills": ["ugo-readiness-orchestrator","ugo-hugo","ugo-runtime-validation","ugo-evidence-judge"],
-  "validators": ["Judge","Sentinel"],
-  "resources": ["hugo-intent"],
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "hugo-intent"
+  ],
   "correlation_id": "readiness-hugo-intent-20260929T212200Z-6c13b3ea",
-  "current_step": "regression_fixed_rerun_same_sha_pipeline",
+  "current_step": "verified_runtime_suite_closed",
   "attempt": 1,
-  "evidence_ids": ["github-actions-run-36633258342-failed-contract-ordering"]
+  "evidence_ids": [
+    "github-actions-run-36633258342-failed-contract-ordering",
+    "github-actions-run-36633538777-success",
+    "github-actions-job-109628438124",
+    "github-actions-artifact-11063771893",
+    "docs/ugo-readiness-evidence/readiness-hugo-intent-a668c242.json"
+  ]
 }
