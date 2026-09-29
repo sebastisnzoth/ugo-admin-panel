@@ -65,3 +65,4 @@ jobs:
           path: artifacts/readiness-admin-model-router/*.json
           if-no-files-found: error
           retention-days: 90
+# retry after verifier newline repair
