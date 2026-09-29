@@ -2,10 +2,10 @@
   "task_id": "super-admin-ui",
   "job_id": "UGO-SUPER-ADMIN-UI",
   "title": "Runtime-validar la UI de Super Admin en el entorno aplicable",
-  "status": "FAILED",
+  "status": "DONE",
   "started_at": "2026-09-29T17:44:45Z",
-  "heartbeat_at": "2026-09-29T18:03:00Z",
-  "lease_expires_at": "2026-09-29T18:03:00Z",
+  "heartbeat_at": "2026-09-29T19:20:00Z",
+  "lease_expires_at": "2026-09-29T19:20:00Z",
   "started_sha": "c796b4ec42c75c7dce8d6474ae1de5cb2b0ab1fb",
   "owner": "UGO",
   "department": "Producto / Frontend",
@@ -13,7 +13,9 @@
   "skills": [
     "runtime-ui",
     "admin-actions",
-    "backend-consistency"
+    "backend-consistency",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
   ],
   "validators": [
     "Judge",
@@ -24,7 +26,7 @@
     "preview-runtime"
   ],
   "correlation_id": "6b754ec7-c53f-48dc-bd3e-8fe51eb5687d",
-  "current_step": "MAX_ATTEMPTS_EXHAUSTED_SELECTOR_HARNESS",
+  "current_step": "DONE",
   "attempt": 3,
   "evidence_ids": [
     "repo:scripts/super-admin-ui-runtime.mjs",
@@ -36,11 +38,34 @@
     "github-actions:artifact-digest:sha256:be39ffa94b18368bfd122103e1af134141d6252884ff3564a595bf384808f08c",
     "runtime-sha:38be9a0908fbee116495db1daf75850a2df57937",
     "artifact:super-admin-ui-failure.txt:UI_AUTHENTICATED_SUPERADMIN_VISIBLE",
-    "artifact:super-admin-ui-failure.png"
+    "artifact:super-admin-ui-failure.png",
+    "repo-commit:7c4e69f2cab83dc5e7348fe24424b6cbd1e24c77:decouple-ui-proof",
+    "repo-commit:62b20d7faf0b97b848432fa799ec9db01979741c:disambiguate-superadmin-navigation",
+    "repo-commit:393693dd4261ac239a1466b3fc89d89a96670da6:judge-dashboard-state",
+    "repo-commit:a719db02e35649591805c41f0de039fec506b1d7:await-dashboard-hydration",
+    "github-actions:run:36618240588:SUCCESS",
+    "github-actions:job:109576685466:SUCCESS",
+    "github-actions:artifact:11056596516",
+    "github-actions:artifact-digest:sha256:a63b5422d57578e2c202c14652a5f27e271480623dc717d0807490556bb6ef41",
+    "runtime-sha:a719db02e35649591805c41f0de039fec506b1d7",
+    "runtime:correlation:e7e6293f-ed37-489f-8013-5307c42ebe58",
+    "runtime:service:3278b694-1949-40d3-82bc-666a58c104f5",
+    "artifact:super-admin-ui-runtime.json",
+    "artifact:super-admin-ui-autonomy.png",
+    "artifact:super-admin-ui-runtime.png",
+    "artifact:super-admin-ui-judge.json",
+    "artifact:super-admin-ui-sentinel.json"
   ],
-  "completed_at": "2026-09-29T18:03:00Z",
-  "runtime_validated_sha": null,
-  "failure": {
+  "completed_at": "2026-09-29T19:20:00Z",
+  "runtime_validated_sha": "a719db02e35649591805c41f0de039fec506b1d7",
+  "failure": null,
+  "validators_result": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "remaining_verifiable_steps": [],
+  "main_sha_at_failure": "56cf41a4832ad5a4a4a9ae9c0a39d0fa591856c7",
+  "prior_failure": {
     "category": "TEST_HARNESS_SELECTOR",
     "reason": "Browser reached authenticated UGO TEST Super Admin shell, but Playwright exact accessible-name selector for 'Super Admin' timed out because rendered button includes the leading icon glyph.",
     "product_ui_observed": true,
@@ -48,14 +73,24 @@
     "max_attempts_exhausted": true,
     "next_safe_fix": "Use a non-exact accessible-name selector (for example /Super Admin/) and rerun only after scheduler policy permits a new attempt."
   },
-  "validators_result": {
-    "judge": "NOT_RUN_RUNTIME_PROOF_INCOMPLETE",
-    "sentinel": "NOT_RUN_JUDGE_NOT_PASS"
-  },
-  "remaining_verifiable_steps": [
-    "Correct the Playwright Super Admin navigation selector without changing product behavior.",
-    "Run UGO Super Admin UI Runtime TEST on one exact SHA and complete Autonomy, QA, Model Router, Risk/Audit, Timeline and Launch Gate checks.",
-    "Require Judge PASS then Sentinel PASS and persist immutable runtime artifacts for that same SHA."
-  ],
-  "main_sha_at_failure": "56cf41a4832ad5a4a4a9ae9c0a39d0fa591856c7"
+  "recovery": {
+    "method": "POST_FAILURE_HARNESS_REMEDIATION_AND_DEDICATED_AUTOMATIC_RUNTIME_PROOF",
+    "scheduler_attempt_count_preserved": 3,
+    "no_fourth_scheduler_attempt_claimed": true,
+    "environment": "UGO TEST",
+    "browser_proof": "PASS",
+    "authorized_action": "superadmin_evaluate_release_gate(CUSTOMER_1)",
+    "authorized_action_result": "BLOCKED",
+    "page_errors": 0,
+    "runtime_checks": {
+      "authenticated_session": "PASS",
+      "super_admin_authorization": "PASS",
+      "autonomy": "PASS",
+      "qa_lab": "PASS",
+      "model_router": "PASS",
+      "risk_audit": "PASS",
+      "launch_gate_action": "PASS",
+      "correlation_timeline": "PASS"
+    }
+  }
 }
