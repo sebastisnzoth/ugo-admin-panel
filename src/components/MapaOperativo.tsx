@@ -42,7 +42,41 @@ export function SecMapaOperativo(){
 
   React.useEffect(()=>{load()},[load]);
   React.useEffect(()=>{if(!auto)return;const t=setInterval(load,15000);return()=>clearInterval(t)},[auto,load]);
-  React.useEffect(()=>{if(mapRef.current||!mapEl.current)return;const init=()=>{if(mapRef.current||!mapEl.current)return;const map=L.map(mapEl.current,{zoomControl:true,attributionControl:false}).setView([-27.5969,-48.5495],12);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);mapRef.current=map;[100,400,800].forEach(t=>setTimeout(()=>map.invalidateSize(),t))};if((window as any).L)init();else{const js=document.createElement('script');js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';js.onload=init;document.head.appendChild(js)}},[]);
+  React.useEffect(()=>{
+    if(mapRef.current||!mapEl.current)return;
+    let disposed=false;
+    const timers:number[]=[];
+    let injectedScript:HTMLScriptElement|null=null;
+    const init=()=>{
+      if(disposed||mapRef.current||!mapEl.current)return;
+      const map=L.map(mapEl.current,{zoomControl:true,attributionControl:false}).setView([-27.5969,-48.5495],12);
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+      mapRef.current=map;
+      [100,400,800].forEach(t=>timers.push(window.setTimeout(()=>{
+        if(!disposed&&mapRef.current===map)try{map.invalidateSize()}catch{}
+      },t)));
+    };
+    if((window as any).L)init();
+    else{
+      const js=document.createElement('script');
+      injectedScript=js;
+      js.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+      js.onload=init;
+      document.head.appendChild(js);
+    }
+    return()=>{
+      disposed=true;
+      timers.forEach(timer=>window.clearTimeout(timer));
+      markers.current.forEach(marker=>{try{marker.remove()}catch{}});
+      markers.current=[];
+      lines.current.forEach(line=>{try{line.remove()}catch{}});
+      lines.current=[];
+      const map=mapRef.current;
+      mapRef.current=null;
+      if(map)try{map.remove()}catch{}
+      if(injectedScript?.parentNode&&!((window as any).L))injectedScript.remove();
+    };
+  },[]);
 
   const catEmoji=React.useMemo(()=>Object.fromEntries(cats.map(c=>[c.slug,c.emoji||'🔧'])),[cats]);
   const visible=React.useMemo(()=>users.filter(u=>{
