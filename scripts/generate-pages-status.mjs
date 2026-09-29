@@ -221,6 +221,16 @@ const agentRegistry = {
   'judge': { department: 'Control Independiente', agent: 'Judge', skills: ['independent-verification','acceptance-criteria'] },
   'sentinel': { department: 'Seguridad / Riesgo', agent: 'Sentinel', skills: ['safety-gate','invariants','fail-closed'] },
 }
+const directActionMap = {
+  'worker-autonomy': {
+    channel: 'GITHUB_DIRECT',
+    label: 'Ejecutar prueba autónoma en GitHub',
+    workflow: 'autonomous-worker-test.yml',
+    url: 'https://github.com/sebastisnzoth/ugo-admin-panel/actions/workflows/autonomous-worker-test.yml',
+    audit: 'GitHub actor/run + artifact ugo-execution-audit-<run_id> + Decision/Evidence Ledger + Judge/Sentinel',
+    production: 'PROTECTED',
+  },
+}
 const assignmentMap = {
   'worker-autonomy': ['autonomy-worker'],
   'model-router-runtime': ['model-router'],
@@ -244,6 +254,8 @@ const assignJob = step => {
   step.assigned_agent = profile.agent
   step.skills = profile.skills
   step.validators = ['Judge','Sentinel']
+  step.execution_channel = directActionMap[step.id]?.channel || 'UGO_MAESTRO'
+  if (directActionMap[step.id]) step.direct_action = directActionMap[step.id]
   return step
 }
 
