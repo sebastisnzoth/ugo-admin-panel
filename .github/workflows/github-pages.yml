@@ -1,6 +1,8 @@
 name: UGO GitHub Pages
 
 on:
+  schedule:
+    - cron: "*/15 * * * *"
   push:
     branches: [main]
     paths:
@@ -12,6 +14,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -47,6 +50,36 @@ jobs:
             "${PUBLISHED_AT}"
           sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
           sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html
+
+      - name: Build same-SHA CI snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          curl -fsSL \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${GITHUB_SHA}&per_page=50" \
+            > /tmp/ugo-runs.json
+          jq '
+            [.workflow_runs
+              | group_by(.name)[]
+              | map(select(.status == "completed"))
+              | sort_by(.updated_at)
+              | reverse
+              | .[0]
+              | select(. != null)
+              | {
+                  name,
+                  status,
+                  conclusion,
+                  run_number,
+                  head_sha,
+                  updated_at,
+                  html_url
+                }
+            ]
+          ' /tmp/ugo-runs.json > _site/ci-status.json
 
       - name: Verify public artifact is sanitized
         shell: bash
