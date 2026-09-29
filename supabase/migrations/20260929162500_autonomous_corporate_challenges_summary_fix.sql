@@ -105,7 +105,7 @@ begin
   where challenge_type in('META_AUDIT','RED_TEAM','DIGITAL_TWIN','FOUNDER_CHALLENGE');
 
   return summary;
-end$;
+end$$;
 
 revoke all on function public.autonomous_execute_corporate_challenges() from public,anon,authenticated;
 grant execute on function public.autonomous_execute_corporate_challenges() to service_role;
