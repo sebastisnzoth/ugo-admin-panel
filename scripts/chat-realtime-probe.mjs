@@ -88,6 +88,7 @@ async function probeDirection({
   for (let retry = 0; retry < 2; retry += 1) {
     const attempt = `realtime-ci-${senderRole}-${runId}-${retry}`
     const signal = deferred(`${label} intento ${retry + 1}`)
+    let cleanupCompleted = false
     const channel = receiver
       .channel(`chat-probe-${senderRole}-${runId}-${retry}`)
       .on('postgres_changes', {
@@ -123,7 +124,10 @@ async function probeDirection({
 
       const persisted = await persistedMessage(receiver, attempt)
       assert.equal(persisted?.id, sent.id, `${label}: receptor debe leer el mismo mensaje persistido`)
-      return { sent, event, retry }
+      signal.cancel()
+      await receiver.removeChannel(channel)
+      cleanupCompleted = true
+      return { sent, event, persisted, attempt, retry, cleanupCompleted, receivedAt: new Date().toISOString() }
     } catch (error) {
       lastError = error
       const persisted = await persistedMessage(receiver, attempt).catch(() => null)
@@ -134,7 +138,7 @@ async function probeDirection({
       }
     } finally {
       signal.cancel()
-      await receiver.removeChannel(channel).catch(() => {})
+      if (!cleanupCompleted) await receiver.removeChannel(channel).catch(() => {})
     }
   }
   throw lastError || new Error(`${label}: Realtime no confirmado`)
@@ -207,11 +211,29 @@ try {
   const observations={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true}
   const {data:qaRun,error:recordError}=await serviceRole.rpc('autonomous_record_external_qa_probe',{p_scenario_id:scenario.id,p_service_id:service.id,p_observations:observations})
   if(recordError)throw recordError
-  const rtAssertions={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true,timeout_false:true,cleanup_completed:true}
+  const realtimeDetail={
+    service_id:service.id,
+    client_message_id:clientToProvider.sent.id,
+    provider_message_id:providerToClient.sent.id,
+    client_sender_id:clientId,
+    provider_sender_id:providerId,
+    client_correlation_id:clientToProvider.attempt,
+    provider_correlation_id:providerToClient.attempt,
+    client_received_at:clientToProvider.receivedAt,
+    provider_received_at:providerToClient.receivedAt,
+  }
+  const rtAssertions={
+    client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,
+    payload_validated:true,timeout_false:true,
+    cleanup_completed:clientToProvider.cleanupCompleted&&providerToClient.cleanupCompleted,
+  }
   for(const [key,passed] of Object.entries(rtAssertions)){
-    const {error:evidenceError}=await serviceRole.rpc('autonomous_record_independent_qa_evidence',{p_run_id:qaRun.id,p_service_id:service.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'REALTIME_RUNTIME'})
+    const observed={passed,...realtimeDetail}
+    const {error:evidenceError}=await serviceRole.rpc('autonomous_record_independent_qa_evidence',{p_run_id:qaRun.id,p_service_id:service.id,p_assertion_key:key,p_expected:{passed:true},p_observed:observed,p_passed:passed,p_source:'REALTIME_RUNTIME'})
     if(evidenceError)throw evidenceError
   }
+  const {error:judgeError}=await serviceRole.rpc('autonomous_judge_independent_runtime_coverage',{p_scenario_key:'realtime'})
+  if(judgeError)throw judgeError
   console.log(`CHAT_REALTIME_OK pedido=${service.numero ?? 'fixture'} estado=${service.estado} run=${runId} retries=${clientToProvider.retry + providerToClient.retry}`)
 } finally {
   await Promise.allSettled([client.auth.signOut(), provider.auth.signOut()])
