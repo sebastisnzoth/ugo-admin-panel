@@ -7,7 +7,7 @@ export type VoiceAvailability={category:VoiceCategory;providers:VoiceProvider[]}
 
 const commonAliases:Array<[RegExp,string[]]>=[
  [/\b(electricista|electricidad|eletricista|eletrica|enchufe|tomacorriente|sin luz|sem luz|cortocircuito|curto circuito)\b/,['electricidad','eletrica']],
- [/\b(plomero|plomeria|fontanero|encanador|encanamento|hidraulico|hidraulica|sanitarista|canilla|grifo|perdida de agua|fuga de agua|fuga|cano|caño|caneria|cañeria|tuberia|tubo roto|cano roto|desague|vazamento)\b/,['plomeria','encanamento','hidraulica']],
+ [/\b(plomero|plomeria|fontanero|encanador|encanamento|hidraulico|hidraulica|sanitarista|canilla|grifo|perdida de agua|fuga de agua|fuga|caño|caneria|cañeria|desague|vazamento|cano|tuberia|tubo roto|cano roto)\b/,['plomeria','encanamento','hidraulica']],
  [/\b(jardinero|jardineria|jardineiro|jardinagem|pasto|cesped)\b/,['jardineria','jardinagem']],
  [/\b(limpieza|limpiar|limpiador|limpiadora|faxina|limpeza|diarista)\b/,['limpieza','limpeza','faxina']],
  [/\b(pintor|pintura|pintar|repintar|pared|paredes|retoque|tinta)\b/,['pintura','reparaciones','reparacao','manutencao']],

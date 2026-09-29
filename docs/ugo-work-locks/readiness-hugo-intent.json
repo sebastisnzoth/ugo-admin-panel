@@ -4,27 +4,17 @@
   "job_id": "UGO-READINESS-HUGO-INTENT",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T21:22:00Z",
-  "heartbeat_at": "2026-09-29T21:25:00Z",
-  "lease_expires_at": "2026-09-29T22:10:00Z",
+  "heartbeat_at": "2026-09-29T21:28:00Z",
+  "lease_expires_at": "2026-09-29T22:13:00Z",
   "started_sha": "6c13b3ea4566d618d0b8b7a41dadd382fda2e017",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Intent Runtime Agent",
-  "skills": [
-    "ugo-readiness-orchestrator",
-    "ugo-hugo",
-    "ugo-runtime-validation",
-    "ugo-evidence-judge"
-  ],
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "hugo-intent"
-  ],
+  "skills": ["ugo-readiness-orchestrator","ugo-hugo","ugo-runtime-validation","ugo-evidence-judge"],
+  "validators": ["Judge","Sentinel"],
+  "resources": ["hugo-intent"],
   "correlation_id": "readiness-hugo-intent-20260929T212200Z-6c13b3ea",
-  "current_step": "runtime_suite_committed_waiting_same_sha_ci",
+  "current_step": "regression_fixed_rerun_same_sha_pipeline",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": ["github-actions-run-36633258342-failed-contract-ordering"]
 }
