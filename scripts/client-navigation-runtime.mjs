@@ -82,7 +82,7 @@ try{
    }
 
    await clickMenu(page,'Pedir servicio')
-   await page.getByPlaceholder(/¿Qué necesitás|Buscar/i).first().waitFor({state:'visible',timeout:10000})
+   const serviceSearch=page.getByRole('textbox',{name:'Buscar servicio'}); await serviceSearch.waitFor({state:'visible',timeout:10000}); await serviceSearch.evaluate(node=>{if(node!==document.activeElement)throw new Error('Pedir servicio did not focus search')})
    clickMap.push({control:'Pedir servicio focus',result:'PASS'})
    await snap(page,name+' Pedir servicio')
 
