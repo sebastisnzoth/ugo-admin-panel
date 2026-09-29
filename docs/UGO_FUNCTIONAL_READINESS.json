@@ -818,6 +818,23 @@
           ]
         },
         {
+          "id": "auto-department-job-visibility",
+          "title": "Jobs visibles por departamento",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "En UGO Empresa Autónoma > Departamentos, cada departamento debe mostrar jobs activos, jobs totales, último job, estado del último job, última evidencia y correlation_id sin inventar actividad.",
+          "done_evidence": "Runtime UI en UGO TEST/Preview del mismo SHA + datos concordantes con autonomous_jobs/autonomous_evidence_ledger para los 13 departamentos + Judge PASS + Sentinel PASS.",
+          "improvement_focus": "Evitar que un departamento con jobs SUCCEEDED parezca vacío sólo porque no tiene un job activo; diferenciar activo, histórico y último resultado.",
+          "real_test_required": false,
+          "depends_on": [
+            "auto-departments"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "super-admin-ui"
+          ]
+        },
+        {
           "id": "auto-agents",
           "title": "Agentes y especialistas conectados",
           "owner": "UGO",
