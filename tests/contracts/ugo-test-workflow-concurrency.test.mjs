@@ -7,7 +7,7 @@ const isolated=fs.readFileSync('.github/workflows/isolated-rpc-rls.yml','utf8')
 const worker=fs.readFileSync('.github/workflows/autonomous-worker-test.yml','utf8')
 
 test('UGO TEST mutating gates are chained instead of competing for one pending concurrency slot',()=>{
- assert.match(core,/group: ugo-test-runtime-\$\{\{ github\.head_ref \|\| github\.ref_name \}\}/)
+ assert.match(core,/group: ugo-core-ci-\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/)
  assert.match(isolated,/workflows: \["UGO Core CI"\]/)
  assert.match(isolated,/github\.event\.workflow_run\.head_sha/)
  assert.match(isolated,/head_branch == 'main'/)
@@ -20,5 +20,5 @@ test('UGO TEST mutating gates are chained instead of competing for one pending c
 
 
 test('Core CI skips the synthetic push emitted when a technical branch is created',()=>{
- assert.match(core,/github\.event_name != 'push' \|\| github\.event\.created == false/)
+ assert.match(core,/github\.event_name != 'push' \|\| github\.event\.created == false/)\n assert.match(core,/cancel-in-progress: true/)
 })
