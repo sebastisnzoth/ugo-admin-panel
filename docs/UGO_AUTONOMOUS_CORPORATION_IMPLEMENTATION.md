@@ -23,6 +23,8 @@ No production publication is implied.
 
 **29 September protected media + model-route closure:** UGO TEST executed the protected Storage runtime probe against a completed demo service with real initial/final objects. Signed downloads returned non-zero bytes, SHA-256 was recorded, public bucket access was denied, and `uploaded-media-bytes` moved to `COVERED`. Quality Coverage is now 8/10; only `physical-gps-device` and `real-customer-acceptance` remain UNCOVERED. The zero-cost model routes were also reconciled from fresh runtime benchmarks: all three READY task classes now point to an AVAILABLE/eligible free primary and AVAILABLE free fallback with max_cost=0; READY no longer survives when no fresh validated free primary exists.
 
+**29 September corporate challenge + final D14 audit closure:** UGO TEST now has deterministic `PASSED` results for `META_AUDIT`, `RED_TEAM` and `DIGITAL_TWIN`. The Digital Twin is bound to one completed persisted demo service with accepted offer <=20 km, arrival event, initial/final evidence, protected uploaded bytes runtime proof, audit binding, confirmed cash payment and bilateral ratings; it explicitly does **not** claim physical GPS or real customer acceptance. `FOUNDER_CHALLENGE` remains human-only and `PLANNED`. The final D14 corporate audit is persisted as control `corporate-final-audit` and currently fails closed with exactly three blockers: `FOUNDER_CHALLENGE_PENDING`, `PHYSICAL_GPS_DEVICE_UNVERIFIED`, and `REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED`.
+
 ## 2. Master requirement matrix
 
 | Master capability | Current implementation | Maturity |
