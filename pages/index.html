@@ -145,8 +145,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="metric"><strong class="warn" id="readinessPending">—</strong><span>pendientes de prueba/cierre</span></div>
     <div class="metric"><strong class="warn" id="readinessHuman">—</strong><span>pruebas reales finales</span></div>
     <div class="metric"><strong class="accent" id="readinessGroupsCount">—</strong><span>áreas auditadas</span></div>
+    <div class="metric"><strong class="warn" id="readinessRemaining">—</strong><span>pasos exactos restantes hasta terminar UGO</span></div>
   </section>
   <section class="steps" id="readinessGroups"><div class="card">Cargando mapa funcional…</div></section>
+  <section class="card" style="margin-top:12px">
+    <div class="row"><span><b>Controles que podés ejecutar ahora en paralelo</b></span><span class="pill ugo" id="readinessAvailableNow">—</span></div>
+    <p class="sub" id="readinessExecutionHint">Calculando prioridades, dependencias y recursos compartidos…</p>
+  </section>
 
   <h2>Próximo movimiento</h2>
   <section class="card">
@@ -520,7 +525,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openReadinessWithUgoMaster = async (item, group) => {
-    if (!item || item.status === 'VERIFIED') return
+    if (!item || !['AVAILABLE','HUMAN_DEFERRED'].includes(item.gate_state)) return
     saveDispatch({
       id: item.id,
       title: item.title,
@@ -695,6 +700,15 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     status === 'HUMAN_FINAL' ? 'human' :
     status === 'IN_PROGRESS' ? 'accent' :
     status === 'BLOCKED' ? 'blocked' : 'pending'
+  const readinessGateLabel = gate => ({
+    AVAILABLE:'HABILITADO',
+    IN_PROGRESS:'EN PROCESO',
+    BLOCKED_DEPENDENCY:'BLOQUEADO POR DEPENDENCIA',
+    WAITING_RESOURCE_CAPACITY:'ESPERANDO RECURSO',
+    QUEUED_CAPACITY:'EN COLA',
+    HUMAN_DEFERRED:'PRUEBA REAL DIFERIDA',
+    VERIFIED:'VERIFIED'
+  }[gate] || gate || 'UNVERIFIED')
 
   const renderReadiness = s => {
     const readiness = s.functional_readiness || {groups:[]}
@@ -705,6 +719,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('readinessPending').textContent = summary.pending ?? 0
     document.getElementById('readinessHuman').textContent = summary.human_final ?? 0
     document.getElementById('readinessGroupsCount').textContent = groups.length
+    document.getElementById('readinessRemaining').textContent = summary.remaining_total ?? '—'
+    document.getElementById('readinessAvailableNow').textContent = (summary.available_now ?? 0) + ' / 5'
+    document.getElementById('readinessExecutionHint').textContent =
+      'Restan exactamente ' + (summary.remaining_total ?? '—') + ' controles: ' +
+      (summary.remaining_autonomous ?? '—') + ' delegables por UGO/ChatGPT y ' +
+      (summary.human_deferred ?? summary.human_final ?? '—') + ' pruebas reales finales. ' +
+      'Sólo los marcados HABILITADO se pueden lanzar ahora; los demás quedan bloqueados por dependencia, recurso o capacidad.'
     document.getElementById('readinessGroups').innerHTML = groups.map(group => {
       const items = group.items || []
       const verified = items.filter(x => x.status === 'VERIFIED').length
@@ -717,11 +738,13 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Qué se verifica:</b> ' + esc(item.verify || '—') + '</p>' +
             '<p class="sub"><b>Evidencia para cerrar:</b> ' + esc(item.done_evidence || '—') + '</p>' +
             '<p class="sub"><b>Qué se puede mejorar:</b> ' + esc(item.improvement_focus || '—') + '</p>' +
+            '<p class="sub"><b>Prioridad:</b> ' + esc(item.priority || 'NORMAL') + ' · <b>Dependencias:</b> ' + esc((item.depends_on || []).join(', ') || 'ninguna') + ' · <b>Recursos:</b> ' + esc((item.resources || []).join(', ') || '—') + '</p>' +
+            '<p class="sub"><b>Estado de ejecución:</b> ' + esc(item.gate_reason || readinessGateLabel(item.gate_state)) + '</p>' +
             '<div class="cta-row">' +
-              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (item.status === 'VERIFIED' ? 'disabled' : '') + '>' +
-                (item.status === 'VERIFIED' ? 'VERIFIED' : item.status === 'HUMAN_FINAL' ? 'Ver instrucciones para Sergio' : 'Resolver con UGO Maestro') +
+              '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (item.gate_state === 'AVAILABLE' || item.gate_state === 'HUMAN_DEFERRED' ? '' : 'disabled') + '>' +
+                (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_DEFERRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : 'Resolver con UGO Maestro') +
               '</button>' +
-              '<span class="pill ' + readinessPill(item.status) + '">' + esc(readinessStatusLabel(item.status)) + '</span>' +
+              '<span class="pill ' + (item.gate_state === 'AVAILABLE' ? 'ugo' : item.gate_state === 'VERIFIED' ? 'ugo' : item.gate_state === 'IN_PROGRESS' ? 'accent' : item.gate_state === 'HUMAN_DEFERRED' ? 'human' : 'pending') + '">' + esc(readinessGateLabel(item.gate_state)) + '</span>' +
             '</div>' +
           '</div>'
         ).join('') + '</div></article>'
@@ -898,7 +921,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-readiness-id]').forEach(button => {
       const group = (s.functional_readiness?.groups || []).find(g => g.id === button.dataset.readinessGroup)
       const item = group?.items?.find(x => x.id === button.dataset.readinessId)
-      if (item && item.status !== 'VERIFIED' && !button.disabled) {
+      if (item && ['AVAILABLE','HUMAN_DEFERRED'].includes(item.gate_state) && !button.disabled) {
         button.onclick = () => openReadinessWithUgoMaster(item, group)
       }
     })
