@@ -155,6 +155,7 @@ Actions/Pages/workflow     → ugo-github-ops
 prueba TEST/Preview real   → ugo-runtime-validation
 evidencia/Judge/DONE       → ugo-evidence-judge
 stale lock/fallo/retry     → ugo-recovery
+READINESS_ID/PR/runtime     → ugo-readiness-orchestrator
 ```
 
 Routing obligatorio:
@@ -162,7 +163,8 @@ Routing obligatorio:
 - todo DONE verificable usa `ugo-evidence-judge`;
 - si depende de runtime, sumar `ugo-runtime-validation`;
 - si GitHub ejecuta/publica, sumar `ugo-github-ops`;
-- si hay fallo, stale lock, rollback o retry, sumar `ugo-recovery`.
+- si hay fallo, stale lock, rollback o retry, sumar `ugo-recovery`;
+- todo control del Mapa funcional/READINESS_ID usa `ugo-readiness-orchestrator` para reconciliar main, locks, PRs, runtime, Judge, Sentinel y Command Center antes de informar estado.
 
 
 ## Invariantes UGO
