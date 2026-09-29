@@ -13,6 +13,13 @@ function resolveAdminLogin(value:string){
   return clean.includes('@')?clean.toLowerCase():`${clean.toLowerCase()}@example.com`
 }
 
+function adminAuthErrorMessage(error:unknown){
+  const code=typeof error==='object'&&error&&'code'in error?String((error as {code?:unknown}).code||''):''
+  if(code==='invalid_credentials'||code==='email_not_confirmed')return 'Usuario/email o contraseña incorrectos. Verificá los datos e intentá nuevamente.'
+  if(code==='over_request_rate_limit')return 'Demasiados intentos seguidos. Esperá un momento y volvé a intentar.'
+  return 'No pudimos iniciar sesión de administrador. Verificá tu conexión e intentá nuevamente.'
+}
+
 export function AdminGate({children}:AdminGateProps={}){
   const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[identifier,setIdentifier]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
   const appName=new URLSearchParams(window.location.search).get('app')==='development'?'development':'admin'
@@ -25,7 +32,7 @@ export function AdminGate({children}:AdminGateProps={}){
    if(await authorizeSession(session))setAllowed(true);else{await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. Esta cuenta no tiene rol de administrador.')}setChecking(false)
   }
   useEffect(()=>{verify().catch(()=>{setChecking(false);setAllowed(false);setError('No pudimos validar tu sesión de administrador. Tus datos no cambiaron; reintentá ingresando nuevamente.')})},[])
-  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');setNotice('');try{const email=resolveAdminLogin(identifier);const{data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;if(data.session&&await authorizeSession(data.session)){setAllowed(true);setChecking(false);setError('')}else{await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. La cuenta no tiene privilegios de administrador.')}}catch(err:any){setError(err?.message||'No pudimos iniciar sesión con estas credenciales.')}finally{setBusy(false)}}
+  async function login(e:FormEvent){e.preventDefault();setBusy(true);setError('');setNotice('');try{const email=resolveAdminLogin(identifier);const{data,error}=await supabase.auth.signInWithPassword({email,password});if(error)throw error;if(data.session&&await authorizeSession(data.session)){setAllowed(true);setChecking(false);setError('')}else{await supabase.auth.signOut();setAllowed(false);setError('Acceso denegado. La cuenta no tiene privilegios de administrador.')}}catch(err:unknown){setError(adminAuthErrorMessage(err))}finally{setBusy(false)}}
   async function sendRecovery(){const cleanIdentifier=identifier.trim();if(!cleanIdentifier)return setError('Ingresá el usuario o email de tu cuenta Admin.');if(!cleanIdentifier.includes('@'))return setError('Ingresá un email válido para recuperar tu contraseña.');setBusy(true);setError('');setNotice('');try{const{error}=await supabase.auth.resetPasswordForEmail(cleanIdentifier,{redirectTo:window.location.origin+window.location.pathname+'?app=admin'});if(error)throw error;setNotice('Se envió el enlace de recuperación. Revisá tu correo.')}catch(err:any){setError(err?.message||'No pudimos enviar la recuperación.')}finally{setBusy(false)}}
   async function saveNewPassword(e:FormEvent){e.preventDefault();if(newPassword.length<8)return setError('La nueva contraseña debe tener al menos 8 caracteres.');setBusy(true);setError('');setNotice('');try{const{error}=await supabase.auth.updateUser({password:newPassword});if(error)throw error;setRecovery(false);setNotice('Contraseña actualizada. Podés volver a ingresar.')}catch(err:any){setError(err?.message||'No pudimos actualizar la contraseña.')}finally{setBusy(false)}}
   if(checking)return <div className="mvp-loading" role="status" aria-live="polite"><p>Validando acceso U.G.O.…</p></div>
