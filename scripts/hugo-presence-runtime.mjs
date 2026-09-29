@@ -51,7 +51,7 @@ async function prove(page,role,viewportName){
  await surface.waitFor({state:'visible',timeout:20000})
  const aria=await surface.getAttribute('aria-label')
  if(role==='admin')assert.match(String(aria||''),/Abrir Hugo (Admin|Super Admin)/)
- else assert.match(String(aria||''),new RegExp('Hugo, controlador por voz del '+role))
+ else assert.match(String(aria||''),new RegExp('Hugo, controlador por voz del '+(role==='provider'?'proveedor':'cliente')))
  const button=role==='admin'?surface:surface.getByRole('button',{name:/Hablar con Hugo|Cortar conversación con Hugo/}).first()
  await button.waitFor({state:'visible',timeout:10000})
  assert.equal(await button.isEnabled(),true,role+' Hugo trigger disabled')
