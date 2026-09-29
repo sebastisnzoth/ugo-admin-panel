@@ -4,14 +4,14 @@ Contenido público, estático y sanitizado para UGO Observatory.
 
 ## Qué muestra
 
-- snapshot de resultados verificables de UGO TEST;
+- snapshot generado en cada deployment desde resultados verificables de UGO TEST;
 - Quality Coverage;
 - assurance checks;
 - bloqueos finales explícitos;
 - estado de Customer #1;
 - SHA y fecha UTC de cada publicación.
 
-La fuente de evidencia es `docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md`.
+La fuente de evidencia es `docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md`. `status.json` no se mantiene a mano: el workflow lo genera de forma determinista y falla si no encuentra la evidencia esperada.
 
 ## Límites de seguridad
 

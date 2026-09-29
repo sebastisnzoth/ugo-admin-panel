@@ -6,6 +6,7 @@ on:
     paths:
       - "pages/**"
       - "docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md"
+      - "scripts/generate-pages-status.mjs"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
 
@@ -37,9 +38,15 @@ jobs:
         run: |
           mkdir -p _site
           cp -a pages/. _site/
+          rm -f _site/status.json
           PUBLISHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html _site/status.json
-          sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html _site/status.json
+          node scripts/generate-pages-status.mjs \
+            docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md \
+            _site/status.json \
+            "${GITHUB_SHA}" \
+            "${PUBLISHED_AT}"
+          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
+          sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html
 
       - name: Verify public artifact is sanitized
         shell: bash
