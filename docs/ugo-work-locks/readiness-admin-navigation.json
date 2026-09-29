@@ -22,5 +22,13 @@
   "evidence_ids": [
     "github-actions-run-36633047077",
     "github-actions-job-109626762674"
+  ],
+  "title": "Verify Admin and Super Admin navigation, menus and actions in runtime",
+  "department": "Admin / Super Admin",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-admin",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
   ]
 }
