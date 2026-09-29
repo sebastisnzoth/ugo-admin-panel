@@ -1,0 +1,31 @@
+{
+  "readiness_id": "client-navigation",
+  "task_id": "readiness-client-navigation",
+  "job_id": "UGO-READINESS-CLIENT-NAVIGATION",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T22:03:00Z",
+  "heartbeat_at": "2026-09-29T22:03:00Z",
+  "lease_expires_at": "2026-09-29T22:48:00Z",
+  "started_sha": "ff633eb5951746da34891996ee9aba6cb8b39849",
+  "owner": "UGO",
+  "assigned_agent": "Client Runtime Navigation Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "client-shell"
+  ],
+  "correlation_id": "readiness-client-navigation-20260929T220300Z-ff633eb5",
+  "current_step": "ACQUIRE_AND_INSPECT",
+  "attempt": 1,
+  "evidence_ids": [],
+  "title": "Verify Client navigation, menus, routes and actions in runtime",
+  "department": "App Cliente",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}
