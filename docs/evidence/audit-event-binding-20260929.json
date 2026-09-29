@@ -1,0 +1,92 @@
+{
+  "task_id": "audit-event-binding",
+  "job_id": "UGO-AUDIT-EVENT-BINDING",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "runtime_validated_sha": "935696f9b9f85f0f72347d44e9f08356737398be",
+  "service_id": "2fd9a0c1-0bed-47d7-bbba-e287d3d59adb",
+  "correlation_id": "3d44f4c0-3898-4c66-aaf6-dff3f27c5e84",
+  "bound_events": [
+    "matching",
+    "arrival",
+    "evidence_before",
+    "evidence_after",
+    "payment",
+    "closure"
+  ],
+  "judge": {
+    "result": "PASS",
+    "binding_count": 6,
+    "missing_events": [],
+    "mixed_service_count": 0,
+    "decision_ledger_count": 1,
+    "evidence_ledger_count": 1
+  },
+  "negative_probe": {
+    "result": "PASS",
+    "wrong_service_judge_passed": false,
+    "wrong_service_binding_count": 0,
+    "mixed_service_count": 6,
+    "missing_events": [
+      "matching",
+      "arrival",
+      "evidence_before",
+      "evidence_after",
+      "payment",
+      "closure"
+    ]
+  },
+  "access_control": {
+    "bind_rpc": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": true
+    },
+    "judge_rpc": {
+      "anon": false,
+      "authenticated": false,
+      "service_role": true
+    }
+  },
+  "ledger": {
+    "decision": "P0_AUDIT_CHAIN_BOUND",
+    "evidence_type": "P0_AUDIT_EVENT_CHAIN",
+    "evidence_hash": "9abc82466d98df0fa26b56f7621c86fefd3db9db1712b53e5a338bc7060632b4"
+  },
+  "source": {
+    "migration": "supabase/migrations/20260929182500_autonomous_p0_audit_event_chain.sql",
+    "contract_test": "tests/contracts/autonomous-p0-audit-event-chain.test.mjs"
+  },
+  "ci": {
+    "workflow": "UGO Core CI",
+    "run_id": 36611873701,
+    "job_id": 109555060616,
+    "head_sha": "935696f9b9f85f0f72347d44e9f08356737398be",
+    "conclusion": "success",
+    "checks": [
+      "TypeScript and production build",
+      "Core contract suite",
+      "Lint critical operational surfaces",
+      "Full repository lint gate"
+    ]
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "sentinel_basis": [
+    "same service_id across all six bindings",
+    "single correlation_id across bindings and corporate ledgers",
+    "negative wrong-service probe fails closed",
+    "RPC EXECUTE restricted to service_role",
+    "UGO Core CI green on runtime-validated SHA",
+    "production untouched"
+  ],
+  "concurrency_revalidation": {
+    "main_after_runtime": "adf92d42ba4777e8edaa90e6d915c80dd8411016",
+    "ahead_of_runtime_sha_by": 2,
+    "overlapping_files": [],
+    "note": "Concurrent commits modified SuperAdminCommandCenter.tsx and the IP corporate protection integration test only; audit-event-binding source remained intact."
+  }
+}
