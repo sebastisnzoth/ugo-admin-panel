@@ -833,7 +833,9 @@
           "resources": [
             "super-admin-ui"
           ],
-          "resolve": "Actualizar UGO Empresa Autónoma > Departamentos para consultar y mostrar por cada departamento: jobs activos, jobs totales, último job, estado del último job, última evidencia y correlation_id desde autonomous_jobs/autonomous_evidence_ledger. No inferir actividad: si no hay job activo, mostrar 0 activos pero conservar histórico y último resultado. Agregar pruebas de regresión, validar responsive y concordancia backend/UI en UGO TEST/Preview del mismo SHA, corregir cualquier discrepancia, ejecutar Judge y Sentinel, persistir evidencia y cerrar el readiness lock en DONE sólo con ambos PASS."
+          "resolve": "Actualizar UGO Empresa Autónoma > Departamentos para consultar y mostrar por cada departamento: jobs activos, jobs totales, último job, estado del último job, última evidencia y correlation_id desde autonomous_jobs/autonomous_evidence_ledger. No inferir actividad: si no hay job activo, mostrar 0 activos pero conservar histórico y último resultado. Agregar pruebas de regresión, validar responsive y concordancia backend/UI en UGO TEST/Preview del mismo SHA, corregir cualquier discrepancia, ejecutar Judge y Sentinel, persistir evidencia y cerrar el readiness lock en DONE sólo con ambos PASS.",
+          "execution_mode": "HYBRID",
+          "execution_route": "UGO Maestro/ChatGPT implementa UI, wiring, tests y evidencia; GitHub Actions ejecuta la validación determinista runtime/CI/Judge/Sentinel. No requiere intervención humana salvo un bloqueo externo real."
         },
         {
           "id": "auto-agents",
