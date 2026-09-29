@@ -11,7 +11,7 @@ const must = (re, label) => {
   if (!match) throw new Error(`UGO Pages evidence missing: ${label}`)
   return match
 }
-const clean = value => value.replace(/`/g, '').replace(/\*\*/g, '').trim()
+const clean = value => value.replace(/`/g, '').replace(/\*\*/g, '').trim()\nconst evidence_url = 'https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
 
 const coverageMatch = must(/Quality Coverage is now\s+(\d+)\/(\d+)/i, 'quality coverage')
 const blockersMatch = must(
@@ -151,7 +151,12 @@ function resolutionFor(title) {
     owner: 'UGO'
   }
 }
-for (const step of implementationSteps) Object.assign(step, resolutionFor(step.title))
+for (const [index, step] of implementationSteps.entries()) {
+  Object.assign(step, resolutionFor(step.title))
+  step.order = index + 1
+  step.depends_on = index === 0 ? [] : [implementationSteps[index - 1].id]
+  step.evidence_url = evidence_url
+}
 
 const blockerDetails = {
   FOUNDER_CHALLENGE_PENDING: {
@@ -197,7 +202,7 @@ const status = {
   published_at_utc: publishedAt,
   environment: 'UGO TEST / GitHub Pages',
   production: 'PROTECTED',
-  production_ready: false,
+  production_ready: false,\n  state: 'IN_PROGRESS',\n  evidence_url,
   objective: 'UGO Launch Ready — Florianópolis',
   objective_path: 'Cliente → solicitud → matching ≤20 km → aceptación → GPS/viaje → llegada → evidencias → trabajo → aprobación → pago → cierre → ratings → auditoría',
   quality_coverage: { covered: Number(coverageMatch[1]), total: Number(coverageMatch[2]) },
@@ -217,7 +222,7 @@ const status = {
     total_visible_work_items: implementationSteps.length + finalGateSteps.length,
     human_involved: [...implementationSteps, ...finalGateSteps].filter(x => x.owner.includes('SERGIO')).length,
   },
-  next_movement: implementationSteps[0] || finalGateSteps[0] || null,
+  next_movement: implementationSteps[0] || finalGateSteps[0] || null,\n  refresh_policy: { mode: 'EVENT_PLUS_SCHEDULE', minutes: 15 },
   needs_sergio_now: finalGateSteps.some(x => x.owner.includes('SERGIO')),
 }
 
