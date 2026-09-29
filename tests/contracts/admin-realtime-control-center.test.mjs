@@ -30,6 +30,8 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/setInterval/)
  assert.match(src,/scheduleReconcile\(250\)/)
  assert.match(src,/scheduleReconcile\(1000\)/)
+ assert.match(src,/scheduleReconcile\(2500\)/)
+ assert.match(src,/scheduleReconcile\(5000\)/)
  assert.match(src,/reconcileTimers\.forEach\(timer=>window\.clearTimeout\(timer\)\)/)
 })
 
