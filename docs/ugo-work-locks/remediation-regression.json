@@ -1,0 +1,27 @@
+{
+  "task_id": "remediation-regression",
+  "job_id": "UGO-REMEDIATION-REGRESSION",
+  "title": "Generate remediation request, rerun and permanent regression automatically",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T18:59:00Z",
+  "heartbeat_at": "2026-09-29T18:59:00Z",
+  "lease_expires_at": "2026-09-29T19:44:00Z",
+  "started_sha": "8bb00afa5baaef2aa4045eaa3a7d638a922e9b2f",
+  "owner": "UGO",
+  "department": "Confiabilidad",
+  "assigned_agent": "Recovery Engineer",
+  "skills": [
+    "remediation",
+    "rollback",
+    "incident-recovery",
+    "ugo-recovery",
+    "ugo-job-execution",
+    "ugo-evidence-judge"
+  ],
+  "validators": ["Judge", "Sentinel"],
+  "resources": ["qa-lab", "regression"],
+  "correlation_id": "ugo-remediation-regression-20260929T185900Z",
+  "current_step": "CLAIMED_REVALIDATING_RUNTIME",
+  "attempt": 1,
+  "dependencies": ["chaos-p0"]
+}
