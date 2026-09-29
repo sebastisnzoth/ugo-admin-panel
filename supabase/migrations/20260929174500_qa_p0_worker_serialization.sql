@@ -136,7 +136,7 @@ begin
  perform set_config('request.jwt.claim.sub','',true);
  perform set_config('request.jwt.claim.role',initial_role,true);
  return sid;
-end$function$;
+end;$function$;
 
 revoke all on function public.autonomous_qa_run_p0_test_service() from public,anon,authenticated;
 grant execute on function public.autonomous_qa_run_p0_test_service() to service_role;
