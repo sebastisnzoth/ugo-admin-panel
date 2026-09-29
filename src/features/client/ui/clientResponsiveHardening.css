@@ -132,3 +132,70 @@
     max-width:calc(100vw - 32px)!important;
   }
 }
+
+
+/* Phone landscape: width-based desktop breakpoints must not turn a short handset into a desktop shell. */
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .ugo-client-root{
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    scroll-padding-bottom:88px;
+  }
+
+  .ugo-client-root .ugo-home-screen{
+    padding-bottom:calc(92px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-client-root .ugo-home-layout{
+    width:100%!important;
+    max-width:100%!important;
+    grid-template-columns:1fr!important;
+    grid-template-areas:"hero" "services" "map"!important;
+    padding:10px 12px 84px!important;
+    gap:10px!important;
+  }
+
+  .ugo-client-root .ugo-home-hero{grid-area:hero!important}
+  .ugo-client-root .ugo-home-services{grid-area:services!important}
+  .ugo-client-root .ugo-home-map-card{
+    grid-area:map!important;
+    position:relative!important;
+    top:auto!important;
+  }
+  .ugo-client-root .ugo-home-map{height:220px!important}
+
+  .ugo-client-root .ugo-home-mobile-nav{
+    display:grid!important;
+    position:fixed!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:max(6px,env(safe-area-inset-bottom))!important;
+    width:auto!important;
+    height:58px!important;
+    z-index:285!important;
+  }
+
+  .ugo-client-root .prototype-hugo{
+    right:12px!important;
+    bottom:calc(72px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-client-root .ugo-client-screen-overlay,
+  .ugo-client-root .ugo-guided-request{
+    width:100%!important;
+    max-width:100vw!important;
+    max-height:100dvh!important;
+    overflow-y:auto!important;
+  }
+
+  .ugo-client-root .ugo-history-panel,
+  .ugo-client-root .ugo-request-sheet,
+  .ugo-client-root .ugo-provider-drawer{
+    max-height:calc(100dvh - 10px)!important;
+    overflow-y:auto!important;
+  }
+}

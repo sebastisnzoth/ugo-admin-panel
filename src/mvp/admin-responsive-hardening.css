@@ -163,3 +163,211 @@
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
+
+
+/* Short phone landscape uses the compact rail, trims chrome and keeps every module scrollable. */
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .ugo-admin2{
+    min-height:100dvh!important;
+    grid-template-columns:72px minmax(0,1fr)!important;
+    overflow-x:hidden!important;
+  }
+
+  .ugo-admin2-sidebar{
+    height:100dvh!important;
+    padding:8px 7px!important;
+  }
+
+  .ugo-admin2-brand{
+    padding:2px 0 8px!important;
+    text-align:center;
+  }
+
+  .ugo-admin2-brand span{font-size:18px!important}
+  .ugo-admin2-brand small,
+  .ugo-admin2-sidebar nav button span,
+  .ugo-admin2-status{display:none!important}
+
+  .ugo-admin2-sidebar nav{
+    gap:3px!important;
+    overflow-y:auto!important;
+    overflow-x:hidden!important;
+  }
+
+  .ugo-admin2-sidebar nav button{
+    min-height:44px!important;
+    grid-template-columns:1fr!important;
+    padding:0!important;
+  }
+
+  .ugo-admin2-main{
+    min-width:0!important;
+    padding:10px 12px 24px!important;
+    overflow-x:hidden!important;
+  }
+
+  .ugo-admin2-main>header{
+    align-items:center!important;
+    margin-bottom:10px!important;
+    gap:8px!important;
+  }
+
+  .ugo-admin2-main>header h1{
+    font-size:clamp(24px,4vw,30px)!important;
+  }
+
+  .ugo-admin2-head-actions{
+    gap:5px!important;
+  }
+
+  .ugo-admin2-gmail{
+    max-width:180px!important;
+    min-height:38px!important;
+  }
+
+  .ugo-admin2-refresh{min-height:38px!important}
+  .ugo-admin2-section{min-height:0!important}
+  .ugo-admin2-section-head{padding:11px 13px!important}
+  .ugo-admin2-operations-menu,
+  .ugo-admin2-submenu{position:relative!important;top:auto!important}
+
+  .ugo-admin2-native-module,
+  .ugo-admin2-module-card,
+  .ugo-admin2-history,
+  .ugo-admin2-messages{
+    max-width:100%!important;
+    overflow-x:auto!important;
+  }
+
+  .ugo-admin2 .hugo-free-trigger{
+    right:10px!important;
+    bottom:10px!important;
+    min-width:96px!important;
+    height:42px!important;
+  }
+
+  .ugo-admin2 .hugo-free-overlay{
+    padding:8px 10px 16px!important;
+  }
+
+  .ugo-admin2 .hugo-free-orb-wrap{
+    width:112px!important;
+    height:112px!important;
+  }
+
+  .ugo-admin2 .hugo-free-orb{
+    width:82px!important;
+    height:82px!important;
+  }
+}
+
+
+/* Admin map: collapse filter/detail rails vertically on phones instead of forcing page-wide horizontal scroll. */
+.ugo-admin2 .ugo-admin-map,
+.ugo-admin2 .ugo-admin-map-body,
+.ugo-admin2 .ugo-admin-map-stage{min-width:0;max-width:100%}
+@media(max-width:760px){
+  .ugo-admin2 .ugo-admin-map{
+    height:auto!important;
+    min-height:640px!important;
+    overflow:visible!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-toolbar{
+    position:relative;
+    max-width:100%;
+    padding:8px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-toolbar input[type="text"],
+  .ugo-admin2 .ugo-admin-map-toolbar input:not([type]),
+  .ugo-admin2 .ugo-admin-map-toolbar select{
+    min-width:0!important;
+    max-width:100%!important;
+    font-size:16px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-body{
+    flex-direction:column!important;
+    min-height:560px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-filters{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:180px!important;
+    flex:0 0 auto!important;
+    border-right:0!important;
+    border-bottom:1px solid var(--ugo-color-outline-variant)!important;
+    overflow:auto!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-stage{
+    width:100%!important;
+    min-height:360px!important;
+    flex:1 0 360px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-canvas{
+    width:100%!important;
+    min-height:360px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-detail{
+    width:100%!important;
+    max-width:100%!important;
+    max-height:220px!important;
+    flex:0 0 auto!important;
+    border-left:0!important;
+    border-top:1px solid var(--ugo-color-outline-variant)!important;
+  }
+}
+
+@media(max-width:420px){
+  .ugo-admin2 .ugo-admin-map-toolbar{
+    align-items:stretch!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-toolbar>div[style*="flex: 1"],
+  .ugo-admin2 .ugo-admin-map-toolbar>div[style*="flex:1"]{
+    display:none!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-filters{max-height:150px!important}
+  .ugo-admin2 .ugo-admin-map-stage,
+  .ugo-admin2 .ugo-admin-map-canvas{
+    min-height:320px!important;
+  }
+}
+
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .ugo-admin2 .ugo-admin-map{
+    min-height:430px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-body{
+    flex-direction:row!important;
+    min-height:320px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-filters{
+    width:170px!important;
+    max-width:170px!important;
+    max-height:none!important;
+    border-right:1px solid var(--ugo-color-outline-variant)!important;
+    border-bottom:0!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-stage,
+  .ugo-admin2 .ugo-admin-map-canvas{
+    min-height:320px!important;
+  }
+
+  .ugo-admin2 .ugo-admin-map-detail{
+    width:190px!important;
+    max-width:190px!important;
+    max-height:none!important;
+    border-left:1px solid var(--ugo-color-outline-variant)!important;
+    border-top:0!important;
+  }
+}

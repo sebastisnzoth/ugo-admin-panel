@@ -1,0 +1,75 @@
+name: UGO Responsive Visual Audit
+
+on:
+  push:
+    branches:
+      - fix/responsive-full-audit
+  workflow_dispatch:
+
+concurrency:
+  group: ugo-responsive-visual-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    name: Chromium · Responsive Visual Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install app dependencies
+        run: npm ci --include=dev
+
+      - name: Install Playwright test runner
+        run: npm install --no-save @playwright/test@1.55.0
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Start UGO Vite
+        shell: bash
+        run: |
+          mkdir -p artifacts/responsive
+          npm run dev -- --host 127.0.0.1 --port 5173 > artifacts/responsive/vite.log 2>&1 &
+          echo $! > /tmp/ugo-vite.pid
+          for i in {1..60}; do
+            if curl --fail --silent http://127.0.0.1:5173/ >/dev/null; then
+              echo "UGO Vite ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "UGO Vite did not become ready"
+          cat artifacts/responsive/vite.log
+          exit 1
+
+      - name: Run responsive browser audit
+        env:
+          RESPONSIVE_BASE_URL: http://127.0.0.1:5173
+          RESPONSIVE_ARTIFACT_DIR: artifacts/responsive
+        run: npx playwright test tests/e2e/responsive-visual.spec.mjs --browser=chromium --workers=1 --reporter=line
+
+      - name: Upload responsive screenshots and metrics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: responsive-visual-audit
+          path: artifacts/responsive
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Stop UGO Vite
+        if: always()
+        shell: bash
+        run: |
+          if [[ -f /tmp/ugo-vite.pid ]]; then
+            kill "$(cat /tmp/ugo-vite.pid)" || true
+          fi

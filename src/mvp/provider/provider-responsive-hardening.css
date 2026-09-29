@@ -132,3 +132,68 @@
     padding-inline:24px!important;
   }
 }
+
+
+/* Short phone landscape keeps the provider flow app-like instead of switching to the wide workspace. */
+@media(orientation:landscape) and (max-height:520px) and (max-width:950px){
+  .ugo-provider-root{
+    height:100dvh!important;
+    min-height:0!important;
+    max-height:100dvh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch;
+    scroll-padding-bottom:82px;
+    padding-left:0!important;
+    padding-bottom:0!important;
+  }
+
+  .ugo-provider-root .provider-screen{
+    width:100%!important;
+    max-width:100%!important;
+    margin:0!important;
+    padding:12px 14px calc(88px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-provider-root .provider-bottom-nav{
+    position:fixed!important;
+    top:auto!important;
+    left:8px!important;
+    right:8px!important;
+    bottom:max(6px,env(safe-area-inset-bottom))!important;
+    transform:none!important;
+    width:auto!important;
+    height:58px!important;
+    padding:4px 6px!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    border-radius:18px!important;
+  }
+
+  .ugo-provider-root .provider-bottom-nav button{
+    min-height:48px!important;
+    padding:4px!important;
+  }
+
+  .ugo-provider-root .provider-global-hugo{
+    left:10px!important;
+    right:10px!important;
+    width:auto!important;
+    max-width:calc(100vw - 20px)!important;
+    bottom:calc(72px + env(safe-area-inset-bottom))!important;
+  }
+
+  .ugo-provider-root .provider-arrival-toast{
+    bottom:calc(74px + env(safe-area-inset-bottom))!important;
+    max-width:calc(100vw - 20px)!important;
+  }
+
+  .ugo-provider-root .provider-job-detail-sheet{
+    width:calc(100vw - 10px)!important;
+    max-width:calc(100vw - 10px)!important;
+    max-height:calc(100dvh - 10px)!important;
+    overflow-y:auto!important;
+  }
+
+  .ugo-provider-root .provider-map{height:220px!important}
+}
