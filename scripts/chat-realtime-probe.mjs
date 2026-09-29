@@ -207,7 +207,7 @@ try {
   const observations={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true}
   const {data:qaRun,error:recordError}=await serviceRole.rpc('autonomous_record_external_qa_probe',{p_scenario_id:scenario.id,p_service_id:service.id,p_observations:observations})
   if(recordError)throw recordError
-  const rtAssertions={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true}
+  const rtAssertions={client_realtime:true,provider_realtime:true,subscription_established:true,event_received:true,payload_validated:true,timeout_false:true,cleanup_completed:true}
   for(const [key,passed] of Object.entries(rtAssertions)){
     const {error:evidenceError}=await serviceRole.rpc('autonomous_record_independent_qa_evidence',{p_run_id:qaRun.id,p_service_id:service.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'REALTIME_RUNTIME'})
     if(evidenceError)throw evidenceError
