@@ -24,7 +24,7 @@ begin
 
   select
     not exists(select 1 from public.autonomous_jobs where status in('QUEUED','RUNNING','WAITING_APPROVAL') and data_quality_status<>'TRUSTED') and
-    to_regprocedure('public.autonomous_assess_job_data_quality(uuid)') is not null
+    to_regprocedure('public.autonomous_assess_data_quality(uuid,boolean,boolean,boolean,boolean,text,boolean,jsonb)') is not null
   into quality_ok;
 
   select
@@ -46,7 +46,7 @@ begin
     evidence_refs=case control_key
       when 'audit-evidence' then jsonb_build_array('deterministic:no-orphan-ledgers','deterministic:evidence-hash-and-correlation-present')
       when 'authority-boundaries' then jsonb_build_array('quality-coverage:roles','quality-coverage:permissions-rls','deterministic:no-ownerless-executable-jobs')
-      when 'data-quality-gate' then jsonb_build_array('deterministic:no-active-untrusted-jobs','rpc:autonomous_assess_job_data_quality')
+      when 'data-quality-gate' then jsonb_build_array('deterministic:no-active-untrusted-jobs','rpc:autonomous_assess_data_quality')
       when 'job-resilience' then jsonb_build_array('deterministic:no-expired-running-leases','rpc:autonomous_claim_job','rpc:autonomous_recover_stale_jobs')
       else evidence_refs end
   where control_key in('audit-evidence','authority-boundaries','data-quality-gate','job-resilience');
