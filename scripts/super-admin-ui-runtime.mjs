@@ -90,9 +90,9 @@ try{
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
   await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
-  const header=await page.locator('.ugo-autonomous-content header').textContent();
-  assert.ok((header||'').includes('Modo: '+before.mode),'AUTONOMY_MODE_UI_BACKEND_MISMATCH');
-  assert.ok((header||'').includes('Launch: '+before.launch),'LAUNCH_HEADER_UI_BACKEND_MISMATCH');
+  const autonomyText=await page.locator('.ugo-autonomous-content').textContent();
+  assert.ok((autonomyText||'').includes('Modo: '+before.mode),'AUTONOMY_MODE_UI_BACKEND_MISMATCH');
+  assert.ok((autonomyText||'').includes('Launch: '+before.launch),'LAUNCH_HEADER_UI_BACKEND_MISMATCH');
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
   await page.getByRole('button',{name:'QA Lab',exact:true}).click();
