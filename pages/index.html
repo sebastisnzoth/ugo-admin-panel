@@ -52,7 +52,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   <section class="monitor" aria-label="Monitor de trabajo">
     <div class="monitor-head">
       <div><span class="live-dot"></span><strong>MONITOR DE TRABAJO</strong></div>
-      <div class="tiny">Actividad observable · no inventa estados</div>
+      <div class="tiny" id="activitySource">Actividad GitHub · cargando snapshot seguro…</div>
     </div>
     <div class="monitor-grid">
       <div class="monitor-box">
@@ -366,50 +366,73 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     })
   }
 
-  const loadLiveMonitor = () => fetch('https://api.github.com/repos/sebastisnzoth/ugo-admin-panel/actions/runs?branch=main&per_page=12', {
-    headers:{'Accept':'application/vnd.github+json'}, cache:'no-store'
-  }).then(r => {
-    if (!r.ok) throw new Error('GitHub activity HTTP ' + r.status)
-    return r.json()
-  }).then(data => {
-    const runs = data.workflow_runs || []
-    const active = runs.filter(r => r.status === 'in_progress' || r.status === 'queued')
-    const latest = runs[0]
-    const dispatches = getDispatches()
-    const workLocks = statusSnapshot?.active_locks || []
-    if (workLocks.length) {
-      document.getElementById('liveState').textContent = 'UGO TRABAJANDO'
-      document.getElementById('liveState').className = 'state-big accent'
-      document.getElementById('liveDetail').textContent = workLocks.map(l => (l.assigned_agent || 'UGO') + ' · ' + (l.title || l.task_id) + ' · ' + (l.status || 'IN_PROGRESS') + (l.current_step ? ' · ' + l.current_step : '')).join(' / ')
-    } else if (active.length) {
-      document.getElementById('liveState').textContent = 'EN PROCESO'
-      document.getElementById('liveState').className = 'state-big accent'
-      document.getElementById('liveDetail').textContent = active.map(r => r.name + ' · ' + r.status.toUpperCase()).join(' / ')
-    } else if (dispatches.length) {
-      document.getElementById('liveState').textContent = 'ESPERANDO LOCK / EVIDENCIA'
-      document.getElementById('liveState').className = 'state-big warn'
-      document.getElementById('liveDetail').textContent = dispatches.length + ' tarea(s) solicitadas; esperando lock persistido o ejecución observable.'
-    } else {
-      document.getElementById('liveState').textContent = 'SIN EJECUCIÓN OBSERVABLE'
-      document.getElementById('liveState').className = 'state-big'
-      document.getElementById('liveDetail').textContent = 'No hay workflows RUNNING/QUEUED en este momento.'
-    }
-    document.getElementById('liveActivity').innerHTML = runs.slice(0,8).map(r =>
-      '<div class="activity-item"><b>' + esc(r.name) + '</b> · ' + esc((r.status || '').toUpperCase()) +
-      (r.conclusion ? ' / ' + esc(r.conclusion.toUpperCase()) : '') +
-      '<div class="tiny">#' + esc(r.run_number) + ' · ' + esc((r.head_sha || '').slice(0,12)) + ' · ' + esc(r.event) + '</div></div>'
-    ).join('') || '<div class="activity-item">Sin actividad reciente.</div>'
-    if (latest) {
-      document.getElementById('latestMovement').textContent = latest.display_title || latest.name
-      document.getElementById('latestMovementMeta').textContent = (latest.head_sha || '').slice(0,12) + ' · ' + (latest.status || '').toUpperCase()
-    }
-    renderDispatch()
-  }).catch(err => {
-    document.getElementById('liveState').textContent = 'ACTIVIDAD NO DISPONIBLE'
-    document.getElementById('liveState').className = 'state-big bad'
-    document.getElementById('liveDetail').textContent = 'No se pudo consultar GitHub en vivo. El snapshot de 5 minutos sigue disponible.'
-    console.error(err)
-  })
+  const loadLiveMonitor = () => fetch('activity.json?ts=' + Date.now(), {cache:'no-store'})
+    .then(r => {
+      if (!r.ok) throw new Error('activity.json HTTP ' + r.status)
+      return r.json()
+    })
+    .then(data => {
+      const runs = data.workflow_runs || []
+      const generatedAt = data.generated_at_utc ? new Date(data.generated_at_utc) : null
+      const ageMs = generatedAt && !Number.isNaN(generatedAt.getTime()) ? Date.now() - generatedAt.getTime() : null
+      const ageMinutes = ageMs == null ? null : Math.max(0, Math.floor(ageMs / 60000))
+      const stale = ageMinutes != null && ageMinutes > 10
+      const active = runs.filter(r => r.status === 'in_progress' || r.status === 'queued' || r.status === 'waiting' || r.status === 'pending')
+      const latest = runs[0]
+      const dispatches = getDispatches()
+      const workLocks = statusSnapshot?.active_locks || []
+
+      const source = document.getElementById('activitySource')
+      if (source) {
+        source.textContent = stale
+          ? 'Actividad GitHub · snapshot atrasado ' + ageMinutes + ' min'
+          : 'Actividad GitHub autenticada · snapshot ' + (ageMinutes == null ? 'sin edad verificable' : 'hace ' + ageMinutes + ' min')
+        source.className = stale ? 'tiny warn' : 'tiny'
+      }
+
+      if (workLocks.length) {
+        document.getElementById('liveState').textContent = 'UGO TRABAJANDO'
+        document.getElementById('liveState').className = 'state-big accent'
+        document.getElementById('liveDetail').textContent = workLocks.map(l => (l.assigned_agent || 'UGO') + ' · ' + (l.title || l.task_id) + ' · ' + (l.status || 'IN_PROGRESS') + (l.current_step ? ' · ' + l.current_step : '')).join(' / ')
+      } else if (active.length) {
+        document.getElementById('liveState').textContent = stale ? 'ACTIVIDAD EN SNAPSHOT ATRASADO' : 'EN PROCESO'
+        document.getElementById('liveState').className = stale ? 'state-big warn' : 'state-big accent'
+        document.getElementById('liveDetail').textContent = active.map(r => r.name + ' · ' + String(r.status || '').toUpperCase()).join(' / ')
+      } else if (dispatches.length) {
+        document.getElementById('liveState').textContent = stale ? 'SNAPSHOT ATRASADO' : 'ESPERANDO LOCK / EVIDENCIA'
+        document.getElementById('liveState').className = 'state-big warn'
+        document.getElementById('liveDetail').textContent = dispatches.length + ' tarea(s) solicitadas; esperando lock persistido o ejecución observable.'
+      } else {
+        document.getElementById('liveState').textContent = stale ? 'SNAPSHOT ATRASADO' : 'SIN EJECUCIÓN OBSERVABLE'
+        document.getElementById('liveState').className = stale ? 'state-big warn' : 'state-big'
+        document.getElementById('liveDetail').textContent = stale
+          ? 'El último snapshot verificable tiene ' + ageMinutes + ' min. No se infiere estado actual.'
+          : 'No hay workflows RUNNING/QUEUED en el último snapshot verificable.'
+      }
+
+      document.getElementById('liveActivity').innerHTML = runs.slice(0,8).map(r =>
+        '<div class="activity-item"><b>' + esc(r.name) + '</b> · ' + esc(String(r.status || '').toUpperCase()) +
+        (r.conclusion ? ' / ' + esc(String(r.conclusion).toUpperCase()) : '') +
+        '<div class="tiny">#' + esc(r.run_number) + ' · ' + esc((r.head_sha || '').slice(0,12)) + ' · ' + esc(r.event) + '</div></div>'
+      ).join('') || '<div class="activity-item">Sin actividad reciente.</div>'
+
+      if (latest) {
+        document.getElementById('latestMovement').textContent = latest.display_title || latest.name
+        document.getElementById('latestMovementMeta').textContent = (latest.head_sha || '').slice(0,12) + ' · ' + String(latest.status || '').toUpperCase()
+      }
+      renderDispatch()
+    })
+    .catch(err => {
+      document.getElementById('liveState').textContent = 'ACTIVIDAD NO DISPONIBLE'
+      document.getElementById('liveState').className = 'state-big bad'
+      document.getElementById('liveDetail').textContent = 'No se pudo cargar activity.json. El panel no inferirá estados hasta recuperar evidencia.'
+      const source = document.getElementById('activitySource')
+      if (source) {
+        source.textContent = 'Actividad GitHub · evidencia no disponible'
+        source.className = 'tiny bad'
+      }
+      console.error(err)
+    })
 
   const fail = message => {
     document.getElementById('prodState').textContent = 'EVIDENCE UNAVAILABLE'
@@ -503,7 +526,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   loadStatus()
   loadCi()
   loadLiveMonitor()
-  const revalidate = () => Promise.allSettled([loadStatus(), loadCi()])
+  const revalidate = () => Promise.allSettled([loadStatus(), loadCi(), loadLiveMonitor()])
   document.getElementById('revalidateNow').addEventListener('click', () => {
     const button = document.getElementById('revalidateNow')
     button.textContent = 'Revalidando…'
