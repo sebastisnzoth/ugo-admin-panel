@@ -1,0 +1,109 @@
+{
+  "task_id": "complete-test-journey",
+  "job_id": "UGO-COMPLETE-TEST-JOURNEY",
+  "status": "DONE",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "daf71e9f56e839e837a1659b8b21308acb78f2b9",
+  "runtime_execution_sha": "e523862f6913cc3f3ee02f84de09e7cbaa71e27f",
+  "service_id": "83bb7314-c75e-4c41-82fb-0d9b4492ca41",
+  "task_correlation_id": "8bb91123-cda9-4d25-8a22-9de72c7e2b66",
+  "execution": {
+    "runner": "public.autonomous_qa_run_p0_test_service()",
+    "invocation_mode": "service_role protected runtime function",
+    "manual_db_edit": false,
+    "service_environment": "demo",
+    "service_number": 815,
+    "final_state": "completado",
+    "accepted_offer_id": "20f88ea5-43ea-4649-8b24-e017581d6ecc",
+    "accepted_offer_distance_km": 0,
+    "state_chain": [
+      "borrador -> ofrecido",
+      "ofrecido -> asignado",
+      "asignado -> en_camino",
+      "en_camino -> llegado",
+      "llegado -> en_progreso",
+      "en_progreso -> esperando_aprobacion",
+      "esperando_aprobacion -> completado"
+    ],
+    "evidence_before_id": "f63f517d-942e-4d29-8bfe-5f673a84ea79",
+    "evidence_after_id": "5acfe2fe-8fe0-4ac4-a33c-50410ee901b8",
+    "payment_id": "f0bb76d3-75ad-472b-8ae0-9fe11d32d546",
+    "payment_method": "efectivo",
+    "payment_state": "liberado",
+    "ratings": [
+      {
+        "side": "cliente",
+        "id": "313ad299-a417-424e-b913-47147b361e30",
+        "score": 5
+      },
+      {
+        "side": "proveedor",
+        "id": "2c3666f8-8599-46d1-88b2-f2c5a58ef424",
+        "score": 5
+      }
+    ]
+  },
+  "independent_judge": {
+    "job_id": "a2743ae9-5e08-4024-82a3-e36845e54131",
+    "correlation_id": "e158fdf6-3a80-4ee9-89fd-e51820765db8",
+    "status": "SUCCEEDED",
+    "decision": "P0_DEMO_VERIFIED",
+    "evidence_type": "QA_P0_PERSISTED_JOURNEY",
+    "passed": true,
+    "observations": {
+      "service_completed": true,
+      "accepted_offer_within_20km": true,
+      "no_offer_outside_20km": true,
+      "arrival_event": true,
+      "initial_evidence_row": true,
+      "final_evidence_row": true,
+      "cash_acknowledged": true,
+      "bilateral_rating": true
+    },
+    "limitations": {
+      "simulated_service": true,
+      "physical_gps_verified": false,
+      "uploaded_media_verified": false,
+      "real_human_customer_acceptance": false,
+      "note": "The TEST runner performed the client approval action and persisted it; the independent QA verifier intentionally does not equate this automated TEST action with physical/human acceptance."
+    }
+  },
+  "audit_binding": {
+    "judge": "PASS",
+    "binding_count": 6,
+    "mixed_service_count": 0,
+    "missing_events": [],
+    "decision_ledger_count": 1,
+    "evidence_ledger_count": 1,
+    "events": [
+      "matching",
+      "arrival",
+      "evidence_before",
+      "evidence_after",
+      "payment",
+      "closure"
+    ],
+    "evidence_hash": "9bbf06db2d5a103f605c8303917cb8f07f68985441e788b36a45fd2b08101496"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "basis": [
+      "journey judge SUCCEEDED",
+      "no service-specific development incidents",
+      "zero active autonomous kill switches",
+      "company autonomy returned to safe OFF state",
+      "single serviceId retained across service, offer, evidence, payment, ratings and audit bindings",
+      "production untouched"
+    ],
+    "company_mode_after": "OFF",
+    "active_kill_switches": 0,
+    "service_incident_count": 0
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "verified_at": "2026-09-29T18:34:00Z"
+}
