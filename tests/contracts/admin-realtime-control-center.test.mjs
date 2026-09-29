@@ -28,6 +28,9 @@ test('admin dashboard metrics stay live and truthfully show degraded realtime',a
  assert.match(src,/Sistema en vivo/)
  assert.match(src,/Realtime degradado/)
  assert.match(src,/setInterval/)
+ assert.match(src,/scheduleReconcile\(250\)/)
+ assert.match(src,/scheduleReconcile\(1000\)/)
+ assert.match(src,/reconcileTimers\.forEach\(timer=>window\.clearTimeout\(timer\)\)/)
 })
 
 test('service 360 sheet refreshes trace chat payments disputes and evidence live',async()=>{
