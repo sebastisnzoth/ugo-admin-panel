@@ -140,3 +140,38 @@ jobs:
       - name: Verify Customer #1 gate with designated TEST Super Admin
         if: always()
         run: node scripts/autonomous-launch-gate-runtime.mjs
+
+      - name: Install transient browser runtime for Super Admin proof
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+
+      - name: Runtime-validate Super Admin UI against authoritative UGO TEST backend
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          export VITE_APP_REVISION="$UGO_RUNTIME_SHA"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-superadmin-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
+          node scripts/super-admin-ui-runtime.mjs
+
+      - name: Upload Super Admin runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: super-admin-ui-runtime-${{ github.event.workflow_run.head_sha || github.sha }}
+          path: artifacts/super-admin-ui-runtime.*
+          if-no-files-found: warn
+          retention-days: 90
