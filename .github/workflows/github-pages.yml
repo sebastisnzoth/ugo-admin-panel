@@ -48,21 +48,6 @@ jobs:
         shell: bash
         run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
 
-      - name: Prepare static site
-        shell: bash
-        run: |
-          mkdir -p _site
-          cp -a pages/. _site/
-          rm -f _site/status.json
-          PUBLISHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
-          node scripts/generate-pages-status.mjs \
-            docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md \
-            _site/status.json \
-            "${GITHUB_SHA}" \
-            "${PUBLISHED_AT}"
-          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
-          sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html
-
       - name: Build same-SHA CI snapshot
         env:
           GH_TOKEN: ${{ github.token }}
@@ -126,33 +111,110 @@ jobs:
             ]
           }' /tmp/ugo-activity-runs.json > _site/activity.json
 
-      - name: Build open PR snapshot
+      - name: Build open PR readiness snapshot
         env:
           GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
+          mkdir -p _site
           GENERATED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           curl -fsSL \
             -H "Authorization: Bearer ${GH_TOKEN}" \
             -H "Accept: application/vnd.github+json" \
             "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" \
             > /tmp/ugo-open-prs.json
-          jq --arg generated_at "$GENERATED_AT" '{
+
+          echo '{"pull_requests":[]}' > /tmp/ugo-readiness-prs.json
+          jq -c '.[]' /tmp/ugo-open-prs.json | while read -r pr; do
+            number="$(jq -r '.number' <<<"$pr")"
+            head_sha="$(jq -r '.head.sha' <<<"$pr")"
+            head_ref="$(jq -r '.head.ref' <<<"$pr")"
+
+            curl -fsSL \
+              -H "Authorization: Bearer ${GH_TOKEN}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${number}/files?per_page=100" \
+              > "/tmp/ugo-pr-files-${number}.json"
+
+            readiness_id=""
+            evidence_status=""
+            runtime_status=""
+            judge=""
+            sentinel=""
+            evidence_path="$(jq -r '[.[] | select(.filename | test("^docs/evidence/.*\\.json$"))][0].filename // empty' "/tmp/ugo-pr-files-${number}.json")"
+
+            if [ -n "$evidence_path" ]; then
+              encoded_path="$(python - <<'PY' "$evidence_path"
+import sys, urllib.parse
+print(urllib.parse.quote(sys.argv[1], safe="/"))
+PY
+)"
+              if curl -fsSL \
+                -H "Authorization: Bearer ${GH_TOKEN}" \
+                -H "Accept: application/vnd.github+json" \
+                "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${encoded_path}?ref=${head_sha}" \
+                > "/tmp/ugo-pr-evidence-${number}.json"; then
+                jq -r '.content' "/tmp/ugo-pr-evidence-${number}.json" | tr -d '\n' | base64 -d > "/tmp/ugo-pr-evidence-decoded-${number}.json" || true
+                if jq -e . "/tmp/ugo-pr-evidence-decoded-${number}.json" >/dev/null 2>&1; then
+                  readiness_id="$(jq -r '.readiness_id // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+                  evidence_status="$(jq -r '.final_status // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+                  runtime_status="$(jq -r '.runtime_proof.status // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+                  judge="$(jq -r '.independent_validation.judge // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+                  sentinel="$(jq -r '.independent_validation.sentinel // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+                fi
+              fi
+            fi
+
+            if [ -z "$readiness_id" ]; then
+              readiness_id="$(sed -nE 's#^(fix|feat|chore)/([a-z0-9-]+)-readiness-.*#\2#p' <<<"$head_ref" | head -n1)"
+            fi
+
+            jq \
+              --argjson pr "$pr" \
+              --arg readiness_id "$readiness_id" \
+              --arg evidence_status "$evidence_status" \
+              --arg runtime_status "$runtime_status" \
+              --arg judge "$judge" \
+              --arg sentinel "$sentinel" \
+              --arg evidence_path "$evidence_path" \
+              '.pull_requests += [{
+                number: $pr.number,
+                title: $pr.title,
+                draft: $pr.draft,
+                html_url: $pr.html_url,
+                updated_at: $pr.updated_at,
+                head_ref: $pr.head.ref,
+                head_sha: $pr.head.sha,
+                base_ref: $pr.base.ref,
+                readiness_id: $readiness_id,
+                evidence_status: $evidence_status,
+                runtime_status: $runtime_status,
+                judge: $judge,
+                sentinel: $sentinel,
+                evidence_path: $evidence_path
+              }]' /tmp/ugo-readiness-prs.json > /tmp/ugo-readiness-prs.next.json
+            mv /tmp/ugo-readiness-prs.next.json /tmp/ugo-readiness-prs.json
+          done
+
+          jq --arg generated_at "$GENERATED_AT" '. + {
             generated_at_utc: $generated_at,
-            source: "GITHUB_PULL_REQUESTS_SERVER_SIDE",
-            pull_requests: [
-              .[] | {
-                number,
-                title,
-                draft,
-                html_url,
-                updated_at,
-                head_ref: .head.ref,
-                head_sha: .head.sha,
-                base_ref: .base.ref
-              }
-            ]
-          }' /tmp/ugo-open-prs.json > _site/pull-requests.json
+            source: "GITHUB_PULL_REQUESTS_SERVER_SIDE"
+          }' /tmp/ugo-readiness-prs.json > _site/pull-requests.json
+
+      - name: Prepare static site
+        shell: bash
+        run: |
+          cp -a pages/. _site/
+          rm -f _site/status.json
+          PUBLISHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+          node scripts/generate-pages-status.mjs \
+            docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md \
+            _site/status.json \
+            "${GITHUB_SHA}" \
+            "${PUBLISHED_AT}" \
+            _site/pull-requests.json
+          sed -i "s/__UGO_SHA__/${GITHUB_SHA}/g" _site/index.html
+          sed -i "s/__UGO_PUBLISHED_AT__/${PUBLISHED_AT}/g" _site/index.html
 
       - name: Build main HEAD snapshot
         env:
@@ -183,6 +245,10 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
+      - name: Wait for Pages artifact visibility
+        shell: bash
+        run: sleep 8
 
       - name: Deploy to GitHub Pages
         id: deployment
