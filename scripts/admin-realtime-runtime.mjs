@@ -103,7 +103,7 @@ try{
  await fs.writeFile('artifacts/admin-realtime-runtime.json',JSON.stringify(evidence,null,2)+'\n')
  console.log(JSON.stringify({status:'PASS',sha,before,expected,forwardLatencyMs,restoreLatencyMs,restored}))
 }finally{
- if(!restored)await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id).catch(()=>{})
+ if(!restored){try{await root.from('perfiles_proveedor').update(original).eq('usuario_id',fixture.usuario_id)}catch{}}
  await browser.close()
  await user.auth.signOut()
 }
