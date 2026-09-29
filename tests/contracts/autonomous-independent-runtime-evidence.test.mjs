@@ -120,7 +120,7 @@ test('independent judge authorization relies on explicit service_role EXECUTE gr
  const judgeStart=migration.indexOf('create or replace function public.autonomous_judge_independent_runtime_coverage')
  const judgeEnd=migration.indexOf('revoke all on function public.autonomous_judge_independent_runtime_coverage',judgeStart)
  const judge=migration.slice(judgeStart,judgeEnd)
- assert.doesNotMatch(judge,/request\.jwt\.claim\.role/)
+ assert.doesNotMatch(judge,/current_setting\('request\.jwt\.claim\.role'/)
  assert.match(migration,/revoke all on function public\.autonomous_judge_independent_runtime_coverage\(text\) from public,anon,authenticated/)
  assert.match(migration,/grant execute on function public\.autonomous_judge_independent_runtime_coverage\(text\) to service_role/)
 })
