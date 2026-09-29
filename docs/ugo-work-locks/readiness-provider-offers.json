@@ -1,0 +1,23 @@
+{
+  "readiness_id": "provider-offers",
+  "task_id": "readiness-provider-offers",
+  "job_id": "UGO-READINESS-PROVIDER-OFFERS",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T20:45:00Z",
+  "heartbeat_at": "2026-09-29T20:45:00Z",
+  "lease_expires_at": "2026-09-29T21:30:00Z",
+  "started_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
+  "owner": "UGO",
+  "assigned_agent": "Provider Matching Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-demand"
+  ],
+  "correlation_id": "readiness-provider-offers-20260929T204500Z",
+  "current_step": "inspect_matching_and_runtime_tests",
+  "attempt": 1,
+  "evidence_ids": []
+}
