@@ -1,0 +1,31 @@
+{
+  "readiness_id": "admin-users",
+  "task_id": "readiness-admin-users",
+  "job_id": "UGO-READINESS-ADMIN-USERS",
+  "title": "Verify Admin user profile and audited history in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T23:34:00Z",
+  "heartbeat_at": "2026-09-29T23:34:00Z",
+  "lease_expires_at": "2026-09-30T00:19:00Z",
+  "started_sha": "daab889acc40c9b8cd8519b53ab719b5c9b1e550",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Admin Users Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-users"
+  ],
+  "correlation_id": "readiness-admin-users-20260929T233400Z-daab889a",
+  "current_step": "INSPECT",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "admin-users",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}
