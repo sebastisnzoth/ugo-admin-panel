@@ -33,3 +33,15 @@ test('D9 regression and release-gate specialists remain disabled during validati
   assert.match(guard, /revoke all on function public\.autonomous_validate_specialist\(text\) from public,anon,authenticated/)
   assert.match(guard, /grant execute on function public\.autonomous_validate_specialist\(text\) to service_role/)
 })
+
+
+test('latest owner-integrity guard preserves validation-only specialist proofs', () => {
+  const guard = readFileSync('supabase/migrations/20260929170000_specialist_validation_owner_integrity_fix.sql', 'utf8')
+  assert.match(guard, /AUTONOMOUS_AGENT_REQUIRED/)
+  assert.match(guard, /agent\.agent_key in \('regression-agent','release-gate-agent'\)/)
+  assert.match(guard, /AUTHORIZED_VALIDATION_ONLY/)
+  assert.match(guard, /qa\.regression_reconcile_validation/)
+  assert.match(guard, /qa\.release_gate_verify_validation/)
+  assert.match(guard, /and not validation_only/)
+  assert.match(guard, /AUTONOMOUS_AGENT_AUTHORITY_DOWNGRADE/)
+})
