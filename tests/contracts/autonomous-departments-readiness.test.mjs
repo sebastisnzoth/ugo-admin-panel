@@ -26,3 +26,12 @@ test('departments dashboard exposes responsible agent and maturity',()=>{
  assert.match(dashboard,/Madurez/)
  assert.match(dashboard,/auto_departments_readiness/)
 })
+
+test('service grants are minimal and scoped to readiness persistence',()=>{
+ const grants=fs.readFileSync('supabase/migrations/20260929205500_autonomous_departments_readiness_service_grants.sql','utf8')
+ assert.match(grants,/grant select, update on table public\.autonomous_departments to service_role/)
+ assert.match(grants,/grant select, insert on table public\.autonomous_jobs to service_role/)
+ assert.match(grants,/grant select, insert on table public\.autonomous_evidence_ledger to service_role/)
+ assert.doesNotMatch(grants,/grant all/i)
+ assert.doesNotMatch(grants,/to anon|to authenticated/i)
+})
