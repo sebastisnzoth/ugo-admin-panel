@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-ADMIN-MODEL-ROUTER",
   "status": "DONE",
   "started_at": "2026-09-29T22:15:00Z",
-  "heartbeat_at": "2026-09-29T22:23:20Z",
-  "lease_expires_at": "2026-09-29T22:23:20Z",
+  "heartbeat_at": "2026-09-29T22:23:30Z",
+  "lease_expires_at": "2026-09-29T22:23:30Z",
   "finished_at": "2026-09-29T22:23:20Z",
   "started_sha": "d1f3e90dc09f159ff842095694025d462f2888d9",
   "verified_runtime_sha": "bc96fb8fea184404e52972b3d164047b46a3ac0a",
@@ -26,13 +26,15 @@
     "model-router"
   ],
   "correlation_id": "readiness-admin-model-router-20260929T221500Z-d1f3e90d",
-  "current_step": "VERIFIED",
+  "current_step": "validated_and_closed",
   "attempt": 1,
   "evidence_ids": [
-    "docs/evidence/readiness-admin-model-router-20260929.json",
-    "github-actions-run:36639082280",
-    "github-actions-job:109647073069",
-    "github-actions-artifact:11065279324"
+    "github-actions:run:36639082280",
+    "github-actions:job:109647073069",
+    "github-actions:artifact:11065279324",
+    "sha256:9ede2c7240d55d0ca7cc7e99d899b14819ab8bfa84565c4951580bc7a1369295",
+    "primary:a53b130e-c6a8-40d1-8e9d-f32a9d2cc1a1",
+    "fallback:8e1eb66f-90a5-4c46-a6f2-b0d3286a5ba9"
   ],
   "judge": {
     "verdict": "PASS",
@@ -44,5 +46,13 @@
     "production_touched": false
   },
   "result": "VERIFIED",
-  "title": "Verify Admin Model Router primary, fallback, telemetry and cost in runtime"
+  "title": "Verify Admin Model Router primary, fallback, telemetry and cost in runtime",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-admin-model-router-20260929.json",
+  "runtime_validated_sha": "bc96fb8fea184404e52972b3d164047b46a3ac0a",
+  "completed_at": "2026-09-29T22:23:30Z",
+  "result_summary": "UGO TEST verified 3 READY zero-cost routes, Gemini primary runtime, controlled OpenRouter fallback, persisted telemetry, Admin visibility, contract/TypeScript regressions, Judge PASS and Sentinel PASS. Production untouched."
 }
