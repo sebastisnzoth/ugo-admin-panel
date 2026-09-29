@@ -427,12 +427,20 @@ const status = {
     retry_backoff: allWork.filter(x => x.gate_state === 'RETRY_BACKOFF').length,
     failed_review: allWork.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
   },
-  next_movement: runnable[0] || allWork.find(x => x.gate_state === 'IN_PROGRESS') || allWork.find(x => x.gate_state === 'HUMAN_REQUIRED') || allWork[0] || null,
+  next_movement: runnable[0]
+    || allWork.find(x => x.gate_state === 'IN_PROGRESS')
+    || allWork.find(x => ['FAILED_REQUIRES_REVIEW','STALE_LOCK','RETRY_BACKOFF'].includes(x.gate_state))
+    || allWork.find(x => x.gate_state === 'HUMAN_REQUIRED')
+    || allWork[0]
+    || null,
   refresh_policy: {
     mode: 'EVENT_PLUS_SCHEDULE',
     minutes: 5,
   },
-  needs_sergio_now: allWork.some(x => x.owner.includes('SERGIO')),
+  needs_sergio_now:
+    runnable.length === 0
+    && !allWork.some(x => ['IN_PROGRESS','FAILED_REQUIRES_REVIEW','STALE_LOCK','RETRY_BACKOFF'].includes(x.gate_state))
+    && allWork.some(x => x.gate_state === 'HUMAN_REQUIRED'),
 }
 
 writeFileSync(outPath, JSON.stringify(status, null, 2) + '\n')
