@@ -1,0 +1,60 @@
+{
+  "task_id": "release-gate",
+  "job_id": "UGO-RELEASE-GATE",
+  "status": "DONE",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "77dcf1d32703ca038a63bdd1dc384d66ca93c96d",
+  "runtime_source_sha": "7a3e9b7c5242bf79d5ae76ee289abd3a901a3e3a",
+  "correlation_id": "a4d1f0d2-7e41-4ef6-9c5b-1a6b7d2f1906",
+  "autonomous_job_id": "29bb02e4-e136-4a05-bb5a-ceb7fb09911b",
+  "actual": {
+    "status": "BLOCKED",
+    "blockers": [
+      "QA_COVERAGE_INCOMPLETE",
+      "CUSTOMER_ACCEPTANCE_NOT_APPROVED"
+    ]
+  },
+  "negative_control": {
+    "status": "BLOCKED",
+    "blockers": [
+      "QA_COVERAGE_INCOMPLETE"
+    ]
+  },
+  "positive_control": {
+    "status": "READY",
+    "blockers": []
+  },
+  "independent_judge": {
+    "result": "PASS",
+    "persisted_job_status": "SUCCEEDED",
+    "evidence_ledger_count": 1,
+    "decision_ledger_count": 1,
+    "recomputed_blockers": [
+      "QA_COVERAGE_INCOMPLETE",
+      "CUSTOMER_ACCEPTANCE_NOT_APPROVED"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "release_gate_agent_status": "DISABLED",
+    "deterministic_judge_status": "IDLE",
+    "correlation_running_jobs": 0,
+    "enabled_kill_switches": 0,
+    "autonomy_mode": "OFF"
+  },
+  "security": {
+    "validation_rpc_anon_execute": false,
+    "validation_rpc_authenticated_execute": false,
+    "validation_rpc_service_role_execute": true,
+    "fixed_search_path": true
+  },
+  "notes": [
+    "Authoritative CUSTOMER_1 remained blocked from current persisted TEST state.",
+    "Human acceptance was not fabricated or modified.",
+    "Positive READY case used the same deterministic blocker evaluator with a controlled all-requirements-satisfied TEST snapshot.",
+    "Release gate specialist remained DISABLED; evidence was emitted by the GREEN deterministic-judge."
+  ],
+  "verified_at": "2026-09-29T19:14:00Z"
+}
