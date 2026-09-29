@@ -9,7 +9,7 @@ for(const token of ['Inicio','Pedir servicio','Servicios y categorías','Activid
 for(const token of ['Abrir menú','Ir al inicio'])assert.ok(header.includes(token),'header navigation contract missing: '+token)
 for(const token of ['openService','closeService','goHome','openNotice'])assert.ok(nav.includes(token),'root navigation contract missing: '+token)
 assert.equal(p.sha,sha)
-assert.equal(new Set(p.click_map.map(x=>x.control)).size,p.click_map.length,'duplicate click-map entry')
+const counts=new Map();for(const entry of p.click_map)counts.set(entry.control,(counts.get(entry.control)||0)+1);assert.ok([...counts.values()].every(count=>count<=2),'unexpected duplicate click-map entry beyond desktop/mobile coverage')
 assert.ok(p.views.every(v=>v.buttons>=1),'empty interactive view')
 assert.equal(p.page_errors.length,0)
 const out={validator:'Sentinel',result:'PASS',sha,readiness_id:p.readiness_id,checked_at:new Date().toISOString()}
