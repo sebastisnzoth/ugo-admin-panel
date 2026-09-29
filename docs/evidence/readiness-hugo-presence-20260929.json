@@ -1,0 +1,119 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "hugo-presence",
+  "task_id": "readiness-hugo-presence",
+  "job_id": "UGO-READINESS-HUGO-PRESENCE",
+  "correlation_id": "readiness-hugo-presence-20260929T204700Z",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "started_sha": "d27e7047d64a8816dfe38b79769adbc0a15ab4bc",
+  "implementation": {
+    "admin_session_fix_sha": "cc382d6163ae6174c71cc228ff04a8d418a351ab",
+    "validator_pipeline_sha": "92f97c3bf7baeec409d5c5c8fd07a477ccceffd6",
+    "changes": [
+      "Admin Hugo role resolution now reuses the already-authorized local Supabase session instead of a redundant auth.getUser request that could transiently hide Hugo.",
+      "Dedicated browser regression verifies Hugo in Client, Provider and Admin on desktop and mobile.",
+      "Independent Judge re-derives the result from persisted six-role/viewport observations.",
+      "Sentinel verifies global mounts, authorized-session role derivation and fixed/mobile positioning rules."
+    ]
+  },
+  "runtime_proof": {
+    "workflow_run_id": 36631312555,
+    "workflow_job_id": 109620958158,
+    "head_sha": "92f97c3bf7baeec409d5c5c8fd07a477ccceffd6",
+    "artifact_id": 11062214387,
+    "artifact_name": "hugo-presence-runtime-92f97c3bf7baeec409d5c5c8fd07a477ccceffd6",
+    "artifact_digest": "sha256:630872d4c996f05305f1d8baf78f963cb321fdc35beb12183d6ff71f85f6d62a",
+    "result": "PASS",
+    "observations": [
+      {
+        "role": "client",
+        "viewport": "1440x1000",
+        "aria": "Hugo, controlador por voz del cliente",
+        "status": "PASS"
+      },
+      {
+        "role": "provider",
+        "viewport": "1440x1000",
+        "aria": "Hugo, controlador por voz del proveedor",
+        "status": "PASS"
+      },
+      {
+        "role": "admin",
+        "viewport": "1440x1000",
+        "aria": "Abrir Hugo Super Admin",
+        "status": "PASS"
+      },
+      {
+        "role": "client",
+        "viewport": "390x844",
+        "aria": "Hugo, controlador por voz del cliente",
+        "status": "PASS"
+      },
+      {
+        "role": "provider",
+        "viewport": "390x844",
+        "aria": "Hugo, controlador por voz del proveedor",
+        "status": "PASS"
+      },
+      {
+        "role": "admin",
+        "viewport": "390x844",
+        "aria": "Abrir Hugo Super Admin",
+        "status": "PASS"
+      }
+    ],
+    "all_triggers_inside_viewport": true,
+    "all_triggers_lower_non_invasive_zone": true
+  },
+  "regression": {
+    "core_ci_run_id": 36630903554,
+    "core_ci_result": "SUCCESS",
+    "contract_file": "tests/contracts/admin-hugo-role-context.test.mjs",
+    "dedicated_runtime_script": "scripts/hugo-presence-runtime.mjs",
+    "judge_script": "scripts/hugo-presence-judge.mjs",
+    "sentinel_script": "scripts/hugo-presence-sentinel.mjs",
+    "workflow": ".github/workflows/hugo-presence-runtime.yml"
+  },
+  "prior_failures": [
+    {
+      "run_id": 36629086885,
+      "category": "TEST_HARNESS_GEOMETRY",
+      "resolution": "Measure the visible trigger instead of the full Hugo container."
+    },
+    {
+      "run_id": 36629493359,
+      "category": "TEST_HARNESS_LOCALIZED_LABEL",
+      "resolution": "Assert the rendered Spanish provider label."
+    },
+    {
+      "run_id": 36630455068,
+      "category": "PRODUCT_ADMIN_AUTH_RACE",
+      "resolution": "AdminPhase2 now derives role from the authorized local session; permanent regression added."
+    }
+  ],
+  "judge": {
+    "validator": "Judge",
+    "result": "PASS",
+    "evidence_file": "artifact:hugo-presence-judge.json",
+    "basis": [
+      "All six Client/Provider/Admin desktop/mobile runtime observations are present and PASS.",
+      "All visible Hugo triggers are fully inside their viewport.",
+      "All visible Hugo triggers remain in the lower non-invasive zone.",
+      "Runtime evidence SHA matches the validator SHA."
+    ]
+  },
+  "sentinel": {
+    "validator": "Sentinel",
+    "result": "PASS",
+    "evidence_file": "artifact:hugo-presence-sentinel.json",
+    "basis": [
+      "Client and Provider mount their Hugo bridge globally.",
+      "Admin mounts ConversationalOrb from a role derived from the authorized session and verified profile.",
+      "Desktop/mobile fixed-position rules are present.",
+      "All runtime observations passed in UGO TEST and production was not touched."
+    ]
+  },
+  "evidence_id": "hugo-presence-runtime-20260929T211113Z",
+  "verified_at": "2026-09-29T21:11:13Z"
+}
