@@ -96,3 +96,11 @@ test('fail-closed regression matrix protects all nine forbidden certification sh
  assert.doesNotMatch(migration,/qa-independent:uploaded-media-bytes/)
  assert.doesNotMatch(migration,/qa-independent:real-customer-acceptance/)
 })
+
+
+test('GPS independent QA run writes only columns present in autonomous_qa_runs',()=>{
+ const gpsFn=migration.slice(migration.indexOf('autonomous_qa_run_gps_independent_evidence'))
+ assert.match(gpsFn,/insert into public\.autonomous_qa_runs\(scenario_id,correlation_id,status,simulator_results,judge_result,started_at,finished_at\)/)
+ assert.doesNotMatch(gpsFn,/autonomous_qa_runs\(scenario_id,service_id/)
+ assert.match(gpsFn,/'BLOCKED'/)
+})
