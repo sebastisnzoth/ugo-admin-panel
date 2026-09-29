@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { scheduleTasks } from './ugo-scheduler-engine.mjs'
 
 const [sourcePath, outPath, sourceSha, publishedAt] = process.argv.slice(2)
 if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
@@ -8,6 +9,7 @@ if (!sourcePath || !outPath || !sourceSha || !publishedAt) {
 
 const source = readFileSync(sourcePath, 'utf8')
 const evidenceUrl = 'https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
+const schedulerPolicy = JSON.parse(readFileSync('docs/UGO_SCHEDULER_POLICY.json','utf8'))
 
 const must = (re, label) => {
   const match = source.match(re)
@@ -271,41 +273,26 @@ const finalGateSteps = blockersMatch.slice(1, 4).map((code, index) => ({
 }))
 
 const allWork = [...implementationSteps, ...finalGateSteps]
-const activeLocks = []
+const workLocks = []
 const workLocksDir = 'docs/ugo-work-locks'
 if (existsSync(workLocksDir)) {
   for (const name of readdirSync(workLocksDir)) {
     if (!name.endsWith('.json')) continue
     try {
-      const lock = JSON.parse(readFileSync(join(workLocksDir, name), 'utf8'))
-      if (['IN_PROGRESS','QUEUED','WAITING_EVIDENCE'].includes(lock.status)) activeLocks.push(lock)
-    } catch {}
+      workLocks.push(JSON.parse(readFileSync(join(workLocksDir, name), 'utf8')))
+    } catch (error) {
+      if (schedulerPolicy.fail_closed_on_invalid_lock) throw new Error(`Invalid scheduler lock ${name}: ${error.message}`)
+    }
   }
 }
-const pendingIds = new Set(allWork.map(x => x.id))
-const intersects = (a=[], b=[]) => a.some(x => b.includes(x))
-for (const step of allWork) {
-  const unresolvedDeps = (step.depends_on || []).filter(id => pendingIds.has(id))
-  const ownLock = activeLocks.find(lock => lock.task_id === step.id)
-  const conflict = activeLocks.find(lock => lock.task_id !== step.id && intersects(step.resources || [], lock.resources || []))
-  if (ownLock) {
-    step.gate_state = 'IN_PROGRESS'
-    step.gate_reason = 'Trabajo activo persistido en el repo.'
-    step.active_lock = ownLock
-  } else if (unresolvedDeps.length) {
-    step.gate_state = 'BLOCKED_DEPENDENCY'
-    step.gate_reason = 'Debe completarse antes: ' + unresolvedDeps.join(', ')
-    step.blocked_by = unresolvedDeps
-  } else if (conflict) {
-    step.gate_state = 'WAITING_CONFLICT'
-    step.gate_reason = 'Recurso compartido en uso por ' + conflict.task_id
-    step.blocked_by = [conflict.task_id]
-  } else {
-    step.gate_state = 'AVAILABLE'
-    step.gate_reason = 'Puede ejecutarse ahora sin dependencias pendientes ni conflicto de recursos.'
-  }
-}
-const runnable = allWork.filter(x => x.gate_state === 'AVAILABLE')
+
+const plan = scheduleTasks({
+  tasks: allWork,
+  locks: workLocks,
+  policy: schedulerPolicy,
+  now: new Date(publishedAt),
+})
+const runnable = plan.runnable
 
 const status = {
   title: 'UGO Implementation Command Center',
@@ -336,7 +323,16 @@ const status = {
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
   implementation_steps: implementationSteps,
   final_gate_steps: finalGateSteps,
-  active_locks: activeLocks,
+  active_locks: plan.activeLocks,
+  stale_locks: plan.staleLocks,
+  scheduler: plan.summary,
+  scheduler_policy: {
+    version: schedulerPolicy.version,
+    max_parallel_tasks: schedulerPolicy.max_parallel_tasks,
+    default_lease_minutes: schedulerPolicy.default_lease_minutes,
+    max_attempts: schedulerPolicy.max_attempts,
+    fairness: schedulerPolicy.fairness,
+  },
   runnable_steps: runnable.map(x => x.id),
   counts: {
     implementation_pending: implementationSteps.length,
@@ -346,9 +342,13 @@ const status = {
     runnable_now: runnable.length,
     in_progress: allWork.filter(x => x.gate_state === 'IN_PROGRESS').length,
     blocked_dependency: allWork.filter(x => x.gate_state === 'BLOCKED_DEPENDENCY').length,
-    waiting_conflict: allWork.filter(x => x.gate_state === 'WAITING_CONFLICT').length,
+    waiting_conflict: allWork.filter(x => ['WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY'].includes(x.gate_state)).length,
+    stale_locks: plan.staleLocks.length,
+    human_required: allWork.filter(x => x.gate_state === 'HUMAN_REQUIRED').length,
+    retry_backoff: allWork.filter(x => x.gate_state === 'RETRY_BACKOFF').length,
+    failed_review: allWork.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
   },
-  next_movement: runnable[0] || allWork.find(x => x.gate_state === 'IN_PROGRESS') || allWork[0] || null,
+  next_movement: runnable[0] || allWork.find(x => x.gate_state === 'IN_PROGRESS') || allWork.find(x => x.gate_state === 'HUMAN_REQUIRED') || allWork[0] || null,
   refresh_policy: {
     mode: 'EVENT_PLUS_SCHEDULE',
     minutes: 5,
@@ -357,4 +357,4 @@ const status = {
 }
 
 writeFileSync(outPath, JSON.stringify(status, null, 2) + '\n')
-console.log(`UGO Pages command center · implementation pending ${status.counts.implementation_pending} · final blockers ${status.counts.final_gate_blockers}`)
+console.log(`UGO Scheduler ${plan.summary.policy_version} · runnable ${status.counts.runnable_now} · active ${status.counts.in_progress} · stale ${status.counts.stale_locks} · pending ${status.counts.total_visible_work_items}`)
