@@ -17,7 +17,9 @@ test('autonomous dashboard uses exact totals and paged rows instead of LIMIT 100
 })
 
 test('governance integration fixtures have real owners and deterministic cleanup',()=>{
- assert.match(integration,/governanceAgent\.id/)
+ assert.match(integration,/yellowGovernanceAgent\.id/)
+ assert.match(integration,/redGovernanceAgent\.id/)
+ assert.match(integration,/technologyAgent\.id/)
  assert.doesNotMatch(integration,/p_department_id:14,p_agent_id:null/)
  assert.match(integration,/isolated governance fixture cleanup/)
  assert.match(integration,/governance runtime must not leak executable approval fixtures/)
