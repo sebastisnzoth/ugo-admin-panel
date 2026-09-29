@@ -2,10 +2,10 @@
   "task_id": "super-admin-ui",
   "job_id": "UGO-SUPER-ADMIN-UI",
   "title": "Runtime-validar la UI de Super Admin en el entorno aplicable",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-29T17:44:45Z",
-  "heartbeat_at": "2026-09-29T18:00:00Z",
-  "lease_expires_at": "2026-09-29T18:45:00Z",
+  "heartbeat_at": "2026-09-29T18:03:00Z",
+  "lease_expires_at": "2026-09-29T18:03:00Z",
   "started_sha": "c796b4ec42c75c7dce8d6474ae1de5cb2b0ab1fb",
   "owner": "UGO",
   "department": "Producto / Frontend",
@@ -24,12 +24,38 @@
     "preview-runtime"
   ],
   "correlation_id": "6b754ec7-c53f-48dc-bd3e-8fe51eb5687d",
-  "current_step": "FINAL_RUNTIME_ATTEMPT",
+  "current_step": "MAX_ATTEMPTS_EXHAUSTED_SELECTOR_HARNESS",
   "attempt": 3,
   "evidence_ids": [
     "repo:scripts/super-admin-ui-runtime.mjs",
     "repo:.github/workflows/isolated-rpc-rls.yml",
     "github-actions:run:36608117553:FAILED_PRE_UI_BACKEND_READ",
-    "github-actions:run:36608363909:FAILED_UI_SESSION_MOUNT"
-  ]
+    "github-actions:run:36608363909:FAILED_UI_SESSION_MOUNT",
+    "github-actions:run:36608610224:FAILURE",
+    "github-actions:artifact:11051764354",
+    "github-actions:artifact-digest:sha256:be39ffa94b18368bfd122103e1af134141d6252884ff3564a595bf384808f08c",
+    "runtime-sha:38be9a0908fbee116495db1daf75850a2df57937",
+    "artifact:super-admin-ui-failure.txt:UI_AUTHENTICATED_SUPERADMIN_VISIBLE",
+    "artifact:super-admin-ui-failure.png"
+  ],
+  "completed_at": "2026-09-29T18:03:00Z",
+  "runtime_validated_sha": null,
+  "failure": {
+    "category": "TEST_HARNESS_SELECTOR",
+    "reason": "Browser reached authenticated UGO TEST Super Admin shell, but Playwright exact accessible-name selector for 'Super Admin' timed out because rendered button includes the leading icon glyph.",
+    "product_ui_observed": true,
+    "done_criteria_met": false,
+    "max_attempts_exhausted": true,
+    "next_safe_fix": "Use a non-exact accessible-name selector (for example /Super Admin/) and rerun only after scheduler policy permits a new attempt."
+  },
+  "validators_result": {
+    "judge": "NOT_RUN_RUNTIME_PROOF_INCOMPLETE",
+    "sentinel": "NOT_RUN_JUDGE_NOT_PASS"
+  },
+  "remaining_verifiable_steps": [
+    "Correct the Playwright Super Admin navigation selector without changing product behavior.",
+    "Run UGO Super Admin UI Runtime TEST on one exact SHA and complete Autonomy, QA, Model Router, Risk/Audit, Timeline and Launch Gate checks.",
+    "Require Judge PASS then Sentinel PASS and persist immutable runtime artifacts for that same SHA."
+  ],
+  "main_sha_at_failure": "56cf41a4832ad5a4a4a9ae9c0a39d0fa591856c7"
 }
