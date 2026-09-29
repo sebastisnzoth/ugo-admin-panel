@@ -393,6 +393,28 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   }
 
   const openUgoMasterForStep = async step => {
+    try {
+      const freshResponse = await fetch('status.json?ts=' + Date.now(), {cache:'no-store'})
+      if (freshResponse.ok) {
+        const freshStatus = await freshResponse.json()
+        statusSnapshot = freshStatus
+        const freshSteps = [...(freshStatus.implementation_steps || []), ...(freshStatus.final_gate_steps || [])]
+        const freshStep = freshSteps.find(x => x.id === step.id)
+        if (!freshStep) {
+          alert('Este paso ya no está pendiente. UGO no lo repetirá. Revalidá el panel para ver el siguiente trabajo.')
+          renderSyncState()
+          return
+        }
+        step = freshStep
+        if (!canOpenUgoMaster(step)) {
+          alert('Este paso cambió de estado a ' + (gateLabel(step) || step.gate_state) + '. Revalidá el panel antes de continuar.')
+          return
+        }
+      }
+    } catch (error) {
+      console.warn('No se pudo revalidar status.json antes de abrir UGO Maestro.', error)
+    }
+
     saveDispatch(step, 'UGO_MAESTRO')
     const prompt = step.gate_state === 'HUMAN_REQUIRED' ? buildHumanPrompt(step) : buildChatGPTPrompt(step)
     const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
