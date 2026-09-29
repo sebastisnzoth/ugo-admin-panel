@@ -27,6 +27,7 @@
 .monitor-box{background:#0b1425;border:1px solid var(--line);border-radius:14px;padding:14px;min-height:110px}
 .monitor-box strong{display:block;margin-bottom:8px}.live-dot{width:9px;height:9px;border-radius:50%;background:#86efac;display:inline-block;margin-right:7px;box-shadow:0 0 0 5px rgba(134,239,172,.08)}
 .activity-list{display:grid;gap:8px}.activity-item{padding:10px 0;border-bottom:1px solid var(--line)}.activity-item:last-child{border-bottom:0}
+.sync-strip{margin-top:12px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0b1425}.sync-strip .sha{font:700 .78rem ui-monospace,SFMono-Regular,Menlo,monospace;color:#dce8f8}.sync-strip.ok{border-color:#2f6f55}.sync-strip.warn{border-color:#8a6a2d}.sync-strip.bad{border-color:#8b3a3a}.sync-note{font-size:.78rem;color:var(--muted)}
 .state-big{font-size:1.25rem;font-weight:850}.tiny{font-size:.78rem;color:var(--muted)}
 footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#7f93b1;font-size:.88rem}
     @media(max-width:1000px){.metrics{grid-template-columns:repeat(2,1fr)}.grid,.monitor-grid{grid-template-columns:1fr}}@media(max-width:620px){.metrics{grid-template-columns:1fr}.step{grid-template-columns:1fr}.step-index{font-size:1.15rem}}
@@ -75,6 +76,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       <summary>Ver actividad observable</summary>
       <div class="activity-list" id="liveActivity"><div class="activity-item">Consultando…</div></div>
     </details>
+    <div class="sync-strip warn" id="syncStrip" aria-live="polite">
+      <div>
+        <b id="syncState">Verificando sincronización…</b>
+        <div class="sync-note" id="syncNote">Comparando snapshot publicado con HEAD real de main.</div>
+      </div>
+      <div class="sha" id="snapshotSha">snapshot —</div>
+      <div class="sha" id="mainSha">main —</div>
+    </div>
   </section>
 
   <section class="card" style="margin-top:14px">
@@ -205,6 +214,50 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       </div>
     </article>`
   let statusSnapshot = null
+  let mainHeadSha = null
+  let mainHeadCheckedAt = null
+  const renderSyncState = () => {
+    const strip = document.getElementById('syncStrip')
+    const state = document.getElementById('syncState')
+    const note = document.getElementById('syncNote')
+    const snapshot = statusSnapshot?.source_sha || null
+    document.getElementById('snapshotSha').textContent = 'snapshot ' + (snapshot ? snapshot.slice(0,12) : '—')
+    document.getElementById('mainSha').textContent = 'main ' + (mainHeadSha ? mainHeadSha.slice(0,12) : '—')
+    if (!snapshot || !mainHeadSha) {
+      strip.className = 'sync-strip warn'
+      state.textContent = 'SINCRONIZACIÓN NO VERIFICADA'
+      note.textContent = 'Falta una de las dos referencias; no se infiere que el panel esté al día.'
+      return
+    }
+    if (snapshot === mainHeadSha) {
+      strip.className = 'sync-strip ok'
+      state.textContent = 'PANEL SINCRONIZADO'
+      note.textContent = 'El snapshot publicado coincide con HEAD real de main.'
+      return
+    }
+    strip.className = 'sync-strip warn'
+    state.textContent = 'PANEL ACTUALIZÁNDOSE'
+    note.textContent = 'main avanzó después del snapshot publicado. Los estados visibles pueden quedar atrás hasta la próxima publicación; no repitas trabajo sólo por esta vista.'
+  }
+  const loadMainHead = () => fetch('https://api.github.com/repos/sebastisnzoth/ugo-admin-panel/commits/main', {
+    cache:'no-store',
+    headers:{'Accept':'application/vnd.github+json'}
+  }).then(r => {
+    if (!r.ok) throw new Error('GitHub HEAD HTTP ' + r.status)
+    return r.json()
+  }).then(commit => {
+    mainHeadSha = commit.sha || null
+    mainHeadCheckedAt = new Date().toISOString()
+    renderSyncState()
+    return mainHeadSha
+  }).catch(err => {
+    const strip = document.getElementById('syncStrip')
+    strip.className = 'sync-strip bad'
+    document.getElementById('syncState').textContent = 'HEAD DE MAIN NO DISPONIBLE'
+    document.getElementById('syncNote').textContent = 'No se pudo comparar el snapshot con main; mantener estado como no verificado.'
+    console.error(err)
+    return null
+  })
   const buildChatGPTPrompt = step => [
     'UGO — RESOLVER PASO DEL CAMINO HASTA DONE',
     '',
@@ -458,6 +511,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return r.json()
   }).then(s => {
     statusSnapshot = s
+    renderSyncState()
     const currentIds = new Set([...(s.implementation_steps || []), ...(s.final_gate_steps || [])].map(x => x.id))
     const cleanedDispatches = getDispatches().filter(x => currentIds.has(x.step_id))
     localStorage.setItem(dispatchKey, JSON.stringify(cleanedDispatches))
@@ -526,7 +580,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   loadStatus()
   loadCi()
   loadLiveMonitor()
-  const revalidate = () => Promise.allSettled([loadStatus(), loadCi(), loadLiveMonitor()])
+  loadMainHead()
+  const revalidate = () => Promise.allSettled([loadStatus(), loadCi(), loadLiveMonitor(), loadMainHead()])
   document.getElementById('revalidateNow').addEventListener('click', () => {
     const button = document.getElementById('revalidateNow')
     button.textContent = 'Revalidando…'
@@ -551,8 +606,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       button.textContent = '↻ Actualizar página y flujo'
     }
   })
-  setInterval(revalidate, 300000)
-  setInterval(loadLiveMonitor, 90000)
+  setInterval(() => Promise.allSettled([loadStatus(), loadCi()]), 60000)
+  setInterval(loadLiveMonitor, 45000)
+  setInterval(loadMainHead, 90000)
 })()
 </script>
 </body>
