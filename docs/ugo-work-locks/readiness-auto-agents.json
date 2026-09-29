@@ -1,0 +1,32 @@
+{
+  "readiness_id": "auto-agents",
+  "task_id": "readiness-auto-agents",
+  "job_id": "UGO-READINESS-AUTO-AGENTS",
+  "title": "Verify autonomous agents and specialists distinguish cataloged, enabled, executed, and verified with trigger+executor+Judge+Sentinel proof",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T22:15:00Z",
+  "heartbeat_at": "2026-09-29T22:15:00Z",
+  "lease_expires_at": "2026-09-29T23:00:00Z",
+  "started_sha": "19a1d71bb1ded150d1a30ba7b7279d03a56ae5cf",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "Autonomy Registry Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-job-execution",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-registry"
+  ],
+  "correlation_id": "readiness-auto-agents-20260929T221500Z-19a1d71b",
+  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME_PATH",
+  "attempt": 1,
+  "evidence_ids": []
+}
