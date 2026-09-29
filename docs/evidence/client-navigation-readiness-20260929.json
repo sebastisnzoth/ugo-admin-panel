@@ -1,0 +1,68 @@
+{
+  "readiness_id": "client-navigation",
+  "correlation_id": "UGO-CLIENT-NAV-20260929-1721",
+  "repository": "sebastisnzoth/ugo-admin-panel",
+  "base_branch": "main",
+  "source_main_sha": "1bc7bccccd0ca503e81c561131429e682bc36d01",
+  "remediation_branch": "fix/client-navigation-readiness-20260929",
+  "remediation_head_sha": "6fc616b4e435b86cb260313ecd939b333145d7dd",
+  "pull_request": 283,
+  "scope": "App Cliente / navegación, menús y rutas",
+  "findings": [
+    {
+      "id": "CLIENT-NAV-001",
+      "severity": "P1",
+      "status": "FIXED_IN_PR",
+      "description": "El menú Hugo / Asistente IA navegaba a la ruta legacy search; ClientProviderRadarBridge devuelve search/provider a home, creando un rebote que hacía la acción equivalente a un botón muerto.",
+      "remediation": "El menú ahora navega al flujo canónico request y emite clientHugo."
+    },
+    {
+      "id": "CLIENT-NAV-002",
+      "severity": "P1",
+      "status": "FIXED_IN_PR",
+      "description": "ClientGlobalVoiceCommands estaba montado en ClientRoot y nuevamente dentro de ClientGlobalSurfaces, duplicando listeners globales de navegación por voz.",
+      "remediation": "Se conserva un único montaje dentro de ClientGlobalSurfaces."
+    }
+  ],
+  "regression": {
+    "file": "tests/contracts/client-navigation-readiness.test.mjs",
+    "assertions": [
+      "Hugo menu targets request, never legacy search",
+      "global voice navigation listener mounts exactly once",
+      "home exposes history/profile/request destinations",
+      "history/profile/request expose deterministic home/back exits"
+    ]
+  },
+  "automated_checks": {
+    "github_pr_mergeable": true,
+    "github_actions_runs": 0,
+    "vercel": {
+      "state": "failure",
+      "reason": "build-rate-limit"
+    },
+    "netlify_preview": {
+      "deploy_id": "6abc1e79cc7a2f000826383f",
+      "commit_ref": "6fc616b4e435b86cb260313ecd939b333145d7dd",
+      "context": "deploy-preview",
+      "state": "error",
+      "error_message": "Failed during stage 'building site': Build script returned non-zero exit code: 2"
+    }
+  },
+  "runtime_proof": {
+    "status": "NOT_AVAILABLE",
+    "reason": "No preview del remediation SHA quedó publicable: Vercel bloqueado por rate limit y Netlify build error."
+  },
+  "independent_validation": {
+    "judge": "PENDING_RUNTIME_PROOF",
+    "sentinel": "PENDING_RUNTIME_PROOF"
+  },
+  "final_status": "NEEDS_RUNTIME_PROOF",
+  "readiness_file_changed": false,
+  "production_touched": false,
+  "next_required_proof": [
+    "Obtener un TEST/Preview exitoso del remediation SHA (o del SHA de main luego de integración segura).",
+    "Recorrer Inicio, Servicios, Actividad, Perfil, Notificaciones, Hugo, Ayuda/Disputa y retorno desde overlays sin botón muerto, loop o pantalla inaccesible.",
+    "Registrar Judge PASS y Sentinel PASS sobre el mismo SHA.",
+    "Recién entonces actualizar docs/UGO_FUNCTIONAL_READINESS.json a VERIFIED."
+  ]
+}
