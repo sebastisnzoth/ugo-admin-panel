@@ -68,9 +68,17 @@ try{
   await page.getByRole('main',{name:'Qué hay que hacer'}).waitFor({state:'visible',timeout:15000})
   const description=page.getByRole('textbox',{name:'Descripción del trabajo'})
   await description.fill(expected.description)
-  await page.getByRole('button',{name:/Continuar/}).click()
-
-  await page.getByRole('main',{name:'Dónde es el servicio'}).waitFor({state:'visible',timeout:15000})
+  const needContinue=page.locator('.ugo-need-screen footer button').filter({hasText:'Continuar'}).first()
+  await needContinue.waitFor({state:'visible',timeout:15000})
+  await page.waitForFunction(()=>{const button=document.querySelector('.ugo-need-screen footer button');return button instanceof HTMLButtonElement&&!button.disabled},null,{timeout:20000})
+  await needContinue.click()
+  try{
+    await page.getByRole('main',{name:'Dónde es el servicio'}).waitFor({state:'visible',timeout:20000})
+  }catch(error){
+    const alert=await page.getByRole('alert').first().textContent().catch(()=>null)
+    const screen=await page.locator('.ugo-need-screen').innerText().catch(()=>null)
+    throw new Error('Client request did not advance from need to location. alert='+String(alert)+' screen='+String(screen),{cause:error})
+  }
   await page.getByRole('button',{name:/Usar mi ubicación/}).click()
   const addressInput=page.locator('input[autocomplete="street-address"]')
   await addressInput.waitFor({state:'visible',timeout:10000})
