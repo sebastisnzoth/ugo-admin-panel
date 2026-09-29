@@ -62,6 +62,7 @@ Seleccionar automáticamente según el alcance; combinar sólo las necesarias:
 - `ugo-runtime-validation`: prueba real UGO TEST/Preview con backend autoritativo.
 - `ugo-evidence-judge`: Decision/Evidence Ledger, criterios DONE y Judge independiente.
 - `ugo-recovery`: stale locks, fallos, rollback y recuperación segura.
+- `ugo-readiness-orchestrator`: READINESS_ID, locks, PRs, runtime, Judge/Sentinel y sincronización del Command Center.
 
 No crear una nueva Skill salvo que tenga reutilización real, reglas propias y reduzca coordinación o errores. Ver criterios en `docs/UGO_AI_AGENT_SYSTEM_MASTER.md`.
 
