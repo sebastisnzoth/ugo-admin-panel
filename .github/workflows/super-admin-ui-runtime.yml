@@ -7,6 +7,9 @@ on:
       - "scripts/super-admin-ui-runtime.mjs"
       - "scripts/super-admin-ui-judge.mjs"
       - "scripts/super-admin-ui-sentinel.mjs"
+      - "src/mvp/SuperAdminCommandCenter.tsx"
+      - "src/mvp/AutonomousCorporationDashboard.tsx"
+      - "tests/contracts/autonomous-dashboard-integrity.test.mjs"
       - ".github/workflows/super-admin-ui-runtime.yml"
   workflow_dispatch:
 
