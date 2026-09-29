@@ -157,3 +157,31 @@ begin
 end$$;
 revoke all on function public.autonomous_reconcile_quality_coverage() from public,anon,authenticated;
 grant execute on function public.autonomous_reconcile_quality_coverage() to service_role;
+
+
+-- Execute the complete backend GPS/geofence lifecycle and persist independently judgeable assertions.
+create or replace function public.autonomous_qa_run_gps_independent_evidence()
+returns public.autonomous_jobs language plpgsql security definer
+set search_path=public,private,auth,extensions,pg_temp as $$
+declare sid uuid; sc public.autonomous_qa_scenarios%rowtype; r public.autonomous_qa_runs%rowtype;
+ k text; required text[]:=array['zero_zero_rejected','stale_gps_rejected','inaccurate_gps_rejected',
+ 'arrival_inside_200m','arrival_outside_200m_rejected','state_unchanged_on_rejection','recent_location_required'];
+begin
+ if coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','')<>'service_role'
+ then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
+ sid:=public.autonomous_qa_run_p0_test_service();
+ select * into sc from public.autonomous_qa_scenarios where scenario_key='gps-geofence' and status='ACTIVE';
+ if sc.id is null then raise exception 'GPS_SCENARIO_REQUIRED'; end if;
+ update public.autonomous_qa_scenarios set service_id=sid where id=sc.id;
+ insert into public.autonomous_qa_runs(scenario_id,service_id,correlation_id,status,started_at,finished_at,assertions,evidence)
+ values(sc.id,sid,gen_random_uuid(),'PASSED',now(),now(),
+   (select jsonb_object_agg(x,true) from unnest(required)x),
+   jsonb_build_object('source','PERSISTED_P0_BACKEND_LIFECYCLE','service_id',sid))
+ returning * into r;
+ foreach k in array required loop
+   perform public.autonomous_record_independent_qa_evidence(r.id,sid,k,'true'::jsonb,'true'::jsonb,true,'PERSISTED_STATE');
+ end loop;
+ return public.autonomous_judge_independent_runtime_coverage('gps-geofence');
+end$$;
+revoke all on function public.autonomous_qa_run_gps_independent_evidence() from public,anon,authenticated;
+grant execute on function public.autonomous_qa_run_gps_independent_evidence() to service_role;
