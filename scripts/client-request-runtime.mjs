@@ -18,9 +18,15 @@ const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,pa
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
 
+const {data:activeCategories,error:categoriesError}=await auth.from('categorias').select('id,nombre,slug,emoji').eq('activa',true).order('nombre')
+assert.ifError(categoriesError)
+assert.ok(activeCategories?.length,'UGO TEST requires at least one active category')
+const selectedCategory=activeCategories.find(category=>/plomer|limpeza|electric|repar/i.test(String(category.slug||'')+' '+String(category.nombre||'')))||activeCategories[0]
 const expected={
-  category:'Plomería',
-  description:'Reparar pérdida de agua de prueba readiness client-request',
+  category:String(selectedCategory.nombre),
+  categoryId:String(selectedCategory.id),
+  categorySlug:String(selectedCategory.slug||''),
+  description:String(selectedCategory.nombre)+': solicitud de prueba readiness client-request con detalle suficiente',
   latitude:-27.438,
   longitude:-48.477,
   address:'Rua das Flores 321, Canasvieiras, Florianópolis',
@@ -51,9 +57,12 @@ try{
   await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
 
-  const categoryButton=page.getByRole('button',{name:/Plomería/i}).first()
+  const showAll=page.getByRole('button',{name:/Ver todas/}).first()
+  await showAll.waitFor({state:'visible',timeout:15000})
+  await showAll.click()
+  const categoryButton=page.locator('.ugo-home-all-results button').filter({hasText:expected.category}).first()
   await categoryButton.waitFor({state:'visible',timeout:15000})
-  assert.equal(await categoryButton.isDisabled(),false,'Plomería category unavailable in TEST')
+  assert.equal(await categoryButton.isDisabled(),false,expected.category+' active category unavailable in TEST UI')
   await categoryButton.click()
 
   await page.getByRole('main',{name:'Qué hay que hacer'}).waitFor({state:'visible',timeout:15000})
@@ -104,6 +113,7 @@ try{
 
   const {data:cat,error:catError}=await auth.from('categorias').select('id,nombre,slug').eq('id',backendRow.categoria_id).single()
   assert.ifError(catError)
+  assert.equal(String(cat?.id),expected.categoryId,'persisted category id mismatch')
   assert.equal(cat?.nombre,expected.category,'persisted category mismatch')
   assert.equal(backendRow.descripcion,expected.description,'persisted description mismatch')
   assert.match(String(backendRow.direccion_cliente||''),/Rua das Flores 321/)
@@ -126,7 +136,7 @@ try{
     sha,
     service_id:serviceId,
     request_draft_id:requestDraftId,
-    ui:{category:expected.category,description:expected.description,address:expected.address,when:'Lo antes posible',payment:'Efectivo'},
+    ui:{category:expected.category,category_id:expected.categoryId,category_slug:expected.categorySlug,description:expected.description,address:expected.address,when:'Lo antes posible',payment:'Efectivo'},
     backend:{
       id:backendRow.id,
       cliente_id:backendRow.cliente_id,
