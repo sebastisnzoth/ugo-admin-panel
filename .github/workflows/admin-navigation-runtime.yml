@@ -9,6 +9,7 @@ on:
       - "scripts/admin-navigation-sentinel.mjs"
       - "src/mvp/ServiceHistoryPanel.tsx"
       - "src/components/ScoutSection.tsx"
+      - "src/components/AdvancedSections.tsx"
       - ".github/workflows/admin-navigation-runtime.yml"
   workflow_dispatch:
 
