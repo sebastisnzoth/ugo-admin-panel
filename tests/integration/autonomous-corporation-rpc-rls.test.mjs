@@ -143,8 +143,16 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  } finally {
   for(const id of fixtureJobIds){
    const row=await service.from('autonomous_jobs').select('status').eq('id',id).maybeSingle()
-   if(row.data&&['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED'].includes(row.data.status)) await db.rpc('superadmin_cancel_autonomous_job',{p_job_id:id,p_reason:'isolated governance fixture cleanup'})
+   if(row.error)throw row.error
+   if(row.data&&['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED'].includes(row.data.status)){
+    const cancelled=await db.rpc('superadmin_cancel_autonomous_job',{p_job_id:id,p_reason:'isolated governance fixture cleanup'})
+    if(cancelled.error)throw cancelled.error
+    assert.equal(cancelled.data.status,'CANCELLED','governance fixture cleanup must persist cancellation')
+   }
   }
+  const remaining=await service.from('autonomous_jobs').select('id,status').in('id',fixtureJobIds).in('status',['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED'])
+  if(remaining.error)throw remaining.error
+  assert.equal(remaining.data?.length,0,'governance runtime must not leak executable approval fixtures')
   await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:false,p_reason:'runtime cleanup'})
   await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime cleanup; safe default'})
   if(originalRole!=='superadmin'){
