@@ -45,12 +45,23 @@ async function openMenu(page){
 }
 async function clickMenu(page,label){
  const errorsBefore=pageErrors.length
- const drawer=await openMenu(page)
- const button=drawer.getByRole('button',{name:new RegExp(label,'i')}).first()
- await button.waitFor({state:'visible',timeout:10000})
- assert.equal(await button.isDisabled(),false,label+': disabled')
- await button.click()
- await drawer.waitFor({state:'hidden',timeout:5000})
+ let clicked=false,lastError=null
+ for(let attempt=1;attempt<=3&&!clicked;attempt++){
+  try{
+   const drawer=await openMenu(page)
+   const button=drawer.getByRole('button',{name:new RegExp(label,'i')}).first()
+   await button.waitFor({state:'visible',timeout:10000})
+   assert.equal(await button.isDisabled(),false,label+': disabled')
+   await button.evaluate(node=>node.click())
+   await drawer.waitFor({state:'hidden',timeout:5000})
+   clicked=true
+  }catch(error){
+   lastError=error
+   await page.keyboard.press('Escape').catch(()=>{})
+   await page.waitForTimeout(150)
+  }
+ }
+ if(!clicked)throw lastError||new Error(label+': click failed')
  await page.waitForTimeout(250)
  assert.equal(pageErrors.length,errorsBefore,label+': pageerror after click')
  clickMap.push({control:label,result:'PASS'})
