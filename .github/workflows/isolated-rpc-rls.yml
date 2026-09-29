@@ -3,31 +3,15 @@ name: UGO Isolated RPC RLS
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'api/**'
-      - 'src/**'
-      - 'supabase/**'
-      - 'tests/integration/**'
-      - 'tests/contracts/**'
-      - 'scripts/assert-test-environment.mjs'
-      - 'scripts/bootstrap-test-auth.mjs'
-      - 'scripts/chat-realtime-probe.mjs'
-      - 'scripts/autonomous-qa-auth-runtime.mjs'
-      - 'scripts/autonomous-qa-gps-runtime.mjs'
-      - 'scripts/autonomous-launch-gate-runtime.mjs'
-      - 'docs/UGO_AUTONOMOUS_CORPORATION_IMPLEMENTATION.md'
-      - 'package.json'
-      - 'package-lock.json'
-      - '.github/workflows/isolated-rpc-rls.yml'
+  workflow_run:
+    workflows: ["UGO Core CI"]
+    types: [completed]
 
 permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-runtime-${{ github.head_ref || github.ref_name }}
+  group: ugo-isolated-rpc-rls
   cancel-in-progress: false
 
 env:
@@ -46,12 +30,15 @@ env:
 
 jobs:
   isolated-integration:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main') }}
     name: Cliente ↔ Proveedor ↔ Admin isolated RPC/RLS
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node
         uses: actions/setup-node@v4
