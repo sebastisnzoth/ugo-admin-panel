@@ -2,10 +2,10 @@
   "task_id": "remediation-regression",
   "job_id": "UGO-REMEDIATION-REGRESSION",
   "title": "Generate remediation request, rerun and permanent regression automatically",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T18:59:00Z",
-  "heartbeat_at": "2026-09-29T19:04:00Z",
-  "lease_expires_at": "2026-09-29T19:49:00Z",
+  "heartbeat_at": "2026-09-29T19:05:00Z",
+  "lease_expires_at": "2026-09-29T19:50:00Z",
   "started_sha": "8bb00afa5baaef2aa4045eaa3a7d638a922e9b2f",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -14,15 +14,43 @@
   "validators": ["Judge","Sentinel"],
   "resources": ["qa-lab","regression"],
   "correlation_id": "3f0a4a0e-0f7f-4bcf-9d2e-8edc1f01c929",
-  "current_step": "RUNTIME_PASS_PERSISTING_REPO_EVIDENCE",
+  "current_step": "DONE",
   "attempt": 1,
   "dependencies": ["chaos-p0"],
-  "runtime": {
-    "environment": "UGO TEST",
-    "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
-    "failed_run_id": "317f51fd-6db2-4858-991d-3d62add71a27",
-    "remediation_id": "b798325b-bf53-40c5-84a3-4c371b323ce2",
-    "rerun_id": "cbb4193f-f38f-4522-a6bd-6aa48a324142",
-    "job_id": "376731b3-8c6b-425a-bb01-d45a2c50b88e"
-  }
+  "completed_at": "2026-09-29T19:05:00Z",
+  "completed_main_sha": "724d3282f4cd9346a714383b27073b5deadaf3c4",
+  "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
+  "failed_run_id": "317f51fd-6db2-4858-991d-3d62add71a27",
+  "remediation_id": "b798325b-bf53-40c5-84a3-4c371b323ce2",
+  "rerun_id": "cbb4193f-f38f-4522-a6bd-6aa48a324142",
+  "autonomous_job_id": "376731b3-8c6b-425a-bb01-d45a2c50b88e",
+  "evidence_ids": [
+    "ugo-test:service:ea823649-670e-47a2-a547-312dfaa19f42",
+    "ugo-test:failed-run:317f51fd-6db2-4858-991d-3d62add71a27",
+    "ugo-test:remediation:b798325b-bf53-40c5-84a3-4c371b323ce2",
+    "ugo-test:rerun:cbb4193f-f38f-4522-a6bd-6aa48a324142",
+    "ugo-test:job:376731b3-8c6b-425a-bb01-d45a2c50b88e",
+    "ugo-test:correlation:3f0a4a0e-0f7f-4bcf-9d2e-8edc1f01c929",
+    "repo:docs/evidence/remediation-regression-20260929.json",
+    "github:724d3282f4cd9346a714383b27073b5deadaf3c4",
+    "github-actions:run:36616630278:QUEUED"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "safe_final_state": {
+    "autonomy": "OFF",
+    "running_jobs": 0,
+    "active_leases": 0,
+    "active_kill_switches": 0
+  },
+  "notes": [
+    "Controlled failure used the existing persisted Meta-QA seeded defect against a completed DEMO P0 service.",
+    "Remediation moved OPEN -> FIXED -> VERIFIED and the safe fix removed only the controlled injected defect; business state was not mutated.",
+    "Rerun PASSED and permanent_regression=true.",
+    "Failed run, remediation, rerun, autonomous job, Evidence Ledger and Decision Ledger share one correlation_id.",
+    "Independent persisted-state Judge PASS; Sentinel PASS; production untouched.",
+    "Core CI for the repository evidence SHA was queued at lock close and is not used as the authoritative DONE proof."
+  ]
 }
