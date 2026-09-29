@@ -27,6 +27,7 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  assert.equal(profile.data.activo,true)
  const originalRole=profile.data.tipo
  const service=privileged()
+ let fixtureId=null
  if(originalRole!=='superadmin'){
    const deniedCreate=await db.rpc('ip_create_innovation',{p_title:'UGO_TEST_IP_DENIED',p_description:'authorization probe',p_department_id:8,p_innovation_type:'TECHNICAL',p_possible_protection:'TRADE_SECRET',p_confidentiality:'CONFIDENTIAL',p_target_jurisdictions:['BR']})
    assert.ok(deniedCreate.error,'non-superadmin admin must not govern IP')
@@ -41,6 +42,7 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  const created=await db.rpc('ip_create_innovation',{p_title:marker,p_description:'isolated IP gate runtime fixture',p_department_id:8,p_innovation_type:'TECHNICAL',p_possible_protection:'TRADE_SECRET',p_confidentiality:'CONFIDENTIAL',p_target_jurisdictions:['BR'],p_repository:'sebastisnzoth/ugo-admin-panel'})
  if(created.error)throw created.error
  const id=created.data.id
+ fixtureId=id
  assert.equal(created.data.status,'IP_REVIEW_REQUIRED')
  const evidence=await db.rpc('ip_add_evidence',{p_innovation_id:id,p_evidence_type:'COMMIT',p_reference:'runtime-test-fixture',p_metadata:{integration_test:true}})
  if(evidence.error)throw evidence.error
@@ -56,6 +58,10 @@ test('IP Gate isolated UGO TEST RPC/RLS', {skip:!enabled}, async()=>{
  const updateAttempt=await db.from('ip_evidence_ledger').update({reference:'tampered'}).eq('id',evidence.data.id)
  assert.ok(updateAttempt.error,'evidence ledger update must be rejected')
  } finally {
+  if(fixtureId){
+   const archived=await service.from('ip_innovations').update({status:'ARCHIVED',decision_reason:'UGO TEST integration fixture auto-archived',updated_at:new Date().toISOString()}).eq('id',fixtureId)
+   if(archived.error)throw archived.error
+  }
   if(originalRole!=='superadmin'){
    const restored=await service.from('usuarios').update({tipo:originalRole}).eq('id',signed.data.user.id)
    if(restored.error)throw restored.error
