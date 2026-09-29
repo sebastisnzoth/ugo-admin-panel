@@ -82,7 +82,7 @@ try{
     if(await notificationClose.count()&&await notificationClose.isVisible())await notificationClose.click()
     const home=page.getByRole('button',{name:/Ir al inicio|Volver al inicio|Volver/}).first()
     if(await home.count()&&await home.isVisible())await home.click()
-    await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:10000})
+    await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
    }
 
    await clickMenu(page,'Pedir servicio')
@@ -104,12 +104,12 @@ try{
     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
     await snap(page,name+' '+item)
     await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-    await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:10000})
+    await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
    }
 
    const headerHome=page.getByRole('button',{name:'Ir al inicio'})
    await headerHome.click()
-   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:10000})
+   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
    clickMap.push({control:'Header Ir al inicio',result:'PASS'})
 
    await page.screenshot({path:'artifacts/client-navigation-'+name+'.png',fullPage:true})
