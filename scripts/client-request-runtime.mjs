@@ -88,7 +88,7 @@ try{
 
   await page.getByRole('heading',{name:'Resumen del pedido'}).waitFor({state:'visible',timeout:15000})
   const summary=await page.locator('.ugo-summary-screen').innerText()
-  assert.match(summary,/Plomería/i)
+  assert.ok(summary.includes(expected.category),'category missing from summary')
   assert.ok(summary.includes(expected.description),'description missing from summary')
   assert.match(summary,/Rua das Flores 321/i)
   assert.match(summary,/Lo antes posible/i)
