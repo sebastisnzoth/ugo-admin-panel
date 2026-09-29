@@ -13,6 +13,7 @@ test('UGO TEST mutating gates are chained instead of competing for one pending c
  assert.match(isolated,/workflows: \["UGO Core CI"\]/)
  assert.match(isolated,/github\.event\.workflow_run\.head_sha/)
  assert.match(isolated,/head_branch == 'main'/)
+ assert.match(isolated,/github\.event\.workflow_run\.event == 'push'/)
  assert.match(worker,/workflows: \["UGO Isolated RPC RLS"\]/)
  assert.match(worker,/github\.event\.workflow_run\.head_sha/)
  assert.match(worker,/head_branch == 'main'/)
