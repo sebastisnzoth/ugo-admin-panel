@@ -12,3 +12,11 @@ test('D14 integrity controls derive status from persisted facts and cannot be ca
  assert.match(sql,/revoke all on function public\.autonomous_verify_integrity_controls\(\) from public,anon,authenticated/)
  assert.match(sql,/grant execute on function public\.autonomous_verify_integrity_controls\(\) to service_role/)
 })
+
+
+test('Autonomous Worker fails closed unless all integrity controls verify EFFECTIVE',()=>{
+ const runtime=fs.readFileSync('scripts/autonomous-control-integrity-runtime.mjs','utf8')
+ const workflow=fs.readFileSync('.github/workflows/autonomous-worker-test.yml','utf8')
+ assert.match(runtime,/assert\.equal\(controls\.get\(k\),'EFFECTIVE'/)
+ assert.match(workflow,/node scripts\/autonomous-control-integrity-runtime\.mjs/)
+})
