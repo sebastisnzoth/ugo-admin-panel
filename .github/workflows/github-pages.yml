@@ -24,7 +24,9 @@ permissions:
 
 concurrency:
   group: "ugo-pages"
-  cancel-in-progress: true
+  # Never cancel an in-flight Pages deployment: cancellation during deploy can leave the next run waiting/failing.
+  # Queue the newest publication instead; every run still publishes its exact SHA snapshot.
+  cancel-in-progress: false
 
 jobs:
   deploy:
