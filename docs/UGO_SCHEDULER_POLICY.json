@@ -1,0 +1,125 @@
+{
+  "version": "UGO_SCHEDULER_V2",
+  "max_parallel_tasks": 3,
+  "default_lease_minutes": 45,
+  "heartbeat_grace_minutes": 10,
+  "max_attempts": 3,
+  "retry_backoff_minutes": [
+    5,
+    15,
+    30
+  ],
+  "fairness": "priority_then_oldest",
+  "fail_closed_on_invalid_lock": true,
+  "priorities": {
+    "CRITICAL": 100,
+    "HIGH": 80,
+    "NORMAL": 50,
+    "LOW": 20
+  },
+  "resource_capacities": {
+    "shared-provider-fixture": 1,
+    "ugo-test-p0": 1,
+    "qa-lab": 1,
+    "launch-gate": 1,
+    "audit-ledger": 1,
+    "preview-runtime": 2,
+    "model-router": 1,
+    "openrouter": 1,
+    "super-admin-ui": 1,
+    "payments": 1,
+    "ratings": 1,
+    "ugo-test-worker": 1,
+    "autonomy-state": 1,
+    "recovery": 1,
+    "regression": 1,
+    "d14-audit": 1,
+    "customer1": 1,
+    "customer1-device-test": 1,
+    "physical-gps": 1,
+    "founder-challenge": 1,
+    "ugo-empresas": 1
+  },
+  "task_policies": {
+    "worker-autonomy": {
+      "priority": "CRITICAL",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "model-router-runtime": {
+      "priority": "HIGH",
+      "risk": "LOW",
+      "human_gate": false
+    },
+    "qa-simulator-binding": {
+      "priority": "CRITICAL",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "chaos-p0": {
+      "priority": "HIGH",
+      "risk": "HIGH",
+      "human_gate": false
+    },
+    "remediation-regression": {
+      "priority": "HIGH",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "release-gate": {
+      "priority": "CRITICAL",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "audit-event-binding": {
+      "priority": "CRITICAL",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "complete-test-journey": {
+      "priority": "CRITICAL",
+      "risk": "HIGH",
+      "human_gate": false
+    },
+    "exception-recovery": {
+      "priority": "HIGH",
+      "risk": "HIGH",
+      "human_gate": false
+    },
+    "d14-audit": {
+      "priority": "CRITICAL",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "customer1-gate": {
+      "priority": "CRITICAL",
+      "risk": "HIGH",
+      "human_gate": true
+    },
+    "super-admin-ui": {
+      "priority": "NORMAL",
+      "risk": "LOW",
+      "human_gate": false
+    },
+    "ugo-empresas": {
+      "priority": "LOW",
+      "risk": "MEDIUM",
+      "human_gate": false
+    },
+    "founder-challenge": {
+      "priority": "CRITICAL",
+      "risk": "HIGH",
+      "human_gate": true
+    },
+    "physical-gps": {
+      "priority": "CRITICAL",
+      "risk": "HIGH",
+      "human_gate": true
+    },
+    "real-customer-acceptance": {
+      "priority": "CRITICAL",
+      "risk": "HIGH",
+      "human_gate": true
+    }
+  }
+}
