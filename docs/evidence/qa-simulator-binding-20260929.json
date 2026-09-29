@@ -1,0 +1,63 @@
+{
+  "task_id": "qa-simulator-binding",
+  "job_id": "UGO-QA-SIMULATOR-BINDING",
+  "status": "DONE",
+  "validated_sha": "d940c3d164e581d26be4f1f8633954ea14ba968d",
+  "workflow": {
+    "name": "UGO QA Simulator Binding Proof",
+    "run_id": 36608010711,
+    "job_id": 109541913670,
+    "conclusion": "success",
+    "same_sha_checkout": true,
+    "runtime_revision_id": "69654ee0-60d1-4d92-a1f7-0baf7b2b8fe6",
+    "environment": "UGO_TEST"
+  },
+  "runtime_evidence": {
+    "service_id": "2fd9a0c1-0bed-47d7-bbba-e287d3d59adb",
+    "authenticated_roles": [
+      "cliente",
+      "proveedor",
+      "admin",
+      "superadmin"
+    ],
+    "simulator_actions": [
+      "qa-client-simulator",
+      "qa-provider-simulator",
+      "qa-admin-system-simulator"
+    ],
+    "actor_action_source": "AUTHENTICATED_DATABASE_ACTION",
+    "caller_supplied_booleans_authoritative": false
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": "persisted-runtime-and-independent-judge-evidence",
+    "verified_scenarios": [
+      "provider-radius",
+      "payments",
+      "service-lifecycle",
+      "gps-geofence",
+      "realtime",
+      "roles",
+      "permissions-rls"
+    ]
+  },
+  "coverage": {
+    "roles": "COVERED",
+    "permissions-rls": "COVERED",
+    "service-lifecycle": "COVERED"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "environment": "UGO TEST",
+    "autonomy": "OFF",
+    "d14Canonical": 6,
+    "activeLeases": 0,
+    "activeKillSwitches": 0
+  },
+  "notes": [
+    "Dedicated same-SHA proof completed successfully before this lock reconciliation.",
+    "A later unrelated isolated workflow failed in Super Admin UI; that belongs to task super-admin-ui and does not invalidate this dedicated QA simulator binding proof.",
+    "Current mutable scenario pointers may move as later TEST runs execute; the exact runtime revision and workflow run above preserve the validated SHA and evidence."
+  ],
+  "verified_at": "2026-09-29T18:00:14Z"
+}
