@@ -7,6 +7,7 @@ on:
       - "scripts/admin-navigation-runtime.mjs"
       - "scripts/admin-navigation-judge.mjs"
       - "scripts/admin-navigation-sentinel.mjs"
+      - "src/mvp/ServiceHistoryPanel.tsx"
       - ".github/workflows/admin-navigation-runtime.yml"
   workflow_dispatch:
 
