@@ -137,6 +137,18 @@ export function scheduleTasks({tasks, locks, policy, now = new Date()}) {
     candidates.push(task)
   }
 
+  const autonomousOutstanding = tasks.some(task =>
+    task.scheduler?.human_gate === false &&
+    !['DONE'].includes(task.gate_state)
+  )
+  if (policy.defer_human_gates_until_autonomous_exhausted && autonomousOutstanding) {
+    for (const task of tasks) {
+      if (task.gate_state !== 'HUMAN_REQUIRED') continue
+      task.gate_state = 'HUMAN_DEFERRED'
+      task.gate_reason = 'Prueba humana diferida hasta agotar el trabajo autónomo verificable.'
+    }
+  }
+
   candidates.sort((a,b) =>
     b.scheduler.priority_score - a.scheduler.priority_score ||
     b.scheduler.critical_path_score - a.scheduler.critical_path_score ||
@@ -183,6 +195,7 @@ export function scheduleTasks({tasks, locks, policy, now = new Date()}) {
       ready_waiting_capacity: tasks.filter(t => ['QUEUED_CAPACITY','WAITING_RESOURCE_CAPACITY'].includes(t.gate_state)).length,
       blocked_dependency: tasks.filter(t => t.gate_state === 'BLOCKED_DEPENDENCY').length,
       human_required: tasks.filter(t => t.gate_state === 'HUMAN_REQUIRED').length,
+      human_deferred: tasks.filter(t => t.gate_state === 'HUMAN_DEFERRED').length,
       retry_backoff: tasks.filter(t => t.gate_state === 'RETRY_BACKOFF').length,
       failed_review: tasks.filter(t => t.gate_state === 'FAILED_REQUIRES_REVIEW').length,
     }
