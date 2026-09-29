@@ -47,5 +47,9 @@
       "status": "PASS",
       "sha": "5ff1059a4436b87064c3eb99a051d3409ec80e1d"
     }
+  },
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   }
 }
