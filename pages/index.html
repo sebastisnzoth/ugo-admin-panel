@@ -144,6 +144,16 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 (function(){
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
   const pillClass = owner => owner.includes('SERGIO') ? 'human' : 'ugo'
+  const gateLabel = step => ({
+    AVAILABLE:'HABILITADO',
+    IN_PROGRESS:'EN PROCESO',
+    BLOCKED_DEPENDENCY:'BLOQUEADO POR DEPENDENCIA',
+    WAITING_CONFLICT:'EN ESPERA POR CONFLICTO'
+  }[step.gate_state] || step.gate_state || 'PENDIENTE')
+  const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
+    step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
+    step.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' :
+    step.gate_state === 'WAITING_CONFLICT' ? 'Esperando recurso' : 'No disponible'
   const renderStep = (step, idx) => `
     <article class="step">
       <div class="step-index">#${idx + 1}</div>
@@ -151,15 +161,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <h3>${esc(step.title)}</h3>
         <div class="meta-line">
           <span class="pill ${pillClass(step.owner)}">${esc(step.owner)}</span>
-          <span class="pill ${step.status === 'BLOCKED' ? 'blocked' : 'pending'}">${esc(step.status)}</span>
+          <span class="pill ${step.gate_state === 'AVAILABLE' ? 'ugo' : step.gate_state === 'IN_PROGRESS' ? 'accent' : 'blocked'}">${esc(gateLabel(step))}</span>
           <span class="pill">${esc(step.phase)}</span>
           ${step.depends_on?.length ? '<span class="pill">depende de ' + esc(step.depends_on.join(', ')) + '</span>' : ''}
+          ${step.resources?.length ? '<span class="pill">recursos: ' + esc(step.resources.join(', ')) + '</span>' : ''}
         </div>
         <p><b>Por qué falta:</b> ${esc(step.why)}</p>
+        <p><b>Estado operativo:</b> ${esc(step.gate_reason || gateLabel(step))}</p>
         <div class="resolve"><b>Cómo resolverlo:</b> ${esc(step.resolve)}</div>
         <details><summary>Qué evidencia lo convierte en DONE</summary><p>${esc(step.done_evidence)}</p></details>
         <div class="cta-row">
-          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}">Resolver con UGO Maestro</button>
+          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}" ${step.gate_state === 'AVAILABLE' ? '' : 'disabled'}>${esc(buttonLabel(step))}</button>
           <span class="pill" data-lifecycle-id="${esc(step.id)}">PENDIENTE</span>
           ${step.evidence_url ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(step.evidence_url) + '">Ver evidencia</a>' : ''}
         </div>
@@ -172,6 +184,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'Repositorio obligatorio: sebastisnzoth/ugo-admin-panel',
     'Rama objetivo: main',
     'SHA de referencia publicado: ' + (statusSnapshot?.source_sha || 'verificar main actual antes de actuar'),
+    '',
+    'TASK_ID:',
+    step.id,
     '',
     'PASO A RESOLVER:',
     step.title,
@@ -188,8 +203,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     'RESPONSABLE:',
     step.owner,
     '',
+    'DEPENDENCIAS:',
+    (step.depends_on || []).join(', ') || 'ninguna',
+    '',
+    'RECURSOS / LOCKS:',
+    (step.resources || []).join(', ') || step.id,
+    '',
     'INSTRUCCIONES DE EJECUCIÓN:',
-    '- Revalidar main y el estado real antes de modificar nada.',
+    '- Revalidar main, status del Command Center y docs/ugo-work-locks antes de modificar nada.',
+    '- Antes de trabajar, crear o actualizar docs/ugo-work-locks/' + step.id + '.json con status IN_PROGRESS, started_at, started_sha, owner, resources y correlation_id.',
+    '- No tomar la tarea si existe un lock activo incompatible sobre alguno de los mismos resources.',
+    '- Al terminar, actualizar ese lock a DONE o FAILED con evidencia verificable; no borrar el historial útil.',
     '- No repetir trabajo ya DONE.',
     '- No reset, no force push, no revertir trabajo válido ajeno.',
     '- No tocar producción.',
@@ -201,24 +225,30 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     '',
     'Ejecutá este paso ahora y continuá con trabajo independiente si aparece un bloqueo externo.'
   ].join('\n')
-  const dispatchKey = 'ugo-command-center-dispatch'
-  const getDispatch = () => {
-    try { return JSON.parse(localStorage.getItem(dispatchKey) || 'null') } catch { return null }
+  const dispatchKey = 'ugo-command-center-dispatches'
+  const getDispatches = () => {
+    try {
+      const value = JSON.parse(localStorage.getItem(dispatchKey) || '[]')
+      return Array.isArray(value) ? value : []
+    } catch { return [] }
   }
   const saveDispatch = step => {
-    const data = {step_id:step.id,title:step.title,source_sha:statusSnapshot?.source_sha || null,sent_at:new Date().toISOString()}
-    localStorage.setItem(dispatchKey, JSON.stringify(data))
+    const list = getDispatches().filter(x => x.step_id !== step.id)
+    list.push({step_id:step.id,title:step.title,source_sha:statusSnapshot?.source_sha || null,sent_at:new Date().toISOString(),resources:step.resources || []})
+    localStorage.setItem(dispatchKey, JSON.stringify(list))
     renderDispatch()
   }
   const renderDispatch = () => {
-    const d = getDispatch()
-    if (!d) {
-      document.getElementById('sentTask').textContent = 'Ninguna tarea enviada desde este navegador.'
+    const list = getDispatches()
+    const serverLocks = statusSnapshot?.active_locks || []
+    const active = [...list.filter(d => !serverLocks.some(l => l.task_id === d.step_id)), ...serverLocks.map(l => ({step_id:l.task_id,title:l.title || l.task_id,sent_at:l.started_at,source_sha:l.started_sha,server:true}))]
+    if (!active.length) {
+      document.getElementById('sentTask').textContent = 'Ninguna tarea activa.'
       document.getElementById('sentTaskMeta').textContent = ''
       return
     }
-    document.getElementById('sentTask').textContent = d.title
-    document.getElementById('sentTaskMeta').textContent = 'ENVIADO A UGO · ' + new Date(d.sent_at).toLocaleString() + (d.source_sha ? ' · SHA ' + d.source_sha.slice(0,12) : '')
+    document.getElementById('sentTask').innerHTML = active.map(d => '<div><b>' + esc(d.title || d.step_id) + '</b></div>').join('')
+    document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openUgoMasterForStep = async step => {
     saveDispatch(step)
@@ -233,27 +263,44 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     if (!chatWindow) console.warn('El navegador bloqueó la apertura de UGO Maestro Autónomo.')
   }
   const renderLifecycle = s => {
-    const d = getDispatch()
+    const dispatches = getDispatches()
     const all = [...(s.implementation_steps || []), ...(s.final_gate_steps || [])]
     document.querySelectorAll('[data-lifecycle-id]').forEach(el => {
       const id = el.dataset.lifecycleId
-      const stillPending = all.some(x => x.id === id)
-      if (!d || d.step_id !== id) {
-        el.textContent = stillPending ? 'PENDIENTE' : 'DONE'
-        return
-      }
-      if (!stillPending) {
+      const step = all.find(x => x.id === id)
+      const local = dispatches.find(x => x.step_id === id)
+      if (!step) {
         el.textContent = 'DONE'
         el.className = 'pill ugo'
-      } else if (d.source_sha && s.source_sha !== d.source_sha) {
-        el.textContent = 'SIGUE PENDIENTE'
-        el.className = 'pill blocked'
-        const btn = document.querySelector('[data-step-id="' + CSS.escape(id) + '"]')
-        if (btn) btn.textContent = 'Volver a resolver'
-      } else {
-        el.textContent = 'ESPERANDO EVIDENCIA'
-        el.className = 'pill pending'
+        return
       }
+      if (step.gate_state === 'IN_PROGRESS') {
+        el.textContent = 'EN PROCESO'
+        el.className = 'pill accent'
+        return
+      }
+      if (step.gate_state === 'BLOCKED_DEPENDENCY') {
+        el.textContent = 'BLOQUEADO'
+        el.className = 'pill blocked'
+        return
+      }
+      if (step.gate_state === 'WAITING_CONFLICT') {
+        el.textContent = 'ESPERANDO CONFLICTO'
+        el.className = 'pill blocked'
+        return
+      }
+      if (local) {
+        if (local.source_sha && s.source_sha !== local.source_sha) {
+          el.textContent = 'SIGUE PENDIENTE'
+          el.className = 'pill blocked'
+        } else {
+          el.textContent = 'ENVIADO · ESPERANDO LOCK'
+          el.className = 'pill pending'
+        }
+        return
+      }
+      el.textContent = 'HABILITADO'
+      el.className = 'pill ugo'
     })
   }
 
@@ -266,15 +313,20 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     const runs = data.workflow_runs || []
     const active = runs.filter(r => r.status === 'in_progress' || r.status === 'queued')
     const latest = runs[0]
-    const d = getDispatch()
-    if (active.length) {
+    const dispatches = getDispatches()
+    const workLocks = statusSnapshot?.active_locks || []
+    if (workLocks.length) {
+      document.getElementById('liveState').textContent = 'UGO TRABAJANDO'
+      document.getElementById('liveState').className = 'state-big accent'
+      document.getElementById('liveDetail').textContent = workLocks.map(l => (l.title || l.task_id) + ' · ' + (l.status || 'IN_PROGRESS')).join(' / ')
+    } else if (active.length) {
       document.getElementById('liveState').textContent = 'EN PROCESO'
       document.getElementById('liveState').className = 'state-big accent'
       document.getElementById('liveDetail').textContent = active.map(r => r.name + ' · ' + r.status.toUpperCase()).join(' / ')
-    } else if (d) {
-      document.getElementById('liveState').textContent = 'ESPERANDO EVIDENCIA'
+    } else if (dispatches.length) {
+      document.getElementById('liveState').textContent = 'ESPERANDO LOCK / EVIDENCIA'
       document.getElementById('liveState').className = 'state-big warn'
-      document.getElementById('liveDetail').textContent = 'La tarea fue enviada a UGO Maestro; todavía no hay una ejecución observable activa.'
+      document.getElementById('liveDetail').textContent = dispatches.length + ' tarea(s) enviadas a UGO Maestro; esperando lock persistido o ejecución observable.'
     } else {
       document.getElementById('liveState').textContent = 'SIN EJECUCIÓN OBSERVABLE'
       document.getElementById('liveState').className = 'state-big'
@@ -335,15 +387,16 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       document.getElementById('nextWhy').textContent = next.why
       document.getElementById('nextResolve').textContent = next.resolve
       const nextButton = document.getElementById('nextUgoMaster')
-      nextButton.disabled = false
-      nextButton.onclick = () => openUgoMasterForStep(next)
+      nextButton.disabled = next.gate_state !== 'AVAILABLE'
+      nextButton.textContent = buttonLabel(next)
+      nextButton.onclick = next.gate_state === 'AVAILABLE' ? () => openUgoMasterForStep(next) : null
     }
     document.getElementById('implementationSteps').innerHTML = (s.implementation_steps || []).map(renderStep).join('') || '<div class="card">Sin trabajo técnico pendiente.</div>'
     document.getElementById('finalGateSteps').innerHTML = (s.final_gate_steps || []).map(renderStep).join('') || '<div class="card">Sin blockers finales.</div>'
     const allSteps = [...(s.implementation_steps || []), ...(s.final_gate_steps || [])]
     document.querySelectorAll('[data-step-id]').forEach(button => {
       const step = allSteps.find(x => x.id === button.dataset.stepId)
-      if (step) button.addEventListener('click', () => openUgoMasterForStep(step))
+      if (step && step.gate_state === 'AVAILABLE' && !button.disabled) button.onclick = () => openUgoMasterForStep(step)
     })
     const assurance = Object.fromEntries((s.assurance || []).map(x=>[x.name,x.status]))
     document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
