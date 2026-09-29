@@ -1,6 +1,22 @@
 name: UGO Autonomous Worker TEST
 on:
   workflow_dispatch:
+    inputs:
+      task_id:
+        description: 'Task ID del Command Center'
+        required: false
+        default: 'worker-autonomy'
+        type: string
+      job_id:
+        description: 'Job ID auditable'
+        required: false
+        default: 'UGO-WORKER-AUTONOMY'
+        type: string
+      reason:
+        description: 'Motivo auditable de la ejecución'
+        required: false
+        default: 'Command Center direct GitHub action'
+        type: string
   workflow_run:
     workflows: ["UGO Isolated RPC RLS"]
     types: [completed]
@@ -23,6 +39,37 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Record GitHub direct-action request
+        shell: bash
+        env:
+          CTA_TASK_ID: ${{ github.event.inputs.task_id || 'worker-autonomy' }}
+          CTA_JOB_ID: ${{ github.event.inputs.job_id || 'UGO-WORKER-AUTONOMY' }}
+          CTA_REASON: ${{ github.event.inputs.reason || github.event_name }}
+          CTA_SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ugo-execution-audit"
+          node <<'NODE'
+          const fs = require('fs'), path = require('path')
+          const out = path.join(process.env.RUNNER_TEMP, 'ugo-execution-audit', 'request.json')
+          fs.writeFileSync(out, JSON.stringify({
+            schema_version:'UGO_GITHUB_DIRECT_ACTION_V1',
+            task_id:process.env.CTA_TASK_ID, job_id:process.env.CTA_JOB_ID, reason:process.env.CTA_REASON,
+            requested_by:process.env.GITHUB_ACTOR, event_name:process.env.GITHUB_EVENT_NAME,
+            workflow:process.env.GITHUB_WORKFLOW, run_id:process.env.GITHUB_RUN_ID,
+            run_attempt:process.env.GITHUB_RUN_ATTEMPT, repository:process.env.GITHUB_REPOSITORY,
+            source_sha:process.env.CTA_SOURCE_SHA, environment:'UGO TEST', production:'PROTECTED',
+            started_at:new Date().toISOString()
+          }, null, 2) + '\n')
+          NODE
+          {
+            echo "## UGO GitHub Direct Action"
+            echo "- task: `$CTA_TASK_ID`"
+            echo "- job: `$CTA_JOB_ID`"
+            echo "- source SHA: `$CTA_SOURCE_SHA`"
+            echo "- actor: `$GITHUB_ACTOR`"
+            echo "- channel: GitHub Actions / UGO TEST"
+            echo "- production: PROTECTED"
+          } >> "$GITHUB_STEP_SUMMARY"
       - run: npm ci
       - name: Enforce UGO TEST only
         env:
@@ -189,3 +236,36 @@ jobs:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-runtime-revision.mjs
+      - name: Finalize direct-action audit
+        if: always()
+        shell: bash
+        env:
+          CTA_TASK_ID: ${{ github.event.inputs.task_id || 'worker-autonomy' }}
+          CTA_JOB_ID: ${{ github.event.inputs.job_id || 'UGO-WORKER-AUTONOMY' }}
+          CTA_SOURCE_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          CTA_JOB_STATUS: ${{ job.status }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/ugo-execution-audit"
+          node <<'NODE'
+          const fs = require('fs'), path = require('path')
+          const file = path.join(process.env.RUNNER_TEMP, 'ugo-execution-audit', 'request.json')
+          let audit = {}
+          try { audit = JSON.parse(fs.readFileSync(file,'utf8')) } catch {}
+          Object.assign(audit,{
+            schema_version:audit.schema_version||'UGO_GITHUB_DIRECT_ACTION_V1',
+            task_id:audit.task_id||process.env.CTA_TASK_ID, job_id:audit.job_id||process.env.CTA_JOB_ID,
+            source_sha:audit.source_sha||process.env.CTA_SOURCE_SHA, finished_at:new Date().toISOString(),
+            job_status:process.env.CTA_JOB_STATUS,
+            run_url:'https://github.com/'+process.env.GITHUB_REPOSITORY+'/actions/runs/'+process.env.GITHUB_RUN_ID
+          })
+          fs.writeFileSync(file, JSON.stringify(audit,null,2)+'\n')
+          NODE
+      - name: Upload immutable execution audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-execution-audit-${{ github.run_id }}
+          path: ${{ runner.temp }}/ugo-execution-audit/request.json
+          if-no-files-found: error
+          retention-days: 90
+
