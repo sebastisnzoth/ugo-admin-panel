@@ -239,25 +239,25 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     state.textContent = 'PANEL ACTUALIZÁNDOSE'
     note.textContent = 'main avanzó después del snapshot publicado. Los estados visibles pueden quedar atrás hasta la próxima publicación; no repitas trabajo sólo por esta vista.'
   }
-  const loadMainHead = () => fetch('https://api.github.com/repos/sebastisnzoth/ugo-admin-panel/commits/main', {
-    cache:'no-store',
-    headers:{'Accept':'application/vnd.github+json'}
-  }).then(r => {
-    if (!r.ok) throw new Error('GitHub HEAD HTTP ' + r.status)
-    return r.json()
-  }).then(commit => {
-    mainHeadSha = commit.sha || null
-    mainHeadCheckedAt = new Date().toISOString()
-    renderSyncState()
-    return mainHeadSha
-  }).catch(err => {
-    const strip = document.getElementById('syncStrip')
-    strip.className = 'sync-strip bad'
-    document.getElementById('syncState').textContent = 'HEAD DE MAIN NO DISPONIBLE'
-    document.getElementById('syncNote').textContent = 'No se pudo comparar el snapshot con main; mantener estado como no verificado.'
-    console.error(err)
-    return null
-  })
+  const loadMainHead = () => fetch('main-head.json?ts=' + Date.now(), {cache:'no-store'})
+    .then(r => {
+      if (!r.ok) throw new Error('main-head.json HTTP ' + r.status)
+      return r.json()
+    })
+    .then(data => {
+      mainHeadSha = data.sha || null
+      mainHeadCheckedAt = data.generated_at_utc || new Date().toISOString()
+      renderSyncState()
+      return mainHeadSha
+    })
+    .catch(err => {
+      const strip = document.getElementById('syncStrip')
+      strip.className = 'sync-strip bad'
+      document.getElementById('syncState').textContent = 'HEAD DE MAIN NO DISPONIBLE'
+      document.getElementById('syncNote').textContent = 'No se pudo cargar main-head.json autenticado; mantener estado como no verificado.'
+      console.error(err)
+      return null
+    })
   const buildChatGPTPrompt = step => [
     'UGO — RESOLVER PASO DEL CAMINO HASTA DONE',
     '',
