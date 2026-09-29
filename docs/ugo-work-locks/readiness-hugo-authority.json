@@ -21,5 +21,11 @@
   "correlation_id": "ugo-hugo-authority-20260929T213000Z-a668c242",
   "current_step": "INSPECT",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [],
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
