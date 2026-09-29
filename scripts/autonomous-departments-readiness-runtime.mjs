@@ -24,13 +24,13 @@ for(const departmentId of canonical){
  const correlationId=randomUUID()
  const idempotencyKey=`readiness:auto-departments:${runtimeSha}:D${departmentId}`
  const input=[{type:'readiness_control',readiness_id:'auto-departments',department_id:departmentId,source_sha:runtimeSha}]
- const result={readiness_id:'auto-departments',department_id:departmentId,department_name:department.name,responsible_agent_id:agent.id,responsible_agent_key:agent.agent_key,responsible_agent_name:agent.name,input_count:input.length,output:{registered:true,agent_connected:true,inputs_visible:true,outputs_visible:true},runtime_sha:runtimeSha}
+ const result={readiness_id:'auto-departments',department_id:departmentId,department_name:department.name,responsible_agent_id:agent.id,responsible_agent_key:agent.agent_key,responsible_agent_name:agent.name,responsible_agent_authority:agent.authority_class,input_count:input.length,output:{registered:true,agent_connected:true,inputs_visible:true,outputs_visible:true},runtime_sha:runtimeSha}
  let job
  const existing=await db.from('autonomous_jobs').select('*').eq('idempotency_key',idempotencyKey).maybeSingle()
  if(existing.error)throw existing.error
  if(existing.data){job=existing.data}
  else{
-   const inserted=await db.from('autonomous_jobs').insert({department_id:departmentId,agent_id:agent.id,objective:'Readiness proof: department registry, responsible agent and I/O evidence',trigger_type:'READINESS_RUNTIME',target_type:'autonomous_department',target_id:String(departmentId),authority_class:'GREEN',status:'SUCCEEDED',idempotency_key:idempotencyKey,correlation_id:correlationId,input_evidence:input,result,started_at:new Date().toISOString(),finished_at:new Date().toISOString()}).select('*').single()
+   const inserted=await db.from('autonomous_jobs').insert({department_id:departmentId,agent_id:agent.id,objective:'Readiness proof: department registry, responsible agent and I/O evidence',trigger_type:'READINESS_RUNTIME',target_type:'autonomous_department',target_id:String(departmentId),authority_class:agent.authority_class,status:'SUCCEEDED',idempotency_key:idempotencyKey,correlation_id:correlationId,input_evidence:input,result,started_at:new Date().toISOString(),finished_at:new Date().toISOString()}).select('*').single()
    if(inserted.error)throw inserted.error
    job=inserted.data
  }
@@ -45,7 +45,7 @@ for(const departmentId of canonical){
    evidence=insertedEvidence.data
  }
  const maturity='CONNECTED'
- const health={...(department.health||{}),auto_departments_readiness:{status:'PASS',maturity,responsible_agent_id:agent.id,responsible_agent_key:agent.agent_key,responsible_agent_name:agent.name,proof_job_id:job.id,proof_evidence_id:evidence.id,runtime_sha:runtimeSha,verified_at:new Date().toISOString()}}
+ const health={...(department.health||{}),auto_departments_readiness:{status:'PASS',maturity,responsible_agent_id:agent.id,responsible_agent_key:agent.agent_key,responsible_agent_name:agent.name,responsible_agent_authority:agent.authority_class,proof_job_id:job.id,proof_evidence_id:evidence.id,runtime_sha:runtimeSha,verified_at:new Date().toISOString()}}
  const updated=await db.from('autonomous_departments').update({health,last_action_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq('department_id',departmentId)
  if(updated.error)throw updated.error
  proof.push({department_id:departmentId,name:department.name,responsible_agent:{id:agent.id,key:agent.agent_key,name:agent.name,status:agent.status},job_id:job.id,evidence_id:evidence.id,correlation_id:job.correlation_id,input_count:Array.isArray(job.input_evidence)?job.input_evidence.length:0,output_present:Boolean(job.result),maturity})
