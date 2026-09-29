@@ -1,0 +1,23 @@
+{
+  "readiness_id": "admin-navigation",
+  "task_id": "readiness-admin-navigation",
+  "job_id": "UGO-READINESS-ADMIN-NAVIGATION",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-29T21:20:00Z",
+  "heartbeat_at": "2026-09-29T21:20:00Z",
+  "lease_expires_at": "2026-09-29T22:05:00Z",
+  "started_sha": "d68ed824835a654584d8613121cb37e29513d499",
+  "owner": "UGO",
+  "assigned_agent": "Admin Runtime Navigation Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-shell"
+  ],
+  "correlation_id": "readiness-admin-navigation-20260929T212000Z-d68ed824",
+  "current_step": "inventory_and_runtime_crawl",
+  "attempt": 1,
+  "evidence_ids": []
+}
