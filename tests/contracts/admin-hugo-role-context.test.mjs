@@ -51,3 +51,11 @@ test('Hugo server endpoint accepts role and active surface context',async()=>{
  assert.match(api,/CONTEXTO OPERATIVO EN VIVO/)
  assert.match(api,/clean\(body\.context,60000\)/)
 })
+
+
+test('Admin Hugo role uses the already-authorized local session instead of a redundant getUser request',async()=>{
+ const src=await read('src/mvp/AdminPhase2.tsx')
+ assert.match(src,/supabase\.auth\.getSession\(\)/)
+ assert.doesNotMatch(src,/supabase\.auth\.getUser\(\)/)
+ assert.match(src,/from\('usuarios'\)\.select\('tipo,activo'\)/)
+})
