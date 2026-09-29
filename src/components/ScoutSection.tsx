@@ -98,8 +98,8 @@ export function SecScout(){
   const map=L.map(mapEl.current,{zoomControl:true,attributionControl:true}).setView([lat,lng],13)
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap contributors'}).addTo(map)
   mapRef.current=map;setMapReady(true)
-  ;[80,300,800].forEach(ms=>window.setTimeout(()=>map.invalidateSize(),ms))
-  return()=>{try{map.remove()}catch{}mapRef.current=null}
+  const resizeTimers=[80,300,800].map(ms=>window.setTimeout(()=>{if(mapRef.current===map)map.invalidateSize()},ms))
+  return()=>{resizeTimers.forEach(timer=>window.clearTimeout(timer));try{map.remove()}catch{}if(mapRef.current===map)mapRef.current=null}
  },[leafletReady])
 
  useEffect(()=>{
