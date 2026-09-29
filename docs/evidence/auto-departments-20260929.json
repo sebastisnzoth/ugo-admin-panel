@@ -1,0 +1,167 @@
+{
+  "readiness_id": "auto-departments",
+  "task_id": "readiness-auto-departments",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENTS",
+  "correlation_id": "readiness-auto-departments-20260929T204100Z",
+  "environment": "UGO TEST",
+  "project_ref": "tmossnqfwfwjrtzwcbmm",
+  "source_main_sha": "a7ac4da421b4edf064c408a504021a55a6bedd28",
+  "runtime_code_sha": "dafa2a8ae1d8f023c8a52bce2bddaa642f41121d",
+  "final_status": "IN_PROGRESS",
+  "runtime_proof": {
+    "status": "PASS",
+    "executed_at": "2026-09-29T20:44:31.253227Z",
+    "departments_expected": 13,
+    "departments_verified": 13,
+    "proofs": [
+      {
+        "department_id": 1,
+        "job_id": "f4861c5e-181c-4fdc-a952-f8ed578ecb01",
+        "evidence_id": "11762f8a-1ba5-437f-aa7e-6d9a0407d088",
+        "correlation_id": "617be344-af53-4b10-9276-8454baeacce6",
+        "agent_key": "executive-orchestrator",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 2,
+        "job_id": "4d29d69a-fab7-4d10-87d9-c30fd8fb0639",
+        "evidence_id": "04cb202c-0a74-4cdd-b686-cae6372eb27b",
+        "correlation_id": "6c0adab0-e1e9-43ff-bb23-05ce3ecee866",
+        "agent_key": "operations-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 3,
+        "job_id": "f1d9bffd-2210-474c-b266-fa758a8f6ad7",
+        "evidence_id": "2f39875f-9c88-4a25-996f-5e4001820dd0",
+        "correlation_id": "8f0311cf-77d2-4f2b-b700-8ae1a7faeff5",
+        "agent_key": "client-experience-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 4,
+        "job_id": "888530d2-1f49-46b0-931e-8401879026b7",
+        "evidence_id": "1bcb10c9-f3ad-4714-acbc-3a30fab37618",
+        "correlation_id": "1f9b7cc2-399e-4f69-b6ca-259901ec5aeb",
+        "agent_key": "provider-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 5,
+        "job_id": "8573b675-0628-4f62-8fde-2f023ebd65ba",
+        "evidence_id": "ae2ebbed-afcb-4a39-b174-29099df86e0e",
+        "correlation_id": "c96b2a4c-7f98-4ea4-bbb6-8eda3a7e10cd",
+        "agent_key": "growth-expansion-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 6,
+        "job_id": "7cd977a2-d469-4815-987c-976f60e07ac2",
+        "evidence_id": "22f15f76-3756-43f9-b451-f287bf597b9d",
+        "correlation_id": "120d20cf-124c-447d-8dbd-1e93345afb25",
+        "agent_key": "trust-resolution-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 7,
+        "job_id": "6789245f-b2d2-44aa-a782-51f06f6fd274",
+        "evidence_id": "7726bbe2-b7b5-49ff-91b8-c9d0938435af",
+        "correlation_id": "dd87a407-709f-49fa-b058-8e2d71281bc6",
+        "agent_key": "finance-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 8,
+        "job_id": "b9ae117e-075f-427d-8ee3-8dabc6bbbd67",
+        "evidence_id": "f1120f40-88ab-478f-862d-5df9f942dead",
+        "correlation_id": "4e70e6ec-1314-4710-a91a-4d259b178952",
+        "agent_key": "technology-security-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 9,
+        "job_id": "426df80e-4528-4cec-a49e-f7f8f78b2467",
+        "evidence_id": "9c6e55d8-6fe5-463d-80b7-509f2abdf3de",
+        "correlation_id": "5de1b8d5-50fe-4263-9f50-f7e211a3d1bf",
+        "agent_key": "deterministic-judge",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 10,
+        "job_id": "bd3f1492-92cb-4dab-8e04-8fc770a09c68",
+        "evidence_id": "dfb11158-23d5-4636-ae8c-f2dbb6997eb4",
+        "correlation_id": "04eff1d2-e1ab-490d-a7e2-c97f0f1f1a4d",
+        "agent_key": "legal-policy-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 11,
+        "job_id": "b0b0cc77-2b8c-45e9-ae24-3a38caf2963f",
+        "evidence_id": "8348097e-f1a8-47b8-8afd-d3a3936de7fa",
+        "correlation_id": "22194108-d7d8-4812-9a87-c100f876e5a0",
+        "agent_key": "marketing-brand-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 12,
+        "job_id": "526b1085-28d0-4530-9360-a73a552692c0",
+        "evidence_id": "6cacc7d8-445e-4807-8c96-668938a47a60",
+        "correlation_id": "a38b3780-5ec3-4f13-af69-61e0665599dd",
+        "agent_key": "product-design-agent",
+        "status": "SUCCEEDED"
+      },
+      {
+        "department_id": 14,
+        "job_id": "c2c44e83-be42-4e61-a5a8-63223fc58a97",
+        "evidence_id": "02249c87-f4b7-48a1-8bd8-22d578ba4e27",
+        "correlation_id": "cd12a8c2-af06-4140-87ca-89749d861ced",
+        "agent_key": "enterprise-risk-officer",
+        "status": "SUCCEEDED"
+      }
+    ]
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "judge_summary": {
+      "expected_departments": 13,
+      "departments_with_proof": 13,
+      "judge_passed": 13,
+      "failed_departments": []
+    },
+    "sentinel": "PASS",
+    "sentinel_summary": {
+      "proof_rows": 13,
+      "succeeded": 13,
+      "responsible_agents_enabled": 13,
+      "input_contract_present": 13,
+      "io_contract_present": 13,
+      "verification_passed": 13,
+      "distinct_departments": 13
+    }
+  },
+  "defect_remediation": {
+    "defect": "Initial verifier used unqualified digest() and UGO TEST rejected it.",
+    "containment": "The failed invocation was transactional; no partial readiness proof was persisted.",
+    "fix": "Use extensions.digest(...) explicitly.",
+    "regression": "tests/contracts/auto-departments-readiness.test.mjs"
+  },
+  "tests": [
+    {
+      "name": "UGO TEST department registry verifier",
+      "status": "PASS",
+      "result": "13/13 departments persisted with job/evidence/decision"
+    },
+    {
+      "name": "Judge persisted-state validation",
+      "status": "PASS",
+      "result": "13/13"
+    },
+    {
+      "name": "Sentinel completeness validation",
+      "status": "PASS",
+      "result": "13/13"
+    }
+  ],
+  "ui_improvement": "Departments view now shows responsible agent, declared inputs/outputs, and maturity derived from persisted proof.",
+  "production_touched": false
+}
