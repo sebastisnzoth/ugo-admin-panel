@@ -5,8 +5,8 @@
   "title": "Verify every autonomous department is registered, visibly mapped to a responsible agent, and has persisted job/evidence I/O",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T20:48:00Z",
-  "heartbeat_at": "2026-09-29T20:48:00Z",
-  "lease_expires_at": "2026-09-29T21:33:00Z",
+  "heartbeat_at": "2026-09-29T20:52:00Z",
+  "lease_expires_at": "2026-09-29T21:37:00Z",
   "started_sha": "1c6d04bab03ca673e3ac7054598239a4ca0837ec",
   "owner": "UGO",
   "department": "Plataforma Autónoma",
@@ -25,7 +25,7 @@
     "autonomy-registry"
   ],
   "correlation_id": "ugo-auto-departments-20260929T204800Z",
-  "current_step": "AUDIT_REGISTRY",
+  "current_step": "WAIT_CORE_CI_AND_ISOLATED_RUNTIME",
   "attempt": 1,
   "evidence_ids": []
 }
