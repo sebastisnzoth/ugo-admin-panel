@@ -73,3 +73,10 @@ test('GPS runtime invokes the complete persisted independent lifecycle judge',()
  assert.match(gps,/autonomous_qa_run_gps_independent_evidence/)
  assert.match(gps,/judgeJob\?\.status,'SUCCEEDED'/)
 })
+
+
+test('authenticated role proof covers the complete configured privilege boundary',()=>{
+ const auth=fs.readFileSync('scripts/autonomous-qa-auth-runtime.mjs','utf8')
+ for(const assertion of ['admin_governance_denied','superadmin_governance_allowed','provider_cannot_act_as_client']) assert.match(auth,new RegExp(assertion+':true'))
+ assert.match(auth,/allowedSuperadminGov/)
+})
