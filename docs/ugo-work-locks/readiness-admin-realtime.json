@@ -2,11 +2,14 @@
   "readiness_id": "admin-realtime",
   "task_id": "readiness-admin-realtime",
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T23:04:00Z",
-  "heartbeat_at": "2026-09-29T23:25:00Z",
-  "lease_expires_at": "2026-09-30T00:10:00Z",
+  "heartbeat_at": "2026-09-29T23:28:30Z",
+  "lease_expires_at": "2026-09-29T23:28:30Z",
+  "completed_at": "2026-09-29T23:28:30Z",
   "started_sha": "15bef1e7d6beeeaeb166a5c2d65bbf4f33be9232",
+  "verified_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
+  "runtime_validated_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Admin Realtime Runtime Agent",
@@ -14,12 +17,27 @@
     "Judge",
     "Sentinel"
   ],
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
   "resources": [
     "admin-realtime"
   ],
   "correlation_id": "readiness-admin-realtime-20260929T230400Z-15bef1e7",
-  "current_step": "RUN_UI_AUTHENTICATED_REALTIME_PROOF",
+  "current_step": "VERIFIED",
   "attempt": 2,
-  "evidence_ids": [],
-  "title": "Verify Admin operational state updates without manual refresh in UGO TEST"
+  "evidence_ids": [
+    "github-actions-run-36645017774",
+    "github-actions-job-109665861416",
+    "github-actions-artifact-11068686285",
+    "judge-pass-b438e779",
+    "sentinel-pass-b438e779",
+    "docs/evidence/readiness-admin-realtime-20260929.json"
+  ],
+  "evidence_path": "docs/evidence/readiness-admin-realtime-20260929.json",
+  "artifact_digest": "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
+  "production_touched": false,
+  "result": "VERIFIED",
+  "result_summary": "UGO TEST Admin operational KPI updated from authenticated Realtime without manual refresh, beat fallback polling, fixture reconciled, Judge PASS, Sentinel PASS."
 }
