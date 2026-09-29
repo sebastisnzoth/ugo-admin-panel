@@ -102,7 +102,12 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(yellowFirst.error)throw yellowFirst.error
  assert.equal(yellowFirst.data.status,'WAITING_APPROVAL')
  assert.equal(yellowFirst.data.authorization_decision,'DUAL_CONTROL_PENDING')
- const yellowSameActor=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'same actor must fail'})
+ let yellowSameActor=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'same actor must fail'})
+ if(yellowSameActor.error?.message?.includes('AUTONOMY_NOT_EXECUTABLE')){
+  const recovered=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'ON',p_reason:'isolated YELLOW second-approval fixture recovery'})
+  if(recovered.error)throw recovered.error
+  yellowSameActor=await db.rpc('superadmin_decide_autonomous_job',{p_job_id:yellow.data.id,p_approve:true,p_reason:'same actor must fail'})
+ }
  assert.ok(yellowSameActor.error)
  assert.match(yellowSameActor.error.message,/INDEPENDENT_SECOND_APPROVER_REQUIRED/)
 
