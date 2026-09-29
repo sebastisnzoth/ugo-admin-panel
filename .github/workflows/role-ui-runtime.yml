@@ -7,10 +7,9 @@ on:
       - "scripts/role-ui-runtime.mjs"
       - ".github/workflows/role-ui-runtime.yml"
       - "src/features/client/**"
-      - "src/mvp/provider/**"
-      - "src/mvp/AdminPhase2.tsx"
-      - "src/mvp/AutonomousCorporationDashboard.tsx"
-      - "src/mvp/AutonomousWorkforceControlCenter.tsx"
+      - "src/mvp/**"
+      - "src/components/**"
+      - "src/hooks/**"
   workflow_dispatch:
 
 permissions:
