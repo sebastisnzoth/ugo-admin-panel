@@ -134,6 +134,16 @@ jobs:
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         run: node scripts/autonomous-qa-gps-runtime.mjs
 
+      - name: Verify autonomous department registry and persisted I/O
+        if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="$(git rev-parse HEAD)"
+          node scripts/autonomous-departments-readiness-runtime.mjs
+          node scripts/autonomous-departments-readiness-judge.mjs
+          node scripts/autonomous-departments-readiness-sentinel.mjs
+
       - name: UGO Empresas TEST demand slots runtime
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
         shell: bash
@@ -183,5 +193,8 @@ jobs:
           path: |
             artifacts/super-admin-ui-runtime.*
             artifacts/ugo-empresas-runtime.png
+            artifacts/auto-departments-runtime.json
+            artifacts/auto-departments-judge.json
+            artifacts/auto-departments-sentinel.json
           if-no-files-found: warn
           retention-days: 90
