@@ -1,0 +1,45 @@
+{
+  "task_id": "worker-autonomy",
+  "job_id": "UGO-WORKER-AUTONOMY",
+  "environment": "UGO_TEST",
+  "production_touched": false,
+  "reference_sha": "2f4684d21478b3796d2ac2c5414ddb96f70a6c1d",
+  "runtime_validated_sha": "b1f29b654b448667e599644d273922e6a7da89b0",
+  "workflow": {
+    "name": "UGO Scheduled Worker Proof TEST",
+    "run_id": 36614235816,
+    "run_number": 68,
+    "job_id": 109563581599,
+    "conclusion": "success"
+  },
+  "proof": {
+    "autonomy_on_executed": true,
+    "autonomous_job_id": "4eec3b12-a4f0-494d-844f-995718005e3d",
+    "autonomous_job_status": "SUCCEEDED",
+    "correlation_id": "042ca321-692b-457d-8135-edd24aa1a5f7",
+    "decision_ledger_count": 1,
+    "evidence_ledger_count": 1,
+    "verification_passed": true,
+    "final_autonomy_mode": "OFF"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "autonomy": "OFF",
+    "d14_canonical": 6,
+    "active_leases": 0,
+    "active_kill_switches": 0
+  },
+  "runtime_revision": {
+    "persisted": true,
+    "source_sha": "b1f29b654b448667e599644d273922e6a7da89b0",
+    "workflow": "UGO Scheduled Worker Proof TEST"
+  },
+  "prior_general_worker_failure": {
+    "run_id": 36613236063,
+    "run_number": 570,
+    "source_sha": "2f4684d21478b3796d2ac2c5414ddb96f70a6c1d",
+    "reason": "AUTHENTICATED_CLIENT_SIMULATOR_ACTION_REQUIRED",
+    "interpretation": "Broader autonomous QA pipeline guardrail failure; not used as evidence for this dedicated scheduled-worker autonomy task."
+  },
+  "completed_at": "2026-09-29T18:46:18Z"
+}
