@@ -18,5 +18,8 @@ try{
  for(const [key,passed] of Object.entries(observations)){
   const {error:ee}=await service.rpc('autonomous_record_independent_qa_evidence',{p_run_id:run.id,p_service_id:svc.id,p_assertion_key:key,p_expected:true,p_observed:passed,p_passed:passed,p_source:'AUTHENTICATED_RUNTIME'});if(ee)throw ee
  }
- console.log(JSON.stringify({gpsGeofence:true,zero:zero.error.code,stale:stale.error.code,inaccurate:inaccurate.error.code}))
+ const {data:judgeJob,error:judgeError}=await service.rpc('autonomous_qa_run_gps_independent_evidence')
+ if(judgeError)throw judgeError
+ assert.equal(judgeJob?.status,'SUCCEEDED')
+ console.log(JSON.stringify({gpsGeofence:true,zero:zero.error.code,stale:stale.error.code,inaccurate:inaccurate.error.code,judgeJob:judgeJob.id}))
 }finally{await p.auth.signOut()}
