@@ -54,8 +54,10 @@ declare s public.autonomous_qa_scenarios%rowtype; r public.autonomous_qa_runs%ro
  judge public.autonomous_agents%rowtype; job public.autonomous_jobs%rowtype; required text[];
  missing text[]; bad_hash text[]; verification jsonb; evidence_snapshot jsonb;
 begin
- if coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','')<>'service_role'
- then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
+ -- Authorization is enforced by EXECUTE privilege: this SECURITY DEFINER RPC is
+ -- revoked from PUBLIC/anon/authenticated and granted only to service_role below.
+ -- Do not duplicate that boundary with request.jwt.claim.role: Supabase secret keys
+ -- can legitimately execute as service_role without exposing a legacy JWT role claim.
  if p_scenario_key not in('gps-geofence','roles','permissions-rls','realtime')
  then raise exception 'INDEPENDENT_JUDGE_SCENARIO_UNSUPPORTED'; end if;
  select * into s from public.autonomous_qa_scenarios where scenario_key=p_scenario_key and status='ACTIVE';
