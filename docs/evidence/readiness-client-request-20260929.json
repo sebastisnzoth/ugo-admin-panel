@@ -1,0 +1,44 @@
+{
+  "readiness_id": "client-request",
+  "task_id": "readiness-client-request",
+  "job_id": "UGO-READINESS-CLIENT-REQUEST",
+  "correlation_id": "readiness-client-request-20260929T231430Z-f1fa5a58",
+  "environment": "UGO TEST",
+  "verified_sha": "710d7c3624d9f48d2c2f92a0f189800525021e08",
+  "workflow_run_id": 36645245760,
+  "workflow_job_id": 109666580833,
+  "artifact_id": 11068317496,
+  "artifact_name": "client-request-runtime-710d7c3624d9f48d2c2f92a0f189800525021e08",
+  "artifact_digest": "sha256:ae47ec633430710baa2686e04c43f3f99182ede63a242b275fe0088f073bcece",
+  "service_id": "e4fada2e-5260-4466-8fa3-efb736df70b9",
+  "request_draft_id": "50e629e3-9cc6-4cae-b393-d254ff2584fe",
+  "backend_state_at_proof": "buscando",
+  "cleanup": {
+    "attempted": true,
+    "ok": true,
+    "error": null
+  },
+  "assertions": {
+    "category_persisted": true,
+    "description_persisted": true,
+    "location_persisted": true,
+    "conditions_persisted": true,
+    "payment_persisted": true,
+    "idempotent_single_service": true,
+    "submitted_operational_state": true,
+    "no_page_errors": true
+  },
+  "validators": {
+    "Judge": {
+      "status": "PASS",
+      "sha": "710d7c3624d9f48d2c2f92a0f189800525021e08",
+      "checked_at": "2026-09-29T23:28:10.615Z"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "sha": "710d7c3624d9f48d2c2f92a0f189800525021e08",
+      "checked_at": "2026-09-29T23:28:10.666Z"
+    }
+  },
+  "completed_at": "2026-09-29T23:28:12Z"
+}
