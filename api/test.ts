@@ -256,8 +256,9 @@ async function autonomyOpenRouter(req:any,res:any){
    if(error)throw error
   }
   if(!summary.jobs.length&&!summary.decisions.length&&!summary.evidence_types.length){await audit(false,null,null,null,'NO_PERSISTED_AGENT_EVIDENCE',null);return res.status(409).json({error:'NO HAY EVIDENCIA SUFICIENTE',correlation_id:correlationId})}
-  const key=String(process.env.OPENROUTER_API_KEY||'').trim()
-  if(!key){await audit(false,null,null,null,'MODEL_CREDENTIAL_UNAVAILABLE',null);return res.status(503).json({error:'Model Router no disponible',correlation_id:correlationId})}
+  const openrouterKey=String(process.env.OPENROUTER_API_KEY||'').trim()
+  const geminiKey=String(process.env.GEMINI_API_KEY||'').trim()
+  if(!openrouterKey&&!geminiKey){await audit(false,null,null,null,'MODEL_CREDENTIAL_UNAVAILABLE',null);return res.status(503).json({error:'Model Router no disponible',correlation_id:correlationId})}
   const taskClass='AGENT_CONSULTATION'
   const{data:route,error:routeError}=await sb.from('autonomous_model_routes').select('status,max_cost,primary_candidate_id,fallback_candidate_id').eq('task_class',taskClass).maybeSingle()
   if(routeError)throw routeError
@@ -266,17 +267,28 @@ async function autonomyOpenRouter(req:any,res:any){
   if(!idsToTry.length){await audit(false,null,null,null,'NO_FREE_MODEL',null);return res.status(409).json({error:'NO_ELIGIBLE_FREE_MODEL',correlation_id:correlationId})}
   const{data:candidates,error:candidateError}=await sb.from('autonomous_model_candidates').select('id,provider,model_id,free_tier,eligible,availability,last_benchmarked_at').in('id',idsToTry)
   if(candidateError)throw candidateError
-  const cutoff=Date.now()-15*60*1000
-  const ordered=idsToTry.map((id:any)=>(candidates||[]).find((x:any)=>x.id===id)).filter((x:any)=>x&&x.provider==='openrouter'&&x.eligible&&x.availability==='AVAILABLE'&&x.free_tier&&x.last_benchmarked_at&&Date.parse(x.last_benchmarked_at)>=cutoff)
+  const cutoff=Date.now()-20*60*1000
+  const ordered=idsToTry.map((id:any)=>(candidates||[]).find((x:any)=>x.id===id)).filter((x:any)=>x&&['gemini','openrouter'].includes(x.provider)&&x.eligible&&x.availability==='AVAILABLE'&&x.free_tier&&x.last_benchmarked_at&&Date.parse(x.last_benchmarked_at)>=cutoff)
   if(!ordered.length){await audit(false,null,null,null,'NO_FRESH_FREE_MODEL',null);return res.status(409).json({error:'NO_ELIGIBLE_FREE_MODEL',correlation_id:correlationId})}
   let lastError:any=null
+  const system=`Sos ${agent.name} de UGO. Función declarada: ${agent.capability}. Respondé sólo a partir de estos conteos, estados y tipos de evidencia. No afirmes haber ejecutado acciones ni visto datos personales. No interpretes esta consulta como autorización para mutar, pagar, desplegar o aprobar. Si faltan datos, decilo.`
   for(const candidate of ordered){
    const started=Date.now()
    try{
-    const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{authorization:`Bearer ${key}`,'content-type':'application/json','x-title':'UGO Autonomous Company'},body:JSON.stringify({model:candidate.model_id,messages:[{role:'system',content:`Sos ${agent.name} de UGO. Función declarada: ${agent.capability}. Respondé sólo a partir de estos conteos, estados y tipos de evidencia. No afirmes haber ejecutado acciones ni visto datos personales. No interpretes esta consulta como autorización para mutar, pagar, desplegar o aprobar. Si faltan datos, decilo.`},{role:'user',content:JSON.stringify({question,verified_summary:summary})}],temperature:.1,max_tokens:500}),signal:AbortSignal.timeout(15000)})
-    const payload:any=await response.json().catch(()=>null)
-    if(!response.ok)throw new Error(payload?.error?.message||`OpenRouter ${response.status}`)
-    const answer=safeText(payload?.choices?.[0]?.message?.content,4000)
+    let answer=''
+    if(candidate.provider==='gemini'){
+     if(!geminiKey)throw new Error('GEMINI_CREDENTIAL_UNAVAILABLE')
+     const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(candidate.model_id)}:generateContent`,{method:'POST',headers:{'content-type':'application/json','x-goog-api-key':geminiKey},body:JSON.stringify({contents:[{role:'user',parts:[{text:system+'\\n'+JSON.stringify({question,verified_summary:summary})}]}],generationConfig:{temperature:.1,maxOutputTokens:500}}),signal:AbortSignal.timeout(15000)})
+     const payload:any=await response.json().catch(()=>null)
+     if(!response.ok)throw new Error(payload?.error?.message||`Gemini ${response.status}`)
+     answer=safeText(payload?.candidates?.[0]?.content?.parts?.map((p:any)=>p?.text||'').join(''),4000)
+    }else{
+     if(!openrouterKey)throw new Error('OPENROUTER_CREDENTIAL_UNAVAILABLE')
+     const response=await fetch('https://openrouter.ai/api/v1/chat/completions',{method:'POST',headers:{authorization:`Bearer ${openrouterKey}`,'content-type':'application/json','x-title':'UGO Autonomous Company'},body:JSON.stringify({model:candidate.model_id,messages:[{role:'system',content:system},{role:'user',content:JSON.stringify({question,verified_summary:summary})}],temperature:.1,max_tokens:500}),signal:AbortSignal.timeout(15000)})
+     const payload:any=await response.json().catch(()=>null)
+     if(!response.ok)throw new Error(payload?.error?.message||`OpenRouter ${response.status}`)
+     answer=safeText(payload?.choices?.[0]?.message?.content,4000)
+    }
     if(!answer)throw new Error('EMPTY_MODEL_RESPONSE')
     const latency=Date.now()-started
     const{error:metricError}=await sb.from('autonomous_model_metrics').insert({candidate_id:candidate.id,task_class:taskClass,correlation_id:correlationId,quality_score:null,latency_ms:latency,success:true,cost:0})
