@@ -1,0 +1,23 @@
+{
+  "task_id": "remediation-regression",
+  "job_id": "UGO-REMEDIATION-REGRESSION",
+  "status": "DONE",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "started_sha": "8bb00afa5baaef2aa4045eaa3a7d638a922e9b2f",
+  "claim_commit_sha": "1581aff63521aeb19dfdfd2dd59a2502a0f13121",
+  "correlation_id": "3f0a4a0e-0f7f-4bcf-9d2e-8edc1f01c929",
+  "service_id": "ea823649-670e-47a2-a547-312dfaa19f42",
+  "failed_run_id": "317f51fd-6db2-4858-991d-3d62add71a27",
+  "remediation_id": "b798325b-bf53-40c5-84a3-4c371b323ce2",
+  "rerun_id": "cbb4193f-f38f-4522-a6bd-6aa48a324142",
+  "autonomous_job_id": "376731b3-8c6b-425a-bb01-d45a2c50b88e",
+  "initial_failure": {"status":"FAILED","seeded_defect_detected":true},
+  "remediation": {"status":"VERIFIED","strategy":"REMOVE_CONTROLLED_SEEDED_DEFECT","business_state_mutated":false},
+  "rerun": {"status":"PASSED","permanent_regression":true},
+  "independent_judge": {"result":"PASS","evidence_ledger_count":1,"decision_ledger_count":1,"correlation_count":1},
+  "sentinel": {"result":"PASS","autonomy":"OFF","running_jobs":0,"active_leases":0,"active_kill_switches":0,"d14_canonical":6,"legacy_auditor_active":0},
+  "advisors": {"new_security_issue_from_change":false,"note":"Existing project-wide advisor findings remain outside this task."},
+  "verified_at": "2026-09-29T19:04:00Z"
+}
