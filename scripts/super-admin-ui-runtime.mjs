@@ -38,16 +38,19 @@ async function snapshot(){
   const [
     company, gate, qaSimulators, qaScenarios, qaRuns, qaCoverage,
     modelCandidates, modelRoutes, modelMetrics, risks, controls, challenges,
-    jobs
+    empresasReadiness, empresasDemands, empresasSlots, jobs
   ]=await Promise.all([
     reader.from('autonomous_company_state').select('*').maybeSingle(),
     reader.from('autonomous_release_gate').select('*').eq('gate_key','CUSTOMER_1').maybeSingle(),
     count('autonomous_qa_simulators'), count('autonomous_qa_scenarios'), visibleCount('autonomous_qa_runs',50), count('autonomous_quality_coverage'),
     count('autonomous_model_candidates'), count('autonomous_model_routes'), visibleCount('autonomous_model_metrics',50),
     count('autonomous_enterprise_risks'), count('autonomous_control_coverage'), count('autonomous_challenges'),
+    reader.from('ugo_empresas_readiness').select('*').eq('product_key','UGO_EMPRESAS').maybeSingle(),
+    reader.from('ugo_empresas_demands').select('id,company_ref,status,quantity').order('created_at',{ascending:false}).limit(20),
+    reader.from('ugo_empresas_slots').select('id,demand_id,status,validated_minutes').order('slot_index').limit(100),
     reader.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100)
   ]);
-  for(const r of [company,gate,jobs]) assert.ifError(r.error);
+  for(const r of [company,gate,empresasReadiness,empresasDemands,empresasSlots,jobs]) assert.ifError(r.error);
   const correlated=(jobs.data||[]).find(j=>j.correlation_id);
   assert.ok(correlated,'CORRELATED_JOB_REQUIRED_FOR_TIMELINE_RUNTIME_PROOF');
   return {
@@ -56,6 +59,7 @@ async function snapshot(){
     qa:{simulators:qaSimulators,scenarios:qaScenarios,runs:qaRuns,coverage:qaCoverage},
     models:{candidates:modelCandidates,routes:modelRoutes,metrics:modelMetrics},
     risk:{risks,controls,challenges},
+    empresas:{readiness:empresasReadiness.data||null,demands:empresasDemands.data||[],slots:empresasSlots.data||[]},
     correlated
   };
 }
@@ -111,6 +115,18 @@ try{
   await assertCardCount('CONTROLES',before.risk.controls);
   await assertCardCount('CHALLENGES D14',before.risk.challenges);
 
+  await page.getByRole('button',{name:'UGO Empresas',exact:true}).click();
+  await page.getByText('UGO Empresas',{exact:true}).last().waitFor({state:'visible'});
+  assert.equal(before.empresas.readiness?.status,'READY','UGO_EMPRESAS_RUNTIME_NOT_READY');
+  assert.equal(before.empresas.readiness?.metrics?.runtime_sha,sha,'UGO_EMPRESAS_SHA_MISMATCH');
+  const enterpriseDemand=before.empresas.demands.find(d=>d.id===before.empresas.readiness?.metrics?.demand_id);
+  assert.ok(enterpriseDemand,'UGO_EMPRESAS_EVIDENCE_DEMAND_NOT_VISIBLE');
+  const enterpriseSlots=before.empresas.slots.filter(s=>s.demand_id===enterpriseDemand.id);
+  assert.equal(enterpriseSlots.length,enterpriseDemand.quantity,'UGO_EMPRESAS_SLOT_COUNT_MISMATCH');
+  assert.ok(enterpriseSlots.every(s=>s.status==='VALIDATED'),'UGO_EMPRESAS_SLOT_STATE_MISMATCH');
+  await page.getByText(enterpriseDemand.company_ref,{exact:false}).waitFor({state:'visible'});
+  await page.screenshot({path:'artifacts/ugo-empresas-runtime.png',fullPage:true});
+
   await page.getByRole('button',{name:'Ledgers',exact:true}).click();
   const search=page.getByPlaceholder('correlation_id, job id o serviceId');
   await search.fill(String(before.correlated.correlation_id));
@@ -135,7 +151,7 @@ try{
     actor_role:profile.tipo,
     runtime_checks:{
       authenticated_session:'PASS',super_admin_authorization:'PASS',autonomy:'PASS',qa_lab:'PASS',
-      model_router:'PASS',risk_audit:'PASS',launch_gate_action:'PASS',correlation_timeline:'PASS'
+      model_router:'PASS',risk_audit:'PASS',ugo_empresas:'PASS',launch_gate_action:'PASS',correlation_timeline:'PASS'
     },
     backend_before:before,
     backend_after:{mode:after.mode,launch:after.launch},
