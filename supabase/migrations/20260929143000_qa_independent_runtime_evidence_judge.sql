@@ -59,7 +59,7 @@ begin
  select * into s from public.autonomous_qa_scenarios where scenario_key=p_scenario_key and status='ACTIVE';
  if s.id is null or s.service_id is null then raise exception 'ACTIVE_BOUND_SCENARIO_REQUIRED'; end if;
  select * into r from public.autonomous_qa_runs where scenario_id=s.id order by finished_at desc nulls last,created_at desc limit 1;
- if r.id is null or r.status<>'PASSED' then raise exception 'LATEST_PASSED_QA_RUN_REQUIRED'; end if;
+ if r.id is null or r.status not in('BLOCKED','PASSED') then raise exception 'LATEST_JUDGEABLE_QA_RUN_REQUIRED'; end if;
  select * into judge from public.autonomous_agents where agent_key='deterministic-judge' and department_id=9 and status='IDLE';
  if not exists(select 1 from public.servicios where id=s.service_id and ambiente='demo') then raise exception 'UGO_TEST_SERVICE_REQUIRED'; end if;
  if judge.id is null then raise exception 'DETERMINISTIC_JUDGE_NOT_READY'; end if;
@@ -105,6 +105,16 @@ begin
  values(job.id,'QA_INDEPENDENT_JUDGE','autonomous_qa_runs/'||r.id,
  encode(extensions.digest(verification::text,'sha256'),'hex'),jsonb_build_object('scenario_key',s.scenario_key),r.correlation_id)
  on conflict do nothing;
+ insert into public.autonomous_decision_ledger
+   (job_id,department_id,agent_id,decision,reason,authority_class,policy_version,evidence_refs,authorization_result,correlation_id)
+ values(job.id,9,judge.id,'QA_INDEPENDENT_JUDGE_PASSED',
+   'Independent deterministic verdict derived from hashed runtime evidence plus persisted UGO TEST state',
+   'GREEN',job.policy_version,jsonb_build_array('autonomous_qa_runs/'||r.id::text),
+   'AUTHORIZED',r.correlation_id)
+ on conflict do nothing;
+ update public.autonomous_qa_runs
+   set status='PASSED',judge_result=verification,finished_at=coalesce(finished_at,now()),judge_agent_id=judge.id
+ where id=r.id;
  update public.autonomous_quality_coverage set scenario_id=s.id,last_run_id=r.id,status='COVERED',updated_at=now()
  where coverage_key=s.scenario_key;
  return job;
