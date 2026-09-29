@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-rls",
   "job_id": "UGO-READINESS-CROSS-RLS",
   "title": "Verify cross-role RLS/RPC isolation with same-SHA runtime evidence",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:50:00Z",
-  "heartbeat_at": "2026-09-29T21:00:00Z",
-  "lease_expires_at": "2026-09-29T21:45:00Z",
+  "heartbeat_at": "2026-09-29T21:08:00Z",
+  "lease_expires_at": "2026-09-29T21:08:00Z",
   "started_sha": "b92f2887c2bdb0e90271c5bf1695d2db897bc8ef",
   "owner": "UGO",
   "department": "Seguridad / Calidad",
@@ -19,19 +19,44 @@
     "security-rls"
   ],
   "correlation_id": "readiness-cross-rls-20260929T205000Z-b92f288",
-  "current_step": "RERUN_SAME_SHA_AFTER_RPC_GUARD",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
     "repo:tests/integration/cross-role-rls-rpc.test.mjs",
     "github:c091182dae350f966252cecabdccb590758ea1e4",
     "supabase-test:migration:harden_provider_offer_rpc_cross_role",
     "github:09ce7e0734bde1787aa4117747df244b18115d67",
-    "github:f9196eb74cc12f2a0ca10abd3a7c08a34da245e6"
+    "github:f9196eb74cc12f2a0ca10abd3a7c08a34da245e6",
+    "repo:docs/evidence/readiness-cross-rls-20260929.json",
+    "github:ca42975adfa44e5f47df2c389b30e17f3da6cae9",
+    "github-actions:core-run:36630244665",
+    "github-actions:isolated-run:36630426605",
+    "github-actions:job:109618549528",
+    "ugo-test:service:67593d1a-e171-46ed-b30e-b10bf0a1b820",
+    "ugo-test:run:fae59f24-448c-4a8a-b495-df3cc5c76826"
   ],
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-backend",
     "ugo-qa",
     "ugo-evidence-judge"
+  ],
+  "completed_at": "2026-09-29T21:08:00Z",
+  "completed_main_sha_before_lock_close": "ca42975adfa44e5f47df2c389b30e17f3da6cae9",
+  "runtime_validated_sha": "24ec61d201be36bca5a15f099adc8f5aa272fa48",
+  "service_id": "67593d1a-e171-46ed-b30e-b10bf0a1b820",
+  "evidence_path": "docs/evidence/readiness-cross-rls-20260929.json",
+  "evidence_commit_sha": "ca42975adfa44e5f47df2c389b30e17f3da6cae9",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "production_touched": false,
+  "notes": [
+    "Same-SHA checkout 24ec61d201be36bca5a15f099adc8f5aa272fa48 contains the RPC hardening migration and permanent cross-role regression.",
+    "Core CI run 36630244665 passed for the same SHA.",
+    "UGO Isolated RPC RLS run 36630426605 job 109618549528 authoritative RPC/RLS step passed; integration summary 9 tests, 6 pass, 0 fail, 3 skip.",
+    "Containing multi-control workflow later failed only on unrelated UGO Empresas and Super Admin UI steps; those failures are not cross-rls evidence.",
+    "Production was not touched."
   ]
 }
