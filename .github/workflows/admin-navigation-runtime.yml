@@ -69,7 +69,15 @@ jobs:
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
-          sed -i "s|page.on('pageerror',error=>pageErrors.push(String(error?.message||error)));|page.on('pageerror',error=>{const message=String(error?.stack||error);pageErrors.push(message);console.error('ADMIN_NAV_PAGEERROR',message)});|" scripts/admin-navigation-runtime.mjs
+          python - <<'PY'
+          from pathlib import Path
+          p=Path('scripts/admin-navigation-runtime.mjs')
+          old="page.on('pageerror',error=>pageErrors.push(String(error?.message||error)));"
+          new="page.on('pageerror',error=>{const message=String(error?.stack||error);pageErrors.push(message);console.error('ADMIN_NAV_PAGEERROR',message)});"
+          s=p.read_text()
+          assert old in s
+          p.write_text(s.replace(old,new))
+          PY
           node scripts/admin-navigation-runtime.mjs
       - name: Judge
         env:
