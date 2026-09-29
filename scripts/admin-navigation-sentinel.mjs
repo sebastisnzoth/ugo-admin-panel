@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+const sha=process.env.UGO_RUNTIME_SHA||'';
+const p=JSON.parse(await fs.readFile('artifacts/admin-navigation-runtime.json','utf8'));
+const source=await fs.readFile('src/mvp/AdminPhase2.tsx','utf8');
+for(const token of ['Navegación Admin','Menú de operaciones','aria-label="Personas"','aria-label="Finanzas"','aria-label="Configuración"']) assert.ok(source.includes(token),'static navigation contract missing: '+token);
+assert.equal(p.sha,sha);
+assert.equal(new Set(p.click_map.map(x=>x.scope+'::'+x.control)).size,p.click_map.length,'duplicate click-map entry');
+assert.ok(p.button_inventory.every(v=>v.buttons.every(b=>b.label)),'unlabeled runtime button');
+assert.equal(p.page_errors.length,0);
+const out={validator:'Sentinel',result:'PASS',sha,readiness_id:p.readiness_id,checked_at:new Date().toISOString()};
+await fs.writeFile('artifacts/admin-navigation-sentinel.json',JSON.stringify(out,null,2)+'\n');
+console.log(JSON.stringify(out));
