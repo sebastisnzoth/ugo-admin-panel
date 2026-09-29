@@ -45,5 +45,6 @@
     "docs/ugo-readiness-evidence/readiness-hugo-intent-a668c242.json"
   ],
   "evidence_path": "docs/ugo-readiness-evidence/readiness-hugo-intent-a668c242.json",
-  "result_summary": "Production intent resolver verified against active UGO TEST categories: 10 natural-language category cases and 6 flow-action cases PASS; exact-SHA build and Core CI PASS; Judge and Sentinel PASS."
+  "result_summary": "Production intent resolver verified against active UGO TEST categories: 10 natural-language category cases and 6 flow-action cases PASS; exact-SHA build and Core CI PASS; Judge and Sentinel PASS.",
+  "title": "Verify Hugo natural-language intent recognition and flow commands in UGO TEST"
 }
