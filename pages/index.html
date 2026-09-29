@@ -20,7 +20,7 @@
     .steps{display:grid;gap:12px}.step{display:grid;grid-template-columns:90px 1fr;gap:14px}.step-index{font-size:1.5rem;font-weight:850;color:var(--accent)}.step .meta-line{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 10px}.step p{margin:8px 0;color:var(--muted);line-height:1.55}.step b{color:#fff}.pill.ugo{color:var(--accent)}.pill.human{color:var(--warn)}.pill.blocked{color:var(--bad)}.pill.pending{color:var(--warn)}
     details{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}summary{cursor:pointer;color:#dce8f8;font-weight:750}.resolve{margin-top:10px;padding:12px;border-radius:12px;background:#0b1425;border:1px solid #223657}
     .meta{margin-top:26px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--muted);font:.82rem ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}.meta strong{color:#fff}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-block;text-decoration:none;color:inherit;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#15223b;font-weight:750}.btn.primary{background:#dff4ff;color:#0a3148;border-color:#b9e7fb}.cta-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.cta{border:0;cursor:pointer;font:inherit}.cta.chatgpt{background:#10a37f;color:white;border:1px solid #27c79d}.cta.chatgpt:hover{filter:brightness(1.06)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-block;text-decoration:none;color:inherit;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#15223b;font-weight:750}.btn.primary{background:#dff4ff;color:#0a3148;border-color:#b9e7fb}.cta-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.cta{border:0;cursor:pointer;font:inherit}.cta.chatgpt{background:#10a37f;color:white;border:1px solid #27c79d}.cta.chatgpt:hover{filter:brightness(1.06)}.cta.github{background:#238636;color:white;border:1px solid #2ea043}.cta.github:hover{filter:brightness(1.08)}
     .monitor{margin-top:22px;border:1px solid #315080;border-radius:20px;background:linear-gradient(135deg,#0d1b34,#101a2e);padding:18px}
 .monitor-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
 .monitor-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;margin-top:14px}
@@ -61,8 +61,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         <div class="sub" id="liveDetail">Consultando actividad de UGO.</div>
       </div>
       <div class="monitor-box">
-        <strong>Tarea enviada a UGO Maestro</strong>
-        <div id="sentTask">Ninguna tarea enviada desde este navegador.</div>
+        <strong>Trabajo solicitado</strong>
+        <div id="sentTask">Ninguna tarea solicitada desde este navegador.</div>
         <div class="tiny" id="sentTaskMeta"></div>
       </div>
       <div class="monitor-box">
@@ -101,7 +101,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <h3 id="nextTitle">Esperando evidencia…</h3>
     <p class="sub" id="nextWhy">—</p>
     <div class="resolve"><b>Cómo resolverlo:</b> <span id="nextResolve">—</span></div>
-    <div class="cta-row"><button class="btn cta chatgpt" id="nextUgoMaster" type="button" disabled>Resolver con UGO Maestro</button><button class="btn cta" id="revalidateNow" type="button">Revalidar ahora</button></div>
+    <div class="cta-row"><a class="btn cta github" id="nextGitHubAction" target="_blank" rel="noopener" hidden>Resolver en GitHub</a><button class="btn cta chatgpt" id="nextUgoMaster" type="button" disabled>Resolver con UGO Maestro</button><button class="btn cta" id="revalidateNow" type="button">Revalidar ahora</button></div>
   </section>
 
   <h2>Trabajo de implementación pendiente</h2>
@@ -193,11 +193,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
         </div>
         <p><b>Por qué falta:</b> ${esc(step.why)}</p>
         <p><b>Estado operativo:</b> ${esc(step.gate_reason || gateLabel(step))}</p>
-        <p><b>Job:</b> ${esc(step.job_id || step.id)} · <b>Skills:</b> ${esc((step.skills || []).join(', ') || 'según UGO Maestro')} · <b>Valida:</b> ${esc((step.validators || []).join(' → ') || 'Judge → Sentinel')}</p>
+        <p><b>Job:</b> ${esc(step.job_id || step.id)} · <b>Skills:</b> ${esc((step.skills || []).join(', ') || 'según UGO Maestro')} · <b>Valida:</b> ${esc((step.validators || []).join(' → ') || 'Judge → Sentinel')} · <b>Canal:</b> ${esc(step.execution_channel || 'UGO_MAESTRO')}</p>
         <div class="resolve"><b>Cómo resolverlo:</b> ${esc(step.resolve)}</div>
         <details><summary>Qué evidencia lo convierte en DONE</summary><p>${esc(step.done_evidence)}</p></details>
         <div class="cta-row">
-          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}" ${step.gate_state === 'AVAILABLE' ? '' : 'disabled'}>${esc(buttonLabel(step))}</button>
+          ${step.direct_action && step.gate_state === 'AVAILABLE' ? '<a class="btn cta github" target="_blank" rel="noopener" data-github-step-id="' + esc(step.id) + '" href="' + esc(step.direct_action.url) + '">' + esc(step.direct_action.label || 'Resolver en GitHub') + '</a>' : ''}
+          <button class="btn cta chatgpt" type="button" data-step-id="${esc(step.id)}" ${step.gate_state === 'AVAILABLE' ? '' : 'disabled'}>${esc(step.direct_action && step.gate_state === 'AVAILABLE' ? 'Analizar con UGO Maestro' : buttonLabel(step))}</button>
           <span class="pill" data-lifecycle-id="${esc(step.id)}">PENDIENTE</span>
           ${step.evidence_url ? '<a class="btn" target="_blank" rel="noopener" href="' + esc(step.evidence_url) + '">Ver evidencia</a>' : ''}
         </div>
@@ -272,9 +273,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       return Array.isArray(value) ? value : []
     } catch { return [] }
   }
-  const saveDispatch = step => {
+  const saveDispatch = (step, channel = 'UGO_MAESTRO') => {
     const list = getDispatches().filter(x => x.step_id !== step.id)
-    list.push({step_id:step.id,title:step.title,source_sha:statusSnapshot?.source_sha || null,sent_at:new Date().toISOString(),resources:step.resources || []})
+    list.push({step_id:step.id,title:step.title,source_sha:statusSnapshot?.source_sha || null,sent_at:new Date().toISOString(),resources:step.resources || [],channel})
     localStorage.setItem(dispatchKey, JSON.stringify(list))
     renderDispatch()
   }
@@ -291,7 +292,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openUgoMasterForStep = async step => {
-    saveDispatch(step)
+    saveDispatch(step, 'UGO_MAESTRO')
     const prompt = buildChatGPTPrompt(step)
     const chatWindow = window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
     try {
@@ -376,7 +377,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     } else if (dispatches.length) {
       document.getElementById('liveState').textContent = 'ESPERANDO LOCK / EVIDENCIA'
       document.getElementById('liveState').className = 'state-big warn'
-      document.getElementById('liveDetail').textContent = dispatches.length + ' tarea(s) enviadas a UGO Maestro; esperando lock persistido o ejecución observable.'
+      document.getElementById('liveDetail').textContent = dispatches.length + ' tarea(s) solicitadas; esperando lock persistido o ejecución observable.'
     } else {
       document.getElementById('liveState').textContent = 'SIN EJECUCIÓN OBSERVABLE'
       document.getElementById('liveState').className = 'state-big'
@@ -453,9 +454,20 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       document.getElementById('nextWhy').textContent = next.why
       document.getElementById('nextResolve').textContent = next.resolve
       const nextButton = document.getElementById('nextUgoMaster')
+      const nextGitHub = document.getElementById('nextGitHubAction')
       nextButton.disabled = next.gate_state !== 'AVAILABLE'
-      nextButton.textContent = buttonLabel(next)
+      nextButton.textContent = next.direct_action && next.gate_state === 'AVAILABLE' ? 'Analizar con UGO Maestro' : buttonLabel(next)
       nextButton.onclick = next.gate_state === 'AVAILABLE' ? () => openUgoMasterForStep(next) : null
+      if (next.direct_action && next.gate_state === 'AVAILABLE') {
+        nextGitHub.hidden = false
+        nextGitHub.href = next.direct_action.url
+        nextGitHub.textContent = next.direct_action.label || 'Resolver en GitHub'
+        nextGitHub.onclick = () => saveDispatch(next, 'GITHUB_DIRECT')
+      } else {
+        nextGitHub.hidden = true
+        nextGitHub.removeAttribute('href')
+        nextGitHub.onclick = null
+      }
     }
     document.getElementById('implementationSteps').innerHTML = (s.implementation_steps || []).map(renderStep).join('') || '<div class="card">Sin trabajo técnico pendiente.</div>'
     document.getElementById('finalGateSteps').innerHTML = (s.final_gate_steps || []).map(renderStep).join('') || '<div class="card">Sin blockers finales.</div>'
@@ -463,6 +475,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-step-id]').forEach(button => {
       const step = allSteps.find(x => x.id === button.dataset.stepId)
       if (step && step.gate_state === 'AVAILABLE' && !button.disabled) button.onclick = () => openUgoMasterForStep(step)
+    })
+    document.querySelectorAll('[data-github-step-id]').forEach(link => {
+      const step = allSteps.find(x => x.id === link.dataset.githubStepId)
+      if (step && step.direct_action && step.gate_state === 'AVAILABLE') link.onclick = () => saveDispatch(step, 'GITHUB_DIRECT')
     })
     const assurance = Object.fromEntries((s.assurance || []).map(x=>[x.name,x.status]))
     document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
