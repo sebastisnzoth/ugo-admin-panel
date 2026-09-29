@@ -2,10 +2,10 @@
   "readiness_id": "hugo-presence",
   "task_id": "readiness-hugo-presence",
   "job_id": "UGO-READINESS-HUGO-PRESENCE",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T20:47:00Z",
-  "heartbeat_at": "2026-09-29T21:16:00Z",
-  "lease_expires_at": "2026-09-29T22:01:00Z",
+  "heartbeat_at": "2026-09-29T21:18:00Z",
+  "lease_expires_at": "2026-09-29T21:18:00Z",
   "started_sha": "d27e7047d64a8816dfe38b79769adbc0a15ab4bc",
   "owner": "UGO",
   "assigned_agent": "Hugo Runtime Presence Agent",
@@ -17,7 +17,7 @@
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-presence-20260929T204700Z",
-  "current_step": "judge_sentinel_runtime_pending",
+  "current_step": "validated_and_closed",
   "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36629086885",
@@ -32,7 +32,16 @@
     "github-actions-artifact-11061378231-admin-failure-screenshot",
     "github-actions-run-36630898063-success-runtime",
     "github-actions-artifact-11062143730-runtime-pass",
-    "runtime-sha-cc382d6163ae6174c71cc228ff04a8d418a351ab"
+    "runtime-sha-cc382d6163ae6174c71cc228ff04a8d418a351ab",
+    "hugo-presence-runtime-20260929T211113Z",
+    "github-actions-run-36631312555-success",
+    "github-actions-job-109620958158-success",
+    "github-actions-artifact-11062214387",
+    "github-actions-artifact-digest-sha256:630872d4c996f05305f1d8baf78f963cb321fdc35beb12183d6ff71f85f6d62a",
+    "runtime-sha-92f97c3bf7baeec409d5c5c8fd07a477ccceffd6",
+    "artifact-hugo-presence-runtime.json",
+    "artifact-hugo-presence-judge.json",
+    "artifact-hugo-presence-sentinel.json"
   ],
   "title": "Verify Hugo presence across Client, Provider and Admin roles with runtime evidence",
   "department": "Hugo / IA / Voz",
@@ -41,5 +50,13 @@
     "ugo-hugo",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-hugo-presence-20260929.json",
+  "completed_at": "2026-09-29T21:18:00Z",
+  "runtime_validated_sha": "92f97c3bf7baeec409d5c5c8fd07a477ccceffd6",
+  "result_summary": "UGO TEST verified Hugo visible and usable for Client, Provider and Admin on desktop/mobile; Admin auth race fixed; independent Judge and Sentinel PASS with persisted same-SHA artifact."
 }
