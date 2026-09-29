@@ -62,7 +62,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   const realtimeFilter=role==='client'?`cliente_id=eq.${userId}`:role==='provider'?`proveedor_id=eq.${userId}`:undefined
   const change={event:'*' as const,schema:'public' as const,table:'servicios' as const,...(realtimeFilter?{filter:realtimeFilter}:{})}
   const ch=(sb as any).channel(`ugo-history-${role}-${userId}-${channelEpoch}`).on('postgres_changes',change,sync).subscribe((status:string)=>{if(status==='SUBSCRIBED'){sync();return}if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){sync();reconnect()}})
-  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch)}
+  return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void sb.removeChannel(ch).catch(()=>undefined)}
  },[channelEpoch,load,open,role,sb,userId])
  useEffect(()=>{
   if(role!=='provider'||!userId||!initialServiceId||openedInitialService.current===initialServiceId)return
