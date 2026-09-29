@@ -21,5 +21,13 @@
   "attempt": 1,
   "evidence_ids": [
     "github-actions-run-36629086885"
+  ],
+  "title": "Verify Hugo presence across Client, Provider and Admin roles with runtime evidence",
+  "department": "Hugo / IA / Voz",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
   ]
 }
