@@ -23,6 +23,8 @@ No production publication is implied.
 
 **29 September protected media + model-route closure:** UGO TEST executed the protected Storage runtime probe against a completed demo service with real initial/final objects. Signed downloads returned non-zero bytes, SHA-256 was recorded, public bucket access was denied, and `uploaded-media-bytes` moved to `COVERED`. Quality Coverage is now 8/10; only `physical-gps-device` and `real-customer-acceptance` remain UNCOVERED. The zero-cost model routes were also reconciled from fresh runtime benchmarks: all three READY task classes now point to an AVAILABLE/eligible free primary and AVAILABLE free fallback with max_cost=0; READY no longer survives when no fresh validated free primary exists.
 
+**29 September Model Router runtime closure:** Same-SHA UGO TEST run `d26df3d10021af3dc999f508aecf01789770f0a4` executed the protected model probe, zero-cost route reconciliation, controlled primary failure with real OpenRouter fallback, protected consultation handler, and canonical-agent routing. Persisted metrics prove repeated reevaluation across multiple runtime correlations, including fallback quality/latency/failure telemetry at zero cost. Independent Judge and Sentinel checks passed for this task. Evidence: `docs/evidence/model-router-runtime-20260929.json`.
+
 **29 September corporate challenge + final D14 audit closure:** UGO TEST now has deterministic `PASSED` results for `META_AUDIT`, `RED_TEAM` and `DIGITAL_TWIN`. The Digital Twin is bound to one completed persisted demo service with accepted offer <=20 km, arrival event, initial/final evidence, protected uploaded bytes runtime proof, audit binding, confirmed cash payment and bilateral ratings; it explicitly does **not** claim physical GPS or real customer acceptance. `FOUNDER_CHALLENGE` remains human-only and `PLANNED`. The final D14 corporate audit is persisted as control `corporate-final-audit` and currently fails closed with exactly three blockers: `FOUNDER_CHALLENGE_PENDING`, `PHYSICAL_GPS_DEVICE_UNVERIFIED`, and `REAL_CUSTOMER_ACCEPTANCE_UNVERIFIED`.
 
 ## 2. Master requirement matrix
@@ -43,10 +45,10 @@ No production publication is implied.
 | Meta-QA | seeded-defect scenario + governed calibration RPC | IMPLEMENTED; required runtime CI calibration added |
 | Customer #1 Release Gate | persisted gate with QA, critical finding and stale-job blockers | IMPLEMENTED; full acceptance journey remains |
 
-| OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics + protected server runtime primary/fallback | IMPLEMENTED; Preview runtime validation pending |
+| OpenRouter free-first | authenticated free-first probe + persisted candidates/routes/metrics + protected server runtime primary/fallback + periodic reevaluation | RUNTIME VALIDATED / TEST |
 | IP Gate | persisted corporate protection gate + Super Admin visibility | RUNTIME VALIDATED foundation / TEST; remaining Master evidence/audit closure controls tracked below |
 | Super Admin Empresa Autónoma | persisted autonomy/departments/agents/jobs/inbox/ledgers/findings/kill switches + QA Lab + Model Router + Risk & Audit + Launch Gate + correlation timeline + UGO Empresas | IMPLEMENTED; runtime UI validation remains |
-| Consultar Agente | evidence-gated protected server-side OpenRouter consultation with correlation id | IMPLEMENTED; Preview runtime validation pending |
+| Consultar Agente | evidence-gated protected server-side model consultation with correlation id | RUNTIME VALIDATED / TEST |
 | UGO Empresas | D12-owned readiness + multi-worker demand/slot persistence | IMPLEMENTED foundation; gated behind customer #1 stability |
 
 Customer #1 evaluation now also blocks when coverage is empty or no completed, non-simulated `ambiente='real'` service has accepted matching, initial/final evidence, confirmed payment and bilateral ratings. A `demo` P0 harness run cannot satisfy this gate. The gate is applied in UGO TEST; the real customer acceptance run remains pending.
@@ -110,7 +112,6 @@ The Quality Coverage Map starts honestly as `UNCOVERED`. Coverage may become `CO
 
 ### Phase B
 - Prove the browser-independent scheduled TEST worker operates with autonomy ON.
-- Runtime-validate protected OpenRouter primary/fallback and periodic reevaluation in Preview/TEST.
 
 ### Phase C
 - Bind QA simulators to actual UGO TEST Client/Provider/Admin actions. Synthetic caller-supplied booleans are now explicitly rejected as authoritative runtime evidence; scenarios require a persisted `service_id` in UGO TEST and deterministic persisted-state judges.
