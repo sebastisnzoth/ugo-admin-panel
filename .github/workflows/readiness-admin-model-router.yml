@@ -1,0 +1,67 @@
+name: UGO Readiness Admin Model Router TEST
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/mvp/AutonomousCorporationDashboard.tsx'
+      - 'src/mvp/SuperAdminCommandCenter.tsx'
+      - 'scripts/readiness-admin-model-router-*.mjs'
+      - 'tests/contracts/readiness-admin-model-router.test.mjs'
+      - '.github/workflows/readiness-admin-model-router.yml'
+  workflow_dispatch:
+concurrency:
+  group: ugo-readiness-admin-model-router-test
+  cancel-in-progress: false
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - name: Contract regression
+        run: node --test tests/contracts/readiness-admin-model-router.test.mjs tests/contracts/autonomous-model-consumer-runtime.test.mjs
+      - name: TypeScript
+        run: npx tsc -b
+      - name: Enforce UGO TEST only
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: node scripts/assert-test-environment.mjs
+      - name: Probe primary model
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/openrouter-autonomy-probe.mjs
+      - name: Reconcile routes
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-model-route-runtime.mjs
+      - name: Exercise controlled fallback
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-model-fallback-runtime.mjs
+      - name: Capture readiness runtime
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/readiness-admin-model-router-runtime.mjs
+      - name: Judge
+        run: node scripts/readiness-admin-model-router-judge.mjs
+      - name: Sentinel
+        run: node scripts/readiness-admin-model-router-sentinel.mjs
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-admin-model-router-${{ github.sha }}
+          path: artifacts/readiness-admin-model-router/*.json
+          if-no-files-found: error
+          retention-days: 90
