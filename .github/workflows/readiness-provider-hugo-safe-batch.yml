@@ -72,3 +72,76 @@ jobs:
           name: readiness-hugo-responsive-${{ github.sha }}
           path: artifacts/hugo-responsive
           retention-days: 90
+
+
+  provider-dispute-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Refuse non-TEST environment
+        run: |
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Complete provider dispute in UGO TEST
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-dispute-runtime.mjs
+      - name: Judge
+        run: node scripts/provider-dispute-judge.mjs
+      - name: Sentinel
+        run: node scripts/provider-dispute-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-provider-dispute-${{ github.sha }}
+          path: artifacts/provider-dispute-*
+          if-no-files-found: warn
+          retention-days: 90
+
+  provider-notifications-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Refuse non-TEST environment
+        run: |
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm install --no-save --package-lock=false playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Provider notification web runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/provider-notifications-vite.log 2>&1 &
+          pid=$!; trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null && break || sleep 1; done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/provider-notifications-runtime.mjs
+      - name: Judge
+        run: node scripts/provider-notifications-judge.mjs
+      - name: Sentinel
+        run: node scripts/provider-notifications-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-provider-notifications-${{ github.sha }}
+          path: artifacts/provider-notifications-*
+          if-no-files-found: warn
+          retention-days: 90
