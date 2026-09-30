@@ -4,15 +4,15 @@ export const GLOBAL_VOICE_COMMAND_EVENT='ugo:global-voice-command'
 export const GLOBAL_VOICE_COMMAND_HANDLED_EVENT='ugo:global-voice-command-handled'
 
 type VoiceCommandSource='native'|'custom'
-type VoiceCommandDetail={text?:string;final?:boolean}
-type Handler=(text:string,source:VoiceCommandSource)=>boolean|Promise<boolean>
+type VoiceCommandDetail={text?:string;final?:boolean;engine?:string}
+type Handler=(text:string,source:VoiceCommandSource,engine?:string)=>boolean|Promise<boolean>
 
 export function useGlobalVoiceCommandListener(handler:Handler,enabled=true){
  const handlerRef=useRef(handler),lastRef=useRef({text:'',at:0}),busyRef=useRef(false)
  handlerRef.current=handler
  useEffect(()=>{
   if(!enabled)return
-  const consume=async(text:string,source:VoiceCommandSource)=>{
+  const consume=async(text:string,source:VoiceCommandSource,engine?:string)=>{
    const value=String(text||'').trim()
    if(!value||busyRef.current)return
    const now=Date.now(),last=lastRef.current
@@ -20,7 +20,7 @@ export function useGlobalVoiceCommandListener(handler:Handler,enabled=true){
    lastRef.current={text:value,at:now}
    busyRef.current=true
    let handled=false
-   try{handled=Boolean(await handlerRef.current(value,source))}
+   try{handled=Boolean(await handlerRef.current(value,source,engine))}
    catch(error){console.error('UGO global voice command failed',error)}
    finally{
     busyRef.current=false
@@ -30,7 +30,7 @@ export function useGlobalVoiceCommandListener(handler:Handler,enabled=true){
   const native=(event:Event)=>{
    const detail=(event as CustomEvent<VoiceCommandDetail>).detail||{}
    if(detail.final===false)return
-   void consume(String(detail.text||''),'native')
+   void consume(String(detail.text||''),'native',String(detail.engine||''))
   }
   const custom=(event:Event)=>{
    const detail=(event as CustomEvent<VoiceCommandDetail>).detail||{}
