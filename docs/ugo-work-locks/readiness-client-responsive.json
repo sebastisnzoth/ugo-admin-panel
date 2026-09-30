@@ -1,0 +1,31 @@
+{
+  "readiness_id": "client-responsive",
+  "task_id": "readiness-client-responsive",
+  "job_id": "UGO-READINESS-CLIENT_RESPONSIVE",
+  "title": "Verify Client mobile tablet desktop layout with no inaccessible actions",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T02:41:00Z",
+  "heartbeat_at": "2026-09-30T02:41:00Z",
+  "lease_expires_at": "2026-09-30T03:26:00Z",
+  "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "Client Responsive Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "client-shell"
+  ],
+  "correlation_id": "readiness-client-responsive-20260930T024100Z-d3644148",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "evidence_ids": []
+}
