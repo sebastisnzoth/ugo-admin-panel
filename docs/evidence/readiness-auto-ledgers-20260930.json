@@ -1,0 +1,41 @@
+{
+  "readiness_id": "auto-ledgers",
+  "task_id": "readiness-auto-ledgers",
+  "job_id": "UGO-READINESS-AUTO-LEDGERS",
+  "correlation_id": "d608e791-b8b8-4675-87b2-821a820e7ed9",
+  "environment": "UGO TEST",
+  "verified_sha": "a13ef154d96209253ae392c305374882e94662eb",
+  "workflow_run_id": 36659725594,
+  "workflow_job_id": 109711587407,
+  "artifact_id": 11073822151,
+  "artifact_name": "auto-ledgers-runtime-a13ef154d96209253ae392c305374882e94662eb",
+  "artifact_digest": "sha256:8a5f5f62d4085de45dd569c2ec83e6887afcbc6de08b049bc4e5158a44d3237b",
+  "autonomous_job_id": "f33dd7fb-805e-4616-bd70-31c2fd542fc8",
+  "decision_id": "c37a6de0-7aa4-4b4f-bfb2-5f161a6571fc",
+  "evidence_id": "2cb3ee5f-0af0-4654-a3da-69a3f9460d03",
+  "assertions": {
+    "append_path_succeeded": true,
+    "same_correlation_id": true,
+    "decision_queryable": true,
+    "evidence_queryable": true,
+    "decision_references_evidence": true,
+    "decision_update_rejected": true,
+    "decision_delete_rejected": true,
+    "evidence_update_rejected": true,
+    "evidence_delete_rejected": true
+  },
+  "validators": {
+    "Judge": {
+      "status": "PASS",
+      "sha": "a13ef154d96209253ae392c305374882e94662eb",
+      "checked_at": "2026-09-30T02:25:15.135Z"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "sha": "a13ef154d96209253ae392c305374882e94662eb",
+      "checked_at": "2026-09-30T02:25:15.189Z"
+    }
+  },
+  "production_touched": false,
+  "completed_at": "2026-09-30T02:25:16Z"
+}
