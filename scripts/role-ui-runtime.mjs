@@ -6,6 +6,7 @@ import {createClient} from '@supabase/supabase-js'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
+const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const clientEmail=process.env.UGO_TEST_CLIENT_EMAIL||''
 const clientPassword=process.env.UGO_TEST_CLIENT_PASSWORD||''
 const providerEmail=process.env.UGO_TEST_PROVIDER_EMAIL||''
@@ -16,7 +17,7 @@ const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(anon&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&adminEmail&&adminPassword&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
+assert.ok(anon&&serviceKey&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&adminEmail&&adminPassword&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
 
 async function login(email,password){
  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
@@ -32,6 +33,7 @@ async function login(email,password){
  assert.ifError(lastError)
  throw lastError
 }
+const privileged=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
 const admin=await login(adminEmail,adminPassword)
@@ -52,14 +54,14 @@ async function retryDb(operation,label){
 }
 async function ensureOperationalProviderFixture(){
  const providerId=provider.session.user.id
- const {data:profile,error:profileError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion').eq('usuario_id',providerId).maybeSingle(),'provider profile read')
+ const {data:profile,error:profileError}=await retryDb(()=>privileged.from('perfiles_proveedor').select('usuario_id,estado_verificacion').eq('usuario_id',providerId).maybeSingle(),'provider profile read')
  assert.ifError(profileError)
  assert.ok(profile,'UGO_TEST_PROVIDER_PROFILE_REQUIRED')
  if(profile.estado_verificacion!=='verificado'){
-   const {error:updateError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').update({estado_verificacion:'verificado'}).eq('usuario_id',providerId),'provider verification update')
+   const {error:updateError}=await retryDb(()=>privileged.from('perfiles_proveedor').update({estado_verificacion:'verificado'}).eq('usuario_id',providerId),'provider verification update')
    assert.ifError(updateError)
  }
- const {data:verified,error:verifyError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').select('estado_verificacion').eq('usuario_id',providerId).single(),'provider verification readback')
+ const {data:verified,error:verifyError}=await retryDb(()=>privileged.from('perfiles_proveedor').select('estado_verificacion').eq('usuario_id',providerId).single(),'provider verification readback')
  assert.ifError(verifyError)
  assert.equal(verified.estado_verificacion,'verificado','UGO_TEST_PROVIDER_MUST_BE_VERIFIED')
 }
