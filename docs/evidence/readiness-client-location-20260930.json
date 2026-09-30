@@ -1,0 +1,59 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "client-location",
+  "task_id": "readiness-client-location",
+  "job_id": "UGO-READINESS-CLIENT-LOCATION",
+  "correlation_id": "ugo-client-location-20260930T004200Z",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "0e5865046babe9d1f2010bb73f1ce4e2d119992b",
+  "workflow_run": {
+    "id": 36653093427,
+    "job_id": 109691449422,
+    "name": "UGO Readiness Client Location TEST",
+    "conclusion": "success",
+    "artifact_id": 11070742911,
+    "artifact_name": "client-location-runtime-0e5865046babe9d1f2010bb73f1ce4e2d119992b",
+    "artifact_digest": "sha256:b02c1bd3b0a5dbf94bc6a761f6facf698a6545b62f0b8b36a585666eb0cb7bf6"
+  },
+  "core_ci": {
+    "run_id": 36653093402,
+    "conclusion": "success",
+    "same_sha": true
+  },
+  "runtime": {
+    "valid_geolocation_populates_form": true,
+    "map_reflects_confirmed_pickup": true,
+    "pickup_coordinates_persist_in_request_draft": true,
+    "manual_address_edit_clears_stale_pickup": true,
+    "zero_zero_rejected_fail_closed": true,
+    "permission_denied_message": true,
+    "timeout_message": true,
+    "no_page_errors": true,
+    "physical_gps_deferred": true,
+    "production_touched": false,
+    "result": "PASS"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:02:14.625Z",
+      "failures": []
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:02:14.663Z",
+      "production_touched": false,
+      "failures": []
+    }
+  },
+  "remediation": {
+    "prior_failed_runtime_run": 36652826457,
+    "prior_failure": "Runtime harness waited for the wrong Continue button before reaching the location screen.",
+    "fix": "Select the real Continue action, wait for it to become enabled, and make permission-denied geolocation deterministic in headless Chromium."
+  },
+  "human_final_deferred": {
+    "physical_device_gps": true,
+    "reason": "Browser TEST proves wiring and fail-closed semantics; real physical GPS acquisition remains a final human/device test."
+  }
+}
