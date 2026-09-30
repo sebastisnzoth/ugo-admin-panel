@@ -29,5 +29,6 @@ test('superadmin command center reuses the mounted admin session and still verif
   assert.match(center, /supabase\.auth\.getSession\(\)/)
   assert.match(center, /from\('usuarios'\)\.select\('tipo,activo'\)/)
   assert.match(center, /profile\?\.tipo!=='superadmin'/)
-  assert.doesNotMatch(center, /const\{data:\{user\},error:userError\}=await supabase\.auth\.getUser\(\)/)
+  const initialLoad = center.slice(center.indexOf('const load=async()=>'), center.indexOf('setAuthorized(true)') + 'setAuthorized(true)'.length)
+  assert.doesNotMatch(initialLoad, /supabase\.auth\.getUser\(\)/)
 })
