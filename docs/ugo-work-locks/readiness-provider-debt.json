@@ -1,0 +1,32 @@
+{
+  "readiness_id": "provider-debt",
+  "task_id": "readiness-provider-debt",
+  "job_id": "UGO-READINESS-PROVIDER-DEBT",
+  "title": "Verify provider debt limit blocks new acceptances after three services owed",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T04:34:00Z",
+  "heartbeat_at": "2026-09-30T04:34:00Z",
+  "lease_expires_at": "2026-09-30T05:19:00Z",
+  "started_sha": "35e923d935b11981d72a6333e406762ddfd6ca98",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Finance Gate Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-finance",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-finance"
+  ],
+  "correlation_id": "readiness-provider-debt-20260930T043400Z",
+  "current_step": "ACQUIRE_AND_INSPECT",
+  "attempt": 1,
+  "evidence_ids": []
+}
