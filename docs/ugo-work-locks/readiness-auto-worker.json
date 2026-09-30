@@ -1,0 +1,32 @@
+{
+  "readiness_id": "auto-worker",
+  "task_id": "readiness-auto-worker",
+  "job_id": "UGO-READINESS-AUTO_WORKER",
+  "title": "Verify scheduled autonomous worker same-SHA, policy compliance and safe final state",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T02:41:00Z",
+  "heartbeat_at": "2026-09-30T02:41:00Z",
+  "lease_expires_at": "2026-09-30T03:26:00Z",
+  "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "Autonomous Worker Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-autonomous-company",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-test-worker",
+    "autonomy-state"
+  ],
+  "correlation_id": "readiness-auto-worker-20260930T024100Z-d3644148",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "evidence_ids": []
+}
