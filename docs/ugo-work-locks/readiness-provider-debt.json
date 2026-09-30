@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-debt",
   "job_id": "UGO-READINESS-PROVIDER-DEBT",
   "title": "Verify provider debt limit blocks new acceptances after three services owed",
-  "status": "FAILED",
+  "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:34:00Z",
-  "heartbeat_at": "2026-09-30T04:40:00Z",
-  "lease_expires_at": "2026-09-30T04:40:00Z",
+  "heartbeat_at": "2026-09-30T04:43:00Z",
+  "lease_expires_at": "2026-09-30T05:28:00Z",
   "started_sha": "35e923d935b11981d72a6333e406762ddfd6ca98",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,8 +26,8 @@
     "provider-finance"
   ],
   "correlation_id": "readiness-provider-debt-20260930T043400Z",
-  "current_step": "FAILED_INFRA_AUTH_504",
-  "attempt": 1,
+  "current_step": "HARDEN_TEST_CONCURRENCY",
+  "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36669588425",
     "docs/evidence/ugo-test-auth-outage-20260930.json"
