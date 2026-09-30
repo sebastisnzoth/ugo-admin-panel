@@ -1,26 +1,25 @@
 {
   "readiness_id": "cross-performance",
   "task_id": "readiness-cross-performance",
-  "job_id": "UGO-READINESS-CROSS-PERFORMANCE",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20260930T1341Z",
   "title": "Verify perceived performance and critical action latency",
-  "status": "FAILED",
-  "started_at": "2026-09-30T03:40:00Z",
-  "heartbeat_at": "2026-09-30T10:44:00Z",
-  "lease_expires_at": "2026-09-30T10:44:00Z",
-  "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
-  "finished_at": "2026-09-30T10:44:00Z",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T13:41:00Z",
+  "heartbeat_at": "2026-09-30T13:41:00Z",
+  "lease_expires_at": "2026-09-30T14:26:00Z",
+  "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
-  "assigned_agent": "Cross-role Performance Runtime Agent",
+  "assigned_agent": "GPT_UGO · Cross Performance Runtime Agent",
   "validators": ["Judge", "Sentinel"],
   "validators_result": {
-    "Judge": "NOT_RUN",
-    "Sentinel": "NOT_RUN"
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
   },
   "resources": ["preview-runtime"],
-  "correlation_id": "readiness-cross-performance-20260930T034000Z-c1097e3c",
-  "current_step": "FAILED_REQUIRES_REVIEW",
-  "attempt": 1,
+  "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
+  "current_step": "RECONCILE_STALE_LOCK_AND_RUNTIME_EVIDENCE",
+  "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
@@ -28,7 +27,6 @@
     "github-core-run:36667189922",
     "github-core-job:109740433860"
   ],
-  "failure_reason": "Stale lease reconciled. Same-SHA runtime job failed before producing the required latency artifact; Judge and Sentinel were skipped. Core CI also failed at OpenRouter free-first validation before TypeScript/build. Control is not currently scheduler-enabled, so no duplicate retry was started.",
   "production_touched": false,
   "skills": [
     "ugo-readiness-orchestrator",
