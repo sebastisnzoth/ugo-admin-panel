@@ -3,15 +3,15 @@
   "readiness_id": "cross-security",
   "task_id": "readiness-cross-security",
   "status": "VERIFIED",
-  "tested_sha": "073cef7cf4f7d815b4d229f8e065d61fbc97f744",
+  "tested_sha": "3d33e6ba350e8165eaeb9dce5c4b9925e99f29d6",
   "merged_main_sha": "65e9a73ee7d7df04842a739e72e22ac86056093f",
-  "environment": "UGO TEST",
-  "workflow_run_id": 36732156721,
-  "workflow_job_id": 109944353156,
-  "artifact_id": 11104479279,
-  "artifact_digest": "sha256:574f62a8174316f5482f314e04fa71d7b78fa9ea823ea08e536828931f389e65",
+  "environment": "UGO TEST / main same-SHA",
+  "workflow_run_id": 36732524898,
+  "workflow_job_id": 109945623272,
+  "artifact_id": 11104694928,
+  "artifact_digest": "sha256:7d4a2d670fca58e830f36e001aef7dab76d1f7c1488dc276571be67113a2ed4b",
   "scan": {
-    "tracked_files_scanned": 1925,
+    "tracked_files_scanned": 1932,
     "tracked_findings": 0,
     "client_bundle_secret_hits": 0,
     "risky_log_calls": 0,
@@ -22,20 +22,61 @@
   "validators": {
     "judge": {
       "result": "PASS",
-      "checked_at": "2026-09-30T14:51:01.494Z"
+      "checked_at": "2026-09-30T14:54:05.124Z",
+      "run_id": 36732524898
     },
     "sentinel": {
       "result": "PASS",
-      "checked_at": "2026-09-30T14:51:01.549Z",
+      "checked_at": "2026-09-30T14:54:05.175Z",
+      "run_id": 36732524898,
       "production_touched": false,
       "secrets_used": "synthetic-only"
     }
   },
   "regression": {
-    "core_ci_run_id": 36732156723,
-    "core_ci_result": "SUCCESS"
+    "pr_core_ci_run_id": 36732156723,
+    "pr_core_ci_result": "SUCCESS",
+    "main_core_ci_run_id": 36732524887,
+    "main_core_ci_result": "IN_PROGRESS_AT_VERIFICATION",
+    "main_note": "Main differs from the PR-certified implementation only by the comment-only same-SHA trigger commit before this evidence record."
   },
   "pull_request": 312,
   "production_touched": false,
-  "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa"
+  "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa",
+  "result": "PASS",
+  "runtime_validated_sha": "3d33e6ba350e8165eaeb9dce5c4b9925e99f29d6",
+  "artifact_size_bytes": 1170,
+  "verified_at": "2026-09-30T14:54:06.442Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "prior_attempts": [
+    {
+      "run_id": 36730663798,
+      "result": "FAIL",
+      "reason": "scanner calibration"
+    },
+    {
+      "run_id": 36730947008,
+      "result": "FAIL",
+      "reason": "scanner calibration"
+    },
+    {
+      "run_id": 36731548565,
+      "result": "FAIL",
+      "reason": "reduced false positives"
+    },
+    {
+      "run_id": 36731987479,
+      "result": "FAIL",
+      "reason": "over-broad raw-error heuristic rejected"
+    },
+    {
+      "run_id": 36732156721,
+      "result": "PASS",
+      "sha": "073cef7cf4f7d815b4d229f8e065d61fbc97f744",
+      "scope": "PR same-SHA"
+    }
+  ]
 }
