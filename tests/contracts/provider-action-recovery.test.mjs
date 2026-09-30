@@ -62,6 +62,7 @@ test('provider completion hands cash close to the client',()=>{
  assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
 })
 
-test('provider still blocks departure until a valid payment method is persisted',()=>{
- assert.match(source,/service\.estado==='asignado'&&!funded&&!cashSelected/)
+test('provider blocks departure until payment or a persisted variable-price preference exists',()=>{
+ assert.match(source,/paymentPreferenceSelected=Boolean\(service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)\)/)
+ assert.match(source,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
 })
