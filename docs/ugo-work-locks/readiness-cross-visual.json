@@ -90,5 +90,13 @@
   "failure": null,
   "completed_at": "2026-09-30T20:58:00Z",
   "verified_sha": "52036da557d30a298bb7a949ddba29701ee2d53b",
-  "main_sha_at_close": "251331e27ec636048c2d20778d6dd5f8cc1cc730"
+  "main_sha_at_close": "251331e27ec636048c2d20778d6dd5f8cc1cc730",
+  "title": "Consistencia visual",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "skills": [
+    "design-system",
+    "responsive-ui",
+    "runtime-visual-validation",
+    "regression-testing"
+  ]
 }
