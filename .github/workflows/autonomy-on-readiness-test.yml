@@ -1,0 +1,67 @@
+name: UGO Autonomy ON Readiness TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/autonomy-on-readiness-test.yml"
+      - "scripts/autonomous-uploaded-media-runtime.mjs"
+      - "scripts/autonomous-quality-coverage-runtime.mjs"
+      - "scripts/autonomous-d14-quality-coverage-runtime.mjs"
+      - "scripts/autonomous-final-corporate-audit-runtime.mjs"
+      - "scripts/autonomous-launch-gate-runtime.mjs"
+      - "supabase/migrations/20260929124500_qa_uploaded_media_bytes_runtime.sql"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-autonomy-on-readiness-test
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Enforce UGO TEST only
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: node scripts/assert-test-environment.mjs
+      - name: Verify protected uploaded media bytes
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-uploaded-media-runtime.mjs
+      - name: Reconcile Quality Coverage
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-quality-coverage-runtime.mjs
+      - name: D14 audit Quality Coverage
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-d14-quality-coverage-runtime.mjs
+      - name: Final corporate audit remains fail-closed on human gates
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomous-final-corporate-audit-runtime.mjs
+      - name: Evaluate Customer 1 gate
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+          UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+        run: node scripts/autonomous-launch-gate-runtime.mjs
