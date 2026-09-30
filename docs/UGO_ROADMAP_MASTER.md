@@ -594,3 +594,10 @@ Base: `08f8823959aee8000764faa38c0770423444a913`. The functional readiness engin
 Local verification: three regression cases, 11 readiness tests, 14 scheduler/Command Center tests, full suite 1058 passed / 0 failed / 8 skipped, TypeScript/build and changed-file lint passed. Evidence: `docs/evidence/command-center-resource-safety-20260930.json`. This is not same-SHA CI, TEST runtime, Judge/Sentinel certification or VERIFIED.
 
 Next: integrate safely after confirming automatic Vercel/Netlify deployments cannot violate the no-deploy instruction, then validate the resulting main SHA. Keep readiness unchanged until the required independent validators pass. No production changes or branch ref movement.
+
+
+## Provider dispute integration · 30/09/2026
+
+PR #307 supplied the active-job dispute entry and a TEST lifecycle probe. Its original Judge/Sentinel only checked caller booleans, so historical PASS is insufficient for authoritative DONE. The integration keeps this control IN_PROGRESS and preserves historical run references. The strengthened Judge independently queries persisted ownership, resolution, audit, notices and actual uploaded synthetic image bytes. Cleanup verifies fixture ownership and reports errors; Sentinel independently checks absence of database, Auth and Storage fixtures. The workflow runs on main in UGO TEST only. Anonymous opening and provider self-resolution are negative probes.
+
+Next: same-SHA runtime/Core CI/Pages, then persist the independent artifacts before closing the lock. Synthetic media is automation evidence; physical camera/GPS and human Customer #1 acceptance remain separate. No deployment to production.

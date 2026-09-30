@@ -67,6 +67,7 @@ export function ProviderActiveJob(){
    {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Documentá el resultado y marcá “TRABAJO LISTO”. Primero confirma el cliente; el pago en efectivo viene después.</p>}
    {s.estado==='esperando_aprobacion'&&<div className="provider-simple-done" role="status"><strong>✓ Trabajo enviado al cliente</strong><span>{d.cashSelected?'Primero el cliente confirma el trabajo. Después UGO le muestra cuánto pagarte y, cuando confirme el pago, el servicio se cierra.':'El cliente ahora revisa y aprueba. UGO sigue el cierre y el cobro por detrás.'}</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>ABRIR DISPUTA</Button></div>}
    {s.estado==='disputado'&&<div className="provider-simple-done" role="status"><strong>⚖ Servicio en disputa</strong><span>UGO pausó el cierre normal mientras revisa el caso.</span><Button variant="secondary" className="provider-secondary provider-wide" onClick={()=>flow.actions.openDispute(s.id)}>VER DISPUTA</Button></div>}
+   {!['esperando_aprobacion','disputado','completado'].includes(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide provider-dispute-entry" onClick={()=>flow.actions.openDispute(s.id)}>AYUDA / DISPUTA</Button>}
    {CANCELLABLE.has(s.estado)&&<Button variant="secondary" className="provider-secondary provider-wide" disabled={d.busy} onClick={()=>void cancelJob()}>Cancelar este pedido</Button>}
   </Card>
 
