@@ -232,12 +232,22 @@ async function autonomyOpenRouter(req:any,res:any){
  try{
   if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
   const{sb,user}=await authenticatedSuperadmin(req)
+  const action=String(req.body?.action||'consult').trim()
   const agentId=String(req.body?.agent_id||'').trim()
   const question=safeText(req.body?.question,1200)
-  if(!/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(agentId)||!question)return res.status(400).json({error:'agent_id y question requeridos'})
+  if(!/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(agentId))return res.status(400).json({error:'agent_id requerido'})
   const{data:agent,error:agentError}=await sb.from('autonomous_agents').select('id,department_id,name,capability,status,authority_class,permissions').eq('id',agentId).maybeSingle()
   if(agentError)throw agentError
   if(!agent||agent.status==='DISABLED')return res.status(409).json({error:'AGENT_NOT_OPERATIONAL'})
+  if(action==='execute_readonly'){
+   if(!Array.isArray(agent.permissions)||!agent.permissions.includes('advisory_only'))return res.status(409).json({error:'AGENT_READONLY_EXECUTOR_NOT_AVAILABLE'})
+   const run=await sb.rpc('autonomous_execute_readonly_specialist',{p_agent_id:agent.id})
+   if(run.error)throw run.error
+   const job=run.data
+   return res.status(200).json({ok:true,job_id:job?.id||null,status:job?.status||null,correlation_id:job?.correlation_id||null,result:job?.result||null,readonly:true,aggregate_only:true})
+  }
+  if(action!=='consult')return res.status(400).json({error:'Acción de agente inválida'})
+  if(!question)return res.status(400).json({error:'question requerida'})
   const{data:switches,error:switchError}=await sb.from('autonomous_kill_switches').select('scope_type,scope_key').eq('enabled',true)
   if(switchError)throw switchError
   if((switches||[]).some((x:any)=>x.scope_type==='GLOBAL'||x.scope_type==='DEPARTMENT'&&x.scope_key===String(agent.department_id)||x.scope_type==='AGENT'&&x.scope_key===agent.id||x.scope_type==='CAPABILITY'&&x.scope_key==='AGENT_CONSULTATION'))return res.status(409).json({error:'AGENT_CONSULTATION_PAUSED'})
