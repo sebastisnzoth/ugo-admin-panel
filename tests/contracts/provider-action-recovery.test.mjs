@@ -65,5 +65,5 @@ test('provider completion hands cash close to the client',()=>{
 })
 
 test('provider still blocks departure until a valid payment method is persisted',()=>{
- assert.match(source,/service\.estado==='asignado'&&!funded&&!cashSelected/)
+ assert.match(source,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
 })
