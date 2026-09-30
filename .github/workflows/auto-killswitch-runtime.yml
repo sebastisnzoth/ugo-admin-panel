@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: ugo-readiness-auto-killswitch
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
