@@ -1,0 +1,58 @@
+{
+  "schema_version": "UGO_AUTO_AGENTS_READINESS_EVIDENCE_V2",
+  "readiness_id": "auto-agents",
+  "task_id": "readiness-auto-agents",
+  "job_id": "UGO-READINESS-AUTO-AGENTS",
+  "environment": "UGO TEST",
+  "source_sha": "a95ef512714dbb7b877dd9b59ef832759de3aa84",
+  "result": "PASS",
+  "counts": {
+    "cataloged": 118,
+    "enabled": 38,
+    "executed": 38,
+    "verified_enabled": 38,
+    "disabled_cataloged_only": 80
+  },
+  "delta": {
+    "previous_verified": 22,
+    "d3_d4_newly_verified": 16,
+    "total_verified_now": 38
+  },
+  "d3_d4": {
+    "departments": [
+      3,
+      4
+    ],
+    "specialists": 16,
+    "executor": "READONLY_SPECIALIST_EXECUTOR",
+    "authorization": "AUTHORIZED_ADVISORY_EXECUTOR",
+    "readonly": true,
+    "aggregate_only": true,
+    "executed": 16,
+    "judge_pass": 16,
+    "sentinel_pass": 16
+  },
+  "proof_contract": {
+    "verified_enabled_agents": [
+      "persisted successful job",
+      "execution evidence",
+      "AGENT_JUDGE_PROOF",
+      "AGENT_SENTINEL_PROOF"
+    ],
+    "advisory_specialists": [
+      "read-only aggregate analysis",
+      "no business-table mutation",
+      "backend mutation guard",
+      "service-role executor only"
+    ]
+  },
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "created_at": "2026-09-30T02:07:07.915670Z",
+  "notes": [
+    "Authoritative UGO TEST query returned 118 total, 38 enabled, 38 executed, 38 Judge PASS, 38 Sentinel PASS, 38 verified, 80 disabled.",
+    "The 16 D3/D4 specialists are now real governed read-only executors, not catalog-only placeholders.",
+    "No production environment was touched."
+  ]
+}
