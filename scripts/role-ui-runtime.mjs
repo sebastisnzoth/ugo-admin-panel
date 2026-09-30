@@ -150,19 +150,32 @@ async function testProvider(viewport,name){
  try{
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
    await assertResponsive(page,'provider '+name+' home')
-   const nav=page.getByRole('navigation',{name:'Navegación principal'}).first()
-   const items=[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
-   for(const item of items){
-     await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
-     await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
-     await assertResponsive(page,'provider '+name+' '+String(item))
+   let checkedItems=0
+   if(viewport.width>=1000){
+     const nav=page.getByRole('navigation',{name:'Navegación principal'}).first()
+     const items=[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
+     for(const item of items){
+       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
+       await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+       await assertResponsive(page,'provider '+name+' '+String(item))
+     }
+     const menu=page.getByRole('complementary',{name:'Menú proveedor'})
+     await safeClick(page,menu.getByRole('button',{name:/Ayuda/i}),'provider Ayuda')
+     await assertResponsive(page,'provider '+name+' Ayuda')
+     checkedItems=items.length+1
+   }else{
+     const nav=page.getByRole('navigation',{name:'Navegación proveedor'}).first()
+     const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
+     for(const item of items){
+       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+String(item))
+       await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+       await assertResponsive(page,'provider '+name+' '+String(item))
+     }
+     checkedItems=items.length
    }
-   const menu=page.getByRole('complementary',{name:'Menú proveedor'})
-   await safeClick(page,menu.getByRole('button',{name:/Ayuda/i}),'provider Ayuda')
-   await assertResponsive(page,'provider '+name+' Ayuda')
    await page.screenshot({path:'artifacts/role-ui-provider-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-   results.push({role:'provider',viewport:name,status:'PASS',menu_items:items.length+1})
+   results.push({role:'provider',viewport:name,status:'PASS',menu_items:checkedItems})
  } finally {await page.close()}
 }
 
