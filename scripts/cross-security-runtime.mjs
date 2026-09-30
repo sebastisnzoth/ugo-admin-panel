@@ -93,5 +93,6 @@ const evidence={
 evidence.result=(evidence.tracked_scan_pass&&evidence.client_bundle_no_server_secrets&&evidence.log_policy_pass&&evidence.no_client_exposed_secret_env)?'PASS':'FAIL'
 await mkdir('artifacts',{recursive:true})
 await writeFile('artifacts/cross-security-runtime.json',JSON.stringify(evidence,null,2)+'\n')
-console.log(JSON.stringify({readiness_id:evidence.readiness_id,sha:evidence.sha,result:evidence.result,tracked_files_scanned:evidence.tracked_files_scanned,tracked_findings:evidence.tracked_findings.length,bundle_hits:evidence.bundle_hits.length,risky_log_calls:evidence.risky_log_calls.length,risky_client_env:evidence.risky_client_env.length,production_touched:false}))\nif(evidence.result!=='PASS') console.log(JSON.stringify({tracked_findings:evidence.tracked_findings,bundle_hits:evidence.bundle_hits,risky_log_calls:evidence.risky_log_calls,risky_client_env:evidence.risky_client_env}))
+console.log(JSON.stringify({readiness_id:evidence.readiness_id,sha:evidence.sha,result:evidence.result,tracked_files_scanned:evidence.tracked_files_scanned,tracked_findings:evidence.tracked_findings.length,bundle_hits:evidence.bundle_hits.length,risky_log_calls:evidence.risky_log_calls.length,risky_client_env:evidence.risky_client_env.length,production_touched:false}))
+if(evidence.result!=='PASS') console.log(JSON.stringify({tracked_findings:evidence.tracked_findings,bundle_hits:evidence.bundle_hits,risky_log_calls:evidence.risky_log_calls,risky_client_env:evidence.risky_client_env}))
 assert.equal(evidence.result,'PASS')
