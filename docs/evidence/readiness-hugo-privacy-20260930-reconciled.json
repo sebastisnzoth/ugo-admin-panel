@@ -3,13 +3,13 @@
   "readiness_id": "hugo-privacy",
   "status": "VERIFIED",
   "environment": "UGO TEST",
-  "tested_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "tested_sha": "7df047243e37e1c4eb012ab0307c09f6c7683048",
   "workflow_run": {
-    "id": 36708404355,
-    "job_id": 109864074843,
+    "id": 36709011191,
+    "job_id": 109866036793,
     "conclusion": "success",
-    "artifact_id": 11092489437,
-    "artifact_digest": "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299"
+    "artifact_id": 11092913705,
+    "artifact_digest": "sha256:59da13dffb0bfe978ff68387bb74a912abc054086499646c477a10dd10198bc2"
   },
   "regression": {
     "contracts": "PASS",
@@ -31,5 +31,15 @@
     "production_touched": false
   },
   "production_touched": false,
-  "verified_at": "2026-09-30T11:26:09Z"
+  "verified_at": "2026-09-30T11:32:03Z",
+  "final_status": "VERIFIED",
+  "runtime_proof": {
+    "status": "PASS",
+    "sha": "7df047243e37e1c4eb012ab0307c09f6c7683048",
+    "environment": "UGO TEST"
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  }
 }
