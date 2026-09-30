@@ -100,9 +100,9 @@ try{
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
-      const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
-      await visible(drawer)
-      await drawer.getByRole('button',{name:/Pedir servicio/i}).click()
+      const requestButton=client.page.locator('button:visible').filter({hasText:/Pedir servicio/i}).first()
+      await visible(requestButton,5000)
+      await requestButton.click()
       await visible(client.page.locator('.ugo-client-root'))
     })
   } finally { await client.context.close() }
