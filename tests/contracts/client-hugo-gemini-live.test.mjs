@@ -22,7 +22,7 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/generationConfig:\{responseModalities:\['AUDIO'\]/)
  assert.match(bridge,/outputAudioTranscription:\{\}/)
  assert.match(bridge,/inputAudioTranscription:\{\}/)
- assert.match(bridge,/silenceDurationMs:500/)
+ assert.match(bridge,/silenceDurationMs:750/)
  assert.match(bridge,/END_SENSITIVITY_HIGH/)
  assert.match(bridge,/interimInputTranscription/)
  assert.match(bridge,/inputTranscription/)
@@ -78,6 +78,8 @@ test('Client and Provider require the persistent Gemini Live audio speaker and n
 test('Gemini Live declares bounded role tools in the same persistent session',()=>{
  assert.match(bridge,/functionDeclarations:roleTools\(\)/)
  assert.match(bridge,/get_current_location/)
+ assert.match(bridge,/use_saved_place/)
+ assert.match(bridge,/open_request_photo/)
  assert.match(bridge,/create_service_request/)
  assert.match(bridge,/approve_work/)
  assert.match(bridge,/confirm_cash_payment/)
@@ -132,3 +134,6 @@ test('Client Hugo confirms a successful persisted cancellation briefly',()=>{
  assert.match(dock,/message:'Pedido cancelado'/)
  assert.match(dock,/code:'CONFIRMATION_REQUIRED'/)
 })
+
+
+test('Client Hugo keeps a natural voice contract and reuses saved places',()=>{assert.match(bridge,/Hablá como una persona/);assert.match(bridge,/use_saved_place antes de volver a pedir una dirección/);assert.match(dock,/if\(name==='use_saved_place'\)/);assert.match(dock,/direcciones_cliente/);assert.match(dock,/UGO_UI_EVENTS\.clientRequestPhoto/)})
