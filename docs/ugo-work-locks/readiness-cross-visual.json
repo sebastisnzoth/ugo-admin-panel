@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T20:21:00Z",
-  "lease_expires_at": "2026-09-30T21:06:00Z",
+  "heartbeat_at": "2026-09-30T20:24:00Z",
+  "lease_expires_at": "2026-09-30T21:09:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,8 +17,8 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R9_PROVIDER_DESKTOP_RENDER_DIAGNOSTIC",
-  "attempt": 9,
+  "current_step": "R10_JUDGE_STRUCTURAL_COVERAGE_RERUN",
+  "attempt": 10,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
     "repo:docs/evidence/readiness-cross-visual-20260930.json",
@@ -59,7 +59,11 @@
     "fix:84bcd3fef70571f7502880eb1bed2c7a94427911",
     "github-run:36771522089:FAIL_PROVIDER_DESKTOP_ROUTE_ROOT",
     "artifact:11123936887",
-    "fix:322daba5e45cadaaa351794f332874c914a6cfad"
+    "fix:322daba5e45cadaaa351794f332874c914a6cfad",
+    "github-run:36771834955:RUNTIME_PASS_JUDGE_THRESHOLD_FAIL",
+    "artifact:11123408011",
+    "runtime-sha:322daba5e45cadaaa351794f332874c914a6cfad",
+    "fix:86d91553d745f35090fcdedca6320958e33a7afb"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
