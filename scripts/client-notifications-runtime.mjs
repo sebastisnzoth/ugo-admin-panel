@@ -226,7 +226,7 @@ try{
  }
  assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
-  const assignedNotice=page.locator('.ugo-notification-live.is-client')
+  const assignedNotice=page.locator('.ugo-notification-live.is-client').filter({hasText:assignedPersisted.titulo}).first()
   await assignedNotice.waitFor({state:'attached',timeout:30000})
   const visibilityProbe=await assignedNotice.evaluate(node=>{
    const describe=el=>{
