@@ -2,14 +2,14 @@
   "readiness_id": "admin-realtime",
   "task_id": "readiness-admin-realtime",
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T23:04:00Z",
-  "heartbeat_at": "2026-09-30T00:40:00Z",
-  "lease_expires_at": "2026-09-30T01:25:00Z",
-  "completed_at": "2026-09-29T23:27:00Z",
+  "heartbeat_at": "2026-09-30T00:45:00Z",
+  "lease_expires_at": "2026-09-30T00:45:00Z",
+  "completed_at": "2026-09-30T00:45:00Z",
   "started_sha": "15bef1e7d6beeeaeb166a5c2d65bbf4f33be9232",
-  "verified_sha": null,
-  "runtime_validated_sha": null,
+  "verified_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
+  "runtime_validated_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Admin Realtime Runtime Agent",
@@ -18,41 +18,49 @@
     "Sentinel"
   ],
   "validator_results": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "admin-realtime"
   ],
   "correlation_id": "readiness-admin-realtime-20260929T230400Z-15bef1e7",
-  "current_step": "RUNTIME_SAME_SHA_REQUIRED",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
-    "github-actions:run:36645017774",
-    "github-actions:job:109665861416",
-    "github-actions:artifact:11068686285",
-    "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
+    "github-actions:run:36651562789",
+    "github-actions:job:109686642422",
+    "github-actions:artifact:11070278953",
+    "sha256:9c7868215676cdd729e1f97964f766b2f7a324f439cf84dd3013aab714ca09f9",
     "repo:docs/evidence/readiness-admin-realtime-20260929.json"
   ],
   "evidence_path": "docs/evidence/readiness-admin-realtime-20260929.json",
-  "artifact_digest": "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
+  "artifact_digest": "sha256:9c7868215676cdd729e1f97964f766b2f7a324f439cf84dd3013aab714ca09f9",
   "production_touched": false,
-  "result": "NEEDS_RUNTIME_PROOF",
-  "result_summary": "Reopened because main advanced after the prior runtime evidence. Same-SHA runtime proof is required before VERIFIED.",
-  "finished_at": "2026-09-29T23:27:00Z",
-  "verified_runtime_sha": null,
+  "result": "VERIFIED",
+  "result_summary": "Same-SHA UGO TEST runtime verified on cf34746f79746b7eae81343f47141411f0a587e8: Admin KPI changed 2→3 without refresh in 2217 ms, fixture reconciled 3→2 in 2090 ms, fallback was not required, Judge PASS, Sentinel PASS, production untouched.",
+  "finished_at": "2026-09-30T00:45:00Z",
+  "verified_runtime_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "judge": {
-    "result": "PENDING"
+    "result": "PASS",
+    "checked_at": "2026-09-30T00:44:00.396Z",
+    "basis": [
+      "runtime KPI changed without refresh",
+      "change observed before polling fallback",
+      "fixture reconciled"
+    ]
   },
   "sentinel": {
-    "result": "PENDING",
-    "production_touched": false
+    "result": "PASS",
+    "checked_at": "2026-09-30T00:44:00.445Z",
+    "production_touched": false,
+    "reconciliation": "PASS"
   },
-  "evidence_commit_sha": "279013cf39b42a2d74b4dd72d7702efee8af9a60",
+  "evidence_commit_sha": "e6f3dc9198f22a2df72abb01ff0262ef5d87d280",
   "title": "Verify Admin realtime operational states in UGO TEST",
   "skills": [
     "admin-realtime",
