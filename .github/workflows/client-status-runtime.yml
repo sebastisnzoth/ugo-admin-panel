@@ -12,7 +12,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime-v5
+  group: ugo-client-status-runtime-v6
   cancel-in-progress: false
 
 permissions:
@@ -196,3 +196,5 @@ jobs:
 # provider-auth GPS backend v4 2026-09-30T11:00Z
 
 # cash-selection v5 2026-09-30T11:04Z
+
+# status-ui-diagnostics v6 2026-09-30T11:07Z
