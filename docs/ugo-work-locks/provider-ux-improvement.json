@@ -4,8 +4,8 @@
   "title": "Improve provider operational clarity and mobile navigation",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:23:00Z",
-  "heartbeat_at": "2026-09-30T03:23:00Z",
-  "lease_expires_at": "2026-09-30T04:08:00Z",
+  "heartbeat_at": "2026-09-30T03:27:00Z",
+  "lease_expires_at": "2026-09-30T04:12:00Z",
   "started_sha": "cdcb86a8bd1096cbd1b2c9a60224e351bbcfbbf3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -24,7 +24,10 @@
     "provider-shell"
   ],
   "correlation_id": "provider-ux-improvement-20260930T032300Z",
-  "current_step": "IMPLEMENT_OPERATIONAL_DOCK",
+  "current_step": "VALIDATE_ACTIVE_JOB_UX",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "tests/contracts/provider-operational-dock.test.mjs",
+    "tests/contracts/provider-active-job-ux.test.mjs"
+  ]
 }
