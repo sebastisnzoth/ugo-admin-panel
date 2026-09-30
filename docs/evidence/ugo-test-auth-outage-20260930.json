@@ -1,0 +1,31 @@
+{
+  "incident_id": "ugo-test-auth-outage-20260930T0430Z",
+  "environment": "UGO Arena TEST",
+  "project_ref": "tmossnqfwfwjrtzwcbmm",
+  "production_touched": false,
+  "observed_window": "2026-09-30T04:20:00Z/2026-09-30T04:40:00Z",
+  "symptoms": {
+    "auth_request_timeouts": 54,
+    "postgres_query_cancellations_sqlstate_57014": 32,
+    "postgres_connection_abort_logs_sqlstate_08006": 27,
+    "auth_unexpected_failures": 13
+  },
+  "direct_evidence": [
+    "Auth /token password and refresh requests returned HTTP 504 with context deadline exceeded.",
+    "Auth reported failed connection from supabase_auth_admin to localhost:5432.",
+    "Postgres logged cancelled queries and aborted connections during the same window.",
+    "Supabase project control-plane status remained ACTIVE_HEALTHY while data/auth path was degraded."
+  ],
+  "affected_readiness_ids": [
+    "provider-gps",
+    "provider-debt",
+    "provider-responsive"
+  ],
+  "functional_results_preserved": {
+    "provider-gps": "16/16 GPS contracts PASS before Auth runtime",
+    "provider-debt": "13/13 debt contracts PASS before Auth runtime",
+    "provider-responsive": "build/browser harness reached runtime; provider login failed before viewport assertions"
+  },
+  "action": "Do not classify these as product regressions. Retry same controls only after UGO TEST Auth/DB connectivity is healthy.",
+  "recorded_at": "2026-09-30T04:41:00Z"
+}
