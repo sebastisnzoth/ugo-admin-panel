@@ -1,0 +1,56 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-debt",
+  "task_id": "readiness-provider-debt",
+  "job_id": "UGO-READINESS-PROVIDER-DEBT",
+  "correlation_id": "readiness-provider-debt-20260930T043400Z",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "verified_runtime_sha": "79eb2ebcbb7a5449ba5246a97d73e7d840f27323",
+  "runtime": {
+    "workflow_run_id": 36707290354,
+    "workflow_job_id": 109860440097,
+    "authenticated_rls_read": true,
+    "baseline_real_pending_debts": 0,
+    "threshold": 3,
+    "temporary_real_debts": 3,
+    "blocked_at_threshold": true,
+    "online_guard_rejected": true,
+    "fixture_restored": true,
+    "profile_restored": true,
+    "shared_fixture_lock": true
+  },
+  "contracts": {
+    "provider_debt_acceptance_gate": "PASS",
+    "provider_ugo_debt_limit": "PASS",
+    "cash_provider_ugo_debt": "PASS"
+  },
+  "artifact": {
+    "id": 11092048406,
+    "name": "provider-debt-runtime-79eb2ebcbb7a5449ba5246a97d73e7d840f27323",
+    "digest": "sha256:9ed00ee4ed6d3a6e22cdfa52ca51bb9a2fcb8f84054244ff6a09f6c16c3799e7"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:14:29.580Z",
+    "basis": [
+      "three temporary real debts reached threshold",
+      "debt guard blocked provider availability",
+      "fixture and profile restored",
+      "same-SHA runtime artifact"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:14:29.635Z",
+    "basis": [
+      "UGO TEST only",
+      "service-role probe isolated by advisory lock",
+      "temporary debt mutation restored",
+      "provider profile restored",
+      "authenticated RLS state read"
+    ]
+  },
+  "result": "VERIFIED",
+  "verified_at": "2026-09-30T11:14:30Z"
+}
