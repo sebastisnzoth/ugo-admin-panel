@@ -11,6 +11,7 @@ on:
       - "docs/UGO_SCHEDULER_POLICY.json"
       - "docs/UGO_FUNCTIONAL_READINESS.json"
       - "docs/ugo-work-locks/**"
+      - "docs/evidence/**"
       - "scripts/generate-pages-status.mjs"
       - "scripts/ugo-scheduler-engine.mjs"
       - "scripts/ugo-readiness-engine.mjs"
