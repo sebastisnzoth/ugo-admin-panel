@@ -44,5 +44,37 @@
     "criterion": "Real provider device must grant precise location and produce one fresh non-0,0 GPS fix while en_camino; UGO must publish it before arrival validation.",
     "fabricated": false
   },
-  "unrelated_ci_note": "Repository-wide core check on candidate SHA has unrelated concurrent failures in Hugo/API-count tests; provider GPS workflow runtime, Judge and Sentinel all passed independently."
+  "unrelated_ci_note": "Repository-wide core check on candidate SHA has unrelated concurrent failures in Hugo/API-count tests; provider GPS workflow runtime, Judge and Sentinel all passed independently.",
+  "latest_main": {
+    "sha": "ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
+    "correlation_id": "readiness-provider-gps-20260930T224400Z-gptugo-r7",
+    "changes": [
+      "Provider en-route UI now exposes GPS freshness age and precision after a trusted published fix.",
+      "provider-live-gps-quality contract now covers freshness label and 1s freshness clock.",
+      "provider-gps runtime workflow paths now include provider-live-gps-quality.test.mjs."
+    ],
+    "validation": {
+      "prior_canonical_runtime": {
+        "run_id": 36748700207,
+        "runtime": "PASS",
+        "judge": "PASS",
+        "sentinel": "PASS",
+        "candidate_sha": "0da38ac3cce2c92ead4fa1fe5c4159d8624ee8ac"
+      },
+      "same_sha_runtime_attempts": [
+        {
+          "run_id": 36787485080,
+          "sha": "d7f91a99f8119e0b8f99d288298a8ad8b72cf231",
+          "status": "CANCELLED_BEFORE_JOBS"
+        },
+        {
+          "run_id": 36787549792,
+          "sha": "ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
+          "status": "CANCELLED_BEFORE_JOBS",
+          "retry": "FORBIDDEN_BY_GITHUB"
+        }
+      ],
+      "note": "No same-SHA PASS was fabricated. Canonical GPS guard evidence remains persisted; latest additive freshness UI change still needs a successful same-SHA runtime cycle if treated as gating."
+    }
+  }
 }
