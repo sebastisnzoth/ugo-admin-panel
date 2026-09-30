@@ -3,29 +3,32 @@
   "task_id": "readiness-cross-performance",
   "job_id": "UGO-READINESS-CROSS-PERFORMANCE",
   "title": "Verify perceived performance and critical action latency",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T03:40:00Z",
-  "heartbeat_at": "2026-09-30T04:08:00Z",
-  "lease_expires_at": "2026-09-30T04:53:00Z",
+  "heartbeat_at": "2026-09-30T10:44:00Z",
+  "lease_expires_at": "2026-09-30T10:44:00Z",
   "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
+  "finished_at": "2026-09-30T10:44:00Z",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
   "assigned_agent": "Cross-role Performance Runtime Agent",
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "preview-runtime"
-  ],
+  "validators": ["Judge", "Sentinel"],
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "resources": ["preview-runtime"],
   "correlation_id": "readiness-cross-performance-20260930T034000Z-c1097e3c",
-  "current_step": "WAITING_SAME_SHA_RUNTIME_JUDGE_SENTINEL",
+  "current_step": "FAILED_REQUIRES_REVIEW",
   "attempt": 1,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
-    "github-core-run:36667189922"
+    "github-job:109740427671",
+    "github-core-run:36667189922",
+    "github-core-job:109740433860"
   ],
+  "failure_reason": "Stale lease reconciled. Same-SHA runtime job failed before producing the required latency artifact; Judge and Sentinel were skipped. Core CI also failed at OpenRouter free-first validation before TypeScript/build. Control is not currently scheduler-enabled, so no duplicate retry was started.",
   "production_touched": false,
   "skills": [
     "ugo-readiness-orchestrator",
