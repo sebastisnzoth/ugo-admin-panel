@@ -1,0 +1,30 @@
+{
+  "readiness_id": "provider-notifications",
+  "task_id": "readiness-provider-notifications",
+  "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
+  "title": "Verify provider-notifications on reconciled main",
+  "status": "IN_PROGRESS",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Notifications Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "notifications"
+  ],
+  "correlation_id": "readiness-provider-notifications-20260930T1125Z-reconciled",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 2,
+  "started_at": "2026-09-30T11:25:00Z",
+  "heartbeat_at": "2026-09-30T11:25:00Z",
+  "lease_expires_at": "2026-09-30T12:25:00Z",
+  "started_sha": "c5bdf837fc872b01480b06304c2ae8b1108beb6e",
+  "evidence_ids": [],
+  "production_touched": false
+}
