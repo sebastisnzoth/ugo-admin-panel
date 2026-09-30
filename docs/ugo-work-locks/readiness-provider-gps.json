@@ -5,9 +5,9 @@
   "title": "Verify provider fresh GPS publication and rejection guards",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T10:48:00Z",
-  "lease_expires_at": "2026-09-30T11:33:00Z",
-  "started_sha": "d9b71cc8741da1889a9a06c2b0543bedc15efb6f",
+  "heartbeat_at": "2026-09-30T14:04:00Z",
+  "lease_expires_at": "2026-09-30T14:49:00Z",
+  "started_sha": "b451fc12e929b9d1ea6e765ac3830e8776751c7a",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider GPS Runtime Agent",
@@ -24,24 +24,18 @@
   "resources": [
     "provider-location"
   ],
-  "correlation_id": "readiness-provider-gps-20260930T043000Z",
-  "current_step": "RETRY_AFTER_TEST_AUTH_RECOVERY",
-  "attempt": 3,
+  "correlation_id": "readiness-provider-gps-20260930T140400Z-b451fc12-r4",
+  "current_step": "STALE_RECONCILED_ADD_JUDGE_SENTINEL_AND_RERUN_TEST",
+  "attempt": 4,
   "evidence_ids": [
     "github-actions-run-36669225058",
     "artifact-11076899569",
     "github-actions-run-36669338660",
     "artifact-11077228063",
     "docs/evidence/ugo-test-auth-outage-20260930.json",
-    "commit-bbe8ac9973120bfec8205d9aac2ba82ec014326b"
+    "commit-bbe8ac9973120bfec8205d9aac2ba82ec014326b",
+    "stale-reconcile:b451fc12e929b9d1ea6e765ac3830e8776751c7a",
+    "auth-recovery-evidence:cross-performance-run-36725481224"
   ],
-  "failure": {
-    "kind": "INFRASTRUCTURE",
-    "component": "UGO_TEST_AUTH",
-    "http_status": 504,
-    "functional_contracts_passed": 16,
-    "attempts": 2,
-    "message": "Functional gates remain non-failing; runtime retry deferred until TEST Auth/DB connectivity recovers. Shared TEST fixture concurrency hardening applied."
-  },
   "production_touched": false
 }
