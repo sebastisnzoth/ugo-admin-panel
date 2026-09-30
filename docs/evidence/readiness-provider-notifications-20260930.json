@@ -1,0 +1,36 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "provider-notifications",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "d513ae5b0ae6ef308e688604c04d4d446e3a54e4",
+  "workflow_run": {
+    "id": 36707659252,
+    "job_id": 109861655516,
+    "conclusion": "success",
+    "artifact_id": 11092109066,
+    "artifact_digest": "sha256:8d6367e39c5517caee59ca4ec773adf661c0ef16c5c9176968e68a7486e05b61"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "offer realtime without refresh",
+      "assignment realtime without refresh",
+      "service change realtime without refresh",
+      "chat message realtime without refresh",
+      "tone emitted",
+      "vibration emitted"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-30T11:18:56Z"
+}
