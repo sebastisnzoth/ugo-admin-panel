@@ -5,8 +5,8 @@
   "title": "Recuperación automática",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:21:00Z",
-  "heartbeat_at": "2026-09-30T03:23:00Z",
-  "lease_expires_at": "2026-09-30T03:53:00Z",
+  "heartbeat_at": "2026-09-30T03:32:30Z",
+  "lease_expires_at": "2026-09-30T04:02:30Z",
   "started_sha": "af1bc0c2c7fa5383b196e64b6a662abd45bb437d",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -19,9 +19,11 @@
     "recovery"
   ],
   "correlation_id": "readiness-auto-recovery-af1bc0c2",
-  "current_step": "FIX_WORKFLOW_FAIL_CLOSED",
-  "attempt": 1,
-  "evidence_ids": [],
+  "current_step": "PRESERVE_ACTIVE_AUTONOMY_STATE",
+  "attempt": 2,
+  "evidence_ids": [
+    "run:36664800465:FAIL_PRECONDITION_STATE_EVOLVED"
+  ],
   "dependencies": [
     "auto-worker"
   ],
@@ -32,5 +34,10 @@
     "ugo-recovery",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
+  ],
+  "defects_found": [
+    "GitHub Actions pipe through tee masked runtime/Judge failures; UGO_TEST_SUPABASE_URL secret resolved empty.",
+    "Recovery proof assumed global OFF/zero kill-switch state; current UGO TEST legitimately runs ON with unrelated scoped kill switches.",
+    "Worker primitives lost service_role compatibility after later hardening migration; restored in TEST via versioned migration."
   ]
 }
