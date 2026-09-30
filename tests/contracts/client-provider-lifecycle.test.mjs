@@ -201,3 +201,17 @@ test('provider and client observe critical service changes through realtime',asy
  assert.match(clientReview,/table:'servicios'.*cliente_id=eq\.\$\{userId\}/)
  assert.match(clientReview,/table:'pagos'/)
 })
+
+
+test('backend permits travel for a zero-tariff service only after a client payment preference, but blocks work until amount and payment are real',async()=>{
+ const sql=await read('supabase/migrations/20260930190000_variable_price_lifecycle_payment_gate.sql')
+ assert.match(sql,/estado='asignado'[\s\S]*p_estado='en_camino'/)
+ assert.match(sql,/coalesce\(v_servicio\.tarifa,0\)<=0/)
+ assert.match(sql,/requested_payment_method/)
+ assert.match(sql,/payment_method/)
+ assert.match(sql,/El cliente todavía no confirmó una forma de pago habilitada/)
+ assert.match(sql,/estado='llegado'[\s\S]*p_estado='en_progreso'/)
+ assert.match(sql,/coalesce\(v_servicio\.tarifa,0\)<=0[\s\S]*importe aprobado/i)
+ assert.match(sql,/p\.estado='retenido'/)
+ assert.match(sql,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
+})
