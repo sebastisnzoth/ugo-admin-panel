@@ -33,3 +33,10 @@ test('voice scheduled requests cannot skip time validation',async()=>{
  assert.match(summary,/const scheduleReady=d\.when!=='programar'/)
  assert.match(summary,/Falta una fecha y hora futura válida/)
 })
+
+test('expired home matching has a single retry action without nested interactive controls',async()=>{
+ const home=await read('src/features/client/home/ClientHomeScreen.tsx')
+ assert.match(home,/if\(expired\)\{void retryOrder\(order\.id\);return\}openOrder\(order\.id\)/)
+ assert.doesNotMatch(home,/ugo-home-order-retry" role="button"/)
+ assert.doesNotMatch(home,/onKeyDown=\{event=>\{if\(event\.key==='Enter'/)
+})
