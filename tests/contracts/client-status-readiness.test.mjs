@@ -8,7 +8,7 @@ test('client professional tracking keeps the exact serviceId through the full ca
  const [tracking,detail,provider]=await Promise.all([
   read('src/features/client/order/ClientLiveTracking.tsx'),
   read('src/features/client/order/ClientServiceDetail.tsx'),
-  read('src/mvp/provider/providerService.ts'),
+  read('src/lib/marketplace/lifecycle.ts'),
  ])
  assert.match(tracking,/serviceId\)query=query\.eq\('id',serviceId\)\.in\('estado',DETAIL_TRACKING_STATES\)/)
  for(const state of ['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'])assert.ok(tracking.includes(`'${state}'`),`missing client lifecycle state ${state}`)
@@ -16,5 +16,5 @@ test('client professional tracking keeps the exact serviceId through the full ca
  assert.match(tracking,/data-service-state=\{state\}/)
  assert.match(tracking,/data-current-stage=\{TIMELINE\[current\]\.key\}/)
  assert.match(detail,/!disputeActive&&<SentinelErrorBoundary[^>]+client\.order\.tracking[\s\S]*<ClientLiveTracking serviceId=\{service\.id\} embedded\/>/)
- assert.match(provider,/LIFECYCLE_ORDER=\['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'\]/)
+ assert.match(provider,/PROVIDER_LIFECYCLE_ORDER = \[[\s\S]*'asignado'[\s\S]*'en_camino'[\s\S]*'llegado'[\s\S]*'en_progreso'[\s\S]*'esperando_aprobacion'[\s\S]*'completado'/)
 })
