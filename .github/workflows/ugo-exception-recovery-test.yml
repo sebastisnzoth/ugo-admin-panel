@@ -6,10 +6,11 @@ on:
     branches: [main]
     paths:
       - 'supabase/migrations/20260929190746_autonomous_exception_recovery_runtime.sql'
+      - 'supabase/migrations/20260930035000_restore_service_role_worker_recovery.sql'
+      - 'supabase/migrations/20260930035500_exception_recovery_preserve_runtime_state.sql'
       - 'scripts/autonomous-exception-recovery-runtime.mjs'
       - 'scripts/autonomous-exception-recovery-judge.mjs'
       - 'tests/contracts/autonomous-exception-recovery.test.mjs'
-      - 'docs/readiness/auto-recovery-playbooks.md'
       - '.github/workflows/ugo-exception-recovery-test.yml'
 
 concurrency:
