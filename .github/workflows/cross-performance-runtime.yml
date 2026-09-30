@@ -1,6 +1,16 @@
 name: UGO Cross Performance Runtime
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/cross-performance-runtime.mjs"
+      - "scripts/cross-performance-judge.mjs"
+      - "scripts/cross-performance-sentinel.mjs"
+      - ".github/workflows/cross-performance-runtime.yml"
+      - "src/features/client/**"
+      - "src/features/provider/**"
+      - "src/features/admin/**"
   pull_request:
     branches: [main]
     paths:
