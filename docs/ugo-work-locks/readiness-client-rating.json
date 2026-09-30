@@ -6,8 +6,8 @@
   "title": "Verify Client-to-Provider rating persists exactly once after service closure",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T14:35:30.000Z",
-  "heartbeat_at": "2026-09-30T14:35:30.000Z",
-  "lease_expires_at": "2026-09-30T15:20:30.000Z",
+  "heartbeat_at": "2026-09-30T14:40:00.000Z",
+  "lease_expires_at": "2026-09-30T15:25:00.000Z",
   "started_sha": "4b803e322343c54f2d5561a26ea639f801b12e93",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,9 +27,14 @@
     "ratings"
   ],
   "correlation_id": "readiness-client-rating-20260930T143530Z-4b803e32",
-  "current_step": "REVALIDATE_AND_INSPECT",
+  "current_step": "INSTALL_RUNTIME_PROOF",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "impl:scripts/client-rating-runtime.mjs",
+    "impl:scripts/client-rating-judge.mjs",
+    "impl:scripts/client-rating-cleanup.mjs",
+    "impl:scripts/client-rating-sentinel.mjs"
+  ],
   "production_touched": false,
   "validators_result": {
     "Judge": "PENDING",
