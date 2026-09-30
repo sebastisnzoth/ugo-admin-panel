@@ -36,7 +36,7 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
  assert.match(sql,/default_cash/)
  assert.doesNotMatch(sql,/Elegí una forma de pago antes de crear el pedido/)
  assert.match(postConfirm,/payment_method:draft\.paymentMethod==='pix'\?'pix':'efectivo'/)
- assert.match(paymentChoice,/seleccionar_pago_efectivo/)
+ assert.match(paymentChoice,/seleccionar_metodo_pago_servicio/)
  assert.match(paymentChoice,/requested_payment_method/)
 })
 
@@ -75,7 +75,7 @@ test('variable-price assigned services persist payment preference before the fin
  assert.match(active,/Definí el importe antes de empezar/)
  assert.match(active,/ServiceExpansionPanel role="provider"/)
  assert.match(migration,/seleccionar_metodo_pago_servicio/)
- assert.match(migration,/tarifa.*<=.*0/is)
+ assert.match(migration,/v_amount_ready:=round\(coalesce\(v_servicio\.tarifa,0\)::numeric,2\)>0/)
  assert.match(migration,/requested_payment_method/)
  assert.match(migration,/payment_method/)
  assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*security definer/i)
