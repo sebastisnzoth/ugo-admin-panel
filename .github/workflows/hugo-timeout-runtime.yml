@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - "api/hugo/chat.ts"
-      - "api/hugo/modelRouter.ts"
+      - "server/hugo/modelRouter.ts"
       - "scripts/hugo-timeout-*.mjs"
       - "tests/contracts/client-hugo-runtime-resilience.test.mjs"
       - "tests/contracts/hugo-model-router-resilience.test.mjs"
