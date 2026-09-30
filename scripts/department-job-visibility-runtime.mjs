@@ -50,11 +50,15 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:1440,height:1100}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
-await page.addInitScript(session=>localStorage.setItem('ugo-test-admin-auth',JSON.stringify(session)),login.session)
-
 try{
   await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
-  await page.getByRole('button',{name:/Super Admin/}).first().waitFor({state:'visible',timeout:20000})
+  const loginInput=page.getByPlaceholder('Usuario o email')
+  if(await loginInput.isVisible().catch(()=>false)){
+    await loginInput.fill(email)
+    await page.getByPlaceholder('Contraseña').fill(password)
+    await page.getByRole('button',{name:'Ingresar',exact:true}).click()
+  }
+  await page.getByRole('button',{name:/Super Admin/}).first().waitFor({state:'visible',timeout:30000})
   await page.getByRole('button',{name:/Super Admin/}).first().click()
   await page.getByText('Control global de UGO',{exact:true}).waitFor({state:'visible',timeout:20000})
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click()
