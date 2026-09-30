@@ -1,0 +1,32 @@
+{
+  "task_id": "readiness-client-location",
+  "readiness_id": "client-location",
+  "job_id": "UGO-READINESS-CLIENT-LOCATION",
+  "title": "Verify Client current location and map wiring in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T00:42:00Z",
+  "heartbeat_at": "2026-09-30T00:42:00Z",
+  "lease_expires_at": "2026-09-30T01:27:00Z",
+  "started_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "Client Location Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "client-location"
+  ],
+  "correlation_id": "ugo-client-location-20260930T004200Z",
+  "current_step": "INSPECT_LOCATION_AND_MAP_WIRING",
+  "attempt": 1,
+  "evidence_ids": []
+}
