@@ -1,0 +1,70 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "provider-alerts",
+  "task_id": "readiness-provider-alerts",
+  "job_id": "UGO-READINESS-PROVIDER-ALERTS",
+  "correlation_id": "readiness-provider-alerts-20260929T2250-0300",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+  "workflow_run": {
+    "id": 36657605370,
+    "job_id": 109705204210,
+    "name": "UGO Provider Alerts Runtime TEST",
+    "conclusion": "success",
+    "artifact_id": 11072153644,
+    "artifact_name": "provider-alerts-runtime-99c336558c06e04fc122f9384ce1051de27c6832",
+    "artifact_digest": "sha256:4786c4b7fbb6ca075206fa1935f56ef2c7c1772a72cd758318b74c56834fbd78"
+  },
+  "runtime": {
+    "channel": "provider realtime notifications",
+    "notification_type": "nueva_oferta",
+    "realtime_banner": true,
+    "tone": true,
+    "vibrate": true,
+    "manual_refresh_used": false,
+    "ephemeral_provider": true,
+    "production_touched": false,
+    "result": "PASS"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:59:16.653Z",
+      "basis": [
+        "provider offer banner arrived through realtime without refresh",
+        "provider attention tone emitted",
+        "provider vibration requested"
+      ]
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:59:16.699Z",
+      "production_touched": false
+    }
+  },
+  "attempts": [
+    {
+      "run_id": 36657371381,
+      "sha": "4e4bb1c117da4545aae85afc07763166a578c674",
+      "result": "FAIL",
+      "cause": "ephemeral auth trigger already created usuarios row; fixture insert collided with PK"
+    },
+    {
+      "run_id": 36657488136,
+      "sha": "cc3a760a139dd9181ed13cb45a6688cd8cfdcae6",
+      "result": "FAIL",
+      "cause": "business guard correctly rejected Online provider without main category"
+    },
+    {
+      "run_id": 36657605370,
+      "sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+      "result": "PASS"
+    }
+  ],
+  "fixes": [
+    "Made ephemeral provider setup idempotent with upsert.",
+    "Seeded a real active TEST category before setting provider Online.",
+    "Added dedicated runtime/Judge/Sentinel workflow for provider offer attention."
+  ]
+}
