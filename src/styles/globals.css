@@ -2,10 +2,14 @@ html{font-family:var(--ugo-font-sans);background:var(--ugo-color-page);color:var
 body{margin:0}
 *,*::before,*::after{box-sizing:border-box}
 button,input,select,textarea{font:inherit}
-button,[role="button"],[role="tab"]{min-width:44px;min-height:44px}
-input:not([type="checkbox"]):not([type="radio"]),select,textarea{min-height:44px}
+button,[role="button"],[role="tab"]{min-width:44px!important;min-height:44px!important}
+input:not([type="checkbox"]):not([type="radio"]),select,textarea{min-height:44px!important}
 input[type="checkbox"],input[type="radio"]{min-width:24px;min-height:24px}
 :focus-visible{outline:3px solid var(--ugo-color-brand-600);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
 }
+
+.mvp-auth-divider{color:#667085!important}
+.mvp-auth-page:not(.role-client):not(.role-provider) .mvp-kicker{color:#a6f4f7!important}
+.mvp-auth-card input:focus-visible{outline:3px solid var(--ugo-color-brand-600)!important;outline-offset:3px!important}
