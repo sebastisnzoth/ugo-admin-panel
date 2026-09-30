@@ -38,10 +38,10 @@ for(const p of tracked){
   const lines=src.split(/\r?\n/)
   lines.forEach((line,i)=>{
     if(!placeholder(line)){
-      for(const re of highConfidence){
+      if(configSurface(p)){for(const re of highConfidence){
         re.lastIndex=0
         if(re.test(line)) findings.push({path:p,line:i+1,kind:'high-confidence-secret-pattern'})
-      }
+      }}
       if(configSurface(p)){
         literalQuoted.lastIndex=0
         let m
