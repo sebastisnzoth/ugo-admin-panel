@@ -58,6 +58,14 @@ try{
 
   const state=await snapshot()
   const root=page.locator('.ugo-autonomous-content')
+  const waitRootText=async(marker,code)=>{
+    for(let attempt=0;attempt<40;attempt++){
+      const current=(await root.textContent())||''
+      if(current.includes(String(marker)))return current
+      await page.waitForTimeout(250)
+    }
+    throw new Error(code+':'+String(marker))
+  }
   const text=(await root.textContent())||''
   const openFindings=state.findings.filter(x=>x.status!=='CLOSED')
 
