@@ -48,6 +48,7 @@ const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 const upload=await clientDb.storage.from('dispute-evidence').upload(evidencePath,image,{contentType:'image/png',upsert:false});if(upload.error)throw upload.error
 const opened=await clientDb.rpc('abrir_disputa_v2',{p_servicio_id:ids.service,p_motivo_codigo:'incompleto',p_motivo:'Cliente abre disputa TEST con evidencia controlada',p_evidencias:[{path:evidencePath,name:'runtime.png',type:'image/png',size:image.length}]});if(opened.error)throw opened.error
 ids.dispute=opened.data.id
+await writeFile('artifacts/client-dispute-fixture.json',JSON.stringify({sha,ids}))
 evidence.open=opened.data.abierta_por===ids.client&&opened.data.estado==='abierta'
 const msg=await admin.from('disputa_mensajes').select('autor_rol,evidencias').eq('disputa_id',ids.dispute).eq('autor_rol','cliente').single();if(msg.error)throw msg.error
 evidence.evidence=Array.isArray(msg.data.evidencias)&&msg.data.evidencias.length===1
