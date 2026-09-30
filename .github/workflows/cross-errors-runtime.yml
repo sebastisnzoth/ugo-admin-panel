@@ -1,0 +1,111 @@
+name: UGO Cross Errors Runtime
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/mvp/shared.tsx"
+      - "api/hugo/chat.ts"
+      - "scripts/cross-errors-*.mjs"
+      - "scripts/cross-errors-api-runtime.ts"
+      - ".github/workflows/cross-errors-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-errors-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  UGO_UI_BASE_URL: http://127.0.0.1:4173
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: TypeScript
+        run: npx tsc -b --pretty false
+      - name: Build
+        env:
+          VITE_APP_REVISION: ${{ env.UGO_RUNTIME_SHA }}
+        run: npx vite build
+      - name: Install deterministic runtime tools
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1 tsx@4.20.6
+          npx playwright install --with-deps chromium
+      - name: Start local UGO
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-cross-errors-vite.log 2>&1 &
+          echo $! > /tmp/ugo-cross-errors-vite.pid
+          for attempt in $(seq 1 40); do
+            curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null && exit 0
+            sleep 1
+          done
+          cat /tmp/ugo-cross-errors-vite.log
+          exit 1
+      - name: UI fault injection
+        run: node scripts/cross-errors-ui-runtime.mjs
+      - name: API fault injection
+        run: npx tsx scripts/cross-errors-api-runtime.ts
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/cross-errors-*-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - run: node scripts/cross-errors-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/cross-errors-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - run: node scripts/cross-errors-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-sentinel-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/cross-errors-sentinel.json
+          retention-days: 90
