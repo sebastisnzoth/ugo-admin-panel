@@ -28,6 +28,72 @@ if (existsSync(workLocksDir)) {
   }
 }
 
+const evidenceDir = 'docs/evidence'
+const evidenceFiles = []
+const evidenceLatestByKey = new Map()
+const evidenceTimestamp = value => {
+  const raw = value?.updated_at || value?.completed_at || value?.created_at || value?.published_at || value?.generated_at || value?.validated_at || ''
+  return Date.parse(raw) || 0
+}
+const evidenceSummaryFor = (name, value) => {
+  const independent = value?.independent_validation || {}
+  const validators = value?.validators_result || {}
+  const counts = value?.counts || value?.safe_final_state || null
+  return {
+    key: value?.readiness_id || value?.task_id || value?.job_id || name.replace(/\.json$/,''),
+    path: join(evidenceDir, name),
+    readiness_id: value?.readiness_id || null,
+    task_id: value?.task_id || null,
+    job_id: value?.job_id || null,
+    result: value?.result || value?.final_status || value?.status || value?.workflow_conclusion || null,
+    environment: value?.environment || null,
+    runtime_sha: value?.runtime_validated_sha || value?.runtime_sha || value?.verified_sha || value?.source_sha || null,
+    workflow_run_id: value?.workflow_run_id || value?.runtime?.run_id || null,
+    judge: value?.judge || independent.judge || validators.Judge || validators.judge || null,
+    sentinel: value?.sentinel || independent.sentinel || validators.Sentinel || validators.sentinel || null,
+    counts,
+    created_at: value?.created_at || value?.completed_at || value?.updated_at || value?.published_at || value?.generated_at || null,
+  }
+}
+if (existsSync(evidenceDir)) {
+  for (const name of readdirSync(evidenceDir)) {
+    if (!name.endsWith('.json')) continue
+    try {
+      const value = JSON.parse(readFileSync(join(evidenceDir,name),'utf8'))
+      const summary = evidenceSummaryFor(name,value)
+      evidenceFiles.push(summary)
+      const previous = evidenceLatestByKey.get(summary.key)
+      if (!previous || evidenceTimestamp(value) >= previous.timestamp) {
+        evidenceLatestByKey.set(summary.key,{summary,timestamp:evidenceTimestamp(value)})
+      }
+    } catch (error) {
+      throw new Error(`Invalid evidence file ${name}: ${error.message}`)
+    }
+  }
+}
+const evidenceRegistry = [...evidenceLatestByKey.values()].map(x=>x.summary).sort((a,b)=>String(a.key).localeCompare(String(b.key)))
+const evidenceByReadiness = new Map(evidenceRegistry.filter(x=>x.readiness_id).map(x=>[x.readiness_id,x]))
+const stateDrift = []
+for (const lock of workLocks) {
+  const readinessId = lock.readiness_id || (String(lock.task_id||'').startsWith('readiness-') ? String(lock.task_id).slice('readiness-'.length) : null)
+  if (!readinessId) continue
+  const evidence = evidenceByReadiness.get(readinessId)
+  if (!evidence?.counts || !lock.safe_final_state) continue
+  const pairs = [
+    ['enabled_agents','enabled'],
+    ['executed_agents','executed'],
+    ['verified_enabled_agents','verified_enabled'],
+    ['disabled_cataloged_agents','disabled_cataloged_only'],
+  ]
+  for (const [lockKey,evidenceKey] of pairs) {
+    const left = lock.safe_final_state?.[lockKey]
+    const right = evidence.counts?.[evidenceKey]
+    if (left != null && right != null && Number(left)!==Number(right)) {
+      stateDrift.push({readiness_id:readinessId,field:lockKey,lock_value:left,evidence_value:right,lock_task_id:lock.task_id,evidence_path:evidence.path})
+    }
+  }
+}
+
 const {
   readiness: functionalReadiness,
   summary: readinessSummary,
@@ -425,6 +491,8 @@ const latestCompletedLock = [...workLocks]
   .filter(lock => lock.status === 'DONE' && lock.completed_at)
   .sort((a,b) => (Date.parse(b.completed_at) || 0) - (Date.parse(a.completed_at) || 0))[0] || null
 
+const autoAgentsEvidence = evidenceByReadiness.get('auto-agents') || null
+const autoAgentCounts = autoAgentsEvidence?.counts || null
 const autonomousCompany = {
   mode: 'OFF',
   mode_reason: 'Estado seguro entre ejecuciones; GitHub Pages no enciende autonomía ni toca producción.',
@@ -444,7 +512,16 @@ const autonomousCompany = {
     completed_at: latestCompletedLock.completed_at,
     validators_result: latestCompletedLock.validators_result || null,
   } : null,
-  source: 'REPO_LOCKS_AND_SCHEDULER',
+  source: 'REPO_LOCKS_SCHEDULER_AND_EVIDENCE',
+  agents: autoAgentCounts ? {
+    total: Number(autoAgentCounts.cataloged ?? autoAgentCounts.total ?? 0),
+    enabled: Number(autoAgentCounts.enabled ?? 0),
+    executed: Number(autoAgentCounts.executed ?? 0),
+    verified: Number(autoAgentCounts.verified_enabled ?? autoAgentCounts.verified ?? 0),
+    disabled: Number(autoAgentCounts.disabled_cataloged_only ?? autoAgentCounts.disabled ?? 0),
+    evidence_path: autoAgentsEvidence?.path || null,
+    evidence_created_at: autoAgentsEvidence?.created_at || null,
+  } : null,
 }
 
 const status = {
@@ -475,6 +552,14 @@ const status = {
   customer_1: 'BLOCKED',
   customer_1_reason: 'CUSTOMER_ACCEPTANCE_NOT_APPROVED',
   autonomous_company: autonomousCompany,
+  evidence_registry: evidenceRegistry,
+  evidence_summary: {
+    files: evidenceFiles.length,
+    latest_records: evidenceRegistry.length,
+    passed: evidenceRegistry.filter(x => ['PASS','SUCCESS','VERIFIED','DONE'].includes(String(x.result||'').toUpperCase()) || (String(x.judge||'').toUpperCase()==='PASS' && String(x.sentinel||'').toUpperCase()==='PASS')).length,
+    drift_count: stateDrift.length,
+  },
+  state_drift: stateDrift,
   functional_readiness: functionalReadiness,
   functional_readiness_summary: readinessSummary,
   implementation_steps: pendingImplementation,
