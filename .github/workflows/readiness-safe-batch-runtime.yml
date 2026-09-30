@@ -10,6 +10,8 @@ on:
       - "src/features/provider/**"
       - "src/components/ConversationalOrb.tsx"
       - "api/hugo/**"
+      - "scripts/readiness-safe-batch-judge.mjs"
+      - "scripts/readiness-safe-batch-sentinel.mjs"
   workflow_dispatch:
 
 permissions:
@@ -81,5 +83,60 @@ jobs:
         with:
           name: readiness-safe-batch-${{ github.sha }}
           path: artifacts/readiness-safe-batch-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Download runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-${{ github.sha }}
+          path: artifacts
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/readiness-safe-batch-judge.mjs
+      - name: Upload Judge evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-safe-batch-judge-${{ github.sha }}
+          path: artifacts/readiness-safe-batch-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Download runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-${{ github.sha }}
+          path: artifacts
+      - name: Download Judge evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/readiness-safe-batch-sentinel.mjs
+      - name: Upload Sentinel evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-safe-batch-sentinel-${{ github.sha }}
+          path: artifacts/readiness-safe-batch-sentinel.json
           if-no-files-found: error
           retention-days: 90
