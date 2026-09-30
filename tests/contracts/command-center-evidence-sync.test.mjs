@@ -32,6 +32,6 @@ test('auto-agents persisted state and latest evidence agree',()=>{
   assert.equal(lock.safe_final_state.executed_agents,evidence.counts.executed)
   assert.equal(lock.safe_final_state.verified_enabled_agents,evidence.counts.verified_enabled)
   assert.equal(lock.safe_final_state.disabled_cataloged_agents,evidence.counts.disabled_cataloged_only)
-  assert.equal(evidence.counts.enabled,38)
-  assert.equal(evidence.counts.verified_enabled,38)
+  assert.equal(evidence.counts.enabled,118)
+  assert.equal(evidence.counts.verified_enabled,118)
 })
