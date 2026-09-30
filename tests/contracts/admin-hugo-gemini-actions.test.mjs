@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
-test('Admin Hugo uses the persistent Gemini Live audio session instead of a second TTS path',async()=>{
+test('Admin Hugo keeps Gemini Live primary and isolates TTS to browser-speech fallback',async()=>{
  const[bridge,orb,api]=await Promise.all([
   read('src/lib/browserVoiceBridge.ts'),
   read('src/components/ConversationalOrb.tsx'),
@@ -17,7 +17,9 @@ test('Admin Hugo uses the persistent Gemini Live audio session instead of a seco
  assert.match(orb,/Te escucho\. Hablame…/)
  assert.match(bridge,/playConversationPcm/)
  assert.match(bridge,/sendToolResponse/)
- assert.doesNotMatch(orb,/tts:true|audio_base64|speechSynthesis/)
+ assert.doesNotMatch(orb,/tts:true|audio_base64/)
+ assert.match(orb,/detail\.engine==='browser-speech'/)
+ assert.match(orb,/SpeechSynthesisUtterance/)
 })
 
 test('Admin Hugo reads the operational domains exposed across the control center',async()=>{

@@ -2,10 +2,10 @@
   "task_id": "command-center-live-sync",
   "job_id": "UGO-COMMAND-CENTER-LIVE-SYNC",
   "title": "Sincronizar Command Center publicado con HEAD real de main",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T03:07:00Z",
-  "heartbeat_at": "2026-09-30T03:07:00Z",
-  "lease_expires_at": "2026-09-30T03:52:00Z",
+  "heartbeat_at": "2026-09-30T03:14:00Z",
+  "lease_expires_at": "2026-09-30T03:14:00Z",
   "started_sha": "c3d2a11f1348b9c06d2065d3759351bd1e21259b",
   "owner": "UGO",
   "department": "Plataforma Autónoma / Observabilidad",
@@ -18,18 +18,27 @@
   ],
   "validators": [
     "Judge",
-    "Sentinel"
+    "Sentinel",
+    "Core CI",
+    "GitHub Pages"
   ],
   "resources": [
     "preview-runtime"
   ],
   "correlation_id": "ugo-command-center-live-sync-20260929T181000Z",
-  "current_step": "IMPROVE_DONE_CONTROL",
+  "current_step": "DONE",
   "attempt": 2,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "docs/evidence/command-center-done-control-20260930.json",
+    "github-actions-run-36663342009",
+    "github-actions-run-36663342592"
+  ],
   "recovery": {
     "cause": "Scheduler fail-closed rejected two resources not declared in UGO_SCHEDULER_POLICY.json.",
     "action": "Fresh scheduler-authorized attempt acquired on current main to improve DONE visibility and live-state reconciliation.",
     "production_touched": false
-  }
+  },
+  "finished_at": "2026-09-30T03:14:00Z",
+  "verified_sha": "fdce24aef79c02006a721baa785d8440b3817d45",
+  "result": "DONE_CONTROL_PUBLISHED"
 }

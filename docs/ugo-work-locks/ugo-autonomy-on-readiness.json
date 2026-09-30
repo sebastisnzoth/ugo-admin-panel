@@ -1,0 +1,30 @@
+{
+  "task_id": "ugo-autonomy-on-readiness",
+  "job_id": "UGO-AUTONOMY-ON-READINESS-20260930",
+  "title": "Close all autonomous blockers possible before UGO TEST ON",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:13:00Z",
+  "heartbeat_at": "2026-09-30T03:15:00Z",
+  "lease_expires_at": "2026-09-30T04:00:00Z",
+  "started_sha": "fdce24aef79c02006a721baa785d8440b3817d45",
+  "owner": "UGO",
+  "assigned_agent": "Autonomy ON Readiness Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-state"
+  ],
+  "correlation_id": "ugo-autonomy-on-readiness-20260930T031300Z",
+  "current_step": "CLOSE_AUTOMATABLE_GATES",
+  "attempt": 1,
+  "evidence_ids": [],
+  "department": "UGO Empresa Autónoma",
+  "skills": [
+    "ugo-autonomous-company",
+    "ugo-readiness-orchestrator",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}

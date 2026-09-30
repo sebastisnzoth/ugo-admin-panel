@@ -1,0 +1,32 @@
+{
+  "task_id": "command-center-live-sync",
+  "feature": "authoritative-done-control",
+  "environment": "GitHub Pages / UGO TEST observability",
+  "verified_sha": "fdce24aef79c02006a721baa785d8440b3817d45",
+  "production_touched": false,
+  "assertions": {
+    "done_control_visible": true,
+    "exact_verified_fraction_visible": true,
+    "remaining_autonomous_visible": true,
+    "remaining_human_visible": true,
+    "runnable_ids_visible": true,
+    "blockers_ranked": true,
+    "authoritative_done_requires_zero_remaining": true,
+    "authoritative_done_requires_zero_active_leases": true,
+    "authoritative_done_requires_zero_stale_locks": true,
+    "authoritative_done_requires_zero_state_drift": true,
+    "no_self_certification_by_text": true
+  },
+  "validation": {
+    "core_ci": {
+      "run_id": 36663342009,
+      "conclusion": "success"
+    },
+    "github_pages": {
+      "run_id": 36663342592,
+      "conclusion": "success"
+    },
+    "contract": "tests/contracts/command-center-evidence-sync.test.mjs"
+  },
+  "completed_at": "2026-09-30T03:14:00Z"
+}
