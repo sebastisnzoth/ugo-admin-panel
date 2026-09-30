@@ -3,6 +3,7 @@ import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderCategoriesEditor}from'./ProviderCategoriesEditor'
 import{ProviderCalendarIntegration}from'./ProviderCalendarIntegration'
+import{ProviderPilotCapabilities}from'./ProviderPilotCapabilities'
 import{Button,Card,Input,SectionHeader,StatusPill,Textarea}from'../../shared/ui'
 
 const initials=(name:string)=>name.split(/\s+/).filter(Boolean).slice(0,2).map(part=>part[0]?.toUpperCase()).join('')||'PRO'
@@ -34,6 +35,7 @@ export function ProviderProfileScreen(){
   </div>
   <div className="provider-settings-list">
    <details className="provider-setting"><summary><span className="provider-setting-icon">⌁</span><div><strong>Servicios y zona</strong><small>Elegí todos los rubros en los que trabajás</small></div></summary><div className="provider-setting-content"><p>{p.categoria_principal_id?'Tu rubro principal está configurado. Podés sumar otros sin crear otra cuenta.':'Falta configurar tu rubro principal.'}</p><ProviderCategoriesEditor primaryId={p.categoria_principal_id||null} onSaved={d.reload}/><p>{p.ciudad_base||'Ciudad sin definir'} · radio de {p.zona_radio_km||15} km</p><Button variant="ghost" onClick={()=>setEditing(true)}>Editar zona y tarifa</Button></div></details>
+   <details className="provider-setting"><summary><span className="provider-setting-icon">⚙</span><div><strong>Configuración del piloto</strong><small>Capacidad, límites y referencias</small></div></summary><ProviderPilotCapabilities providerId={p.usuario_id} categoryId={p.categoria_principal_id||null} initial={(p as any).pilot_capabilities||{}}/></details>
    <details className="provider-setting"><summary><span className="provider-setting-icon">✓</span><div><strong>Documentos y verificación</strong><small>{verificationLabel(p.estado_verificacion)}</small></div></summary><div className="provider-setting-content"><p>UGO usa la verificación para proteger al cliente y al profesional. El estado mostrado es el registrado en tu cuenta.</p></div></details>
    <details className="provider-setting"><summary><span className="provider-setting-icon">$</span><div><strong>Cobros y cuenta</strong><small>Mercado Pago, PIX y retiros</small></div></summary><div className="provider-setting-content"><p>Vinculá tu cuenta, revisá el saldo disponible y solicitá retiros desde Ganancias.</p><Button variant="ghost" onClick={flow.actions.openEarnings}>Administrar fondos</Button></div></details>
    <details className="provider-setting"><summary><span className="provider-setting-icon">▣</span><div><strong>Google Calendar</strong><small>Agenda externa opcional · UGO sigue siendo la fuente de verdad</small></div></summary><div className="provider-setting-content"><ProviderCalendarIntegration/></div></details>
