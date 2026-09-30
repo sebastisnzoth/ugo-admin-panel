@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-debt",
   "job_id": "UGO-READINESS-PROVIDER-DEBT",
   "title": "Verify provider debt limit blocks new acceptances after three services owed",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T04:34:00Z",
-  "heartbeat_at": "2026-09-30T10:48:00Z",
-  "lease_expires_at": "2026-09-30T11:33:00Z",
+  "heartbeat_at": "2026-09-30T11:20:00Z",
+  "lease_expires_at": "2026-09-30T11:20:00Z",
   "started_sha": "35e923d935b11981d72a6333e406762ddfd6ca98",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,19 +26,27 @@
     "provider-finance"
   ],
   "correlation_id": "readiness-provider-debt-20260930T043400Z",
-  "current_step": "RETRY_AFTER_TEST_AUTH_RECOVERY",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
     "github-actions-run-36669588425",
     "docs/evidence/ugo-test-auth-outage-20260930.json",
-    "commit-348ca1d08c4afe6ff1573046ccadce427fd705cc"
+    "commit-348ca1d08c4afe6ff1573046ccadce427fd705cc",
+    "github-actions-run:36707290354",
+    "github-actions-job:109860440097",
+    "artifact:11092048406",
+    "artifact-digest:sha256:9ed00ee4ed6d3a6e22cdfa52ca51bb9a2fcb8f84054244ff6a09f6c16c3799e7"
   ],
-  "failure": {
-    "kind": "INFRASTRUCTURE",
-    "component": "UGO_TEST_AUTH",
-    "http_status": 504,
-    "functional_contracts_passed": 13,
-    "message": "Functional gates remain non-failing; runtime retry deferred until TEST Auth/DB connectivity recovers. Shared TEST fixture concurrency hardening applied."
+  "failure": null,
+  "production_touched": false,
+  "completed_at": "2026-09-30T11:20:00Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
-  "production_touched": false
+  "verified_sha": "79eb2ebcbb7a5449ba5246a97d73e7d840f27323",
+  "runtime_validated_sha": "79eb2ebcbb7a5449ba5246a97d73e7d840f27323",
+  "evidence_path": "docs/evidence/readiness-provider-debt-20260930.json",
+  "result": "VERIFIED",
+  "result_summary": "UGO TEST runtime reached 3 temporary real debts, blocked provider availability/acceptance at threshold, restored fixture/profile, and passed Judge/Sentinel."
 }
