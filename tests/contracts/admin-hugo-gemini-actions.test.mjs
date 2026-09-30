@@ -84,3 +84,13 @@ test('Admin Hugo Gemini Live exposes only bounded safe UI actions',async()=>{
  assert.match(phase,/action\.type==='refresh'/)
  assert.doesNotMatch(bridge,/admin_update_service|admin_set_status|admin_transfer|admin_delete/)
 })
+
+
+test('admin Hugo browser-speech fallback still answers through the authorized Hugo API',async()=>{
+ const src=await readFile(new URL('../../src/components/ConversationalOrb.tsx',import.meta.url),'utf8')
+ assert.match(src,/detail\.engine==='browser-speech'/)
+ assert.match(src,/fetch\('\/api\/hugo\/chat'/)
+ assert.match(src,/Authorization:'Bearer '\+session\.access_token/)
+ assert.match(src,/ugo:admin:hugo-action/)
+ assert.match(src,/SpeechSynthesisUtterance/)
+})
