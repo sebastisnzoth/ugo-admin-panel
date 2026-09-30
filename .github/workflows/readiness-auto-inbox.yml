@@ -49,14 +49,17 @@ jobs:
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
           test -n "$UGO_TEST_ADMIN_PASSWORD"
       - name: Contract regression
+        id: contract
         run: node --test tests/contracts/readiness-auto-inbox.test.mjs
       - name: TypeScript build
+        id: typecheck
         run: npx tsc -b
       - name: Install Chromium
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Execute same-SHA Inbox scenarios
+        id: runtime
         shell: bash
         run: |
           set -euo pipefail
@@ -73,9 +76,42 @@ jobs:
           curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
           node scripts/readiness-auto-inbox-runtime.mjs
       - name: Judge
+        id: judge
         run: node scripts/readiness-auto-inbox-judge.mjs
       - name: Sentinel
+        id: sentinel
         run: node scripts/readiness-auto-inbox-sentinel.mjs
+      - name: Persist stage diagnostics
+        if: always()
+        env:
+          CONTRACT_OUTCOME: ${{ steps.contract.outcome }}
+          TYPECHECK_OUTCOME: ${{ steps.typecheck.outcome }}
+          RUNTIME_OUTCOME: ${{ steps.runtime.outcome }}
+          JUDGE_OUTCOME: ${{ steps.judge.outcome }}
+          SENTINEL_OUTCOME: ${{ steps.sentinel.outcome }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence
+          cat > docs/evidence/readiness-auto-inbox-last-run.json <<JSON
+          {
+            "readiness_id": "auto-inbox",
+            "source_sha": "${GITHUB_SHA}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "contract": "${CONTRACT_OUTCOME}",
+            "typecheck": "${TYPECHECK_OUTCOME}",
+            "runtime": "${RUNTIME_OUTCOME}",
+            "judge": "${JUDGE_OUTCOME}",
+            "sentinel": "${SENTINEL_OUTCOME}",
+            "production_touched": false
+          }
+          JSON
+          git config user.name "ugo-readiness-bot"
+          git config user.email "ugo-readiness-bot@users.noreply.github.com"
+          git add docs/evidence/readiness-auto-inbox-last-run.json
+          git commit -m "docs(auto-inbox): persist workflow stage diagnostics" || true
+          git pull --rebase origin main
+          git push origin HEAD:main
       - name: Persist VERIFIED evidence and close readiness lock
         shell: bash
         run: |
