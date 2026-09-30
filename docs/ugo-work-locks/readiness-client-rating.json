@@ -4,10 +4,10 @@
   "task_id": "readiness-client-rating",
   "job_id": "UGO-READINESS-CLIENT-RATING",
   "title": "Verify Client-to-Provider rating persists exactly once after service closure",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T14:35:30.000Z",
-  "heartbeat_at": "2026-09-30T14:40:00.000Z",
-  "lease_expires_at": "2026-09-30T15:25:00.000Z",
+  "heartbeat_at": "2026-09-30T14:42:00.000Z",
+  "lease_expires_at": null,
   "started_sha": "4b803e322343c54f2d5561a26ea639f801b12e93",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,17 +27,49 @@
     "ratings"
   ],
   "correlation_id": "readiness-client-rating-20260930T143530Z-4b803e32",
-  "current_step": "INSTALL_RUNTIME_PROOF",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
     "impl:scripts/client-rating-runtime.mjs",
     "impl:scripts/client-rating-judge.mjs",
     "impl:scripts/client-rating-cleanup.mjs",
-    "impl:scripts/client-rating-sentinel.mjs"
+    "impl:scripts/client-rating-sentinel.mjs",
+    "github-run:36730816468",
+    "github-job:109939619228",
+    "github-artifact:11104642401",
+    "sha256:fbac10a8b79aa72942871f589f54f4344e95b81d0e6646380ce4962012d15cef",
+    "github-run:36730816492:CORE_CI_PASS",
+    "repo:docs/evidence/readiness-client-rating-20260930.json"
   ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
-  }
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "completed_at": "2026-09-30T14:42:00.000Z",
+  "finished_at": "2026-09-30T14:42:00.000Z",
+  "runtime_validated_sha": "96117a0b2128dabd3cf7669989f3fe446416e328",
+  "verified_runtime_sha": "96117a0b2128dabd3cf7669989f3fe446416e328",
+  "verified_sha": "96117a0b2128dabd3cf7669989f3fe446416e328",
+  "result": "VERIFIED",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T14:40:12.759Z",
+    "workflow_run_id": 36730816468,
+    "job_id": 109939619228
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T14:40:17.488Z",
+    "workflow_run_id": 36730816468,
+    "job_id": 109939619228,
+    "production_touched": false
+  },
+  "evidence_path": "docs/evidence/readiness-client-rating-20260930.json",
+  "artifact_digest": "sha256:fbac10a8b79aa72942871f589f54f4344e95b81d0e6646380ce4962012d15cef",
+  "result_summary": "Client-to-Provider rating verified in UGO TEST: UI contract PASS, completed-service guard PASS, one persisted client rating, duplicate rejected by DB uniqueness, client readback PASS, Judge PASS, cleanup PASS, Sentinel PASS, Core CI PASS; production untouched."
 }
