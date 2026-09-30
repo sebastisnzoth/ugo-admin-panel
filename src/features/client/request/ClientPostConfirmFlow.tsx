@@ -14,6 +14,7 @@ type View='matching'|'assigned'|'chat'|'detail'|'completed'
 type Pickup={latitude:number;longitude:number}
 type DispatchContext={category:string;pickup:Pickup|null}
 const MATCHING=new Set(['buscando','ofrecido'])
+const ACTIVE_CLIENT_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado'] as const
 const draftPickup=(draft:Draft):Pickup|null=>{if(draft.pickupLat==null||draft.pickupLng==null)return null;const latitude=Number(draft.pickupLat),longitude=Number(draft.pickupLng);return Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180?{latitude,longitude}:null}
 
 export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
@@ -30,6 +31,11 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
   if(!requestDraftId){requestDraftId=crypto.randomUUID();sessionStorage.setItem(requestKey,requestDraftId)}
   const context:DispatchContext={category:draft.categorySlug||draft.categoryId,pickup:draftPickup(draft)};setDispatchContext(context)
   let row=await findByDraft(requestDraftId)
+  if(!row&&!draft.scheduleAt){
+   const conflict=await supabase.from('servicios').select('id,numero,estado').eq('cliente_id',session.user.id).in('estado',[...ACTIVE_CLIENT_STATES]).is('programado_para',null).order('created_at',{ascending:false}).limit(1).maybeSingle()
+   if(conflict.error)throw conflict.error
+   if(conflict.data?.id)throw new Error(`Ya tenés un pedido inmediato activo${conflict.data.numero?` (#${conflict.data.numero})`:''}. Podés seguirlo o programar otro servicio para más adelante.`)
+  }
   if(!row){
    const quoted=Number(draft.tariffQuote?.precio_referencia||0),requested=Number(draft.amount||0),serviceAmount=requested>0?requested:quoted>0?quoted:null,commission=serviceAmount?Math.round(serviceAmount*15)/100:null,providerNet=serviceAmount&&commission!=null?Math.round((serviceAmount-commission)*100)/100:null
    const metadata={source:'canonical-client-12-screen',request_draft_id:requestDraftId,requested_when:draft.when,scheduled_at:draft.scheduleAt||null,payment_method:draft.paymentMethod==='pix'?'pix':'efectivo',address_label:draft.addressLabel||null,address_complement:draft.complement||null,pricing_zone:draft.zone||draft.tariffQuote?.zona||null,tariff_quote:draft.tariffQuote||null,pricing_source:draft.tariffQuote?'ugo_tariff':requested>0?'client_amount':null,pickup_source:draft.pickupSource||null,demo:false}
