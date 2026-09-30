@@ -16,7 +16,7 @@ for(const agent of agents){
  if(advisoryOnly){
   const run=await db.rpc('autonomous_execute_readonly_specialist',{p_agent_id:agent.id})
   if(run.error)throw run.error
-  const job=run.data
+  const job=Array.isArray(run.data)?run.data[0]:run.data
   if(!job?.id)throw new Error('READONLY_SPECIALIST_JOB_MISSING:'+agent.agent_key)
   const ev=await db.from('autonomous_evidence_ledger').select('*').eq('job_id',job.id).eq('evidence_type','READONLY_SPECIALIST_EXECUTION').maybeSingle()
   if(ev.error)throw ev.error
