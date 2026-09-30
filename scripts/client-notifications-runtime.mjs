@@ -226,7 +226,36 @@ try{
  assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
   const assignedNotice=page.locator('.ugo-notification-live.is-client')
-  await assignedNotice.getByText('UGO · ACTUALIZACIÓN DEL PEDIDO',{exact:true}).waitFor({state:'visible',timeout:30000})
+  await assignedNotice.waitFor({state:'attached',timeout:30000})
+  const visibilityProbe=await assignedNotice.evaluate(node=>{
+   const describe=el=>{
+    const style=getComputedStyle(el),rect=el.getBoundingClientRect()
+    return{
+     tag:el.tagName.toLowerCase(),
+     className:typeof el.className==='string'?el.className:'',
+     id:el.id||'',
+     display:style.display,
+     visibility:style.visibility,
+     opacity:style.opacity,
+     position:style.position,
+     overflow:style.overflow,
+     zIndex:style.zIndex,
+     transform:style.transform,
+     width:rect.width,
+     height:rect.height,
+     top:rect.top,
+     left:rect.left,
+     hidden:el.hidden,
+     ariaHidden:el.getAttribute('aria-hidden'),
+    }
+   }
+   const chain=[]
+   let current=node
+   while(current&&chain.length<10){chain.push(describe(current));current=current.parentElement}
+   return{notice:describe(node),ancestors:chain,text:(node.textContent||'').replace(/\\s+/g,' ').trim()}
+  })
+  await fs.writeFile('artifacts/client-notifications-live-notice-visibility.json',JSON.stringify({service_id:fixture.id,visibilityProbe},null,2)+'\n')
+  await assignedNotice.getByText('UGO · ACTUALIZACIÓN DEL PEDIDO',{exact:true}).waitFor({state:'visible',timeout:5000})
   const assignedBannerText=await assignedNotice.innerText()
   await assignedNotice.click()
   await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
