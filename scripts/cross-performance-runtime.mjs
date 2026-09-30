@@ -5,6 +5,7 @@ import { createClient } from '@supabase/supabase-js'
 
 // PR330 pointer actionability reconciliation: retain DOM hit-test + Playwright trial click.
 // same-SHA retrigger after cross-role diagnostics
+// final same-SHA retrigger after cross-role auth preservation
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
