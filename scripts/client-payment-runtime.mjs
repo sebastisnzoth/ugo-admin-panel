@@ -35,12 +35,14 @@ try{
  assert.ifError(payError);paymentId=payment.id
  const first=await client.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:service.id});assert.ifError(first.error)
  const second=await client.rpc('confirmar_pago_efectivo_cliente',{p_servicio_id:service.id});assert.ifError(second.error)
- const[{data:s},{data:p},{data:debts},{data:audits}]=await Promise.all([
+ const[serviceRead,paymentRead,debtRead,auditRead]=await Promise.all([
   admin.from('servicios').select('estado,metadata').eq('id',service.id).single(),
   admin.from('pagos').select('id,estado,metodo,monto_bruto,comision_ugo').eq('id',paymentId).single(),
   admin.from('deudas_ugo_proveedor').select('id,pago_id,servicio_id,comision_ugo,estado,ambiente').eq('pago_id',paymentId),
   admin.from('audit_log').select('id,evento,actor_id,entidad_id,detalles').eq('evento','client.cash_payment.confirmed').eq('entidad_id',service.id)
  ])
+ assert.ifError(serviceRead.error);assert.ifError(paymentRead.error);assert.ifError(debtRead.error);assert.ifError(auditRead.error)
+ const s=serviceRead.data,p=paymentRead.data,debts=debtRead.data||[],audits=auditRead.data||[]
  assert.equal(s?.estado,'completado');assert.equal(p?.estado,'liberado');assert.equal(p?.metodo,'efectivo')
  assert.equal(debts?.length,1,'ONE_CASH_DEBT_REQUIRED');assert.equal(Number(debts[0].comision_ugo),18)
  assert.equal(audits?.length,1,'ONE_CASH_AUDIT_REQUIRED');assert.equal(audits[0].actor_id,CLIENT)
