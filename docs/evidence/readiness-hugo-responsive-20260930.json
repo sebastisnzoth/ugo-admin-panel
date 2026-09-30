@@ -1,0 +1,27 @@
+{
+  "readiness_id": "hugo-responsive",
+  "control": "Responsive Hugo",
+  "environment": "UGO TEST",
+  "runtime_sha": "9c34a28f7ee294cae1dd61c58a576ef5a3692a20",
+  "workflow_run_id": 36725518023,
+  "workflow_job_id": 109921260771,
+  "artifact_id": 11101549540,
+  "artifact_name": "readiness-hugo-responsive-9c34a28f7ee294cae1dd61c58a576ef5a3692a20",
+  "artifact_digest": "sha256:1af8b87b01a4aa5ce8a8408a31ff26478308da054ee418d2139b6b5ac5abde6a",
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "mobile": "PASS",
+    "tablet": "PASS",
+    "desktop": "PASS",
+    "keyboard_mobile": "PASS",
+    "production_touched": false
+  },
+  "notes": {
+    "core_ci_run_id": 36725518018,
+    "core_ci": "FAIL_UNRELATED_GLOBAL_VERCEL_FUNCTION_LIMIT"
+  },
+  "completed_at": "2026-09-30T13:59:35Z"
+}
