@@ -24,7 +24,7 @@ assert.ifError(profileError)
 assert.equal(profile.tipo,'superadmin')
 assert.equal(profile.activo,true)
 
-const {data:department,error:departmentError}=await root.from('autonomous_departments').select('department_id').eq('status','ACTIVE').order('department_id').limit(1).single()
+const {data:department,error:departmentError}=await root.from('autonomous_departments').select('department_id,status').order('department_id').limit(1).single()
 assert.ifError(departmentError)
 const departmentId=department.department_id
 const {data:company,error:companyError}=await root.from('autonomous_company_state').select('mode,reason').eq('singleton',true).single()
