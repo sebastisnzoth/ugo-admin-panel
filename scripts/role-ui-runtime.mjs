@@ -36,16 +36,30 @@ const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
 const admin=await login(adminEmail,adminPassword)
 
+async function retryDb(operation,label){
+ let last=null
+ for(let attempt=1;attempt<=5;attempt++){
+   const result=await operation()
+   if(!result?.error)return result
+   last=result
+   const error=result.error,code=String(error?.code||''),status=Number(error?.status||0),message=String(error?.message||'')
+   const retryable=code==='PGRST002'||status===429||status>=500||/schema cache|fetch|network|timeout|gateway|temporar/i.test(message)
+   if(!retryable||attempt===5)break
+   await new Promise(resolve=>setTimeout(resolve,Math.min(750*attempt,3000)))
+ }
+ assert.ifError(last?.error,new Error(label+' failed'))
+ return last
+}
 async function ensureOperationalProviderFixture(){
  const providerId=provider.session.user.id
- const {data:profile,error:profileError}=await admin.sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion').eq('usuario_id',providerId).maybeSingle()
+ const {data:profile,error:profileError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion').eq('usuario_id',providerId).maybeSingle(),'provider profile read')
  assert.ifError(profileError)
  assert.ok(profile,'UGO_TEST_PROVIDER_PROFILE_REQUIRED')
  if(profile.estado_verificacion!=='verificado'){
-   const {error:updateError}=await admin.sb.from('perfiles_proveedor').update({estado_verificacion:'verificado'}).eq('usuario_id',providerId)
+   const {error:updateError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').update({estado_verificacion:'verificado'}).eq('usuario_id',providerId),'provider verification update')
    assert.ifError(updateError)
  }
- const {data:verified,error:verifyError}=await admin.sb.from('perfiles_proveedor').select('estado_verificacion').eq('usuario_id',providerId).single()
+ const {data:verified,error:verifyError}=await retryDb(()=>admin.sb.from('perfiles_proveedor').select('estado_verificacion').eq('usuario_id',providerId).single(),'provider verification readback')
  assert.ifError(verifyError)
  assert.equal(verified.estado_verificacion,'verificado','UGO_TEST_PROVIDER_MUST_BE_VERIFIED')
 }
