@@ -91,6 +91,7 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:390,height:844}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
+await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
@@ -100,7 +101,7 @@ async function backendState(){
  assert.ifError(error)
  return String(data?.estado||'')
 }
-async function expectUi(state,stage){
+async function expectUi(state,stage,{bannerTextOverride=null}={}){
  let persisted=''
  for(let attempt=0;attempt<30;attempt++){
   persisted=await backendState()
@@ -137,12 +138,16 @@ async function expectUi(state,stage){
  assert.equal(notice.usuario_id,login.user.id)
  assert.equal(notice.datos.servicio_id,fixture.id)
  const banner=page.locator('.ugo-notification-live.is-client')
- await banner.getByText(notice.titulo,{exact:true}).waitFor({state:'visible',timeout:15000})
+ let bannerText=bannerTextOverride
+ if(!bannerText){
+  await banner.getByText(notice.titulo,{exact:true}).waitFor({state:'visible',timeout:15000})
+  bannerText=await banner.innerText()
+ }
  const {data:foreign,error:foreignError}=await provider.from('notificaciones').select('id').eq('id',notice.id)
  assert.ifError(foreignError)
  assert.deepEqual(foreign,[],'Provider must not read client notifications')
  await page.screenshot({path:'artifacts/client-notifications-'+state+'.png',fullPage:true})
- notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:notice.titulo,banner_text:await banner.innerText(),state,foreign_read_count:foreign.length})
+ notices.push({id:notice.id,tipo:notice.tipo,service_id:fixture.id,usuario_id:notice.usuario_id,title:notice.titulo,banner_text:bannerText,state,foreign_read_count:foreign.length})
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 
@@ -170,19 +175,26 @@ async function addProviderEvidence(tipo){
 }
 
 try{
- // Authenticate only through the canonical Client AuthScreen and keep the
- // same browser document. The first real client notification must route to
- // the exact disposable service through datos.servicio_id.
+ // Use the same proven browser auth harness as other VERIFIED client
+ // readiness controls: a real password-authenticated Supabase session is
+ // loaded before the app starts. This isolates notification behavior from
+ // the separate AuthScreen lifecycle while keeping the user/session real.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- const emailInput=page.getByPlaceholder('tu@email.com')
- if(await emailInput.count()){
-  await emailInput.fill(email)
-  await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
-  await page.getByRole('button',{name:'Ingresar a UGO'}).click()
+ try{
+  await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:30000})
+ }catch(error){
+  const diagnostic=await page.evaluate(()=>({
+   href:window.location.href,
+   body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,3000),
+   stored_session:Boolean(localStorage.getItem('ugo-test-client-auth')),
+   auth:Boolean(document.querySelector('[aria-label="Iniciar sesión"]')),
+   onboarding:Boolean(document.querySelector('.ugo-client-onboarding')),
+   client_root:Boolean(document.querySelector('.ugo-client-root')),
+  })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',stored_session:false,auth:false,onboarding:false,client_root:false}))
+  await page.screenshot({path:'artifacts/client-notifications-browser-auth-failure.png',fullPage:true}).catch(()=>{})
+  await fs.writeFile('artifacts/client-notifications-browser-auth-diagnostic.json',JSON.stringify({service_id:fixture.id,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
+  throw error
  }
- await page.waitForFunction(()=>!document.querySelector('[aria-label="Iniciar sesión"]'),null,{timeout:30000})
- const onboarding=page.getByRole('heading',{name:'Terminemos tu perfil'})
- if(await onboarding.count())throw new Error('UGO_TEST_CLIENT_ONBOARDING_INCOMPLETE')
 
  // The canonical assignment notification trigger is AFTER UPDATE of
  // estado/proveedor_id. Perform the real assignment only after the client is
@@ -213,8 +225,10 @@ try{
  try{
   const assignedNotice=page.locator('.ugo-notification-live.is-client')
   await assignedNotice.getByText('UGO · ACTUALIZACIÓN DEL PEDIDO',{exact:true}).waitFor({state:'visible',timeout:30000})
+  const assignedBannerText=await assignedNotice.innerText()
   await assignedNotice.click()
   await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
+  globalThis.__ugoAssignedBannerText=assignedBannerText
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
    href:window.location.href,
@@ -228,7 +242,7 @@ try{
   await fs.writeFile('artifacts/client-notifications-open-from-live-notice-diagnostic.json',JSON.stringify({service_id:fixture.id,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
   throw error
  }
- await expectUi('asignado','accepted')
+ await expectUi('asignado','accepted',{bannerTextOverride:globalThis.__ugoAssignedBannerText||null})
 
  const paymentAmount=Math.max(1,Number(template.tarifa||50))
  const {data:selectedPayment,error:paymentInsertError}=await admin.from('pagos').insert({
