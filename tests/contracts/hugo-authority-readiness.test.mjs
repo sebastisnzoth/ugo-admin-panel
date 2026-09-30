@@ -4,7 +4,7 @@ import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('Hugo chat requires authenticated role authority and explains denials',async()=>{
- const[api,policy]=await Promise.all([read('api/hugo/chat.ts'),read('api/hugo/authority.ts')])
+ const[api,policy]=await Promise.all([read('api/hugo/chat.ts'),read('src/server/hugo/authority.ts')])
  assert.match(api,/authorizeHugo\(req,body\)/)
  assert.match(api,/auth\.getUser\(token\)/)
  assert.match(api,/from\('usuarios'\)\.select\('tipo,activo'\)/)
