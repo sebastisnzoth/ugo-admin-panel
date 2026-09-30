@@ -84,7 +84,7 @@
           "id": "client-camera",
           "title": "Cámara y subida de foto",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "Sacar foto/subir archivo, cancelación y errores.",
           "done_evidence": "Runtime browser + persistencia de evidencia; hardware final si aplica.",
           "improvement_focus": "Preview, compresión y feedback de carga.",
