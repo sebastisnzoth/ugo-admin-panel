@@ -4,6 +4,7 @@ import { useClientCategoryShortcut } from '../hooks/useClientCategoryShortcut'
 
 const noop = () => {}
 const unavailable = async () => false
+const LEGACY_SCREEN_REDIRECT:Partial<Record<ClientScreen,ClientScreen>>={search:'home',provider:'home',matching:'history',service:'history',payment:'history',review:'history'}
 const emptyActions: ClientActionHandlers = {
   openSearch: noop, openProvider: noop, selectProvider: noop, createService: unavailable,
   startMatching: unavailable, cancelService: unavailable, openPayment: unavailable,
@@ -31,8 +32,9 @@ export function ClientFlowProvider({ children }: { children: React.ReactNode }) 
   const intentId = useRef(0)
 
   const navigate = useCallback((next: ClientScreen, nextProviderId: string | null = null) => {
-    setScreen(next)
-    setProviderId(nextProviderId)
+    const resolved=LEGACY_SCREEN_REDIRECT[next]||next
+    setScreen(resolved)
+    setProviderId(resolved==='home'||resolved==='history'?null:nextProviderId)
   }, [])
   const publishHugoIntent = useCallback((intent: Omit<ClientHugoIntent, 'id'>) => {
     setHugoIntent({ ...intent, id: ++intentId.current })
