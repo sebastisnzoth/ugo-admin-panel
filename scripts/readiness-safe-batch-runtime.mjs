@@ -81,6 +81,7 @@ try{
  {
   const marker='READINESS-HUGO-ACTION-'+sha.slice(0,12)
   const clientId=sessions.client.session.user.id
+  const futureAt=new Date(Date.now()+48*60*60*1000).toISOString()
   const {data:fixture,error:fixtureError}=await adminSb.from('servicios').insert({
     cliente_id:clientId,
     categoria_id:category.id,
@@ -88,7 +89,8 @@ try{
     descripcion:marker,
     direccion_cliente:'UGO TEST isolated runtime fixture',
     urgencia:false,
-    metadata:{source:'readiness-safe-batch',runtime_sha:sha,fixture:true}
+    programado_para:futureAt,
+    metadata:{source:'readiness-safe-batch',runtime_sha:sha,fixture:true,requested_when:'programar',scheduled_at:futureAt}
   }).select('id,estado,metadata').single()
   assert.ifError(fixtureError);assert.ok(fixture?.id,'isolated service fixture required')
   const serviceId=String(fixture.id)
