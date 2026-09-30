@@ -22,3 +22,9 @@ test('Command Center builds a bounded safe batch for UGO Maestro', () => {
   assert.match(html, /UGO — EJECUTAR LOTE SEGURO DESDE IMPLEMENTATION COMMAND CENTER/)
   assert.match(html, /No declarar VERIFIED sin lock DONE \+ evidencia \+ Judge PASS \+ Sentinel PASS/)
 })
+
+test('Command Center exposes the safe TEST workflow for auto-killswitch', () => {
+  const generator = fs.readFileSync(new URL('../../scripts/generate-pages-status.mjs', import.meta.url), 'utf8')
+  assert.match(generator, /'auto-killswitch': 'auto-killswitch-runtime\.yml'/)
+  assert.match(generator, /production: 'PROTECTED'/)
+})
