@@ -11,8 +11,8 @@ on:
       - 'scripts/provider-ui-runtime.mjs'
       - '.github/workflows/provider-ui-runtime-test.yml'
 concurrency:
-  group: ugo-provider-ui-runtime-${{ github.ref }}
-  cancel-in-progress: true
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
 jobs:
   provider-ui:
     runs-on: ubuntu-latest
