@@ -1,7 +1,6 @@
 import{ClientGlobalMenu}from'./ClientGlobalMenu'
 import{NotificationCenter,type UgoNotification}from'../../../mvp/NotificationCenter'
 import{ClientHugoBridge}from'../hugo/ClientHugoBridge'
-import{ClientGlobalVoiceCommands}from'../hugo/ClientGlobalVoiceCommands'
 
 type Props={onOpenNotice:(notice:UgoNotification)=>void}
 export function ClientGlobalSurfaces({onOpenNotice}:Props){
