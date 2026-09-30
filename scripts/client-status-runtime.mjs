@@ -14,6 +14,7 @@ const providerEmail=process.env.UGO_TEST_PROVIDER_EMAIL||''
 const providerPassword=process.env.UGO_TEST_PROVIDER_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
+const PARALLEL_TEST_SESSIONS_MUST_NOT_BE_REVOKED=true
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceRole&&email&&password&&providerEmail&&providerPassword&&sha,'CLIENT_STATUS_RUNTIME_INPUTS_REQUIRED')
 
@@ -240,8 +241,7 @@ try{
  }catch(error){
   cleanup={ok:false,mode:'failed',error:String(error?.message||error)}
  }
- await auth.auth.signOut().catch(()=>{})
- await provider.auth.signOut().catch(()=>{})
+ // persistSession=false: do not call global signOut; parallel TEST runners may share these identities.
 }
 
 assert.equal(cleanup.ok,true,'DISPOSABLE_TEST_FIXTURE_CLEANUP_REQUIRED')
