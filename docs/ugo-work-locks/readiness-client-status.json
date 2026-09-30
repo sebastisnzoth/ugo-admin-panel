@@ -5,8 +5,8 @@
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:16:00Z",
-  "heartbeat_at": "2026-09-30T03:16:00Z",
-  "lease_expires_at": "2026-09-30T04:16:00Z",
+  "heartbeat_at": "2026-09-30T03:27:00Z",
+  "lease_expires_at": "2026-09-30T04:27:00Z",
   "started_sha": "4586c16db0dda146a4e252ec874edfcebc09fdbe",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,7 +25,10 @@
     "client-service-status"
   ],
   "correlation_id": "readiness-client-status-20260930T031600Z-4586c16d",
-  "current_step": "INSPECTING",
+  "current_step": "CI_AND_RUNTIME_PROOF",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "tests/contracts/client-status-readiness.test.mjs"
+  ],
+  "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558"
 }
