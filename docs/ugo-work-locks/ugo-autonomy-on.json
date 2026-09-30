@@ -1,0 +1,23 @@
+{
+  "task_id": "ugo-autonomy-on",
+  "job_id": "UGO-AUTONOMY-ON-20260930",
+  "title": "Stabilize UGO TEST autonomous company in ON mode",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:36:00Z",
+  "heartbeat_at": "2026-09-30T03:36:00Z",
+  "lease_expires_at": "2026-09-30T04:21:00Z",
+  "started_sha": "e1d1f8ad275a058e561c30913c302483a03c6a2f",
+  "owner": "UGO",
+  "assigned_agent": "Autonomy ON Stabilization Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-on-gate"
+  ],
+  "correlation_id": "ugo-autonomy-on-20260930T033600Z",
+  "current_step": "REMOVE_FALSE_CONTAINMENT_AND_VERIFY_ON",
+  "attempt": 1,
+  "evidence_ids": []
+}
