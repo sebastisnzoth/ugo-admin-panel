@@ -5,8 +5,8 @@
   "title": "Verify perceived performance and critical action latency",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:40:00Z",
-  "heartbeat_at": "2026-09-30T03:40:00Z",
-  "lease_expires_at": "2026-09-30T04:25:00Z",
+  "heartbeat_at": "2026-09-30T04:08:00Z",
+  "lease_expires_at": "2026-09-30T04:53:00Z",
   "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -19,8 +19,12 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-cross-performance-20260930T034000Z-c1097e3c",
-  "current_step": "LATENCY_AND_LOADER_RUNTIME_PROOF",
+  "current_step": "WAITING_SAME_SHA_RUNTIME_JUDGE_SENTINEL",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-pr:296",
+    "github-run:36667189938",
+    "github-core-run:36667189922"
+  ],
   "production_touched": false
 }
