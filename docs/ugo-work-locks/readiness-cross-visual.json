@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T20:12:00Z",
-  "lease_expires_at": "2026-09-30T20:57:00Z",
+  "heartbeat_at": "2026-09-30T20:15:00Z",
+  "lease_expires_at": "2026-09-30T21:00:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,8 +17,8 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R6_CLIENT_MOBILE_MENU_MOUNT_RERUN",
-  "attempt": 6,
+  "current_step": "R7_CLIENT_RENDER_DIAGNOSTIC",
+  "attempt": 7,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
     "repo:docs/evidence/readiness-cross-visual-20260930.json",
@@ -51,7 +51,9 @@
     "fix:785a32c0d76bc679e1a48d039d730ed5126117e7",
     "github-run:36770419049:FAIL_CLIENT_MOBILE_MENU_MOUNT_RACE",
     "artifact:11124085230",
-    "fix:930a3e6ab86c626efbe1c93c4c9d50e8eb892fb7"
+    "fix:930a3e6ab86c626efbe1c93c4c9d50e8eb892fb7",
+    "github-run:36770839462:FAIL_CLIENT_ROOT_DISAPPEARED",
+    "fix:173dce18235ca1ceafde6454a4499f29c7f22c54"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
