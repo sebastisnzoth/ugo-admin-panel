@@ -1,0 +1,34 @@
+{
+  "readiness_id": "auto-inbox",
+  "task_id": "readiness-auto-inbox",
+  "job_id": "UGO-READINESS-AUTO-INBOX",
+  "title": "Verify Executive Inbox approvals and escalations in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T01:15:00Z",
+  "heartbeat_at": "2026-09-30T01:15:00Z",
+  "lease_expires_at": "2026-09-30T02:00:00Z",
+  "started_sha": "48741a2a181de1cabaf20c4ca8e353687674615d",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "Executive Inbox Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-inbox"
+  ],
+  "correlation_id": "readiness-auto-inbox-20260930T011500Z-48741a2a",
+  "current_step": "INSPECT_IMPLEMENTATION_AND_TEST_GAPS",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-job-execution",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ]
+}
