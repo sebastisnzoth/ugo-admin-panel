@@ -111,3 +111,10 @@ test('zero-price onsite flow is presented as an initial quote, not as extra work
  assert.match(panel,/Enviar presupuesto/)
  assert.match(panel,/Aprobar presupuesto/)
 })
+
+
+test('payment choice stays visible through travel and arrival so an approved quote can be paid',async()=>{
+ const choice=await read('src/features/client/payments/ClientPaymentChoice.tsx')
+ assert.match(choice,/PAYMENT_STATES=\['asignado','en_camino','llegado'\]/)
+ assert.match(choice,/pixNeedsGeneration/)
+})
