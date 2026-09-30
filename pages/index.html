@@ -20,7 +20,7 @@
     .steps{display:grid;gap:12px}.step{display:grid;grid-template-columns:90px 1fr;gap:14px}.step-index{font-size:1.5rem;font-weight:850;color:var(--accent)}.step .meta-line{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 10px}.step p{margin:8px 0;color:var(--muted);line-height:1.55}.step b{color:#fff}.pill.ugo{color:var(--accent)}.pill.human{color:var(--warn)}.pill.blocked{color:var(--bad)}.pill.pending{color:var(--warn)}
     details{border-top:1px solid var(--line);margin-top:12px;padding-top:10px}summary{cursor:pointer;color:#dce8f8;font-weight:750}.resolve{margin-top:10px;padding:12px;border-radius:12px;background:#0b1425;border:1px solid #223657}
     .meta{margin-top:26px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--panel2);color:var(--muted);font:.82rem ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}.meta strong{color:#fff}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-block;text-decoration:none;color:inherit;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#15223b;font-weight:750}.btn.primary{background:#dff4ff;color:#0a3148;border-color:#b9e7fb}.cta-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.cta{border:0;cursor:pointer;font:inherit}.cta.chatgpt{background:#10a37f;color:white;border:1px solid #27c79d}.cta.chatgpt:hover{filter:brightness(1.06)}.cta.github{background:#238636;color:white;border:1px solid #2ea043}.cta.github:hover{filter:brightness(1.08)}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}.btn{display:inline-block;text-decoration:none;color:inherit;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#15223b;font-weight:750}.btn.primary{background:#dff4ff;color:#0a3148;border-color:#b9e7fb}.cta-row{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px}.cta{border:0;cursor:pointer;font:inherit}.cta.chatgpt{background:#10a37f;color:white;border:1px solid #27c79d}.cta.chatgpt:hover{filter:brightness(1.06)}.cta.github{background:#238636;color:white;border:1px solid #2ea043}.cta.github:hover{filter:brightness(1.08)}.cta.bulk{background:#6d5dfc;color:white;border:1px solid #8b7fff}.cta.bulk:hover{filter:brightness(1.07)}
     .monitor{margin-top:22px;border:1px solid #315080;border-radius:20px;background:linear-gradient(135deg,#0d1b34,#101a2e);padding:18px}
 .monitor-head{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
 .monitor-grid{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:12px;margin-top:14px}
@@ -151,6 +151,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   <section class="card" style="margin-top:12px">
     <div class="row"><span><b>Controles que podés ejecutar ahora en paralelo</b></span><span class="pill ugo" id="readinessAvailableNow">—</span></div>
     <p class="sub" id="readinessExecutionHint">Calculando prioridades, dependencias y recursos compartidos…</p>
+    <div class="cta-row"><button class="btn cta bulk" id="runSafeBatch" type="button" disabled>Resolver lote seguro con UGO Maestro</button><button class="btn" id="copySafeBatch" type="button" disabled>Copiar lote</button></div>
+    <p class="tiny" id="safeBatchHint">El lote sólo incluye controles HABILITADO y respeta capacidad, dependencias y recursos declarados.</p>
   </section>
 
   <h2>Próximo movimiento</h2>
@@ -225,7 +227,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     HUMAN_REQUIRED:'REQUIERE SERGIO',
     HUMAN_DEFERRED:'PRUEBA REAL DIFERIDA'
   }[step.gate_state] || step.gate_state || 'PENDIENTE')
-  const canOpenUgoMaster = step => ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK','HUMAN_REQUIRED'].includes(step.gate_state)
+  const actionableGateStates = ['AVAILABLE','FAILED_REQUIRES_REVIEW','STALE_LOCK','HUMAN_REQUIRED','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING']
+  const canOpenUgoMaster = step => actionableGateStates.includes(step.gate_state)
   const buttonLabel = step => step.gate_state === 'AVAILABLE' ? 'Resolver con UGO Maestro' :
     step.gate_state === 'IN_PROGRESS' ? 'Trabajo en proceso' :
     step.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' :
@@ -233,6 +236,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     step.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' :
     step.gate_state === 'RETRY_BACKOFF' ? 'Esperando reintento' :
     step.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' :
+    step.gate_state === 'FIXED_IN_PR' ? 'Validar PR y continuar' :
+    step.gate_state === 'WAITING_RUNTIME' ? 'Completar prueba runtime' :
+    step.gate_state === 'JUDGE_PENDING' ? 'Ejecutar Judge' :
+    step.gate_state === 'SENTINEL_PENDING' ? 'Ejecutar Sentinel' :
     step.gate_state === 'QUEUED_CAPACITY' ? 'En cola' :
     step.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' :
     step.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : 'No disponible'
@@ -552,6 +559,70 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     localStorage.setItem(dispatchKey, JSON.stringify(list))
     renderDispatch()
   }
+  const getSafeBatch = () => {
+    const groups = statusSnapshot?.functional_readiness?.groups || []
+    return groups.flatMap(group => (group.items || [])
+      .filter(item => item.gate_state === 'AVAILABLE')
+      .map(item => ({...item, group_id:group.id, group_title:group.title})))
+      .slice(0, Math.min(5, Number(statusSnapshot?.scheduler_policy?.max_parallel_tasks || 5)))
+  }
+  const buildSafeBatchPrompt = items => [
+    'UGO — EJECUTAR LOTE SEGURO DESDE IMPLEMENTATION COMMAND CENTER',
+    '',
+    'Repositorio obligatorio: sebastisnzoth/ugo-admin-panel',
+    'Rama objetivo: main',
+    'SHA de referencia publicado: ' + (statusSnapshot?.source_sha || 'revalidar HEAD de main'),
+    '',
+    'OBJETIVO:',
+    'Resolver autónomamente hasta VERIFIED los controles habilitados listados abajo. Antes de escribir, revalidar main, scheduler, locks, PRs y evidencia. No duplicar trabajos, no saltar runtime/Judge/Sentinel y no tocar producción.',
+    '',
+    'CONTROLES HABILITADOS (' + items.length + '):',
+    ...items.flatMap((item, index) => [
+      '',
+      (index + 1) + '. READINESS_ID: ' + item.id,
+      'ÁREA: ' + (item.group_title || 'UGO'),
+      'CONTROL: ' + item.title,
+      'QUÉ VERIFICAR: ' + (item.verify || '—'),
+      'EVIDENCIA DONE: ' + (item.done_evidence || '—'),
+      'ESTADO: ' + item.gate_state
+    ]),
+    '',
+    'REGLAS DE EJECUCIÓN:',
+    '- Adquirir/renovar lock por READINESS_ID antes de modificar.',
+    '- Respetar capacidad máxima y conflictos de recursos del scheduler.',
+    '- Ejecutar en paralelo sólo trabajos compatibles.',
+    '- Para cada control: implementar/wiring si falta → prueba específica → runtime real si aplica → evidencia persistente same-SHA → Judge independiente → Sentinel.',
+    '- Si un control cambia de estado o ya tiene trabajo activo, reconciliarlo y no repetirlo.',
+    '- No declarar VERIFIED sin lock DONE + evidencia + Judge PASS + Sentinel PASS.',
+    '- Al final devolver estado exacto por READINESS_ID, SHA, PR/lock, evidencia y próximos pasos restantes.'
+  ].join('\n')
+  const copyText = async textValue => {
+    try {
+      await navigator.clipboard.writeText(textValue)
+      return true
+    } catch (_) {
+      window.prompt('Copiá este contenido:', textValue)
+      return false
+    }
+  }
+  const openSafeBatch = async (openChat = true) => {
+    try {
+      const freshResponse = await fetch('status.json?ts=' + Date.now(), {cache:'no-store'})
+      if (freshResponse.ok) statusSnapshot = await freshResponse.json()
+    } catch (error) {
+      console.warn('No se pudo revalidar status.json antes del lote seguro.', error)
+    }
+    const items = getSafeBatch()
+    if (!items.length) {
+      alert('No hay controles HABILITADO para un lote seguro. Revalidá el panel para ver el estado actual.')
+      return
+    }
+    items.forEach(item => saveDispatch({id:item.id,title:item.title,resources:['functional-readiness',item.group_id || 'readiness']}, 'UGO_MAESTRO_BATCH'))
+    const prompt = buildSafeBatchPrompt(items)
+    if (openChat) window.open('https://chatgpt.com/?hint=gpt-d666867e3628393fca5c35c8f84aaab4', '_blank', 'noopener')
+    const copied = await copyText(prompt)
+    if (openChat && copied) alert('Lote seguro copiado. Se abrió UGO Maestro: pegalo y enviá para ejecutar hasta 5 controles compatibles.')
+  }
   const renderDispatch = () => {
     const list = getDispatches()
     const serverLocks = statusSnapshot?.active_locks || []
@@ -565,7 +636,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('sentTaskMeta').textContent = active.length + ' tarea(s) activas/enviadas'
   }
   const openReadinessWithUgoMaster = async (item, group) => {
-    if (!item || !['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state)) return
+    if (!item || !actionableGateStates.includes(item.gate_state)) return
     saveDispatch({
       id: item.id,
       title: item.title,
@@ -808,6 +879,18 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('readinessGroupsCount').textContent = groups.length
     document.getElementById('readinessRemaining').textContent = summary.remaining_total ?? '—'
     document.getElementById('readinessAvailableNow').textContent = (summary.available_now ?? 0) + ' / 5'
+    const safeBatch = groups.flatMap(group => (group.items || []).filter(item => item.gate_state === 'AVAILABLE')).slice(0, Math.min(5, Number(s.scheduler_policy?.max_parallel_tasks || 5)))
+    const runSafeBatch = document.getElementById('runSafeBatch')
+    const copySafeBatch = document.getElementById('copySafeBatch')
+    runSafeBatch.disabled = safeBatch.length === 0
+    copySafeBatch.disabled = safeBatch.length === 0
+    runSafeBatch.textContent = safeBatch.length ? 'Resolver lote seguro (' + safeBatch.length + ') con UGO Maestro' : 'Sin lote habilitado'
+    copySafeBatch.textContent = safeBatch.length ? 'Copiar lote (' + safeBatch.length + ')' : 'Copiar lote'
+    document.getElementById('safeBatchHint').textContent = safeBatch.length
+      ? 'Listos para delegar ahora: ' + safeBatch.map(item => item.id).join(', ') + '. UGO revalidará locks y recursos antes de ejecutar.'
+      : 'No hay controles HABILITADO ahora; el panel mantiene visibles los estados de continuación sin duplicar trabajo.'
+    runSafeBatch.onclick = safeBatch.length ? () => openSafeBatch(true) : null
+    copySafeBatch.onclick = safeBatch.length ? () => openSafeBatch(false) : null
     document.getElementById('readinessExecutionHint').textContent =
       'Restan exactamente ' + (summary.remaining_total ?? '—') + ' controles: ' +
       (summary.remaining_autonomous ?? '—') + ' delegables por UGO/ChatGPT y ' +
