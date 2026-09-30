@@ -1,0 +1,87 @@
+name: UGO Provider Alerts Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/provider-alerts-runtime.mjs"
+      - "scripts/provider-alerts-judge.mjs"
+      - "scripts/provider-alerts-sentinel.mjs"
+      - "src/mvp/NotificationCenter.tsx"
+      - "public/sw.js"
+      - "supabase/functions/push-dispatch/index.ts"
+      - "tests/contracts/provider-offer-alert-lifecycle.test.mjs"
+      - "tests/contracts/provider-alert-radius-20km.test.mjs"
+      - ".github/workflows/provider-alerts-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: provider-alerts-runtime-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime-proof:
+    name: Provider nueva oferta → alerta/sonido UGO TEST
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse non-TEST environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: TypeScript and build
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Provider alert contracts
+        run: |
+          node --test tests/contracts/provider-offer-alert-lifecycle.test.mjs
+          node --test tests/contracts/provider-alert-radius-20km.test.mjs
+      - name: Install browser harness
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Runtime provider offer alert
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${{ github.sha }}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-provider-alerts-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/provider-alerts-runtime.mjs
+      - name: Judge
+        run: node scripts/provider-alerts-judge.mjs
+      - name: Sentinel
+        run: node scripts/provider-alerts-sentinel.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-alerts-runtime-${{ github.sha }}
+          path: artifacts/provider-alerts-*
+          if-no-files-found: warn
+          retention-days: 90
