@@ -15,6 +15,11 @@ test('provider assignment creates a deduplicated client notification from the se
  assert.match(sql,/after update of estado, proveedor_id on public\.servicios/)
 })
 
+test('client home presentation never hides the notification center that owns live realtime alerts',async()=>{
+ const css=await read('src/features/client/ai/clientStudioReference.css')
+ assert.doesNotMatch(css,/\.ugo-client-root\.ugo-client-screen-home \.ugo-notification-center[^}]*display\s*:\s*none/i)
+})
+
 test('client receives inserted notifications in realtime and shows a visible live alert',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
  assert.match(center,/event:'INSERT',schema:'public',table:'notificaciones'/)
