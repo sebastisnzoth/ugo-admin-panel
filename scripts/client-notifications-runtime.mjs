@@ -88,8 +88,6 @@ const browser=await chromium.launch({headless:true})
 const page=await browser.newPage({viewport:{width:390,height:844}})
 const pageErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
-await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
-
 const transitions=[]
 const notices=[]
 const noticeTypes={asignado:'proveedor_asignado',en_camino:'proveedor_en_camino',llegado:'proveedor_llego',en_progreso:'servicio_iniciado',esperando_aprobacion:'aprobacion_pendiente',completado:'servicio_completado'}
@@ -170,7 +168,15 @@ async function addProviderEvidence(tipo){
 
 try{
  await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
- await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
+ const emailInput=page.getByPlaceholder('tu@email.com')
+ if(await emailInput.count()){
+  await emailInput.fill(email)
+  await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
+  await page.getByRole('button',{name:'Ingresar a UGO'}).click()
+ }
+ const onboarding=page.getByRole('heading',{name:'Terminemos tu perfil'})
+ if(await onboarding.count())throw new Error('UGO_TEST_CLIENT_ONBOARDING_INCOMPLETE')
+ await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
  await expectUi('asignado','accepted')
 
  const paymentAmount=Math.max(1,Number(template.tarifa||50))
