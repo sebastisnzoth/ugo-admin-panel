@@ -42,6 +42,7 @@ const insertRow={
  proveedor_id:template.proveedor_id,
  categoria_id:template.categoria_id,
  estado:'asignado',
+ programado_para:new Date(Date.now()+24*60*60*1000).toISOString(),
  descripcion:'UGO TEST readiness client-status '+sha.slice(0,12),
  urgencia:false,
  direccion_cliente:template.direccion_cliente||'UGO TEST',

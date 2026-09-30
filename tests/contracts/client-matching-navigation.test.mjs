@@ -40,3 +40,17 @@ test('expired home matching has a single retry action without nested interactive
  assert.doesNotMatch(home,/ugo-home-order-retry" role="button"/)
  assert.doesNotMatch(home,/onKeyDown=\{event=>\{if\(event\.key==='Enter'/)
 })
+
+test('existing matching retries share the canonical persisted retry helper',async()=>{
+ const[home,detail,actions]=await Promise.all([
+  read('src/features/client/home/ClientHomeScreen.tsx'),
+  read('src/features/client/order/ClientServiceDetail.tsx'),
+  read('src/features/client/services/clientActionService.ts')
+ ])
+ assert.match(home,/retryOwnedClientMatching\(supabase,session\.user\.id,serviceId\)/)
+ assert.match(detail,/retryOwnedClientMatching\(supabase,user\.id,service\.id\)/)
+ assert.doesNotMatch(detail,/pickupFallback:'none'/)
+ assert.match(actions,/export async function retryOwnedClientMatching/)
+ assert.match(actions,/rpc\('iniciar_matching',\{p_servicio_id:owned\.id\}\)/)
+ assert.match(actions,/\['ofrecido','asignado'\]\.includes/)
+})

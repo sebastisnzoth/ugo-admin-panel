@@ -12,7 +12,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime-v2
+  group: ugo-client-status-runtime-v3
   cancel-in-progress: false
 
 permissions:
@@ -188,3 +188,5 @@ jobs:
 # workflow start marker instrumentation 2026-09-30T10:53Z
 
 # disposable fixture v2 2026-09-30T10:54Z
+
+# scheduled disposable fixture v3 2026-09-30T10:57Z

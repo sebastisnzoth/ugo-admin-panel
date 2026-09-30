@@ -1,6 +1,5 @@
 import React,{useCallback,useEffect,useId,useMemo,useRef,useState}from'react'
 import{clearSentinelContext,reportSentinelIncident}from'../../../lib/sentinel'
-import{getDispatchProvider}from'../../../lib/dispatch/provider'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import{ClientCompletionReview}from'./ClientCompletionReview'
 import{ClientEvidenceGallery}from'./ClientEvidenceGallery'
@@ -13,7 +12,7 @@ import{STATUS_LABELS}from'../../../mvp/shared'
 import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 import{useClientFlow}from'../flow/clientFlow'
-import{CLIENT_CANCELLABLE_SERVICE_STATES}from'../services/clientActionService'
+import{CLIENT_CANCELLABLE_SERVICE_STATES,retryOwnedClientMatching}from'../services/clientActionService'
 
 type DetailRow={id:string;numero:number|string|null;estado:string;categoria_id:string;descripcion:string|null;direccion_cliente:string|null;programado_para:string|null;created_at:string|null;matching_expires_at:string|null;tarifa:number|string|null;moneda:string|null;proveedor_id:string|null;categoria:{nombre?:string|null;emoji?:string|null}|null;proveedor:{nombre?:string|null;karma?:number|null}|null}
 const CANCELLABLE=new Set(CLIENT_CANCELLABLE_SERVICE_STATES)
@@ -28,7 +27,7 @@ export function ClientServiceDetail({serviceId,onClose}:{serviceId:string;onClos
  useEffect(()=>{void load()},[load])
  useEffect(()=>{if(!matchingDeadline)return;setNow(Date.now());const timer=window.setInterval(()=>setNow(Date.now()),1000);return()=>window.clearInterval(timer)},[matchingDeadline])
  useEffect(()=>{let alive=true,reconnectTimer:number|undefined;const resync=()=>{if(alive)void load()},reconnect=()=>{if(reconnectTimer)window.clearTimeout(reconnectTimer);reconnectTimer=window.setTimeout(()=>{if(alive)setChannelEpoch(value=>value+1)},1000)};const onOnline=()=>{resync();reconnect()};const onVisibility=()=>{if(document.visibilityState==='visible'){resync();reconnect()}};window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility);const generation=++channelGeneration.current,topic=`client-service-detail-${serviceId}-${instanceId}-${channelEpoch}-${generation}`;const ch=supabase.channel(topic).on('postgres_changes',{event:'*',schema:'public',table:'servicios',filter:`id=eq.${serviceId}`},resync).subscribe(status=>{if(status==='SUBSCRIBED'){resync();return}if((status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED')&&document.visibilityState==='visible'&&navigator.onLine){resync();reconnect();void reportSentinelIncident({eventType:'realtime_subscription_error',message:`Detalle de pedido Realtime: ${status}`,role:'client',severity:'P1',serviceId,action:'client.order.realtime'})}});return()=>{alive=false;if(reconnectTimer)window.clearTimeout(reconnectTimer);window.removeEventListener('online',onOnline);document.removeEventListener('visibilitychange',onVisibility);void supabase.removeChannel(ch)}},[channelEpoch,instanceId,load,serviceId,supabase])
- const retryMatching=async()=>{if(!service||!['buscando','ofrecido'].includes(service.estado)||busy)return;setBusy(true);setNotice('');try{await getDispatchProvider().start({serviceId:service.id,category:service.categoria_id,pickupFallback:'none'});setNow(Date.now());setNotice('Buscando profesional. UGO volvió a avisar a profesionales disponibles.');await load()}catch(error){setNotice(error instanceof Error?error.message:'No pudimos reintentar la búsqueda. El pedido sigue guardado.')}finally{setBusy(false)}}
+ const retryMatching=async()=>{if(!service||!['buscando','ofrecido'].includes(service.estado)||busy)return;setBusy(true);setNotice('');try{const{data:{user}}=await supabase.auth.getUser();if(!user)throw new Error('Sesión no disponible.');const ok=await retryOwnedClientMatching(supabase,user.id,service.id);if(!ok)throw new Error('Este pedido ya cambió de estado y no necesita reintento.');setNow(Date.now());setNotice('Buscando profesional. UGO volvió a avisar a profesionales disponibles.');await load()}catch(error){setNotice(error instanceof Error?error.message:'No pudimos reintentar la búsqueda. El pedido sigue guardado.')}finally{setBusy(false)}}
  const cancel=async()=>{if(!service||!CANCELLABLE.has(service.estado)||busy)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setBusy(true);setNotice('');const ok=await flow.actions.cancelService(service.id);setBusy(false);if(ok){setNotice('Pedido cancelado. Los otros pedidos no fueron modificados.');await load()}else setNotice('No pudimos cancelar este pedido. Su estado actual fue preservado.')}
  const awaitingApproval=service?.estado==='esperando_aprobacion',disputeActive=service?.estado==='disputado'
  const openExactDispute=()=>setDisputeOpenKey(value=>value+1)
