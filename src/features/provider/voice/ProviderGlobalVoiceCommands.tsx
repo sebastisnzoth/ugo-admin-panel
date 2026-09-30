@@ -3,11 +3,13 @@ import{emitUgoUiEvent,UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import{useGlobalVoiceCommandListener}from'../../../shared/voice/useGlobalVoiceCommandListener'
 import{useProviderData}from'../../../mvp/provider/providerData'
 import{useProviderFlow}from'../../../mvp/provider/providerFlow'
-import{normalizeProviderVoice}from'./providerVoiceHelpers'
+import{detectProviderVoiceLocale,findProviderVoiceOpportunity,normalizeProviderVoice,providerVoiceSummary}from'./providerVoiceHelpers'
+import{runProviderVoiceCommand}from'./providerVoiceCommands'
 
 export function ProviderGlobalVoiceCommands(){
  const flow=useProviderFlow(),data=useProviderData()
- const handle=useCallback(async(source:string)=>{
+ const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{}},[])
+ const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeProviderVoice(source)
   if(!value)return false
   if(/\b(parar voz|detener voz|cerrar hugo|cancelar escucha|parar escuta|fechar hugo)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.globalVoiceStop);return true}
@@ -20,8 +22,11 @@ export function ProviderGlobalVoiceCommands(){
   if(/\b(historial|historico|atividade|actividad)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|leva|lleva)\b/.test(value)){flow.actions.openHistory();return true}
   if(/\b(disputa|problema|soporte|suporte|ayuda|ajuda)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|preciso|necesito)\b/.test(value)){flow.actions.openDispute();return true}
   if(/\b(trabalho atual|trabajo actual|servicio actual|servico atual|mision|missao)\b/.test(value)){data.service?flow.actions.openActiveJob():flow.actions.openAgenda();return true}
+  if(engine==='browser-speech'){
+   return runProviderVoiceCommand({source,locale:detectProviderVoiceLocale(source),summary:providerVoiceSummary(data),flow:flow.actions,data,findOpportunity:(text)=>findProviderVoiceOpportunity(text,data.opportunities),speak})
+  }
   return false
- },[data,flow.actions])
+ },[data,flow.actions,speak])
  useGlobalVoiceCommandListener(handle)
  return null
 }

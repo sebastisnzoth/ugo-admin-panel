@@ -11,10 +11,13 @@ test('production Live token path avoids the rejected auth-token field',()=>{
  assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
 })
 
-test('Hugo client has no secondary TTS or browser recognition fallback',()=>{
- assert.doesNotMatch(dock,/ttsCooldownUntil|playDeviceSpeech|SpeechRecognition|webkitSpeechRecognition|speechSynthesis|companion_mode|askGeminiCompanion/)
+test('Hugo client isolates browser-speech recovery without reviving retired companion paths',()=>{
+ assert.doesNotMatch(dock,/ttsCooldownUntil|playDeviceSpeech|SpeechRecognition|webkitSpeechRecognition|companion_mode|askGeminiCompanion/)
  assert.match(dock,/UGOVoiceBridge/)
  assert.match(dock,/sendToolResponse/)
+ assert.match(dock,/detail\.engine==='browser-speech'/)
+ assert.match(dock,/SpeechSynthesisUtterance/)
+ assert.match(dock,/createOrder\(current\)/)
 })
 
 test('voice confirmation creates the actual service with exact pickup and payment context',()=>{

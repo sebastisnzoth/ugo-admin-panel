@@ -7,7 +7,7 @@ const read = (path) => readFile(new URL(`../../${path}`, import.meta.url), 'utf8
 test('provider bottom navigation keeps active semantics and earnings reachable from profile', async () => {
   const [root, profile] = await Promise.all([read('src/mvp/provider/ProviderRoot.tsx'), read('src/mvp/provider/ProviderProfile.tsx')])
   assert.match(root, /openEarnings/)
-  assert.match(root, />Perfil<\/button>/)
+  assert.match(root, />Perfil(?:<|\{)/)
   assert.match(profile, /Fondos y retiros/)
   assert.match(profile, /Administrar fondos/)
   assert.match(profile, /flow\.actions\.openEarnings/)

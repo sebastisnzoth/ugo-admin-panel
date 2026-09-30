@@ -3,7 +3,7 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
-test('Admin Hugo uses the persistent Gemini Live audio session instead of a second TTS path',async()=>{
+test('Admin Hugo keeps Gemini Live primary and isolates TTS to browser-speech fallback',async()=>{
  const[bridge,orb,api]=await Promise.all([
   read('src/lib/browserVoiceBridge.ts'),
   read('src/components/ConversationalOrb.tsx'),
@@ -17,7 +17,9 @@ test('Admin Hugo uses the persistent Gemini Live audio session instead of a seco
  assert.match(orb,/Te escucho\. Hablame…/)
  assert.match(bridge,/playConversationPcm/)
  assert.match(bridge,/sendToolResponse/)
- assert.doesNotMatch(orb,/tts:true|audio_base64|speechSynthesis/)
+ assert.doesNotMatch(orb,/tts:true|audio_base64/)
+ assert.match(orb,/detail\.engine==='browser-speech'/)
+ assert.match(orb,/SpeechSynthesisUtterance/)
 })
 
 test('Admin Hugo reads the operational domains exposed across the control center',async()=>{
@@ -83,4 +85,14 @@ test('Admin Hugo Gemini Live exposes only bounded safe UI actions',async()=>{
  assert.match(phase,/action\.type==='open_service'/)
  assert.match(phase,/action\.type==='refresh'/)
  assert.doesNotMatch(bridge,/admin_update_service|admin_set_status|admin_transfer|admin_delete/)
+})
+
+
+test('admin Hugo browser-speech fallback still answers through the authorized Hugo API',async()=>{
+ const src=await readFile(new URL('../../src/components/ConversationalOrb.tsx',import.meta.url),'utf8')
+ assert.match(src,/detail\.engine==='browser-speech'/)
+ assert.match(src,/fetch\('\/api\/hugo\/chat'/)
+ assert.match(src,/Authorization:'Bearer '\+session\.access_token/)
+ assert.match(src,/ugo:admin:hugo-action/)
+ assert.match(src,/SpeechSynthesisUtterance/)
 })

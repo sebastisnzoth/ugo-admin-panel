@@ -2,7 +2,7 @@ import{normalizeProviderVoice,type ProviderHugoLocale}from'./providerVoiceHelper
 import type{ProviderOpportunity}from'../../../mvp/provider/providerTypes'
 type Speak=(text:string)=>Promise<void>
 type FlowActions={openHome:()=>void;openDemand:()=>void;openOpportunities:()=>void;openAgenda:()=>void;openEarnings:()=>void;openProfile:()=>void;openHistory:()=>void;openDispute:()=>void;openActiveJob:()=>void;acceptOpportunity:(id:string)=>Promise<boolean>;rejectOpportunity:(id:string)=>Promise<boolean>}
-type Data={online:boolean;service:any;toggleOnline:()=>Promise<unknown>;advance:(state:string)=>Promise<boolean>}
+type Data={online:boolean;service:any;toggleOnline:()=>Promise<unknown>;advance:(state:'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion')=>Promise<boolean>}
 export async function runProviderVoiceCommand(args:{source:string;locale:ProviderHugoLocale;summary:string;flow:FlowActions;data:Data;findOpportunity:(source:string)=>ProviderOpportunity|null;speak:Speak}){const{source,locale,summary,flow,data,findOpportunity,speak}=args,value=normalizeProviderVoice(source),pt=locale==='pt-BR'
 if(/\b(inicio|home|principal)\b/.test(value)){flow.openHome();await speak(pt?'Voltei ao início.':'Volví al inicio.');return true}
 if(/\b(demanda|radar|zonas?)\b/.test(value)){flow.openDemand();await speak(pt?'Abri o radar de demanda.':'Abrí el radar de demanda.');return true}

@@ -46,3 +46,23 @@ test('global navigation and cancellation commands are deterministic',()=>{
  assert.equal(intent.resolveHugoGlobalCommand('cancelar pedido'),'cancel')
  assert.equal(intent.resolveHugoGlobalCommand('mañana a las 10'),null)
 })
+
+
+test('global client voice request keeps the spoken need as the request description',async()=>{
+ const src=await readFile(new URL('../../src/features/client/hugo/ClientGlobalVoiceCommands.tsx',import.meta.url),'utf8')
+ assert.match(src,/publishHugoIntent\(\{text:source,categoryHint:null,description:source/)
+})
+
+
+test('browser-speech fallback drives the full client request conversation',async()=>{
+ const src=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
+ assert.match(src,/detail\.engine==='browser-speech'/)
+ assert.match(src,/handleBrowserFallback\(value\)/)
+ assert.match(src,/resolveVoiceCategory\(value\)/)
+ assert.match(src,/captureCurrentLocation\(current\)/)
+ assert.match(src,/parseHugoWhen\(value\)/)
+ assert.match(src,/current\.paymentMethod='pix'/)
+ assert.match(src,/isHugoAffirmative\(value\)/)
+ assert.match(src,/createOrder\(current\)/)
+ assert.match(src,/SpeechSynthesisUtterance/)
+})

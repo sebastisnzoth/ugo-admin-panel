@@ -5,8 +5,33 @@ if(!key&&!gemini)throw new Error('MODEL_PROVIDER_API_KEY_REQUIRED')
 const base=process.env.OPENROUTER_BASE_URL||'https://openrouter.ai/api/v1'
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'}
 const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
-const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false}}):null
-async function persist(candidate){if(!db)return;const{error}=await db.from('autonomous_model_candidates').upsert(candidate,{onConflict:'provider,model_id'});if(error)throw new Error('MODEL_ROUTE_PERSIST_FAILED '+error.message)}
+const timedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(8000)})
+const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
+async function persist(candidate){
+ if(!db)return
+ let lastError=null,lastRetryable=false
+ for(let attempt=1;attempt<=4;attempt++){
+  try{
+   const{error}=await db.from('autonomous_model_candidates').upsert(candidate,{onConflict:'provider,model_id'})
+   if(!error)return
+   lastError=error
+   const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
+   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   lastRetryable=retryable
+   if(!retryable||attempt===4)break
+  }catch(error){
+   lastError=error
+   const text=String(error?.message||error||'')
+   const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   lastRetryable=retryable
+   if(!retryable||attempt===4)break
+  }
+  await new Promise(resolve=>setTimeout(resolve,attempt*750))
+ }
+ const message=String(lastError?.message||lastError||'unknown')
+ if(lastRetryable){console.error(JSON.stringify({state:'MODEL_ROUTE_PERSISTENCE_DEGRADED',retryable:true,error:safeError({message})}));return false}
+ throw new Error('MODEL_ROUTE_PERSIST_FAILED '+message)
+}
 function safeError(p){return String(p?.error?.message||p?.message||'unknown').replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,200)}
 
 if(gemini){
@@ -36,7 +61,7 @@ if(gemini){
  console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',catalogCandidates:models.length,lastFailure:geminiLast,failover:'openrouter'}))
 }
 if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
-const catalog=await fetch(base+'/models',{headers})
+const catalog=await fetch(base+'/models',{headers,signal:AbortSignal.timeout(6000)})
 if(!catalog.ok)throw new Error('OPENROUTER_CONNECTION_FAILED status='+catalog.status)
 const catalogBody=await catalog.json()
 const free=(catalogBody.data||[]).filter(m=>String(m?.pricing?.prompt)==='0'&&String(m?.pricing?.completion)==='0').map(m=>m.id)
