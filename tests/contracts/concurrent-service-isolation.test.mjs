@@ -31,7 +31,7 @@ test('client approval and YA PAGUÉ are distinct exact-service mutation boundari
 test('global client surfaces never mount service-scoped operations without an explicit service id',async()=>{
  const surfaces=await read('src/features/client/ui/ClientOperationalSurfaces.tsx')
  for(const legacy of['ClientPaymentChoice','ClientLiveTracking','ClientCompletionReview','ServiceChat','AppLocationButton'])assert.doesNotMatch(surfaces,new RegExp(legacy))
- assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/screen==='home'&&!detailOpen&&<ClientRatingPrompt\/>/)
  assert.match(surfaces,/screen==='dispute'&&!detailOpen&&<DisputeDock role="client" openRequest\/>/)
 })
 

@@ -86,7 +86,7 @@ test('client rating is immediately available after payment closes the selected s
   read('src/features/client/order/ClientServiceDetail.tsx'),
   read('src/features/client/rating/ClientRatingPrompt.tsx'),
  ])
- assert.match(surfaces,/screen!=='request'&&!detailOpen&&<ClientRatingPrompt\/>/)
+ assert.match(surfaces,/screen==='home'&&!detailOpen&&<ClientRatingPrompt\/>/)
  assert.match(detail,/service\.estado==='completado'[\s\S]*<ClientRatingPrompt serviceId=\{service\.id\} embedded\/>/)
  assert.match(prompt,/serviceId\?servicesQuery\.eq\('id',serviceId\)\.limit\(1\)/)
  assert.match(prompt,/embedded\?'is-embedded'/)

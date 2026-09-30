@@ -1,0 +1,31 @@
+{
+  "readiness_id": "provider-gps",
+  "task_id": "readiness-provider-gps",
+  "job_id": "UGO-READINESS-PROVIDER-GPS",
+  "title": "Verify provider fresh GPS publication and rejection guards",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T04:30:00Z",
+  "heartbeat_at": "2026-09-30T04:30:00Z",
+  "lease_expires_at": "2026-09-30T05:15:00Z",
+  "started_sha": "d9b71cc8741da1889a9a06c2b0543bedc15efb6f",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider GPS Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-location"
+  ],
+  "correlation_id": "readiness-provider-gps-20260930T043000Z",
+  "current_step": "ACQUIRE_AND_INSPECT",
+  "attempt": 1,
+  "evidence_ids": []
+}
