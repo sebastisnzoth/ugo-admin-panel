@@ -7,6 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 // same-SHA retrigger after cross-role diagnostics
 // final same-SHA retrigger after cross-role auth preservation
 // same-SHA retrigger after fresh role-session harness
+// same-SHA retrigger after global Hugo decoupling
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
