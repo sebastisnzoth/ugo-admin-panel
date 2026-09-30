@@ -66,7 +66,11 @@
     "github-run:36735812811:IN_PROGRESS",
     "workflow-run:36735812811",
     "serviceId:2c53777c-49cb-4620-a8e4-90a89404df6a",
-    "evidence:docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json"
+    "evidence:docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+    "github-run:36735812811:PASS",
+    "runtime:PASS",
+    "judge:PASS",
+    "sentinel:PASS"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
@@ -76,7 +80,7 @@
     "cause": "Runtime clicked a stale visible client notification (cancelled order #1163) because the harness selected the first live notice instead of the newly persisted assignment notification. Backend assignment and new notification persistence were correct.",
     "next_fix": "Select the live notice whose text contains assignedPersisted.titulo, then open that exact service and continue lifecycle verification."
   },
-  "finished_at": null,
+  "finished_at": "2026-09-30T15:26:23.157Z",
   "validators_result": {
     "Judge": "PASS",
     "Sentinel": "PASS"
