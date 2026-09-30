@@ -28,3 +28,14 @@ test('Command Center exposes the safe TEST workflow for auto-killswitch', () => 
   assert.match(generator, /'auto-killswitch': 'auto-killswitch-runtime\.yml'/)
   assert.match(generator, /production: 'PROTECTED'/)
 })
+
+
+test('Command Center emits one readiness entry per PR evidence file', () => {
+  const workflow = fs.readFileSync(new URL('../../.github/workflows/github-pages.yml', import.meta.url), 'utf8')
+  assert.match(workflow, /evidence_paths=/)
+  assert.match(workflow, /while IFS= read -r evidence_path/)
+  assert.match(workflow, /\.final_status \/\/ \.status \/\/ \.result/)
+  assert.match(workflow, /\.judge\.result/)
+  assert.match(workflow, /\.sentinel\.result/)
+  assert.match(workflow, /emitted=\$\(\(emitted \+ 1\)\)/)
+})
