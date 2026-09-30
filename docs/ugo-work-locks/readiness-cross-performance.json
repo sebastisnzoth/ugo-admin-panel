@@ -5,8 +5,8 @@
   "title": "Verify perceived performance and critical action latency",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:41:00Z",
-  "heartbeat_at": "2026-09-30T13:54:00Z",
-  "lease_expires_at": "2026-09-30T14:39:00Z",
+  "heartbeat_at": "2026-09-30T14:00:30Z",
+  "lease_expires_at": "2026-09-30T14:45:30Z",
   "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -23,7 +23,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
-  "current_step": "TDD_RED_RUNTIME_SHA_AND_SELECTORS",
+  "current_step": "RUNNING_EXACT_HEAD_RUNTIME_JUDGE_SENTINEL",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
@@ -31,7 +31,10 @@
     "github-job:109740427671",
     "github-core-run:36667189922",
     "github-core-job:109740433860",
-    "diagnosis:run-36724184797-runtime-selector-and-pr-sha"
+    "diagnosis:run-36724184797-runtime-selector-and-pr-sha",
+    "github-pr:310",
+    "github-run:36725481224",
+    "candidate-sha:bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3"
   ],
   "production_touched": false,
   "skills": [
