@@ -15,6 +15,7 @@ const ignored=p=>p.startsWith('node_modules/')||p.startsWith('dist/')||p.startsW
 const looksText=p=>textExt.has(path.extname(p))||path.basename(p).startsWith('.env')
 const executableSurface=p=>/^(src|api|scripts|supabase\/functions)\//.test(p)
 const configSurface=p=>/^(src|api|scripts|supabase\/functions|\.github\/workflows)\//.test(p)||path.basename(p).startsWith('.env')
+const literalConfigSurface=p=>path.basename(p).startsWith('.env')||/\.(?:ya?ml|json|toml)$/.test(p)
 const placeholder=s=>/example|synthetic|redacted|placeholder|change[-_ ]?me|your[-_ ]|dummy|fake|test-only|ugo-test/i.test(s)
 const stripStrings=s=>s.replace(/(["'`])(?:\\.|(?!\1).)*\1/g,"''")
 const findings=[]
@@ -42,7 +43,7 @@ for(const p of tracked){
         re.lastIndex=0
         if(re.test(line)) findings.push({path:p,line:i+1,kind:'high-confidence-secret-pattern'})
       }}
-      if(configSurface(p)){
+      if(literalConfigSurface(p)){
         literalQuoted.lastIndex=0
         let m
         while((m=literalQuoted.exec(line))){
