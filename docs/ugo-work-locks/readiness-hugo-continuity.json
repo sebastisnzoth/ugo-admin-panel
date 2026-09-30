@@ -32,5 +32,11 @@
   "validators_result": {
     "Judge": "PENDING",
     "Sentinel": "PENDING"
-  }
+  },
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
