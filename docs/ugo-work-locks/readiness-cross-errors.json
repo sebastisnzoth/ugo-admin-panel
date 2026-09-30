@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-errors",
   "job_id": "UGO-READINESS-CROSS-ERRORS-R3",
   "title": "Verify actionable errors and empty states with fault injection",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T10:49:00Z",
-  "heartbeat_at": "2026-09-30T13:42:00Z",
-  "lease_expires_at": "2026-09-30T14:27:00Z",
+  "heartbeat_at": "2026-09-30T13:46:00Z",
+  "lease_expires_at": "2026-09-30T13:46:00Z",
   "started_sha": "5b60eb9e3bc7446d9440aaec12eda37eb0eab051",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -19,7 +19,7 @@
     "qa-lab"
   ],
   "correlation_id": "readiness-cross-errors-20260930T134200Z-5b60eb9e-r3",
-  "current_step": "RECONCILE_DONE_VALIDATOR_SCHEMA_AND_REGRESSION",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
     "github-pr:296",
@@ -39,7 +39,10 @@
     "github-artifact:11091289965",
     "github-artifact:11091339750",
     "repo-evidence:docs/evidence/readiness-cross-errors-20260930.json",
-    "schema-reconcile-start:5b60eb9e3bc7446d9440aaec12eda37eb0eab051"
+    "schema-reconcile-start:5b60eb9e3bc7446d9440aaec12eda37eb0eab051",
+    "github-pr:309",
+    "github-run:36723896284",
+    "github-merge:207b7c80348a109b934cb8b1df6feabf0cafb8e9"
   ],
   "production_touched": false,
   "skills": [
@@ -48,12 +51,18 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "verified_sha": "86f8f2d631edb717ecf51ad38ea46ad04aff9071",
-  "merged_main_sha": "58fc61d10eb5837cd0eb172b67b623768576950c",
+  "verified_sha": "207b7c80348a109b934cb8b1df6feabf0cafb8e9",
+  "merged_main_sha": "207b7c80348a109b934cb8b1df6feabf0cafb8e9",
   "validation": {
     "runtime": "PASS",
     "judge": "PASS",
     "sentinel": "PASS",
-    "production_touched": false
+    "production_touched": false,
+    "readiness_engine_contract": "PASS"
+  },
+  "completed_at": "2026-09-30T13:46:00Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   }
 }
