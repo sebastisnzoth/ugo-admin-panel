@@ -20,9 +20,17 @@ assert.ok(anon&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&ad
 
 async function login(email,password){
  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
- const {data,error}=await sb.auth.signInWithPassword({email,password})
- assert.ifError(error); assert.ok(data.session,'SESSION_REQUIRED')
- return {sb,session:data.session}
+ let lastError=null
+ for(let attempt=1;attempt<=4;attempt++){
+   const {data,error}=await sb.auth.signInWithPassword({email,password})
+   if(!error){assert.ok(data.session,'SESSION_REQUIRED');return {sb,session:data.session}}
+   lastError=error
+   const status=Number(error?.status||0),retryable=status===429||status>=500||/fetch|network|timeout|gateway/i.test(String(error?.message||''))
+   if(!retryable||attempt===4)break
+   await new Promise(resolve=>setTimeout(resolve,attempt*1000))
+ }
+ assert.ifError(lastError)
+ throw lastError
 }
 const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
