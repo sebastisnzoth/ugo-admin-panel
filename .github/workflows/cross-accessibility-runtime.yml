@@ -22,7 +22,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-cross-accessibility-runtime
+  group: ugo-cross-accessibility-runtime-${{ github.sha }}
   cancel-in-progress: false
 
 env:
