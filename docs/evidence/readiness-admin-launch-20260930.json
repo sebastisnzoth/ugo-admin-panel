@@ -1,0 +1,16 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "admin-launch",
+  "verdict": "VERIFIED",
+  "environment": "UGO TEST",
+  "source_sha": "25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
+  "workflow_run_id": 36661882557,
+  "workflow_job_id": 109718236419,
+  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36661882557",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "artifact": null,
+  "summary": "UGO TEST Launch Gate runtime plus deterministic negative BLOCKED and positive READY cases passed; Judge and Sentinel passed.",
+  "recorded_at": "2026-09-30T03:04:00Z"
+}
