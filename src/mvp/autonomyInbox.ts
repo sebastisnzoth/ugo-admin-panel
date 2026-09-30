@@ -4,6 +4,10 @@ export type ExecutiveInboxJob={
  authority_class?:string|null
  status?:string|null
  created_at?:string|null
+ objective?:string|null
+ department_id?:number|null
+ approval_count?:number|null
+ blocked_reason?:string|null
  [key:string]:unknown
 }
 
