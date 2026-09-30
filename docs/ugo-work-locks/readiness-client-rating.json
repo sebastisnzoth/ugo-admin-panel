@@ -1,0 +1,38 @@
+{
+  "schema_version": "UGO_WORK_LOCK_V1",
+  "readiness_id": "client-rating",
+  "task_id": "readiness-client-rating",
+  "job_id": "UGO-READINESS-CLIENT-RATING",
+  "title": "Verify Client-to-Provider rating persists exactly once after service closure",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T14:35:30.000Z",
+  "heartbeat_at": "2026-09-30T14:35:30.000Z",
+  "lease_expires_at": "2026-09-30T15:20:30.000Z",
+  "started_sha": "4b803e322343c54f2d5561a26ea639f801b12e93",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "GPT_UGO Client Rating Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-ratings",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ratings"
+  ],
+  "correlation_id": "readiness-client-rating-20260930T143530Z-4b803e32",
+  "current_step": "REVALIDATE_AND_INSPECT",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  }
+}
