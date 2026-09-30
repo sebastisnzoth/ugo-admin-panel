@@ -18,16 +18,17 @@ const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&clientEmail&&clientPassword&&providerEmail&&providerPassword&&adminEmail&&adminPassword&&sha,'UGO_TEST_UI_INPUTS_REQUIRED')
 
+const timedFetch=(input,init={})=>fetch(input,{...init,signal:init.signal||AbortSignal.timeout(12000)})
 async function login(email,password){
- const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+ const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:timedFetch}})
  let lastError=null
- for(let attempt=1;attempt<=4;attempt++){
+ for(let attempt=1;attempt<=6;attempt++){
    const {data,error}=await sb.auth.signInWithPassword({email,password})
    if(!error){assert.ok(data.session,'SESSION_REQUIRED');return {sb,session:data.session}}
    lastError=error
    const status=Number(error?.status||0),retryable=status===429||status>=500||/fetch|network|timeout|gateway/i.test(String(error?.message||''))
-   if(!retryable||attempt===4)break
-   await new Promise(resolve=>setTimeout(resolve,attempt*1000))
+   if(!retryable||attempt===6)break
+   await new Promise(resolve=>setTimeout(resolve,Math.min(1500*attempt,6000)))
  }
  assert.ifError(lastError)
  throw lastError
@@ -39,13 +40,17 @@ const admin=await login(adminEmail,adminPassword)
 async function retryDb(operation,label){
  let last=null
  for(let attempt=1;attempt<=5;attempt++){
-   const result=await operation()
-   if(!result?.error)return result
-   last=result
-   const error=result.error,code=String(error?.code||''),status=Number(error?.status||0),message=String(error?.message||'')
+   try{
+     const result=await operation()
+     if(!result?.error)return result
+     last=result
+   }catch(error){
+     last={error}
+   }
+   const error=last?.error,code=String(error?.code||''),status=Number(error?.status||0),message=String(error?.message||error||'')
    const retryable=code==='PGRST002'||status===429||status>=500||/schema cache|fetch|network|timeout|gateway|temporar/i.test(message)
    if(!retryable||attempt===5)break
-   await new Promise(resolve=>setTimeout(resolve,Math.min(750*attempt,3000)))
+   await new Promise(resolve=>setTimeout(resolve,Math.min(1000*attempt,4000)))
  }
  assert.ifError(last?.error,new Error(label+' failed'))
  return last
