@@ -3,10 +3,10 @@
   "task_id": "readiness-admin-risk",
   "job_id": "UGO-READINESS-ADMIN-RISK",
   "title": "Verify Risk & Audit findings, ledgers, blockers and evidence links in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T00:40:30Z",
-  "heartbeat_at": "2026-09-30T00:48:00Z",
-  "lease_expires_at": "2026-09-30T01:33:00Z",
+  "heartbeat_at": "2026-09-30T00:52:00Z",
+  "lease_expires_at": "2026-09-30T01:37:00Z",
   "started_sha": "de88adb636b1d7bdf58d736cd2d23ae9a9c2a28a",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,11 +19,13 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-admin-risk-20260930T004030Z-de88adb6",
-  "current_step": "IMPLEMENT_AND_RUNTIME",
+  "current_step": "WAIT_GITHUB_RUNTIME",
   "attempt": 1,
   "evidence_ids": [
     "code:risk-audit-blockers-ledgers-ui",
-    "contract:admin-risk-surface"
+    "contract:admin-risk-surface",
+    "github:0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
+    "github-actions:run:36651659263"
   ],
   "production_touched": false,
   "skills": [
@@ -31,5 +33,11 @@
     "audit-ledger",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "runtime": {
+    "workflow": "UGO Super Admin UI Runtime TEST",
+    "run_id": 36651659263,
+    "sha": "0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
+    "status": "pending"
+  }
 }
