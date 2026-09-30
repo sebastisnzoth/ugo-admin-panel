@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useId, useMemo, useState } from 'react'
 import type { FormEvent, ButtonHTMLAttributes, InputHTMLAttributes, HTMLAttributes } from 'react'
 import type { Session, SupabaseClient } from '@supabase/supabase-js'
 import { getRoleSupabase, type UgoRole } from '../lib/roleSupabase'
+import { CLIENT_ACTIVE_SERVICE_STATES, MARKETPLACE_STATUS_LABELS, PROVIDER_ACTIVE_SERVICE_STATES, PROVIDER_LIFECYCLE_ORDER } from '../lib/marketplace/lifecycle'
 
 export type Category = { id:string; slug:string; nombre:string; emoji:string }
 export type UgoUser = { id:string; nombre:string; tipo:'cliente'|'proveedor'|'admin'|'superadmin'; activo:boolean; karma:number; servicios_completados:number }
@@ -11,10 +12,10 @@ export type Offer = { id:string; servicio_id:string; proveedor_id:string; estado
 export type Payment = { id:string; servicio_id:string; monto_bruto:number; comision_ugo:number; ganancia_proveedor:number; moneda:string; estado:string }
 export type Notice = { type:'ok'|'error'|'info'; text:string } | null
 
-export const ACTIVE_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
-export const PROVIDER_ACTIVE_STATES=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado']
-export const STATUS_ORDER=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado']
-export const STATUS_LABELS:Record<string,string>={borrador:'Borrador',buscando:'Buscando profesionales',ofrecido:'Ofertas enviadas',asignado:'Profesional asignado',en_camino:'En camino',llegado:'Proveedor en el lugar',en_progreso:'Trabajo en curso',esperando_aprobacion:'Esperando aprobación',completado:'Completado',cancelado:'Cancelado',disputado:'En disputa',pendiente:'Pendiente',autorizado:'Autorizado',retenido:'Retenido',liberado:'Liberado',reembolsado:'Reembolsado',fallido:'Fallido'}
+export const ACTIVE_STATES=[...CLIENT_ACTIVE_SERVICE_STATES]
+export const PROVIDER_ACTIVE_STATES=[...PROVIDER_ACTIVE_SERVICE_STATES]
+export const STATUS_ORDER=[...PROVIDER_LIFECYCLE_ORDER]
+export const STATUS_LABELS:Record<string,string>={...MARKETPLACE_STATUS_LABELS,pendiente:'Pendiente',autorizado:'Autorizado',retenido:'Retenido',liberado:'Liberado',reembolsado:'Reembolsado',fallido:'Fallido'}
 export const money=(value:number|null|undefined,currency='BRL')=>new Intl.NumberFormat('pt-BR',{style:'currency',currency}).format(Number(value||0))
 export function timeAgo(value:string){const m=Math.max(0,Math.round((Date.now()-new Date(value).getTime())/60000));if(m<1)return'ahora';if(m<60)return`hace ${m} min`;const h=Math.round(m/60);return h<24?`hace ${h} h`:new Date(value).toLocaleDateString('es-AR')}
 export function go(app:'client'|'provider'|'admin'|'home'){window.location.href=app==='home'?window.location.pathname:`${window.location.pathname}?app=${app}`}
