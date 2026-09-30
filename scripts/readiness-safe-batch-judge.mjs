@@ -13,8 +13,11 @@ assert.equal(runtime.production_touched,false,'JUDGE_PRODUCTION_MUST_BE_UNTOUCHE
 
 assert.equal(runtime.hugo_action?.status,'PASS','Hugo action runtime did not pass')
 assert.equal(runtime.hugo_action?.persisted_effect,true,'Hugo action effect was not persisted')
-assert.equal(runtime.hugo_action?.audit_metadata?.source,'hugo-conversational','Hugo audit source missing')
-assert.equal(runtime.hugo_action?.audit_metadata?.voice,true,'Hugo voice audit flag missing')
+assert.equal(runtime.hugo_action?.action,'cancel_service','Hugo backend action mismatch')
+assert.equal(runtime.hugo_action?.before?.state,'buscando','Hugo fixture initial state mismatch')
+assert.notEqual(runtime.hugo_action?.after?.state,'buscando','Hugo persisted cancellation missing')
+assert.equal(runtime.hugo_action?.audit_trail?.runtime_sha,sha,'Hugo runtime audit SHA missing')
+assert.equal(runtime.hugo_action?.audit_trail?.channel,'ugo:native-voice-tool-call','Hugo action channel audit missing')
 assert.ok(runtime.hugo_action?.service_id,'Hugo persisted service id missing')
 assert.ok(runtime.hugo_action?.cleanup_state,'Hugo cleanup state missing')
 
@@ -37,7 +40,7 @@ const result={
  status:'PASS',
  sha,
  basis:{
-   hugo:'persistent INTENT→ACTION→EFFECT with auditable TEST service',
+   hugo:'isolated TEST service cancelled through real Hugo tool channel with persisted backend effect',
    errors:'UI/API fault injection communicates cause and next step',
    performance:'critical role loads and navigation satisfy runtime SLOs'
  },
