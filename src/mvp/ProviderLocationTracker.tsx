@@ -88,7 +88,8 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  },[available,enRoute,service?.id,service?.estado,supabase])
 
  if(service?.estado!=='en_camino')return null
- if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert">📍 {locationError}</div>
- if(distanceToClient==null||distanceToClient>ARRIVAL_RADIUS_M)return null
- return <div className="provider-arrival-toast" role="status">📍 Llegada detectada · UGO está confirmando automáticamente</div>
+ if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>GPS necesita atención</strong><span>📍 {locationError}</span></div>
+ if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>GPS activo</strong><span>Buscando tu distancia exacta al cliente…</span></div>
+ if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{Math.round(distanceToClient)} m para llegar</strong><span>UGO sigue publicando tu ubicación. “YA LLEGUÉ” se valida contra el geofence de {ARRIVAL_RADIUS_M} m.</span></div>
+ return <div className="provider-arrival-toast provider-location-ok" role="status"><strong>Llegada detectada</strong><span>📍 Estás a {Math.round(distanceToClient)} m · UGO está confirmando automáticamente.</span></div>
 }
