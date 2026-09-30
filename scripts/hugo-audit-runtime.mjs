@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { createClient } from '@supabase/supabase-js'
-import hugoChatHandler from '../api/hugo/chat.ts'
+import operationsHandler from '../api/operations.ts'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
@@ -37,7 +37,7 @@ function invokeAudit(reqBody,headers){
       json(body){resolve({status:statusCode,body});return body},
       end(){resolve({status:statusCode,body:null})},
     }
-    Promise.resolve(hugoChatHandler({method:'POST',headers,body:reqBody},res)).catch(reject)
+    Promise.resolve(operationsHandler({method:'POST',headers,query:{op:'hugo-audit'},body:reqBody},res)).catch(reject)
   })
 }
 
@@ -64,7 +64,7 @@ try{
   const context=await browser.newContext({viewport:{width:1280,height:900}})
   const page=await context.newPage()
   await page.addInitScript(({session})=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),{session})
-  await page.route('**/api/hugo/chat',async route=>{
+  await page.route('**/api/operations**',async route=>{
     const request=route.request()
     const body=JSON.parse(request.postData()||'{}')
     const auth=request.headers()['authorization']||''
