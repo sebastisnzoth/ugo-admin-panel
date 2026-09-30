@@ -92,7 +92,7 @@ async function persistedAcceptedOpportunity(supabase:SupabaseClient,opportunityI
   const persistedService=service as PersistedService
   if(persistedService.id!==serviceId)return false
   if(persistedService.proveedor_id!==userId)return false
-  return PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+  return (PROVIDER_ACTIVE_STATES as readonly string[]).includes(persistedService.estado)
  }catch{return null}
 }
 
