@@ -102,6 +102,8 @@ const {
   locks: workLocks,
   pullRequests,
   maxParallel: schedulerPolicy.max_parallel_tasks,
+  maxAttempts: schedulerPolicy.max_attempts,
+  retryBackoffMinutes: schedulerPolicy.retry_backoff_minutes,
   now: new Date(publishedAt),
 })
 
