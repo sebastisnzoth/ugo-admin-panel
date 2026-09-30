@@ -3,7 +3,7 @@
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
   "title": "Verify provider-notifications on reconciled main",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider Notifications Runtime Agent",
@@ -12,19 +12,48 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "notifications"
   ],
   "correlation_id": "readiness-provider-notifications-20260930T1125Z-reconciled",
-  "current_step": "LOCK_ACQUIRED",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "started_at": "2026-09-30T11:25:00Z",
-  "heartbeat_at": "2026-09-30T11:25:00Z",
-  "lease_expires_at": "2026-09-30T12:25:00Z",
+  "heartbeat_at": "2026-09-30T11:26:09Z",
+  "lease_expires_at": "2026-09-30T11:26:09Z",
   "started_sha": "c5bdf837fc872b01480b06304c2ae8b1108beb6e",
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-actions:run:36708404355",
+    "github-actions:job:109864074761",
+    "github-actions:artifact:11092279919",
+    "sha256:a43c622b34e98fde0486d3a9b1057140f3608925df4630fe55f32d757d523f19",
+    "repo:docs/evidence/readiness-provider-notifications-20260930-reconciled.json"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-09-30T11:26:09Z",
+  "finished_at": "2026-09-30T11:26:09Z",
+  "verified_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "runtime_validated_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "verified_runtime_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "result": "VERIFIED",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-notifications-20260930-reconciled.json",
+  "evidence_commit_sha": "1c38fbf69b6bb32e9c2a73a9810fd0a79d0d7079",
+  "artifact_digest": "sha256:a43c622b34e98fde0486d3a9b1057140f3608925df4630fe55f32d757d523f19",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z",
+    "production_touched": false
+  },
+  "result_summary": "UGO TEST verified provider offer, assignment, service-change and message notifications without refresh, with tone/vibration."
 }
