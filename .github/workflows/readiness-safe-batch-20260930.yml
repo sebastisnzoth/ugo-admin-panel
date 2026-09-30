@@ -16,6 +16,8 @@ env:
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
   UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
   UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
 
 jobs:
   client-saved-places:
@@ -38,9 +40,9 @@ jobs:
           node --input-type=module <<'NODE' > artifacts/client-saved-places/runtime.json
           import assert from 'node:assert/strict'
           import {createClient} from '@supabase/supabase-js'
-          const db=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
-          const {data:users,error:ue}=await db.from('usuarios').select('id').eq('tipo','cliente').eq('activo',true).limit(1); assert.ifError(ue); assert.ok(users?.[0]?.id)
-          const uid=users[0].id, tag='Readiness '+process.env.GITHUB_SHA.slice(0,8), address='Rua Teste UGO 123'
+          const db=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+          const {data:login,error:loginError}=await db.auth.signInWithPassword({email:process.env.UGO_TEST_CLIENT_EMAIL,password:process.env.UGO_TEST_CLIENT_PASSWORD}); assert.ifError(loginError); assert.ok(login?.user?.id)
+          const uid=login.user.id, tag='Readiness '+process.env.GITHUB_SHA.slice(0,8), address='Rua Teste UGO 123'
           const {data:created,error:ce}=await db.from('direcciones_cliente').insert({usuario_id:uid,etiqueta:tag,direccion:address,complemento:'Sala 1',es_predeterminada:false}).select('id,etiqueta,direccion,complemento').single(); assert.ifError(ce)
           const {data:updated,error:up}=await db.from('direcciones_cliente').update({etiqueta:tag+' Editado',complemento:'Sala 2'}).eq('id',created.id).eq('usuario_id',uid).select('id,etiqueta,complemento').single(); assert.ifError(up); assert.match(updated.etiqueta,/Editado/)
           const {data:listed,error:le}=await db.from('direcciones_cliente').select('id,etiqueta,direccion').eq('id',created.id).eq('usuario_id',uid).single(); assert.ifError(le); assert.equal(listed.direccion,address)
@@ -78,7 +80,7 @@ jobs:
           node --input-type=module <<'NODE' > artifacts/client-responsive/runtime.json
           import assert from 'node:assert/strict'; import {chromium} from 'playwright'
           const browser=await chromium.launch({headless:true}), matrix=[[390,844],[768,1024],[1440,900]], out=[]
-          for(const [width,height] of matrix){const c=await browser.newContext({viewport:{width,height}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));await p.goto('http://127.0.0.1:4173/?app=client',{waitUntil:'networkidle'});const m=await p.evaluate(()=>({dw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,bw:document.body.scrollWidth,bcw:document.body.clientWidth,buttons:[...document.querySelectorAll('button')].filter(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0}).map(x=>({h:x.getBoundingClientRect().height,text:(x.textContent||'').trim().slice(0,80),cls:x.className}))}));await p.screenshot({path:`artifacts/client-responsive/${width}x${height}.png`,fullPage:true});const offenders=width<=390?m.buttons.filter(b=>b.h<32):[];out.push({width,height,metrics:m,errors,offenders});assert.ok(m.dw<=m.cw+1&&m.bw<=m.bcw+1);assert.deepEqual(errors,[]);if(width<=390)assert.deepEqual(offenders,[]);await c.close()}await browser.close();console.log(JSON.stringify({readiness_id:'client-responsive',sha:process.env.GITHUB_SHA,environment:'UGO TEST/local same-SHA',viewports:out,production_touched:false}))
+          for(const [width,height] of matrix){const c=await browser.newContext({viewport:{width,height}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));await p.goto('http://127.0.0.1:4173/?app=client',{waitUntil:'networkidle'});const m=await p.evaluate(()=>({dw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,bw:document.body.scrollWidth,bcw:document.body.clientWidth,buttons:[...document.querySelectorAll('button')].filter(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0}).map(x=>({h:x.getBoundingClientRect().height,text:(x.textContent||'').trim().slice(0,80),cls:x.className}))}));await p.screenshot({path:`artifacts/client-responsive/${width}x${height}.png`,fullPage:true});const offenders=width<=390?m.buttons.filter(b=>b.h<32):[];out.push({width,height,metrics:m,errors,offenders});if(offenders.length)console.error('UGO_RESPONSIVE_OFFENDERS',JSON.stringify({width,height,offenders}));assert.ok(m.dw<=m.cw+1&&m.bw<=m.bcw+1);assert.deepEqual(errors,[]);if(width<=390)assert.deepEqual(offenders,[]);await c.close()}await browser.close();console.log(JSON.stringify({readiness_id:'client-responsive',sha:process.env.GITHUB_SHA,environment:'UGO TEST/local same-SHA',viewports:out,production_touched:false}))
           NODE
       - name: Judge
         run: node -e "const p=require('./artifacts/client-responsive/runtime.json');if(p.sha!==process.env.GITHUB_SHA||p.viewports.length!==3)process.exit(1)"
