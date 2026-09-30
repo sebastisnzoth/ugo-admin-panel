@@ -3,7 +3,7 @@
   "task_id": "readiness-hugo-privacy",
   "job_id": "UGO-READINESS-HUGO-PRIVACY",
   "title": "Verify hugo-privacy on reconciled main",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Privacy Agent",
@@ -12,19 +12,48 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "hugo-security"
   ],
   "correlation_id": "readiness-hugo-privacy-20260930T1125Z-reconciled",
-  "current_step": "LOCK_ACQUIRED",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "started_at": "2026-09-30T11:25:00Z",
-  "heartbeat_at": "2026-09-30T11:25:00Z",
-  "lease_expires_at": "2026-09-30T12:25:00Z",
+  "heartbeat_at": "2026-09-30T11:26:09Z",
+  "lease_expires_at": "2026-09-30T11:26:09Z",
   "started_sha": "c5bdf837fc872b01480b06304c2ae8b1108beb6e",
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-actions:run:36708404355",
+    "github-actions:job:109864074843",
+    "github-actions:artifact:11092489437",
+    "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299",
+    "repo:docs/evidence/readiness-hugo-privacy-20260930-reconciled.json"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-09-30T11:26:09Z",
+  "finished_at": "2026-09-30T11:26:09Z",
+  "verified_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "runtime_validated_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "verified_runtime_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "result": "VERIFIED",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-hugo-privacy-20260930-reconciled.json",
+  "evidence_commit_sha": "90604883be38394e92d782071cf61efd13a97873",
+  "artifact_digest": "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z",
+    "production_touched": false
+  },
+  "result_summary": "Reconciled current-main proof verified secret/blob redaction and authenticated role authority on Hugo API/edge."
 }
