@@ -1,4 +1,4 @@
-# retry: 2026-09-30 provider-real-login r3
+# retry: 2026-09-30 cross-visual r3 canonical after TEST fixture hardening
 name: UGO Cross Visual Runtime TEST
 
 on:
