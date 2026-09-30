@@ -9,4 +9,8 @@ test('client exposes exact dispute entry at approval and active dispute state',a
  assert.match(detail,/DisputeDock role="client" serviceId={service\.id}/)
  assert.match(detail,/VER DISPUTA/)
  assert.match(detail,/UGO pausó el cierre normal de este servicio mientras revisa el caso/)
+ const dock=await readFile('src/mvp/DisputeDock.tsx','utf8')
+ assert.match(dock,/Próximo paso:/)
+ assert.match(dock,/tiempo de respuesta depende del motivo y de si requiere revisión humana/)
+ assert.match(dock,/mostrará aquí cualquier plazo aplicable cuando esté configurado/)
 })
