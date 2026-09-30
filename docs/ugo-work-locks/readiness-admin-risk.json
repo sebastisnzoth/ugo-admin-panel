@@ -5,40 +5,31 @@
   "title": "Verify Risk & Audit findings, ledgers, blockers and evidence links in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T00:40:30Z",
-  "heartbeat_at": "2026-09-30T01:05:00Z",
-  "lease_expires_at": "2026-09-30T01:50:00Z",
-  "started_sha": "de88adb636b1d7bdf58d736cd2d23ae9a9c2a28a",
+  "heartbeat_at": "2026-09-30T02:23:30Z",
+  "lease_expires_at": "2026-09-30T03:08:30Z",
+  "started_sha": "c725dde35be088691813f2cd726882d82398404f",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Risk & Audit Runtime Agent",
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "audit-ledger"
-  ],
+  "validators": ["Judge","Sentinel"],
+  "resources": ["audit-ledger"],
   "correlation_id": "readiness-admin-risk-20260930T004030Z-de88adb6",
-  "current_step": "DEDICATED_RISK_RUNTIME_PROOF",
-  "attempt": 2,
+  "current_step": "RECONCILED_STALE_LOCK_RETRY_DEDICATED_RUNTIME",
+  "attempt": 3,
   "evidence_ids": [
     "code:risk-audit-blockers-ledgers-ui",
     "contract:admin-risk-surface",
     "github:0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
     "github-actions:run:36651659263",
-    "github-actions:run:36651659263:FAIL_UNRELATED_DEPARTMENT_VOLATILITY"
+    "github-actions:run:36651659263:FAIL_UNRELATED_DEPARTMENT_VOLATILITY",
+    "reconcile:stale-lock:20260930T022330Z"
   ],
   "production_touched": false,
-  "skills": [
-    "risk-audit",
-    "audit-ledger",
-    "ugo-runtime-validation",
-    "ugo-evidence-judge"
-  ],
+  "skills": ["risk-audit","audit-ledger","ugo-runtime-validation","ugo-evidence-judge"],
   "runtime": {
-    "workflow": "UGO Super Admin UI Runtime TEST",
-    "run_id": 36651659263,
-    "sha": "0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
-    "status": "pending"
+    "workflow": "UGO Readiness Admin Risk TEST",
+    "run_id": null,
+    "sha": "c725dde35be088691813f2cd726882d82398404f",
+    "status": "reconciled_retry_pending"
   }
 }
