@@ -9,7 +9,6 @@ on:
       - 'scripts/autonomous-exception-recovery-runtime.mjs'
       - 'scripts/autonomous-exception-recovery-judge.mjs'
       - 'tests/contracts/autonomous-exception-recovery.test.mjs'
-      - 'docs/ugo-work-locks/readiness-auto-recovery.json'
       - 'docs/readiness/auto-recovery-playbooks.md'
       - '.github/workflows/ugo-exception-recovery-test.yml'
 
