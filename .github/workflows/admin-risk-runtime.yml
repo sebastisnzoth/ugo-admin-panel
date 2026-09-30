@@ -10,6 +10,7 @@ on:
       - "src/mvp/AutonomousCorporationDashboard.tsx"
       - "src/mvp/SuperAdminCommandCenter.tsx"
       - "tests/contracts/admin-risk-surface.test.mjs"
+      - "docs/ugo-work-locks/readiness-admin-risk.json"
       - ".github/workflows/admin-risk-runtime.yml"
   workflow_dispatch:
 
