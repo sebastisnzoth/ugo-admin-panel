@@ -8,3 +8,10 @@ const {data,error}=await db.rpc('autonomous_reconcile_quality_coverage')
 if(error)throw error
 if(!data?.id||data?.status!=='SUCCEEDED'||data?.verification_result?.passed!==true)throw new Error('QA_COVERAGE_RECONCILE_UNVERIFIED')
 console.log(JSON.stringify({qaCoverageReconciled:true,jobId:data.id,correlationId:data.correlation_id,status:data.status,verification:data.verification_result}))
+
+const protectedKeys=['physical-gps-device','uploaded-media-bytes','real-customer-acceptance']
+const {data:protectedRows,error:protectedError}=await db.from('autonomous_quality_coverage').select('coverage_key,status').in('coverage_key',protectedKeys)
+if(protectedError)throw protectedError
+const bad=(protectedRows||[]).filter(row=>row.status==='COVERED')
+if(bad.length)throw new Error('QA_COVERAGE_RECONCILE_DID_NOT_FAIL_CLOSE:'+bad.map(x=>x.coverage_key).join(','))
+console.log(JSON.stringify({protectedCoverageFailClosed:true,rows:(protectedRows||[]).map(x=>({coverage_key:x.coverage_key,status:x.status}))}))
