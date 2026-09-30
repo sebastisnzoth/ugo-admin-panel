@@ -4,8 +4,8 @@
   "job_id": "job-hugo-voice-20260930T1529Z",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-09-30T15:29:30Z",
-  "lease_expires_at": "2026-09-30T16:14:30Z",
+  "heartbeat_at": "2026-09-30T15:31:00Z",
+  "lease_expires_at": "2026-09-30T16:16:00Z",
   "started_sha": "c5dee60c6f3eb93015e86a79dbd9655a21d1d8d6",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,9 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "RUNTIME_AND_REGRESSION",
+  "current_step": "CI_RUNTIME_BROWSER",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "pending:hugo-voice-gate"
+  ]
 }
