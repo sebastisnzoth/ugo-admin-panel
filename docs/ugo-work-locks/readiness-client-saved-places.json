@@ -5,7 +5,7 @@
   "title": "Verify persisted CRUD and selection for Casa, Oficina and custom client saved places",
   "status": "DONE",
   "started_at": "2026-09-30T02:41:00Z",
-  "heartbeat_at": "2026-09-30T03:04:00Z",
+  "heartbeat_at": "2026-09-30T03:05:00Z",
   "lease_expires_at": null,
   "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
   "owner": "UGO",
@@ -29,12 +29,13 @@
   "attempt": 1,
   "evidence_ids": [
     "docs/evidence/readiness-client-saved-places-20260930.json",
-    "github-actions-artifact:11074349652"
+    "github-actions-run-36661508534",
+    "github-actions-artifact:11074976488"
   ],
-  "finished_at": "2026-09-30T03:04:00Z",
-  "verified_sha": "25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
-  "workflow_run_id": 36661882557,
-  "workflow_job_id": 109718236685,
+  "finished_at": "2026-09-30T03:05:00Z",
+  "verified_sha": "6388b3a13b04beafe70c4a0402c508843783b52f",
+  "workflow_run_id": 36661508534,
+  "workflow_job_id": 109718684047,
   "validators_result": {
     "Judge": "PASS",
     "Sentinel": "PASS"
