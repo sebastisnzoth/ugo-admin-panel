@@ -1,6 +1,14 @@
 name: UGO Cross Errors Runtime
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/mvp/shared.tsx"
+      - "api/hugo/chat.ts"
+      - "scripts/cross-errors-*.mjs"
+      - "scripts/cross-errors-api-runtime.ts"
+      - ".github/workflows/cross-errors-runtime.yml"
   pull_request:
     branches: [main]
     paths:
