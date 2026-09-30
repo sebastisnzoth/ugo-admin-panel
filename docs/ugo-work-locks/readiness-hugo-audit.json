@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-audit",
   "job_id": "UGO-READINESS-HUGO-AUDIT",
   "title": "Verify complete Hugo trace INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:40:42Z",
-  "heartbeat_at": "2026-09-30T13:59:10Z",
-  "lease_expires_at": "2026-09-30T14:44:10Z",
+  "heartbeat_at": "2026-09-30T14:12:30Z",
+  "lease_expires_at": "2026-09-30T14:12:30Z",
   "started_sha": "3299349164749f061763cacc2ebde90337ca1cc7",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,7 +19,7 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-hugo-audit-20260930T134042Z-32993491",
-  "current_step": "ATTEMPT_3_SAME_SHA_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
     "commit:1ac7725118c02a6d8a7866c4fea564af1c2e8e52",
@@ -41,7 +41,17 @@
     "commit:d76d3e12342c92c4d3347e8a83d2e6c264932fac",
     "commit:5a4db3a693e65dce5de9656f69a5c03ce1fec92b",
     "commit:43b86e1d336f11956fa563d4f17c02995e634c76",
-    "commit:d12f69030794658f133d840fad8612dfe23ed0e8"
+    "commit:d12f69030794658f133d840fad8612dfe23ed0e8",
+    "workflow_run:36726597402:SUCCESS",
+    "core_ci:36726597408:SUCCESS",
+    "artifact:11102942081:runtime",
+    "artifact:11103086984:judge",
+    "artifact:11103152037:sentinel",
+    "correlation_id:f1cc1754-1036-4132-b503-11f62b3e39d8",
+    "decision_ledger:2cbfc2b5-96d0-4e15-bfea-9ebb29af3cbc",
+    "evidence_ledger:49f29187-6c0c-4274-930f-c4121cdc4be7",
+    "audit_log:6690",
+    "evidence:docs/evidence/readiness-hugo-audit-20260930.json"
   ],
   "production_touched": false,
   "skills": [
@@ -51,7 +61,19 @@
     "ugo-evidence-judge"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
-  }
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "finished_at": "2026-09-30T14:12:30Z",
+  "verified_sha": "ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4",
+  "runtime_correlation_id": "f1cc1754-1036-4132-b503-11f62b3e39d8",
+  "service_id": "c55695c6-3ca2-4b71-87eb-152965ae1ffb",
+  "ledgers": {
+    "decision_id": "2cbfc2b5-96d0-4e15-bfea-9ebb29af3cbc",
+    "evidence_id": "49f29187-6c0c-4274-930f-c4121cdc4be7",
+    "audit_log_id": 6690
+  },
+  "evidence_path": "docs/evidence/readiness-hugo-audit-20260930.json",
+  "evidence_commit_sha": "4491fa5ff60f9e78ca544f477266e41694957f67",
+  "runtime_result": "PASS"
 }
