@@ -20,6 +20,7 @@ async function run(kind){
  let serviceId='',draftId=''
  try{
   await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'});await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+  const pendingRating=page.getByRole('button',{name:'Calificar más tarde'});if(await pendingRating.count()&&await pendingRating.isVisible())await pendingRating.click()
   await page.getByRole('button',{name:/Ver todas/}).first().click();const cat=page.locator('.ugo-home-all-results button').filter({hasText:category.nombre}).first();await cat.waitFor({state:'visible'});await cat.click()
   await page.getByRole('main',{name:'Qué hay que hacer'}).waitFor({state:'visible'});await page.getByRole('textbox',{name:'Descripción del trabajo'}).fill(kind==='faxina'?'Faxina piloto completa en apartamento con cocina y baños.':'Instalar dos estantes livianos en la sala con fijaciones adecuadas.')
   if(kind==='faxina'){await page.getByLabel('Tipo de faxina').selectOption({label:'Profunda'});await page.getByLabel('Tipo de inmueble').fill('Apartamento');await page.getByLabel('Dormitorios').fill('2');await page.getByLabel('Baños').fill('2');await page.getByLabel('m² aprox.').fill('75');await page.getByLabel('Mascotas').selectOption({label:'Sí · gato'});await page.getByLabel('Escaleras / acceso').selectOption({label:'Ascensor'});await page.getByLabel('Productos de limpieza').selectOption({label:'Profesional'});await page.getByLabel('Equipamiento').selectOption({label:'Profesional'})}
