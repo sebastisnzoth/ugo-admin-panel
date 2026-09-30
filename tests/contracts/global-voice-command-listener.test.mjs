@@ -24,16 +24,16 @@ test('client root mounts global voice commands with navigation and Hugo request 
  assert.match(src,/UGO_UI_EVENTS\.clientProfileAddresses/)
 })
 
-test('provider root mounts global voice commands and keeps transactional job mutations out of raw transcript routing',async()=>{
+test('provider root mounts global voice commands and only routes operational fallback through the guarded provider command runner',async()=>{
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  const src=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
  assert.match(root,/<ProviderGlobalVoiceCommands\/>/)
  assert.match(src,/flow\.actions\.openOpportunities\(\)/)
  assert.match(src,/flow\.actions\.openEarnings\(\)/)
  assert.doesNotMatch(src,/data\.toggleOnline\(\)/)
- assert.doesNotMatch(src,/acceptOpportunity/)
- assert.doesNotMatch(src,/rejectOpportunity/)
- assert.doesNotMatch(src,/data\.advance/)
+ assert.doesNotMatch(src,/data\.advance\(/)
+ assert.match(src,/engine==='browser-speech'/)
+ assert.match(src,/runProviderVoiceCommand/)
 })
 
 
@@ -80,4 +80,12 @@ test('persistent provider availability changes stay on guarded Gemini tools',asy
  assert.match(live,/provider_set_offline[^\n]+required:\['confirmed'\]/)
  assert.match(provider,/provider_set_online'\)\{if\(args\.confirmed!==true\)/)
  assert.match(provider,/provider_set_offline'\)\{if\(args\.confirmed!==true\)/)
+})
+
+
+test('global voice listener forwards the active engine so fallback commands do not duplicate Gemini Live tools',async()=>{
+ const src=await read('src/shared/voice/useGlobalVoiceCommandListener.ts')
+ assert.match(src,/engine\?:string/)
+ assert.match(src,/handlerRef\.current\(value,source,engine\)/)
+ assert.match(src,/String\(detail\.engine\|\|''\)/)
 })
