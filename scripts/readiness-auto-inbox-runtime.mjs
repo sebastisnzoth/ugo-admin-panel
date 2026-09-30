@@ -42,9 +42,9 @@ const greenCorrelation=crypto.randomUUID()
 const ids=[crypto.randomUUID(),crypto.randomUUID(),crypto.randomUUID(),crypto.randomUUID()]
 const now=Date.now()
 const fixtures=[
- {id:ids[0],department_id:departmentId,objective:'AUTO_INBOX_DUP_OLD',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[0],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-90*60000).toISOString()},
- {id:ids[1],department_id:departmentId,objective:'AUTO_INBOX_DUP_NEW',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[1],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-20*60000).toISOString()},
- {id:ids[2],department_id:departmentId,objective:'AUTO_INBOX_YELLOW',authority_class:'YELLOW',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[2],correlation_id:yellowCorrelation,created_at:new Date(now-45*60000).toISOString()},
+ {id:ids[0],department_id:departmentId,objective:'AUTO_INBOX_DUP_OLD',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[0],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-19*60000).toISOString()},
+ {id:ids[1],department_id:departmentId,objective:'AUTO_INBOX_DUP_NEW',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[1],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-16*60000).toISOString()},
+ {id:ids[2],department_id:departmentId,objective:'AUTO_INBOX_YELLOW',authority_class:'YELLOW',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[2],correlation_id:yellowCorrelation,created_at:new Date(now-31*60000).toISOString()},
  {id:ids[3],department_id:departmentId,objective:'AUTO_INBOX_GREEN',authority_class:'GREEN',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[3],correlation_id:greenCorrelation,created_at:new Date(now-5*60000).toISOString()}
 ]
 const inserted=await root.from('autonomous_jobs').insert(fixtures)
