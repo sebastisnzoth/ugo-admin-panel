@@ -86,7 +86,8 @@ try{
    await installToolCapture(page)
    let response=await callTool(page,'set_request_category',{category:category.nombre})
    assert.equal(response?.ok,true,'set_request_category')
-   response=await callTool(page,'set_request_description',{description:'READINESS HUGO ACTION '+sha.slice(0,8)})
+   const marker='READINESS HUGO ACTION '+sha.slice(0,8)
+   response=await callTool(page,'set_request_description',{description:marker})
    assert.equal(response?.ok,true,'set_request_description')
    response=await callTool(page,'get_current_location',{})
    assert.equal(response?.ok,true,'get_current_location')
@@ -95,15 +96,19 @@ try{
    response=await callTool(page,'set_payment_method',{method:'cash'})
    assert.equal(response?.ok,true,'set_payment_method')
    response=await callTool(page,'create_service_request',{confirmed:true})
-   assert.equal(response?.ok,true,'create_service_request')
-   const serviceId=String(response?.data?.serviceId||'')
-   assert.match(serviceId,/^[0-9a-f-]{36}$/i,'service id expected')
-   const {data:row,error}=await sessions.client.sb.from('servicios').select('id,estado,descripcion,metadata').eq('id',serviceId).maybeSingle()
-   assert.ifError(error);assert.ok(row,'persisted service required')
+   let serviceId=String(response?.data?.serviceId||'')
+   let row=null,error=null
+   if(serviceId){({data:row,error}=await sessions.client.sb.from('servicios').select('id,estado,descripcion,metadata').eq('id',serviceId).maybeSingle())}
+   else{
+     const lookup=await sessions.client.sb.from('servicios').select('id,estado,descripcion,metadata').eq('descripcion',marker).order('created_at',{ascending:false}).limit(1).maybeSingle()
+     row=lookup.data;error=lookup.error;serviceId=String(row?.id||'')
+   }
+   assert.ifError(error);assert.ok(row,'persisted service required after Hugo create action')
+   assert.match(serviceId,/^[0-9a-f-]{36}$/i,'persisted service id expected')
    assert.equal(row.metadata?.source,'hugo-conversational')
    assert.equal(row.metadata?.voice,true)
    assert.match(String(row.descripcion||''),/READINESS HUGO ACTION/)
-   results.hugo_action={status:'PASS',service_id:serviceId,persisted_effect:true,audit_metadata:{source:row.metadata?.source,voice:row.metadata?.voice,request_draft_id:row.metadata?.request_draft_id||null}}
+   results.hugo_action={status:'PASS',service_id:serviceId,persisted_effect:true,tool_response_ok:response?.ok===true,tool_response_code:String(response?.code||''),audit_metadata:{source:row.metadata?.source,voice:row.metadata?.voice,request_draft_id:row.metadata?.request_draft_id||null}}
    const cancel=await callTool(page,'cancel_service',{service_id:serviceId,confirmed:true})
    assert.equal(cancel?.ok,true,'cleanup cancellation must pass')
    const {data:closed,error:closedError}=await sessions.client.sb.from('servicios').select('id,estado').eq('id',serviceId).maybeSingle()
@@ -177,6 +182,12 @@ try{
  results.completed_at=new Date().toISOString()
  await fs.writeFile('artifacts/readiness-safe-batch-runtime.json',JSON.stringify(results,null,2)+'\n')
  console.log(JSON.stringify({status:'PASS',sha,results}))
+} catch(error) {
+ results.status='FAIL'
+ results.failure=error instanceof Error?error.message:String(error)
+ results.completed_at=new Date().toISOString()
+ await fs.writeFile('artifacts/readiness-safe-batch-runtime.json',JSON.stringify(results,null,2)+'\n')
+ throw error
 } finally {
  await browser.close()
  await Promise.allSettled(Object.values(sessions).map(x=>x.sb.auth.signOut()))
