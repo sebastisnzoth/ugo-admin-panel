@@ -105,3 +105,36 @@ Criterio **VERIFIED** por categoría: implementación + wiring + consumidor real
 ## Fuera de alcance de este cambio
 
 No declarar que el piloto está listo sólo por agregar este documento. No usar producción para demostrar readiness. No inventar documentos legales obligatorios: cualquier requisito adicional debe ser aprobado por Legal/Compliance y reflejado explícitamente en onboarding.
+
+
+## Registro de implementación — 30/09/2026
+
+Rama de trabajo: `feat/pilot-faxina-marido-flows-20260930`. PR: **#313**. Base observada al iniciar: `db5bad8a239ec67b84e1fec48a7dfc7e3e68a8da`.
+
+Implementado en esta iteración:
+- Cliente/Faxina: captura específica de tipo de faxina, inmueble, dormitorios, baños, m² aproximados, mascotas, acceso/escaleras, productos y equipamiento.
+- Cliente/Marido de Aluguel: captura específica de tarea, cantidad, ambiente, materiales/repuestos y altura; advertencia para trabajos regulados o de riesgo.
+- Programados: captura explícita de hora **desde** y **hasta**, con validación de que el fin sea posterior al inicio.
+- Confirmación/persistencia: `pilot_kind`, `pilot_details`, `preferences` y `scheduled_end_at` quedan asociados al pedido en metadata.
+- Resumen Cliente: muestra el final programado y los datos específicos capturados.
+- Oferta Proveedor: recibe contexto persistido del pedido y hora de finalización dentro de las indicaciones.
+- Catálogo TEST/piloto: migración idempotente para `faxina` y `marido-de-aluguel`.
+- Gate estático: `scripts/pilot-category-contract.mjs` verifica que las piezas contractuales mínimas estén presentes.
+
+Commits de implementación registrados:
+- `0d4f0be61e0114b7f83927bc3dfcc7e75bccf01e` — formularios específicos.
+- `ebbb37856483faeaed78741dc6331e7217b3db05` — estilos de formularios.
+- `20677e5d4c27f0ec4055c77d04455737454c7ab2` — horario desde/hasta.
+- `b0173432185ce9eaf05b8a639c14b95ebbe49d2d` — metadata del pedido.
+- `aee2e732b13a67811eabbd2e5b850fe2bce9505e` — resumen Cliente.
+- `a68792268f1579e227b8cd647706decb8dd07077` — contexto para oferta Proveedor.
+- `46df1a89d696dbbbee922cfd61a85e6fb79c2355` — categorías piloto.
+- `48a4e17560223728ddd47ce1fe6e166242422bc7` — gate estático.
+
+### Estado de cierre
+
+**NO DECLARAR DONE/VERIFIED todavía.** En el último chequeo, el PR era mergeable pero GitHub reportaba estado `unstable` y no había workflow del HEAD que demostrara CI/runtime. Antes de cerrar deben ejecutarse y conservarse en el **mismo SHA**: build/TypeScript/tests, UGO TEST E2E de Faxina, UGO TEST E2E de Marido de Aluguel, Judge/Sentinel y las pruebas humanas/físicas no automatizables. La ausencia de esas pruebas es un bloqueo de evidencia, no permiso para degradar el criterio de DONE.
+
+### Próximo orden de ejecución
+
+Continuar por dependencias: validar compilación/gate estático → completar configuración específica del proveedor/documentos/referencias → validar matching y conflictos usando desde/hasta → recorrer E2E Faxina → recorrer E2E Marido de Aluguel → pagos/notificaciones/disputas/rating → fault injection/seguridad → runtime del mismo SHA → Judge/Sentinel → aceptación humana → PILOT-GATE. Mantener TEST; no desplegar ni modificar producción para obtener evidencia.
