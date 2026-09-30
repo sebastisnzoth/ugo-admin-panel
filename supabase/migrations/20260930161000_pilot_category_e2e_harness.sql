@@ -10,7 +10,7 @@ declare
  cid constant uuid:='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1';
  pid constant uuid:='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2';
  cat uuid; cat_name text; sid uuid; oid uuid; s public.servicios%rowtype; loc extensions.geography;
- lat double precision; lng double precision; arrival jsonb; initial_role text; br_cash_old text;
+ lat double precision; lng double precision; arrival jsonb; initial_role text; br_cash_old text; expansion public.ampliaciones_servicio%rowtype;
  old_primary uuid; old_categories uuid[]; old_category_name text; pilot_details jsonb;
 begin
  initial_role:=coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','');
@@ -73,10 +73,31 @@ begin
  values(sid,pid,'antes','qa/pilot/'||sid||'/before.jpg','Pilot persisted initial evidence',jsonb_build_object('qa',true,'phase','before','pilot_slug',p_slug));
  select * into s from private.avanzar_servicio_impl(sid,'en_progreso');
 
+ -- Real governed scope change: provider proposes, client explicitly approves,
+ -- and cash totals are adjusted before completion.
+ select * into expansion
+ from public.proponer_ampliacion_servicio(
+   sid,
+   case when p_slug='faxina' then 'Limpeza interna adicional de armário solicitada no local' else 'Fixação adicional aprovada durante a execução' end,
+   20,
+   15
+ );
+ if expansion.id is null or expansion.estado<>'pendiente' then raise exception 'PILOT_SCOPE_PROPOSAL_FAILED:%',p_slug; end if;
+
+ perform set_config('request.jwt.claim.sub',cid::text,true);
+ select * into expansion from public.resolver_ampliacion_servicio(expansion.id,true);
+ if expansion.estado<>'aprobada' or expansion.pago_estado<>'incluido' then
+   raise exception 'PILOT_SCOPE_APPROVAL_FAILED:%:%:%',p_slug,expansion.estado,expansion.pago_estado;
+ end if;
+
  update public.servicios
- set metadata=metadata||jsonb_build_object('scope_change',jsonb_build_object('status','none_required','checked_at',now(),'approved',true))
+ set metadata=metadata||jsonb_build_object(
+   'scope_change',
+   jsonb_build_object('status','approved','expansion_id',expansion.id,'amount_extra',expansion.monto_extra,'minutes_extra',expansion.minutos_extra,'approved',true)
+ )
  where id=sid;
 
+ perform set_config('request.jwt.claim.sub',pid::text,true);
  insert into public.evidencias_servicio(servicio_id,usuario_id,tipo,storage_path,descripcion,metadata)
  values(sid,pid,'despues','qa/pilot/'||sid||'/after.jpg','Pilot persisted final evidence',jsonb_build_object('qa',true,'phase','after','pilot_slug',p_slug));
  select * into s from private.avanzar_servicio_impl(sid,'esperando_aprobacion');
