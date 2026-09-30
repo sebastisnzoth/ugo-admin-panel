@@ -38,11 +38,14 @@ async function runViewport(name,viewport){
  const{page,errors}=await openProvider(viewport)
  try{
   await assertResponsive(page,'provider '+name+' home')
-  const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
-  await bottom.waitFor({state:'visible',timeout:10000})
-  for(const item of ['Inicio','Pedidos','Trabajo','Perfil']){
-   const button=bottom.getByRole('button',{name:new RegExp(item,'i')}).first()
-   await button.waitFor({state:'visible',timeout:10000})
+  if(name==='desktop'){
+   const primary=page.getByRole('navigation',{name:'Navegación principal'})
+   await primary.waitFor({state:'visible',timeout:10000})
+   for(const item of ['Inicio','Trabajos','Calendario','Ganancias','Historial','Perfil'])await primary.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+  }else{
+   const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
+   await bottom.waitFor({state:'visible',timeout:10000})
+   for(const item of ['Inicio','Pedidos','Trabajo','Perfil'])await bottom.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
   }
   const dock=page.getByRole('region',{name:'Estado operativo del proveedor'}).or(page.locator('.provider-operational-dock')).first()
   await dock.waitFor({state:'visible',timeout:10000})
@@ -51,7 +54,7 @@ async function runViewport(name,viewport){
   assert.ok(await dock.getByRole('button',{name:/Pedidos/i}).count(),'demand status missing')
   await page.screenshot({path:'artifacts/provider-ui-'+name+'.png',fullPage:true})
   assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-  results.push({viewport:name,status:'PASS',bottom_nav:4,operational_dock:true})
+  results.push({viewport:name,status:'PASS',navigation:name==='desktop'?'studio-sidebar':'bottom-nav',operational_dock:true})
  }finally{await page.close()}
 }
 try{
