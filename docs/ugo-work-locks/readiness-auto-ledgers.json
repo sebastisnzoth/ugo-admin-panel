@@ -5,7 +5,7 @@
   "title": "Verify append-only correlated queryable Decision/Evidence Ledgers in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T02:13:00Z",
-  "heartbeat_at": "2026-09-30T02:13:00Z",
+  "heartbeat_at": "2026-09-30T02:18:00Z",
   "lease_expires_at": "2026-09-30T02:58:00Z",
   "started_sha": "1f6faad2c37d5a268923d8cb875dd48332900b0e",
   "owner": "UGO",
@@ -22,7 +22,7 @@
     "Sentinel"
   ],
   "resources": [
-    "autonomous-ledgers"
+    "audit-ledger"
   ],
   "correlation_id": "readiness-auto-ledgers-20260930T021300Z-1f6faad2",
   "current_step": "INSPECT",
