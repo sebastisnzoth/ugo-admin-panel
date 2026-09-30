@@ -156,22 +156,18 @@ async function testClient(viewport,name){
 }
 
 async function testProvider(viewport,name){
- const {page,errors}=await openRole('provider',viewport)
- const trace=pageContext.get(page)
- if(trace)trace.step='provider authenticated load'
+ const page=await browser.newPage({viewport})
+ const errors=[],trace={step:'provider UI login'}
+ pageContext.set(page,trace)
+ page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
  try{
-   const providerRoot=page.locator('.ugo-provider-root')
-   try{
-     await providerRoot.waitFor({state:'visible',timeout:12000})
-   }catch{
-     const authEmail=page.getByPlaceholder('tu@email.com')
-     if(!(await authEmail.isVisible().catch(()=>false)))throw new Error('PROVIDER_AUTH_RESTORE_FAILED '+name+' pageErrors='+errors.join(' | '))
-     if(trace)trace.step='provider UI login fallback'
-     await authEmail.fill(providerEmail)
-     await page.getByPlaceholder('Mínimo 6 caracteres').fill(providerPassword)
-     await page.getByRole('button',{name:'Ingresar a UGO'}).click()
-     await providerRoot.waitFor({state:'visible',timeout:30000})
-   }
+   await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
+   const authEmail=page.getByPlaceholder('tu@email.com')
+   await authEmail.waitFor({state:'visible',timeout:20000})
+   await authEmail.fill(providerEmail)
+   await page.getByPlaceholder('Mínimo 6 caracteres').fill(providerPassword)
+   await page.getByRole('button',{name:'Ingresar a UGO'}).click()
+   await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
    await assertResponsive(page,'provider '+name+' home')
    let checkedItems=0
    if(viewport.width>=1000){
