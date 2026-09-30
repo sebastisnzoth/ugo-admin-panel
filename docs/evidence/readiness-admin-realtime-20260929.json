@@ -1,43 +1,62 @@
 {
-  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "schema_version": "UGO_READINESS_CLOSURE_V2",
   "readiness_id": "admin-realtime",
   "task_id": "readiness-admin-realtime",
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
   "correlation_id": "readiness-admin-realtime-20260929T230400Z-15bef1e7",
   "status": "VERIFIED",
   "environment": "UGO TEST",
-  "tested_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
+  "tested_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
   "workflow_run": {
-    "id": 36645017774,
+    "id": 36651562789,
+    "job_id": 109686642422,
     "name": "UGO Admin Realtime Runtime TEST",
     "conclusion": "success",
-    "artifact_id": 11068686285,
-    "artifact_name": "admin-realtime-runtime-b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
-    "artifact_digest": "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2"
+    "artifact_id": 11070278953,
+    "artifact_name": "admin-realtime-runtime-cf34746f79746b7eae81343f47141411f0a587e8",
+    "artifact_digest": "sha256:9c7868215676cdd729e1f97964f766b2f7a324f439cf84dd3013aab714ca09f9"
   },
   "runtime": {
     "actor_role": "superadmin",
     "tested_url": "http://127.0.0.1:4173/?app=admin",
-    "kpi": "Proveedores online",
-    "before": 2,
-    "expected": 3,
-    "after_restore": 2,
-    "event_to_ui_latency_ms": 957,
-    "restore_latency_ms": 2297,
-    "fallback_poll_ms": 8000,
-    "beat_fallback": true,
-    "manual_refresh_used": false,
-    "top_level_navigations": 1,
-    "reconciliation_restored": true,
+    "fixture": {
+      "provider_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2",
+      "original": {
+        "online": false,
+        "disponible": true
+      },
+      "target_online": true
+    },
+    "ui": {
+      "live_indicator": "PASS",
+      "kpi": "Proveedores online",
+      "before": 2,
+      "expected": 3,
+      "after_restore": 2
+    },
+    "realtime": {
+      "event_to_ui_latency_ms": 2217,
+      "restore_latency_ms": 2090,
+      "fallback_poll_ms": 8000,
+      "beat_fallback": true
+    },
+    "refresh": {
+      "manual_refresh_used": false,
+      "top_level_navigations": 1
+    },
+    "reconciliation": {
+      "restored": true
+    },
     "page_errors": [],
     "production_touched": false,
     "result": "PASS",
-    "completed_at": "2026-09-29T23:25:35.628Z"
+    "completed_at": "2026-09-30T00:43:03.348Z",
+    "mutation_started_at": "2026-09-30T00:42:58.111Z"
   },
   "validators": {
     "Judge": {
       "result": "PASS",
-      "checked_at": "2026-09-29T23:26:32.935Z",
+      "checked_at": "2026-09-30T00:44:00.396Z",
       "basis": [
         "runtime KPI changed without refresh",
         "change observed before polling fallback",
@@ -46,18 +65,21 @@
     },
     "Sentinel": {
       "result": "PASS",
-      "checked_at": "2026-09-29T23:26:32.980Z",
+      "checked_at": "2026-09-30T00:44:00.445Z",
       "production_touched": false,
       "reconciliation": "PASS"
     }
   },
-  "fixes": [
-    "Normalized executable Judge/Sentinel scripts.",
-    "Added WAL-triggered short reconciliation retries for Admin metrics.",
-    "Authenticated Admin Realtime before mounting the control center.",
-    "Bound the realtime contract test to the runtime workflow.",
-    "Added real UI-login path to the newer runtime harness without changing production."
-  ],
+  "regression": {
+    "first_same_sha_attempt": {
+      "run_id": 36651428220,
+      "sha": "12a2a7204fb045e9cf1cb098cc5d89e65c98acf0",
+      "result": "FAIL",
+      "reason": "harness read KPI before numeric initial load"
+    },
+    "fix_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
+    "fix": "runtime harness waits for a numeric KPI before mutating the TEST fixture"
+  },
   "source_artifact_files": [
     "admin-realtime-runtime.json",
     "admin-realtime-judge.json",
