@@ -32,4 +32,5 @@ test('provider en-route UI exposes GPS freshness and precision without trusting 
  assert.match(s,/precisión ±/)
  assert.match(s,/setLastFix\(\{capturedAt:Number\(pos\.timestamp\|\|Date\.now\(\)\),accuracy\}\)/)
  assert.match(s,/fixAgeMs<=MAX_POSITION_AGE_MS/)
+ assert.match(s,/setInterval\(\(\)=>setNowMs\(Date\.now\(\)\),1_000\)/)
 })
