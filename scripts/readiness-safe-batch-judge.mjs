@@ -8,6 +8,7 @@ const runtime=JSON.parse(await fs.readFile(input,'utf8'))
 
 assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
 assert.equal(runtime.status,'PASS','RUNTIME_MUST_PASS')
+assert.equal(runtime.current_sha_open_incidents,0,'CURRENT_SHA_INCIDENTS_MUST_BE_CLEAR')
 assert.equal(runtime.sha,sha,'JUDGE_SAME_SHA_REQUIRED')
 assert.equal(runtime.environment,'UGO TEST','JUDGE_TEST_ENV_ONLY')
 assert.equal(runtime.production_touched,false,'JUDGE_PRODUCTION_MUST_BE_UNTOUCHED')

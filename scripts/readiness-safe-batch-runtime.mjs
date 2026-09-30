@@ -207,6 +207,12 @@ assert.ok(category,'TEST_CATEGORY_REQUIRED')
   results.performance.status='PASS'
  }
 
+ await browser.close();browser=undefined
+ await new Promise(resolve=>setTimeout(resolve,1500))
+ const {count:incidentCount,error:incidentError}=await adminSb.from('development_incidents').select('id',{count:'exact',head:true}).eq('runtime_revision',sha).neq('status','resolved').in('severity',['P0','P1'])
+ assert.ifError(incidentError)
+ results.current_sha_open_incidents=incidentCount
+ assert.equal(incidentCount,0,'CURRENT_SHA_HAS_OPEN_P0_P1_INCIDENTS')
  results.status='PASS'
  results.completed_at=new Date().toISOString()
  await fs.writeFile('artifacts/readiness-safe-batch-runtime.json',JSON.stringify(results,null,2)+'\n')

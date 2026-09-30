@@ -51,6 +51,7 @@ export function ClientRatingPrompt({serviceId=null,embedded=false}:Props={}){
   window.addEventListener('online',onOnline);document.addEventListener('visibilitychange',onVisibility)
   const timer=window.setInterval(()=>{if(shouldEscalate())resync()},15000)
   const channel=supabase.channel(`client-rating-${userId.slice(0,6)}-${channelEpoch}`).on('postgres_changes',{event:'UPDATE',schema:'public',table:'servicios',filter:`cliente_id=eq.${userId}`},resync).on('postgres_changes',{event:'*',schema:'public',table:'resenas',filter:`cliente_id=eq.${userId}`},resync).subscribe(status=>{
+   if(!alive)return
    if(status==='SUBSCRIBED')resync()
    else if(status==='CHANNEL_ERROR'||status==='TIMED_OUT'||status==='CLOSED'){
     resync();reconnect()

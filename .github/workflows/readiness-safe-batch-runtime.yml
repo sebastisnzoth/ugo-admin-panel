@@ -73,7 +73,7 @@ jobs:
           export UGO_RUNTIME_SHA="${UGO_RUNTIME_SHA}"
           export VITE_APP_REVISION="${UGO_RUNTIME_SHA}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
-          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-safe-batch-vite.log 2>&1 &
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/ugo-safe-batch-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do

@@ -10,6 +10,7 @@ const judge=JSON.parse(await fs.readFile(judgePath,'utf8'))
 
 assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
 assert.equal(runtime.status,'PASS','RUNTIME_MUST_PASS')
+assert.equal(runtime.current_sha_open_incidents,0,'CURRENT_SHA_INCIDENTS_MUST_BE_CLEAR')
 assert.equal(runtime.sha,sha,'SENTINEL_RUNTIME_SAME_SHA_REQUIRED')
 assert.equal(judge.sha,sha,'SENTINEL_JUDGE_SAME_SHA_REQUIRED')
 assert.equal(judge.status,'PASS','SENTINEL_REQUIRES_JUDGE_PASS')
