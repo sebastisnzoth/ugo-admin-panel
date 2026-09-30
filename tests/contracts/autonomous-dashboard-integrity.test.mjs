@@ -44,3 +44,13 @@ test('department jobs UX supports filters history freshness and divergence alert
  assert.match(command,/loaded_at/)
  assert.match(command,/\.limit\(10\)/)
 })
+
+
+test('super admin runtime validates persisted UGO Empresas proof coherently without requiring every UI commit to rewrite product evidence',()=>{
+ const runtime=fs.readFileSync('scripts/super-admin-ui-runtime.mjs','utf8')
+ assert.match(runtime,/UGO_EMPRESAS_RUNTIME_SHA_INVALID/)
+ assert.match(runtime,/UGO_EMPRESAS_EVIDENCE_SHA_MISMATCH/)
+ assert.match(runtime,/UGO_EMPRESAS_CORRELATION_MISMATCH/)
+ assert.match(runtime,/requirements\?\.sha/)
+ assert.doesNotMatch(runtime,/UGO_EMPRESAS_SHA_MISMATCH/)
+})
