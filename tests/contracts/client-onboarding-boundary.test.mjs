@@ -8,7 +8,7 @@ test('ClientOnboardingGate renders children instead of recursively loading Clien
   const gate = await read('src/features/client/onboarding/ClientOnboardingGate.tsx')
   assert.doesNotMatch(gate, /import\('\.\/ClientApp'\)/)
   assert.match(gate, /ClientOnboardingGate\(\{children\}/)
-  assert.match(gate, /if\(complete\)return <div className="ugo-client-stitch-scope">\{children\}<\/div>/)
+  assert.match(gate, /if\(complete\)return <>\{children\}<\/>/); assert.doesNotMatch(gate, /if\(complete\).*ugo-client-stitch-scope/)
 })
 
 test('ClientRoot owns the single onboarding boundary', async () => {

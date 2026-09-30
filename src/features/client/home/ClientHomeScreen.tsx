@@ -61,7 +61,7 @@ export function ClientHomeScreen({onOpenService}:Props){
   <section className="ugo-home-layout">
    <div className="ugo-home-hero">
     <div className="ugo-home-topline">
-     <button type="button" className="ugo-home-location" onClick={()=>emitUgoUiEvent(UGO_UI_EVENTS.clientLocation)} aria-label="Cambiar ubicación"><span>⌖</span><div><small>TU ZONA</small><strong>{place}</strong></div><b>Cambiar</b></button>
+     <button type="button" className="ugo-home-location" onClick={locateUser} disabled={locating} aria-label="Actualizar mi ubicación"><span>⌖</span><div><small>TU ZONA</small><strong>{place}</strong></div><b>{locating?'Ubicando…':'Actualizar'}</b></button>
      <button type="button" className="ugo-home-bell" onClick={()=>document.querySelector<HTMLButtonElement>('.ugo-notification-center.role-client .ugo-notification-trigger')?.click()} aria-label="Notificaciones">◇</button>
     </div>
     <span className="ugo-home-kicker"><i/> UGO CERCA TUYO</span>
