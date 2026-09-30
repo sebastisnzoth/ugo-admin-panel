@@ -1,0 +1,147 @@
+name: UGO Cross Performance Runtime
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/cross-performance-runtime.mjs"
+      - "scripts/cross-performance-judge.mjs"
+      - "scripts/cross-performance-sentinel.mjs"
+      - ".github/workflows/cross-performance-runtime.yml"
+      - "src/features/client/**"
+      - "src/features/provider/**"
+      - "src/features/admin/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/cross-performance-runtime.mjs"
+      - "scripts/cross-performance-judge.mjs"
+      - "scripts/cross-performance-sentinel.mjs"
+      - ".github/workflows/cross-performance-runtime.yml"
+      - "src/features/client/**"
+      - "src/features/provider/**"
+      - "src/features/admin/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-performance-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Guard TEST-only credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ env.UGO_RUNTIME_SHA }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run dedicated latency proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${UGO_RUNTIME_SHA}"
+          export VITE_APP_REVISION="${UGO_RUNTIME_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-cross-performance-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node scripts/cross-performance-runtime.mjs
+      - name: Upload runtime evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/readiness-cross-performance-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
+        run: node scripts/cross-performance-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/readiness-cross-performance-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
+        run: node scripts/cross-performance-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-performance-sentinel-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/readiness-cross-performance-sentinel.json
+          if-no-files-found: error
+          retention-days: 90
