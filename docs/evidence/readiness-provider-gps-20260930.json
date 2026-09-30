@@ -1,0 +1,48 @@
+{
+  "readiness_id": "provider-gps",
+  "correlation_id": "readiness-provider-gps-20260930T165800Z-gptugo-r6",
+  "candidate_sha": "0da38ac3cce2c92ead4fa1fe5c4159d8624ee8ac",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "workflow_run_id": 36748700207,
+  "runtime": {
+    "status": "PASS",
+    "service_id": "f41edbff-9b85-44a8-91b6-50fd612e5994",
+    "qa_run_id": "587d6036-d52e-4fe4-8828-6615b9cc127d",
+    "db_judge_job": "3afa38ce-96b3-459d-8102-392b4b2e3753",
+    "evidence_source": "PERSISTED_STATE",
+    "observations": {
+      "zero_zero_rejected": true,
+      "stale_gps_rejected": true,
+      "inaccurate_gps_rejected": true,
+      "outside_geofence_rejected": true,
+      "rejected_arrival_did_not_change_state": true,
+      "valid_gps_arrival_accepted": true
+    },
+    "fixture_availability_restored": true,
+    "artifact_id": 11112998831
+  },
+  "judge": {
+    "status": "PASS",
+    "artifact_id": 11113313430,
+    "completed_at": "2026-09-30T17:04:23.814Z"
+  },
+  "sentinel": {
+    "status": "PASS",
+    "artifact_id": 11113746599,
+    "completed_at": "2026-09-30T17:05:12.015Z"
+  },
+  "fixes": [
+    "runtime consumes canonical autonomous_qa_run_gps_independent_evidence only",
+    "noncanonical SERVICE_ROLE_ISOLATED_TEST_RUNTIME evidence removed",
+    "UGO Arena TEST unaccent extension enabled and dependency versioned",
+    "provider GPS contract suite passed on candidate SHA"
+  ],
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "criterion": "Real provider device must grant precise location and produce one fresh non-0,0 GPS fix while en_camino; UGO must publish it before arrival validation.",
+    "fabricated": false
+  },
+  "unrelated_ci_note": "Repository-wide core check on candidate SHA has unrelated concurrent failures in Hugo/API-count tests; provider GPS workflow runtime, Judge and Sentinel all passed independently."
+}
