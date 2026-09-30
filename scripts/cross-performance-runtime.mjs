@@ -86,6 +86,21 @@ try{
   }
 
   async function visible(locator,timeout=20000){ await locator.waitFor({state:'visible',timeout}); return locator }
+  async function clickFirstPointerReachable(locator,label){
+    const count=await locator.count()
+    for(let index=0;index<count;index++){
+      const item=locator.nth(index)
+      if(!(await item.isVisible())) continue
+      const reachable=await item.evaluate(el=>{
+        const r=el.getBoundingClientRect()
+        if(!r.width||!r.height) return false
+        const top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)
+        return top===el||Boolean(top&&el.contains(top))
+      })
+      if(reachable){ await item.click(); return }
+    }
+    throw new Error(label+'_NO_POINTER_REACHABLE_TARGET')
+  }
   async function timed(label,fn,limitMs=4000){
     const started=performance.now()
     await fn()
@@ -100,9 +115,9 @@ try{
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
-      const requestButton=client.page.locator('button:visible').filter({hasText:/Pedir servicio/i}).first()
-      await visible(requestButton,5000)
-      await requestButton.click()
+      const requestButtons=client.page.locator('button:visible').filter({hasText:/Pedir servicio/i})
+      await visible(requestButtons.first(),5000)
+      await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
       await visible(client.page.locator('.ugo-client-root'))
     })
   } finally { await client.context.close() }
