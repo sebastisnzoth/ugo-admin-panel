@@ -1,0 +1,104 @@
+name: UGO Cross Accessibility Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/styles/tokens.css"
+      - "src/styles/globals.css"
+      - "src/lib/accessibilityRuntime.ts"
+      - "src/main.tsx"
+      - "src/shared/ui/**"
+      - "src/mvp/**"
+      - "src/features/client/**"
+      - "tests/contracts/cross-accessibility-readiness.test.mjs"
+      - "scripts/cross-accessibility-runtime.mjs"
+      - "scripts/cross-accessibility-judge.mjs"
+      - "scripts/cross-accessibility-sentinel.mjs"
+      - ".github/workflows/cross-accessibility-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-accessibility-runtime
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+
+jobs:
+  runtime-proof:
+    name: Keyboard focus contrast labels touch targets
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact triggering SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install repository dependencies
+        run: npm ci --include=dev
+
+      - name: Verify TEST-only environment
+        run: npm run verify:test-env
+
+      - name: Accessibility contract regression
+        run: node --test tests/contracts/cross-accessibility-readiness.test.mjs
+
+      - name: TypeScript and build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+
+      - name: Install transient browser accessibility harness
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save --package-lock=false playwright@1.56.1 axe-core@4.10.3
+          npx playwright install --with-deps chromium
+
+      - name: Execute browser accessibility proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-cross-accessibility-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/" >/dev/null
+          node scripts/cross-accessibility-runtime.mjs
+
+      - name: Judge accessibility evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-accessibility-judge.mjs
+
+      - name: Sentinel accessibility evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-accessibility-sentinel.mjs
+
+      - name: Upload immutable accessibility evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-accessibility-runtime-${{ github.sha }}
+          path: artifacts/cross-accessibility-*
+          if-no-files-found: warn
+          retention-days: 90
