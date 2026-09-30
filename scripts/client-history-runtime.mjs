@@ -34,8 +34,13 @@ for(const service of services.filter(service=>service.estado==='completado')){
  if(pe||re||ee)continue
  const clientRating=(ratings||[]).find(x=>x.autor_tipo==='cliente')
  const providerRating=(ratings||[]).find(x=>x.autor_tipo==='proveedor')
- if(payments?.[0]&&clientRating&&providerRating&&evidence?.[0]){
-  fixture={service,payment:payments[0],clientRating,providerRating,evidence}
+ let authorizedEvidence=null
+ for(const candidate of evidence||[]){
+  const {data:signed,error:signedError}=await auth.storage.from('service-evidence').createSignedUrl(candidate.storage_path,120)
+  if(!signedError&&signed?.signedUrl){authorizedEvidence={...candidate,signed_url:signed.signedUrl};break}
+ }
+ if(payments?.[0]&&clientRating&&providerRating&&authorizedEvidence){
+  fixture={service,payment:payments[0],clientRating,providerRating,evidence:[authorizedEvidence]}
   break
  }
 }
