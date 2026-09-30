@@ -27,7 +27,7 @@ test('Hugo edge function sanitizes context, history and user message before exte
 test('Hugo privacy stays behind authenticated role authority',async()=>{
  const[api,authority,live]=await Promise.all([
   read('api/hugo/chat.ts'),
-  read('src/server/hugo/authority.ts'),
+  read('server/hugo/authority.ts'),
   read('api/test.ts'),
  ])
  assert.match(api,/authorizeHugo\(req,body\)/)
