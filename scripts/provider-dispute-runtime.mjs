@@ -66,7 +66,7 @@ try{
  const adminDb=await login(adm.email)
  const resolved=await adminDb.rpc('admin_resolver_disputa',{p_disputa_id:ids.dispute,p_resolucion:'Resolución TEST completa a favor del proveedor',p_favor_de:'proveedor'});if(resolved.error)throw resolved.error
  evidence.closure=resolved.data.estado==='resuelta_proveedor'&&resolved.data.resuelta_por===ids.admin
- const audit=await admin.from('audit_log').select('evento').eq('entidad_tipo','disputa').eq('entidad_id',ids.dispute).in('evento',['disputa_abierta_v2','disputa_resuelta']);if(audit.error)throw audit.error
+ const audit=await adminDb.from('audit_log').select('evento').eq('entidad_tipo','disputa').eq('entidad_id',ids.dispute).in('evento',['disputa_abierta_v2','disputa_resuelta']);if(audit.error)throw audit.error
  evidence.audit=new Set((audit.data||[]).map(x=>x.evento)).size===2
  const notices=await admin.from('notificaciones').select('tipo,usuario_id').contains('datos',{disputa_id:ids.dispute});if(notices.error)throw notices.error
  evidence.notifications=(notices.data||[]).some(x=>x.tipo==='disputa_resuelta'&&x.usuario_id===ids.provider)
