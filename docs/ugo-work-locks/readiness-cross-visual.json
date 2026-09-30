@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T20:00:00Z",
-  "lease_expires_at": "2026-09-30T20:45:00Z",
+  "heartbeat_at": "2026-09-30T20:05:00Z",
+  "lease_expires_at": "2026-09-30T20:50:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,8 +17,8 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "WAITING_CANONICAL_GITHUB_ACTIONS_RUN_FOR_MERGE_SHA",
-  "attempt": 3,
+  "current_step": "R4_PROVIDER_SESSION_SEED_RERUN",
+  "attempt": 4,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
     "repo:docs/evidence/readiness-cross-visual-20260930.json",
@@ -42,7 +42,10 @@
     "revalidated-main:cc2d5b557436478519d5956129f0f2e5cbf7efdd",
     "pr:326",
     "merge-sha:c4b345c73a8f3b5205523b1293df95d218143f8a",
-    "dispatch-check:no-run-observed"
+    "dispatch-check:no-run-observed",
+    "github-run:36769246039:FAIL_PROVIDER_AUTH_TRANSITION",
+    "fix:c68b54d8020fee0e0fba9518303829de5e4a5509",
+    "diagnosis:provider-test-harness-used-redundant-ui-login"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
@@ -50,8 +53,5 @@
     "Judge": "PENDING_RUNTIME",
     "Sentinel": "PENDING_RUNTIME"
   },
-  "failure": {
-    "code": "GITHUB_ACTIONS_RUN_NOT_OBSERVED",
-    "detail": "Canonical PR #326 merged to main to trigger the TEST-only cross-visual workflow, but fetch_commit_workflow_runs returned no run for merge SHA c4b345c73a8f3b5205523b1293df95d218143f8a. Do not mark VERIFIED until a same-SHA run completes and Judge/Sentinel pass."
-  }
+  "failure": null
 }
