@@ -35,7 +35,12 @@ function downstreamScores(tasks) {
 export function scheduleTasks({tasks, locks, policy, now = new Date()}) {
   const nowMs = now.getTime()
   const latestLocks = latestByTask(locks)
-  const pendingIds = new Set(tasks.map(t => t.id))
+  const completedIds = new Set(
+    [...latestLocks.values()]
+      .filter(lock => lock.status === 'DONE')
+      .map(lock => lock.task_id)
+  )
+  const pendingIds = new Set(tasks.map(t => t.id).filter(id => !completedIds.has(id)))
   const scores = downstreamScores(tasks)
   const capacities = policy.resource_capacities || {}
   const resourceUsage = new Map()

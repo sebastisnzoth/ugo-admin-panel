@@ -12,7 +12,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime-v3
+  group: ugo-client-status-runtime-v4
   cancel-in-progress: false
 
 permissions:
@@ -24,6 +24,8 @@ env:
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
   UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
 
 jobs:
   client-status:
@@ -190,3 +192,5 @@ jobs:
 # disposable fixture v2 2026-09-30T10:54Z
 
 # scheduled disposable fixture v3 2026-09-30T10:57Z
+
+# provider-auth GPS backend v4 2026-09-30T11:00Z

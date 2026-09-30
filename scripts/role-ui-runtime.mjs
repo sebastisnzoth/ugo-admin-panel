@@ -140,7 +140,11 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
+     const root=page.locator('.ugo-client-root')
+     try{await root.waitFor({state:'visible',timeout:10000})}catch(error){
+       const snapshot=await page.locator('body').innerText().catch(()=> '')
+       throw new Error('CLIENT_ROOT_MISSING item='+item+' viewport='+name+' url='+page.url()+' page_errors='+errors.join(' | ')+' body='+snapshot.slice(0,1200),{cause:error})
+     }
      await assertResponsive(page,'client '+name+' '+item)
    }
    await page.screenshot({path:'artifacts/role-ui-client-'+name+'.png',fullPage:true})

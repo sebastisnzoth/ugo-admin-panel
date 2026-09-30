@@ -1,0 +1,64 @@
+{
+  "readiness_id": "cross-errors",
+  "task_id": "readiness-cross-errors",
+  "job_id": "UGO-READINESS-CROSS-ERRORS-R2",
+  "correlation_id": "readiness-cross-errors-20260930T104900Z-8e8ac4f2-r2",
+  "control": "Errores y estados vacíos",
+  "criterion": "Toda falla comunica causa y próximo paso.",
+  "tested_sha": "86f8f2d631edb717ecf51ad38ea46ad04aff9071",
+  "merged_main_sha": "58fc61d10eb5837cd0eb172b67b623768576950c",
+  "pull_request": 302,
+  "workflow_run": 36705893309,
+  "runtime_job": 109855929670,
+  "judge_job": 109856329328,
+  "sentinel_job": 109856389206,
+  "results": {
+    "typescript": "PASS",
+    "build": "PASS",
+    "ui_fault_injection": "PASS",
+    "api_fault_injection": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "injected_faults": [
+    {
+      "surface": "UI auth",
+      "fault": "AUTH_INVALID_CREDENTIALS",
+      "assertions": [
+        "cause visible",
+        "retry next step visible",
+        "password recovery path visible"
+      ]
+    },
+    {
+      "surface": "Hugo API",
+      "fault": "AUTH_REQUIRED",
+      "http_status": 401,
+      "assertions": [
+        "fail closed",
+        "cause visible",
+        "explicit next_step visible"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "id": 11092142476,
+      "name": "cross-errors-runtime-86f8f2d631edb717ecf51ad38ea46ad04aff9071",
+      "digest": "sha256:1e820a17e03cbc1997df8ef563a8dd014abaada9bd783d2f13d686df526fdeb6"
+    },
+    {
+      "id": 11091289965,
+      "name": "cross-errors-judge-86f8f2d631edb717ecf51ad38ea46ad04aff9071",
+      "digest": "sha256:671c20dfa98e2fbaa4dce2722908370726177fcd475e4486dbe79226a20e6eba"
+    },
+    {
+      "id": 11091339750,
+      "name": "cross-errors-sentinel-86f8f2d631edb717ecf51ad38ea46ad04aff9071",
+      "digest": "sha256:7bfddebe1fd11de6baf0ee82ccd5b85f8db5ad9da1c45bd89e79d8842ee91bc3"
+    }
+  ],
+  "prior_attempt_note": "Run 36705053848 failed only because the first Playwright selector was ambiguous; selector was corrected and API evidence made unconditional before the successful final run.",
+  "production_touched": false,
+  "verified_at": "2026-09-30T11:03:00Z"
+}

@@ -17,6 +17,12 @@ const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:fa
 const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
+async function freshTestSession(){
+ const{data,error}=await auth.auth.signInWithPassword({email,password})
+ assert.ifError(error)
+ assert.ok(data.session&&data.user,'UGO_TEST_CLIENT_FRESH_SESSION_REQUIRED')
+ return data.session
+}
 
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
@@ -69,7 +75,8 @@ async function clickMenu(page,label){
 async function freshPage(viewport){
  const page=await browser.newPage({viewport})
  page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
- await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+ const browserSession=await freshTestSession()
+ await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),browserSession)
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  try{
   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
