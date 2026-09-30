@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-performance",
   "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20260930T1341Z",
   "title": "Verify perceived performance and critical action latency",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:41:00Z",
-  "heartbeat_at": "2026-09-30T14:00:30Z",
-  "lease_expires_at": "2026-09-30T14:45:30Z",
+  "heartbeat_at": "2026-09-30T14:02:15Z",
+  "lease_expires_at": "2026-09-30T14:02:15Z",
   "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -16,14 +16,14 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "preview-runtime"
   ],
   "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
-  "current_step": "RUNNING_EXACT_HEAD_RUNTIME_JUDGE_SENTINEL",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
@@ -34,7 +34,15 @@
     "diagnosis:run-36724184797-runtime-selector-and-pr-sha",
     "github-pr:310",
     "github-run:36725481224",
-    "candidate-sha:bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3"
+    "candidate-sha:bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+    "github-job-runtime:109921613354",
+    "github-job-judge:109922228537",
+    "github-job-sentinel:109922343113",
+    "github-artifact:11101399848",
+    "github-artifact:11101844611",
+    "github-artifact:11103020411",
+    "repo-evidence:docs/evidence/readiness-cross-performance-20260930.json",
+    "github-merge:737036ed7da79be981dd887dc07da8d92848ef8a"
   ],
   "production_touched": false,
   "skills": [
@@ -42,5 +50,19 @@
     "ugo-performance",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-30T14:02:15Z",
+  "finished_at": "2026-09-30T14:02:15Z",
+  "verified_sha": "bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+  "merged_main_sha": "737036ed7da79be981dd887dc07da8d92848ef8a",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "exact_candidate_sha": "PASS",
+    "p95_ms": 727,
+    "max_ms": 727,
+    "production_touched": false
+  }
 }
