@@ -1,5 +1,5 @@
 name: UGO Client Notifications Runtime TEST
-# retrigger: chatgpt-ugo-20260930
+# retrigger: attempt-2-20260930T1345Z
 
 on:
   workflow_dispatch:
