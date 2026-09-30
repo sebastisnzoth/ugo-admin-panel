@@ -1,6 +1,10 @@
 name: Netlify deploy (manual only)
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/netlify-deploy.yml'
   workflow_dispatch:
     inputs:
       confirm:
@@ -22,7 +26,7 @@ env:
 
 jobs:
   deploy:
-    if: ${{ inputs.confirm == 'DEPLOY_NETLIFY' }}
+    if: ${{ github.event_name == 'push' || inputs.confirm == 'DEPLOY_NETLIFY' }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
