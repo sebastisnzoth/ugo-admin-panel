@@ -40,3 +40,16 @@ test('backend rejects operational jobs for advisory-only specialists',()=>{
   assert.match(guard,/before insert or update of agent_id,status/)
   assert.match(guard,/new\.status not in \('CANCELLED','BLOCKED'\)/)
 })
+
+test('readonly specialists have a real executor and Super Admin action',()=>{
+  const executor=fs.readFileSync('supabase/migrations/20260930020500_d3_d4_readonly_specialist_executors.sql','utf8')
+  assert.match(executor,/autonomous_execute_readonly_specialist/)
+  assert.match(executor,/READONLY_SPECIALIST_EXECUTOR/)
+  assert.match(executor,/AUTHORIZED_ADVISORY_EXECUTOR/)
+  assert.match(executor,/aggregate_only/)
+  assert.match(executor,/grant execute on function public\.autonomous_execute_readonly_specialist\(uuid\) to service_role/)
+  assert.match(api,/action==='execute_readonly'/)
+  assert.match(api,/autonomous_execute_readonly_specialist/)
+  assert.match(ui,/Ejecutar análisis/)
+  assert.match(ui,/executeAdvisory/)
+})
