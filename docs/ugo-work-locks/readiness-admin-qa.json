@@ -1,0 +1,32 @@
+{
+  "readiness_id": "admin-qa",
+  "task_id": "readiness-admin-qa",
+  "job_id": "UGO-READINESS-ADMIN-QA",
+  "title": "Verify QA Lab simulators, results, Meta-QA and regressions in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T00:37:00Z",
+  "heartbeat_at": "2026-09-30T00:37:00Z",
+  "lease_expires_at": "2026-09-30T01:22:00Z",
+  "started_sha": "b9a158b2a7d88ab9a7983b3f782a67cc396b01cb",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "QA Lab Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "qa-lab"
+  ],
+  "correlation_id": "readiness-admin-qa-20260930T003700Z-b9a158b2",
+  "current_step": "INSPECT_AND_HARDEN",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "qa-lab",
+    "meta-qa",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}
