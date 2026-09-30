@@ -3,13 +3,14 @@ import fs from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
-const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
+const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const email=process.env.UGO_TEST_PROVIDER_EMAIL||'',password=process.env.UGO_TEST_PROVIDER_PASSWORD||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(anon&&email&&password&&sha,'UGO_TEST_PROVIDER_DEBT_INPUTS_REQUIRED')
+assert.ok(anon&&serviceKey&&email&&password&&sha,'UGO_TEST_PROVIDER_DEBT_INPUTS_REQUIRED')
 
 const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const sleep=ms=>new Promise(r=>setTimeout(r,ms))
 let login=null,lastError=null
 for(let attempt=1;attempt<=3;attempt+=1){
@@ -43,6 +44,16 @@ try{
  }
 
  const saldo=unresolved.reduce((sum,d)=>sum+Number(d.saldo_pendiente||0),0)
+ const{data:threshold,error:thresholdError}=await admin.rpc('provider_debt_readiness_probe')
+ assert.ifError(thresholdError)
+ assert.equal(threshold?.status,'PASS','THREE_DEBT_PROBE_REQUIRED')
+ assert.equal(Number(threshold?.threshold),3)
+ assert.equal(Number(threshold?.temporary_real_debts),3)
+ assert.equal(Boolean(threshold?.blocked_at_threshold),true)
+ assert.equal(Boolean(threshold?.online_guard_rejected),true)
+ assert.equal(Boolean(threshold?.fixture_restored),true)
+ assert.equal(Boolean(threshold?.profile_restored),true)
+ assert.equal(Boolean(threshold?.production_touched),false)
  await fs.mkdir('artifacts',{recursive:true})
  const result={
   task:'provider-debt-runtime',
@@ -58,6 +69,8 @@ try{
   source:'deudas_ugo_proveedor RLS',
   removed_public_status_rpc_not_required:true,
   read_only:true,
+  threshold_probe:threshold,
+  three_debt_block_verified:true,
   completed_at:new Date().toISOString(),
  }
  await fs.writeFile('artifacts/provider-debt-runtime.json',JSON.stringify(result,null,2)+'\n')

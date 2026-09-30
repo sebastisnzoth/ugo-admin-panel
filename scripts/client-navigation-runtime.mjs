@@ -103,6 +103,7 @@ try{
   const page=await freshPage(viewport)
   try{
    await snap(page,name+' home')
+   if(name==='mobile')await assertMobileHomeNav(page)
 
    for(const item of ['Inicio','Actividad y pedidos','Direcciones','Formas de pago','Configuración']){
     await clickMenu(page,item)

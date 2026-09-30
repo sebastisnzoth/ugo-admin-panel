@@ -101,7 +101,27 @@ async function expectUi(state,stage){
  }
  assert.equal(persisted,state,'backend state mismatch for '+state)
  const timeline=page.locator('[data-service-state="'+state+'"][data-current-stage="'+stage+'"]').first()
- await timeline.waitFor({state:'visible',timeout:15000})
+ try{
+  await timeline.waitFor({state:'visible',timeout:15000})
+ }catch(error){
+  const clientRead=await auth.from('servicios').select('id,estado,cliente_id,proveedor_id,programado_para').eq('id',fixture.id).maybeSingle()
+  const diagnostic=await page.evaluate(()=>({
+   body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,2400),
+   detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
+   loading:Boolean(document.querySelector('.ugo-history-empty')),
+   tracking:Boolean(document.querySelector('.ugo-live-tracking')),
+   timelines:[...document.querySelectorAll('[data-service-state]')].map(node=>({
+    state:node.getAttribute('data-service-state'),
+    stage:node.getAttribute('data-current-stage'),
+    text:(node.textContent||'').replace(/\s+/g,' ').trim()
+   })),
+  })).catch(()=>({body:'EVALUATION_FAILED',detail:false,loading:false,tracking:false,timelines:[]}))
+  await page.screenshot({path:'artifacts/client-status-failure-'+state+'.png',fullPage:true}).catch(()=>{})
+  await fs.writeFile('artifacts/client-status-diagnostic-'+state+'.json',JSON.stringify({
+   state,stage,service_id:fixture.id,admin_state:persisted,client_read:clientRead,diagnostic,page_errors:pageErrors
+  },null,2)+'\n').catch(()=>{})
+  throw error
+ }
  const labels=await timeline.locator('small').allTextContents()
  assert.deepEqual(labels,['Asignado','Aceptado','En camino','Llegó','Trabajando','Finalizado'])
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
@@ -111,6 +131,17 @@ try{
  await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
  await expectUi('asignado','accepted')
+
+ const {error:cashError}=await auth.rpc('seleccionar_pago_efectivo',{p_servicio_id:fixture.id})
+ assert.ifError(cashError)
+ const {data:selectedPayment,error:paymentReadError}=await admin.from('pagos')
+  .select('id,metodo,estado')
+  .eq('servicio_id',fixture.id)
+  .order('created_at',{ascending:false})
+  .limit(1)
+  .maybeSingle()
+ assert.ifError(paymentReadError)
+ assert.equal(selectedPayment?.metodo,'efectivo','CASH_PAYMENT_SELECTION_REQUIRED')
 
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)

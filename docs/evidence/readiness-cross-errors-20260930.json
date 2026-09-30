@@ -60,5 +60,9 @@
   ],
   "prior_attempt_note": "Run 36705053848 failed only because the first Playwright selector was ambiguous; selector was corrected and API evidence made unconditional before the successful final run.",
   "production_touched": false,
-  "verified_at": "2026-09-30T11:03:00Z"
+  "verified_at": "2026-09-30T11:03:00Z",
+  "pages_revalidation": {
+    "requested_at": "2026-09-30T11:06:00Z",
+    "reason": "Refresh Implementation Command Center after authoritative DONE lock"
+  }
 }

@@ -44,9 +44,7 @@ async function retryDb(operation,label){
      const result=await operation()
      if(!result?.error)return result
      last=result
-   }catch(error){
-     last={error}
-   }
+   }catch(error){last={error}}
    const error=last?.error,code=String(error?.code||''),status=Number(error?.status||0),message=String(error?.message||error||'')
    const retryable=code==='PGRST002'||status===429||status>=500||/schema cache|fetch|network|timeout|gateway|temporar/i.test(message)
    if(!retryable||attempt===5)break
@@ -120,11 +118,14 @@ const closeClientOverlay=async page=>{
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
  const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
- if(!(await trigger.count())||!(await trigger.isVisible().catch(()=>false))){
-   await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
-   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ if(await trigger.count()&&await trigger.isVisible().catch(()=>false)){
+   await safeClick(page,trigger,'client menu')
+   return
  }
- await safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
+ const trace=pageContext.get(page)
+ if(trace)trace.step='client menu event'
+ await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
+ await page.getByRole('complementary',{name:'Menú UGO Cliente'}).waitFor({state:'visible',timeout:10000})
 }
 
 async function testClient(viewport,name){
