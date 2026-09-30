@@ -141,11 +141,19 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
      const clientRoot=page.locator('.ugo-client-root')
-     if(!(await clientRoot.isVisible().catch(()=>false))){
-       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true})
-       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' pageErrors='+errors.join(' | '))
+     try{
+       await clientRoot.waitFor({state:'visible',timeout:30000})
+     }catch(error){
+       const diagnostic=await page.evaluate(()=>({
+         url:location.href,
+         body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,1200),
+         rootClass:document.querySelector('.ugo-client-root')?.getAttribute('class')||null,
+         auth:Boolean(document.querySelector('.mvp-auth-page')),
+         onboarding:Boolean(document.querySelector('.ugo-client-onboarding'))
+       })).catch(()=>null)
+       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'-'+item.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png',fullPage:true}).catch(()=>{})
+       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' diagnostic='+JSON.stringify(diagnostic)+' pageErrors='+errors.join(' | '),{cause:error})
      }
      await assertResponsive(page,'client '+name+' '+item)
    }
