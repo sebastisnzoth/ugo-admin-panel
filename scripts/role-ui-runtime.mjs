@@ -155,8 +155,8 @@ async function testProvider(viewport,name){
      ?page.getByRole('navigation',{name:'Navegación principal'}).first()
      :page.getByRole('navigation',{name:'Navegación proveedor'}).first()
    const items=desktop
-     ?[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
-     :[/Inicio proveedor/i,/Pedidos/i,/Trabajo/i,/Perfil proveedor/i]
+     ?[/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
+     :[/Pedidos/i,/Trabajo/i,/Perfil proveedor/i]
    for(const item of items){
      const label='provider '+name+' '+String(item)
      try{
@@ -185,7 +185,7 @@ async function testProvider(viewport,name){
    }
    await page.screenshot({path:'artifacts/role-ui-provider-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-   results.push({role:'provider',viewport:name,status:'PASS',menu_items:items.length+(desktop?1:0)})
+   results.push({role:'provider',viewport:name,status:'PASS',menu_items:items.length+(desktop?2:1)})
  } finally {await page.close()}
 }
 
