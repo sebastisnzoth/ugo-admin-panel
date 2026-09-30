@@ -180,7 +180,12 @@ async function testProvider(viewport,name){
      const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
      for(const item of items){
        await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+String(item))
-       await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+       const providerRoot=page.locator('.ugo-provider-root')
+       if(!(await providerRoot.isVisible().catch(()=>false))){
+         await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true})
+         throw new Error('PROVIDER_RENDER_FAILURE '+name+' item='+String(item)+' pageErrors='+errors.join(' | '))
+       }
        await assertResponsive(page,'provider '+name+' '+String(item))
      }
      checkedItems=items.length
