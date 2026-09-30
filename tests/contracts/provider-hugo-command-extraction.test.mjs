@@ -82,3 +82,13 @@ test('provider Hugo availability mutations require explicit confirmation',async(
  assert.match(provider,/provider_set_offline'\)\{if\(args\.confirmed!==true\)/)
  assert.match(provider,/CONFIRMATION_REQUIRED/)
 })
+
+
+test('provider browser-speech fallback uses the deterministic command engine and speaks its result',async()=>{
+ const src=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
+ assert.match(src,/engine==='browser-speech'/)
+ assert.match(src,/runProviderVoiceCommand/)
+ assert.match(src,/findProviderVoiceOpportunity/)
+ assert.match(src,/providerVoiceSummary/)
+ assert.match(src,/SpeechSynthesisUtterance/)
+})
