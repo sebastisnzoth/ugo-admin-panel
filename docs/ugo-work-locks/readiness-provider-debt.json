@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-debt",
   "job_id": "UGO-READINESS-PROVIDER-DEBT",
   "title": "Verify provider debt limit blocks new acceptances after three services owed",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T04:34:00Z",
-  "heartbeat_at": "2026-09-30T04:34:00Z",
-  "lease_expires_at": "2026-09-30T05:19:00Z",
+  "heartbeat_at": "2026-09-30T04:40:00Z",
+  "lease_expires_at": "2026-09-30T04:40:00Z",
   "started_sha": "35e923d935b11981d72a6333e406762ddfd6ca98",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,7 +26,18 @@
     "provider-finance"
   ],
   "correlation_id": "readiness-provider-debt-20260930T043400Z",
-  "current_step": "ACQUIRE_AND_INSPECT",
+  "current_step": "FAILED_INFRA_AUTH_504",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "github-actions-run-36669588425"
+  ],
+  "failed_at": "2026-09-30T04:40:00Z",
+  "failure": {
+    "kind": "INFRASTRUCTURE",
+    "component": "UGO_TEST_AUTH",
+    "http_status": 504,
+    "functional_contracts_passed": 13,
+    "message": "Provider debt contracts all passed; authenticated TEST state probe could not sign in because Auth returned repeated HTTP 504."
+  },
+  "production_touched": false
 }
