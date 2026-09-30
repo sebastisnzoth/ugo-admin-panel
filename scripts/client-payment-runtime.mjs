@@ -19,6 +19,7 @@ assert.ifError(templateError);const template=templates?.[0];assert.ok(template?.
 const metadata={readiness_fixture:'client-payment',readiness_sha:sha,trabajo_aprobado_at:new Date().toISOString(),requested_payment_method:'efectivo'}
 const{data:service,error:createError}=await admin.from('servicios').insert({
  cliente_id:CLIENT,proveedor_id:PROVIDER,categoria_id:template.categoria_id,estado:'esperando_aprobacion',
+ programado_para:new Date(Date.now()+30*60*1000).toISOString(),
  descripcion:'UGO TEST client-payment '+sha.slice(0,12),urgencia:false,direccion_cliente:template.direccion_cliente||'UGO TEST',
  zona:template.zona||null,tarifa:120,comision_ugo:18,ganancia_proveedor:102,moneda:'BRL',ambiente:'demo',
  ubicacion_cliente:template.ubicacion_cliente||null,metadata
