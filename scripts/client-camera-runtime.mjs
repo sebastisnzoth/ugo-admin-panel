@@ -1,3 +1,4 @@
+// readiness rerun after shared build repair
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
