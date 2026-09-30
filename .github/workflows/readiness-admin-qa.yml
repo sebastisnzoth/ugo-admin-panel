@@ -43,6 +43,8 @@ jobs:
           done
       - run: node --test tests/contracts/readiness-admin-qa.test.mjs tests/contracts/superadmin-qa-lab-surface.test.mjs tests/contracts/autonomous-meta-qa-agent-runtime.test.mjs tests/contracts/autonomous-independent-runtime-evidence.test.mjs
       - run: npx tsc -b
+      - name: Reconcile protected QA gates fail closed
+        run: node scripts/readiness-admin-qa-reconcile.mjs
       - name: Persisted-state readiness judge
         run: |
           node scripts/readiness-admin-qa-runtime.mjs
