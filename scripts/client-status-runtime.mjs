@@ -20,16 +20,46 @@ const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,pa
 assert.ifError(loginError)
 assert.ok(login.session&&login.user,'UGO_TEST_CLIENT_SESSION_REQUIRED')
 
-const {data:rows,error:findError}=await admin.from('servicios')
- .select('id,numero,estado,cliente_id,proveedor_id')
+const {data:templates,error:templateError}=await admin.from('servicios')
+ .select('categoria_id,cliente_id,proveedor_id,descripcion,urgencia,direccion_cliente,zona,tarifa,comision_ugo,ganancia_proveedor,moneda,ubicacion_cliente,metadata')
  .eq('cliente_id',login.user.id)
  .not('proveedor_id','is',null)
  .order('created_at',{ascending:false})
  .limit(1)
-assert.ifError(findError)
-const fixture=rows?.[0]
-assert.ok(fixture?.id&&fixture?.proveedor_id,'ASSIGNED_CLIENT_SERVICE_FIXTURE_REQUIRED')
-const originalState=String(fixture.estado||'')
+assert.ifError(templateError)
+const template=templates?.[0]
+assert.ok(template?.proveedor_id&&template?.categoria_id,'CLIENT_STATUS_TEMPLATE_SERVICE_REQUIRED')
+
+const readinessTag='client-status:'+sha
+const metadata={
+ ...(template.metadata&&typeof template.metadata==='object'?template.metadata:{}),
+ readiness_fixture:'client-status',
+ readiness_sha:sha,
+ readiness_tag:readinessTag,
+}
+const insertRow={
+ cliente_id:login.user.id,
+ proveedor_id:template.proveedor_id,
+ categoria_id:template.categoria_id,
+ estado:'asignado',
+ descripcion:'UGO TEST readiness client-status '+sha.slice(0,12),
+ urgencia:false,
+ direccion_cliente:template.direccion_cliente||'UGO TEST',
+ zona:template.zona||null,
+ tarifa:template.tarifa??0,
+ comision_ugo:template.comision_ugo??0,
+ ganancia_proveedor:template.ganancia_proveedor??0,
+ moneda:template.moneda||'BRL',
+ ubicacion_cliente:template.ubicacion_cliente||null,
+ metadata,
+}
+const {data:fixture,error:createError}=await admin.from('servicios')
+ .insert(insertRow)
+ .select('id,numero,estado,cliente_id,proveedor_id')
+ .single()
+assert.ifError(createError)
+assert.ok(fixture?.id&&fixture?.proveedor_id,'DISPOSABLE_CLIENT_STATUS_FIXTURE_REQUIRED')
+
 const sequence=[
  ['asignado','accepted'],
  ['en_camino','route'],
@@ -47,7 +77,7 @@ page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
 await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
 
 const transitions=[]
-let restored=false
+let cleanup={ok:false,mode:'none',error:null}
 try{
  await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
@@ -71,17 +101,27 @@ try{
  }
  await page.screenshot({path:'artifacts/client-status-runtime.png',fullPage:true})
 }finally{
- const {error:restoreError}=await admin.from('servicios').update({estado:originalState}).eq('id',fixture.id).eq('cliente_id',login.user.id)
- if(!restoreError){
-  const {data}=await admin.from('servicios').select('estado').eq('id',fixture.id).single()
-  restored=String(data?.estado||'')===originalState
- }
  await page.close().catch(()=>{})
  await browser.close().catch(()=>{})
+ try{
+  await admin.from('ofertas_servicio').delete().eq('servicio_id',fixture.id)
+  await admin.from('pagos').delete().eq('servicio_id',fixture.id)
+  const {error:deleteError}=await admin.from('servicios').delete().eq('id',fixture.id).eq('cliente_id',login.user.id)
+  if(!deleteError){
+   const {data:deleted,error:checkError}=await admin.from('servicios').select('id').eq('id',fixture.id).maybeSingle()
+   if(!checkError&&!deleted)cleanup={ok:true,mode:'deleted',error:null}
+  }
+  if(!cleanup.ok){
+   const {error:cancelError}=await admin.from('servicios').update({estado:'cancelado',proveedor_id:null,metadata:{...metadata,readiness_cleanup:'cancelled'}}).eq('id',fixture.id).eq('cliente_id',login.user.id)
+   cleanup={ok:!cancelError,mode:cancelError?'failed':'cancelled',error:cancelError?String(cancelError.message||cancelError):null}
+  }
+ }catch(error){
+  cleanup={ok:false,mode:'failed',error:String(error?.message||error)}
+ }
  await auth.auth.signOut().catch(()=>{})
 }
 
-assert.equal(restored,true,'TEST_FIXTURE_RESTORE_REQUIRED')
+assert.equal(cleanup.ok,true,'DISPOSABLE_TEST_FIXTURE_CLEANUP_REQUIRED')
 assert.deepEqual(pageErrors,[],'runtime page errors detected')
 assert.equal(transitions.length,sequence.length,'full lifecycle runtime proof required')
 const evidence={
@@ -91,12 +131,13 @@ const evidence={
  production_touched:false,
  sha,
  service_id:fixture.id,
- original_state:originalState,
+ fixture:'disposable',
  sequence:transitions,
- restored,
+ cleanup,
+ cleanup_ok:cleanup.ok,
  page_errors:pageErrors,
  result:'PASS',
  completed_at:new Date().toISOString(),
 }
 await fs.writeFile('artifacts/client-status-runtime.json',JSON.stringify(evidence,null,2)+'\n')
-console.log(JSON.stringify({status:'PASS',sha,service_id:fixture.id,states:transitions.map(x=>x.state),restored}))
+console.log(JSON.stringify({status:'PASS',sha,service_id:fixture.id,states:transitions.map(x=>x.state),cleanup}))
