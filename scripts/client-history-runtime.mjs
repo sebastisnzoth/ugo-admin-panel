@@ -20,7 +20,7 @@ assert.ok(login.session&&login.user)
 const {data:services,error:servicesError}=await auth.from('servicios')
  .select('id,numero,estado,tarifa,created_at,completado_at,programado_para')
  .eq('cliente_id',login.user.id)
- .order('created_at',{ascending:false}).limit(80)
+ .order('created_at',{ascending:false}).limit(200)
 assert.ifError(servicesError)
 assert.ok(services?.length,'UGO_TEST_HISTORY_COMPLETED_SERVICE_REQUIRED')
 
