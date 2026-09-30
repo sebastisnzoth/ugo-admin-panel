@@ -5,8 +5,8 @@
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:46:00Z",
-  "heartbeat_at": "2026-09-30T10:54:00Z",
-  "lease_expires_at": "2026-09-30T11:39:00Z",
+  "heartbeat_at": "2026-09-30T10:57:00Z",
+  "lease_expires_at": "2026-09-30T11:42:00Z",
   "started_sha": "e5604ef5576392956de149ff3fcec0e14b21056e",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,8 +25,8 @@
     "client-service-status"
   ],
   "correlation_id": "readiness-client-status-20260930T104600Z-e5604ef5",
-  "current_step": "RUNNING_V2_DISPOSABLE_FIXTURE_RUNTIME",
-  "attempt": 4,
+  "current_step": "RUNNING_V3_SCHEDULED_DISPOSABLE_FIXTURE",
+  "attempt": 5,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
     "docs/evidence/readiness-client-status-20260930.json",
@@ -44,7 +44,11 @@
     "commit:22392f91bb6f4836f6fd68fcac18cb06c6aed38a",
     "commit:5dfaee3e465ee15ae46939dbf2c959c188336c44",
     "commit:dce9f0254e821a2d4552e48d9824a44e770a4c61",
-    "commit:604f80a9ee0264496205648f49eb21ac26d06afb"
+    "commit:604f80a9ee0264496205648f49eb21ac26d06afb",
+    "run:36705355548:FAIL_P0001_ACTIVE_ORDER_RULE",
+    "artifact:11092100809",
+    "commit:9ce81512a52e57f409cc455d51d2307061f523b0",
+    "commit:e7b33b610829f132871d8a5092ff08444546b002"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
   "judge": "PENDING",
