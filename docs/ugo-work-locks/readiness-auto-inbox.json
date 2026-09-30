@@ -5,8 +5,8 @@
   "title": "Verify Executive Inbox approvals and escalations in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T01:15:00Z",
-  "heartbeat_at": "2026-09-30T01:39:40Z",
-  "lease_expires_at": "2026-09-30T02:24:40.000Z",
+  "heartbeat_at": "2026-09-30T01:52:00Z",
+  "lease_expires_at": "2026-09-30T02:37:00Z",
   "started_sha": "48741a2a181de1cabaf20c4ca8e353687674615d",
   "owner": "UGO",
   "department": "UGO Empresa Autónoma",
@@ -19,7 +19,7 @@
     "autonomy-inbox"
   ],
   "correlation_id": "readiness-auto-inbox-20260930T011500Z-48741a2a",
-  "current_step": "DEDICATED_RUNTIME_WITH_STAGE_DIAGNOSTICS",
+  "current_step": "STABILIZE_DEDICATED_RUNTIME_CONCURRENCY",
   "attempt": 3,
   "evidence_ids": [
     "github:2ad4f1e01290dc374e39f592b886050a1d00b111",
@@ -30,7 +30,8 @@
     "github:0ce501a72bd45acf82d17a67d74b009fa88bc2aa",
     "github:b440b67b79659e885250b75d87fbb8468b2744b7",
     "github:7eabce9056a24ae70e625303ea5848d2eede1afe",
-    "github:40f97e2cf18a9c7cb1d4570c0f3e0aa76fdfd25f"
+    "github:40f97e2cf18a9c7cb1d4570c0f3e0aa76fdfd25f",
+    "diagnostic:run-36657097227:contract-pass-typecheck-cancelled"
   ],
   "production_touched": false,
   "skills": [
