@@ -12,7 +12,9 @@ test('cross-performance workflow validates the exact PR head SHA',()=>{
   assert.match(workflow,/name: cross-performance-runtime-\$\{\{ env\.UGO_RUNTIME_SHA \}\}/)
 })
 
-test('client performance navigation clicks the visible menu action, not the covered page action',()=>{
-  assert.match(runtime,/getByRole\('complementary',\{name:'Menú UGO Cliente'\}\)/)
-  assert.match(runtime,/menu\.getByRole\('button',\{name:\/Pedir servicio\/i\}\)/)
+test('client performance navigation uses a genuinely pointer-reachable action',()=>{
+  assert.match(runtime,/clickFirstPointerReachable/)
+  assert.match(runtime,/document\.elementFromPoint/)
+  assert.match(runtime,/filter\(\{hasText:\/Pedir servicio\/i\}\)/)
+  assert.doesNotMatch(runtime,/force:\s*true/)
 })
