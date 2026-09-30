@@ -45,7 +45,12 @@ async function openLocation(){
   await page.getByRole('main',{name:'Qué hay que hacer'}).waitFor({state:'visible',timeout:15000})
   await page.getByRole('textbox',{name:'Descripción del trabajo'}).fill('Prueba automatizada de ubicación Cliente con detalle suficiente')
   const continueButton=page.locator('.ugo-need-screen footer button').filter({hasText:'Continuar'}).first()
-  await page.waitForFunction(()=>{const button=document.querySelector('.ugo-need-screen footer button');return button instanceof HTMLButtonElement&&!button.disabled},null,{timeout:15000})
+  await continueButton.waitFor({state:'visible',timeout:15000})
+  await page.waitForFunction(()=>{
+    const buttons=Array.from(document.querySelectorAll('.ugo-need-screen footer button'))
+    const button=buttons.find(node=>node instanceof HTMLButtonElement&&node.textContent?.includes('Continuar'))
+    return button instanceof HTMLButtonElement&&!button.disabled
+  },null,{timeout:15000})
   await continueButton.click()
   await page.getByRole('main',{name:'Dónde es el servicio'}).waitFor({state:'visible',timeout:20000})
 }
@@ -76,6 +81,7 @@ try{
   assert.ok(!(await map.evaluate(el=>el.classList.contains('has-location'))),'INVALID_COORDS_MUST_FAIL_CLOSED')
 
   await context.clearPermissions()
+  await page.evaluate(()=>{Object.defineProperty(navigator,'geolocation',{configurable:true,value:{getCurrentPosition:(_ok,error)=>error({code:1,message:'permission denied'}),watchPosition:()=>0,clearWatch:()=>{}}})})
   await page.getByRole('button',{name:/Usar mi ubicación/}).click()
   await page.getByRole('alert').filter({hasText:/permiso de ubicación/i}).waitFor({state:'visible',timeout:10000})
 
