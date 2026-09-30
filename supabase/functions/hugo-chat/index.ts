@@ -1,6 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
+const SECRET_PATTERNS = [
+  /\b(?:sk|sb|ghp|github_pat|xox[baprs]|AIza)[A-Za-z0-9_\-]{12,}\b/g,
+  /\bBearer\s+[A-Za-z0-9._~+\/-]{12,}=*/gi,
+  /\b(?:password|passwd|secret|token|api[_-]?key|service[_-]?role[_-]?key)\s*[:=]\s*["']?[^\s,;"']{4,}/gi,
+  /data:[^;\s]+;base64,[A-Za-z0-9+/=]{80,}/gi,
+];
+function sanitizeForModel(value: unknown, max = 12000) {
+  let text = typeof value === 'string' ? value : JSON.stringify(value ?? '');
+  for (const pattern of SECRET_PATTERNS) text = text.replace(pattern, '[REDACTED]');
+  return text.replace(/[A-Za-z0-9+/]{800,}={0,2}/g, '[REDACTED_BLOB]').trim().slice(0, max);
+}
+
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -23,8 +35,11 @@ serve(async (req) => {
       .eq('clave', `hugo_prompt_${role}`)
       .single();
 
-    const systemPrompt = (row?.valor ?? 'Eres Hugo, el núcleo de inteligencia de U.GO. Responde en español, máximo 3 frases.') +
-      (context ? `\n\nESTADO DEL SISTEMA:\n${context}` : '');
+    const safeContext = sanitizeForModel(context, 12000);
+    const safeMessage = sanitizeForModel(message, 1800);
+    const safeHistory = Array.isArray(history) ? history.slice(-6).map((item) => ({ role: item?.role === 'assistant' ? 'assistant' : 'user', content: sanitizeForModel(item?.content, 1200) })) : [];
+    const systemPrompt = sanitizeForModel(row?.valor ?? 'Eres Hugo, el núcleo de inteligencia de U.GO. Responde en español, máximo 3 frases.', 8000) +
+      (safeContext ? `\n\nESTADO DEL SISTEMA:\n${safeContext}` : '');
 
     // Call Anthropic
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -39,8 +54,8 @@ serve(async (req) => {
         max_tokens: 400,
         system: systemPrompt,
         messages: [
-          ...history.slice(-6),
-          { role: 'user', content: message }
+          ...safeHistory,
+          { role: 'user', content: safeMessage }
         ],
       }),
     });
@@ -63,7 +78,7 @@ serve(async (req) => {
 
   } catch (err) {
     return new Response(
-      JSON.stringify({ hugo_mensaje: `Error: ${err.message}`, accion: null }),
+      JSON.stringify({ hugo_mensaje: 'Hugo no pudo responder ahora.', accion: null }),
       { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } }
     );
   }
