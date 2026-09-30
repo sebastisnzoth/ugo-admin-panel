@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T20:31:00Z",
-  "lease_expires_at": "2026-09-30T21:16:00Z",
+  "heartbeat_at": "2026-09-30T20:36:00Z",
+  "lease_expires_at": "2026-09-30T21:21:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,8 +17,8 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R12_PROVIDER_AUTH_FALLBACK_RERUN",
-  "attempt": 12,
+  "current_step": "R13_PROVIDER_REAL_UI_LOGIN_RERUN",
+  "attempt": 13,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
     "repo:docs/evidence/readiness-cross-visual-20260930.json",
@@ -69,7 +69,10 @@
     "fix:ca52a0a9c73ffdf8ff10380c56e0e120a97db675",
     "github-run:36772610251:FLAKY_PROVIDER_SESSION_RESTORE",
     "artifact:11124413270",
-    "fix:9f95ee47b80649ee6ab13f7a7919be60fcac7a51"
+    "fix:9f95ee47b80649ee6ab13f7a7919be60fcac7a51",
+    "github-run:36773122548:FLAKY_PROVIDER_RESTORED_SESSION_DROPPED",
+    "artifact:11123624650",
+    "fix:52036da557d30a298bb7a949ddba29701ee2d53b"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
