@@ -307,8 +307,11 @@ async function testAdmin(viewport,name){
 try{
  const viewports=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]
  for(const [name,viewport] of viewports){
+   await freshRoleSession('client')
    await testClient(viewport,name)
+   await freshRoleSession('provider')
    await testProvider(viewport,name)
+   await freshRoleSession('admin')
    await testAdminAuthBoundary(viewport,name)
    await testAdmin(viewport,name)
  }
