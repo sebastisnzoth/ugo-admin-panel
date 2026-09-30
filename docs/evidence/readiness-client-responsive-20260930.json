@@ -1,0 +1,20 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "client-responsive",
+  "verdict": "VERIFIED",
+  "environment": "UGO TEST",
+  "source_sha": "25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
+  "workflow_run_id": 36661882557,
+  "workflow_job_id": 109718236659,
+  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36661882557",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "artifact": {
+    "id": 11074796654,
+    "name": "readiness-client-responsive-25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
+    "digest": "sha256:215e3d977909d66f47dbd6547a2b10d9b2e2824ce87228e2b17a76b38fd51aac"
+  },
+  "summary": "Browser matrix 390x844, 768x1024 and 1440x900 passed with no horizontal overflow or page errors; mobile text-action target repaired to 44px; screenshots reviewed.",
+  "recorded_at": "2026-09-30T03:04:00Z"
+}
