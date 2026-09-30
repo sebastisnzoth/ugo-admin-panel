@@ -1,0 +1,30 @@
+{
+  "readiness_id": "hugo-responsive",
+  "task_id": "readiness-hugo-responsive",
+  "job_id": "UGO-READINESS-HUGO-RESPONSIVE",
+  "title": "Verify hugo-responsive in UGO TEST",
+  "status": "IN_PROGRESS",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Responsive Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "hugo-shell"
+  ],
+  "correlation_id": "readiness-hugo-responsive-20260930T1038Z",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "started_at": "2026-09-30T10:38:00Z",
+  "heartbeat_at": "2026-09-30T10:38:00Z",
+  "lease_expires_at": "2026-09-30T12:38:00Z",
+  "started_sha": "17801dd24e11673ace34d1a39fc1385619a11465",
+  "evidence_ids": [],
+  "production_touched": false
+}
