@@ -5,8 +5,8 @@
   "title": "Verify client digital/cash payment lifecycle without double charge",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T11:19:00Z",
-  "heartbeat_at": "2026-09-30T13:38:00Z",
-  "lease_expires_at": "2026-09-30T14:23:00Z",
+  "heartbeat_at": "2026-09-30T13:47:00Z",
+  "lease_expires_at": "2026-09-30T14:32:00Z",
   "started_sha": "7602b9d74f65301e1042c8c47d94c87505659fd2",
   "owner": "UGO",
   "department": "App Cliente",
@@ -20,10 +20,12 @@
     "client-payment"
   ],
   "correlation_id": "readiness-client-payment-20260930T111900Z-5d36d7cf",
-  "current_step": "STALE_RECONCILED_INSPECT_AND_BUILD_RUNTIME_PROOF",
+  "current_step": "RUNTIME_JUDGE_SENTINEL_RUN_36724104644",
   "attempt": 2,
   "evidence_ids": [
-    "stale-reconcile:7602b9d74f65301e1042c8c47d94c87505659fd2"
+    "stale-reconcile:7602b9d74f65301e1042c8c47d94c87505659fd2",
+    "workflow-run:36724104644",
+    "migration:20260930134500_client_payment_cash_audit.sql"
   ],
   "production_touched": false,
   "skills": [
