@@ -1,0 +1,33 @@
+{
+  "readiness_id": "provider-notifications",
+  "task_id": "readiness-provider-notifications",
+  "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
+  "title": "Verify provider notifications in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T11:30:00Z",
+  "heartbeat_at": "2026-09-30T11:30:00Z",
+  "lease_expires_at": "2026-09-30T12:15:00Z",
+  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Notifications Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-notifications",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "notifications"
+  ],
+  "correlation_id": "readiness-provider-notifications-20260930T113000Z-0833841a",
+  "current_step": "INSPECT_NOTIFICATION_PIPELINE_AND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
