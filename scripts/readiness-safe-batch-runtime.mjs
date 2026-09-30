@@ -149,6 +149,8 @@ assert.ok(category,'TEST_CATEGORY_REQUIRED')
   const {context,page}=await openRole('client')
   try{
    await visible(page.locator('.ugo-client-root'))
+   await visible(page.locator('.ugo-real-hugo'))
+   await installToolCapture(page)
    await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ugo:native-voice-error',{detail:{code:'session',engine:'gemini-live'}})))
    const error=page.locator('.ugo-hugo-stage-error')
    await visible(error,5000)
