@@ -214,4 +214,6 @@ test('backend permits travel for a zero-tariff service only after a client payme
  assert.match(sql,/coalesce\(v_servicio\.tarifa,0\)<=0[\s\S]*importe aprobado/i)
  assert.match(sql,/p\.estado='retenido'/)
  assert.match(sql,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
+ const wrapper=await read('supabase/migrations/20260930190200_variable_price_lifecycle_wrapper_fix.sql')
+ assert.match(wrapper,/create or replace function public\.avanzar_servicio[\s\S]*security definer/i)
 })
