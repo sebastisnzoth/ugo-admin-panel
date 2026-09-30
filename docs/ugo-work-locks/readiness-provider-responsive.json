@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-responsive",
   "job_id": "UGO-READINESS-PROVIDER-RESPONSIVE",
   "title": "Verify Provider responsive usability on mobile tablet and desktop",
-  "status": "FAILED",
+  "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:37:00Z",
-  "heartbeat_at": "2026-09-30T04:40:30Z",
-  "lease_expires_at": "2026-09-30T04:40:30Z",
+  "heartbeat_at": "2026-09-30T04:44:00Z",
+  "lease_expires_at": "2026-09-30T05:29:00Z",
   "started_sha": "83baa1e650be36b0efb8d144f10058dad6a4dc12",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,8 +26,8 @@
     "provider-shell"
   ],
   "correlation_id": "readiness-provider-responsive-20260930T043700Z",
-  "current_step": "FAILED_INFRA_AUTH_504",
-  "attempt": 1,
+  "current_step": "HARDEN_TEST_CONCURRENCY",
+  "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36669664440",
     "docs/evidence/ugo-test-auth-outage-20260930.json"
