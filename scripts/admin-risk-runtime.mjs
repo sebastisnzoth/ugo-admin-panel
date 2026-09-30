@@ -64,7 +64,13 @@ try{
   for(const [label,value] of [['Riesgos',state.risks.length],['Controles',state.controls.length],['Challenges D14',state.challenges.length],['Findings abiertos',openFindings.length]]){
     const card=root.locator('article').filter({hasText:String(label)}).first()
     await card.waitFor({state:'visible',timeout:10000})
-    assert.ok(((await card.textContent())||'').includes(String(value)),label+'_COUNT_MISMATCH')
+    let matched=false
+    for(let attempt=0;attempt<40;attempt++){
+      const cardText=(await card.textContent())||''
+      if(cardText.includes(String(value))){matched=true;break}
+      await page.waitForTimeout(250)
+    }
+    assert.ok(matched,label+'_COUNT_MISMATCH')
   }
   for(const blocker of state.gate?.blockers||[])assert.ok(text.includes(String(blocker)),'RISK_BLOCKER_UI_BACKEND_MISMATCH:'+blocker)
 
