@@ -26,5 +26,12 @@
     "Judge": "PENDING",
     "Sentinel": "PENDING"
   },
-  "production_touched": false
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-job-execution",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ]
 }
