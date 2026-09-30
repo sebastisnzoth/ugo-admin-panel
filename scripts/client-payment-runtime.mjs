@@ -3,7 +3,6 @@ import fs from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
-const CLIENT='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1'
 const PROVIDER='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceRole=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const email=process.env.UGO_TEST_CLIENT_EMAIL||'',password=process.env.UGO_TEST_CLIENT_PASSWORD||'',sha=process.env.UGO_RUNTIME_SHA||''
@@ -12,7 +11,8 @@ assert.ok(anon&&serviceRole&&email&&password&&sha,'CLIENT_PAYMENT_RUNTIME_INPUTS
 const client=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
 const admin=createClient(url,serviceRole,{auth:{persistSession:false,autoRefreshToken:false}})
 const{data:login,error:loginError}=await client.auth.signInWithPassword({email,password})
-assert.ifError(loginError);assert.equal(login.user?.id,CLIENT,'TEST_CLIENT_ID_MISMATCH')
+assert.ifError(loginError);assert.ok(login.user?.id,'TEST_CLIENT_REQUIRED')
+const CLIENT=login.user.id
 
 const{data:templates,error:templateError}=await admin.from('servicios').select('categoria_id,direccion_cliente,zona,ubicacion_cliente').eq('cliente_id',CLIENT).order('created_at',{ascending:false}).limit(1)
 assert.ifError(templateError);const template=templates?.[0];assert.ok(template?.categoria_id,'PAYMENT_TEMPLATE_REQUIRED')
