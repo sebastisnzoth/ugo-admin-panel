@@ -66,7 +66,6 @@ try{
     }
     throw new Error(code+':'+String(marker))
   }
-  const text=(await root.textContent())||''
   const openFindings=state.findings.filter(x=>x.status!=='CLOSED')
 
   for(const [label,value] of [['Riesgos',state.risks.length],['Controles',state.controls.length],['Challenges D14',state.challenges.length],['Findings abiertos',openFindings.length]]){
@@ -80,19 +79,19 @@ try{
     }
     assert.ok(matched,label+'_COUNT_MISMATCH')
   }
-  for(const blocker of state.gate?.blockers||[])assert.ok(text.includes(String(blocker)),'RISK_BLOCKER_UI_BACKEND_MISMATCH:'+blocker)
+  for(const blocker of state.gate?.blockers||[])await waitRootText(blocker,'RISK_BLOCKER_UI_BACKEND_MISMATCH')
 
   const finding=openFindings[0]
   if(finding){
-    assert.ok(text.includes(String(finding.finding_type||finding.id)),'RISK_FINDING_UI_BACKEND_MISMATCH')
-    assert.ok(text.includes(String(finding.status)),'RISK_FINDING_STATUS_MISMATCH')
+    await waitRootText(finding.finding_type||finding.id,'RISK_FINDING_UI_BACKEND_MISMATCH')
+    await waitRootText(finding.status,'RISK_FINDING_STATUS_MISMATCH')
   }
 
   const evidence=state.evidence[0]
   assert.ok(evidence,'RISK_EVIDENCE_REQUIRED')
   const evidenceMarker=String(evidence.reference||evidence.evidence_type||evidence.id)
-  assert.ok(text.includes(evidenceMarker),'RISK_EVIDENCE_UI_BACKEND_MISMATCH:'+evidenceMarker)
-  if(evidence.correlation_id)assert.ok(text.includes(String(evidence.correlation_id)),'RISK_EVIDENCE_CORRELATION_MISMATCH')
+  await waitRootText(evidenceMarker,'RISK_EVIDENCE_UI_BACKEND_MISMATCH')
+  if(evidence.correlation_id)await waitRootText(evidence.correlation_id,'RISK_EVIDENCE_CORRELATION_MISMATCH')
   if(/^https?:\/\//.test(String(evidence.reference||''))){
     const link=root.locator('a').filter({hasText:String(evidence.reference)}).first()
     assert.equal(await link.getAttribute('href'),String(evidence.reference),'RISK_EVIDENCE_LINK_MISMATCH')
@@ -102,8 +101,8 @@ try{
 
   const decision=state.decisions[0]
   assert.ok(decision,'RISK_DECISION_REQUIRED')
-  assert.ok(text.includes(String(decision.decision||'DECISION')),'RISK_DECISION_UI_BACKEND_MISMATCH')
-  if(decision.correlation_id)assert.ok(text.includes(String(decision.correlation_id)),'RISK_DECISION_CORRELATION_MISMATCH')
+  await waitRootText(decision.decision||'DECISION','RISK_DECISION_UI_BACKEND_MISMATCH')
+  if(decision.correlation_id)await waitRootText(decision.correlation_id,'RISK_DECISION_CORRELATION_MISMATCH')
 
   assert.deepEqual(pageErrors,[],'RISK_BROWSER_PAGE_ERRORS')
   await page.screenshot({path:'artifacts/admin-risk-runtime.png',fullPage:true})
