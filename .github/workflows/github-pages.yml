@@ -16,6 +16,7 @@ on:
       - "scripts/ugo-scheduler-engine.mjs"
       - "scripts/ugo-readiness-engine.mjs"
       - "scripts/validate-ugo-scheduler.mjs"
+      - "tests/contracts/command-center-evidence-sync.test.mjs"
       - ".github/workflows/github-pages.yml"
   workflow_dispatch:
 
@@ -48,6 +49,10 @@ jobs:
       - name: Validate scheduler policy and locks
         shell: bash
         run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
+
+      - name: Validate Command Center evidence synchronization contract
+        shell: bash
+        run: node --test tests/contracts/command-center-evidence-sync.test.mjs
 
       - name: Build same-SHA CI snapshot
         env:
