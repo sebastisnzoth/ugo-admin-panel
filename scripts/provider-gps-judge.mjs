@@ -13,14 +13,17 @@ assert.equal(runtime.gpsGeofence,true,'JUDGE_GPS_GATE_REQUIRED')
 assert.ok(runtime.serviceId,'JUDGE_SERVICE_ID_REQUIRED')
 assert.ok(runtime.qaRunId,'JUDGE_QA_RUN_REQUIRED')
 assert.ok(runtime.judgeJob,'JUDGE_DB_EVIDENCE_JOB_REQUIRED')
+assert.equal(runtime.verification_result?.passed,true,'JUDGE_DB_VERDICT_REQUIRED')
+assert.equal(runtime.verification_result?.source,'INDEPENDENT_PERSISTED_EVIDENCE','JUDGE_DB_SOURCE_REQUIRED')
 assert.equal(runtime.fixtureAvailabilityRestored,true,'JUDGE_FIXTURE_RESTORE_REQUIRED')
 const required=[
  'zero_zero_rejected',
  'stale_gps_rejected',
  'inaccurate_gps_rejected',
- 'outside_geofence_rejected',
- 'rejected_arrival_did_not_change_state',
- 'valid_gps_arrival_accepted',
+ 'arrival_inside_200m',
+ 'arrival_outside_200m_rejected',
+ 'state_unchanged_on_rejection',
+ 'recent_location_required',
 ]
 for(const key of required) assert.equal(runtime.observations?.[key],true,'JUDGE_OBSERVATION_'+key)
 const result={validator:'Judge',readiness_id:'provider-gps',status:'PASS',sha,serviceId:runtime.serviceId,qaRunId:runtime.qaRunId,dbJudgeJob:runtime.judgeJob,checks:required,completed_at:new Date().toISOString()}
