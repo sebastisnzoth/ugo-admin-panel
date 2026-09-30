@@ -1,0 +1,56 @@
+{
+  "readiness_id": "cross-observability",
+  "task_id": "readiness-cross-observability",
+  "job_id": "UGO-READINESS-CROSS-OBSERVABILITY",
+  "title": "Verify critical observability by serviceId/job with correlation_id and evidence",
+  "status": "DONE",
+  "started_at": "2026-09-30T15:06:00Z",
+  "heartbeat_at": "2026-09-30T15:14:00Z",
+  "lease_expires_at": null,
+  "started_sha": "db5bad8a239ec67b84e1fec48a7dfc7e3e68a8da",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "Cross Observability Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "audit-ledger"
+  ],
+  "correlation_id": "readiness-cross-observability-20260930T150600Z-db5bad8a",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "github-run:36734750824",
+    "github-core-run:36734750962",
+    "github-job-runtime:109953395640",
+    "github-job-judge:109954396672",
+    "github-job-sentinel:109954499865",
+    "github-artifact:11107021220",
+    "github-artifact:11106147808",
+    "github-artifact:11106008366",
+    "repo-evidence:docs/evidence/readiness-cross-observability-20260930.json"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ],
+  "completed_at": "2026-09-30T15:14:00Z",
+  "finished_at": "2026-09-30T15:14:00Z",
+  "verified_sha": "850eedec2f1a303c5abeb4a66705ede5a8ceb6ca",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false
+  }
+}

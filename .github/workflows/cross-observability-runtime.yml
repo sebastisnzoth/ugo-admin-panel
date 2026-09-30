@@ -1,0 +1,117 @@
+name: UGO Cross Observability Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cross-observability-*.mjs'
+      - 'scripts/auto-ledgers-runtime.mjs'
+      - 'scripts/hugo-audit-runtime.mjs'
+      - 'api/operations.ts'
+      - '.github/workflows/cross-observability-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-cross-observability
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+
+jobs:
+  runtime:
+    name: Service/job correlation runtime · UGO TEST
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify autonomous job ledgers
+        run: |
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          node scripts/auto-ledgers-runtime.mjs
+      - name: Verify service audit correlation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          export SUPABASE_URL="$UGO_TEST_SUPABASE_URL"
+          export SUPABASE_ANON_KEY="$UGO_TEST_SUPABASE_ANON_KEY"
+          export SUPABASE_SERVICE_ROLE_KEY="$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-cross-observability-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null && break || sleep 1
+          done
+          node --experimental-strip-types scripts/hugo-audit-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-observability-runtime-${{ github.sha }}
+          path: |
+            artifacts/auto-ledgers-runtime.json
+            artifacts/hugo-audit-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-observability-runtime-${{ github.sha }}
+          path: artifacts
+      - run: UGO_RUNTIME_SHA="${GITHUB_SHA}" node scripts/cross-observability-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-observability-judge-${{ github.sha }}
+          path: artifacts/cross-observability-judge.json
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-observability-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-observability-judge-${{ github.sha }}
+          path: artifacts
+      - run: UGO_RUNTIME_SHA="${GITHUB_SHA}" node scripts/cross-observability-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-observability-sentinel-${{ github.sha }}
+          path: artifacts/cross-observability-sentinel.json
