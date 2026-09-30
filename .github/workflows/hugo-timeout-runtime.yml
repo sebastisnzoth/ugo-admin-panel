@@ -1,11 +1,15 @@
 name: UGO Hugo Timeout Runtime TEST
 on:
+  pull_request:
+    branches: [main]
   push:
     branches: [main]
     paths:
       - "api/hugo/chat.ts"
+      - "api/hugo/modelRouter.ts"
       - "scripts/hugo-timeout-*.mjs"
       - "tests/contracts/client-hugo-runtime-resilience.test.mjs"
+      - "tests/contracts/hugo-model-router-resilience.test.mjs"
       - "tests/contracts/provider-hugo-runtime-resilience.test.mjs"
       - ".github/workflows/hugo-timeout-runtime.yml"
   workflow_dispatch:
@@ -30,7 +34,7 @@ jobs:
         env: {VITE_APP_REVISION: "${{ github.sha }}"}
         run: npm run build
       - name: Hugo resilience contracts
-        run: node --test tests/contracts/client-hugo-runtime-resilience.test.mjs tests/contracts/provider-hugo-runtime-resilience.test.mjs
+        run: node --test tests/contracts/client-hugo-runtime-resilience.test.mjs tests/contracts/provider-hugo-runtime-resilience.test.mjs tests/contracts/hugo-model-router-resilience.test.mjs
       - name: Fault injection runtime
         env: {UGO_RUNTIME_SHA: "${{ github.sha }}"}
         run: node scripts/hugo-timeout-runtime.mjs
