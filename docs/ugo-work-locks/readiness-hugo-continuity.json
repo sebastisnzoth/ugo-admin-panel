@@ -5,8 +5,8 @@
   "title": "Verify continuous Hugo conversation context in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:40:00Z",
-  "heartbeat_at": "2026-09-30T13:43:00Z",
-  "lease_expires_at": "2026-09-30T14:28:00Z",
+  "heartbeat_at": "2026-09-30T13:45:00Z",
+  "lease_expires_at": "2026-09-30T14:30:00Z",
   "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,9 +19,15 @@
     "hugo-session"
   ],
   "correlation_id": "readiness-hugo-continuity-20260930T134000Z-3d32723c",
-  "current_step": "FIX_AND_RUNTIME_PROOF",
+  "current_step": "WAITING_SAME_SHA_CI_AND_RUNTIME",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-pr:308",
+    "github-head:cbc5a245fb6637c0f7f47eac264951751ab9c729",
+    "github-run:36723710001",
+    "github-run:36723709923",
+    "github-run:36723709943"
+  ],
   "production_touched": false,
   "validators_result": {
     "Judge": "PENDING",
