@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-responsive",
   "job_id": "UGO-READINESS-HUGO-RESPONSIVE",
   "title": "Verify Hugo responsive behavior in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:57:00Z",
-  "heartbeat_at": "2026-09-30T13:57:00Z",
-  "lease_expires_at": "2026-09-30T14:42:00Z",
+  "heartbeat_at": "2026-09-30T14:00:00Z",
+  "lease_expires_at": null,
   "started_sha": "d76d3e12342c92c4d3347e8a83d2e6c264932fac",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -26,8 +26,28 @@
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-responsive-20260930T135700Z-d76d3e12",
-  "current_step": "EXECUTE_RESPONSIVE_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 1,
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-run:36725518023",
+    "github-job:109921260771",
+    "github-artifact:11101549540",
+    "repo-evidence:docs/evidence/readiness-hugo-responsive-20260930.json"
+  ],
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "completed_at": "2026-09-30T14:00:00Z",
+  "finished_at": "2026-09-30T14:00:00Z",
+  "verified_sha": "9c34a28f7ee294cae1dd61c58a576ef5a3692a20",
+  "merged_main_sha": "49699551770b273728bc30a07e2db31d64982696",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "production_touched": false
+  }
 }
