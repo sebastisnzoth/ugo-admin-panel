@@ -14,7 +14,7 @@
     "Sentinel"
   ],
   "resources": [
-    "autonomy-on-gate"
+    "autonomy-state"
   ],
   "correlation_id": "ugo-autonomy-on-20260930T033600Z",
   "current_step": "VERIFIED",
@@ -36,5 +36,12 @@
   },
   "evidence_path": "docs/evidence/ugo-autonomy-on-20260930.json",
   "evidence_commit_sha": "8ea7525845dfa2283b6cb7164e6f9f08b4902d2a",
-  "production_touched": false
+  "production_touched": false,
+  "department": "Plataforma Autónoma",
+  "skills": [
+    "ugo-autonomous-company",
+    "ugo-job-execution",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
