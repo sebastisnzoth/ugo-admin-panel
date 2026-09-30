@@ -95,10 +95,11 @@ try{
 
  const cards=page.locator('.ugo-autonomous-inbox-job')
  const texts=await cards.allTextContents()
- const redIndexes=texts.map((x,i)=>x.includes('AUTO_INBOX_RED')?i:-1).filter(i=>i>=0)
- const redIndex=redIndexes[0]??-1
- const yellowIndex=texts.findIndex(x=>x.includes('AUTO_INBOX_YELLOW'))
- assert.equal(redIndexes.length,1,'INBOX_IDEMPOTENCY_ROW_RENDERED_MORE_THAN_ONCE')
+ const correlations=await cards.evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-correlation-id')))
+ const redIndex=correlations.indexOf(String(redJob.correlation_id))
+ const yellowIndex=correlations.indexOf(String(yellowJob.correlation_id))
+ assert.equal(correlations.filter(x=>x===String(redJob.correlation_id)).length,1,'INBOX_IDEMPOTENCY_ROW_RENDERED_MORE_THAN_ONCE')
+ assert.equal(correlations.filter(x=>x===String(yellowJob.correlation_id)).length,1,'INBOX_YELLOW_ROW_RENDERED_MORE_THAN_ONCE')
  assert.ok(redIndex>=0&&yellowIndex>=0,'INBOX_FIXTURES_NOT_VISIBLE')
  assert.ok(redIndex<yellowIndex,'INBOX_PRIORITY_ORDER_INVALID')
  assert.match(texts[redIndex],/Prioridad P0/)
