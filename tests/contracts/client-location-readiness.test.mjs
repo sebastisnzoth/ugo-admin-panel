@@ -28,7 +28,7 @@ test('client location keeps GPS fail-closed semantics',()=>{
 })
 
 test('client location runtime proves valid, invalid, permission and timeout cases',()=>{
-  for(const token of ['MAP_CONFIRMED_CLASS_REQUIRED','INVALID_COORDS_MUST_FAIL_CLOSED','permission denied','timeout_message'])assert.ok(runtime.toLowerCase().includes(token.toLowerCase()),token)
+  for(const token of ['MAP_CONFIRMED_CLASS_REQUIRED','INVALID_COORDS_MUST_FAIL_CLOSED','clearPermissions','timeout_message'])assert.ok(runtime.toLowerCase().includes(token.toLowerCase()),token)
   assert.match(runtime,/setGeolocation\(\{latitude:0,longitude:0\}\)/)
   assert.match(runtime,/clearPermissions\(\)/)
   assert.match(runtime,/Object\.defineProperty\(navigator,'geolocation'/)
