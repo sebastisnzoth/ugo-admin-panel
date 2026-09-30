@@ -1,0 +1,71 @@
+{
+  "schema_version": "UGO_AUTONOMY_ON_READINESS_EVIDENCE_V1",
+  "task_id": "ugo-autonomy-on-readiness",
+  "environment": "UGO TEST",
+  "result": "PASS",
+  "source_main_sha": "5fa00dda19c860a73047103491b0eff08e29f06e",
+  "state": {
+    "mode": "ON",
+    "autonomy_on_gate": {
+      "status": "READY",
+      "blockers": []
+    },
+    "agents_total": 118,
+    "agents_enabled": 118,
+    "action_capabilities": 118,
+    "model_routes_ready": "3/3",
+    "critical_findings": 0,
+    "running_jobs": 0,
+    "stale_jobs": 0,
+    "active_kill_switches": 0,
+    "automatable_uncovered": [],
+    "human_uncovered": [
+      "physical-gps-device",
+      "real-customer-acceptance"
+    ],
+    "active_global_kill_switches": 0,
+    "active_scoped_kill_switches": 3,
+    "scoped_containment_compatible_with_on": true
+  },
+  "stabilization": {
+    "uploaded_media_bytes": "COVERED",
+    "scheduled_worker_preserves_prior_mode": true,
+    "isolated_rpc_runtime_preserves_prior_mode": true,
+    "command_center_separates_autonomy_and_customer1": true,
+    "scoped_kill_switches_do_not_force_company_off": true
+  },
+  "validation": {
+    "github_workflow": "UGO Autonomy ON Readiness TEST",
+    "github_run_id": 36664619926,
+    "conclusion": "success",
+    "judge_audit_log_id": 6547,
+    "sentinel_audit_log_id": 6548
+  },
+  "customer_1": {
+    "independent_from_internal_autonomy": true,
+    "status": "BLOCKED",
+    "launch_forced": false,
+    "note": "Commercial/customer launch remains fail-closed on its own QA/human acceptance gates."
+  },
+  "production_touched": false,
+  "implementation": [
+    "supabase/migrations/20260930032000_uploaded_media_coverage_guard_fix.sql",
+    "supabase/migrations/20260930033000_autonomy_on_readiness_gate.sql",
+    "supabase/migrations/20260930034000_preserve_autonomy_mode_in_worker_proof.sql",
+    "supabase/migrations/20260930034500_service_role_release_gate_read.sql",
+    "tests/integration/autonomous-corporation-rpc-rls.test.mjs",
+    "scripts/autonomous-scheduled-worker-on-proof.mjs",
+    "scripts/autonomous-scheduled-worker-superadmin-proof.mjs",
+    "scripts/autonomy-on-readiness-runtime.mjs",
+    "tests/contracts/autonomy-on-readiness.test.mjs",
+    "src/mvp/SuperAdminCommandCenter.tsx",
+    "src/mvp/AutonomousCorporationDashboard.tsx",
+    "supabase/migrations/20260930035500_autonomy_on_scoped_containment.sql"
+  ],
+  "created_at": "2026-09-30T03:31:00Z",
+  "notes": [
+    "AUTONOMY_ON remains READY while scoped AGENT/DEPARTMENT/CAPABILITY kill switches contain subsets; only GLOBAL containment blocks ON readiness.",
+    "At the final check, three scoped kill switches were intentionally active and were not modified.",
+    "Production was not touched."
+  ]
+}

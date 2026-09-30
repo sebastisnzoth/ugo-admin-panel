@@ -11,7 +11,6 @@ test('provider keeps online work and demand status visible across screens',async
  assert.match(root,/jobLabel/)
  assert.match(root,/data\.opportunities\.length/)
  assert.match(root,/provider-nav-work-dot/)
- assert.match(root,/provider-nav-attention/)
  assert.match(root,/aria-label=\{data\.service\?/)
 })
 

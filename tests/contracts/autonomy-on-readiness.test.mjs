@@ -5,6 +5,7 @@ import fs from'node:fs'
 const gate=fs.readFileSync('supabase/migrations/20260930033000_autonomy_on_readiness_gate.sql','utf8')
 const preserve=fs.readFileSync('supabase/migrations/20260930034000_preserve_autonomy_mode_in_worker_proof.sql','utf8')
 const media=fs.readFileSync('supabase/migrations/20260930032000_uploaded_media_coverage_guard_fix.sql','utf8')
+const containment=fs.readFileSync('supabase/migrations/20260930035500_autonomy_on_scoped_containment.sql','utf8')
 const runtime=fs.readFileSync('scripts/autonomy-on-readiness-runtime.mjs','utf8')
 
 test('AUTONOMY_ON gate is independent from Customer 1 commercial launch',()=>{
@@ -44,4 +45,11 @@ test('post-ON runtime asserts persistent ON and separate Customer 1 gate',()=>{
  assert.match(runtime,/AUTONOMY_ON/)
  assert.match(runtime,/CUSTOMER_1/)
  assert.match(runtime,/productionTouched:false/)
+})
+
+
+test('scoped kill switches contain subsets without forcing company OFF',()=>{
+ assert.match(containment,/scope_type='GLOBAL'/)
+ assert.match(containment,/GLOBAL_KILL_SWITCH_ACTIVE/)
+ assert.doesNotMatch(containment,/where enabled\) then/)
 })

@@ -2,10 +2,10 @@
   "task_id": "ugo-autonomy-on-readiness",
   "job_id": "UGO-AUTONOMY-ON-READINESS-20260930",
   "title": "Close all autonomous blockers possible before UGO TEST ON",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T03:13:00Z",
-  "heartbeat_at": "2026-09-30T03:15:00Z",
-  "lease_expires_at": "2026-09-30T04:00:00Z",
+  "heartbeat_at": "2026-09-30T03:31:30Z",
+  "lease_expires_at": "2026-09-30T03:31:30Z",
   "started_sha": "fdce24aef79c02006a721baa785d8440b3817d45",
   "owner": "UGO",
   "assigned_agent": "Autonomy ON Readiness Agent",
@@ -17,14 +17,37 @@
     "autonomy-state"
   ],
   "correlation_id": "ugo-autonomy-on-readiness-20260930T031300Z",
-  "current_step": "CLOSE_AUTOMATABLE_GATES",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-actions:run:36664619926:SUCCESS",
+    "audit-log:6547:Judge:PASS",
+    "audit-log:6548:Sentinel:PASS",
+    "ugo-test:AUTONOMY_ON:READY",
+    "ugo-test:company-mode:ON",
+    "ugo-test:118-enabled-agents",
+    "ugo-test:118-action-capabilities",
+    "repo:docs/evidence/ugo-autonomy-on-readiness-20260930.json"
+  ],
   "department": "UGO Empresa Autónoma",
   "skills": [
     "ugo-autonomous-company",
     "ugo-readiness-orchestrator",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
+  ],
+  "finished_at": "2026-09-30T03:31:30Z",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/ugo-autonomy-on-readiness-20260930.json",
+  "evidence_commit_sha": "a63a718d5d6ea114e3f27b39d7a59c07af9b6e7d",
+  "notes": [
+    "UGO TEST internal autonomous company mode is ON and AUTONOMY_ON is READY with no blockers.",
+    "Scheduled worker proof and isolated RPC/RLS integration preserve the pre-existing autonomy mode instead of forcing OFF.",
+    "Customer #1 commercial launch remains independent and fail-closed; no human/physical gates were fabricated.",
+    "Production was not touched."
   ]
 }

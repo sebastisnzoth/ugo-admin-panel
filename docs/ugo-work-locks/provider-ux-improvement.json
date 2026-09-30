@@ -4,8 +4,8 @@
   "title": "Improve provider operational clarity and mobile navigation",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:23:00Z",
-  "heartbeat_at": "2026-09-30T03:27:00Z",
-  "lease_expires_at": "2026-09-30T04:12:00Z",
+  "heartbeat_at": "2026-09-30T03:37:00Z",
+  "lease_expires_at": "2026-09-30T04:22:00Z",
   "started_sha": "cdcb86a8bd1096cbd1b2c9a60224e351bbcfbbf3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -21,13 +21,16 @@
     "Sentinel"
   ],
   "resources": [
-    "provider-shell"
+    "provider-shell",
+    "provider-location"
   ],
   "correlation_id": "provider-ux-improvement-20260930T032300Z",
-  "current_step": "VALIDATE_ACTIVE_JOB_UX",
+  "current_step": "RUN_PROVIDER_UI_RUNTIME",
   "attempt": 1,
   "evidence_ids": [
     "tests/contracts/provider-operational-dock.test.mjs",
-    "tests/contracts/provider-active-job-ux.test.mjs"
+    "tests/contracts/provider-active-job-ux.test.mjs",
+    "github-actions-run-36664809935",
+    "github-actions-run-36665185236"
   ]
 }
