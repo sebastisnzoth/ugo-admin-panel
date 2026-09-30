@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-responsive",
   "job_id": "UGO-READINESS-PROVIDER-RESPONSIVE",
   "title": "Verify Provider responsive usability on mobile tablet and desktop",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T04:37:00Z",
-  "heartbeat_at": "2026-09-30T10:48:00Z",
-  "lease_expires_at": "2026-09-30T11:33:00Z",
+  "heartbeat_at": "2026-09-30T10:52:00Z",
+  "lease_expires_at": "2026-09-30T10:52:00Z",
   "started_sha": "83baa1e650be36b0efb8d144f10058dad6a4dc12",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,18 +26,26 @@
     "provider-shell"
   ],
   "correlation_id": "readiness-provider-responsive-20260930T043700Z",
-  "current_step": "RETRY_AFTER_TEST_AUTH_RECOVERY",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
     "github-actions-run-36669664440",
     "docs/evidence/ugo-test-auth-outage-20260930.json",
-    "commit-99ef789699adb49333fa4451070b3b73139ab5bd"
+    "commit-99ef789699adb49333fa4451070b3b73139ab5bd",
+    "docs/evidence/readiness-provider-responsive-20260930.json",
+    "github-actions-run-36704749370",
+    "github-actions-job-109852246214",
+    "artifact-11091561962",
+    "github-actions-run-36704749357"
   ],
-  "failure": {
-    "kind": "INFRASTRUCTURE",
-    "component": "UGO_TEST_AUTH",
-    "http_status": 504,
-    "message": "Responsive runtime still blocked before viewport assertions by TEST Auth 504. Shared TEST fixture concurrency hardening applied."
+  "production_touched": false,
+  "completed_at": "2026-09-30T10:52:00Z",
+  "finished_at": "2026-09-30T10:52:00Z",
+  "verified_sha": "cb4dbe93cae9cf950d89b1612d6fed6db91e4b29",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
-  "production_touched": false
+  "result": "VERIFIED",
+  "evidence_path": "docs/evidence/readiness-provider-responsive-20260930.json"
 }

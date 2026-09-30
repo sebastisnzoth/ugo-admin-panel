@@ -5,8 +5,8 @@
   "title": "Verify Provider dispute open, evidence, state and closure",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:52:00Z",
-  "heartbeat_at": "2026-09-30T10:52:00Z",
-  "lease_expires_at": "2026-09-30T11:37:00Z",
+  "heartbeat_at": "2026-09-30T10:51:00Z",
+  "lease_expires_at": "2026-09-30T11:36:00Z",
   "started_sha": "cb4dbe93cae9cf950d89b1612d6fed6db91e4b29",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -19,9 +19,12 @@
     "disputes"
   ],
   "correlation_id": "readiness-provider-dispute-20260930T105200Z-cb4dbe93",
-  "current_step": "INSPECT_IMPLEMENTATION",
+  "current_step": "WAITING_CI_RUNTIME",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-pr:300",
+    "github-commit:47f2898dceef2d71d054cd42f58091f69c44d657"
+  ],
   "production_touched": false,
   "skills": [
     "ugo-readiness-orchestrator",

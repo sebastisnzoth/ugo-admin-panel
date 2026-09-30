@@ -46,3 +46,10 @@ test('opening the exact order and chat stays the primary Activity action',()=>{
  assert.match(activity,/Cancelar pedido/)
  assert.match(styles,/\.ugo-history-open-button/)
 })
+
+test('Activity cancellation shares the canonical client action service',()=>{
+ assert.match(activity,/cancelOwnedClientService/)
+ assert.match(activity,/CLIENT_CANCELLABLE_SERVICE_STATES/)
+ assert.doesNotMatch(activity,/getDispatchProvider/)
+ assert.match(activity,/Este pedido ya cambió de estado y no se puede cancelar desde Actividad/)
+})

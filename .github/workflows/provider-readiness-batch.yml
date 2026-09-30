@@ -60,6 +60,8 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Provider responsive runtime
+        id: responsive
+        continue-on-error: true
         shell: bash
         run: |
           set -euo pipefail
@@ -74,9 +76,21 @@ jobs:
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
           node scripts/provider-ui-runtime.mjs
       - name: Provider GPS runtime
+        id: gps
+        continue-on-error: true
         run: node scripts/autonomous-qa-gps-runtime.mjs
       - name: Provider debt runtime
+        id: debt
+        continue-on-error: true
         run: node scripts/provider-debt-runtime.mjs
+      - name: Enforce provider readiness outcomes
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "${{ steps.responsive.outcome }}" = success
+          test "${{ steps.gps.outcome }}" = success
+          test "${{ steps.debt.outcome }}" = success
       - name: Upload provider readiness evidence
         if: always()
         uses: actions/upload-artifact@v4

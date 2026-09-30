@@ -1,11 +1,11 @@
 import React,{useCallback,useEffect,useMemo,useRef,useState}from'react'
-import{getDispatchProvider}from'../lib/dispatch/provider'
 import{getRoleSupabase}from'../lib/roleSupabase'
 import{supabase as adminSupabase}from'../lib/supabase'
 import'./service-history.css'
 import'./provider-history.css'
 import{ProviderHistoryDetail}from'./ProviderHistoryDetail'
 import{ClientEvidenceGallery}from'../features/client/order/ClientEvidenceGallery'
+import{cancelOwnedClientService,CLIENT_CANCELLABLE_SERVICE_STATES}from'../features/client/services/clientActionService'
 
 type Role='client'|'provider'|'admin'
 type Person={nombre?:string|null}
@@ -31,7 +31,7 @@ const CLIENT_STATE_COPY:Record<string,ClientStateCopy>={
  cancelado:{title:'Pedido cancelado',detail:'Este pedido ya no está activo.',tone:'alert'},
  disputado:{title:'Pedido en revisión',detail:'UGO está siguiendo una incidencia de este servicio.',tone:'alert'}
 }
-const CLIENT_CANCELLABLE_STATES=new Set(['borrador','buscando','ofrecido','asignado','en_camino','llegado'])
+const CLIENT_CANCELLABLE_STATES=new Set(CLIENT_CANCELLABLE_SERVICE_STATES)
 const ACTIVE_STATES=new Set(['borrador','buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado'])
 const FINAL_STATES=new Set(['completado','cancelado'])
 const money=(v:unknown)=>`R$ ${Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`
@@ -81,7 +81,7 @@ export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpe
   })()
   return()=>{alive=false}
  },[initialServiceId,role,rows,sb,userId])
- const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setCancellingId(serviceId);setActionNotice('');try{const owned=rows.find(row=>row.id===serviceId&&row.cliente_id===userId);if(!owned)throw new Error('No encontramos este pedido dentro de tu actividad actual.');await getDispatchProvider().cancel(serviceId);setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,rows,userId])
+ const cancelClientService=useCallback(async(serviceId:string)=>{if(role!=='client'||!userId||cancellingId)return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;setCancellingId(serviceId);setActionNotice('');try{const ok=await cancelOwnedClientService(sb,userId,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado y no se puede cancelar desde Actividad.');setActionNotice('Solicitud cancelada correctamente.');await load()}catch(e:any){setActionNotice(e?.message||'No se pudo cancelar la solicitud. El pedido sigue activo y podés reintentar.')}finally{setCancellingId('')}},[cancellingId,load,role,sb,userId])
  if(!userId)return null
  const currentCount=rows.filter(isCurrent).length,upcomingCount=rows.filter(isUpcoming).length,finalCount=rows.filter(isFinal).length
  const visible=rows.filter(row=>{

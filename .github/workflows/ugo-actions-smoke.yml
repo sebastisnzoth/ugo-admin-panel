@@ -1,0 +1,44 @@
+name: UGO Actions Smoke
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/ugo-actions-smoke.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Persist Actions smoke evidence
+        shell: bash
+        env:
+          UGO_SMOKE_SHA: ${{ github.sha }}
+          UGO_SMOKE_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "ugo-actions-smoke"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B actions-smoke origin/main
+          mkdir -p docs/evidence
+          cat > docs/evidence/ugo-actions-smoke-latest.json <<EOF
+          {
+            "environment": "GitHub Actions",
+            "production_touched": false,
+            "sha": "$UGO_SMOKE_SHA",
+            "run_id": "$UGO_SMOKE_RUN_ID",
+            "result": "PASS"
+          }
+          EOF
+          git add docs/evidence/ugo-actions-smoke-latest.json
+          git commit -m "ops(actions): persist smoke evidence"
+          git push origin HEAD:main

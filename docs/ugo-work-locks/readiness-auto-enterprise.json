@@ -1,0 +1,48 @@
+{
+  "readiness_id": "auto-enterprise",
+  "task_id": "readiness-auto-enterprise",
+  "job_id": "UGO-READINESS-AUTO-ENTERPRISE",
+  "title": "Verify UGO Empresas journey in UGO TEST",
+  "status": "DONE",
+  "started_at": "2026-09-30T10:51:00Z",
+  "heartbeat_at": "2026-09-30T10:53:00Z",
+  "lease_expires_at": "2026-09-30T10:53:00Z",
+  "started_sha": "14dd72085e37ad0e49f9372de39e39b35ec22527",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "UGO Empresas Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-empresas"
+  ],
+  "correlation_id": "readiness-auto-enterprise-20260930T105100Z-14dd7208",
+  "current_step": "VERIFIED_RECONCILED_EXISTING_EVIDENCE",
+  "attempt": 1,
+  "evidence_ids": [
+    "repo:docs/evidence/ugo-empresas-20260929.json",
+    "legacy-lock:docs/ugo-work-locks/ugo-empresas.json",
+    "runtime-sha:52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
+    "github-actions-core:36631667022"
+  ],
+  "completed_at": "2026-09-30T10:53:00Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/ugo-empresas-20260929.json",
+  "evidence_commit_sha": "2f170f343b7c83da4993688dbafbe03bcf62c8fc",
+  "verified_sha": "52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
+  "runtime_validated_sha": "52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
+  "production_touched": false,
+  "result": "VERIFIED",
+  "result_summary": "Reconciled existing authoritative UGO Empresas TEST journey: demand, 3 slots, navigation/data binding, Super Admin permissions, isolation and evidence already passed Judge/Sentinel. No duplicate runtime executed.",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-enterprise-ops",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}
