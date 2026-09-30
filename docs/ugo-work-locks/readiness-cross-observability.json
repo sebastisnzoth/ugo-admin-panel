@@ -1,0 +1,36 @@
+{
+  "readiness_id": "cross-observability",
+  "task_id": "readiness-cross-observability",
+  "job_id": "UGO-READINESS-CROSS-OBSERVABILITY",
+  "title": "Verify critical observability by serviceId/job with correlation_id and evidence",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T15:06:00Z",
+  "heartbeat_at": "2026-09-30T15:06:00Z",
+  "lease_expires_at": "2026-09-30T15:51:00Z",
+  "started_sha": "db5bad8a239ec67b84e1fec48a7dfc7e3e68a8da",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "Cross Observability Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "audit-ledger"
+  ],
+  "correlation_id": "readiness-cross-observability-20260930T150600Z-db5bad8a",
+  "current_step": "BUILD_SAME_SHA_COMPOSITE_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ]
+}
