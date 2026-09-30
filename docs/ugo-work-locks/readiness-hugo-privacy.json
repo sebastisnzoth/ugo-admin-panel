@@ -1,0 +1,33 @@
+{
+  "readiness_id": "hugo-privacy",
+  "task_id": "readiness-hugo-privacy",
+  "job_id": "UGO-READINESS-HUGO-PRIVACY",
+  "title": "Verify Hugo privacy and sanitization in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T11:30:00Z",
+  "heartbeat_at": "2026-09-30T11:30:00Z",
+  "lease_expires_at": "2026-09-30T12:15:00Z",
+  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Privacy Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo-security",
+    "ugo-privacy",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "hugo-security"
+  ],
+  "correlation_id": "readiness-hugo-privacy-20260930T113000Z-0833841a",
+  "current_step": "INSPECT_SANITIZATION_AND_PERMISSIONS",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
