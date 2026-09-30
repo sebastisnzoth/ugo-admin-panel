@@ -3,11 +3,11 @@
   "task_id": "readiness-auto-killswitch",
   "job_id": "UGO-READINESS-AUTO-KILLSWITCH",
   "title": "Verify autonomous kill switch control and recovery in UGO TEST",
-  "status": "FAILED",
-  "started_at": "2026-09-30T01:44:00Z",
-  "heartbeat_at": "2026-09-30T10:55:00Z",
-  "lease_expires_at": "2026-09-30T10:55:00Z",
-  "started_sha": "2eb9e4e71e183ba49f1a782f0a003674dab59bf6",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T13:31:00Z",
+  "heartbeat_at": "2026-09-30T13:31:00Z",
+  "lease_expires_at": "2026-09-30T14:16:00Z",
+  "started_sha": "444380253a839a2b6c40b0acca1360d6058780c3",
   "owner": "UGO",
   "department": "UGO Empresa Autónoma",
   "assigned_agent": "Autonomy Safety Runtime Agent",
@@ -18,13 +18,13 @@
   "resources": [
     "autonomy-state"
   ],
-  "correlation_id": "readiness-auto-killswitch-20260930T014400Z-2eb9e4e7",
-  "current_step": "FAILED_REQUIRES_REVIEW",
-  "attempt": 1,
+  "correlation_id": "readiness-auto-killswitch-20260930T133100Z-44438025-r2",
+  "current_step": "EXECUTE_TEST_RUNTIME",
+  "attempt": 2,
   "evidence_ids": [],
   "validators_result": {
-    "Judge": "NOT_RUN",
-    "Sentinel": "NOT_RUN"
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
   },
   "production_touched": false,
   "skills": [
@@ -33,7 +33,5 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge",
     "ugo-github-ops"
-  ],
-  "finished_at": "2026-09-30T10:55:00Z",
-  "failure_reason": "Stale lock reconciled. Lease expired with no persisted runtime artifact, no evidence ids, and no Judge/Sentinel verdict. Control must be re-enabled by scheduler before a new attempt."
+  ]
 }
