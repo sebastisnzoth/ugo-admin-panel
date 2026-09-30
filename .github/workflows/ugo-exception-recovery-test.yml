@@ -9,6 +9,8 @@ on:
       - 'scripts/autonomous-exception-recovery-runtime.mjs'
       - 'scripts/autonomous-exception-recovery-judge.mjs'
       - 'tests/contracts/autonomous-exception-recovery.test.mjs'
+      - 'docs/ugo-work-locks/readiness-auto-recovery.json'
+      - 'docs/readiness/auto-recovery-playbooks.md'
       - '.github/workflows/ugo-exception-recovery-test.yml'
 
 concurrency:
@@ -35,6 +37,16 @@ jobs:
       - name: Contract
         run: node --test tests/contracts/autonomous-exception-recovery.test.mjs
       - name: Execute recoverable exception through UGO runtime
-        run: node scripts/autonomous-exception-recovery-runtime.mjs
+        run: node scripts/autonomous-exception-recovery-runtime.mjs | tee /tmp/ugo-auto-recovery-runtime.json
       - name: Independent Judge and Sentinel
-        run: node scripts/autonomous-exception-recovery-judge.mjs
+        run: node scripts/autonomous-exception-recovery-judge.mjs | tee /tmp/ugo-auto-recovery-verdict.json
+      - name: Persist runtime proof artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ugo-auto-recovery-proof-${{ github.run_id }}
+          if-no-files-found: error
+          retention-days: 30
+          path: |
+            /tmp/ugo-auto-recovery-runtime.json
+            /tmp/ugo-auto-recovery-verdict.json
