@@ -42,3 +42,19 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
 
 
 test('client payment screen implementation lives behind the payments feature boundary',async()=>{const[screen,css]=await Promise.all([read('src/features/client/payments/ClientPaymentScreen.tsx'),read('src/features/client/payments/clientPaymentScreen.css')]);assert.match(screen,/useState<Method>\('cash'\)/);assert.doesNotMatch(screen,/mvp\/client\/ClientPaymentScreen/);assert.match(screen,/clientPaymentScreen\.css/);assert.match(css,/\.ugo-payment-screen/);assert.ok(css.length>3000)})
+
+
+test('assigned client sees payment choice before secondary operational surfaces',async()=>{
+ const [detail,provider]=await Promise.all([
+  read('src/features/client/order/ClientServiceDetail.tsx'),
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
+ ])
+ const paymentIndex=detail.indexOf('action="client.order.payment"')
+ const trackingIndex=detail.indexOf('action="client.order.tracking"')
+ const chatIndex=detail.indexOf('action="client.order.chat"')
+ assert.ok(paymentIndex>=0,'payment choice must be mounted in the order detail')
+ assert.ok(trackingIndex<0||paymentIndex<trackingIndex,'payment choice must appear before tracking')
+ assert.ok(chatIndex<0||paymentIndex<chatIndex,'payment choice must appear before chat')
+ assert.match(provider,/El cliente tiene que elegir cómo pagar/)
+ assert.match(provider,/No tenés que elegirlo vos/)
+})
