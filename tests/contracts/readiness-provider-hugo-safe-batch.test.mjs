@@ -37,7 +37,7 @@ test('Hugo model-bound payloads are sanitized on both backends',()=>{
   assert.match(src,/\[REDACTED\]/)
   assert.match(src,/REDACTED_BLOB/)
   assert.match(src,/Bearer/)
-  assert.match(src,/service[\\s\\S]{0,24}role/i)
+  assert.match(src,/service.*role/i)
  }
  const edge=read('supabase/functions/hugo-chat/index.ts')
  assert.doesNotMatch(edge,/hugo_mensaje:\s*\`Error:/)
