@@ -3,10 +3,10 @@
   "task_id": "readiness-auto-recovery",
   "job_id": "UGO-READINESS-AUTO-RECOVERY",
   "title": "Recuperación automática",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T03:21:00Z",
-  "heartbeat_at": "2026-09-30T03:32:30Z",
-  "lease_expires_at": "2026-09-30T04:02:30Z",
+  "heartbeat_at": "2026-09-30T03:42:00Z",
+  "lease_expires_at": null,
   "started_sha": "af1bc0c2c7fa5383b196e64b6a662abd45bb437d",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -19,10 +19,17 @@
     "recovery"
   ],
   "correlation_id": "readiness-auto-recovery-af1bc0c2",
-  "current_step": "PRESERVE_ACTIVE_AUTONOMY_STATE",
-  "attempt": 2,
+  "current_step": "DONE",
+  "attempt": 3,
   "evidence_ids": [
-    "run:36664800465:FAIL_PRECONDITION_STATE_EVOLVED"
+    "workflow-run:36665442988",
+    "workflow-job:109729094137",
+    "artifact:11076271680",
+    "correlation:e0b67696-15ce-4218-8165-30abc976937a",
+    "incident:f434a909-e7ad-49cf-ba9e-7dbdf35cecc8",
+    "recovery-job:13517699-a49a-4888-bdee-1f2ba00ccc1f",
+    "recovery-audit:04171e06-b976-4736-bd86-2a3f7c36bc8f",
+    "evidence:docs/ugo-readiness-evidence/readiness-auto-recovery-20260930.json"
   ],
   "dependencies": [
     "auto-worker"
@@ -39,5 +46,28 @@
     "GitHub Actions pipe through tee masked runtime/Judge failures; UGO_TEST_SUPABASE_URL secret resolved empty.",
     "Recovery proof assumed global OFF/zero kill-switch state; current UGO TEST legitimately runs ON with unrelated scoped kill switches.",
     "Worker primitives lost service_role compatibility after later hardening migration; restored in TEST via versioned migration."
-  ]
+  ],
+  "completed_at": "2026-09-30T03:42:00Z",
+  "runtime_validated_sha": "54dea7ec2361974c9d97d77aeb546ec1e935b727",
+  "evidence_path": "docs/ugo-readiness-evidence/readiness-auto-recovery-20260930.json",
+  "evidence_commit_sha": "783a13612e548264e0819841a8bd6a71f269d7d9",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "result": {
+    "workflow_run_id": 36665442988,
+    "artifact_id": 11076271680,
+    "correlation_id": "e0b67696-15ce-4218-8165-30abc976937a",
+    "incident_id": "f434a909-e7ad-49cf-ba9e-7dbdf35cecc8",
+    "recovery_job_id": "13517699-a49a-4888-bdee-1f2ba00ccc1f",
+    "recovery_audit_id": "04171e06-b976-4736-bd86-2a3f7c36bc8f",
+    "initial_mode": "ON",
+    "final_mode": "ON",
+    "kill_switches_preserved": true,
+    "running_jobs_after": 0,
+    "production_touched": false
+  }
 }
