@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T18:36:00Z",
-  "lease_expires_at": "2026-09-30T19:21:00Z",
+  "heartbeat_at": "2026-09-30T18:40:00Z",
+  "lease_expires_at": "2026-09-30T19:25:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,7 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R2_PLAYWRIGHT_RERUN_BUILDING_EXACT_SHA",
+  "current_step": "R3_REAL_PROVIDER_LOGIN_CANONICAL_RERUN",
   "attempt": 3,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
@@ -32,7 +32,10 @@
     "candidate_sha:9b233e350023fce0260dda79176bac67f220a45e",
     "github-run:36759744797",
     "candidate-sha:b1b805146d2ba861cfcbe8289f01807100e3c8ad",
-    "fix:client-menu-reset-before-route-check"
+    "fix:client-menu-reset-before-route-check",
+    "candidate-sha:833a630c20625df83ffd0729038b1fbdc6183713",
+    "fix:provider-real-login-ui-path",
+    "github-run:36760273627"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
