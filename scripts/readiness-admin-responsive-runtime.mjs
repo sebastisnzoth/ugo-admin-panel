@@ -75,7 +75,7 @@ try{
    await page.screenshot({path:`artifacts/admin-responsive-${vp.id}-superadmin.png`,fullPage:true})
    const tabNames=['Command Center','Empresa Autónoma','Feature Flags','Audit Log','Integraciones','Métricas globales','Roles y permisos','Legal / IP Protection']
    for(const tab of tabNames){
-    const b=page.getByRole('button',{name:tab,exact:true})
+    const b=page.locator('.ugo-superadmin > .ugo-admin2-submenu button').filter({hasText:tab}).first()
     await b.waitFor({state:'visible',timeout:20000})
     await b.click()
     await page.waitForTimeout(120)
