@@ -1,0 +1,62 @@
+name: UGO Readiness Admin QA TEST
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/mvp/AutonomousCorporationDashboard.tsx'
+      - 'scripts/readiness-admin-qa-*.mjs'
+      - 'tests/contracts/readiness-admin-qa.test.mjs'
+      - '.github/workflows/readiness-admin-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+  UGO_READINESS_CORRELATION_ID: readiness-admin-qa-20260930T003700Z-b9a158b2
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Require UGO TEST runtime credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in UGO_TEST_SUPABASE_SERVICE_ROLE_KEY UGO_TEST_CLIENT_PASSWORD UGO_TEST_PROVIDER_PASSWORD UGO_TEST_ADMIN_PASSWORD; do
+            test -n "${!name}" || { echo "Missing $name"; exit 1; }
+          done
+      - run: node --test tests/contracts/readiness-admin-qa.test.mjs tests/contracts/superadmin-qa-lab-surface.test.mjs tests/contracts/autonomous-meta-qa-agent-runtime.test.mjs tests/contracts/autonomous-independent-runtime-evidence.test.mjs
+      - run: npx tsc -b
+      - name: Refresh persisted independent QA evidence
+        run: |
+          node scripts/autonomous-meta-qa-runtime.mjs
+          node scripts/autonomous-qa-auth-runtime.mjs
+          node scripts/autonomous-qa-gps-runtime.mjs
+      - name: Persisted-state readiness judge
+        run: |
+          node scripts/readiness-admin-qa-runtime.mjs
+          node scripts/readiness-admin-qa-judge.mjs
+          node scripts/readiness-admin-qa-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-admin-qa-${{ github.sha }}
+          path: artifacts/readiness-admin-qa/*.json
+          if-no-files-found: error
+          retention-days: 90
