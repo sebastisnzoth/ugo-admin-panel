@@ -34,7 +34,9 @@ try{
  evidence.provider_id=uid
  let q=await admin.from('usuarios').upsert({id:uid,nombre:'UGO Alert Runtime',tipo:'proveedor',activo:true},{onConflict:'id'})
  if(q.error)throw q.error
- q=await admin.from('perfiles_proveedor').upsert({usuario_id:uid,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04'},{onConflict:'usuario_id'})
+ const category=await admin.from('categorias').select('id').eq('activa',true).limit(1).single()
+ if(category.error)throw category.error
+ q=await admin.from('perfiles_proveedor').upsert({usuario_id:uid,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:category.data.id,tarifa_base:100},{onConflict:'usuario_id'})
  if(q.error)throw q.error
 
  browser=await chromium.launch({headless:true})
