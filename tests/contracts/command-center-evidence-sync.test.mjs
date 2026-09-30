@@ -35,3 +35,15 @@ test('auto-agents persisted state and latest evidence agree',()=>{
   assert.equal(evidence.counts.enabled,118)
   assert.equal(evidence.counts.verified_enabled,118)
 })
+
+
+test('Command Center exposes authoritative DONE control without self-certifying',()=>{
+  assert.match(page,/id="doneControl"/)
+  assert.match(page,/Camino exacto hasta DONE/)
+  assert.match(page,/renderDoneControl/)
+  assert.match(page,/remaining === 0 && active === 0 && stale === 0 && drift === 0/)
+  assert.match(page,/DONE exige evidencia \+ Judge PASS \+ Sentinel PASS/)
+  assert.match(page,/doneBlockers/)
+  assert.match(page,/remaining_autonomous/)
+  assert.match(page,/human_deferred/)
+})

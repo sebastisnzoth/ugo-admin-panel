@@ -1,0 +1,28 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "client-saved-places",
+  "verdict": "VERIFIED",
+  "environment": "UGO TEST",
+  "source_sha": "6388b3a13b04beafe70c4a0402c508843783b52f",
+  "workflow_run_id": 36661508534,
+  "workflow_job_id": 109718684047,
+  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36661508534",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "artifact": {
+    "id": 11074976488,
+    "name": "readiness-client-saved-places-6388b3a13b04beafe70c4a0402c508843783b52f",
+    "digest": "sha256:05273f5444d5c04123d27aa6d8d1b55e25fd9920e39dadae4b2003df4ff863b0"
+  },
+  "summary": "Authenticated UGO TEST browser proof: persisted create/read, inline edit, UI reflection, make-default and 'Pedir acá' selection all passed with no page errors; independent Judge and Sentinel passed.",
+  "recorded_at": "2026-09-30T03:05:00Z",
+  "assertions": {
+    "create_persisted": true,
+    "edit_persisted": true,
+    "ui_reflected": true,
+    "made_default": true,
+    "selected_for_order": true,
+    "no_page_errors": true
+  }
+}

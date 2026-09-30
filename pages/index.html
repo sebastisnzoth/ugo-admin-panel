@@ -15,6 +15,11 @@
     h2{margin:34px 0 12px;font-size:1.28rem}h3{margin:0 0 8px;font-size:1rem}.sub{color:var(--muted);line-height:1.55}
     .metrics{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:28px 0 10px}.metric,.card,.step{background:rgba(16,26,46,.94);border:1px solid var(--line);border-radius:17px;padding:18px}.metric strong{display:block;font-size:1.85rem;letter-spacing:-.04em}.metric span{color:var(--muted);font-size:.9rem}
     .ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.accent{color:var(--accent)}
+    .done-board{margin:18px 0 6px;border:1px solid #315080;border-radius:20px;padding:20px;background:linear-gradient(135deg,#0b1930,#101d35)}
+    .done-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.done-head h2{margin:0 0 8px}.done-score{font-size:clamp(2rem,5vw,3.8rem);font-weight:900;letter-spacing:-.05em}
+    .done-track{height:12px;border-radius:999px;background:#07101f;border:1px solid var(--line);overflow:hidden;margin:14px 0}.done-fill{height:100%;width:0;background:linear-gradient(90deg,#38bdf8,#86efac);transition:width .25s ease}
+    .done-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.done-check{background:#0b1425;border:1px solid var(--line);border-radius:13px;padding:12px}.done-check b{display:block;margin-bottom:5px}.done-check.pass{border-color:#2f6f55}.done-check.wait{border-color:#8a6a2d}.done-check.fail{border-color:#8b3a3a}
+    .done-blockers{display:grid;gap:8px;margin-top:12px}.done-blocker{display:grid;grid-template-columns:minmax(180px,1fr) minmax(180px,1.2fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0b1425}
     .objective{background:linear-gradient(135deg,#102345,#111a2e);border:1px solid #315080;border-radius:18px;padding:20px;margin-top:24px}.objective strong{color:#fff}.objective code{color:#c6e8ff;white-space:normal}
     .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}.row:last-child{border-bottom:0}
     .steps{display:grid;gap:12px}.step{display:grid;grid-template-columns:90px 1fr;gap:14px}.step-index{font-size:1.5rem;font-weight:850;color:var(--accent)}.step .meta-line{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0 10px}.step p{margin:8px 0;color:var(--muted);line-height:1.55}.step b{color:#fff}.pill.ugo{color:var(--accent)}.pill.human{color:var(--warn)}.pill.blocked{color:var(--bad)}.pill.pending{color:var(--warn)}
@@ -143,6 +148,32 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="metric"><strong class="accent" id="totalValue">—</strong><span>ítems visibles hasta DONE</span></div>
     <div class="metric"><strong class="ok" id="coverageValue">—</strong><span>Quality Coverage</span></div>
     <div class="metric"><strong class="warn" id="sergioValue">—</strong><span>ítems con intervención de Sergio</span></div>
+  </section>
+
+  <section class="done-board" id="doneControl" aria-label="Control de cierre DONE">
+    <div class="done-head">
+      <div>
+        <span class="badge">DONE CONTROL</span>
+        <h2>Camino exacto hasta DONE</h2>
+        <p class="sub" id="doneSummary">Calculando cierre autoritativo…</p>
+      </div>
+      <div style="text-align:right">
+        <div class="done-score" id="donePercent">—%</div>
+        <div class="tiny" id="doneFraction">— / — VERIFIED</div>
+      </div>
+    </div>
+    <div class="done-track" aria-hidden="true"><div class="done-fill" id="doneFill"></div></div>
+    <div class="done-grid">
+      <div class="done-check" id="doneCheckControls"><b>Controles</b><span id="doneCheckControlsText">—</span></div>
+      <div class="done-check" id="doneCheckLocks"><b>Trabajo activo</b><span id="doneCheckLocksText">—</span></div>
+      <div class="done-check" id="doneCheckIntegrity"><b>Integridad</b><span id="doneCheckIntegrityText">—</span></div>
+      <div class="done-check" id="doneCheckHuman"><b>Pruebas humanas</b><span id="doneCheckHumanText">—</span></div>
+    </div>
+    <div class="row" style="margin-top:12px"><span><b>Restantes delegables por UGO/ChatGPT</b></span><span class="pill ugo" id="doneAutonomous">—</span></div>
+    <div class="row"><span><b>Pruebas humanas/físicas restantes</b></span><span class="pill human" id="doneHuman">—</span></div>
+    <div class="row"><span><b>Habilitados para trabajar ahora</b></span><span class="pill accent" id="doneRunnable">—</span></div>
+    <h3 style="margin-top:16px">Qué impide DONE ahora</h3>
+    <div class="done-blockers" id="doneBlockers"><div class="done-blocker">Calculando bloqueadores…</div></div>
   </section>
 
   <h2>Mapa funcional completo</h2>
@@ -876,6 +907,64 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     VERIFIED:'VERIFIED'
   }[gate] || gate || 'UNVERIFIED')
 
+  const doneMissing = item => {
+    if (item.status === 'HUMAN_FINAL' || ['HUMAN_REQUIRED','HUMAN_DEFERRED'].includes(item.gate_state)) return 'Falta prueba humana/física real + evidencia final.'
+    if (item.gate_state === 'IN_PROGRESS') return 'Trabajo activo: falta completar runtime/evidencia y cerrar Judge → Sentinel.'
+    if (item.gate_state === 'WAITING_RUNTIME' || item.status === 'NEEDS_RUNTIME_PROOF') return 'Falta prueba runtime verificable del mismo SHA.'
+    if (item.gate_state === 'JUDGE_PENDING') return 'Falta Judge independiente PASS.'
+    if (item.gate_state === 'SENTINEL_PENDING') return 'Falta Sentinel PASS y cierre de lock.'
+    if (item.gate_state === 'STALE_LOCK') return 'Falta reconciliar lock vencido antes de continuar.'
+    if (item.gate_state === 'FAILED_REQUIRES_REVIEW') return 'Fallo pendiente de corrección y nueva evidencia.'
+    if (item.gate_state === 'BLOCKED_DEPENDENCY') return 'Faltan dependencias previas: ' + ((item.blocked_by || item.depends_on || []).join(', ') || 'ver cadena de dependencias') + '.'
+    if (['WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY'].includes(item.gate_state)) return 'Espera capacidad/recurso del scheduler.'
+    if (item.gate_state === 'AVAILABLE') return 'Habilitado: ejecutar implementación/prueba → runtime → evidencia → Judge → Sentinel.'
+    return 'Falta completar la cadena autoritativa DONE.'
+  }
+
+  const renderDoneControl = s => {
+    const summary = s.functional_readiness_summary || {}
+    const groups = s.functional_readiness?.groups || []
+    const items = groups.flatMap(group => (group.items || []).map(item => ({...item, group_title:group.title})))
+    const total = Number(summary.total ?? items.length ?? 0)
+    const verified = Number(summary.verified ?? items.filter(x => x.status === 'VERIFIED').length)
+    const remaining = Number(summary.remaining_total ?? Math.max(0,total-verified))
+    const autonomous = Number(summary.remaining_autonomous ?? items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_FINAL').length)
+    const human = Number(summary.human_deferred ?? summary.human_final ?? items.filter(x => x.status === 'HUMAN_FINAL').length)
+    const active = Number(s.scheduler?.active_leases ?? (s.active_locks || []).length)
+    const stale = Number(s.scheduler?.stale_leases ?? 0)
+    const drift = Number(s.evidence_summary?.drift_count ?? (s.state_drift || []).length)
+    const runnableIds = summary.runnable_ids || items.filter(x => x.gate_state === 'AVAILABLE').map(x => x.id)
+    const percent = total > 0 ? Math.round((verified / total) * 100) : 0
+    const authoritativeDone = remaining === 0 && active === 0 && stale === 0 && drift === 0
+
+    document.getElementById('donePercent').textContent = percent + '%'
+    document.getElementById('doneFraction').textContent = verified + ' / ' + total + ' VERIFIED'
+    document.getElementById('doneFill').style.width = Math.max(0,Math.min(100,percent)) + '%'
+    document.getElementById('doneSummary').textContent = authoritativeDone
+      ? 'DONE autoritativo: todos los controles están VERIFIED y no hay locks activos, vencidos ni drift de evidencia.'
+      : 'Faltan ' + remaining + ' controles para DONE: ' + autonomous + ' delegables y ' + human + ' humanos/físicos. DONE exige evidencia + Judge PASS + Sentinel PASS; no se infiere por código existente.'
+
+    const setCheck = (id, pass, text, fail=false) => {
+      const el=document.getElementById(id)
+      el.className='done-check ' + (pass ? 'pass' : fail ? 'fail' : 'wait')
+      document.getElementById(id+'Text').textContent=text
+    }
+    setCheck('doneCheckControls', remaining===0, remaining===0 ? '0 pendientes' : remaining + ' pendientes')
+    setCheck('doneCheckLocks', active===0, active===0 ? '0 leases activos' : active + ' lease(s) activo(s)')
+    setCheck('doneCheckIntegrity', stale===0 && drift===0, stale===0 && drift===0 ? 'sin stale locks / drift' : stale + ' stale · ' + drift + ' drift', stale>0 || drift>0)
+    setCheck('doneCheckHuman', human===0, human===0 ? 'cerradas' : human + ' pendientes')
+
+    document.getElementById('doneAutonomous').textContent = autonomous
+    document.getElementById('doneHuman').textContent = human
+    document.getElementById('doneRunnable').textContent = runnableIds.length ? runnableIds.join(', ') : 'ninguno'
+
+    const priority = {IN_PROGRESS:0,AVAILABLE:1,STALE_LOCK:2,FAILED_REQUIRES_REVIEW:2,WAITING_RUNTIME:3,JUDGE_PENDING:4,SENTINEL_PENDING:5,BLOCKED_DEPENDENCY:6,WAITING_RESOURCE_CAPACITY:7,QUEUED_CAPACITY:8,HUMAN_REQUIRED:9,HUMAN_DEFERRED:10}
+    const blockers = items.filter(x => x.status !== 'VERIFIED').sort((a,b) => (priority[a.gate_state] ?? 20) - (priority[b.gate_state] ?? 20)).slice(0,8)
+    document.getElementById('doneBlockers').innerHTML = blockers.length
+      ? blockers.map(item => '<div class="done-blocker"><div><b>' + esc(item.id) + '</b><div class="tiny">' + esc(item.group_title || '') + ' · ' + esc(item.title || '') + '</div></div><div class="sub">' + esc(doneMissing(item)) + '</div><span class="pill ' + (item.status === 'HUMAN_FINAL' ? 'human' : item.gate_state === 'AVAILABLE' ? 'ugo' : item.gate_state === 'IN_PROGRESS' ? 'accent' : 'pending') + '">' + esc(readinessGateLabel(item.gate_state || item.status)) + '</span></div>').join('')
+      : '<div class="done-blocker"><b class="ok">Sin bloqueadores funcionales.</b><span class="sub">La cadena funcional está cerrada.</span><span class="pill ugo">DONE</span></div>'
+  }
+
   const renderReadiness = s => {
     const readiness = s.functional_readiness || {groups:[]}
     const summary = s.functional_readiness_summary || {}
@@ -1033,6 +1122,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     renderSyncState()
     renderOperationalNow(s)
     renderReadiness(s)
+    renderDoneControl(s)
     const readinessIds = (s.functional_readiness?.groups || []).flatMap(group => (group.items || []).map(item => item.id))
     const currentIds = new Set([
       ...(s.implementation_steps || []).map(x => x.id),

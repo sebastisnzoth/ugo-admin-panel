@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/readiness-safe-batch-20260930.yml"
+      - "scripts/autonomous-scheduled-worker-on-proof.mjs"
+      - "src/mvp/ugo-auth-redesign.css"
+      - "src/features/client/profile/ClientProfilePanel.tsx"
+      - "supabase/migrations/*client_saved_places*.sql"
   workflow_dispatch:
 
 permissions:
@@ -115,6 +119,7 @@ jobs:
         run: test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
 
   auto-worker:
+    needs: auto-audit
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:

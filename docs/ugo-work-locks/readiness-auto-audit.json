@@ -3,10 +3,10 @@
   "task_id": "readiness-auto-audit",
   "job_id": "UGO-READINESS-AUTO_AUDIT",
   "title": "Verify independent Judge/Sentinel findings, remediation and re-audit",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T02:41:00Z",
-  "heartbeat_at": "2026-09-30T02:41:00Z",
-  "lease_expires_at": "2026-09-30T03:26:00Z",
+  "heartbeat_at": "2026-09-30T03:04:00Z",
+  "lease_expires_at": null,
   "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
   "owner": "UGO",
   "department": "UGO Empresa Autónoma",
@@ -26,7 +26,19 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-auto-audit-20260930T024100Z-d3644148",
-  "current_step": "LOCK_ACQUIRED",
+  "current_step": "VERIFIED",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "docs/evidence/readiness-auto-audit-20260930.json"
+  ],
+  "finished_at": "2026-09-30T03:04:00Z",
+  "verified_sha": "25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
+  "workflow_run_id": 36661882557,
+  "workflow_job_id": 109718236755,
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "production_touched": false
 }

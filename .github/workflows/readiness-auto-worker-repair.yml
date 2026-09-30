@@ -1,0 +1,70 @@
+name: UGO Readiness Auto Worker Repair TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readiness-auto-worker-repair.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  auto-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Scheduled worker same-SHA
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/auto-worker
+          node scripts/autonomous-scheduled-worker-superadmin-proof.mjs | tee artifacts/auto-worker/worker.json
+      - name: Independent Judge
+        run: |
+          node -e "const p=require('./artifacts/auto-worker/worker.json');if(!p.scheduledWorkerOnProof||!p.verificationPassed||p.status!=='SUCCEEDED'||p.sourceSha!==process.env.GITHUB_SHA||p.finalMode!=='OFF')process.exit(1)"
+      - name: Sentinel safe state
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE' | tee artifacts/auto-worker/sentinel.json
+          import assert from'node:assert/strict';import{createClient}from'@supabase/supabase-js'
+          const db=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+          const state=await db.from('autonomous_company_state').select('mode').eq('singleton',true).single();assert.ifError(state.error);assert.equal(state.data.mode,'OFF')
+          const running=await db.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('status','RUNNING');assert.ifError(running.error);assert.equal(running.count,0)
+          console.log(JSON.stringify({validator:'Sentinel',verdict:'PASS',environment:'UGO TEST',mode:'OFF',running_jobs:0,production_touched:false}))
+          NODE
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-auto-worker-${{ github.sha }}
+          path: artifacts/auto-worker
+          retention-days: 90
+
+# retry after wrapper migration
+
+# retry after blocked_reason schema repair
+
+# rerun after TEST lifecycle migration applied 2026-09-30T03:01Z
+
+# rerun after correlated ledger repair
+
+# retry after correlated ledger repair

@@ -2,11 +2,11 @@
   "task_id": "command-center-live-sync",
   "job_id": "UGO-COMMAND-CENTER-LIVE-SYNC",
   "title": "Sincronizar Command Center publicado con HEAD real de main",
-  "status": "FAILED",
-  "started_at": "2026-09-29T18:10:00Z",
-  "heartbeat_at": "2026-09-29T19:40:00Z",
-  "lease_expires_at": "2026-09-29T19:00:00Z",
-  "started_sha": "3f649ac3b41c9ac9bf1376239de8282540ffaef6",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:07:00Z",
+  "heartbeat_at": "2026-09-30T03:07:00Z",
+  "lease_expires_at": "2026-09-30T03:52:00Z",
+  "started_sha": "c3d2a11f1348b9c06d2065d3759351bd1e21259b",
   "owner": "UGO",
   "department": "Plataforma Autónoma / Observabilidad",
   "assigned_agent": "Command Center Operator",
@@ -16,26 +16,20 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "validators": ["Judge","Sentinel"],
-  "resources": ["preview-runtime"],
-  "correlation_id": "ugo-command-center-live-sync-20260929T181000Z",
-  "current_step": "FAILED_STALE_LEASE",
-  "attempt": 1,
-  "failed_at": "2026-09-29T19:40:00Z",
-  "failure": {
-    "category": "STALE_WORK_LOCK",
-    "reason": "Lease expired at 2026-09-29T19:00:00Z while task remained IN_PROGRESS. Scheduler policy forbids continuing with an expired lease.",
-    "detected_by": "D14 independent corporate audit",
-    "finding_id": "D14-F-001"
-  },
-  "evidence_ids": [
-    "github-actions:run:36610466780:FAILED_INVALID_LOCK_RESOURCE",
-    "repo:pages/index.html:live-main-sync",
-    "d14-finding:D14-F-001"
+  "validators": [
+    "Judge",
+    "Sentinel"
   ],
+  "resources": [
+    "preview-runtime"
+  ],
+  "correlation_id": "ugo-command-center-live-sync-20260929T181000Z",
+  "current_step": "IMPROVE_DONE_CONTROL",
+  "attempt": 2,
+  "evidence_ids": [],
   "recovery": {
     "cause": "Scheduler fail-closed rejected two resources not declared in UGO_SCHEDULER_POLICY.json.",
-    "action": "Expired execution was closed FAILED; a future scheduler-authorized attempt must reacquire preview-runtime with a fresh lease before continuing.",
+    "action": "Fresh scheduler-authorized attempt acquired on current main to improve DONE visibility and live-state reconciliation.",
     "production_touched": false
   }
 }

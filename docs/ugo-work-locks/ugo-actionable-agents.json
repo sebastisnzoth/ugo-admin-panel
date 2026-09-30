@@ -2,10 +2,10 @@
   "task_id": "ugo-actionable-agents",
   "job_id": "UGO-ACTIONABLE-AGENTS-20260930",
   "title": "Make all UGO agents actionable through governed capability executors",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T02:45:00Z",
-  "heartbeat_at": "2026-09-30T02:47:00Z",
-  "lease_expires_at": "2026-09-30T03:32:00Z",
+  "heartbeat_at": "2026-09-30T02:53:30Z",
+  "lease_expires_at": "2026-09-30T02:53:30Z",
   "started_sha": "bab776c83620e49b3ecb65bf7a4bed9809eefdec",
   "owner": "UGO",
   "assigned_agent": "Autonomous Capability Runtime Agent",
@@ -18,14 +18,31 @@
     "ugo-test-worker"
   ],
   "correlation_id": "ugo-actionable-agents-20260930T024500Z",
-  "current_step": "IMPLEMENT_ACTION_EXECUTOR",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-actions:run:36661678855:SUCCESS",
+    "audit-log:6495:Judge:PASS",
+    "audit-log:6496:Sentinel:PASS",
+    "ugo-test:118-action-capabilities",
+    "ugo-test:green-work-order-succeeded",
+    "ugo-test:yellow-gate-waiting-approval",
+    "ugo-test:red-gate-waiting-approval",
+    "repo:docs/evidence/ugo-actionable-agents-20260930.json"
+  ],
   "department": "UGO Empresa Autónoma",
   "skills": [
     "ugo-autonomous-company",
     "ugo-agent-orchestration",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "finished_at": "2026-09-30T02:53:30Z",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/ugo-actionable-agents-20260930.json",
+  "evidence_commit_sha": "3e5ed373bdcdcff15dbeca7a25c85752189fc927"
 }
