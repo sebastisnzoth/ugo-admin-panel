@@ -19,7 +19,7 @@ export function ClientGlobalVoiceCommands(){
   if(/\b(hugo|asistente|assistente)\b/.test(value)&&/\b(abrir|abre|hablar|falar|escuchar|ouvir)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.clientHugo);return true}
   if(/\b(nuevo pedido|nuevo servicio|pedir servicio|novo pedido|novo servico|solicitar servico)\b/.test(value)){flow.navigate('request');return true}
   if(/\b(necesito|quiero|busco|preciso|quero|procurando|contratar)\b/.test(value)){
-   flow.publishHugoIntent({text:source,categoryHint:null,urgent:/\b(urgente|agora|ahora|emergencia)\b/.test(value)})
+   flow.publishHugoIntent({text:source,categoryHint:null,description:source,urgent:/\b(urgente|agora|ahora|emergencia)\b/.test(value)})
    return true
   }
   return false
