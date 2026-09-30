@@ -1,0 +1,31 @@
+{
+  "readiness_id": "admin-launch",
+  "task_id": "readiness-admin-launch",
+  "job_id": "UGO-READINESS-ADMIN_LAUNCH",
+  "title": "Verify deterministic Launch Gate positive and negative decisions from evidence",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T02:41:00Z",
+  "heartbeat_at": "2026-09-30T02:41:00Z",
+  "lease_expires_at": "2026-09-30T03:26:00Z",
+  "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Launch Gate Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-admin",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "launch-gate"
+  ],
+  "correlation_id": "readiness-admin-launch-20260930T024100Z-d3644148",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "evidence_ids": []
+}
