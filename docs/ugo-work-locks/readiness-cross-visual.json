@@ -1,0 +1,23 @@
+{
+  "readiness_id": "cross-visual",
+  "task_id": "readiness-cross-visual",
+  "job_id": "gpt-ugo-cross-visual-20260930-1502",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T18:02:00Z",
+  "heartbeat_at": "2026-09-30T18:02:00Z",
+  "lease_expires_at": "2026-09-30T18:32:00Z",
+  "started_sha": "1121182fd56ae27585d7b71cbaea340faab8e01e",
+  "owner": "UGO",
+  "assigned_agent": "GPT_UGO",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "preview-runtime"
+  ],
+  "correlation_id": "cross-visual-20260930T180200Z",
+  "current_step": "inspect-runtime-and-visual-contracts",
+  "attempt": 1,
+  "evidence_ids": []
+}
