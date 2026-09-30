@@ -1,0 +1,28 @@
+{
+  "readiness_id": "hugo-privacy",
+  "control": "Hugo privacy and sanitization",
+  "environment": "UGO TEST",
+  "runtime_sha": "7602b9d74f65301e1042c8c47d94c87505659fd2",
+  "workflow_run_id": 36723241216,
+  "workflow_job_id": 109913449332,
+  "core_ci_run_id": 36723241206,
+  "core_ci_attempt": 2,
+  "artifact_id": 11101061628,
+  "artifact_name": "readiness-hugo-privacy-7602b9d74f65301e1042c8c47d94c87505659fd2",
+  "artifact_digest": "sha256:2f242724c50b2f4d081ee81141e97f9bcb308672d6cabdebaf2247dd227074f9",
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "authority_regression": "PASS",
+    "core_ci": "PASS",
+    "synthetic_secrets_redacted": true,
+    "raw_blob_redacted": true,
+    "api_auth_required": true,
+    "edge_auth_required": true,
+    "raw_errors_not_reflected": true,
+    "production_touched": false
+  },
+  "completed_at": "2026-09-30T13:43:34Z"
+}
