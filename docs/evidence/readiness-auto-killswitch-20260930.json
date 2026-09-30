@@ -1,0 +1,32 @@
+{
+  "readiness_id": "auto-killswitch",
+  "control": "Kill switches y modo seguro",
+  "environment": "UGO TEST / Arena",
+  "runtime_sha": "a3c11c3ccb81ac221c0bf482aa9024b09939db4d",
+  "workflow_run_id": 36722261505,
+  "workflow_job_id": 109910096431,
+  "core_ci_run_id": 36722261419,
+  "artifact_id": 11102060518,
+  "artifact_name": "auto-killswitch-a3c11c3ccb81ac221c0bf482aa9024b09939db4d",
+  "artifact_digest": "sha256:10e144b527d6dcf98e0f8d56ad464ae52ac22bd2da17084b85bd493f1e525873",
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "fail_closed": true,
+    "recovery_persisted": true,
+    "kill_switch_disabled_after_recovery": true,
+    "blocked_fixture_absent": true,
+    "global_mode_mutation_attempted": false,
+    "observed_global_mode": "ON",
+    "production_touched": false
+  },
+  "basis": [
+    "Scoped AGENT kill switch persisted and was visible in Super Admin.",
+    "Autonomous enqueue failed closed with a kill-switch-specific signal and no job persisted.",
+    "Recovery executed through the UI and persisted an evidence-hashed recovery audit.",
+    "Sentinel confirmed no lingering kill switch and no blocked fixture.",
+    "UGO Core CI passed on the same SHA."
+  ],
+  "completed_at": "2026-09-30T13:33:07Z"
+}
