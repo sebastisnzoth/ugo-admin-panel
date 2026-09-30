@@ -22,13 +22,17 @@
     "human_uncovered": [
       "physical-gps-device",
       "real-customer-acceptance"
-    ]
+    ],
+    "active_global_kill_switches": 0,
+    "active_scoped_kill_switches": 3,
+    "scoped_containment_compatible_with_on": true
   },
   "stabilization": {
     "uploaded_media_bytes": "COVERED",
     "scheduled_worker_preserves_prior_mode": true,
     "isolated_rpc_runtime_preserves_prior_mode": true,
-    "command_center_separates_autonomy_and_customer1": true
+    "command_center_separates_autonomy_and_customer1": true,
+    "scoped_kill_switches_do_not_force_company_off": true
   },
   "validation": {
     "github_workflow": "UGO Autonomy ON Readiness TEST",
@@ -55,7 +59,13 @@
     "scripts/autonomy-on-readiness-runtime.mjs",
     "tests/contracts/autonomy-on-readiness.test.mjs",
     "src/mvp/SuperAdminCommandCenter.tsx",
-    "src/mvp/AutonomousCorporationDashboard.tsx"
+    "src/mvp/AutonomousCorporationDashboard.tsx",
+    "supabase/migrations/20260930035500_autonomy_on_scoped_containment.sql"
   ],
-  "created_at": "2026-09-30T03:31:00Z"
+  "created_at": "2026-09-30T03:31:00Z",
+  "notes": [
+    "AUTONOMY_ON remains READY while scoped AGENT/DEPARTMENT/CAPABILITY kill switches contain subsets; only GLOBAL containment blocks ON readiness.",
+    "At the final check, three scoped kill switches were intentionally active and were not modified.",
+    "Production was not touched."
+  ]
 }
