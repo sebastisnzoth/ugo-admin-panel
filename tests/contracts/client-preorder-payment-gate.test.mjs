@@ -58,3 +58,20 @@ test('assigned client sees payment choice before secondary operational surfaces'
  assert.match(provider,/El cliente tiene que elegir cómo pagar/)
  assert.match(provider,/No tenés que elegirlo vos/)
 })
+
+
+test('variable-price assigned services persist payment preference before the final amount exists',async()=>{
+ const [choice,provider,migration]=await Promise.all([
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
+  read('src/mvp/provider/providerData.tsx'),
+  read('supabase/migrations/20260930185000_variable_price_payment_preference.sql'),
+ ])
+ assert.match(choice,/seleccionar_metodo_pago_servicio/)
+ assert.match(choice,/importe.*confirm/i)
+ assert.match(provider,/paymentPreferenceSelected/)
+ assert.match(provider,/requested_payment_method/)
+ assert.match(migration,/seleccionar_metodo_pago_servicio/)
+ assert.match(migration,/tarifa.*<=.*0/is)
+ assert.match(migration,/requested_payment_method/)
+ assert.match(migration,/payment_method/)
+})
