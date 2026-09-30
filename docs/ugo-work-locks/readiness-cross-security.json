@@ -6,8 +6,8 @@
   "title": "Verify secrets, logs and privacy",
   "status": "DONE",
   "started_at": "2026-09-30T14:33:00.000Z",
-  "heartbeat_at": "2026-09-30T14:54:00.000Z",
-  "lease_expires_at": "2026-09-30T14:54:00.000Z",
+  "heartbeat_at": "2026-09-30T14:55:00.000Z",
+  "lease_expires_at": null,
   "started_sha": "6c70ccfabd3554f0abea274c7eb11e84df92ad4c",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -19,7 +19,7 @@
     "security-rls"
   ],
   "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa",
-  "current_step": "VERIFIED",
+  "current_step": "DONE",
   "attempt": 3,
   "evidence_ids": [
     "github-run:36730663798:FAIL_SCAN",
@@ -33,20 +33,41 @@
     "github-artifact:11104479279",
     "repo:docs/evidence/readiness-cross-security-20260930.json",
     "pr:312:MERGED",
-    "core-ci:36732156723:SUCCESS"
+    "core-ci:36732156723:SUCCESS",
+    "github-run:36732524898:PASS",
+    "github-job:109945623272:PASS",
+    "github-artifact:11104694928",
+    "core-ci-pr:36732156723:SUCCESS",
+    "evidence-commit:01188f7806e9cbdb173b6fdba0e9dd5c07817409"
   ],
   "production_touched": false,
-  "completed_at": "2026-09-30T14:54:00.000Z",
-  "verified_sha": "073cef7cf4f7d815b4d229f8e065d61fbc97f744",
+  "completed_at": "2026-09-30T14:55:00.000Z",
+  "verified_sha": "3d33e6ba350e8165eaeb9dce5c4b9925e99f29d6",
   "main_sha": "86091656c1852ca29b07c9327aeb6946ea06deb1",
   "judge": {
     "result": "PASS",
-    "run_id": 36732156721,
-    "checked_at": "2026-09-30T14:51:01.494Z"
+    "run_id": 36732524898,
+    "job_id": 109945623272,
+    "checked_at": "2026-09-30T14:54:05.124Z"
   },
   "sentinel": {
     "result": "PASS",
-    "run_id": 36732156721,
-    "checked_at": "2026-09-30T14:51:01.549Z"
-  }
+    "run_id": 36732524898,
+    "job_id": 109945623272,
+    "checked_at": "2026-09-30T14:54:05.175Z"
+  },
+  "finished_at": "2026-09-30T14:55:00.000Z",
+  "runtime_validated_sha": "3d33e6ba350e8165eaeb9dce5c4b9925e99f29d6",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validation": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-cross-security-20260930.json",
+  "evidence_commit_sha": "01188f7806e9cbdb173b6fdba0e9dd5c07817409",
+  "artifact_digest": "sha256:7d4a2d670fca58e830f36e001aef7dab76d1f7c1488dc276571be67113a2ed4b"
 }
