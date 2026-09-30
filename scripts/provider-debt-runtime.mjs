@@ -52,6 +52,7 @@ try{
  assert.equal(Boolean(threshold?.blocked_at_threshold),true)
  assert.equal(Boolean(threshold?.online_guard_rejected),true)
  assert.equal(Boolean(threshold?.fixture_restored),true)
+ assert.equal(Boolean(threshold?.profile_restored),true)
  assert.equal(Boolean(threshold?.production_touched),false)
  await fs.mkdir('artifacts',{recursive:true})
  const result={
