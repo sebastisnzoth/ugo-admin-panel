@@ -78,4 +78,5 @@ test('variable-price assigned services persist payment preference before the fin
  assert.match(migration,/tarifa.*<=.*0/is)
  assert.match(migration,/requested_payment_method/)
  assert.match(migration,/payment_method/)
+ assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*security definer/i)
 })
