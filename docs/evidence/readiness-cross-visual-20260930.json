@@ -1,0 +1,57 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "cross-visual",
+  "task_id": "readiness-cross-visual",
+  "correlation_id": "cross-visual-20260930T180200Z",
+  "started_sha": "1121182fd56ae27585d7b71cbaea340faab8e01e",
+  "implementation_sha": "94167eb0088e002e28ff99a682a65b904cba0ab6",
+  "scope": "Consistencia visual transversal: design tokens, jerarquía, componentes y revisión multi-ruta.",
+  "implementation": {
+    "canonical_design_system": "src/mvp/ugo-design-system.css",
+    "client_style_boundary": "src/features/client/clientStyles.ts",
+    "provider_visual_surface": "src/mvp/provider/provider-simple-flow.css",
+    "autonomous_visual_surface": "src/mvp/autonomous-corporation.css",
+    "permanent_regression": "tests/contracts/cross-visual-readiness.test.mjs",
+    "checks": [
+      "canonical semantic color/spacing/radius/touch/motion tokens present",
+      "shared primitives present (buttons, fields, cards, status, nav, modal, drawer)",
+      "Client CSS composition stays centralized under features/client with no duplicate imports",
+      "Provider operational hierarchy keeps responsive main action/nav/dock",
+      "Autonomous control room keeps responsive stats/toolbar/grid hierarchy"
+    ]
+  },
+  "runtime_attempts": [
+    {
+      "deployment_id": "dpl_6z3rYQWcgquJ74PZwCGQqLnV57HM",
+      "sha": "94167eb0088e002e28ff99a682a65b904cba0ab6",
+      "result": "BLOCKED",
+      "blocker": "exceeded_serverless_functions_per_deployment",
+      "detail": "Vercel Hobby plan allows at most 12 Serverless Functions; deployment failed at patchBuild.",
+      "production_touched": false
+    },
+    {
+      "deployment_id": "dpl_ESFXfQ1vCdb3AQeSn15rKnNonCUa",
+      "sha": "4cb06264cacff71c2cf5af57d36a8a9e48286ea6",
+      "result": "PARTIAL",
+      "detail": "READY preview: /landing returned HTTP 200; /ugo-cliente, /ugo-proveedor, /admin and /superadmin returned Vercel Authentication redirects, so authenticated multi-route visual proof could not be completed.",
+      "production_touched": false
+    }
+  ],
+  "tests": {
+    "contract_test_added": true,
+    "executed_in_runtime": false,
+    "reason": "No executable repository workspace was available and the Vercel deployment for the current SHA was blocked by the serverless function-count limit.",
+    "judge": "NOT_RUN",
+    "sentinel": "NOT_RUN"
+  },
+  "result": "NEEDS_RUNTIME_PROOF",
+  "verified": false,
+  "production_touched": false,
+  "remaining_exact": [
+    "Run tests/contracts/cross-visual-readiness.test.mjs (or full npm test) in UGO TEST/CI.",
+    "Open authenticated TEST/preview routes for Cliente, Proveedor, Admin and Super Admin and capture multi-route visual evidence.",
+    "Run Judge and Sentinel against that evidence.",
+    "Only then move readiness-cross-visual lock to DONE / VERIFIED."
+  ],
+  "recorded_at": "2026-09-30T18:08:00Z"
+}
