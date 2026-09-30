@@ -5,8 +5,8 @@
   "title": "Verify Client history services payments ratings and authorized photos in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T02:13:00Z",
-  "heartbeat_at": "2026-09-30T02:13:00Z",
-  "lease_expires_at": "2026-09-30T02:58:00Z",
+  "heartbeat_at": "2026-09-30T02:32:30Z",
+  "lease_expires_at": "2026-09-30T03:17:30Z",
   "started_sha": "1f6faad2c37d5a268923d8cb875dd48332900b0e",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,7 +25,7 @@
     "client-history"
   ],
   "correlation_id": "readiness-client-history-20260930T021300Z-1f6faad2",
-  "current_step": "INSPECT",
+  "current_step": "RUNTIME",
   "attempt": 1,
   "evidence_ids": []
 }
