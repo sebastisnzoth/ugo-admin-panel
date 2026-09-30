@@ -1,0 +1,36 @@
+{
+  "readiness_id": "provider-alerts",
+  "task_id": "readiness-provider-alerts",
+  "job_id": "UGO-READINESS-PROVIDER-ALERTS",
+  "title": "Verify provider new-offer alerts in UGO TEST",
+  "status": "IN_PROGRESS",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Alerts Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-demand",
+    "notifications"
+  ],
+  "correlation_id": "readiness-provider-alerts-20260929T2250-0300",
+  "current_step": "INSPECT_ALERT_RUNTIME",
+  "attempt": 1,
+  "started_at": "2026-09-30T01:51:00Z",
+  "heartbeat_at": "2026-09-30T01:51:00Z",
+  "lease_expires_at": "2026-09-30T02:36:00Z",
+  "started_sha": "d37433c858b1ac670e887a43101a2457215aff2d",
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "provider-demand",
+    "notifications",
+    "ugo-runtime-validation"
+  ]
+}
