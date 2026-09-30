@@ -1,0 +1,23 @@
+{
+  "readiness_id": "cross-accessibility",
+  "task_id": "readiness-cross-accessibility",
+  "job_id": "job-cross-accessibility-20260930T1545Z",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T15:45:00Z",
+  "heartbeat_at": "2026-09-30T15:45:00Z",
+  "lease_expires_at": "2026-09-30T16:30:00Z",
+  "started_sha": "156a6b630351b436f2b3383cfb7a2a3a83152a5e",
+  "owner": "UGO",
+  "assigned_agent": "GPT_UGO",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "preview-runtime"
+  ],
+  "correlation_id": "corr-cross-accessibility-20260930T1545Z",
+  "current_step": "AUDIT_AND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": []
+}
