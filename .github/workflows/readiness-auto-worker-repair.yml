@@ -60,3 +60,5 @@ jobs:
           retention-days: 90
 
 # retry after wrapper migration
+
+# retry after blocked_reason schema repair
