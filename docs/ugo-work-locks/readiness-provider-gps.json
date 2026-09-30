@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "FAILED",
+  "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T04:44:00Z",
-  "lease_expires_at": "2026-09-30T04:44:00Z",
+  "heartbeat_at": "2026-09-30T10:48:00Z",
+  "lease_expires_at": "2026-09-30T11:33:00Z",
   "started_sha": "d9b71cc8741da1889a9a06c2b0543bedc15efb6f",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,8 +25,8 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20260930T043000Z",
-  "current_step": "WAITING_TEST_AUTH_RECOVERY",
-  "attempt": 2,
+  "current_step": "RETRY_AFTER_TEST_AUTH_RECOVERY",
+  "attempt": 3,
   "evidence_ids": [
     "github-actions-run-36669225058",
     "artifact-11076899569",
@@ -35,7 +35,6 @@
     "docs/evidence/ugo-test-auth-outage-20260930.json",
     "commit-bbe8ac9973120bfec8205d9aac2ba82ec014326b"
   ],
-  "failed_at": "2026-09-30T04:44:00Z",
   "failure": {
     "kind": "INFRASTRUCTURE",
     "component": "UGO_TEST_AUTH",
