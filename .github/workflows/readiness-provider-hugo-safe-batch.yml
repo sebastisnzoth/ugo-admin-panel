@@ -24,6 +24,7 @@ jobs:
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - run: node --test tests/contracts/readiness-provider-hugo-safe-batch.test.mjs
+      - run: node --test tests/contracts/command-center-workflow-optimization.test.mjs
       - run: npm run build
       - name: Persist static same-SHA proof
         run: |
