@@ -53,3 +53,13 @@ test('readonly specialists have a real executor and Super Admin action',()=>{
   assert.match(ui,/Ejecutar análisis/)
   assert.match(ui,/executeAdvisory/)
 })
+
+test('readonly executor cannot mutate UGO business tables by contract',()=>{
+  const executor=fs.readFileSync('supabase/migrations/20260930020500_d3_d4_readonly_specialist_executors.sql','utf8')
+  for(const table of ['servicios','usuarios','disputas','resenas','proveedores_mapa','deudas_ugo_proveedor']){
+    assert.doesNotMatch(executor,new RegExp('(?:insert\\s+into|update|delete\\s+from)\\s+public\\.'+table,'i'))
+  }
+  assert.match(executor,/insert into public\.autonomous_jobs/)
+  assert.match(executor,/insert into public\.autonomous_evidence_ledger/)
+  assert.match(executor,/insert into public\.autonomous_decision_ledger/)
+})
