@@ -8,6 +8,13 @@ const SUPABASE_SERVICE_ROLE_KEY = process.env.UGO_TEST_SUPABASE_SERVICE_KEY || p
 const PROVIDER_VERIFICATION_STATES = new Set(['registrado', 'pendiente', 'verificado', 'rechazado', 'suspendido'])
 const USER_ROLES = new Set(['cliente', 'proveedor', 'admin', 'superadmin', 'arbitro'])
 const PRIVILEGED_USER_ROLES = new Set(['admin', 'superadmin', 'arbitro'])
+const HUGO_AUDIT_ROLES = new Set(['client', 'provider', 'admin', 'superadmin'])
+const HUGO_AUDIT_DEPARTMENT: Record<string, number> = { client: 3, provider: 4, admin: 2, superadmin: 1 }
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : {}
+}
 
 function operation(req: VercelRequest) {
   const raw = req.query.op
@@ -402,9 +409,128 @@ async function resetAdminManagedUserPassword(req: VercelRequest, res: VercelResp
   }
 }
 
+
+async function requireHugoAuditActor(req: VercelRequest, requestedRole: string) {
+  if (!HUGO_AUDIT_ROLES.has(requestedRole)) throw httpError('Rol Hugo inválido.', 400)
+  const token = accessToken(req)
+  if (!token) throw httpError('Autenticación requerida.', 401)
+
+  const authClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data: authData, error: authError } = await authClient.auth.getUser(token)
+  if (authError || !authData.user) throw httpError('Sesión inválida o vencida.', 401)
+
+  const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+    global: { headers: { Authorization: `Bearer ${token}` } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const { data: profile, error: profileError } = await userClient
+    .from('usuarios')
+    .select('tipo,activo')
+    .eq('id', authData.user.id)
+    .maybeSingle()
+  if (profileError) throw httpError('No se pudo verificar la autoridad de Hugo.', 403)
+  if (!profile?.activo) throw httpError('Perfil sin autoridad activa.', 403)
+
+  const actual = String(profile.tipo || '').toLowerCase()
+  const allowed =
+    requestedRole === 'client' ? actual === 'cliente' :
+    requestedRole === 'provider' ? actual === 'proveedor' :
+    requestedRole === 'admin' ? actual === 'admin' || actual === 'superadmin' :
+    actual === 'superadmin'
+  if (!allowed) throw httpError('Autoridad Hugo no válida para esta traza.', 403)
+  return { user: authData.user, actualRole: actual }
+}
+
+async function persistHugoAudit(req: VercelRequest, res: VercelResponse) {
+  try {
+    if (!SUPABASE_SERVICE_ROLE_KEY) throw httpError('Auditoría Hugo no configurada.', 503)
+    const correlationId = clean(req.body?.correlation_id, 80)
+    const action = clean(req.body?.action, 120)
+    const intent = clean(req.body?.intent, 500)
+    const role = clean(req.body?.role, 30).toLowerCase() || 'client'
+    const serviceId = clean(req.body?.service_id, 80)
+    if (!UUID_RE.test(correlationId) || !action || !intent) throw httpError('Traza Hugo inválida.', 400)
+
+    const actor = await requireHugoAuditActor(req, role)
+    const effect = asRecord(req.body?.effect)
+    const response = asRecord(req.body?.response)
+    const sb = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+      auth: { persistSession: false, autoRefreshToken: false },
+    })
+    const trace = {
+      intent,
+      authority: { requested_role: role, profile_role: actor.actualRole, decision: 'ALLOW' },
+      action,
+      effect,
+      audit: { correlation_id: correlationId },
+      response,
+      source: 'hugo:native-voice-tool-call',
+    }
+
+    const { data: decision, error: decisionError } = await sb
+      .from('autonomous_decision_ledger')
+      .insert({
+        department_id: HUGO_AUDIT_DEPARTMENT[role],
+        decision: `HUGO_${action.toUpperCase()}`,
+        reason: 'Authenticated Hugo tool action with explicit correlated trace.',
+        authority_class: 'GREEN',
+        policy_version: 'hugo-audit-v1',
+        evidence_refs: [{ type: 'hugo_trace', correlation_id: correlationId, service_id: UUID_RE.test(serviceId) ? serviceId : null }],
+        authorization_result: 'ALLOW',
+        correlation_id: correlationId,
+      })
+      .select('id')
+      .single()
+    if (decisionError) throw decisionError
+
+    const { data: evidence, error: evidenceError } = await sb
+      .from('autonomous_evidence_ledger')
+      .insert({
+        evidence_type: 'hugo_action_trace',
+        reference: `hugo://trace/${correlationId}`,
+        metadata: { ...trace, decision_ledger_id: decision.id, actor_id: actor.user.id, service_id: UUID_RE.test(serviceId) ? serviceId : null },
+        correlation_id: correlationId,
+        created_by: actor.user.id,
+      })
+      .select('id')
+      .single()
+    if (evidenceError) throw evidenceError
+
+    const { data: audit, error: auditError } = await sb
+      .from('audit_log')
+      .insert({
+        evento: 'HUGO_ACTION_TRACE',
+        actor_id: actor.user.id,
+        entidad_tipo: UUID_RE.test(serviceId) ? 'servicio' : 'hugo',
+        entidad_id: UUID_RE.test(serviceId) ? serviceId : null,
+        detalles: { ...trace, decision_ledger_id: decision.id, evidence_ledger_id: evidence.id },
+      })
+      .select('id')
+      .single()
+    if (auditError) throw auditError
+
+    return res.status(200).json({
+      ok: true,
+      correlation_id: correlationId,
+      ledgers: { decision_id: decision.id, evidence_id: evidence.id, audit_log_id: audit.id },
+      stages: ['INTENT', 'AUTHORITY', 'ACTION', 'EFFECT', 'AUDIT', 'RESPONSE'],
+    })
+  } catch (error) {
+    console.error('Hugo audit persistence failed:', error)
+    const status = typeof error === 'object' && error !== null && 'status' in error ? Number((error as { status?: unknown }).status) : 500
+    return res.status(status >= 400 && status < 600 ? status : 500).json({
+      ok: false,
+      error: status === 401 || status === 403 ? (error instanceof Error ? error.message : 'Acceso denegado.') : 'No se pudo persistir la auditoría de Hugo.',
+    })
+  }
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
   switch (operation(req)) {
+    case 'hugo-audit': return persistHugoAudit(req, res)
     case 'cash-select': return selectCash(req, res)
     case 'cash-confirm': return confirmCash(req, res)
     case 'kyc-verify': return verifyKyc(req, res)
