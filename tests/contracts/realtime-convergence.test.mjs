@@ -23,6 +23,7 @@ test('provider realtime resyncs authoritative state after reconnect', async () =
   assert.match(source, /table:'servicios',filter:`proveedor_id=eq\.\$\{userId\}`/)
   assert.match(source, /table:'pagos',filter:`proveedor_id=eq\.\$\{userId\}`/)
   assert.match(source, /status==='SUBSCRIBED'/)
-  assert.match(source, /window\.addEventListener\('online',resync\)/)
+  assert.match(source, /const onOnline=\(\)=>\{resync\(\);reconnect\(\)\}/)
+  assert.match(source, /window\.addEventListener\('online',onOnline\)/)
   assert.match(source, /document\.addEventListener\('visibilitychange',onVisibility\)/)
 })
