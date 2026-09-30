@@ -1,0 +1,4 @@
+import test from'node:test';import assert from'node:assert/strict';import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('cross-security runtime scans tracked sources, bundle, logs and client env exposure',async()=>{const s=await read('scripts/cross-security-runtime.mjs');for(const token of['git',['dist','-type','f'],'high-confidence-secret-pattern','synthetic-secret-in-client-bundle','risky_log_calls','no_client_exposed_secret_env','minimum_data_policy_pass']){const t=Array.isArray(token)?token.join(','):token;assert.ok(s.includes(t.split(',')[0]))}})
+test('cross-security uses independent Judge and Sentinel',async()=>{const[j,s]=await Promise.all([read('scripts/cross-security-judge.mjs'),read('scripts/cross-security-sentinel.mjs')]);assert.match(j,/validator:'Judge'/);assert.match(s,/validator:'Sentinel'/);assert.match(s,/synthetic-only/)})

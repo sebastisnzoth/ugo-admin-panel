@@ -1,0 +1,76 @@
+name: UGO Cross Security Runtime TEST
+
+on:
+  pull_request:
+    paths:
+      - "scripts/cross-security-*.mjs"
+      - "tests/contracts/cross-security-readiness.test.mjs"
+      - ".github/workflows/cross-security-runtime.yml"
+      - "src/**"
+      - "api/**"
+      - "supabase/functions/**"
+      - ".env*"
+  push:
+    branches: [main]
+    paths:
+      - "scripts/cross-security-*.mjs"
+      - "tests/contracts/cross-security-readiness.test.mjs"
+      - ".github/workflows/cross-security-runtime.yml"
+      - "src/**"
+      - "api/**"
+      - "supabase/functions/**"
+      - ".env*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-cross-security
+  cancel-in-progress: false
+
+env:
+  UGO_SYNTHETIC_SERVICE_ROLE_KEY: ugo-test-service-role-secret-9d0e7f7f4e
+  UGO_SYNTHETIC_API_KEY: ugo-test-api-key-7d4f53f607
+  UGO_SYNTHETIC_PASSWORD: ugo-test-password-3f43a687c0
+
+jobs:
+  security-proof:
+    name: Cross security · same SHA · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Contract regression
+        run: node --test tests/contracts/cross-security-readiness.test.mjs tests/contracts/hugo-privacy-readiness.test.mjs
+      - name: Build exact SHA with synthetic server-only secrets
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ env.UGO_SYNTHETIC_SERVICE_ROLE_KEY }}
+          GEMINI_API_KEY: ${{ env.UGO_SYNTHETIC_API_KEY }}
+        run: npm run build
+      - name: Repository + bundle + log sanitization proof
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/cross-security-runtime.mjs
+      - name: Independent Judge
+        run: node scripts/cross-security-judge.mjs
+      - name: Sentinel
+        run: node scripts/cross-security-sentinel.mjs
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-cross-security-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/cross-security-*
+          if-no-files-found: warn
+          retention-days: 90
