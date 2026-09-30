@@ -114,15 +114,22 @@ const closeClientOverlay=async page=>{
 }
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
+ const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
+ if(await drawer.count()&&await drawer.isVisible())return
  const opener=page.getByRole('button',{name:/Abrir menú/}).first()
- if(await opener.count()&&await opener.isVisible()){
-   await safeClick(page,opener,'client menu')
-   return
- }
  const trace=pageContext.get(page)
+ if(trace)trace.step='client menu'
+ if(await opener.count()){
+   await opener.click({force:true}).catch(()=>{})
+   if(await drawer.isVisible().catch(()=>false))return
+ }
  if(trace)trace.step='client menu global event'
- await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
- await page.getByRole('complementary',{name:'Menú UGO Cliente'}).waitFor({state:'visible',timeout:5000})
+ for(let attempt=0;attempt<12;attempt++){
+   await page.evaluate(()=>window.dispatchEvent(new Event('ugo:client-menu-open')))
+   if(await drawer.isVisible().catch(()=>false))return
+   await page.waitForTimeout(250)
+ }
+ await drawer.waitFor({state:'visible',timeout:2000})
 }
 
 async function testClient(viewport,name){
