@@ -52,9 +52,9 @@ const metadata={
 }
 const insertRow={
  cliente_id:login.user.id,
- proveedor_id:TEST_PROVIDER_ID,
+ proveedor_id:null,
  categoria_id:template.categoria_id,
- estado:'asignado',
+ estado:'borrador',
  programado_para:new Date(Date.now()+30*60*1000).toISOString(),
  descripcion:'UGO TEST readiness client-notifications '+sha.slice(0,12),
  urgencia:false,
@@ -73,7 +73,9 @@ const {data:fixture,error:createError}=await admin.from('servicios')
  .select('id,numero,estado,cliente_id,proveedor_id')
  .single()
 assert.ifError(createError)
-assert.ok(fixture?.id&&fixture?.proveedor_id,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_REQUIRED')
+assert.ok(fixture?.id,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_REQUIRED')
+assert.equal(fixture.estado,'borrador','DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_NEUTRAL')
+assert.equal(fixture.proveedor_id,null,'DISPOSABLE_CLIENT_NOTIFICATIONS_FIXTURE_MUST_START_UNASSIGNED')
 
 const expected=[
  ['asignado','accepted'],
@@ -181,6 +183,33 @@ try{
  await page.waitForFunction(()=>!document.querySelector('[aria-label="Iniciar sesión"]'),null,{timeout:30000})
  const onboarding=page.getByRole('heading',{name:'Terminemos tu perfil'})
  if(await onboarding.count())throw new Error('UGO_TEST_CLIENT_ONBOARDING_INCOMPLETE')
+
+ // The canonical assignment notification trigger is AFTER UPDATE of
+ // estado/proveedor_id. Perform the real assignment only after the client is
+ // authenticated so both persistence and foreground Realtime delivery are
+ // observable in the same run.
+ const {data:assigned,error:assignError}=await admin.from('servicios')
+  .update({proveedor_id:TEST_PROVIDER_ID,estado:'asignado'})
+  .eq('id',fixture.id)
+  .select('id,estado,proveedor_id')
+  .single()
+ assert.ifError(assignError)
+ assert.equal(assigned?.estado,'asignado','CLIENT_NOTIFICATIONS_ASSIGNMENT_UPDATE_REQUIRED')
+ assert.equal(assigned?.proveedor_id,TEST_PROVIDER_ID,'CLIENT_NOTIFICATIONS_PROVIDER_ASSIGNMENT_REQUIRED')
+
+ let assignedPersisted=null
+ for(let attempt=0;attempt<30;attempt++){
+  const {data,error}=await auth.from('notificaciones')
+   .select('id,tipo,titulo,datos,usuario_id,leida_at')
+   .eq('usuario_id',login.user.id)
+   .eq('tipo','proveedor_asignado')
+   .contains('datos',{servicio_id:fixture.id})
+   .maybeSingle()
+  assert.ifError(error)
+  if(data){assignedPersisted=data;break}
+  await new Promise(resolve=>setTimeout(resolve,250))
+ }
+ assert.ok(assignedPersisted?.id,'CLIENT_ASSIGNMENT_NOTIFICATION_MUST_PERSIST_AFTER_UPDATE')
  try{
   const assignedNotice=page.locator('.ugo-notification-live.is-client')
   await assignedNotice.getByText('UGO · ACTUALIZACIÓN DEL PEDIDO',{exact:true}).waitFor({state:'visible',timeout:30000})
