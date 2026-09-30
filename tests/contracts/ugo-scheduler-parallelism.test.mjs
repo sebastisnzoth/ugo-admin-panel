@@ -156,3 +156,28 @@ test('latest lock state wins so an older active lease cannot ghost-block a compl
   assert.equal(tasks[0].gate_state, 'AVAILABLE')
   assert.equal(plan.runnable.length, 1)
 })
+
+
+test('completed dependency no longer blocks a downstream task', () => {
+  const tasks = [
+    task('dependency', ['r1'], 1),
+    {...task('downstream', ['r2'], 2), depends_on: ['dependency']},
+  ]
+  const locks = [{
+    task_id: 'dependency',
+    status: 'DONE',
+    started_at: '2026-09-30T01:00:00Z',
+    finished_at: '2026-09-30T01:10:00Z',
+    resources: ['r1'],
+  }]
+
+  const plan = scheduleTasks({
+    tasks,
+    locks,
+    policy: basePolicy,
+    now: new Date('2026-09-30T01:30:00Z'),
+  })
+
+  assert.equal(tasks.find(t => t.id === 'downstream').gate_state, 'AVAILABLE')
+  assert.deepEqual(plan.runnable.map(t => t.id), ['dependency', 'downstream'])
+})
