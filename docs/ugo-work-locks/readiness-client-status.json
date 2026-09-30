@@ -5,8 +5,8 @@
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:46:00Z",
-  "heartbeat_at": "2026-09-30T11:10:00Z",
-  "lease_expires_at": "2026-09-30T11:55:00Z",
+  "heartbeat_at": "2026-09-30T11:15:00Z",
+  "lease_expires_at": "2026-09-30T12:00:00Z",
   "started_sha": "e5604ef5576392956de149ff3fcec0e14b21056e",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,8 +25,8 @@
     "client-service-status"
   ],
   "correlation_id": "readiness-client-status-20260930T104600Z-e5604ef5",
-  "current_step": "RUNNING_V7_FULL_BUSINESS_LIFECYCLE",
-  "attempt": 9,
+  "current_step": "RUNNING_V8_ISOLATED_AUTH_SESSION",
+  "attempt": 10,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
     "docs/evidence/readiness-client-status-20260930.json",
@@ -63,7 +63,10 @@
     "commit:19fd823f55f3ee919d3a95f14c6599bc6d596407",
     "run:36706497333:FAIL_CASH_DISABLED_BRAZIL",
     "artifact:11092356974",
-    "commit:b451aa6343b70fb2732a6fef05a8d27537e3b050"
+    "commit:b451aa6343b70fb2732a6fef05a8d27537e3b050",
+    "run:36707038292:FAIL_PARALLEL_TEST_SESSION_INTERFERENCE",
+    "artifact:11092407286",
+    "commit:d6e116dd017619be9d57677f8c816896687e8bbf"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
   "judge": "PENDING",
