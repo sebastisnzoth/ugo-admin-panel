@@ -6,8 +6,8 @@ returns boolean
 language plpgsql
 stable
 security definer
-set search_path to 'public','private','pg_temp'
-as $$
+set search_path to 'public','private','extensions','pg_temp'
+as $
 declare
   v_slug text;
   v_description text;
