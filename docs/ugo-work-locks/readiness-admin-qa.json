@@ -5,8 +5,8 @@
   "title": "Verify QA Lab simulators, results, Meta-QA and regressions in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T00:37:00Z",
-  "heartbeat_at": "2026-09-30T00:47:00Z",
-  "lease_expires_at": "2026-09-30T01:32:00Z",
+  "heartbeat_at": "2026-09-30T00:53:00Z",
+  "lease_expires_at": "2026-09-30T01:38:00Z",
   "started_sha": "b9a158b2a7d88ab9a7983b3f782a67cc396b01cb",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,11 +19,13 @@
     "qa-lab"
   ],
   "correlation_id": "readiness-admin-qa-20260930T003700Z-b9a158b2",
-  "current_step": "RUNTIME_VALIDATION",
-  "attempt": 1,
+  "current_step": "RECONCILE_PROTECTED_QA_GATES_AND_RERUN",
+  "attempt": 2,
   "evidence_ids": [
     "github-actions:run:36651938894",
-    "github-actions:job:109687826536"
+    "github-actions:job:109687826536",
+    "github-actions:run:36651938894",
+    "runtime-failure:PHYSICAL_HUMAN_GATES_MUST_REMAIN_FAIL_CLOSED"
   ],
   "production_touched": false,
   "skills": [
