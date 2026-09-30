@@ -2,10 +2,10 @@
   "readiness_id": "cross-visual",
   "task_id": "readiness-cross-visual",
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T20:36:00Z",
-  "lease_expires_at": "2026-09-30T21:21:00Z",
+  "heartbeat_at": "2026-09-30T20:58:00Z",
+  "lease_expires_at": "2026-09-30T20:58:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,7 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R13_PROVIDER_REAL_UI_LOGIN_RERUN",
+  "current_step": "VERIFIED_RUNTIME_JUDGE_SENTINEL",
   "attempt": 13,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
@@ -72,13 +72,23 @@
     "fix:9f95ee47b80649ee6ab13f7a7919be60fcac7a51",
     "github-run:36773122548:FLAKY_PROVIDER_RESTORED_SESSION_DROPPED",
     "artifact:11123624650",
-    "fix:52036da557d30a298bb7a949ddba29701ee2d53b"
+    "fix:52036da557d30a298bb7a949ddba29701ee2d53b",
+    "github-run:36773597008:SUCCESS",
+    "job:110085844915:SUCCESS",
+    "artifact:11125210102",
+    "runtime-sha:52036da557d30a298bb7a949ddba29701ee2d53b",
+    "judge:PASS",
+    "sentinel:PASS",
+    "evidence:docs/evidence/readiness-cross-visual-20260930.json"
   ],
-  "result": "IN_PROGRESS",
+  "result": "VERIFIED",
   "production_touched": false,
   "validators_result": {
-    "Judge": "PENDING_RUNTIME",
-    "Sentinel": "PENDING_RUNTIME"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
-  "failure": null
+  "failure": null,
+  "completed_at": "2026-09-30T20:58:00Z",
+  "verified_sha": "52036da557d30a298bb7a949ddba29701ee2d53b",
+  "main_sha_at_close": "251331e27ec636048c2d20778d6dd5f8cc1cc730"
 }
