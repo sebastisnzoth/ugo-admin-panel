@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-debt",
   "job_id": "UGO-READINESS-PROVIDER-DEBT",
   "title": "Verify provider debt limit blocks new acceptances after three services owed",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T04:34:00Z",
-  "heartbeat_at": "2026-09-30T04:43:00Z",
-  "lease_expires_at": "2026-09-30T05:28:00Z",
+  "heartbeat_at": "2026-09-30T04:44:00Z",
+  "lease_expires_at": "2026-09-30T04:44:00Z",
   "started_sha": "35e923d935b11981d72a6333e406762ddfd6ca98",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,19 +26,20 @@
     "provider-finance"
   ],
   "correlation_id": "readiness-provider-debt-20260930T043400Z",
-  "current_step": "HARDEN_TEST_CONCURRENCY",
+  "current_step": "WAITING_TEST_AUTH_RECOVERY",
   "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36669588425",
-    "docs/evidence/ugo-test-auth-outage-20260930.json"
+    "docs/evidence/ugo-test-auth-outage-20260930.json",
+    "commit-348ca1d08c4afe6ff1573046ccadce427fd705cc"
   ],
-  "failed_at": "2026-09-30T04:40:00Z",
+  "failed_at": "2026-09-30T04:44:00Z",
   "failure": {
     "kind": "INFRASTRUCTURE",
     "component": "UGO_TEST_AUTH",
     "http_status": 504,
     "functional_contracts_passed": 13,
-    "message": "Provider debt contracts all passed; authenticated TEST state probe could not sign in because Auth returned repeated HTTP 504."
+    "message": "Functional gates remain non-failing; runtime retry deferred until TEST Auth/DB connectivity recovers. Shared TEST fixture concurrency hardening applied."
   },
   "production_touched": false
 }
