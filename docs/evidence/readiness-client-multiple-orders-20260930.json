@@ -1,0 +1,57 @@
+{
+  "readiness_id": "client-multiple-orders",
+  "task_id": "readiness-client-multiple-orders",
+  "job_id": "UGO-READINESS-CLIENT-MULTIPLE-ORDERS",
+  "correlation_id": "readiness-client-multiple-orders-20260930T021000Z-92202294",
+  "environment": "UGO TEST / UGO Arena",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "started_sha": "922022949e59a244ba118e8f95c9bd9834853625",
+  "verified_code_sha": "8b34800089567718285399c01b2e9d71bb2a6f6c",
+  "main_sha_observed_before_close": "aca72c5ee2138798bdc7054c3a5162c5b6c74cf6",
+  "production_touched": false,
+  "implementation": {
+    "client_preflight": "second immediate active order is blocked; scheduled drafts bypass immediate-only preflight",
+    "backend_guard": "private.guard_client_immediate_order_concurrency",
+    "migration_version": "20260930021452",
+    "migration_file": "supabase/migrations/20260930021452_client_active_scheduled_coexistence_policy.sql",
+    "usability": "active list distinguishes Programado with date/time and blocking message explains scheduled alternative"
+  },
+  "runtime_proof": {
+    "audit_log_id": 6466,
+    "existing_immediate_preserved": true,
+    "second_immediate_blocked": true,
+    "future_order_while_immediate_active": true,
+    "second_future_order_coexists": true,
+    "cleanup_ok": true,
+    "residual_fixture_rows": 0
+  },
+  "regression": {
+    "focused_workflow": ".github/workflows/readiness-client-multiple-orders.yml",
+    "workflow_run_id": 36659584911,
+    "workflow_conclusion": "success",
+    "contract_files": [
+      "tests/contracts/client-multiple-orders-readiness.test.mjs",
+      "tests/contracts/client-end-to-end-flow.test.mjs",
+      "tests/contracts/service-scheduling-contract.test.mjs",
+      "tests/contracts/client-single-active-service.test.mjs"
+    ],
+    "global_core_ci_note": "A concurrent client-history change caused unrelated ServiceHistoryPanel TypeScript failures in global Core CI; no client-multiple-orders assertion failed."
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "audit_log_id": 6467
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "audit_log_id": 6468
+    }
+  },
+  "advisors": {
+    "security_checked": true,
+    "performance_checked": true,
+    "control_specific_new_findings": false,
+    "note": "Existing repository-wide advisor debt remains outside this readiness scope."
+  },
+  "result": "VERIFIED"
+}
