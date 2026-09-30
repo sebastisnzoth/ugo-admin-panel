@@ -1,0 +1,48 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "provider-notifications",
+  "status": "VERIFIED",
+  "final_status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_proof": {
+    "status": "PASS",
+    "sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+    "environment": "UGO TEST"
+  },
+  "workflow_run": {
+    "id": 36714117294,
+    "job_id": 109882622414,
+    "conclusion": "success",
+    "artifact_id": 11094754299,
+    "artifact_digest": "sha256:4d411a10796457a54e835f0b09b51087636731ef3248c4f8bbaf51b0f0574cc2"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true,
+    "core_ci_run": 36714117260,
+    "core_ci_conclusion": "success"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "offer realtime without refresh",
+      "assignment realtime",
+      "service-change realtime",
+      "chat message realtime",
+      "attention tone and vibration emitted"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "production_touched": false,
+  "result_summary": "UGO TEST verified provider offer, assignment, service-change and message notifications without refresh, with tone/vibration.",
+  "verified_at": "2026-09-30T12:22:30Z"
+}
