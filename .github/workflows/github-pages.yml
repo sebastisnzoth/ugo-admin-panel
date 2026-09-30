@@ -143,60 +143,90 @@ jobs:
               "https://api.github.com/repos/${GITHUB_REPOSITORY}/pulls/${number}/files?per_page=100" \
               > "/tmp/ugo-pr-files-${number}.json"
 
-            readiness_id=""
-            evidence_status=""
-            runtime_status=""
-            judge=""
-            sentinel=""
-            evidence_path="$(jq -r '[.[] | select(.filename | test("^docs/evidence/.*\\.json$"))][0].filename // empty' "/tmp/ugo-pr-files-${number}.json")"
+            evidence_paths="$(jq -r '.[] | select(.filename | test("^docs/evidence/.*\\.json$")) | .filename' "/tmp/ugo-pr-files-${number}.json")"
+            emitted=0
 
-            if [ -n "$evidence_path" ]; then
-              encoded_path="$evidence_path"
-              if curl -fsSL \
-                -H "Authorization: Bearer ${GH_TOKEN}" \
-                -H "Accept: application/vnd.github+json" \
-                "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${encoded_path}?ref=${head_sha}" \
-                > "/tmp/ugo-pr-evidence-${number}.json"; then
-                jq -r '.content' "/tmp/ugo-pr-evidence-${number}.json" | tr -d '\n' | base64 -d > "/tmp/ugo-pr-evidence-decoded-${number}.json" || true
-                if jq -e . "/tmp/ugo-pr-evidence-decoded-${number}.json" >/dev/null 2>&1; then
-                  readiness_id="$(jq -r '.readiness_id // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
-                  evidence_status="$(jq -r '.final_status // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
-                  runtime_status="$(jq -r '.runtime_proof.status // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
-                  judge="$(jq -r '.independent_validation.judge // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
-                  sentinel="$(jq -r '.independent_validation.sentinel // empty' "/tmp/ugo-pr-evidence-decoded-${number}.json")"
+            if [ -n "$evidence_paths" ]; then
+              while IFS= read -r evidence_path; do
+                [ -n "$evidence_path" ] || continue
+                readiness_id=""
+                evidence_status=""
+                runtime_status=""
+                judge=""
+                sentinel=""
+                encoded_path="$evidence_path"
+
+                if curl -fsSL \
+                  -H "Authorization: Bearer ${GH_TOKEN}" \
+                  -H "Accept: application/vnd.github+json" \
+                  "https://api.github.com/repos/${GITHUB_REPOSITORY}/contents/${encoded_path}?ref=${head_sha}" \
+                  > "/tmp/ugo-pr-evidence-${number}-${emitted}.json"; then
+                  jq -r '.content' "/tmp/ugo-pr-evidence-${number}-${emitted}.json" | tr -d '\n' | base64 -d > "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json" || true
+                  if jq -e . "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json" >/dev/null 2>&1; then
+                    readiness_id="$(jq -r '.readiness_id // empty' "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json")"
+                    evidence_status="$(jq -r '.final_status // .status // .result // empty' "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json")"
+                    runtime_status="$(jq -r '.runtime_proof.status // .runtime.status // .workflow_run.conclusion // empty' "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json")"
+                    judge="$(jq -r '.independent_validation.judge // .judge.result // .validators_result.Judge // .validator_results.Judge // empty' "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json")"
+                    sentinel="$(jq -r '.independent_validation.sentinel // .sentinel.result // .validators_result.Sentinel // .validator_results.Sentinel // empty' "/tmp/ugo-pr-evidence-decoded-${number}-${emitted}.json")"
+                  fi
                 fi
-              fi
+
+                if [ -z "$readiness_id" ]; then
+                  continue
+                fi
+
+                jq \
+                  --argjson pr "$pr" \
+                  --arg readiness_id "$readiness_id" \
+                  --arg evidence_status "$evidence_status" \
+                  --arg runtime_status "$runtime_status" \
+                  --arg judge "$judge" \
+                  --arg sentinel "$sentinel" \
+                  --arg evidence_path "$evidence_path" \
+                  '.pull_requests += [{
+                    number: $pr.number,
+                    title: $pr.title,
+                    draft: $pr.draft,
+                    html_url: $pr.html_url,
+                    updated_at: $pr.updated_at,
+                    head_ref: $pr.head.ref,
+                    head_sha: $pr.head.sha,
+                    base_ref: $pr.base.ref,
+                    readiness_id: $readiness_id,
+                    evidence_status: $evidence_status,
+                    runtime_status: $runtime_status,
+                    judge: $judge,
+                    sentinel: $sentinel,
+                    evidence_path: $evidence_path
+                  }]' /tmp/ugo-readiness-prs.json > /tmp/ugo-readiness-prs.next.json
+                mv /tmp/ugo-readiness-prs.next.json /tmp/ugo-readiness-prs.json
+                emitted=$((emitted + 1))
+              done <<< "$evidence_paths"
             fi
 
-            if [ -z "$readiness_id" ]; then
+            if [ "$emitted" -eq 0 ]; then
               readiness_id="$(sed -nE 's#^(fix|feat|chore)/([a-z0-9-]+)-readiness-.*#\2#p' <<<"$head_ref" | head -n1)"
+              jq \
+                --argjson pr "$pr" \
+                --arg readiness_id "$readiness_id" \
+                '.pull_requests += [{
+                  number: $pr.number,
+                  title: $pr.title,
+                  draft: $pr.draft,
+                  html_url: $pr.html_url,
+                  updated_at: $pr.updated_at,
+                  head_ref: $pr.head.ref,
+                  head_sha: $pr.head.sha,
+                  base_ref: $pr.base.ref,
+                  readiness_id: $readiness_id,
+                  evidence_status: "",
+                  runtime_status: "",
+                  judge: "",
+                  sentinel: "",
+                  evidence_path: ""
+                }]' /tmp/ugo-readiness-prs.json > /tmp/ugo-readiness-prs.next.json
+              mv /tmp/ugo-readiness-prs.next.json /tmp/ugo-readiness-prs.json
             fi
-
-            jq \
-              --argjson pr "$pr" \
-              --arg readiness_id "$readiness_id" \
-              --arg evidence_status "$evidence_status" \
-              --arg runtime_status "$runtime_status" \
-              --arg judge "$judge" \
-              --arg sentinel "$sentinel" \
-              --arg evidence_path "$evidence_path" \
-              '.pull_requests += [{
-                number: $pr.number,
-                title: $pr.title,
-                draft: $pr.draft,
-                html_url: $pr.html_url,
-                updated_at: $pr.updated_at,
-                head_ref: $pr.head.ref,
-                head_sha: $pr.head.sha,
-                base_ref: $pr.base.ref,
-                readiness_id: $readiness_id,
-                evidence_status: $evidence_status,
-                runtime_status: $runtime_status,
-                judge: $judge,
-                sentinel: $sentinel,
-                evidence_path: $evidence_path
-              }]' /tmp/ugo-readiness-prs.json > /tmp/ugo-readiness-prs.next.json
-            mv /tmp/ugo-readiness-prs.next.json /tmp/ugo-readiness-prs.json
           done
 
           jq --arg generated_at "$GENERATED_AT" '. + {
