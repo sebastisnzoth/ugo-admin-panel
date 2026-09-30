@@ -1,0 +1,134 @@
+name: UGO Cross Idempotency Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cross-idempotency-runtime.mjs'
+      - 'scripts/cross-idempotency-judge.mjs'
+      - 'scripts/cross-idempotency-sentinel.mjs'
+      - 'tests/contracts/cross-idempotency-readiness.test.mjs'
+      - 'supabase/migrations/20260930141225_cross_idempotency_rating_uniqueness.sql'
+      - '.github/workflows/cross-idempotency-runtime.yml'
+
+concurrency:
+  group: ugo-cross-idempotency-runtime
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+
+jobs:
+  cross-idempotency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Guard UGO TEST only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Contract regression
+        run: node --test tests/contracts/cross-idempotency-readiness.test.mjs
+      - name: Concurrent runtime proof
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-idempotency-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-idempotency-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-idempotency-sentinel.mjs
+      - name: Persist VERIFIED closure
+        shell: bash
+        env:
+          UGO_VALIDATED_SHA: ${{ github.sha }}
+          UGO_WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "ugo-readiness-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B readiness-cross-idempotency-close origin/main
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const runtime=JSON.parse(fs.readFileSync('artifacts/readiness-cross-idempotency-runtime.json','utf8'))
+          const judge=JSON.parse(fs.readFileSync('artifacts/readiness-cross-idempotency-judge.json','utf8'))
+          const sentinel=JSON.parse(fs.readFileSync('artifacts/readiness-cross-idempotency-sentinel.json','utf8'))
+          if(runtime.status!=='PASS'||judge.result!=='PASS'||sentinel.result!=='PASS')throw new Error('CROSS_IDEMPOTENCY_VALIDATORS_NOT_PASS')
+          if(runtime.sha!==process.env.UGO_VALIDATED_SHA||judge.sha!==runtime.sha||sentinel.sha!==runtime.sha)throw new Error('CROSS_IDEMPOTENCY_SAME_SHA_REQUIRED')
+          if(runtime.production_touched!==false||runtime.cleanup_ok!==true)throw new Error('CROSS_IDEMPOTENCY_UNSAFE_RUNTIME')
+          const lockPath='docs/ugo-work-locks/readiness-cross-idempotency.json'
+          const lock=JSON.parse(fs.readFileSync(lockPath,'utf8'))
+          if(lock.status!=='IN_PROGRESS')throw new Error('CROSS_IDEMPOTENCY_LOCK_NOT_ACTIVE')
+          const evidencePath='docs/evidence/readiness-cross-idempotency-20260930.json'
+          const evidence={
+            readiness_id:'cross-idempotency',
+            task_id:'readiness-cross-idempotency',
+            environment:'UGO TEST',
+            production_touched:false,
+            runtime_validated_sha:runtime.sha,
+            workflow_run_id:Number(process.env.UGO_WORKFLOW_RUN_ID),
+            correlation_id:lock.correlation_id,
+            acceptance:runtime.acceptance,
+            payment_close:runtime.payment_close,
+            rating:runtime.rating,
+            cleanup_ok:runtime.cleanup_ok,
+            validators:{Judge:judge.result,Sentinel:sentinel.result},
+            result:'PASS',
+            verified_at:new Date().toISOString()
+          }
+          fs.mkdirSync('docs/evidence',{recursive:true})
+          fs.writeFileSync(evidencePath,JSON.stringify(evidence,null,2)+'\n')
+          const now=new Date().toISOString()
+          lock.status='DONE'
+          lock.heartbeat_at=now
+          lock.lease_expires_at=null
+          lock.current_step='DONE'
+          lock.completed_at=now
+          lock.runtime_validated_sha=runtime.sha
+          lock.evidence_path=evidencePath
+          lock.validators_result={Judge:'PASS',Sentinel:'PASS'}
+          lock.judge='PASS'
+          lock.sentinel='PASS'
+          lock.production_touched=false
+          lock.evidence_ids=[...new Set([...(lock.evidence_ids||[]),'migration:20260930141225_cross_idempotency_rating_uniqueness','workflow-run:'+process.env.UGO_WORKFLOW_RUN_ID,'evidence:'+evidencePath])]
+          fs.writeFileSync(lockPath,JSON.stringify(lock,null,2)+'\n')
+          NODE
+          git add docs/ugo-work-locks/readiness-cross-idempotency.json docs/evidence/readiness-cross-idempotency-20260930.json
+          git commit -m "chore(readiness): close cross-idempotency VERIFIED [skip netlify]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-idempotency-runtime-${{ github.sha }}
+          path: artifacts/readiness-cross-idempotency-*.json
+          if-no-files-found: warn
+          retention-days: 90
