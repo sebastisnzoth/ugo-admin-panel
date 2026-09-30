@@ -21,8 +21,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-provider-debt-runtime
-  cancel-in-progress: true
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
 
 jobs:
   debt-runtime:
