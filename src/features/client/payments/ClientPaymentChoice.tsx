@@ -6,7 +6,7 @@ import{useClientFlow}from'../flow/clientFlow'
 type Payment={id:string;servicio_id:string;metodo?:string|null;estado:string;pix_copia_cola?:string|null;pix_qr_code?:string|null;pix_expira_at?:string|null;mp_payment_id?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null}
 type ServiceWithCurrency=Service&{moneda?:string|null;tarifa?:number|string|null;metadata?:Record<string,unknown>|null}
 type PaymentPreferenceResult={status?:string;method?:string;amount_ready?:boolean;payment_id?:string|null}
-const PAYMENT_STATES=['asignado']
+const PAYMENT_STATES=['asignado','en_camino','llegado']
 const normalizePaymentMethod=(value:unknown)=>{const method=String(value||'').toLowerCase();return method==='cash'?'efectivo':method}
 const shouldEscalatePaymentSync=()=>document.visibilityState==='visible'&&navigator.onLine
 
