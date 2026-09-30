@@ -3,9 +3,9 @@
   "task_id": "readiness-client-history",
   "job_id": "UGO-READINESS-CLIENT_HISTORY",
   "title": "Verify Client history services payments ratings and authorized photos in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T02:13:00Z",
-  "heartbeat_at": "2026-09-30T02:32:30Z",
+  "heartbeat_at": "2026-09-30T02:36:00Z",
   "lease_expires_at": "2026-09-30T03:17:30Z",
   "started_sha": "1f6faad2c37d5a268923d8cb875dd48332900b0e",
   "owner": "UGO",
@@ -25,7 +25,18 @@
     "client-history"
   ],
   "correlation_id": "readiness-client-history-20260930T021300Z-1f6faad2",
-  "current_step": "RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "docs/evidence/readiness-client-history-20260930.json",
+    "github-actions-run-36660492191",
+    "artifact-11074166889"
+  ],
+  "finished_at": "2026-09-30T02:36:00Z",
+  "verified_sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "result": "VERIFIED",
+  "workflow_run_id": 36660492191,
+  "artifact_id": 11074166889
 }
