@@ -2,10 +2,10 @@
   "readiness_id": "cross-accessibility",
   "task_id": "readiness-cross-accessibility",
   "job_id": "job-cross-accessibility-20260930T1545Z",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T15:45:00Z",
-  "heartbeat_at": "2026-09-30T16:55:00Z",
-  "lease_expires_at": "2026-09-30T17:40:00Z",
+  "heartbeat_at": "2026-09-30T17:06:00Z",
+  "lease_expires_at": "2026-09-30T17:06:00Z",
   "started_sha": "156a6b630351b436f2b3383cfb7a2a3a83152a5e",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,16 +17,32 @@
     "preview-runtime"
   ],
   "correlation_id": "corr-cross-accessibility-20260930T1545Z",
-  "current_step": "FIX_RUNTIME_VIOLATIONS_AND_RERUN",
-  "attempt": 2,
+  "current_step": "VERIFIED",
+  "attempt": 3,
   "evidence_ids": [
     "github-actions-run-36747347441",
     "artifact-11112384879",
-    "runtime-failure:contrast-labels-touch-targets"
+    "runtime-failure:contrast-labels-touch-targets",
+    "docs/ugo-readiness-evidence/readiness-cross-accessibility-20260930.json",
+    "github-actions:36748760217",
+    "workflow-job:110001632382",
+    "artifact:11112919192",
+    "artifact-digest:sha256:d0539f8b7c04065ede2f0b4074c9e00d89151e4df475ea0cc1b2cbbf42c44a8a",
+    "runtime:PASS",
+    "judge:PASS",
+    "sentinel:PASS"
   ],
   "reconciliation": {
     "reason": "stale lease had valid post-heartbeat implementation commits; resumed same task without duplicate job",
     "main_sha": "475f0d07f18565f82d5ad170cd77a52dd23223d4",
     "production_touched": false
-  }
+  },
+  "result_sha": "38cece12bbffe6b3068923ce6bdead88aec097b5",
+  "finished_at": "2026-09-30T17:06:00Z",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "production_touched": false
 }
