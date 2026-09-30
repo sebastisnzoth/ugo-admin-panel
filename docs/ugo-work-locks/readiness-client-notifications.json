@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T15:12:00Z",
-  "lease_expires_at": "2026-09-30T15:57:00Z",
+  "heartbeat_at": "2026-09-30T15:19:00Z",
+  "lease_expires_at": "2026-09-30T16:04:00Z",
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,8 +27,8 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "MERGE_VISIBILITY_FIX_AND_RERUN_TEST",
-  "attempt": 8,
+  "current_step": "FIX_RUNTIME_SELECTOR_EXACT_ASSIGNMENT_NOTICE",
+  "attempt": 9,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
     "github-artifact:11101693090",
@@ -57,15 +57,18 @@
     "github-artifact:11103468622",
     "diagnostic:assignment-notification-reached-DOM-but-remained-hidden",
     "root-cause:client-home-css-hid-notification-center",
-    "github-pr:314"
+    "github-pr:314",
+    "github-run:36735018650:FAIL_WRONG_LIVE_NOTICE_SELECTED",
+    "github-artifact:11106423333",
+    "diagnostic:fixture-1168-assigned-but-harness-clicked-cancelled-1163"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
-    "run_id": 36728587834,
-    "sha": "c89ca5ec57548a7cbc9e87b210761c21b6f08b1d",
-    "cause": "Browser runtime authenticated and assignment notification reached the DOM. Playwright resolved the expected live-notice text 44 times, but it remained hidden until the client live-notice auto-dismiss elapsed. Backend persistence and Realtime delivery are therefore working; remaining blocker is rendered visibility/UI state.",
-    "next_fix": "Remove the Client Home selector that hides the whole notification center, keep the center mounted/visible for live notices, then rerun the same lifecycle runtime with Judge and Sentinel."
+    "run_id": 36735018650,
+    "sha": "b915303287d2e9236d3d27c13fcb77b3e3295df6",
+    "cause": "Attempt 8 proved the live notice is rendered and visible. The runtime then selected the first generic client live notice, which was an older unread cancellation for service #1163, instead of the persisted provider assignment for disposable fixture #1168. It opened the wrong detail; backend/client reads confirmed the fixture itself was correctly estado=asignado with provider assigned.",
+    "next_fix": "Make the browser runtime wait for and click the live notice containing the exact persisted assignment title from assignedPersisted for the disposable fixture, then rerun same-SHA lifecycle validation."
   },
   "finished_at": null,
   "validators_result": {

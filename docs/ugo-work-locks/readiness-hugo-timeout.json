@@ -5,9 +5,9 @@
   "title": "Verify Hugo timeout and bounded recovery in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T14:06:00Z",
-  "heartbeat_at": "2026-09-30T14:06:00Z",
-  "lease_expires_at": "2026-09-30T14:51:00Z",
-  "started_sha": "35af48ce29d339770e8f9a9013e325c26eef0f37",
+  "heartbeat_at": "2026-09-30T15:18:00Z",
+  "lease_expires_at": "2026-09-30T16:03:00Z",
+  "started_sha": "881f20b5602762b3833aef01c7e24b05f1cb18d4",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Timeout Runtime Agent",
@@ -25,12 +25,18 @@
     "model-router"
   ],
   "correlation_id": "readiness-hugo-timeout-20260930T140600Z-35af48ce",
-  "current_step": "EXECUTE_BOUNDED_TIMEOUT_FAULT_INJECTION",
-  "attempt": 1,
+  "current_step": "RECONCILED_STALE_LOCK_IMPLEMENTING_PRIMARY_FALLBACK_TELEMETRY",
+  "attempt": 2,
   "evidence_ids": [],
   "production_touched": false,
   "dependency_status": {
     "hugo_action": "DONE",
     "admin_model_router": "DONE"
+  },
+  "recovery": {
+    "reason": "STALE_LOCK_RECONCILED",
+    "previous_lease_expires_at": "2026-09-30T14:51:00Z",
+    "reconciled_at": "2026-09-30T15:18:00Z",
+    "preserved_correlation_id": true
   }
 }

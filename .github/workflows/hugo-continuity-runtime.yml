@@ -1,0 +1,61 @@
+name: UGO Hugo Continuity Runtime TEST
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/components/ConversationalOrb.tsx'
+      - 'api/hugo/chat.ts'
+      - 'scripts/hugo-continuity-*.mjs'
+      - 'tests/contracts/hugo-continuity.test.mjs'
+      - '.github/workflows/hugo-continuity-runtime.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/components/ConversationalOrb.tsx'
+      - 'api/hugo/chat.ts'
+      - 'scripts/hugo-continuity-*.mjs'
+      - 'tests/contracts/hugo-continuity.test.mjs'
+      - '.github/workflows/hugo-continuity-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-hugo-continuity-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  continuity-proof:
+    name: Hugo multi-turn continuity · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: {ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
+      - uses: actions/setup-node@v4
+        with: {node-version: 22, cache: npm}
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env: {VITE_APP_REVISION: "${{ github.event.pull_request.head.sha || github.sha }}"}
+        run: npm run build
+      - name: Continuity contracts
+        run: node --test tests/contracts/hugo-continuity.test.mjs
+      - name: Multi-turn UGO TEST runtime
+        env: {UGO_RUNTIME_SHA: "${{ github.event.pull_request.head.sha || github.sha }}"}
+        run: node scripts/hugo-continuity-runtime.mjs
+      - name: Independent Judge
+        env: {UGO_RUNTIME_SHA: "${{ github.event.pull_request.head.sha || github.sha }}"}
+        run: node scripts/hugo-continuity-judge.mjs
+      - name: Sentinel
+        env: {UGO_RUNTIME_SHA: "${{ github.event.pull_request.head.sha || github.sha }}"}
+        run: node scripts/hugo-continuity-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-hugo-continuity-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/hugo-continuity-*
+          if-no-files-found: error
+          retention-days: 90
