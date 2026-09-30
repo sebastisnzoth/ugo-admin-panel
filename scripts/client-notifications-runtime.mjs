@@ -1,3 +1,4 @@
+// readiness retrigger: canonical-auth-attempt-3
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import {chromium} from 'playwright'
