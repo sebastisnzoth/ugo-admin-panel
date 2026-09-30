@@ -3,10 +3,10 @@
   "task_id": "readiness-client-payment",
   "job_id": "UGO-READINESS-CLIENT-PAYMENT",
   "title": "Verify client digital/cash payment lifecycle without double charge",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T11:19:00Z",
-  "heartbeat_at": "2026-09-30T13:50:30Z",
-  "lease_expires_at": "2026-09-30T14:35:30Z",
+  "heartbeat_at": "2026-09-30T13:53:11.323Z",
+  "lease_expires_at": null,
   "started_sha": "7602b9d74f65301e1042c8c47d94c87505659fd2",
   "owner": "UGO",
   "department": "App Cliente",
@@ -20,7 +20,7 @@
     "client-payment"
   ],
   "correlation_id": "readiness-client-payment-20260930T111900Z-5d36d7cf",
-  "current_step": "RUNTIME_JUDGE_SENTINEL_RUN_36724563460",
+  "current_step": "DONE",
   "attempt": 2,
   "evidence_ids": [
     "stale-reconcile:7602b9d74f65301e1042c8c47d94c87505659fd2",
@@ -28,7 +28,11 @@
     "migration:20260930134500_client_payment_cash_audit.sql",
     "workflow-run:36724104644:TEST_CLIENT_ID_MISMATCH",
     "workflow-run:36724291309:P0001_ACTIVE_ORDER_RULE",
-    "workflow-run:36724563460"
+    "workflow-run:36724563460",
+    "workflow-run:36724877738",
+    "serviceId:6d538130-557d-4c94-9752-980996b2f2ee",
+    "paymentId:e1d1e463-b34e-4c0c-b238-736fad0071c6",
+    "evidence:docs/evidence/readiness-client-payment-20260930.json"
   ],
   "production_touched": false,
   "skills": [
@@ -37,5 +41,14 @@
     "ugo-payments",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-30T13:53:11.323Z",
+  "runtime_validated_sha": "ea429bd82d906320b9c5c502cfdeb81ef3c61166",
+  "evidence_path": "docs/evidence/readiness-client-payment-20260930.json",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": "PASS",
+  "sentinel": "PASS"
 }

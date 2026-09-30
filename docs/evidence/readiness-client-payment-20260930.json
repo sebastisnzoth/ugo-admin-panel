@@ -1,0 +1,30 @@
+{
+  "readiness_id": "client-payment",
+  "task_id": "readiness-client-payment",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "runtime_validated_sha": "ea429bd82d906320b9c5c502cfdeb81ef3c61166",
+  "workflow_run_id": 36724877738,
+  "service_id": "6d538130-557d-4c94-9752-980996b2f2ee",
+  "payment_id": "e1d1e463-b34e-4c0c-b238-736fad0071c6",
+  "repeated_confirmation": true,
+  "payment_rows": 1,
+  "debt_rows": 1,
+  "audit_rows": 1,
+  "debt": {
+    "commission": 18,
+    "state": "pendiente",
+    "environment": "demo"
+  },
+  "audit": {
+    "event": "client.cash_payment.confirmed",
+    "actor_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba"
+  },
+  "cleanup_ok": true,
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T13:53:11.323Z"
+}
