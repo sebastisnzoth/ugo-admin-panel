@@ -3,7 +3,7 @@
   "task_id": "readiness-hugo-responsive",
   "job_id": "UGO-READINESS-HUGO-RESPONSIVE",
   "title": "Verify hugo-responsive on reconciled main",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Responsive Runtime Agent",
@@ -12,19 +12,48 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "hugo-shell"
   ],
   "correlation_id": "readiness-hugo-responsive-20260930T1125Z-reconciled",
-  "current_step": "LOCK_ACQUIRED",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "started_at": "2026-09-30T11:25:00Z",
-  "heartbeat_at": "2026-09-30T11:25:00Z",
-  "lease_expires_at": "2026-09-30T12:25:00Z",
+  "heartbeat_at": "2026-09-30T11:26:09Z",
+  "lease_expires_at": "2026-09-30T11:26:09Z",
   "started_sha": "c5bdf837fc872b01480b06304c2ae8b1108beb6e",
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-actions:run:36708404355",
+    "github-actions:job:109864074464",
+    "github-actions:artifact:11093152004",
+    "sha256:d8844c0df50f7a572de87451167c5068d1ed7a161c5b87dc7d73b48f044dd46e",
+    "repo:docs/evidence/readiness-hugo-responsive-20260930-reconciled.json"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-09-30T11:26:09Z",
+  "finished_at": "2026-09-30T11:26:09Z",
+  "verified_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "runtime_validated_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "verified_runtime_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "result": "VERIFIED",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-hugo-responsive-20260930-reconciled.json",
+  "evidence_commit_sha": "ae83d6d066a473d86d6918ddbc2b2fcdf32944ae",
+  "artifact_digest": "sha256:d8844c0df50f7a572de87451167c5068d1ed7a161c5b87dc7d73b48f044dd46e",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T11:26:09Z",
+    "production_touched": false
+  },
+  "result_summary": "Reconciled current-main Playwright proof verified Hugo mobile/tablet/desktop and mobile keyboard layout."
 }
