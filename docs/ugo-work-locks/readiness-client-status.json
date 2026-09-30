@@ -3,11 +3,11 @@
   "task_id": "readiness-client-status",
   "job_id": "UGO-READINESS-CLIENT_STATUS",
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
-  "status": "FAILED",
-  "started_at": "2026-09-30T03:16:00Z",
-  "heartbeat_at": "2026-09-30T03:30:00Z",
-  "lease_expires_at": "2026-09-30T03:30:00Z",
-  "started_sha": "4586c16db0dda146a4e252ec874edfcebc09fdbe",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T04:22:00Z",
+  "heartbeat_at": "2026-09-30T04:22:00Z",
+  "lease_expires_at": "2026-09-30T05:07:00Z",
+  "started_sha": "fa4fb4e13bba34c54d1f313c5ca0c80565f68a67",
   "owner": "UGO",
   "department": "App Cliente",
   "assigned_agent": "Client Status Runtime Agent",
@@ -24,23 +24,20 @@
   "resources": [
     "client-service-status"
   ],
-  "correlation_id": "readiness-client-status-20260930T031600Z-4586c16d",
-  "current_step": "FAILED_RUNTIME_PROOF",
-  "attempt": 1,
+  "correlation_id": "readiness-client-status-20260930T042200Z-fa4fb4e1",
+  "current_step": "RETRY_RUNTIME_PROOF",
+  "attempt": 2,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
     "docs/evidence/readiness-client-status-20260930.json",
     "github-actions-run-36664137129",
     "github-actions-run-36664147522",
     "github-actions-run-36664124610",
-    "artifact-11076140593"
+    "artifact-11076140593",
+    "retry-start:fa4fb4e13bba34c54d1f313c5ca0c80565f68a67"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
-  "finished_at": "2026-09-30T03:30:00Z",
-  "result": "NEEDS_RUNTIME_PROOF",
-  "judge": "NOT_RUN",
-  "sentinel": "NOT_RUN",
-  "failure_code": "CLIENT_STATUS_RUNTIME_PROOF_UNAVAILABLE",
-  "failure_reason": "Implementation and regression passed Core CI, but no exact serviceId full-lifecycle runtime proof with Judge and Sentinel PASS was obtained. Existing client-navigation runtime failed at an unrelated logout auth-boundary check before validators.",
+  "judge": "PENDING",
+  "sentinel": "PENDING",
   "production_touched": false
 }
