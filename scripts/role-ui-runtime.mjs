@@ -150,19 +150,26 @@ async function testProvider(viewport,name){
    if(trace)trace.step='provider home'
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
    await assertResponsive(page,'provider '+name+' home')
-   const nav=page.getByRole('navigation',{name:'Navegación principal'}).first()
-   const items=[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
+   const desktop=name==='desktop'
+   const nav=desktop
+     ?page.getByRole('navigation',{name:'Navegación principal'}).first()
+     :page.getByRole('navigation',{name:'Navegación proveedor'}).first()
+   const items=desktop
+     ?[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
+     :[/Inicio proveedor/i,/Pedidos/i,/Trabajo/i,/Perfil proveedor/i]
    for(const item of items){
      await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
      await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
      await assertResponsive(page,'provider '+name+' '+String(item))
    }
-   const menu=page.getByRole('complementary',{name:'Menú proveedor'})
-   await safeClick(page,menu.getByRole('button',{name:/Ayuda/i}),'provider Ayuda')
-   await assertResponsive(page,'provider '+name+' Ayuda')
+   if(desktop){
+     const menu=page.getByRole('complementary',{name:'Menú proveedor'})
+     await safeClick(page,menu.getByRole('button',{name:/Ayuda/i}),'provider Ayuda')
+     await assertResponsive(page,'provider '+name+' Ayuda')
+   }
    await page.screenshot({path:'artifacts/role-ui-provider-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-   results.push({role:'provider',viewport:name,status:'PASS',menu_items:items.length+1})
+   results.push({role:'provider',viewport:name,status:'PASS',menu_items:items.length+(desktop?1:0)})
  } finally {await page.close()}
 }
 
