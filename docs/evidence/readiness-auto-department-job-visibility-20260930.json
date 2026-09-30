@@ -1,0 +1,72 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "auto-department-job-visibility",
+  "task_id": "readiness-auto-department-job-visibility",
+  "job_id": "UGO-READINESS-AUTO-DEPARTMENT-JOB-VISIBILITY",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+  "workflow_run": {
+    "id": 36656268962,
+    "job_id": 109701181613,
+    "name": "UGO Readiness Department Job Visibility TEST",
+    "conclusion": "success",
+    "artifact_id": 11072961695,
+    "artifact_name": "department-job-visibility-db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+    "artifact_digest": "sha256:d2d8fc285ee45bf78aafa513c291ffc1a4df45a5881071c7263a47d884b56dca"
+  },
+  "runtime": {
+    "department_count": 13,
+    "assertions": {
+      "active_counts_match": true,
+      "total_counts_match": true,
+      "last_job_matches": true,
+      "last_evidence_matches": true,
+      "correlation_id_visible": true,
+      "department_filter_works": true,
+      "history_dialog_works": true,
+      "freshness_visible": true,
+      "no_divergence_alert": true,
+      "no_page_errors": true
+    },
+    "production_touched": false,
+    "result": "PASS",
+    "completed_at": "2026-09-30T01:42:21.975Z"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "runtime_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+      "created_at": "2026-09-30T01:42:22.304Z"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "runtime_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+      "production_touched": false,
+      "created_at": "2026-09-30T01:42:22.355Z"
+    }
+  },
+  "remediation": [
+    "Replaced brittle localStorage session injection with real Admin UI login.",
+    "Waited explicitly for the Admin login form before authentication.",
+    "Changed backend/UI comparison from a stale initial snapshot to convergence checks under live autonomous job activity.",
+    "Anchored department row selection to the leading department id to avoid UUID/correlation substring collisions."
+  ],
+  "prior_failed_runs": [
+    {
+      "id": 36655604494,
+      "sha": "651d32158bc1238544831075cddb018e44366b25",
+      "reason": "Admin login race in runtime harness"
+    },
+    {
+      "id": 36655858411,
+      "sha": "ba5571e9ebae7730ab39ee3ac77860eed7073f48",
+      "reason": "stale backend snapshot under concurrent autonomous job activity"
+    },
+    {
+      "id": 36656082311,
+      "sha": "ea85162c7a65b4982a5397bd89769cbe6077ec01",
+      "reason": "department locator matched internal UUID/correlation substring"
+    }
+  ]
+}
