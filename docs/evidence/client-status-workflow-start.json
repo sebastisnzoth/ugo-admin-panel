@@ -2,7 +2,7 @@
   "readiness_id": "client-status",
   "environment": "GitHub Actions / UGO TEST",
   "production_touched": false,
-  "sha": "a41af39cc160b898122d34ac25eecd12ca9b7d86",
-  "run_id": "36705897312",
-  "started_at": "2026-09-30T11:01:00Z"
+  "sha": "208b3b7c6a49de5668c69cb6e1a6efcee5c667dd",
+  "run_id": "36706227312",
+  "started_at": "2026-09-30T11:04:11Z"
 }
