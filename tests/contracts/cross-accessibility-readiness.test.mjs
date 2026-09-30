@@ -38,7 +38,7 @@ test('shared primitives carry semantic labels and dialog keyboard runtime is ins
  assert.match(shared,/role="dialog"/)
  assert.match(shared,/aria-modal="true"/)
  assert.match(main,/installAccessibilityRuntime\(\)/)
- assert.match(runtime,/event\.key==='Tab'/)
+ assert.match(runtime,/event\.key!==?'Tab'/)
  assert.match(runtime,/event\.key==='Escape'/)
  assert.match(runtime,/focus\(\{preventScroll:true\}\)/)
 })
