@@ -1,0 +1,35 @@
+{
+  "readiness_id": "client-dispute",
+  "task_id": "readiness-client-dispute",
+  "job_id": "UGO-READINESS-CLIENT-DISPUTE",
+  "title": "Verify Client dispute open, evidence, state and closure",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T13:30:00.000Z",
+  "heartbeat_at": "2026-09-30T13:30:00.000Z",
+  "lease_expires_at": "2026-09-30T14:15:00.000Z",
+  "started_sha": "a3c11c3ccb81ac221c0bf482aa9024b09939db4d",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "Client Dispute Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "disputes"
+  ],
+  "correlation_id": "readiness-client-dispute-20260930T133000Z",
+  "current_step": "BUILD_SAFE_SPECIFIC_WORKFLOW",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "dependency_status": {
+    "client_status": "DONE"
+  }
+}
