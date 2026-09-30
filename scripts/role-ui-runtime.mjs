@@ -144,18 +144,10 @@ async function testClient(viewport,name){
 }
 
 async function testProvider(viewport,name){
- const page=await browser.newPage({viewport})
- const errors=[],trace={step:'provider login'}
- pageContext.set(page,trace)
- page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
+ const {page,errors}=await openRole('provider',viewport)
+ const trace=pageContext.get(page)
+ if(trace)trace.step='provider authenticated load'
  try{
-   await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'})
-   const authEmail=page.getByPlaceholder('tu@email.com')
-   if(await authEmail.count()){
-     await authEmail.fill(providerEmail)
-     await page.getByPlaceholder('Mínimo 6 caracteres').fill(providerPassword)
-     await page.getByRole('button',{name:'Ingresar a UGO'}).click()
-   }
    await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:30000})
    await assertResponsive(page,'provider '+name+' home')
    const nav=page.getByRole('navigation',{name:'Navegación principal'}).first()
