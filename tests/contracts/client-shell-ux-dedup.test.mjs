@@ -11,9 +11,10 @@ test('client shell has one visible menu trigger and no hidden duplicate button',
  assert.match(header,/className="ugo-client-header-menu"/)
 })
 
-test('client menu sends Hugo to the canonical request surface and logout back to client auth route',async()=>{
+test('client menu opens global Hugo without remounting request flow and logout returns to client auth route',async()=>{
  const menu=await read('src/features/client/ui/ClientGlobalMenu.tsx')
- assert.match(menu,/const hugo=\(\)=>\{close\(\);flow\.navigate\('request'\)/)
+ assert.match(menu,/const hugo=\(\)=>\{close\(\);window\.setTimeout\(\(\)=>emitUgoUiEvent\(UGO_UI_EVENTS\.clientHugo\),80\)\}/)
+ assert.doesNotMatch(menu,/const hugo=\(\)=>\{close\(\);flow\.navigate\('request'\)/)
  assert.doesNotMatch(menu,/const hugo=\(\)=>go\('search'\)/)
  assert.match(menu,/window\.location\.replace/)
  assert.match(menu,/\?app=client/)
