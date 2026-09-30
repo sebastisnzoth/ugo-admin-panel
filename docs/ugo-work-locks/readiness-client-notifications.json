@@ -1,0 +1,32 @@
+{
+  "readiness_id": "client-notifications",
+  "task_id": "readiness-client-notifications",
+  "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T12:51:23.389Z",
+  "heartbeat_at": "2026-09-30T12:51:23.389Z",
+  "lease_expires_at": "2026-09-30T13:36:23.389Z",
+  "started_sha": "813b22d740cdbce40d90115163c04ccfcd07f27b",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "Client Notifications Runtime Agent",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops",
+    "ugo-readiness-orchestrator"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "notifications"
+  ],
+  "correlation_id": "readiness-client-notifications-20260930T125123389Z",
+  "current_step": "PREPARE_TEST_WEB_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
