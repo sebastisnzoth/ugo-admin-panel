@@ -1,0 +1,49 @@
+{
+  "readiness_id": "hugo-voice",
+  "task_id": "readiness-hugo-voice",
+  "job_id": "job-hugo-voice-20260930T1529Z",
+  "correlation_id": "corr-hugo-voice-20260930T1529Z",
+  "tested_sha": "adc1ac46d1e19ac557739d67d7d57fbba06164db",
+  "environment": "UGO_TEST_BROWSER_RUNTIME",
+  "production_touched": false,
+  "automated_scope": {
+    "build": "PASS",
+    "voice_contracts": "PASS",
+    "chromium_runtime": "PASS",
+    "roles": [
+      "client",
+      "provider",
+      "admin"
+    ],
+    "input_fallback": "PASS_BROWSER_SPEECH",
+    "explicit_states": "PASS_CONTRACT",
+    "textual_recovery": "PASS_CONTRACT",
+    "output_path": "PASS_CONTRACT",
+    "artifact_id": 11107149057,
+    "artifact_digest": "sha256:6d0a7cfd466e94f0f5dd2218b7ac17ab1b56729831c2364e864626fa59e8e1b8",
+    "workflow_run_id": 36737490396,
+    "workflow_job_id": 109962904403
+  },
+  "independent_checks": {
+    "note": "Automated resilience workflow on the same implementation SHA completed Judge and Sentinel successfully; final physical microphone/audio evidence is still required specifically for hugo-voice.",
+    "resilience_run_id": 36737490174,
+    "judge": "PASS_AUTOMATED_SCOPE",
+    "sentinel": "PASS_AUTOMATED_SCOPE"
+  },
+  "unrelated_baseline": {
+    "core_ci_run_id": 36737490242,
+    "status": "FAIL_BASELINE_UNRELATED",
+    "failures": [
+      "hugo-continuity contract expectations drift on current main",
+      "hugo-continuity ordering contract drift on current main",
+      "Vercel Hobby api/ function-count limit exceeded"
+    ]
+  },
+  "human_final_required": {
+    "required": true,
+    "action": "En navegador/dispositivo real UGO TEST: abrir Hugo, permitir micrófono, decir una frase corta, confirmar que aparece la transcripción/acción y que se escucha la respuesta; luego negar micrófono y confirmar mensaje accionable + fallback textual.",
+    "reason": "El control exige hardware/micrófono final cuando aplica; mocks no certifican sensor/audio físico."
+  },
+  "result": "AUTOMATED_SCOPE_PASS_HUMAN_EVIDENCE_PENDING",
+  "completed_at": "2026-09-30T15:34:00Z"
+}
