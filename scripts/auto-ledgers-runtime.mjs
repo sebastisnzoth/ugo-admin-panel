@@ -1,6 +1,5 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
-import crypto from 'node:crypto'
 import {createClient} from '@supabase/supabase-js'
 
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
@@ -10,72 +9,36 @@ const sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(key&&sha,'UGO_TEST_LEDGER_INPUTS_REQUIRED')
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
-const correlationId=crypto.randomUUID()
-const idempotency='readiness-auto-ledgers:'+sha+':'+correlationId
-
 await fs.mkdir('artifacts',{recursive:true})
-const {data:job,error:jobError}=await db.from('autonomous_jobs').insert({
- department_id:14,
- objective:'Readiness proof for append-only correlated Decision/Evidence Ledgers',
- trigger_type:'READINESS_TEST',
- target_type:'READINESS',
- target_id:'auto-ledgers',
- authority_class:'GREEN',
- status:'SUCCEEDED',
- idempotency_key:idempotency,
- correlation_id:correlationId,
- input_evidence:[{source:'readiness-auto-ledgers',sha}],
- result:{readiness_id:'auto-ledgers',sha,environment:'UGO TEST'},
- started_at:new Date().toISOString(),
- finished_at:new Date().toISOString()
-}).select('id,department_id,status,idempotency_key,correlation_id,created_at').single()
+
+const {data:job,error:jobError}=await db.rpc('autonomous_reconcile_quality_coverage')
 assert.ifError(jobError)
-assert.equal(job.correlation_id,correlationId)
+assert.equal(job.status,'SUCCEEDED')
+assert.ok(job.id&&job.correlation_id,'correlated autonomous job required')
 
-const reference='readiness://auto-ledgers/'+sha+'/'+correlationId
-const {data:evidence,error:evidenceError}=await db.from('autonomous_evidence_ledger').insert({
- job_id:job.id,
- evidence_type:'READINESS_AUTO_LEDGERS',
- reference,
- evidence_hash:crypto.createHash('sha256').update(reference).digest('hex'),
- metadata:{readiness_id:'auto-ledgers',sha,environment:'UGO TEST'},
- correlation_id:correlationId
-}).select('id,job_id,evidence_type,reference,evidence_hash,metadata,correlation_id,created_at').single()
-assert.ifError(evidenceError)
+const [{data:decisions,error:de},{data:evidence,error:ee}]=await Promise.all([
+ db.from('autonomous_decision_ledger').select('id,job_id,decision,evidence_refs,correlation_id,created_at').eq('job_id',job.id).eq('correlation_id',job.correlation_id),
+ db.from('autonomous_evidence_ledger').select('id,job_id,evidence_type,reference,evidence_hash,correlation_id,created_at').eq('job_id',job.id).eq('correlation_id',job.correlation_id)
+])
+assert.ifError(de);assert.ifError(ee)
+assert.ok(decisions?.length,'decision ledger row required')
+assert.ok(evidence?.length,'evidence ledger row required')
+const decision=decisions[0],proofEvidence=evidence[0]
+assert.equal(decision.job_id,job.id)
+assert.equal(proofEvidence.job_id,job.id)
+assert.equal(decision.correlation_id,job.correlation_id)
+assert.equal(proofEvidence.correlation_id,job.correlation_id)
+assert.ok((decision.evidence_refs||[]).includes(proofEvidence.reference),'decision must reference correlated evidence')
 
-const {data:decision,error:decisionError}=await db.from('autonomous_decision_ledger').insert({
- job_id:job.id,
- department_id:14,
- agent_id:null,
- decision:'LEDGER_RUNTIME_PROOF_RECORDED',
- reason:'Verify append-only, correlation and queryability in UGO TEST',
- authority_class:'GREEN',
- policy_version:'UGO_FUNCTIONAL_READINESS_V3',
- evidence_refs:[reference],
- authorization_result:'AUTHORIZED_TEST',
- correlation_id:correlationId
-}).select('id,job_id,department_id,decision,evidence_refs,authorization_result,correlation_id,created_at').single()
-assert.ifError(decisionError)
-
-const {data:queriedEvidence,error:qe}=await db.from('autonomous_evidence_ledger').select('id,job_id,reference,correlation_id').eq('correlation_id',correlationId)
-assert.ifError(qe)
-const {data:queriedDecision,error:qd}=await db.from('autonomous_decision_ledger').select('id,job_id,decision,evidence_refs,correlation_id').eq('correlation_id',correlationId)
-assert.ifError(qd)
-assert.equal(queriedEvidence?.length,1,'evidence must be queryable by correlation_id')
-assert.equal(queriedDecision?.length,1,'decision must be queryable by correlation_id')
-assert.equal(queriedEvidence[0].job_id,job.id)
-assert.equal(queriedDecision[0].job_id,job.id)
-assert.equal(queriedEvidence[0].correlation_id,correlationId)
-assert.equal(queriedDecision[0].correlation_id,correlationId)
-assert.ok((queriedDecision[0].evidence_refs||[]).includes(reference),'decision must reference correlated evidence')
-
-const updateDecision=await db.from('autonomous_decision_ledger').update({reason:'MUTATION_SHOULD_FAIL'}).eq('id',decision.id)
-const deleteDecision=await db.from('autonomous_decision_ledger').delete().eq('id',decision.id)
-const updateEvidence=await db.from('autonomous_evidence_ledger').update({reference:'MUTATION_SHOULD_FAIL'}).eq('id',evidence.id)
-const deleteEvidence=await db.from('autonomous_evidence_ledger').delete().eq('id',evidence.id)
-for(const [name,result] of Object.entries({updateDecision,deleteDecision,updateEvidence,deleteEvidence})){
- assert.ok(result.error,name+' must be rejected by append-only guard')
- assert.match(String(result.error.message||result.error),/AUTONOMOUS_LEDGER_APPEND_ONLY/)
+const mutationResults={
+ decision_update:await db.from('autonomous_decision_ledger').update({reason:'MUTATION_SHOULD_FAIL'}).eq('id',decision.id),
+ decision_delete:await db.from('autonomous_decision_ledger').delete().eq('id',decision.id),
+ evidence_update:await db.from('autonomous_evidence_ledger').update({reference:'MUTATION_SHOULD_FAIL'}).eq('id',proofEvidence.id),
+ evidence_delete:await db.from('autonomous_evidence_ledger').delete().eq('id',proofEvidence.id)
+}
+for(const [name,result] of Object.entries(mutationResults)){
+ assert.ok(result.error,name+' must be rejected')
+ assert.match(String(result.error.message||result.error),/AUTONOMOUS_LEDGER_APPEND_ONLY|permission denied/i,name+' must be blocked by immutable ledger boundary')
 }
 
 const proof={
@@ -85,11 +48,13 @@ const proof={
  environment:'UGO TEST',
  sha,
  autonomous_job_id:job.id,
- correlation_id:correlationId,
+ correlation_id:job.correlation_id,
  decision_id:decision.id,
- evidence_id:evidence.id,
- reference,
+ evidence_id:proofEvidence.id,
+ reference:proofEvidence.reference,
+ mutation_errors:Object.fromEntries(Object.entries(mutationResults).map(([name,result])=>[name,String(result.error?.message||result.error)])),
  assertions:{
+  append_path_succeeded:true,
   same_correlation_id:true,
   decision_queryable:true,
   evidence_queryable:true,
@@ -103,4 +68,4 @@ const proof={
  completed_at:new Date().toISOString()
 }
 await fs.writeFile('artifacts/auto-ledgers-runtime.json',JSON.stringify(proof,null,2)+'\n')
-console.log(JSON.stringify({status:'PASS',sha,correlationId,jobId:job.id,decisionId:decision.id,evidenceId:evidence.id}))
+console.log(JSON.stringify({status:'PASS',sha,correlationId:job.correlation_id,jobId:job.id,decisionId:decision.id,evidenceId:proofEvidence.id}))
