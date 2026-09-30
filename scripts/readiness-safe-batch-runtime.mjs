@@ -209,7 +209,7 @@ assert.ok(category,'TEST_CATEGORY_REQUIRED')
 
  await browser.close();browser=undefined
  await new Promise(resolve=>setTimeout(resolve,1500))
- const {data:incidents,error:incidentError}=await adminSb.from('development_incidents').select('id').eq('runtime_revision',sha).neq('status','resolved').in('severity',['P0','P1']).limit(1)
+ const {data:incidents,error:incidentError}=await sessions.admin.sb.from('development_incidents').select('id').eq('runtime_revision',sha).neq('status','resolved').in('severity',['P0','P1']).limit(1)
  if(incidentError)throw new Error('SENTINEL_INCIDENT_READ_FAILED '+JSON.stringify(incidentError))
  const incidentCount=incidents.length
  results.current_sha_open_incidents=incidentCount
