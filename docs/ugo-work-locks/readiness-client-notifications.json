@@ -2,10 +2,10 @@
   "readiness_id": "client-notifications",
   "task_id": "readiness-client-notifications",
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T15:19:00Z",
-  "lease_expires_at": "2026-09-30T16:04:00Z",
+  "heartbeat_at": "2026-09-30T15:26:23.157Z",
+  "lease_expires_at": null,
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,7 +27,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_RUNTIME_SELECTOR_EXACT_ASSIGNMENT_NOTICE",
+  "current_step": "DONE",
   "attempt": 9,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
@@ -60,20 +60,35 @@
     "github-pr:314",
     "github-run:36735018650:FAIL_WRONG_LIVE_NOTICE_SELECTED",
     "github-artifact:11106423333",
-    "diagnostic:fixture-1168-assigned-but-harness-clicked-cancelled-1163"
+    "diagnostic:fixture-1168-assigned-but-harness-clicked-cancelled-1163",
+    "diagnostic:stale-cancelled-notice-opened-instead-of-new-assignment",
+    "fix:4342a69044627c073e4859abfdaa5f96b17817dc",
+    "github-run:36735812811:IN_PROGRESS",
+    "workflow-run:36735812811",
+    "serviceId:2c53777c-49cb-4620-a8e4-90a89404df6a",
+    "evidence:docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+    "github-run:36735812811:PASS",
+    "runtime:PASS",
+    "judge:PASS",
+    "sentinel:PASS"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
     "run_id": 36735018650,
     "sha": "b915303287d2e9236d3d27c13fcb77b3e3295df6",
-    "cause": "Attempt 8 proved the live notice is rendered and visible. The runtime then selected the first generic client live notice, which was an older unread cancellation for service #1163, instead of the persisted provider assignment for disposable fixture #1168. It opened the wrong detail; backend/client reads confirmed the fixture itself was correctly estado=asignado with provider assigned.",
-    "next_fix": "Make the browser runtime wait for and click the live notice containing the exact persisted assignment title from assignedPersisted for the disposable fixture, then rerun same-SHA lifecycle validation."
+    "cause": "Runtime clicked a stale visible client notification (cancelled order #1163) because the harness selected the first live notice instead of the newly persisted assignment notification. Backend assignment and new notification persistence were correct.",
+    "next_fix": "Select the live notice whose text contains assignedPersisted.titulo, then open that exact service and continue lifecycle verification."
   },
-  "finished_at": null,
+  "finished_at": "2026-09-30T15:26:23.157Z",
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
-  "failure_reason": null
+  "failure_reason": null,
+  "completed_at": "2026-09-30T15:26:23.157Z",
+  "runtime_validated_sha": "4342a69044627c073e4859abfdaa5f96b17817dc",
+  "evidence_path": "docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+  "judge": "PASS",
+  "sentinel": "PASS"
 }

@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-timeout",
   "job_id": "UGO-READINESS-HUGO-TIMEOUT",
   "title": "Verify Hugo timeout and bounded recovery in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T14:06:00Z",
-  "heartbeat_at": "2026-09-30T15:18:00Z",
-  "lease_expires_at": "2026-09-30T16:03:00Z",
+  "heartbeat_at": "2026-09-30T15:26:00Z",
+  "lease_expires_at": "2026-09-30T15:26:00Z",
   "started_sha": "881f20b5602762b3833aef01c7e24b05f1cb18d4",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -25,9 +25,17 @@
     "model-router"
   ],
   "correlation_id": "readiness-hugo-timeout-20260930T140600Z-35af48ce",
-  "current_step": "RECONCILED_STALE_LOCK_IMPLEMENTING_PRIMARY_FALLBACK_TELEMETRY",
+  "current_step": "DONE",
   "attempt": 2,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github:pr:316",
+    "github-actions:run:36736416973",
+    "github-actions:job:109959189437",
+    "github-actions:artifact:11106494662",
+    "repo:docs/evidence/readiness-hugo-timeout-20260930.json",
+    "runtime:correlation:512e612b-c440-4f04-b487-d2971b1b8bf7",
+    "runtime:correlation:e251fbc3-364f-4159-8cbe-00ab00ca2900"
+  ],
   "production_touched": false,
   "dependency_status": {
     "hugo_action": "DONE",
@@ -38,5 +46,14 @@
     "previous_lease_expires_at": "2026-09-30T14:51:00Z",
     "reconciled_at": "2026-09-30T15:18:00Z",
     "preserved_correlation_id": true
-  }
+  },
+  "completed_at": "2026-09-30T15:26:00Z",
+  "completed_main_sha": "7f5e04bde6437312e8eaae2dfc269909e942f29f",
+  "runtime_validated_sha": "c4289de22a464808b555d35811958ed2e812a29f",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "blocker": null
 }

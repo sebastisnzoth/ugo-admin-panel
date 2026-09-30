@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-continuity",
   "job_id": "UGO-READINESS-HUGO-CONTINUITY-20260930",
   "title": "Verify continuous Hugo conversation context in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:40:00Z",
-  "heartbeat_at": "2026-09-30T13:45:00Z",
-  "lease_expires_at": "2026-09-30T14:30:00Z",
+  "heartbeat_at": "2026-09-30T15:22:00Z",
+  "lease_expires_at": "2026-09-30T15:22:00Z",
   "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,24 +19,36 @@
     "hugo-session"
   ],
   "correlation_id": "readiness-hugo-continuity-20260930T134000Z-3d32723c",
-  "current_step": "WAITING_SAME_SHA_CI_AND_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "github-pr:308",
     "github-head:cbc5a245fb6637c0f7f47eac264951751ab9c729",
     "github-run:36723710001",
     "github-run:36723709923",
-    "github-run:36723709943"
+    "github-run:36723709943",
+    "main_code_sha:9ca585204756d949ff40714bcabe2a60ccb05faa",
+    "workflow_run:36735950716:SUCCESS",
+    "artifact:11106144524",
+    "judge:PASS",
+    "sentinel:PASS",
+    "evidence:docs/evidence/readiness-hugo-continuity-20260930.json"
   ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-hugo",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "finished_at": "2026-09-30T15:22:00Z",
+  "verified_sha": "9ca585204756d949ff40714bcabe2a60ccb05faa",
+  "runtime_correlation_id": "hugo-continuity-fe4fa5f9f5f03e5c",
+  "evidence_path": "docs/evidence/readiness-hugo-continuity-20260930.json",
+  "evidence_commit_sha": "d536340c55642fd37407d4420694e59b37725877",
+  "runtime_result": "PASS"
 }

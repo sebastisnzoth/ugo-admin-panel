@@ -1,0 +1,57 @@
+{
+  "readiness_id": "hugo-continuity",
+  "control": "Conversación continua",
+  "status": "VERIFIED",
+  "verified_sha": "9ca585204756d949ff40714bcabe2a60ccb05faa",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "correlation_id": "hugo-continuity-fe4fa5f9f5f03e5c",
+  "workflow": {
+    "name": "UGO Hugo Continuity Runtime TEST",
+    "run_id": 36735950716,
+    "conclusion": "success",
+    "event": "push",
+    "head_branch": "main",
+    "head_sha": "9ca585204756d949ff40714bcabe2a60ccb05faa"
+  },
+  "artifact": {
+    "id": 11106144524,
+    "name": "readiness-hugo-continuity-9ca585204756d949ff40714bcabe2a60ccb05faa",
+    "digest": "sha256:85e63d03ab56afe6f5df5a8eb9b530130513affd7abc2cb2b81e3872b9ecb87e",
+    "retention_days": 90
+  },
+  "runtime": {
+    "session_turns": 6,
+    "history_limit": 8,
+    "ordered": true,
+    "retained_fact": "servicio 50",
+    "checks": [
+      "live-ref-not-stale-closure",
+      "bounded-8-turn-history",
+      "stable-role-mapping",
+      "history-before-current-turn",
+      "multi-turn-fact-retained"
+    ]
+  },
+  "tests": {
+    "build": "PASS",
+    "continuity_contracts": "PASS",
+    "multi_turn_runtime": "PASS",
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "code_change": {
+    "file": "src/components/ConversationalOrb.tsx",
+    "defect": "browser-speech fallback captured stale msgs state inside long-lived event listener",
+    "fix": "sync msgsRef with live state and send the latest bounded 8-turn history"
+  },
+  "legacy_reconciliation": {
+    "stale_lock_reconciled": true,
+    "obsolete_prs": [
+      308,
+      315
+    ],
+    "note": "PR #315 was not merged because main advanced concurrently; identical verified changes were ported file-by-file to current main using per-file SHAs."
+  },
+  "completed_at": "2026-09-30T15:20:49Z"
+}
