@@ -1,0 +1,26 @@
+{
+  "readiness_id": "cross-idempotency",
+  "task_id": "readiness-cross-idempotency",
+  "job_id": "UGO-READINESS-CROSS-IDEMPOTENCY",
+  "title": "Verify idempotency and concurrency across acceptance, payment, closure and rating",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T14:09:00Z",
+  "heartbeat_at": "2026-09-30T14:09:00Z",
+  "lease_expires_at": "2026-09-30T14:54:00Z",
+  "started_sha": "d2cd369107fd85740db8be0abfad906f5d02af8e",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "Cross Idempotency Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": ["Judge", "Sentinel"],
+  "resources": ["ugo-test-p0"],
+  "correlation_id": "readiness-cross-idempotency-20260930T140900Z-d2cd3691",
+  "current_step": "INSPECT_CONCURRENCY_GUARDS_AND_BUILD_RUNTIME_PROOF",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
