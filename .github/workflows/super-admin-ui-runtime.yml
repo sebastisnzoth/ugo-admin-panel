@@ -10,6 +10,7 @@ on:
       - "src/mvp/SuperAdminCommandCenter.tsx"
       - "src/mvp/AutonomousCorporationDashboard.tsx"
       - "tests/contracts/autonomous-dashboard-integrity.test.mjs"
+      - "tests/contracts/admin-risk-surface.test.mjs"
       - ".github/workflows/super-admin-ui-runtime.yml"
   workflow_dispatch:
 
