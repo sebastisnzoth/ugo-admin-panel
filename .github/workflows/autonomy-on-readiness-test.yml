@@ -17,6 +17,7 @@ on:
       - "supabase/migrations/20260930034500_service_role_release_gate_read.sql"
       - "scripts/autonomy-on-readiness-runtime.mjs"
       - "tests/contracts/autonomy-on-readiness.test.mjs"
+      - "tests/integration/autonomous-corporation-rpc-rls.test.mjs"
   workflow_dispatch:
 
 permissions:
