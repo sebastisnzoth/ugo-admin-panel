@@ -12,7 +12,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime
+  group: ugo-client-status-runtime-v2
   cancel-in-progress: false
 
 permissions:
@@ -129,7 +129,7 @@ jobs:
           const lock=JSON.parse(fs.readFileSync(lockPath,'utf8'))
           if(runtime.result!=='PASS'||judge.result!=='PASS'||sentinel.result!=='PASS')throw new Error('CLIENT_STATUS_VALIDATORS_NOT_PASS')
           if(runtime.sha!==process.env.UGO_VALIDATED_SHA||judge.sha!==runtime.sha||sentinel.sha!==runtime.sha)throw new Error('CLIENT_STATUS_SAME_SHA_REQUIRED')
-          if(runtime.production_touched!==false||runtime.restored!==true)throw new Error('CLIENT_STATUS_SENTINEL_STATE_UNSAFE')
+          if(runtime.production_touched!==false||runtime.cleanup_ok!==true||runtime.fixture!=='disposable')throw new Error('CLIENT_STATUS_SENTINEL_STATE_UNSAFE')
           if(lock.readiness_id!=='client-status'||lock.task_id!=='readiness-client-status')throw new Error('CLIENT_STATUS_LOCK_MISMATCH')
           const evidencePath='docs/ugo-readiness-evidence/readiness-client-status-20260930.json'
           const evidence={
@@ -141,8 +141,9 @@ jobs:
             runtime_validated_sha:runtime.sha,
             workflow_run_id:Number(process.env.UGO_WORKFLOW_RUN_ID),
             service_id:runtime.service_id,
-            original_state:runtime.original_state,
-            restored:runtime.restored,
+            fixture:runtime.fixture,
+            cleanup:runtime.cleanup,
+            cleanup_ok:runtime.cleanup_ok,
             sequence:runtime.sequence,
             page_errors:runtime.page_errors,
             validators:{Judge:judge.result,Sentinel:sentinel.result},
@@ -185,3 +186,5 @@ jobs:
 # self-closing runtime proof 2026-09-30T10:48Z
 
 # workflow start marker instrumentation 2026-09-30T10:53Z
+
+# disposable fixture v2 2026-09-30T10:54Z
