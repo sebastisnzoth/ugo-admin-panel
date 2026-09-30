@@ -1,0 +1,46 @@
+{
+  "schema_version": "UGO_CREATE_ALL_AGENTS_EVIDENCE_V1",
+  "task_id": "ugo-create-all-agents",
+  "environment": "UGO TEST",
+  "source_sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
+  "correlation_id": "ugo-create-all-agents-20260930T023300Z",
+  "result": "PASS",
+  "counts": {
+    "cataloged": 118,
+    "enabled": 118,
+    "executed": 118,
+    "judge_pass": 118,
+    "sentinel_pass": 118,
+    "verified": 118,
+    "disabled": 0,
+    "newly_enabled_generic_readonly": 80,
+    "previously_verified": 38
+  },
+  "contract": {
+    "new_agents_mode": "governed_readonly_advisory",
+    "permissions": [
+      "advisory_only",
+      "persisted_evidence_read",
+      "generic_readonly_specialist"
+    ],
+    "mutation_capability": false,
+    "executor": "autonomous_execute_cataloged_readonly_agent",
+    "judge": "autonomous_judge_cataloged_readonly_agent_job",
+    "sentinel": "autonomous_sentinel_cataloged_readonly_agent_job",
+    "api_superadmin_route": "api/test.ts action=execute_readonly",
+    "production_touched": false
+  },
+  "validation": {
+    "github_workflow": "UGO Create All Agents TEST",
+    "github_run_id": 36660445041,
+    "conclusion": "success",
+    "security_advisor_checked": true,
+    "new_executor_exposed_to_anon_or_authenticated": false
+  },
+  "notes": [
+    "All 118 cataloged agents are enabled and have at least one persisted successful execution with Judge and Sentinel proof in UGO TEST.",
+    "The 80 newly enabled agents are read-only advisory workers. Mutating business actions remain unavailable until capability-specific executors are independently validated.",
+    "No production environment was touched."
+  ],
+  "created_at": "2026-09-30T02:36:00Z"
+}
