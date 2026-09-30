@@ -1,10 +1,10 @@
 {
   "readiness_id": "auto-inbox",
-  "source_sha": "3370ddaad7c64fffeda509f92e261b852c34026e",
-  "run_id": "36656453069",
+  "source_sha": "db172ad37ee769f28bac6adf2802b3f52f01eabe",
+  "run_id": "36656796350",
   "contract": "success",
-  "typecheck": "success",
-  "runtime": "failure",
+  "typecheck": "cancelled",
+  "runtime": "skipped",
   "judge": "skipped",
   "sentinel": "skipped",
   "production_touched": false
