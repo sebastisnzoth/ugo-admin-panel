@@ -40,6 +40,8 @@ export function evaluateFunctionalReadiness({
   locks = [],
   pullRequests = [],
   maxParallel = 5,
+  maxAttempts = 3,
+  retryBackoffMinutes = [5, 15, 30],
   now = new Date(),
 }) {
   const readiness = structuredClone(functionalReadiness)
@@ -82,9 +84,25 @@ export function evaluateFunctionalReadiness({
     }
 
     if (lock?.status === 'FAILED') {
-      item.status = 'FAILED_REQUIRES_REVIEW'
+      const attempt = Number(lock.attempt || 1)
+      if (attempt >= Number(maxAttempts || 1)) {
+        item.status = 'FAILED_REQUIRES_REVIEW'
+        item.evidence_source = 'READINESS_LOCK'
+        continue
+      }
+      const configuredBackoff = Array.isArray(retryBackoffMinutes) && retryBackoffMinutes.length
+        ? retryBackoffMinutes
+        : [5]
+      const backoff = configuredBackoff[Math.min(attempt - 1, configuredBackoff.length - 1)]
+      const base = parseTime(lock.finished_at) ?? parseTime(lock.heartbeat_at) ?? parseTime(lock.started_at) ?? nowMs
+      const retryAt = lock.retry_after ? parseTime(lock.retry_after) : base + Number(backoff || 0) * 60 * 1000
+      item.retry_at = new Date(retryAt).toISOString()
       item.evidence_source = 'READINESS_LOCK'
-      continue
+      if (retryAt > nowMs) {
+        item.status = 'RETRY_BACKOFF'
+        continue
+      }
+      item.status = item.declared_status
     }
 
     const pr = readinessPrById.get(item.id) || null
@@ -159,7 +177,10 @@ export function evaluateFunctionalReadiness({
       item.gate_reason = 'El lease del control venció y debe reconciliarse antes de reintentar.'
     } else if (item.status === 'FAILED_REQUIRES_REVIEW') {
       item.gate_state = 'FAILED_REQUIRES_REVIEW'
-      item.gate_reason = 'La última ejecución falló y requiere revisión antes de reintentar.'
+      item.gate_reason = 'La última ejecución agotó los intentos automáticos y requiere revisión.'
+    } else if (item.status === 'RETRY_BACKOFF') {
+      item.gate_state = 'RETRY_BACKOFF'
+      item.gate_reason = 'Reintento habilitado después de ' + item.retry_at
     } else if (item.status === 'WAITING_RUNTIME') {
       item.gate_state = 'WAITING_RUNTIME'
       item.gate_reason = 'Corrección persistida en PR #' + item.pull_request.number + '; falta runtime same-SHA antes de Judge/Sentinel.'
@@ -218,6 +239,7 @@ export function evaluateFunctionalReadiness({
     queued_capacity:items.filter(x => x.gate_state === 'QUEUED_CAPACITY').length,
     stale_locks:items.filter(x => x.gate_state === 'STALE_LOCK').length,
     failed_review:items.filter(x => x.gate_state === 'FAILED_REQUIRES_REVIEW').length,
+    retry_backoff:items.filter(x => x.gate_state === 'RETRY_BACKOFF').length,
     fixed_in_pr:items.filter(x => x.gate_state === 'FIXED_IN_PR').length,
     waiting_runtime:items.filter(x => x.gate_state === 'WAITING_RUNTIME').length,
     judge_pending:items.filter(x => x.gate_state === 'JUDGE_PENDING').length,
