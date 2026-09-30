@@ -27,3 +27,13 @@ test('client menu account card reflects the authenticated profile instead of a h
  assert.match(menu,/const initials=useMemo/)
  assert.doesNotMatch(menu,/ugo-client-account-avatar">S</)
 })
+
+test('client global header stays on home while request history profile and detail own their navigation',async()=>{
+ const[root,css]=await Promise.all([read('src/features/client/ClientRoot.tsx'),read('src/features/client/ui/clientPersistentHeader.css')])
+ assert.match(root,/flow\.screen==='home'&&!detailOpen&&<ClientPersistentHeader/)
+ assert.match(root,/ugo-client-detail-open/)
+ assert.match(css,/ugo-client-screen-history \.ugo-client-screen-overlay/)
+ assert.match(css,/ugo-client-screen-profile \.ugo-client-screen-overlay/)
+ assert.match(css,/ugo-client-detail-open \.ugo-client-screen-overlay/)
+ assert.match(css,/ugo-client-screen-request \.ugo-need-screen/)
+})
