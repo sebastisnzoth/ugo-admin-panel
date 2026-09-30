@@ -3,7 +3,9 @@ import {createClient} from '@supabase/supabase-js'
 
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
+const sha=process.env.UGO_RUNTIME_SHA||''
 if(!url.includes('tmossnqfwfwjrtzwcbmm')||!sk)throw new Error('UGO_TEST_ONLY')
+assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
 
 const service=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false}})
 const providerId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
@@ -70,6 +72,7 @@ assert.equal(judgeJob?.status,'SUCCEEDED')
 
 console.log(JSON.stringify({
  gpsGeofence:true,
+ sha,
  serviceId,
  qaRunId:run.id,
  observations,
