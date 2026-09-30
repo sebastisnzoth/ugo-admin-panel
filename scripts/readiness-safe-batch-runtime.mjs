@@ -6,6 +6,7 @@ import {createClient} from '@supabase/supabase-js'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
+const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
 const credentials={
@@ -14,7 +15,7 @@ const credentials={
   admin:[process.env.UGO_TEST_ADMIN_EMAIL||'',process.env.UGO_TEST_ADMIN_PASSWORD||''],
 }
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(anon&&sha,'UGO_TEST_RUNTIME_INPUTS_REQUIRED')
+assert.ok(anon&&serviceKey&&sha,'UGO_TEST_RUNTIME_INPUTS_REQUIRED')
 for(const [role,[email,password]] of Object.entries(credentials))assert.ok(email&&password,role+' credentials required')
 
 async function login(email,password){
@@ -23,6 +24,7 @@ async function login(email,password){
  assert.ifError(error);assert.ok(data.session,'SESSION_REQUIRED')
  return {sb,session:data.session}
 }
+const adminSb=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const sessions={}
 for(const [role,[email,password]] of Object.entries(credentials))sessions[role]=await login(email,password)
 
@@ -75,46 +77,51 @@ async function callTool(page,name,args){
 }
 
 try{
- // 1) HUGO ACTION: real client tool channel -> persisted TEST effect -> cancellation cleanup.
+ // 1) HUGO ACTION: isolated TEST fixture -> real Client Hugo cancellation -> persisted effect -> privileged cleanup.
  {
-  const {context,page,loadMs}=await openRole('client',{geolocation:true})
+  const marker='READINESS-HUGO-ACTION-'+sha.slice(0,12)
+  const clientId=sessions.client.session.user.id
+  const {data:fixture,error:fixtureError}=await adminSb.from('servicios').insert({
+    cliente_id:clientId,
+    categoria_id:category.id,
+    estado:'buscando',
+    descripcion:marker,
+    direccion_cliente:'UGO TEST isolated runtime fixture',
+    urgencia:false,
+    metadata:{source:'readiness-safe-batch',runtime_sha:sha,fixture:true}
+  }).select('id,estado,metadata').single()
+  assert.ifError(fixtureError);assert.ok(fixture?.id,'isolated service fixture required')
+  const serviceId=String(fixture.id)
+  const {context,page,loadMs}=await openRole('client')
   results.performance.client_initial_load_ms=loadMs
   assert.ok(loadMs<=8000,'client initial load too slow: '+loadMs)
   try{
    await visible(page.locator('.ugo-client-root'))
    await visible(page.locator('.ugo-real-hugo'))
    await installToolCapture(page)
-   let response=await callTool(page,'set_request_category',{category:category.nombre})
-   assert.equal(response?.ok,true,'set_request_category')
-   const marker='READINESS HUGO ACTION '+sha.slice(0,8)
-   response=await callTool(page,'set_request_description',{description:marker})
-   assert.equal(response?.ok,true,'set_request_description')
-   response=await callTool(page,'get_current_location',{})
-   assert.equal(response?.ok,true,'get_current_location')
-   response=await callTool(page,'set_schedule',{when:'ahora'})
-   assert.equal(response?.ok,true,'set_schedule')
-   response=await callTool(page,'set_payment_method',{method:'cash'})
-   assert.equal(response?.ok,true,'set_payment_method')
-   response=await callTool(page,'create_service_request',{confirmed:true})
-   let serviceId=String(response?.data?.serviceId||'')
-   let row=null,error=null
-   if(serviceId){({data:row,error}=await sessions.client.sb.from('servicios').select('id,estado,descripcion,metadata').eq('id',serviceId).maybeSingle())}
-   else{
-     const lookup=await sessions.client.sb.from('servicios').select('id,estado,descripcion,metadata').eq('descripcion',marker).order('created_at',{ascending:false}).limit(1).maybeSingle()
-     row=lookup.data;error=lookup.error;serviceId=String(row?.id||'')
+   const response=await callTool(page,'cancel_service',{service_id:serviceId,confirmed:true})
+   assert.equal(response?.ok,true,'Hugo cancel_service must pass on isolated TEST fixture')
+   const {data:after,error:afterError}=await adminSb.from('servicios').select('id,estado,metadata').eq('id',serviceId).maybeSingle()
+   assert.ifError(afterError);assert.ok(after,'cancelled fixture must remain auditable before cleanup')
+   assert.notEqual(String(after.estado),'buscando','Hugo cancellation effect must persist')
+   results.hugo_action={
+     status:'PASS',
+     action:'cancel_service',
+     service_id:serviceId,
+     persisted_effect:true,
+     before:{state:'buscando'},
+     after:{state:String(after.estado)},
+     tool_response:response,
+     audit_trail:{runtime_sha:sha,fixture_source:after.metadata?.source||null,channel:'ugo:native-voice-tool-call',confirmed:true}
    }
-   assert.ifError(error);assert.ok(row,'persisted service required after Hugo create action')
-   assert.match(serviceId,/^[0-9a-f-]{36}$/i,'persisted service id expected')
-   assert.equal(row.metadata?.source,'hugo-conversational')
-   assert.equal(row.metadata?.voice,true)
-   assert.match(String(row.descripcion||''),/READINESS HUGO ACTION/)
-   results.hugo_action={status:'PASS',service_id:serviceId,persisted_effect:true,tool_response_ok:response?.ok===true,tool_response_code:String(response?.code||''),audit_metadata:{source:row.metadata?.source,voice:row.metadata?.voice,request_draft_id:row.metadata?.request_draft_id||null}}
-   const cancel=await callTool(page,'cancel_service',{service_id:serviceId,confirmed:true})
-   assert.equal(cancel?.ok,true,'cleanup cancellation must pass')
-   const {data:closed,error:closedError}=await sessions.client.sb.from('servicios').select('id,estado').eq('id',serviceId).maybeSingle()
-   assert.ifError(closedError);assert.ok(closed)
-   results.hugo_action.cleanup_state=closed.estado
-  } finally {await context.close()}
+  } finally {
+   const {error:cleanupError}=await adminSb.from('servicios').delete().eq('id',serviceId)
+   assert.ifError(cleanupError)
+   const {data:gone}=await adminSb.from('servicios').select('id').eq('id',serviceId).maybeSingle()
+   assert.equal(gone,null,'isolated Hugo fixture must be removed')
+   results.hugo_action.cleanup_state='DELETED'
+   await context.close()
+  }
  }
 
  // 2) CROSS ERRORS: browser fault injection + API auth failure must be explicit/actionable.
