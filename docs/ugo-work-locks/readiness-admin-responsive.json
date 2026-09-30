@@ -1,0 +1,34 @@
+{
+  "readiness_id": "admin-responsive",
+  "task_id": "readiness-admin-responsive",
+  "job_id": "UGO-READINESS-ADMIN-RESPONSIVE",
+  "title": "Verify responsive Admin/Super Admin across mobile, tablet and desktop in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T01:18:00Z",
+  "heartbeat_at": "2026-09-30T01:18:00Z",
+  "lease_expires_at": "2026-09-30T02:03:00Z",
+  "started_sha": "78ef6d9795023c953324a8ad57482d73aa531206",
+  "owner": "UGO",
+  "department": "Admin / Super Admin",
+  "assigned_agent": "Admin Responsive Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-shell"
+  ],
+  "correlation_id": "readiness-admin-responsive-20260930T011800Z-78ef6d97",
+  "current_step": "INSPECT_IMPLEMENTATION_AND_TEST_GAPS",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-code-engineering",
+    "ugo-ui-responsive",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ]
+}
