@@ -1,0 +1,30 @@
+{
+  "readiness_id": "hugo-continuity",
+  "task_id": "readiness-hugo-continuity",
+  "job_id": "UGO-READINESS-HUGO-CONTINUITY-20260930",
+  "title": "Verify continuous Hugo conversation context in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T13:40:00Z",
+  "heartbeat_at": "2026-09-30T13:40:00Z",
+  "lease_expires_at": "2026-09-30T14:25:00Z",
+  "started_sha": "7602b9d74f65301e1042c8c47d94c87505659fd2",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Continuity Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "hugo-session"
+  ],
+  "correlation_id": "readiness-hugo-continuity-20260930T134000Z-7602b9d7",
+  "current_step": "INSPECT_AND_BUILD_RUNTIME_PROOF",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  }
+}
