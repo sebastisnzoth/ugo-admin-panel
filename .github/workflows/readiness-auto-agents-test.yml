@@ -6,6 +6,9 @@ on:
       - "scripts/autonomous-agents-readiness-*.mjs"
       - "tests/contracts/autonomous-agents-readiness.test.mjs"
       - "src/mvp/AutonomousWorkforceControlCenter.tsx"
+      - "api/test.ts"
+      - "supabase/migrations/20260930014500_enable_d3_d4_advisory_specialists.sql"
+      - "tests/contracts/d3-d4-advisory-specialists.test.mjs"
       - ".github/workflows/readiness-auto-agents-test.yml"
   workflow_dispatch:
 permissions:
@@ -30,7 +33,7 @@ jobs:
       - name: Enforce UGO TEST only
         run: node scripts/assert-test-environment.mjs
       - name: Permanent contract regression
-        run: node --test tests/contracts/autonomous-agents-readiness.test.mjs tests/contracts/superadmin-autonomous-agents.test.mjs
+        run: node --test tests/contracts/autonomous-agents-readiness.test.mjs tests/contracts/superadmin-autonomous-agents.test.mjs tests/contracts/d3-d4-advisory-specialists.test.mjs
       - name: Runtime trigger + executor proof per enabled agent
         run: |
           set -euo pipefail
