@@ -26,5 +26,11 @@
     "auto-worker"
   ],
   "production_touched": false,
-  "defect_found": "GitHub Actions pipe through tee masked runtime/Judge failures; UGO_TEST_SUPABASE_URL secret resolved empty."
+  "defect_found": "GitHub Actions pipe through tee masked runtime/Judge failures; UGO_TEST_SUPABASE_URL secret resolved empty.",
+  "skills": [
+    "ugo-autonomous-company",
+    "ugo-recovery",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
