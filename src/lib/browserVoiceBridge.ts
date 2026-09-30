@@ -12,6 +12,9 @@ const CHUNK_SAMPLES=1600
 const emit=(name:string,detail:Record<string,unknown>)=>window.dispatchEvent(new CustomEvent(name,{detail}))
 function audioCtor(){return window.AudioContext||(window as any).webkitAudioContext}
 const canStream=()=>Boolean(navigator.mediaDevices?.getUserMedia&&window.WebSocket&&audioCtor())
+type SpeechRecognitionLike={continuous:boolean;interimResults:boolean;lang:string;maxAlternatives:number;start:()=>void;stop:()=>void;abort:()=>void;onstart:null|(()=>void);onspeechstart:null|(()=>void);onend:null|(()=>void);onresult:null|((event:any)=>void);onerror:null|((event:any)=>void)}
+type SpeechRecognitionCtor=new()=>SpeechRecognitionLike
+const speechCtor=()=>((window as any).SpeechRecognition||(window as any).webkitSpeechRecognition)as SpeechRecognitionCtor|undefined
 
 function bytesToBase64(bytes:Uint8Array){
  let binary=''
@@ -73,13 +76,15 @@ function setupMessage(model:string){return{setup:{model:'models/'+model,generati
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||!canStream())return
- let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null
+ let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null,fallbackRecognition:SpeechRecognitionLike|null=null,fallbackActive=false
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
  let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0
  const conversationSources=new Set<AudioBufferSourceNode>()
 
  const clearReconnect=()=>{if(reconnectTimer){window.clearTimeout(reconnectTimer);reconnectTimer=0}}
  const resetAudioQueue=()=>{pendingSamples=[]}
+ const stopFallback=()=>{fallbackActive=false;const current=fallbackRecognition;fallbackRecognition=null;if(current){current.onstart=null;current.onspeechstart=null;current.onend=null;current.onresult=null;current.onerror=null;try{current.abort()}catch{}}}
+ const startFallback=()=>{const Ctor=speechCtor();if(!Ctor)return false;stopFallback();const recognition=new Ctor();fallbackRecognition=recognition;fallbackActive=true;active=true;paused=false;recognition.continuous=true;recognition.interimResults=true;recognition.lang=navigator.language?.toLowerCase().startsWith('pt')?'pt-BR':'es-AR';recognition.maxAlternatives=3;recognition.onstart=()=>emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'fallback'});recognition.onspeechstart=()=>emit('ugo:native-voice-state',{state:'hearing',engine:'browser-speech',reason:'fallback'});recognition.onresult=(event:any)=>{const from=Number(event?.resultIndex||0);for(let i=from;i<(event?.results?.length||0);i++){const result=event.results?.[i],text=String(result?.[0]?.transcript||'').trim();if(text)emit('ugo:native-voice-result',{text,final:Boolean(result?.isFinal),engine:'browser-speech'})}};recognition.onerror=(event:any)=>{const code=String(event?.error||'unavailable');if(fallbackActive&&(code==='no-speech'||code==='aborted'))return;if(fallbackActive&&code==='network'){emit('ugo:native-voice-state',{state:'connecting',engine:'browser-speech',reason:'fallback-network'});return}fallbackActive=false;active=false;emit('ugo:native-voice-error',{code:code==='not-allowed'||code==='service-not-allowed'?'not-allowed':code==='audio-capture'?'no-microphone':code,engine:'browser-speech'})};recognition.onend=()=>{if(fallbackActive&&!paused)window.setTimeout(()=>{if(fallbackActive&&!paused)startFallback()},180)};try{recognition.start();return true}catch{stopFallback();active=false;return false}}
  const closeSocket=()=>{const current=socket;socket=null;setupReady=false;connectionSerial++;if(current&&current.readyState<=WebSocket.OPEN){try{current.close(1000,'ugo-stop')}catch{}}}
  const cleanupAudio=()=>{resetAudioQueue();if(processor){processor.onaudioprocess=null;try{processor.disconnect()}catch{}}if(source){try{source.disconnect()}catch{}}if(gain){try{gain.disconnect()}catch{}}processor=null;source=null;gain=null;stream?.getTracks().forEach(track=>track.stop());stream=null;if(audioContext){void audioContext.close().catch(()=>{});audioContext=null}}
  const sendJson=(payload:Record<string,unknown>)=>{if(socket?.readyState===WebSocket.OPEN&&setupReady){try{socket.send(JSON.stringify(payload));return true}catch{}}return false}
@@ -172,21 +177,21 @@ function installBrowserBridge(){
  }
 
  const shutdown=(notify:boolean)=>{
-  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
+  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
   if(notify)emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'stopped'})
  }
 
  window.UGOVoiceBridge={
-  isAvailable:()=>canStream(),
+  isAvailable:()=>canStream()||Boolean(speechCtor()),
   startListening:async()=>{
    primeConversationAudio()
    if(active){paused=false;await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'});return}
    active=true;paused=false;emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'starting'})
    try{await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'listening'})}
-   catch(error){console.warn('UGO Gemini Live start failed',error);const name=String((error as any)?.name||''),status=Number((error as any)?.status||0),code=name==='NotAllowedError'||name==='SecurityError'?'not-allowed':name==='NotFoundError'?'no-microphone':name==='NotReadableError'?'microphone-busy':status===401?'session':status===403?'forbidden':status===429?'rate-limited':'unavailable';shutdown(false);emit('ugo:native-voice-error',{code,engine:'gemini-live',message:error instanceof Error?error.message:String(error||'')});throw error}
+   catch(error){console.warn('UGO Gemini Live start failed; activating browser speech fallback',error);const name=String((error as any)?.name||''),status=Number((error as any)?.status||0),code=name==='NotAllowedError'||name==='SecurityError'?'not-allowed':name==='NotFoundError'?'no-microphone':name==='NotReadableError'?'microphone-busy':status===401?'session':status===403?'forbidden':status===429?'rate-limited':'unavailable';shutdown(false);if(startFallback()){emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'gemini-fallback',live_error:code});return}emit('ugo:native-voice-error',{code,engine:'gemini-live',message:error instanceof Error?error.message:String(error||'')});throw error}
   },
-  pauseListening:()=>{if(!active)return;paused=true;endAudioStream();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'paused'})},
-  resumeListening:async()=>{if(!active)return;paused=false;resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
+  pauseListening:()=>{if(!active)return;paused=true;if(fallbackRecognition){try{fallbackRecognition.stop()}catch{};emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'paused'});return}endAudioStream();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'paused'})},
+  resumeListening:async()=>{if(!active)return;paused=false;if(fallbackActive){startFallback();return}resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
   stopListening:()=>shutdown(true),
   stopSpeaking:()=>stopConversationPlayback(),
   sendToolResponse:(id,name,response)=>sendJson({toolResponse:{functionResponses:[{id,name,response}]}}),
