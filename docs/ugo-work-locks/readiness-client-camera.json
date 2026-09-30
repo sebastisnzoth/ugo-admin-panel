@@ -3,9 +3,9 @@
   "task_id": "readiness-client-camera",
   "job_id": "UGO-READINESS-CLIENT_CAMERA",
   "title": "Verify Client camera capture/upload cancellation errors and persisted evidence in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T02:13:00Z",
-  "heartbeat_at": "2026-09-30T02:32:30Z",
+  "heartbeat_at": "2026-09-30T02:33:00Z",
   "lease_expires_at": "2026-09-30T03:17:30Z",
   "started_sha": "1f6faad2c37d5a268923d8cb875dd48332900b0e",
   "owner": "UGO",
@@ -25,7 +25,19 @@
     "client-media"
   ],
   "correlation_id": "readiness-client-camera-20260930T021300Z-1f6faad2",
-  "current_step": "RUNTIME",
+  "current_step": "HUMAN_FINAL",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "docs/evidence/readiness-client-camera-20260930.json",
+    "github-actions-run-36660251797",
+    "artifact-11073858157"
+  ],
+  "finished_at": "2026-09-30T02:33:00Z",
+  "verified_sha": "5a54f772ee7646ae14df36547fb5a6aee0fca175",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "result": "HUMAN_FINAL_PENDING",
+  "hardware_final_required": true,
+  "workflow_run_id": 36660251797,
+  "artifact_id": 11073858157
 }
