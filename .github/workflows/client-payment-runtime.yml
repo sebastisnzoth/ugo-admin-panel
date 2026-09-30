@@ -10,6 +10,7 @@ on:
       - 'scripts/client-payment-sentinel.mjs'
       - 'tests/contracts/client-payment-readiness.test.mjs'
       - 'supabase/migrations/20260930134500_client_payment_cash_audit.sql'
+      - 'supabase/migrations/20260930135200_client_payment_readiness_service_role_grants.sql'
       - '.github/workflows/client-payment-runtime.yml'
 
 concurrency:
