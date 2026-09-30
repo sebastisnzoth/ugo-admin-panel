@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-responsive",
   "job_id": "UGO-READINESS-PROVIDER-RESPONSIVE",
   "title": "Verify Provider responsive usability on mobile tablet and desktop",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T04:37:00Z",
-  "heartbeat_at": "2026-09-30T04:44:00Z",
-  "lease_expires_at": "2026-09-30T05:29:00Z",
+  "heartbeat_at": "2026-09-30T04:45:00Z",
+  "lease_expires_at": "2026-09-30T04:45:00Z",
   "started_sha": "83baa1e650be36b0efb8d144f10058dad6a4dc12",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,18 +26,19 @@
     "provider-shell"
   ],
   "correlation_id": "readiness-provider-responsive-20260930T043700Z",
-  "current_step": "HARDEN_TEST_CONCURRENCY",
+  "current_step": "WAITING_TEST_AUTH_RECOVERY",
   "attempt": 2,
   "evidence_ids": [
     "github-actions-run-36669664440",
-    "docs/evidence/ugo-test-auth-outage-20260930.json"
+    "docs/evidence/ugo-test-auth-outage-20260930.json",
+    "commit-99ef789699adb49333fa4451070b3b73139ab5bd"
   ],
-  "failed_at": "2026-09-30T04:40:30Z",
+  "failed_at": "2026-09-30T04:45:00Z",
   "failure": {
     "kind": "INFRASTRUCTURE",
     "component": "UGO_TEST_AUTH",
     "http_status": 504,
-    "message": "Responsive runtime reached browser harness but provider authentication failed with Gateway Timeout before viewport assertions. Prior provider desktop/mobile runtime was green; tablet code path remains unjudged."
+    "message": "Responsive runtime still blocked before viewport assertions by TEST Auth 504. Shared TEST fixture concurrency hardening applied."
   },
   "production_touched": false
 }
