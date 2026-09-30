@@ -21,3 +21,12 @@ test('provider GPS runtime evidence is bound to the exact candidate SHA',()=>{
   assert.match(runtime,/environment:'UGO TEST'/)
   assert.match(runtime,/productionTouched:false/)
 })
+
+test('provider GPS runtime relies on the canonical persisted independent judge only',()=>{
+  assert.doesNotMatch(runtime,/SERVICE_ROLE_ISOLATED_TEST_RUNTIME/)
+  assert.doesNotMatch(runtime,/autonomous_record_external_qa_probe/)
+  assert.doesNotMatch(runtime,/autonomous_record_independent_qa_evidence/)
+  assert.match(runtime,/autonomous_qa_run_gps_independent_evidence/)
+  assert.match(runtime,/verification_result/)
+  assert.match(runtime,/qa_run_id/)
+})
