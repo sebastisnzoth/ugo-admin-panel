@@ -11,3 +11,12 @@
   top:0!important;
   height:100dvh!important;
 }
+
+.ugo-client-root.ugo-client-screen-history .ugo-client-screen-overlay,
+.ugo-client-root.ugo-client-screen-profile .ugo-client-screen-overlay,
+.ugo-client-root.ugo-client-detail-open .ugo-client-screen-overlay{
+  padding-top:0!important;
+}
+.ugo-client-root.ugo-client-screen-profile .ugo-client-profile-panel{
+  margin-top:0!important;
+}
