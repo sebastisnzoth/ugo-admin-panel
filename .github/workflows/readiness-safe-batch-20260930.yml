@@ -115,6 +115,7 @@ jobs:
         run: test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
 
   auto-worker:
+    needs: auto-audit
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
