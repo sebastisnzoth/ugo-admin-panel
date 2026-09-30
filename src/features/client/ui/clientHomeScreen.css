@@ -401,6 +401,7 @@
 
   .ugo-client-root .ugo-home-map-card{
     grid-area:map!important;
+    align-self:start!important;
   }
 }
 
