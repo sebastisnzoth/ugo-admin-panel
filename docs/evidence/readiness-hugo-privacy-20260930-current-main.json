@@ -1,0 +1,48 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "hugo-privacy",
+  "status": "VERIFIED",
+  "final_status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_proof": {
+    "status": "PASS",
+    "sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+    "environment": "UGO TEST"
+  },
+  "workflow_run": {
+    "id": 36714117294,
+    "job_id": 109882622123,
+    "conclusion": "success",
+    "artifact_id": 11094733098,
+    "artifact_digest": "sha256:d943b1fa701a65456991a721c50e6fe7a05df1994494486f1d27a76ab437e92e"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true,
+    "core_ci_run": 36714117260,
+    "core_ci_conclusion": "success"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "synthetic secrets redacted",
+      "raw evidence/base64 blobs redacted",
+      "API authority regression passed",
+      "legacy edge authenticated role authority passed",
+      "raw edge errors not reflected"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "production_touched": false,
+  "result_summary": "Same-SHA privacy proof passed: synthetic secrets and raw blobs sanitized; API/edge authority enforced; raw edge errors not reflected.",
+  "verified_at": "2026-09-30T12:22:30Z"
+}
