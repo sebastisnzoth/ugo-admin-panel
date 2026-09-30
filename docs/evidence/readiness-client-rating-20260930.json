@@ -1,0 +1,69 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "client-rating",
+  "task_id": "readiness-client-rating",
+  "correlation_id": "readiness-client-rating-20260930T143530Z-4b803e32",
+  "environment": "UGO TEST",
+  "runtime_validated_sha": "96117a0b2128dabd3cf7669989f3fe446416e328",
+  "main_sha_at_persist": "96117a0b2128dabd3cf7669989f3fe446416e328",
+  "control": {
+    "area": "App Cliente",
+    "title": "Calificación Cliente→Proveedor",
+    "verify": "Calificar una sola vez tras cierre.",
+    "done_evidence": "Rating persistido + UI."
+  },
+  "implementation": {
+    "ui_prompt": "src/features/client/rating/ClientRatingPrompt.tsx",
+    "mutation_boundary": "src/features/ratings/serviceRatingService.ts",
+    "completed_service_guard": true,
+    "database_uniqueness": "resenas(servicio_id, autor_tipo)",
+    "runtime_workflow": ".github/workflows/client-rating-runtime.yml",
+    "production_touched": false
+  },
+  "tests": {
+    "contract": {
+      "result": "PASS",
+      "tests": 12,
+      "basis": "tests/contracts/client-rating.test.mjs; UI wiring, 1-5 stars, post-completion gating, service-scoped idempotent mutation and realtime convergence."
+    },
+    "runtime": {
+      "result": "PASS",
+      "workflow_run_id": 36730816468,
+      "job_id": 109939619228,
+      "persisted": true,
+      "exactly_once": true,
+      "client_readback": true,
+      "provider_karma_updated": true,
+      "environment_guard": "PASS"
+    },
+    "judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:40:12.759Z",
+      "basis": "Independent DB read proves completed service, one persisted client rating, correct participants and score."
+    },
+    "cleanup": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:40:16.114Z"
+    },
+    "sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:40:17.488Z",
+      "fixtures": "verified absent",
+      "production_touched": false
+    },
+    "core_ci": {
+      "result": "PASS",
+      "workflow_run_id": 36730816492,
+      "sha": "96117a0b2128dabd3cf7669989f3fe446416e328"
+    }
+  },
+  "artifact": {
+    "id": 11104642401,
+    "name": "readiness-client-rating-96117a0b2128dabd3cf7669989f3fe446416e328",
+    "digest": "sha256:fbac10a8b79aa72942871f589f54f4344e95b81d0e6646380ce4962012d15cef",
+    "size_in_bytes": 1919,
+    "expires_at": "2026-12-29T14:39:52Z"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T14:41:45.000Z"
+}
