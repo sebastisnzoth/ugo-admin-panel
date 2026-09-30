@@ -1,0 +1,85 @@
+name: UGO Readiness Auto Inbox TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/mvp/autonomyInbox.ts'
+      - 'src/mvp/AutonomousCorporationDashboard.tsx'
+      - 'src/mvp/SuperAdminCommandCenter.tsx'
+      - 'scripts/readiness-auto-inbox-*.mjs'
+      - 'tests/contracts/readiness-auto-inbox.test.mjs'
+      - '.github/workflows/readiness-auto-inbox.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-auto-inbox-test
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+  UGO_READINESS_CORRELATION_ID: readiness-auto-inbox-20260930T011500Z-48741a2a
+
+jobs:
+  verify:
+    name: Executive Inbox ↔ authoritative UGO TEST
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Require UGO TEST runtime credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - name: Contract regression
+        run: node --test tests/contracts/readiness-auto-inbox.test.mjs
+      - name: TypeScript build
+        run: npx tsc -b
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Execute same-SHA Inbox scenarios
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-auto-inbox-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null
+          node scripts/readiness-auto-inbox-runtime.mjs
+      - name: Judge
+        run: node scripts/readiness-auto-inbox-judge.mjs
+      - name: Sentinel
+        run: node scripts/readiness-auto-inbox-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-auto-inbox-${{ github.sha }}
+          path: artifacts/readiness-auto-inbox/*
+          if-no-files-found: error
+          retention-days: 90
