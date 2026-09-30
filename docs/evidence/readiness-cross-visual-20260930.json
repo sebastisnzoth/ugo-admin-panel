@@ -41,17 +41,35 @@
     "contract_test_added": true,
     "executed_in_runtime": false,
     "reason": "No executable repository workspace was available and the Vercel deployment for the current SHA was blocked by the serverless function-count limit.",
-    "judge": "NOT_RUN",
-    "sentinel": "NOT_RUN"
+    "judge": "PENDING_NEW_RUNTIME",
+    "sentinel": "PENDING_NEW_RUNTIME",
+    "contract_last_known": "PASS on run 36760273627",
+    "build_last_known": "PASS on run 36760273627",
+    "runtime_last_known": "FAIL on run 36760273627 before TEST fixture hardening"
   },
   "result": "NEEDS_RUNTIME_PROOF",
   "verified": false,
   "production_touched": false,
   "remaining_exact": [
-    "Run tests/contracts/cross-visual-readiness.test.mjs (or full npm test) in UGO TEST/CI.",
-    "Open authenticated TEST/preview routes for Cliente, Proveedor, Admin and Super Admin and capture multi-route visual evidence.",
-    "Run Judge and Sentinel against that evidence.",
-    "Only then move readiness-cross-visual lock to DONE / VERIFIED."
+    "Observe or trigger UGO Cross Visual Runtime TEST for merge SHA c4b345c73a8f3b5205523b1293df95d218143f8a.",
+    "Require Visual contract regression PASS, exact-SHA build PASS, authenticated Cliente/Proveedor/Admin/Super Admin visual proof PASS.",
+    "Require Judge PASS and Sentinel PASS on the same SHA.",
+    "Then update readiness-cross-visual lock to DONE and evidence result to VERIFIED."
   ],
-  "recorded_at": "2026-09-30T18:08:00Z"
+  "recorded_at": "2026-09-30T18:08:00Z",
+  "latest_revalidation": {
+    "at": "2026-09-30T20:00:00Z",
+    "main_sha": "c4b345c73a8f3b5205523b1293df95d218143f8a",
+    "prior_failed_run": 36760273627,
+    "prior_failure": "role-ui-runtime provider root timeout",
+    "test_fixture_hardening": [
+      "f7d121e7e05c7db82759abc16aa6f18a976cf6f9",
+      "d52cd9cdd413e52861df4652105174a8346976c0"
+    ],
+    "trigger_pr": 326,
+    "trigger_merge_sha": "c4b345c73a8f3b5205523b1293df95d218143f8a",
+    "same_sha_run_observed": false,
+    "local_clone_attempt": "BLOCKED_NO_NETWORK",
+    "production_touched": false
+  }
 }
