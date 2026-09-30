@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T18:31:00Z",
-  "lease_expires_at": "2026-09-30T19:16:00Z",
+  "heartbeat_at": "2026-09-30T18:35:00Z",
+  "lease_expires_at": "2026-09-30T19:20:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,8 +17,8 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R2_BUILD_LOCAL_PLAYWRIGHT_VISUAL_PROOF",
-  "attempt": 2,
+  "current_step": "LOCAL_SAME_SHA_VISUAL_RUNTIME",
+  "attempt": 3,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
     "repo:docs/evidence/readiness-cross-visual-20260930.json",
@@ -26,12 +26,16 @@
     "preview:dpl_ESFXfQ1vCdb3AQeSn15rKnNonCUa:LANDING_200",
     "preview:internal-routes:AUTH_BLOCKED",
     "reconcile:vercel-path-abandoned",
-    "strategy:local-playwright-ugo-test"
+    "strategy:local-playwright-ugo-test",
+    "workflow:cross-visual-runtime.yml",
+    "run:36759449519",
+    "candidate_sha:9b233e350023fce0260dda79176bac67f220a45e"
   ],
-  "result": "NEEDS_RUNTIME_PROOF",
+  "result": "IN_PROGRESS",
   "production_touched": false,
   "validators_result": {
     "Judge": "PENDING",
     "Sentinel": "PENDING"
-  }
+  },
+  "failure": null
 }
