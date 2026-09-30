@@ -5,27 +5,33 @@
   "title": "Verify perceived performance and critical action latency",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:41:00Z",
-  "heartbeat_at": "2026-09-30T13:41:00Z",
-  "lease_expires_at": "2026-09-30T14:26:00Z",
+  "heartbeat_at": "2026-09-30T13:54:00Z",
+  "lease_expires_at": "2026-09-30T14:39:00Z",
   "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
   "assigned_agent": "GPT_UGO · Cross Performance Runtime Agent",
-  "validators": ["Judge", "Sentinel"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
   "validators_result": {
     "Judge": "PENDING",
     "Sentinel": "PENDING"
   },
-  "resources": ["preview-runtime"],
+  "resources": [
+    "preview-runtime"
+  ],
   "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
-  "current_step": "RECONCILE_STALE_LOCK_AND_RUNTIME_EVIDENCE",
+  "current_step": "TDD_RED_RUNTIME_SHA_AND_SELECTORS",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
     "github-job:109740427671",
     "github-core-run:36667189922",
-    "github-core-job:109740433860"
+    "github-core-job:109740433860",
+    "diagnosis:run-36724184797-runtime-selector-and-pr-sha"
   ],
   "production_touched": false,
   "skills": [
