@@ -13,7 +13,17 @@ for(const agent of agents){
  const advisoryOnly=Array.isArray(agent.permissions)&&agent.permissions.includes('advisory_only')
  const base={agent_id:agent.id,agent_key:agent.agent_key,name:agent.name,department_id:agent.department_id,cataloged:true,enabled:agent.status!=='DISABLED',operational_status:agent.status,advisory_only:advisoryOnly}
  if(agent.status==='DISABLED'){proof.push({...base,executed:false,maturity:'CATALOGED'});continue}
- if(advisoryOnly){proof.push({...base,executed:false,maturity:'ENABLED',consultation_ready:true});continue}
+ if(advisoryOnly){
+  const run=await db.rpc('autonomous_execute_readonly_specialist',{p_agent_id:agent.id})
+  if(run.error)throw run.error
+  const job=run.data
+  if(!job?.id)throw new Error('READONLY_SPECIALIST_JOB_MISSING:'+agent.agent_key)
+  const ev=await db.from('autonomous_evidence_ledger').select('*').eq('job_id',job.id).eq('evidence_type','READONLY_SPECIALIST_EXECUTION').maybeSingle()
+  if(ev.error)throw ev.error
+  if(!ev.data)throw new Error('READONLY_SPECIALIST_EVIDENCE_MISSING:'+agent.agent_key)
+  proof.push({...base,executed:true,maturity:'EXECUTED',consultation_ready:true,executor_kind:'READONLY_SPECIALIST_EXECUTOR',job_id:job.id,execution_evidence_id:ev.data.id,correlation_id:job.correlation_id})
+  continue
+ }
  const idempotencyKey=`readiness:auto-agents:${runtimeSha}:${agent.agent_key}`
  const existing=await db.from('autonomous_jobs').select('*').eq('idempotency_key',idempotencyKey).maybeSingle()
  if(existing.error)throw existing.error
@@ -30,5 +40,5 @@ for(const agent of agents){
  proof.push({...base,executed:true,maturity:'EXECUTED',job_id:job.id,execution_evidence_id:ev.data.id,correlation_id:job.correlation_id})
 }
 await mkdir('artifacts',{recursive:true})
-const report={schema_version:'UGO_AUTO_AGENTS_RUNTIME_V2',readiness_id:'auto-agents',environment:'UGO TEST',runtime_sha:runtimeSha,total_cataloged:agents.length,total_enabled:proof.filter(x=>x.enabled).length,total_advisory_enabled:proof.filter(x=>x.enabled&&x.advisory_only).length,total_executed:proof.filter(x=>x.executed).length,proof,created_at:new Date().toISOString()}
+const report={schema_version:'UGO_AUTO_AGENTS_RUNTIME_V3',readiness_id:'auto-agents',environment:'UGO TEST',runtime_sha:runtimeSha,total_cataloged:agents.length,total_enabled:proof.filter(x=>x.enabled).length,total_advisory_enabled:proof.filter(x=>x.enabled&&x.advisory_only).length,total_executed:proof.filter(x=>x.executed).length,proof,created_at:new Date().toISOString()}
 await writeFile('artifacts/auto-agents-runtime.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify({readiness_id:report.readiness_id,cataloged:report.total_cataloged,enabled:report.total_enabled,executed:report.total_executed,runtime_sha:runtimeSha,status:'PASS'}))
