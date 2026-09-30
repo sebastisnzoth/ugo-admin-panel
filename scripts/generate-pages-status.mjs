@@ -39,6 +39,44 @@ const {
   now: new Date(publishedAt),
 })
 
+const readinessDirectActionMap = {
+  'client-request': 'client-request-runtime.yml',
+  'client-navigation': 'client-navigation-runtime.yml',
+  'admin-auth': 'admin-auth-runtime.yml',
+  'admin-navigation': 'admin-navigation-runtime.yml',
+  'admin-realtime': 'admin-realtime-runtime.yml',
+  'admin-users': 'readiness-admin-users.yml',
+  'admin-model-router': 'readiness-admin-model-router.yml',
+  'admin-qa': 'readiness-admin-qa.yml',
+  'admin-responsive': 'role-ui-runtime.yml',
+  'admin-risk': 'super-admin-ui-runtime.yml',
+  'hugo-presence': 'hugo-presence-runtime.yml',
+  'hugo-intent': 'hugo-intent-runtime.yml',
+  'hugo-authority': 'hugo-authority-runtime.yml',
+  'cross-rls': 'isolated-rpc-rls.yml',
+  'auto-agents': 'readiness-auto-agents-test.yml',
+  'auto-departments': 'readiness-auto-departments-test.yml',
+  'auto-department-job-visibility': 'department-job-visibility-runtime.yml',
+}
+for (const group of functionalReadiness.groups || []) {
+  for (const item of group.items || []) {
+    const workflow = readinessDirectActionMap[item.id]
+    item.execution_mode = item.real_test_required ? 'HUMAN_REQUIRED' : 'AUTO_SELECT'
+    if (workflow) {
+      item.execution_route = 'AUTO_SELECT · GPT/UGO para análisis, código, diseño y decisiones; GitHub Direct para runtime/CI determinista.'
+      item.direct_action = {
+        channel: 'GITHUB_DIRECT',
+        label: 'Resolver en GitHub',
+        workflow,
+        url: 'https://github.com/sebastisnzoth/ugo-admin-panel/actions/workflows/' + workflow,
+        production: 'PROTECTED',
+      }
+    } else if (!item.real_test_required) {
+      item.execution_route = item.execution_route || 'GPT_UGO · análisis, código, diseño, debugging y decisiones hasta que exista un workflow seguro específico.'
+    }
+  }
+}
+
 const must = (re, label) => {
   const match = source.match(re)
   if (!match) throw new Error(`UGO Pages evidence missing: ${label}`)
