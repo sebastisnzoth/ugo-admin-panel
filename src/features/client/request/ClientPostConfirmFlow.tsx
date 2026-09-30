@@ -1,5 +1,6 @@
 import React,{useCallback,useEffect,useRef,useState}from'react'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
+import{CLIENT_ACTIVE_SERVICE_STATES,isMatchingServiceState}from'../../../lib/marketplace/lifecycle'
 import{ClientEvidenceGallery}from'../order/ClientEvidenceGallery'
 import{ServiceChat}from'../../../mvp/ServiceChat'
 import{STATUS_LABELS,useRoleSession}from'../../../mvp/shared'
@@ -13,15 +14,13 @@ type ServiceRow={id:string;estado:string;proveedor_id:string|null;matching_expir
 type View='matching'|'assigned'|'chat'|'detail'|'completed'
 type Pickup={latitude:number;longitude:number}
 type DispatchContext={category:string;pickup:Pickup|null}
-const MATCHING=new Set(['buscando','ofrecido'])
-const ACTIVE_CLIENT_STATES=['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','disputado'] as const
 const draftPickup=(draft:Draft):Pickup|null=>{if(draft.pickupLat==null||draft.pickupLng==null)return null;const latitude=Number(draft.pickupLat),longitude=Number(draft.pickupLng);return Number.isFinite(latitude)&&latitude>=-90&&latitude<=90&&Number.isFinite(longitude)&&longitude>=-180&&longitude<=180?{latitude,longitude}:null}
 
 export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
  const{session,supabase}=useRoleSession('client'),flow=useClientFlow(),[service,setService]=useState<ServiceRow|null>(null),[channelEpoch,setChannelEpoch]=useState(0),[view,setView]=useState<View>('matching'),[now,setNow]=useState(()=>Date.now()),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[dispatchContext,setDispatchContext]=useState<DispatchContext|null>(null),creating=useRef(false)
  const draftKey=session?`ugo:guided-request-draft:${session.user.id}`:'',requestKey=session?`ugo:guided-request:${session.user.id}`:''
  const clearDraft=useCallback(()=>{if(draftKey)sessionStorage.removeItem(draftKey);if(requestKey)sessionStorage.removeItem(requestKey)},[draftKey,requestKey])
- const load=useCallback(async(id:string)=>{if(!session)return null;const{data,error}=await supabase.from('servicios').select('id,numero,estado,matching_expires_at,proveedor_id,proveedor:usuarios!servicios_proveedor_id_fkey(nombre,karma),categoria:categorias(nombre)').eq('id',id).eq('cliente_id',session.user.id).maybeSingle();if(error)throw error;if(!data)return null;const row=data as unknown as ServiceRow;setService(row);if(row.estado==='completado')setView('completed');else if(MATCHING.has(row.estado))setView('matching');else if(row.proveedor_id)setView(v=>v==='chat'||v==='detail'?v:'assigned');return row},[session,supabase])
+ const load=useCallback(async(id:string)=>{if(!session)return null;const{data,error}=await supabase.from('servicios').select('id,numero,estado,matching_expires_at,proveedor_id,proveedor:usuarios!servicios_proveedor_id_fkey(nombre,karma),categoria:categorias(nombre)').eq('id',id).eq('cliente_id',session.user.id).maybeSingle();if(error)throw error;if(!data)return null;const row=data as unknown as ServiceRow;setService(row);if(row.estado==='completado')setView('completed');else if(isMatchingServiceState(row.estado))setView('matching');else if(row.proveedor_id)setView(v=>v==='chat'||v==='detail'?v:'assigned');return row},[session,supabase])
  const findByDraft=useCallback(async(requestDraftId:string)=>{if(!session||!requestDraftId)return null;const{data,error}=await supabase.from('servicios').select('id,numero,estado,matching_expires_at,proveedor_id').eq('cliente_id',session.user.id).eq('metadata->>request_draft_id',requestDraftId).maybeSingle();if(error)throw error;return(data||null)as ServiceRow|null},[session,supabase])
  const startDispatch=useCallback(async(id:string,context:DispatchContext)=>{const dispatch=getDispatchProvider();const result=await dispatch.start({serviceId:id,category:context.category,pickup:context.pickup,pickupFallback:'none'});if(result.state==='matched')await load(id);return result},[load])
  const create=useCallback(async()=>{if(!session||creating.current||!draftKey||!requestKey)return;creating.current=true;setBusy(true);setMessage('');try{
@@ -32,7 +31,7 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
   const context:DispatchContext={category:draft.categorySlug||draft.categoryId,pickup:draftPickup(draft)};setDispatchContext(context)
   let row=await findByDraft(requestDraftId)
   if(!row&&!draft.scheduleAt){
-   const conflict=await supabase.from('servicios').select('id,numero,estado').eq('cliente_id',session.user.id).in('estado',[...ACTIVE_CLIENT_STATES]).is('programado_para',null).order('created_at',{ascending:false}).limit(1).maybeSingle()
+   const conflict=await supabase.from('servicios').select('id,numero,estado').eq('cliente_id',session.user.id).in('estado',[...CLIENT_ACTIVE_SERVICE_STATES]).is('programado_para',null).order('created_at',{ascending:false}).limit(1).maybeSingle()
    if(conflict.error)throw conflict.error
    if(conflict.data?.id)throw new Error(`Ya tenés un pedido inmediato activo${conflict.data.numero?` (#${conflict.data.numero})`:''}. Podés seguirlo o programar otro servicio para más adelante.`)
   }
@@ -43,8 +42,8 @@ export function ClientPostConfirmFlow({onExit}:{onExit:()=>void}){
    if(inserted.error){if(String(inserted.error.code||'')==='23505')row=await findByDraft(requestDraftId);else throw inserted.error}else row=(inserted.data||null)as ServiceRow|null
   }
   if(!row?.id)throw new Error('No se pudo crear ni recuperar el pedido.')
-  setService(row);setView(MATCHING.has(row.estado)?'matching':row.estado==='completado'?'completed':'assigned');setMessage(row.estado==='buscando'?'Pedido creado. Estamos avisando a profesionales verificados.':'Pedido recuperado. Sin duplicarlo.')
-  if(MATCHING.has(row.estado)){await startDispatch(row.id,context);clearDraft();await load(row.id);setNow(Date.now());setMessage('Pedido enviado. Esperando respuestas de profesionales verificados.')}
+  setService(row);setView(isMatchingServiceState(row.estado)?'matching':row.estado==='completado'?'completed':'assigned');setMessage(row.estado==='buscando'?'Pedido creado. Estamos avisando a profesionales verificados.':'Pedido recuperado. Sin duplicarlo.')
+  if(isMatchingServiceState(row.estado)){await startDispatch(row.id,context);clearDraft();await load(row.id);setNow(Date.now());setMessage('Pedido enviado. Esperando respuestas de profesionales verificados.')}
   else clearDraft()
  }catch(error){setMessage(error instanceof Error?error.message:'No pudimos publicar el pedido. El borrador quedó guardado para reintentar.')}finally{creating.current=false;setBusy(false)}},[clearDraft,draftKey,findByDraft,load,requestKey,session,startDispatch,supabase])
  useEffect(()=>{void create()},[create])
