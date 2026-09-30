@@ -9,7 +9,7 @@ if((p.approvals?.decision_rows||[]).length!==1||p.approvals.decision_rows[0]?.de
 if(p.rejection?.status!=='CANCELLED'||p.rejection?.duplicate_retry_blocked!==true)fail('rejection')
 if((p.rejection?.decision_rows||[]).length!==1||p.rejection.decision_rows[0]?.decision!=='HUMAN_REJECTED')fail('rejection_audit')
 if(p.audit?.duplicate_side_effect_rows!==0)fail('duplicate_side_effects')
-if(p.cleanup?.fixtures_removed!==true||p.cleanup?.company_mode_restored!==true)fail('cleanup')
+if(p.cleanup?.active_fixtures_closed!==true||p.cleanup?.audit_history_retained!==true||p.cleanup?.company_mode_restored!==true)fail('cleanup')
 const out={validator:'Judge',verdict:'PASS',checked_at:new Date().toISOString(),runtime_sha:p.runtime_sha,readiness_id:p.readiness_id,correlation_id:p.correlation_id}
 await writeFile('artifacts/readiness-auto-inbox/judge.json',JSON.stringify(out,null,2)+'\n')
 console.log(JSON.stringify(out))
