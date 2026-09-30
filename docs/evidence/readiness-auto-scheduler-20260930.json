@@ -1,0 +1,109 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "auto-scheduler",
+  "task_id": "readiness-auto-scheduler",
+  "job_id": "UGO-READINESS-AUTO-SCHEDULER",
+  "correlation_id": "readiness-auto-scheduler-20260930T012200Z-b11149dc",
+  "status": "VERIFIED",
+  "environment": "UGO TEST / GitHub Actions",
+  "tested_sha": "cc241ffc3128c50a765cdfa7d52e79bb6623479a",
+  "workflow_run": {
+    "id": 36655333209,
+    "name": "UGO Readiness · Auto Scheduler",
+    "conclusion": "success",
+    "url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36655333209",
+    "runtime_job_id": 109698350267,
+    "judge_job_id": 109698389057,
+    "sentinel_job_id": 109698426520,
+    "artifact_id": 11071952711,
+    "artifact_name": "auto-scheduler-runtime-36655333209"
+  },
+  "runtime": {
+    "policy_version": "UGO_SCHEDULER_V2",
+    "max_parallel_tasks": 5,
+    "resource": "autonomy-scheduler",
+    "resource_capacity": 1,
+    "assertions": [
+      {
+        "id": "max_parallel_5",
+        "result": "PASS",
+        "detail": "Six independent jobs yield exactly five AVAILABLE and one QUEUED_CAPACITY."
+      },
+      {
+        "id": "resource_capacity_conflict",
+        "result": "PASS",
+        "detail": "Two jobs sharing a capacity-1 resource cannot run together."
+      },
+      {
+        "id": "active_lease_consumes_slot",
+        "result": "PASS",
+        "detail": "An active lease consumes a global slot and its resource capacity."
+      },
+      {
+        "id": "resource_capacity_gt_one",
+        "result": "PASS",
+        "detail": "Capacity-2 resource admits exactly two compatible jobs and queues the third."
+      },
+      {
+        "id": "stale_lock_fail_closed",
+        "result": "PASS",
+        "detail": "Expired own lease becomes STALE_LOCK and is not automatically duplicated."
+      },
+      {
+        "id": "latest_lock_state_wins",
+        "result": "PASS",
+        "detail": "A newer DONE lock prevents an older active record from ghost-blocking the task."
+      }
+    ],
+    "policy_and_lock_validation": "PASS",
+    "production_touched": false,
+    "result": "PASS"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:29:37Z",
+      "basis": [
+        "independent re-derivation of max_parallel_tasks=5",
+        "independent resource conflict scenario",
+        "independent stale-lock fail-closed scenario"
+      ],
+      "job_id": 109698389057
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:29:37Z",
+      "production_touched": false,
+      "basis": [
+        "scheduler policy and persistent locks validate",
+        "auto-scheduler lock owns only autonomy-scheduler",
+        "workflow permissions are contents: read",
+        "no production deployment command in readiness workflow"
+      ],
+      "job_id": 109698426520
+    }
+  },
+  "regression": {
+    "test_file": "tests/contracts/ugo-scheduler-parallelism.test.mjs",
+    "dedicated_workflow": ".github/workflows/readiness-auto-scheduler.yml",
+    "initial_core_ci_run": 36654928323,
+    "initial_core_ci_note": "All six auto-scheduler tests passed; the global suite was red only because readiness-auto-inbox.test.mjs referenced a workflow absent at that earlier SHA.",
+    "sentinel_hardening_runs": [
+      {
+        "run_id": 36655180860,
+        "result": "FAIL_CLOSED",
+        "reason": "Sentinel deployment-word guard self-matched; guard corrected."
+      },
+      {
+        "run_id": 36655265280,
+        "result": "FAIL_CLOSED",
+        "reason": "Sentinel regex source self-matched; guard changed to structural uses/run inspection."
+      },
+      {
+        "run_id": 36655333209,
+        "result": "PASS",
+        "reason": "Runtime, Judge and Sentinel all green on the same SHA."
+      }
+    ]
+  }
+}
