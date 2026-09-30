@@ -25,10 +25,13 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const[available,setAvailable]=useState(false)
  const[distanceToClient,setDistanceToClient]=useState<number|null>(null)
  const[locationError,setLocationError]=useState('')
+ const[lastFix,setLastFix]=useState<{capturedAt:number;accuracy:number}|null>(null)
+ const[nowMs,setNowMs]=useState(()=>Date.now())
  const enRoute=service?.estado==='en_camino'
  const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
- useEffect(()=>{if(service?.estado!=='en_camino')attemptedServiceRef.current=null},[service?.estado,service?.id])
+ useEffect(()=>{if(service?.estado!=='en_camino'){attemptedServiceRef.current=null;setLastFix(null)}},[service?.estado,service?.id])
+ useEffect(()=>{if(!enRoute)return;setNowMs(Date.now());const timer=window.setInterval(()=>setNowMs(Date.now()),1_000);return()=>window.clearInterval(timer)},[enRoute])
 
  useEffect(()=>{
   let alive=true
@@ -74,7 +77,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     return
    }
    {
-    lastWrite=Date.now();lastPoint=point
+    lastWrite=Date.now();lastPoint=point;setLastFix({capturedAt:Number(pos.timestamp||Date.now()),accuracy})
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
     setDistanceToClient(validMeters)
@@ -87,9 +90,11 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   return()=>navigator.geolocation.clearWatch(watchId)
  },[available,enRoute,service?.id,service?.estado,supabase])
 
+ const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
+ const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=MAX_POSITION_AGE_MS?'GPS reciente':'GPS desactualizado'} · hace ${Math.floor((fixAgeMs||0)/1_000)} s · precisión ±${Math.round(lastFix.accuracy)} m`:'Esperando primera ubicación reciente…'
  if(service?.estado!=='en_camino')return null
- if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>GPS necesita atención</strong><span>📍 {locationError}</span></div>
- if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>GPS activo</strong><span>Buscando tu distancia exacta al cliente…</span></div>
- if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{Math.round(distanceToClient)} m para llegar</strong><span>UGO sigue publicando tu ubicación. “YA LLEGUÉ” se valida contra el geofence de {ARRIVAL_RADIUS_M} m.</span></div>
- return <div className="provider-arrival-toast provider-location-ok" role="status"><strong>Llegada detectada</strong><span>📍 Estás a {Math.round(distanceToClient)} m · UGO está confirmando automáticamente.</span></div>
+ if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>GPS necesita atención</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
+ if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>GPS activo</strong><span>Buscando tu distancia exacta al cliente…</span><span className="provider-location-freshness">{freshness}</span></div>
+ if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{Math.round(distanceToClient)} m para llegar</strong><span>UGO sigue publicando tu ubicación. “YA LLEGUÉ” se valida contra el geofence de {ARRIVAL_RADIUS_M} m.</span><span className="provider-location-freshness">{freshness}</span></div>
+ return <div className="provider-arrival-toast provider-location-ok" role="status"><strong>Llegada detectada</strong><span>📍 Estás a {Math.round(distanceToClient)} m · UGO está confirmando automáticamente.</span><span className="provider-location-freshness">{freshness}</span></div>
 }
