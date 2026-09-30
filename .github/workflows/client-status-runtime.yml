@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
@@ -81,6 +81,66 @@ jobs:
         env:
           UGO_RUNTIME_SHA: ${{ github.sha }}
         run: node scripts/client-status-sentinel.mjs
+      - name: Persist authoritative readiness closure
+        shell: bash
+        env:
+          UGO_VALIDATED_SHA: ${{ github.sha }}
+          UGO_WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "ugo-readiness-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B readiness-closure origin/main
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const runtime=JSON.parse(fs.readFileSync('artifacts/client-status-runtime.json','utf8'))
+          const judge=JSON.parse(fs.readFileSync('artifacts/client-status-judge.json','utf8'))
+          const sentinel=JSON.parse(fs.readFileSync('artifacts/client-status-sentinel.json','utf8'))
+          const lockPath='docs/ugo-work-locks/readiness-client-status.json'
+          const lock=JSON.parse(fs.readFileSync(lockPath,'utf8'))
+          if(runtime.result!=='PASS'||judge.result!=='PASS'||sentinel.result!=='PASS')throw new Error('CLIENT_STATUS_VALIDATORS_NOT_PASS')
+          if(runtime.sha!==process.env.UGO_VALIDATED_SHA||judge.sha!==runtime.sha||sentinel.sha!==runtime.sha)throw new Error('CLIENT_STATUS_SAME_SHA_REQUIRED')
+          if(runtime.production_touched!==false||runtime.restored!==true)throw new Error('CLIENT_STATUS_SENTINEL_STATE_UNSAFE')
+          if(lock.readiness_id!=='client-status'||lock.task_id!=='readiness-client-status')throw new Error('CLIENT_STATUS_LOCK_MISMATCH')
+          const evidencePath='docs/ugo-readiness-evidence/readiness-client-status-20260930.json'
+          const evidence={
+            readiness_id:'client-status',
+            task_id:'readiness-client-status',
+            control:'Seguimiento del profesional',
+            environment:'UGO TEST',
+            production_touched:false,
+            runtime_validated_sha:runtime.sha,
+            workflow_run_id:Number(process.env.UGO_WORKFLOW_RUN_ID),
+            service_id:runtime.service_id,
+            original_state:runtime.original_state,
+            restored:runtime.restored,
+            sequence:runtime.sequence,
+            page_errors:runtime.page_errors,
+            validators:{Judge:judge.result,Sentinel:sentinel.result},
+            result:'PASS',
+            verified_at:new Date().toISOString()
+          }
+          fs.mkdirSync('docs/ugo-readiness-evidence',{recursive:true})
+          fs.writeFileSync(evidencePath,JSON.stringify(evidence,null,2)+'\n')
+          const now=new Date().toISOString()
+          lock.status='DONE'
+          lock.heartbeat_at=now
+          lock.lease_expires_at=null
+          lock.current_step='DONE'
+          lock.completed_at=now
+          lock.runtime_validated_sha=runtime.sha
+          lock.evidence_path=evidencePath
+          lock.validators_result={Judge:'PASS',Sentinel:'PASS'}
+          lock.judge='PASS'
+          lock.sentinel='PASS'
+          lock.production_touched=false
+          lock.evidence_ids=[...new Set([...(lock.evidence_ids||[]),'workflow-run:'+process.env.UGO_WORKFLOW_RUN_ID,'serviceId:'+runtime.service_id,'evidence:'+evidencePath])]
+          fs.writeFileSync(lockPath,JSON.stringify(lock,null,2)+'\n')
+          NODE
+          git add docs/ugo-work-locks/readiness-client-status.json docs/ugo-readiness-evidence/readiness-client-status-20260930.json
+          git commit -m "chore(readiness): close client-status VERIFIED"
+          git push origin HEAD:main
       - name: Upload evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -93,3 +153,5 @@ jobs:
           retention-days: 90
 
 # runtime retrigger 2026-09-30T10:46Z
+
+# self-closing runtime proof 2026-09-30T10:48Z
