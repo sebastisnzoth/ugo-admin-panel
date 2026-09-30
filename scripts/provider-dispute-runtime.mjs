@@ -46,13 +46,13 @@ try{
  const [client,provider,adm]=await Promise.all([mkUser('cliente'),mkUser('proveedor'),mkUser('admin')])
  ids.client=client.id;ids.provider=provider.id;ids.admin=adm.id
  const category=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(category.error)throw category.error
- const reason=await admin.from('reglas_motivos_disputa').select('codigo,actor').eq('activo',true).in('actor',['proveedor','ambos']).limit(1).single();if(reason.error)throw reason.error
+ const disputeReason='cancelacion_tardia'
  const maxq=await admin.from('servicios').select('numero').order('numero',{ascending:false}).limit(1).single();if(maxq.error)throw maxq.error
  const serviceId=crypto.randomUUID();ids.service=serviceId
  const service=await admin.from('servicios').insert({id:serviceId,numero:Number(maxq.data.numero)+100000,cliente_id:ids.client,proveedor_id:ids.provider,categoria_id:category.data.id,estado:'asignado',descripcion:'UGO provider dispute readiness TEST',tarifa:99.9,ambiente:'demo',metadata:{readiness_id:'provider-dispute',sha,ephemeral:true}}).select('id').single();if(service.error)throw service.error
 
  const providerDb=await login(provider.email)
- const opened=await providerDb.rpc('abrir_disputa_v2',{p_servicio_id:serviceId,p_motivo_codigo:reason.data.codigo,p_motivo:'Proveedor abre disputa TEST con evidencia controlada',p_evidencias:[{path:'test/provider-dispute/evidence.jpg',name:'evidence.jpg',type:'image/jpeg'}]});if(opened.error)throw opened.error
+ const opened=await providerDb.rpc('abrir_disputa_v2',{p_servicio_id:serviceId,p_motivo_codigo:disputeReason,p_motivo:'Proveedor abre disputa TEST con evidencia controlada',p_evidencias:[{path:'test/provider-dispute/evidence.jpg',name:'evidence.jpg',type:'image/jpeg'}]});if(opened.error)throw opened.error
  ids.dispute=opened.data.id
  evidence.open=opened.data.abierta_por===ids.provider&&opened.data.estado==='abierta'
  const msg=await admin.from('disputa_mensajes').select('autor_rol,evidencias').eq('disputa_id',ids.dispute).eq('autor_rol','proveedor').single();if(msg.error)throw msg.error
