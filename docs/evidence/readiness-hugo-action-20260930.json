@@ -1,0 +1,57 @@
+{
+  "readiness_id": "hugo-action",
+  "task_id": "readiness-hugo-action",
+  "correlation_id": "readiness-hugo-action-20260930T105800Z-cadb8022",
+  "control": "Acciones reales sobre UI/backend",
+  "criterion": "INTENT→ACTION→EFFECT with persisted backend effect and audit trail",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "implementation": {
+    "confirmation_commit": "cbb49a9c342608040e5558cbc2c66c7ea9c0ac8a",
+    "regression_commit": "2abb6579eda8ac6fc4798b935d6b33fd12f67b64",
+    "behavior": "cancel_service requires explicit confirmation, validates ownership/session, executes client action, persists cancellation, and returns brief confirmation 'Pedido cancelado'."
+  },
+  "runtime": {
+    "workflow_run_id": 36706401777,
+    "exact_test_sha": "2c9861e0bdc35b4506eabb470ff186cd245df4f3",
+    "result": "PASS",
+    "action": "cancel_service",
+    "service_id": "f1fe1f66-947f-4a78-9171-c81c1875d8c2",
+    "before_state": "buscando",
+    "after_state": "cancelado",
+    "persisted_effect": true,
+    "audit_channel": "ugo:native-voice-tool-call",
+    "explicit_confirmation": true,
+    "cleanup_state": "DELETED",
+    "runtime_artifact": {
+      "id": 11091514833,
+      "digest": "sha256:8d4aa936a183a9d0941d863efa0d78799247741d732b5b8a7b3e6cc08d267cd7"
+    }
+  },
+  "validators": {
+    "Judge": {
+      "status": "PASS",
+      "job_id": 109857944718,
+      "artifact_id": 11091604611,
+      "digest": "sha256:0f001ff488d6f0c3704944ff7449a3651aaf17dfb658a91bf002b8d325880a0b"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "job_id": 109858019981,
+      "artifact_id": 11092396599,
+      "digest": "sha256:a8c76b3957d0cb34aa6188b71a9ca02275701a7cb73efd6bcd1b9dd9ebbe0871"
+    }
+  },
+  "regression": {
+    "core_ci": {
+      "run_id": 36706401748,
+      "status": "PASS"
+    },
+    "hugo_voice_gate": {
+      "run_id": 36706401819,
+      "status": "PASS"
+    },
+    "note": "Cross-role UI runtime was not used as authoritative evidence for hugo-action because its failure was in a separate cross-errors assertion after the Hugo action had already persisted successfully."
+  },
+  "finished_at": "2026-09-30T11:10:00Z"
+}
