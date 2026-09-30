@@ -6,6 +6,7 @@ on:
     paths:
       - "src/mvp/admin-responsive-hardening.css"
       - "src/mvp/AdminPhase2.tsx"
+      - "src/mvp/AutonomousCorporationDashboard.tsx"
       - "tests/contracts/admin-responsive-readiness.test.mjs"
       - "scripts/readiness-admin-responsive-runtime.mjs"
       - "scripts/readiness-admin-responsive-judge.mjs"
