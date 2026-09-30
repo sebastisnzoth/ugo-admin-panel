@@ -15,7 +15,7 @@ try{
  })
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded',timeout:15000})
  await page.getByRole('textbox',{name:/Email/i}).fill('fault-injection@ugo.test')
- await page.getByLabel('Contraseña').fill('incorrecta')
+ await page.locator('input[type="password"]').fill('incorrecta')
  await page.getByRole('button',{name:'Ingresar a UGO'}).click()
  const alert=page.getByRole('alert')
  await alert.waitFor({state:'visible',timeout:8000})
