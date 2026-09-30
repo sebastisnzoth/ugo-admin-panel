@@ -37,3 +37,10 @@ test('auto-inbox readiness has a dedicated same-SHA TEST workflow with independe
  assert.match(workflow,/readiness-auto-inbox-sentinel\.mjs/)
  assert.match(workflow,/github\.sha/)
 })
+
+test('runtime dedupe proof is scoped to the single visible Executive Inbox surface',()=>{
+ const runtime=fs.readFileSync('scripts/readiness-auto-inbox-runtime.mjs','utf8')
+ assert.match(runtime,/section\.ugo-admin2-module-card:visible/)
+ assert.match(runtime,/INBOX_VISIBLE_SECTION_COUNT_INVALID/)
+ assert.match(runtime,/\.ugo-autonomous-inbox-job:visible/)
+})
