@@ -4,8 +4,8 @@
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T18:31:00Z",
-  "heartbeat_at": "2026-09-30T18:40:00Z",
-  "lease_expires_at": "2026-09-30T19:25:00Z",
+  "heartbeat_at": "2026-09-30T19:54:00Z",
+  "lease_expires_at": "2026-09-30T20:39:00Z",
   "started_sha": "8b5cf42316b0c2bda89e5ce5bedad888057e76ec",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,7 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T183100Z-r2",
-  "current_step": "R3_REAL_PROVIDER_LOGIN_CANONICAL_RERUN",
+  "current_step": "R3_REAL_PROVIDER_LOGIN_CANONICAL_RERUN_AFTER_TEST_FIXTURE_HARDENING",
   "attempt": 3,
   "evidence_ids": [
     "impl:tests/contracts/cross-visual-readiness.test.mjs",
@@ -35,7 +35,11 @@
     "fix:client-menu-reset-before-route-check",
     "candidate-sha:833a630c20625df83ffd0729038b1fbdc6183713",
     "fix:provider-real-login-ui-path",
-    "github-run:36760273627"
+    "github-run:36760273627",
+    "reconcile:stale-lock-20260930T1954Z",
+    "fix:f7d121e7e05c7db82759abc16aa6f18a976cf6f9",
+    "fix:d52cd9cdd413e52861df4652105174a8346976c0",
+    "revalidated-main:cc2d5b557436478519d5956129f0f2e5cbf7efdd"
   ],
   "result": "IN_PROGRESS",
   "production_touched": false,
