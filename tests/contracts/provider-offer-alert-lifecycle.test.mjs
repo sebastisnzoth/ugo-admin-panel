@@ -30,3 +30,13 @@ test('automatic arrival reuses the GPS fix already published by the live tracker
  assert.match(service,/async function markProviderArrived\(supabase:SupabaseClient,serviceId:string\)\{[\s\S]*await publishProviderLocation\(supabase,serviceId\)[\s\S]*confirmProviderArrival\(supabase,serviceId\)/)
  assert.match(service,/options\.locationAlreadyPublished\?await confirmProviderArrival\(supabase,serviceId\):await markProviderArrived\(supabase,serviceId\)/)
 })
+
+
+test('provider offer alert surfaces fast context and a clear response CTA',async()=>{
+ const center=await read('src/mvp/NotificationCenter.tsx')
+ assert.match(center,/providerOfferContext/)
+ assert.match(center,/distancia_km/)
+ assert.match(center,/Vence en/)
+ assert.match(center,/ugo-provider-alert-context/)
+ assert.match(center,/Ver pedido y responder/)
+})
