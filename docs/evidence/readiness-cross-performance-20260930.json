@@ -1,0 +1,66 @@
+{
+  "readiness_id": "cross-performance",
+  "task_id": "readiness-cross-performance",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20260930T1341Z",
+  "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
+  "control": "Rendimiento percibido",
+  "criterion": "Acciones críticas no quedan colgadas; loaders correctos.",
+  "tested_sha": "bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+  "merged_main_sha": "737036ed7da79be981dd887dc07da8d92848ef8a",
+  "pull_request": 310,
+  "workflow_run": 36725481224,
+  "runtime_job": 109921613354,
+  "judge_job": 109922228537,
+  "sentinel_job": 109922343113,
+  "results": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "exact_candidate_sha": "PASS",
+    "test_environment": "UGO TEST",
+    "production_touched": false
+  },
+  "performance": {
+    "client_initial_load_ms": 485,
+    "client_request_navigation_ms": 727,
+    "provider_initial_load_ms": 331,
+    "provider_jobs_navigation_ms": 56,
+    "admin_initial_load_ms": 310,
+    "admin_operations_navigation_ms": 54,
+    "sample_count": 6,
+    "max_ms": 727,
+    "p95_ms": 727,
+    "status": "PASS"
+  },
+  "artifacts": [
+    {
+      "id": 11101399848,
+      "name": "cross-performance-runtime-bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+      "digest": "sha256:98e2cf8cbd3728e23a2c726a3ff3a8985f37632b158188d58417353afa58f26c"
+    },
+    {
+      "id": 11101844611,
+      "name": "cross-performance-judge-bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+      "digest": "sha256:85d43819c78f12e9c9f30b62541cfbddfbf1d613879eb0eb8b19b1d15200cd7e"
+    },
+    {
+      "id": 11103020411,
+      "name": "cross-performance-sentinel-bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+      "digest": "sha256:32cec9c64950770868501e4e7210a02e4e87d3c948cc603210472bec471dbb89"
+    }
+  ],
+  "regression": {
+    "contract_tests": [
+      "cross-performance workflow validates the exact PR head SHA",
+      "client performance navigation uses a genuinely pointer-reachable action"
+    ],
+    "latest_core_ci": 36725481288,
+    "cross_performance_contracts": "PASS",
+    "unrelated_core_failures": [
+      "Hugo Live speaker contract",
+      "hugo-audit readiness contract"
+    ]
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-30T14:02:00Z"
+}
