@@ -3,10 +3,10 @@
   "readiness_id": "client-location",
   "job_id": "UGO-READINESS-CLIENT-LOCATION",
   "title": "Verify Client current location and map wiring in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T00:42:00Z",
-  "heartbeat_at": "2026-09-30T00:58:00Z",
-  "lease_expires_at": "2026-09-30T01:43:00Z",
+  "heartbeat_at": "2026-09-30T01:04:00Z",
+  "lease_expires_at": "2026-09-30T01:04:00Z",
   "started_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
   "owner": "UGO",
   "department": "App Cliente",
@@ -26,19 +26,45 @@
     "client-location"
   ],
   "correlation_id": "ugo-client-location-20260930T004200Z",
-  "current_step": "RERUN_SAME_SHA_AFTER_CORE_FIX",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
-    "github:442a02f04120a2098bcb951a5d3c45ae8ba35120",
-    "github:bb725f200874645929b53eeaa89b81b5d091fb0c",
-    "github:dd27169397e0bcb85f48bb87222069b598d08516",
-    "github:22c2234b1ee4e4917818a50efc8a22c30b6956ff",
-    "github:c2fcb26f666dfbf0706959802b55a5ea2e0a99a4",
-    "github:20c41f87c0919d606706d030b5674a94f3e4c1f9",
-    "github:e75ec148c1b808bb51c72991e278e4b07c66538e",
-    "github-actions:client-location:36651882350",
-    "github-actions:core-ci:36651882341",
-    "github-actions:core-ci:36652619218:PASS",
-    "runtime-prior:36651882350:PASS"
-  ]
+    "github-actions:run:36653093427",
+    "github-actions:job:109691449422",
+    "github-actions:artifact:11070742911",
+    "sha256:b02c1bd3b0a5dbf94bc6a761f6facf698a6545b62f0b8b36a585666eb0cb7bf6",
+    "github-actions:core-ci:36653093402",
+    "repo:docs/evidence/readiness-client-location-20260930.json"
+  ],
+  "completed_at": "2026-09-30T01:04:00Z",
+  "finished_at": "2026-09-30T01:04:00Z",
+  "verified_sha": "0e5865046babe9d1f2010bb73f1ce4e2d119992b",
+  "runtime_validated_sha": "0e5865046babe9d1f2010bb73f1ce4e2d119992b",
+  "verified_runtime_sha": "0e5865046babe9d1f2010bb73f1ce4e2d119992b",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:02:14.625Z",
+    "failures": []
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:02:14.663Z",
+    "production_touched": false,
+    "failures": []
+  },
+  "evidence_path": "docs/evidence/readiness-client-location-20260930.json",
+  "evidence_commit_sha": "6db6f8e8ffdd8165944b4c74519978c8db834d11",
+  "artifact_digest": "sha256:b02c1bd3b0a5dbf94bc6a761f6facf698a6545b62f0b8b36a585666eb0cb7bf6",
+  "production_touched": false,
+  "physical_gps_deferred": true,
+  "result_summary": "UGO TEST browser runtime verified current-location/map wiring and fail-closed invalid/permission/timeout behavior on 0e5865046babe9d1f2010bb73f1ce4e2d119992b. Judge PASS, Sentinel PASS and same-SHA Core CI PASS. Physical-device GPS remains explicitly deferred to the final human/device test; production untouched."
 }
