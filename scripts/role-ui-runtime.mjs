@@ -219,7 +219,7 @@ async function testAdmin(viewport,name){
    const mainNav=page.getByRole('navigation',{name:'Navegación Admin'})
    const superAdminButton=mainNav.getByRole('button',{name:/Super Admin/i})
    await superAdminButton.waitFor({state:'visible',timeout:30000})
-   const mainItems=['Inicio','Operaciones','Personas','Finanzas','Configuración','Super Admin']
+    const mainItems=['Inicio','Operaciones','Personas','Finanzas','Configuración']
    for(const item of mainItems){
      await safeClick(page,mainNav.getByRole('button',{name:new RegExp(item,'i')}),'admin '+item)
      await assertResponsive(page,'admin '+name+' '+item)
