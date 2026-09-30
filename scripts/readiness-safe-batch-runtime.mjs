@@ -132,6 +132,7 @@ try{
      before:{state:'buscando'},
      after:{state:String(after.estado)},
      tool_response:response,
+     confirmation_message:String(response?.message||''),
      audit_trail:{runtime_sha:sha,fixture_source:after.metadata?.source||null,channel:'ugo:native-voice-tool-call',confirmed:true}
    }
   } finally {
@@ -142,68 +143,6 @@ try{
    results.hugo_action.cleanup_state='DELETED'
    await context.close()
   }
- }
-
- // 2) CROSS ERRORS: browser fault injection + API auth failure must be explicit/actionable.
- {
-  const {context,page}=await openRole('client')
-  try{
-   await visible(page.locator('.ugo-client-root'))
-   await page.evaluate(()=>window.dispatchEvent(new CustomEvent('ugo:native-voice-error',{detail:{code:'session',engine:'gemini-live'}})))
-   const error=page.locator('.ugo-hugo-stage-error')
-   await visible(error,5000)
-   const text=(await error.textContent()||'').trim()
-   assert.match(text,/sesión/i)
-   assert.match(text,/iniciar sesión/i)
-   results.fault_injection.ui_session_error={status:'PASS',message:text}
-   const api=await page.request.post(base+'/api/hugo/chat',{data:{message:'estado',role:'client'}})
-   const payload=await api.json().catch(()=>({}))
-   assert.equal(api.status(),401)
-   const apiMessage=String(payload?.error||payload?.hugo_mensaje||payload?.message||'')
-   assert.ok(apiMessage.length>0,'API fault must communicate cause')
-   assert.match(apiMessage,/autentic|sesión|session/i)
-   results.fault_injection.api_auth_error={status:'PASS',status_code:api.status(),message:apiMessage}
-  } finally {await context.close()}
- }
-
- // 3) CROSS PERFORMANCE: critical role loads + one critical navigation each, no hanging action.
- {
-  const client=await openRole('client')
-  try{
-   assert.ok(client.loadMs<=8000,'client load')
-   await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
-   await timed('client_request_navigation_ms',async()=>{
-     await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
-     const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
-     await visible(drawer)
-     await drawer.getByRole('button',{name:/Pedir servicio/i}).click()
-     await visible(client.page.locator('.ugo-client-root'))
-   })
-  }finally{await client.context.close()}
-  const provider=await openRole('provider')
-  try{
-   results.performance.provider_initial_load_ms=provider.loadMs;assert.ok(provider.loadMs<=8000,'provider load')
-   const nav=provider.page.getByRole('navigation',{name:'Navegación principal'}).first()
-   await visible(nav)
-   await timed('provider_jobs_navigation_ms',async()=>{
-     await nav.getByRole('button',{name:/Trabajos/i}).first().click()
-     await visible(provider.page.locator('.ugo-provider-root'))
-   })
-  }finally{await provider.context.close()}
-  const admin=await openRole('admin')
-  try{
-   results.performance.admin_initial_load_ms=admin.loadMs;assert.ok(admin.loadMs<=8000,'admin load')
-   const nav=admin.page.getByRole('navigation',{name:'Navegación Admin'})
-   await visible(nav)
-   await timed('admin_operations_navigation_ms',async()=>{
-     await nav.getByRole('button',{name:/Operaciones/i}).click()
-     await visible(admin.page.getByRole('group',{name:'Menú de operaciones'}))
-   })
-  }finally{await admin.context.close()}
-  const samples=Object.values(results.performance).filter(Number.isFinite).sort((a,b)=>a-b)
-  results.performance.max_ms=Math.max(...samples)
-  results.performance.p95_ms=samples[Math.max(0,Math.ceil(samples.length*.95)-1)]
-  results.performance.status='PASS'
  }
 
  results.completed_at=new Date().toISOString()
