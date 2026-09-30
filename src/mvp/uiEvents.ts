@@ -6,6 +6,7 @@ export const UGO_UI_EVENTS={
  clientHugoVoice:'ugo:client:open-hugo-voice-order',
  clientHugoDraft:'ugo:client:hugo-draft-sync',
  clientHugoConfirmRequest:'ugo:client:hugo-confirm-request',
+ clientRequestPhoto:'ugo:client:request-photo',
  clientFocusServiceSearch:'ugo:client:focus-service-search',
  clientShowCategories:'ugo:client:show-categories',
  clientProfilePayment:'ugo:client:profile-payment',
