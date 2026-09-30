@@ -1,3 +1,4 @@
+// Main same-SHA readiness proof is enforced by GitHub Actions.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { readFile, writeFile, mkdir } from 'node:fs/promises'
