@@ -1,0 +1,41 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "cross-security",
+  "task_id": "readiness-cross-security",
+  "status": "VERIFIED",
+  "tested_sha": "073cef7cf4f7d815b4d229f8e065d61fbc97f744",
+  "merged_main_sha": "65e9a73ee7d7df04842a739e72e22ac86056093f",
+  "environment": "UGO TEST",
+  "workflow_run_id": 36732156721,
+  "workflow_job_id": 109944353156,
+  "artifact_id": 11104479279,
+  "artifact_digest": "sha256:574f62a8174316f5482f314e04fa71d7b78fa9ea823ea08e536828931f389e65",
+  "scan": {
+    "tracked_files_scanned": 1925,
+    "tracked_findings": 0,
+    "client_bundle_secret_hits": 0,
+    "risky_log_calls": 0,
+    "risky_client_env": 0,
+    "synthetic_redaction_pass": true,
+    "minimum_data_policy_pass": true
+  },
+  "validators": {
+    "judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:51:01.494Z"
+    },
+    "sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:51:01.549Z",
+      "production_touched": false,
+      "secrets_used": "synthetic-only"
+    }
+  },
+  "regression": {
+    "core_ci_run_id": 36732156723,
+    "core_ci_result": "SUCCESS"
+  },
+  "pull_request": 312,
+  "production_touched": false,
+  "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa"
+}
