@@ -25,7 +25,7 @@ const originalInfo=console.info
 console.info=(...args)=>{logs.push(args);originalInfo(...args)}
 let first,firstElapsed=0,secondElapsed=0,secondError
 try{
- const{askHugoModel}=await import('../api/hugo/modelRouter.ts?ugo-timeout-runtime='+Date.now())
+ const{askHugoModel}=await import('../server/hugo/modelRouter.ts?ugo-timeout-runtime='+Date.now())
  const t1=Date.now()
  first=await askHugoModel('hola',[],'system',false,'gemini-test')
  firstElapsed=Date.now()-t1
