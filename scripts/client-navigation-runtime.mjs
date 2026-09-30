@@ -71,7 +71,23 @@ async function freshPage(viewport){
  page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
  await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
- await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ try{
+  await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ }catch(error){
+  const diagnostic=await page.evaluate(()=>({
+   title:document.title,
+   bodyText:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,1400),
+   rootClass:document.querySelector('.ugo-client-root')?.getAttribute('class')||null,
+   onboarding:Boolean(document.querySelector('.ugo-client-onboarding')),
+   auth:Boolean(document.querySelector('.mvp-auth-page')),
+   errorBoundary:Boolean(document.querySelector('[data-ugo-error-boundary],.ugo-app-error,.app-error-boundary')),
+   storedSession:Boolean(localStorage.getItem('ugo-test-client-auth')),
+  })).catch(()=>({title:'',bodyText:'EVALUATION_FAILED',rootClass:null,onboarding:false,auth:false,errorBoundary:false,storedSession:false}))
+  const label=viewport.width+'x'+viewport.height
+  await page.screenshot({path:'artifacts/client-navigation-startup-'+label+'.png',fullPage:true}).catch(()=>{})
+  await fs.writeFile('artifacts/client-navigation-startup-'+label+'.json',JSON.stringify({sha,base,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
+  throw new Error('CLIENT_HOME_STARTUP_FAILED '+JSON.stringify(diagnostic),{cause:error})
+ }
  return page
 }
 
