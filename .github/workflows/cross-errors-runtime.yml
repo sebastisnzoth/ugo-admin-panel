@@ -60,6 +60,7 @@ jobs:
       - name: UI fault injection
         run: node scripts/cross-errors-ui-runtime.mjs
       - name: API fault injection
+        if: always()
         run: npx tsx scripts/cross-errors-api-runtime.ts
       - name: Upload runtime evidence
         if: always()
