@@ -1,0 +1,49 @@
+{
+  "readiness_id": "cross-observability",
+  "control": "Observabilidad y auditoría",
+  "environment": "UGO TEST",
+  "runtime_sha": "850eedec2f1a303c5abeb4a66705ede5a8ceb6ca",
+  "workflow_run_id": 36734750824,
+  "core_ci_run_id": 36734750962,
+  "runtime_job_id": 109953395640,
+  "judge_job_id": 109954396672,
+  "sentinel_job_id": 109954499865,
+  "job_trace": {
+    "autonomous_job_id": "6ef2e308-f2bc-44ec-9a06-7af9e5abac9b",
+    "correlation_id": "43ce2209-e095-4520-be67-383119712588",
+    "decision_id": "e23e3cad-bc9a-4d12-b4c9-16b02a1fd964",
+    "evidence_id": "52ca50be-ff98-44f2-9a51-591a33f0997a"
+  },
+  "service_trace": {
+    "service_id": "ca135031-8bb7-4a99-9b4d-36e86f3e2cab",
+    "correlation_id": "50de58e5-7d47-47b8-9e1d-f322741d1d80",
+    "decision_id": "c0077c8a-1c41-42af-8391-bb4cd51b37da",
+    "evidence_id": "97fe05e8-9a85-48b3-a3b1-f268f3188bd5",
+    "audit_log_id": 6736
+  },
+  "artifacts": [
+    {
+      "id": 11107021220,
+      "name": "cross-observability-runtime-850eedec2f1a303c5abeb4a66705ede5a8ceb6ca",
+      "digest": "sha256:99e8bedc1f25c815ce799095ac46b3ebeaa5b82ed29b304197fefdbc02b0417c"
+    },
+    {
+      "id": 11106147808,
+      "name": "cross-observability-judge-850eedec2f1a303c5abeb4a66705ede5a8ceb6ca",
+      "digest": "sha256:5cec6123e74b5eb41c6267f86606911fecd3b0a9057855db95ea744c1f8e3819"
+    },
+    {
+      "id": 11106008366,
+      "name": "cross-observability-sentinel-850eedec2f1a303c5abeb4a66705ede5a8ceb6ca",
+      "digest": "sha256:e7f91a131ff8bddd56da62bed2820ea57d68f9c2891bb619cfece9b0fb7e5c9d"
+    }
+  ],
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false
+  },
+  "completed_at": "2026-09-30T15:13:42Z"
+}
