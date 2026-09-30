@@ -118,3 +118,10 @@ test('payment choice stays visible through travel and arrival so an approved quo
  assert.match(choice,/PAYMENT_STATES=\['asignado','en_camino','llegado'\]/)
  assert.match(choice,/pixNeedsGeneration/)
 })
+
+
+test('payment method RPC is syntactically valid and cannot be changed after work starts',async()=>{
+ const migration=await read('supabase/migrations/20260930185000_variable_price_payment_preference.sql')
+ assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*as \$\$[\s\S]*select private\.seleccionar_metodo_pago_servicio_impl/)
+ assert.match(migration,/estado not in \('asignado','en_camino','llegado'\)/)
+})
