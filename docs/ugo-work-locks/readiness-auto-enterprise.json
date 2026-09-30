@@ -1,0 +1,25 @@
+{
+  "readiness_id": "auto-enterprise",
+  "task_id": "readiness-auto-enterprise",
+  "job_id": "UGO-READINESS-AUTO-ENTERPRISE",
+  "title": "Verify UGO Empresas journey in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T10:51:00Z",
+  "heartbeat_at": "2026-09-30T10:51:00Z",
+  "lease_expires_at": "2026-09-30T11:36:00Z",
+  "started_sha": "14dd72085e37ad0e49f9372de39e39b35ec22527",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "UGO Empresas Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-empresas"
+  ],
+  "correlation_id": "readiness-auto-enterprise-20260930T105100Z-14dd7208",
+  "current_step": "INSPECT_ENTERPRISE_TEST_JOURNEY",
+  "attempt": 1,
+  "evidence_ids": []
+}
