@@ -243,7 +243,7 @@ async function autonomyOpenRouter(req:any,res:any){
    if(!Array.isArray(agent.permissions)||!agent.permissions.includes('advisory_only'))return res.status(409).json({error:'AGENT_READONLY_EXECUTOR_NOT_AVAILABLE'})
    const run=await sb.rpc('autonomous_execute_readonly_specialist',{p_agent_id:agent.id})
    if(run.error)throw run.error
-   const job=run.data
+   const job=Array.isArray(run.data)?run.data[0]:run.data
    return res.status(200).json({ok:true,job_id:job?.id||null,status:job?.status||null,correlation_id:job?.correlation_id||null,result:job?.result||null,readonly:true,aggregate_only:true})
   }
   if(action!=='consult')return res.status(400).json({error:'Acción de agente inválida'})
