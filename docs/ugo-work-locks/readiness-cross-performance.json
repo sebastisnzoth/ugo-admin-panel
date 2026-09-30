@@ -1,0 +1,26 @@
+{
+  "readiness_id": "cross-performance",
+  "task_id": "readiness-cross-performance",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE",
+  "title": "Verify perceived performance and critical action latency",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:40:00Z",
+  "heartbeat_at": "2026-09-30T03:40:00Z",
+  "lease_expires_at": "2026-09-30T04:25:00Z",
+  "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "Cross-role Performance Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "preview-runtime"
+  ],
+  "correlation_id": "readiness-cross-performance-20260930T034000Z-c1097e3c",
+  "current_step": "LATENCY_AND_LOADER_RUNTIME_PROOF",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
