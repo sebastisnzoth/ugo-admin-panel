@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-errors",
   "job_id": "UGO-READINESS-CROSS-ERRORS-R2",
   "title": "Verify actionable errors and empty states with fault injection",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T10:49:00Z",
-  "heartbeat_at": "2026-09-30T11:00:00Z",
-  "lease_expires_at": "2026-09-30T11:45:00Z",
+  "heartbeat_at": "2026-09-30T11:03:30Z",
+  "lease_expires_at": "2026-09-30T11:03:30Z",
   "started_sha": "8e8ac4f233fb62fcdb8affb5617cfa3adb3ffb91",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -19,7 +19,7 @@
     "qa-lab"
   ],
   "correlation_id": "readiness-cross-errors-20260930T104900Z-8e8ac4f2-r2",
-  "current_step": "REVALIDATING_PROVEN_FIX_ON_LATEST_MAIN",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
@@ -29,7 +29,16 @@
     "github-run:36705243262",
     "github-job-runtime:109853835476",
     "github-job-judge:109854506684",
-    "github-job-sentinel:109854604090"
+    "github-job-sentinel:109854604090",
+    "github-pr:302",
+    "github-run:36705893309",
+    "github-job-runtime:109855929670",
+    "github-job-judge:109856329328",
+    "github-job-sentinel:109856389206",
+    "github-artifact:11092142476",
+    "github-artifact:11091289965",
+    "github-artifact:11091339750",
+    "repo-evidence:docs/evidence/readiness-cross-errors-20260930.json"
   ],
   "production_touched": false,
   "skills": [
@@ -37,5 +46,14 @@
     "ugo-qa",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "completed_at": "2026-09-30T11:03:30Z",
+  "verified_sha": "86f8f2d631edb717ecf51ad38ea46ad04aff9071",
+  "merged_main_sha": "58fc61d10eb5837cd0eb172b67b623768576950c",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false
+  }
 }
