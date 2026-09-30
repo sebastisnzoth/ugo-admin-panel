@@ -32,7 +32,7 @@ test('global client surfaces never mount service-scoped operations without an ex
  const surfaces=await read('src/features/client/ui/ClientOperationalSurfaces.tsx')
  for(const legacy of['ClientPaymentChoice','ClientLiveTracking','ClientCompletionReview','ServiceChat','AppLocationButton'])assert.doesNotMatch(surfaces,new RegExp(legacy))
  assert.match(surfaces,/screen==='home'&&!detailOpen&&<ClientRatingPrompt\/>/)
- assert.match(surfaces,/screen==='dispute'&&!detailOpen&&<DisputeDock role="client" openRequest\/>/)
+ assert.match(surfaces,/screen==='dispute'&&!detailOpen&&<><ClientSupportScreen\/><DisputeDock role="client" openRequest\/><\/>/)
 })
 
 test('Hugo can create another request while services already exist',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/cancelarlo antes de crear otro/)})
