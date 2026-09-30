@@ -60,46 +60,6 @@ function uiAction(value:unknown,role:'admin'|'superadmin'){
 }
 function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw Object.assign(new Error('GEMINI_API_KEY no configurada'),{status:503});return key}
 
-const HUGO_SERVICE_KEY=process.env.SUPABASE_SERVICE_ROLE_KEY
-const UUID_RE=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-const HUGO_DEPARTMENT:Record<string,number>={client:3,provider:4,admin:2,superadmin:1}
-async function persistHugoAudit(authority:Awaited<ReturnType<typeof authorizeHugo>>,body:JsonRecord){
- if(!SUPABASE_URL||!HUGO_SERVICE_KEY)throw Object.assign(new Error('Auditoría Hugo no configurada.'),{status:503,code:'AUDIT_BACKEND_UNAVAILABLE'})
- const correlationId=clean(body.correlation_id,80),action=clean(body.action,120),intent=clean(body.intent,500),serviceId=clean(body.service_id,80)
- if(!UUID_RE.test(correlationId)||!action||!intent)throw Object.assign(new Error('Traza Hugo inválida.'),{status:400,code:'INVALID_AUDIT_TRACE'})
- const role=authority.requestedRole
- const effect=asRecord(body.effect),response=asRecord(body.response)
- const admin=createClient(SUPABASE_URL,HUGO_SERVICE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
- const trace={intent,authority:{requested_role:role,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'},action,effect,audit:{correlation_id:correlationId},response,source:'hugo:native-voice-tool-call'}
- const{data:decision,error:decisionError}=await admin.from('autonomous_decision_ledger').insert({
-  department_id:HUGO_DEPARTMENT[role]||2,
-  decision:`HUGO_${action.toUpperCase()}`,
-  reason:'Authenticated Hugo tool action with explicit correlated trace.',
-  authority_class:'GREEN',
-  policy_version:'hugo-audit-v1',
-  evidence_refs:[{type:'hugo_trace',correlation_id:correlationId,service_id:UUID_RE.test(serviceId)?serviceId:null}],
-  authorization_result:'ALLOW',
-  correlation_id:correlationId,
- }).select('id').single()
- if(decisionError)throw decisionError
- const{data:evidence,error:evidenceError}=await admin.from('autonomous_evidence_ledger').insert({
-  evidence_type:'hugo_action_trace',
-  reference:`hugo://trace/${correlationId}`,
-  metadata:{...trace,decision_ledger_id:decision.id,actor_id:authority.user.id,service_id:UUID_RE.test(serviceId)?serviceId:null},
-  correlation_id:correlationId,
-  created_by:authority.user.id,
- }).select('id').single()
- if(evidenceError)throw evidenceError
- const{data:audit,error:auditError}=await admin.from('audit_log').insert({
-  evento:'HUGO_ACTION_TRACE',
-  actor_id:authority.user.id,
-  entidad_tipo:UUID_RE.test(serviceId)?'servicio':'hugo',
-  entidad_id:UUID_RE.test(serviceId)?serviceId:null,
-  detalles:{...trace,decision_ledger_id:decision.id,evidence_ledger_id:evidence.id},
- }).select('id').single()
- if(auditError)throw auditError
- return{ok:true,correlation_id:correlationId,ledgers:{decision_id:decision.id,evidence_id:evidence.id,audit_log_id:audit.id},stages:['INTENT','AUTHORITY','ACTION','EFFECT','AUDIT','RESPONSE']}
-}
 
 async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
  const key=geminiKey()
@@ -146,7 +106,6 @@ export default async function handler(req:RequestLike,res:ResponseLike){
  try{
   const body=asRecord(typeof req.body==='string'?JSON.parse(req.body):req.body)
   const authority=await authorizeHugo(req,body)
-  if(body.operation==='audit_tool_action')return res.status(200).json(await persistHugoAudit(authority,body))
   if(body.tts===true){
    const text=clean(body.text||body.message,360)
    if(!text)return res.status(400).json({error:'Texto requerido para voz.'})
