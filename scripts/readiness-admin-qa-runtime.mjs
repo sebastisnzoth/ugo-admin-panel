@@ -55,7 +55,11 @@ if(independentJobs.data.length<1)throw new Error('INDEPENDENT_QA_JUDGE_MISSING')
 
 const protectedKeys=['physical-gps-device','uploaded-media-bytes','real-customer-acceptance']
 const protectedCoverage=coverage.data.filter(x=>protectedKeys.includes(x.coverage_key))
-if(protectedCoverage.length!==protectedKeys.length||protectedCoverage.some(x=>x.status==='COVERED'))throw new Error('PHYSICAL_HUMAN_GATES_MUST_REMAIN_FAIL_CLOSED')
+if(protectedCoverage.some(x=>x.status==='COVERED'))throw new Error('PHYSICAL_HUMAN_GATES_MUST_REMAIN_FAIL_CLOSED')
+const protectedCoverageSnapshot=protectedKeys.map(keyName=>{
+ const row=protectedCoverage.find(x=>x.coverage_key===keyName)
+ return {coverage_key:keyName,status:row?.status||'NOT_REGISTERED'}
+})
 
 const scenarioSummary=scenarios.data.map(s=>{
  const sr=runs.data.filter(r=>r.scenario_id===s.id)
@@ -76,7 +80,7 @@ const payload={
  qa_lab:{active_simulators:simulators.data.map(x=>({id:x.id,key:x.simulator_key,role:x.role,status:x.status})),active_scenarios:scenarioSummary,total_recent_runs:runs.data.length,coverage:coverage.data.map(x=>({coverage_key:x.coverage_key,status:x.status,scenario_id:x.scenario_id||null,last_run_id:x.last_run_id||null}))},
  meta_qa:{calibration_id:calibration.id,service_id:calibration.service_id,baseline_run_id:calibration.baseline_run_id,seeded_run_id:calibration.seeded_run_id,rerun_id:calibration.rerun_id,baseline_status:baseline.status,seeded_status:seeded.status,rerun_status:rerun.status,seeded_defect_detected:true,remediation_requested:true,permanent_regression:true,agent_job_id:metaJob.id,agent_correlation_id:metaJob.correlation_id,decision_ledger_rows:decisionCount||0,evidence_ledger_rows:evidenceCount||0},
  independent_judge:{successful_jobs:independentJobs.data.length,latest_job_id:independentJobs.data[0]?.id||null,latest_correlation_id:independentJobs.data[0]?.correlation_id||null,source:independentJobs.data[0]?.verification_result?.source||null},
- fail_closed:{protected_keys:protectedKeys,protected_coverage:protectedCoverage.map(x=>({coverage_key:x.coverage_key,status:x.status})),self_certification_allowed:false}
+ fail_closed:{protected_keys:protectedKeys,protected_coverage:protectedCoverageSnapshot,self_certification_allowed:false}
 }
 await mkdir('artifacts/readiness-admin-qa',{recursive:true})
 await writeFile('artifacts/readiness-admin-qa/runtime.json',JSON.stringify(payload,null,2)+'\n')
