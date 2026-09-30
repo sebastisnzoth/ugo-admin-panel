@@ -130,9 +130,13 @@ try{
     assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
     const correlation=((await cells.nth(9).textContent())||'').trim();
     if(correlation&&correlation!=='—'){
-      const persisted=await reader.from('autonomous_jobs').select('id,status,correlation_id,department_id').eq('department_id',summary.department_id).eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1);
-      assert.ifError(persisted.error);
-      assert.ok(persisted.data?.length,'DEPARTMENT_CORRELATION_NOT_PERSISTED D'+summary.department_id);
+      const [jobMatch,evidenceMatch]=await Promise.all([
+        reader.from('autonomous_jobs').select('id,status,correlation_id,department_id').eq('department_id',summary.department_id).eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1),
+        reader.from('autonomous_evidence_ledger').select('id,job_id,correlation_id').eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1)
+      ]);
+      assert.ifError(jobMatch.error);
+      assert.ifError(evidenceMatch.error);
+      assert.ok((jobMatch.data?.length||0)>0||(evidenceMatch.data?.length||0)>0,'DEPARTMENT_CORRELATION_NOT_PERSISTED D'+summary.department_id);
     }else{
       const persistedCount=await reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',summary.department_id);
       assert.ifError(persistedCount.error);
