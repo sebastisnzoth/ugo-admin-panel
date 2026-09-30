@@ -1,0 +1,26 @@
+{
+  "schema_version": "UGO_WORK_LOCK_V1",
+  "readiness_id": "cross-security",
+  "task_id": "readiness-cross-security",
+  "job_id": "UGO-READINESS-CROSS-SECURITY",
+  "title": "Verify secrets, logs and privacy",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T14:33:00.000Z",
+  "heartbeat_at": "2026-09-30T14:33:00.000Z",
+  "lease_expires_at": "2026-09-30T15:18:00.000Z",
+  "started_sha": "6c70ccfabd3554f0abea274c7eb11e84df92ad4c",
+  "owner": "UGO",
+  "assigned_agent": "GPT_UGO",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "security-rls"
+  ],
+  "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa",
+  "current_step": "REVALIDATE_AND_SCAN",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
