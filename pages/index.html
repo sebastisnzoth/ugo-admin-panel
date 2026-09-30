@@ -831,8 +831,9 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
             '<p class="sub"><b>Estado de ejecución:</b> ' + esc(item.gate_reason || readinessGateLabel(item.gate_state)) + '</p>' +
             (item.pull_request ? '<p class="sub"><b>PR:</b> <a target="_blank" rel="noopener" href="' + esc(item.pull_request.html_url) + '">#' + esc(item.pull_request.number) + '</a> · ' + esc(item.pull_request.head_ref || '') + ' · evidencia: ' + esc(item.pull_request.evidence_status || 'pendiente') + ' · runtime: ' + esc(item.pull_request.runtime_status || 'pendiente') + '</p>' : '') +
             '<div class="cta-row">' +
+              (item.direct_action && ['AVAILABLE','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state) ? '<a class="btn cta github" target="_blank" rel="noopener" data-github-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" href="' + esc(item.direct_action.url) + '">' + esc(item.direct_action.label || 'Resolver en GitHub') + '</a>' : '') +
               '<button class="btn cta chatgpt" type="button" data-readiness-id="' + esc(item.id) + '" data-readiness-group="' + esc(group.id) + '" ' + (['AVAILABLE','HUMAN_REQUIRED','STALE_LOCK','FAILED_REQUIRES_REVIEW','FIXED_IN_PR','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING'].includes(item.gate_state) ? '' : 'disabled') + '>' +
-                (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'HUMAN_DEFERRED' ? 'Dejada para el final' : item.gate_state === 'STALE_LOCK' ? 'Reconciliar lock' : item.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Revisar fallo' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : 'Resolver con UGO Maestro') +
+                (item.gate_state === 'VERIFIED' ? 'VERIFIED' : item.gate_state === 'HUMAN_REQUIRED' ? 'Ver instrucciones para Sergio' : item.gate_state === 'HUMAN_DEFERRED' ? 'Dejada para el final' : item.gate_state === 'STALE_LOCK' ? 'Revisar / desarrollar con GPT' : item.gate_state === 'FAILED_REQUIRES_REVIEW' ? 'Corregir con GPT / UGO' : item.gate_state === 'IN_PROGRESS' ? 'En proceso' : item.gate_state === 'BLOCKED_DEPENDENCY' ? 'Bloqueado' : item.gate_state === 'WAITING_RESOURCE_CAPACITY' ? 'Esperando recurso' : item.gate_state === 'QUEUED_CAPACITY' ? 'En cola' : item.direct_action ? 'Desarrollar con GPT / UGO' : 'Resolver con GPT / UGO Maestro') +
               '</button>' +
               '<span class="pill ' + (item.gate_state === 'AVAILABLE' ? 'ugo' : item.gate_state === 'VERIFIED' ? 'ugo' : item.gate_state === 'IN_PROGRESS' ? 'accent' : item.gate_state === 'HUMAN_DEFERRED' ? 'human' : 'pending') + '">' + esc(readinessGateLabel(item.gate_state)) + '</span>' +
             '</div>' +
@@ -1023,6 +1024,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.querySelectorAll('[data-github-step-id]').forEach(link => {
       const step = allSteps.find(x => x.id === link.dataset.githubStepId)
       if (step && step.direct_action && step.gate_state === 'AVAILABLE') link.onclick = () => openGitHubActionForStep(step)
+    })
+    document.querySelectorAll('[data-github-readiness-id]').forEach(link => {
+      const group = (s.functional_readiness?.groups || []).find(g => g.id === link.dataset.readinessGroup)
+      const item = group?.items?.find(x => x.id === link.dataset.githubReadinessId)
+      if (item?.direct_action) link.onclick = () => {
+        saveDispatch(item, 'GITHUB_DIRECT')
+        return true
+      }
     })
     const assurance = Object.fromEntries((s.assurance || []).map(x=>[x.name,x.status]))
     document.getElementById('metaAuditStatus').textContent = assurance.META_AUDIT || 'UNVERIFIED'
