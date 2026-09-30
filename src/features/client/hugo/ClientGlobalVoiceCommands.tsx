@@ -6,7 +6,7 @@ import{useClientFlow}from'../flow/clientFlow'
 
 export function ClientGlobalVoiceCommands(){
  const flow=useClientFlow()
- const handle=useCallback(async(source:string)=>{
+ const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeVoiceText(source)
   if(!value)return false
   if(/\b(parar voz|detener voz|cerrar hugo|cancelar escucha|parar escuta|fechar hugo)\b/.test(value)){emitUgoUiEvent(UGO_UI_EVENTS.globalVoiceStop);return true}
@@ -20,6 +20,7 @@ export function ClientGlobalVoiceCommands(){
   if(/\b(nuevo pedido|nuevo servicio|pedir servicio|novo pedido|novo servico|solicitar servico)\b/.test(value)){flow.navigate('request');return true}
   if(/\b(necesito|quiero|busco|preciso|quero|procurando|contratar)\b/.test(value)){
    flow.publishHugoIntent({text:source,categoryHint:null,description:source,urgent:/\b(urgente|agora|ahora|emergencia)\b/.test(value)})
+   if(engine==='browser-speech'){try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(/\b(preciso|quero|procurando|contratar)\b/.test(value)?'Entendi. Abri o pedido com o que você me disse.':'Entendí. Abrí el pedido con lo que me dijiste.');utterance.lang=/\b(preciso|quero|procurando|contratar)\b/.test(value)?'pt-BR':'es-AR';window.speechSynthesis?.speak(utterance)}catch{}}
    return true
   }
   return false
