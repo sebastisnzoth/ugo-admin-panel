@@ -38,6 +38,17 @@ test('authoritative DONE lock verifies control and unlocks dependent work', () =
   assert.equal(items.find(x=>x.id==='b').gate_state,'AVAILABLE')
 })
 
+test('authoritative DONE lock also accepts persisted validation schema', () => {
+  const locks=[{
+    task_id:'readiness-a',readiness_id:'a',status:'DONE',started_at:'2026-09-29T18:00:00Z',
+    validation:{runtime:'PASS',judge:'PASS',sentinel:'PASS',production_touched:false},evidence_ids:['evidence:a']
+  }]
+  const {readiness}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  assert.equal(items.find(x=>x.id==='a').gate_state,'VERIFIED')
+  assert.equal(items.find(x=>x.id==='b').gate_state,'AVAILABLE')
+})
+
 test('active readiness lock consumes global slot and resource', () => {
   const locks=[{
     task_id:'readiness-a',readiness_id:'a',status:'IN_PROGRESS',started_at:'2026-09-29T19:30:00Z',

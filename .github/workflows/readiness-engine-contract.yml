@@ -1,0 +1,25 @@
+name: UGO Readiness Engine Contract
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/ugo-readiness-engine.mjs"
+      - "tests/contracts/ugo-readiness-engine.test.mjs"
+      - ".github/workflows/readiness-engine-contract.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  readiness-engine-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Readiness engine regression contract
+        run: node --test tests/contracts/ugo-readiness-engine.test.mjs

@@ -27,7 +27,7 @@ const latestReadinessLocks = locks => {
 }
 
 const validatorPass = lock => {
-  const result = lock?.validators_result || {}
+  const result = lock?.validators_result || lock?.validation || {}
   const judge = result.Judge || result.judge
   const sentinel = result.Sentinel || result.sentinel
   const evidence = (Array.isArray(lock?.evidence_ids) && lock.evidence_ids.length > 0)
