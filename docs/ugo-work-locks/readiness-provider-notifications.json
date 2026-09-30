@@ -2,34 +2,57 @@
   "readiness_id": "provider-notifications",
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
-  "title": "Verify provider notifications in UGO TEST",
-  "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T11:30:00Z",
-  "heartbeat_at": "2026-09-30T11:32:00Z",
-  "lease_expires_at": "2026-09-30T12:17:00Z",
-  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "title": "Verify provider-notifications in UGO TEST",
+  "status": "DONE",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider Notifications Runtime Agent",
-  "skills": [
-    "ugo-readiness-orchestrator",
-    "ugo-provider",
-    "ugo-notifications",
-    "ugo-runtime-validation",
-    "ugo-evidence-judge"
-  ],
   "validators": [
     "Judge",
     "Sentinel"
   ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
   "resources": [
     "notifications"
   ],
-  "correlation_id": "readiness-provider-notifications-20260930T113000Z-0833841a",
-  "current_step": "WAITING_CORE_CI_AND_RUNTIME_PROOF",
+  "correlation_id": "readiness-provider-notifications-20260930-current-main",
+  "current_step": "VERIFIED",
   "attempt": 1,
+  "started_at": "2026-09-30T11:30:00Z",
+  "heartbeat_at": "2026-09-30T12:23:00Z",
+  "lease_expires_at": "2026-09-30T12:23:00Z",
+  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "completed_at": "2026-09-30T12:23:00Z",
+  "finished_at": "2026-09-30T12:23:00Z",
+  "verified_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_validated_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "verified_runtime_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "result": "VERIFIED",
+  "production_touched": false,
   "evidence_ids": [
-    "commit:d339ab5e6b8d4ee345b1d85aa656f278beaca24a"
+    "github-run:36714117294",
+    "github-artifact:11094754299",
+    "sha256:4d411a10796457a54e835f0b09b51087636731ef3248c4f8bbaf51b0f0574cc2",
+    "repo:docs/evidence/readiness-provider-notifications-20260930-current-main.json"
   ],
-  "production_touched": false
+  "evidence_path": "docs/evidence/readiness-provider-notifications-20260930-current-main.json",
+  "evidence_commit_sha": "bcd44d1b9bffe437b73693931b84216403c9e819",
+  "artifact_digest": "sha256:4d411a10796457a54e835f0b09b51087636731ef3248c4f8bbaf51b0f0574cc2",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z",
+    "production_touched": false
+  },
+  "result_summary": "UGO TEST verified provider offer, assignment, service-change and message notifications without refresh, with tone/vibration."
 }
