@@ -1,5 +1,6 @@
 import{createClient}from'@supabase/supabase-js'
 import{decideHugoAuthority,normalizeHugoRequestedRole}from'./authority'
+import{askHugoModel}from'./modelRouter'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
@@ -62,16 +63,10 @@ function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw 
 
 
 async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
- const key=geminiKey()
  const safeSystem=sanitizeForModel(system,12000)
- const safeHistory=history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:sanitizeForModel(m.content,1200)}]}})
+ const safeHistory=history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'assistant':'user',content:sanitizeForModel(m.content,1200)}})
  const safeMessage=sanitizeForModel(message,1800)
- const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:safeSystem}]},contents:[...safeHistory,{role:'user',parts:[{text:safeMessage}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
- const payload:unknown=await response.json().catch(()=>({}))
- if(!response.ok)throw Object.assign(new Error(clean(nested(payload,'error','message'))||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
- const text=clean(parts(nested(payload,'candidates','0','content','parts')).map(p=>p.text||'').join(''),5000)
- if(!text)throw Object.assign(new Error('Gemini no devolvió contenido'),{status:502})
- return{text,model:MODEL}
+ return askHugoModel(safeMessage,safeHistory,safeSystem,jsonMode,MODEL)
 }
 
 function sampleRateFromMime(mime:string){const match=String(mime||'').match(/rate=(\d+)/i),value=Number(match?.[1]||24000);return Number.isFinite(value)&&value>0?value:24000}
@@ -161,13 +156,13 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
   const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
-  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
+  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
   console.error('Hugo chat failed',error)
   const info=asRecord(error),status=Number(info.status)||502
   if(info.retryAfter)res.setHeader('Retry-After',String(info.retryAfter))
   const message=error instanceof Error?error.message:'Hugo no pudo responder ahora.'
   const nextStep=status===401?'Iniciá sesión nuevamente y reintentá.':status===403?'Revisá que tu cuenta tenga permiso para esta acción y reintentá.':status===429?'Esperá un momento y reintentá.':status===503||status===504?'Reintentá en unos instantes; el resto de UGO sigue disponible.':'Reintentá la acción. Si vuelve a fallar, seguí usando UGO sin voz y reportá el incidente.'
-  return res.status(status>=400&&status<600?status:502).json({error:message,error_code:clean(info.code,80)||undefined,authority:info.authority||undefined,hugo_mensaje:`${message} ${nextStep}`,next_step:nextStep,accion:null,ui_action:null,datos:null})
+  return res.status(status>=400&&status<600?status:502).json({error:message,error_code:clean(info.code,80)||undefined,correlation_id:clean(info.correlation_id,80)||undefined,authority:info.authority||undefined,hugo_mensaje:`${message} ${nextStep}`,next_step:nextStep,accion:null,ui_action:null,datos:null})
  }
 }
