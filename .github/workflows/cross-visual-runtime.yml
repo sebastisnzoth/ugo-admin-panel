@@ -1,3 +1,4 @@
+# retry: 2026-09-30 provider-real-login r3
 name: UGO Cross Visual Runtime TEST
 
 on:
