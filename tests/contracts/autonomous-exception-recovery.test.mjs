@@ -8,6 +8,7 @@ const judge=fs.readFileSync('scripts/autonomous-exception-recovery-judge.mjs','u
 const workerGuard=fs.readFileSync('supabase/migrations/20260930035000_restore_service_role_worker_recovery.sql','utf8')
 const statePreservation=fs.readFileSync('supabase/migrations/20260930035500_exception_recovery_preserve_runtime_state.sql','utf8')
 const currentWorkerGuard=fs.readFileSync('supabase/migrations/20260930036000_service_role_claims_json_guard.sql','utf8')
+const protectedJudge=fs.readFileSync('supabase/migrations/20260930036500_exception_recovery_protected_judge.sql','utf8')
 
 test('exception recovery is TEST-only, service-role-only and uses UGO worker recovery',()=>{
   for(const x of['autonomous_execute_exception_recovery','AUTONOMOUS_LEASE_TIMEOUT','autonomous_worker_cycle','autonomous_recovery_audits','EXCEPTION_DETECTED','EXCEPTION_RECOVERY_VERIFICATION'])assert.ok(sql.includes(x),x)
@@ -18,9 +19,19 @@ test('exception recovery is TEST-only, service-role-only and uses UGO worker rec
 })
 
 test('independent judge requires persisted incident, recovery audit, ledgers and safe sentinel state',()=>{
-  for(const x of['development_incidents','autonomous_recovery_audits','autonomous_decision_ledger','autonomous_evidence_ledger','audit_log','SENTINEL_STATE_PRESERVATION_FAILED'])assert.ok(judge.includes(x),x)
-  assert.match(judge,/manual_sql_state_edit/)
-  assert.match(judge,/manual_github_state_edit/)
+  for(const x of[
+    'development_incidents',
+    'autonomous_recovery_audits',
+    'autonomous_decision_ledger',
+    'autonomous_evidence_ledger',
+    'audit_log',
+    'manual_sql_state_edit',
+    'manual_github_state_edit',
+    'SENTINEL_STATE_PRESERVATION_FAILED'
+  ])assert.ok(protectedJudge.includes(x),x)
+  assert.match(protectedJudge,/revoke all on function public\.autonomous_judge_exception_recovery\(uuid\) from public,anon,authenticated/i)
+  assert.match(protectedJudge,/grant execute on function public\.autonomous_judge_exception_recovery\(uuid\) to service_role/i)
+  assert.match(judge,/autonomous_judge_exception_recovery/)
 })
 
 
@@ -51,6 +62,7 @@ test('recovery preserves active autonomy mode and unrelated scoped kill switches
   ])assert.ok(statePreservation.includes(x),x)
   assert.match(runtime,/modePreserved/)
   assert.match(runtime,/kill_switches_preserved/)
-  assert.match(judge,/initial_kill_switch_ids/)
-  assert.match(judge,/SENTINEL_STATE_PRESERVATION_FAILED/)
+  assert.match(protectedJudge,/initial_kill_switch_ids/)
+  assert.match(protectedJudge,/SENTINEL_STATE_PRESERVATION_FAILED/)
+  assert.match(judge,/killSwitchesPreserved/)
 })
