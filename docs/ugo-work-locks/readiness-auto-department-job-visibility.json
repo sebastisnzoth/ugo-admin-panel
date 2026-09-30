@@ -5,8 +5,8 @@
   "title": "Expose active and historical autonomous jobs per department in Super Admin",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-29T21:05:00Z",
-  "heartbeat_at": "2026-09-30T00:40:00Z",
-  "lease_expires_at": "2026-09-30T01:25:00Z",
+  "heartbeat_at": "2026-09-30T01:32:00Z",
+  "lease_expires_at": "2026-09-30T02:17:00Z",
   "started_sha": "e7bfe362cdcc214b594aa8183e6478488f9ae81b",
   "owner": "UGO",
   "department": "Producto / Frontend / Empresa Autónoma",
@@ -26,14 +26,15 @@
     "super-admin-ui"
   ],
   "correlation_id": "ugo-auto-department-job-visibility-20260929T210500Z",
-  "current_step": "FIX_RUNTIME_HARNESS_AND_REPROVE",
-  "attempt": 1,
+  "current_step": "RECLAIM_STALE_LOCK_AND_FIX_RUNTIME_AUTH",
+  "attempt": 2,
   "evidence_ids": [
     "github:108df272df38eca1a868dd210aa41c3b083fd521",
     "github:6904d03476f7b0ddc2a6f5b7bd362de8e9ab75d2",
     "github:bcbd0e611cd30b109b018bdc20bd67d6d240c7a5",
     "github-actions:core-ci:36634174615",
     "github-actions:super-admin-ui-runtime:36634174789",
-    "github-actions:super-admin-ui-runtime:36634174789:FAIL_AUTONOMY_HYDRATION"
+    "github-actions:super-admin-ui-runtime:36634174789:FAIL_AUTONOMY_HYDRATION",
+    "reclaim:stale-lease:2026-09-30T01:32:00Z"
   ]
 }
