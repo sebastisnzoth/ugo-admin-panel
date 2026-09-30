@@ -19,13 +19,13 @@ assert.ok(login.session&&login.user)
 
 const {data:services,error:servicesError}=await auth.from('servicios')
  .select('id,numero,estado,tarifa,created_at,completado_at,programado_para')
- .eq('cliente_id',login.user.id).eq('estado','completado')
- .order('created_at',{ascending:false}).limit(80)
+ .eq('cliente_id',login.user.id)
+ .order('created_at',{ascending:false}).limit(200)
 assert.ifError(servicesError)
 assert.ok(services?.length,'UGO_TEST_HISTORY_COMPLETED_SERVICE_REQUIRED')
 
 let fixture=null
-for(const service of services){
+for(const service of services.filter(service=>service.estado==='completado')){
  const [{data:payments,error:pe},{data:ratings,error:re},{data:evidence,error:ee}]=await Promise.all([
   auth.from('pagos').select('id,estado,metodo,monto_bruto').eq('servicio_id',service.id).limit(1),
   auth.from('resenas').select('id,autor_tipo,puntuacion,comentario').eq('servicio_id',service.id),
@@ -34,8 +34,13 @@ for(const service of services){
  if(pe||re||ee)continue
  const clientRating=(ratings||[]).find(x=>x.autor_tipo==='cliente')
  const providerRating=(ratings||[]).find(x=>x.autor_tipo==='proveedor')
- if(payments?.[0]&&clientRating&&providerRating&&evidence?.[0]){
-  fixture={service,payment:payments[0],clientRating,providerRating,evidence}
+ let authorizedEvidence=null
+ for(const candidate of evidence||[]){
+  const {data:signed,error:signedError}=await auth.storage.from('service-evidence').createSignedUrl(candidate.storage_path,120)
+  if(!signedError&&signed?.signedUrl){authorizedEvidence={...candidate,signed_url:signed.signedUrl};break}
+ }
+ if(payments?.[0]&&clientRating&&providerRating&&authorizedEvidence){
+  fixture={service,payment:payments[0],clientRating,providerRating,evidence:[authorizedEvidence]}
   break
  }
 }

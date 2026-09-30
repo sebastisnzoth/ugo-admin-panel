@@ -241,10 +241,33 @@ async function autonomyOpenRouter(req:any,res:any){
   if(!agent||agent.status==='DISABLED')return res.status(409).json({error:'AGENT_NOT_OPERATIONAL'})
   if(action==='execute_readonly'){
    if(!Array.isArray(agent.permissions)||!agent.permissions.includes('advisory_only'))return res.status(409).json({error:'AGENT_READONLY_EXECUTOR_NOT_AVAILABLE'})
-   const run=await sb.rpc('autonomous_execute_readonly_specialist',{p_agent_id:agent.id})
+   const generic=agent.permissions.includes('generic_readonly_specialist')
+   const executor=generic?'autonomous_execute_cataloged_readonly_agent':'autonomous_execute_readonly_specialist'
+   const judge=generic?'autonomous_judge_cataloged_readonly_agent_job':'autonomous_judge_readonly_specialist_job'
+   const sentinel=generic?'autonomous_sentinel_cataloged_readonly_agent_job':'autonomous_sentinel_readonly_specialist_job'
+   const run=await sb.rpc(executor,{p_agent_id:agent.id})
    if(run.error)throw run.error
    const job=Array.isArray(run.data)?run.data[0]:run.data
-   return res.status(200).json({ok:true,job_id:job?.id||null,status:job?.status||null,correlation_id:job?.correlation_id||null,result:job?.result||null,readonly:true,aggregate_only:true})
+   if(!job?.id)throw new Error('READONLY_AGENT_JOB_NOT_PERSISTED')
+   const judged=await sb.rpc(judge,{p_job_id:job.id});if(judged.error)throw judged.error
+   const guarded=await sb.rpc(sentinel,{p_job_id:job.id});if(guarded.error)throw guarded.error
+   return res.status(200).json({ok:true,job_id:job.id,status:job.status||null,correlation_id:job.correlation_id||null,result:job.result||null,readonly:true,aggregate_only:true,judge:'PASS',sentinel:'PASS',executor})
+  }
+  if(action==='create_work_order'){
+   const summary=safeText(req.body?.summary,500),actionType=safeText(req.body?.action_type||'CAPABILITY_WORK_ORDER',80).toUpperCase().replace(/[^A-Z0-9_.:-]/g,'_')
+   if(!summary)return res.status(400).json({error:'summary requerida'})
+   if(!Array.isArray(agent.permissions)||!agent.permissions.includes('action_work_order'))return res.status(409).json({error:'AGENT_ACTION_EXECUTOR_NOT_AVAILABLE'})
+   const idem='superadmin-work-order:'+agent.id+':'+createHash('sha256').update(actionType+'|'+summary).digest('hex')
+   const prepared=await sb.rpc('autonomous_prepare_agent_work_order',{p_agent_id:agent.id,p_action_type:actionType,p_summary:summary,p_payload:{requested_by:user.id,source:'SUPERADMIN_UI'},p_idempotency_key:idem})
+   if(prepared.error)throw prepared.error
+   let job=Array.isArray(prepared.data)?prepared.data[0]:prepared.data
+   if(!job?.id)throw new Error('AGENT_WORK_ORDER_NOT_PERSISTED')
+   if(job.status==='QUEUED'){
+    const executed=await sb.rpc('autonomous_execute_work_order_job',{p_job_id:job.id})
+    if(executed.error)throw executed.error
+    job=Array.isArray(executed.data)?executed.data[0]:executed.data
+   }
+   return res.status(200).json({ok:true,job_id:job.id,status:job.status,correlation_id:job.correlation_id,authority_class:job.authority_class,approval_count:job.approval_count||0,result:job.result||null})
   }
   if(action!=='consult')return res.status(400).json({error:'Acción de agente inválida'})
   if(!question)return res.status(400).json({error:'question requerida'})

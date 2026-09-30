@@ -1,22 +1,22 @@
 {
-  "schema_version": "UGO_AUTO_AGENTS_READINESS_EVIDENCE_V2",
+  "schema_version": "UGO_AUTO_AGENTS_READINESS_EVIDENCE_V3",
   "readiness_id": "auto-agents",
   "task_id": "readiness-auto-agents",
   "job_id": "UGO-READINESS-AUTO-AGENTS",
   "environment": "UGO TEST",
-  "source_sha": "a95ef512714dbb7b877dd9b59ef832759de3aa84",
+  "source_sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
   "result": "PASS",
   "counts": {
     "cataloged": 118,
-    "enabled": 38,
-    "executed": 38,
-    "verified_enabled": 38,
-    "disabled_cataloged_only": 80
+    "enabled": 118,
+    "executed": 118,
+    "verified_enabled": 118,
+    "disabled_cataloged_only": 0
   },
   "delta": {
-    "previous_verified": 22,
-    "d3_d4_newly_verified": 16,
-    "total_verified_now": 38
+    "previous_verified": 38,
+    "newly_verified": 80,
+    "total_verified_now": 118
   },
   "d3_d4": {
     "departments": [
@@ -49,10 +49,11 @@
   "judge": "PASS",
   "sentinel": "PASS",
   "production_touched": false,
-  "created_at": "2026-09-30T02:07:07.915670Z",
+  "created_at": "2026-09-30T02:36:00Z",
   "notes": [
-    "Authoritative UGO TEST query returned 118 total, 38 enabled, 38 executed, 38 Judge PASS, 38 Sentinel PASS, 38 verified, 80 disabled.",
-    "The 16 D3/D4 specialists are now real governed read-only executors, not catalog-only placeholders.",
+    "Authoritative UGO TEST verification now reports 118 cataloged, enabled, executed and Judge/Sentinel-verified agents.",
+    "The 80 newly enabled specialists use governed read-only advisory execution; mutation capability remains capability-specific.",
+    "Source proof: docs/evidence/ugo-create-all-agents-20260930.json and GitHub Actions run 36660445041.",
     "No production environment was touched."
   ]
 }

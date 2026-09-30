@@ -1,0 +1,42 @@
+{
+  "readiness_id": "client-camera",
+  "task_id": "readiness-client-camera",
+  "job_id": "UGO-READINESS-CLIENT-CAMERA",
+  "environment": "UGO TEST",
+  "verified_runtime_sha": "5a54f772ee7646ae14df36547fb5a6aee0fca175",
+  "workflow_run_id": 36660251797,
+  "workflow_job_id": 109713202425,
+  "artifact_id": 11073858157,
+  "artifact_name": "client-camera-runtime-5a54f772ee7646ae14df36547fb5a6aee0fca175",
+  "artifact_digest": "sha256:a9d3d976272c3f29421b356ab62e15fa5013f28dbe6926dc563a500e773f53c9",
+  "runtime_proof": {
+    "draft_id": "5e20ee64-715e-4b3f-923d-751cf3404f9c",
+    "evidence_id": "79eabeb5-6502-4b18-8632-0167d542182c",
+    "storage_bytes": 68,
+    "picker_cancelled_without_persistence": true,
+    "camera_permission_error_visible": true,
+    "file_upload_via_ui": true,
+    "db_row_persisted": true,
+    "storage_bytes_persisted": true,
+    "request_draft_correlated": true,
+    "ui_cleanup_row_deleted": true
+  },
+  "validators": {
+    "Judge": {
+      "status": "PASS",
+      "sha": "5a54f772ee7646ae14df36547fb5a6aee0fca175",
+      "hardware_final_required": true,
+      "checked_at": "2026-09-30T02:32:53.228Z"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "sha": "5a54f772ee7646ae14df36547fb5a6aee0fca175",
+      "checked_at": "2026-09-30T02:32:53.270Z"
+    }
+  },
+  "autonomous_result": "PASS",
+  "physical_hardware_result": "PENDING_HUMAN_FINAL",
+  "final_status": "HUMAN_FINAL",
+  "production_touched": false,
+  "completed_at": "2026-09-30T02:32:54Z"
+}

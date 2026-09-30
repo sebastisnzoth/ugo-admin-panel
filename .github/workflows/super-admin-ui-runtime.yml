@@ -85,7 +85,7 @@ jobs:
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 30); do
-            if curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null; then break; fi
+            if curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null 2>&1; then break; fi
             sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=admin" >/dev/null

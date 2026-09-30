@@ -99,7 +99,7 @@ test('Admin voice executes bounded reads through the same Gemini Live tool chann
  assert.match(adminOrb,/admin_get_operational_summary/)
  assert.match(adminOrb,/admin_find_service/)
  assert.match(adminOrb,/admin_find_user/)
- assert.doesNotMatch(adminOrb,/speechSynthesis/)
+ assert.match(adminOrb,/engine==='browser-speech'/)\n assert.match(adminOrb,/\/api\/hugo\/chat/)\n assert.match(adminOrb,/SpeechSynthesisUtterance/)
 })
 
 

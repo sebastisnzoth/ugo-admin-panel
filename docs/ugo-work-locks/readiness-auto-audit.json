@@ -1,0 +1,32 @@
+{
+  "readiness_id": "auto-audit",
+  "task_id": "readiness-auto-audit",
+  "job_id": "UGO-READINESS-AUTO_AUDIT",
+  "title": "Verify independent Judge/Sentinel findings, remediation and re-audit",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T02:41:00Z",
+  "heartbeat_at": "2026-09-30T02:41:00Z",
+  "lease_expires_at": "2026-09-30T03:26:00Z",
+  "started_sha": "d3644148b2f13deba9eeac30374ab0057a417a09",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "D14 Continuous Audit Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-autonomous-company",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "d14-audit",
+    "audit-ledger"
+  ],
+  "correlation_id": "readiness-auto-audit-20260930T024100Z-d3644148",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "evidence_ids": []
+}

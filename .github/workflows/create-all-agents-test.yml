@@ -1,0 +1,43 @@
+name: UGO Create All Agents TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api/test.ts"
+      - "src/mvp/AutonomousWorkforceControlCenter.tsx"
+      - "supabase/migrations/20260930023500_create_all_agents_readonly_runtime.sql"
+      - "tests/contracts/create-all-agents-runtime.test.mjs"
+      - ".github/workflows/create-all-agents-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-create-all-agents-test
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: All 118 governed agents
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: TypeScript build
+        run: npx tsc -b
+      - name: Agent contracts
+        run: >
+          node --test
+          tests/contracts/create-all-agents-runtime.test.mjs
+          tests/contracts/superadmin-autonomous-agents.test.mjs
+          tests/contracts/superadmin-workforce-control-center.test.mjs
+          tests/contracts/autonomous-agents-readiness.test.mjs

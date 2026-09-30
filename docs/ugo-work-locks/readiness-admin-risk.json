@@ -3,35 +3,44 @@
   "task_id": "readiness-admin-risk",
   "job_id": "UGO-READINESS-ADMIN-RISK",
   "title": "Verify Risk & Audit findings, ledgers, blockers and evidence links in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T00:40:30Z",
-  "heartbeat_at": "2026-09-30T02:25:30Z",
-  "lease_expires_at": "2026-09-30T03:10:30Z",
+  "heartbeat_at": "2026-09-30T02:27:30Z",
+  "lease_expires_at": "2026-09-30T03:12:30Z",
   "started_sha": "9775cbbbcdec959e9bdc16b47a8df4e6bac039e8",
+  "completed_at": "2026-09-30T02:27:30Z",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Risk & Audit Runtime Agent",
   "validators": ["Judge","Sentinel"],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
   "resources": ["audit-ledger"],
   "correlation_id": "readiness-admin-risk-20260930T004030Z-de88adb6",
-  "current_step": "DEDICATED_RISK_RUNTIME_RETRY_AFTER_BUILD_REPAIR",
+  "current_step": "VERIFIED",
   "attempt": 3,
   "evidence_ids": [
     "code:risk-audit-blockers-ledgers-ui",
     "contract:admin-risk-surface",
-    "github:0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
-    "github-actions:run:36651659263",
-    "github-actions:run:36651659263:FAIL_UNRELATED_DEPARTMENT_VOLATILITY",
-    "reconcile:stale-lock:20260930T022330Z",
-    "github-actions:run:36659675404:FAIL_UNRELATED_TYPESCRIPT",
-    "github:9775cbbbcdec959e9bdc16b47a8df4e6bac039e8"
+    "github-actions:run:36659787889",
+    "github-actions:job:109711772410",
+    "github-actions:artifact:11074121044",
+    "github:1321ddec1149bf2ec6ed2057225cafb3454610d5",
+    "docs/evidence/readiness-admin-risk-20260930.json"
   ],
+  "evidence_path": "docs/evidence/readiness-admin-risk-20260930.json",
+  "evidence_commit_sha": "3707733f907eee1306ed3373e6de0d8aa99cfa26",
+  "tested_sha": "1321ddec1149bf2ec6ed2057225cafb3454610d5",
   "production_touched": false,
   "skills": ["risk-audit","audit-ledger","ugo-runtime-validation","ugo-evidence-judge"],
   "runtime": {
     "workflow": "UGO Readiness Admin Risk TEST",
-    "run_id": null,
-    "sha": "9775cbbbcdec959e9bdc16b47a8df4e6bac039e8",
-    "status": "retry_pending"
+    "run_id": 36659787889,
+    "job_id": 109711772410,
+    "artifact_id": 11074121044,
+    "sha": "1321ddec1149bf2ec6ed2057225cafb3454610d5",
+    "status": "success"
   }
 }

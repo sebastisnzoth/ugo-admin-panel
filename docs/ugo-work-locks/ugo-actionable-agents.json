@@ -1,0 +1,31 @@
+{
+  "task_id": "ugo-actionable-agents",
+  "job_id": "UGO-ACTIONABLE-AGENTS-20260930",
+  "title": "Make all UGO agents actionable through governed capability executors",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T02:45:00Z",
+  "heartbeat_at": "2026-09-30T02:47:00Z",
+  "lease_expires_at": "2026-09-30T03:32:00Z",
+  "started_sha": "bab776c83620e49b3ecb65bf7a4bed9809eefdec",
+  "owner": "UGO",
+  "assigned_agent": "Autonomous Capability Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-registry",
+    "ugo-test-worker"
+  ],
+  "correlation_id": "ugo-actionable-agents-20260930T024500Z",
+  "current_step": "IMPLEMENT_ACTION_EXECUTOR",
+  "attempt": 1,
+  "evidence_ids": [],
+  "department": "UGO Empresa Autónoma",
+  "skills": [
+    "ugo-autonomous-company",
+    "ugo-agent-orchestration",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
+}

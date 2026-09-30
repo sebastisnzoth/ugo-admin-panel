@@ -28,7 +28,9 @@ const browser=await chromium.launch({headless:true})
 const context=await browser.newContext({viewport:{width:390,height:844}})
 const page=await context.newPage()
 const pageErrors=[]
+const consoleErrors=[]
 page.on('pageerror',error=>pageErrors.push(String(error?.stack||error)))
+page.on('console',message=>{if(message.type()==='error')consoleErrors.push(message.text())})
 await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
 
 let draftId=''
@@ -68,7 +70,15 @@ try{
 
  const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl7nZkAAAAASUVORK5CYII=','base64')
  await fileInput.setInputFiles({name:'ugo-readiness-camera.png',mimeType:'image/png',buffer:png})
- await page.locator('.ugo-request-evidence-grid figure').first().waitFor({state:'visible',timeout:20000})
+ await page.waitForFunction(()=>!document.querySelector('.ugo-request-evidence-upload-actions button')?.textContent?.includes('Subiendo'),null,{timeout:20000}).catch(()=>{})
+ const figure=page.locator('.ugo-request-evidence-grid figure').first()
+ if(!(await figure.isVisible().catch(()=>false))){
+   const alertText=await page.getByRole('alert').first().innerText().catch(()=>null)
+   const {data:diagnosticRows,error:diagnosticError}=await auth.from('evidencias_solicitud').select('id,storage_path,draft_id,metadata').eq('cliente_id',login.user.id).eq('draft_id',draftId).is('servicio_id',null)
+   const diagnostic={alertText,consoleErrors,diagnosticRows,diagnosticError:diagnosticError?String(diagnosticError.message||diagnosticError):null}
+   await fs.writeFile('artifacts/client-camera-diagnostic.json',JSON.stringify(diagnostic,null,2)+'\n')
+   throw new Error('CLIENT_CAMERA_UPLOAD_NOT_VISIBLE '+JSON.stringify(diagnostic))
+ }
  await page.waitForFunction(()=>document.querySelectorAll('.ugo-request-evidence-grid figure').length===1,null,{timeout:15000})
 
  const {data:rows,error:rowError}=await auth.from('evidencias_solicitud')
@@ -110,6 +120,7 @@ try{
   hardware_final_required:true,
   result:'PASS',
   page_errors:pageErrors,
+  console_errors:consoleErrors,
   completed_at:new Date().toISOString()
  }
  await fs.writeFile('artifacts/client-camera-runtime.json',JSON.stringify(evidence,null,2)+'\n')
