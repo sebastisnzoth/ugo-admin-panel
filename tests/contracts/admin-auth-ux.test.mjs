@@ -22,3 +22,13 @@ test('admin feature shell keeps the operational panel mounted during migration',
   assert.match(shell, /return <AdminPhase2\/>/)
   assert.doesNotMatch(shell, /módulos operativos se migran/)
 })
+
+
+test('superadmin command center reuses the mounted admin session and still verifies active superadmin role', async () => {
+  const center = await read('src/mvp/SuperAdminCommandCenter.tsx')
+  assert.match(center, /supabase\.auth\.getSession\(\)/)
+  assert.match(center, /from\('usuarios'\)\.select\('tipo,activo'\)/)
+  assert.match(center, /profile\?\.tipo!=='superadmin'/)
+  const initialLoad = center.slice(center.indexOf('const load=async()=>'), center.indexOf('setAuthorized(true)') + 'setAuthorized(true)'.length)
+  assert.doesNotMatch(initialLoad, /supabase\.auth\.getUser\(\)/)
+})
