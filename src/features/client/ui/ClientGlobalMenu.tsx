@@ -40,7 +40,8 @@ export function ClientGlobalMenu(){
      <button type="button" onClick={payment}><span>▤</span><div><b>Formas de pago</b></div></button>
      <button type="button" onClick={notifications}><span>♢</span><div><b>Notificaciones</b></div></button>
      <button type="button" onClick={hugo}><span>✦</span><div><b>Hugo / Asistente IA</b></div></button>
-     <button type="button" onClick={()=>go('dispute')}><span>?</span><div><b>Ayuda y soporte</b></div></button>\n     <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>Configuración</b></div></button>
+     <button type="button" onClick={()=>go('dispute')}><span>?</span><div><b>Ayuda y soporte</b></div></button>
+     <button type="button" onClick={()=>go('profile')}><span>⚙</span><div><b>Configuración</b></div></button>
      <button type="button" className="ugo-menu-logout" onClick={()=>void logout()}><span>⇥</span><div><b>Cerrar sesión</b></div></button>
     </nav>
     <div className="ugo-client-global-footer"><b>UGO</b><span>Un pedido. Un profesional. Sin vueltas.</span></div>
