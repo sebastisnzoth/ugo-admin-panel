@@ -11,6 +11,12 @@ on:
       - "scripts/autonomous-final-corporate-audit-runtime.mjs"
       - "scripts/autonomous-launch-gate-runtime.mjs"
       - "supabase/migrations/20260929124500_qa_uploaded_media_bytes_runtime.sql"
+      - "supabase/migrations/20260930032000_uploaded_media_coverage_guard_fix.sql"
+      - "supabase/migrations/20260930033000_autonomy_on_readiness_gate.sql"
+      - "supabase/migrations/20260930034000_preserve_autonomy_mode_in_worker_proof.sql"
+      - "supabase/migrations/20260930034500_service_role_release_gate_read.sql"
+      - "scripts/autonomy-on-readiness-runtime.mjs"
+      - "tests/contracts/autonomy-on-readiness.test.mjs"
   workflow_dispatch:
 
 permissions:
@@ -65,3 +71,10 @@ jobs:
           UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
           UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-launch-gate-runtime.mjs
+      - name: Contract test AUTONOMY_ON
+        run: node --test tests/contracts/autonomy-on-readiness.test.mjs
+      - name: Verify persistent ON state
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/autonomy-on-readiness-runtime.mjs

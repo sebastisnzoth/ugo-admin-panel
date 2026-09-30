@@ -5,8 +5,8 @@
   "title": "Recuperación automática",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:21:00Z",
-  "heartbeat_at": "2026-09-30T03:21:00Z",
-  "lease_expires_at": "2026-09-30T03:51:00Z",
+  "heartbeat_at": "2026-09-30T03:23:00Z",
+  "lease_expires_at": "2026-09-30T03:53:00Z",
   "started_sha": "af1bc0c2c7fa5383b196e64b6a662abd45bb437d",
   "owner": "UGO",
   "department": "Confiabilidad",
@@ -19,11 +19,12 @@
     "recovery"
   ],
   "correlation_id": "readiness-auto-recovery-af1bc0c2",
-  "current_step": "CLAIM_AND_REVALIDATE",
+  "current_step": "FIX_WORKFLOW_FAIL_CLOSED",
   "attempt": 1,
   "evidence_ids": [],
   "dependencies": [
     "auto-worker"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "defect_found": "GitHub Actions pipe through tee masked runtime/Judge failures; UGO_TEST_SUPABASE_URL secret resolved empty."
 }

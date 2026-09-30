@@ -23,11 +23,29 @@ export function ProviderActiveJob(){
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
  const stateLabel=STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
  const progressIndex=FLOW_ORDER[s.estado]??0
+ const nextAction=s.estado==='asignado'
+  ?(paymentReady?'Salí hacia el cliente':'Esperá la confirmación del pago')
+  :s.estado==='en_camino'
+   ?'Llegá al lugar y confirmá tu llegada'
+   :s.estado==='llegado'
+    ?(evidence.initial?'Empezá el trabajo':'Sacá la foto inicial')
+    :s.estado==='en_progreso'
+     ?(evidence.final?'Marcá el trabajo listo':'Sacá la foto final')
+     :s.estado==='esperando_aprobacion'
+      ?'Esperá la aprobación del cliente'
+      :s.estado==='disputado'?'Seguí la disputa':'Revisá el estado del servicio'
+ const paymentLabel=d.funded?'Pago protegido':d.cashSelected?'Efectivo':'Pago pendiente'
+ const locationLabel=s.estado==='en_camino'?'GPS activo':s.estado==='llegado'||s.estado==='en_progreso'?'Ubicación confirmada':'Ubicación lista'
  const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;const reason=window.prompt('Contanos brevemente por qué cancelás este pedido. El motivo queda registrado.');if(reason===null)return;if(reason.trim().length<5){window.alert('Indicá un motivo de al menos 5 caracteres para cancelar el pedido.');return}await d.cancelService(reason)}
  return <section className="provider-screen provider-active-job" aria-labelledby="provider-job-title">
   <><Button variant="ghost" className="provider-back" onClick={flow.actions.openHome}>← Inicio</Button><SectionHeader eyebrow="TRABAJO ACTIVO" title={stateLabel} description="Un paso por vez. UGO se ocupa del resto."/></>
   <div className="provider-job-progress" aria-label="Progreso del trabajo">{FLOW_STEPS.map((step,index)=><div key={step.state} className={index<=progressIndex?'is-done':''}><span>{index<progressIndex?'✓':index+1}</span><small>{step.label}</small></div>)}</div>
+  <Card className="provider-card provider-mission-brief" aria-label="Qué hacer ahora">
+   <div className="provider-mission-brief-head"><div><small>AHORA</small><strong>{nextAction}</strong></div><span className="provider-mission-state">{stateLabel}</span></div>
+   <div className="provider-mission-brief-chips"><span>{paymentLabel}</span><span>{locationLabel}</span><span>#{s.numero??String(s.id).slice(0,8)}</span></div>
+   <div className="provider-mission-brief-actions">{mapHref&&<a href={mapHref} target="_blank" rel="noreferrer">📍 Abrir mapa</a>}<button type="button" onClick={()=>document.getElementById('provider-primary-control')?.scrollIntoView({behavior:'smooth',block:'center'})}>Ver acción principal ↓</button></div>
+  </Card>
   <Card className="provider-card provider-job-summary">
    <div className="provider-job-problem"><small>QUÉ HAY QUE RESOLVER</small><h2>{s.categoria?.emoji} {s.categoria?.nombre||'Servicio'}</h2><p>{s.descripcion}</p></div>
    <div className="provider-job-facts">
@@ -38,7 +56,7 @@ export function ProviderActiveJob(){
    <details className="provider-secondary-details"><summary>Fotos o detalles del cliente</summary><ProviderRequestEvidence serviceId={s.id}/></details>
   </Card>
 
-  <Card className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
+  <Card id="provider-primary-control" className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
    <small>CONTROL DEL PEDIDO · #{s.numero??String(s.id).slice(0,8)}</small>
    {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>ESTOY YENDO</Button><div className="provider-simple-status" role="status"><strong>Falta confirmar la forma de pago</strong><span>El botón queda visible y se habilita automáticamente cuando UGO confirma PIX o efectivo.</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</Button>}

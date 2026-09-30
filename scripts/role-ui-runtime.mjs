@@ -90,6 +90,7 @@ async function testClient(viewport,name){
      await reopenClientMenu(page)
      const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
      await drawer.waitFor({state:'visible'})
+     await closeClientOverlay(page)
      await safeClick(page,drawer.getByRole('button',{name:new RegExp(item,'i')}), 'client '+item)
      await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
      await assertResponsive(page,'client '+name+' '+item)
