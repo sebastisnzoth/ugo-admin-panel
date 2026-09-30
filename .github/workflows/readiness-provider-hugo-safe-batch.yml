@@ -145,3 +145,32 @@ jobs:
           path: artifacts/provider-notifications-*
           if-no-files-found: warn
           retention-days: 90
+
+
+  hugo-privacy-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Hugo authority regression
+        run: node --test api/hugo/authority.test.mjs
+      - name: Sanitization and permission proof
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/hugo-privacy-runtime.mjs
+      - name: Judge
+        run: node scripts/hugo-privacy-judge.mjs
+      - name: Sentinel
+        run: node scripts/hugo-privacy-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-hugo-privacy-${{ github.sha }}
+          path: artifacts/hugo-privacy-*
+          if-no-files-found: warn
+          retention-days: 90
