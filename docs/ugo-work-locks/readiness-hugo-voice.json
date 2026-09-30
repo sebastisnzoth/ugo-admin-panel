@@ -2,10 +2,10 @@
   "readiness_id": "hugo-voice",
   "task_id": "readiness-hugo-voice",
   "job_id": "job-hugo-voice-20260930T1529Z",
-  "status": "IN_PROGRESS",
+  "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-09-30T15:31:00Z",
-  "lease_expires_at": "2026-09-30T16:16:00Z",
+  "heartbeat_at": "2026-09-30T15:34:10Z",
+  "lease_expires_at": "2026-09-30T16:19:10Z",
   "started_sha": "c5dee60c6f3eb93015e86a79dbd9655a21d1d8d6",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,9 +17,17 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "CI_RUNTIME_BROWSER",
+  "current_step": "HUMAN_MIC_AUDIO_FINAL",
   "attempt": 1,
   "evidence_ids": [
-    "pending:hugo-voice-gate"
-  ]
+    "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
+    "github-actions:36737490396",
+    "artifact:11107149057"
+  ],
+  "result_sha": "adc1ac46d1e19ac557739d67d7d57fbba06164db",
+  "validators_result": {
+    "Judge": "PENDING_HUMAN_EVIDENCE",
+    "Sentinel": "PENDING_HUMAN_EVIDENCE"
+  },
+  "blocker": "HUMAN_MICROPHONE_AUDIO_PROOF"
 }
