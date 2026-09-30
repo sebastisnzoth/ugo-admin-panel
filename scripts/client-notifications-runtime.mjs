@@ -1,3 +1,4 @@
+// infra retrigger: attempt7 npm-registry-404 20260930T1417Z
 // readiness retrigger: canonical-auth-attempt-3
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
