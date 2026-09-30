@@ -7,6 +7,7 @@ const runtime=fs.readFileSync('scripts/autonomous-exception-recovery-runtime.mjs
 const judge=fs.readFileSync('scripts/autonomous-exception-recovery-judge.mjs','utf8')
 const workerGuard=fs.readFileSync('supabase/migrations/20260930035000_restore_service_role_worker_recovery.sql','utf8')
 const statePreservation=fs.readFileSync('supabase/migrations/20260930035500_exception_recovery_preserve_runtime_state.sql','utf8')
+const currentWorkerGuard=fs.readFileSync('supabase/migrations/20260930036000_service_role_claims_json_guard.sql','utf8')
 
 test('exception recovery is TEST-only, service-role-only and uses UGO worker recovery',()=>{
   for(const x of['autonomous_execute_exception_recovery','AUTONOMOUS_LEASE_TIMEOUT','autonomous_worker_cycle','autonomous_recovery_audits','EXCEPTION_DETECTED','EXCEPTION_RECOVERY_VERIFICATION'])assert.ok(sql.includes(x),x)
@@ -27,14 +28,14 @@ test('trusted server worker remains service-role compatible without opening anon
   for(const x of[
     'autonomous_claim_job',
     'autonomous_recover_stale_jobs',
-    "current_setting('request.jwt.claim.role',true)",
-    "='service_role'",
+    "current_setting('request.jwt.claims',true)",
+    "'service_role'",
     'private.is_superadmin()'
-  ])assert.ok(workerGuard.includes(x),x)
-  assert.match(workerGuard,/grant execute on function public\.autonomous_claim_job\(text,integer\) to authenticated,service_role/i)
-  assert.match(workerGuard,/grant execute on function public\.autonomous_recover_stale_jobs\(\) to authenticated,service_role/i)
-  assert.match(workerGuard,/revoke all on function public\.autonomous_claim_job\(text,integer\) from public,anon/i)
-  assert.match(workerGuard,/revoke all on function public\.autonomous_recover_stale_jobs\(\) from public,anon/i)
+  ])assert.ok(currentWorkerGuard.includes(x),x)
+  assert.match(currentWorkerGuard,/grant execute on function public\.autonomous_claim_job\(text,integer\) to authenticated,service_role/i)
+  assert.match(currentWorkerGuard,/grant execute on function public\.autonomous_recover_stale_jobs\(\) to authenticated,service_role/i)
+  assert.match(currentWorkerGuard,/revoke all on function public\.autonomous_claim_job\(text,integer\) from public,anon/i)
+  assert.match(currentWorkerGuard,/revoke all on function public\.autonomous_recover_stale_jobs\(\) from public,anon/i)
 })
 
 
