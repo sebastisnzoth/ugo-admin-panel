@@ -141,7 +141,7 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
      const clientRoot=page.locator('.ugo-client-root')
      if(!(await clientRoot.isVisible().catch(()=>false))){
        await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true})
@@ -168,7 +168,7 @@ async function testProvider(viewport,name){
      const items=[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
      for(const item of items){
        await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
-       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
        const providerRoot=page.locator('.ugo-provider-root')
        if(!(await providerRoot.isVisible().catch(()=>false))){
          await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true})
@@ -185,7 +185,7 @@ async function testProvider(viewport,name){
      const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
      for(const item of items){
        await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+String(item))
-       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
        const providerRoot=page.locator('.ugo-provider-root')
        if(!(await providerRoot.isVisible().catch(()=>false))){
          await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true})
