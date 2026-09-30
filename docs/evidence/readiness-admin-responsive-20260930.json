@@ -1,0 +1,108 @@
+{
+  "readiness_id": "admin-responsive",
+  "task_id": "readiness-admin-responsive",
+  "job_id": "UGO-READINESS-ADMIN-RESPONSIVE",
+  "correlation_id": "readiness-admin-responsive-20260930T011800Z-78ef6d97",
+  "control": "Responsive Admin/Super Admin",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "started_sha": "78ef6d9795023c953324a8ad57482d73aa531206",
+  "runtime_validated_sha": "c8ff650449aa6ec268ded3802f590bd99f910e6f",
+  "implementation": {
+    "responsive_hardening": "Adaptive Super Admin tables, horizontal containment, compact scroll-snap navigation and touch-friendly submenu.",
+    "typescript_regression_fix": "Restored AutonomousCorporationDashboard build compatibility without changing runtime business logic.",
+    "permanent_regressions": [
+      "tests/contracts/admin-responsive-readiness.test.mjs",
+      "scripts/readiness-admin-responsive-runtime.mjs",
+      "scripts/readiness-admin-responsive-judge.mjs",
+      "scripts/readiness-admin-responsive-sentinel.mjs",
+      ".github/workflows/readiness-admin-responsive.yml"
+    ]
+  },
+  "viewport_matrix": [
+    {
+      "name": "mobile",
+      "width": 390,
+      "height": 844,
+      "result": "PASS"
+    },
+    {
+      "name": "tablet",
+      "width": 768,
+      "height": 1024,
+      "result": "PASS"
+    },
+    {
+      "name": "desktop",
+      "width": 1440,
+      "height": 1100,
+      "result": "PASS"
+    }
+  ],
+  "runtime_scope": {
+    "admin_sections": [
+      "Inicio",
+      "Operaciones",
+      "Personas",
+      "Finanzas",
+      "Configuración"
+    ],
+    "superadmin_tabs": [
+      "Command Center",
+      "Empresa Autónoma",
+      "Feature Flags",
+      "Audit Log",
+      "Integraciones",
+      "Métricas globales",
+      "Roles y permisos",
+      "Legal / IP Protection"
+    ],
+    "assertions": [
+      "no document horizontal overflow",
+      "no body horizontal overflow",
+      "no admin shell horizontal overflow",
+      "mobile navigation usable",
+      "browser page errors empty",
+      "screenshots persisted"
+    ]
+  },
+  "tests": {
+    "test_environment_guard": "PASS",
+    "responsive_contract": "PASS",
+    "typescript_and_production_build": "PASS",
+    "chromium_runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:33:57.946Z"
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T01:33:58.002Z",
+      "production_touched": false,
+      "reconciliation": "PASS"
+    }
+  },
+  "github_actions": {
+    "workflow": "UGO Admin Responsive Runtime TEST",
+    "run_id": 36655576808,
+    "job_id": 109699081708,
+    "artifact_id": 11072091418,
+    "artifact_name": "admin-responsive-runtime-c8ff650449aa6ec268ded3802f590bd99f910e6f",
+    "artifact_digest": "sha256:9486f1ad6987780025b88ccfa117ff7597517fe455bfea32981dc5588d0b6020",
+    "artifact_file_count": 9
+  },
+  "screenshots": [
+    "admin-responsive-mobile-home.png",
+    "admin-responsive-mobile-superadmin.png",
+    "admin-responsive-tablet-home.png",
+    "admin-responsive-tablet-superadmin.png",
+    "admin-responsive-desktop-home.png",
+    "admin-responsive-desktop-superadmin.png"
+  ],
+  "result": "VERIFIED",
+  "completed_at": "2026-09-30T01:33:58.002Z"
+}
