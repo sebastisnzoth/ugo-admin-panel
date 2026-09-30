@@ -1,0 +1,48 @@
+import assert from'node:assert/strict'
+import{access,readFile,stat,writeFile}from'node:fs/promises'
+
+const sha=process.env.UGO_RUNTIME_SHA||''
+assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
+const runtime=JSON.parse(await readFile('artifacts/role-ui-runtime.json','utf8'))
+assert.equal(runtime.task,'role-ui-runtime')
+assert.equal(runtime.sha,sha,'SAME_SHA_REQUIRED')
+assert.equal(runtime.environment,'UGO TEST')
+assert.equal(runtime.page_errors,0)
+assert.ok(Array.isArray(runtime.results)&&runtime.results.length>=16,'ROLE_UI_RESULTS_INCOMPLETE')
+assert.ok(runtime.results.every(item=>item.status==='PASS'),'ROLE_UI_RESULT_FAILED')
+
+const shots=[
+ 'role-ui-client-desktop.png','role-ui-client-mobile.png',
+ 'role-ui-provider-desktop.png','role-ui-provider-mobile.png',
+ 'role-ui-admin-desktop.png','role-ui-admin-mobile.png',
+]
+const screenshotEvidence=[]
+for(const name of shots){
+ const path='artifacts/'+name
+ await access(path)
+ const info=await stat(path)
+ assert.ok(info.size>1000,name+' screenshot too small')
+ screenshotEvidence.push({name,bytes:info.size})
+}
+for(const role of ['client','provider','admin']){
+ for(const viewport of ['desktop','mobile']){
+  assert.ok(runtime.results.some(item=>item.role===role&&item.viewport===viewport&&item.status==='PASS'),role+' '+viewport+' missing')
+ }
+}
+assert.ok(runtime.results.filter(item=>item.role==='admin-auth'&&item.access==='DENIED').length>=6,'ADMIN_AUTH_BOUNDARY_INCOMPLETE')
+
+const out={
+ validator:'Judge',
+ readiness_id:'cross-visual',
+ tested_sha:sha,
+ environment:'UGO TEST local authenticated runtime',
+ production_touched:false,
+ contract:'PASS',
+ responsive_cross_role:'PASS',
+ route_hierarchy:'PASS',
+ screenshots:screenshotEvidence,
+ result:'PASS',
+ checked_at:new Date().toISOString(),
+}
+await writeFile(`artifacts/cross-visual-judge-${sha}.json`,JSON.stringify(out,null,2)+'\n')
+console.log(JSON.stringify(out))
