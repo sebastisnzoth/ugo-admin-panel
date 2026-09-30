@@ -1,0 +1,35 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "hugo-responsive",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "workflow_run": {
+    "id": 36708404355,
+    "job_id": 109864074464,
+    "conclusion": "success",
+    "artifact_id": 11093152004,
+    "artifact_digest": "sha256:d8844c0df50f7a572de87451167c5068d1ed7a161c5b87dc7d73b48f044dd46e"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "390x844 viewport passed",
+      "768x1024 viewport passed",
+      "1440x900 viewport passed",
+      "mobile keyboard contraction passed",
+      "no horizontal overflow"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-30T11:26:09Z"
+}
