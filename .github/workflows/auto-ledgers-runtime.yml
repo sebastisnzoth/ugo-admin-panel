@@ -1,0 +1,65 @@
+name: UGO Readiness Auto Ledgers TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/auto-ledgers-runtime.mjs"
+      - "scripts/auto-ledgers-judge.mjs"
+      - "scripts/auto-ledgers-sentinel.mjs"
+      - "supabase/migrations/20260927234500_autonomous_corporation_foundation.sql"
+      - ".github/workflows/auto-ledgers-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-auto-ledgers-test
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime-proof:
+    name: Decision/Evidence ledgers · append-only · correlation · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST credentials
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Execute ledger runtime proof
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/auto-ledgers-runtime.mjs
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/auto-ledgers-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/auto-ledgers-sentinel.mjs
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-ledgers-runtime-${{ github.sha }}
+          path: artifacts/auto-ledgers-*
+          if-no-files-found: warn
+          retention-days: 90
