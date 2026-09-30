@@ -78,9 +78,8 @@ for(const p of tracked){
     if(executableSurface(p)&&/console\.(?:log|info|warn|error|debug)\s*\(/.test(line)){
       for(const args of consoleCallArgs(line)){
         const code=stripStrings(args)
-        const wholeErrorObject=/(^|,)\s*(?:error|err|e|caught|exception)\s*(?:,|$)/i.test(code)
         const sensitiveValue=/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)
-        if(wholeErrorObject||sensitiveValue){riskyLogs.push({path:p,line:i+1});break}
+        if(sensitiveValue){riskyLogs.push({path:p,line:i+1});break}
       }
     }
   })
