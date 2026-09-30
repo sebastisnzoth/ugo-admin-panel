@@ -168,16 +168,32 @@ async function addProviderEvidence(tipo){
 }
 
 try{
- await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
+ // Authenticate only through the canonical Client AuthScreen. Once the real
+ // browser session exists, navigate to the exact deep link under test.
+ await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  const emailInput=page.getByPlaceholder('tu@email.com')
  if(await emailInput.count()){
   await emailInput.fill(email)
   await page.getByPlaceholder('Mínimo 6 caracteres').fill(password)
   await page.getByRole('button',{name:'Ingresar a UGO'}).click()
  }
+ await page.waitForFunction(()=>!document.querySelector('[aria-label="Iniciar sesión"]'),null,{timeout:30000})
  const onboarding=page.getByRole('heading',{name:'Terminemos tu perfil'})
  if(await onboarding.count())throw new Error('UGO_TEST_CLIENT_ONBOARDING_INCOMPLETE')
- await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
+ await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
+ try{
+  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
+ }catch(error){
+  const diagnostic=await page.evaluate(()=>({
+   href:window.location.href,
+   body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,3000),
+   detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
+   auth:Boolean(document.querySelector('[aria-label="Iniciar sesión"]')),
+  })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',detail:false,auth:false}))
+  await page.screenshot({path:'artifacts/client-notifications-auth-deeplink-failure.png',fullPage:true}).catch(()=>{})
+  await fs.writeFile('artifacts/client-notifications-auth-deeplink-diagnostic.json',JSON.stringify({service_id:fixture.id,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
+  throw error
+ }
  await expectUi('asignado','accepted')
 
  const paymentAmount=Math.max(1,Number(template.tarifa||50))
