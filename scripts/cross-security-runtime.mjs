@@ -18,6 +18,27 @@ const configSurface=p=>/^(src|api|scripts|supabase\/functions|\.github\/workflow
 const literalConfigSurface=p=>path.basename(p).startsWith('.env')||/\.(?:ya?ml|json|toml)$/.test(p)
 const placeholder=s=>/example|synthetic|redacted|placeholder|change[-_ ]?me|your[-_ ]|dummy|fake|test-only|ugo-test/i.test(s)
 const stripStrings=s=>s.replace(/(["'`])(?:\\.|(?!\1).)*\1/g,"''")
+const consoleCallArgs=line=>{
+  const out=[]
+  const re=/console\.(?:log|info|warn|error|debug)\s*\(/g
+  let match
+  while((match=re.exec(line))){
+    let depth=1,i=re.lastIndex,quote='',escaped=false
+    for(;i<line.length;i++){
+      const ch=line[i]
+      if(quote){
+        if(escaped){escaped=false;continue}
+        if(ch==='\\'){escaped=true;continue}
+        if(ch===quote){quote='';continue}
+        continue
+      }
+      if(ch==='"'||ch==="'"||ch==='`'){quote=ch;continue}
+      if(ch==='('){depth++;continue}
+      if(ch===')'&&--depth===0){out.push(line.slice(re.lastIndex,i));break}
+    }
+  }
+  return out
+}
 const findings=[]
 const riskyClientEnv=[]
 const riskyLogs=[]
@@ -55,11 +76,11 @@ for(const p of tracked){
     }
     if(configSurface(p)&&/\bVITE_[A-Z0-9_]*(SECRET|PRIVATE|SERVICE_ROLE|PASSWORD|ACCESS_TOKEN|REFRESH_TOKEN)[A-Z0-9_]*\b/.test(line)) riskyClientEnv.push({path:p,line:i+1})
     if(executableSurface(p)&&/console\.(?:log|info|warn|error|debug)\s*\(/.test(line)){
-      const calls=line.split(/(?=console\.(?:log|info|warn|error|debug)\s*\()/g).slice(1)
-      for(const call of calls){
-        const segment=call.split(';')[0]
-        const code=stripStrings(segment)
-        if(/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)) riskyLogs.push({path:p,line:i+1})
+      for(const args of consoleCallArgs(line)){
+        const code=stripStrings(args)
+        const wholeErrorObject=/(^|,)\s*(?:error|err|e|caught|exception)\s*(?:,|$)/i.test(code)
+        const sensitiveValue=/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)
+        if(wholeErrorObject||sensitiveValue){riskyLogs.push({path:p,line:i+1});break}
       }
     }
   })
