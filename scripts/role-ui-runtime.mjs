@@ -141,7 +141,12 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
+     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+     const clientRoot=page.locator('.ugo-client-root')
+     if(!(await clientRoot.isVisible().catch(()=>false))){
+       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true})
+       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' pageErrors='+errors.join(' | '))
+     }
      await assertResponsive(page,'client '+name+' '+item)
    }
    await page.screenshot({path:'artifacts/role-ui-client-'+name+'.png',fullPage:true})
