@@ -1,6 +1,6 @@
 import{createClient}from'@supabase/supabase-js'
-import{decideHugoAuthority,normalizeHugoRequestedRole}from'./authority'
-import{askHugoModel}from'./modelRouter'
+import{decideHugoAuthority,normalizeHugoRequestedRole}from'../../src/server/hugo/authority'
+import{askHugoModel}from'../../src/server/hugo/modelRouter'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
