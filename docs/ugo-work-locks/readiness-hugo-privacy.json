@@ -4,10 +4,10 @@
   "job_id": "UGO-READINESS-HUGO-PRIVACY",
   "title": "Verify Hugo privacy and sanitization in UGO TEST",
   "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T11:30:00Z",
-  "heartbeat_at": "2026-09-30T11:32:00Z",
-  "lease_expires_at": "2026-09-30T12:17:00Z",
-  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "started_at": "2026-09-30T13:36:00Z",
+  "heartbeat_at": "2026-09-30T13:36:00Z",
+  "lease_expires_at": "2026-09-30T14:21:00Z",
+  "started_sha": "fe7e6f409bfcf485b9ae08ef14e50e95e96c07cf",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Privacy Runtime Agent",
@@ -25,11 +25,13 @@
   "resources": [
     "hugo-security"
   ],
-  "correlation_id": "readiness-hugo-privacy-20260930T113000Z-0833841a",
-  "current_step": "WAITING_CORE_CI_AND_RUNTIME_PROOF",
-  "attempt": 1,
-  "evidence_ids": [
-    "commit:ba2122f2d6b8cf5e885a5e0325cf5b54b23b9cb9"
-  ],
-  "production_touched": false
+  "correlation_id": "readiness-hugo-privacy-20260930T133600Z-fe7e6f40-r2",
+  "current_step": "PORT_CURRENT_MAIN_AND_VERIFY",
+  "attempt": 2,
+  "evidence_ids": [],
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  }
 }
