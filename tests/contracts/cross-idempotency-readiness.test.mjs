@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const accept=fs.readFileSync('supabase/migrations/20260925011107_offer_acceptance_rpc_execute_hardening.sql','utf8')
+const accept=fs.readFileSync('supabase/migrations/20260904_stage5_harden_atomic_offer_acceptance.sql','utf8')
 const cash=fs.readFileSync('supabase/migrations/20260920050000_fix_client_cash_close_sensitive_counter.sql','utf8')
 const rating=fs.readFileSync('supabase/migrations/20260930141225_cross_idempotency_rating_uniqueness.sql','utf8')
 
