@@ -49,7 +49,7 @@ test('each canonical request persists its own generated service id and matching 
 test('Activity lists all owned orders and opens or cancels one exact service id',async()=>{
  const history=await read('src/mvp/ServiceHistoryPanel.tsx')
  assert.match(history,/\.eq\('cliente_id',userId\)/)
- assert.match(history,/\.limit\(role==='admin'\?200:80\)/)
+ assert.match(history,/\.limit\(200\)/)
  assert.match(history,/visible\.map\(r=>/)
  assert.match(history,/onOpenService\(r\.id\)/)
  assert.match(history,/cancelClientService\(r\.id\)/)
