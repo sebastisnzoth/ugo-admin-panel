@@ -22,3 +22,14 @@ test('en-route trusted GPS RPC failures are surfaced instead of silently swallow
  assert.match(tail,/if\(enRoute\)setLocationError/)
  assert.match(tail,/No pudimos publicar tu GPS reciente/)
 })
+
+
+test('provider en-route UI exposes GPS freshness and precision without trusting stale fixes',async()=>{
+ const s=await read('src/mvp/ProviderLocationTracker.tsx')
+ assert.match(s,/provider-location-freshness/)
+ assert.match(s,/GPS reciente/)
+ assert.match(s,/GPS desactualizado/)
+ assert.match(s,/precisión ±/)
+ assert.match(s,/setLastFix\(\{capturedAt:Number\(pos\.timestamp\|\|Date\.now\(\)\),accuracy\}\)/)
+ assert.match(s,/fixAgeMs<=MAX_POSITION_AGE_MS/)
+})
