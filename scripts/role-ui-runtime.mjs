@@ -158,9 +158,25 @@ async function testProvider(viewport,name){
      ?[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
      :[/Inicio proveedor/i,/Pedidos/i,/Trabajo/i,/Perfil proveedor/i]
    for(const item of items){
-     await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
-     await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
-     await assertResponsive(page,'provider '+name+' '+String(item))
+     const label='provider '+name+' '+String(item)
+     try{
+       await safeClick(page,nav.getByRole('button',{name:item}).first(),label)
+       await page.locator('.ugo-provider-root').waitFor({state:'visible',timeout:10000})
+       await assertResponsive(page,label)
+     }catch(error){
+       const diagnostic={
+         role:'provider',
+         viewport:name,
+         item:String(item),
+         url:page.url(),
+         page_errors:[...errors],
+         visible_text:(await page.locator('body').innerText().catch(()=>'' )).slice(0,4000),
+         failure:error instanceof Error?error.message:String(error)
+       }
+       await fs.writeFile('artifacts/role-ui-provider-'+name+'-failure.json',JSON.stringify(diagnostic,null,2))
+       await page.screenshot({path:'artifacts/role-ui-provider-'+name+'-failure.png',fullPage:true}).catch(()=>{})
+       throw new Error('PROVIDER_RUNTIME_NAV_FAILURE '+JSON.stringify(diagnostic),{cause:error})
+     }
    }
    if(desktop){
      const menu=page.getByRole('complementary',{name:'Menú proveedor'})
