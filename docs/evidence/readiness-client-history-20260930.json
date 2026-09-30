@@ -1,0 +1,37 @@
+{
+  "readiness_id": "client-history",
+  "task_id": "readiness-client-history",
+  "job_id": "UGO-READINESS-CLIENT-HISTORY",
+  "environment": "UGO TEST",
+  "verified_sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
+  "workflow_run_id": 36660492191,
+  "workflow_job_id": 109713931345,
+  "artifact_id": 11074166889,
+  "artifact_name": "client-history-runtime-7035a39f864a8565438a767e1a8a3aa2a7423a02",
+  "artifact_digest": "sha256:3401cb90e9b65fb5615129823892eda6079f40aea3e1570ba14e48dd5c6788fe",
+  "service_id": "eaf21ae1-cdc9-433d-84c1-343e70673dea",
+  "service_number": 901,
+  "assertions": {
+    "completed_service_visible": true,
+    "payment_visible_and_concordant": true,
+    "client_rating_visible_and_concordant": true,
+    "provider_rating_visible_and_concordant": true,
+    "authorized_photo_visible": true,
+    "no_page_errors": true
+  },
+  "validators": {
+    "Judge": {
+      "status": "PASS",
+      "sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
+      "checked_at": "2026-09-30T02:35:55.382Z"
+    },
+    "Sentinel": {
+      "status": "PASS",
+      "sha": "7035a39f864a8565438a767e1a8a3aa2a7423a02",
+      "checked_at": "2026-09-30T02:35:55.435Z"
+    }
+  },
+  "result": "VERIFIED",
+  "production_touched": false,
+  "completed_at": "2026-09-30T02:35:56Z"
+}
