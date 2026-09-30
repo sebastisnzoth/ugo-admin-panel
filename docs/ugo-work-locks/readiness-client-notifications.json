@@ -22,11 +22,14 @@
     "Sentinel"
   ],
   "resources": [
-    "notifications"
+    "notifications",
+    "shared-provider-fixture",
+    "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T125123389Z",
   "current_step": "PREPARE_TEST_WEB_RUNTIME",
   "attempt": 1,
   "evidence_ids": [],
-  "production_touched": false
+  "production_touched": false,
+  "title": "Verify client lifecycle notifications over web realtime in UGO TEST"
 }
