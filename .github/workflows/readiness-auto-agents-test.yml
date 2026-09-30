@@ -9,6 +9,7 @@ on:
       - "api/test.ts"
       - "supabase/migrations/20260930014500_enable_d3_d4_advisory_specialists.sql"
       - "supabase/migrations/20260930015500_guard_advisory_specialist_mutations.sql"
+      - "supabase/migrations/20260930020500_d3_d4_readonly_specialist_executors.sql"
       - "tests/contracts/d3-d4-advisory-specialists.test.mjs"
       - ".github/workflows/readiness-auto-agents-test.yml"
   workflow_dispatch:
