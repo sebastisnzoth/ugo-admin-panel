@@ -38,5 +38,11 @@
   "runtime_validated_sha": "52cdc2ceeab00f58bbed47b8895f06a2e4debcee",
   "production_touched": false,
   "result": "VERIFIED",
-  "result_summary": "Reconciled existing authoritative UGO Empresas TEST journey: demand, 3 slots, navigation/data binding, Super Admin permissions, isolation and evidence already passed Judge/Sentinel. No duplicate runtime executed."
+  "result_summary": "Reconciled existing authoritative UGO Empresas TEST journey: demand, 3 slots, navigation/data binding, Super Admin permissions, isolation and evidence already passed Judge/Sentinel. No duplicate runtime executed.",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-enterprise-ops",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
