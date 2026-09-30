@@ -6,8 +6,8 @@
   "title": "Verify secrets, logs and privacy",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T14:33:00.000Z",
-  "heartbeat_at": "2026-09-30T14:33:00.000Z",
-  "lease_expires_at": "2026-09-30T15:18:00.000Z",
+  "heartbeat_at": "2026-09-30T14:43:00.000Z",
+  "lease_expires_at": "2026-09-30T15:28:00.000Z",
   "started_sha": "6c70ccfabd3554f0abea274c7eb11e84df92ad4c",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -19,8 +19,13 @@
     "security-rls"
   ],
   "correlation_id": "readiness-cross-security-20260930T143300Z-6c70ccfa",
-  "current_step": "REVALIDATE_AND_SCAN",
-  "attempt": 1,
-  "evidence_ids": [],
+  "current_step": "REMEDIATE_SCAN_FALSE_POSITIVES_AND_DOC_PATTERNS",
+  "attempt": 2,
+  "evidence_ids": [
+    "github-run:36730663798:FAIL_SCAN",
+    "github-artifact:11104836875",
+    "github-run:36730947008:FAIL_SCAN",
+    "github-artifact:11104812362"
+  ],
   "production_touched": false
 }
