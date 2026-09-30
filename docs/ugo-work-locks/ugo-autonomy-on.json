@@ -2,10 +2,10 @@
   "task_id": "ugo-autonomy-on",
   "job_id": "UGO-AUTONOMY-ON-20260930",
   "title": "Stabilize UGO TEST autonomous company in ON mode",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T03:36:00Z",
-  "heartbeat_at": "2026-09-30T03:36:00Z",
-  "lease_expires_at": "2026-09-30T04:21:00Z",
+  "heartbeat_at": "2026-09-30T03:40:30Z",
+  "lease_expires_at": null,
   "started_sha": "e1d1f8ad275a058e561c30913c302483a03c6a2f",
   "owner": "UGO",
   "assigned_agent": "Autonomy ON Stabilization Agent",
@@ -17,7 +17,24 @@
     "autonomy-on-gate"
   ],
   "correlation_id": "ugo-autonomy-on-20260930T033600Z",
-  "current_step": "REMOVE_FALSE_CONTAINMENT_AND_VERIFY_ON",
+  "current_step": "VERIFIED",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "github-actions:run:36665296119:SUCCESS",
+    "audit-log:6563:Judge:PASS",
+    "audit-log:6564:Sentinel:PASS",
+    "ugo-test:autonomy-mode:ON",
+    "ugo-test:enabled-kill-switches:0",
+    "ugo-test:green-worker-job:e61cc561-60df-4bbb-9c20-990465f674b0:SUCCEEDED",
+    "repo:docs/evidence/ugo-autonomy-on-20260930.json"
+  ],
+  "finished_at": "2026-09-30T03:40:30Z",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/ugo-autonomy-on-20260930.json",
+  "evidence_commit_sha": "8ea7525845dfa2283b6cb7164e6f9f08b4902d2a",
+  "production_touched": false
 }
