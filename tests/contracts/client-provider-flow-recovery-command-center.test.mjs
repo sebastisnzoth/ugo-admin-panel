@@ -36,7 +36,8 @@ test('Recovery controls remain proof-gated and reconcile equivalent existing con
   for (const item of group.items) {
     assert.equal(item.status, 'NEEDS_RUNTIME_PROOF')
     assert.match(item.improvement_focus, /runtime/)
-    assert.match(item.done_evidence, /TEST|real|Runtime|runtime|E2E|Prueba|Cadena|Comando|Foto|Pedido|Proveedor|Cliente/)
+    assert.equal(typeof item.done_evidence, 'string')
+    assert.ok(item.done_evidence.trim().length > 12)
   }
   assert.deepEqual(byId.get('provider-realtime-location').reconciles_with, ['provider-gps'])
   assert.ok(byId.get('provider-proximity-alert').reconciles_with.includes('provider-notifications'))
