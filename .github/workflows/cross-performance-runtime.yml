@@ -31,6 +31,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
   UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
@@ -47,7 +48,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.UGO_RUNTIME_SHA }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -64,7 +65,7 @@ jobs:
       - run: npm run verify:test-env
       - name: Build exact SHA
         env:
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ env.UGO_RUNTIME_SHA }}
         run: npm run build
       - name: Install Chromium
         run: |
@@ -74,8 +75,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
-          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_RUNTIME_SHA="${UGO_RUNTIME_SHA}"
+          export VITE_APP_REVISION="${UGO_RUNTIME_SHA}"
           export UGO_UI_BASE_URL="http://127.0.0.1:4173"
           npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-cross-performance-vite.log 2>&1 &
           vite_pid=$!
@@ -90,7 +91,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-runtime-${{ github.sha }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts/readiness-cross-performance-runtime.json
           if-no-files-found: error
           retention-days: 90
@@ -102,18 +103,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.UGO_RUNTIME_SHA }}
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-runtime-${{ github.sha }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts
       - name: Judge
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
         run: node scripts/cross-performance-judge.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-judge-${{ github.sha }}
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts/readiness-cross-performance-judge.json
           if-no-files-found: error
           retention-days: 90
@@ -125,22 +126,22 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.sha }}
+          ref: ${{ env.UGO_RUNTIME_SHA }}
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-runtime-${{ github.sha }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-judge-${{ github.sha }}
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts
       - name: Sentinel
         env:
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
         run: node scripts/cross-performance-sentinel.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-sentinel-${{ github.sha }}
+          name: cross-performance-sentinel-${{ env.UGO_RUNTIME_SHA }}
           path: artifacts/readiness-cross-performance-sentinel.json
           if-no-files-found: error
           retention-days: 90
