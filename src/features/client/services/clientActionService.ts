@@ -2,6 +2,7 @@ import type{SupabaseClient}from'@supabase/supabase-js'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
 
 export const CLIENT_CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
+export const CLIENT_MATCHING_RETRY_STATES=['buscando','ofrecido']
 type OwnedServiceRow={id:string;estado:string;metadata?:Record<string,unknown>|null}
 
 function hasWorkApproval(row:OwnedServiceRow|null){
@@ -23,6 +24,21 @@ export async function cancelOwnedClientService(supabase:SupabaseClient,userId:st
  if(!owned?.id)return false
  await getDispatchProvider().cancel(owned.id)
  return true
+}
+
+export async function retryOwnedClientMatching(supabase:SupabaseClient,userId:string,serviceId:string){
+ if(!serviceId)return false
+ const{data,error}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',serviceId).eq('cliente_id',userId).in('estado',CLIENT_MATCHING_RETRY_STATES).maybeSingle()
+ if(error)throw error
+ const owned=(data||null)as(OwnedServiceRow&{proveedor_id?:string|null})|null
+ if(!owned?.id)return false
+ const result=await supabase.rpc('iniciar_matching',{p_servicio_id:owned.id})
+ if(!result.error)return true
+ try{
+  const{data:persisted}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',owned.id).eq('cliente_id',userId).maybeSingle()
+  if(persisted&&(['ofrecido','asignado'].includes(String(persisted.estado))||Boolean(persisted.proveedor_id)))return true
+ }catch{}
+ throw result.error
 }
 
 export async function approvePendingClientService(supabase:SupabaseClient,userId:string,serviceId:string){
