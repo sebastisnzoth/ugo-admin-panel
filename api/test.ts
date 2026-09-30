@@ -235,7 +235,7 @@ async function autonomyOpenRouter(req:any,res:any){
   const agentId=String(req.body?.agent_id||'').trim()
   const question=safeText(req.body?.question,1200)
   if(!/^[0-9a-f]{8}-[0-9a-f-]{27,36}$/i.test(agentId)||!question)return res.status(400).json({error:'agent_id y question requeridos'})
-  const{data:agent,error:agentError}=await sb.from('autonomous_agents').select('id,department_id,name,capability,status,authority_class').eq('id',agentId).maybeSingle()
+  const{data:agent,error:agentError}=await sb.from('autonomous_agents').select('id,department_id,name,capability,status,authority_class,permissions').eq('id',agentId).maybeSingle()
   if(agentError)throw agentError
   if(!agent||agent.status==='DISABLED')return res.status(409).json({error:'AGENT_NOT_OPERATIONAL'})
   const{data:switches,error:switchError}=await sb.from('autonomous_kill_switches').select('scope_type,scope_key').eq('enabled',true)
@@ -255,7 +255,7 @@ async function autonomyOpenRouter(req:any,res:any){
    const{error}=await sb.from('autonomous_agent_consultations').insert({agent_id:agent.id,actor_id:user.id,correlation_id:correlationId,task_class:'AGENT_CONSULTATION',question_hash:questionHash,answer_hash:answer?createHash('sha256').update(answer).digest('hex'):null,evidence_summary:{job_count:summary.jobs.length,decision_count:summary.decisions.length,evidence_count:summary.evidence_types.length},provider,model_id:model,success,failure_code:failureCode,latency_ms:latency,cost:0})
    if(error)throw error
   }
-  if(!summary.jobs.length&&!summary.decisions.length&&!summary.evidence_types.length){await audit(false,null,null,null,'NO_PERSISTED_AGENT_EVIDENCE',null);return res.status(409).json({error:'NO HAY EVIDENCIA SUFICIENTE',correlation_id:correlationId})}
+  if(!summary.jobs.length&&!summary.decisions.length&&!summary.evidence_types.length){const advisoryOnly=Array.isArray(agent.permissions)&&agent.permissions.includes('advisory_only');if(advisoryOnly){const answer='Todavía no tengo evidencia persistida suficiente para emitir un análisis de este dominio. Necesito jobs, decisiones o evidencia auditada antes de concluir.';await audit(true,answer,'deterministic','advisory-no-evidence',null,0);return res.status(200).json({answer,model:'advisory-no-evidence',provider:'deterministic',correlation_id:correlationId,cost:0,evidence_available:false})}await audit(false,null,null,null,'NO_PERSISTED_AGENT_EVIDENCE',null);return res.status(409).json({error:'NO HAY EVIDENCIA SUFICIENTE',correlation_id:correlationId})}
   const openrouterKey=String(process.env.OPENROUTER_API_KEY||'').trim()
   const geminiKey=String(process.env.GEMINI_API_KEY||'').trim()
   if(!openrouterKey&&!geminiKey){await audit(false,null,null,null,'MODEL_CREDENTIAL_UNAVAILABLE',null);return res.status(503).json({error:'Model Router no disponible',correlation_id:correlationId})}
