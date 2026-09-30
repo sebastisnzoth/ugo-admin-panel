@@ -92,7 +92,7 @@ async function openRole(role,viewport){
  page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
-   localStorage.setItem(key,JSON.stringify(session))
+   if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
  },{role,session:sessions[role]})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
