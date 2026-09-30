@@ -32,6 +32,7 @@ test('client location runtime proves valid, invalid, permission and timeout case
   assert.match(runtime,/setGeolocation\(\{latitude:0,longitude:0\}\)/)
   assert.match(runtime,/clearPermissions\(\)/)
   assert.match(runtime,/Object\.defineProperty\(navigator,'geolocation'/)
+  assert.match(runtime,/physical_gps_deferred:true/)
 })
 
 test('client location Judge Sentinel and workflow are same-SHA TEST-only',()=>{
