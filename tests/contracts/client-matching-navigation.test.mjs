@@ -21,3 +21,15 @@ test('scheduled request cannot continue with a past local datetime',async()=>{
  assert.match(source,/min=\{localValue\(new Date\(\)\)\}/)
  assert.match(source,/Elegí una fecha y hora futura/)
 })
+
+test('voice scheduled requests cannot skip time validation',async()=>{
+ const[when,summary]=await Promise.all([
+  read('src/features/client/request/ClientWhenScreen.tsx'),
+  read('src/features/client/request/ClientSummaryScreen.tsx')
+ ])
+ assert.match(when,/nextWhen==='programar'/)
+ assert.match(when,/Hugo necesita una fecha y hora futura/)
+ assert.match(when,/scheduleOk=draft\.when!=='programar'/)
+ assert.match(summary,/const scheduleReady=d\.when!=='programar'/)
+ assert.match(summary,/Falta una fecha y hora futura válida/)
+})

@@ -2,7 +2,6 @@ import React,{useEffect,useMemo,useState}from'react'
 import{useClientFlow}from'../flow/clientFlow'
 import{useRoleSession}from'../../../mvp/shared'
 import{UGO_UI_EVENTS,emitUgoUiEvent}from'../../../mvp/uiEvents'
-import'../../../mvp/client-reference.css'
 import'./clientGlobalMenu.css'
 
 const OPEN_CLIENT_MENU_EVENT='ugo:client-menu-open'

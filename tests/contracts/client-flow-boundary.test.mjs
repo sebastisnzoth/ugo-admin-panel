@@ -35,3 +35,14 @@ test('migrated client features consume the canonical flow boundary directly',asy
 
 
 test('client global menu lives behind the client UI boundary',async()=>{const[legacy,menu,surfaces]=await Promise.all([read('src/mvp/ClientGlobalMenu.tsx'),read('src/features/client/ui/ClientGlobalMenu.tsx'),read('src/features/client/ui/ClientGlobalSurfaces.tsx')]);assert.match(legacy,/features\/client\/ui\/ClientGlobalMenu/);assert.match(menu,/\.\.\/flow\/clientFlow/);assert.match(menu,/mvp\/shared/);assert.match(menu,/mvp\/uiEvents/);assert.match(surfaces,/from'\.\/ClientGlobalMenu'/);assert.doesNotMatch(surfaces,/mvp\/ClientGlobalMenu/)})
+
+test('legacy client screen names resolve to canonical visible destinations',async()=>{
+ const source=await read('src/features/client/flow/clientFlow.tsx')
+ assert.match(source,/search:'home'/)
+ assert.match(source,/provider:'home'/)
+ assert.match(source,/matching:'history'/)
+ assert.match(source,/service:'history'/)
+ assert.match(source,/payment:'history'/)
+ assert.match(source,/review:'history'/)
+ assert.match(source,/const resolved=LEGACY_SCREEN_REDIRECT\[next\]\|\|next/)
+})
