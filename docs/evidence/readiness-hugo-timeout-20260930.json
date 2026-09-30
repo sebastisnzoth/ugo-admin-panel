@@ -1,0 +1,54 @@
+{
+  "readiness_id": "hugo-timeout",
+  "task_id": "readiness-hugo-timeout",
+  "job_id": "UGO-READINESS-HUGO-TIMEOUT",
+  "correlation_id": "readiness-hugo-timeout-20260930T140600Z-35af48ce",
+  "validated_environment": "UGO TEST",
+  "runtime_validated_sha": "c4289de22a464808b555d35811958ed2e812a29f",
+  "pull_request": 316,
+  "workflow_run_id": 36736416973,
+  "workflow_job_id": 109959189437,
+  "artifact_id": 11106494662,
+  "artifact_name": "readiness-hugo-timeout-c4289de22a464808b555d35811958ed2e812a29f",
+  "artifact_digest": "sha256:42a5ff7de91806e46fb835dd2ecd8e6f7526926c6694a8e333af2d6d3bfda255",
+  "acceptance": {
+    "primary": "Gemini",
+    "fallback": "OpenRouter",
+    "primary_timeout_injected": true,
+    "fallback_success_after_primary_timeout": true,
+    "dual_provider_timeout_bounded": true,
+    "ui_not_left_waiting_by_api": true,
+    "clear_retry_message_contract": true,
+    "correlation_telemetry": true
+  },
+  "fault_injection": {
+    "gemini_timeout_ms": 250,
+    "openrouter_timeout_ms": 250,
+    "primary_to_fallback_elapsed_ms": 266,
+    "dual_timeout_elapsed_ms": 502,
+    "primary_error_code": "GEMINI_TIMEOUT",
+    "terminal_error_code": "HUGO_MODEL_FALLBACK_EXHAUSTED",
+    "correlation_id": "512e612b-c440-4f04-b487-d2971b1b8bf7",
+    "dual_timeout_correlation_id": "e251fbc3-364f-4159-8cbe-00ab00ca2900"
+  },
+  "tests": {
+    "build": "PASS",
+    "resilience_contracts": "9/9 PASS",
+    "fault_injection": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "independent_judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T15:24:28.690Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T15:24:28.733Z",
+    "production_touched": false,
+    "external_model_call": false,
+    "fail_closed": true
+  },
+  "production_touched": false,
+  "result": "PASS"
+}
