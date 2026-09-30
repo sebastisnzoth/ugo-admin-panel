@@ -1,4 +1,4 @@
-# retry: 2026-09-30 after TEST Auth recovery
+# retry: 2026-09-30 canonical provider-gps r6
 name: UGO Provider GPS Runtime TEST
 
 on:
