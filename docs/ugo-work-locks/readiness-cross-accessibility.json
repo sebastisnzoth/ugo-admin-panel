@@ -4,8 +4,8 @@
   "job_id": "job-cross-accessibility-20260930T1545Z",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T15:45:00Z",
-  "heartbeat_at": "2026-09-30T15:45:00Z",
-  "lease_expires_at": "2026-09-30T16:30:00Z",
+  "heartbeat_at": "2026-09-30T16:55:00Z",
+  "lease_expires_at": "2026-09-30T17:40:00Z",
   "started_sha": "156a6b630351b436f2b3383cfb7a2a3a83152a5e",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,16 @@
     "preview-runtime"
   ],
   "correlation_id": "corr-cross-accessibility-20260930T1545Z",
-  "current_step": "AUDIT_AND_RUNTIME",
-  "attempt": 1,
-  "evidence_ids": []
+  "current_step": "FIX_RUNTIME_VIOLATIONS_AND_RERUN",
+  "attempt": 2,
+  "evidence_ids": [
+    "github-actions-run-36747347441",
+    "artifact-11112384879",
+    "runtime-failure:contrast-labels-touch-targets"
+  ],
+  "reconciliation": {
+    "reason": "stale lease had valid post-heartbeat implementation commits; resumed same task without duplicate job",
+    "main_sha": "475f0d07f18565f82d5ad170cd77a52dd23223d4",
+    "production_touched": false
+  }
 }
