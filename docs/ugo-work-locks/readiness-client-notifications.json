@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T13:55:21Z",
-  "lease_expires_at": "2026-09-30T14:40:21Z",
+  "heartbeat_at": "2026-09-30T14:00:02Z",
+  "lease_expires_at": "2026-09-30T14:45:02Z",
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,23 +27,25 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_CANONICAL_AUTH_THEN_AUTHENTICATED_DEEPLINK",
-  "attempt": 4,
+  "current_step": "FIX_CANONICAL_LOGIN_THEN_OPEN_FROM_LIVE_NOTIFICATION",
+  "attempt": 5,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
     "github-artifact:11101693090",
     "github-run:36724478895:FAIL_DIALOG_TIMEOUT",
     "github-artifact:11102078392",
-    "review:attempt3-auth-deeplink-scope-separated"
+    "review:attempt3-auth-deeplink-scope-separated",
+    "github-run:36725284882:FAIL_SESSION_NAVIGATION",
+    "github-artifact:11101149256",
+    "review:attempt4-open-via-notification-routing"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
-    "run_id": 36723968599,
-    "sha": "a9cee7d985b43fdc60f3645b937696415fbf0fe2",
-    "cause": "browser harness injected local storage session and never reached Client detail dialog",
-    "next_fix": "authenticate through canonical Client AuthScreen, preserving deep link serviceId",
-    "review_resolution": "Authenticate through canonical Client AuthScreen first, then navigate as the authenticated client to the exact serviceId deep link so the readiness test measures notifications rather than query persistence across login."
+    "run_id": 36725284882,
+    "sha": "29b85cd9d3fcce7955fae6a083d4c913eb786cc7",
+    "cause": "after canonical UI login, a second full page navigation returned to AuthScreen; artifact proved href retained serviceId but browser was unauthenticated on the new document",
+    "next_fix": "stay in the authenticated document, wait for the real client live notification generated for the disposable service, click it, and open the service through notification datos.servicio_id routing"
   },
   "finished_at": null,
   "validators_result": {
