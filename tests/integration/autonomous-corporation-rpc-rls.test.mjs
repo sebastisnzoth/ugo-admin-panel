@@ -26,6 +26,10 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  assert.equal(profile.data.activo,true)
  const originalRole=profile.data.tipo
  const service=privileged()
+ const originalCompany=await service.from('autonomous_company_state').select('mode,reason').eq('singleton',true).single()
+ if(originalCompany.error)throw originalCompany.error
+ const originalMode=originalCompany.data.mode
+ const originalReason=originalCompany.data.reason
  if(originalRole!=='superadmin'){
   const denied=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'SHADOW',p_reason:'authorization probe'})
   assert.ok(denied.error,'non-superadmin admin must not change corporate autonomy')
@@ -144,9 +148,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  const recovered=await db.rpc('superadmin_recover_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_verification:{evidence_refs:['integration-runtime-containment']},p_reason:'isolated verified recovery'})
  if(recovered.error)throw recovered.error
  assert.equal(recovered.data.decision,'RECOVER')
- const off=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime validation complete; safe default restored'})
- if(off.error)throw off.error
- assert.equal(off.data.mode,'OFF')
+ const probeOff=await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime validation complete; isolated probe'})
+ if(probeOff.error)throw probeOff.error
+ assert.equal(probeOff.data.mode,'OFF')
  } finally {
   for(const id of fixtureJobIds){
    const row=await service.from('autonomous_jobs').select('status').eq('id',id).maybeSingle()
@@ -161,7 +165,9 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
   if(remaining.error)throw remaining.error
   assert.equal(remaining.data?.length,0,'governance runtime must not leak executable approval fixtures')
   await db.rpc('superadmin_set_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_enabled:false,p_reason:'runtime cleanup'})
-  await db.rpc('superadmin_set_autonomy_mode',{p_mode:'OFF',p_reason:'runtime cleanup; safe default'})
+  const restoredMode=await db.rpc('superadmin_set_autonomy_mode',{p_mode:originalMode,p_reason:originalReason||'restore autonomous company mode after isolated runtime'})
+  if(restoredMode.error)throw restoredMode.error
+  assert.equal(restoredMode.data.mode,originalMode,'isolated governance runtime must restore original autonomy mode')
   if(originalRole!=='superadmin'){
    const restored=await service.from('usuarios').update({tipo:originalRole}).eq('id',signed.data.user.id)
    if(restored.error)throw restored.error
