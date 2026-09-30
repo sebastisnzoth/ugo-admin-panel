@@ -48,7 +48,7 @@ async function shellMetrics(page,label){
 }
 
 async function clickNav(page,name){
- const button=page.getByRole('button',{name:new RegExp(name,'i')}).first()
+ const button=page.locator('.ugo-admin2-sidebar nav button').filter({hasText:name}).first()
  await button.waitFor({state:'visible',timeout:20000})
  await button.click()
  await page.waitForTimeout(180)
