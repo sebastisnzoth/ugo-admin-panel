@@ -1,0 +1,34 @@
+{
+  "readiness_id": "provider-notifications",
+  "control": "Notificaciones Proveedor",
+  "environment": "UGO TEST",
+  "runtime_sha": "45be66b581433b6bdc44533194987667559e2bae",
+  "workflow_run_id": 36725016445,
+  "workflow_job_id": 109919549135,
+  "artifact_id": 11101274032,
+  "artifact_name": "readiness-provider-notifications-45be66b581433b6bdc44533194987667559e2bae",
+  "artifact_digest": "sha256:18f821e662146c8176c7c8c992fdc797103d0e9d214855b3db8eb2c53ae80dfe",
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "notification_contracts": "PASS",
+    "channels": [
+      "offer",
+      "assignment",
+      "change",
+      "message"
+    ],
+    "realtime_without_refresh": true,
+    "attention_tone": true,
+    "attention_vibrate": true,
+    "fixtures": "ephemeral",
+    "production_touched": false
+  },
+  "notes": {
+    "core_ci_run_id": 36725016553,
+    "core_ci": "FAIL_UNRELATED_GLOBAL_VERCEL_FUNCTION_LIMIT"
+  },
+  "completed_at": "2026-09-30T13:55:44Z"
+}
