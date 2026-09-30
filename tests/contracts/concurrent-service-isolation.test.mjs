@@ -53,7 +53,7 @@ test('Activity lists all owned orders and opens or cancels one exact service id'
  assert.match(history,/visible\.map\(r=>/)
  assert.match(history,/onOpenService\(r\.id\)/)
  assert.match(history,/cancelClientService\(r\.id\)/)
- assert.match(history,/rows\.find\(row=>row\.id===serviceId&&row\.cliente_id===userId\)/)
+ assert.match(history,/cancelOwnedClientService\(sb,userId,serviceId\)/)
 })
 
 test('client exact-order detail does not mix operational surfaces from another service',async()=>{
