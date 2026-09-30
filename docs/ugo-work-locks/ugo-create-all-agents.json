@@ -14,8 +14,7 @@
     "Sentinel"
   ],
   "resources": [
-    "autonomy-registry",
-    "autonomy-executors"
+    "autonomy-registry"
   ],
   "correlation_id": "ugo-create-all-agents-20260930T023300Z",
   "current_step": "DONE",
@@ -35,5 +34,12 @@
     "Judge": "PASS",
     "Sentinel": "PASS"
   },
-  "evidence_path": "docs/evidence/ugo-create-all-agents-20260930.json"
+  "evidence_path": "docs/evidence/ugo-create-all-agents-20260930.json",
+  "department": "UGO Empresa Autónoma",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-autonomous-company",
+    "ugo-agent-registry",
+    "ugo-evidence-judge"
+  ]
 }
