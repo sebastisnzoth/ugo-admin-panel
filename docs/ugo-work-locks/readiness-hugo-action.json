@@ -30,5 +30,11 @@
   "production_touched": false,
   "notes": [
     "PR #294 overlaps Hugo voice resilience. Do not duplicate its voice fallback changes; verify action effects against current main and reconcile only what is needed."
+  ],
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo-actions",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
   ]
 }
