@@ -927,7 +927,7 @@
           "id": "auto-ledgers",
           "title": "Decision/Evidence Ledgers",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Append-only, correlacionados, consultables.",
           "done_evidence": "Integridad + correlation_id.",
           "improvement_focus": "Búsqueda por job/serviceId.",
