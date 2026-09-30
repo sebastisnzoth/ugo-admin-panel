@@ -7,6 +7,8 @@ on:
     branches: [main]
     paths:
       - 'scripts/provider-debt-runtime.mjs'
+      - 'scripts/provider-debt-judge.mjs'
+      - 'scripts/provider-debt-sentinel.mjs'
       - 'src/mvp/provider/providerData.tsx'
       - 'src/mvp/provider/ProviderEarnings.tsx'
       - 'src/mvp/provider/ProviderHome.tsx'
@@ -23,7 +25,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-provider-debt-readiness
   cancel-in-progress: false
 
 jobs:
@@ -61,11 +63,22 @@ jobs:
           UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
           UGO_RUNTIME_SHA: ${{ github.sha }}
         run: node scripts/provider-debt-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-debt-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-debt-sentinel.mjs
       - name: Upload debt evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: provider-debt-runtime-${{ github.sha }}
-          path: artifacts/provider-debt-runtime.json
+          path: |
+            artifacts/provider-debt-runtime.json
+            artifacts/provider-debt-judge.json
+            artifacts/provider-debt-sentinel.json
           if-no-files-found: error
           retention-days: 90
