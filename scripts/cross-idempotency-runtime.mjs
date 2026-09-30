@@ -28,6 +28,24 @@ const save=()=>fs.writeFile('artifacts/readiness-cross-idempotency-runtime.json'
 await save()
 
 const fixtureIds=[]
+let providerProfileBefore=null
+async function prepareProviderFixture(){
+  const current=await admin.from('perfiles_proveedor').select('online,disponible').eq('usuario_id',providerId).single()
+  assert.ifError(current.error)
+  providerProfileBefore=current.data
+  const enabled=await admin.from('perfiles_proveedor').update({online:true,disponible:true}).eq('usuario_id',providerId).select('online,disponible').single()
+  assert.ifError(enabled.error)
+  assert.equal(enabled.data.online,true)
+  assert.equal(enabled.data.disponible,true)
+}
+async function restoreProviderFixture(){
+  if(!providerProfileBefore)return
+  const restored=await admin.from('perfiles_proveedor').update({
+    online:providerProfileBefore.online,
+    disponible:providerProfileBefore.disponible
+  }).eq('usuario_id',providerId)
+  assert.ifError(restored.error)
+}
 async function cleanup(serviceId){
   if(!serviceId)return
   await admin.from('resenas').delete().eq('servicio_id',serviceId)
@@ -41,6 +59,7 @@ async function cleanup(serviceId){
 }
 
 try{
+  await prepareProviderFixture()
   const {data:cat,error:catError}=await admin.from('categorias').select('id').eq('activa',true).limit(1).single()
   assert.ifError(catError)
 
@@ -125,5 +144,6 @@ try{
   out.status='FAIL';out.failure=String(error?.message||error);out.completed_at=new Date().toISOString();await save();throw error
 }finally{
   for(const id of [...fixtureIds])await cleanup(id).catch(()=>{})
+  await restoreProviderFixture().catch(()=>{})
   await Promise.allSettled([client.auth.signOut(),provider.auth.signOut()])
 }
