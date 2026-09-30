@@ -29,7 +29,8 @@
   "current_step": "FAILED_INFRA_AUTH_504",
   "attempt": 1,
   "evidence_ids": [
-    "github-actions-run-36669588425"
+    "github-actions-run-36669588425",
+    "docs/evidence/ugo-test-auth-outage-20260930.json"
   ],
   "failed_at": "2026-09-30T04:40:00Z",
   "failure": {
