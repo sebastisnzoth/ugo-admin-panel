@@ -6,10 +6,27 @@ const sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 if(!url.includes('tmossnqfwfwjrtzwcbmm')||!sk)throw new Error('UGO_TEST_ONLY')
 
 const service=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false}})
+const providerId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
 
-const {data:serviceId,error:p0Error}=await service.rpc('autonomous_qa_run_p0_test_service')
-if(p0Error)throw p0Error
-assert.ok(serviceId,'P0_SERVICE_REQUIRED')
+const {data:profile,error:profileError}=await service
+ .from('perfiles_proveedor')
+ .select('online,disponible')
+ .eq('usuario_id',providerId)
+ .single()
+if(profileError)throw profileError
+
+let serviceId=null
+try{
+ const {error:availabilityError}=await service
+  .from('perfiles_proveedor')
+  .update({online:true,disponible:true})
+  .eq('usuario_id',providerId)
+ if(availabilityError)throw availabilityError
+
+ const {data:p0ServiceId,error:p0Error}=await service.rpc('autonomous_qa_run_p0_test_service')
+ if(p0Error)throw p0Error
+ serviceId=p0ServiceId
+ assert.ok(serviceId,'P0_SERVICE_REQUIRED')
 
 const {data:scenario,error:scenarioError}=await service
  .from('autonomous_qa_scenarios')
@@ -57,6 +74,14 @@ console.log(JSON.stringify({
  qaRunId:run.id,
  observations,
  judgeJob:judgeJob.id,
+ fixtureAvailabilityRestored:true,
  environment:'UGO TEST',
  productionTouched:false,
 }))
+}finally{
+ const {error:restoreError}=await service
+  .from('perfiles_proveedor')
+  .update({online:Boolean(profile.online),disponible:Boolean(profile.disponible)})
+  .eq('usuario_id',providerId)
+ if(restoreError)throw restoreError
+}

@@ -34,3 +34,10 @@ test('Activity cancellation uses the same persisted-state recovery path as match
   assert.doesNotMatch(history, /\.rpc\('cancelar_servicio'/)
   assert.match(history, /'Cancelar pedido'/)
 })
+
+test('detail cancellation states come from the canonical client action service',async()=>{
+ const detail=await read('src/features/client/order/ClientServiceDetail.tsx')
+ assert.match(detail,/CLIENT_CANCELLABLE_SERVICE_STATES/)
+ assert.match(detail,/const CANCELLABLE=new Set\(CLIENT_CANCELLABLE_SERVICE_STATES\)/)
+ assert.doesNotMatch(detail,/new Set\(\['borrador','buscando'/)
+})
