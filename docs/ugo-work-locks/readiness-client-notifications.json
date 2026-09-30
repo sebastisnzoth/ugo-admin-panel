@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T14:12:00Z",
-  "lease_expires_at": "2026-09-30T14:57:00Z",
+  "heartbeat_at": "2026-09-30T14:17:00Z",
+  "lease_expires_at": "2026-09-30T15:02:00Z",
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,7 +27,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_STABLE_E2E_BROWSER_SESSION_AND_RERUN",
+  "current_step": "RETRY_ATTEMPT7_AFTER_TRANSIENT_NPM_REGISTRY_404",
   "attempt": 7,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
@@ -46,15 +46,18 @@
     "github-artifact:11103281757",
     "review:attempt6-backend-notification-persisted-browser-returned-authscreen",
     "reference:scripts/client-status-runtime.mjs",
-    "reference:scripts/client-navigation-runtime.mjs"
+    "reference:scripts/client-navigation-runtime.mjs",
+    "github-run:36727655821:INFRA_NPM_REGISTRY_404",
+    "infra:electron-to-chromium-1.5.443.tgz-404",
+    "contracts:notification-suite-16-PASS"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
-    "run_id": 36726695639,
-    "sha": "35af48ce29d339770e8f9a9013e325c26eef0f37",
-    "cause": "Assignment UPDATE emitted and persisted proveedor_asignado successfully, but the canonical browser login returned to AuthScreen before NotificationCenter could render. Backend notification path is proven; browser authentication harness is the remaining blocker.",
-    "next_fix": "Use the repository's already-proven E2E browser authentication pattern: obtain a real Supabase password session, inject that real session under ugo-test-client-auth before page load, wait for Inicio UGO Cliente, then perform the assignment UPDATE and verify live banner routing."
+    "run_id": 36727655821,
+    "sha": "e07d08dcedde35856c2c7f32d75f1ef0b905b66c",
+    "cause": "Infrastructure failure before browser runtime: npm registry returned 404 for electron-to-chromium-1.5.443.tgz while installing Playwright. TypeScript/build and 16 notification contract tests passed.",
+    "next_fix": "Retrigger the same logical attempt without functional changes; do not count this as a notification/runtime failure."
   },
   "finished_at": null,
   "validators_result": {
