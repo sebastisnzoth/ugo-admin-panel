@@ -47,7 +47,7 @@ for(const p of tracked){
         literalQuoted.lastIndex=0
         let m
         while((m=literalQuoted.exec(line))){
-          if(!/process\.env|import\.meta\.env|secrets\.|vars\.|\$\{/.test(m[3])) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:m[1]})
+          if(!/process\.env|import\.meta\.env|secrets\.|vars\.|\$\{|^\$[A-Z_]+$/.test(m[3])) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:m[1]})
         }
         const envMatch=line.match(literalEnv)
         if(envMatch&&!placeholder(envMatch[2])&&!/\$\{|\$[A-Z_]+/.test(envMatch[2])) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:envMatch[1]})
@@ -55,8 +55,12 @@ for(const p of tracked){
     }
     if(configSurface(p)&&/\bVITE_[A-Z0-9_]*(SECRET|PRIVATE|SERVICE_ROLE|PASSWORD|ACCESS_TOKEN|REFRESH_TOKEN)[A-Z0-9_]*\b/.test(line)) riskyClientEnv.push({path:p,line:i+1})
     if(executableSurface(p)&&/console\.(?:log|info|warn|error|debug)\s*\(/.test(line)){
-      const code=stripStrings(line)
-      if(/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)) riskyLogs.push({path:p,line:i+1})
+      const calls=line.split(/(?=console\.(?:log|info|warn|error|debug)\s*\()/g).slice(1)
+      for(const call of calls){
+        const segment=call.split(';')[0]
+        const code=stripStrings(segment)
+        if(/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)) riskyLogs.push({path:p,line:i+1})
+      }
     }
   })
 }
