@@ -26,5 +26,11 @@
     "github-run:36667189938",
     "github-core-run:36667189922"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-performance",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
