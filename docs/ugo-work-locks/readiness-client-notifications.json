@@ -2,10 +2,10 @@
   "readiness_id": "client-notifications",
   "task_id": "readiness-client-notifications",
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T14:00:02Z",
-  "lease_expires_at": "2026-09-30T14:45:02Z",
+  "heartbeat_at": "2026-09-30T14:04:00Z",
+  "lease_expires_at": null,
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,7 +27,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_CANONICAL_LOGIN_THEN_OPEN_FROM_LIVE_NOTIFICATION",
+  "current_step": "FAILED_REQUIRES_REVIEW",
   "attempt": 5,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
@@ -37,20 +37,22 @@
     "review:attempt3-auth-deeplink-scope-separated",
     "github-run:36725284882:FAIL_SESSION_NAVIGATION",
     "github-artifact:11101149256",
-    "review:attempt4-open-via-notification-routing"
+    "review:attempt4-open-via-notification-routing",
+    "github-run:36725876214:FAIL_REALTIME_BANNER_TIMEOUT",
+    "github-artifact:11103490341"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
-    "run_id": 36725284882,
-    "sha": "29b85cd9d3fcce7955fae6a083d4c913eb786cc7",
-    "cause": "after canonical UI login, a second full page navigation returned to AuthScreen; artifact proved href retained serviceId but browser was unauthenticated on the new document",
-    "next_fix": "stay in the authenticated document, wait for the real client live notification generated for the disposable service, click it, and open the service through notification datos.servicio_id routing"
+    "run_id": 36725876214,
+    "sha": "de01b3c5ecfa40faa6a26d8bc0d3860da54e42a7",
+    "cause": "canonical authenticated browser stayed in-session, but .ugo-notification-live.is-client never rendered the expected UGO · ACTUALIZACIÓN DEL PEDIDO banner within 30s",
+    "next_fix": "inspect client realtime notification subscription/delivery and scheduler attempt accounting before retry"
   },
-  "finished_at": null,
+  "finished_at": "2026-09-30T14:04:00Z",
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
   },
-  "failure_reason": null
+  "failure_reason": "Retry policy exceeded (attempt 5 while scheduler max_attempts is 3). Latest same-SHA browser run authenticated canonically but did not receive/render the expected client realtime notification banner. Stop automatic retries; review notification subscription/delivery path and scheduler attempt accounting before any new execution."
 }
