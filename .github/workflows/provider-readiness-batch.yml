@@ -10,6 +10,10 @@ on:
       - 'scripts/autonomous-qa-gps-runtime.mjs'
       - 'scripts/provider-debt-runtime.mjs'
       - 'tests/contracts/provider-test-runtime-concurrency.test.mjs'
+      - 'supabase/migrations/20260930105814_reconcile_qa_p0_secret_key_compat.sql'
+      - 'supabase/migrations/20260930110213_provider_debt_readiness_probe.sql'
+      - 'supabase/migrations/20260930110510_provider_debt_readiness_probe_restore_profile.sql'
+      - 'supabase/migrations/20260930110826_cleanup_provider_accept_readiness_fixture.sql'
 
 permissions:
   contents: read

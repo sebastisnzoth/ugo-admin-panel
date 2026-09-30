@@ -3,29 +3,49 @@
   "task_id": "readiness-hugo-action",
   "job_id": "UGO-READINESS-HUGO-ACTION-ATTEMPT-2",
   "title": "Verify Hugo INTENT→ACTION→EFFECT with persistent audit evidence",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T10:58:00Z",
-  "heartbeat_at": "2026-09-30T10:58:00Z",
-  "lease_expires_at": "2026-09-30T11:28:00Z",
+  "heartbeat_at": "2026-09-30T11:10:00Z",
+  "lease_expires_at": "2026-09-30T11:10:00Z",
   "started_sha": "cadb80225ce878ef9ebbcfa3bf94a66246baf794",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "GPT_UGO · Hugo Action Runtime Agent",
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["hugo-actions"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "hugo-actions"
+  ],
   "correlation_id": "readiness-hugo-action-20260930T105800Z-cadb8022",
-  "current_step": "REVALIDATE_AND_REPAIR",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:294",
     "github-pr:296",
     "github-run:36667189938",
-    "github-core-run:36667189922"
+    "github-core-run:36667189922",
+    "github-pr:303",
+    "github-run:36706401777",
+    "github-runtime-artifact:11091514833",
+    "github-judge-job:109857944718",
+    "github-judge-artifact:11091604611",
+    "github-sentinel-job:109858019981",
+    "github-sentinel-artifact:11092396599",
+    "github-core-run:36706401748",
+    "github-hugo-voice-run:36706401819",
+    "commit:cbb49a9c342608040e5558cbc2c66c7ea9c0ac8a",
+    "commit:2abb6579eda8ac6fc4798b935d6b33fd12f67b64",
+    "evidence:docs/evidence/readiness-hugo-action-20260930.json"
   ],
   "production_touched": false,
   "notes": [
     "Attempt 1 failed without Judge/Sentinel PASS. PR #294 overlaps voice resilience; do not duplicate valid work.",
-    "Attempt 2 starts from current main cadb80225ce878ef9ebbcfa3bf94a66246baf794."
+    "Attempt 2 starts from current main cadb80225ce878ef9ebbcfa3bf94a66246baf794.",
+    "Attempt 2 proved real cancel_service through the Hugo tool channel in UGO TEST: state persisted buscando→cancelado, serviceId recorded, audit channel recorded, fixture cleaned.",
+    "Judge PASS and Sentinel PASS on workflow run 36706401777.",
+    "Brief effect confirmation added to main and pinned by contract test."
   ],
   "skills": [
     "ugo-readiness-orchestrator",
@@ -34,7 +54,13 @@
     "ugo-evidence-judge"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
-  }
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "finished_at": "2026-09-30T11:10:00Z",
+  "implementation_sha": "2abb6579eda8ac6fc4798b935d6b33fd12f67b64",
+  "evidence_path": "docs/evidence/readiness-hugo-action-20260930.json",
+  "runtime_result": "PASS",
+  "persisted_effect": true,
+  "audit_trail": true
 }

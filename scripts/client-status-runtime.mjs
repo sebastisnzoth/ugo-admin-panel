@@ -59,6 +59,7 @@ const insertRow={
  comision_ugo:template.comision_ugo??0,
  ganancia_proveedor:template.ganancia_proveedor??0,
  moneda:template.moneda||'BRL',
+ ambiente:'demo',
  ubicacion_cliente:template.ubicacion_cliente||null,
  metadata,
 }
@@ -127,21 +128,55 @@ async function expectUi(state,stage){
  transitions.push({service_id:fixture.id,state,stage,backend_state:persisted,ui_state:await timeline.getAttribute('data-service-state'),ui_stage:await timeline.getAttribute('data-current-stage'),labels,result:'PASS'})
 }
 
+const EVIDENCE_BUCKET='service-evidence'
+const EVIDENCE_PNG=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9WlKxQAAAABJRU5ErkJggg==','base64')
+const evidencePaths=[]
+async function addProviderEvidence(tipo){
+ const path=fixture.id+'/'+TEST_PROVIDER_ID+'/client-status-'+tipo+'-'+sha.slice(0,12)+'.png'
+ const uploaded=await provider.storage.from(EVIDENCE_BUCKET).upload(path,EVIDENCE_PNG,{upsert:false,contentType:'image/png'})
+ assert.ifError(uploaded.error)
+ const {error}=await provider.from('evidencias_servicio').insert({
+  servicio_id:fixture.id,
+  usuario_id:TEST_PROVIDER_ID,
+  tipo,
+  storage_path:path,
+  descripcion:'UGO TEST client-status '+tipo,
+  metadata:{readiness_fixture:'client-status',sha,bytes:EVIDENCE_PNG.byteLength},
+ })
+ if(error){
+  await provider.storage.from(EVIDENCE_BUCKET).remove([path]).catch(()=>{})
+  throw error
+ }
+ evidencePaths.push(path)
+ return path
+}
+
 try{
  await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
  await expectUi('asignado','accepted')
 
- const {error:cashError}=await auth.rpc('seleccionar_pago_efectivo',{p_servicio_id:fixture.id})
- assert.ifError(cashError)
- const {data:selectedPayment,error:paymentReadError}=await admin.from('pagos')
-  .select('id,metodo,estado')
-  .eq('servicio_id',fixture.id)
-  .order('created_at',{ascending:false})
-  .limit(1)
-  .maybeSingle()
- assert.ifError(paymentReadError)
- assert.equal(selectedPayment?.metodo,'efectivo','CASH_PAYMENT_SELECTION_REQUIRED')
+ const paymentAmount=Math.max(1,Number(template.tarifa||50))
+ const {data:selectedPayment,error:paymentInsertError}=await admin.from('pagos').insert({
+  servicio_id:fixture.id,
+  cliente_id:login.user.id,
+  proveedor_id:TEST_PROVIDER_ID,
+  procesador:'ugo-test',
+  pago_externo_id:'client-status-'+sha,
+  monto_bruto:paymentAmount,
+  comision_ugo:0,
+  ganancia_proveedor:0,
+  moneda:'BRL',
+  estado:'retenido',
+  metodo:'pix',
+  modelo_pago:'custodia_ugo',
+  ambiente:'demo',
+  fecha_confirmacion:new Date().toISOString(),
+ }).select('id,metodo,estado,pago_externo_id,ambiente').single()
+ assert.ifError(paymentInsertError)
+ assert.equal(selectedPayment?.estado,'retenido','PROTECTED_TEST_PAYMENT_REQUIRED')
+ assert.ok(selectedPayment?.pago_externo_id,'PROTECTED_TEST_PAYMENT_EXTERNAL_ID_REQUIRED')
+ assert.equal(selectedPayment?.ambiente,'demo','TEST_PAYMENT_ENVIRONMENT_REQUIRED')
 
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
@@ -169,16 +204,19 @@ try{
  assert.equal(arrival?.status,'arrived','GPS_VALIDATED_ARRIVAL_REQUIRED')
  await expectUi('llegado','arrived')
 
+ await addProviderEvidence('antes')
  const {error:workError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_progreso'})
  assert.ifError(workError)
  await expectUi('en_progreso','working')
 
+ await addProviderEvidence('despues')
  const {error:finishError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'esperando_aprobacion'})
  assert.ifError(finishError)
  await expectUi('esperando_aprobacion','finished')
 
- const {error:completeError}=await admin.from('servicios').update({estado:'completado'}).eq('id',fixture.id).eq('cliente_id',login.user.id)
- assert.ifError(completeError)
+ const {data:approved,error:approveError}=await auth.rpc('aprobar_servicio',{p_servicio_id:fixture.id})
+ assert.ifError(approveError)
+ assert.equal(approved?.estado,'completado','CLIENT_APPROVAL_MUST_COMPLETE_SERVICE')
  await expectUi('completado','finished')
 
  await page.screenshot({path:'artifacts/client-status-runtime.png',fullPage:true})
@@ -186,6 +224,8 @@ try{
  await page.close().catch(()=>{})
  await browser.close().catch(()=>{})
  try{
+  if(evidencePaths.length)await provider.storage.from(EVIDENCE_BUCKET).remove(evidencePaths).catch(()=>{})
+  await admin.from('evidencias_servicio').delete().eq('servicio_id',fixture.id)
   await admin.from('ofertas_servicio').delete().eq('servicio_id',fixture.id)
   await admin.from('pagos').delete().eq('servicio_id',fixture.id)
   const {error:deleteError}=await admin.from('servicios').delete().eq('id',fixture.id).eq('cliente_id',login.user.id)
@@ -216,14 +256,16 @@ const evidence={
  service_id:fixture.id,
  fixture:'disposable',
  transition_sources:{
-  asignado:'fixture_create',
+  asignado:'fixture_create+protected_test_payment',
   en_camino:'provider.avanzar_servicio',
   llegado:'provider.publicar_ubicacion_proveedor+marcar_llegada_proveedor',
-  en_progreso:'provider.avanzar_servicio',
-  esperando_aprobacion:'provider.avanzar_servicio',
-  completado:'service_role_test_finalize',
+  en_progreso:'provider.evidence_antes+avanzar_servicio',
+  esperando_aprobacion:'provider.evidence_despues+avanzar_servicio',
+  completado:'client.aprobar_servicio',
  },
  sequence:transitions,
+ evidence_paths:evidencePaths,
+ payment:{method:'pix',state:'retenido',environment:'demo'},
  cleanup,
  cleanup_ok:cleanup.ok,
  page_errors:pageErrors,

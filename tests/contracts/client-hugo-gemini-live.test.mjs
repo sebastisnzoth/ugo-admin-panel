@@ -125,3 +125,10 @@ test('Client Hugo can enumerate multiple active services before exact service ac
  assert.match(dock,/number:candidate\.numero\?\?null/)
  assert.match(dock,/summary:serviceSummary\(candidate,pt\)/)
 })
+
+
+test('Client Hugo confirms a successful persisted cancellation briefly',()=>{
+ assert.match(dock,/if\(name==='cancel_service'\)/)
+ assert.match(dock,/message:'Pedido cancelado'/)
+ assert.match(dock,/code:'CONFIRMATION_REQUIRED'/)
+})

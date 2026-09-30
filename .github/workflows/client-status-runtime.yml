@@ -12,7 +12,7 @@ on:
       - '.github/workflows/client-status-runtime.yml'
 
 concurrency:
-  group: ugo-client-status-runtime-v6
+  group: ugo-client-status-runtime-v7
   cancel-in-progress: false
 
 permissions:
@@ -198,3 +198,5 @@ jobs:
 # cash-selection v5 2026-09-30T11:04Z
 
 # status-ui-diagnostics v6 2026-09-30T11:07Z
+
+# full-business-lifecycle v7 2026-09-30T11:11Z
