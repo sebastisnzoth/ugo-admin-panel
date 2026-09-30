@@ -7,8 +7,17 @@ const sha=process.env.UGO_RUNTIME_SHA||''
 if(!url.includes('tmossnqfwfwjrtzwcbmm')||!sk)throw new Error('UGO_TEST_ONLY')
 assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
 
-const service=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false}})
+const service=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
 const providerId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
+const required=[
+ 'zero_zero_rejected',
+ 'stale_gps_rejected',
+ 'inaccurate_gps_rejected',
+ 'arrival_inside_200m',
+ 'arrival_outside_200m_rejected',
+ 'state_unchanged_on_rejection',
+ 'recent_location_required',
+]
 
 const {data:profile,error:profileError}=await service
  .from('perfiles_proveedor')
@@ -17,7 +26,7 @@ const {data:profile,error:profileError}=await service
  .single()
 if(profileError)throw profileError
 
-let serviceId=null
+let result=null
 try{
  const {error:availabilityError}=await service
   .from('perfiles_proveedor')
@@ -25,66 +34,41 @@ try{
   .eq('usuario_id',providerId)
  if(availabilityError)throw availabilityError
 
- const {data:p0ServiceId,error:p0Error}=await service.rpc('autonomous_qa_run_p0_test_service')
- if(p0Error)throw p0Error
- serviceId=p0ServiceId
- assert.ok(serviceId,'P0_SERVICE_REQUIRED')
+ const {data:judgeJob,error:judgeError}=await service.rpc('autonomous_qa_run_gps_independent_evidence')
+ if(judgeError)throw judgeError
+ assert.equal(judgeJob?.status,'SUCCEEDED','GPS_INDEPENDENT_JUDGE_REQUIRED')
+ const verification=judgeJob?.verification_result||{}
+ assert.equal(verification.passed,true,'GPS_INDEPENDENT_VERDICT_REQUIRED')
+ assert.equal(verification.source,'INDEPENDENT_PERSISTED_EVIDENCE','GPS_INDEPENDENT_SOURCE_REQUIRED')
+ const evidence=Array.isArray(verification.evidence)?verification.evidence:[]
+ const assertions=new Set(evidence.map(item=>String(item?.assertion||'')))
+ for(const key of required)assert.ok(assertions.has(key),'GPS_EVIDENCE_MISSING_'+key)
 
-const {data:scenario,error:scenarioError}=await service
- .from('autonomous_qa_scenarios')
- .select('id')
- .eq('scenario_key','gps-geofence')
- .single()
-if(scenarioError)throw scenarioError
-
-const observations={
- zero_zero_rejected:true,
- stale_gps_rejected:true,
- inaccurate_gps_rejected:true,
- outside_geofence_rejected:true,
- rejected_arrival_did_not_change_state:true,
- valid_gps_arrival_accepted:true,
-}
-
-const {data:run,error:runError}=await service.rpc('autonomous_record_external_qa_probe',{
- p_scenario_id:scenario.id,
- p_service_id:serviceId,
- p_observations:observations,
-})
-if(runError)throw runError
-
-for(const [key,passed] of Object.entries(observations)){
- const {error:evidenceError}=await service.rpc('autonomous_record_independent_qa_evidence',{
-  p_run_id:run.id,
-  p_service_id:serviceId,
-  p_assertion_key:key,
-  p_expected:true,
-  p_observed:passed,
-  p_passed:passed,
-  p_source:'SERVICE_ROLE_ISOLATED_TEST_RUNTIME',
- })
- if(evidenceError)throw evidenceError
-}
-
-const {data:judgeJob,error:judgeError}=await service.rpc('autonomous_qa_run_gps_independent_evidence')
-if(judgeError)throw judgeError
-assert.equal(judgeJob?.status,'SUCCEEDED')
-
-console.log(JSON.stringify({
- gpsGeofence:true,
- sha,
- serviceId,
- qaRunId:run.id,
- observations,
- judgeJob:judgeJob.id,
- fixtureAvailabilityRestored:true,
- environment:'UGO TEST',
- productionTouched:false,
-}))
+ const qaRunId=verification.qa_run_id||judgeJob?.target_id||null
+ const serviceId=judgeJob?.service_id||null
+ assert.ok(qaRunId,'GPS_QA_RUN_REQUIRED')
+ assert.ok(serviceId,'GPS_SERVICE_REQUIRED')
+ const observations=Object.fromEntries(required.map(key=>[key,true]))
+ result={
+  gpsGeofence:true,
+  sha,
+  serviceId,
+  qaRunId,
+  observations,
+  judgeJob:judgeJob.id,
+  verification_result:verification,
+  fixtureAvailabilityRestored:false,
+  environment:'UGO TEST',
+  productionTouched:false,
+ }
 }finally{
  const {error:restoreError}=await service
   .from('perfiles_proveedor')
   .update({online:Boolean(profile.online),disponible:Boolean(profile.disponible)})
   .eq('usuario_id',providerId)
  if(restoreError)throw restoreError
+ if(result)result.fixtureAvailabilityRestored=true
 }
+
+assert.ok(result,'GPS_RUNTIME_RESULT_REQUIRED')
+console.log(JSON.stringify(result))
