@@ -125,6 +125,7 @@ const readinessDirectActionMap = {
   'auto-agents': 'readiness-auto-agents-test.yml',
   'auto-departments': 'readiness-auto-departments-test.yml',
   'auto-department-job-visibility': 'department-job-visibility-runtime.yml',
+  'auto-killswitch': 'auto-killswitch-runtime.yml',
 }
 for (const group of functionalReadiness.groups || []) {
   for (const item of group.items || []) {
