@@ -14,8 +14,17 @@ assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&email&&password&&sha,'UGO_TEST_PROVIDER_UI_INPUTS_REQUIRED')
 
 const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
-const{data,error}=await sb.auth.signInWithPassword({email,password})
-assert.ifError(error);assert.ok(data.session,'PROVIDER_SESSION_REQUIRED')
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))
+let data=null,lastError=null
+for(let attempt=1;attempt<=3;attempt+=1){
+ const login=await sb.auth.signInWithPassword({email,password})
+ if(!login.error){data=login.data;break}
+ lastError=login.error
+ const status=Number(login.error?.status||0)
+ if(!(status>=500||login.error?.name==='AuthRetryableFetchError')||attempt===3)break
+ await sleep(attempt*1000)
+}
+if(!data?.session)throw lastError||new Error('PROVIDER_SESSION_REQUIRED')
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const results=[]
@@ -59,6 +68,7 @@ async function runViewport(name,viewport){
 }
 try{
  await runViewport('desktop',{width:1440,height:1000})
+ await runViewport('tablet',{width:820,height:1180})
  await runViewport('mobile',{width:390,height:844})
  await fs.writeFile('artifacts/provider-ui-runtime.json',JSON.stringify({task:'provider-ui-runtime',sha,environment:'UGO TEST',results,page_errors:0,completed_at:new Date().toISOString()},null,2)+'\n')
  console.log(JSON.stringify({status:'PASS',sha,results}))
