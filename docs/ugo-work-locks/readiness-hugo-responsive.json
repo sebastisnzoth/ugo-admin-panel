@@ -1,0 +1,58 @@
+{
+  "readiness_id": "hugo-responsive",
+  "task_id": "readiness-hugo-responsive",
+  "job_id": "UGO-READINESS-HUGO-RESPONSIVE",
+  "title": "Verify hugo-responsive in UGO TEST",
+  "status": "DONE",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Responsive Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "hugo-shell"
+  ],
+  "correlation_id": "readiness-hugo-responsive-20260930-current-main",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "started_at": "2026-09-30T11:30:00Z",
+  "heartbeat_at": "2026-09-30T12:23:00Z",
+  "lease_expires_at": "2026-09-30T12:23:00Z",
+  "started_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "completed_at": "2026-09-30T12:23:00Z",
+  "finished_at": "2026-09-30T12:23:00Z",
+  "verified_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_validated_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "verified_runtime_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "result": "VERIFIED",
+  "production_touched": false,
+  "evidence_ids": [
+    "github-run:36714117294",
+    "github-artifact:11095618208",
+    "sha256:8617c7180120b7b306a63dd942d6645c68aa9c43d2944c4e8bcf884dbdb31ba9",
+    "repo:docs/evidence/readiness-hugo-responsive-20260930-current-main.json"
+  ],
+  "evidence_path": "docs/evidence/readiness-hugo-responsive-20260930-current-main.json",
+  "evidence_commit_sha": "3e21befb15ef2baec04818cdca216dfc35fa589c",
+  "artifact_digest": "sha256:8617c7180120b7b306a63dd942d6645c68aa9c43d2944c4e8bcf884dbdb31ba9",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z",
+    "production_touched": false
+  },
+  "result_summary": "Hugo responsive passed desktop/tablet/mobile and mobile-keyboard browser proof."
+}
