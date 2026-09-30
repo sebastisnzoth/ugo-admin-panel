@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T04:30:00Z",
-  "lease_expires_at": "2026-09-30T05:15:00Z",
+  "heartbeat_at": "2026-09-30T04:38:00Z",
+  "lease_expires_at": "2026-09-30T04:38:00Z",
   "started_sha": "d9b71cc8741da1889a9a06c2b0543bedc15efb6f",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,7 +25,22 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20260930T043000Z",
-  "current_step": "ACQUIRE_AND_INSPECT",
+  "current_step": "FAILED_INFRA_AUTH_504",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "github-actions-run-36669225058",
+    "artifact-11076899569",
+    "github-actions-run-36669338660",
+    "artifact-11077228063"
+  ],
+  "failed_at": "2026-09-30T04:38:00Z",
+  "failure": {
+    "kind": "INFRASTRUCTURE",
+    "component": "UGO_TEST_AUTH",
+    "http_status": 504,
+    "functional_contracts_passed": 16,
+    "attempts": 2,
+    "message": "Provider GPS runtime could not authenticate because UGO TEST Auth returned repeated HTTP 504. No functional GPS assertion failed."
+  },
+  "production_touched": false
 }
