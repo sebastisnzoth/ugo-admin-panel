@@ -1,3 +1,4 @@
+# retry: 2026-09-30T10:48Z after TEST Auth recovery
 name: UGO Provider UI Runtime TEST
 on:
   workflow_dispatch:
