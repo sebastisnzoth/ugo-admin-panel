@@ -3,9 +3,9 @@
   "task_id": "readiness-auto-ledgers",
   "job_id": "UGO-READINESS-AUTO_LEDGERS",
   "title": "Verify append-only correlated queryable Decision/Evidence Ledgers in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T02:13:00Z",
-  "heartbeat_at": "2026-09-30T02:18:00Z",
+  "heartbeat_at": "2026-09-30T02:25:16Z",
   "lease_expires_at": "2026-09-30T02:58:00Z",
   "started_sha": "1f6faad2c37d5a268923d8cb875dd48332900b0e",
   "owner": "UGO",
@@ -25,7 +25,15 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-auto-ledgers-20260930T021300Z-1f6faad2",
-  "current_step": "INSPECT",
+  "current_step": "DONE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "docs/evidence/readiness-auto-ledgers-20260930.json"
+  ],
+  "finished_at": "2026-09-30T02:25:16Z",
+  "verified_sha": "a13ef154d96209253ae392c305374882e94662eb",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "workflow_run_id": 36659725594,
+  "artifact_id": 11073822151
 }
