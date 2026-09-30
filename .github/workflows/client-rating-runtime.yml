@@ -1,0 +1,75 @@
+name: UGO Client Rating Runtime TEST
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/client-rating-runtime.yml"
+      - "scripts/client-rating-*.mjs"
+      - "tests/contracts/client-rating.test.mjs"
+      - "src/features/client/rating/ClientRatingPrompt.tsx"
+      - "src/features/ratings/serviceRatingService.ts"
+      - "src/features/client/order/ClientServiceDetail.tsx"
+      - "src/features/client/ui/ClientOperationalSurfaces.tsx"
+      - "supabase/migrations/20260920030000_bilateral_service_ratings.sql"
+      - "supabase/migrations/20260930141225_cross_idempotency_rating_uniqueness.sql"
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Refuse non-TEST environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Client rating UI and service contracts
+        run: node --test tests/contracts/client-rating.test.mjs
+      - name: Generate masked ephemeral fixture credential
+        run: |
+          node --input-type=module <<'NODE'
+          import {randomUUID} from "node:crypto";import {appendFileSync} from "node:fs"
+          const password="UGO-"+randomUUID()+"-R9!"
+          console.log("::add-mask::"+password)
+          appendFileSync(process.env.GITHUB_ENV,"UGO_RATING_FIXTURE_PASSWORD="+password+"\n")
+          NODE
+      - name: Persist one client rating in UGO TEST
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-rating-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-rating-judge.mjs
+      - name: Clean isolated fixtures
+        if: always()
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-rating-cleanup.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-rating-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-client-rating-${{ github.sha }}
+          path: artifacts/client-rating-*
+          if-no-files-found: warn
+          retention-days: 90
