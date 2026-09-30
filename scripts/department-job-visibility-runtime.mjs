@@ -26,8 +26,7 @@ const {data:departments,error:departmentsError}=await db.from('autonomous_depart
 assert.ifError(departmentsError)
 assert.ok(departments?.length,'AUTONOMOUS_DEPARTMENTS_REQUIRED')
 const activeStatuses=['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED']
-const summaries=[]
-for(const department of departments){
+async function readDepartmentSummary(department){
   const id=department.department_id
   const [{count:total,error:totalError},{count:active,error:activeError},{data:lastRows,error:lastError}]=await Promise.all([
     db.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',id),
@@ -42,8 +41,9 @@ for(const department of departments){
     assert.ifError(evidenceResult.error)
     lastEvidence=evidenceResult.data?.[0]||null
   }
-  summaries.push({department_id:id,name:department.name,total_jobs:total||0,active_jobs:active||0,last_job:lastJob,last_evidence:lastEvidence})
+  return {department_id:id,name:department.name,total_jobs:total||0,active_jobs:active||0,last_job:lastJob,last_evidence:lastEvidence}
 }
+const summaries=[]
 
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
@@ -67,17 +67,23 @@ try{
   const table=page.locator('table').filter({hasText:'Jobs totales'}).first()
   await table.waitFor({state:'visible',timeout:20000})
 
-  for(const summary of summaries){
-    const row=table.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first()
+  for(const department of departments){
+    const row=table.locator('tbody tr').filter({hasText:'D'+department.department_id}).first()
     await row.waitFor({state:'visible',timeout:10000})
-    const text=(await row.textContent())||''
-    assert.ok(text.includes(String(summary.active_jobs)),'ACTIVE_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id)
-    assert.ok(text.includes(String(summary.total_jobs)),'TOTAL_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id)
-    if(summary.last_job){
-      assert.ok(text.includes(String(summary.last_job.status)),'LAST_JOB_STATUS_MISMATCH D'+summary.department_id)
-      assert.ok(text.includes(String(summary.last_job.correlation_id||'—')),'CORRELATION_MISMATCH D'+summary.department_id)
-      if(summary.last_evidence)assert.ok(text.includes(String(summary.last_evidence.evidence_type||summary.last_evidence.reference)),'LAST_EVIDENCE_MISMATCH D'+summary.department_id)
+    let matched=null
+    let lastObserved={ui:'',backend:null}
+    for(let attempt=0;attempt<12;attempt++){
+      const summary=await readDepartmentSummary(department)
+      const text=(await row.textContent())||''
+      const countsMatch=text.includes(String(summary.active_jobs))&&text.includes(String(summary.total_jobs))
+      const jobMatch=!summary.last_job||(text.includes(String(summary.last_job.status))&&text.includes(String(summary.last_job.correlation_id||'—')))
+      const evidenceMatch=!summary.last_evidence||text.includes(String(summary.last_evidence.evidence_type||summary.last_evidence.reference))
+      lastObserved={ui:text,backend:summary}
+      if(countsMatch&&jobMatch&&evidenceMatch){matched=summary;break}
+      await page.waitForTimeout(750)
     }
+    assert.ok(matched,'DEPARTMENT_UI_BACKEND_DID_NOT_CONVERGE D'+department.department_id+' '+JSON.stringify(lastObserved))
+    summaries.push(matched)
   }
 
   const first=summaries[0]
