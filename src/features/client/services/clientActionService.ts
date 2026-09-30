@@ -1,8 +1,9 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
+import{MATCHING_SERVICE_STATES}from'../../../lib/marketplace/lifecycle'
 
 export const CLIENT_CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
-export const CLIENT_MATCHING_RETRY_STATES=['buscando','ofrecido']
+export const CLIENT_MATCHING_RETRY_STATES=[...MATCHING_SERVICE_STATES]
 type OwnedServiceRow={id:string;estado:string;metadata?:Record<string,unknown>|null}
 
 function hasWorkApproval(row:OwnedServiceRow|null){
