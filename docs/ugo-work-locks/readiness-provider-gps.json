@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "IN_PROGRESS",
+  "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T17:06:00Z",
-  "lease_expires_at": "2026-09-30T17:51:00Z",
+  "heartbeat_at": "2026-09-30T17:09:00Z",
+  "lease_expires_at": "2026-09-30T18:09:00Z",
   "started_sha": "eb99eba18f061f03321d9782d6ca60ad1aff1e75",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,7 +25,7 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20260930T165800Z-gptugo-r6",
-  "current_step": "R6_CANONICAL_RUNTIME_FIXED_TEST_DEPENDENCY_VERSIONED_RERUN_PENDING",
+  "current_step": "HUMAN_FINAL_PROVIDER_GPS_PHYSICAL_REQUIRED",
   "attempt": 6,
   "evidence_ids": [
     "github-actions-run-36669225058",
@@ -44,13 +44,31 @@
     "test-db:canonical-gps-judge-job-5cc2f926-7bce-4807-a699-f3524603ba7d",
     "commit:8750c055894250465de83fd64f61c8a0102daafd",
     "commit:d04e66a531829af592b5ba5ff09e134c4fb527da",
-    "commit:10f0cc56121ac7205cb44e543628725a00f91acf"
+    "commit:10f0cc56121ac7205cb44e543628725a00f91acf",
+    "github-run:36748700207",
+    "github-artifact:11112998831:runtime-pass",
+    "github-artifact:11113313430:judge-pass",
+    "github-artifact:11113746599:sentinel-pass",
+    "service:f41edbff-9b85-44a8-91b6-50fd612e5994",
+    "qa-run:587d6036-d52e-4fe4-8828-6615b9cc127d",
+    "db-judge-job:3afa38ce-96b3-459d-8102-392b4b2e3753",
+    "docs/evidence/readiness-provider-gps-20260930.json",
+    "commit:d7570046c2b8829fe7d65ca6344a32f6aec7c7e8"
   ],
   "production_touched": false,
-  "last_failure": {
-    "run_id": 36748122295,
-    "sha": "52ff6267cffe8f6ee05c568a5a031b6886c36525",
-    "cause": "UGO TEST pilot matching dependency unaccent was not installed; canonical GPS runtime wrapper also still duplicated noncanonical evidence",
-    "next_fix": "Rerun provider-gps workflow using canonical PERSISTED_STATE evidence after enabling/versioning unaccent in TEST"
+  "last_failure": null,
+  "automated_closure": {
+    "candidate_sha": "0da38ac3cce2c92ead4fa1fe5c4159d8624ee8ac",
+    "workflow_run_id": 36748700207,
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false
+  },
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "action": "Con un dispositivo físico del proveedor, abrir un servicio TEST en estado en_camino, permitir ubicación precisa, obtener un fix GPS real reciente no 0,0 y comprobar que UGO lo publica antes de validar llegada.",
+    "evidence_required": "GPS físico final"
   }
 }
