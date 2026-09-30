@@ -17,8 +17,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-provider-gps-runtime
-  cancel-in-progress: true
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
 
 jobs:
   gps-runtime:
