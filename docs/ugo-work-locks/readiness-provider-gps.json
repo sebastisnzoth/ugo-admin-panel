@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "IN_PROGRESS",
+  "status": "WAITING_RUNTIME",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T22:44:00Z",
-  "lease_expires_at": "2026-09-30T23:44:00Z",
+  "heartbeat_at": "2026-09-30T22:50:00Z",
+  "lease_expires_at": "2026-09-30T23:50:00Z",
   "started_sha": "1232706724e06458dd56d754f7f3b904ff6cc824",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,7 +25,7 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20260930T224400Z-gptugo-r7",
-  "current_step": "IMPLEMENT_GPS_FRESHNESS_INDICATOR_AND_REVERIFY",
+  "current_step": "RETRY_SAME_SHA_PROVIDER_GPS_RUNTIME_AFTER_SCHEDULER_CAPACITY",
   "attempt": 7,
   "evidence_ids": [
     "github-actions-run-36669225058",
@@ -54,10 +54,20 @@
     "db-judge-job:3afa38ce-96b3-459d-8102-392b4b2e3753",
     "docs/evidence/readiness-provider-gps-20260930.json",
     "commit:d7570046c2b8829fe7d65ca6344a32f6aec7c7e8",
-    "stale-reconcile:1232706724e06458dd56d754f7f3b904ff6cc824"
+    "stale-reconcile:1232706724e06458dd56d754f7f3b904ff6cc824",
+    "commit:1d61d573f1783ff6f9aac307f16e2e859e990ce4",
+    "commit:0eba5bacf90a36c1c9330fdcd95d8c8ad26b92f8",
+    "commit:d7f91a99f8119e0b8f99d288298a8ad8b72cf231",
+    "commit:ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
+    "github-run:36787485080:CANCELLED_BEFORE_JOBS",
+    "github-run:36787549792:CANCELLED_BEFORE_JOBS",
+    "retry:36787549792:FORBIDDEN"
   ],
   "production_touched": false,
-  "last_failure": null,
+  "last_failure": {
+    "code": "SAME_SHA_RUNTIME_CANCELLED",
+    "message": "Provider GPS same-SHA workflow was cancelled before jobs by repository scheduler/concurrency; GitHub refused rerun of cancelled run."
+  },
   "automated_closure": {
     "candidate_sha": "0da38ac3cce2c92ead4fa1fe5c4159d8624ee8ac",
     "workflow_run_id": 36748700207,
@@ -71,5 +81,12 @@
     "status": "PENDING",
     "action": "Con un dispositivo físico del proveedor, abrir un servicio TEST en estado en_camino, permitir ubicación precisa, obtener un fix GPS real reciente no 0,0 y comprobar que UGO lo publica antes de validar llegada.",
     "evidence_required": "GPS físico final"
+  },
+  "automated_closure_latest": {
+    "candidate_sha": "ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
+    "runtime": "PENDING_RETRY",
+    "judge": "PENDING",
+    "sentinel": "PENDING",
+    "production_touched": false
   }
 }
