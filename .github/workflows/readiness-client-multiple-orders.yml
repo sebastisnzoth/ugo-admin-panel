@@ -1,0 +1,51 @@
+name: UGO Readiness Client Multiple Orders TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/features/client/request/ClientPostConfirmFlow.tsx"
+      - "src/features/client/home/ClientHomeScreen.tsx"
+      - "supabase/migrations/20260930021452_client_active_scheduled_coexistence_policy.sql"
+      - "tests/contracts/client-multiple-orders-readiness.test.mjs"
+      - "tests/contracts/client-end-to-end-flow.test.mjs"
+      - "tests/contracts/service-scheduling-contract.test.mjs"
+      - "tests/contracts/client-single-active-service.test.mjs"
+      - ".github/workflows/readiness-client-multiple-orders.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-client-multiple-orders-test
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Active + scheduled Client order policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Focused policy regressions
+        run: >
+          node --test
+          tests/contracts/client-multiple-orders-readiness.test.mjs
+          tests/contracts/client-end-to-end-flow.test.mjs
+          tests/contracts/service-scheduling-contract.test.mjs
+          tests/contracts/client-single-active-service.test.mjs
+      - name: Verify migration is TEST-applied policy
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q "guard_client_immediate_order_concurrency" supabase/migrations/20260930021452_client_active_scheduled_coexistence_policy.sql
+          grep -q "programado_para is not null" supabase/migrations/20260930021452_client_active_scheduled_coexistence_policy.sql
+          grep -q "security invoker" supabase/migrations/20260930021452_client_active_scheduled_coexistence_policy.sql
