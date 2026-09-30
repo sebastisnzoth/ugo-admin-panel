@@ -2,34 +2,57 @@
   "readiness_id": "hugo-privacy",
   "task_id": "readiness-hugo-privacy",
   "job_id": "UGO-READINESS-HUGO-PRIVACY",
-  "title": "Verify Hugo privacy and sanitization in UGO TEST",
-  "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T11:30:00Z",
-  "heartbeat_at": "2026-09-30T11:32:00Z",
-  "lease_expires_at": "2026-09-30T12:17:00Z",
-  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "title": "Verify hugo-privacy in UGO TEST",
+  "status": "DONE",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "Hugo Privacy Runtime Agent",
-  "skills": [
-    "ugo-readiness-orchestrator",
-    "ugo-hugo-security",
-    "ugo-privacy",
-    "ugo-runtime-validation",
-    "ugo-evidence-judge"
-  ],
   "validators": [
     "Judge",
     "Sentinel"
   ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
   "resources": [
     "hugo-security"
   ],
-  "correlation_id": "readiness-hugo-privacy-20260930T113000Z-0833841a",
-  "current_step": "WAITING_CORE_CI_AND_RUNTIME_PROOF",
+  "correlation_id": "readiness-hugo-privacy-20260930-current-main",
+  "current_step": "VERIFIED",
   "attempt": 1,
+  "started_at": "2026-09-30T11:30:00Z",
+  "heartbeat_at": "2026-09-30T12:23:00Z",
+  "lease_expires_at": "2026-09-30T12:23:00Z",
+  "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
+  "completed_at": "2026-09-30T12:23:00Z",
+  "finished_at": "2026-09-30T12:23:00Z",
+  "verified_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_validated_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "verified_runtime_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "result": "VERIFIED",
+  "production_touched": false,
   "evidence_ids": [
-    "commit:ba2122f2d6b8cf5e885a5e0325cf5b54b23b9cb9"
+    "github-run:36714117294",
+    "github-artifact:11094733098",
+    "sha256:d943b1fa701a65456991a721c50e6fe7a05df1994494486f1d27a76ab437e92e",
+    "repo:docs/evidence/readiness-hugo-privacy-20260930-current-main.json"
   ],
-  "production_touched": false
+  "evidence_path": "docs/evidence/readiness-hugo-privacy-20260930-current-main.json",
+  "evidence_commit_sha": "2dfb2a8e47d1c9f83b2bd76ef215a428a761c640",
+  "artifact_digest": "sha256:d943b1fa701a65456991a721c50e6fe7a05df1994494486f1d27a76ab437e92e",
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T12:22:30Z",
+    "production_touched": false
+  },
+  "result_summary": "Hugo model-bound context is sanitized and role authority is enforced on API and legacy edge."
 }
