@@ -24,11 +24,30 @@ serve(async (req) => {
   try {
     const { message, role = 'admin', history = [], context = '' } = await req.json();
 
-    // Fetch system prompt from config_sistema
     const sb = createClient(
       Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+      { auth: { persistSession: false, autoRefreshToken: false } }
     );
+    const authHeader = req.headers.get('Authorization') ?? '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    if (!token) return new Response(JSON.stringify({ hugo_mensaje: 'Autenticación requerida.', accion: null }), { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } });
+    const { data: authData, error: authError } = await sb.auth.getUser(token);
+    if (authError || !authData.user) return new Response(JSON.stringify({ hugo_mensaje: 'Sesión inválida o vencida.', accion: null }), { status: 401, headers: { ...CORS, 'Content-Type': 'application/json' } });
+    const { data: profile, error: profileError } = await sb.from('usuarios').select('tipo,activo').eq('id', authData.user.id).maybeSingle();
+    if (profileError || !profile?.activo) return new Response(JSON.stringify({ hugo_mensaje: 'Acceso no autorizado.', accion: null }), { status: 403, headers: { ...CORS, 'Content-Type': 'application/json' } });
+    const requestedRole = String(role || 'admin').toLowerCase();
+    const profileRole = String(profile.tipo || '').toLowerCase();
+    const allowed = requestedRole === 'superadmin'
+      ? profileRole === 'superadmin'
+      : requestedRole === 'admin'
+        ? profileRole === 'admin' || profileRole === 'superadmin'
+        : requestedRole === 'provider'
+          ? profileRole === 'proveedor'
+          : requestedRole === 'client'
+            ? profileRole === 'cliente'
+            : false;
+    if (!allowed) return new Response(JSON.stringify({ hugo_mensaje: 'Acceso no autorizado.', accion: null }), { status: 403, headers: { ...CORS, 'Content-Type': 'application/json' } });
     const { data: row } = await sb
       .from('config_sistema')
       .select('valor')
