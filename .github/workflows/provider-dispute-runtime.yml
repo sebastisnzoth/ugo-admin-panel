@@ -40,6 +40,14 @@ jobs:
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
       - name: Provider dispute contract
         run: node --test tests/contracts/provider-dispute-readiness.test.mjs
+      - name: Generate masked ephemeral fixture credential
+        run: |
+          node --input-type=module <<'NODE'
+          import {randomUUID} from "node:crypto";import {appendFileSync} from "node:fs"
+          const password="UGO-"+randomUUID()+"-A9!"
+          console.log("::add-mask::"+password)
+          appendFileSync(process.env.GITHUB_ENV,"UGO_DISPUTE_FIXTURE_PASSWORD="+password+"\n")
+          NODE
       - name: Complete provider dispute in UGO TEST
         env:
           UGO_RUNTIME_SHA: ${{ github.sha }}

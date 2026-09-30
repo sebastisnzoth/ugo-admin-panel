@@ -11,7 +11,8 @@ assert.equal(url,'https://tmossnqfwfwjrtzwcbmm.supabase.co','Refusing non-TEST S
 assert.match(sha,/^[a-f0-9]{40}$/,'Exact runtime SHA required')
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const token=sha.slice(0,8)+'-'+Date.now()
-const password='UGO-Test-'+token+'-A9!'
+const password=process.env.UGO_DISPUTE_FIXTURE_PASSWORD
+assert.ok(password,'Masked ephemeral fixture credential required')
 const ids={client:null,provider:null,admin:null,service:null,dispute:null,storage_paths:[]}
 const evidence={schema_version:'UGO_READINESS_EVIDENCE_V1',readiness_id:'provider-dispute',sha,environment:'UGO TEST',open:false,evidence:false,status_progression:false,closure:false,audit:false,notifications:false,production_touched:false,result:'FAIL'}
 
@@ -82,7 +83,7 @@ try{
  const notices=await admin.from('notificaciones').select('tipo,usuario_id').contains('datos',{disputa_id:ids.dispute});if(notices.error)throw notices.error
  evidence.notifications=(notices.data||[]).some(x=>x.tipo==='disputa_resuelta'&&x.usuario_id===ids.provider)
  assert.ok(evidence.open&&evidence.evidence&&evidence.status_progression&&evidence.closure&&evidence.audit&&evidence.notifications)
- evidence.fixture={...ids};evidence.result='PASS'
+ evidence.fixture={...ids,admin_email:adm.email};evidence.result='PASS'
  await mkdir('artifacts',{recursive:true});await writeFile('artifacts/provider-dispute-runtime.json',JSON.stringify(evidence,null,2)+'\n')
  console.log(JSON.stringify({status:'PASS',readiness_id:evidence.readiness_id,sha,open:true,evidence:true,status_progression:true,closure:true,audit:true,notifications:true,production_touched:false}))
 }finally{

@@ -9,11 +9,13 @@ const e=JSON.parse(await readFile('artifacts/provider-dispute-runtime.json','utf
 assert.equal(e.sha,sha);assert.equal(e.environment,'UGO TEST')
 const ids=e.fixture;assert.ok(ids?.dispute&&ids.service&&ids.client&&ids.provider&&ids.admin)
 const db=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+const auditor=createClient(url,process.env.UGO_TEST_SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+const login=await auditor.auth.signInWithPassword({email:ids.admin_email,password:process.env.UGO_DISPUTE_FIXTURE_PASSWORD});assert.ifError(login.error);assert.ok(login.data.session)
 async function rows(table,columns,field,value){const q=await db.from(table).select(columns).eq(field,value);assert.ifError(q.error);return q.data}
 const [disputes,messages,audit,notices,services]=await Promise.all([
  rows('disputas','id,servicio_id,abierta_por,estado,resuelta_por','id',ids.dispute),
  rows('disputa_mensajes','autor_rol,evidencias','disputa_id',ids.dispute),
- rows('audit_log','evento','entidad_id',ids.dispute),
+ auditor.from('audit_log').select('evento').eq('entidad_id',ids.dispute).then(q=>{assert.ifError(q.error);return q.data}),
  db.from('notificaciones').select('tipo,usuario_id').contains('datos',{disputa_id:ids.dispute}).then(q=>{assert.ifError(q.error);return q.data}),
  rows('servicios','metadata,cliente_id,proveedor_id','id',ids.service)
 ])

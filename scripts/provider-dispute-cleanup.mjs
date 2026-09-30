@@ -8,7 +8,7 @@ try{fixture=JSON.parse(await readFile('artifacts/provider-dispute-fixture.json',
 assert.equal(fixture.sha,sha);const ids=fixture.ids
 const db=createClient(url,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
 const failures=[]
-const collect=q=>{if(q.error)failures.push(q.error.code||'CLEANUP_ERROR')}
+const collect=q=>{if(q.error)failures.push({code:q.error.code||'CLEANUP_ERROR',message:q.error.message})}
 // Only synthetic accounts returned by this execution may be removed.
 for(const id of [ids.client,ids.provider,ids.admin].filter(Boolean)){
  const q=await db.auth.admin.getUserById(id)
@@ -17,8 +17,8 @@ for(const id of [ids.client,ids.provider,ids.admin].filter(Boolean)){
 }
 if(ids.service){const q=await db.from('servicios').select('metadata').eq('id',ids.service).maybeSingle();assert.ifError(q.error);if(q.data){assert.equal(q.data.metadata?.sha,sha);assert.equal(q.data.metadata?.ephemeral,true)}}
 if(ids.storage_paths?.length){for(const path of ids.storage_paths)assert.ok(path.startsWith(ids.service+'/'+ids.provider+'/'));collect(await db.storage.from('dispute-evidence').remove(ids.storage_paths))}
-if(ids.dispute){collect(await db.from('disputa_mensajes').delete().eq('disputa_id',ids.dispute));collect(await db.from('audit_log').delete().eq('entidad_tipo','disputa').eq('entidad_id',ids.dispute));collect(await db.from('disputas').delete().eq('id',ids.dispute))}
-if(ids.service){collect(await db.from('notificaciones').delete().contains('datos',{servicio_id:ids.service}));collect(await db.from('servicios').delete().eq('id',ids.service))}
+if(ids.dispute){collect(await db.from('disputa_mensajes').delete().eq('disputa_id',ids.dispute));collect(await db.from('disputas').delete().eq('id',ids.dispute))}
+if(ids.service){collect(await db.from('pagos').delete().eq('servicio_id',ids.service));collect(await db.from('notificaciones').delete().contains('datos',{servicio_id:ids.service}));collect(await db.from('servicios').delete().eq('id',ids.service))}
 for(const id of [ids.client,ids.provider,ids.admin].filter(Boolean)){
  collect(await db.from('notificaciones').delete().eq('usuario_id',id));collect(await db.from('perfiles_proveedor').delete().eq('usuario_id',id));collect(await db.from('usuarios').delete().eq('id',id))
  const q=await db.auth.admin.deleteUser(id);if(q.error&&q.error.status!==404)collect(q)
