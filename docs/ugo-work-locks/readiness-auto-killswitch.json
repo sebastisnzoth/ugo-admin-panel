@@ -3,10 +3,10 @@
   "task_id": "readiness-auto-killswitch",
   "job_id": "UGO-READINESS-AUTO-KILLSWITCH",
   "title": "Verify autonomous kill switch control and recovery in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:31:00Z",
-  "heartbeat_at": "2026-09-30T13:31:00Z",
-  "lease_expires_at": "2026-09-30T14:16:00Z",
+  "heartbeat_at": "2026-09-30T13:34:00Z",
+  "lease_expires_at": null,
   "started_sha": "444380253a839a2b6c40b0acca1360d6058780c3",
   "owner": "UGO",
   "department": "UGO Empresa Autónoma",
@@ -19,12 +19,18 @@
     "autonomy-state"
   ],
   "correlation_id": "readiness-auto-killswitch-20260930T133100Z-44438025-r2",
-  "current_step": "EXECUTE_TEST_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 2,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-run:36722261505",
+    "github-core-run:36722261419",
+    "github-job-runtime-judge-sentinel:109910096431",
+    "github-artifact:11102060518",
+    "repo-evidence:docs/evidence/readiness-auto-killswitch-20260930.json"
+  ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "production_touched": false,
   "skills": [
@@ -33,5 +39,17 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge",
     "ugo-github-ops"
-  ]
+  ],
+  "completed_at": "2026-09-30T13:34:00Z",
+  "finished_at": "2026-09-30T13:34:00Z",
+  "verified_sha": "a3c11c3ccb81ac221c0bf482aa9024b09939db4d",
+  "merged_main_sha": "f692d8280cf5e988d0c5cc2a5b3684482de5e930",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false,
+    "artifact_digest": "sha256:10e144b527d6dcf98e0f8d56ad464ae52ac22bd2da17084b85bd493f1e525873"
+  }
 }
