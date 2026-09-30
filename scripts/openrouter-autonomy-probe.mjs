@@ -9,7 +9,7 @@ const timedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeou
 const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
 async function persist(candidate){
  if(!db)return
- let lastError=null
+ let lastError=null,lastRetryable=false
  for(let attempt=1;attempt<=4;attempt++){
   try{
    const{error}=await db.from('autonomous_model_candidates').upsert(candidate,{onConflict:'provider,model_id'})
@@ -17,16 +17,19 @@ async function persist(candidate){
    lastError=error
    const text=[error?.message,error?.details,error?.hint,error?.code].filter(Boolean).join(' ')
    const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   lastRetryable=retryable
    if(!retryable||attempt===4)break
   }catch(error){
    lastError=error
    const text=String(error?.message||error||'')
    const retryable=/cloudflare|gateway|timeout|fetch|network|502|503|504|temporar|upstream/i.test(text)
+   lastRetryable=retryable
    if(!retryable||attempt===4)break
   }
   await new Promise(resolve=>setTimeout(resolve,attempt*750))
  }
  const message=String(lastError?.message||lastError||'unknown')
+ if(lastRetryable){console.error(JSON.stringify({state:'MODEL_ROUTE_PERSISTENCE_DEGRADED',retryable:true,error:safeError({message})}));return false}
  throw new Error('MODEL_ROUTE_PERSIST_FAILED '+message)
 }
 function safeError(p){return String(p?.error?.message||p?.message||'unknown').replace(/[A-Za-z0-9_-]{24,}/g,'[redacted]').slice(0,200)}
