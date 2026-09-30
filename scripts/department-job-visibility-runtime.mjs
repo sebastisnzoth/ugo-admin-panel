@@ -68,7 +68,7 @@ try{
   await table.waitFor({state:'visible',timeout:20000})
 
   for(const department of departments){
-    const row=table.locator('tbody tr').filter({hasText:'D'+department.department_id}).first()
+    const row=table.locator('tbody tr').filter({hasText:new RegExp('^D'+department.department_id+'(?!\\d)')}).first()
     await row.waitFor({state:'visible',timeout:10000})
     let matched=null
     let lastObserved={ui:'',backend:null}
