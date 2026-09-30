@@ -55,6 +55,7 @@
   --ugo-control-height-lg:48px;
   --ugo-transition-fast:140ms ease;
   --ugo-color-primary:var(--ugo-color-brand-500);
+  --ugo-color-on-primary:#ffffff;
   --ugo-color-on-surface:var(--ugo-color-text);
   --ugo-color-on-surface-variant:var(--ugo-color-text-muted);
   --ugo-color-outline-variant:var(--ugo-color-border);
