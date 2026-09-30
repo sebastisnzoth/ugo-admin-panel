@@ -74,11 +74,23 @@ const pageContext=new WeakMap()
 const sessions={client:client.session,provider:provider.session,admin:admin.session}
 async function freshRoleSession(role){
  const source=role==='client'?client:role==='provider'?provider:admin
- const{data,error}=await source.sb.auth.refreshSession()
- assert.ifError(error)
- assert.ok(data.session,role+'_FRESH_SESSION_REQUIRED')
- sessions[role]=data.session
- return data.session
+ const credentialsForRole=role==='client'?[clientEmail,clientPassword]:role==='provider'?[providerEmail,providerPassword]:[adminEmail,adminPassword]
+ let lastError=null
+ for(let attempt=1;attempt<=4;attempt++){
+   const{data,error}=await source.sb.auth.signInWithPassword({email:credentialsForRole[0],password:credentialsForRole[1]})
+   if(!error&&data.session){
+     source.session=data.session
+     sessions[role]=data.session
+     return data.session
+   }
+   lastError=error||new Error(role+'_FRESH_SESSION_REQUIRED')
+   const status=Number(lastError?.status||0)
+   const retryable=status===429||status>=500||/fetch|network|timeout|gateway/i.test(String(lastError?.message||''))
+   if(!retryable||attempt===4)break
+   await new Promise(resolve=>setTimeout(resolve,attempt*1000))
+ }
+ assert.ifError(lastError)
+ throw lastError||new Error(role+'_FRESH_SESSION_REQUIRED')
 }
 
 async function assertResponsive(page,label){
