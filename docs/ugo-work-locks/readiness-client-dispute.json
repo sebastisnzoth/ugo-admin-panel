@@ -4,13 +4,13 @@
   "job_id": "UGO-READINESS-CLIENT-DISPUTE",
   "title": "Verify Client dispute open, evidence, state and closure",
   "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T13:30:00.000Z",
-  "heartbeat_at": "2026-09-30T13:36:00.000Z",
-  "lease_expires_at": "2026-09-30T14:15:00.000Z",
-  "started_sha": "a3c11c3ccb81ac221c0bf482aa9024b09939db4d",
+  "started_at": "2026-09-30T14:20:00.000Z",
+  "heartbeat_at": "2026-09-30T14:20:00.000Z",
+  "lease_expires_at": "2026-09-30T15:05:00.000Z",
+  "started_sha": "d2f88711fb1eaa72fdf38f58a7f873ebdd6bc91f",
   "owner": "UGO",
   "department": "App Cliente",
-  "assigned_agent": "Client Dispute Runtime Agent",
+  "assigned_agent": "GPT_UGO Client Dispute Runtime Agent",
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-client",
@@ -24,12 +24,13 @@
   "resources": [
     "disputes"
   ],
-  "correlation_id": "readiness-client-dispute-20260930T133000Z",
-  "current_step": "RERUN_AFTER_CANONICAL_REASON_FIX",
-  "attempt": 2,
+  "correlation_id": "readiness-client-dispute-20260930T142000Z-d2f88711",
+  "current_step": "RECONCILED_STALE_LOCK_VALIDATE_CURRENT_MAIN",
+  "attempt": 3,
   "evidence_ids": [
     "github-run:36722519002:FAIL_INVALID_REASON",
-    "github-artifact:11101945820"
+    "github-artifact:11101945820",
+    "lock-reconciled:d2f88711fb1eaa72fdf38f58a7f873ebdd6bc91f"
   ],
   "production_touched": false,
   "dependency_status": {
