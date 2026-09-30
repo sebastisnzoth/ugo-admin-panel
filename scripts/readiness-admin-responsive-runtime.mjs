@@ -60,8 +60,9 @@ try{
   const page=await context.newPage()
   const errors=[]
   page.on('pageerror',e=>errors.push(String(e?.message||e)))
-  await page.addInitScript(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)})
-  await page.goto(base+'/?app=admin',{waitUntil:'networkidle'})
+  await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'})
+  await page.evaluate(({key,value})=>window.localStorage.setItem(key,value),{key:'ugo-test-admin-auth',value:JSON.stringify(login.session)})
+  await page.reload({waitUntil:'networkidle'})
   await page.locator('.ugo-admin2').waitFor({state:'visible',timeout:20000})
   const sections=[]
   for(const nav of ['Inicio','Operaciones','Personas','Finanzas','Configuración']){
