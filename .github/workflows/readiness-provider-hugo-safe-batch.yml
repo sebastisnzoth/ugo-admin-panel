@@ -158,7 +158,7 @@ jobs:
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - name: Hugo authority regression
-        run: node --test api/hugo/authority.test.mjs
+        run: node --test tests/contracts/hugo-authority-readiness.test.mjs
       - name: Sanitization and permission proof
         env:
           UGO_RUNTIME_SHA: ${{ github.sha }}
