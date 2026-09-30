@@ -12,7 +12,7 @@ test('Admin Hugo browser fallback sends live multi-turn history instead of a sta
 })
 
 test('Hugo model router keeps a bounded recent conversation window and stable role mapping',async()=>{
- const [api,router]=await Promise.all([read('api/hugo/chat.ts'),read('src/server/hugo/modelRouter.ts')])
+ const [api,router]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/modelRouter.ts')])
  assert.match(api,/history\.slice\(-8\)/)
  assert.match(api,/sanitizeForModel\(m\.content,1200\)/)
  assert.match(router,/history\.slice\(-8\)/)
@@ -20,6 +20,6 @@ test('Hugo model router keeps a bounded recent conversation window and stable ro
 })
 
 test('Hugo continuity keeps prior turns in-order before the new user turn',async()=>{
- const router=await read('src/server/hugo/modelRouter.ts')
+ const router=await read('server/hugo/modelRouter.ts')
  assert.match(router,/contents:\[\.\.\.safeHistory,\{role:'user',parts:\[\{text:message\}\]\}\]/)
 })
