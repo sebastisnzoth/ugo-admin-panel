@@ -1,13 +1,13 @@
 {
   "readiness_id": "cross-performance",
   "task_id": "readiness-cross-performance",
-  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20260930T1341Z",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-PR330-20260930",
   "title": "Verify perceived performance and critical action latency",
-  "status": "DONE",
-  "started_at": "2026-09-30T13:41:00Z",
-  "heartbeat_at": "2026-09-30T14:02:15Z",
-  "lease_expires_at": "2026-09-30T14:02:15Z",
-  "started_sha": "3d32723c4d74cc61099d30cd9078b3a5447657e6",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T22:20:00Z",
+  "heartbeat_at": "2026-09-30T22:20:00Z",
+  "lease_expires_at": "2026-09-30T23:05:00Z",
+  "started_sha": "bd1dfe59294ab29a7dbd777ffacb62328cc979f5",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
   "assigned_agent": "GPT_UGO · Cross Performance Runtime Agent",
@@ -16,15 +16,15 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
   },
   "resources": [
     "preview-runtime"
   ],
-  "correlation_id": "readiness-cross-performance-20260930T134100Z-3d32723c",
-  "current_step": "VERIFIED",
-  "attempt": 2,
+  "correlation_id": "readiness-cross-performance-pr330-20260930T222000Z",
+  "current_step": "FIX_RUNTIME_POINTER_TARGET",
+  "attempt": 3,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
@@ -42,7 +42,10 @@
     "github-artifact:11101844611",
     "github-artifact:11103020411",
     "repo-evidence:docs/evidence/readiness-cross-performance-20260930.json",
-    "github-merge:737036ed7da79be981dd887dc07da8d92848ef8a"
+    "github-merge:737036ed7da79be981dd887dc07da8d92848ef8a",
+    "github-pr:330",
+    "github-run:36773312837",
+    "diagnosis:CLIENT_REQUEST_BUTTON_NO_POINTER_REACHABLE_TARGET"
   ],
   "production_touched": false,
   "skills": [
@@ -51,9 +54,9 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "completed_at": "2026-09-30T14:02:15Z",
-  "finished_at": "2026-09-30T14:02:15Z",
-  "verified_sha": "bc2b6fc3edb485ee2dee43e1e6edefdb52074fa3",
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
   "merged_main_sha": "737036ed7da79be981dd887dc07da8d92848ef8a",
   "validation": {
     "runtime": "PASS",
@@ -64,5 +67,7 @@
     "p95_ms": 727,
     "max_ms": 727,
     "production_touched": false
-  }
+  },
+  "result": null,
+  "failure": "Regression on PR #330 run 36773312837: CLIENT_REQUEST_BUTTON_NO_POINTER_REACHABLE_TARGET"
 }
