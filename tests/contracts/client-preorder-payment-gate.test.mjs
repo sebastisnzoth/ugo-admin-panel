@@ -93,3 +93,21 @@ test('cash option fails closed and backend exposes the same market capability us
  assert.match(migration,/pago_efectivo_br_activo/)
  assert.match(migration,/pago_efectivo_ar_activo/)
 })
+
+
+test('post-quote Pix is an explicit next action instead of looking already paid',async()=>{
+ const choice=await read('src/features/client/payments/ClientPaymentChoice.tsx')
+ assert.match(choice,/pixNeedsGeneration/)
+ assert.match(choice,/Generar Pix/)
+ assert.match(choice,/Importe confirmado/)
+ assert.doesNotMatch(choice,/tariffPending\?'Elegís Pix ahora; el cobro se genera cuando el importe esté confirmado\.':'Pago electrónico confirmado dentro de UGO\.'/)
+})
+
+test('zero-price onsite flow is presented as an initial quote, not as extra work',async()=>{
+ const panel=await read('src/mvp/ServiceExpansionPanel.tsx')
+ assert.match(panel,/initialQuote/)
+ assert.match(panel,/PRESUPUESTO INICIAL/)
+ assert.match(panel,/Importe total/)
+ assert.match(panel,/Enviar presupuesto/)
+ assert.match(panel,/Aprobar presupuesto/)
+})
