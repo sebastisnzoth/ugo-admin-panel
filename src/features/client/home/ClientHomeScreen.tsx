@@ -5,6 +5,7 @@ import{useRoleSession,type Category}from'../../../mvp/shared'
 import{useClientFlow}from'../flow/clientFlow'
 import{UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import{refreshProviderRadar,subscribeProviderRadar,type ProviderRadarRow}from'../radar/providerRadarStore'
+import{retryOwnedClientMatching}from'../services/clientActionService'
 
 const FLORIPA:[number,number]=[-48.5482,-27.5949]
 const MAP_STYLE:maplibregl.StyleSpecification={version:8,sources:{osm:{type:'raster',tiles:['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],tileSize:256,attribution:'© OpenStreetMap contributors'}},layers:[{id:'osm',type:'raster',source:'osm'}]}
@@ -53,7 +54,7 @@ export function ClientHomeScreen({onOpenService}:Props){
  const filtered=query.trim()?categories.filter(c=>norm(c.nombre).includes(norm(query.trim()))):[]
  const choose=(category:Category|null)=>{if(!category)return;flow.publishHugoIntent({text:`Necesito ${category.nombre}`,categoryHint:category.slug||category.id,urgent:false,description:null})}
  const openOrder=(serviceId:string)=>{if(onOpenService){onOpenService(serviceId);return}flow.navigate('history')}
- const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId)return;setRetryingId(serviceId);try{const{error}=await supabase.rpc('iniciar_matching',{p_servicio_id:serviceId});if(error)throw error;await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,retryingId,supabase])
+ const retryOrder=useCallback(async(serviceId:string)=>{if(retryingId||!session)return;setRetryingId(serviceId);try{const ok=await retryOwnedClientMatching(supabase,session.user.id,serviceId);if(!ok)throw new Error('Este pedido ya cambió de estado.');await loadOrders()}catch(error){console.warn('[ClientHome] matching retry failed',error);openOrder(serviceId)}finally{setRetryingId(null)}},[loadOrders,retryingId,session,supabase])
  const firstName=String(profile?.nombre||'').trim().split(/\s+/)[0]||'Hola'
  if(!session)return null
 
