@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-role-ui-runtime
+  group: ugo-role-ui-runtime-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: false
 
 env:

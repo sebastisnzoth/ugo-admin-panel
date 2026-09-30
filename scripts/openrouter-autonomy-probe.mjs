@@ -5,7 +5,8 @@ if(!key&&!gemini)throw new Error('MODEL_PROVIDER_API_KEY_REQUIRED')
 const base=process.env.OPENROUTER_BASE_URL||'https://openrouter.ai/api/v1'
 const headers={authorization:'Bearer '+key,'content-type':'application/json','HTTP-Referer':'https://github.com/sebastisnzoth/ugo-admin-panel','X-Title':'UGO Autonomous Company'}
 const su=process.env.UGO_TEST_SUPABASE_URL,sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY
-const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false}}):null
+const timedFetch=(input,init={})=>fetch(input,{...init,signal:AbortSignal.timeout(8000)})
+const db=su&&sk&&su.includes('tmossnqfwfwjrtzwcbmm')?createClient(su,sk,{auth:{persistSession:false},global:{fetch:timedFetch}}):null
 async function persist(candidate){
  if(!db)return
  let lastError=null
@@ -57,7 +58,7 @@ if(gemini){
  console.error(JSON.stringify({connected:false,provider:'gemini',state:'PROBE_FAILED',catalogCandidates:models.length,lastFailure:geminiLast,failover:'openrouter'}))
 }
 if(!key)throw new Error('OPENROUTER_FALLBACK_KEY_REQUIRED')
-const catalog=await fetch(base+'/models',{headers})
+const catalog=await fetch(base+'/models',{headers,signal:AbortSignal.timeout(6000)})
 if(!catalog.ok)throw new Error('OPENROUTER_CONNECTION_FAILED status='+catalog.status)
 const catalogBody=await catalog.json()
 const free=(catalogBody.data||[]).filter(m=>String(m?.pricing?.prompt)==='0'&&String(m?.pricing?.completion)==='0').map(m=>m.id)
