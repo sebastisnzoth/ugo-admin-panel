@@ -3,7 +3,7 @@
   "task_id": "readiness-provider-alerts",
   "job_id": "UGO-READINESS-PROVIDER-ALERTS",
   "title": "Verify provider new-offer alerts in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider Alerts Runtime Agent",
@@ -12,25 +12,59 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "provider-demand",
     "notifications"
   ],
   "correlation_id": "readiness-provider-alerts-20260929T2250-0300",
-  "current_step": "INSPECT_ALERT_RUNTIME",
-  "attempt": 1,
+  "current_step": "VERIFIED",
+  "attempt": 3,
   "started_at": "2026-09-30T01:51:00Z",
-  "heartbeat_at": "2026-09-30T01:51:00Z",
-  "lease_expires_at": "2026-09-30T02:36:00Z",
+  "heartbeat_at": "2026-09-30T02:00:00Z",
+  "lease_expires_at": "2026-09-30T02:00:00Z",
   "started_sha": "d37433c858b1ac670e887a43101a2457215aff2d",
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-actions:run:36657605370",
+    "github-actions:job:109705204210",
+    "github-actions:artifact:11072153644",
+    "sha256:4786c4b7fbb6ca075206fa1935f56ef2c7c1772a72cd758318b74c56834fbd78",
+    "repo:docs/evidence/readiness-provider-alerts-20260929.json"
+  ],
   "production_touched": false,
   "skills": [
     "provider-demand",
     "notifications",
     "ugo-runtime-validation"
-  ]
+  ],
+  "completed_at": "2026-09-30T02:00:00Z",
+  "finished_at": "2026-09-30T02:00:00Z",
+  "verified_sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+  "runtime_validated_sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+  "verified_runtime_sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+  "result": "VERIFIED",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:59:16.653Z",
+    "basis": [
+      "provider offer banner arrived through realtime without refresh",
+      "provider attention tone emitted",
+      "provider vibration requested"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:59:16.699Z",
+    "production_touched": false
+  },
+  "evidence_path": "docs/evidence/readiness-provider-alerts-20260929.json",
+  "artifact_digest": "sha256:4786c4b7fbb6ca075206fa1935f56ef2c7c1772a72cd758318b74c56834fbd78",
+  "evidence_commit_sha": "b0eee4e18634a9a7992fc4791b9bf2aa5f822a89",
+  "result_summary": "UGO TEST verified provider nueva_oferta alert through Realtime without refresh: live banner rendered, provider tone emitted, vibration requested, Judge PASS and Sentinel PASS. Ephemeral TEST fixture only; production untouched."
 }
