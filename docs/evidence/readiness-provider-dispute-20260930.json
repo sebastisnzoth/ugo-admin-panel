@@ -1,0 +1,36 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "provider-dispute",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "d513ae5b0ae6ef308e688604c04d4d446e3a54e4",
+  "workflow_run": {
+    "id": 36707659252,
+    "job_id": 109861655526,
+    "conclusion": "success",
+    "artifact_id": 11092203683,
+    "artifact_digest": "sha256:b40438b8cf484f37dedf62eafb1b7fec49fb51409ff5af8012629f38e15a011b"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "provider opened authenticated dispute in UGO TEST",
+      "evidence persisted",
+      "client reply advanced to en_revision",
+      "admin resolution persisted",
+      "audit trail verified through authenticated admin",
+      "provider close notification verified"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-30T11:18:56Z"
+}
