@@ -22,7 +22,7 @@ check(runtime.recovery?.persisted===true,'RECOVERY_PERSISTED')
 check(runtime.recovery?.audited===true,'RECOVERY_AUDITED')
 check(runtime.recovery?.evidence_hash_present===true,'RECOVERY_EVIDENCE_HASH')
 check(runtime.recovery?.final_enabled===false,'FINAL_SWITCH_DISABLED')
-check(runtime.mode?.changed===false,'GLOBAL_MODE_UNCHANGED')
+check(runtime.mode?.mutation_attempted===false,'NO_GLOBAL_MODE_MUTATION_ATTEMPT')
 check(runtime.production_touched===false,'PRODUCTION_UNTOUCHED')
 check(Array.isArray(runtime.page_errors)&&runtime.page_errors.length===0,'NO_PAGE_ERRORS')
 
@@ -37,7 +37,7 @@ const evidence={
     'scoped AGENT kill switch persisted and was visible in Super Admin',
     'autonomous enqueue failed closed with kill-switch-specific signal and no job persisted',
     'recovery ran through the UI and persisted an evidence-hashed recovery audit',
-    'global autonomy mode was unchanged and production was untouched'
+    'the isolated runtime never mutates global autonomy mode and production was untouched'
   ],
   created_at:new Date().toISOString()
 }
