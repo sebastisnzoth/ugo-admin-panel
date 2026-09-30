@@ -23,5 +23,12 @@
   "current_step": "INSPECT_IMPLEMENTATION_AND_TEST_CONTRACT",
   "attempt": 1,
   "evidence_ids": [],
-  "production_touched": false
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-payments",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ]
 }
