@@ -2,14 +2,14 @@
   "readiness_id": "admin-realtime",
   "task_id": "readiness-admin-realtime",
   "job_id": "UGO-READINESS-ADMIN-REALTIME",
-  "status": "DONE",
+  "status": "IN_PROGRESS",
   "started_at": "2026-09-29T23:04:00Z",
-  "heartbeat_at": "2026-09-29T23:27:00Z",
-  "lease_expires_at": "2026-09-29T23:27:00Z",
+  "heartbeat_at": "2026-09-30T00:40:00Z",
+  "lease_expires_at": "2026-09-30T01:25:00Z",
   "completed_at": "2026-09-29T23:27:00Z",
   "started_sha": "15bef1e7d6beeeaeb166a5c2d65bbf4f33be9232",
-  "verified_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
-  "runtime_validated_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
+  "verified_sha": null,
+  "runtime_validated_sha": null,
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Admin Realtime Runtime Agent",
@@ -18,15 +18,15 @@
     "Sentinel"
   ],
   "validator_results": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
   },
   "resources": [
     "admin-realtime"
   ],
   "correlation_id": "readiness-admin-realtime-20260929T230400Z-15bef1e7",
-  "current_step": "VERIFIED",
-  "attempt": 2,
+  "current_step": "RUNTIME_SAME_SHA_REQUIRED",
+  "attempt": 3,
   "evidence_ids": [
     "github-actions:run:36645017774",
     "github-actions:job:109665861416",
@@ -37,28 +37,20 @@
   "evidence_path": "docs/evidence/readiness-admin-realtime-20260929.json",
   "artifact_digest": "sha256:d5350589475e3be272f5d78be60339f40068db77f0c72113a691b6ed3b6845f2",
   "production_touched": false,
-  "result": "VERIFIED",
-  "result_summary": "UGO TEST verified Admin operational state convergence without manual refresh: realtime transport active, KPI changed from 2 to 3 in 957 ms, fixture restored to 2 in 2297 ms, reconciliation beat the 8 s fallback, Judge PASS and Sentinel PASS. Production untouched.",
+  "result": "NEEDS_RUNTIME_PROOF",
+  "result_summary": "Reopened because main advanced after the prior runtime evidence. Same-SHA runtime proof is required before VERIFIED.",
   "finished_at": "2026-09-29T23:27:00Z",
-  "verified_runtime_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c",
+  "verified_runtime_sha": null,
   "validators_result": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
   },
   "judge": {
-    "result": "PASS",
-    "checked_at": "2026-09-29T23:26:32.935Z",
-    "basis": [
-      "runtime KPI changed without refresh",
-      "change observed before polling fallback",
-      "fixture reconciled"
-    ]
+    "result": "PENDING"
   },
   "sentinel": {
-    "result": "PASS",
-    "checked_at": "2026-09-29T23:26:32.980Z",
-    "production_touched": false,
-    "reconciliation": "PASS"
+    "result": "PENDING",
+    "production_touched": false
   },
   "evidence_commit_sha": "279013cf39b42a2d74b4dd72d7702efee8af9a60",
   "title": "Verify Admin realtime operational states in UGO TEST",
@@ -66,5 +58,6 @@
     "admin-realtime",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "previous_verified_runtime_sha": "b438e779f0885ab0b9cdf7bfd8c2165f7657b97c"
 }
