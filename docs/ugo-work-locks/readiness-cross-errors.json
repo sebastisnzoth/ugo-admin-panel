@@ -5,21 +5,31 @@
   "title": "Verify actionable errors and empty states with fault injection",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:49:00Z",
-  "heartbeat_at": "2026-09-30T10:49:00Z",
-  "lease_expires_at": "2026-09-30T11:34:00Z",
+  "heartbeat_at": "2026-09-30T11:00:00Z",
+  "lease_expires_at": "2026-09-30T11:45:00Z",
   "started_sha": "8e8ac4f233fb62fcdb8affb5617cfa3adb3ffb91",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
   "assigned_agent": "Cross-role Fault Injection Agent",
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["qa-lab"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "qa-lab"
+  ],
   "correlation_id": "readiness-cross-errors-20260930T104900Z-8e8ac4f2-r2",
-  "current_step": "RECONCILING_STALE_LOCK_AND_BUILDING_DETERMINISTIC_FAULT_INJECTION",
+  "current_step": "REVALIDATING_PROVEN_FIX_ON_LATEST_MAIN",
   "attempt": 2,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
-    "github-core-run:36667189922"
+    "github-core-run:36667189922",
+    "github-pr:301",
+    "github-run:36705243262",
+    "github-job-runtime:109853835476",
+    "github-job-judge:109854506684",
+    "github-job-sentinel:109854604090"
   ],
   "production_touched": false,
   "skills": [
