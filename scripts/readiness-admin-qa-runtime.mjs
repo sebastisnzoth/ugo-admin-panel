@@ -2,9 +2,16 @@ import { mkdir, writeFile } from 'node:fs/promises'
 import { createClient } from '@supabase/supabase-js'
 
 const url=process.env.UGO_TEST_SUPABASE_URL||''
-const key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
-if(url!=='https://tmossnqfwfwjrtzwcbmm.supabase.co'||!key)throw new Error('UGO_TEST_SERVICE_ROLE_REQUIRED')
-const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
+const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
+const email=process.env.UGO_TEST_ADMIN_EMAIL||''
+const password=process.env.UGO_TEST_ADMIN_PASSWORD||''
+if(url!=='https://tmossnqfwfwjrtzwcbmm.supabase.co'||!anon||!email||!password)throw new Error('UGO_TEST_SUPERADMIN_REQUIRED')
+const db=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
+const {data:login,error:loginError}=await db.auth.signInWithPassword({email,password})
+if(loginError||!login.user)throw loginError||new Error('UGO_TEST_SUPERADMIN_LOGIN_FAILED')
+const {data:profile,error:profileError}=await db.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
+if(profileError)throw profileError
+if(profile?.tipo!=='superadmin'||profile?.activo!==true)throw new Error('UGO_TEST_SUPERADMIN_REQUIRED')
 
 const q=async(promise,label)=>{const {data,error,count}=await promise;if(error)throw new Error(label+': '+error.message);return {data:data||[],count}}
 const [simulators,scenarios,runs,coverage,calibrations,independentJobs]=await Promise.all([
@@ -73,4 +80,5 @@ const payload={
 }
 await mkdir('artifacts/readiness-admin-qa',{recursive:true})
 await writeFile('artifacts/readiness-admin-qa/runtime.json',JSON.stringify(payload,null,2)+'\n')
+await db.auth.signOut()
 console.log(JSON.stringify(payload))
