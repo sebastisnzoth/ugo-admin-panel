@@ -80,3 +80,16 @@ test('variable-price assigned services persist payment preference before the fin
  assert.match(migration,/payment_method/)
  assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*security definer/i)
 })
+
+
+test('cash option fails closed and backend exposes the same market capability used by selection',async()=>{
+ const [choice,migration]=await Promise.all([
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
+  read('supabase/migrations/20260930185400_cash_payment_capability_rpc.sql'),
+ ])
+ assert.match(choice,/cashError\?false:cashAllowed!==false/)
+ assert.match(migration,/cash_payment_enabled/)
+ assert.match(migration,/pago_efectivo_activo/)
+ assert.match(migration,/pago_efectivo_br_activo/)
+ assert.match(migration,/pago_efectivo_ar_activo/)
+})
