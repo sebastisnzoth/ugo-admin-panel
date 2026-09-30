@@ -5,8 +5,8 @@
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:46:00Z",
-  "heartbeat_at": "2026-09-30T11:00:00Z",
-  "lease_expires_at": "2026-09-30T11:45:00Z",
+  "heartbeat_at": "2026-09-30T11:04:00Z",
+  "lease_expires_at": "2026-09-30T11:49:00Z",
   "started_sha": "e5604ef5576392956de149ff3fcec0e14b21056e",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,8 +25,8 @@
     "client-service-status"
   ],
   "correlation_id": "readiness-client-status-20260930T104600Z-e5604ef5",
-  "current_step": "RUNNING_V4_PROVIDER_AUTH_GPS_BACKEND",
-  "attempt": 6,
+  "current_step": "RUNNING_V5_CASH_CONFIRMED_PROVIDER_FLOW",
+  "attempt": 7,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
     "docs/evidence/readiness-client-status-20260930.json",
@@ -52,7 +52,11 @@
     "run:36705550808:FAIL_GPS_BACKEND_REQUIRED",
     "artifact:11091419002",
     "commit:4a078a4124f998e8e3e138a627dc30d051311c47",
-    "commit:a41af39cc160b898122d34ac25eecd12ca9b7d86"
+    "commit:a41af39cc160b898122d34ac25eecd12ca9b7d86",
+    "run:36705897312:FAIL_PAYMENT_REQUIRED",
+    "artifact:11091861924",
+    "commit:208b3b7c6a49de5668c69cb6e1a6efcee5c667dd",
+    "commit:338ad31d0b353c0acd791ecc201447d808bbb326"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
   "judge": "PENDING",
