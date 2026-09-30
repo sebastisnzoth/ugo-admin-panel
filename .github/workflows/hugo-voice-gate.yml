@@ -1,0 +1,59 @@
+name: UGO Hugo Voice Gate
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/hugo-voice-gate.yml"
+      - "src/lib/browserVoiceBridge.ts"
+      - "src/shared/voice/**"
+      - "src/features/client/hugo/**"
+      - "src/features/provider/voice/**"
+      - "src/components/ConversationalOrb.tsx"
+      - "src/mvp/provider/providerData.tsx"
+      - "tests/contracts/*hugo*.test.mjs"
+      - "tests/contracts/*voice*.test.mjs"
+      - "tests/contracts/provider-runtime-resilience.test.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-hugo-voice-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+
+jobs:
+  hugo-voice:
+    name: Build + Hugo voice contracts
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: TypeScript and production build
+        run: npm run build
+      - name: Hugo voice contract suite
+        run: |
+          node --test --test-concurrency=1 \
+            tests/contracts/admin-hugo-gemini-actions.test.mjs \
+            tests/contracts/browser-voice-bridge.test.mjs \
+            tests/contracts/client-hugo-conversational-ui.test.mjs \
+            tests/contracts/client-hugo-gemini-live.test.mjs \
+            tests/contracts/client-hugo-runtime-resilience.test.mjs \
+            tests/contracts/client-hugo-voice-intent-behavior.test.mjs \
+            tests/contracts/client-voice-order-catalog.test.mjs \
+            tests/contracts/global-voice-command-listener.test.mjs \
+            tests/contracts/provider-hugo-command-extraction.test.mjs \
+            tests/contracts/provider-runtime-resilience.test.mjs
