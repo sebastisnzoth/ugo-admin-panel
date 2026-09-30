@@ -5,8 +5,8 @@
   "title": "Verify provider notifications in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T11:30:00Z",
-  "heartbeat_at": "2026-09-30T11:30:00Z",
-  "lease_expires_at": "2026-09-30T12:15:00Z",
+  "heartbeat_at": "2026-09-30T11:32:00Z",
+  "lease_expires_at": "2026-09-30T12:17:00Z",
   "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,8 +26,10 @@
     "notifications"
   ],
   "correlation_id": "readiness-provider-notifications-20260930T113000Z-0833841a",
-  "current_step": "INSPECT_NOTIFICATION_PIPELINE_AND_RUNTIME",
+  "current_step": "WAITING_CORE_CI_AND_RUNTIME_PROOF",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "commit:d339ab5e6b8d4ee345b1d85aa656f278beaca24a"
+  ],
   "production_touched": false
 }
