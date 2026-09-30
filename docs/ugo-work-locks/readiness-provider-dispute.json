@@ -1,0 +1,30 @@
+{
+  "readiness_id": "provider-dispute",
+  "task_id": "readiness-provider-dispute",
+  "job_id": "UGO-READINESS-PROVIDER-DISPUTE",
+  "title": "Verify provider-dispute in UGO TEST",
+  "status": "IN_PROGRESS",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Dispute Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "disputes"
+  ],
+  "correlation_id": "readiness-provider-dispute-20260930T1038Z",
+  "current_step": "LOCK_ACQUIRED",
+  "attempt": 1,
+  "started_at": "2026-09-30T10:38:00Z",
+  "heartbeat_at": "2026-09-30T10:38:00Z",
+  "lease_expires_at": "2026-09-30T12:38:00Z",
+  "started_sha": "17801dd24e11673ace34d1a39fc1385619a11465",
+  "evidence_ids": [],
+  "production_touched": false
+}
