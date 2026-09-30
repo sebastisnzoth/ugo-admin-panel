@@ -100,7 +100,7 @@ try{
   const [{data:decisions,error:decisionError},{data:evidence,error:evidenceError},{data:auditRows,error:auditError}]=await Promise.all([
     adminSb.from('autonomous_decision_ledger').select('id,decision,authorization_result,correlation_id,evidence_refs').eq('correlation_id',correlationId),
     adminSb.from('autonomous_evidence_ledger').select('id,evidence_type,reference,metadata,correlation_id').eq('correlation_id',correlationId),
-    adminSb.from('audit_log').select('id,evento,actor_id,entidad_id,detalles').filter('detalles->>correlation_id','eq',correlationId),
+    adminSb.from('audit_log').select('id,evento,actor_id,entidad_id,detalles').filter('detalles->audit->>correlation_id','eq',correlationId),
   ])
   assert.ifError(decisionError)
   assert.ifError(evidenceError)
