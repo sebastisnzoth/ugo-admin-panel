@@ -119,6 +119,11 @@ const closeClientOverlay=async page=>{
 }
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
+ const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
+ if(!(await trigger.count())||!(await trigger.isVisible().catch(()=>false))){
+   await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
+   await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+ }
  await safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
 }
 
