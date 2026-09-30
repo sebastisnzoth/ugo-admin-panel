@@ -1,0 +1,82 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "client-dispute",
+  "task_id": "readiness-client-dispute",
+  "correlation_id": "readiness-client-dispute-20260930T142000Z-d2f88711",
+  "environment": "UGO TEST",
+  "runtime_validated_sha": "16e65325f075dd878668f0f54415caa7712f6a99",
+  "main_sha_at_persist": "17e118b3abe73294286c7bb107a8042321207a68",
+  "control": {
+    "area": "App Cliente",
+    "title": "Disputas Cliente",
+    "verify": "Abrir disputa, adjuntar evidencia, ver estado y cierre.",
+    "done_evidence": "Disputa TEST completa + audit trail."
+  },
+  "implementation": {
+    "canonical_reason_code": "incompleto",
+    "sla_next_step_copy": true,
+    "cleanup_fixture_persistence_fix": true,
+    "production_touched": false
+  },
+  "tests": {
+    "contract": {
+      "result": "PASS",
+      "basis": "client-dispute-readiness.test.mjs"
+    },
+    "runtime": {
+      "result": "PASS",
+      "workflow_run_id": 36729372366,
+      "job_id": 109934567179,
+      "open": true,
+      "evidence": true,
+      "status_progression": true,
+      "closure": true,
+      "audit": true,
+      "notifications": true
+    },
+    "judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:28:49.476Z",
+      "media_bytes_verified": true,
+      "basis": "Independent database reads: client ownership, resolution, evidence, audit and client notification"
+    },
+    "cleanup": {
+      "result": "PASS"
+    },
+    "sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T14:28:58.218Z",
+      "fixtures": "verified absent via database and auth"
+    },
+    "core_ci": {
+      "result": "PASS",
+      "workflow_run_id": 36729372337
+    },
+    "pages_observatory": {
+      "result": "PASS",
+      "workflow_run_id": 36729372606
+    }
+  },
+  "artifact": {
+    "id": 11103384707,
+    "name": "readiness-client-dispute-16e65325f075dd878668f0f54415caa7712f6a99",
+    "digest": "sha256:24b415a2b0223886047db894bb00929ece084280ae2f1f9c1f27fe479b2e492c",
+    "size_in_bytes": 2001,
+    "expires_at": "2026-12-29T14:28:25Z"
+  },
+  "prior_failed_attempt": {
+    "workflow_run_id": 36728828434,
+    "job_id": 109932665474,
+    "artifact_id": 11102719667,
+    "functional_flow": "PASS",
+    "judge": "PASS",
+    "failure": "TEST cleanup skipped dispute because ids.dispute was not persisted to client-dispute-fixture.json"
+  },
+  "main_revalidation": {
+    "compared_from_runtime_sha_to_main": "17e118b3abe73294286c7bb107a8042321207a68",
+    "client_dispute_surface_unchanged": true,
+    "only_intervening_change": "docs/ugo-work-locks/readiness-client-notifications.json"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T14:29:41.000Z"
+}
