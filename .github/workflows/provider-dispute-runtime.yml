@@ -1,0 +1,55 @@
+name: UGO Provider Dispute Runtime TEST
+
+on:
+  push:
+    branches:
+      - fix/readiness-provider-dispute-reconciled-20260930
+    paths:
+      - ".github/workflows/provider-dispute-runtime.yml"
+      - "src/mvp/provider/ProviderActiveJob.tsx"
+      - "src/hooks/useDisputes.ts"
+      - "tests/contracts/provider-dispute-readiness.test.mjs"
+      - "scripts/provider-dispute-*.mjs"
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime-proof:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Refuse non-TEST environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Provider dispute contract
+        run: node --test tests/contracts/provider-dispute-readiness.test.mjs
+      - name: Complete provider dispute in UGO TEST
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-dispute-runtime.mjs
+      - name: Judge
+        run: node scripts/provider-dispute-judge.mjs
+      - name: Sentinel
+        run: node scripts/provider-dispute-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readiness-provider-dispute-${{ github.sha }}
+          path: artifacts/provider-dispute-*
+          if-no-files-found: warn
+          retention-days: 90
