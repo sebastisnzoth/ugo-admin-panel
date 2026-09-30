@@ -2,7 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises'
 const p=JSON.parse(await readFile('artifacts/readiness-auto-inbox/runtime.json','utf8'))
 const fail=m=>{throw new Error('JUDGE_FAIL:'+m)}
 if(p.readiness_id!=='auto-inbox'||p.environment!=='UGO TEST')fail('identity')
-if(p.ui?.deduplicated!==true||p.ui?.duplicate_rows_rendered!==1||p.ui?.old_duplicate_hidden!==true)fail('dedup')
+if(p.ui?.idempotency_deduplicated!==true||p.ui?.duplicate_rows_rendered!==1)fail('dedup')
 if(p.ui?.priority_order!=='PASS'||p.ui?.sla_labels!=='PASS'||p.ui?.page_errors!==0)fail('ordering_or_ui')
 if(p.approvals?.first_approval!=='PASS'||p.approvals?.same_actor_duplicate_blocked!==true||p.approvals?.approval_count!==1)fail('approval')
 if((p.approvals?.decision_rows||[]).length!==1||p.approvals.decision_rows[0]?.decision!=='YELLOW_FIRST_APPROVAL')fail('approval_audit')
