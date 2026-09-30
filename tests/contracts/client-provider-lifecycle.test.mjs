@@ -74,7 +74,8 @@ test('provider cannot leave assigned without a valid payment path',async()=>{
   read('src/mvp/provider/providerData.tsx'),
   read('supabase/migrations/20260911_cash_evidence_backend_hardening.sql'),
  ])
- assert.match(providerData,/service\.estado==='asignado'&&!funded&&!cashSelected/)
+ assert.match(providerData,/paymentPreferenceSelected=Boolean\(service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)\)/)
+ assert.match(providerData,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
  assert.match(backend,/p\.estado='retenido'/)
  assert.match(backend,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
 })
@@ -199,4 +200,29 @@ test('provider and client observe critical service changes through realtime',asy
  assert.match(providerRealtime,/table:'pagos'.*proveedor_id=eq\.\$\{userId\}/)
  assert.match(clientReview,/table:'servicios'.*cliente_id=eq\.\$\{userId\}/)
  assert.match(clientReview,/table:'pagos'/)
+})
+
+
+test('backend permits travel for a zero-tariff service only after a client payment preference, but blocks work until amount and payment are real',async()=>{
+ const sql=await read('supabase/migrations/20260930190000_variable_price_lifecycle_payment_gate.sql')
+ assert.match(sql,/estado='asignado'[\s\S]*p_estado='en_camino'/)
+ assert.match(sql,/coalesce\(v_servicio\.tarifa,0\)<=0/)
+ assert.match(sql,/requested_payment_method/)
+ assert.match(sql,/payment_method/)
+ assert.match(sql,/El cliente todavía no confirmó una forma de pago habilitada/)
+ assert.match(sql,/estado='llegado'[\s\S]*p_estado='en_progreso'/)
+ assert.match(sql,/coalesce\(v_servicio\.tarifa,0\)<=0[\s\S]*importe aprobado/i)
+ assert.match(sql,/p\.estado='retenido'/)
+ assert.match(sql,/p\.metodo='efectivo'[\s\S]*p\.modelo_pago='presencial'/)
+ const wrapper=await read('supabase/migrations/20260930190200_variable_price_lifecycle_wrapper_fix.sql')
+ assert.match(wrapper,/create or replace function public\.avanzar_servicio[\s\S]*security definer/i)
+})
+
+
+test('cash quote materializes after tariff approval even when provider is already travelling or arrived',async()=>{
+ const sql=await read('supabase/migrations/20260930191500_materialize_cash_after_onsite_quote.sql')
+ assert.match(sql,/new\.estado not in \('asignado','en_camino','llegado'\)/)
+ assert.match(sql,/trg_materialize_cash_payment_on_assignment/)
+ assert.match(sql,/new\.estado in \('asignado','en_camino','llegado'\)/)
+ assert.match(sql,/new\.tarifa/)
 })

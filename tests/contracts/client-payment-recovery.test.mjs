@@ -21,7 +21,7 @@ test('client payment rehydrates persisted state after reconnect and visibility r
 
 test('ambiguous cash selection re-reads persisted state before surfacing failure',()=>{
  assert.match(source,/paymentMethodPersisted\(method:'efectivo'\|'pix'\):Promise<boolean\|null>/)
- assert.match(source,/seleccionar_pago_efectivo[\s\S]*const persisted=await paymentMethodPersisted\('efectivo'\)/)
+ assert.match(source,/persistPreference\('efectivo'\)[\s\S]*const persisted=await paymentMethodPersisted\('efectivo'\)/)
  assert.match(source,/if\(persisted===true\)\{[\s\S]*Efectivo seleccionado[\s\S]*await load\(\);return\}/)
 })
 
