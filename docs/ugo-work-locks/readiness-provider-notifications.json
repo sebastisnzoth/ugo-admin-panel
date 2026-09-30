@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
   "title": "Verify provider notifications in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T11:30:00Z",
-  "heartbeat_at": "2026-09-30T11:32:00Z",
-  "lease_expires_at": "2026-09-30T12:17:00Z",
+  "heartbeat_at": "2026-09-30T12:51:00.916Z",
+  "lease_expires_at": "2026-09-30T12:51:00.916Z",
   "started_sha": "0833841aa19b72232134132690b3fe954d48f421",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,10 +26,20 @@
     "notifications"
   ],
   "correlation_id": "readiness-provider-notifications-20260930T113000Z-0833841a",
-  "current_step": "WAITING_CORE_CI_AND_RUNTIME_PROOF",
+  "current_step": "RECONCILED_PARTIAL_RUNTIME_UNVERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "commit:d339ab5e6b8d4ee345b1d85aa656f278beaca24a"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "finished_at": "2026-09-30T12:51:00.916Z",
+  "failure_reason": "Expired lease reconciled: cited commit has no associated workflow run; no persisted provider-notifications runtime/Judge/Sentinel completion evidence. Existing implementation preserved; retry required.",
+  "reconciliation": {
+    "source_sha": "f2a9a029918358af5642bfc99047472fa83459ce",
+    "checked_at": "2026-09-30T12:51:00.916Z",
+    "commit_workflow_runs": [],
+    "latest_provider_alerts_run": 36657605370,
+    "latest_provider_alerts_sha": "99c336558c06e04fc122f9384ce1051de27c6832",
+    "same_sha_evidence": false
+  }
 }
