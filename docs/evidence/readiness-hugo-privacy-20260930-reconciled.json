@@ -1,0 +1,35 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "hugo-privacy",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "workflow_run": {
+    "id": 36708404355,
+    "job_id": 109864074843,
+    "conclusion": "success",
+    "artifact_id": 11092489437,
+    "artifact_digest": "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "synthetic secrets redacted",
+      "raw evidence/base64 blobs redacted",
+      "API authority regression passed",
+      "legacy edge requires authenticated role authority",
+      "raw edge errors not reflected"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "production_touched": false,
+  "verified_at": "2026-09-30T11:26:09Z"
+}
