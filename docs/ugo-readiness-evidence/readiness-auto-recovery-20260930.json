@@ -1,0 +1,83 @@
+{
+  "readiness_id": "auto-recovery",
+  "task_id": "readiness-auto-recovery",
+  "control": "Recuperación automática",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "requested_reference_sha": "2350f2734ffc642a04c6de06e13a7fe4802b577e",
+  "runtime_validated_sha": "54dea7ec2361974c9d97d77aeb546ec1e935b727",
+  "workflow": {
+    "name": "UGO Exception Recovery TEST",
+    "run_id": 36665442988,
+    "run_number": 17,
+    "conclusion": "success",
+    "job_id": 109729094137,
+    "url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36665442988"
+  },
+  "artifact": {
+    "id": 11076271680,
+    "name": "ugo-auto-recovery-proof-36665442988",
+    "digest": "sha256:fd4a188bda6857e492af70224218077b761f42aaec165a3713ebded5ace3916f",
+    "expires_at": "2026-10-30T03:40:57Z"
+  },
+  "runtime_proof": {
+    "passed": true,
+    "exception": "LEASE_TIMEOUT",
+    "correlation_id": "e0b67696-15ce-4218-8165-30abc976937a",
+    "incident_id": "f434a909-e7ad-49cf-ba9e-7dbdf35cecc8",
+    "recovery_job_id": "13517699-a49a-4888-bdee-1f2ba00ccc1f",
+    "recovery_audit_id": "04171e06-b976-4736-bd86-2a3f7c36bc8f",
+    "incident_status": "resolved",
+    "job_status": "SUCCEEDED",
+    "recovery_action": "autonomous_worker_cycle",
+    "initial_mode": "ON",
+    "final_mode": "ON",
+    "kill_switches_preserved": true,
+    "active_kill_switches_after": 0,
+    "running_jobs_after": 0,
+    "decision_ledger_count": 2,
+    "evidence_ledger_count": 2,
+    "audit_log_count": 1,
+    "manual_sql_state_edit": false,
+    "manual_github_state_edit": false
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "tests": {
+    "contract": {
+      "passed": 4,
+      "failed": 0
+    },
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "artifact_persisted": true
+  },
+  "permanent_regressions": [
+    "Workflow uses pipefail so tee cannot mask runtime/Judge failures.",
+    "UGO TEST URL is explicit public configuration; service-role key remains secret.",
+    "Readiness lock/documentation changes do not recursively trigger recovery runs.",
+    "Worker service-role detection uses PostgREST request.jwt.claims JSON.",
+    "Recovery preserves pre-existing autonomy mode and unrelated scoped kill switches.",
+    "Judge/Sentinel read persisted internal state through a service-role-only protected RPC rather than broad Data API table grants."
+  ],
+  "implementation_files": [
+    "supabase/migrations/20260930035000_restore_service_role_worker_recovery.sql",
+    "supabase/migrations/20260930035500_exception_recovery_preserve_runtime_state.sql",
+    "supabase/migrations/20260930036000_service_role_claims_json_guard.sql",
+    "supabase/migrations/20260930036500_exception_recovery_protected_judge.sql",
+    "scripts/autonomous-exception-recovery-runtime.mjs",
+    "scripts/autonomous-exception-recovery-judge.mjs",
+    "tests/contracts/autonomous-exception-recovery.test.mjs",
+    ".github/workflows/ugo-exception-recovery-test.yml",
+    "docs/readiness/auto-recovery-playbooks.md"
+  ],
+  "advisors": {
+    "post_migration_security_checked": true,
+    "post_migration_performance_checked": true,
+    "note": "Existing project-wide advisor findings remain outside this readiness control; no anon/public execute grant was introduced for recovery worker or Judge RPC."
+  },
+  "verified_at": "2026-09-30T03:41:01Z"
+}
