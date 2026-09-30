@@ -22,37 +22,37 @@
   "current_step": "VERIFIED",
   "attempt": 2,
   "started_at": "2026-09-30T11:25:00Z",
-  "heartbeat_at": "2026-09-30T11:26:09Z",
-  "lease_expires_at": "2026-09-30T11:26:09Z",
+  "heartbeat_at": "2026-09-30T11:32:03Z",
+  "lease_expires_at": "2026-09-30T11:32:03Z",
   "started_sha": "c5bdf837fc872b01480b06304c2ae8b1108beb6e",
   "evidence_ids": [
-    "github-actions:run:36708404355",
-    "github-actions:job:109864074843",
-    "github-actions:artifact:11092489437",
-    "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299",
+    "github-actions:run:36709011191",
+    "github-actions:job:109866036793",
+    "github-actions:artifact:11092913705",
+    "sha256:59da13dffb0bfe978ff68387bb74a912abc054086499646c477a10dd10198bc2",
     "repo:docs/evidence/readiness-hugo-privacy-20260930-reconciled.json"
   ],
   "production_touched": false,
-  "completed_at": "2026-09-30T11:26:09Z",
-  "finished_at": "2026-09-30T11:26:09Z",
-  "verified_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
-  "runtime_validated_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
-  "verified_runtime_sha": "6b2f46fd9cc53b4de3a4810c0324a4576d8c1f69",
+  "completed_at": "2026-09-30T11:32:03Z",
+  "finished_at": "2026-09-30T11:32:03Z",
+  "verified_sha": "7df047243e37e1c4eb012ab0307c09f6c7683048",
+  "runtime_validated_sha": "7df047243e37e1c4eb012ab0307c09f6c7683048",
+  "verified_runtime_sha": "7df047243e37e1c4eb012ab0307c09f6c7683048",
   "result": "VERIFIED",
   "validator_results": {
     "Judge": "PASS",
     "Sentinel": "PASS"
   },
   "evidence_path": "docs/evidence/readiness-hugo-privacy-20260930-reconciled.json",
-  "evidence_commit_sha": "90604883be38394e92d782071cf61efd13a97873",
-  "artifact_digest": "sha256:f869201110c74309f5d777f5a629307e588cccda8e2b45c8f2d78e145e798299",
+  "evidence_commit_sha": "0b8662e9b0767a9550725245da3e772526a8d7bc",
+  "artifact_digest": "sha256:59da13dffb0bfe978ff68387bb74a912abc054086499646c477a10dd10198bc2",
   "judge": {
     "result": "PASS",
-    "checked_at": "2026-09-30T11:26:09Z"
+    "checked_at": "2026-09-30T11:32:03Z"
   },
   "sentinel": {
     "result": "PASS",
-    "checked_at": "2026-09-30T11:26:09Z",
+    "checked_at": "2026-09-30T11:32:03Z",
     "production_touched": false
   },
   "result_summary": "Reconciled current-main proof verified secret/blob redaction and authenticated role authority on Hugo API/edge."
