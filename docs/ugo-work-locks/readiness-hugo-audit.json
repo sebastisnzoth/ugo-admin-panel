@@ -5,8 +5,8 @@
   "title": "Verify complete Hugo trace INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:40:42Z",
-  "heartbeat_at": "2026-09-30T13:40:42Z",
-  "lease_expires_at": "2026-09-30T14:25:42Z",
+  "heartbeat_at": "2026-09-30T13:50:30Z",
+  "lease_expires_at": "2026-09-30T14:35:30Z",
   "started_sha": "3299349164749f061763cacc2ebde90337ca1cc7",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,9 +19,16 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-hugo-audit-20260930T134042Z-32993491",
-  "current_step": "INSPECT_TRACE_AND_RUNTIME_WIRING",
+  "current_step": "RUNNING_SAME_SHA_RUNTIME",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "commit:1ac7725118c02a6d8a7866c4fea564af1c2e8e52",
+    "commit:dceaf5bfb1570f09501fc429d11b04cc47e1a168",
+    "commit:3d753d0edab4920af6f4cd0c5f83fd75de53d7d6",
+    "commit:e6ac3d263034fbf130a43cba28e96cbe1302b955",
+    "commit:e71e11408925773d5b988e2a9c98b903905197cf",
+    "commit:920f18437e14e1f54e60876e94b08d129077b127"
+  ],
   "production_touched": false,
   "skills": [
     "ugo-readiness-orchestrator",
