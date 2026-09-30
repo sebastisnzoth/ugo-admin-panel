@@ -1,0 +1,59 @@
+name: UGO Hugo Privacy Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api/hugo/chat.ts"
+      - "supabase/functions/hugo-chat/index.ts"
+      - "scripts/hugo-privacy-*.mjs"
+      - ".github/workflows/hugo-privacy-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-hugo-privacy
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+
+jobs:
+  privacy-proof:
+    name: Hugo privacy · UGO TEST · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Hugo authority regression
+        run: node --test tests/contracts/hugo-authority-readiness.test.mjs
+      - name: Sanitization and permission proof
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/hugo-privacy-runtime.mjs
+      - name: Independent Judge
+        run: node scripts/hugo-privacy-judge.mjs
+      - name: Sentinel
+        run: node scripts/hugo-privacy-sentinel.mjs
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-hugo-privacy-${{ github.sha }}
+          path: artifacts/hugo-privacy-*
+          if-no-files-found: warn
+          retention-days: 90
