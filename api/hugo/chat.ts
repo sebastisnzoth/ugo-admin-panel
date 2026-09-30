@@ -35,6 +35,15 @@ const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((ite
 const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
 function sameOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
 function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
+function sanitizeForModel(v:unknown,max=4000){
+ let text=clean(v,max)
+ text=text
+  .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi,'Bearer [REDACTED]')
+  .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/g,'[REDACTED_JWT]')
+  .replace(/\b(?:sk|sb_secret|service_role|ghp|github_pat|AIza)[-_A-Za-z0-9]{12,}\b/g,'[REDACTED_SECRET]')
+  .replace(/\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|passwd|authorization)\b\s*[:=]\s*["']?[^\s,"'}]{6,}["']?/gi,'$1=[REDACTED]')
+ return text.slice(0,max)
+}
 function extractJson(text:string){try{return JSON.parse(text)}catch{/* Gemini may wrap JSON in prose. */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* Return null for an invalid embedded object. */}}return null}
 const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
 function uiAction(value:unknown,role:'admin'|'superadmin'){
@@ -51,7 +60,10 @@ function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw 
 
 async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
  const key=geminiKey()
- const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:clean(m.content,1200)}]}}),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
+ const safeSystem=sanitizeForModel(system,12000)
+ const safeHistory=history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:sanitizeForModel(m.content,1200)}]}})
+ const safeMessage=sanitizeForModel(message,1800)
+ const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:safeSystem}]},contents:[...safeHistory,{role:'user',parts:[{text:safeMessage}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
  const payload:unknown=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(clean(nested(payload,'error','message'))||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
  const text=clean(parts(nested(payload,'candidates','0','content','parts')).map(p=>p.text||'').join(''),5000)
@@ -62,7 +74,7 @@ async function askGemini(message:string,history:unknown[],system:string,jsonMode
 function sampleRateFromMime(mime:string){const match=String(mime||'').match(/rate=(\d+)/i),value=Number(match?.[1]||24000);return Number.isFinite(value)&&value>0?value:24000}
 
 async function askGeminiTts(text:string,locale:string){
- const key=geminiKey(),languageCode=locale==='pt-BR'?'pt-BR':'es-ES',prompt=locale==='pt-BR'?`Fale como Hugo: simpático, próximo, acolhedor e ágil, como um amigo confiável ajudando a resolver algo. Não acrescente nem retire informação. Diga apenas: ${text}`:`Hablá como Hugo: simpático, cercano, cálido y ágil, como un amigo confiable que ayuda a resolver algo. No agregues ni quites información. Decí solamente: ${text}`
+ const key=geminiKey(),languageCode=locale==='pt-BR'?'pt-BR':'es-ES',safeText=sanitizeForModel(text,360),prompt=locale==='pt-BR'?`Fale como Hugo: simpático, próximo, acolhedor e ágil, como um amigo confiável ajudando a resolver algo. Não acrescente nem retire informação. Diga apenas: ${safeText}`:`Hablá como Hugo: simpático, cercano, cálido y ágil, como un amigo confiable que ayuda a resolver algo. No agregues ni quites informação. Decí solamente: ${safeText}`
  let lastStatus=502,lastError='Gemini TTS no respondió',lastRetryAfter=''
  for(const model of TTS_MODELS){
   const started=Date.now()
