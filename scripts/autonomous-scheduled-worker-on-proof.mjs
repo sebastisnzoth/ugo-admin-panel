@@ -18,7 +18,7 @@ const{data:login,error:loginError}=await actor.auth.signInWithPassword({email,pa
 if(loginError||!login?.user)throw loginError||new Error('UGO_TEST_SUPERADMIN_LOGIN_REQUIRED')
 const{data:profile,error:profileError}=await db.from('usuarios').select('tipo,activo').eq('id',login.user.id).single()
 if(profileError||!profile?.activo||profile.tipo!=='superadmin')throw profileError||new Error('UGO_TEST_SUPERADMIN_REQUIRED')
-const{data,error}=await actor.rpc('autonomous_run_scheduled_worker_proof',{p_source_sha:sha,p_run_id:runId})
+const{data,error}=await db.rpc('autonomous_run_scheduled_worker_proof',{p_source_sha:sha,p_run_id:runId})
 if(error)throw error
 assert.equal(data?.scheduledWorkerOnProof,true)
 assert.equal(data?.sourceSha,sha)
