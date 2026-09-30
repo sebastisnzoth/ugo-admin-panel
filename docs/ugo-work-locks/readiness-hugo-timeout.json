@@ -1,0 +1,36 @@
+{
+  "readiness_id": "hugo-timeout",
+  "task_id": "readiness-hugo-timeout",
+  "job_id": "UGO-READINESS-HUGO-TIMEOUT",
+  "title": "Verify Hugo timeout and bounded recovery in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T14:06:00Z",
+  "heartbeat_at": "2026-09-30T14:06:00Z",
+  "lease_expires_at": "2026-09-30T14:51:00Z",
+  "started_sha": "35af48ce29d339770e8f9a9013e325c26eef0f37",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Timeout Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "model-router"
+  ],
+  "correlation_id": "readiness-hugo-timeout-20260930T140600Z-35af48ce",
+  "current_step": "EXECUTE_BOUNDED_TIMEOUT_FAULT_INJECTION",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "dependency_status": {
+    "hugo_action": "DONE",
+    "admin_model_router": "DONE"
+  }
+}
