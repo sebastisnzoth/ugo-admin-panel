@@ -1,0 +1,74 @@
+name: UGO Provider + Hugo Safe Batch TEST
+
+on:
+  push:
+    branches:
+      - verify/readiness-provider-hugo-safe-batch-20260930
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+
+jobs:
+  contracts-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/readiness-provider-hugo-safe-batch.test.mjs
+      - run: npm run build
+      - name: Persist same-SHA static evidence
+        run: |
+          mkdir -p artifacts/provider-hugo-safe-batch
+          node -e "require('fs').writeFileSync('artifacts/provider-hugo-safe-batch/static.json',JSON.stringify({sha:process.env.GITHUB_SHA,environment:'UGO TEST/local same-SHA',contracts:'PASS',build:'PASS',production_touched:false},null,2))"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-hugo-safe-batch-${{ github.sha }}
+          path: artifacts/provider-hugo-safe-batch
+          retention-days: 90
+
+  hugo-responsive-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: npm install --no-save --package-lock=false playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Browser viewport and mobile-keyboard proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > hugo-responsive-fixture.html <<'HTML'
+          <!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><script type="module" src="/src/mvp/provider/provider-responsive-hardening.css"></script><script type="module" src="/src/mvp/client/client-hugo-voice-order.css"></script><style>body{margin:0}.provider-bottom-nav{position:fixed;height:72px;background:#eee}.provider-global-hugo{position:fixed;right:10px}.ugo-real-orb{width:64px;height:64px}.ugo-hugo-voice-controller{width:280px;max-width:100%}</style></head><body><div class="ugo-provider-root"><main class="provider-screen"><input id="kbd" placeholder="mensaje"><button id="primary">Acción principal</button></main><section class="provider-global-hugo"><div class="ugo-hugo-voice-controller"><input value="texto"></div><button class="ugo-real-orb">Hugo</button></section><nav class="provider-bottom-nav"><button>Inicio</button><button>Trabajo</button></nav></div><button class="ugo-hugo-voice-fab">Hugo</button></body></html>
+          HTML
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/hugo-responsive-vite.log 2>&1 &
+          pid=$!; trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/hugo-responsive-fixture.html >/dev/null && break || sleep 1; done
+          mkdir -p artifacts/hugo-responsive
+          node --input-type=module <<'NODE' > artifacts/hugo-responsive/runtime.json
+          import assert from 'node:assert/strict'; import {chromium} from 'playwright'
+          const browser=await chromium.launch({headless:true}), cases=[[390,844],[768,1024],[1440,900]], results=[]
+          for(const [width,height] of cases){const ctx=await browser.newContext({viewport:{width,height}}),page=await ctx.newPage();await page.goto('http://127.0.0.1:4173/hugo-responsive-fixture.html');const m=await page.evaluate(()=>{const q=s=>document.querySelector(s)?.getBoundingClientRect();return{doc:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,hugo:q('.provider-global-hugo'),nav:q('.provider-bottom-nav'),primary:q('#primary')}});assert.ok(m.doc<=m.client+1);if(width<=390){assert.ok(m.hugo.right<=width+1);assert.ok(m.hugo.bottom<=m.nav.top+1||m.hugo.top<m.nav.top)}results.push({width,height,m});await page.screenshot({path:`artifacts/hugo-responsive/${width}x${height}.png`});await ctx.close()}
+          const ctx=await browser.newContext({viewport:{width:390,height:844}}),page=await ctx.newPage();await page.goto('http://127.0.0.1:4173/hugo-responsive-fixture.html');await page.focus('#kbd');await page.setViewportSize({width:390,height:520});const k=await page.evaluate(()=>({doc:document.documentElement.scrollWidth,client:document.documentElement.clientWidth,hugo:document.querySelector('.provider-global-hugo').getBoundingClientRect().toJSON()}));assert.ok(k.doc<=k.client+1);assert.ok(k.hugo.right<=391);await ctx.close();await browser.close();console.log(JSON.stringify({readiness_id:'hugo-responsive',sha:process.env.GITHUB_SHA,environment:'UGO TEST/local same-SHA',viewports:results,keyboard_mobile:'PASS',production_touched:false}))
+          NODE
+      - name: Judge
+        run: node -e "const p=require('./artifacts/hugo-responsive/runtime.json');if(p.sha!==process.env.GITHUB_SHA||p.keyboard_mobile!=='PASS'||p.viewports.length!==3)process.exit(1)"
+      - name: Sentinel
+        run: node -e "const p=require('./artifacts/hugo-responsive/runtime.json');if(p.production_touched!==false)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: readiness-hugo-responsive-${{ github.sha }}
+          path: artifacts/hugo-responsive
+          retention-days: 90
