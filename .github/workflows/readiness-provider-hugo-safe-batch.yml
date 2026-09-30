@@ -4,6 +4,18 @@ on:
   push:
     branches:
       - verify/readiness-provider-hugo-safe-batch-20260930
+    paths:
+      - ".github/workflows/readiness-provider-hugo-safe-batch.yml"
+      - "api/hugo/**"
+      - "supabase/functions/hugo-chat/**"
+      - "src/mvp/NotificationCenter.tsx"
+      - "src/mvp/provider/**"
+      - "src/mvp/client/client-hugo-voice-order.css"
+      - "tests/contracts/readiness-provider-hugo-safe-batch.test.mjs"
+      - "tests/contracts/hugo-authority-readiness.test.mjs"
+      - "scripts/provider-dispute-*.mjs"
+      - "scripts/provider-notifications-*.mjs"
+      - "scripts/hugo-privacy-*.mjs"
 
 permissions:
   contents: read
