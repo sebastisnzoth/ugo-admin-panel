@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T14:06:00Z",
-  "lease_expires_at": "2026-09-30T14:51:00Z",
+  "heartbeat_at": "2026-09-30T14:12:00Z",
+  "lease_expires_at": "2026-09-30T14:57:00Z",
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,8 +27,8 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_FIXTURE_ASSIGNMENT_UPDATE_TRIGGER_AND_RERUN",
-  "attempt": 6,
+  "current_step": "FIX_STABLE_E2E_BROWSER_SESSION_AND_RERUN",
+  "attempt": 7,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
     "github-artifact:11101693090",
@@ -41,16 +41,20 @@
     "github-run:36725876214:FAIL_REALTIME_BANNER_TIMEOUT",
     "github-artifact:11103490341",
     "review:attempt5-root-cause-trigger-after-update",
-    "source:supabase/migrations/20260917162500_restore_client_service_notifications.sql"
+    "source:supabase/migrations/20260917162500_restore_client_service_notifications.sql",
+    "github-run:36726695639:FAIL_BROWSER_AUTH_REGRESSION",
+    "github-artifact:11103281757",
+    "review:attempt6-backend-notification-persisted-browser-returned-authscreen",
+    "reference:scripts/client-status-runtime.mjs",
+    "reference:scripts/client-navigation-runtime.mjs"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
   "last_failure": {
-    "run_id": 36725876214,
-    "sha": "de01b3c5ecfa40faa6a26d8bc0d3860da54e42a7",
-    "cause": "canonical authenticated browser stayed in-session, but .ugo-notification-live.is-client never rendered the expected UGO · ACTUALIZACIÓN DEL PEDIDO banner within 30s",
-    "next_fix": "inspect client realtime notification subscription/delivery and scheduler attempt accounting before retry",
-    "review_resolution": "Root cause confirmed: trg_notificar_estado_servicio is AFTER UPDATE of estado/proveedor_id. The readiness fixture inserted the row already in estado=asignado with proveedor_id set, so proveedor_asignado could never be emitted. Attempt 6 will create a neutral disposable row and perform a real UPDATE to asignado after the canonical client is authenticated and subscribed."
+    "run_id": 36726695639,
+    "sha": "35af48ce29d339770e8f9a9013e325c26eef0f37",
+    "cause": "Assignment UPDATE emitted and persisted proveedor_asignado successfully, but the canonical browser login returned to AuthScreen before NotificationCenter could render. Backend notification path is proven; browser authentication harness is the remaining blocker.",
+    "next_fix": "Use the repository's already-proven E2E browser authentication pattern: obtain a real Supabase password session, inject that real session under ugo-test-client-auth before page load, wait for Inicio UGO Cliente, then perform the assignment UPDATE and verify live banner routing."
   },
   "finished_at": null,
   "validators_result": {
