@@ -52,6 +52,7 @@
     right:8px!important;
     width:auto!important;
     max-width:none!important;
+    transform:none!important;
     bottom:max(8px,env(safe-area-inset-bottom))!important;
   }
 
