@@ -1197,6 +1197,370 @@
       ]
     },
     {
+      "id": "pilot-faxina-marido",
+      "title": "PILOTO · FAXINA + MARIDO DE ALUGUEL",
+      "items": [
+        {
+          "id": "pilot-category-contract",
+          "title": "PILOT-CATEGORY-CONTRACT · Contrato Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Modelo, catálogo, campos obligatorios y reglas de seguridad de ambas categorías.",
+          "done_evidence": "Contrato ejecutable + migración/catálogo + pruebas deterministas + same-SHA.",
+          "improvement_focus": "Mantener reglas explícitas y fail-closed.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-request-flow",
+            "provider-demand"
+          ]
+        },
+        {
+          "id": "pilot-client-faxina",
+          "title": "PILOT-CLIENT-FAXINA · Solicitud Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Dirección, fecha, desde/hasta, tipo, inmueble, dormitorios, baños, m², mascotas, acceso, productos, equipamiento, tareas, observaciones y fotos.",
+          "done_evidence": "Pedido Faxina TEST persistido con validaciones y resumen.",
+          "improvement_focus": "Formulario claro y datos suficientes para ofertar.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-request-flow",
+            "client-media"
+          ]
+        },
+        {
+          "id": "pilot-provider-faxina",
+          "title": "PILOT-PROVIDER-FAXINA · Configuración y oferta",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Tipos, zona/radio, disponibilidad, productos, equipamiento, restricciones, cobro, documentos, verificación y referencias.",
+          "done_evidence": "Perfil proveedor Faxina TEST apto + oferta completa + aceptación.",
+          "improvement_focus": "Decisión informada antes de aceptar.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-demand",
+            "provider-shell"
+          ]
+        },
+        {
+          "id": "pilot-e2e-faxina",
+          "title": "PILOT-E2E-FAXINA · Flujo completo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Solicitud→matching→aceptación→GPS/llegada→evidencias→trabajo→aprobación→pago→ratings→historial.",
+          "done_evidence": "serviceId TEST Faxina completo y auditado.",
+          "improvement_focus": "Cero pasos manuales de DB.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-client-faxina",
+            "pilot-provider-faxina",
+            "pilot-matching-schedule",
+            "pilot-payments",
+            "pilot-notifications",
+            "pilot-disputes",
+            "pilot-ratings-history"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "ugo-test-p0",
+            "shared-provider-fixture"
+          ]
+        },
+        {
+          "id": "pilot-client-marido",
+          "title": "PILOT-CLIENT-MARIDO · Solicitud Cliente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Dirección, fecha, desde/hasta, trabajo, ítems, ambiente, descripción, fotos, materiales, altura, acceso y observaciones.",
+          "done_evidence": "Pedido Marido TEST persistido con guardas de riesgo.",
+          "improvement_focus": "Desviar trabajos regulados/peligrosos.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-request-flow",
+            "client-media"
+          ]
+        },
+        {
+          "id": "pilot-provider-marido",
+          "title": "PILOT-PROVIDER-MARIDO · Configuración y oferta",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Trabajos, zona/radio, disponibilidad, herramientas, transporte, materiales, cotización, límites, habilitaciones, documentos y referencias.",
+          "done_evidence": "Perfil proveedor Marido TEST apto + oferta completa + aceptación.",
+          "improvement_focus": "No aceptar trabajo fuera de capacidad/habilitación.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-demand",
+            "provider-shell"
+          ]
+        },
+        {
+          "id": "pilot-e2e-marido",
+          "title": "PILOT-E2E-MARIDO · Flujo completo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Solicitud→matching→aceptación→GPS/llegada→evidencias→trabajo→aprobación→pago→ratings→historial.",
+          "done_evidence": "serviceId TEST Marido completo y auditado.",
+          "improvement_focus": "Fail-closed ante trabajo regulado.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-client-marido",
+            "pilot-provider-marido",
+            "pilot-matching-schedule",
+            "pilot-payments",
+            "pilot-notifications",
+            "pilot-disputes",
+            "pilot-ratings-history"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "ugo-test-p0",
+            "shared-provider-fixture"
+          ]
+        },
+        {
+          "id": "pilot-documents-references",
+          "title": "PILOT-DOCUMENTS-REFERENCES · Documentos y referencias",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Documentos requeridos, consentimiento, privacidad y referencias laborales sin requisitos legales inventados.",
+          "done_evidence": "Onboarding TEST + almacenamiento/lectura autorizada + RLS.",
+          "improvement_focus": "Minimización de datos.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-shell",
+            "security-rls"
+          ]
+        },
+        {
+          "id": "pilot-matching-schedule",
+          "title": "PILOT-MATCHING-SCHEDULE · Aptitud, zona y horario",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Proveedor apto, disponible, en zona y sin conflicto desde/hasta.",
+          "done_evidence": "Matching TEST positivo/negativo + conflicto horario.",
+          "improvement_focus": "Explicar por qué no hay match.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract",
+            "pilot-documents-references"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-demand",
+            "shared-provider-fixture"
+          ]
+        },
+        {
+          "id": "pilot-payments",
+          "title": "PILOT-PAYMENTS · Digital, efectivo y deuda UGO",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Sin doble cobro/cierre; efectivo genera deuda/comisión UGO cuando corresponde.",
+          "done_evidence": "Pagos TEST idempotentes + ledger.",
+          "improvement_focus": "Estado de pago inequívoco.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "payments",
+            "provider-finance"
+          ]
+        },
+        {
+          "id": "pilot-notifications",
+          "title": "PILOT-NOTIFICATIONS · Ciclo Cliente/Proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Oferta, asignado, en camino, llegó, cambios y cierre con recuperación.",
+          "done_evidence": "Notificaciones TEST + fallo inyectado.",
+          "improvement_focus": "No perder eventos por red intermitente.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "notifications"
+          ]
+        },
+        {
+          "id": "pilot-disputes",
+          "title": "PILOT-DISPUTES · Apertura y cierre",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Abrir, adjuntar evidencia, ver estado/SLA y cerrar.",
+          "done_evidence": "Disputa TEST completa + audit trail.",
+          "improvement_focus": "Próximo paso visible.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "disputes"
+          ]
+        },
+        {
+          "id": "pilot-ratings-history",
+          "title": "PILOT-RATINGS-HISTORY · Rating bilateral e historial",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Rating único bilateral tras cierre e historial concordante.",
+          "done_evidence": "Ratings TEST únicos + historial Cliente/Proveedor.",
+          "improvement_focus": "Evitar rating duplicado.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "ratings",
+            "client-history",
+            "provider-history"
+          ]
+        },
+        {
+          "id": "pilot-faults-security",
+          "title": "PILOT-FAULTS-SECURITY · Fault injection, RLS y privacidad",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Campos faltantes, horarios inválidos/solapados, doble acción, GPS, red/API/notificación, proveedor no apto/deuda, RLS/RPC, secretos, logs, concurrencia y fail-closed.",
+          "done_evidence": "Suite negativa TEST + seguridad same-SHA.",
+          "improvement_focus": "Causa y recuperación explícitas.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-payments",
+            "pilot-matching-schedule",
+            "pilot-notifications",
+            "pilot-disputes",
+            "pilot-ratings-history"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "security-rls",
+            "regression"
+          ]
+        },
+        {
+          "id": "pilot-runtime-faxina",
+          "title": "PILOT-RUNTIME-FAXINA · Runtime UGO TEST",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Ejecución real de Faxina en UGO TEST sobre el mismo SHA.",
+          "done_evidence": "serviceId + persisted state + runtime artifact + correlation_id.",
+          "improvement_focus": "Prueba reproducible.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-e2e-faxina",
+            "pilot-faults-security"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "ugo-test-p0",
+            "shared-provider-fixture"
+          ]
+        },
+        {
+          "id": "pilot-runtime-marido",
+          "title": "PILOT-RUNTIME-MARIDO · Runtime UGO TEST",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Ejecución real de Marido de Aluguel en UGO TEST sobre el mismo SHA.",
+          "done_evidence": "serviceId + persisted state + runtime artifact + correlation_id.",
+          "improvement_focus": "Prueba reproducible.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-e2e-marido",
+            "pilot-faults-security"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "ugo-test-p0",
+            "shared-provider-fixture"
+          ]
+        },
+        {
+          "id": "pilot-judge-sentinel",
+          "title": "PILOT-JUDGE-SENTINEL · Verificación independiente",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Judge rederiva desde evidencia persistida y Sentinel valida invariantes/seguridad.",
+          "done_evidence": "Judge PASS + Sentinel PASS mismo SHA.",
+          "improvement_focus": "Sin autocertificación.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-runtime-faxina",
+            "pilot-runtime-marido"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "audit-ledger"
+          ]
+        },
+        {
+          "id": "pilot-human-acceptance",
+          "title": "PILOT-HUMAN-ACCEPTANCE · Pruebas físicas",
+          "owner": "SERGIO + UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "GPS/cámara/notificación/dispositivo y aceptación humana cuando no sea automatizable.",
+          "done_evidence": "Capturas/IDs/timestamps vinculados al SHA y serviceId.",
+          "improvement_focus": "Pasos exactos y evidencia mínima.",
+          "real_test_required": true,
+          "depends_on": [
+            "pilot-judge-sentinel"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "physical-gps",
+            "customer1-device-test"
+          ]
+        },
+        {
+          "id": "pilot-gate",
+          "title": "PILOT-GATE · Listo para prueba piloto",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Sólo READY con todos los automatizables VERIFIED y aceptación humana completada.",
+          "done_evidence": "UGO · FAXINA + MARIDO DE ALUGUEL · LISTO PARA PRUEBA PILOTO.",
+          "improvement_focus": "Bloqueos exactos, sin inferencias.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-judge-sentinel",
+            "pilot-human-acceptance"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "launch-gate"
+          ]
+        }
+      ]
+    },
+    {
       "id": "final",
       "title": "Pruebas reales finales",
       "items": [
