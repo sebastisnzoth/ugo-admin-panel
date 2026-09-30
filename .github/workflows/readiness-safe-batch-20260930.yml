@@ -1,0 +1,143 @@
+name: UGO Readiness Safe Batch 20260930
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readiness-safe-batch-20260930.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  client-saved-places:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/client-saved-places.test.mjs
+      - name: Persisted CRUD proof in UGO TEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          mkdir -p artifacts/client-saved-places
+          node --input-type=module <<'NODE' > artifacts/client-saved-places/runtime.json
+          import assert from 'node:assert/strict'
+          import {createClient} from '@supabase/supabase-js'
+          const db=createClient(process.env.UGO_TEST_SUPABASE_URL,process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}})
+          const {data:users,error:ue}=await db.from('usuarios').select('id').eq('tipo','client').eq('activo',true).limit(1); assert.ifError(ue); assert.ok(users?.[0]?.id)
+          const uid=users[0].id, tag='Readiness '+process.env.GITHUB_SHA.slice(0,8), address='Rua Teste UGO 123'
+          const {data:created,error:ce}=await db.from('direcciones_cliente').insert({usuario_id:uid,etiqueta:tag,direccion:address,complemento:'Sala 1',es_predeterminada:false}).select('id,etiqueta,direccion,complemento').single(); assert.ifError(ce)
+          const {data:updated,error:up}=await db.from('direcciones_cliente').update({etiqueta:tag+' Editado',complemento:'Sala 2'}).eq('id',created.id).eq('usuario_id',uid).select('id,etiqueta,complemento').single(); assert.ifError(up); assert.match(updated.etiqueta,/Editado/)
+          const {data:listed,error:le}=await db.from('direcciones_cliente').select('id,etiqueta,direccion').eq('id',created.id).eq('usuario_id',uid).single(); assert.ifError(le); assert.equal(listed.direccion,address)
+          const {error:de}=await db.from('direcciones_cliente').delete().eq('id',created.id).eq('usuario_id',uid); assert.ifError(de)
+          const {data:gone,error:ge}=await db.from('direcciones_cliente').select('id').eq('id',created.id).maybeSingle(); assert.ifError(ge); assert.equal(gone,null)
+          console.log(JSON.stringify({readiness_id:'client-saved-places',sha:process.env.GITHUB_SHA,environment:'UGO TEST',crud:'PASS',ui_contract:'PASS',production_touched:false}))
+          NODE
+      - name: Judge
+        run: node -e "const p=require('./artifacts/client-saved-places/runtime.json');if(p.sha!==process.env.GITHUB_SHA||p.crud!=='PASS'||p.ui_contract!=='PASS')process.exit(1)"
+      - name: Sentinel
+        run: node -e "const p=require('./artifacts/client-saved-places/runtime.json');if(p.environment!=='UGO TEST'||p.production_touched!==false)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with: { name: "readiness-client-saved-places-${{ github.sha }}", path: artifacts/client-saved-places }
+
+  client-responsive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright@1.56.1 && npx playwright install --with-deps chromium
+      - name: Browser viewport matrix
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/client-responsive
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/client-responsive-vite.log 2>&1 &
+          pid=$!; trap 'kill "$pid" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/?app=client >/dev/null && break || sleep 1; done
+          node --input-type=module <<'NODE' > artifacts/client-responsive/runtime.json
+          import assert from 'node:assert/strict'; import {chromium} from 'playwright'
+          const browser=await chromium.launch({headless:true}), matrix=[[390,844],[768,1024],[1440,900]], out=[]
+          for(const [width,height] of matrix){const c=await browser.newContext({viewport:{width,height}}),p=await c.newPage(),errors=[];p.on('pageerror',e=>errors.push(String(e)));await p.goto('http://127.0.0.1:4173/?app=client',{waitUntil:'networkidle'});const m=await p.evaluate(()=>({dw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,bw:document.body.scrollWidth,bcw:document.body.clientWidth,buttons:[...document.querySelectorAll('button')].filter(x=>{const r=x.getBoundingClientRect();return r.width>0&&r.height>0}).map(x=>x.getBoundingClientRect().height)}));assert.ok(m.dw<=m.cw+1&&m.bw<=m.bcw+1);assert.deepEqual(errors,[]);if(width<=390)assert.ok(m.buttons.every(h=>h>=32));await p.screenshot({path:`artifacts/client-responsive/${width}x${height}.png`,fullPage:true});out.push({width,height,metrics:m,errors});await c.close()}await browser.close();console.log(JSON.stringify({readiness_id:'client-responsive',sha:process.env.GITHUB_SHA,environment:'UGO TEST/local same-SHA',viewports:out,production_touched:false}))
+          NODE
+      - name: Judge
+        run: node -e "const p=require('./artifacts/client-responsive/runtime.json');if(p.sha!==process.env.GITHUB_SHA||p.viewports.length!==3)process.exit(1)"
+      - name: Sentinel
+        run: node -e "const p=require('./artifacts/client-responsive/runtime.json');if(p.production_touched!==false)process.exit(1)"
+      - uses: actions/upload-artifact@v4
+        with: { name: "readiness-client-responsive-${{ github.sha }}", path: artifacts/client-responsive }
+
+  admin-launch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node scripts/autonomous-launch-gate-runtime.mjs | tee /tmp/launch.json
+      - name: Deterministic controlled cases
+        run: node --test tests/contracts/autonomous-company-control-plane.test.mjs
+      - name: Judge
+        run: grep -q '"environment":"UGO TEST"' /tmp/launch.json
+      - name: Sentinel
+        run: test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+
+  auto-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node scripts/autonomous-scheduled-worker-on-proof.mjs | tee /tmp/worker.json
+      - name: Judge
+        run: grep -q '"scheduledWorkerOnProof":true' /tmp/worker.json
+      - name: Sentinel
+        run: grep -q '"finalMode":"OFF"' /tmp/worker.json
+
+  auto-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: "${{ github.sha }}" }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Initial D14 audit
+        run: node scripts/autonomous-d14-quality-coverage-runtime.mjs | tee /tmp/audit1.json
+      - name: Remediation/regression control
+        run: node scripts/autonomous-remediation-regression-runtime.mjs | tee /tmp/remediation.json
+      - name: Re-audit
+        run: node scripts/autonomous-d14-quality-coverage-runtime.mjs | tee /tmp/audit2.json
+      - name: Independent Judge
+        run: node scripts/autonomous-qa-judge-runtime.mjs | tee /tmp/judge.json
+      - name: Independent Sentinel
+        run: node scripts/autonomous-sentinel-gate.mjs | tee /tmp/sentinel.json
