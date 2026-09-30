@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-voice",
   "job_id": "job-hugo-voice-20260930T1529Z",
   "title": "Verify Hugo conversational voice input output and textual fallback",
-  "status": "WAITING_EVIDENCE",
+  "status": "IN_PROGRESS",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-09-30T16:59:00Z",
-  "lease_expires_at": "2026-09-30T17:44:00Z",
+  "heartbeat_at": "2026-09-30T17:11:30Z",
+  "lease_expires_at": "2026-09-30T17:56:30Z",
   "started_sha": "c5dee60c6f3eb93015e86a79dbd9655a21d1d8d6",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -17,32 +17,36 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "hugo-voice"
-  ],
+  "validators": ["Judge", "Sentinel"],
+  "resources": ["hugo-voice"],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "HUMAN_MIC_AUDIO_FINAL",
-  "attempt": 2,
+  "current_step": "FIX_HUMAN_RUNTIME_DEFECTS",
+  "attempt": 3,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
     "github-actions:36737490396",
-    "artifact:11107149057"
+    "artifact:11107149057",
+    "human-runtime:2026-09-30T17:10Z"
   ],
   "result_sha": "adc1ac46d1e19ac557739d67d7d57fbba06164db",
-  "revalidated_main_sha": "52ff6267cffe8f6ee05c568a5a031b6886c36525",
+  "revalidated_main_sha": "aba2f1ca165cf1c0b01408630813dbae39fec157",
+  "human_runtime_evidence": {
+    "result": "FAIL",
+    "voice_initial_intent": "PASS",
+    "address_followup": "FAIL",
+    "saved_place_casa": "FAIL",
+    "confirmation_followup": "FAIL",
+    "required_photo_prompt": "FAIL",
+    "notes": "Human test: Hugo hears the initial service need, then loses the flow at work address; a saved place spoken as 'casa' is not resolved; confirmation does not complete the missing work-detail/photo sequence."
+  },
   "revalidation": {
-    "later_commits_touch_voice_implementation": false,
-    "automated_runtime_artifact_still_available": true,
-    "automated_runtime_result": "PASS",
-    "delegable_scope_remaining": 0
+    "automated_runtime_result": "PASS_ON_PREVIOUS_SCOPE",
+    "delegable_scope_remaining": 1,
+    "human_evidence_invalidates_verified_candidate": true
   },
   "validators_result": {
-    "Judge": "PENDING_HUMAN_EVIDENCE",
-    "Sentinel": "PENDING_HUMAN_EVIDENCE"
+    "Judge": "BLOCKED_BY_RUNTIME_DEFECT",
+    "Sentinel": "BLOCKED_BY_RUNTIME_DEFECT"
   },
-  "blocker": "HUMAN_MICROPHONE_AUDIO_PROOF"
+  "blocker": "VOICE_MULTI_TURN_ADDRESS_AND_ORDER_FLOW_DEFECT"
 }
