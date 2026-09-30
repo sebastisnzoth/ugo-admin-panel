@@ -1,0 +1,204 @@
+name: UGO Readiness Client Saved Places Repair TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readiness-client-saved-places-repair.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-client-saved-places-test
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+
+jobs:
+  runtime-proof:
+    name: Saved places CRUD · UI · Judge · Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Saved places contracts
+        run: node --test tests/contracts/client-saved-places.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Execute persisted CRUD and browser UI proof
+        shell: bash
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/client-saved-places
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-client-saved-places-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import fs from 'node:fs/promises'
+          import {chromium} from 'playwright'
+          import {createClient} from '@supabase/supabase-js'
+
+          const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
+          const url=process.env.UGO_TEST_SUPABASE_URL||''
+          const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
+          const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
+          const email=process.env.UGO_TEST_CLIENT_EMAIL||''
+          const password=process.env.UGO_TEST_CLIENT_PASSWORD||''
+          const sha=process.env.UGO_RUNTIME_SHA||''
+          const base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173'
+          assert.equal(url,TEST_URL)
+          assert.ok(anon&&serviceKey&&email&&password&&sha)
+
+          const auth=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+          const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
+          const {data:login,error:loginError}=await auth.auth.signInWithPassword({email,password})
+          assert.ifError(loginError); assert.ok(login.session&&login.user)
+          const uid=login.user.id
+          const suffix=sha.slice(0,8)
+          const original='Readiness Oficina '+suffix
+          const edited='Readiness Oficina Editada '+suffix
+          const address='Rua Teste UGO 123'
+          const editedAddress='Rua Teste UGO 456'
+          await admin.from('direcciones_cliente').delete().eq('usuario_id',uid).like('etiqueta','Readiness Oficina%')
+
+          const browser=await chromium.launch({headless:true})
+          const context=await browser.newContext({viewport:{width:390,height:844}})
+          const page=await context.newPage()
+          const pageErrors=[]
+          page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)))
+          await page.route('https://photon.komoot.io/**',route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({features:[{geometry:{coordinates:[-48.477,-27.438]},properties:{street:'Rua Teste UGO',housenumber:'123',district:'Canasvieiras',city:'Florianópolis'}}]})}))
+          await page.addInitScript(session=>localStorage.setItem('ugo-test-client-auth',JSON.stringify(session)),login.session)
+
+          try{
+            await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
+            await page.getByRole('main',{name:'Inicio UGO Cliente'}).waitFor({state:'visible',timeout:20000})
+            await page.getByRole('button',{name:'Abrir menú'}).first().click()
+            await page.getByRole('button',{name:/Mi perfil/}).click()
+            const profile=page.getByRole('dialog',{name:'Perfil del cliente'})
+            await profile.waitFor({state:'visible',timeout:15000})
+
+            await profile.getByPlaceholder('Nombre: Casa, Oficina, Mamá…').fill(original)
+            await profile.getByPlaceholder('Dirección').last().fill(address)
+            await profile.getByPlaceholder('Complemento (opcional)').last().fill('Sala 1')
+            await profile.getByRole('button',{name:'+ Guardar lugar'}).click()
+            const createdCard=profile.locator('article').filter({hasText:original}).first()
+            await createdCard.waitFor({state:'visible',timeout:15000})
+            assert.match(await createdCard.innerText(),/Rua Teste UGO 123/)
+
+            let {data:created,error:createdError}=await admin.from('direcciones_cliente').select('id,etiqueta,direccion,complemento,es_predeterminada').eq('usuario_id',uid).eq('etiqueta',original).single()
+            assert.ifError(createdError); assert.ok(created?.id)
+
+            await createdCard.getByRole('button',{name:'Editar'}).click()
+            const editor=profile.getByLabel('Editar '+original)
+            await editor.getByPlaceholder('Nombre del lugar').fill(edited)
+            await editor.getByPlaceholder('Dirección').fill(editedAddress)
+            await editor.getByPlaceholder('Complemento (opcional)').fill('Sala 2')
+            await editor.getByRole('button',{name:'Guardar edición'}).click()
+            const editedCard=profile.locator('article').filter({hasText:edited}).first()
+            await editedCard.waitFor({state:'visible',timeout:15000})
+            assert.match(await editedCard.innerText(),/Rua Teste UGO 456/)
+            assert.match(await editedCard.innerText(),/Sala 2/)
+
+            const {data:updated,error:updatedError}=await admin.from('direcciones_cliente').select('id,etiqueta,direccion,complemento,es_predeterminada').eq('id',created.id).single()
+            assert.ifError(updatedError)
+            assert.equal(updated.etiqueta,edited)
+            assert.equal(updated.direccion,editedAddress)
+            assert.equal(updated.complemento,'Sala 2')
+
+            const defaultButton=editedCard.getByRole('button',{name:'Hacer principal'})
+            if(await defaultButton.count()){await defaultButton.click(); await page.waitForTimeout(500)}
+            const {data:principal,error:principalError}=await admin.from('direcciones_cliente').select('es_predeterminada').eq('id',created.id).single()
+            assert.ifError(principalError); assert.equal(principal.es_predeterminada,true)
+            assert.match(await editedCard.innerText(),/Principal/)
+
+            await editedCard.getByRole('button',{name:'Pedir acá'}).click()
+            await page.waitForTimeout(500)
+            const selection=await page.evaluate(uid=>JSON.parse(sessionStorage.getItem('ugo:guided-request-draft:'+uid)||'{}'),uid)
+            assert.equal(selection.pickupSource,'saved')
+            assert.equal(selection.addressLabel,edited)
+            assert.equal(selection.address,editedAddress)
+            assert.equal(selection.complement,'Sala 2')
+            assert.deepEqual(pageErrors,[])
+
+            await page.screenshot({path:'artifacts/client-saved-places/runtime.png',fullPage:true})
+            const proof={
+              readiness_id:'client-saved-places',
+              task_id:'readiness-client-saved-places',
+              job_id:'UGO-READINESS-CLIENT_SAVED_PLACES',
+              environment:'UGO TEST',
+              sha,
+              assertions:{
+                create_persisted:true,
+                edit_persisted:true,
+                ui_reflected:true,
+                made_default:true,
+                selected_for_order:true,
+                no_page_errors:true
+              },
+              place_id:created.id,
+              result:'PASS',
+              production_touched:false,
+              completed_at:new Date().toISOString()
+            }
+            await fs.writeFile('artifacts/client-saved-places/runtime.json',JSON.stringify(proof,null,2)+'\n')
+            console.log(JSON.stringify({status:'PASS',readiness_id:'client-saved-places',sha,placeId:created.id}))
+          } finally {
+            await admin.from('direcciones_cliente').delete().eq('usuario_id',uid).like('etiqueta','Readiness Oficina%')
+            await context.close(); await browser.close(); await auth.auth.signOut()
+          }
+          NODE
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: |
+          node -e "const p=require('./artifacts/client-saved-places/runtime.json');const a=p.assertions||{};if(p.sha!==process.env.UGO_RUNTIME_SHA||p.result!=='PASS'||!a.create_persisted||!a.edit_persisted||!a.ui_reflected||!a.made_default||!a.selected_for_order||!a.no_page_errors)process.exit(1)"
+      - name: Sentinel
+        run: |
+          node -e "const p=require('./artifacts/client-saved-places/runtime.json');if(p.environment!=='UGO TEST'||p.production_touched!==false)process.exit(1)"
+      - name: Upload immutable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-client-saved-places-${{ github.sha }}
+          path: artifacts/client-saved-places
+          if-no-files-found: warn
+          retention-days: 90
