@@ -72,6 +72,14 @@ const browser=await chromium.launch({headless:true})
 const results=[]
 const pageContext=new WeakMap()
 const sessions={client:client.session,provider:provider.session,admin:admin.session}
+async function freshRoleSession(role){
+ const source=role==='client'?client:role==='provider'?provider:admin
+ const{data,error}=await source.sb.auth.refreshSession()
+ assert.ifError(error)
+ assert.ok(data.session,role+'_FRESH_SESSION_REQUIRED')
+ sessions[role]=data.session
+ return data.session
+}
 
 async function assertResponsive(page,label){
  const metrics=await page.evaluate(()=>({
