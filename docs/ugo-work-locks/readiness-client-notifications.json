@@ -4,8 +4,8 @@
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T14:28:00Z",
-  "lease_expires_at": "2026-09-30T15:13:00Z",
+  "heartbeat_at": "2026-09-30T15:12:00Z",
+  "lease_expires_at": "2026-09-30T15:57:00Z",
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,8 +27,8 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "DIAGNOSE_ATTACHED_BUT_HIDDEN_CLIENT_LIVE_NOTICE",
-  "attempt": 7,
+  "current_step": "MERGE_VISIBILITY_FIX_AND_RERUN_TEST",
+  "attempt": 8,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
     "github-artifact:11101693090",
@@ -55,7 +55,9 @@
     "external:npm-status-operational-20260930",
     "github-run:36728587834:FAIL_LIVE_NOTICE_HIDDEN",
     "github-artifact:11103468622",
-    "diagnostic:assignment-notification-reached-DOM-but-remained-hidden"
+    "diagnostic:assignment-notification-reached-DOM-but-remained-hidden",
+    "root-cause:client-home-css-hid-notification-center",
+    "github-pr:314"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
@@ -63,7 +65,7 @@
     "run_id": 36728587834,
     "sha": "c89ca5ec57548a7cbc9e87b210761c21b6f08b1d",
     "cause": "Browser runtime authenticated and assignment notification reached the DOM. Playwright resolved the expected live-notice text 44 times, but it remained hidden until the client live-notice auto-dismiss elapsed. Backend persistence and Realtime delivery are therefore working; remaining blocker is rendered visibility/UI state.",
-    "next_fix": "Instrument the attached live-notice button and ancestor chain to persist computed display/visibility/opacity, geometry and classes; then fix the exact UI/CSS condition instead of changing notification delivery."
+    "next_fix": "Remove the Client Home selector that hides the whole notification center, keep the center mounted/visible for live notices, then rerun the same lifecycle runtime with Judge and Sentinel."
   },
   "finished_at": null,
   "validators_result": {
