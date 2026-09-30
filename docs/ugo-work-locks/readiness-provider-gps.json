@@ -31,7 +31,8 @@
     "github-actions-run-36669225058",
     "artifact-11076899569",
     "github-actions-run-36669338660",
-    "artifact-11077228063"
+    "artifact-11077228063",
+    "docs/evidence/ugo-test-auth-outage-20260930.json"
   ],
   "failed_at": "2026-09-30T04:38:00Z",
   "failure": {
