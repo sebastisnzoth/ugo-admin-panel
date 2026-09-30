@@ -1,0 +1,83 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "admin-qa",
+  "task_id": "readiness-admin-qa",
+  "job_id": "UGO-READINESS-ADMIN-QA",
+  "correlation_id": "readiness-admin-qa-20260930T003700Z-b9a158b2",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "75793c22f923fac956aac1817e38144b09347a4a",
+  "workflow_run": {
+    "id": 36652619264,
+    "job_id": 109689971641,
+    "name": "UGO Readiness Admin QA TEST",
+    "conclusion": "success",
+    "artifact_id": 11071605219,
+    "artifact_name": "readiness-admin-qa-75793c22f923fac956aac1817e38144b09347a4a",
+    "artifact_digest": "sha256:b9b5e0d5da82d9b3d0f38120b9fdb5acd1f145d42bacc44a54ebac7fc7e128d6"
+  },
+  "runtime": {
+    "active_simulator_roles": [
+      "ADMIN",
+      "CLIENT",
+      "PROVIDER"
+    ],
+    "active_scenarios": [
+      "gps-geofence",
+      "payments",
+      "permissions-rls",
+      "provider-radius",
+      "qa-meta-seeded-defect",
+      "realtime",
+      "roles",
+      "service-lifecycle"
+    ],
+    "recent_runs": 100,
+    "meta_qa_sequence": [
+      "PASSED",
+      "FAILED",
+      "PASSED"
+    ],
+    "seeded_defect_detected": true,
+    "permanent_regression": true,
+    "independent_judge_successful_jobs": 50,
+    "protected_coverage": {
+      "physical-gps-device": "UNCOVERED",
+      "uploaded-media-bytes": "UNCOVERED",
+      "real-customer-acceptance": "UNCOVERED"
+    },
+    "self_certification_allowed": false,
+    "production_touched": false,
+    "result": "PASS"
+  },
+  "validators": {
+    "Judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T00:55:46.532Z",
+      "basis": [
+        "persisted simulators",
+        "persisted scenario results",
+        "Meta-QA fail-remediate-pass",
+        "decision/evidence ledgers",
+        "independent deterministic judge",
+        "physical/human gates fail closed"
+      ]
+    },
+    "Sentinel": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T00:55:46.564Z",
+      "production_touched": false,
+      "reconciliation": "PASS",
+      "protected_human_physical_gates": "FAIL_CLOSED"
+    }
+  },
+  "remediation": {
+    "root_cause": "uploaded-media-bytes could be promoted to COVERED by a later machine-evidence migration, contradicting the three protected final gates.",
+    "test_migration_version": "20260930005427",
+    "test_migration_name": "guard_protected_qa_coverage_fail_closed",
+    "repository_migration": "supabase/migrations/20260930005427_guard_protected_qa_coverage_fail_closed.sql",
+    "guard": "trg_guard_autonomous_protected_quality_coverage",
+    "first_failure_run": 36651938894,
+    "reconciliation_failure_run": 36652381154
+  }
+}
