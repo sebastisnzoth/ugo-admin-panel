@@ -5,7 +5,7 @@
   "title": "Verify autonomous agents and specialists distinguish cataloged, enabled, executed, and verified with trigger+executor+Judge+Sentinel proof",
   "status": "DONE",
   "started_at": "2026-09-29T22:15:00Z",
-  "heartbeat_at": "2026-09-29T22:22:30Z",
+  "heartbeat_at": "2026-09-30T02:07:07.915670Z",
   "lease_expires_at": "2026-09-29T22:22:30Z",
   "started_sha": "19a1d71bb1ded150d1a30ba7b7279d03a56ae5cf",
   "owner": "UGO",
@@ -32,36 +32,41 @@
     "github-actions:run:36638974305:SUCCESS",
     "github-actions:job:109646448905:SUCCESS",
     "github-actions:artifact:11066175673:sha256:52292e24df514d429d0b4fd8b2860ea79d2ae5f4dea2871a00e4ec4e32be46a1",
-    "ugo-test:auto-agents:cataloged:118",
-    "ugo-test:auto-agents:enabled:22",
-    "ugo-test:auto-agents:executed:22",
-    "ugo-test:auto-agents:verified:22",
     "repo:docs/evidence/readiness-auto-agents-20260929.json",
-    "github:f0fafb9a7f153e89649b2d7cb0d1854c58c8491f"
+    "github:f0fafb9a7f153e89649b2d7cb0d1854c58c8491f",
+    "ugo-test:auto-agents:cataloged:118",
+    "ugo-test:auto-agents:enabled:38",
+    "ugo-test:auto-agents:executed:38",
+    "ugo-test:auto-agents:verified:38",
+    "ugo-test:auto-agents:d3-d4:verified:16",
+    "repo:docs/evidence/readiness-auto-agents-20260930.json",
+    "github:3bb49da06152329280ddf5007f8530f66c742b8f"
   ],
-  "completed_at": "2026-09-29T22:22:30Z",
-  "completed_main_sha": "f0fafb9a7f153e89649b2d7cb0d1854c58c8491f",
+  "completed_at": "2026-09-30T02:07:07.915670Z",
+  "completed_main_sha": "3bb49da06152329280ddf5007f8530f66c742b8f",
   "runtime_validated_sha": "d8106f13bd672ca5d155283ba2a65fe57e556bfe",
   "runtime_correlation_id": "readiness-auto-agents-20260929T221500Z-19a1d71b",
   "validators_result": {
     "Judge": "PASS",
     "Sentinel": "PASS"
   },
-  "evidence_path": "docs/evidence/readiness-auto-agents-20260929.json",
-  "evidence_commit_sha": "f0fafb9a7f153e89649b2d7cb0d1854c58c8491f",
+  "evidence_path": "docs/evidence/readiness-auto-agents-20260930.json",
+  "evidence_commit_sha": "3bb49da06152329280ddf5007f8530f66c742b8f",
   "safe_final_state": {
     "environment": "UGO TEST",
     "production_touched": false,
     "cataloged_agents": 118,
-    "enabled_agents": 22,
-    "executed_agents": 22,
-    "verified_enabled_agents": 22,
-    "disabled_cataloged_agents": 96
+    "enabled_agents": 38,
+    "executed_agents": 38,
+    "verified_enabled_agents": 38,
+    "disabled_cataloged_agents": 80
   },
   "notes": [
     "Operational status and maturity are separate in Super Admin.",
-    "All 22 enabled agents have same-SHA trigger, deterministic executor, Judge PASS and Sentinel PASS evidence.",
-    "The remaining 96 agents stay cataloged/disabled and were explicitly not executed.",
+    "All 38 enabled agents have persisted execution evidence plus Judge PASS and Sentinel PASS in UGO TEST.",
+    "The 16 new D3/D4 specialists use governed read-only aggregate executors and cannot mutate business tables.",
+    "The remaining 80 agents stay cataloged/disabled until their executor contracts are implemented.",
     "No production environment was touched."
-  ]
+  ],
+  "result": "VERIFIED"
 }
