@@ -101,7 +101,7 @@
           "id": "client-multiple-orders",
           "title": "Pedidos activos y programados",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Permitir futuros programados sin romper reglas de pedido activo.",
           "done_evidence": "Escenarios TEST de coexistencia.",
           "improvement_focus": "Explicar bloqueos y disponibilidad.",
