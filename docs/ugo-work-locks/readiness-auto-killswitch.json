@@ -1,0 +1,30 @@
+{
+  "readiness_id": "auto-killswitch",
+  "task_id": "readiness-auto-killswitch",
+  "job_id": "UGO-READINESS-AUTO-KILLSWITCH",
+  "title": "Verify autonomous kill switch control and recovery in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T01:44:00Z",
+  "heartbeat_at": "2026-09-30T01:44:00Z",
+  "lease_expires_at": "2026-09-30T02:29:00Z",
+  "started_sha": "2eb9e4e71e183ba49f1a782f0a003674dab59bf6",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "Autonomy Safety Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-state"
+  ],
+  "correlation_id": "readiness-auto-killswitch-20260930T014400Z-2eb9e4e7",
+  "current_step": "INSPECT_AND_BUILD_RUNTIME_PROOF",
+  "attempt": 1,
+  "evidence_ids": [],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "production_touched": false
+}
