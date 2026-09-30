@@ -1,0 +1,31 @@
+{
+  "readiness_id": "hugo-action",
+  "task_id": "readiness-hugo-action",
+  "job_id": "UGO-READINESS-HUGO-ACTION",
+  "title": "Verify Hugo INTENT→ACTION→EFFECT with persistent audit evidence",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:40:00Z",
+  "heartbeat_at": "2026-09-30T03:40:00Z",
+  "lease_expires_at": "2026-09-30T04:25:00Z",
+  "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "Hugo Action Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "hugo-actions"
+  ],
+  "correlation_id": "readiness-hugo-action-20260930T034000Z-c1097e3c",
+  "current_step": "RECONCILE_PR_294_AND_VERIFY_INTENT_ACTION_EFFECT",
+  "attempt": 1,
+  "evidence_ids": [
+    "github-pr:294"
+  ],
+  "production_touched": false,
+  "notes": [
+    "PR #294 overlaps Hugo voice resilience. Do not duplicate its voice fallback changes; verify action effects against current main and reconcile only what is needed."
+  ]
+}

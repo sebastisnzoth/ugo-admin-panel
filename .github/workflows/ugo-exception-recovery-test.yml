@@ -9,6 +9,7 @@ on:
       - 'supabase/migrations/20260930035000_restore_service_role_worker_recovery.sql'
       - 'supabase/migrations/20260930035500_exception_recovery_preserve_runtime_state.sql'
       - 'supabase/migrations/20260930036000_service_role_claims_json_guard.sql'
+      - 'supabase/migrations/20260930036500_exception_recovery_protected_judge.sql'
       - 'scripts/autonomous-exception-recovery-runtime.mjs'
       - 'scripts/autonomous-exception-recovery-judge.mjs'
       - 'tests/contracts/autonomous-exception-recovery.test.mjs'

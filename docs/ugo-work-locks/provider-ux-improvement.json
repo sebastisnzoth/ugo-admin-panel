@@ -2,10 +2,10 @@
   "task_id": "provider-ux-improvement",
   "job_id": "UGO-PROVIDER-UX-IMPROVEMENT-20260930",
   "title": "Improve provider operational clarity and mobile navigation",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T03:23:00Z",
-  "heartbeat_at": "2026-09-30T03:37:00Z",
-  "lease_expires_at": "2026-09-30T04:22:00Z",
+  "heartbeat_at": "2026-09-30T03:44:00Z",
+  "lease_expires_at": "2026-09-30T03:44:00Z",
   "started_sha": "cdcb86a8bd1096cbd1b2c9a60224e351bbcfbbf3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,12 +25,19 @@
     "provider-location"
   ],
   "correlation_id": "provider-ux-improvement-20260930T032300Z",
-  "current_step": "RUN_PROVIDER_UI_RUNTIME",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
     "tests/contracts/provider-operational-dock.test.mjs",
     "tests/contracts/provider-active-job-ux.test.mjs",
     "github-actions-run-36664809935",
-    "github-actions-run-36665185236"
-  ]
+    "github-actions-run-36665185236",
+    "docs/evidence/provider-ux-improvement-20260930.json",
+    "github-actions-run-36665591818",
+    "github-actions-run-36665591849",
+    "artifact-11076142772"
+  ],
+  "finished_at": "2026-09-30T03:44:00Z",
+  "verified_sha": "a3b17c42485691088d33f3769eec5ab43028ddb7",
+  "result": "IMPLEMENTED_AND_RUNTIME_VERIFIED"
 }

@@ -1,0 +1,37 @@
+name: UGO Autonomy ON Stability
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/mvp/SuperAdminCommandCenter.tsx"
+      - "tests/contracts/autonomy-on-killswitch-semantics.test.mjs"
+      - ".github/workflows/autonomy-on-stability.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-autonomy-on-stability
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npx tsc -b
+      - run: >
+          node --test
+          tests/contracts/autonomy-on-killswitch-semantics.test.mjs
+          tests/contracts/actionable-agents-runtime.test.mjs
+          tests/contracts/superadmin-workforce-control-center.test.mjs

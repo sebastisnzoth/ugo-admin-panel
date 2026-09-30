@@ -1,0 +1,47 @@
+{
+  "task_id": "provider-ux-improvement",
+  "job_id": "UGO-PROVIDER-UX-IMPROVEMENT-20260930",
+  "environment": "UGO TEST",
+  "verified_sha": "a3b17c42485691088d33f3769eec5ab43028ddb7",
+  "production_touched": false,
+  "improvements": {
+    "operational_dock": true,
+    "active_job_next_action_brief": true,
+    "gps_distance_feedback": true,
+    "accessible_dock_labels": true,
+    "provider_only_runtime_workflow": true
+  },
+  "assertions": {
+    "online_state_visible": true,
+    "active_work_state_visible": true,
+    "demand_count_visible": true,
+    "mission_mode_unobstructed": true,
+    "canonical_actions_preserved": [
+      "ESTOY YENDO",
+      "YA LLEGUÉ",
+      "EMPEZAR TRABAJO",
+      "TRABAJO LISTO"
+    ],
+    "gps_invalid_stale_accuracy_guards_preserved": true,
+    "gps_distance_and_geofence_reason_visible": true,
+    "desktop_and_mobile_provider_runtime": true
+  },
+  "validation": {
+    "core_ci": {
+      "run_id": 36665591818,
+      "conclusion": "success"
+    },
+    "provider_ui_runtime": {
+      "run_id": 36665591849,
+      "conclusion": "success",
+      "artifact_id": 11076142772,
+      "artifact_digest": "sha256:2ede9b0806bde4d5ee7c90468f534dcd649342c94797c4e1ca54ef006bab3c5b"
+    },
+    "contracts": [
+      "tests/contracts/provider-operational-dock.test.mjs",
+      "tests/contracts/provider-active-job-ux.test.mjs",
+      "tests/contracts/provider-location-feedback.test.mjs"
+    ]
+  },
+  "completed_at": "2026-09-30T03:44:00Z"
+}

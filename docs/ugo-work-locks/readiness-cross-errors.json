@@ -1,0 +1,26 @@
+{
+  "readiness_id": "cross-errors",
+  "task_id": "readiness-cross-errors",
+  "job_id": "UGO-READINESS-CROSS-ERRORS",
+  "title": "Verify actionable errors and empty states with fault injection",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:40:00Z",
+  "heartbeat_at": "2026-09-30T03:40:00Z",
+  "lease_expires_at": "2026-09-30T04:25:00Z",
+  "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "Cross-role Fault Injection Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "qa-lab"
+  ],
+  "correlation_id": "readiness-cross-errors-20260930T034000Z-c1097e3c",
+  "current_step": "FAULT_INJECTION_UI_API",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}

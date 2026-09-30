@@ -28,6 +28,21 @@ const client=await login(clientEmail,clientPassword)
 const provider=await login(providerEmail,providerPassword)
 const admin=await login(adminEmail,adminPassword)
 
+async function ensureOperationalProviderFixture(){
+ const providerId=provider.session.user.id
+ const {data:profile,error:profileError}=await admin.sb.from('perfiles_proveedor').select('usuario_id,estado_verificacion').eq('usuario_id',providerId).maybeSingle()
+ assert.ifError(profileError)
+ assert.ok(profile,'UGO_TEST_PROVIDER_PROFILE_REQUIRED')
+ if(profile.estado_verificacion!=='verificado'){
+   const {error:updateError}=await admin.sb.from('perfiles_proveedor').update({estado_verificacion:'verificado'}).eq('usuario_id',providerId)
+   assert.ifError(updateError)
+ }
+ const {data:verified,error:verifyError}=await admin.sb.from('perfiles_proveedor').select('estado_verificacion').eq('usuario_id',providerId).single()
+ assert.ifError(verifyError)
+ assert.equal(verified.estado_verificacion,'verificado','UGO_TEST_PROVIDER_MUST_BE_VERIFIED')
+}
+await ensureOperationalProviderFixture()
+
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const results=[]

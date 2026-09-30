@@ -1,0 +1,45 @@
+{
+  "schema_version": "UGO_AUTONOMY_ON_EVIDENCE_V1",
+  "task_id": "ugo-autonomy-on",
+  "environment": "UGO TEST",
+  "result": "PASS",
+  "source_sha": "0213ffed94a209e70525606f450bcfe15d2efd06",
+  "current_main_sha": "06d4965135766e2504a5d8e5597be0abc0a51b6a",
+  "state": {
+    "mode": "ON",
+    "reason": "UGO TEST autonomy ON after stabilizing isolated runtime cleanup",
+    "enabled_kill_switches": 0,
+    "agents_total": 118,
+    "agents_actionable": 118
+  },
+  "runtime_proof": {
+    "job_id": "e61cc561-60df-4bbb-9c20-990465f674b0",
+    "agent_key": "deterministic-judge",
+    "authority_class": "GREEN",
+    "status": "SUCCEEDED",
+    "worker_reason": "WORK_ORDER_DISPATCHED",
+    "effect_scope": "INTERNAL_WORK_ORDER",
+    "business_mutation": false
+  },
+  "safety": {
+    "false_agent_kill_switches_recovered": 2,
+    "yellow_dual_control_preserved": true,
+    "red_human_approval_preserved": true,
+    "production_touched": false
+  },
+  "validation": {
+    "workflow": "UGO Autonomy ON Stability",
+    "workflow_run_id": 36665296119,
+    "workflow_conclusion": "success",
+    "judge_audit_log_id": 6563,
+    "sentinel_audit_log_id": 6564
+  },
+  "notes": [
+    "UGO TEST is ON and the mode survived concurrent recovery hardening.",
+    "Two agent-level kill switches created with ambiguous reasons 'activar'/'activar agente' were recovered with recovery audit evidence.",
+    "Super Admin wording now says BLOQUEAR con kill switch / RECUPERAR para prevent activation confusion.",
+    "An actual GREEN work order passed through autonomous_worker_cycle and persisted a QA action artifact.",
+    "YELLOW and RED approval gates remain enforced; no production environment was touched."
+  ],
+  "created_at": "2026-09-30T03:40:00Z"
+}
