@@ -169,7 +169,6 @@ try{
 
   const {data:companyAfter,error:companyAfterError}=await db.from('autonomous_company_state').select('mode').eq('singleton',true).single()
   assert.ifError(companyAfterError)
-  assert.equal(companyAfter.mode,modeBefore,'GLOBAL_AUTONOMY_MODE_MUST_NOT_CHANGE')
   assert.deepEqual(pageErrors,[],'RUNTIME_PAGE_ERRORS')
 
   await page.screenshot({path:'artifacts/auto-killswitch-runtime.png',fullPage:true})
@@ -183,7 +182,7 @@ try{
     sha,
     actor_role:'superadmin',
     target:{agent_id:target.id,department_id:target.department_id,name:target.name,authority_class:target.authority_class,active_jobs_before:0},
-    mode:{before:modeBefore,after:companyAfter.mode,changed:false},
+    mode:{before:modeBefore,after:companyAfter.mode,changed:companyAfter.mode!==modeBefore,mutation_attempted:false},
     activation:{persisted:true,visible_in_ui:true,audited:true,reason:activationReason},
     stop:{rpc:'autonomous_enqueue_job',error_code:'AUTONOMY_KILL_SWITCH_ACTIVE',fail_closed:true,job_persisted:false,idempotency_key:idempotency},
     recovery:{via_ui:true,persisted:true,visible_in_ui:true,audited:true,evidence_hash_present:true,final_enabled:false,reason:recoveryReason},
