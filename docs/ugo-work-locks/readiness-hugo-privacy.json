@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-privacy",
   "job_id": "UGO-READINESS-HUGO-PRIVACY",
   "title": "Verify Hugo privacy and sanitization in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:36:00Z",
-  "heartbeat_at": "2026-09-30T13:36:00Z",
-  "lease_expires_at": "2026-09-30T14:21:00Z",
+  "heartbeat_at": "2026-09-30T13:44:00Z",
+  "lease_expires_at": null,
   "started_sha": "fe7e6f409bfcf485b9ae08ef14e50e95e96c07cf",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -26,12 +26,30 @@
     "hugo-security"
   ],
   "correlation_id": "readiness-hugo-privacy-20260930T133600Z-fe7e6f40-r2",
-  "current_step": "PORT_CURRENT_MAIN_AND_VERIFY",
+  "current_step": "VERIFIED",
   "attempt": 2,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-run:36723241216",
+    "github-core-run:36723241206#attempt-2",
+    "github-job:109913449332",
+    "github-artifact:11101061628",
+    "repo-evidence:docs/evidence/readiness-hugo-privacy-20260930.json"
+  ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "completed_at": "2026-09-30T13:44:00Z",
+  "finished_at": "2026-09-30T13:44:00Z",
+  "verified_sha": "7602b9d74f65301e1042c8c47d94c87505659fd2",
+  "merged_main_sha": "87609813f9b40b5d37b257cc86f8da2229466508",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false
   }
 }
