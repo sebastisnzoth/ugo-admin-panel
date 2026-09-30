@@ -30,3 +30,13 @@ test('browser voice bridge self-installs without a boot-critical React bootstrap
  assert.match(src,/if\(typeof window!==\'undefined\'\)installBrowserBridge\(\)/)
  assert.doesNotMatch(app,/BrowserVoiceBridgeBootstrap/)
 })
+
+
+test('browser voice bridge degrades to Web Speech when Gemini Live cannot start',async()=>{
+ const src=await read('src/lib/browserVoiceBridge.ts')
+ assert.match(src,/speechCtor/)
+ assert.match(src,/engine:'browser-speech'/)
+ assert.match(src,/activating browser speech fallback/)
+ assert.match(src,/if\(startFallback\(\)\)/)
+ assert.match(src,/isAvailable:\(\)=>canStream\(\)\|\|Boolean\(speechCtor\(\)\)/)
+})
