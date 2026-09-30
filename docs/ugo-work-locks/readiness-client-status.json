@@ -3,10 +3,10 @@
   "task_id": "readiness-client-status",
   "job_id": "UGO-READINESS-CLIENT_STATUS",
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T10:46:00Z",
-  "heartbeat_at": "2026-09-30T11:15:00Z",
-  "lease_expires_at": "2026-09-30T12:00:00Z",
+  "heartbeat_at": "2026-09-30T11:17:24.784Z",
+  "lease_expires_at": null,
   "started_sha": "e5604ef5576392956de149ff3fcec0e14b21056e",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,7 +25,7 @@
     "client-service-status"
   ],
   "correlation_id": "readiness-client-status-20260930T104600Z-e5604ef5",
-  "current_step": "RUNNING_V8_ISOLATED_AUTH_SESSION",
+  "current_step": "DONE",
   "attempt": 10,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
@@ -66,10 +66,20 @@
     "commit:b451aa6343b70fb2732a6fef05a8d27537e3b050",
     "run:36707038292:FAIL_PARALLEL_TEST_SESSION_INTERFERENCE",
     "artifact:11092407286",
-    "commit:d6e116dd017619be9d57677f8c816896687e8bbf"
+    "commit:d6e116dd017619be9d57677f8c816896687e8bbf",
+    "workflow-run:36707466051",
+    "serviceId:cf31eafa-c6c7-482b-aeab-9585165eebd9",
+    "evidence:docs/ugo-readiness-evidence/readiness-client-status-20260930.json"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
-  "judge": "PENDING",
-  "sentinel": "PENDING",
-  "production_touched": false
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "completed_at": "2026-09-30T11:17:24.784Z",
+  "runtime_validated_sha": "d6e116dd017619be9d57677f8c816896687e8bbf",
+  "evidence_path": "docs/ugo-readiness-evidence/readiness-client-status-20260930.json",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }

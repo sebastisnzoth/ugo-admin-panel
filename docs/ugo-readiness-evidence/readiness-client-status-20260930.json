@@ -1,0 +1,128 @@
+{
+  "readiness_id": "client-status",
+  "task_id": "readiness-client-status",
+  "control": "Seguimiento del profesional",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "runtime_validated_sha": "d6e116dd017619be9d57677f8c816896687e8bbf",
+  "workflow_run_id": 36707466051,
+  "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+  "fixture": "disposable",
+  "cleanup": {
+    "ok": true,
+    "mode": "deleted",
+    "error": null
+  },
+  "cleanup_ok": true,
+  "sequence": [
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "asignado",
+      "stage": "accepted",
+      "backend_state": "asignado",
+      "ui_state": "asignado",
+      "ui_stage": "accepted",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "en_camino",
+      "stage": "route",
+      "backend_state": "en_camino",
+      "ui_state": "en_camino",
+      "ui_stage": "route",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "llegado",
+      "stage": "arrived",
+      "backend_state": "llegado",
+      "ui_state": "llegado",
+      "ui_stage": "arrived",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "en_progreso",
+      "stage": "working",
+      "backend_state": "en_progreso",
+      "ui_state": "en_progreso",
+      "ui_stage": "working",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "esperando_aprobacion",
+      "stage": "finished",
+      "backend_state": "esperando_aprobacion",
+      "ui_state": "esperando_aprobacion",
+      "ui_stage": "finished",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "cf31eafa-c6c7-482b-aeab-9585165eebd9",
+      "state": "completado",
+      "stage": "finished",
+      "backend_state": "completado",
+      "ui_state": "completado",
+      "ui_stage": "finished",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "page_errors": [],
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T11:17:24.784Z"
+}
