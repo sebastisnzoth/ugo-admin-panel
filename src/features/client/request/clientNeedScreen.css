@@ -55,3 +55,5 @@
  .ugo-client-root.ugo-client-screen-request .prototype-hugo .ugo-real-state i{margin:0!important}
  .ugo-client-root.ugo-client-screen-request .ugo-hugo-stage-card{position:absolute!important;left:82px!important;bottom:0!important;width:320px!important;margin:0!important;border-radius:20px!important}
 }
+
+.ugo-pilot-fields{margin:18px 0;padding:16px;border:1px solid #dce6e2;border-radius:16px;background:#fff;display:grid;gap:12px}.ugo-pilot-fields h2{margin:0}.ugo-pilot-fields label{display:grid;gap:6px;color:#31414e;font-size:13px;font-weight:750}.ugo-pilot-fields input,.ugo-pilot-fields select{box-sizing:border-box;width:100%;min-height:44px;border:1px solid #d9e1de;border-radius:11px;background:#fff;color:#102335;padding:9px 11px;font:inherit}.ugo-pilot-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.ugo-pilot-warning{margin:0;padding:10px 12px;border-radius:11px;background:#fff7e8;color:#704b12;font-size:12px;line-height:1.4}@media(max-width:420px){.ugo-pilot-grid{grid-template-columns:1fr 1fr}.ugo-pilot-grid label:last-child{grid-column:1/-1}}
