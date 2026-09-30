@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
   "title": "Verify provider notifications in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:53:00Z",
-  "heartbeat_at": "2026-09-30T13:53:00Z",
-  "lease_expires_at": "2026-09-30T14:38:00Z",
+  "heartbeat_at": "2026-09-30T13:56:00Z",
+  "lease_expires_at": null,
   "started_sha": "3a11d88e5120951f1e0265f3d8cea8b8be4fdb4c",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -26,8 +26,29 @@
     "notifications"
   ],
   "correlation_id": "readiness-provider-notifications-20260930T135300Z-3a11d88e-r2",
-  "current_step": "PORT_RUNTIME_TO_CURRENT_MAIN",
+  "current_step": "VERIFIED",
   "attempt": 2,
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-run:36725016445",
+    "github-job:109919549135",
+    "github-artifact:11101274032",
+    "repo-evidence:docs/evidence/readiness-provider-notifications-20260930.json"
+  ],
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "completed_at": "2026-09-30T13:56:00Z",
+  "finished_at": "2026-09-30T13:56:00Z",
+  "verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
+  "merged_main_sha": "06af274f9614f6eba4dd0c15554218430049dd71",
+  "validation": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "build": "PASS",
+    "notification_contracts": "PASS",
+    "production_touched": false
+  }
 }
