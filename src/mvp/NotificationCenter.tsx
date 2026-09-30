@@ -23,6 +23,22 @@ function providerOfferNoticeActive(notice:UgoNotification,now=Date.now()){
  const created=Date.parse(notice.created_at)
  return Number.isFinite(created)&&now-created<=LEGACY_PROVIDER_OFFER_MAX_AGE_MS
 }
+function providerOfferContext(notice:UgoNotification){
+ if(notice.tipo!=='nueva_oferta')return[] as string[]
+ const data=notice.datos||{}
+ const pick=(...keys:string[])=>{for(const key of keys){const value=data[key];if(typeof value==='string'&&value.trim())return value.trim();if(typeof value==='number'&&Number.isFinite(value))return String(value)}return''}
+ const service=pick('servicio','categoria','categoria_nombre','nombre_servicio')
+ const zone=pick('zona','barrio','region')
+ const distanceRaw=pick('distancia_km','distance_km')
+ const distance=distanceRaw&&Number.isFinite(Number(distanceRaw))?`${Number(distanceRaw).toFixed(Number(distanceRaw)>=10?0:1)} km`:''
+ const scheduleRaw=pick('horario','scheduled_at','fecha_programada')
+ let schedule=''
+ if(scheduleRaw){const parsed=Date.parse(scheduleRaw);schedule=Number.isFinite(parsed)?new Date(parsed).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}):scheduleRaw}
+ const expiryRaw=pick('expira_at')
+ let expiry=''
+ if(expiryRaw){const ms=Date.parse(expiryRaw)-Date.now();if(Number.isFinite(ms)&&ms>0){const minutes=Math.max(1,Math.ceil(ms/60000));expiry=`Vence en ${minutes} min`}}
+ return [service,zone,distance,schedule,expiry].filter(Boolean).slice(0,4)
+}
 type AudioWindow=Window&typeof globalThis&{webkitAudioContext?:typeof AudioContext}
 let providerAudioContext:AudioContext|null=null
 function providerAudio(){
@@ -78,12 +94,13 @@ export function NotificationCenter({role,onOpenNotice,attentionEnabled=true}:Pro
  async function openNotice(notice:UgoNotification){setError('');try{const actionable=await noticeStillActionable(notice);if(!notice.leida_at)await mark(notice.id);if(!actionable.ok){setLiveNotice(null);setOpen(false);setError(actionable.message||'Esta notificación ya no está disponible.');return}setLiveNotice(null);setOpen(false);onOpenNotice?.(notice)}catch(e){setError(e instanceof Error?e.message:'No se pudo abrir la notificación.')}}
  async function enablePush(){if(!uid||pushState==='loading'||pushState==='unsupported')return;setError('');setPushState('loading');try{const permission=await Notification.requestPermission();if(permission!=='granted'){setPushState(permission==='denied'?'blocked':'off');return}const reg=await navigator.serviceWorker.ready;let sub=await retireStalePush(await reg.pushManager.getSubscription());if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:vapidBytes(VAPID_PUBLIC)});const endpoint=sub.endpoint,p256dh=b64(sub.getKey('p256dh')),auth=b64(sub.getKey('auth'));const rpc=db as unknown as PushRpcClient;const{error}=await rpc.rpc('guardar_push_suscripcion',{p_endpoint:endpoint,p_p256dh:p256dh,p_auth:auth,p_user_agent:navigator.userAgent});if(error)throw new Error(error.message||'No se pudo guardar la suscripción push.');setPushState('on')}catch(e){setError(e instanceof Error?e.message:'No se pudo activar Web Push');setPushState('off')}}
  const unread=rows.filter(r=>!r.leida_at).length
+ const liveProviderContext=liveNotice&&role==='provider'?providerOfferContext(liveNotice):[]
  const icon=(t:string)=>t.includes('chat')?'💬':t.includes('pago')?'💳':t.includes('oferta')||t.includes('asignado')?'⚡':t.includes('cancel')?'✕':t.includes('camino')||t.includes('llego')?'📍':t.includes('aprob')||t.includes('complet')?'✅':t.includes('disputa')?'🛡':'🔔'
  const pushLabel=pushState==='on'?'✓ Avisos activados':pushState==='loading'?'Activando…':pushState==='blocked'?'Avisos bloqueados':pushState==='unsupported'?'Push no disponible':'Activar avisos',providerCall=Boolean(liveNotice&&role==='provider'&&PROVIDER_CALL_TYPES.has(liveNotice.tipo)),providerAttention=Boolean(liveNotice&&role==='provider'&&PROVIDER_ATTENTION_TYPES.has(liveNotice.tipo)),clientCall=Boolean(liveNotice&&role==='client'&&CLIENT_ATTENTION_TYPES.has(liveNotice.tipo))
  return <div className={`ugo-notification-center role-${role}`}>
   <button type="button" aria-label={`Notificaciones UGO${unread?`, ${unread} sin leer`:''}`} className="ugo-notification-trigger" onClick={()=>setOpen(v=>!v)}>🔔{unread>0&&<b>{unread>99?'99+':unread}</b>}</button>
   {pushState==='off'&&<button type="button" className="ugo-notification-enable-chip" onClick={()=>void enablePush()} aria-label="Activar notificaciones push"><span>🔔</span><b>Activar notificaciones</b></button>}
-  {liveNotice&&<button type="button" className={`ugo-notification-live is-${role} ${providerCall?'is-provider-call':''}`} onClick={()=>void openNotice(liveNotice)} aria-live="assertive"><span className="ugo-notification-icon">{icon(liveNotice.tipo)}</span><span><small>{providerCall?'UGO · NUEVO PEDIDO':(clientCall||providerAttention)?(liveNotice.tipo==='chat_mensaje'?'UGO · MENSAJE NUEVO':'UGO · ACTUALIZACIÓN DEL PEDIDO'):'UGO · ACTUALIZACIÓN EN VIVO'}</small><strong>{liveNotice.titulo}</strong>{liveNotice.cuerpo&&<em>{liveNotice.cuerpo}</em>}<b>{providerCall?(liveNotice.tipo==='nueva_oferta'?'Ver y decidir →':'Abrir trabajo →'):'Ver pedido →'}</b></span></button>}
+  {liveNotice&&<button type="button" className={`ugo-notification-live is-${role} ${providerCall?'is-provider-call':''}`} onClick={()=>void openNotice(liveNotice)} aria-live="assertive"><span className="ugo-notification-icon">{icon(liveNotice.tipo)}</span><span><small>{providerCall?'UGO · NUEVO PEDIDO':(clientCall||providerAttention)?(liveNotice.tipo==='chat_mensaje'?'UGO · MENSAJE NUEVO':'UGO · ACTUALIZACIÓN DEL PEDIDO'):'UGO · ACTUALIZACIÓN EN VIVO'}</small><strong>{liveNotice.titulo}</strong>{liveNotice.cuerpo&&<em>{liveNotice.cuerpo}</em>}{providerCall&&liveProviderContext.length>0&&<span className="ugo-provider-alert-context" aria-label="Datos rápidos del pedido">{liveProviderContext.map(item=><span key={item}>{item}</span>)}</span>}<b>{providerCall?(liveNotice.tipo==='nueva_oferta'?'Ver pedido y responder →':'Abrir trabajo →'):'Ver pedido →'}</b></span></button>}
   {open&&<aside className="ugo-notification-panel" aria-label="Centro de notificaciones UGO">
    <header><strong>Notificaciones UGO</strong>{unread>0&&<button type="button" onClick={()=>void markAll()}>Marcar todas</button>}<button type="button" className="ugo-notification-close" onClick={()=>setOpen(false)} aria-label="Cerrar notificaciones">×</button></header>
    <div className="ugo-notification-push"><div><strong>Avisos fuera de la app</strong><span>Recibí cambios del servicio aunque UGO esté cerrado.</span></div><button type="button" disabled={pushState!=='off'} onClick={()=>void enablePush()}>{pushLabel}</button></div>
