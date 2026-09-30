@@ -5,8 +5,8 @@
   "title": "Verify provider fresh GPS publication and rejection guards",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T16:58:00Z",
-  "lease_expires_at": "2026-09-30T17:43:00Z",
+  "heartbeat_at": "2026-09-30T17:06:00Z",
+  "lease_expires_at": "2026-09-30T17:51:00Z",
   "started_sha": "eb99eba18f061f03321d9782d6ca60ad1aff1e75",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,7 +25,7 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20260930T165800Z-gptugo-r6",
-  "current_step": "R6_RECONCILED_STALE_LOCK_REVALIDATE_CANONICAL_RUNTIME",
+  "current_step": "R6_CANONICAL_RUNTIME_FIXED_TEST_DEPENDENCY_VERSIONED_RERUN_PENDING",
   "attempt": 6,
   "evidence_ids": [
     "github-actions-run-36669225058",
@@ -39,13 +39,18 @@
     "github-run:36727324353:FAIL_INVALID_EVIDENCE_SOURCE",
     "github-artifact:11103142555",
     "diagnosis:canonical-source-PERSISTED_STATE",
-    "stale-reconcile:eb99eba18f061f03321d9782d6ca60ad1aff1e75"
+    "stale-reconcile:eb99eba18f061f03321d9782d6ca60ad1aff1e75",
+    "test-db:unaccent-extension-enabled",
+    "test-db:canonical-gps-judge-job-5cc2f926-7bce-4807-a699-f3524603ba7d",
+    "commit:8750c055894250465de83fd64f61c8a0102daafd",
+    "commit:d04e66a531829af592b5ba5ff09e134c4fb527da",
+    "commit:10f0cc56121ac7205cb44e543628725a00f91acf"
   ],
   "production_touched": false,
   "last_failure": {
-    "run_id": 36727324353,
-    "sha": "78692622fb6d1b22cb142f7e18ce1bcde026ef22",
-    "cause": "runtime wrapper used unsupported SERVICE_ROLE_ISOLATED_TEST_RUNTIME before canonical independent GPS judge",
-    "next_fix": "remove duplicate external evidence and derive serviceId/qaRunId/assertions from autonomous_qa_run_gps_independent_evidence"
+    "run_id": 36748122295,
+    "sha": "52ff6267cffe8f6ee05c568a5a031b6886c36525",
+    "cause": "UGO TEST pilot matching dependency unaccent was not installed; canonical GPS runtime wrapper also still duplicated noncanonical evidence",
+    "next_fix": "Rerun provider-gps workflow using canonical PERSISTED_STATE evidence after enabling/versioning unaccent in TEST"
   }
 }
