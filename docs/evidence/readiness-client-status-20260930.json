@@ -1,0 +1,69 @@
+{
+  "readiness_id": "client-status",
+  "task_id": "readiness-client-status",
+  "job_id": "UGO-READINESS-CLIENT_STATUS",
+  "correlation_id": "readiness-client-status-20260930T031600Z-4586c16d",
+  "environment": "UGO TEST / repository CI",
+  "reference_sha": "fdce24aef79c02006a721baa785d8440b3817d45",
+  "started_sha": "4586c16db0dda146a4e252ec874edfcebc09fdbe",
+  "current_main_sha": "ce39e1225836ea81ae295fec106f8c306a24ea54",
+  "implementation": {
+    "commits": [
+      "19f5886cb48a9d049cb9886ccb613ae73c69c490",
+      "581174a3dd0dadec6b9fad779a23e07abee4eed9",
+      "97d7ce09772161d599a5e82cfc718789e720dc80",
+      "98b4635edb07185e98607c460598cb951f4f11c9"
+    ],
+    "changes": [
+      "ClientLiveTracking follows exact serviceId through asignado, en_camino, llegado, en_progreso, esperando_aprobacion and completado.",
+      "Readable six-step timeline added: Asignado, Aceptado, En camino, Llegó, Trabajando, Finalizado.",
+      "ClientServiceDetail keeps tracking visible during approval and completed states.",
+      "Permanent contract regression added at tests/contracts/client-status-readiness.test.mjs."
+    ]
+  },
+  "tests": {
+    "core_ci": [
+      {
+        "run_id": 36664137129,
+        "sha": "98b4635edb07185e98607c460598cb951f4f11c9",
+        "result": "PASS"
+      },
+      {
+        "run_id": 36664147522,
+        "sha": "cdcb86a8bd1096cbd1b2c9a60224e351bbcfbbf3",
+        "result": "PASS"
+      }
+    ],
+    "runtime_navigation": {
+      "run_id": 36664124610,
+      "sha": "97d7ce09772161d599a5e82cfc718789e720dc80",
+      "result": "FAIL",
+      "failure": "Existing client-navigation runtime timed out at logout auth-boundary heading; status lifecycle was not exercised.",
+      "judge": "SKIPPED",
+      "sentinel": "SKIPPED",
+      "artifact_id": 11076140593
+    },
+    "current_head_core_ci": {
+      "run_id": 36664263450,
+      "sha": "78ced0435b78a5a3db4783f6ea351498c8291207",
+      "result": "FAIL_UNRELATED",
+      "failure": "provider-navigation-ux contract mismatch introduced by concurrent provider work; TypeScript/build passed."
+    },
+    "pages": {
+      "run_id": 36664147575,
+      "sha": "cdcb86a8bd1096cbd1b2c9a60224e351bbcfbbf3",
+      "result": "FAIL_UNRELATED",
+      "failure": "scheduler validation rejected active readiness-auto-recovery lock because required skills field was missing."
+    }
+  },
+  "required_runtime_evidence": {
+    "requirement": "Estados UI/backend concordantes por serviceId across the complete professional lifecycle.",
+    "obtained": false,
+    "blocker": "No repository-authorized client-status runtime workflow with required TEST privileges is currently available through this execution channel; existing runtime did not exercise the lifecycle.",
+    "judge": "NOT_RUN",
+    "sentinel": "NOT_RUN"
+  },
+  "production_touched": false,
+  "result": "NEEDS_RUNTIME_PROOF",
+  "completed_at": "2026-09-30T03:29:00Z"
+}
