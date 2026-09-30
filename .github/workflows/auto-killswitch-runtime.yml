@@ -1,4 +1,5 @@
 name: UGO Readiness Auto Kill Switch TEST
+# retrigger: attempt-2-20260930T1331Z
 
 on:
   push:
