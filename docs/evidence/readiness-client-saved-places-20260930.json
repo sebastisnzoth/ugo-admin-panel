@@ -3,18 +3,26 @@
   "readiness_id": "client-saved-places",
   "verdict": "VERIFIED",
   "environment": "UGO TEST",
-  "source_sha": "25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
-  "workflow_run_id": 36661882557,
-  "workflow_job_id": 109718236685,
-  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36661882557",
+  "source_sha": "6388b3a13b04beafe70c4a0402c508843783b52f",
+  "workflow_run_id": 36661508534,
+  "workflow_job_id": 109718684047,
+  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36661508534",
   "judge": "PASS",
   "sentinel": "PASS",
   "production_touched": false,
   "artifact": {
-    "id": 11074349652,
-    "name": "readiness-client-saved-places-25ab3168d8855ba1580e3d01acbec0adcb2a1f3b",
-    "digest": "sha256:767bb2097b122ac114452d51e77fac1b359b47add0102e7b7f82543de8a42abe"
+    "id": 11074976488,
+    "name": "readiness-client-saved-places-6388b3a13b04beafe70c4a0402c508843783b52f",
+    "digest": "sha256:05273f5444d5c04123d27aa6d8d1b55e25fd9920e39dadae4b2003df4ff863b0"
   },
-  "summary": "Authenticated UGO TEST client CRUD persisted: create, edit, read/select and delete under RLS/Data API grants; contract, Judge and Sentinel passed.",
-  "recorded_at": "2026-09-30T03:04:00Z"
+  "summary": "Authenticated UGO TEST browser proof: persisted create/read, inline edit, UI reflection, make-default and 'Pedir acá' selection all passed with no page errors; independent Judge and Sentinel passed.",
+  "recorded_at": "2026-09-30T03:05:00Z",
+  "assertions": {
+    "create_persisted": true,
+    "edit_persisted": true,
+    "ui_reflected": true,
+    "made_default": true,
+    "selected_for_order": true,
+    "no_page_errors": true
+  }
 }
