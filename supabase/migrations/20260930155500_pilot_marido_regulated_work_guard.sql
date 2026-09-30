@@ -41,7 +41,7 @@ set search_path to 'public','private','pg_temp'
 as $$
 begin
   if (new.proveedor_id is distinct from old.proveedor_id and new.proveedor_id is not null)
-     or (new.estado is distinct from old.estado and new.estado in ('asignado','confirmado','en_camino','llegado','en_progreso')) then
+     or (new.estado is distinct from old.estado and new.estado in ('asignado','en_camino','llegado','en_progreso')) then
     if not private.pilot_servicio_generico_permitido(new.id) then
       raise exception 'PILOT_REGULATED_WORK_REQUIRES_RECLASSIFICATION';
     end if;
