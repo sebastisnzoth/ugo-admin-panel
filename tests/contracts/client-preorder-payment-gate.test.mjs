@@ -61,15 +61,19 @@ test('assigned client sees payment choice before secondary operational surfaces'
 
 
 test('variable-price assigned services persist payment preference before the final amount exists',async()=>{
- const [choice,provider,migration]=await Promise.all([
+ const [choice,provider,active,migration]=await Promise.all([
   read('src/features/client/payments/ClientPaymentChoice.tsx'),
   read('src/mvp/provider/providerData.tsx'),
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
   read('supabase/migrations/20260930185000_variable_price_payment_preference.sql'),
  ])
  assert.match(choice,/seleccionar_metodo_pago_servicio/)
  assert.match(choice,/importe.*confirm/i)
  assert.match(provider,/paymentPreferenceSelected/)
  assert.match(provider,/requested_payment_method/)
+ assert.match(provider,/Definí y conseguí la aprobación del importe/)
+ assert.match(active,/Definí el importe antes de empezar/)
+ assert.match(active,/ServiceExpansionPanel role="provider"/)
  assert.match(migration,/seleccionar_metodo_pago_servicio/)
  assert.match(migration,/tarifa.*<=.*0/is)
  assert.match(migration,/requested_payment_method/)
