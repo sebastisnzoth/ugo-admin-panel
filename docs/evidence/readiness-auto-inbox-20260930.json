@@ -1,0 +1,90 @@
+{
+  "schema_version": "UGO_READINESS_AUTO_INBOX_EVIDENCE_V1",
+  "readiness_id": "auto-inbox",
+  "task_id": "readiness-auto-inbox",
+  "job_id": "UGO-READINESS-AUTO-INBOX",
+  "correlation_id": "readiness-auto-inbox-20260930T011500Z-48741a2a",
+  "environment": "UGO TEST",
+  "tested_sha": "5615a41c65e80f7c54ac9e5958499f6a8fdf6dc5",
+  "workflow_run_id": 36657857105,
+  "workflow_name": "UGO Readiness Auto Inbox TEST",
+  "workflow_result": "PASS",
+  "runtime": {
+    "schema_version": "UGO_READINESS_AUTO_INBOX_V2",
+    "readiness_id": "auto-inbox",
+    "task_id": "readiness-auto-inbox",
+    "job_id": "UGO-READINESS-AUTO-INBOX",
+    "correlation_id": "readiness-auto-inbox-20260930T011500Z-48741a2a",
+    "environment": "UGO TEST",
+    "test_project": "tmossnqfwfwjrtzwcbmm",
+    "runtime_sha": "5615a41c65e80f7c54ac9e5958499f6a8fdf6dc5",
+    "generated_at": "2026-09-30T02:02:38.300Z",
+    "production_touched": false,
+    "ui": {
+      "idempotency_deduplicated": true,
+      "duplicate_rows_rendered": 1,
+      "priority_order": "PASS",
+      "sla_labels": "PASS",
+      "page_errors": 0
+    },
+    "approvals": {
+      "first_approval": "PASS",
+      "same_actor_duplicate_blocked": true,
+      "approval_count": 1,
+      "decision_rows": [
+        {
+          "id": "9bb9a422-f39f-4e32-964b-7fbd1a0ec0dd",
+          "decision": "YELLOW_FIRST_APPROVAL",
+          "authorization_result": "PENDING_DUAL_CONTROL",
+          "correlation_id": "93970060-f6cd-4fb7-a16b-cb85b2c99eee",
+          "created_at": "2026-09-30T02:02:36.116354+00:00"
+        }
+      ]
+    },
+    "rejection": {
+      "status": "CANCELLED",
+      "duplicate_retry_blocked": true,
+      "decision_rows": [
+        {
+          "id": "755adf90-8bb6-46e0-bf49-c0a7dcc523db",
+          "decision": "HUMAN_REJECTED",
+          "authorization_result": "DENIED",
+          "correlation_id": "465dd044-342f-44ea-af75-694c5bbea37c",
+          "created_at": "2026-09-30T02:02:37.271929+00:00"
+        }
+      ]
+    },
+    "audit": {
+      "approval_decisions": 1,
+      "rejection_decisions": 1,
+      "duplicate_side_effect_rows": 0
+    },
+    "cleanup": {
+      "active_fixtures_closed": true,
+      "audit_history_retained": true,
+      "company_mode_restored": true
+    }
+  },
+  "validators": {
+    "Judge": {
+      "validator": "Judge",
+      "verdict": "PASS",
+      "checked_at": "2026-09-30T02:02:39.620Z",
+      "runtime_sha": "5615a41c65e80f7c54ac9e5958499f6a8fdf6dc5",
+      "readiness_id": "auto-inbox",
+      "correlation_id": "readiness-auto-inbox-20260930T011500Z-48741a2a"
+    },
+    "Sentinel": {
+      "validator": "Sentinel",
+      "verdict": "PASS",
+      "checked_at": "2026-09-30T02:02:39.674Z",
+      "runtime_sha": "5615a41c65e80f7c54ac9e5958499f6a8fdf6dc5",
+      "readiness_id": "auto-inbox",
+      "production_touched": false,
+      "safe_final_state": true
+    }
+  },
+  "control_result": "VERIFIED",
+  "production_touched": false,
+  "persisted_at": "2026-09-30T02:02:39.800Z"
+}
