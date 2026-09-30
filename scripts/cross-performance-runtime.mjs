@@ -94,6 +94,13 @@ try{
       if(!(await item.isVisible())) continue
       try{
         await item.scrollIntoViewIfNeeded()
+        const reachable=await item.evaluate(el=>{
+          const r=el.getBoundingClientRect()
+          if(!r.width||!r.height)return false
+          const top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)
+          return top===el||Boolean(top&&el.contains(top))
+        })
+        if(!reachable)continue
         await item.click({trial:true,timeout:2500})
         await item.click({timeout:2500})
         return
