@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-readiness-admin-qa-test
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
@@ -43,11 +43,6 @@ jobs:
           done
       - run: node --test tests/contracts/readiness-admin-qa.test.mjs tests/contracts/superadmin-qa-lab-surface.test.mjs tests/contracts/autonomous-meta-qa-agent-runtime.test.mjs tests/contracts/autonomous-independent-runtime-evidence.test.mjs
       - run: npx tsc -b
-      - name: Refresh persisted independent QA evidence
-        run: |
-          node scripts/autonomous-meta-qa-runtime.mjs
-          node scripts/autonomous-qa-auth-runtime.mjs
-          node scripts/autonomous-qa-gps-runtime.mjs
       - name: Persisted-state readiness judge
         run: |
           node scripts/readiness-admin-qa-runtime.mjs
