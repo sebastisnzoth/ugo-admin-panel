@@ -1,0 +1,183 @@
+name: UGO Readiness · Auto Scheduler
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readiness-auto-scheduler.yml"
+      - "scripts/ugo-scheduler-engine.mjs"
+      - "scripts/validate-ugo-scheduler.mjs"
+      - "docs/UGO_SCHEDULER_POLICY.json"
+      - "docs/ugo-work-locks/readiness-auto-scheduler.json"
+      - "tests/contracts/ugo-scheduler-parallelism.test.mjs"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: readiness-auto-scheduler-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  runtime-proof:
+    name: Runtime proof · concurrency and conflicts
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Validate scheduler policy and persistent locks
+        run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
+
+      - name: Prove parallelism, resource conflicts and leases
+        run: node --test tests/contracts/ugo-scheduler-parallelism.test.mjs
+
+      - name: Persist runtime proof artifact
+        shell: bash
+        run: |
+          mkdir -p /tmp/ugo-auto-scheduler
+          cat > /tmp/ugo-auto-scheduler/runtime-proof.json <<JSON
+          {
+            "readiness_id": "auto-scheduler",
+            "task_id": "readiness-auto-scheduler",
+            "job_id": "UGO-READINESS-AUTO-SCHEDULER",
+            "correlation_id": "readiness-auto-scheduler-20260930T012200Z-b11149dc",
+            "source_sha": "${GITHUB_SHA}",
+            "run_id": "${GITHUB_RUN_ID}",
+            "result": "PASS",
+            "checks": [
+              "max_parallel_5",
+              "resource_capacity_conflict",
+              "active_lease_consumes_slot",
+              "resource_capacity_gt_one",
+              "stale_lock_fail_closed",
+              "latest_lock_state_wins"
+            ],
+            "production_touched": false
+          }
+          JSON
+
+      - name: Upload runtime proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: auto-scheduler-runtime-${{ github.run_id }}
+          path: /tmp/ugo-auto-scheduler/runtime-proof.json
+          retention-days: 90
+
+  independent-judge:
+    name: Judge · independent scheduler invariants
+    needs: runtime-proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+
+      - name: Re-derive scheduler invariants independently
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+          import { scheduleTasks } from './scripts/ugo-scheduler-engine.mjs'
+
+          const policy = JSON.parse(readFileSync('./docs/UGO_SCHEDULER_POLICY.json', 'utf8'))
+          assert.equal(policy.max_parallel_tasks, 5)
+          assert.equal(policy.resource_capacities['autonomy-scheduler'], 1)
+
+          const now = new Date('2026-09-30T01:30:00Z')
+          const mk = (id, resources, order) => ({ id, resources, order, depends_on: [] })
+          const independent = Array.from({ length: 6 }, (_, i) => mk(`j${i + 1}`, [`judge-r${i + 1}`], i + 1))
+          const p1 = {
+            ...policy,
+            resource_capacities: {
+              ...policy.resource_capacities,
+              ...Object.fromEntries(independent.map(t => [t.resources[0], 1]))
+            }
+          }
+          const plan1 = scheduleTasks({ tasks: independent, locks: [], policy: p1, now })
+          assert.equal(plan1.runnable.length, 5)
+          assert.equal(independent.filter(t => t.gate_state === 'QUEUED_CAPACITY').length, 1)
+
+          const conflictTasks = [
+            mk('a', ['judge-shared'], 1),
+            mk('b', ['judge-shared'], 2),
+            mk('c', ['judge-free'], 3)
+          ]
+          const p2 = {
+            ...policy,
+            resource_capacities: {
+              ...policy.resource_capacities,
+              'judge-shared': 1,
+              'judge-free': 1
+            }
+          }
+          const plan2 = scheduleTasks({ tasks: conflictTasks, locks: [], policy: p2, now })
+          assert.equal(plan2.runnable.length, 2)
+          assert.equal(conflictTasks.find(t => t.id === 'b').gate_state, 'WAITING_RESOURCE_CAPACITY')
+
+          const staleTask = [mk('stale', ['judge-stale'], 1)]
+          const p3 = {
+            ...policy,
+            resource_capacities: {
+              ...policy.resource_capacities,
+              'judge-stale': 1
+            }
+          }
+          const plan3 = scheduleTasks({
+            tasks: staleTask,
+            locks: [{
+              task_id: 'stale',
+              status: 'IN_PROGRESS',
+              started_at: '2026-09-30T01:00:00Z',
+              heartbeat_at: '2026-09-30T01:10:00Z',
+              lease_expires_at: '2026-09-30T01:29:59Z',
+              resources: ['judge-stale']
+            }],
+            policy: p3,
+            now
+          })
+          assert.equal(plan3.runnable.length, 0)
+          assert.equal(staleTask[0].gate_state, 'STALE_LOCK')
+
+          console.log('Judge PASS · scheduler invariants independently re-derived')
+          NODE
+
+  sentinel:
+    name: Sentinel · fail-closed and production protection
+    needs: independent-judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+
+      - name: Validate fail-closed lock model
+        run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
+
+      - name: Verify readiness lock and production protection
+        shell: bash
+        run: |
+          node --input-type=module <<'NODE'
+          import assert from 'node:assert/strict'
+          import { readFileSync } from 'node:fs'
+
+          const lock = JSON.parse(readFileSync('./docs/ugo-work-locks/readiness-auto-scheduler.json', 'utf8'))
+          const workflow = readFileSync('./.github/workflows/readiness-auto-scheduler.yml', 'utf8')
+
+          assert.equal(lock.readiness_id, 'auto-scheduler')
+          assert.equal(lock.status, 'IN_PROGRESS')
+          assert.deepEqual(lock.resources, ['autonomy-scheduler'])
+          assert.equal(lock.production_touched, false)
+          assert.match(workflow, /permissions:\s*\n\s*contents:\s*read/)
+          assert.doesNotMatch(workflow, /deploy-pages|vercel deploy|supabase db push|production/i)
+
+          console.log('Sentinel PASS · fail-closed locks, read-only workflow, production untouched')
+          NODE
