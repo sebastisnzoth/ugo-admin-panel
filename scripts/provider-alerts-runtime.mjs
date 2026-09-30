@@ -32,9 +32,9 @@ try{
  if(created.error)throw created.error
  uid=created.data.user.id
  evidence.provider_id=uid
- let q=await admin.from('usuarios').insert({id:uid,nombre:'UGO Alert Runtime',tipo:'proveedor',activo:true})
+ let q=await admin.from('usuarios').upsert({id:uid,nombre:'UGO Alert Runtime',tipo:'proveedor',activo:true},{onConflict:'id'})
  if(q.error)throw q.error
- q=await admin.from('perfiles_proveedor').insert({usuario_id:uid,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04'})
+ q=await admin.from('perfiles_proveedor').upsert({usuario_id:uid,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04'},{onConflict:'usuario_id'})
  if(q.error)throw q.error
 
  browser=await chromium.launch({headless:true})
