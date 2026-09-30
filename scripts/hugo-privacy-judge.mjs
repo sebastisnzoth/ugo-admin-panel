@@ -1,0 +1,6 @@
+import assert from'node:assert/strict';import{readFile,writeFile,mkdir}from'node:fs/promises'
+const e=JSON.parse(await readFile('artifacts/hugo-privacy-runtime.json','utf8'))
+for(const k of ['synthetic_secrets_redacted','raw_blob_redacted','api_auth_required','api_role_authority','edge_auth_required','edge_role_authority','raw_errors_not_reflected'])assert.equal(e[k],true,k)
+assert.equal(e.result,'PASS');assert.equal(e.production_touched,false)
+const out={validator:'Judge',readiness_id:'hugo-privacy',sha:e.sha,result:'PASS',basis:['synthetic secret patterns redacted','large raw blob redacted','API requires authenticated user and role authority','edge requires authenticated user and role authority','raw edge errors are not reflected'],checked_at:new Date().toISOString()}
+await mkdir('artifacts',{recursive:true});await writeFile('artifacts/hugo-privacy-judge.json',JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out))
