@@ -112,6 +112,17 @@ try{
  await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:20000})
  await expectUi('asignado','accepted')
 
+ const {error:cashError}=await auth.rpc('seleccionar_pago_efectivo',{p_servicio_id:fixture.id})
+ assert.ifError(cashError)
+ const {data:selectedPayment,error:paymentReadError}=await admin.from('pagos')
+  .select('id,metodo,estado')
+  .eq('servicio_id',fixture.id)
+  .order('created_at',{ascending:false})
+  .limit(1)
+  .maybeSingle()
+ assert.ifError(paymentReadError)
+ assert.equal(selectedPayment?.metodo,'efectivo','CASH_PAYMENT_SELECTION_REQUIRED')
+
  const {error:routeError}=await provider.rpc('avanzar_servicio',{p_servicio_id:fixture.id,p_estado:'en_camino'})
  assert.ifError(routeError)
  await expectUi('en_camino','route')
