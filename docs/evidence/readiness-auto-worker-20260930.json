@@ -1,0 +1,20 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "auto-worker",
+  "verdict": "VERIFIED",
+  "environment": "UGO TEST",
+  "source_sha": "6f6267be3b77427d075143035cf7a59ab60f48a1",
+  "workflow_run_id": 36662659978,
+  "workflow_job_id": 109720571653,
+  "workflow_run_url": "https://github.com/sebastisnzoth/ugo-admin-panel/actions/runs/36662659978",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "production_touched": false,
+  "artifact": {
+    "id": 11074628521,
+    "name": "readiness-auto-worker-6f6267be3b77427d075143035cf7a59ab60f48a1",
+    "digest": "sha256:6d11ab3a8e7458e293fc7ee6008ed33cf31d926481be90c38acb187fbedcfa05"
+  },
+  "summary": "Governed browser-independent scheduled worker proof ran as TEST Super Admin, completed same-SHA, persisted correlated decision/evidence ledgers, and returned to OFF with zero RUNNING jobs; Judge and Sentinel passed.",
+  "recorded_at": "2026-09-30T03:04:00Z"
+}
