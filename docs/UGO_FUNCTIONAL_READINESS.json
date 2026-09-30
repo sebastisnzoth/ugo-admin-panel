@@ -187,7 +187,7 @@
           "id": "client-history",
           "title": "Historial y evidencias",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Mostrar servicios, pagos, ratings y fotos autorizadas.",
           "done_evidence": "Historial TEST concordante.",
           "improvement_focus": "Filtros y búsqueda.",
