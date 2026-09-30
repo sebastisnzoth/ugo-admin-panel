@@ -217,3 +217,12 @@ test('backend permits travel for a zero-tariff service only after a client payme
  const wrapper=await read('supabase/migrations/20260930190200_variable_price_lifecycle_wrapper_fix.sql')
  assert.match(wrapper,/create or replace function public\.avanzar_servicio[\s\S]*security definer/i)
 })
+
+
+test('cash quote materializes after tariff approval even when provider is already travelling or arrived',async()=>{
+ const sql=await read('supabase/migrations/20260930191500_materialize_cash_after_onsite_quote.sql')
+ assert.match(sql,/new\.estado not in \('asignado','en_camino','llegado'\)/)
+ assert.match(sql,/trg_materialize_cash_payment_on_assignment/)
+ assert.match(sql,/new\.estado in \('asignado','en_camino','llegado'\)/)
+ assert.match(sql,/new\.tarifa/)
+})
