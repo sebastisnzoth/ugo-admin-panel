@@ -1,0 +1,36 @@
+{
+  "readiness_id": "hugo-audit",
+  "task_id": "readiness-hugo-audit",
+  "job_id": "UGO-READINESS-HUGO-AUDIT",
+  "title": "Verify complete Hugo trace INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T13:40:42Z",
+  "heartbeat_at": "2026-09-30T13:40:42Z",
+  "lease_expires_at": "2026-09-30T14:25:42Z",
+  "started_sha": "3299349164749f061763cacc2ebde90337ca1cc7",
+  "owner": "UGO",
+  "department": "Hugo / IA / Voz",
+  "assigned_agent": "GPT_UGO · Hugo Audit Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "audit-ledger"
+  ],
+  "correlation_id": "readiness-hugo-audit-20260930T134042Z-32993491",
+  "current_step": "INSPECT_TRACE_AND_RUNTIME_WIRING",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-hugo-audit",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  }
+}
