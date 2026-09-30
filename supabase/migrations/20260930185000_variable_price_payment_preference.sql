@@ -37,7 +37,7 @@ begin
   if v_servicio.proveedor_id is null then
     raise exception 'El servicio todavía no tiene proveedor asignado';
   end if;
-  if v_servicio.estado not in ('asignado','en_camino','llegado','en_progreso','esperando_aprobacion') then
+  if v_servicio.estado not in ('asignado','en_camino','llegado') then
     raise exception 'No podés cambiar la forma de pago en el estado actual del servicio';
   end if;
 
@@ -125,7 +125,7 @@ security definer
 set search_path='public','private','pg_temp'
 as $
   select private.seleccionar_metodo_pago_servicio_impl(p_servicio_id,p_metodo);
-$$;
+$;
 
 revoke all on function public.seleccionar_metodo_pago_servicio(uuid,text) from public,anon;
 grant execute on function public.seleccionar_metodo_pago_servicio(uuid,text) to authenticated,service_role;
