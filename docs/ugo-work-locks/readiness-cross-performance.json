@@ -5,8 +5,8 @@
   "title": "Verify perceived performance and critical action latency",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T22:20:00Z",
-  "heartbeat_at": "2026-09-30T22:20:00Z",
-  "lease_expires_at": "2026-09-30T23:05:00Z",
+  "heartbeat_at": "2026-09-30T22:43:00Z",
+  "lease_expires_at": "2026-09-30T23:20:00Z",
   "started_sha": "bd1dfe59294ab29a7dbd777ffacb62328cc979f5",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -23,7 +23,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-cross-performance-pr330-20260930T222000Z",
-  "current_step": "FIX_RUNTIME_POINTER_TARGET",
+  "current_step": "RERUN_SAME_SHA_POINTER_HIT_TEST_AND_ACTIONABILITY",
   "attempt": 3,
   "evidence_ids": [
     "github-pr:296",
@@ -45,7 +45,9 @@
     "github-merge:737036ed7da79be981dd887dc07da8d92848ef8a",
     "github-pr:330",
     "github-run:36773312837",
-    "diagnosis:CLIENT_REQUEST_BUTTON_NO_POINTER_REACHABLE_TARGET"
+    "diagnosis:CLIENT_REQUEST_BUTTON_NO_POINTER_REACHABLE_TARGET",
+    "candidate-sha:a29302ebe06c04e892b9ceb531eeab4ad22d8fd3",
+    "core-run:36786833524:FAIL_CONTRACT_ELEMENT_FROM_POINT"
   ],
   "production_touched": false,
   "skills": [
