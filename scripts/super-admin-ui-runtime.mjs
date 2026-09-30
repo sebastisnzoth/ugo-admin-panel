@@ -97,10 +97,13 @@ try{
 
   await page.getByRole('button',{name:'Empresa Autónoma',exact:true}).click();
   await page.getByText('UGO Empresa Autónoma',{exact:true}).waitFor({state:'visible'});
-  await page.waitForTimeout(2500);
-  const autonomyText=await page.locator('.ugo-autonomous-content').textContent();
-  assert.ok((autonomyText||'').includes('Modo: '+before.mode),'AUTONOMY_MODE_UI_BACKEND_MISMATCH');
-  assert.ok((autonomyText||'').includes('Launch: '+before.launch),'LAUNCH_HEADER_UI_BACKEND_MISMATCH');
+  let headerMatched=false;
+  for(let attempt=0;attempt<30;attempt++){
+    const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
+    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Launch: '+before.launch)){headerMatched=true;break}
+    await page.waitForTimeout(250);
+  }
+  assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
   await page.screenshot({path:'artifacts/super-admin-ui-autonomy.png',fullPage:true});
 
   await page.getByRole('button',{name:'Departamentos',exact:true}).click();
