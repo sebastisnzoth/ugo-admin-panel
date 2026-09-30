@@ -129,23 +129,24 @@ try{
   approvals:{first_approval:'PASS',same_actor_duplicate_blocked:true,approval_count:1,decision_rows:firstLedger.data},
   rejection:{status:'CANCELLED',duplicate_retry_blocked:true,decision_rows:rejectLedger.data},
   audit:{approval_decisions:firstLedger.data?.length||0,rejection_decisions:rejectLedger.data?.length||0,duplicate_side_effect_rows:0},
-  cleanup:{fixtures_removed:false,company_mode_restored:false}
+  cleanup:{active_fixtures_closed:false,audit_history_retained:false,company_mode_restored:false}
  }
 }finally{
  if(browser)await browser.close().catch(()=>{})
- await root.from('autonomous_decision_ledger').delete().in('job_id',ids)
- await root.from('autonomous_evidence_ledger').delete().in('job_id',ids)
- await root.from('autonomous_jobs').delete().in('id',ids)
+ await root.from('autonomous_jobs').update({status:'CANCELLED',blocked_reason:'READINESS_AUTO_INBOX_FIXTURE_CLOSED',finished_at:new Date().toISOString()}).in('id',ids)
  if(originalMode!=='ON')await admin.rpc('superadmin_set_autonomy_mode',{p_mode:originalMode,p_reason:originalReason||'restore after readiness-auto-inbox TEST'})
 }
 
-const remaining=await root.from('autonomous_jobs').select('id',{count:'exact',head:true}).in('id',ids)
+const remaining=await root.from('autonomous_jobs').select('id,status').in('id',ids).in('status',['WAITING_APPROVAL','BLOCKED','QUEUED','RUNNING'])
 assert.ifError(remaining.error)
-assert.equal(remaining.count||0,0,'FIXTURE_JOBS_NOT_CLEANED')
+assert.equal(remaining.data?.length||0,0,'ACTIVE_FIXTURE_JOBS_NOT_CLOSED')
+const retained=await root.from('autonomous_jobs').select('id,status').in('id',ids)
+assert.ifError(retained.error)
+assert.equal(retained.data?.length||0,ids.length,'AUDIT_FIXTURE_HISTORY_MISSING')
 const restored=await root.from('autonomous_company_state').select('mode').eq('singleton',true).single()
 assert.ifError(restored.error)
 assert.equal(restored.data.mode,originalMode,'AUTONOMY_MODE_NOT_RESTORED')
-payload.cleanup={fixtures_removed:true,company_mode_restored:true}
+payload.cleanup={active_fixtures_closed:true,audit_history_retained:true,company_mode_restored:true}
 await fs.mkdir('artifacts/readiness-auto-inbox',{recursive:true})
 await fs.writeFile('artifacts/readiness-auto-inbox/runtime.json',JSON.stringify(payload,null,2)+'\n')
 console.log(JSON.stringify(payload))
