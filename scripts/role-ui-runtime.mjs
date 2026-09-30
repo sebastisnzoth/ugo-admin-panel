@@ -116,7 +116,14 @@ const closeClientOverlay=async page=>{
 }
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
- await safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
+ const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
+ const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
+ await safeClick(page,trigger,'client menu')
+ if(!(await drawer.isVisible().catch(()=>false))){
+   await page.waitForTimeout(350)
+   await safeClick(page,trigger,'client menu retry after mount')
+ }
+ await drawer.waitFor({state:'visible',timeout:10000})
 }
 
 async function testClient(viewport,name){
