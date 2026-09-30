@@ -163,3 +163,71 @@
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
   }
 }
+
+
+/* Readiness admin-responsive: adaptive tables + compact navigation v1 */
+.ugo-admin2 .ugo-superadmin .ugo-admin2-module-card{
+  min-width:0;
+  max-width:100%;
+}
+.ugo-admin2 .ugo-superadmin .ugo-admin2-module-card table{
+  width:100%;
+  max-width:none;
+}
+@media(max-width:1100px){
+  .ugo-admin2-sidebar nav,
+  .ugo-admin2-operations-menu,
+  .ugo-admin2-submenu{
+    scroll-snap-type:x proximity;
+    scrollbar-width:thin;
+  }
+  .ugo-admin2-sidebar nav button,
+  .ugo-admin2-operations-menu button,
+  .ugo-admin2-submenu button{
+    scroll-snap-align:start;
+  }
+  .ugo-admin2 .ugo-superadmin .ugo-admin2-module-card{
+    overflow-x:auto!important;
+    overscroll-behavior-inline:contain;
+    -webkit-overflow-scrolling:touch;
+  }
+  .ugo-admin2 .ugo-superadmin .ugo-admin2-module-card table{
+    min-width:720px;
+  }
+}
+@media(max-width:760px){
+  .ugo-admin2-sidebar nav{
+    padding-inline:6px!important;
+  }
+  .ugo-admin2-sidebar nav button{
+    flex:0 0 72px!important;
+    min-width:72px!important;
+  }
+  .ugo-admin2-sidebar nav button span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .ugo-admin2-operations-menu button{
+    flex:0 0 122px!important;
+    min-width:122px!important;
+  }
+  .ugo-admin2-submenu button{
+    flex:0 0 auto;
+    min-height:44px;
+    white-space:nowrap;
+  }
+  .ugo-admin2 .ugo-superadmin .ugo-admin2-module-card table{
+    min-width:640px;
+  }
+}
+@media(max-width:420px){
+  .ugo-admin2-sidebar nav button{
+    flex-basis:66px!important;
+    min-width:66px!important;
+  }
+  .ugo-admin2-operations-menu button{
+    flex-basis:116px!important;
+    min-width:116px!important;
+  }
+}
