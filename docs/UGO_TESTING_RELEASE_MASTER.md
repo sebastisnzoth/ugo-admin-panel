@@ -110,7 +110,3 @@ No promover por contratos, persistencia aislada, CI o compilación.
 No disparar Vercel para documentación, para generar APK ni para sustituir QA Android. Publicar sólo cuando exista necesidad funcional de release y registrar revisión exacta + smoke + rollback/mitigación.
 
 **UGO se valida por evidencia. Supabase PROD permanece fuera de alcance.**
-
-
-### Local PR 296 harness correction — 2026-09-30
-Prepared against main 08f8823959aee8000764faa38c0770423444a913, without GitHub writes or deploys. Runtime/Judge/Sentinel use an explicit PR head SHA; API fault injection reuses the actual handler probe from cross-errors. Setup failures now emit evidence, navigation checks assert destination/focus, and cancellation/cleanup must be cancelado/DELETED. Synthetic validator tests verify rejection paths only and do not certify runtime. Persisted fixture metadata is checked; the recorded tool channel is a harness observation, not an independently persisted backend action audit. Full INTENT/voice, persistent action audit and TEST runtime remain unverified.

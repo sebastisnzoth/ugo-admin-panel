@@ -1,0 +1,38 @@
+{
+  "task_id": "command-center-resource-safety",
+  "job_id": "UGO-COMMAND-CENTER-RESOURCE-SAFETY-20260930",
+  "title": "Prevent functional controls from using resources held by global jobs",
+  "status": "WAITING_EVIDENCE",
+  "started_at": "2026-09-30T12:08:41.359753+00:00",
+  "heartbeat_at": "2026-09-30T12:39:13.705Z",
+  "lease_expires_at": "2026-09-30T13:24:13.709Z",
+  "started_sha": "08f8823959aee8000764faa38c0770423444a913",
+  "owner": "UGO",
+  "department": "Plataforma Autónoma",
+  "assigned_agent": "UGO Maestro Autónomo",
+  "resources": [
+    "autonomy-scheduler"
+  ],
+  "correlation_id": "command-center-resource-safety-20260930",
+  "attempt": 1,
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "evidence_ids": [
+    "docs/evidence/command-center-resource-safety-20260930.json"
+  ],
+  "scope": "MAIN_INTEGRATED_PENDING_VALIDATION",
+  "production_touched": false,
+  "current_step": "WAITING_SAME_SHA_CI",
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "skills": [
+    "ugo-job-execution",
+    "ugo-github-ops",
+    "ugo-code-engineering",
+    "ugo-evidence-judge"
+  ]
+}

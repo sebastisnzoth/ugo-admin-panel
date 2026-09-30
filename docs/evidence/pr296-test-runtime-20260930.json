@@ -1,0 +1,39 @@
+{
+  "status": "TEST_HARNESS_VALIDATED",
+  "tested_sha": "5114ebf5feb9a1cd161fdb84911582b126b7e819",
+  "base_main_sha": "08f8823959aee8000764faa38c0770423444a913",
+  "branch": "verify/pr296-no-deploy-20260930",
+  "run_id": 36716183465,
+  "runtime": "PASS",
+  "judge": "PASS",
+  "sentinel": "PASS",
+  "artifact_ids": [
+    11095948838,
+    11097025551,
+    11097200224
+  ],
+  "performance_ms": {
+    "client_load": 4185,
+    "provider_load": 4170,
+    "admin_load": 6495,
+    "client_navigation": 330,
+    "provider_navigation": 40,
+    "admin_navigation": 53
+  },
+  "production_touched": false,
+  "limits": [
+    "Build preview runtime was measured.",
+    "Injected native tool call; full microphone/INTENT chain not certified.",
+    "Tool channel is a harness observation; independent persisted action audit not certified.",
+    "Main and original PR 296 have not been updated or merged.",
+    "Temporary branch deployment guards must not be merged globally."
+  ],
+  "current_sha_open_incidents": 0,
+  "remaining_fixtures": 0,
+  "local_regression": {
+    "passed": 1065,
+    "skipped": 8,
+    "failed": 0,
+    "lint_errors": 0
+  }
+}

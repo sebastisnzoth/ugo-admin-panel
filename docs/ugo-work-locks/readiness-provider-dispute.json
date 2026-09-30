@@ -5,9 +5,9 @@
   "title": "Verify Provider dispute open, evidence, state and closure",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T10:52:00Z",
-  "heartbeat_at": "2026-09-30T11:04:00Z",
-  "lease_expires_at": "2026-09-30T11:49:00Z",
-  "started_sha": "cb4dbe93cae9cf950d89b1612d6fed6db91e4b29",
+  "heartbeat_at": "2026-09-30T12:45:33.438345+00:00",
+  "lease_expires_at": "2026-09-30T13:30:33.438345+00:00",
+  "started_sha": "f2a9a029918358af5642bfc99047472fa83459ce",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider Dispute Runtime Agent",
@@ -19,15 +19,14 @@
     "disputes"
   ],
   "correlation_id": "readiness-provider-dispute-20260930T105200Z-cb4dbe93",
-  "current_step": "RUNTIME_RETRY_SAME_SHA",
-  "attempt": 1,
+  "current_step": "INDEPENDENT_PERSISTED_STATE_VALIDATION",
+  "attempt": 2,
   "evidence_ids": [
-    "github-pr:300",
-    "github-commit:47f2898dceef2d71d054cd42f58091f69c44d657",
-    "github-commit:6451fa7b882f7bd8c2da709edb154d67e5b7aa3e",
-    "github-run:36706143282",
-    "github-job:109856738986",
-    "github-core-run:36706143275"
+    "github-run:36714554713",
+    "github-job:109884165440",
+    "github-artifact:11095717849",
+    "sha256:55e75e5e1c8cfa23ab4def968de7d13cc398b07f21ca4b5ab1e54bec6b60a946",
+    "repo:docs/evidence/readiness-provider-dispute-20260930-current-main.json"
   ],
   "production_touched": false,
   "skills": [
@@ -35,5 +34,25 @@
     "ugo-provider",
     "ugo-runtime-validation",
     "ugo-evidence-judge"
-  ]
+  ],
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "validator_results": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "result": "PENDING",
+  "evidence_path": "docs/evidence/readiness-provider-dispute-20260930-current-main.json",
+  "evidence_commit_sha": "4cb06264cacff71c2cf5af57d36a8a9e48286ea6",
+  "artifact_digest": "sha256:55e75e5e1c8cfa23ab4def968de7d13cc398b07f21ca4b5ab1e54bec6b60a946",
+  "judge": {
+    "result": "NOT_RUN"
+  },
+  "sentinel": {
+    "result": "NOT_RUN"
+  },
+  "result_summary": "Historical boolean-only validators do not close independent verification. Rerun with persisted-state Judge and cleanup Sentinel.",
+  "previous_runtime_sha": "9b9890ab740816179115a5d5efbb19790fdb89fd"
 }

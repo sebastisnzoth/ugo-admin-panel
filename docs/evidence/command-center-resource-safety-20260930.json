@@ -1,0 +1,26 @@
+{
+  "task_id": "command-center-resource-safety",
+  "source_sha": "08f8823959aee8000764faa38c0770423444a913",
+  "environment": "LOCAL_TEST",
+  "status": "PENDING_INTEGRATION",
+  "reproduction": "A global active lock outside the functional catalog holds r1; the original engine marks a control needing r1 AVAILABLE. Two new regressions fail before the fix and pass afterward.",
+  "validation": {
+    "specific_tests": 11,
+    "related_tests": 14,
+    "npm_test": {
+      "total": 1066,
+      "passed": 1058,
+      "failed": 0,
+      "skipped": 8
+    },
+    "build": "PASS",
+    "changed_file_lint": "PASS",
+    "diff_check": "PASS"
+  },
+  "Judge": "NOT_RUN",
+  "Sentinel": "NOT_RUN",
+  "runtime": "NOT_RUN",
+  "production_touched": false,
+  "created_at": "2026-09-30T12:11:18.016825+00:00",
+  "blocker": "Safe main integration must preserve the no-deploy instruction; automatic Vercel/Netlify integrations are active. Commit object only; no ref movement or deploy authorized."
+}

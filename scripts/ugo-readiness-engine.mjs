@@ -128,12 +128,15 @@ export function evaluateFunctionalReadiness({
 
   const done = id => byId.get(id)?.status === 'VERIFIED'
   const active = items.filter(item => item.status === 'IN_PROGRESS')
-  const usedResources = new Set(active.flatMap(item => item.resources || []))
   const globalActiveLocks = (locks || []).filter(lock => {
     if (!ACTIVE_LOCK_STATUSES.has(lock.status)) return false
     const leaseMs = parseTime(lock.lease_expires_at)
     return leaseMs === null || leaseMs > nowMs
   })
+  const usedResources = new Set([
+    ...active.flatMap(item => item.resources || []),
+    ...globalActiveLocks.flatMap(lock => lock.resources || []),
+  ])
   const slots = Math.max(0, Number(maxParallel || 5) - globalActiveLocks.length)
 
   const candidates = items

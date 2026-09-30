@@ -82,3 +82,26 @@ test('open PR with runtime blocker is visible as WAITING_RUNTIME', () => {
   assert.equal(summary.waiting_runtime,1)
   assert.equal(readiness.groups[0].items.find(x=>x.id==='b').gate_state,'BLOCKED_DEPENDENCY')
 })
+
+
+test('global jobs outside the functional catalog reserve their resources', () => {
+  const locks=[{task_id:'external-worker',status:'IN_PROGRESS',
+    lease_expires_at:'2026-09-29T21:00:00Z',resources:['r1']}]
+  const {readiness}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:3,now:new Date('2026-09-29T20:00:00Z')})
+  assert.equal(readiness.groups[0].items.find(x=>x.id==='a').gate_state,'WAITING_RESOURCE_CAPACITY')
+  assert.equal(readiness.groups[0].items.find(x=>x.id==='c').gate_state,'AVAILABLE')
+})
+
+test('active locks reserve resources beyond their catalog entry', () => {
+  const locks=[{task_id:'readiness-a',readiness_id:'a',status:'IN_PROGRESS',
+    lease_expires_at:'2026-09-29T21:00:00Z',resources:['r1','r2']}]
+  const {readiness}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:3,now:new Date('2026-09-29T20:00:00Z')})
+  assert.equal(readiness.groups[0].items.find(x=>x.id==='c').gate_state,'WAITING_RESOURCE_CAPACITY')
+})
+
+test('expired global resource leases release capacity', () => {
+  const locks=[{task_id:'external-worker',status:'IN_PROGRESS',
+    lease_expires_at:'2026-09-29T19:00:00Z',resources:['r1','r2']}]
+  const {summary}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  assert.deepEqual(summary.runnable_ids,['a','c'])
+})

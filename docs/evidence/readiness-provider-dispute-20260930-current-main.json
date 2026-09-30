@@ -1,0 +1,49 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "provider-dispute",
+  "status": "VERIFIED",
+  "final_status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "9b9890ab740816179115a5d5efbb19790fdb89fd",
+  "runtime_proof": {
+    "status": "PASS",
+    "sha": "9b9890ab740816179115a5d5efbb19790fdb89fd",
+    "environment": "UGO TEST"
+  },
+  "workflow_run": {
+    "id": 36714554713,
+    "job_id": 109884165440,
+    "conclusion": "success",
+    "artifact_id": 11095717849,
+    "artifact_digest": "sha256:55e75e5e1c8cfa23ab4def968de7d13cc398b07f21ca4b5ab1e54bec6b60a946"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true,
+    "core_ci_run": 36714554634,
+    "core_ci_conclusion": "success"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "provider opened authenticated dispute in UGO TEST",
+      "evidence persisted",
+      "client response advanced to en_revision",
+      "admin resolution persisted",
+      "audit trail verified",
+      "provider closure notification verified"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "production_touched": false,
+  "result_summary": "UGO TEST complete provider dispute passed open, evidence, state progression, admin closure, audit and notification cleanup on same SHA.",
+  "verified_at": "2026-09-30T12:27:00Z"
+}
