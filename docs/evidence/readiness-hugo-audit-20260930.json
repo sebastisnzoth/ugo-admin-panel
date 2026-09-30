@@ -1,0 +1,103 @@
+{
+  "readiness_id": "hugo-audit",
+  "control": "Auditoría completa de Hugo",
+  "status": "VERIFIED",
+  "verified_runtime_sha": "ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "workflow": {
+    "name": "UGO Hugo Audit Runtime",
+    "run_id": 36726597402,
+    "conclusion": "success",
+    "runtime_job_id": 109925915449,
+    "judge_job_id": 109926635525,
+    "sentinel_job_id": 109926724695,
+    "artifacts": {
+      "runtime": {
+        "id": 11102942081,
+        "name": "hugo-audit-runtime-ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4",
+        "digest": "sha256:cfc11b2b7e6d7da40e41f25cdce7df6ee0a6692bed1d674b0fde9ea7235051ad"
+      },
+      "judge": {
+        "id": 11103086984,
+        "name": "hugo-audit-judge-ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4",
+        "digest": "sha256:de4a79d2083a0bd8f7323f93ddfe767e8a72a860b910d95c657948144ea016ec"
+      },
+      "sentinel": {
+        "id": 11103152037,
+        "name": "hugo-audit-sentinel-ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4",
+        "digest": "sha256:fa98abdc120508b7db047c45042f406a5570f2a3ca5707f605af246db6b84755"
+      }
+    }
+  },
+  "core_ci": {
+    "run_id": 36726597408,
+    "conclusion": "success",
+    "sha": "ce4b3b65f3890d9623c8d5f3c5f286e9f6398aa4"
+  },
+  "trace": {
+    "correlation_id": "f1cc1754-1036-4132-b503-11f62b3e39d8",
+    "intent": "voice_tool:cancel_service",
+    "authority": {
+      "requested_role": "client",
+      "profile_role": "cliente",
+      "decision": "ALLOW"
+    },
+    "action": "cancel_service",
+    "effect": {
+      "ok": true
+    },
+    "audit": {
+      "decision_ledger_id": "2cbfc2b5-96d0-4e15-bfea-9ebb29af3cbc",
+      "evidence_ledger_id": "49f29187-6c0c-4274-930f-c4121cdc4be7",
+      "audit_log_id": 6690
+    },
+    "response": {
+      "ok": true,
+      "message": "Pedido cancelado",
+      "audit_status": "PERSISTED"
+    },
+    "service_id": "c55695c6-3ca2-4b71-87eb-152965ae1ffb"
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "implementation": {
+    "audit_endpoint": "/api/operations?op=hugo-audit",
+    "voice_path_preserved": "Gemini Live remains the voice path; audit does not use /api/hugo/chat",
+    "authorization": "Authenticated actor + active profile role check before server-side ledger persistence",
+    "ledgers": [
+      "autonomous_decision_ledger",
+      "autonomous_evidence_ledger",
+      "audit_log"
+    ],
+    "migration": "supabase/migrations/20260930135400_hugo_audit_service_role_grants.sql"
+  },
+  "regressions": [
+    "tests/contracts/hugo-audit-readiness.test.mjs",
+    "Core CI validates TypeScript/build/contracts and Vercel Hobby function limit",
+    "same-SHA runtime validates persisted effect and correlated ledgers"
+  ],
+  "prior_attempts": [
+    {
+      "run_id": 36724597870,
+      "result": "FAIL_CLOSED",
+      "reason": "service_role lacked INSERT on decision/audit ledgers",
+      "fix": "least-privilege TEST migration"
+    },
+    {
+      "run_id": 36725097943,
+      "result": "FAIL_CLOSED",
+      "reason": "test queried correlation_id at wrong audit_log JSON path",
+      "fix": "query nested detalles.audit.correlation_id"
+    },
+    {
+      "run_id": 36726413682,
+      "result": "PASS",
+      "sha": "b451fc12e929b9d1ea6e765ac3830e8776751c7a",
+      "note": "runtime/Judge/Sentinel pass before final static matcher-only commit"
+    }
+  ],
+  "completed_at": "2026-09-30T14:10:46Z"
+}
