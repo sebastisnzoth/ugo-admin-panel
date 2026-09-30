@@ -5,8 +5,8 @@
   "title": "Verify complete Hugo trace INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T13:40:42Z",
-  "heartbeat_at": "2026-09-30T13:55:00Z",
-  "lease_expires_at": "2026-09-30T14:40:00Z",
+  "heartbeat_at": "2026-09-30T13:59:10Z",
+  "lease_expires_at": "2026-09-30T14:44:10Z",
   "started_sha": "3299349164749f061763cacc2ebde90337ca1cc7",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,8 +19,8 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-hugo-audit-20260930T134042Z-32993491",
-  "current_step": "ATTEMPT_2_SAME_SHA_RUNTIME",
-  "attempt": 2,
+  "current_step": "ATTEMPT_3_SAME_SHA_RUNTIME",
+  "attempt": 3,
   "evidence_ids": [
     "commit:1ac7725118c02a6d8a7866c4fea564af1c2e8e52",
     "commit:dceaf5bfb1570f09501fc429d11b04cc47e1a168",
@@ -32,7 +32,16 @@
     "artifact:11100983633",
     "migration:hugo_audit_service_role_grants",
     "commit:369ca411b4dbdb2d2cb3dc4bf7ed8584a4090fd5",
-    "commit:fc4bc67a027616a8ee32f9cae53a43753b2122c5"
+    "commit:fc4bc67a027616a8ee32f9cae53a43753b2122c5",
+    "workflow_run:36725097943:FAIL_TEST_SELECTOR",
+    "audit_log:6685:HUGO_ACTION_TRACE",
+    "core_ci:36725098040:FAIL_VERCEL_FUNCTION_LIMIT",
+    "commit:fe204d5575c8e5ffc90c75459770dc20deaee3e9",
+    "commit:19c183b7f915fbaa3719d79a9e1124c615e775a4",
+    "commit:d76d3e12342c92c4d3347e8a83d2e6c264932fac",
+    "commit:5a4db3a693e65dce5de9656f69a5c03ce1fec92b",
+    "commit:43b86e1d336f11956fa563d4f17c02995e634c76",
+    "commit:d12f69030794658f133d840fad8612dfe23ed0e8"
   ],
   "production_touched": false,
   "skills": [
