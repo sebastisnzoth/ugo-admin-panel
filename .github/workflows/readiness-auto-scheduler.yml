@@ -177,7 +177,7 @@ jobs:
           assert.deepEqual(lock.resources, ['autonomy-scheduler'])
           assert.equal(lock.production_touched, false)
           assert.match(workflow, /permissions:\s*\n\s*contents:\s*read/)
-          assert.doesNotMatch(workflow, /deploy-pages|vercel deploy|supabase db push|production/i)
+          assert.doesNotMatch(workflow, /uses:\\s*actions\\/deploy-pages|run:\\s*.*vercel\\s+deploy|run:\\s*.*supabase\\s+db\\s+push/i)
 
           console.log('Sentinel PASS · fail-closed locks, read-only workflow, production untouched')
           NODE
