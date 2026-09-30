@@ -1,0 +1,29 @@
+{
+  "readiness_id": "auto-recovery",
+  "task_id": "readiness-auto-recovery",
+  "job_id": "UGO-READINESS-AUTO-RECOVERY",
+  "title": "Recuperación automática",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:21:00Z",
+  "heartbeat_at": "2026-09-30T03:21:00Z",
+  "lease_expires_at": "2026-09-30T03:51:00Z",
+  "started_sha": "af1bc0c2c7fa5383b196e64b6a662abd45bb437d",
+  "owner": "UGO",
+  "department": "Confiabilidad",
+  "assigned_agent": "Recovery Engineer",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "recovery"
+  ],
+  "correlation_id": "readiness-auto-recovery-af1bc0c2",
+  "current_step": "CLAIM_AND_REVALIDATE",
+  "attempt": 1,
+  "evidence_ids": [],
+  "dependencies": [
+    "auto-worker"
+  ],
+  "production_touched": false
+}
