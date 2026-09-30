@@ -63,6 +63,9 @@ jobs:
           VITE_APP_REVISION: ${{ github.sha }}
         run: npm run build
 
+      - name: Risk & Audit contract regression
+        run: node --test tests/contracts/admin-risk-surface.test.mjs
+
       - name: Install transient Chromium harness
         shell: bash
         run: |

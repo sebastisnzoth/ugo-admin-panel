@@ -52,6 +52,8 @@ async function snapshot(){
     reader.from('autonomous_departments').select('department_id,name').order('department_id')
   ]);
   for(const r of [company,gate,empresasReadiness,empresasDemands,empresasSlots,jobs,departments]) assert.ifError(r.error);
+  const {data:recentEvidence,error:recentEvidenceError}=await reader.from('autonomous_evidence_ledger').select('id,job_id,evidence_type,reference,correlation_id,created_at').order('created_at',{ascending:false}).limit(20);
+  assert.ifError(recentEvidenceError);
   const departmentJobs=await Promise.all((departments.data||[]).map(async d=>{const[{count:total,error:totalError},{count:active,error:activeError},{data:lastRows,error:lastError}]=await Promise.all([reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',d.department_id),reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',d.department_id).in('status',['QUEUED','RUNNING','WAITING_APPROVAL','BLOCKED']),reader.from('autonomous_jobs').select('id,status,objective,correlation_id,created_at').eq('department_id',d.department_id).order('created_at',{ascending:false}).limit(1)]);assert.ifError(totalError);assert.ifError(activeError);assert.ifError(lastError);const lastJob=lastRows?.[0]||null;let lastEvidence=null;if(lastJob?.id){const evidenceResult=await reader.from('autonomous_evidence_ledger').select('id,evidence_type,reference,correlation_id,created_at').eq('job_id',lastJob.id).order('created_at',{ascending:false}).limit(1);assert.ifError(evidenceResult.error);lastEvidence=evidenceResult.data?.[0]||null}return{department_id:d.department_id,name:d.name,total_jobs:total||0,active_jobs:active||0,last_job:lastJob,last_evidence:lastEvidence}}));
   const correlated=(jobs.data||[]).find(j=>j.correlation_id);
   assert.ok(correlated,'CORRELATED_JOB_REQUIRED_FOR_TIMELINE_RUNTIME_PROOF');
@@ -60,7 +62,7 @@ async function snapshot(){
     launch:gate.data?.status||'NO EVALUADO',
     qa:{simulators:qaSimulators,scenarios:qaScenarios,runs:qaRuns,coverage:qaCoverage},
     models:{candidates:modelCandidates,routes:modelRoutes,metrics:modelMetrics},
-    risk:{risks,controls,challenges},
+    risk:{risks,controls,challenges,blockers:gate.data?.blockers||[],evidence:recentEvidence||[]},
     empresas:{readiness:empresasReadiness.data||null,demands:empresasDemands.data||[],slots:empresasSlots.data||[]},
     departmentJobs,
     correlated
@@ -150,6 +152,14 @@ try{
   await assertCardCount('RIESGOS',before.risk.risks);
   await assertCardCount('CONTROLES',before.risk.controls);
   await assertCardCount('CHALLENGES D14',before.risk.challenges);
+  const riskAuditText=(await page.locator('.ugo-autonomous-content').textContent())||'';
+  for(const blocker of before.risk.blockers) assert.ok(riskAuditText.includes(String(blocker)),'RISK_BLOCKER_UI_BACKEND_MISMATCH:'+blocker);
+  for(const evidence of before.risk.evidence.slice(0,10)){
+    const expected=String(evidence.reference||evidence.evidence_type||evidence.id);
+    assert.ok(riskAuditText.includes(expected),'RISK_EVIDENCE_UI_BACKEND_MISMATCH:'+expected);
+    if(evidence.correlation_id)assert.ok(riskAuditText.includes(String(evidence.correlation_id)),'RISK_EVIDENCE_CORRELATION_MISMATCH:'+evidence.correlation_id);
+  }
+  await page.screenshot({path:'artifacts/super-admin-ui-risk-audit.png',fullPage:true});
 
   await page.getByRole('button',{name:'UGO Empresas',exact:true}).click();
   await page.getByText('UGO Empresas',{exact:true}).last().waitFor({state:'visible'});

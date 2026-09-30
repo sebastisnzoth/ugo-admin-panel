@@ -5,8 +5,8 @@
   "title": "Verify Risk & Audit findings, ledgers, blockers and evidence links in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T00:40:30Z",
-  "heartbeat_at": "2026-09-30T00:40:30Z",
-  "lease_expires_at": "2026-09-30T01:25:30Z",
+  "heartbeat_at": "2026-09-30T00:48:00Z",
+  "lease_expires_at": "2026-09-30T01:33:00Z",
   "started_sha": "de88adb636b1d7bdf58d736cd2d23ae9a9c2a28a",
   "owner": "UGO",
   "department": "Admin / Super Admin",
@@ -19,9 +19,12 @@
     "audit-ledger"
   ],
   "correlation_id": "readiness-admin-risk-20260930T004030Z-de88adb6",
-  "current_step": "ACQUIRE_AND_INSPECT",
+  "current_step": "IMPLEMENT_AND_RUNTIME",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "code:risk-audit-blockers-ledgers-ui",
+    "contract:admin-risk-surface"
+  ],
   "production_touched": false,
   "skills": [
     "risk-audit",
