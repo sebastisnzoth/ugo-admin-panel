@@ -1,0 +1,164 @@
+name: UGO Client Notifications Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/client-notifications-runtime.mjs'
+      - 'scripts/client-notifications-judge.mjs'
+      - 'scripts/client-notifications-sentinel.mjs'
+      - 'tests/contracts/client-notifications-readiness.test.mjs'
+      - '.github/workflows/client-notifications-runtime.yml'
+
+concurrency:
+  group: ugo-client-notifications-runtime-v7
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+
+jobs:
+  client-notifications:
+    name: Cliente notificaciones web por serviceId
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Refuse missing TEST credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: TypeScript and build
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Contract regression
+        run: node --test tests/contracts/*notification*.test.mjs
+      - name: Install browser harness
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Runtime exact service lifecycle
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${GITHUB_SHA}"
+          export UGO_CORRELATION_ID="${{ github.run_id }}-client-notifications"
+          export VITE_APP_REVISION="${GITHUB_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-client-notifications-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node scripts/client-notifications-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-notifications-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/client-notifications-sentinel.mjs
+      - name: Persist authoritative readiness closure
+        shell: bash
+        env:
+          UGO_VALIDATED_SHA: ${{ github.sha }}
+          UGO_WORKFLOW_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          git config user.name "ugo-readiness-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B readiness-closure origin/main
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const runtime=JSON.parse(fs.readFileSync('artifacts/client-notifications-runtime.json','utf8'))
+          const judge=JSON.parse(fs.readFileSync('artifacts/client-notifications-judge.json','utf8'))
+          const sentinel=JSON.parse(fs.readFileSync('artifacts/client-notifications-sentinel.json','utf8'))
+          const lockPath='docs/ugo-work-locks/readiness-client-notifications.json'
+          const lock=JSON.parse(fs.readFileSync(lockPath,'utf8'))
+          if(runtime.result!=='PASS'||judge.result!=='PASS'||sentinel.result!=='PASS')throw new Error('CLIENT_STATUS_VALIDATORS_NOT_PASS')
+          if(runtime.sha!==process.env.UGO_VALIDATED_SHA||judge.sha!==runtime.sha||sentinel.sha!==runtime.sha)throw new Error('CLIENT_STATUS_SAME_SHA_REQUIRED')
+          if(runtime.production_touched!==false||runtime.cleanup_ok!==true||runtime.fixture!=='disposable')throw new Error('CLIENT_STATUS_SENTINEL_STATE_UNSAFE')
+          if(lock.status!=='IN_PROGRESS'||lock.correlation_id!==runtime.lock_correlation_id)throw new Error('LOCK_OWNERSHIP_CHANGED')
+          if(lock.readiness_id!=='client-notifications'||lock.task_id!=='readiness-client-notifications')throw new Error('CLIENT_STATUS_LOCK_MISMATCH')
+          const evidencePath='docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json'
+          const evidence={
+            readiness_id:'client-notifications',
+            task_id:'readiness-client-notifications',
+            control:'Notificaciones Cliente',
+            environment:'UGO TEST',
+            production_touched:false,
+            runtime_validated_sha:runtime.sha,
+            workflow_run_id:Number(process.env.UGO_WORKFLOW_RUN_ID),
+            service_id:runtime.service_id,
+            fixture:runtime.fixture,
+            cleanup:runtime.cleanup,
+            cleanup_ok:runtime.cleanup_ok,
+            sequence:runtime.sequence,
+            notifications:runtime.notifications,
+            channel:runtime.channel,
+            push_delivery_proven:false,
+            physical_gps_proven:false,
+            correlation_id:runtime.correlation_id,
+            job_id:runtime.job_id,
+            page_errors:runtime.page_errors,
+            validators:{Judge:judge.result,Sentinel:sentinel.result},
+            result:'PASS',
+            verified_at:new Date().toISOString()
+          }
+          fs.mkdirSync('docs/ugo-readiness-evidence',{recursive:true})
+          fs.writeFileSync(evidencePath,JSON.stringify(evidence,null,2)+'\n')
+          const now=new Date().toISOString()
+          lock.status='DONE'
+          lock.heartbeat_at=now
+          lock.lease_expires_at=null
+          lock.current_step='DONE'
+          lock.completed_at=now
+          lock.runtime_validated_sha=runtime.sha
+          lock.evidence_path=evidencePath
+          lock.validators_result={Judge:'PASS',Sentinel:'PASS'}
+          lock.judge='PASS'
+          lock.sentinel='PASS'
+          lock.production_touched=false
+          lock.evidence_ids=[...new Set([...(lock.evidence_ids||[]),'workflow-run:'+process.env.UGO_WORKFLOW_RUN_ID,'serviceId:'+runtime.service_id,'evidence:'+evidencePath])]
+          fs.writeFileSync(lockPath,JSON.stringify(lock,null,2)+'\n')
+          NODE
+          git add docs/ugo-work-locks/readiness-client-notifications.json docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json
+          git commit -m "chore(readiness): close client-notifications VERIFIED [skip netlify]"
+          git push origin HEAD:main
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: client-notifications-runtime-${{ github.sha }}
+          path: |
+            artifacts/client-notifications-*
+            /tmp/ugo-client-notifications-vite.log
+          if-no-files-found: warn
+          retention-days: 90
