@@ -9,7 +9,7 @@ test('Hugo audit persists a single correlation through all ledgers',()=>{
   assert.match(audit,/autonomous_decision_ledger/)
   assert.match(audit,/autonomous_evidence_ledger/)
   assert.match(audit,/audit_log/)
-  assert.match(audit,/correlation_id:correlationId/)
+  assert.match(audit,/correlation_id:\s*correlationId/)
   assert.match(audit,/HUGO_ACTION_TRACE/)
   assert.match(audit,/hugo_action_trace/)
   assert.match(audit,/authorization_result: 'ALLOW'/)
