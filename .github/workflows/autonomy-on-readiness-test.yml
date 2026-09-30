@@ -14,6 +14,7 @@ on:
       - "supabase/migrations/20260930032000_uploaded_media_coverage_guard_fix.sql"
       - "supabase/migrations/20260930033000_autonomy_on_readiness_gate.sql"
       - "supabase/migrations/20260930034000_preserve_autonomy_mode_in_worker_proof.sql"
+      - "supabase/migrations/20260930034500_service_role_release_gate_read.sql"
       - "scripts/autonomy-on-readiness-runtime.mjs"
       - "tests/contracts/autonomy-on-readiness.test.mjs"
   workflow_dispatch:
