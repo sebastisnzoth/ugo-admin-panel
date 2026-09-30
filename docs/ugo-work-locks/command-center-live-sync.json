@@ -17,6 +17,8 @@
     "ugo-evidence-judge"
   ],
   "validators": [
+    "Judge",
+    "Sentinel",
     "Core CI",
     "GitHub Pages"
   ],
