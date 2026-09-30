@@ -93,7 +93,9 @@ try{
  await page.getByRole('heading',{name:'Inbox ejecutivo'}).waitFor({state:'visible'})
  await page.waitForTimeout(800)
 
- const cards=page.locator('.ugo-autonomous-inbox-job')
+ const inboxSection=page.locator('section.ugo-admin2-module-card:visible').filter({has:page.getByRole('heading',{name:'Inbox ejecutivo',exact:true})})
+ assert.equal(await inboxSection.count(),1,'INBOX_VISIBLE_SECTION_COUNT_INVALID')
+ const cards=inboxSection.locator('.ugo-autonomous-inbox-job:visible')
  const texts=await cards.allTextContents()
  const correlations=await cards.evaluateAll(nodes=>nodes.map(node=>node.getAttribute('data-correlation-id')))
  const redUiKey=String(redJob.correlation_id||redJob.id)
