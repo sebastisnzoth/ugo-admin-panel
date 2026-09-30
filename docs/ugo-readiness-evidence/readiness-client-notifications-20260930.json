@@ -1,0 +1,195 @@
+{
+  "readiness_id": "client-notifications",
+  "task_id": "readiness-client-notifications",
+  "control": "Notificaciones Cliente",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "runtime_validated_sha": "4342a69044627c073e4859abfdaa5f96b17817dc",
+  "workflow_run_id": 36735812811,
+  "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+  "fixture": "disposable",
+  "cleanup": {
+    "ok": true,
+    "mode": "deleted",
+    "error": null
+  },
+  "cleanup_ok": true,
+  "sequence": [
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "asignado",
+      "stage": "accepted",
+      "backend_state": "asignado",
+      "ui_state": "asignado",
+      "ui_stage": "accepted",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "en_camino",
+      "stage": "route",
+      "backend_state": "en_camino",
+      "ui_state": "en_camino",
+      "ui_stage": "route",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "llegado",
+      "stage": "arrived",
+      "backend_state": "llegado",
+      "ui_state": "llegado",
+      "ui_stage": "arrived",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "en_progreso",
+      "stage": "working",
+      "backend_state": "en_progreso",
+      "ui_state": "en_progreso",
+      "ui_stage": "working",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "esperando_aprobacion",
+      "stage": "finished",
+      "backend_state": "esperando_aprobacion",
+      "ui_state": "esperando_aprobacion",
+      "ui_stage": "finished",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    },
+    {
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "state": "completado",
+      "stage": "finished",
+      "backend_state": "completado",
+      "ui_state": "completado",
+      "ui_stage": "finished",
+      "labels": [
+        "Asignado",
+        "Aceptado",
+        "En camino",
+        "Llegó",
+        "Trabajando",
+        "Finalizado"
+      ],
+      "result": "PASS"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "0ad196d6-2260-478a-b11d-bf83aea2d7f4",
+      "tipo": "proveedor_asignado",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Profesional asignado",
+      "banner_text": "⚡\nUGO · ACTUALIZACIÓN DEL PEDIDO\nProfesional asignado\nProveedor UGO Test aceptó tu pedido #1171.\nVer pedido →",
+      "state": "asignado",
+      "foreign_read_count": 0
+    },
+    {
+      "id": "0eaf44f7-518b-4f7d-951e-eebc91000a1c",
+      "tipo": "proveedor_en_camino",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Tu profesional está en camino",
+      "banner_text": "📍\nUGO · ACTUALIZACIÓN DEL PEDIDO\nTu profesional está en camino\nProveedor UGO Test ya salió hacia tu dirección para el pedido #1171.\nVer pedido →",
+      "state": "en_camino",
+      "foreign_read_count": 0
+    },
+    {
+      "id": "40ba2832-6246-478a-bf5d-f84080266d64",
+      "tipo": "proveedor_llego",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Tu profesional llegó",
+      "banner_text": "📍\nUGO · ACTUALIZACIÓN DEL PEDIDO\nTu profesional llegó\nProveedor UGO Test marcó llegada para el pedido #1171.\nVer pedido →",
+      "state": "llegado",
+      "foreign_read_count": 0
+    },
+    {
+      "id": "6fd45c1c-5cca-47c5-81ef-c0161dc7d59d",
+      "tipo": "servicio_iniciado",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Trabajo iniciado",
+      "banner_text": "🔔\nUGO · ACTUALIZACIÓN DEL PEDIDO\nTrabajo iniciado\nEl trabajo del pedido #1171 comenzó.\nVer pedido →",
+      "state": "en_progreso",
+      "foreign_read_count": 0
+    },
+    {
+      "id": "d2bf4182-518e-48af-8dca-ae48c4bb5a31",
+      "tipo": "aprobacion_pendiente",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Trabajo listo para validar",
+      "banner_text": "✅\nUGO · ACTUALIZACIÓN DEL PEDIDO\nTrabajo listo para validar\nRevisá las evidencias del pedido #1171 y confirmá el trabajo.\nVer pedido →",
+      "state": "esperando_aprobacion",
+      "foreign_read_count": 0
+    },
+    {
+      "id": "973730ba-d47c-4642-b1b9-f5c3374614ee",
+      "tipo": "servicio_completado",
+      "service_id": "2c53777c-49cb-4620-a8e4-90a89404df6a",
+      "usuario_id": "7b982e23-aba0-4c22-9646-2b7edf6331ba",
+      "title": "Servicio completado",
+      "banner_text": "✅\nUGO · ACTUALIZACIÓN DEL PEDIDO\nServicio completado\nEl pedido #1171 quedó completado. Ya podés calificar al profesional.\nVer pedido →",
+      "state": "completado",
+      "foreign_read_count": 0
+    }
+  ],
+  "channel": "web-realtime",
+  "push_delivery_proven": false,
+  "physical_gps_proven": false,
+  "correlation_id": "36735812811-client-notifications",
+  "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
+  "page_errors": [],
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T15:26:23.157Z"
+}

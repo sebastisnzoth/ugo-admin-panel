@@ -2,10 +2,10 @@
   "readiness_id": "client-notifications",
   "task_id": "readiness-client-notifications",
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T15:22:00Z",
-  "lease_expires_at": "2026-09-30T16:07:00Z",
+  "heartbeat_at": "2026-09-30T15:26:23.157Z",
+  "lease_expires_at": null,
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,7 +27,7 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "RERUN_EXACT_PERSISTED_NOTIFICATION_SELECTOR",
+  "current_step": "DONE",
   "attempt": 9,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
@@ -63,7 +63,10 @@
     "diagnostic:fixture-1168-assigned-but-harness-clicked-cancelled-1163",
     "diagnostic:stale-cancelled-notice-opened-instead-of-new-assignment",
     "fix:4342a69044627c073e4859abfdaa5f96b17817dc",
-    "github-run:36735812811:IN_PROGRESS"
+    "github-run:36735812811:IN_PROGRESS",
+    "workflow-run:36735812811",
+    "serviceId:2c53777c-49cb-4620-a8e4-90a89404df6a",
+    "evidence:docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
@@ -75,8 +78,13 @@
   },
   "finished_at": null,
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
-  "failure_reason": null
+  "failure_reason": null,
+  "completed_at": "2026-09-30T15:26:23.157Z",
+  "runtime_validated_sha": "4342a69044627c073e4859abfdaa5f96b17817dc",
+  "evidence_path": "docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+  "judge": "PASS",
+  "sentinel": "PASS"
 }
