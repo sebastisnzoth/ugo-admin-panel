@@ -19,13 +19,13 @@ assert.ok(login.session&&login.user)
 
 const {data:services,error:servicesError}=await auth.from('servicios')
  .select('id,numero,estado,tarifa,created_at,completado_at,programado_para')
- .eq('cliente_id',login.user.id).eq('estado','completado')
+ .eq('cliente_id',login.user.id)
  .order('created_at',{ascending:false}).limit(80)
 assert.ifError(servicesError)
 assert.ok(services?.length,'UGO_TEST_HISTORY_COMPLETED_SERVICE_REQUIRED')
 
 let fixture=null
-for(const service of services){
+for(const service of services.filter(service=>service.estado==='completado')){
  const [{data:payments,error:pe},{data:ratings,error:re},{data:evidence,error:ee}]=await Promise.all([
   auth.from('pagos').select('id,estado,metodo,monto_bruto').eq('servicio_id',service.id).limit(1),
   auth.from('resenas').select('id,autor_tipo,puntuacion,comentario').eq('servicio_id',service.id),
