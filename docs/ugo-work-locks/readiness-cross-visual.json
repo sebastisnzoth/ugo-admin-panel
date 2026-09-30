@@ -2,10 +2,10 @@
   "readiness_id": "cross-visual",
   "task_id": "readiness-cross-visual",
   "job_id": "gpt-ugo-cross-visual-20260930-1502",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T18:02:00Z",
-  "heartbeat_at": "2026-09-30T18:02:00Z",
-  "lease_expires_at": "2026-09-30T18:32:00Z",
+  "heartbeat_at": "2026-09-30T18:09:00Z",
+  "lease_expires_at": null,
   "started_sha": "1121182fd56ae27585d7b71cbaea340faab8e01e",
   "owner": "UGO",
   "assigned_agent": "GPT_UGO",
@@ -17,7 +17,27 @@
     "preview-runtime"
   ],
   "correlation_id": "cross-visual-20260930T180200Z",
-  "current_step": "inspect-runtime-and-visual-contracts",
+  "current_step": "NEEDS_RUNTIME_PROOF",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "impl:tests/contracts/cross-visual-readiness.test.mjs",
+    "repo:docs/evidence/readiness-cross-visual-20260930.json",
+    "vercel:dpl_6z3rYQWcgquJ74PZwCGQqLnV57HM:BLOCKED_FUNCTION_LIMIT",
+    "preview:dpl_ESFXfQ1vCdb3AQeSn15rKnNonCUa:LANDING_200",
+    "preview:internal-routes:AUTH_BLOCKED"
+  ],
+  "result": "NEEDS_RUNTIME_PROOF",
+  "finished_at": "2026-09-30T18:09:00Z",
+  "completed_at": "2026-09-30T18:09:00Z",
+  "result_sha": "f79a3595f27b424241a08689abb88eeaffcde520",
+  "verified_sha": null,
+  "production_touched": false,
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "failure": {
+    "code": "RUNTIME_PROOF_BLOCKED",
+    "reason": "Current-SHA Vercel deployment failed because Hobby plan exceeds the 12 Serverless Functions limit; authenticated internal preview routes could not be visually inspected. Judge/Sentinel therefore were not run."
+  }
 }
