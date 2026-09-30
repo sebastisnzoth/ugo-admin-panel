@@ -59,13 +59,18 @@ let topNavigations=0
 page.on('pageerror',e=>pageErrors.push(String(e?.stack||e)))
 page.on('framenavigated',frame=>{if(frame===page.mainFrame())topNavigations++})
 
-async function readOnlineKpi(){
+async function readOnlineKpi(timeout=20000){
  const card=page.locator('article').filter({hasText:'Proveedores online'}).first()
- await card.waitFor({state:'visible',timeout:20000})
- const raw=(await card.locator('strong').first().textContent()||'').trim()
- const value=Number(raw)
- assert.ok(Number.isFinite(value),'ONLINE_KPI_NUMERIC_REQUIRED: '+raw)
- return value
+ await card.waitFor({state:'visible',timeout})
+ const started=Date.now()
+ let raw=''
+ while(Date.now()-started<timeout){
+  raw=(await card.locator('strong').first().textContent()||'').trim()
+  const value=Number(raw)
+  if(raw!==''&&raw!=='—'&&Number.isFinite(value))return value
+  await page.waitForTimeout(100)
+ }
+ throw new Error('ONLINE_KPI_NUMERIC_REQUIRED: '+raw)
 }
 async function waitForKpi(expected,timeout=7000){
  const started=Date.now()
