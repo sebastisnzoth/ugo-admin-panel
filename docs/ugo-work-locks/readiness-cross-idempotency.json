@@ -5,8 +5,8 @@
   "title": "Verify idempotency and concurrency across acceptance, payment, closure and rating",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T14:09:00Z",
-  "heartbeat_at": "2026-09-30T14:09:00Z",
-  "lease_expires_at": "2026-09-30T14:54:00Z",
+  "heartbeat_at": "2026-09-30T14:21:30Z",
+  "lease_expires_at": "2026-09-30T15:06:30Z",
   "started_sha": "d2cd369107fd85740db8be0abfad906f5d02af8e",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -16,11 +16,20 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "validators": ["Judge", "Sentinel"],
-  "resources": ["ugo-test-p0"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-test-p0"
+  ],
   "correlation_id": "readiness-cross-idempotency-20260930T140900Z-d2cd3691",
-  "current_step": "INSPECT_CONCURRENCY_GUARDS_AND_BUILD_RUNTIME_PROOF",
+  "current_step": "RUNTIME_JUDGE_SENTINEL_RUN_36728390334",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "workflow-run:36728022890:TEST_PROVIDER_UNAVAILABLE",
+    "workflow-run:36728390334",
+    "migration:20260930141225_cross_idempotency_rating_uniqueness"
+  ],
   "production_touched": false
 }
