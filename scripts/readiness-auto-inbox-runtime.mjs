@@ -24,9 +24,11 @@ assert.ifError(profileError)
 assert.equal(profile.tipo,'superadmin')
 assert.equal(profile.activo,true)
 
-const {data:department,error:departmentError}=await root.from('autonomous_departments').select('department_id,status').order('department_id').limit(1).single()
-assert.ifError(departmentError)
-const departmentId=department.department_id
+const {data:agentFixture,error:agentFixtureError}=await root.from('autonomous_agents').select('id,department_id,status,authority_class').neq('status','DISABLED').eq('authority_class','GREEN').order('department_id').limit(1).single()
+assert.ifError(agentFixtureError)
+assert.ok(agentFixture?.id&&agentFixture?.department_id,'GREEN_EXECUTABLE_AGENT_REQUIRED')
+const departmentId=agentFixture.department_id
+const agentId=agentFixture.id
 const {data:company,error:companyError}=await root.from('autonomous_company_state').select('mode,reason').eq('singleton',true).single()
 assert.ifError(companyError)
 const originalMode=company.mode
@@ -42,10 +44,10 @@ const greenCorrelation=crypto.randomUUID()
 const ids=[crypto.randomUUID(),crypto.randomUUID(),crypto.randomUUID(),crypto.randomUUID()]
 const now=Date.now()
 const fixtures=[
- {id:ids[0],department_id:departmentId,objective:'AUTO_INBOX_DUP_OLD',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[0],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-19*60000).toISOString()},
- {id:ids[1],department_id:departmentId,objective:'AUTO_INBOX_DUP_NEW',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[1],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-16*60000).toISOString()},
- {id:ids[2],department_id:departmentId,objective:'AUTO_INBOX_YELLOW',authority_class:'YELLOW',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[2],correlation_id:yellowCorrelation,created_at:new Date(now-31*60000).toISOString()},
- {id:ids[3],department_id:departmentId,objective:'AUTO_INBOX_GREEN',authority_class:'GREEN',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[3],correlation_id:greenCorrelation,created_at:new Date(now-5*60000).toISOString()}
+ {id:ids[0],department_id:departmentId,agent_id:agentId,objective:'AUTO_INBOX_DUP_OLD',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[0],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-19*60000).toISOString()},
+ {id:ids[1],department_id:departmentId,agent_id:agentId,objective:'AUTO_INBOX_DUP_NEW',authority_class:'RED',status:'BLOCKED',idempotency_key:'readiness-auto-inbox:'+ids[1],correlation_id:duplicateCorrelation,blocked_reason:'TEST_ESCALATION',created_at:new Date(now-16*60000).toISOString()},
+ {id:ids[2],department_id:departmentId,agent_id:agentId,objective:'AUTO_INBOX_YELLOW',authority_class:'YELLOW',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[2],correlation_id:yellowCorrelation,created_at:new Date(now-31*60000).toISOString()},
+ {id:ids[3],department_id:departmentId,agent_id:agentId,objective:'AUTO_INBOX_GREEN',authority_class:'GREEN',status:'WAITING_APPROVAL',idempotency_key:'readiness-auto-inbox:'+ids[3],correlation_id:greenCorrelation,created_at:new Date(now-5*60000).toISOString()}
 ]
 const inserted=await root.from('autonomous_jobs').insert(fixtures)
 assert.ifError(inserted.error)
