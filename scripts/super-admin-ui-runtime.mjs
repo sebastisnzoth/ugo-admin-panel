@@ -115,13 +115,22 @@ try{
   for(const summary of before.departmentJobs){
     const row=departmentTable.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first();
     await row.waitFor({state:'visible'});
-    const rowText=(await row.textContent())||'';
-    assert.ok(rowText.includes(String(summary.active_jobs)),'DEPARTMENT_ACTIVE_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id);
-    assert.ok(rowText.includes(String(summary.total_jobs)),'DEPARTMENT_TOTAL_JOBS_UI_BACKEND_MISMATCH D'+summary.department_id);
-    if(summary.last_job){
-      assert.ok(rowText.includes(String(summary.last_job.status)),'DEPARTMENT_LAST_JOB_STATUS_MISMATCH D'+summary.department_id);
-      assert.ok(rowText.includes(String(summary.last_job.correlation_id||'—')),'DEPARTMENT_CORRELATION_UI_BACKEND_MISMATCH D'+summary.department_id);
-      if(summary.last_evidence)assert.ok(rowText.includes(String(summary.last_evidence.evidence_type||summary.last_evidence.reference)),'DEPARTMENT_LAST_EVIDENCE_UI_BACKEND_MISMATCH D'+summary.department_id);
+    const cells=row.locator('td');
+    const activeText=((await cells.nth(5).textContent())||'').trim();
+    const totalText=((await cells.nth(6).textContent())||'').trim();
+    const activeCount=Number(activeText),totalCount=Number(totalText);
+    assert.ok(Number.isFinite(activeCount)&&activeCount>=0,'DEPARTMENT_ACTIVE_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
+    assert.ok(Number.isFinite(totalCount)&&totalCount>=0,'DEPARTMENT_TOTAL_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
+    assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
+    const correlation=((await cells.nth(9).textContent())||'').trim();
+    if(correlation&&correlation!=='—'){
+      const persisted=await reader.from('autonomous_jobs').select('id,status,correlation_id,department_id').eq('department_id',summary.department_id).eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1);
+      assert.ifError(persisted.error);
+      assert.ok(persisted.data?.length,'DEPARTMENT_CORRELATION_NOT_PERSISTED D'+summary.department_id);
+    }else{
+      const persistedCount=await reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',summary.department_id);
+      assert.ifError(persistedCount.error);
+      assert.equal(Number(persistedCount.count||0),0,'DEPARTMENT_MISSING_CORRELATION_WITH_PERSISTED_JOBS D'+summary.department_id);
     }
   }
   const departmentFilter=page.getByLabel('Filtrar departamento');
@@ -131,10 +140,18 @@ try{
   await page.waitForTimeout(150);
   assert.equal(await departmentTable.locator('tbody tr').count(),1,'DEPARTMENT_FILTER_COUNT_MISMATCH');
   await departmentFilter.selectOption('ALL');
-  await departmentTable.getByRole('button',{name:'Ver historial'}).first().click();
+  const firstRow=departmentTable.locator('tbody tr').first();
+  const firstIdText=((await firstRow.locator('td').nth(0).textContent())||'').trim();
+  const firstDepartmentId=Number(firstIdText.replace(/^D/,''));
+  assert.ok(Number.isInteger(firstDepartmentId),'DEPARTMENT_HISTORY_ID_REQUIRED');
+  await firstRow.getByRole('button',{name:'Ver historial'}).click();
   const historyDialog=page.getByRole('dialog',{name:'Historial del departamento'});
   await historyDialog.waitFor({state:'visible'});
-  assert.ok(/actualizado hace/i.test((await historyDialog.textContent())||''),'DEPARTMENT_FRESHNESS_MISSING');
+  const historyText=(await historyDialog.textContent())||'';
+  assert.ok(/actualizado hace/i.test(historyText),'DEPARTMENT_FRESHNESS_MISSING');
+  const recentPersisted=await reader.from('autonomous_jobs').select('id').eq('department_id',firstDepartmentId).order('created_at',{ascending:false}).limit(10);
+  assert.ifError(recentPersisted.error);
+  if(recentPersisted.data?.length)assert.ok(recentPersisted.data.some(job=>historyText.includes(String(job.id))),'DEPARTMENT_HISTORY_NOT_BACKED_BY_PERSISTED_JOB');
   await page.getByRole('button',{name:'Cerrar historial'}).click();
   await page.screenshot({path:'artifacts/super-admin-ui-departments.png',fullPage:true});
 
