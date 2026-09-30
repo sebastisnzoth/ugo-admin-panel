@@ -1,0 +1,40 @@
+name: UGO Actionable Agents TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "api/test.ts"
+      - "src/mvp/AutonomousWorkforceControlCenter.tsx"
+      - "supabase/migrations/20260930025000_actionable_agent_work_orders.sql"
+      - "supabase/migrations/20260930025500_actionable_agent_advisory_guard.sql"
+      - "tests/contracts/actionable-agents-runtime.test.mjs"
+      - ".github/workflows/actionable-agents-test.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-actionable-agents-test
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npx tsc -b
+      - run: >
+          node --test
+          tests/contracts/actionable-agents-runtime.test.mjs
+          tests/contracts/superadmin-workforce-control-center.test.mjs
+          tests/contracts/superadmin-autonomous-agents.test.mjs
