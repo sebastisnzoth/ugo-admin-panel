@@ -8,6 +8,7 @@ on:
       - 'src/features/client/hugo/ClientVoiceHugoDock.tsx'
       - 'scripts/hugo-audit-*.mjs'
       - 'tests/contracts/hugo-audit-readiness.test.mjs'
+      - 'supabase/migrations/*hugo_audit_service_role_grants.sql'
       - '.github/workflows/hugo-audit-runtime.yml'
   workflow_dispatch:
 
