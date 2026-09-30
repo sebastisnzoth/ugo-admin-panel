@@ -1,0 +1,66 @@
+name: UGO Provider Debt Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-debt-runtime.mjs'
+      - 'src/mvp/provider/providerData.tsx'
+      - 'src/mvp/provider/ProviderEarnings.tsx'
+      - 'src/mvp/provider/ProviderHome.tsx'
+      - 'src/mvp/provider/ProviderOpportunities.tsx'
+      - 'supabase/migrations/20260920073500_provider_ugo_debt_order_block.sql'
+      - 'supabase/migrations/20260927154500_provider_debt_acceptance_gate.sql'
+      - 'tests/contracts/provider-debt-acceptance-gate.test.mjs'
+      - 'tests/contracts/provider-ugo-debt-limit.test.mjs'
+      - 'tests/contracts/cash-provider-ugo-debt.test.mjs'
+      - '.github/workflows/provider-debt-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-provider-debt-runtime
+  cancel-in-progress: true
+
+jobs:
+  debt-runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Refuse missing TEST credentials
+        shell: bash
+        env:
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Debt contracts
+        run: node --test tests/contracts/provider-debt-acceptance-gate.test.mjs tests/contracts/provider-ugo-debt-limit.test.mjs tests/contracts/cash-provider-ugo-debt.test.mjs
+      - name: Provider authenticated debt state
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-debt-runtime.mjs
+      - name: Upload debt evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-debt-runtime-${{ github.sha }}
+          path: artifacts/provider-debt-runtime.json
+          if-no-files-found: error
+          retention-days: 90
