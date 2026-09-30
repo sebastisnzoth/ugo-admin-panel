@@ -1,0 +1,69 @@
+name: UGO Provider GPS Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/autonomous-qa-gps-runtime.mjs'
+      - 'src/mvp/ProviderLocationTracker.tsx'
+      - 'src/mvp/provider/providerService.ts'
+      - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
+      - 'tests/contracts/provider-arrival-gps-gate.test.mjs'
+      - 'tests/contracts/provider-arrival-location.test.mjs'
+      - '.github/workflows/provider-gps-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-provider-gps-runtime
+  cancel-in-progress: true
+
+jobs:
+  gps-runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Refuse missing TEST credentials
+        shell: bash
+        env:
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: |
+          set -euo pipefail
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: GPS contract gate
+        run: node --test tests/contracts/provider-arrival-gps-gate.test.mjs tests/contracts/provider-arrival-location.test.mjs
+      - name: Execute authenticated GPS runtime
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+          UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node scripts/autonomous-qa-gps-runtime.mjs | tee artifacts/provider-gps-runtime.json
+      - name: Upload GPS evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: provider-gps-runtime-${{ github.sha }}
+          path: artifacts/provider-gps-runtime.json
+          if-no-files-found: error
+          retention-days: 90
