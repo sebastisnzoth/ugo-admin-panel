@@ -13,9 +13,10 @@ import{STATUS_LABELS}from'../../../mvp/shared'
 import{ClientPaymentChoice}from'../payments/ClientPaymentChoice'
 import{ClientRatingPrompt}from'../rating/ClientRatingPrompt'
 import{useClientFlow}from'../flow/clientFlow'
+import{CLIENT_CANCELLABLE_SERVICE_STATES}from'../services/clientActionService'
 
 type DetailRow={id:string;numero:number|string|null;estado:string;categoria_id:string;descripcion:string|null;direccion_cliente:string|null;programado_para:string|null;created_at:string|null;matching_expires_at:string|null;tarifa:number|string|null;moneda:string|null;proveedor_id:string|null;categoria:{nombre?:string|null;emoji?:string|null}|null;proveedor:{nombre?:string|null;karma?:number|null}|null}
-const CANCELLABLE=new Set(['borrador','buscando','ofrecido','asignado','en_camino','llegado'])
+const CANCELLABLE=new Set(CLIENT_CANCELLABLE_SERVICE_STATES)
 const formatCountdown=(ms:number)=>{const total=Math.max(0,Math.ceil(ms/1000)),minutes=Math.floor(total/60),seconds=total%60;return `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`}
 const money=(value:number|string|null,moneda:string|null)=>{const raw=String(moneda||'BRL').toUpperCase(),currency=/^[A-Z]{3}$/.test(raw)?raw:'BRL';try{return new Intl.NumberFormat('pt-BR',{style:'currency',currency}).format(Number(value||0))}catch{return `R$ ${Number(value||0).toFixed(2)}`}}
 const when=(value:string|null,created:string|null)=>{const raw=value||created;if(!raw)return'Horario por confirmar';const date=new Date(raw);return Number.isNaN(date.getTime())?'Horario por confirmar':date.toLocaleString('es-AR',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}
