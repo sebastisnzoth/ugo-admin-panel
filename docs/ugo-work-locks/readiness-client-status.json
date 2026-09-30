@@ -1,0 +1,31 @@
+{
+  "readiness_id": "client-status",
+  "task_id": "readiness-client-status",
+  "job_id": "UGO-READINESS-CLIENT_STATUS",
+  "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T03:16:00Z",
+  "heartbeat_at": "2026-09-30T03:16:00Z",
+  "lease_expires_at": "2026-09-30T04:16:00Z",
+  "started_sha": "4586c16db0dda146a4e252ec874edfcebc09fdbe",
+  "owner": "UGO",
+  "department": "App Cliente",
+  "assigned_agent": "Client Status Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-client",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "client-service-status"
+  ],
+  "correlation_id": "readiness-client-status-20260930T031600Z-4586c16d",
+  "current_step": "INSPECTING",
+  "attempt": 1,
+  "evidence_ids": []
+}
