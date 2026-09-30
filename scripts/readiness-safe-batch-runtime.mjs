@@ -209,8 +209,9 @@ assert.ok(category,'TEST_CATEGORY_REQUIRED')
 
  await browser.close();browser=undefined
  await new Promise(resolve=>setTimeout(resolve,1500))
- const {count:incidentCount,error:incidentError}=await adminSb.from('development_incidents').select('id',{count:'exact',head:true}).eq('runtime_revision',sha).neq('status','resolved').in('severity',['P0','P1'])
- assert.ifError(incidentError)
+ const {data:incidents,error:incidentError}=await adminSb.from('development_incidents').select('id').eq('runtime_revision',sha).neq('status','resolved').in('severity',['P0','P1']).limit(1)
+ if(incidentError)throw new Error('SENTINEL_INCIDENT_READ_FAILED '+JSON.stringify(incidentError))
+ const incidentCount=incidents.length
  results.current_sha_open_incidents=incidentCount
  assert.equal(incidentCount,0,'CURRENT_SHA_HAS_OPEN_P0_P1_INCIDENTS')
  results.status='PASS'
