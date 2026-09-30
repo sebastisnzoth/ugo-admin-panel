@@ -9,7 +9,9 @@ import{ClientEvidenceGallery}from'../features/client/order/ClientEvidenceGallery
 
 type Role='client'|'provider'|'admin'
 type Person={nombre?:string|null}
-type PaymentSummary={estado?:string|null;metodo?:string|null;monto_bruto?:number|string|null}\ntype RatingSummary={puntuacion?:number|string|null;comentario?:string|null;autor_tipo?:'cliente'|'proveedor'|string|null}\ntype Row={id:string;numero?:number|null;estado:string;descripcion?:string|null;tarifa?:number|string|null;created_at?:string|null;updated_at?:string|null;programado_para?:string|null;completado_at?:string|null;direccion_cliente?:string|null;cliente_id?:string|null;proveedor_id?:string|null;categoria?:{nombre?:string|null;emoji?:string|null}|null;cliente?:Person|null;proveedor?:Person|null;pago?:PaymentSummary|PaymentSummary[]|null;resenas?:RatingSummary[]|null}
+type PaymentSummary={estado?:string|null;metodo?:string|null;monto_bruto?:number|string|null}
+type RatingSummary={puntuacion?:number|string|null;comentario?:string|null;autor_tipo?:'cliente'|'proveedor'|string|null}
+type Row={id:string;numero?:number|null;estado:string;descripcion?:string|null;tarifa?:number|string|null;created_at?:string|null;updated_at?:string|null;programado_para?:string|null;completado_at?:string|null;direccion_cliente?:string|null;cliente_id?:string|null;proveedor_id?:string|null;categoria?:{nombre?:string|null;emoji?:string|null}|null;cliente?:Person|null;proveedor?:Person|null;pago?:PaymentSummary|PaymentSummary[]|null;resenas?:RatingSummary[]|null}
 type ClientFilter='todos'|'curso'|'proximos'|'finalizados'
 type GenericFilter='todos'|'completado'|'activo'|'cancelado'
 type Props={role:Role;embedded?:boolean;openRequest?:boolean;onOpenService?:(serviceId:string)=>void;initialServiceId?:string|null}
@@ -39,7 +41,9 @@ const isFuture=(row:Row)=>{if(!row.programado_para)return false;const value=new 
 const isUpcoming=(row:Row)=>ACTIVE_STATES.has(row.estado)&&isFuture(row)
 const isCurrent=(row:Row)=>ACTIVE_STATES.has(row.estado)&&!isUpcoming(row)
 const isFinal=(row:Row)=>FINAL_STATES.has(row.estado)
-const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[estado]||estado,detail:'Abrí el pedido para ver el estado completo.',tone:'waiting' as const}\nconst onePayment=(value:Row['pago'])=>Array.isArray(value)?value[0]||null:value||null\nconst stars=(value:unknown)=>{const score=Number(value||0);return Number.isFinite(score)&&score>0?`${score}/5 ★`:'—'}
+const clientState=(estado:string)=>CLIENT_STATE_COPY[estado]||{title:LABELS[estado]||estado,detail:'Abrí el pedido para ver el estado completo.',tone:'waiting' as const}
+const onePayment=(value:Row['pago'])=>Array.isArray(value)?value[0]||null:value||null
+const stars=(value:unknown)=>{const score=Number(value||0);return Number.isFinite(score)&&score>0?`${score}/5 ★`:'—'}
 
 export function ServiceHistoryPanel({role,embedded=false,openRequest=false,onOpenService,initialServiceId=null}:Props){
  const sb=useMemo(()=>role==='admin'?adminSupabase:getRoleSupabase(role),[role])
