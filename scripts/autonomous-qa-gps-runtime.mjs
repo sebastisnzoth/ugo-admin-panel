@@ -3,7 +3,20 @@ import {createClient} from '@supabase/supabase-js'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',sk=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 if(!url.includes('tmossnqfwfwjrtzwcbmm')||!anon||!sk)throw new Error('UGO_TEST_ONLY')
 const service=createClient(url,sk,{auth:{persistSession:false}}),p=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
-const login=await p.auth.signInWithPassword({email:process.env.UGO_TEST_PROVIDER_EMAIL,password:process.env.UGO_TEST_PROVIDER_PASSWORD});if(login.error)throw login.error
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))
+async function signInWithRetry(){
+ let lastError=null
+ for(let attempt=1;attempt<=3;attempt+=1){
+  const login=await p.auth.signInWithPassword({email:process.env.UGO_TEST_PROVIDER_EMAIL,password:process.env.UGO_TEST_PROVIDER_PASSWORD})
+  if(!login.error)return login
+  lastError=login.error
+  const status=Number(login.error?.status||0)
+  if(!(status>=500||login.error?.name==='AuthRetryableFetchError')||attempt===3)break
+  await sleep(1000*attempt)
+ }
+ throw lastError
+}
+await signInWithRetry()
 try{
  const {data:svc,error:se}=await service.from('servicios').select('id,ubicacion_cliente').eq('metadata->>qa_p0','true').eq('ambiente','demo').order('created_at',{ascending:false}).limit(1).single();if(se)throw se
  const zero=await p.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:0,p_lng:0,p_captured_at:new Date().toISOString(),p_accuracy_m:10})
