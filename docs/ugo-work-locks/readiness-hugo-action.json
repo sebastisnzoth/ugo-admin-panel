@@ -5,8 +5,8 @@
   "title": "Verify Hugo INTENT→ACTION→EFFECT with persistent audit evidence",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T03:40:00Z",
-  "heartbeat_at": "2026-09-30T03:40:00Z",
-  "lease_expires_at": "2026-09-30T04:25:00Z",
+  "heartbeat_at": "2026-09-30T04:08:00Z",
+  "lease_expires_at": "2026-09-30T04:53:00Z",
   "started_sha": "c1097e3c48d8c0362ea5bc67b9848cf5d0ef1d88",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -19,10 +19,13 @@
     "hugo-actions"
   ],
   "correlation_id": "readiness-hugo-action-20260930T034000Z-c1097e3c",
-  "current_step": "RECONCILE_PR_294_AND_VERIFY_INTENT_ACTION_EFFECT",
+  "current_step": "WAITING_SAME_SHA_RUNTIME_JUDGE_SENTINEL",
   "attempt": 1,
   "evidence_ids": [
-    "github-pr:294"
+    "github-pr:294",
+    "github-pr:296",
+    "github-run:36667189938",
+    "github-core-run:36667189922"
   ],
   "production_touched": false,
   "notes": [
