@@ -1,0 +1,34 @@
+{
+  "readiness_id": "auto-scheduler",
+  "task_id": "readiness-auto-scheduler",
+  "job_id": "UGO-READINESS-AUTO-SCHEDULER",
+  "title": "Verify autonomous scheduler parallelism, locks and resource conflicts in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T01:22:00Z",
+  "heartbeat_at": "2026-09-30T01:22:00Z",
+  "lease_expires_at": "2026-09-30T02:07:00Z",
+  "started_sha": "b11149dc69106c61bf269159d7a15010da2135bd",
+  "owner": "UGO",
+  "department": "UGO Empresa Autónoma",
+  "assigned_agent": "Autonomy Scheduler Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "autonomy-scheduler"
+  ],
+  "correlation_id": "readiness-auto-scheduler-20260930T012200Z-b11149dc",
+  "current_step": "INSPECT_SCHEDULER_IMPLEMENTATION_AND_CONCURRENCY_TEST_GAPS",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-job-execution",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge",
+    "ugo-github-ops"
+  ]
+}
