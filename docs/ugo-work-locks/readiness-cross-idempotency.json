@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-idempotency",
   "job_id": "UGO-READINESS-CROSS-IDEMPOTENCY",
   "title": "Verify idempotency and concurrency across acceptance, payment, closure and rating",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T14:09:00Z",
-  "heartbeat_at": "2026-09-30T14:21:30Z",
-  "lease_expires_at": "2026-09-30T15:06:30Z",
+  "heartbeat_at": "2026-09-30T14:21:07.721Z",
+  "lease_expires_at": null,
   "started_sha": "d2cd369107fd85740db8be0abfad906f5d02af8e",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -24,12 +24,22 @@
     "ugo-test-p0"
   ],
   "correlation_id": "readiness-cross-idempotency-20260930T140900Z-d2cd3691",
-  "current_step": "RUNTIME_JUDGE_SENTINEL_RUN_36728390334",
+  "current_step": "DONE",
   "attempt": 1,
   "evidence_ids": [
     "workflow-run:36728022890:TEST_PROVIDER_UNAVAILABLE",
     "workflow-run:36728390334",
-    "migration:20260930141225_cross_idempotency_rating_uniqueness"
+    "migration:20260930141225_cross_idempotency_rating_uniqueness",
+    "evidence:docs/evidence/readiness-cross-idempotency-20260930.json"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "completed_at": "2026-09-30T14:21:07.721Z",
+  "runtime_validated_sha": "61313f8b52a5572c52baf2937ec2fbc71954601f",
+  "evidence_path": "docs/evidence/readiness-cross-idempotency-20260930.json",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": "PASS",
+  "sentinel": "PASS"
 }

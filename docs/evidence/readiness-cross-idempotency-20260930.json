@@ -1,0 +1,51 @@
+{
+  "readiness_id": "cross-idempotency",
+  "task_id": "readiness-cross-idempotency",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "runtime_validated_sha": "61313f8b52a5572c52baf2937ec2fbc71954601f",
+  "workflow_run_id": 36728390334,
+  "correlation_id": "readiness-cross-idempotency-20260930T140900Z-d2cd3691",
+  "acceptance": {
+    "concurrent_calls": 2,
+    "successful_calls": 2,
+    "service_rows": 1,
+    "accepted_offer_rows": 1,
+    "status": "PASS"
+  },
+  "payment_close": {
+    "concurrent_calls": 2,
+    "successful_calls": 2,
+    "service_rows": 1,
+    "payment_rows": 1,
+    "debt_rows": 1,
+    "audit_rows": 1,
+    "service_state": "completado",
+    "payment_state": "liberado",
+    "status": "PASS"
+  },
+  "rating": {
+    "client": {
+      "concurrent_calls": 2,
+      "successful_calls": 1,
+      "conflict_calls": 1,
+      "conflict_code": "23505"
+    },
+    "provider": {
+      "concurrent_calls": 2,
+      "successful_calls": 1,
+      "conflict_calls": 1,
+      "conflict_code": "23505"
+    },
+    "persisted_rows": 2,
+    "conflict_feedback": "DETERMINISTIC_UNIQUE_CONFLICT",
+    "status": "PASS"
+  },
+  "cleanup_ok": true,
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "PASS",
+  "verified_at": "2026-09-30T14:21:07.720Z"
+}
