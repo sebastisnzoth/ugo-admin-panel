@@ -211,8 +211,17 @@ async function testProvider(viewport,name){
      const nav=page.getByRole('navigation',{name:'Navegación proveedor'}).first()
      const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
      for(const item of items){
-       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+String(item))
-       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
+       const navLabel=String(item)
+       console.info('UGO_ROLE_UI_PROVIDER_MOBILE_NAV_START',name,navLabel)
+       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+navLabel)
+       try{
+         await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
+       }catch(error){
+         const snapshot=await page.locator('body').innerText().catch(()=> '')
+         console.error('UGO_ROLE_UI_PROVIDER_MOBILE_NAV_FAILURE',name,navLabel,'url='+page.url(),'pageErrors='+errors.join(' | '),'body='+snapshot.slice(0,1200))
+         await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true}).catch(()=>{})
+         throw error
+       }
        const providerRoot=page.locator('.ugo-provider-root')
        if(!(await providerRoot.isVisible().catch(()=>false))){
          await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true})
