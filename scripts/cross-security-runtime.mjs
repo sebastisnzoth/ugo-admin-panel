@@ -13,7 +13,10 @@ const textExt=new Set(['.js','.mjs','.cjs','.ts','.tsx','.jsx','.json','.yml','.
 const tracked=execFileSync('git',['ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean)
 const ignored=p=>p.startsWith('node_modules/')||p.startsWith('dist/')||p.startsWith('artifacts/')
 const looksText=p=>textExt.has(path.extname(p))||path.basename(p).startsWith('.env')
+const executableSurface=p=>/^(src|api|scripts|supabase\/functions)\//.test(p)
+const configSurface=p=>/^(src|api|scripts|supabase\/functions|\.github\/workflows)\//.test(p)||path.basename(p).startsWith('.env')
 const placeholder=s=>/example|synthetic|redacted|placeholder|change[-_ ]?me|your[-_ ]|dummy|fake|test-only|ugo-test/i.test(s)
+const stripStrings=s=>s.replace(/(["'`])(?:\\.|(?!\1).)*\1/g,"''")
 const findings=[]
 const riskyClientEnv=[]
 const riskyLogs=[]
@@ -26,7 +29,8 @@ const highConfidence=[
   /\bAKIA[0-9A-Z]{16}\b/,
   /\bAIza[0-9A-Za-z_-]{25,}\b/
 ]
-const secretAssign=/\b(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY|PRIVATE_KEY|CLIENT_SECRET|ACCESS_TOKEN|REFRESH_TOKEN|PASSWORD|PASSWD|SECRET_KEY)\b\s*[:=]\s*["']?([^\s"'#,}]{8,})/gi
+const literalQuoted=/\b(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY|PRIVATE_KEY|CLIENT_SECRET|ACCESS_TOKEN|REFRESH_TOKEN|PASSWORD|PASSWD|SECRET_KEY)\b\s*[:=]\s*(["'])([^"'\n]{8,})\2/gi
+const literalEnv=/^\s*(SUPABASE_SERVICE_ROLE_KEY|SERVICE_ROLE_KEY|PRIVATE_KEY|CLIENT_SECRET|ACCESS_TOKEN|REFRESH_TOKEN|PASSWORD|PASSWD|SECRET_KEY)\s*=\s*([^\s#]{8,})\s*$/i
 for(const p of tracked){
   if(ignored(p)||!looksText(p)) continue
   let src
@@ -34,16 +38,25 @@ for(const p of tracked){
   const lines=src.split(/\r?\n/)
   lines.forEach((line,i)=>{
     if(!placeholder(line)){
-      for(const re of highConfidence) if(re.test(line)) findings.push({path:p,line:i+1,kind:'high-confidence-secret-pattern'})
-      secretAssign.lastIndex=0
-      let m
-      while((m=secretAssign.exec(line))){
-        const value=m[2]
-        if(!/\$\{|process\.env|import\.meta\.env|env\.|secrets\.|vars\./i.test(value)) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:m[1]})
+      for(const re of highConfidence){
+        re.lastIndex=0
+        if(re.test(line)) findings.push({path:p,line:i+1,kind:'high-confidence-secret-pattern'})
+      }
+      if(configSurface(p)){
+        literalQuoted.lastIndex=0
+        let m
+        while((m=literalQuoted.exec(line))){
+          if(!/process\.env|import\.meta\.env|secrets\.|vars\.|\$\{/.test(m[3])) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:m[1]})
+        }
+        const envMatch=line.match(literalEnv)
+        if(envMatch&&!placeholder(envMatch[2])&&!/\$\{|\$[A-Z_]+/.test(envMatch[2])) findings.push({path:p,line:i+1,kind:'literal-sensitive-assignment',key:envMatch[1]})
       }
     }
-    if(/\bVITE_[A-Z0-9_]*(SECRET|PRIVATE|SERVICE_ROLE|PASSWORD|ACCESS_TOKEN|REFRESH_TOKEN)[A-Z0-9_]*\b/.test(line)) riskyClientEnv.push({path:p,line:i+1})
-    if(/console\.(?:log|info|warn|error|debug)\s*\([^\n]*(authorization|bearer|password|passwd|secret|service[_-]?role|access[_-]?token|refresh[_-]?token|process\.env|req\.headers)/i.test(line)) riskyLogs.push({path:p,line:i+1})
+    if(configSurface(p)&&/\bVITE_[A-Z0-9_]*(SECRET|PRIVATE|SERVICE_ROLE|PASSWORD|ACCESS_TOKEN|REFRESH_TOKEN)[A-Z0-9_]*\b/.test(line)) riskyClientEnv.push({path:p,line:i+1})
+    if(executableSurface(p)&&/console\.(?:log|info|warn|error|debug)\s*\(/.test(line)){
+      const code=stripStrings(line)
+      if(/\b(accessToken|refreshToken|clientSecret|serviceRoleKey|password|authorization)\b|process\.env|req\.headers/i.test(code)) riskyLogs.push({path:p,line:i+1})
+    }
   })
 }
 const distFiles=execFileSync('find',['dist','-type','f'],{encoding:'utf8'}).trim().split('\n').filter(Boolean)
@@ -67,9 +80,7 @@ const sanitizeForLog=value=>{
     seen.add(v)
     if(Array.isArray(v)) return v.slice(0,25).map(walk)
     const out={}
-    for(const [k,val] of Object.entries(v).slice(0,50)){
-      out[k]=/(authorization|password|passwd|secret|token|service[_-]?role|private[_-]?key|api[_-]?key)/i.test(k)?'[REDACTED]':walk(val)
-    }
+    for(const [k,val] of Object.entries(v).slice(0,50)) out[k]=/(authorization|password|passwd|secret|token|service[_-]?role|private[_-]?key|api[_-]?key)/i.test(k)?'[REDACTED]':walk(val)
     return out
   }
   return walk(value)
