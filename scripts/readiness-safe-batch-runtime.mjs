@@ -16,31 +16,42 @@ const credentials={
 }
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
 assert.ok(anon&&serviceKey&&sha,'UGO_TEST_RUNTIME_INPUTS_REQUIRED')
+await fs.mkdir('artifacts',{recursive:true})
+const bootstrapEvidence={task:'readiness-safe-batch-runtime',sha,environment:'UGO TEST',production_touched:false,status:'BOOTSTRAP'}
+const timedFetch=(input,init={})=>fetch(input,{...init,signal:init.signal||AbortSignal.timeout(12000)})
 for(const [role,[email,password]] of Object.entries(credentials))assert.ok(email&&password,role+' credentials required')
 
 async function login(email,password){
- const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
+ const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:timedFetch}})
  let lastError=null
- for(let attempt=1;attempt<=3;attempt++){
+ for(let attempt=1;attempt<=5;attempt++){
   try{
    const {data,error}=await sb.auth.signInWithPassword({email,password})
    if(!error&&data.session)return {sb,session:data.session}
    lastError=error||new Error('SESSION_REQUIRED')
   }catch(error){lastError=error}
-  if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*1500))
+  if(attempt<5)await new Promise(resolve=>setTimeout(resolve,Math.min(attempt*2000,6000)))
  }
  throw lastError||new Error('SESSION_REQUIRED')
 }
-const adminSb=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
+const adminSb=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:timedFetch}})
 const sessions={}
-for(const [role,[email,password]] of Object.entries(credentials))sessions[role]=await login(email,password)
+try{
+ for(const [role,[email,password]] of Object.entries(credentials))sessions[role]=await login(email,password)
+}catch(error){
+ bootstrapEvidence.status='FAIL'
+ bootstrapEvidence.failure_stage='auth_bootstrap'
+ bootstrapEvidence.failure=error instanceof Error?error.message:String(error)
+ bootstrapEvidence.completed_at=new Date().toISOString()
+ await fs.writeFile('artifacts/readiness-safe-batch-runtime.json',JSON.stringify(bootstrapEvidence,null,2)+'\n')
+ throw error
+}
 
 const {data:categories,error:categoryError}=await sessions.client.sb.from('categorias').select('id,nombre,slug').limit(20)
 assert.ifError(categoryError)
 const category=(categories||[]).find(item=>item?.id&&item?.nombre)
 assert.ok(category,'TEST_CATEGORY_REQUIRED')
 
-await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const results={task:'readiness-safe-batch-runtime',sha,environment:'UGO TEST',hugo_action:{},fault_injection:{},performance:{},production_touched:false}
 
