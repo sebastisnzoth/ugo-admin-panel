@@ -168,8 +168,9 @@ async function addProviderEvidence(tipo){
 }
 
 try{
- // Authenticate only through the canonical Client AuthScreen. Once the real
- // browser session exists, navigate to the exact deep link under test.
+ // Authenticate only through the canonical Client AuthScreen and keep the
+ // same browser document. The first real client notification must route to
+ // the exact disposable service through datos.servicio_id.
  await page.goto(base+'/?app=client',{waitUntil:'domcontentloaded'})
  const emailInput=page.getByPlaceholder('tu@email.com')
  if(await emailInput.count()){
@@ -180,8 +181,10 @@ try{
  await page.waitForFunction(()=>!document.querySelector('[aria-label="Iniciar sesión"]'),null,{timeout:30000})
  const onboarding=page.getByRole('heading',{name:'Terminemos tu perfil'})
  if(await onboarding.count())throw new Error('UGO_TEST_CLIENT_ONBOARDING_INCOMPLETE')
- await page.goto(base+'/?app=client&serviceId='+encodeURIComponent(fixture.id),{waitUntil:'domcontentloaded'})
  try{
+  const assignedNotice=page.locator('.ugo-notification-live.is-client')
+  await assignedNotice.getByText('UGO · ACTUALIZACIÓN DEL PEDIDO',{exact:true}).waitFor({state:'visible',timeout:30000})
+  await assignedNotice.click()
   await page.getByRole('dialog',{name:'Detalle del pedido'}).waitFor({state:'visible',timeout:30000})
  }catch(error){
   const diagnostic=await page.evaluate(()=>({
@@ -189,9 +192,11 @@ try{
    body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,3000),
    detail:Boolean(document.querySelector('[aria-label="Detalle del pedido"]')),
    auth:Boolean(document.querySelector('[aria-label="Iniciar sesión"]')),
-  })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',detail:false,auth:false}))
-  await page.screenshot({path:'artifacts/client-notifications-auth-deeplink-failure.png',fullPage:true}).catch(()=>{})
-  await fs.writeFile('artifacts/client-notifications-auth-deeplink-diagnostic.json',JSON.stringify({service_id:fixture.id,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
+   live_notice:Boolean(document.querySelector('.ugo-notification-live.is-client')),
+   notice_text:(document.querySelector('.ugo-notification-live.is-client')?.textContent||'').replace(/\s+/g,' ').trim(),
+  })).catch(()=>({href:'EVALUATION_FAILED',body:'EVALUATION_FAILED',detail:false,auth:false,live_notice:false,notice_text:''}))
+  await page.screenshot({path:'artifacts/client-notifications-open-from-live-notice-failure.png',fullPage:true}).catch(()=>{})
+  await fs.writeFile('artifacts/client-notifications-open-from-live-notice-diagnostic.json',JSON.stringify({service_id:fixture.id,diagnostic,page_errors:pageErrors},null,2)+'\n').catch(()=>{})
   throw error
  }
  await expectUi('asignado','accepted')
