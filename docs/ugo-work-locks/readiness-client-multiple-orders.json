@@ -5,8 +5,8 @@
   "title": "Verify coexistence of active and future scheduled Client orders in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T02:10:00Z",
-  "heartbeat_at": "2026-09-30T02:10:00Z",
-  "lease_expires_at": "2026-09-30T02:55:00Z",
+  "heartbeat_at": "2026-09-30T02:20:00Z",
+  "lease_expires_at": "2026-09-30T03:05:00Z",
   "started_sha": "922022949e59a244ba118e8f95c9bd9834853625",
   "owner": "UGO",
   "department": "App Cliente",
@@ -25,7 +25,10 @@
     "client-order-policy"
   ],
   "correlation_id": "readiness-client-multiple-orders-20260930T021000Z-92202294",
-  "current_step": "INSPECT",
+  "current_step": "VALIDATE",
   "attempt": 1,
-  "evidence_ids": []
+  "evidence_ids": [
+    "supabase-migration-20260930021452",
+    "audit-log-6466"
+  ]
 }
