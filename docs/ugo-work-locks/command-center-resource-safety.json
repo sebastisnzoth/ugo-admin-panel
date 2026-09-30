@@ -1,0 +1,34 @@
+{
+  "task_id": "command-center-resource-safety",
+  "job_id": "UGO-COMMAND-CENTER-RESOURCE-SAFETY-20260930",
+  "title": "Prevent functional controls from using resources held by global jobs",
+  "status": "FAILED",
+  "started_at": "2026-09-30T12:08:41.359753+00:00",
+  "heartbeat_at": "2026-09-30T12:11:18.016825+00:00",
+  "lease_expires_at": "2026-09-30T12:11:18.016825+00:00",
+  "started_sha": "08f8823959aee8000764faa38c0770423444a913",
+  "owner": "UGO",
+  "department": "Plataforma Aut\u00f3noma",
+  "assigned_agent": "UGO Maestro Aut\u00f3nomo",
+  "resources": [
+    "autonomy-scheduler"
+  ],
+  "correlation_id": "command-center-resource-safety-20260930",
+  "attempt": 1,
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "evidence_ids": [
+    "docs/evidence/command-center-resource-safety-20260930.json"
+  ],
+  "scope": "LOCAL_ONLY_PENDING_INTEGRATION",
+  "production_touched": false,
+  "current_step": "BLOCKED_EXTERNAL_SAFE_INTEGRATION",
+  "finished_at": "2026-09-30T12:11:18.016825+00:00",
+  "failure_reason": "Safe main integration must preserve the no-deploy instruction; automatic Vercel/Netlify integrations are active. Commit object only; no ref movement or deploy authorized.",
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  }
+}

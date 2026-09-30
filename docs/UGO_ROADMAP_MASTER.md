@@ -585,3 +585,12 @@ Implementado en `main` y con migración aplicada en UGO Arena/TEST: OAuth Gmail 
 - El modelo speaker sólo vocaliza texto ya resuelto por el dominio UGO y no recibe autoridad sobre lifecycle, pagos, disponibilidad, permisos ni persistencia.
 - La clave Gemini continúa exclusivamente server-side y ambos canales usan tokens efímeros de un uso.
 - Estado de madurez al integrar: IMPLEMENTED. Requiere CI del SHA exacto y smoke real con micrófono para promover a CI/RUNTIME VALIDATED.
+
+
+## Command Center resource safety · 30/09/2026 · pending integration
+
+Base: `08f8823959aee8000764faa38c0770423444a913`. The functional readiness engine now reserves resources from every live global job, including jobs outside the functional catalog and additional resources in its lease. Expired global leases release capacity. This prevents an AVAILABLE control from competing with a global worker for the same resource.
+
+Local verification: three regression cases, 11 readiness tests, 14 scheduler/Command Center tests, full suite 1058 passed / 0 failed / 8 skipped, TypeScript/build and changed-file lint passed. Evidence: `docs/evidence/command-center-resource-safety-20260930.json`. This is not same-SHA CI, TEST runtime, Judge/Sentinel certification or VERIFIED.
+
+Next: integrate safely after confirming automatic Vercel/Netlify deployments cannot violate the no-deploy instruction, then validate the resulting main SHA. Keep readiness unchanged until the required independent validators pass. No production changes or branch ref movement.
