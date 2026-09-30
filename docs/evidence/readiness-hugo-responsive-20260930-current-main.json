@@ -1,0 +1,48 @@
+{
+  "schema_version": "UGO_READINESS_CLOSURE_V1",
+  "readiness_id": "hugo-responsive",
+  "status": "VERIFIED",
+  "final_status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+  "runtime_proof": {
+    "status": "PASS",
+    "sha": "bcbc8c4695ab42e8f8bff2b6f36bd747254d677b",
+    "environment": "UGO TEST"
+  },
+  "workflow_run": {
+    "id": 36714117294,
+    "job_id": 109882622330,
+    "conclusion": "success",
+    "artifact_id": 11095618208,
+    "artifact_digest": "sha256:8617c7180120b7b306a63dd942d6645c68aa9c43d2944c4e8bcf884dbdb31ba9"
+  },
+  "regression": {
+    "contracts": "PASS",
+    "build": "PASS",
+    "same_sha": true,
+    "core_ci_run": 36714117260,
+    "core_ci_conclusion": "success"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "390x844 viewport passed",
+      "768x1024 viewport passed",
+      "1440x900 viewport passed",
+      "mobile keyboard contraction passed",
+      "Judge and Sentinel passed"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "production_touched": false
+  },
+  "independent_validation": {
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "production_touched": false,
+  "result_summary": "Same-SHA browser proof passed for desktop/tablet/mobile plus mobile keyboard contraction with no horizontal overflow.",
+  "verified_at": "2026-09-30T12:22:30Z"
+}
