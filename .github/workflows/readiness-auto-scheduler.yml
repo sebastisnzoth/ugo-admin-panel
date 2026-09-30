@@ -173,9 +173,16 @@ jobs:
           const workflow = readFileSync('./.github/workflows/readiness-auto-scheduler.yml', 'utf8')
 
           assert.equal(lock.readiness_id, 'auto-scheduler')
-          assert.equal(lock.status, 'IN_PROGRESS')
+          assert.ok(['IN_PROGRESS', 'DONE'].includes(lock.status))
           assert.deepEqual(lock.resources, ['autonomy-scheduler'])
           assert.equal(lock.production_touched, false)
+          if (lock.status === 'DONE') {
+            assert.equal(lock.validators_result?.Judge, 'PASS')
+            assert.equal(lock.validators_result?.Sentinel, 'PASS')
+            assert.ok(Array.isArray(lock.evidence_ids) && lock.evidence_ids.length > 0)
+            assert.ok(lock.evidence_path)
+            assert.ok(lock.evidence_commit_sha)
+          }
           assert.match(workflow, /permissions:\s*\n\s*contents:\s*read/)
           const operationalLines = workflow
             .split('\\n')
