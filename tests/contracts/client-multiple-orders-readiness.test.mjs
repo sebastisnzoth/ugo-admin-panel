@@ -22,6 +22,7 @@ test('client order policy blocks a second immediate order but allows scheduled c
   assert.match(flow,/\.is\('programado_para',null\)/)
   assert.match(flow,/Ya tenés un pedido inmediato activo/)
   assert.match(flow,/if\(!row\)\{/)
+  assert.match(flow,/programado_para:draft\.scheduleAt\?new Date\(draft\.scheduleAt\)\.toISOString\(\):null/)
 })
 
 test('client home distinguishes scheduled active orders',async()=>{
