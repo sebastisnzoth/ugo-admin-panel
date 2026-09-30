@@ -116,7 +116,14 @@ const closeClientOverlay=async page=>{
 }
 const reopenClientMenu=async page=>{
  await closeClientOverlay(page)
- await safeClick(page,page.getByRole('button',{name:/Abrir menú/}).first(),'client menu')
+ const trigger=page.getByRole('button',{name:/Abrir menú/}).first()
+ const drawer=page.getByRole('complementary',{name:'Menú UGO Cliente'})
+ await safeClick(page,trigger,'client menu')
+ if(!(await drawer.isVisible().catch(()=>false))){
+   await page.waitForTimeout(350)
+   await safeClick(page,trigger,'client menu retry after mount')
+ }
+ await drawer.waitFor({state:'visible',timeout:10000})
 }
 
 async function testClient(viewport,name){
@@ -134,7 +141,12 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.locator('.ugo-client-root').waitFor({state:'visible',timeout:10000})
+     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:10000})
+     const clientRoot=page.locator('.ugo-client-root')
+     if(!(await clientRoot.isVisible().catch(()=>false))){
+       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true})
+       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' pageErrors='+errors.join(' | '))
+     }
      await assertResponsive(page,'client '+name+' '+item)
    }
    await page.screenshot({path:'artifacts/role-ui-client-'+name+'.png',fullPage:true})
@@ -242,7 +254,7 @@ async function testAdmin(viewport,name){
    }
    await page.screenshot({path:'artifacts/role-ui-admin-'+name+'.png',fullPage:true})
    assert.deepEqual(errors,[],'admin page errors: '+errors.join(' | '))
-   results.push({role:'admin',viewport:name,status:'PASS',main_items:mainItems.length,autonomous_items:12})
+   results.push({role:'admin',viewport:name,status:'PASS',main_items:mainItems.length+1,autonomous_items:12})
  } finally {await page.close()}
 }
 
