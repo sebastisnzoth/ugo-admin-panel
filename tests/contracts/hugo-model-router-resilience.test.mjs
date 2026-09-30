@@ -1,7 +1,7 @@
 import test from'node:test'
 import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
-const router=await readFile(new URL('../../src/server/hugo/modelRouter.ts',import.meta.url),'utf8')
+const router=await readFile(new URL('../../server/hugo/modelRouter.ts',import.meta.url),'utf8')
 const chat=await readFile(new URL('../../api/hugo/chat.ts',import.meta.url),'utf8')
 test('Hugo routes retryable Gemini failures to bounded OpenRouter fallback',()=>{
  assert.match(router,/GEMINI_TIMEOUT_MS/)
