@@ -3,10 +3,10 @@
   "task_id": "readiness-auto-scheduler",
   "job_id": "UGO-READINESS-AUTO-SCHEDULER",
   "title": "Verify autonomous scheduler parallelism, locks and resource conflicts in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-30T01:22:00Z",
-  "heartbeat_at": "2026-09-30T01:22:00Z",
-  "lease_expires_at": "2026-09-30T02:07:00Z",
+  "heartbeat_at": "2026-09-30T01:30:00Z",
+  "lease_expires_at": "2026-09-30T01:30:00Z",
   "started_sha": "b11149dc69106c61bf269159d7a15010da2135bd",
   "owner": "UGO",
   "department": "UGO Empresa Autónoma",
@@ -19,9 +19,17 @@
     "autonomy-scheduler"
   ],
   "correlation_id": "readiness-auto-scheduler-20260930T012200Z-b11149dc",
-  "current_step": "INSPECT_SCHEDULER_IMPLEMENTATION_AND_CONCURRENCY_TEST_GAPS",
+  "current_step": "VERIFIED",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-actions:run:36655333209",
+    "github-actions:job:109698350267",
+    "github-actions:job:109698389057",
+    "github-actions:job:109698426520",
+    "github-actions:artifact:11071952711",
+    "repo:docs/evidence/readiness-auto-scheduler-20260930.json",
+    "repo:tests/contracts/ugo-scheduler-parallelism.test.mjs"
+  ],
   "production_touched": false,
   "skills": [
     "ugo-readiness-orchestrator",
@@ -30,5 +38,36 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge",
     "ugo-github-ops"
-  ]
+  ],
+  "completed_at": "2026-09-30T01:30:00Z",
+  "finished_at": "2026-09-30T01:30:00Z",
+  "verified_sha": "cc241ffc3128c50a765cdfa7d52e79bb6623479a",
+  "runtime_validated_sha": "cc241ffc3128c50a765cdfa7d52e79bb6623479a",
+  "verified_runtime_sha": "cc241ffc3128c50a765cdfa7d52e79bb6623479a",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:29:37Z",
+    "workflow_run_id": 36655333209,
+    "job_id": 109698389057
+  },
+  "sentinel": {
+    "result": "PASS",
+    "checked_at": "2026-09-30T01:29:37Z",
+    "workflow_run_id": 36655333209,
+    "job_id": 109698426520,
+    "production_touched": false,
+    "fail_closed": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-auto-scheduler-20260930.json",
+  "evidence_commit_sha": "2eca0b822c72931a583c0bf867adb2ff9c575c89",
+  "result_summary": "Scheduler verified on cc241ffc3128c50a765cdfa7d52e79bb6623479a: max 5 compatible jobs, resource capacity conflicts, active/stale lease handling and latest-lock reconciliation PASS; independent Judge PASS; Sentinel PASS; production untouched."
 }
