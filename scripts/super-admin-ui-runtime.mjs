@@ -116,9 +116,15 @@ try{
     const row=departmentTable.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first();
     await row.waitFor({state:'visible'});
     const cells=row.locator('td');
-    const activeText=((await cells.nth(5).textContent())||'').trim();
-    const totalText=((await cells.nth(6).textContent())||'').trim();
-    const activeCount=Number(activeText),totalCount=Number(totalText);
+    let activeText='',totalText='',activeCount=NaN,totalCount=NaN;
+    for(let attempt=0;attempt<40;attempt++){
+      activeText=((await cells.nth(5).textContent())||'').trim();
+      totalText=((await cells.nth(6).textContent())||'').trim();
+      activeCount=activeText==='—'?NaN:Number(activeText);
+      totalCount=totalText==='—'?NaN:Number(totalText);
+      if(Number.isFinite(activeCount)&&Number.isFinite(totalCount))break;
+      await page.waitForTimeout(250);
+    }
     assert.ok(Number.isFinite(activeCount)&&activeCount>=0,'DEPARTMENT_ACTIVE_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
     assert.ok(Number.isFinite(totalCount)&&totalCount>=0,'DEPARTMENT_TOTAL_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
     assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
