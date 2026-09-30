@@ -1,0 +1,32 @@
+{
+  "readiness_id": "provider-responsive",
+  "task_id": "readiness-provider-responsive",
+  "job_id": "UGO-READINESS-PROVIDER-RESPONSIVE",
+  "title": "Verify Provider responsive usability on mobile tablet and desktop",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-09-30T04:37:00Z",
+  "heartbeat_at": "2026-09-30T04:37:00Z",
+  "lease_expires_at": "2026-09-30T05:22:00Z",
+  "started_sha": "83baa1e650be36b0efb8d144f10058dad6a4dc12",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Responsive Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-responsive",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-shell"
+  ],
+  "correlation_id": "readiness-provider-responsive-20260930T043700Z",
+  "current_step": "ACQUIRE_AND_EXTEND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": []
+}
