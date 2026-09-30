@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 
-const audit=fs.readFileSync('api/hugo/audit.ts','utf8')
+const audit=fs.readFileSync('api/hugo/chat.ts','utf8')
 const client=fs.readFileSync('src/features/client/hugo/ClientVoiceHugoDock.tsx','utf8')
 
 test('Hugo audit persists a single correlation through all ledgers',()=>{
