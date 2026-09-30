@@ -5,9 +5,9 @@
   "title": "Verify provider fresh GPS publication and rejection guards",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T14:15:00Z",
-  "lease_expires_at": "2026-09-30T15:00:00Z",
-  "started_sha": "e07d08dcedde35856c2c7f32d75f1ef0b905b66c",
+  "heartbeat_at": "2026-09-30T16:58:00Z",
+  "lease_expires_at": "2026-09-30T17:43:00Z",
+  "started_sha": "eb99eba18f061f03321d9782d6ca60ad1aff1e75",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider GPS Runtime Agent",
@@ -24,9 +24,9 @@
   "resources": [
     "provider-location"
   ],
-  "correlation_id": "readiness-provider-gps-20260930T140400Z-b451fc12-r4",
-  "current_step": "R5_REMOVE_NONCANONICAL_EVIDENCE_AND_RERUN",
-  "attempt": 5,
+  "correlation_id": "readiness-provider-gps-20260930T165800Z-gptugo-r6",
+  "current_step": "R6_RECONCILED_STALE_LOCK_REVALIDATE_CANONICAL_RUNTIME",
+  "attempt": 6,
   "evidence_ids": [
     "github-actions-run-36669225058",
     "artifact-11076899569",
@@ -38,7 +38,8 @@
     "auth-recovery-evidence:cross-performance-run-36725481224",
     "github-run:36727324353:FAIL_INVALID_EVIDENCE_SOURCE",
     "github-artifact:11103142555",
-    "diagnosis:canonical-source-PERSISTED_STATE"
+    "diagnosis:canonical-source-PERSISTED_STATE",
+    "stale-reconcile:eb99eba18f061f03321d9782d6ca60ad1aff1e75"
   ],
   "production_touched": false,
   "last_failure": {
