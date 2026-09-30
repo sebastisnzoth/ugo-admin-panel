@@ -3,10 +3,10 @@
   "readiness_id": "auto-department-job-visibility",
   "job_id": "UGO-READINESS-AUTO-DEPARTMENT-JOB-VISIBILITY",
   "title": "Expose active and historical autonomous jobs per department in Super Admin",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-09-29T21:05:00Z",
-  "heartbeat_at": "2026-09-30T01:32:00Z",
-  "lease_expires_at": "2026-09-30T02:17:00Z",
+  "heartbeat_at": "2026-09-30T01:43:00Z",
+  "lease_expires_at": "2026-09-30T01:43:00Z",
   "started_sha": "e7bfe362cdcc214b594aa8183e6478488f9ae81b",
   "owner": "UGO",
   "department": "Producto / Frontend / Empresa Autónoma",
@@ -26,7 +26,7 @@
     "super-admin-ui"
   ],
   "correlation_id": "ugo-auto-department-job-visibility-20260929T210500Z",
-  "current_step": "RECLAIM_STALE_LOCK_AND_FIX_RUNTIME_AUTH",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
     "github:108df272df38eca1a868dd210aa41c3b083fd521",
@@ -35,6 +35,41 @@
     "github-actions:core-ci:36634174615",
     "github-actions:super-admin-ui-runtime:36634174789",
     "github-actions:super-admin-ui-runtime:36634174789:FAIL_AUTONOMY_HYDRATION",
-    "reclaim:stale-lease:2026-09-30T01:32:00Z"
-  ]
+    "reclaim:stale-lease:2026-09-30T01:32:00Z",
+    "github-actions:run:36656268962",
+    "github-actions:job:109701181613",
+    "github-actions:artifact:11072961695",
+    "sha256:d2d8fc285ee45bf78aafa513c291ffc1a4df45a5881071c7263a47d884b56dca",
+    "repo:docs/evidence/readiness-auto-department-job-visibility-20260930.json"
+  ],
+  "completed_at": "2026-09-30T01:43:00Z",
+  "finished_at": "2026-09-30T01:43:00Z",
+  "verified_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+  "runtime_validated_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+  "verified_runtime_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "judge": {
+    "result": "PASS",
+    "runtime_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+    "created_at": "2026-09-30T01:42:22.304Z"
+  },
+  "sentinel": {
+    "result": "PASS",
+    "runtime_sha": "db19e83cff3fe60d61ff010db22419cb7fd29ae0",
+    "production_touched": false,
+    "created_at": "2026-09-30T01:42:22.355Z"
+  },
+  "evidence_path": "docs/evidence/readiness-auto-department-job-visibility-20260930.json",
+  "evidence_commit_sha": "eb7aa9ebf124468860c86bd36d3d785d11c6dc49",
+  "artifact_digest": "sha256:d2d8fc285ee45bf78aafa513c291ffc1a4df45a5881071c7263a47d884b56dca",
+  "production_touched": false,
+  "result_summary": "UGO TEST verified 13 departments with active/total jobs, latest job/evidence, correlation, filter, history and freshness visible in Super Admin. Runtime converged under live autonomous job changes. Judge PASS, Sentinel PASS, production untouched."
 }
