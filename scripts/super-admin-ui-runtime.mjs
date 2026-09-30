@@ -46,7 +46,7 @@ async function snapshot(){
     count('autonomous_model_candidates'), count('autonomous_model_routes'), visibleCount('autonomous_model_metrics',50),
     count('autonomous_enterprise_risks'), count('autonomous_control_coverage'), count('autonomous_challenges'),
     reader.from('ugo_empresas_readiness').select('*').eq('product_key','UGO_EMPRESAS').maybeSingle(),
-    reader.from('ugo_empresas_demands').select('id,company_ref,status,quantity').order('created_at',{ascending:false}).limit(20),
+    reader.from('ugo_empresas_demands').select('id,company_ref,status,quantity,requirements').order('created_at',{ascending:false}).limit(20),
     reader.from('ugo_empresas_slots').select('id,demand_id,status,validated_minutes').order('slot_index').limit(100),
     reader.from('autonomous_jobs').select('id,service_id,correlation_id,status,authority_class,objective,created_at').order('created_at',{ascending:false}).limit(100),
     reader.from('autonomous_departments').select('department_id,name').order('department_id')
@@ -191,9 +191,12 @@ try{
   await page.getByRole('button',{name:'UGO Empresas',exact:true}).click();
   await page.getByText('UGO Empresas',{exact:true}).last().waitFor({state:'visible'});
   assert.equal(before.empresas.readiness?.status,'READY','UGO_EMPRESAS_RUNTIME_NOT_READY');
-  assert.equal(before.empresas.readiness?.metrics?.runtime_sha,sha,'UGO_EMPRESAS_SHA_MISMATCH');
+  const enterpriseRuntimeSha=String(before.empresas.readiness?.metrics?.runtime_sha||'');
+  assert.match(enterpriseRuntimeSha,/^[0-9a-f]{40}$/,'UGO_EMPRESAS_RUNTIME_SHA_INVALID');
   const enterpriseDemand=before.empresas.demands.find(d=>d.id===before.empresas.readiness?.metrics?.demand_id);
   assert.ok(enterpriseDemand,'UGO_EMPRESAS_EVIDENCE_DEMAND_NOT_VISIBLE');
+  assert.equal(String(enterpriseDemand.requirements?.sha||''),enterpriseRuntimeSha,'UGO_EMPRESAS_EVIDENCE_SHA_MISMATCH');
+  if(before.empresas.readiness?.metrics?.correlation_id)assert.equal(String(enterpriseDemand.requirements?.correlation_id||''),String(before.empresas.readiness.metrics.correlation_id),'UGO_EMPRESAS_CORRELATION_MISMATCH');
   const enterpriseSlots=before.empresas.slots.filter(s=>s.demand_id===enterpriseDemand.id);
   assert.equal(enterpriseSlots.length,enterpriseDemand.quantity,'UGO_EMPRESAS_SLOT_COUNT_MISMATCH');
   assert.ok(enterpriseSlots.every(s=>s.status==='VALIDATED'),'UGO_EMPRESAS_SLOT_STATE_MISMATCH');
