@@ -1,3 +1,4 @@
+// infra retrigger: attempt7-final npm-registry-replication 20260930T1421Z
 // infra retrigger: attempt7 npm-registry-404 20260930T1417Z
 // readiness retrigger: canonical-auth-attempt-3
 import assert from 'node:assert/strict'
