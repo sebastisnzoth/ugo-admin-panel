@@ -163,6 +163,8 @@ export default async function handler(req:RequestLike,res:ResponseLike){
   console.error('Hugo chat failed',error)
   const info=asRecord(error),status=Number(info.status)||502
   if(info.retryAfter)res.setHeader('Retry-After',String(info.retryAfter))
-  return res.status(status>=400&&status<600?status:502).json({error:error instanceof Error?error.message:'Hugo no pudo responder ahora.',error_code:clean(info.code,80)||undefined,authority:info.authority||undefined,hugo_mensaje:status===403?(error instanceof Error?error.message:'Acción no autorizada.'):'Hugo no pudo responder ahora. Podés seguir usando el texto.',accion:null,ui_action:null,datos:null})
+  const message=error instanceof Error?error.message:'Hugo no pudo responder ahora.'
+  const nextStep=status===401?'Iniciá sesión nuevamente y reintentá.':status===403?'Revisá que tu cuenta tenga permiso para esta acción y reintentá.':status===429?'Esperá un momento y reintentá.':status===503||status===504?'Reintentá en unos instantes; el resto de UGO sigue disponible.':'Reintentá la acción. Si vuelve a fallar, seguí usando UGO sin voz y reportá el incidente.'
+  return res.status(status>=400&&status<600?status:502).json({error:message,error_code:clean(info.code,80)||undefined,authority:info.authority||undefined,hugo_mensaje:`${message} ${nextStep}`,next_step:nextStep,accion:null,ui_action:null,datos:null})
  }
 }
