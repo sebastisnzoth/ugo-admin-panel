@@ -2,10 +2,10 @@
   "readiness_id": "client-notifications",
   "task_id": "readiness-client-notifications",
   "job_id": "UGO-READINESS-CLIENT-NOTIFICATIONS",
-  "status": "IN_PROGRESS",
+  "status": "FAILED",
   "started_at": "2026-09-30T13:45:00Z",
-  "heartbeat_at": "2026-09-30T13:49:00Z",
-  "lease_expires_at": "2026-09-30T14:34:00Z",
+  "heartbeat_at": "2026-09-30T13:52:00Z",
+  "lease_expires_at": null,
   "started_sha": "781755c316850babf3c7e28d76e8b6639da4578f",
   "owner": "UGO",
   "department": "App Cliente",
@@ -27,11 +27,13 @@
     "preview-runtime"
   ],
   "correlation_id": "readiness-client-notifications-20260930T134500Z-781755c3-r2",
-  "current_step": "FIX_CANONICAL_UI_AUTH_AND_RERUN",
+  "current_step": "FAILED_REQUIRES_REVIEW",
   "attempt": 3,
   "evidence_ids": [
     "github-run:36723968599:FAIL_DIALOG_TIMEOUT",
-    "github-artifact:11101693090"
+    "github-artifact:11101693090",
+    "github-run:36724478895:FAIL_DIALOG_TIMEOUT",
+    "github-artifact:11102078392"
   ],
   "production_touched": false,
   "title": "Verify client lifecycle notifications over web realtime in UGO TEST",
@@ -40,5 +42,11 @@
     "sha": "a9cee7d985b43fdc60f3645b937696415fbf0fe2",
     "cause": "browser harness injected local storage session and never reached Client detail dialog",
     "next_fix": "authenticate through canonical Client AuthScreen, preserving deep link serviceId"
-  }
+  },
+  "finished_at": "2026-09-30T13:52:00Z",
+  "validators_result": {
+    "Judge": "NOT_RUN",
+    "Sentinel": "NOT_RUN"
+  },
+  "failure_reason": "Attempt 3 exhausted. Canonical Client UI authentication completed far enough to remove the synthetic localStorage shortcut, but the same-SHA browser runtime still never rendered the deep-linked 'Detalle del pedido' dialog. No runtime PASS artifact, Judge or Sentinel verdict exists; manual/runtime harness review required before retry policy can be reset."
 }
