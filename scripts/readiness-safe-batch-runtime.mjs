@@ -20,9 +20,16 @@ for(const [role,[email,password]] of Object.entries(credentials))assert.ok(email
 
 async function login(email,password){
  const sb=createClient(url,anon,{auth:{persistSession:false,autoRefreshToken:false}})
- const {data,error}=await sb.auth.signInWithPassword({email,password})
- assert.ifError(error);assert.ok(data.session,'SESSION_REQUIRED')
- return {sb,session:data.session}
+ let lastError=null
+ for(let attempt=1;attempt<=3;attempt++){
+  try{
+   const {data,error}=await sb.auth.signInWithPassword({email,password})
+   if(!error&&data.session)return {sb,session:data.session}
+   lastError=error||new Error('SESSION_REQUIRED')
+  }catch(error){lastError=error}
+  if(attempt<3)await new Promise(resolve=>setTimeout(resolve,attempt*1500))
+ }
+ throw lastError||new Error('SESSION_REQUIRED')
 }
 const adminSb=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const sessions={}
