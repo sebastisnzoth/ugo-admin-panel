@@ -35,6 +35,18 @@ const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((ite
 const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
 function sameOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
 function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
+const HUGO_SECRET_PATTERNS=[
+ /\b(?:sk|sb|ghp|github_pat|xox[baprs]|AIza)[A-Za-z0-9_\-]{12,}\b/g,
+ /\bBearer\s+[A-Za-z0-9._~+\/-]{12,}=*/gi,
+ /\b(?:password|passwd|secret|token|api[_-]?key|service[_-]?role[_-]?key)\s*[:=]\s*["']?[^\s,;"']{4,}/gi,
+ /data:[^;\s]+;base64,[A-Za-z0-9+/=]{80,}/gi,
+]
+function sanitizeForModel(value:unknown,max=12000){
+ const raw=typeof value==='string'?value:JSON.stringify(value??'')
+ return HUGO_SECRET_PATTERNS.reduce((text,pattern)=>text.replace(pattern,'[REDACTED]'),raw)
+  .replace(/[A-Za-z0-9+/]{800,}={0,2}/g,'[REDACTED_BLOB]')
+  .trim().slice(0,max)
+}
 function extractJson(text:string){try{return JSON.parse(text)}catch{/* Gemini may wrap JSON in prose. */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* Return null for an invalid embedded object. */}}return null}
 const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
 function uiAction(value:unknown,role:'admin'|'superadmin'){
@@ -51,7 +63,8 @@ function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw 
 
 async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
  const key=geminiKey()
- const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:system}]},contents:[...history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:clean(m.content,1200)}]}}),{role:'user',parts:[{text:message}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
+ const safeSystem=sanitizeForModel(system,18000),safeMessage=sanitizeForModel(message,1800),safeHistory=history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'model':'user',parts:[{text:sanitizeForModel(m.content,1200)}]}})
+ const response=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(MODEL)}:generateContent`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({system_instruction:{parts:[{text:safeSystem}]},contents:[...safeHistory,{role:'user',parts:[{text:safeMessage}]}],generationConfig:{temperature:.15,maxOutputTokens:900,...(jsonMode?{responseMimeType:'application/json'}:{})}}),signal:AbortSignal.timeout(12000)})
  const payload:unknown=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(clean(nested(payload,'error','message'))||`Gemini ${response.status}`),{status:response.status>=400&&response.status<600?response.status:502})
  const text=clean(parts(nested(payload,'candidates','0','content','parts')).map(p=>p.text||'').join(''),5000)
@@ -98,7 +111,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    res.setHeader('Server-Timing',`gemini-tts;dur=${elapsed}`)
    return res.status(200).json({...audio,timing_ms:elapsed})
   }
-  const message=clean(body.message,1800),context=clean(body.context,60000),history=Array.isArray(body.history)?body.history:[]
+  const message=sanitizeForModel(body.message,1800),context=sanitizeForModel(body.context,18000),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const clientMode=body.mode==='client_voice'
   const requestedRole=authority.requestedRole
