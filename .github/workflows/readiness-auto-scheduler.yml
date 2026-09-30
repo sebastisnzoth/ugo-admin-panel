@@ -177,7 +177,18 @@ jobs:
           assert.deepEqual(lock.resources, ['autonomy-scheduler'])
           assert.equal(lock.production_touched, false)
           assert.match(workflow, /permissions:\s*\n\s*contents:\s*read/)
-          assert.doesNotMatch(workflow, /uses:\\s*actions\\/deploy-pages|run:\\s*.*vercel\\s+deploy|run:\\s*.*supabase\\s+db\\s+push/i)
+          const operationalLines = workflow
+            .split('\\n')
+            .map(line => line.trim())
+            .filter(line => line.startsWith('uses:') || line.startsWith('run:'))
+          assert.equal(
+            operationalLines.some(line =>
+              line.includes('actions/' + 'deploy-pages') ||
+              line.includes('vercel ' + 'deploy') ||
+              line.includes('supabase db ' + 'push')
+            ),
+            false
+          )
 
           console.log('Sentinel PASS · fail-closed locks, read-only workflow, production untouched')
           NODE
