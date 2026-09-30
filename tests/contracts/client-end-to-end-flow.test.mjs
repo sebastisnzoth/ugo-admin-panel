@@ -54,7 +54,7 @@ test('matching remains visible, can run in background and can be retried after d
  assert.match(post,/startDispatch\(service\.id,context\)/)
  assert.doesNotMatch(post,/clearDraft\(\);onExit\(\)\}catch/)
  assert.match(detail,/Reintentar pedido/)
- assert.match(detail,/getDispatchProvider\(\)\.start/)
+ assert.match(detail,/retryOwnedClientMatching\(supabase,user\.id,service\.id\)/)
 })
 
 test('payment and closure remain service-scoped from assignment through rating',()=>{
