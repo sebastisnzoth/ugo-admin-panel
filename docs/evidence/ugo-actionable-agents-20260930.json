@@ -1,0 +1,63 @@
+{
+  "schema_version": "UGO_ACTIONABLE_AGENTS_EVIDENCE_V1",
+  "task_id": "ugo-actionable-agents",
+  "environment": "UGO TEST",
+  "result": "PASS",
+  "source_main_sha": "e82a15e6ed5239d31850ef3adb5069476d26479d",
+  "counts": {
+    "agents": 118,
+    "work_order_capabilities": 118,
+    "action_permission": 118
+  },
+  "runtime": {
+    "green": {
+      "agent_key": "deterministic-judge",
+      "status": "SUCCEEDED",
+      "evidence": true
+    },
+    "yellow": {
+      "agent_key": "corporate-strategy",
+      "status": "WAITING_APPROVAL",
+      "approval_count": 0
+    },
+    "red": {
+      "agent_key": "executive-orchestrator",
+      "status": "WAITING_APPROVAL",
+      "approval_count": 0
+    },
+    "current_company_mode": "OFF",
+    "safe_mode_was_used_for_green_proof": true
+  },
+  "security": {
+    "prepare_anon_denied": true,
+    "prepare_authenticated_denied": true,
+    "execute_anon_denied": true,
+    "execute_authenticated_denied": true,
+    "artifacts_anon_denied": true,
+    "business_mutation_granted": false,
+    "production_touched": false
+  },
+  "validation": {
+    "github_workflow": "UGO Actionable Agents TEST",
+    "github_run_id": 36661678855,
+    "conclusion": "success",
+    "judge_audit_log_id": 6495,
+    "sentinel_audit_log_id": 6496
+  },
+  "implementation": [
+    "supabase/migrations/20260930025000_actionable_agent_work_orders.sql",
+    "supabase/migrations/20260930025500_actionable_agent_advisory_guard.sql",
+    "supabase/migrations/20260930030000_actionable_agent_indexes.sql",
+    "api/test.ts",
+    "src/mvp/AutonomousWorkforceControlCenter.tsx",
+    "tests/contracts/actionable-agents-runtime.test.mjs"
+  ],
+  "notes": [
+    "All 118 agents have an exact capability-specific work-order executor contract.",
+    "GREEN work orders may execute only when company mode permits and are safe-mode allowlisted.",
+    "YELLOW requires independent dual control; RED requires human approval.",
+    "Work orders persist to autonomous_action_artifacts and do not mutate business tables.",
+    "A parallel runtime cleanup returned UGO TEST autonomy to OFF after the proof; this safe default was preserved."
+  ],
+  "created_at": "2026-09-30T02:53:00Z"
+}
