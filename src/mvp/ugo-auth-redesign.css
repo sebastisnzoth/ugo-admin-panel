@@ -758,4 +758,4 @@
 
 /* Basic accessibility hardening: minimum mobile target and admin login contrast. */
 .mvp-auth-page.role-client .mvp-back,.mvp-auth-page.role-provider .mvp-back{min-height:44px!important}
-.ugo-admin-login-kicker{color:#ffffff!important}
+.ugo-admin-login-kicker{color:#344054!important}
