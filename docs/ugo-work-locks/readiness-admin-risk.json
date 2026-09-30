@@ -5,16 +5,16 @@
   "title": "Verify Risk & Audit findings, ledgers, blockers and evidence links in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T00:40:30Z",
-  "heartbeat_at": "2026-09-30T02:23:30Z",
-  "lease_expires_at": "2026-09-30T03:08:30Z",
-  "started_sha": "c725dde35be088691813f2cd726882d82398404f",
+  "heartbeat_at": "2026-09-30T02:25:30Z",
+  "lease_expires_at": "2026-09-30T03:10:30Z",
+  "started_sha": "9775cbbbcdec959e9bdc16b47a8df4e6bac039e8",
   "owner": "UGO",
   "department": "Admin / Super Admin",
   "assigned_agent": "Risk & Audit Runtime Agent",
   "validators": ["Judge","Sentinel"],
   "resources": ["audit-ledger"],
   "correlation_id": "readiness-admin-risk-20260930T004030Z-de88adb6",
-  "current_step": "RECONCILED_STALE_LOCK_RETRY_DEDICATED_RUNTIME",
+  "current_step": "DEDICATED_RISK_RUNTIME_RETRY_AFTER_BUILD_REPAIR",
   "attempt": 3,
   "evidence_ids": [
     "code:risk-audit-blockers-ledgers-ui",
@@ -22,14 +22,16 @@
     "github:0b5942bef291011ee1df0f7d38e3c6b7aa2a56d2",
     "github-actions:run:36651659263",
     "github-actions:run:36651659263:FAIL_UNRELATED_DEPARTMENT_VOLATILITY",
-    "reconcile:stale-lock:20260930T022330Z"
+    "reconcile:stale-lock:20260930T022330Z",
+    "github-actions:run:36659675404:FAIL_UNRELATED_TYPESCRIPT",
+    "github:9775cbbbcdec959e9bdc16b47a8df4e6bac039e8"
   ],
   "production_touched": false,
   "skills": ["risk-audit","audit-ledger","ugo-runtime-validation","ugo-evidence-judge"],
   "runtime": {
     "workflow": "UGO Readiness Admin Risk TEST",
     "run_id": null,
-    "sha": "c725dde35be088691813f2cd726882d82398404f",
-    "status": "reconciled_retry_pending"
+    "sha": "9775cbbbcdec959e9bdc16b47a8df4e6bac039e8",
+    "status": "retry_pending"
   }
 }
