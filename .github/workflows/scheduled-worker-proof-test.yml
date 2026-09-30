@@ -44,7 +44,10 @@ jobs:
       - name: Prove scheduled worker autonomy ON
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+          UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
         run: node scripts/autonomous-scheduled-worker-on-proof.mjs
 
       - name: Execute Sentinel Gate
