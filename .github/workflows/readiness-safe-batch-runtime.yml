@@ -1,0 +1,150 @@
+name: UGO Readiness Safe Batch Runtime
+
+on:
+  push:
+    branches: [verify/pr296-no-deploy-20260930]
+  pull_request:
+    branches: [main]
+    paths:
+      - "scripts/readiness-safe-batch-runtime.mjs"
+      - ".github/workflows/readiness-safe-batch-runtime.yml"
+      - "src/features/client/**"
+      - "src/features/provider/**"
+      - "src/components/ConversationalOrb.tsx"
+      - "api/hugo/**"
+      - "scripts/readiness-safe-batch-judge.mjs"
+      - "scripts/readiness-safe-batch-sentinel.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-readiness-safe-batch-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Guard TEST-only credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ env.UGO_RUNTIME_SHA }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1 tsx@4.20.6
+          npx playwright install --with-deps chromium
+      - name: Execute Hugo action + fault injection + performance runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${UGO_RUNTIME_SHA}"
+          export VITE_APP_REVISION="${UGO_RUNTIME_SHA}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-safe-batch-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          npx tsx scripts/cross-errors-api-runtime.ts
+          node scripts/readiness-safe-batch-runtime.mjs
+      - name: Upload same-SHA evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-safe-batch-${{ env.UGO_RUNTIME_SHA }}
+          path: |
+            artifacts/readiness-safe-batch-runtime.json
+            artifacts/cross-errors-api-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - name: Download runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
+        run: node scripts/readiness-safe-batch-judge.mjs
+      - name: Upload Judge evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-safe-batch-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/readiness-safe-batch-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.UGO_RUNTIME_SHA }}
+      - name: Download runtime evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - name: Download Judge evidence
+        uses: actions/download-artifact@v4
+        with:
+          name: readiness-safe-batch-judge-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ env.UGO_RUNTIME_SHA }}
+        run: node scripts/readiness-safe-batch-sentinel.mjs
+      - name: Upload Sentinel evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: readiness-safe-batch-sentinel-${{ env.UGO_RUNTIME_SHA }}
+          path: artifacts/readiness-safe-batch-sentinel.json
+          if-no-files-found: error
+          retention-days: 90
