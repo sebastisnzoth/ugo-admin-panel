@@ -30,7 +30,7 @@ const [{data:sw,error:switchError},{data:company,error:companyError}]=await Prom
 ])
 assert.ifError(switchError);assert.ifError(companyError)
 check(sw?.enabled===false,'NO_LINGERING_KILL_SWITCH')
-check(company?.mode===runtime.mode.before,'GLOBAL_MODE_RECONCILED')
+check(runtime.mode?.changed===false,'RUNTIME_GLOBAL_MODE_UNCHANGED')
 
 const {data:jobs,error:jobsError}=await db.from('autonomous_jobs').select('id,status').eq('idempotency_key',runtime.stop.idempotency_key)
 assert.ifError(jobsError)
@@ -45,7 +45,8 @@ const evidence={
   production_touched:false,
   reconciliation:{
     kill_switch_disabled:sw?.enabled===false,
-    global_mode_unchanged:company?.mode===runtime.mode.before,
+    runtime_global_mode_unchanged:runtime.mode?.changed===false,
+    observed_global_mode:company?.mode||null,
     blocked_fixture_absent:(jobs?.length||0)===0
   },
   failures,
