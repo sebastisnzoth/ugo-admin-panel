@@ -5,8 +5,8 @@
   "title": "Verify Client current location and map wiring in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-09-30T00:42:00Z",
-  "heartbeat_at": "2026-09-30T00:46:00Z",
-  "lease_expires_at": "2026-09-30T01:31:00Z",
+  "heartbeat_at": "2026-09-30T00:58:00Z",
+  "lease_expires_at": "2026-09-30T01:43:00Z",
   "started_sha": "cf34746f79746b7eae81343f47141411f0a587e8",
   "owner": "UGO",
   "department": "App Cliente",
@@ -26,8 +26,8 @@
     "client-location"
   ],
   "correlation_id": "ugo-client-location-20260930T004200Z",
-  "current_step": "WAIT_CLIENT_LOCATION_RUNTIME_AND_CORE",
-  "attempt": 1,
+  "current_step": "RERUN_SAME_SHA_AFTER_CORE_FIX",
+  "attempt": 2,
   "evidence_ids": [
     "github:442a02f04120a2098bcb951a5d3c45ae8ba35120",
     "github:bb725f200874645929b53eeaa89b81b5d091fb0c",
@@ -37,6 +37,8 @@
     "github:20c41f87c0919d606706d030b5674a94f3e4c1f9",
     "github:e75ec148c1b808bb51c72991e278e4b07c66538e",
     "github-actions:client-location:36651882350",
-    "github-actions:core-ci:36651882341"
+    "github-actions:core-ci:36651882341",
+    "github-actions:core-ci:36652619218:PASS",
+    "runtime-prior:36651882350:PASS"
   ]
 }
