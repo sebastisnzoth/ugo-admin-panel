@@ -29,6 +29,8 @@ assert.ifError(agentFixtureError)
 assert.ok(agentFixture?.id&&agentFixture?.department_id,'GREEN_EXECUTABLE_AGENT_REQUIRED')
 const departmentId=agentFixture.department_id
 const agentId=agentFixture.id
+const staleFixtures=await root.from('autonomous_jobs').update({status:'CANCELLED',blocked_reason:'READINESS_AUTO_INBOX_STALE_FIXTURE_RECONCILED',finished_at:new Date().toISOString()}).like('idempotency_key','readiness-auto-inbox:%').in('status',['WAITING_APPROVAL','BLOCKED','QUEUED','RUNNING'])
+assert.ifError(staleFixtures.error)
 const {data:company,error:companyError}=await root.from('autonomous_company_state').select('mode,reason').eq('singleton',true).single()
 assert.ifError(companyError)
 const originalMode=company.mode
