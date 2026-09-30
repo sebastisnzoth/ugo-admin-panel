@@ -1,0 +1,70 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-responsive",
+  "task_id": "readiness-provider-responsive",
+  "job_id": "UGO-READINESS-PROVIDER-RESPONSIVE",
+  "correlation_id": "readiness-provider-responsive-20260930T043700Z",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "verified_runtime_sha": "cb4dbe93cae9cf950d89b1612d6fed6db91e4b29",
+  "runtime": {
+    "workflow_run_id": 36704749370,
+    "workflow_job_id": 109852246214,
+    "responsive_step": "PASS",
+    "viewports": [
+      {
+        "name": "desktop",
+        "width": 1440,
+        "height": 1000,
+        "navigation": "studio-sidebar",
+        "status": "PASS"
+      },
+      {
+        "name": "tablet",
+        "width": 820,
+        "height": 1180,
+        "navigation": "bottom-nav",
+        "status": "PASS"
+      },
+      {
+        "name": "mobile",
+        "width": 390,
+        "height": 844,
+        "navigation": "bottom-nav",
+        "status": "PASS"
+      }
+    ],
+    "no_horizontal_overflow": true,
+    "operational_dock_visible": true,
+    "page_errors": 0
+  },
+  "regression": {
+    "core_ci_run_id": 36704749357,
+    "core_ci_result": "SUCCESS",
+    "exact_sha": true
+  },
+  "artifact": {
+    "id": 11091561962,
+    "name": "provider-readiness-batch-cb4dbe93cae9cf950d89b1612d6fed6db91e4b29",
+    "digest": "sha256:aa9dc3b5ed2cf3ccb2b9550577853343890c0c623483820faacedac97d60e8a4"
+  },
+  "judge": {
+    "result": "PASS",
+    "basis": [
+      "desktop/tablet/mobile runtime all passed on the same SHA",
+      "navigation and provider operational dock remained visible and usable",
+      "Core CI passed on the same SHA"
+    ]
+  },
+  "sentinel": {
+    "result": "PASS",
+    "basis": [
+      "UGO TEST only",
+      "production untouched",
+      "no secrets exposed",
+      "runtime artifact persisted"
+    ]
+  },
+  "result": "VERIFIED",
+  "verified_at": "2026-09-30T10:52:00Z"
+}
