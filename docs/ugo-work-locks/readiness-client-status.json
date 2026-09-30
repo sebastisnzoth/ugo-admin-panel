@@ -4,10 +4,10 @@
   "job_id": "UGO-READINESS-CLIENT_STATUS",
   "title": "Verify client professional tracking state timeline by serviceId in UGO TEST",
   "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T04:22:00Z",
-  "heartbeat_at": "2026-09-30T04:23:00Z",
-  "lease_expires_at": "2026-09-30T05:08:00Z",
-  "started_sha": "fa4fb4e13bba34c54d1f313c5ca0c80565f68a67",
+  "started_at": "2026-09-30T10:46:00Z",
+  "heartbeat_at": "2026-09-30T10:46:00Z",
+  "lease_expires_at": "2026-09-30T11:31:00Z",
+  "started_sha": "e5604ef5576392956de149ff3fcec0e14b21056e",
   "owner": "UGO",
   "department": "App Cliente",
   "assigned_agent": "Client Status Runtime Agent",
@@ -24,9 +24,9 @@
   "resources": [
     "client-service-status"
   ],
-  "correlation_id": "readiness-client-status-20260930T042200Z-fa4fb4e1",
-  "current_step": "WAITING_CLIENT_STATUS_RUNTIME_WORKFLOW",
-  "attempt": 2,
+  "correlation_id": "readiness-client-status-20260930T104600Z-e5604ef5",
+  "current_step": "RECONCILED_STALE_LOCK_RETRIGGER_RUNTIME",
+  "attempt": 3,
   "evidence_ids": [
     "tests/contracts/client-status-readiness.test.mjs",
     "docs/evidence/readiness-client-status-20260930.json",
@@ -39,7 +39,8 @@
     "commit:bb7d821a247067deee9d8c5ed5caa70d97e73f52",
     "commit:0ef5e55f0c0b5b8ef492e7b0f83d3f34edd4877f",
     "commit:d9b71cc8741da1889a9a06c2b0543bedc15efb6f",
-    "workflow:.github/workflows/client-status-runtime.yml"
+    "workflow:.github/workflows/client-status-runtime.yml",
+    "stale-reconcile:e5604ef5576392956de149ff3fcec0e14b21056e"
   ],
   "implementation_sha": "396a01215e74ae067c45673baee21bfaaa367558",
   "judge": "PENDING",
