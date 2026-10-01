@@ -148,7 +148,8 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
 const GPS_TARGET_ACCURACY_M=80
 const GPS_ACCEPTABLE_ACCURACY_M=250
 const GPS_FRESH_MS=30_000
-const GPS_TIMEOUT_MS=20_000
+const GPS_ACCEPT_FALLBACK_MS=4_000
+const GPS_TIMEOUT_MS=15_000
 function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);return Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(accuracy)&&accuracy>0&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
 function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
 function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
@@ -163,12 +164,13 @@ async function currentPosition(){
  let best:GeolocationPosition|null=null,lastError:GeolocationPositionError|null=null
  // First wake the location provider. A strict maximumAge=0 call can fail on mobile WebViews
  // before the GPS has a fix, so use a recent device fix only as a candidate while acquiring a fresh one.
- try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:7_000});if(acceptablePosition(warm))best=warm}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
+ try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:5_000});if(acceptablePosition(warm)){best=warm;if(Number(warm.coords.accuracy)<=GPS_TARGET_ACCURACY_M)return warm}}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
  return await new Promise<GeolocationPosition>((resolve,reject)=>{
-  let settled=false,watchId:number|null=null,timer:number|null=null
-  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer)}
+  let settled=false,watchId:number|null=null,timer:number|null=null,fallbackTimer:number|null=null
+  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer);if(fallbackTimer!=null)window.clearTimeout(fallbackTimer)}
   const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
   const fail=(error:Error)=>{if(settled)return;settled=true;cleanup();reject(error)}
+  fallbackTimer=window.setTimeout(()=>{if(best&&acceptablePosition(best))finish(best)},GPS_ACCEPT_FALLBACK_MS)
   timer=window.setTimeout(()=>{if(best&&acceptablePosition(best))finish(best);else if(lastError)fail(geolocationError(lastError));else fail(new Error('No pudimos fijar tu ubicación con precisión suficiente. Mantené la ubicación precisa activa, dejá UGO abierto unos segundos y reintentá.'))},GPS_TIMEOUT_MS)
   watchId=navigator.geolocation.watchPosition(position=>{
    if(!usablePosition(position)||positionAge(position)>GPS_FRESH_MS)return
