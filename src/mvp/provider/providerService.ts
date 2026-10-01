@@ -219,6 +219,15 @@ function providerArrivalError(result:ProviderArrivalResult){
  return arrivalFailure(code,'UGO no pudo validar la llegada con el backend.')
 }
 async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
+ // Reuse the location already published by the live tracker whenever it is still valid.
+ // This avoids forcing a second cold GPS acquisition when the provider taps “YA LLEGUÉ”.
+ try{
+  return await confirmProviderArrival(supabase,serviceId)
+ }catch(error){
+  const code=providerArrivalCode(error)
+  if(code==='outside_geofence'||code==='client_location_unavailable'||code==='invalid_state')throw error
+  if(code&& !['gps_unavailable','gps_stale','gps_inaccurate'].includes(code))throw error
+ }
  await publishProviderLocation(supabase,serviceId)
  return confirmProviderArrival(supabase,serviceId)
 }
