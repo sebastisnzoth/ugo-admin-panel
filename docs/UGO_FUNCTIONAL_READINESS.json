@@ -1543,7 +1543,7 @@
           "id": "hugo-conversation-continuity",
           "title": "Continuidad conversacional",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Conservar categoría, descripción, dirección/lugar, horario y pago ya confirmados; preguntar sólo lo faltante.",
           "done_evidence": "Conversaciones multi-turn conservan estado correctamente.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
