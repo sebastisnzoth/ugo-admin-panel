@@ -1,4 +1,5 @@
 const ACTIVE_LOCK_STATUSES = new Set(['QUEUED','IN_PROGRESS','WAITING_EVIDENCE'])
+const HUMAN_LOCK_STATUSES = new Set(['HUMAN_REQUIRED'])
 const PRIORITY_SCORE = {CRITICAL:100,HIGH:80,NORMAL:50,LOW:20,FINAL:0}
 
 const parseTime = value => {
@@ -68,6 +69,12 @@ export function evaluateFunctionalReadiness({
 
     if (validatorPass(lock)) {
       item.status = 'VERIFIED'
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    if (lock && HUMAN_LOCK_STATUSES.has(lock.status)) {
+      item.status = 'HUMAN_REQUIRED'
       item.evidence_source = 'READINESS_LOCK'
       continue
     }
@@ -165,7 +172,9 @@ export function evaluateFunctionalReadiness({
   }
 
   const remainingAutonomousBeforeHuman = items.filter(
-    item => item.status !== 'VERIFIED' && item.declared_status !== 'HUMAN_FINAL'
+    item => item.status !== 'VERIFIED'
+      && item.status !== 'HUMAN_REQUIRED'
+      && item.declared_status !== 'HUMAN_FINAL'
   ).length
 
   for (const item of items) {
@@ -199,6 +208,9 @@ export function evaluateFunctionalReadiness({
     } else if (item.status === 'IN_PROGRESS') {
       item.gate_state = 'IN_PROGRESS'
       item.gate_reason = 'Existe un lock persistido activo para este control.'
+    } else if (item.status === 'HUMAN_REQUIRED') {
+      item.gate_state = 'HUMAN_REQUIRED'
+      item.gate_reason = 'La automatización verificable quedó agotada; falta evidencia humana/física real.'
     } else if (item.declared_status === 'HUMAN_FINAL') {
       if (remainingAutonomousBeforeHuman > 0) {
         item.gate_state = 'HUMAN_DEFERRED'
@@ -233,7 +245,7 @@ export function evaluateFunctionalReadiness({
     total:items.length,
     verified:items.filter(x => x.status === 'VERIFIED').length,
     remaining_total:items.filter(x => x.status !== 'VERIFIED').length,
-    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.declared_status !== 'HUMAN_FINAL').length,
+    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL').length,
     human_final:items.filter(x => x.declared_status === 'HUMAN_FINAL' && x.status !== 'VERIFIED').length,
     available_now:items.filter(x => x.gate_state === 'AVAILABLE').length,
     in_progress:items.filter(x => x.gate_state === 'IN_PROGRESS').length,
