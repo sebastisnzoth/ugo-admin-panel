@@ -2,19 +2,6 @@ name: UGO Provider Arrival Runtime TEST
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/autonomous-qa-gps-runtime.mjs'
-      - 'scripts/provider-arrival-judge.mjs'
-      - 'scripts/provider-arrival-sentinel.mjs'
-      - 'src/mvp/ProviderLocationTracker.tsx'
-      - 'src/mvp/provider/providerService.ts'
-      - 'src/mvp/provider/ProviderActiveJob.tsx'
-      - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
-      - 'tests/contracts/provider-arrival-gps-gate.test.mjs'
-      - 'tests/contracts/provider-arrival-location.test.mjs'
-      - '.github/workflows/provider-arrival-runtime.yml'
 
 permissions:
   contents: read
