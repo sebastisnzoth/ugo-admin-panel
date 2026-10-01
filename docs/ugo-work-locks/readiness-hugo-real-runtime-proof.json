@@ -1,0 +1,44 @@
+{
+  "readiness_id": "hugo-real-runtime-proof",
+  "task_id": "readiness-hugo-real-runtime-proof",
+  "job_id": "UGO-READINESS-HUGO-REAL-RUNTIME-PROOF-20261001",
+  "title": "Prueba real Hugo",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T12:41:00Z",
+  "heartbeat_at": "2026-10-01T12:41:00Z",
+  "lease_expires_at": "2026-10-01T13:26:00Z",
+  "started_sha": "b52644b4856c9c5084f6f635bef57c918fe77d83",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo Real Runtime Proof Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "hugo-voice",
+    "qa-lab"
+  ],
+  "correlation_id": "hugo-real-runtime-proof-20261001T124100Z",
+  "current_step": "AGGREGATE_REAL_TOOL_BACKEND_UI_PROOFS_AND_VERIFY_NO_MOCK_ONLY",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:hugo-admin-actions:HUMAN_REQUIRED",
+    "main-sha:b52644b4856c9c5084f6f635bef57c918fe77d83"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null,
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "kind": "MICROPHONE_GEMINI_AUDIO_TOOL_BACKEND_UI_CHAIN"
+  }
+}
