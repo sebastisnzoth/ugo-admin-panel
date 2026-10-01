@@ -30,12 +30,12 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/final:true/)
 })
 
-test('ephemeral token request is one-use and constrained to the selected Live model and modality',()=>{
+test('ephemeral token request is one-use and omits rejected live constraints',()=>{
  assert.match(api,/voice_live_token===true/)
  assert.match(api,/generativelanguage\.googleapis\.com\/v1beta\/auth_tokens/)
- assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:/)
- assert.match(api,/model:`models\/\$\{model\}`/)
- assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
+ assert.doesNotMatch(api,/liveConnectConstraints/)
+ assert.match(api,/return\{token,model,expires_at:expireTime,mode\}/)
  assert.doesNotMatch(api,/auth_token\s*:/)
 })
 
@@ -154,4 +154,11 @@ test('Gemini Live uses hybrid local VAD for faster turn completion',()=>{
  assert.match(bridge,/reason:'local-end-of-speech'/)
  assert.match(bridge,/audioStreamEnd:true/)
  assert.match(bridge,/AbortSignal\.timeout\(5000\)/)
+})
+
+
+test('Gemini Live startup errors are not masked as fake listening',()=>{
+ assert.match(bridge,/UGO Gemini Live start failed'/)
+ assert.match(bridge,/if\(!canStream\(\)&&startFallback\(\)\)/)
+ assert.doesNotMatch(bridge,/reason:'gemini-fallback'/)
 })
