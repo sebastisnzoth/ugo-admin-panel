@@ -10,7 +10,7 @@ const tabs:[Tab,string][]=[['command','Command Center'],['autonomy','Empresa Aut
 
 export function SuperAdminCommandCenter(){
  const realtimeInstance=useId().replace(/:/g,''),reloadTimer=useRef<ReturnType<typeof setTimeout>|null>(null)
- const[tab,setTab]=useState<Tab>('command'),[loading,setLoading]=useState(true),[error,setError]=useState(''),[authorized,setAuthorized]=useState(false)
+ const[tab,setTab]=useState<Tab>(()=>{const requested=new URLSearchParams(window.location.search).get('tab');return requested==='autonomy'?'autonomy':'command'}),[loading,setLoading]=useState(true),[error,setError]=useState(''),[authorized,setAuthorized]=useState(false)
  const[metrics,setMetrics]=useState<Metric[]>([]),[flags,setFlags]=useState<Record<string,boolean>>({})
  const[audit,setAudit]=useState<any[]>([]),[integrations,setIntegrations]=useState<Integration[]>([]),[integrationsError,setIntegrationsError]=useState('')
  const[ipInnovations,setIpInnovations]=useState<any[]>([]),[ipDecisions,setIpDecisions]=useState<any[]>([]),[ipFindings,setIpFindings]=useState<any[]>([]),[ipTotals,setIpTotals]=useState({innovations:0,pending:0,confidential:0,externalCounsel:0,findings:0})
