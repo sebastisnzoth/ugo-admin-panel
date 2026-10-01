@@ -3,9 +3,12 @@ import assert from'node:assert/strict'
 import fs from'node:fs'
 const ui=fs.readFileSync('src/mvp/AutonomousWorkforceControlCenter.tsx','utf8')
 test('workforce center exposes human operational controls without fake mass enable',()=>{
- for(const label of ['TOTAL AGENTES','ACTIVOS','TRABAJANDO AHORA','PAUSADOS','DESHABILITADOS','ESPERANDO APROBACIÓN','CON ERROR','BLOQUEADOS POR SEGURIDAD'])assert.match(ui,new RegExp(label,'i'))
+ for(const label of ['TOTAL AGENTES','ACTIVOS','TRABAJANDO AHORA','PAUSADOS','DESHABILITADOS','APROBACIÓN HUMANA','INCONSISTENCIAS GREEN','CON ERROR','BLOQUEADOS POR SEGURIDAD'])assert.match(ui,new RegExp(label,'i'))
  for(const label of ['Buscar agente','Mostrar solo los que necesitan mi atención','Ejecutar ahora','No listo para habilitar','Kill switch','Ver actividad'])assert.match(ui,new RegExp(label,'i'))
  assert.doesNotMatch(ui,/Habilitar todos/i)
+ assert.match(ui,/requiresHumanApproval/)
+ assert.match(ui,/greenApprovalInconsistency/)
+ assert.match(ui,/GREEN no requiere aprobación humana/)
 })
 test('manual execution uses governed enqueue and disabled agents stay non executable',()=>{
  assert.match(ui,/autonomous_enqueue_job/)
