@@ -3,10 +3,10 @@
   "task_id": "readiness-proximity-matching",
   "job_id": "UGO-READINESS-PROXIMITY-MATCHING-20261001",
   "title": "Matching por proximidad y elegibilidad",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T02:34:00Z",
-  "heartbeat_at": "2026-10-01T02:34:00Z",
-  "lease_expires_at": "2026-10-01T03:19:00Z",
+  "heartbeat_at": "2026-10-01T02:44:00Z",
+  "lease_expires_at": null,
   "started_sha": "eb83ac3cb708b51e8d37a94c5c3dac19ee6b270b",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,25 +16,36 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "provider-demand",
     "provider-location"
   ],
   "correlation_id": "proximity-matching-20261001T023400Z",
-  "current_step": "VERIFY_COMBINED_ELIGIBILITY_CATEGORY_ONLINE_GPS_RADIUS_DEBT_AVAILABILITY",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:provider-operating-zone:VERIFIED",
     "dependency:provider-realtime-location:HUMAN_REQUIRED",
-    "main-sha:eb83ac3cb708b51e8d37a94c5c3dac19ee6b270b"
+    "main-sha:eb83ac3cb708b51e8d37a94c5c3dac19ee6b270b",
+    "github-pr:343",
+    "github-head:4da86bbe4967d5807c501f4221ffe3c98a3e8dec",
+    "github-run:36806874525:PASS",
+    "github-artifact:11138011969",
+    "github-core-run:36806874490:PASS",
+    "github-timeout-run:36806874498:PASS",
+    "runtime:baseline=1-offline=0-stale=0-outside=0-inside=1-wrong-category=0",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:dfe4333d30d4ffa04ef2a862ab36753a0d608485"
   ],
   "production_touched": false,
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "result": null
+  "completed_at": "2026-10-01T02:44:00Z",
+  "finished_at": "2026-10-01T02:44:00Z",
+  "verified_sha": "4da86bbe4967d5807c501f4221ffe3c98a3e8dec",
+  "result": "VERIFIED",
+  "merged_main_sha": "dfe4333d30d4ffa04ef2a862ab36753a0d608485"
 }
