@@ -9,11 +9,16 @@ const tracker=fs.readFileSync(new URL('../../src/mvp/ProviderLocationTracker.tsx
 const locationButton=fs.readFileSync(new URL('../../src/mvp/AppLocationButton.tsx',import.meta.url),'utf8')
 const nullIslandGuard=fs.readFileSync(new URL('../../supabase/migrations/20260921221500_reject_null_island_provider_location.sql',import.meta.url),'utf8')
 
-test('arrival publishes fresh device geolocation before the dedicated backend arrival RPC',()=>{
+test('arrival validates an already-published trusted fix first and reacquires fresh device geolocation only when needed',()=>{
  const helperStart=service.indexOf('async function markProviderArrived')
- const publishIndex=service.indexOf('await publishProviderLocation(supabase,serviceId)',helperStart)
- const arrivalRpcIndex=service.indexOf("supabase.rpc('marcar_llegada_proveedor'",helperStart)
- assert.ok(helperStart>=0&&publishIndex>helperStart&&arrivalRpcIndex>publishIndex)
+ const helperEnd=service.indexOf('async function confirmProviderArrival',helperStart)
+ const helper=service.slice(helperStart,helperEnd)
+ const confirmIndex=helper.indexOf('confirmProviderArrival(supabase,serviceId)')
+ const publishIndex=helper.indexOf('publishProviderLocation(supabase,serviceId)')
+ assert.ok(helperStart>=0&&confirmIndex>=0&&publishIndex>confirmIndex)
+ assert.match(helper,/gps_unavailable/)
+ assert.match(helper,/gps_stale/)
+ assert.match(helper,/gps_inaccurate/)
  assert.match(service,/if\(state==='llegado'\)[\s\S]*markProviderArrived\(supabase,serviceId\)/)
  assert.match(service,/navigator\.geolocation\.watchPosition/)
  assert.match(service,/enableHighAccuracy:true/)
@@ -28,15 +33,11 @@ test('provider arrival location is persisted through the hardened service-scoped
  assert.doesNotMatch(service,/\.from\('perfiles_proveedor'\)\.update\(\{ubicacion:/)
 })
 
-test('arrival GPS failure is a P0 blocker and never reaches arrival mutation without valid publication',()=>{
+test('arrival GPS failure is a P0 blocker and generic transition RPC cannot bypass the dedicated arrival gate',()=>{
  assert.match(service,/eventType:'provider_location_error'/)
  assert.match(service,/severity:'P0'/)
  assert.match(service,/checklistCode:'MAP-GPS'/)
  assert.match(service,/action:'provider\.service\.location'/)
- const helperStart=service.indexOf('async function markProviderArrived')
- const publishIndex=service.indexOf('await publishProviderLocation(supabase,serviceId)',helperStart)
- const arrivalRpcIndex=service.indexOf("supabase.rpc('marcar_llegada_proveedor'",helperStart)
- assert.ok(helperStart>=0&&publishIndex>helperStart&&arrivalRpcIndex>publishIndex)
  const arrivalBranchStart=service.indexOf("if(state==='llegado')")
  const genericRpcIndex=service.indexOf("supabase.rpc('avanzar_servicio'",arrivalBranchStart)
  const arrivalBranch=service.slice(arrivalBranchStart,genericRpcIndex)
@@ -86,10 +87,10 @@ test('arrival rejects Null Island instead of persisting a fake provider position
 
 
 test('provider tracker surfaces precise GPS failures and never auto-arrives from an error callback',()=>{
- assert.match(tracker,/error=>\{setLocationError\(error\.code===1\?'UGO necesita permiso de ubicación precisa/)
+ assert.match(tracker,/error=>\{if\(error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return;setLocationError\(error\.code===1\?'UGO necesita permiso de ubicación precisa/)
  assert.match(tracker,/No pudimos obtener tu GPS\. Revisá que la ubicación del dispositivo esté activada\./)
  assert.match(tracker,/El GPS tardó demasiado en responder\. Reintentando/)
- const errorHandler=tracker.slice(tracker.indexOf('error=>{setLocationError'),tracker.indexOf('}, {enableHighAccuracy:true'))
+ const errorHandler=tracker.slice(tracker.indexOf('error=>{if(error.code!==1'),tracker.indexOf('}, {enableHighAccuracy:true'))
  assert.doesNotMatch(errorHandler,/autoArrivalRef/)
  assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })
