@@ -1,0 +1,38 @@
+{
+  "readiness_id": "hugo-gemini-live-core",
+  "task_id": "readiness-hugo-gemini-live-core",
+  "job_id": "UGO-READINESS-HUGO-GEMINI-LIVE-CORE-20261001",
+  "title": "hugo-gemini-live-core",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T00:08:57Z",
+  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo AI Engineering Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "hugo-voice",
+    "model-router"
+  ],
+  "correlation_id": "hugo-gemini-live-core-20261001T000857Z",
+  "current_step": "RECONCILE_HUGO_VOICE_AND_VERIFY_GEMINI_LIVE_CORE",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
