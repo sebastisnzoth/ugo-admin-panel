@@ -10,7 +10,7 @@ test('Admin Hugo keeps Gemini Live primary and isolates TTS to browser-speech fa
   read('api/test.ts'),
  ])
  assert.match(bridge,/app\.includes\('admin'\)/)
- assert.match(bridge,/role==='admin'\?adminSupabase:getRoleSupabase\(role\)/)
+ assert.match(bridge,/role==='admin'\|\|role==='superadmin'\?adminSupabase:getRoleSupabase\(role\)/)
  assert.match(api,/voiceRole=\['client','provider','admin','superadmin'\]/)
  assert.match(api,/voiceRole==='admin'\?\['admin','superadmin'\]\.includes\(profileRole\)/)
  assert.match(orb,/UGOVoiceBridge/)
