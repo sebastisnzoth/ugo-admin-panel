@@ -1,4 +1,6 @@
 import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs'
-const sql=fs.readFileSync('supabase/migrations/20260930224000_admin_assignment_complete_guard.sql','utf8'),ui=fs.readFileSync('src/mvp/AdminServicesPro.tsx','utf8'),hook=fs.readFileSync('src/hooks/useAdminActiveServices.ts','utf8')
+const sql=fs.readFileSync('supabase/migrations/20260930224000_admin_assignment_complete_guard.sql','utf8'),normalize=fs.readFileSync('supabase/migrations/20260930224100_admin_assignment_normalize_draft.sql','utf8'),ui=fs.readFileSync('src/mvp/AdminServicesPro.tsx','utf8'),hook=fs.readFileSync('src/hooks/useAdminActiveServices.ts','utf8')
 test('backend blocks incomplete direct provider assignment',()=>{assert.match(sql,/guard_complete_provider_assignment/);assert.match(sql,/Falta completar/);assert.match(sql,/forma de pago/);assert.match(sql,/ubicación/);assert.match(sql,/proveedor habilitado/);assert.match(sql,/requested_payment_method/);assert.match(sql,/trg_guard_complete_provider_assignment/)})
 test('Admin 360 explains missing assignment prerequisites before save',()=>{assert.match(ui,/assignmentMissing/);assert.match(ui,/Asignación bloqueada/);assert.match(ui,/forma de pago/);assert.match(ui,/proveedor habilitado/);assert.match(hook,/categoria_id,ubicacion_cliente/)})
+
+test('direct assignment normalizes draft into assigned',()=>{assert.match(normalize,/\('borrador','buscando','ofrecido'\)/);assert.match(normalize,/new\.estado='asignado'/);assert.match(normalize,/aceptado_at=coalesce/)})
