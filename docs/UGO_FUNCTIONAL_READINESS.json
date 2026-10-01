@@ -244,7 +244,7 @@
           "id": "provider-offers",
           "title": "Recepción de ofertas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Ofertas elegibles ≤20 km al proveedor correcto.",
           "done_evidence": "Matching TEST + aislamiento.",
           "improvement_focus": "Priorizar distancia, valor y urgencia.",
@@ -253,13 +253,15 @@
           "priority": "CRITICAL",
           "resources": [
             "provider-demand"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-offers-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-alerts",
           "title": "Alerta/sonido de oferta",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Oferta nueva debe notificar según capacidades.",
           "done_evidence": "Runtime TEST del canal soportado.",
           "improvement_focus": "Fallback visible si sonido bloqueado.",
@@ -271,13 +273,15 @@
           "resources": [
             "provider-demand",
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-alerts-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-accept",
           "title": "Aceptar/rechazar oferta",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Aceptar/rechazar de forma idempotente y autorizada.",
           "done_evidence": "Estado persistido + concurrencia controlada.",
           "improvement_focus": "Feedback inmediato.",
@@ -288,7 +292,9 @@
           "priority": "HIGH",
           "resources": [
             "provider-demand"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-accept-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-gps",
@@ -431,7 +437,7 @@
           "id": "provider-notifications",
           "title": "Notificaciones Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Oferta, asignación, cambios y mensajes.",
           "done_evidence": "Push/web TEST.",
           "improvement_focus": "Sonido configurable.",
@@ -442,13 +448,15 @@
           "priority": "NORMAL",
           "resources": [
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-notifications-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-responsive",
           "title": "Responsive Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Todas las acciones utilizables en móvil/tablet/desktop.",
           "done_evidence": "Matriz de viewports + revisión visual.",
           "improvement_focus": "Optimizar uso con una mano.",
@@ -459,7 +467,9 @@
           "priority": "NORMAL",
           "resources": [
             "provider-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-responsive-20260930.json",
+          "reconciled_from_persisted_evidence": true
         }
       ]
     },
