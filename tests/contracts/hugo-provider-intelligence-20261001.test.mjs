@@ -27,3 +27,19 @@ test('provider intelligence patch preserves Live token hardening in TEST runtime
  assert.match(src,/responseModalities:\['AUDIO'\]/)
  assert.match(src,/ugo-admin-panel\.vercel\.app/)
 })
+
+
+test('provider AI may emit only validated structured actions and client executes through existing app actions',async()=>{
+ const edge=await read('supabase/functions/hugo-runtime/index.ts')
+ const client=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
+ assert.match(edge,/safeProviderAction/)
+ assert.match(edge,/provider_action/)
+ assert.match(edge,/set_online/)
+ assert.match(edge,/accept_job/)
+ assert.match(edge,/update_service_status/)
+ assert.match(client,/executeAiAction/)
+ assert.match(client,/data\.setOnline\(true\)/)
+ assert.match(client,/flow\.actions\.acceptOpportunity/)
+ assert.match(client,/data\.advance\(status\)/)
+ assert.match(client,/La acción propuesta por Hugo no está permitida/)
+})
