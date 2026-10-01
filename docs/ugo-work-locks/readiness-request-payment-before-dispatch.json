@@ -5,8 +5,8 @@
   "title": "request-payment-before-dispatch",
   "status": "IN_PROGRESS",
   "started_at": "2026-10-01T00:08:57Z",
-  "heartbeat_at": "2026-10-01T00:08:57Z",
-  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "heartbeat_at": "2026-10-01T01:10:00Z",
+  "lease_expires_at": "2026-10-01T01:55:00Z",
   "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -24,11 +24,18 @@
     "client-request-flow"
   ],
   "correlation_id": "request-payment-before-dispatch-20261001T000857Z",
-  "current_step": "RECONCILE_CLIENT_PAYMENT_AND_VERIFY_PRE_DISPATCH_GUARD",
+  "current_step": "WAITING_PR333_GLOBAL_GATES",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
-    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef",
+    "github-pr:333",
+    "github-head:97c90f24f84961ed5d3c9483fec5795e3adcb9c5",
+    "github-run:36800490001:PASS",
+    "github-artifact:11135313792",
+    "judge:PASS",
+    "sentinel:PASS",
+    "ugo-arena:migration:payment_before_dispatch_guard"
   ],
   "production_touched": false,
   "completed_at": null,
