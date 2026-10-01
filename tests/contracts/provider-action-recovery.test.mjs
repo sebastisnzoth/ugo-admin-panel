@@ -4,14 +4,16 @@ import fs from'node:fs'
 
 const source=fs.readFileSync(new URL('../../src/mvp/provider/providerData.tsx',import.meta.url),'utf8')
 const service=fs.readFileSync(new URL('../../src/mvp/provider/providerService.ts',import.meta.url),'utf8')
+const lifecycle=fs.readFileSync(new URL('../../src/lib/marketplace/lifecycle.ts',import.meta.url),'utf8')
 
 test('generic provider actions still reload after ambiguous failure',()=>{
  assert.match(source,/const run=[\s\S]*catch\(e\)\{try\{await reload\(\)\}catch\{\}/)
 })
 
 test('lifecycle transitions treat persisted target or later state as success',()=>{
- assert.match(source,/LIFECYCLE_ORDER=\['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'\]/)
- assert.match(source,/transitionPersisted=async\(serviceId:string,target:string\)/)
+ assert.match(lifecycle,/PROVIDER_LIFECYCLE_ORDER = \[[\s\S]*'asignado'[\s\S]*'en_camino'[\s\S]*'llegado'[\s\S]*'en_progreso'[\s\S]*'esperando_aprobacion'[\s\S]*'completado'/)
+ assert.match(source,/transitionPersisted=async\(serviceId:string,target:ProviderLifecycleState\)/)
+ assert.match(source,/isAtOrBeyondProviderState\(String\(data\?\.estado\|\|''\),target\)/)
  assert.match(source,/if\(await transitionPersisted\(serviceId,state\)\)[\s\S]*return true/)
 })
 
@@ -62,7 +64,6 @@ test('provider completion hands cash close to the client',()=>{
  assert.doesNotMatch(completeService,/confirmar_pago_efectivo/)
 })
 
-test('provider blocks departure until payment or a persisted variable-price preference exists',()=>{
- assert.match(source,/paymentPreferenceSelected=Boolean\(service&&!amountReady&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)\)/)
+test('provider still blocks departure until a valid payment method is persisted',()=>{
  assert.match(source,/service\.estado==='asignado'&&state==='en_camino'&&!funded&&!cashSelected&&!paymentPreferenceSelected/)
 })

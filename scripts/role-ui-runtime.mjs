@@ -72,6 +72,26 @@ const browser=await chromium.launch({headless:true})
 const results=[]
 const pageContext=new WeakMap()
 const sessions={client:client.session,provider:provider.session,admin:admin.session}
+async function freshRoleSession(role){
+ const source=role==='client'?client:role==='provider'?provider:admin
+ const credentialsForRole=role==='client'?[clientEmail,clientPassword]:role==='provider'?[providerEmail,providerPassword]:[adminEmail,adminPassword]
+ let lastError=null
+ for(let attempt=1;attempt<=4;attempt++){
+   const{data,error}=await source.sb.auth.signInWithPassword({email:credentialsForRole[0],password:credentialsForRole[1]})
+   if(!error&&data.session){
+     source.session=data.session
+     sessions[role]=data.session
+     return data.session
+   }
+   lastError=error||new Error(role+'_FRESH_SESSION_REQUIRED')
+   const status=Number(lastError?.status||0)
+   const retryable=status===429||status>=500||/fetch|network|timeout|gateway/i.test(String(lastError?.message||''))
+   if(!retryable||attempt===4)break
+   await new Promise(resolve=>setTimeout(resolve,attempt*1000))
+ }
+ assert.ifError(lastError)
+ throw lastError||new Error(role+'_FRESH_SESSION_REQUIRED')
+}
 
 async function assertResponsive(page,label){
  const metrics=await page.evaluate(()=>({
@@ -92,7 +112,7 @@ async function openRole(role,viewport){
  page.on('pageerror',error=>errors.push(trace.step+': '+String(error?.message||error)))
  await page.addInitScript(({role,session})=>{
    const key=role==='admin'?'ugo-test-admin-auth':'ugo-test-'+role+'-auth'
-   localStorage.setItem(key,JSON.stringify(session))
+   if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(session))
  },{role,session:sessions[role]})
  await page.goto(base+'/?app='+role,{waitUntil:'domcontentloaded'})
  return {page,errors}
@@ -141,11 +161,19 @@ async function testClient(viewport,name){
      await closeClientOverlay(page)
      const menuList=drawer.locator('.ugo-client-menu-list')
      await safeClick(page,menuList.getByRole('button',{name:new RegExp(item,'i')}).first(), 'client '+item)
-     await page.waitForFunction(()=>document.querySelector('.ugo-client-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
      const clientRoot=page.locator('.ugo-client-root')
-     if(!(await clientRoot.isVisible().catch(()=>false))){
-       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'.png',fullPage:true})
-       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' pageErrors='+errors.join(' | '))
+     try{
+       await clientRoot.waitFor({state:'visible',timeout:30000})
+     }catch(error){
+       const diagnostic=await page.evaluate(()=>({
+         url:location.href,
+         body:(document.body.innerText||'').replace(/\s+/g,' ').slice(0,1200),
+         rootClass:document.querySelector('.ugo-client-root')?.getAttribute('class')||null,
+         auth:Boolean(document.querySelector('.mvp-auth-page')),
+         onboarding:Boolean(document.querySelector('.ugo-client-onboarding'))
+       })).catch(()=>null)
+       await page.screenshot({path:'artifacts/role-ui-client-failure-'+name+'-'+item.replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png',fullPage:true}).catch(()=>{})
+       throw new Error('CLIENT_RENDER_FAILURE '+name+' item='+item+' diagnostic='+JSON.stringify(diagnostic)+' pageErrors='+errors.join(' | '),{cause:error})
      }
      await assertResponsive(page,'client '+name+' '+item)
    }
@@ -191,8 +219,17 @@ async function testProvider(viewport,name){
      const nav=page.getByRole('navigation',{name:'Navegación proveedor'}).first()
      const items=[/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]
      for(const item of items){
-       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+String(item))
-       await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
+       const navLabel=String(item)
+       console.info('UGO_ROLE_UI_PROVIDER_MOBILE_NAV_START',name,navLabel)
+       await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider mobile '+navLabel)
+       try{
+         await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
+       }catch(error){
+         const snapshot=await page.locator('body').innerText().catch(()=> '')
+         console.error('UGO_ROLE_UI_PROVIDER_MOBILE_NAV_FAILURE',name,navLabel,'url='+page.url(),'pageErrors='+errors.join(' | '),'body='+snapshot.slice(0,1200))
+         await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true}).catch(()=>{})
+         throw error
+       }
        const providerRoot=page.locator('.ugo-provider-root')
        if(!(await providerRoot.isVisible().catch(()=>false))){
          await page.screenshot({path:'artifacts/role-ui-provider-failure-'+name+'.png',fullPage:true})
@@ -278,8 +315,11 @@ async function testAdmin(viewport,name){
 try{
  const viewports=[['desktop',{width:1440,height:1000}],['mobile',{width:390,height:844}]]
  for(const [name,viewport] of viewports){
+   await freshRoleSession('client')
    await testClient(viewport,name)
+   await freshRoleSession('provider')
    await testProvider(viewport,name)
+   await freshRoleSession('admin')
    await testAdminAuthBoundary(viewport,name)
    await testAdmin(viewport,name)
  }

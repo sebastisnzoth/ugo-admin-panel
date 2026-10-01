@@ -6,7 +6,7 @@ on:
     branches: [main]
     paths:
       - "api/hugo/chat.ts"
-      - "api/hugo/modelRouter.ts"
+      - "server/hugo/modelRouter.ts"
       - "scripts/hugo-timeout-*.mjs"
       - "tests/contracts/client-hugo-runtime-resilience.test.mjs"
       - "tests/contracts/hugo-model-router-resilience.test.mjs"
@@ -16,7 +16,7 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: ugo-readiness-hugo-timeout
+  group: ugo-readiness-hugo-timeout-${{ github.ref }}
   cancel-in-progress: false
 jobs:
   timeout-proof:
@@ -25,28 +25,28 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-        with: {ref: "${{ github.sha }}"}
+        with: {ref: "${{ github.event.pull_request.head.sha || github.sha }}"}
       - uses: actions/setup-node@v4
         with: {node-version: 22, cache: npm}
       - run: npm ci --include=dev
       - run: npm run verify:test-env
       - name: Build exact SHA
-        env: {VITE_APP_REVISION: "${{ github.sha }}"}
+        env: {VITE_APP_REVISION: "${{ github.event.pull_request.head.sha || github.sha }}"}
         run: npm run build
       - name: Hugo resilience contracts
         run: node --test tests/contracts/client-hugo-runtime-resilience.test.mjs tests/contracts/provider-hugo-runtime-resilience.test.mjs tests/contracts/hugo-model-router-resilience.test.mjs
       - name: Fault injection runtime
-        env: {UGO_RUNTIME_SHA: "${{ github.sha }}"}
+        env: {UGO_RUNTIME_SHA: "${{ github.event.pull_request.head.sha || github.sha }}"}
         run: node scripts/hugo-timeout-runtime.mjs
       - name: Independent Judge
-        env: {UGO_RUNTIME_SHA: "${{ github.sha }}"}
+        env: {UGO_RUNTIME_SHA: "${{ github.event.pull_request.head.sha || github.sha }}"}
         run: node scripts/hugo-timeout-judge.mjs
       - name: Sentinel
         run: node scripts/hugo-timeout-sentinel.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: readiness-hugo-timeout-${{ github.sha }}
+          name: readiness-hugo-timeout-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/hugo-timeout-*
           if-no-files-found: warn
           retention-days: 90

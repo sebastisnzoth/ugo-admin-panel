@@ -1,5 +1,6 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{reportSentinelIncident}from'../../lib/sentinel'
+import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type Service}from'../shared'
 
 export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null}
@@ -10,14 +11,13 @@ export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];s
 type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
-type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
+type ProviderTransitionState=Extract<ProviderLifecycleState,'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'>
 export type ProviderAdvanceOptions={locationAlreadyPublished?:boolean}
 type SnapshotPart='profile'|'offers'|'services'|'payments'|'debts'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const MISSION_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso'])
 const PASSIVE_SERVICE_STATES=new Set(['esperando_aprobacion','disputado'])
-const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'] as const
 const errorRecord=(error:unknown)=>error&&typeof error==='object'?error as Record<string,unknown>:null
 const messageOf=(error:unknown,fallback:string)=>{if(error instanceof Error&&error.message)return error.message;const record=errorRecord(error),message=record?.message;return typeof message==='string'&&message.trim()?message:fallback}
 const errorCode=(error:unknown)=>{const code=errorRecord(error)?.code;return typeof code==='string'&&code.trim()?code:null}
@@ -92,7 +92,7 @@ async function persistedAcceptedOpportunity(supabase:SupabaseClient,opportunityI
   const persistedService=service as PersistedService
   if(persistedService.id!==serviceId)return false
   if(persistedService.proveedor_id!==userId)return false
-  return PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+  return (PROVIDER_ACTIVE_STATES as readonly string[]).includes(persistedService.estado)
  }catch{return null}
 }
 
@@ -182,8 +182,7 @@ async function persistedProviderTransition(supabase:SupabaseClient,serviceId:str
  try{
   const{data:auth,error:authError}=await supabase.auth.getUser();const userId=auth.user?.id;if(authError||!userId)return null
   const{data,error}=await supabase.from('servicios').select('estado').eq('id',serviceId).eq('proveedor_id',userId).maybeSingle();if(error||!data)return null
-  const current=LIFECYCLE_ORDER.indexOf(String(data.estado||'') as typeof LIFECYCLE_ORDER[number]),wanted=LIFECYCLE_ORDER.indexOf(target as typeof LIFECYCLE_ORDER[number])
-  return wanted>=0&&current>=wanted
+  return isAtOrBeyondProviderState(String(data.estado||''),target)
  }catch{return null}
 }
 

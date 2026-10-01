@@ -3,6 +3,12 @@ import fs from 'node:fs/promises'
 import { chromium } from 'playwright'
 import { createClient } from '@supabase/supabase-js'
 
+// PR330 pointer actionability reconciliation: retain DOM hit-test + Playwright trial click.
+// same-SHA retrigger after cross-role diagnostics
+// final same-SHA retrigger after cross-role auth preservation
+// same-SHA retrigger after fresh role-session harness
+// same-SHA retrigger after global Hugo decoupling
+
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
@@ -88,18 +94,25 @@ try{
   async function visible(locator,timeout=20000){ await locator.waitFor({state:'visible',timeout}); return locator }
   async function clickFirstPointerReachable(locator,label){
     const count=await locator.count()
+    let lastError=null
     for(let index=0;index<count;index++){
       const item=locator.nth(index)
       if(!(await item.isVisible())) continue
-      const reachable=await item.evaluate(el=>{
-        const r=el.getBoundingClientRect()
-        if(!r.width||!r.height) return false
-        const top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)
-        return top===el||Boolean(top&&el.contains(top))
-      })
-      if(reachable){ await item.click(); return }
+      try{
+        await item.scrollIntoViewIfNeeded()
+        const reachable=await item.evaluate(el=>{
+          const r=el.getBoundingClientRect()
+          if(!r.width||!r.height)return false
+          const top=document.elementFromPoint(r.left+r.width/2,r.top+r.height/2)
+          return top===el||Boolean(top&&el.contains(top))
+        })
+        if(!reachable)continue
+        await item.click({trial:true,timeout:2500})
+        await item.click({timeout:2500})
+        return
+      }catch(error){ lastError=error }
     }
-    throw new Error(label+'_NO_POINTER_REACHABLE_TARGET')
+    throw new Error(label+'_NO_POINTER_REACHABLE_TARGET'+(lastError?' '+String(lastError?.message||lastError):''))
   }
   async function timed(label,fn,limitMs=4000){
     const started=performance.now()
@@ -112,13 +125,18 @@ try{
 
   const client=await openRole('client')
   try{
+    await visible(client.page.getByRole('main',{name:'Inicio UGO Cliente'}),20000)
     await visible(client.page.getByRole('button',{name:/Abrir menú/i}).first())
     await timed('client_request_navigation_ms',async()=>{
       await client.page.getByRole('button',{name:/Abrir menú/i}).first().click()
-      const requestButtons=client.page.locator('button:visible').filter({hasText:/Pedir servicio/i})
-      await visible(requestButtons.first(),5000)
+      const drawer=client.page.getByRole('complementary',{name:'Menú UGO Cliente'})
+      await visible(drawer,5000)
+      const requestButtons=drawer.locator('button:visible').filter({hasText:/Pedir servicio/i})
+      const requestButton=requestButtons.first()
+      await visible(requestButton,5000)
       await clickFirstPointerReachable(requestButtons,'CLIENT_REQUEST_BUTTON')
-      await visible(client.page.locator('.ugo-client-root'))
+      await drawer.waitFor({state:'hidden',timeout:5000})
+      await visible(client.page.getByRole('textbox',{name:'Buscar servicio'}),5000)
     })
   } finally { await client.context.close() }
 
