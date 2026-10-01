@@ -4,7 +4,7 @@ type JsonRecord=Record<string,unknown>
 const rec=(v:unknown):JsonRecord=>v!==null&&typeof v==='object'&&!Array.isArray(v)?v as JsonRecord:{}
 const clean=(v:unknown,max=5000)=>String(v??'').trim().slice(0,max)
 const json=(body:unknown,status=200,origin='')=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin',...(origin?{'Access-Control-Allow-Origin':origin}:{})}})
-const allowedOrigins=new Set(['https://sebastisnzoth.github.io','http://localhost:5173','http://127.0.0.1:5173'])
+const allowedOrigins=new Set(['https://sebastisnzoth.github.io','https://ugo-admin-panel.vercel.app','http://localhost:5173','http://127.0.0.1:5173'])
 const corsOrigin=(req:Request)=>{const origin=req.headers.get('origin')||'';return allowedOrigins.has(origin)?origin:''}
 const corsHeaders=(origin:string)=>({'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'})
 const supabaseUrl=Deno.env.get('SUPABASE_URL')||''
