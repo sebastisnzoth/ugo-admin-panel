@@ -11,6 +11,7 @@ type AdminGateProps={children?:React.ReactNode}
 const ADMIN_PROFILE_RETRY_DELAYS=[0,350,900,1800] as const
 function transientAdminProfileError(value:unknown){const text=value instanceof Error?value.message:String((value as any)?.message||value||'');return /timeout|timed out|statement timeout|57014|fetch|network|abort|connection|temporar|pgrst/i.test(text)}
 async function adminWait(ms:number){if(ms>0)await new Promise(resolve=>window.setTimeout(resolve,ms))}
+async function withAdminProfileTimeout<T>(operation:PromiseLike<T>,ms=4500){return await Promise.race([Promise.resolve(operation),new Promise<T>((_,reject)=>window.setTimeout(()=>reject(new Error('ADMIN_PROFILE_QUERY_TIMEOUT')),ms))])}
 
 function resolveAdminLogin(value:string){
   const clean=value.trim()
@@ -27,7 +28,7 @@ function adminAuthErrorMessage(error:unknown){
 export function AdminGate({children}:AdminGateProps={}){
   const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[identifier,setIdentifier]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
   const appName=new URLSearchParams(window.location.search).get('app')==='development'?'development':'admin'
-  async function getAdminProfile(uid:string){let lastError:any=null;for(let attempt=0;attempt<ADMIN_PROFILE_RETRY_DELAYS.length;attempt++){await adminWait(ADMIN_PROFILE_RETRY_DELAYS[attempt]);const query=(supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle();const{data,error}=typeof AbortSignal!=='undefined'&&typeof AbortSignal.timeout==='function'?await query.abortSignal(AbortSignal.timeout(4500)):await query;if(!error)return{profile:(data||null)as AdminProfile|null,error:null};lastError=error;if(!transientAdminProfileError(error))break}return{profile:null,error:lastError}} 
+  async function getAdminProfile(uid:string){let lastError:any=null;for(let attempt=0;attempt<ADMIN_PROFILE_RETRY_DELAYS.length;attempt++){await adminWait(ADMIN_PROFILE_RETRY_DELAYS[attempt]);const query=(supabase as any).from('usuarios').select('tipo,activo').eq('id',uid).maybeSingle();const{data,error}=await withAdminProfileTimeout<any>(query,4500);if(!error)return{profile:(data||null)as AdminProfile|null,error:null};lastError=error;if(!transientAdminProfileError(error))break}return{profile:null,error:lastError}} 
   async function authorizeSession(session:any){if(!session)return false;const{profile,error}=await getAdminProfile(session.user.id);if(error)throw error;const allowed=Boolean(profile&&profile.activo&&['admin','superadmin'].includes(profile.tipo));if(allowed)await supabase.realtime.setAuth(session.access_token);return allowed}
   async function verify(){
    const params=new URLSearchParams(window.location.search),code=params.get('code')
