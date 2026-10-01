@@ -30,7 +30,11 @@ export function buildExecutiveInboxItems(jobs:ExecutiveInboxJob[],nowMs=Date.now
   if(job.status!=='WAITING_APPROVAL'&&job.status!=='BLOCKED')continue
   const key=String(job.correlation_id||job.id)
   const current=newestByWork.get(key)
-  if(!current||timestamp(job.created_at)>=timestamp(current.created_at))newestByWork.set(key,job)
+  const incomingTimestamp=timestamp(job.created_at)
+  const currentTimestamp=timestamp(current?.created_at)
+  const incomingId=String(job.id)
+  const currentId=String(current?.id||'')
+  if(!current||incomingTimestamp>currentTimestamp||(incomingTimestamp===currentTimestamp&&incomingId.localeCompare(currentId)>0))newestByWork.set(key,job)
  }
  return [...newestByWork.values()].map(job=>{
   const sla=inboxSlaMinutes(job.authority_class)
