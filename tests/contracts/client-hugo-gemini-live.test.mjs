@@ -137,3 +137,12 @@ test('Client Hugo confirms a successful persisted cancellation briefly',()=>{
 
 
 test('Client Hugo keeps a natural voice contract and reuses saved places',()=>{assert.match(bridge,/Hablá como una persona/);assert.match(bridge,/use_saved_place antes de volver a pedir una dirección/);assert.match(dock,/if\(name==='use_saved_place'\)/);assert.match(dock,/direcciones_cliente/);assert.match(dock,/UGO_UI_EVENTS\.clientRequestPhoto/)})
+
+
+test('Gemini Live final turn flushes audio and bounds response latency',()=>{
+ assert.ok(bridge.includes("reason:'thinking'"))
+ assert.ok(bridge.includes('endAudioStream();armResponseWatchdog(finalText)'))
+ assert.ok(bridge.includes('response-timeout'))
+ assert.ok(bridge.includes("reason:'response-retry'"))
+ assert.ok(bridge.includes('clearResponseWatchdog'))
+})
