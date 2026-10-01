@@ -1,0 +1,39 @@
+{
+  "readiness_id": "admin-assignment-payment-guard",
+  "task_id": "readiness-admin-assignment-payment-guard",
+  "job_id": "UGO-READINESS-ADMIN-ASSIGNMENT-PAYMENT-GUARD-20261001",
+  "title": "Guard de pago en asignación Admin",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T01:31:00Z",
+  "heartbeat_at": "2026-10-01T01:31:00Z",
+  "lease_expires_at": "2026-10-01T02:16:00Z",
+  "started_sha": "f536d73cf50bd777cb7896f5777a6dd0a00fe316",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Admin Marketplace Lifecycle Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "admin-shell",
+    "payments"
+  ],
+  "correlation_id": "admin-assignment-payment-guard-20261001T013100Z",
+  "current_step": "INSPECT_DIRECT_ASSIGNMENT_AND_ENFORCE_COMPLETE_INPUTS",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:request-payment-before-dispatch:VERIFIED",
+    "main-sha:f536d73cf50bd777cb7896f5777a6dd0a00fe316"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
