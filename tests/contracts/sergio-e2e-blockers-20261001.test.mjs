@@ -12,7 +12,7 @@ test('provider realtime rebuilds after foreground recovery',async()=>{
 test('realtime notification insert alerts immediately before reconciliation',async()=>{
  const src=await read('src/mvp/NotificationCenter.tsx')
  assert.match(src,/setRows\(current=>\[notice,/)
- assert.match(src,/role==='provider'\)signalProviderAlert\(notice\);else signalClientAlert\(notice\)/)
+ assert.match(src,/role==='provider'&&!SERVICE_NOTICE_EXPECTED_STATE\[notice\.tipo\]\)signalProviderAlert\(notice\)/)
  assert.match(src,/resync\(\)/)
 })
 
