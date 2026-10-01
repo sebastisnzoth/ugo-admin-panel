@@ -12,6 +12,16 @@ export function ProviderGlobalVoiceCommands(){
  const flow=useProviderFlow(),data=useProviderData()
  const conversation=useRef<Array<{role:'user'|'assistant';content:string}>>([])
  const remember=useCallback((role:'user'|'assistant',content:string)=>{const text=content.trim();if(!text)return;conversation.current=[...conversation.current,{role,content:text}].slice(-8)},[])
+ const executeAiAction=useCallback(async(action:unknown)=>{
+  if(!action||typeof action!=='object')return null
+  const value=action as Record<string,unknown>,type=String(value.type||'')
+  if(type==='navigate'){const target=String(value.target||'');const nav:Record<string,()=>void>={home:flow.actions.openHome,demand:flow.actions.openDemand,opportunities:flow.actions.openOpportunities,agenda:flow.actions.openAgenda,earnings:flow.actions.openEarnings,profile:flow.actions.openProfile,history:flow.actions.openHistory,dispute:()=>flow.actions.openDispute(),'active-job':flow.actions.openActiveJob};const fn=nav[target];if(!fn)return{ok:false,message:'No reconozco ese destino.'};fn();return{ok:true,message:'Listo.'}}
+  if(type==='set_online'){const ok=data.online?true:await data.setOnline(true);return{ok,message:ok?'Quedaste online.':'No pude ponerte online.'}}
+  if(type==='set_offline'){const ok=!data.online?true:await data.setOnline(false);return{ok,message:ok?'Quedaste offline.':'No pude ponerte offline.'}}
+  if(type==='accept_job'||type==='reject_job'){const serviceId=String(value.service_id||''),item=data.opportunities.find(item=>String(item.serviceId)===serviceId);if(!item)return{ok:false,message:'No encontré ese pedido entre tus oportunidades actuales.'};const ok=type==='accept_job'?await flow.actions.acceptOpportunity(item.id):await flow.actions.rejectOpportunity(item.id);return{ok,message:ok?(type==='accept_job'?'Trabajo aceptado.':'Oportunidad rechazada.'):'La acción no pudo completarse.'}}
+  if(type==='update_service_status'){const serviceId=String(value.service_id||''),status=String(value.status||'') as 'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion';if(!data.service||String(data.service.id)!==serviceId)return{ok:false,message:'Ese no es tu trabajo activo.'};if(!['en_camino','llegado','en_progreso','esperando_aprobacion'].includes(status))return{ok:false,message:'Ese estado no está permitido.'};const ok=await data.advance(status);if(ok)flow.actions.openActiveJob();return{ok,message:ok?'Estado del trabajo actualizado.':'No pude avanzar el trabajo.'}}
+  return{ok:false,message:'La acción propuesta por Hugo no está permitida.'}
+ },[data,flow.actions])
  const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{}},[])
  const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeProviderVoice(source)
@@ -37,11 +47,13 @@ export function ProviderGlobalVoiceCommands(){
     const response=await fetch(getHugoRuntimeUrl('/api/hugo/chat'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({message:source,role:'provider',surface:'provider',context,history})}),payload=await response.json().catch(()=>({}))
     if(!response.ok)throw new Error(String(payload?.hugo_mensaje||payload?.error||'Hugo no respondió'))
     const reply=String(payload?.hugo_mensaje||'').trim()
-    if(reply){remember('user',source);remember('assistant',reply);await speak(reply);return true}
+    const actionResult=await executeAiAction(payload?.provider_action)
+    const spoken=actionResult?.message||reply
+    if(spoken){remember('user',source);remember('assistant',spoken);await speak(spoken);return true}
    }catch(error){console.warn('Hugo provider conversational fallback failed',error)}
   }
   return false
- },[data,flow.actions,flow.screen,remember,speak])
+ },[data,executeAiAction,flow.actions,flow.screen,remember,speak])
  useGlobalVoiceCommandListener(handle)
  return null
 }
