@@ -17,7 +17,7 @@ try{
  await page.goto(base+'/?app=admin',{waitUntil:'domcontentloaded'});await page.getByRole('navigation',{name:'Navegación Admin'}).waitFor({state:'visible',timeout:30000})
  const open=page.getByRole('button',{name:/Abrir Hugo/i});await open.waitFor({state:'visible',timeout:20000});await open.click();await page.getByText(/HUGO/).first().waitFor({state:'visible',timeout:10000});await page.waitForTimeout(300)
  const summary=await call('admin_get_operational_summary');assert.equal(summary.ok,true);assert.ok(summary.data&&typeof summary.data==='object')
- const service=await call('admin_find_service',{service_id:String(svc.data.numero)});assert.equal(service.ok,true);assert.ok(service.data.services.some(x=>x.id===svc.data.id))
+ const service=await call('admin_find_service',{service_id:svc.data.id});assert.equal(service.ok,true);assert.ok(service.data.services.some(x=>x.id===svc.data.id))
  const foundUser=await call('admin_find_user',{query:email});assert.equal(foundUser.ok,true);assert.ok(foundUser.data.users.some(x=>x.id===login.user.id))
  const nav=await call('admin_navigate',{target:'operations:services'});assert.equal(nav.ok,true);assert.equal(nav.data.target,'operations:services')
  const invalidNav=await call('admin_navigate',{target:'finance:transfer'});assert.equal(invalidNav.ok,false);assert.equal(invalidNav.code,'INVALID_TARGET')
