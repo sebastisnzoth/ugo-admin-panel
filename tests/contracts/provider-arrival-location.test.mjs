@@ -105,3 +105,10 @@ test('manual arrival reuses trusted tracker GPS and only reacquires for explicit
  assert.match(helper,/\['gps_unavailable','gps_stale','gps_inaccurate'\]\.includes\(code\)/)
  assert.match(helper,/if\(!code\|\|!\['gps_unavailable','gps_stale','gps_inaccurate'\]\.includes\(code\)\)throw error/)
 })
+
+
+test('provider tracker keeps a recent trusted fix through transient timeout callbacks',()=>{
+ assert.match(tracker,/lastValidFixAtRef=useRef\(0\)/)
+ assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
+ assert.match(tracker,/error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return/)
+})
