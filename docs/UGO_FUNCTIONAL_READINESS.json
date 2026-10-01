@@ -538,7 +538,7 @@
           "id": "hugo-continuity",
           "title": "Conversación continua",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Mantener contexto útil sin repetir ni perder estado.",
           "done_evidence": "Sesiones TEST multi-turn.",
           "improvement_focus": "Menos latencia y respuestas más cortas.",
