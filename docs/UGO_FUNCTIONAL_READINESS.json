@@ -386,7 +386,7 @@
           "id": "provider-jobs",
           "title": "Mis trabajos / historial",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Historial, fotos, pagos, fechas y estados.",
           "done_evidence": "Datos TEST concordantes.",
           "improvement_focus": "Filtros por estado/fecha.",
@@ -397,13 +397,15 @@
           "priority": "NORMAL",
           "resources": [
             "provider-history"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-jobs-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-rating",
           "title": "Calificación Proveedor→Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Rating bilateral tras cierre.",
           "done_evidence": "Rating persistido + regla de unicidad.",
           "improvement_focus": "UX simétrica.",
@@ -414,7 +416,9 @@
           "priority": "NORMAL",
           "resources": [
             "ratings"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-rating-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-dispute",
