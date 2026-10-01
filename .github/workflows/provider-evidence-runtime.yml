@@ -1,0 +1,124 @@
+name: UGO Provider Evidence Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-evidence-runtime.mjs'
+      - 'scripts/provider-evidence-judge.mjs'
+      - 'scripts/provider-evidence-sentinel.mjs'
+      - 'scripts/autonomous-uploaded-media-runtime.mjs'
+      - 'src/features/provider/services/providerEvidenceService.ts'
+      - 'src/mvp/provider/ProviderEvidencePanel.tsx'
+      - 'src/mvp/provider/ProviderActiveJob.tsx'
+      - 'src/lib/cameraCapture.ts'
+      - 'supabase/migrations/20260911_service_evidence.sql'
+      - 'supabase/migrations/20260911215500_service_evidence_state_guard.sql'
+      - 'supabase/migrations/20260914232954_service_evidence_storage_integrity_guard.sql'
+      - 'tests/contracts/provider-evidence-panel-service.test.mjs'
+      - 'tests/contracts/provider-evidence-recovery.test.mjs'
+      - 'tests/contracts/provider-evidence-service-extraction.test.mjs'
+      - 'tests/contracts/provider-evidence-state-guard.test.mjs'
+      - 'tests/contracts/android-evidence-camera.test.mjs'
+      - '.github/workflows/provider-evidence-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-provider-evidence
+  cancel-in-progress: false
+
+jobs:
+  provider-evidence-runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        env:
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Provider evidence contract gates
+        run: node --test tests/contracts/provider-evidence-panel-service.test.mjs tests/contracts/provider-evidence-recovery.test.mjs tests/contracts/provider-evidence-service-extraction.test.mjs tests/contracts/provider-evidence-state-guard.test.mjs tests/contracts/android-evidence-camera.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Execute protected Storage evidence runtime
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node scripts/provider-evidence-runtime.mjs | tee artifacts/provider-evidence-runtime.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts/provider-evidence-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: provider-evidence-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge provider evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-evidence-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-evidence-judge-${{ github.sha }}
+          path: artifacts/provider-evidence-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel provider evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-evidence-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-evidence-sentinel-${{ github.sha }}
+          path: artifacts/provider-evidence-sentinel.json
+          if-no-files-found: error
+          retention-days: 90
