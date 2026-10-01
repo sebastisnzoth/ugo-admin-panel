@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-proximity-alert",
   "job_id": "UGO-READINESS-PROVIDER-PROXIMITY-ALERT-20261001",
   "title": "Alertas sólo a proveedores elegibles por radio",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T02:51:00Z",
-  "heartbeat_at": "2026-10-01T02:51:00Z",
-  "lease_expires_at": "2026-10-01T03:36:00Z",
+  "heartbeat_at": "2026-10-01T03:01:00Z",
+  "lease_expires_at": null,
   "started_sha": "26deed388b0cdadae6f70b5ebe895d7daa6eb00b",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,24 +16,37 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "provider-demand",
     "notifications"
   ],
   "correlation_id": "provider-proximity-alert-20261001T025100Z",
-  "current_step": "VERIFY_NOTIFICATION_INSIDE_OUTSIDE_CONFIGURED_RADIUS",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:proximity-matching:VERIFIED",
-    "main-sha:26deed388b0cdadae6f70b5ebe895d7daa6eb00b"
+    "main-sha:26deed388b0cdadae6f70b5ebe895d7daa6eb00b",
+    "github-pr:345",
+    "github-head:635fb7994ffb8f8ee413053d59226ccc2619dd69",
+    "github-run:36808280664:PASS",
+    "github-artifact:11137814649",
+    "github-core-run:36808280657:PASS",
+    "github-timeout-run:36808280660:PASS",
+    "runtime:10km-radius5-alert0",
+    "runtime:10km-radius15-alert1",
+    "runtime:reported-radius15",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:c4b666994803c2048c14f32849a201a909371a29"
   ],
   "production_touched": false,
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "result": null
+  "completed_at": "2026-10-01T03:01:00Z",
+  "finished_at": "2026-10-01T03:01:00Z",
+  "verified_sha": "635fb7994ffb8f8ee413053d59226ccc2619dd69",
+  "result": "VERIFIED",
+  "merged_main_sha": "c4b666994803c2048c14f32849a201a909371a29"
 }
