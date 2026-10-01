@@ -10,6 +10,7 @@ declare
   invalid_blocked boolean:=false;
   invalid_message text:='';
   sid uuid;
+  invalid_sid uuid;
   payid uuid;
   loc extensions.geography:=extensions.st_setsrid(extensions.st_makepoint(-48.5482,-27.5949),4326)::extensions.geography;
 begin
@@ -28,14 +29,26 @@ begin
   values(p_provider_id,'verificado',true,true,now(),now(),'2026-09-04',cat,100,20)
   on conflict(usuario_id) do update set estado_verificacion='verificado',online=true,disponible=true,onboarding_completo_at=coalesce(public.perfiles_proveedor.onboarding_completo_at,now()),termos_aceitos_at=coalesce(public.perfiles_proveedor.termos_aceitos_at,now()),termos_versao='2026-09-04',categoria_principal_id=cat,tarifa_base=100,zona_radio_km=20;
 
+  insert into public.servicios(numero,cliente_id,categoria_id,estado,descripcion,direccion_cliente,ubicacion_cliente,tarifa,comision_ugo,ganancia_proveedor,metadata,ambiente)
+  values(nextval('public.servicios_numero_seq'),p_client_id,cat,'borrador','UGO TEST invalid active job','Rua UGO TEST sem pagamento',loc,120,18,102,'{}'::jsonb,'demo')
+  returning id into invalid_sid;
+
+  -- Simulate a legacy/corrupt row that lost the payment preference after creation.
+  update public.servicios
+     set metadata='{}'::jsonb
+   where id=invalid_sid;
+
   begin
-    insert into public.servicios(numero,cliente_id,proveedor_id,categoria_id,estado,descripcion,direccion_cliente,ubicacion_cliente,tarifa,comision_ugo,ganancia_proveedor,metadata,ambiente)
-    values(nextval('public.servicios_numero_seq'),p_client_id,p_provider_id,cat,'asignado','UGO TEST invalid active job','Rua UGO TEST sem pagamento',loc,120,18,102,'{}'::jsonb,'demo');
+    update public.servicios
+       set proveedor_id=p_provider_id
+     where id=invalid_sid;
   exception when others then
     invalid_message:=sqlerrm;
     invalid_blocked:=position('forma de pago' in lower(sqlerrm))>0;
   end;
   if not invalid_blocked then raise exception 'ACTIVE_JOB_WITHOUT_PAYMENT_MUST_BE_BLOCKED: %',invalid_message; end if;
+  delete from public.servicios where id=invalid_sid;
+  invalid_sid:=null;
 
   insert into public.servicios(numero,cliente_id,proveedor_id,categoria_id,estado,descripcion,direccion_cliente,ubicacion_cliente,tarifa,comision_ugo,ganancia_proveedor,metadata,ambiente)
   values(nextval('public.servicios_numero_seq'),p_client_id,p_provider_id,cat,'asignado','Arreglar canilla de cocina','Rua UGO TEST 100, Florianópolis',loc,120,18,102,
