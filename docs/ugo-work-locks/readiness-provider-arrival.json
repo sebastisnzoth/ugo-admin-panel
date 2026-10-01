@@ -1,0 +1,32 @@
+{
+  "readiness_id": "provider-arrival",
+  "task_id": "readiness-provider-arrival",
+  "job_id": "UGO-READINESS-PROVIDER-ARRIVAL",
+  "title": "Verify YA LLEGUÉ 200m geofence and GPS fail-closed arrival",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T18:44:00Z",
+  "heartbeat_at": "2026-10-01T18:44:00Z",
+  "lease_expires_at": "2026-10-01T19:29:00Z",
+  "started_sha": "623d070e04186d02c1d931680d6a7775c8c8502c",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Arrival Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-location"
+  ],
+  "correlation_id": "readiness-provider-arrival-20261001T184400Z-gptugo-r1",
+  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false
+}
