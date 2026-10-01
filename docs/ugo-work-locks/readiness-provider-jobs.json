@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-jobs",
   "job_id": "UGO-READINESS-PROVIDER_JOBS",
   "title": "Verify provider jobs history, evidence, payments, dates and states",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T19:13:00Z",
-  "heartbeat_at": "2026-10-01T19:13:00Z",
-  "lease_expires_at": "2026-10-01T19:43:00Z",
+  "heartbeat_at": "2026-10-01T22:45:00Z",
+  "lease_expires_at": "2026-10-01T22:45:00Z",
   "started_sha": "f06f85c0f50679501d739ef7cc32fa1744dc9f2d",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,9 +25,28 @@
     "provider-history"
   ],
   "correlation_id": "readiness-provider-jobs-20261001T191300Z-gptugo-r1",
-  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
-  "attempt": 1,
-  "evidence_ids": [],
+  "current_step": "VERIFIED",
+  "attempt": 2,
+  "evidence_ids": [
+    "docs/evidence/readiness-provider-jobs-20261001.json",
+    "github-actions:36932219990"
+  ],
   "production_touched": false,
-  "last_failure": null
+  "last_failure": null,
+  "completed_at": "2026-10-01T22:45:00Z",
+  "completed_sha": "2aa857bae04a5c57c19a74023ff7ef361feebe64",
+  "validator_results": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "runtime_result": "PASS",
+  "environment": "UGO TEST",
+  "stale_lock_reconciled": true,
+  "reconciliation": {
+    "previous_lease_expires_at": "2026-10-01T19:43:00Z",
+    "proof_tested_sha": "1217e174eeeba8d3b4d2cc8efa73ee633e3d20ee",
+    "reconciled_main_sha": "50f851db70996ad426a314aba1ad1fcd7df7cf88",
+    "functional_provider_jobs_files_changed_since_proof": false,
+    "workflow_run_id": 36932219990
+  }
 }
