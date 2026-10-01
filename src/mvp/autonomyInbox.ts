@@ -24,10 +24,15 @@ const slaForAuthority=(authority?:string|null)=>authority==='RED'?15:authority==
 const priorityForAuthority=(authority?:string|null):'P0'|'P1'|'P2'=>authority==='RED'?'P0':authority==='YELLOW'?'P1':'P2'
 const timestamp=(value?:string|null)=>{const n=value?Date.parse(value):0;return Number.isFinite(n)?n:0}
 
+export function requiresHumanApproval(job:ExecutiveInboxJob){return job.status==='WAITING_APPROVAL'&&(job.authority_class==='YELLOW'||job.authority_class==='RED')}
+export function isGreenApprovalInconsistency(job:ExecutiveInboxJob){return job.status==='WAITING_APPROVAL'&&job.authority_class==='GREEN'}
+export function findAutonomyInconsistencies(jobs:ExecutiveInboxJob[]){return jobs.filter(isGreenApprovalInconsistency)}
+
 export function buildExecutiveInboxItems(jobs:ExecutiveInboxJob[],nowMs=Date.now()):ExecutiveInboxItem[]{
  const newestByWork=new Map<string,ExecutiveInboxJob>()
  for(const job of jobs){
   if(job.status!=='WAITING_APPROVAL'&&job.status!=='BLOCKED')continue
+  if(job.status==='WAITING_APPROVAL'&&!requiresHumanApproval(job))continue
   const key=String(job.correlation_id||job.id)
   const current=newestByWork.get(key)
   const incomingTimestamp=timestamp(job.created_at)
