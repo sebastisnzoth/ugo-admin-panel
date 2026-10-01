@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="UGO Implementation Command Center: estado, pasos restantes, bloqueos y cómo resolverlos.">
-  <title>UGO · Implementation Command Center</title>
+  <title>UGO · Implementation Command Center</title>\n  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root{color-scheme:dark;--bg:#08111f;--panel:#101a2e;--panel2:#0c1526;--line:#253756;--text:#eef5ff;--muted:#9eb0ca;--ok:#86efac;--warn:#fde68a;--bad:#fca5a5;--accent:#7dd3fc}
     *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top,#172554 0,#08111f 44%);color:var(--text);font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
@@ -107,7 +107,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   <section class="monitor" aria-label="Monitor de trabajo">
     <div class="monitor-head">
       <div><span class="live-dot"></span><strong>MONITOR DE TRABAJO</strong></div>
-      <div class="tiny" id="activitySource">Actividad GitHub · cargando snapshot seguro…</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span class="pill pending" id="realtimeState">REALTIME · CONECTANDO</span><div class="tiny" id="activitySource">Actividad GitHub · cargando snapshot seguro…</div></div>
     </div>
     <div class="monitor-grid" style="grid-template-columns:1fr 1fr">
       <div class="monitor-box" style="min-height:140px">
@@ -1511,6 +1511,65 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   loadLiveMonitor()
   loadMainHead()
   const revalidate = () => Promise.allSettled([loadStatus(), loadPullRequests(), loadCi(), loadLiveMonitor(), loadMainHead()])
+
+  const realtimeSupabaseUrl = 'https://tmossnqfwfwjrtzwcbmm.supabase.co'
+  const realtimePublishableKey = 'sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl'
+  let commandRealtimeClient = null
+  let commandRealtimeChannel = null
+  let realtimeRefreshTimer = 0
+  const setRealtimeState = (label, kind='pending') => {
+    const el = document.getElementById('realtimeState')
+    if (!el) return
+    el.textContent = 'REALTIME · ' + label
+    el.className = 'pill ' + kind
+  }
+  const scheduleRealtimeRefresh = () => {
+    if (realtimeRefreshTimer) window.clearTimeout(realtimeRefreshTimer)
+    realtimeRefreshTimer = window.setTimeout(() => {
+      realtimeRefreshTimer = 0
+      revalidate()
+    }, 250)
+  }
+  const teardownRealtimeSignal = () => {
+    if (commandRealtimeClient && commandRealtimeChannel) {
+      try { commandRealtimeClient.removeChannel(commandRealtimeChannel) } catch (_) {}
+    }
+    commandRealtimeChannel = null
+    commandRealtimeClient = null
+  }
+  const setupRealtimeSignal = () => {
+    teardownRealtimeSignal()
+    if (!window.supabase?.createClient) {
+      setRealtimeState('SIN CLIENTE', 'bad')
+      return
+    }
+    commandRealtimeClient = window.supabase.createClient(realtimeSupabaseUrl, realtimePublishableKey, {
+      auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
+      realtime:{params:{eventsPerSecond:10}}
+    })
+    commandRealtimeChannel = commandRealtimeClient
+      .channel('ugo-command-center-public-signal')
+      .on('postgres_changes',{event:'*',schema:'public',table:'development_dashboard_signal'},payload => {
+        const revision = payload?.new?.revision ?? payload?.old?.revision ?? '—'
+        setRealtimeState('REV ' + revision, 'ugo')
+        scheduleRealtimeRefresh()
+      })
+      .subscribe(status => {
+        if (status === 'SUBSCRIBED') setRealtimeState('CONECTADO', 'ugo')
+        else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') setRealtimeState('DEGRADADO', 'bad')
+        else if (status === 'CLOSED') setRealtimeState('DESCONECTADO', 'warn')
+        else setRealtimeState(String(status || 'CONECTANDO').toUpperCase(), 'pending')
+      })
+  }
+  setupRealtimeSignal()
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return
+    revalidate()
+    const state = String(commandRealtimeChannel?.state || '').toLowerCase()
+    if (!commandRealtimeChannel || (state && !['joined','joining'].includes(state))) setupRealtimeSignal()
+  })
+  window.addEventListener('beforeunload', teardownRealtimeSignal)
+
   document.getElementById('revalidateNow').addEventListener('click', () => {
     const button = document.getElementById('revalidateNow')
     button.textContent = 'Revalidando…'
