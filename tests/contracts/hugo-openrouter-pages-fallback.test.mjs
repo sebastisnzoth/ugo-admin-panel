@@ -22,7 +22,7 @@ test('Gemini Live failure degrades to browser speech instead of killing Hugo',as
 test('provider browser speech can continue through the authenticated Hugo model router',async()=>{
  const src=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
  assert.match(src,/engine==='browser-speech'/)
- assert.match(src,/fetch\('\/api\/hugo\/chat'/)
+ assert.match(src,/fetch\(getHugoRuntimeUrl\('\/api\/hugo\/chat'\)/)
  assert.match(src,/role:'provider'/)
  assert.match(src,/Authorization:'Bearer '\+session\.access_token/)
 })
