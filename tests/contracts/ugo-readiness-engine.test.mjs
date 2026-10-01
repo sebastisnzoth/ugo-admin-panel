@@ -133,3 +133,18 @@ test('HUMAN_REQUIRED lock is authoritative, releases capacity, and is not resche
   assert.equal(summary.in_progress,0)
   assert.ok(!summary.runnable_ids.includes('a'))
 })
+
+
+test('HUMAN_REQUIRED dependencies unblock autonomous descendants without becoming VERIFIED', () => {
+  const base=fixture()
+  const locks=[{
+    task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
+    started_at:'2026-09-29T19:00:00Z',lease_expires_at:null,resources:['r1'],
+    evidence_ids:['automated-runtime:a'],human_final:{required:true,status:'PENDING'}
+  }]
+  const {readiness}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  assert.equal(items.find(x=>x.id==='a').gate_state,'HUMAN_REQUIRED')
+  assert.equal(items.find(x=>x.id==='b').gate_state,'AVAILABLE')
+  assert.notEqual(items.find(x=>x.id==='a').status,'VERIFIED')
+})

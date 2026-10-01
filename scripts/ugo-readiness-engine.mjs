@@ -133,7 +133,10 @@ export function evaluateFunctionalReadiness({
     }
   }
 
-  const done = id => byId.get(id)?.status === 'VERIFIED'
+  const dependencySatisfied = id => {
+    const status=byId.get(id)?.status
+    return status === 'VERIFIED' || status === 'HUMAN_REQUIRED'
+  }
   const active = items.filter(item => item.status === 'IN_PROGRESS')
   const globalActiveLocks = (locks || []).filter(lock => {
     if (!ACTIVE_LOCK_STATUSES.has(lock.status)) return false
@@ -150,7 +153,7 @@ export function evaluateFunctionalReadiness({
     .filter(item => item.status === 'NEEDS_RUNTIME_PROOF')
     .map(item => ({
       ...item,
-      unresolved_dependencies:(item.depends_on || []).filter(id => !done(id)),
+      unresolved_dependencies:(item.depends_on || []).filter(id => !dependencySatisfied(id)),
     }))
     .filter(item => item.unresolved_dependencies.length === 0)
     .sort((a,b) =>
@@ -178,7 +181,7 @@ export function evaluateFunctionalReadiness({
   ).length
 
   for (const item of items) {
-    const unresolved = (item.depends_on || []).filter(id => !done(id))
+    const unresolved = (item.depends_on || []).filter(id => !dependencySatisfied(id))
     item.unresolved_dependencies = unresolved
 
     if (item.status === 'VERIFIED') {
