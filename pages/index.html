@@ -152,6 +152,19 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     </div>
   </section>
 
+  <section class="card" id="liveReadinessBoard" style="margin-top:14px" aria-live="polite">
+    <div class="row"><span><b>READINESS LIVE · UGO Arena</b></span><span class="pill pending" id="liveReadinessState">CARGANDO</span></div>
+    <div class="metrics" style="margin-top:12px">
+      <div class="metric"><strong class="bad" id="liveP0Open">—</strong><span>P0 abiertos</span></div>
+      <div class="metric"><strong class="warn" id="liveP1Open">—</strong><span>P1 abiertos</span></div>
+      <div class="metric"><strong class="bad" id="liveSentinelCurrent">—</strong><span>incidentes build actual</span></div>
+      <div class="metric"><strong class="ok" id="liveApproved">—</strong><span>ítems aprobados</span></div>
+      <div class="metric"><strong class="accent" id="liveChecklistTotal">—</strong><span>ítems checklist</span></div>
+    </div>
+    <div class="sub" id="liveReadinessDetail">Leyendo vistas públicas sanitizadas de Supabase TEST.</div>
+    <div class="command-critical" id="liveCriticalIncidents" style="margin-top:10px"></div>
+  </section>
+
   <section class="card" style="margin-top:14px">
     <div class="row"><span><b>Capacidad segura ahora</b></span><span class="pill ugo" id="runnableNow">— habilitados</span></div>
     <p class="sub" id="parallelHint">Calculando dependencias y conflictos…</p>
@@ -453,6 +466,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       mainHeadSha = data.sha || null
       mainHeadCheckedAt = data.generated_at_utc || new Date().toISOString()
       renderSyncState()
+      if (commandRealtimeClient) loadLiveReadiness()
       return mainHeadSha
     })
     .catch(err => {
@@ -1517,6 +1531,51 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
   let commandRealtimeClient = null
   let commandRealtimeChannel = null
   let realtimeRefreshTimer = 0
+  let liveReadinessLoadedAt = null
+  const setLiveReadinessState = (label, kind='pending') => {
+    const el = document.getElementById('liveReadinessState')
+    if (!el) return
+    el.textContent = label
+    el.className = 'pill ' + kind
+  }
+  const loadLiveReadiness = async () => {
+    if (!commandRealtimeClient) return
+    setLiveReadinessState('ACTUALIZANDO','pending')
+    try {
+      const [checklistResult,incidentResult] = await Promise.all([
+        commandRealtimeClient.from('development_checklist_public').select('code,title,priority,status,weight,updated_at,has_evidence').order('position',{ascending:true}),
+        commandRealtimeClient.from('development_incidents_public').select('severity,event_type,status,source_role,action,checklist_code,message,occurrences,last_seen_at,runtime_revision').order('last_seen_at',{ascending:false}).limit(40)
+      ])
+      if (checklistResult.error) throw checklistResult.error
+      if (incidentResult.error) throw incidentResult.error
+      const items = checklistResult.data || []
+      const incidents = incidentResult.data || []
+      const currentRevision = String(mainHeadSha || statusSnapshot?.source_sha || '').slice(0,40)
+      const currentIncidents = incidents.filter(item => item.status !== 'resolved' && currentRevision && String(item.runtime_revision || '').slice(0,40) === currentRevision)
+      const p0Open = items.filter(item => item.priority === 'P0' && item.status !== 'approved').length
+      const p1Open = items.filter(item => item.priority === 'P1' && item.status !== 'approved').length
+      const approved = items.filter(item => item.status === 'approved').length
+      document.getElementById('liveP0Open').textContent = p0Open
+      document.getElementById('liveP1Open').textContent = p1Open
+      document.getElementById('liveSentinelCurrent').textContent = currentIncidents.length
+      document.getElementById('liveApproved').textContent = approved
+      document.getElementById('liveChecklistTotal').textContent = items.length
+      liveReadinessLoadedAt = new Date().toISOString()
+      document.getElementById('liveReadinessDetail').textContent =
+        'Fuente directa: development_checklist_public + development_incidents_public · revisión ' +
+        (currentRevision ? currentRevision.slice(0,12) : 'no resuelta') + ' · ' + new Date(liveReadinessLoadedAt).toLocaleTimeString()
+      document.getElementById('liveCriticalIncidents').innerHTML = currentIncidents.slice(0,5).map(item =>
+        '<div class="command-critical-item"><div><b>' + esc(item.severity + ' · ' + item.event_type) + '</b><small>' +
+        esc((item.source_role || 'runtime') + (item.action ? ' · ' + item.action : '') + ' · ' + item.message) +
+        '</small></div><span class="pill blocked">×' + esc(item.occurrences || 1) + '</span></div>'
+      ).join('') || '<div class="command-critical-item"><div><b>Sin incidentes del build actual</b><small>Sentinel público no reporta P0/P1 para la revisión comparada.</small></div><span class="pill ugo">LIVE</span></div>'
+      setLiveReadinessState('EN VIVO','ugo')
+    } catch (error) {
+      setLiveReadinessState('DEGRADADO','bad')
+      document.getElementById('liveReadinessDetail').textContent = 'No se pudo leer el feed público en vivo; el snapshot publicado sigue visible como respaldo.'
+      console.error('Command Center live readiness failed',error)
+    }
+  }
   const setRealtimeState = (label, kind='pending') => {
     const el = document.getElementById('realtimeState')
     if (!el) return
@@ -1527,7 +1586,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     if (realtimeRefreshTimer) window.clearTimeout(realtimeRefreshTimer)
     realtimeRefreshTimer = window.setTimeout(() => {
       realtimeRefreshTimer = 0
-      revalidate()
+      Promise.allSettled([revalidate(),loadLiveReadiness()])
     }, 250)
   }
   const teardownRealtimeSignal = () => {
@@ -1547,6 +1606,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},
       realtime:{params:{eventsPerSecond:10}}
     })
+    loadLiveReadiness()
     commandRealtimeChannel = commandRealtimeClient
       .channel('ugo-command-center-public-signal')
       .on('postgres_changes',{event:'*',schema:'public',table:'development_dashboard_signal'},payload => {
