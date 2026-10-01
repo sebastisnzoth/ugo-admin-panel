@@ -1,0 +1,37 @@
+{
+  "readiness_id": "provider-realtime-location",
+  "task_id": "readiness-provider-realtime-location",
+  "job_id": "UGO-READINESS-PROVIDER-REALTIME-LOCATION-20261001",
+  "title": "provider-realtime-location",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T00:08:57Z",
+  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Mobile Device Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-location"
+  ],
+  "correlation_id": "provider-realtime-location-20261001T000857Z",
+  "current_step": "RECONCILE_PROVIDER_GPS_AND_RUN_TEST_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
