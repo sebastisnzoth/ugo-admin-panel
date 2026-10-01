@@ -13,6 +13,8 @@ const{data:templates,error:templateError}=await admin.from('servicios').select('
 assert.ifError(templateError);const template=templates?.[0];assert.ok(template?.categoria_id&&template?.ubicacion_cliente,'MATCH_TEMPLATE_REQUIRED')
 const{data:service,error:createError}=await admin.from('servicios').insert({cliente_id:CLIENT,categoria_id:template.categoria_id,estado:'borrador',descripcion:'UGO TEST payment-before-dispatch '+sha.slice(0,12),direccion_cliente:template.direccion_cliente||'UGO TEST',zona:template.zona||null,ubicacion_cliente:template.ubicacion_cliente,tarifa:120,moneda:'BRL',ambiente:'demo',metadata:{readiness_fixture:'request-payment-before-dispatch',readiness_sha:sha}}).select('id').single()
 assert.ifError(createError);assert.ok(service?.id)
+const cleared=await admin.from('servicios').update({metadata:{readiness_fixture:'request-payment-before-dispatch',readiness_sha:sha}}).eq('id',service.id);assert.ifError(cleared.error)
+const{data:clearedRead,error:clearedReadError}=await admin.from('servicios').select('metadata').eq('id',service.id).single();assert.ifError(clearedReadError);assert.equal(clearedRead.metadata?.requested_payment_method,undefined);assert.equal(clearedRead.metadata?.payment_method,undefined)
 let cleanup=false
 try{
  const blocked=await client.rpc('iniciar_matching',{p_servicio_id:service.id})
