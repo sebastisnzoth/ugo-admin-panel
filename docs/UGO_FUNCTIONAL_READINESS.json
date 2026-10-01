@@ -806,7 +806,7 @@
           "id": "auto-departments",
           "title": "Departamentos conectados",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada departamento visible, con agente responsable y entradas/salidas.",
           "done_evidence": "Registro + job/evidence por departamento.",
           "improvement_focus": "Mostrar madurez por departamento.",
