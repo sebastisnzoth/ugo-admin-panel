@@ -19,6 +19,11 @@ test('Executive Inbox deduplicates work and orders escalations by SLA and author
  assert.match(dashboard,/data-correlation-id/)
 })
 
+test('Executive Inbox dedupe is deterministic when duplicate timestamps collide',()=>{
+ assert.match(inbox,/incomingTimestamp===currentTimestamp&&incomingId\.localeCompare\(currentId\)>0/)
+ assert.match(inbox,/currentTimestamp=timestamp\(current\?\.created_at\)/)
+})
+
 test('Executive Inbox preserves audited decisions and actionable failure states',()=>{
  assert.match(command,/superadmin_decide_autonomous_job/)
  assert.match(command,/INDEPENDENT_SECOND_APPROVER_REQUIRED/)
