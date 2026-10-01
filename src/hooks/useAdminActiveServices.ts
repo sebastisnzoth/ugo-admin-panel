@@ -62,7 +62,7 @@ export function useAdminActiveServices() {
         (supabase as any)
           .from('servicios')
           .select(
-            'id,numero,estado,tarifa,created_at,updated_at,descripcion,direccion_cliente,cliente_id,proveedor_id,programado_para,aceptado_at,iniciado_at,completado_at,cancelado_at,metadata,' +
+            'id,numero,estado,tarifa,created_at,updated_at,descripcion,direccion_cliente,cliente_id,proveedor_id,categoria_id,ubicacion_cliente,programado_para,aceptado_at,iniciado_at,completado_at,cancelado_at,metadata,' +
             'categoria:categorias!servicios_categoria_id_fkey(nombre,emoji),' +
             'cliente:usuarios!servicios_cliente_id_fkey(id,nombre,apellido),' +
             'proveedor:usuarios!servicios_proveedor_id_fkey(id,nombre,apellido,karma)'
@@ -128,7 +128,7 @@ export function useAdminActiveServices() {
       .from('servicios')
       .update(cleanPatch)
       .eq('id', serviceId)
-      .select('id,numero,estado,tarifa,created_at,updated_at,descripcion,direccion_cliente,cliente_id,proveedor_id,programado_para,aceptado_at,iniciado_at,completado_at,cancelado_at,metadata')
+      .select('id,numero,estado,tarifa,created_at,updated_at,descripcion,direccion_cliente,cliente_id,proveedor_id,categoria_id,ubicacion_cliente,programado_para,aceptado_at,iniciado_at,completado_at,cancelado_at,metadata')
       .single()
 
     if (updateError) {
