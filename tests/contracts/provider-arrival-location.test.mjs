@@ -93,3 +93,15 @@ test('provider tracker surfaces precise GPS failures and never auto-arrives from
  assert.doesNotMatch(errorHandler,/autoArrivalRef/)
  assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })
+
+
+test('manual arrival reuses trusted tracker GPS and only reacquires for explicit GPS freshness failures',()=>{
+ const helperStart=service.indexOf('async function markProviderArrived')
+ const helperEnd=service.indexOf('async function confirmProviderArrival',helperStart)
+ const helper=service.slice(helperStart,helperEnd)
+ const confirmIndex=helper.indexOf('confirmProviderArrival(supabase,serviceId)')
+ const publishIndex=helper.indexOf('publishProviderLocation(supabase,serviceId)')
+ assert.ok(helperStart>=0&&confirmIndex>=0&&publishIndex>confirmIndex,'arrival should validate an already-published tracker fix before cold GPS acquisition')
+ assert.match(helper,/\['gps_unavailable','gps_stale','gps_inaccurate'\]\.includes\(code\)/)
+ assert.match(helper,/if\(!code\|\|!\['gps_unavailable','gps_stale','gps_inaccurate'\]\.includes\(code\)\)throw error/)
+})
