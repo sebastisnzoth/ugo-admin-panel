@@ -5,9 +5,9 @@
   "title": "Verify Hugo conversational voice input output and textual fallback",
   "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-09-30T22:53:00Z",
-  "lease_expires_at": "2026-09-30T23:38:00Z",
-  "started_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+  "heartbeat_at": "2026-10-01T02:32:00Z",
+  "lease_expires_at": "2026-10-01T03:17:00Z",
+  "started_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "GPT_UGO · Hugo Voice Runtime Agent",
@@ -26,7 +26,7 @@
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
   "current_step": "HUMAN_MIC_AUDIO_RETEST_AFTER_VOICE_FLOW_FIXES",
-  "attempt": 4,
+  "attempt": 5,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
     "github-actions:36737490396",
@@ -35,10 +35,11 @@
     "commit:15ded009f4574d2555274f2b2ab1d02778ba6966",
     "commit:52f802bcce942756c1c788cb19bfef3c156874ba",
     "commit:1121182fd56ae27585d7b71cbaea340faab8e01e",
-    "source-revalidation:main@96352f48a54a1a80e4c0a66908f8c4424fb406e4"
+    "source-revalidation:main@96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+    "stale-reconcile:ce3afbadb1eb148cee3149c470e0e81c25fe3615"
   ],
-  "result_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
-  "revalidated_main_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+  "result_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
+  "revalidated_main_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "human_runtime_evidence": {
     "result": "FAIL",
     "voice_initial_intent": "PASS",
