@@ -47,3 +47,12 @@ test('Command Center exposes authoritative DONE control without self-certifying'
   assert.match(page,/remaining_autonomous/)
   assert.match(page,/human_deferred/)
 })
+
+
+test('Command Center surfaces failed physical Hugo voice evidence instead of reporting generic progress',()=>{
+  const engine=fs.readFileSync('scripts/ugo-readiness-engine.mjs','utf8')
+  assert.match(engine,/WAITING_EVIDENCE.*human_final_required/s)
+  assert.match(engine,/human_runtime_evidence/)
+  assert.match(engine,/prueba humana real FALLÓ/)
+  assert.match(engine,/requiere corrección y nueva prueba física/)
+})
