@@ -227,7 +227,7 @@ jobs:
 
       - name: Build UGO TEST app for GitHub Pages
         env:
-          VITE_API_BASE_URL: https://ugo-admin-panel-netlify.netlify.app
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
           VITE_APP_REVISION: ${{ github.sha }}
         shell: bash
         run: |
