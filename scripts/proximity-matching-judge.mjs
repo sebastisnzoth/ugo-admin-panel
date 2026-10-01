@@ -1,0 +1,4 @@
+import assert from'node:assert/strict';import fs from'node:fs/promises'
+const sha=process.env.UGO_RUNTIME_SHA||'',r=JSON.parse(await fs.readFile('artifacts/proximity-matching-runtime.json','utf8'))
+assert.equal(r.sha,sha);assert.equal(r.result,'PASS');assert.equal(r.production_touched,false);assert.deepEqual([r.baseline_offer_count,r.offline_offer_count,r.stale_gps_offer_count,r.outside_radius_offer_count,r.inside_radius_offer_count,r.wrong_category_offer_count],[1,0,0,0,1,0]);assert.equal(r.debt_guard_present,true);assert.equal(r.schedule_guard_present,true);assert.equal(r.verification_guard_present,true);assert.equal(r.cleanup_ok,true)
+await fs.writeFile('artifacts/proximity-matching-judge.json',JSON.stringify({readiness_id:r.readiness_id,sha,result:'PASS',checks:['category','online','fresh-gps','provider-radius','debt-guard','schedule-guard','verification-guard','cleanup'],checked_at:new Date().toISOString()},null,2)+'\n')
