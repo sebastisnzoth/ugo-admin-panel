@@ -16,7 +16,7 @@ test('admin auth exposes loading, recovery and error semantics', async () => {
   assert.match(gate, /catch\(err:unknown\)\{setError\(adminAuthErrorMessage\(err\)\)\}/)
   assert.match(gate, /ADMIN_PROFILE_RETRY_DELAYS/)
   assert.match(gate, /Login aceptado\. UGO está recuperando la conexión con tu perfil Admin/)
-  assert.match(gate, /AbortSignal\.timeout\(4500\)/)
+  assert.match(gate, /withAdminProfileTimeout/)
 })
 
 test('admin feature shell keeps the operational panel mounted during migration', async () => {
@@ -41,7 +41,7 @@ test('client/provider auth preserves a valid session during transient profile ou
   const shared = await read('src/mvp/shared.tsx')
   assert.match(shared, /AUTH_PROFILE_RETRY_DELAYS/)
   assert.match(shared, /transientProfileError/)
-  assert.match(shared, /AbortSignal\.timeout\(4500\)/)
+  assert.match(shared, /withProfileTimeout/)
   assert.match(shared, /Tu sesión sigue activa/)
   assert.doesNotMatch(shared, /La sesión tardó demasiado en responder\. Podés ingresar nuevamente\.');setSession\(null\)/)
 })
