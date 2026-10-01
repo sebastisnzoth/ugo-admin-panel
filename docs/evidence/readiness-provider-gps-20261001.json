@@ -1,0 +1,54 @@
+{
+  "readiness_id": "provider-gps",
+  "correlation_id": "readiness-provider-gps-20261001T170000Z-gptugo-r8",
+  "candidate_sha": "7baed355c91b41f76ea9fd86b7c3728469a12189",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "implementation": {
+    "zero_zero_guard": true,
+    "stale_gps_guard_ms": 30000,
+    "max_accuracy_m": 250,
+    "arrival_geofence_m": 200,
+    "publish_before_arrival": true,
+    "freshness_indicator": true
+  },
+  "github_actions_attempt": {
+    "run_id": 36896334591,
+    "status": "CANCELLED_BEFORE_JOBS",
+    "note": "The shared GitHub Actions scheduler/concurrency cancelled the run before jobs started; this run is not counted as PASS evidence."
+  },
+  "direct_test_runtime": {
+    "source": "PERSISTED_STATE",
+    "status": "PASS",
+    "service_id": "dfc6efe8-51d0-4fa8-a400-4655bd2107f0",
+    "qa_run_id": "15944c1f-029c-4292-ad3f-1ed0cf99c9d2",
+    "db_judge_job": "3bfd220c-e7e7-4d69-96b2-7422571549e1",
+    "executed_at": "2026-10-01T17:03:14.783386Z",
+    "observations": {
+      "zero_zero_rejected": true,
+      "stale_gps_rejected": true,
+      "inaccurate_gps_rejected": true,
+      "outside_geofence_rejected": true,
+      "rejected_arrival_did_not_change_state": true,
+      "valid_gps_arrival_accepted": true
+    },
+    "fixture_availability_restored": true
+  },
+  "judge": {
+    "status": "PASS",
+    "execution": "Exact repository script scripts/provider-gps-judge.mjs executed against candidate-sha runtime evidence.",
+    "completed_at": "2026-10-01T17:04:08.919Z"
+  },
+  "sentinel": {
+    "status": "PASS",
+    "execution": "Exact repository script scripts/provider-gps-sentinel.mjs executed after Judge PASS against the same candidate SHA.",
+    "completed_at": "2026-10-01T17:04:08.952Z"
+  },
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "criterion": "On a real provider device in UGO TEST, grant precise location while a service is en_camino; obtain a fresh non-0,0 GPS fix and verify UGO publishes it before arrival validation.",
+    "evidence_required": "GPS físico final"
+  },
+  "final_gate": "HUMAN_REQUIRED"
+}
