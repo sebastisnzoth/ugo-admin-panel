@@ -1,15 +1,17 @@
-import{useCallback}from'react'
+import{useCallback,useRef}from'react'
 import{emitUgoUiEvent,UGO_UI_EVENTS}from'../../../mvp/uiEvents'
 import{useGlobalVoiceCommandListener}from'../../../shared/voice/useGlobalVoiceCommandListener'
 import{useProviderData}from'../../../mvp/provider/providerData'
 import{useProviderFlow}from'../../../mvp/provider/providerFlow'
-import{detectProviderVoiceLocale,findProviderVoiceOpportunity,normalizeProviderVoice,providerVoiceSummary}from'./providerVoiceHelpers'
+import{detectProviderVoiceLocale,findProviderVoiceOpportunity,normalizeProviderVoice,providerVoiceContext,providerVoiceSummary}from'./providerVoiceHelpers'
 import{runProviderVoiceCommand}from'./providerVoiceCommands'
 import{getRoleSupabase}from'../../../lib/roleSupabase'
 import{getHugoRuntimeUrl}from'../../../lib/hugoEdgeRuntime'
 
 export function ProviderGlobalVoiceCommands(){
  const flow=useProviderFlow(),data=useProviderData()
+ const conversation=useRef<Array<{role:'user'|'assistant';content:string}>>([])
+ const remember=useCallback((role:'user'|'assistant',content:string)=>{const text=content.trim();if(!text)return;conversation.current=[...conversation.current,{role,content:text}].slice(-8)},[])
  const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{}},[])
  const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeProviderVoice(source)
@@ -30,15 +32,16 @@ export function ProviderGlobalVoiceCommands(){
    try{
     const sb=getRoleSupabase('provider'),{data:{session}}=await sb.auth.getSession()
     if(!session)return false
-    const context=JSON.stringify({summary:providerVoiceSummary(data),online:data.online,activeService:data.service?{id:data.service.id,state:data.service.estado,category:data.service.categoria?.nombre||null}:null,opportunities:data.opportunities.slice(0,5).map(item=>({serviceId:item.serviceId,category:item.category,zone:item.zone,distanceKm:item.distanceKm,estimatedValue:item.estimatedValue}))})
-    const response=await fetch(getHugoRuntimeUrl('/api/hugo/chat'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({message:source,role:'provider',surface:'provider',context})}),payload=await response.json().catch(()=>({}))
+    const context=providerVoiceContext(data,flow.screen)
+    const history=conversation.current
+    const response=await fetch(getHugoRuntimeUrl('/api/hugo/chat'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({message:source,role:'provider',surface:'provider',context,history})}),payload=await response.json().catch(()=>({}))
     if(!response.ok)throw new Error(String(payload?.hugo_mensaje||payload?.error||'Hugo no respondió'))
     const reply=String(payload?.hugo_mensaje||'').trim()
-    if(reply){await speak(reply);return true}
+    if(reply){remember('user',source);remember('assistant',reply);await speak(reply);return true}
    }catch(error){console.warn('Hugo provider conversational fallback failed',error)}
   }
   return false
- },[data,flow.actions,speak])
+ },[data,flow.actions,flow.screen,remember,speak])
  useGlobalVoiceCommandListener(handle)
  return null
 }
