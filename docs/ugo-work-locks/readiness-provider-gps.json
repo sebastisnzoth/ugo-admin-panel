@@ -3,11 +3,11 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "WAITING_RUNTIME",
-  "started_at": "2026-09-30T04:30:00Z",
-  "heartbeat_at": "2026-09-30T22:50:00Z",
-  "lease_expires_at": "2026-09-30T23:50:00Z",
-  "started_sha": "1232706724e06458dd56d754f7f3b904ff6cc824",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T17:00:00Z",
+  "heartbeat_at": "2026-10-01T17:00:00Z",
+  "lease_expires_at": "2026-10-01T18:00:00Z",
+  "started_sha": "e7c3bee26027c1a590a14de2aea63329434e9836",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider GPS Runtime Agent",
@@ -24,9 +24,9 @@
   "resources": [
     "provider-location"
   ],
-  "correlation_id": "readiness-provider-gps-20260930T224400Z-gptugo-r7",
-  "current_step": "RETRY_SAME_SHA_PROVIDER_GPS_RUNTIME_AFTER_SCHEDULER_CAPACITY",
-  "attempt": 7,
+  "correlation_id": "readiness-provider-gps-20261001T170000Z-gptugo-r8",
+  "current_step": "REVALIDATE_IMPLEMENTATION_AND_RUN_TEST_RUNTIME",
+  "attempt": 8,
   "evidence_ids": [
     "github-actions-run-36669225058",
     "artifact-11076899569",
@@ -64,10 +64,7 @@
     "retry:36787549792:FORBIDDEN"
   ],
   "production_touched": false,
-  "last_failure": {
-    "code": "SAME_SHA_RUNTIME_CANCELLED",
-    "message": "Provider GPS same-SHA workflow was cancelled before jobs by repository scheduler/concurrency; GitHub refused rerun of cancelled run."
-  },
+  "last_failure": null,
   "automated_closure": {
     "candidate_sha": "0da38ac3cce2c92ead4fa1fe5c4159d8624ee8ac",
     "workflow_run_id": 36748700207,
