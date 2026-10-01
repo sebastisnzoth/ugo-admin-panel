@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-voice",
   "job_id": "job-hugo-voice-20260930T1529Z",
   "title": "Verify Hugo conversational voice input output and textual fallback",
-  "status": "WAITING_EVIDENCE",
+  "status": "WAITING_RUNTIME",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-10-01T02:44:00Z",
-  "lease_expires_at": "2026-10-01T03:29:00Z",
+  "heartbeat_at": "2026-10-01T04:43:00Z",
+  "lease_expires_at": "2026-10-01T05:28:00Z",
   "started_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -25,8 +25,8 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "HUMAN_RETEST_ALL_ROLES_AFTER_HYBRID_VAD_FIX",
-  "attempt": 7,
+  "current_step": "DEPLOY_AND_VERIFY_GEMINI_LIVE_TOKEN_FIX",
+  "attempt": 8,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
     "github-actions:36737490396",
@@ -41,10 +41,16 @@
     "commit:ee58e714f8b1ddd97b01c2f3b1f97146752d46a3",
     "commit:82a87fbc5538ddb48e9204418d04e0c829e0bb70",
     "commit:fc43ce41abf217ce7dd1defc5430bbf822396345",
-    "reference:gemini-live-hybrid-vad"
+    "reference:gemini-live-hybrid-vad",
+    "vercel-runtime-error:Invalid JSON payload received Unknown name liveConnectConstraints",
+    "commit:ccef91dae03b49c4e2ceabae3d9ef7edcf634c32",
+    "commit:1831d022824958e4ae6b97f4eada960da90f972f",
+    "commit:d5c3e06809ee574bf1cf185929579378c0f271fc",
+    "vercel-deployment:dpl_7EPXAaaTXE6cWXvLJDeMFyuzjjHP:QUEUED",
+    "vercel-deployment:dpl_GS6baSYmE8oLbgjWxJSKdmidfJGJ:QUEUED"
   ],
-  "result_sha": "fc43ce41abf217ce7dd1defc5430bbf822396345",
-  "revalidated_main_sha": "fc43ce41abf217ce7dd1defc5430bbf822396345",
+  "result_sha": "d5c3e06809ee574bf1cf185929579378c0f271fc",
+  "revalidated_main_sha": "d5c3e06809ee574bf1cf185929579378c0f271fc",
   "human_runtime_evidence": {
     "result": "FAIL",
     "roles": [
@@ -57,18 +63,19 @@
     "notes": "Nueva evidencia humana invalida WAITING_EVIDENCE; defecto transversal de runtime."
   },
   "revalidation": {
-    "automated_runtime_result": "SOURCE_FIX_AND_REGRESSION_PERSISTED_NO_FRESH_DEPLOY",
+    "automated_runtime_result": "ROOT_CAUSE_IDENTIFIED_AND_FIXED_AWAITING_DEPLOY",
     "current_source_contract": "PASS_REVALIDATED_ON_MAIN",
-    "delegable_scope_remaining": 0,
+    "delegable_scope_remaining": 1,
     "human_evidence_invalidates_verified_candidate": true,
     "human_retest_required_after_fixes": true,
-    "production_deploy_status": "BLOCKED_OR_PENDING_BY_VERCEL_BUILD_RATE_LIMIT"
+    "runtime_root_cause": "Gemini auth_tokens rejected liveConnectConstraints; all roles share this token path.",
+    "production_deploy_status": "QUEUED"
   },
   "validators_result": {
-    "Judge": "PENDING_POST_FIX_HUMAN_EVIDENCE",
-    "Sentinel": "PENDING_POST_FIX_HUMAN_EVIDENCE"
+    "Judge": "BLOCKED_BY_RUNTIME_DEPLOY",
+    "Sentinel": "BLOCKED_BY_RUNTIME_DEPLOY"
   },
-  "blocker": "HUMAN_ALL_ROLE_VOICE_RETEST_POST_HYBRID_VAD_FIX",
+  "blocker": "GEMINI_LIVE_TOKEN_FIX_NOT_YET_DEPLOYED",
   "human_final_required": {
     "required": true,
     "action": "En UGO TEST/Preview con navegador/dispositivo real: abrir Hugo, permitir micrófono y comprobar una conversación multi-turno completa incluyendo necesidad, dirección guardada 'casa', oferta de foto, confirmación, transcripción/acción y respuesta de audio; luego negar micrófono y confirmar mensaje accionable + fallback textual.",
