@@ -14,7 +14,6 @@ on:
       - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
       - 'tests/contracts/provider-arrival-gps-gate.test.mjs'
       - 'tests/contracts/provider-arrival-location.test.mjs'
-      - 'docs/ugo-work-locks/readiness-provider-arrival.json'
       - '.github/workflows/provider-arrival-runtime.yml'
 
 permissions:
