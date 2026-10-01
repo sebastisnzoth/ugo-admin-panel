@@ -113,7 +113,7 @@ jobs:
           node scripts/readiness-auto-inbox-persist.mjs
           git config user.name "ugo-readiness-bot"
           git config user.email "ugo-readiness-bot@users.noreply.github.com"
-          git add docs/evidence/readiness-auto-inbox-20260930.json docs/ugo-work-locks/readiness-auto-inbox.json
+          git add docs/evidence/readiness-auto-inbox-20260930.json docs/ugo-work-locks/readiness-auto-inbox.json docs/UGO_FUNCTIONAL_READINESS.json
           git commit -m "docs(auto-inbox): persist VERIFIED runtime evidence"
           git pull --rebase origin main
           git push origin HEAD:main
