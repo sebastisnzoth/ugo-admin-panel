@@ -13,7 +13,7 @@ test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=
  assert.match(bridge,/access_token=/)
  assert.match(bridge,/voice_live_token:true/)
  assert.match(bridge,/audio\/pcm;rate=16000/)
- assert.match(bridge,/CHUNK_SAMPLES=1600/)
+ assert.match(bridge,/CHUNK_SAMPLES=800/)
  assert.doesNotMatch(bridge,/MediaRecorder/)
  assert.doesNotMatch(bridge,/audio_base64/)
 })
@@ -22,7 +22,7 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/generationConfig:\{responseModalities:\['AUDIO'\]/)
  assert.match(bridge,/outputAudioTranscription:\{\}/)
  assert.match(bridge,/inputAudioTranscription:\{\}/)
- assert.match(bridge,/silenceDurationMs:750/)
+ assert.match(bridge,/silenceDurationMs:350/)
  assert.match(bridge,/END_SENSITIVITY_HIGH/)
  assert.match(bridge,/interimInputTranscription/)
  assert.match(bridge,/inputTranscription/)
@@ -145,4 +145,13 @@ test('Gemini Live final turn flushes audio and bounds response latency',()=>{
  assert.ok(bridge.includes('response-timeout'))
  assert.ok(bridge.includes("reason:'response-retry'"))
  assert.ok(bridge.includes('clearResponseWatchdog'))
+})
+
+
+test('Gemini Live uses hybrid local VAD for faster turn completion',()=>{
+ assert.match(bridge,/LOCAL_END_SILENCE_MS=420/)
+ assert.match(bridge,/LOCAL_MIN_SPEECH_MS=180/)
+ assert.match(bridge,/reason:'local-end-of-speech'/)
+ assert.match(bridge,/audioStreamEnd:true/)
+ assert.match(bridge,/AbortSignal\.timeout\(5000\)/)
 })

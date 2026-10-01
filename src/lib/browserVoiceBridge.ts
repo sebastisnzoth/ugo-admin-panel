@@ -8,7 +8,9 @@ declare global{interface Window{UGOVoiceBridge?:BrowserVoiceBridge}}
 
 const LIVE_WS_URL='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained'
 const TARGET_RATE=16000
-const CHUNK_SAMPLES=1600
+const CHUNK_SAMPLES=800
+const LOCAL_END_SILENCE_MS=420
+const LOCAL_MIN_SPEECH_MS=180
 const emit=(name:string,detail:Record<string,unknown>)=>window.dispatchEvent(new CustomEvent(name,{detail}))
 function audioCtor(){return window.AudioContext||(window as any).webkitAudioContext}
 const canStream=()=>Boolean(navigator.mediaDevices?.getUserMedia&&window.WebSocket&&audioCtor())
@@ -74,13 +76,13 @@ const ADMIN_TOOLS:LiveFunctionDeclaration[]=[
 ]
 function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
 function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:750},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el compañero operativo de UGO. Hablá como una persona: cálido, fluido, breve y espontáneo. Evitá tono de menú, frases mecánicas, listas y repetir literalmente lo que acaba de decir el usuario. Hacé una sola pregunta por vez y usá transiciones naturales sólo cuando aporten. Permití pausas humanas y no apures el cierre del turno. No menciones nombres de herramientas ni detalles técnicos. En Cliente, conservá todo dato ya confirmado durante la conversación. Si dice “en casa”, “casa”, “trabajo” u otra etiqueta guardada, usá use_saved_place antes de volver a pedir una dirección. Después de entender qué trabajo necesita, ofrecé una sola vez y sin bloquear: “Si querés, podés mostrarme una foto y le da más contexto al profesional”; si acepta, usá open_request_photo, y si dice que no, seguí normalmente. Cuando el pedido tenga categoría, descripción, ubicación y momento, resumilo en una frase natural antes de pedir confirmación. si el usuario habla de un pedido pero no conoce el service_id o tiene varios pedidos activos, usá client_list_services antes de consultar, cancelar, aprobar, confirmar efectivo o calificar. En Admin podés consultar y ejecutar sólo acciones UI seguras mediante las herramientas declaradas: navegar, abrir un servicio o refrescar. No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz. En Proveedor, si el usuario quiere avanzar su trabajo pero no conoce el service_id, usá provider_get_active_service antes de provider_update_service_status. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito.'}]},tools:[{functionDeclarations:roleTools()}]}}}
+function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:80,silenceDurationMs:350},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el compañero operativo de UGO. Hablá como una persona: cálido, fluido, breve y espontáneo. Evitá tono de menú, frases mecánicas, listas y repetir literalmente lo que acaba de decir el usuario. Hacé una sola pregunta por vez y usá transiciones naturales sólo cuando aporten. Permití pausas humanas y no apures el cierre del turno. No menciones nombres de herramientas ni detalles técnicos. En Cliente, conservá todo dato ya confirmado durante la conversación. Si dice “en casa”, “casa”, “trabajo” u otra etiqueta guardada, usá use_saved_place antes de volver a pedir una dirección. Después de entender qué trabajo necesita, ofrecé una sola vez y sin bloquear: “Si querés, podés mostrarme una foto y le da más contexto al profesional”; si acepta, usá open_request_photo, y si dice que no, seguí normalmente. Cuando el pedido tenga categoría, descripción, ubicación y momento, resumilo en una frase natural antes de pedir confirmación. si el usuario habla de un pedido pero no conoce el service_id o tiene varios pedidos activos, usá client_list_services antes de consultar, cancelar, aprobar, confirmar efectivo o calificar. En Admin podés consultar y ejecutar sólo acciones UI seguras mediante las herramientas declaradas: navegar, abrir un servicio o refrescar. No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz. En Proveedor, si el usuario quiere avanzar su trabajo pero no conoce el service_id, usá provider_get_active_service antes de provider_update_service_status. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito.'}]},tools:[{functionDeclarations:roleTools()}]}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||(!canStream()&&!speechCtor()))return
  let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null,fallbackRecognition:SpeechRecognitionLike|null=null,fallbackActive=false
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
- let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0,responseTimer=0,pendingTurnText=''
+ let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0,responseTimer=0,pendingTurnText='',localSpeechActive=false,localSpeechStartedAt=0,lastVoiceAt=0,localTurnEnded=false,noiseFloor=.004
  const conversationSources=new Set<AudioBufferSourceNode>()
 
  const clearReconnect=()=>{if(reconnectTimer){window.clearTimeout(reconnectTimer);reconnectTimer=0}}
@@ -102,7 +104,7 @@ function installBrowserBridge(){
  const issueToken=async()=>{
   const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
   if(!accessToken)throw Object.assign(new Error('Sesión no disponible para voz'),{status:401})
-  const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true,voice_live_mode:'conversation'})})
+  const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true,voice_live_mode:'conversation'}),signal:AbortSignal.timeout(5000)})
   const data=await response.json().catch(()=>({})) as LiveTokenResponse
   if(!response.ok||!data.token||!data.model)throw Object.assign(new Error(data.error||'No pude iniciar Gemini Live'),{status:response.status})
   return{token:data.token,model:String(data.model).replace(/^models\//,'')}
@@ -149,7 +151,7 @@ function installBrowserBridge(){
    socket=ws;setupReady=false;resetAudioQueue()
    await new Promise<void>((resolve,reject)=>{
     let settled=false
-    const timer=window.setTimeout(()=>{if(settled)return;settled=true;try{ws.close()}catch{}reject(Object.assign(new Error('Gemini Live setup timeout'),{status:504}))},8000)
+    const timer=window.setTimeout(()=>{if(settled)return;settled=true;try{ws.close()}catch{}reject(Object.assign(new Error('Gemini Live setup timeout'),{status:504}))},6000)
     const finish=(fn:()=>void)=>{if(settled)return;settled=true;window.clearTimeout(timer);fn()}
     ws.onopen=()=>{if(!active||serial!==connectionSerial){try{ws.close()}catch{};return}try{ws.send(JSON.stringify(setupMessage(model)))}catch(error){finish(()=>reject(error as Error))}}
     ws.onmessage=event=>{if(!active||serial!==connectionSerial||typeof event.data!=='string')return;let data:any;try{data=JSON.parse(event.data)}catch{return}const ready=handleMessage(data);if(ready)finish(resolve);if(data?.goAway&&active){try{ws.close(1000,'gemini-go-away')}catch{}}}
@@ -173,6 +175,17 @@ function installBrowserBridge(){
   processor.onaudioprocess=event=>{
    if(!active||paused||!setupReady||socket?.readyState!==WebSocket.OPEN)return
    const converted=resample(event.inputBuffer.getChannelData(0),audioContext?.sampleRate||TARGET_RATE)
+   let power=0
+   for(let i=0;i<converted.length;i++)power+=converted[i]*converted[i]
+   const rms=Math.sqrt(power/Math.max(1,converted.length)),now=performance.now(),threshold=Math.max(.012,noiseFloor*3)
+   if(!localSpeechActive)noiseFloor=noiseFloor*.96+Math.min(rms,.02)*.04
+   if(rms>=threshold){
+    if(!localSpeechActive){localSpeechActive=true;localSpeechStartedAt=now;emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'local-speech'})}
+    lastVoiceAt=now;localTurnEnded=false
+   }else if(localSpeechActive&&now-lastVoiceAt>=LOCAL_END_SILENCE_MS&&now-localSpeechStartedAt>=LOCAL_MIN_SPEECH_MS){
+    localSpeechActive=false;localTurnEnded=true;endAudioStream();emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'local-end-of-speech'});return
+   }
+   if(localTurnEnded)return
    for(let i=0;i<converted.length;i++)pendingSamples.push(converted[i])
    while(pendingSamples.length>=CHUNK_SAMPLES){
     const chunk=new Float32Array(pendingSamples.splice(0,CHUNK_SAMPLES))
@@ -183,7 +196,7 @@ function installBrowserBridge(){
  }
 
  const shutdown=(notify:boolean)=>{
-  active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
+  active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';localSpeechActive=false;localTurnEnded=false;localSpeechStartedAt=0;lastVoiceAt=0;noiseFloor=.004;connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
   if(notify)emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'stopped'})
  }
 
