@@ -5,9 +5,9 @@
   "title": "Verify Hugo conversational voice input output and textual fallback",
   "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-09-30T22:53:00Z",
-  "lease_expires_at": "2026-09-30T23:38:00Z",
-  "started_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+  "heartbeat_at": "2026-10-01T02:40:00Z",
+  "lease_expires_at": "2026-10-01T03:25:00Z",
+  "started_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
   "assigned_agent": "GPT_UGO · Hugo Voice Runtime Agent",
@@ -25,8 +25,8 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "HUMAN_MIC_AUDIO_RETEST_AFTER_VOICE_FLOW_FIXES",
-  "attempt": 4,
+  "current_step": "HUMAN_RETEST_ALL_ROLES_AFTER_LIVE_TURN_FIX",
+  "attempt": 6,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
     "github-actions:36737490396",
@@ -35,31 +35,37 @@
     "commit:15ded009f4574d2555274f2b2ab1d02778ba6966",
     "commit:52f802bcce942756c1c788cb19bfef3c156874ba",
     "commit:1121182fd56ae27585d7b71cbaea340faab8e01e",
-    "source-revalidation:main@96352f48a54a1a80e4c0a66908f8c4424fb406e4"
+    "source-revalidation:main@96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+    "stale-reconcile:ce3afbadb1eb148cee3149c470e0e81c25fe3615",
+    "commit:a5b3a2cb420366ad51f212dc7bdd3ffcccca15cb",
+    "commit:ee58e714f8b1ddd97b01c2f3b1f97146752d46a3"
   ],
-  "result_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
-  "revalidated_main_sha": "96352f48a54a1a80e4c0a66908f8c4424fb406e4",
+  "result_sha": "ee58e714f8b1ddd97b01c2f3b1f97146752d46a3",
+  "revalidated_main_sha": "ee58e714f8b1ddd97b01c2f3b1f97146752d46a3",
   "human_runtime_evidence": {
     "result": "FAIL",
-    "voice_initial_intent": "PASS",
-    "address_followup": "FAIL",
-    "saved_place_casa": "FAIL",
-    "confirmation_followup": "FAIL",
-    "required_photo_prompt": "FAIL",
-    "notes": "Human test: Hugo hears the initial service need, then loses the flow at work address; a saved place spoken as 'casa' is not resolved; confirmation does not complete the missing work-detail/photo sequence."
+    "roles": [
+      "provider",
+      "admin",
+      "superadmin",
+      "client"
+    ],
+    "symptom": "Entra en escuchando pero responde muy lento o no responde.",
+    "notes": "Nueva evidencia humana invalida WAITING_EVIDENCE; defecto transversal de runtime."
   },
   "revalidation": {
-    "automated_runtime_result": "PREVIOUS_RUNTIME_PASS_SUPERSEDED_BY_POST_FAILURE_FIXES",
+    "automated_runtime_result": "SOURCE_FIX_AND_REGRESSION_PERSISTED",
     "current_source_contract": "PASS_REVALIDATED_ON_MAIN",
     "delegable_scope_remaining": 0,
     "human_evidence_invalidates_verified_candidate": true,
-    "human_retest_required_after_fixes": true
+    "human_retest_required_after_fixes": true,
+    "production_deploy_status": "BLOCKED_BY_VERCEL_BUILD_RATE_LIMIT"
   },
   "validators_result": {
     "Judge": "PENDING_POST_FIX_HUMAN_EVIDENCE",
     "Sentinel": "PENDING_POST_FIX_HUMAN_EVIDENCE"
   },
-  "blocker": "HUMAN_MICROPHONE_AUDIO_RETEST_POST_FIX",
+  "blocker": "HUMAN_ALL_ROLE_VOICE_RETEST_POST_FIX",
   "human_final_required": {
     "required": true,
     "action": "En UGO TEST/Preview con navegador/dispositivo real: abrir Hugo, permitir micrófono y comprobar una conversación multi-turno completa incluyendo necesidad, dirección guardada 'casa', oferta de foto, confirmación, transcripción/acción y respuesta de audio; luego negar micrófono y confirmar mensaje accionable + fallback textual.",

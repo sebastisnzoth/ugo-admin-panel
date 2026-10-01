@@ -1,0 +1,6 @@
+import test from'node:test'
+import assert from'node:assert/strict'
+import{readFile}from'node:fs/promises'
+const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
+test('provider profile persists configurable operating radius',async()=>{const ui=await read('src/mvp/provider/ProviderProfile.tsx'),data=await read('src/mvp/provider/providerData.tsx');assert.match(ui,/Radio de trabajo/);assert.match(ui,/min="1" max="100"/);assert.match(ui,/zona_radio_km:radio/);assert.match(data,/saveProfile/);assert.match(data,/zona_radio_km/)})
+test('matching and notifications use provider-specific radius instead of hardcoded 20km',async()=>{const sql=await read('supabase/migrations/20261001022000_provider_configurable_operating_radius.sql');assert.match(sql,/provider_operating_radius_m/);assert.match(sql,/zona_radio_km/);assert.match(sql,/private\.provider_operating_radius_m\(pp\.usuario_id\)/);assert.match(sql,/private\.provider_operating_radius_m\(new\.proveedor_id\)/);assert.match(sql,/private\.provider_operating_radius_m\(p_proveedor_id\)/);assert.match(sql,/radio_max_km.*v_alert_radius_m/);assert.match(sql,/autonomous_qa_provider_operating_radius/);assert.match(sql,/small_radius_offer_count/);assert.match(sql,/large_radius_offer_count/)})

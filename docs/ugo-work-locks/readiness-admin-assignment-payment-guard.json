@@ -5,8 +5,8 @@
   "title": "Guard de pago en asignación Admin",
   "status": "IN_PROGRESS",
   "started_at": "2026-10-01T01:31:00Z",
-  "heartbeat_at": "2026-10-01T01:31:00Z",
-  "lease_expires_at": "2026-10-01T02:16:00Z",
+  "heartbeat_at": "2026-10-01T02:33:00Z",
+  "lease_expires_at": "2026-10-01T03:18:00Z",
   "started_sha": "f536d73cf50bd777cb7896f5777a6dd0a00fe316",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -24,12 +24,15 @@
     "payments"
   ],
   "correlation_id": "admin-assignment-payment-guard-20261001T013100Z",
-  "current_step": "INSPECT_DIRECT_ASSIGNMENT_AND_ENFORCE_COMPLETE_INPUTS",
-  "attempt": 1,
+  "current_step": "FIX_STALE_DEBT_BLOCK_CONTRACT_AND_RERUN_SAME_SHA",
+  "attempt": 2,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:request-payment-before-dispatch:VERIFIED",
-    "main-sha:f536d73cf50bd777cb7896f5777a6dd0a00fe316"
+    "main-sha:f536d73cf50bd777cb7896f5777a6dd0a00fe316",
+    "stale-lock-reconciled:2026-10-01T02:33:00Z",
+    "github-pr:338",
+    "candidate-head:459e7fdf7e54e4296eea0a141fd9b2c639964e85"
   ],
   "production_touched": false,
   "completed_at": null,
