@@ -1,6 +1,10 @@
 name: UGO Provider Proximity Alert Runtime TEST
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-proximity-alert-runtime.yml'
   pull_request:
     paths:
       - 'supabase/migrations/20261001022000_provider_configurable_operating_radius.sql'

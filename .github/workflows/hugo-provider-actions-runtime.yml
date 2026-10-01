@@ -1,5 +1,9 @@
 name: UGO Hugo Provider Actions Runtime TEST
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/hugo-provider-actions-runtime.yml'
   pull_request:
     paths:
       - 'src/mvp/provider/ProviderHugoBridge.tsx'
