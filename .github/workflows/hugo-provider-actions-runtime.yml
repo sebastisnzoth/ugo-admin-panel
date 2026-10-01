@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-hugo-provider-actions-${{ github.event.pull_request.number || github.ref_name }}
   cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
