@@ -70,3 +70,13 @@ test('Command Center exposes a reconciled whole-UGO audit instead of a historica
   assert.match(page,/auditCriticalList/)
   assert.match(page,/auditPrList/)
 })
+
+
+test('Command Center prioritizes autonomous work before asking Sergio for physical proof',()=>{
+  const page=fs.readFileSync('pages/index.html','utf8')
+  assert.match(page,/id="doneNextAutonomous"/)
+  assert.match(page,/id="doneSergioRule"/)
+  assert.match(page,/todavía no · primero cerrar/)
+  assert.match(page,/ahora sí · sólo para las/)
+  assert.match(page,/nextAutonomous/)
+})
