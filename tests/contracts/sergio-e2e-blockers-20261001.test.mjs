@@ -30,3 +30,11 @@ test('provider Hugo fails fast instead of hanging forever',async()=>{
  assert.match(src,/,9000\)/)
  assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
 })
+
+test('client voice guides optional repair photo and cannot hang on connect',async()=>{
+ const src=await read('src/features/client/hugo/ClientVoiceHugoDock.tsx')
+ assert.match(src,/clientRequestPhoto/)
+ assert.match(src,/ahora sacá una foto de lo que hay que arreglar/)
+ assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
+ assert.match(src,/,9000\)/)
+})
