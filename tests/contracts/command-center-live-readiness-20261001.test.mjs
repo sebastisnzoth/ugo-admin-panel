@@ -10,6 +10,8 @@ test('Command Center renders live readiness from sanitized Supabase public views
  assert.match(page,/liveReadinessState/)
  assert.match(page,/liveP0Open/)
  assert.match(page,/liveSentinelCurrent/)
+ assert.match(page,/development_dashboard_signal/)
+ assert.match(page,/signalRevision/)
 })
 
 test('Realtime invalidation refreshes both static evidence and live operational truth',()=>{
