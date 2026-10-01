@@ -43,5 +43,5 @@ test('client/provider auth preserves a valid session during transient profile ou
   assert.match(shared, /transientProfileError/)
   assert.match(shared, /withProfileTimeout/)
   assert.match(shared, /Tu sesión sigue activa/)
-  assert.doesNotMatch(shared, /La sesión tardó demasiado en responder\. Podés ingresar nuevamente\.');setSession\(null\)/)
+  assert.equal(shared.includes("La sesión tardó demasiado en responder. Podés ingresar nuevamente.');setSession(null)"),false)
 })
