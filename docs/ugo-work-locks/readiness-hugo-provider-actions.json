@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-provider-actions",
   "job_id": "UGO-READINESS-HUGO-PROVIDER-ACTIONS-20261001",
   "title": "Acciones reales Proveedor por Hugo",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T04:20:00Z",
-  "heartbeat_at": "2026-10-01T04:20:00Z",
-  "lease_expires_at": "2026-10-01T05:05:00Z",
+  "heartbeat_at": "2026-10-01T04:55:00Z",
+  "lease_expires_at": null,
   "started_sha": "ccef91dae03b49c4e2ceabae3d9ef7edcf634c32",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,8 +16,8 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "hugo-actions",
@@ -25,22 +25,33 @@
     "provider-location"
   ],
   "correlation_id": "hugo-provider-actions-20261001T042000Z",
-  "current_step": "VERIFY_PROVIDER_TOOLCALLS_REAL_BACKEND_TRANSITIONS",
+  "current_step": "HUMAN_GPS_AND_MIC_PROVIDER_ACTIONS_REQUIRED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:hugo-client-order-by-voice:HUMAN_REQUIRED",
     "dependency:provider-realtime-location:HUMAN_REQUIRED",
-    "main-sha:ccef91dae03b49c4e2ceabae3d9ef7edcf634c32"
+    "main-sha:ccef91dae03b49c4e2ceabae3d9ef7edcf634c32",
+    "github-pr:349",
+    "github-head:f7fcfc1cb7f65e78383e71caf117d19d6e4e17f6",
+    "github-runtime-run:36817091421:PASS",
+    "github-artifact:11141389373",
+    "github-core-run:36817091352:PASS",
+    "github-voice-run:36817091430:PASS",
+    "github-timeout-run:36817091484:PASS",
+    "automated:active-service-confirmation-online-offline-en-camino-invalid-transition:PASS",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:dd62fbbf5b98cd9880e743f1bc194e8faf80a8a5"
   ],
   "production_touched": false,
   "completed_at": null,
   "finished_at": null,
-  "verified_sha": null,
-  "result": null,
+  "verified_sha": "f7fcfc1cb7f65e78383e71caf117d19d6e4e17f6",
+  "result": "HUMAN_REQUIRED",
   "human_final": {
     "required": true,
     "status": "PENDING",
-    "kind": "MICROPHONE_AUDIO_PROVIDER_ACTIONS"
+    "kind": "MICROPHONE_AUDIO_PLUS_PHYSICAL_GPS_GEOFENCE_LIFECYCLE"
   }
 }
