@@ -5,6 +5,7 @@ const judge=JSON.parse(await readFile('artifacts/readiness-auto-inbox/judge.json
 const sentinel=JSON.parse(await readFile('artifacts/readiness-auto-inbox/sentinel.json','utf8'))
 const lockPath='docs/ugo-work-locks/readiness-auto-inbox.json'
 const evidencePath='docs/evidence/readiness-auto-inbox-20260930.json'
+const readinessPath='docs/UGO_FUNCTIONAL_READINESS.json'
 const lock=JSON.parse(await readFile(lockPath,'utf8'))
 
 const fail=m=>{throw new Error('PERSIST_FAIL:'+m)}
@@ -35,6 +36,15 @@ const evidence={
 }
 await mkdir('docs/evidence',{recursive:true})
 await writeFile(evidencePath,JSON.stringify(evidence,null,2)+'\n')
+
+const readiness=JSON.parse(await readFile(readinessPath,'utf8'))
+let readinessUpdated=false
+for(const group of readiness.groups||[])for(const item of group.items||[])if(item.id==='auto-inbox'){
+ item.status='VERIFIED'
+ readinessUpdated=true
+}
+if(!readinessUpdated)fail('readiness_control_not_found')
+await writeFile(readinessPath,JSON.stringify(readiness,null,2)+'\n')
 
 lock.status='DONE'
 lock.current_step='VERIFIED'
