@@ -34,7 +34,7 @@ env:
   UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
-  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
   UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
   UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
