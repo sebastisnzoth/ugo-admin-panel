@@ -36,6 +36,24 @@
 .activity-list{display:grid;gap:8px}.activity-item{padding:10px 0;border-bottom:1px solid var(--line)}.activity-item:last-child{border-bottom:0}
 .sync-strip{margin-top:12px;display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#0b1425}.sync-strip .sha{font:700 .78rem ui-monospace,SFMono-Regular,Menlo,monospace;color:#dce8f8}.sync-strip.ok{border-color:#2f6f55}.sync-strip.warn{border-color:#8a6a2d}.sync-strip.bad{border-color:#8b3a3a}.sync-note{font-size:.78rem;color:var(--muted)}
 .state-big{font-size:1.25rem;font-weight:850}.tiny{font-size:.78rem;color:var(--muted)}
+.command-cockpit{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(180deg,rgba(21,32,52,.96),rgba(13,21,36,.96));box-shadow:0 18px 50px rgba(0,0,0,.22)}
+.command-cockpit-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.command-cockpit h2{margin:6px 0 4px;font-size:1.45rem}.command-cockpit p{margin:0}
+.command-summary-grid{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px;margin-top:14px}
+.command-summary-card{padding:14px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.025)}
+.command-summary-card strong{display:block;font-size:2rem;line-height:1.05;margin-bottom:4px}
+.command-summary-card span{font-size:.82rem;color:var(--muted)}
+.command-next{margin-top:12px;padding:14px;border:1px solid rgba(80,170,255,.25);border-radius:14px;background:rgba(50,120,255,.06)}
+.command-next strong{display:block;font-size:.76rem;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.command-next-title{font-size:1.12rem;font-weight:850;margin-bottom:4px}
+.command-critical{display:grid;gap:8px;margin-top:12px}
+.command-critical-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.018)}
+.command-critical-item b{display:block}.command-critical-item small{display:block;color:var(--muted);margin-top:2px}
+.command-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+body.compact-mode #schedulerOverview,body.compact-mode #autonomousCompany,body.compact-mode #wholeUgoAudit,body.compact-mode #readinessGroups,body.compact-mode #ciStatus,body.compact-mode .technical-secondary{display:none}
+body.compact-mode .technical-heading{display:none}
+.compact-hint{margin-top:8px;color:var(--muted);font-size:.8rem}
+@media(max-width:760px){.command-summary-grid{grid-template-columns:repeat(2,1fr)}.command-cockpit{padding:14px}.command-critical-item{grid-template-columns:1fr}}
 footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#7f93b1;font-size:.88rem}
     @media(max-width:1000px){.metrics{grid-template-columns:repeat(2,1fr)}.grid,.monitor-grid{grid-template-columns:1fr}}@media(max-width:620px){.metrics{grid-template-columns:1fr}.step{grid-template-columns:1fr}.step-index{font-size:1.15rem}}
   </style>
@@ -55,6 +73,35 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <strong>OBJETIVO FINAL</strong>
     <p id="objectiveTitle">Cargando objetivo…</p>
     <code id="objectivePath">Cargando camino crítico…</code>
+  </section>
+
+  <section class="command-cockpit" id="commandCockpit" aria-label="Resumen ejecutivo de cierre">
+    <div class="command-cockpit-head">
+      <div>
+        <span class="badge">VISTA EJECUTIVA</span>
+        <h2>Qué falta para terminar UGO</h2>
+        <p class="sub">Primero lo importante. El detalle técnico queda disponible abajo sin mezclarlo con la operación diaria.</p>
+      </div>
+      <button class="btn" id="toggleTechnical" type="button">Ver detalle técnico</button>
+    </div>
+    <div class="command-summary-grid">
+      <article class="command-summary-card"><strong class="warn" id="summaryRemaining">—</strong><span>restantes reales</span></article>
+      <article class="command-summary-card"><strong class="ok" id="summaryRunnable">—</strong><span>puedo ejecutar ahora</span></article>
+      <article class="command-summary-card"><strong class="bad" id="summaryBlocked">—</strong><span>bloqueados / esperando</span></article>
+      <article class="command-summary-card"><strong class="warn" id="summaryHuman">—</strong><span>pruebas humanas/físicas</span></article>
+    </div>
+    <div class="command-next">
+      <strong>SIGUIENTE MOVIMIENTO RECOMENDADO</strong>
+      <div class="command-next-title" id="summaryNextTitle">Revalidando…</div>
+      <div class="sub" id="summaryNextDetail">Calculando el siguiente trabajo seguro.</div>
+      <div class="command-actions">
+        <button class="btn cta chatgpt" id="summaryRunNext" type="button" disabled>Ejecutar siguiente</button>
+        <button class="btn" id="summaryGoQueue" type="button">Ver cola ordenada</button>
+      </div>
+    </div>
+    <h3 style="margin:16px 0 8px">Los bloqueos más importantes</h3>
+    <div class="command-critical" id="summaryCriticalList"><div class="command-critical-item"><span>Reconciliando estado…</span></div></div>
+    <div class="compact-hint">La pantalla abre en modo simple. “Ver detalle técnico” muestra scheduler, agentes, auditoría completa, mapa funcional y CI.</div>
   </section>
 
   <section class="monitor" aria-label="Monitor de trabajo">
@@ -309,6 +356,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 </main>
 <script>
 (function(){
+  document.body.classList.add('compact-mode')
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
   const pillClass = owner => owner.includes('SERGIO') ? 'human' : 'ugo'
   const gateLabel = step => ({
@@ -980,6 +1028,32 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return 'Falta completar la cadena autoritativa DONE.'
   }
 
+  const renderExecutiveSummary = s => {
+    const audit=s.audit_snapshot || {}
+    const summary=s.functional_readiness_summary || {}
+    const all=(s.functional_readiness?.groups || []).flatMap(group => (group.items || []).map(item => ({...item,group_title:group.title})))
+    const pending=all.filter(item => item.status !== 'VERIFIED')
+    const remaining=Number(audit.remaining ?? summary.remaining_total ?? pending.length)
+    const runnable=Number(summary.available_now ?? audit.runnable_now?.length ?? pending.filter(x=>x.gate_state==='AVAILABLE').length)
+    const human=Number(audit.human_required || 0)+Number(audit.human_deferred || 0)
+    const blocked=pending.filter(x=>['BLOCKED_DEPENDENCY','WAITING_RESOURCE_CAPACITY','QUEUED_CAPACITY','STALE_LOCK','FAILED_REQUIRES_REVIEW','WAITING_RUNTIME','JUDGE_PENDING','SENTINEL_PENDING','RETRY_BACKOFF'].includes(x.gate_state)).length
+    document.getElementById('summaryRemaining').textContent=remaining
+    document.getElementById('summaryRunnable').textContent=runnable
+    document.getElementById('summaryBlocked').textContent=blocked
+    document.getElementById('summaryHuman').textContent=human
+    const next=s.next_movement || pending[0] || null
+    document.getElementById('summaryNextTitle').textContent=next?.title || (remaining===0?'UGO sin pendientes funcionales':'Sin siguiente paso verificable')
+    document.getElementById('summaryNextDetail').textContent=next ? (next.gate_reason || next.why || readinessGateLabel(next.gate_state || next.status)) : (remaining===0?'Todos los controles están cerrados.':'Revisar sincronización y evidencia.')
+    const runNext=document.getElementById('summaryRunNext')
+    runNext.disabled=!next || !canOpenUgoMaster(next)
+    runNext.onclick=next && canOpenUgoMaster(next) ? ()=>openUgoMasterForStep(next) : null
+    const priority={IN_PROGRESS:0,AVAILABLE:1,FAILED_REQUIRES_REVIEW:2,STALE_LOCK:2,WAITING_RUNTIME:3,JUDGE_PENDING:4,SENTINEL_PENDING:5,BLOCKED_DEPENDENCY:6,WAITING_RESOURCE_CAPACITY:7,QUEUED_CAPACITY:8,HUMAN_REQUIRED:9,HUMAN_DEFERRED:10}
+    const critical=(audit.critical_remaining || pending.filter(x=>x.priority==='CRITICAL')).slice().sort((a,b)=>(priority[a.gate_state]??20)-(priority[b.gate_state]??20)).slice(0,5)
+    document.getElementById('summaryCriticalList').innerHTML=critical.length
+      ? critical.map(item=>'<div class="command-critical-item"><div><b>'+esc(item.title || item.id)+'</b><small>'+esc(item.id || '')+(item.group||item.group_title?' · '+esc(item.group||item.group_title):'')+'</small></div><span class="pill '+(item.gate_state==='AVAILABLE'?'ugo':item.gate_state==='IN_PROGRESS'?'accent':'pending')+'">'+esc(readinessGateLabel(item.gate_state || item.status))+'</span></div>').join('')
+      : '<div class="command-critical-item"><div><b class="ok">Sin bloqueos críticos pendientes</b><small>El camino crítico no tiene controles CRITICAL abiertos.</small></div><span class="pill ugo">OK</span></div>'
+  }
+
   const renderAuditSnapshot = s => {
     const audit=s.audit_snapshot || {}
     const critical=audit.critical_remaining || []
@@ -1314,6 +1388,11 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     renderReadiness(s)
     renderAuditSnapshot(s)
     renderDoneControl(s)
+    renderExecutiveSummary(s)
+    const doneBoard=document.getElementById('doneControl')
+    const queueBoard=document.getElementById('executionBoard')
+    const cockpit=document.getElementById('commandCockpit')
+    if(cockpit && doneBoard && queueBoard && cockpit.nextElementSibling !== doneBoard) cockpit.after(doneBoard,queueBoard)
     const readinessIds = (s.functional_readiness?.groups || []).flatMap(group => (group.items || []).map(item => item.id))
     const currentIds = new Set([
       ...(s.implementation_steps || []).map(x => x.id),
@@ -1439,6 +1518,12 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       button.textContent = 'Revalidar ahora'
     })
   })
+
+  document.getElementById('toggleTechnical').addEventListener('click', () => {
+    const compact=document.body.classList.toggle('compact-mode')
+    document.getElementById('toggleTechnical').textContent=compact?'Ver detalle técnico':'Ocultar detalle técnico'
+  })
+  document.getElementById('summaryGoQueue').addEventListener('click', () => document.getElementById('executionBoard')?.scrollIntoView({behavior:'smooth',block:'start'}))
 
   document.getElementById('refreshPageFlow').addEventListener('click', async () => {
     const button = document.getElementById('refreshPageFlow')
