@@ -3,10 +3,10 @@
   "task_id": "readiness-request-payment-before-dispatch",
   "job_id": "UGO-READINESS-REQUEST-PAYMENT-BEFORE-DISPATCH-20261001",
   "title": "request-payment-before-dispatch",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T00:08:57Z",
-  "heartbeat_at": "2026-10-01T01:10:00Z",
-  "lease_expires_at": "2026-10-01T01:55:00Z",
+  "heartbeat_at": "2026-10-01T01:27:00Z",
+  "lease_expires_at": null,
   "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,15 +16,15 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "client-payment",
     "client-request-flow"
   ],
   "correlation_id": "request-payment-before-dispatch-20261001T000857Z",
-  "current_step": "WAITING_PR333_GLOBAL_GATES",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
@@ -35,11 +35,22 @@
     "github-artifact:11135313792",
     "judge:PASS",
     "sentinel:PASS",
-    "ugo-arena:migration:payment_before_dispatch_guard"
+    "ugo-arena:migration:payment_before_dispatch_guard",
+    "github-pr:335",
+    "github-head:681bede6fb2d05b0cbad4d807e088120c1054353",
+    "github-run:36800833198:PASS",
+    "github-artifact:11136325330",
+    "github-core-run:36800833152:PASS",
+    "github-hugo-timeout-run:36800833287:PASS",
+    "merge-main:3b16c4a4ced797bc48cec67b420fbc5359f6198a",
+    "runtime:missing-payment-rejected",
+    "runtime:zero-offers-before-payment",
+    "runtime:matching-allowed-after-persisted-method"
   ],
   "production_touched": false,
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "result": null
+  "completed_at": "2026-10-01T01:27:00Z",
+  "finished_at": "2026-10-01T01:27:00Z",
+  "verified_sha": "681bede6fb2d05b0cbad4d807e088120c1054353",
+  "result": "VERIFIED",
+  "merged_main_sha": "3b16c4a4ced797bc48cec67b420fbc5359f6198a"
 }
