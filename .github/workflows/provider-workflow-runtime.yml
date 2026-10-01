@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-provider-workflow-isolated-fixture
   cancel-in-progress: false
 
 jobs:
