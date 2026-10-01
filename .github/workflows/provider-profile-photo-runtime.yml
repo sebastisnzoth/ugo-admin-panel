@@ -1,0 +1,59 @@
+name: UGO Provider Profile Photo Runtime TEST
+
+on:
+  pull_request:
+    paths:
+      - 'src/mvp/provider/ProviderProfile.tsx'
+      - 'src/mvp/provider/providerData.tsx'
+      - 'src/mvp/provider/providerService.ts'
+      - 'src/mvp/provider/provider-redesign-2026.css'
+      - 'supabase/migrations/20260930223000_provider_profile_photo.sql'
+      - 'scripts/provider-profile-photo-*.mjs'
+      - 'tests/contracts/provider-profile-photo.test.mjs'
+      - '.github/workflows/provider-profile-photo-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/provider-profile-photo.test.mjs
+      - name: Runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-profile-photo-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-profile-photo-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-profile-photo-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-profile-photo-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/provider-profile-photo-*
+          if-no-files-found: warn
+          retention-days: 90

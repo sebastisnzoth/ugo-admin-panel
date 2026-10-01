@@ -1,4 +1,4 @@
-import React,{useEffect,useState}from'react'
+import React,{useEffect,useRef,useState}from'react'
 import{useProviderData}from'./providerData'
 import{useProviderFlow}from'./providerFlow'
 import{ProviderCategoriesEditor}from'./ProviderCategoriesEditor'
@@ -9,7 +9,7 @@ const initials=(name:string)=>name.split(/\s+/).filter(Boolean).slice(0,2).map(p
 const verificationLabel=(state?:string)=>state==='verificado'?'Perfil verificado':state==='rechazado'?'Verificación rechazada':state==='suspendido'?'Perfil suspendido':'Verificación pendiente'
 
 export function ProviderProfileScreen(){
- const d=useProviderData(),flow=useProviderFlow(),p=d.provider
+ const d=useProviderData(),flow=useProviderFlow(),p=d.provider,photoInput=useRef<HTMLInputElement>(null)
  const[editing,setEditing]=useState(false),[bio,setBio]=useState(p.bio||''),[city,setCity]=useState(p.ciudad_base||''),[rate,setRate]=useState(String(p.tarifa_base||'')),[radius,setRadius]=useState(String(p.zona_radio_km||15)),[error,setError]=useState(''),[password,setPassword]=useState(''),[passwordConfirm,setPasswordConfirm]=useState(''),[passwordError,setPasswordError]=useState('')
  useEffect(()=>{setBio(p.bio||'');setCity(p.ciudad_base||'');setRate(String(p.tarifa_base||''));setRadius(String(p.zona_radio_km||15))},[p.bio,p.ciudad_base,p.tarifa_base,p.zona_radio_km])
  const save=async(event:React.FormEvent)=>{event.preventDefault();setError('');const tarifa=Number(rate),radio=Number(radius);if(!Number.isFinite(tarifa)||tarifa<0)return setError('Ingresá una tarifa válida.');if(!Number.isFinite(radio)||radio<1||radio>100)return setError('El radio de trabajo debe estar entre 1 y 100 km.');const ok=await d.saveProfile({bio:bio.trim()||null,tarifa_base:tarifa,ciudad_base:city.trim()||null,zona_radio_km:radio});if(ok)setEditing(false)}
@@ -17,8 +17,8 @@ export function ProviderProfileScreen(){
  return <section className="provider-screen provider-profile-complete" aria-labelledby="provider-profile-title">
   <SectionHeader eyebrow="TU CUENTA" title="Perfil" description="Tu identidad profesional, operación y dinero en un solo lugar." actions={<Button variant="ghost" onClick={()=>setEditing(value=>!value)}>{editing?'Cerrar':'Editar'}</Button>}/>
   <article className="provider-profile-identity">
-   <span className="provider-profile-avatar" aria-hidden="true">{initials(d.name)}</span>
-   <div><h2>{d.name}</h2><p>⭐ {d.karma.toFixed(1)} · {p.ciudad_base||'Ciudad por completar'}</p><StatusPill tone={p.estado_verificacion==='verificado'?'success':p.estado_verificacion==='rechazado'||p.estado_verificacion==='suspendido'?'danger':'warning'}>✓ {verificationLabel(p.estado_verificacion)}</StatusPill></div>
+   <div className="provider-profile-avatar">{d.profilePhotoUrl?<img src={d.profilePhotoUrl} alt={`Foto de perfil de ${d.name}`}/>:<span aria-hidden="true">{initials(d.name)}</span>}</div>
+   <div><h2>{d.name}</h2><p>⭐ {d.karma.toFixed(1)} · {p.ciudad_base||'Ciudad por completar'}</p><StatusPill tone={p.estado_verificacion==='verificado'?'success':p.estado_verificacion==='rechazado'||p.estado_verificacion==='suspendido'?'danger':'warning'}>✓ {verificationLabel(p.estado_verificacion)}</StatusPill><div className="provider-profile-photo-actions"><input ref={photoInput} type="file" accept="image/jpeg,image/png,image/webp" className="provider-profile-photo-input" aria-label="Elegir foto de perfil" onChange={event=>{const file=event.target.files?.[0];if(file)void d.uploadProfilePhoto(file);event.currentTarget.value=''}}/><Button type="button" variant="ghost" onClick={()=>photoInput.current?.click()} disabled={d.busy}>{d.profilePhotoUrl?'Cambiar foto':'Agregar foto'}</Button><small>JPG, PNG o WebP · máximo 5 MB</small></div></div>
    <Button variant={d.online?'primary':'secondary'} className={d.online?'is-online':'is-offline'} onClick={d.toggleOnline} disabled={d.busy} aria-pressed={d.online}>{d.online?'Online':'Offline'}</Button>
   </article>
   {editing&&<form className="provider-profile-form provider-card ugo-ui-card" onSubmit={save}>
