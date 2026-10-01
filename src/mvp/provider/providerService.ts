@@ -3,7 +3,7 @@ import{reportSentinelIncident}from'../../lib/sentinel'
 import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type Service}from'../shared'
 
-export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null}
+export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null;foto_perfil_path?:string|null}
 export type ProviderPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null;metodo?:string|null;procesador?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null;fecha_confirmacion?:string|null}
 export type ProviderDebt={id:string;pago_id:string;servicio_id:string;proveedor_id:string;monto_servicio:number;comision_ugo:number;monto_pagado_ugo:number;saldo_pendiente:number;moneda:string;ambiente:'real'|'demo';estado:'pendiente'|'informado'|'parcial'|'pagado'|'anulado';referencia_pago?:string|null;pago_informado_at?:string|null;pagado_at?:string|null;created_at:string;servicio?:{numero?:number|string|null}|null}
 export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];service:Service|null;payments:ProviderPayment[];debts:ProviderDebt[]}
