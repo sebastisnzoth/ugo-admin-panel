@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-client-order-by-voice",
   "job_id": "UGO-READINESS-HUGO-CLIENT-ORDER-BY-VOICE-20261001",
   "title": "Pedido real por voz",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T03:33:00Z",
-  "heartbeat_at": "2026-10-01T03:33:00Z",
-  "lease_expires_at": "2026-10-01T04:18:00Z",
+  "heartbeat_at": "2026-10-01T04:19:00Z",
+  "lease_expires_at": null,
   "started_sha": "71c8f121d33cdabbb9c33efe3930993f5673665e",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,27 +16,35 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "hugo-actions",
     "client-request-flow"
   ],
   "correlation_id": "hugo-client-order-by-voice-20261001T033300Z",
-  "current_step": "AUTOMATED_TOOLCALL_ORDER_CREATION_RUNTIME",
+  "current_step": "HUMAN_MIC_AUDIO_ORDER_CONVERSATION_REQUIRED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:hugo-conversation-continuity:VERIFIED",
     "dependency:request-payment-before-dispatch:VERIFIED",
-    "main-sha:71c8f121d33cdabbb9c33efe3930993f5673665e"
+    "main-sha:71c8f121d33cdabbb9c33efe3930993f5673665e",
+    "github-pr:348",
+    "github-head:4088151a315631c519bb64ab5ec79893dd057ae4",
+    "github-run:36812086163:PASS",
+    "github-core-run:36812086122:PASS",
+    "github-voice-run:36812086184:PASS",
+    "github-timeout-run:36812086112:PASS",
+    "merge-main:09c64ec0edc48df2093842f7d7f415871efec3e2",
+    "automated-scope:VERIFIED"
   ],
   "production_touched": false,
   "completed_at": null,
   "finished_at": null,
-  "verified_sha": null,
-  "result": null,
+  "verified_sha": "4088151a315631c519bb64ab5ec79893dd057ae4",
+  "result": "HUMAN_REQUIRED",
   "human_final": {
     "required": true,
     "status": "PENDING",
