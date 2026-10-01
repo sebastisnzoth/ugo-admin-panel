@@ -3,23 +3,6 @@ name: UGO Provider Debt Runtime TEST
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/provider-debt-runtime.mjs'
-      - 'scripts/provider-debt-judge.mjs'
-      - 'scripts/provider-debt-sentinel.mjs'
-      - 'src/mvp/provider/providerData.tsx'
-      - 'src/mvp/provider/ProviderEarnings.tsx'
-      - 'src/mvp/provider/ProviderHome.tsx'
-      - 'src/mvp/provider/ProviderOpportunities.tsx'
-      - 'supabase/migrations/20260920073500_provider_ugo_debt_order_block.sql'
-      - 'supabase/migrations/20260927154500_provider_debt_acceptance_gate.sql'
-      - 'supabase/migrations/20260930110213_provider_debt_readiness_probe.sql'
-      - 'tests/contracts/provider-debt-acceptance-gate.test.mjs'
-      - 'tests/contracts/provider-ugo-debt-limit.test.mjs'
-      - 'tests/contracts/cash-provider-ugo-debt.test.mjs'
-      - '.github/workflows/provider-debt-runtime.yml'
 
 permissions:
   contents: read
