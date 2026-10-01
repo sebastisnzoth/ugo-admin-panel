@@ -5,10 +5,13 @@ import{readFile}from'node:fs/promises'
 const provider=await readFile(new URL('../../src/mvp/provider/ProviderHugoBridge.tsx',import.meta.url),'utf8')
 const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 
-test('provider Hugo requires Gemini Live and does not fall back to device recognition',()=>{
+test('provider Hugo delegates voice resilience to the shared bridge and never hangs forever',()=>{
  assert.match(provider,/await bridge\.startListening\(\)/)
- assert.match(provider,/Gemini Live no está disponible\. Tocá el orbe para reconectar\./)
+ assert.match(provider,/window\.setTimeout\(\(\)=>/)
+ assert.match(provider,/,9000\)/)
+ assert.match(provider,/Hugo no pudo conectar con el servicio de voz\. Reintentá en unos segundos\./)
  assert.doesNotMatch(provider,/SpeechRecognition|webkitSpeechRecognition|speechSynthesis|deviceSpeech|Gemini TTS/)
+ assert.match(bridge,/gemini-live-start-fallback/)
 })
 
 test('provider Hugo returns tool results through the same persistent Live session',()=>{
