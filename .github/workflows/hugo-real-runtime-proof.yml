@@ -1,0 +1,97 @@
+name: UGO Hugo Real Runtime Proof TEST
+
+on:
+  pull_request:
+    paths:
+      - 'src/features/client/hugo/**'
+      - 'src/mvp/provider/ProviderHugoBridge.tsx'
+      - 'src/components/ConversationalOrb.tsx'
+      - 'src/lib/browserVoiceBridge.ts'
+      - 'scripts/hugo-client-order-by-voice-runtime.mjs'
+      - 'scripts/hugo-provider-actions-runtime.mjs'
+      - 'scripts/hugo-admin-actions-runtime.mjs'
+      - 'scripts/hugo-real-runtime-proof-*.mjs'
+      - 'tests/contracts/hugo-real-runtime-proof.test.mjs'
+      - '.github/workflows/hugo-real-runtime-proof.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/hugo-real-runtime-proof.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Start exact-SHA UI
+        env:
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-hugo-real-runtime-vite.log 2>&1 &
+          echo $! > /tmp/ugo-hugo-real-runtime-vite.pid
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+      - name: Cliente tool → backend → Cliente/Admin
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/hugo-client-order-by-voice-runtime.mjs
+      - name: Proveedor tool → backend
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/hugo-provider-actions-runtime.mjs
+      - name: Admin bounded tools → UI
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: node scripts/hugo-admin-actions-runtime.mjs
+      - name: Aggregate Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/hugo-real-runtime-proof-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/hugo-real-runtime-proof-sentinel.mjs
+      - name: Stop UI
+        if: always()
+        run: |
+          if [ -f /tmp/ugo-hugo-real-runtime-vite.pid ]; then
+            kill "$(cat /tmp/ugo-hugo-real-runtime-vite.pid)" 2>/dev/null || true
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hugo-real-runtime-proof-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            artifacts/hugo-client-order-by-voice-runtime.*
+            artifacts/hugo-provider-actions-runtime.*
+            artifacts/hugo-admin-actions-runtime.*
+            artifacts/hugo-real-runtime-proof-*.json
+            /tmp/ugo-hugo-real-runtime-vite.log
+          if-no-files-found: warn
+          retention-days: 90
