@@ -1355,7 +1355,7 @@
           "id": "provider-proximity-alert",
           "title": "Alerta al proveedor elegible",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Pedido elegible dentro del radio genera oferta, realtime, push/web/sonido soportado y navegación correcta sin duplicados.",
           "done_evidence": "Pedido TEST genera alerta verificable al proveedor correcto.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1372,7 +1372,9 @@
           "reconciles_with": [
             "provider-alerts",
             "provider-notifications"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-proximity-alert-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "request-payment-before-dispatch",
@@ -1418,7 +1420,7 @@
           "id": "provider-active-jobs",
           "title": "Trabajos activos completos",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Eliminar estados incompletos por pago tardío y mostrar datos, estado, método, evidencias, acciones y timeline válidos.",
           "done_evidence": "Proveedor nunca recibe trabajo activo incompleto por falta de método de pago.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1434,7 +1436,9 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "provider-jobs"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-active-jobs-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "client-provider-lifecycle",
@@ -1529,7 +1533,10 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "hugo-action"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-hugo-provider-actions-20261001.json",
+          "reconciled_from_persisted_evidence": true,
+          "automated_proof": "VERIFIED"
         },
         {
           "id": "hugo-admin-actions",
