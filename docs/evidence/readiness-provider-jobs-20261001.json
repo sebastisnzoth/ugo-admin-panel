@@ -1,0 +1,19 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-jobs",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "1217e174eeeba8d3b4d2cc8efa73ee633e3d20ee",
+  "workflow_run_id": 36932219990,
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false
+  },
+  "remediation": {
+    "test_schema_grant": "service_role SELECT on public.servicio_estado_eventos",
+    "migration": "supabase/migrations/20261001215800_grant_service_role_provider_history_events.sql"
+  },
+  "verified_at": "2026-10-01T22:01:12.356Z"
+}
