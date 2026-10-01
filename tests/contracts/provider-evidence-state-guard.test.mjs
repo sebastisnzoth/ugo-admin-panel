@@ -14,7 +14,7 @@ test('provider evidence is state-gated and storage-bound',async()=>{
  assert.match(stateGuard,/new\.tipo = 'durante' and v_servicio\.estado <> 'en_progreso'/)
  assert.match(stateGuard,/new\.tipo = 'despues' and v_servicio\.estado not in \('en_progreso','esperando_aprobacion'\)/)
  assert.match(storageGuard,/service_evidence_object_exists/)
- assert.match(storageGuard,/bucket_id\s*=\s*'service-evidence'/)
+ assert.match(storageGuard,/(?:o\.)?bucket_id\s*=\s*'service-evidence'/)
  assert.match(screen,/estado==='llegado'\?\['antes'\]/)
  assert.match(screen,/estado==='en_progreso'\?\['durante','despues'\]/)
  assert.match(active,/evidence\.initial\?'Empezá el trabajo':'Sacá la foto inicial'/)
