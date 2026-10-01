@@ -30,6 +30,11 @@ export function AdminGate({children}:AdminGateProps={}){
   const requestedSection=gateParams.get('section')
   const publicDevelopmentAccess=gateParams.get('app')==='admin'&&gateParams.get('auth')!=='1'&&requestedSection!=='superadmin'
   if(publicDevelopmentAccess)return children?<>{children}</>:<Suspense fallback={<div style={{padding:24}}>Cargando panel admin…</div>}><AdminFeatureShell /></Suspense>
+  return <SecureAdminGate gateParams={gateParams}>{children}</SecureAdminGate>
+}
+
+function SecureAdminGate({children,gateParams}:AdminGateProps&{gateParams:URLSearchParams}){
+  const requestedSection=gateParams.get('section')
   const[checking,setChecking]=useState(true),[allowed,setAllowed]=useState(false),[identifier,setIdentifier]=useState(''),[password,setPassword]=useState(''),[newPassword,setNewPassword]=useState(''),[error,setError]=useState(''),[notice,setNotice]=useState(''),[busy,setBusy]=useState(false),[recovery,setRecovery]=useState(false)
   const requestedApp=gateParams.get('app')
   const secureAdminAccess=requestedApp==='admin'&&gateParams.get('auth')==='1'
