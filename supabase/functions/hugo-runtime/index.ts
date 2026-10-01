@@ -4,12 +4,11 @@ type JsonRecord=Record<string,unknown>
 const rec=(v:unknown):JsonRecord=>v!==null&&typeof v==='object'&&!Array.isArray(v)?v as JsonRecord:{}
 const clean=(v:unknown,max=5000)=>String(v??'').trim().slice(0,max)
 const json=(body:unknown,status=200,origin='')=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin',...(origin?{'Access-Control-Allow-Origin':origin}:{})}})
-const allowedOrigins=new Set(['https://sebastisnzoth.github.io','http://localhost:5173','http://127.0.0.1:5173'])
+const allowedOrigins=new Set(['https://sebastisnzoth.github.io','https://ugo-admin-panel.vercel.app','https://ugo-admin-panel-netlify.netlify.app','https://zingy-youtiao-c00ece.netlify.app','http://localhost:5173','http://127.0.0.1:5173','http://localhost:4173','http://127.0.0.1:4173'])
 const corsOrigin=(req:Request)=>{const origin=req.headers.get('origin')||'';return allowedOrigins.has(origin)?origin:''}
 const corsHeaders=(origin:string)=>({'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'})
 const supabaseUrl=Deno.env.get('SUPABASE_URL')||''
 const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||''
-const anonKey=Deno.env.get('SUPABASE_ANON_KEY')||''
 const geminiKey=()=>clean(Deno.env.get('GEMINI_API_KEY'),300)
 const openRouterKey=()=>clean(Deno.env.get('OPENROUTER_API_KEY')||Deno.env.get('UGO_OPENROUTER_API_KEY'),300)
 const geminiModel=()=>clean(Deno.env.get('GEMINI_MODEL')||'gemini-3.5-flash-lite',120)
@@ -42,7 +41,7 @@ async function createLiveToken(){
  const key=geminiKey()
  if(!key)throw Object.assign(new Error('GEMINI_API_KEY no configurada.'),{status:503,code:'GEMINI_NOT_CONFIGURED'})
  const now=Date.now(),expireTime=new Date(now+8*60*1000).toISOString(),newSessionExpireTime=new Date(now+45*1000).toISOString()
- const response=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({uses:1,expireTime,newSessionExpireTime}),signal:AbortSignal.timeout(8000)})
+ const response=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify({uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:{model:`models/${liveModel()}`,config:{responseModalities:['AUDIO']}}}),signal:AbortSignal.timeout(8000)})
  const payload=await response.json().catch(()=>({})) as JsonRecord
  if(!response.ok)throw Object.assign(new Error(clean(rec(payload.error).message)||'Gemini Live no pudo emitir token temporal.'),{status:response.status||502,code:`GEMINI_LIVE_TOKEN_${response.status}`})
  const token=clean(payload.name,500)
