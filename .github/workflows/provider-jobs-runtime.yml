@@ -1,0 +1,106 @@
+name: UGO Provider Jobs Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-jobs-*.mjs'
+      - 'src/mvp/ProviderHistoryDetail.tsx'
+      - 'src/mvp/ServiceHistoryPanel.tsx'
+      - 'tests/contracts/provider-history-detail.test.mjs'
+      - '.github/workflows/provider-jobs-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-provider-jobs-persisted-proof
+  cancel-in-progress: false
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        env:
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Provider history UI contracts
+        run: node --test tests/contracts/provider-history-detail.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Runtime persisted history
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p artifacts
+          node scripts/provider-jobs-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-jobs-runtime-${{ github.sha }}
+          path: artifacts/provider-jobs-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-jobs-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-jobs-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-jobs-judge-${{ github.sha }}
+          path: artifacts/provider-jobs-judge.json
+          retention-days: 90
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-jobs-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-jobs-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-jobs-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-jobs-sentinel-${{ github.sha }}
+          path: artifacts/provider-jobs-sentinel.json
+          retention-days: 90
