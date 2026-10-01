@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-voice",
   "job_id": "job-hugo-voice-20260930T1529Z",
   "title": "Verify Hugo conversational voice input output and textual fallback",
-  "status": "WAITING_RUNTIME",
+  "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-10-01T12:38:30Z",
-  "lease_expires_at": "2026-10-01T13:23:30Z",
+  "heartbeat_at": "2026-10-01T12:40:30Z",
+  "lease_expires_at": "2026-10-01T13:25:30Z",
   "started_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -25,8 +25,8 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "VERIFY_CURRENT_MAIN_VOICE_GATE_BROWSER_RUNTIME",
-  "attempt": 9,
+  "current_step": "HUMAN_MIC_AUDIO_RETEST_ON_READY_PRODUCTION",
+  "attempt": 10,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
     "github-actions:36737490396",
@@ -55,10 +55,12 @@
     "github-run:36862491796:hugo-continuity:PASS",
     "github-run:36862900628:main-continuity:PASS",
     "github-run:36862900678:main-authority:PASS",
-    "github-run:36862900675:main-voice-gate:IN_PROGRESS"
+    "github-run:36862900675:main-voice-gate:IN_PROGRESS",
+    "github-run:36862900675:main-voice-gate:PASS",
+    "github-job:110371214111:browser-runtime:PASS"
   ],
   "result_sha": "71f91be66cf61e99e9eeea36781eb8c48139591f",
-  "revalidated_main_sha": "71f91be66cf61e99e9eeea36781eb8c48139591f",
+  "revalidated_main_sha": "b712f0b8bf07f97781357486b1fe041cc84357aa",
   "human_runtime_evidence": {
     "result": "FAIL",
     "roles": [
@@ -71,27 +73,28 @@
     "notes": "Nueva evidencia humana invalida WAITING_EVIDENCE; defecto transversal de runtime."
   },
   "revalidation": {
-    "automated_runtime_result": "CURRENT_MAIN_PARTIAL_PASS_VOICE_BROWSER_RUNTIME_IN_PROGRESS",
+    "automated_runtime_result": "PASS_CURRENT_MAIN_AUTOMATED_SCOPE",
     "current_source_contract": "PASS_REVALIDATED_ON_MAIN",
-    "delegable_scope_remaining": 1,
+    "delegable_scope_remaining": 0,
     "human_evidence_invalidates_verified_candidate": true,
     "human_retest_required_after_fixes": true,
     "runtime_root_cause": "Gemini auth_tokens rejected liveConnectConstraints; fixed and included in READY production deployment 1831d022.",
     "production_deploy_status": "READY_WITH_ROOT_CAUSE_FIX",
     "current_main_checks": {
-      "sha": "71f91be66cf61e99e9eeea36781eb8c48139591f",
+      "source_sha": "71f91be66cf61e99e9eeea36781eb8c48139591f",
+      "lock_update_sha": "b712f0b8bf07f97781357486b1fe041cc84357aa",
       "continuity": "PASS",
       "authority": "PASS",
       "typescript_build": "PASS",
       "voice_contracts": "PASS",
-      "browser_runtime": "IN_PROGRESS"
+      "browser_runtime": "PASS"
     }
   },
   "validators_result": {
-    "Judge": "PENDING_CURRENT_MAIN_BROWSER_RUNTIME_AND_HUMAN_PROOF",
-    "Sentinel": "PENDING_CURRENT_MAIN_BROWSER_RUNTIME_AND_HUMAN_PROOF"
+    "Judge": "PENDING_PHYSICAL_MIC_AUDIO_PROOF",
+    "Sentinel": "PENDING_PHYSICAL_MIC_AUDIO_PROOF"
   },
-  "blocker": "CURRENT_MAIN_BROWSER_VOICE_RUNTIME_THEN_PHYSICAL_MIC_AUDIO_RETEST",
+  "blocker": "HUMAN_PHYSICAL_MICROPHONE_AUDIO_RETEST_ONLY",
   "human_final_required": {
     "required": true,
     "action": "En UGO TEST/Preview con navegador/dispositivo real: abrir Hugo, permitir micrófono y comprobar una conversación multi-turno completa incluyendo necesidad, dirección guardada 'casa', oferta de foto, confirmación, transcripción/acción y respuesta de audio; luego negar micrófono y confirmar mensaje accionable + fallback textual.",
