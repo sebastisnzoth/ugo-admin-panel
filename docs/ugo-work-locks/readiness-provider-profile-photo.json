@@ -5,8 +5,8 @@
   "title": "provider-profile-photo",
   "status": "IN_PROGRESS",
   "started_at": "2026-10-01T00:08:57Z",
-  "heartbeat_at": "2026-10-01T00:08:57Z",
-  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "heartbeat_at": "2026-10-01T01:10:00Z",
+  "lease_expires_at": "2026-10-01T01:55:00Z",
   "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -23,11 +23,18 @@
     "provider-media"
   ],
   "correlation_id": "provider-profile-photo-20261001T000857Z",
-  "current_step": "INSPECT_PROFILE_STORAGE_UI_AND_RUNTIME",
+  "current_step": "WAITING_PR334_GLOBAL_GATES",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
-    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef",
+    "github-pr:334",
+    "github-head:acb3441120e8a3e0d085d33ca52c995f7262e233",
+    "github-run:36800437882:PASS",
+    "github-artifact:11135263683",
+    "judge:PASS",
+    "sentinel:PASS",
+    "ugo-arena:migration:provider_profile_photo"
   ],
   "production_touched": false,
   "completed_at": null,
