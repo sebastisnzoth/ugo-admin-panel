@@ -3,10 +3,10 @@
   "task_id": "readiness-admin-assignment-payment-guard",
   "job_id": "UGO-READINESS-ADMIN-ASSIGNMENT-PAYMENT-GUARD-20261001",
   "title": "Guard de pago en asignación Admin",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T01:31:00Z",
-  "heartbeat_at": "2026-10-01T02:33:00Z",
-  "lease_expires_at": "2026-10-01T03:18:00Z",
+  "heartbeat_at": "2026-10-01T03:06:00Z",
+  "lease_expires_at": null,
   "started_sha": "f536d73cf50bd777cb7896f5777a6dd0a00fe316",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,15 +16,15 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "admin-shell",
     "payments"
   ],
   "correlation_id": "admin-assignment-payment-guard-20261001T013100Z",
-  "current_step": "FIX_STALE_DEBT_BLOCK_CONTRACT_AND_RERUN_SAME_SHA",
+  "current_step": "VERIFIED",
   "attempt": 2,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
@@ -32,11 +32,24 @@
     "main-sha:f536d73cf50bd777cb7896f5777a6dd0a00fe316",
     "stale-lock-reconciled:2026-10-01T02:33:00Z",
     "github-pr:338",
-    "candidate-head:459e7fdf7e54e4296eea0a141fd9b2c639964e85"
+    "candidate-head:459e7fdf7e54e4296eea0a141fd9b2c639964e85",
+    "github-pr:344",
+    "github-head:6ec17620dba0b407dfe97ed7f7ad0e54c12578ff",
+    "github-run:36808333753:PASS",
+    "github-artifact:11138810322",
+    "github-core-run:36808333731:PASS",
+    "github-admin-realtime-run:36808333649:PASS",
+    "github-cross-role-run:36808333679:PASS",
+    "github-security-run:36808333674:PASS",
+    "github-timeout-run:36808333791:PASS",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:b38a182594f7d5e0e9e5ec1d1c7c1daaa0878382"
   ],
   "production_touched": false,
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "result": null
+  "completed_at": "2026-10-01T03:06:00Z",
+  "finished_at": "2026-10-01T03:06:00Z",
+  "verified_sha": "6ec17620dba0b407dfe97ed7f7ad0e54c12578ff",
+  "result": "VERIFIED",
+  "merged_main_sha": "b38a182594f7d5e0e9e5ec1d1c7c1daaa0878382"
 }

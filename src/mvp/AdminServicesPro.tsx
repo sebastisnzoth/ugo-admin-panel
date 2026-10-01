@@ -11,6 +11,8 @@ const fullName=(u:any)=>[u?.nombre,u?.apellido].filter(Boolean).join(' ')||'—'
 
 type EditForm={estado:ServiceState;proveedor_id:string;tarifa:string;descripcion:string;direccion_cliente:string;motivo:string}
 const toForm=(s:any):EditForm=>({estado:s.estado,proveedor_id:s.proveedor_id||s.proveedor?.id||'',tarifa:String(Number(s.tarifa||0)),descripcion:s.descripcion||'',direccion_cliente:s.direccion_cliente||'',motivo:''})
+const servicePaymentMethod=(s:any)=>{const raw=String(s?.metadata?.requested_payment_method||s?.metadata?.payment_method||'').toLowerCase();return raw==='cash'?'efectivo':raw}
+const assignmentMissing=(s:any,form:EditForm,providers:any[])=>{if(!form.proveedor_id)return[];const missing:string[]=[];if(!s?.cliente_id)missing.push('cliente');if(!s?.categoria_id)missing.push('categoría');if(!s?.ubicacion_cliente)missing.push('ubicación');const provider=providers.find(p=>p.id===form.proveedor_id);if(!provider||provider.estado_verificacion!=='verificado')missing.push('proveedor habilitado');if(!['efectivo','pix'].includes(servicePaymentMethod(s)))missing.push('forma de pago');return missing}
 
 export function AdminServicesPro({initialServiceId,onInitialServiceConsumed}:{initialServiceId?:string|null;onInitialServiceConsumed?:()=>void}={}){
  const{services,providers,loading,error,refetch,updateService,updateServiceStatus,liveStatus,lastSynced}=useAdminActiveServices();const[q,setQ]=useState('');const[state,setState]=useState('todos')
@@ -42,6 +44,8 @@ export function AdminServicesPro({initialServiceId,onInitialServiceConsumed}:{in
  const saveEdit=async()=>{
   if(!editing||!form)return
   if(form.estado==='cancelado'&&!form.motivo.trim()){setEditMessage('Indicá el motivo de la cancelación antes de guardar.');return}
+  const missing=assignmentMissing(editing,form,providers)
+  if(missing.length){setEditMessage(`Asignación bloqueada. Falta completar: ${missing.join(', ')}. Completá esos datos antes de asignar el proveedor.`);return}
   const tarifa=Number(String(form.tarifa).replace(',','.'))
   if(!Number.isFinite(tarifa)||tarifa<0){setEditMessage('La tarifa debe ser un importe válido.');return}
   setEditBusy(true);setEditMessage('')
@@ -72,7 +76,7 @@ export function AdminServicesPro({initialServiceId,onInitialServiceConsumed}:{in
    <div className="ugo-operation-summary"><div><small>CREADO</small><strong>{when(editing.created_at)}</strong></div><div><small>ÚLTIMA ACTUALIZACIÓN</small><strong>{when(editing.updated_at)}</strong></div><div><small>ESTADO ACTUAL</small><strong>{label(editing.estado)}</strong></div></div>
    <div className="ugo-operation-form-grid">
     <label>Estado<select value={form.estado} onChange={e=>setForm({...form,estado:e.target.value as ServiceState})}>{SERVICE_STATES.map(s=><option key={s} value={s}>{label(s)}</option>)}</select></label>
-    <label>Proveedor<select value={form.proveedor_id} onChange={e=>setForm({...form,proveedor_id:e.target.value})}><option value="">Sin asignar</option>{providers.map(p=><option key={p.id} value={p.id} disabled={p.debtBlocked}>{fullName(p)} · ⭐ {Number(p.karma||0).toFixed(1)} · {p.debtBlocked?`BLOQUEADO UGO (${p.pendingDebtCount})`:p.online&&p.disponible?'Online':'Offline'}</option>)}</select>{providers.find(p=>p.id===form.proveedor_id)?.debtBlocked&&<small style={{color:'var(--ugo-color-error)'}}>Este proveedor llegó al límite de comisiones pendientes y no puede recibir otro pedido.</small>}</label>
+    <label>Proveedor<select value={form.proveedor_id} onChange={e=>setForm({...form,proveedor_id:e.target.value})}><option value="">Sin asignar</option>{providers.map(p=><option key={p.id} value={p.id} disabled={p.debtBlocked||p.estado_verificacion!=='verificado'}>{fullName(p)} · ⭐ {Number(p.karma||0).toFixed(1)} · {p.debtBlocked?`BLOQUEADO UGO (${p.pendingDebtCount})`:p.estado_verificacion!=='verificado'?'No verificado':p.online&&p.disponible?'Online':'Offline'}</option>)}</select>{providers.find(p=>p.id===form.proveedor_id)?.debtBlocked&&<small style={{color:'var(--ugo-color-error)'}}>Este proveedor llegó al límite de comisiones pendientes y no puede recibir otro pedido.</small>}{form.proveedor_id&&assignmentMissing(editing,form,providers).length>0&&<small style={{color:'var(--ugo-color-error)'}}>Antes de asignar: completá {assignmentMissing(editing,form,providers).join(', ')}.</small>}</label>
     <label>Tarifa (R$)<input inputMode="decimal" value={form.tarifa} onChange={e=>setForm({...form,tarifa:e.target.value})}/></label>
     <label>Dirección<input value={form.direccion_cliente} onChange={e=>setForm({...form,direccion_cliente:e.target.value})}/></label>
     <label className="wide">Descripción<textarea rows={4} value={form.descripcion} onChange={e=>setForm({...form,descripcion:e.target.value})}/></label>
