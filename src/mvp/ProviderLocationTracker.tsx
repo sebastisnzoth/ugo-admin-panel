@@ -28,7 +28,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const[lastFix,setLastFix]=useState<{capturedAt:number;accuracy:number}|null>(null)
  const[nowMs,setNowMs]=useState(()=>Date.now())
  const enRoute=service?.estado==='en_camino'
- const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null)
+ const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null),lastValidFixAtRef=useRef(0)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
  useEffect(()=>{if(service?.estado!=='en_camino'){attemptedServiceRef.current=null;setLastFix(null)}},[service?.estado,service?.id])
  useEffect(()=>{if(!enRoute)return;setNowMs(Date.now());const timer=window.setInterval(()=>setNowMs(Date.now()),1_000);return()=>window.clearInterval(timer)},[enRoute])
@@ -77,7 +77,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
     return
    }
    {
-    lastWrite=Date.now();lastPoint=point;setLastFix({capturedAt:Number(pos.timestamp||Date.now()),accuracy})
+    lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:Number(pos.timestamp||Date.now()),accuracy})
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
     setDistanceToClient(validMeters)
@@ -86,7 +86,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      try{const ok=await autoArrivalRef.current();if(ok===false)attemptedServiceRef.current=null}catch{attemptedServiceRef.current=null}
     }
    }
-  },error=>{setLocationError(error.code===1?'UGO necesita permiso de ubicación precisa para seguir el servicio.':error.code===2?'No pudimos obtener tu GPS. Revisá que la ubicación del dispositivo esté activada.':'El GPS tardó demasiado en responder. Reintentando…')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
+  },error=>{if(error.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return;setLocationError(error.code===1?'UGO necesita permiso de ubicación precisa para seguir el servicio.':error.code===2?'No pudimos obtener tu GPS. Revisá que la ubicación del dispositivo esté activada.':'El GPS tardó demasiado en responder. Reintentando…')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
   return()=>navigator.geolocation.clearWatch(watchId)
  },[available,enRoute,service?.id,service?.estado,supabase])
 
