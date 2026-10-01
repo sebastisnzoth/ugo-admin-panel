@@ -75,6 +75,14 @@ export function evaluateFunctionalReadiness({
 
     if (lock && HUMAN_LOCK_STATUSES.has(lock.status)) {
       item.status = 'HUMAN_REQUIRED'
+      item.human_runtime_evidence = lock.human_runtime_evidence || null
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    if (lock?.status === 'WAITING_EVIDENCE' && lock?.human_final_required?.required === true) {
+      item.status = 'HUMAN_REQUIRED'
+      item.human_runtime_evidence = lock.human_runtime_evidence || null
       item.evidence_source = 'READINESS_LOCK'
       continue
     }
@@ -213,7 +221,11 @@ export function evaluateFunctionalReadiness({
       item.gate_reason = 'Existe un lock persistido activo para este control.'
     } else if (item.status === 'HUMAN_REQUIRED') {
       item.gate_state = 'HUMAN_REQUIRED'
-      item.gate_reason = 'La automatización verificable quedó agotada; falta evidencia humana/física real.'
+      const humanResult = String(item.human_runtime_evidence?.result || '').toUpperCase()
+      const humanSymptom = String(item.human_runtime_evidence?.symptom || '').trim()
+      item.gate_reason = humanResult === 'FAIL'
+        ? 'La prueba humana real FALLÓ' + (humanSymptom ? ': ' + humanSymptom : '') + '. No está VERIFIED; requiere corrección y nueva prueba física.'
+        : 'La automatización verificable quedó agotada; falta evidencia humana/física real.'
     } else if (item.declared_status === 'HUMAN_FINAL') {
       if (remainingAutonomousBeforeHuman > 0) {
         item.gate_state = 'HUMAN_DEFERRED'
