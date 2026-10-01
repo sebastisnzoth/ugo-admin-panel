@@ -11,7 +11,7 @@ export function resolveAppRoute(search:string):AppRoute{
  if(app==='client')return'client'
  if(app==='provider')return'provider'
  if(app==='development')return'development'
- if(app==='admin')return'admin'
+ if(app==='admin'||app==='superadmin')return'admin'
  if(app==='web')return'web'
  return'landing'
 }
