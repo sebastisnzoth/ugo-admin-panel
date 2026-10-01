@@ -29,6 +29,7 @@ permissions:
   contents: read
 
 # One canonical workflow owns the shared provider TEST fixture on push.
+# canonical provider gate refresh: 2026-10-01
 # Targeted provider workflows remain available through workflow_dispatch only.
 concurrency:
   group: ugo-test-shared-provider-fixture
