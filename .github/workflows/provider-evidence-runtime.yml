@@ -20,6 +20,7 @@ on:
       - 'tests/contracts/provider-evidence-panel-service.test.mjs'
       - 'tests/contracts/provider-evidence-recovery.test.mjs'
       - 'tests/contracts/provider-evidence-service-extraction.test.mjs'
+      - 'tests/contracts/provider-evidence-runtime.test.mjs'
       - 'tests/contracts/provider-evidence-state-guard.test.mjs'
       - 'tests/contracts/android-evidence-camera.test.mjs'
       - '.github/workflows/provider-evidence-runtime.yml'
@@ -53,7 +54,7 @@ jobs:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
         run: npm run verify:test-env
       - name: Provider evidence contract gates
-        run: node --test tests/contracts/provider-evidence-panel-service.test.mjs tests/contracts/provider-evidence-recovery.test.mjs tests/contracts/provider-evidence-service-extraction.test.mjs tests/contracts/provider-evidence-state-guard.test.mjs tests/contracts/android-evidence-camera.test.mjs
+        run: node --test tests/contracts/provider-evidence-panel-service.test.mjs tests/contracts/provider-evidence-recovery.test.mjs tests/contracts/provider-evidence-service-extraction.test.mjs tests/contracts/provider-evidence-state-guard.test.mjs tests/contracts/android-evidence-camera.test.mjs tests/contracts/provider-evidence-runtime.test.mjs
       - name: Build exact SHA
         env:
           VITE_APP_REVISION: ${{ github.sha }}
