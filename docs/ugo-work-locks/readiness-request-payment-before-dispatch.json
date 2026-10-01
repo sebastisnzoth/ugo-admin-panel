@@ -1,0 +1,38 @@
+{
+  "readiness_id": "request-payment-before-dispatch",
+  "task_id": "readiness-request-payment-before-dispatch",
+  "job_id": "UGO-READINESS-REQUEST-PAYMENT-BEFORE-DISPATCH-20261001",
+  "title": "request-payment-before-dispatch",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T00:08:57Z",
+  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Payments Ledger Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "client-payment",
+    "client-request-flow"
+  ],
+  "correlation_id": "request-payment-before-dispatch-20261001T000857Z",
+  "current_step": "RECONCILE_CLIENT_PAYMENT_AND_VERIFY_PRE_DISPATCH_GUARD",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
