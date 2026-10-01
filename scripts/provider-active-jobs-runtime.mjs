@@ -17,6 +17,8 @@ try{
  browser=await chromium.launch({headless:true});const page=await browser.newPage({viewport:{width:390,height:844}})
  await page.goto(base+'/?app=provider',{waitUntil:'domcontentloaded'});await page.getByPlaceholder('tu@email.com').fill(pe);await page.getByPlaceholder('Mínimo 6 caracteres').fill(password);await page.getByRole('button',{name:'Ingresar a UGO'}).click()
  await page.getByText('TRABAJO ACTIVO').waitFor({state:'visible',timeout:30000})
+ await page.getByRole('button',{name:'Continuar trabajo'}).click()
+ await page.getByRole('heading',{name:'Listo para ir'}).waitFor({state:'visible',timeout:10000})
  await page.getByText('Arreglar canilla de cocina').waitFor({state:'visible',timeout:10000})
  await page.getByText(/Rua UGO TEST 100/).waitFor({state:'visible',timeout:10000})
  await page.getByText(/Efectivo|Pago en efectivo/).first().waitFor({state:'visible',timeout:10000})
