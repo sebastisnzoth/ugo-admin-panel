@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-voice",
   "job_id": "job-hugo-voice-20260930T1529Z",
   "title": "Verify Hugo conversational voice input output and textual fallback",
-  "status": "IN_PROGRESS",
+  "status": "WAITING_EVIDENCE",
   "started_at": "2026-09-30T15:29:30Z",
-  "heartbeat_at": "2026-10-01T02:39:00Z",
-  "lease_expires_at": "2026-10-01T03:24:00Z",
+  "heartbeat_at": "2026-10-01T02:40:00Z",
+  "lease_expires_at": "2026-10-01T03:25:00Z",
   "started_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
   "owner": "UGO",
   "department": "Hugo / IA / Voz",
@@ -25,7 +25,7 @@
     "hugo-voice"
   ],
   "correlation_id": "corr-hugo-voice-20260930T1529Z",
-  "current_step": "FIX_LIVE_TURN_FLUSH_AND_RESPONSE_WATCHDOG",
+  "current_step": "HUMAN_RETEST_ALL_ROLES_AFTER_LIVE_TURN_FIX",
   "attempt": 6,
   "evidence_ids": [
     "docs/ugo-readiness-evidence/readiness-hugo-voice-20260930.json",
@@ -36,10 +36,12 @@
     "commit:52f802bcce942756c1c788cb19bfef3c156874ba",
     "commit:1121182fd56ae27585d7b71cbaea340faab8e01e",
     "source-revalidation:main@96352f48a54a1a80e4c0a66908f8c4424fb406e4",
-    "stale-reconcile:ce3afbadb1eb148cee3149c470e0e81c25fe3615"
+    "stale-reconcile:ce3afbadb1eb148cee3149c470e0e81c25fe3615",
+    "commit:a5b3a2cb420366ad51f212dc7bdd3ffcccca15cb",
+    "commit:ee58e714f8b1ddd97b01c2f3b1f97146752d46a3"
   ],
-  "result_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
-  "revalidated_main_sha": "ce3afbadb1eb148cee3149c470e0e81c25fe3615",
+  "result_sha": "ee58e714f8b1ddd97b01c2f3b1f97146752d46a3",
+  "revalidated_main_sha": "ee58e714f8b1ddd97b01c2f3b1f97146752d46a3",
   "human_runtime_evidence": {
     "result": "FAIL",
     "roles": [
@@ -52,17 +54,18 @@
     "notes": "Nueva evidencia humana invalida WAITING_EVIDENCE; defecto transversal de runtime."
   },
   "revalidation": {
-    "automated_runtime_result": "PREVIOUS_RUNTIME_PASS_SUPERSEDED_BY_POST_FAILURE_FIXES",
+    "automated_runtime_result": "SOURCE_FIX_AND_REGRESSION_PERSISTED",
     "current_source_contract": "PASS_REVALIDATED_ON_MAIN",
     "delegable_scope_remaining": 0,
     "human_evidence_invalidates_verified_candidate": true,
-    "human_retest_required_after_fixes": true
+    "human_retest_required_after_fixes": true,
+    "production_deploy_status": "BLOCKED_BY_VERCEL_BUILD_RATE_LIMIT"
   },
   "validators_result": {
-    "Judge": "BLOCKED_BY_RUNTIME_DEFECT",
-    "Sentinel": "BLOCKED_BY_RUNTIME_DEFECT"
+    "Judge": "PENDING_POST_FIX_HUMAN_EVIDENCE",
+    "Sentinel": "PENDING_POST_FIX_HUMAN_EVIDENCE"
   },
-  "blocker": "VOICE_RUNTIME_STALL_ALL_ROLES",
+  "blocker": "HUMAN_ALL_ROLE_VOICE_RETEST_POST_FIX",
   "human_final_required": {
     "required": true,
     "action": "En UGO TEST/Preview con navegador/dispositivo real: abrir Hugo, permitir micrófono y comprobar una conversación multi-turno completa incluyendo necesidad, dirección guardada 'casa', oferta de foto, confirmación, transcripción/acción y respuesta de audio; luego negar micrófono y confirmar mensaje accionable + fallback textual.",
