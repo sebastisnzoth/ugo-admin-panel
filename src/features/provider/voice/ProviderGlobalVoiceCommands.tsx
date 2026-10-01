@@ -5,6 +5,8 @@ import{useProviderData}from'../../../mvp/provider/providerData'
 import{useProviderFlow}from'../../../mvp/provider/providerFlow'
 import{detectProviderVoiceLocale,findProviderVoiceOpportunity,normalizeProviderVoice,providerVoiceSummary}from'./providerVoiceHelpers'
 import{runProviderVoiceCommand}from'./providerVoiceCommands'
+import{getRoleSupabase}from'../../../lib/roleSupabase'
+import{getHugoRuntimeUrl}from'../../../lib/hugoEdgeRuntime'
 
 export function ProviderGlobalVoiceCommands(){
  const flow=useProviderFlow(),data=useProviderData()
@@ -23,7 +25,17 @@ export function ProviderGlobalVoiceCommands(){
   if(/\b(disputa|problema|soporte|suporte|ayuda|ajuda)\b/.test(value)&&/\b(abrir|abre|ver|mostrar|ir|preciso|necesito)\b/.test(value)){flow.actions.openDispute();return true}
   if(/\b(trabalho atual|trabajo actual|servicio actual|servico atual|mision|missao)\b/.test(value)){data.service?flow.actions.openActiveJob():flow.actions.openAgenda();return true}
   if(engine==='browser-speech'){
-   return runProviderVoiceCommand({source,locale:detectProviderVoiceLocale(source),summary:providerVoiceSummary(data),flow:flow.actions,data,findOpportunity:(text)=>findProviderVoiceOpportunity(text,data.opportunities),speak})
+   const handled=await runProviderVoiceCommand({source,locale:detectProviderVoiceLocale(source),summary:providerVoiceSummary(data),flow:flow.actions,data,findOpportunity:(text)=>findProviderVoiceOpportunity(text,data.opportunities),speak})
+   if(handled)return true
+   try{
+    const sb=getRoleSupabase('provider'),{data:{session}}=await sb.auth.getSession()
+    if(!session)return false
+    const context=JSON.stringify({summary:providerVoiceSummary(data),online:data.online,activeService:data.service?{id:data.service.id,state:data.service.estado,category:data.service.categoria?.nombre||null}:null,opportunities:data.opportunities.slice(0,5).map(item=>({serviceId:item.serviceId,category:item.category,zone:item.zone,distanceKm:item.distanceKm,estimatedValue:item.estimatedValue}))})
+    const response=await fetch(getHugoRuntimeUrl('/api/hugo/chat'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+session.access_token},body:JSON.stringify({message:source,role:'provider',surface:'provider',context})}),payload=await response.json().catch(()=>({}))
+    if(!response.ok)throw new Error(String(payload?.hugo_mensaje||payload?.error||'Hugo no respondió'))
+    const reply=String(payload?.hugo_mensaje||'').trim()
+    if(reply){await speak(reply);return true}
+   }catch(error){console.warn('Hugo provider conversational fallback failed',error)}
   }
   return false
  },[data,flow.actions,speak])

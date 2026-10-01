@@ -18,6 +18,13 @@ on:
       - "scripts/validate-ugo-scheduler.mjs"
       - "tests/contracts/command-center-evidence-sync.test.mjs"
       - ".github/workflows/github-pages.yml"
+      - "src/**"
+      - "server/hugo/**"
+      - "api/hugo/**"
+      - "api/test.ts"
+      - "vite.config.ts"
+      - "package.json"
+      - "package-lock.json"
   workflow_dispatch:
 
 permissions:
@@ -212,10 +219,27 @@ jobs:
             source: "GITHUB_PULL_REQUESTS_SERVER_SIDE"
           }' /tmp/ugo-readiness-prs.json > _site/pull-requests.json
 
+      - name: Setup Node for TEST app preview
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Build UGO TEST app for GitHub Pages
+        env:
+          VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
+          VITE_APP_REVISION: ${{ github.sha }}
+        shell: bash
+        run: |
+          npm ci
+          npm run build -- --base=/ugo-admin-panel/app/
+
       - name: Prepare static site
         shell: bash
         run: |
           cp -a pages/. _site/
+          mkdir -p _site/app
+          cp -a dist/. _site/app/
           rm -f _site/status.json
           PUBLISHED_AT="$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           node scripts/generate-pages-status.mjs \

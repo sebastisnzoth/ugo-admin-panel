@@ -55,7 +55,7 @@ try{
   await page.evaluate(async()=>{await window.UGOVoiceBridge.startListening()})
   await page.waitForFunction(()=>window.__ugoVoiceRuntimeEvents?.some(item=>item.name==='ugo:native-voice-result'&&item.detail?.final===true&&item.detail?.engine==='browser-speech'),null,{timeout:10000})
   events.push(...await page.evaluate(()=>window.__ugoVoiceRuntimeEvents||[]))
-  const fallbackReady=events.some(item=>item.name==='ugo:native-voice-state'&&item.detail?.engine==='browser-speech'&&item.detail?.reason==='device-fallback')
+  const fallbackReady=events.some(item=>item.name==='ugo:native-voice-state'&&item.detail?.engine==='browser-speech'&&['device-fallback','gemini-live-start-fallback','gemini-live-fallback'].includes(item.detail?.reason))
   const final=events.find(item=>item.name==='ugo:native-voice-result'&&item.detail?.engine==='browser-speech'&&item.detail?.final===true)
   assert.equal(fallbackReady,true,role+' must enter browser-speech fallback')
   assert.equal(final?.detail?.text,'necesito un plomero',role+' must emit final browser transcript')

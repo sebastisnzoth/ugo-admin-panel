@@ -157,8 +157,10 @@ test('Gemini Live uses hybrid local VAD for faster turn completion',()=>{
 })
 
 
-test('Gemini Live startup errors are not masked as fake listening',()=>{
+test('Gemini Live startup errors degrade explicitly to browser speech when available',()=>{
  assert.match(bridge,/UGO Gemini Live start failed'/)
- assert.match(bridge,/if\(!canStream\(\)&&startFallback\(\)\)/)
+ assert.match(bridge,/fallbackEligible&&startFallback\(\)/)
+ assert.match(bridge,/reason:'gemini-live-start-fallback'/)
+ assert.match(bridge,/previous_engine:'gemini-live'/)
  assert.doesNotMatch(bridge,/reason:'gemini-fallback'/)
 })
