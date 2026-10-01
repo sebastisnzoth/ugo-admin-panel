@@ -1,0 +1,63 @@
+name: UGO Provider Active Jobs Runtime TEST
+on:
+  pull_request:
+    paths:
+      - 'src/mvp/provider/ProviderActiveJob.tsx'
+      - 'src/mvp/ProviderHistoryDetail.tsx'
+      - 'supabase/migrations/20261001031500_provider_active_jobs_runtime_qa.sql'
+      - 'scripts/provider-active-jobs-*.mjs'
+      - 'tests/contracts/provider-active-jobs-readiness.test.mjs'
+      - '.github/workflows/provider-active-jobs-runtime.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/provider-active-jobs-readiness.test.mjs
+      - run: npm run build
+      - run: npm install --no-save --package-lock=false playwright@1.56.1
+      - run: npx playwright install --with-deps chromium
+      - name: Runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+          UGO_UI_BASE_URL: http://127.0.0.1:4173
+        run: |
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-provider-active-jobs-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/provider-active-jobs-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-active-jobs-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-active-jobs-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-active-jobs-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/provider-active-jobs-*
+          if-no-files-found: warn
+          retention-days: 90

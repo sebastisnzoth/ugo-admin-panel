@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-active-jobs",
   "job_id": "UGO-READINESS-PROVIDER-ACTIVE-JOBS-20261001",
   "title": "Trabajos activos completos",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-01T03:08:00Z",
-  "heartbeat_at": "2026-10-01T03:08:00Z",
-  "lease_expires_at": "2026-10-01T03:53:00Z",
+  "heartbeat_at": "2026-10-01T03:42:00Z",
+  "lease_expires_at": null,
   "started_sha": "d91023efd10f4283832bb0525126a49eace2c765",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -16,24 +16,36 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "provider-job-state",
     "provider-history"
   ],
   "correlation_id": "provider-active-jobs-20261001T030800Z",
-  "current_step": "VERIFY_ACTIVE_JOB_COMPLETENESS_PAYMENT_EVIDENCE_TIMELINE",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:admin-assignment-payment-guard:VERIFIED",
-    "main-sha:d91023efd10f4283832bb0525126a49eace2c765"
+    "main-sha:d91023efd10f4283832bb0525126a49eace2c765",
+    "github-pr:347",
+    "github-head:2004e0a322890bb82d9658d943f620e9bc84e3e1",
+    "github-run:36811374909:PASS",
+    "github-artifact:11140000132",
+    "github-core-run:36811374945:PASS",
+    "github-timeout-run:36811375021:PASS",
+    "runtime:missing-payment-assignment-blocked",
+    "runtime:complete-cash-active-job-visible",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:14fb96db9a21d1a7d5a7541152419b1532d4b116"
   ],
   "production_touched": false,
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "result": null
+  "completed_at": "2026-10-01T03:42:00Z",
+  "finished_at": "2026-10-01T03:42:00Z",
+  "verified_sha": "2004e0a322890bb82d9658d943f620e9bc84e3e1",
+  "result": "VERIFIED",
+  "merged_main_sha": "14fb96db9a21d1a7d5a7541152419b1532d4b116"
 }
