@@ -1,0 +1,33 @@
+{
+  "readiness_id": "provider-workflow",
+  "task_id": "readiness-provider-workflow",
+  "job_id": "UGO-READINESS-PROVIDER-WORKFLOW",
+  "title": "Verify provider sequential start/finish state machine",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T19:04:00Z",
+  "heartbeat_at": "2026-10-01T19:04:00Z",
+  "lease_expires_at": "2026-10-01T19:24:00Z",
+  "started_sha": "62838e238e717ccec3c6a41653da0f56b075fbe6",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Workflow Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-job-state"
+  ],
+  "correlation_id": "readiness-provider-workflow-20261001T190400Z-gptugo-r1",
+  "current_step": "BUILD_AND_RUN_TEST_STATE_MACHINE",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "last_failure": null
+}
