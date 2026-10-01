@@ -92,6 +92,24 @@ Limitaciones conocidas:
 - Algunos jobs browser/runtime no llegaron a ejecutar Playwright porque falló la instalación de Chromium en el runner.
 - El full-repo lint tenía deuda preexistente en archivos no relacionados; no debe confundirse con falla funcional del lote.
 
+
+
+## Evidencia SAME-CONTENT del runtime TEST (revalidada)
+Revalidación directa realizada el 2026-10-01:
+- UGO Arena `tmossnqfwfwjrtzwcbmm`: estado `ACTIVE_HEALTHY`.
+- Edge Function `hugo-runtime`: `ACTIVE`, versión 3.
+- El contenido de `index.ts` desplegado en UGO Arena coincide byte por byte con `supabase/functions/hugo-runtime/index.ts` del head del PR #360.
+- GitHub blob SHA del archivo validado: `c0db3539e603346c197ff1ccc45bc7c7eecec167`.
+- Hash del deploy Supabase: `2a4dababb97109fb16c5cc8d33ba40eade4a32bc2179fc48cdf91e89d47e94c7`.
+- Logs reales de UGO Arena muestran preflight `OPTIONS 200` y `POST 200` autenticados desde Android/Brasil contra `/functions/v1/hugo-runtime`.
+- Esta evidencia prueba wiring HTTP/auth/CORS del runtime desplegado, pero NO prueba por sí sola WebSocket Gemini Live, captura de micrófono, reproducción de audio ni ejecución de tools.
+
+Clasificación correcta del bloque:
+- Runtime backend desplegado: `VERIFIED` respecto de identidad de código + reachability HTTP autenticada.
+- Conversación Live extremo a extremo: `NEEDS_RUNTIME_PROOF`.
+- Tool/action real de Hugo: `NEEDS_RUNTIME_PROOF`.
+- Customer #1 / dos dispositivos: `BLOCKED_HUMAN`.
+
 ## Qué NO está verificado todavía
 No declarar VERIFIED / READY por estos puntos hasta tener prueba real:
 1. Cliente habla -> Gemini Live escucha -> responde con audio.
