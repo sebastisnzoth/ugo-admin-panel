@@ -37,7 +37,7 @@ const empty:Metrics={active:0,online:0,users:0,pendingProviders:0,pendingPix:0,p
 export function AdminPhase2(){
  const adminParams=new URLSearchParams(window.location.search)
  const publicDevelopmentAccess=adminParams.get('app')==='admin'&&adminParams.get('auth')!=='1'
- const[section,setSection]=useState<Section>(()=>new URLSearchParams(window.location.search).get('app')==='superadmin'?'superadmin':'home')
+ const[section,setSection]=useState<Section>(()=>new URLSearchParams(window.location.search).get('section')==='superadmin'?'superadmin':'home')
  const[operationView,setOperationView]=useState<OperationView>('overview')
  const[peopleView,setPeopleView]=useState<PeopleView>('users')
  const[financeView,setFinanceView]=useState<FinanceView>('pix')
@@ -49,7 +49,7 @@ export function AdminPhase2(){
  const[gmail,setGmail]=useState<GmailStatus>({configured:false,connected:false,email:null,updatedAt:null}),[gmailBusy,setGmailBusy]=useState(false),[gmailMessage,setGmailMessage]=useState('')
  const isSuperAdmin=adminRole==='superadmin'
  const goToSecureAdmin=useCallback(()=>{const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');window.location.assign(url.toString())},[])
- const goToSuperAdmin=useCallback(()=>{if(isSuperAdmin){setSection('superadmin');return}const url=new URL(window.location.href);url.searchParams.set('app','superadmin');url.searchParams.set('tab','autonomy');url.searchParams.delete('auth');window.location.assign(url.toString())},[isSuperAdmin])
+ const goToSuperAdmin=useCallback(()=>{if(isSuperAdmin){setSection('superadmin');const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.history.replaceState({},'',url.toString());return}const url=new URL(window.location.href);url.searchParams.set('app','admin');url.searchParams.set('auth','1');url.searchParams.set('section','superadmin');url.searchParams.set('tab','autonomy');window.location.assign(url.toString())},[isSuperAdmin])
  useEffect(()=>{if(publicDevelopmentAccess){setAdminRole('admin');setRoleError('');return}let active=true;(async()=>{try{const{data:{session},error:sessionError}=await supabase.auth.getSession();const user=session?.user;if(sessionError||!user)throw sessionError||new Error('Sesión Admin requerida.');const adminDb=supabase as any;const{data,error}=await adminDb.from('usuarios').select('tipo,activo').eq('id',user.id).maybeSingle();if(error)throw error;const role=String(data?.tipo||'');if(!data?.activo||!['admin','superadmin'].includes(role))throw new Error('Acceso administrativo no autorizado.');if(active)setAdminRole(role as AdminRole)}catch(error){if(active){setAdminRole(null);setRoleError(error instanceof Error?error.message:'No pudimos validar el rol administrativo.')}}})();return()=>{active=false}},[publicDevelopmentAccess])
  useEffect(()=>{if(section==='superadmin'&&adminRole&&!isSuperAdmin)setSection('home')},[section,adminRole,isSuperAdmin])
  const load=useCallback(async(options?:{silent?:boolean})=>{
