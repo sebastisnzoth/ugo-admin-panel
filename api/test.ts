@@ -102,7 +102,7 @@ const GEMINI_LIVE_TRANSCRIBE_MODEL=String(process.env.GEMINI_LIVE_TRANSCRIBE_MOD
 const GEMINI_LIVE_VOICE_MODEL=String(process.env.GEMINI_LIVE_VOICE_MODEL||process.env.GEMINI_LIVE_MODEL||'gemini-3.8-live').replace(/^models\//,'')
 async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker'|'conversation'='conversation'){
  const now=Date.now(),expireTime=new Date(now+8*60*1000).toISOString(),newSessionExpireTime=new Date(now+45*1000).toISOString()
- // Production compatibility: AuthToken currently rejects liveConnectConstraints.
+ // Production compatibility: AuthToken currently rejects Live connection constraints.
  // Keep the API key server-side with a one-use short-lived token; the model
  // and transcription configuration are sent in the first WebSocket setup.
  const model=mode==='transcribe'?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL
