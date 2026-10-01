@@ -10,6 +10,7 @@ const token=sha.slice(0,8)+'-'+Date.now(),password='UGO-Test-'+token+'-R9!'
 let clientId=null,providerId=null,serviceId=null,ratingId=null
 async function cleanup(){
  if(serviceId)await admin.from('resenas').delete().eq('servicio_id',serviceId)
+ if(serviceId)await admin.from('pagos').delete().eq('servicio_id',serviceId)
  if(serviceId)await admin.from('servicios').delete().eq('id',serviceId)
  for(const id of[providerId,clientId]){if(!id)continue;await admin.from('perfiles_proveedor').delete().eq('usuario_id',id);await admin.from('usuarios').delete().eq('id',id);await admin.auth.admin.deleteUser(id)}
 }
@@ -25,12 +26,12 @@ async function mk(kind){
 try{
  const client=await mk('cliente');clientId=client.id
  const provider=await mk('proveedor');providerId=provider.id
- const category=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(category.error)throw category.error
- const maxq=await admin.from('servicios').select('numero').order('numero',{ascending:false}).limit(1).single();if(maxq.error)throw maxq.error
- serviceId=crypto.randomUUID()
- const service=await admin.from('servicios').insert({id:serviceId,numero:Number(maxq.data.numero)+310000,cliente_id:clientId,proveedor_id:providerId,categoria_id:category.data.id,estado:'completado',descripcion:'UGO provider rating readiness TEST',tarifa:127.5,ambiente:'demo',completado_at:new Date().toISOString(),metadata:{readiness_id:'provider-rating',sha,ephemeral:true}}).select('id,estado').single()
- if(service.error)throw service.error
- assert.equal(service.data.estado,'completado')
+ const prep=await admin.rpc('autonomous_qa_prepare_provider_active_job',{p_provider_id:providerId,p_client_id:clientId})
+ if(prep.error)throw prep.error
+ serviceId=prep.data.service_id
+ const completed=await admin.from('servicios').update({estado:'completado',completado_at:new Date().toISOString(),metadata:{requested_payment_method:'efectivo',payment_method:'efectivo',payment_selected_before_order:true,readiness_id:'provider-rating',sha,ephemeral:true}}).eq('id',serviceId).select('id,estado').single()
+ if(completed.error)throw completed.error
+ assert.equal(completed.data.estado,'completado')
 
  const providerDb=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
  const login=await providerDb.auth.signInWithPassword({email:provider.email,password});if(login.error)throw login.error
