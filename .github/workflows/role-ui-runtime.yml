@@ -26,7 +26,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-arena-remote-runtime
+  group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
 
 env:
