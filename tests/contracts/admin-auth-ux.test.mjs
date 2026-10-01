@@ -14,6 +14,9 @@ test('admin auth exposes loading, recovery and error semantics', async () => {
   assert.match(gate, /Usuario\/email o contraseña incorrectos/)
   assert.match(gate, /Demasiados intentos seguidos/)
   assert.match(gate, /catch\(err:unknown\)\{setError\(adminAuthErrorMessage\(err\)\)\}/)
+  assert.match(gate, /ADMIN_PROFILE_RETRY_DELAYS/)
+  assert.match(gate, /Login aceptado\. UGO está recuperando la conexión con tu perfil Admin/)
+  assert.match(gate, /AbortSignal\.timeout\(4500\)/)
 })
 
 test('admin feature shell keeps the operational panel mounted during migration', async () => {
@@ -31,4 +34,14 @@ test('superadmin command center reuses the mounted admin session and still verif
   assert.match(center, /profile\?\.tipo!=='superadmin'/)
   const initialLoad = center.slice(center.indexOf('const load=async()=>'), center.indexOf('setAuthorized(true)') + 'setAuthorized(true)'.length)
   assert.doesNotMatch(initialLoad, /supabase\.auth\.getUser\(\)/)
+})
+
+
+test('client/provider auth preserves a valid session during transient profile outages', async () => {
+  const shared = await read('src/mvp/shared.tsx')
+  assert.match(shared, /AUTH_PROFILE_RETRY_DELAYS/)
+  assert.match(shared, /transientProfileError/)
+  assert.match(shared, /AbortSignal\.timeout\(4500\)/)
+  assert.match(shared, /Tu sesión sigue activa/)
+  assert.doesNotMatch(shared, /La sesión tardó demasiado en responder\. Podés ingresar nuevamente\.');setSession\(null\)/)
 })
