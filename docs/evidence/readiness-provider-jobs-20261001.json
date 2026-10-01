@@ -15,5 +15,20 @@
     "test_schema_grant": "service_role SELECT on public.servicio_estado_eventos",
     "migration": "supabase/migrations/20261001215800_grant_service_role_provider_history_events.sql"
   },
-  "verified_at": "2026-10-01T22:01:12.356Z"
+  "verified_at": "2026-10-01T22:01:12.356Z",
+  "reconciled_at": "2026-10-01T22:44:00Z",
+  "reconciled_to_sha": "50f851db70996ad426a314aba1ad1fcd7df7cf88",
+  "reconciliation": {
+    "method": "persisted-evidence + git compare",
+    "tested_sha": "1217e174eeeba8d3b4d2cc8efa73ee633e3d20ee",
+    "target_sha": "50f851db70996ad426a314aba1ad1fcd7df7cf88",
+    "commits_ahead": 8,
+    "functional_provider_jobs_files_changed": false,
+    "changed_readiness_metadata_only": true,
+    "prior_workflow_run_id": 36932219990,
+    "prior_workflow_conclusion": "success",
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS"
+  }
 }
