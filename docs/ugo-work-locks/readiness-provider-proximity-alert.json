@@ -1,0 +1,39 @@
+{
+  "readiness_id": "provider-proximity-alert",
+  "task_id": "readiness-provider-proximity-alert",
+  "job_id": "UGO-READINESS-PROVIDER-PROXIMITY-ALERT-20261001",
+  "title": "Alertas sólo a proveedores elegibles por radio",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T02:51:00Z",
+  "heartbeat_at": "2026-10-01T02:51:00Z",
+  "lease_expires_at": "2026-10-01T03:36:00Z",
+  "started_sha": "26deed388b0cdadae6f70b5ebe895d7daa6eb00b",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Provider Notifications Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-demand",
+    "notifications"
+  ],
+  "correlation_id": "provider-proximity-alert-20261001T025100Z",
+  "current_step": "VERIFY_NOTIFICATION_INSIDE_OUTSIDE_CONFIGURED_RADIUS",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:proximity-matching:VERIFIED",
+    "main-sha:26deed388b0cdadae6f70b5ebe895d7daa6eb00b"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
