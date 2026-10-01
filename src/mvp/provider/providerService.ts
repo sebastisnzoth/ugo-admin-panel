@@ -226,7 +226,7 @@ async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
  }catch(error){
   const code=providerArrivalCode(error)
   if(code==='outside_geofence'||code==='client_location_unavailable'||code==='invalid_state')throw error
-  if(code&& !['gps_unavailable','gps_stale','gps_inaccurate'].includes(code))throw error
+  if(!code||!['gps_unavailable','gps_stale','gps_inaccurate'].includes(code))throw error
  }
  await publishProviderLocation(supabase,serviceId)
  return confirmProviderArrival(supabase,serviceId)
