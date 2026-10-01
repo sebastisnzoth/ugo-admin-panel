@@ -1,0 +1,44 @@
+{
+  "readiness_id": "hugo-admin-actions",
+  "task_id": "readiness-hugo-admin-actions",
+  "job_id": "UGO-READINESS-HUGO-ADMIN-ACTIONS-20261001",
+  "title": "Acciones Admin autorizadas por voz",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T04:56:00Z",
+  "heartbeat_at": "2026-10-01T04:56:00Z",
+  "lease_expires_at": "2026-10-01T05:41:00Z",
+  "started_sha": "40e2ff388c92e05f3e751c03302d24d6a77fd36b",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo Admin Actions Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "hugo-actions",
+    "admin-shell"
+  ],
+  "correlation_id": "hugo-admin-actions-20261001T045600Z",
+  "current_step": "VERIFY_ADMIN_READ_NAVIGATION_TOOLCALLS_AND_FORBIDDEN_MUTATIONS",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:hugo-provider-actions:HUMAN_REQUIRED",
+    "main-sha:40e2ff388c92e05f3e751c03302d24d6a77fd36b"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null,
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "kind": "MICROPHONE_AUDIO_ADMIN_ACTIONS"
+  }
+}
