@@ -1542,12 +1542,14 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     if (!commandRealtimeClient) return
     setLiveReadinessState('ACTUALIZANDO','pending')
     try {
-      const [checklistResult,incidentResult] = await Promise.all([
+      const [checklistResult,incidentResult,signalResult] = await Promise.all([
         commandRealtimeClient.from('development_checklist_public').select('code,title,priority,status,weight,updated_at,has_evidence').order('position',{ascending:true}),
-        commandRealtimeClient.from('development_incidents_public').select('severity,event_type,status,source_role,action,checklist_code,message,occurrences,last_seen_at,runtime_revision').order('last_seen_at',{ascending:false}).limit(40)
+        commandRealtimeClient.from('development_incidents_public').select('severity,event_type,status,source_role,action,checklist_code,message,occurrences,last_seen_at,runtime_revision').order('last_seen_at',{ascending:false}).limit(40),
+        commandRealtimeClient.from('development_dashboard_signal').select('revision,changed_at').eq('id',1).maybeSingle()
       ])
       if (checklistResult.error) throw checklistResult.error
       if (incidentResult.error) throw incidentResult.error
+      if (signalResult.error) throw signalResult.error
       const items = checklistResult.data || []
       const incidents = incidentResult.data || []
       const currentRevision = String(mainHeadSha || statusSnapshot?.source_sha || '').slice(0,40)
@@ -1561,8 +1563,10 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       document.getElementById('liveApproved').textContent = approved
       document.getElementById('liveChecklistTotal').textContent = items.length
       liveReadinessLoadedAt = new Date().toISOString()
+      const signalRevision = signalResult.data?.revision ?? '—'
+      setRealtimeState('REV ' + signalRevision,'ugo')
       document.getElementById('liveReadinessDetail').textContent =
-        'Fuente directa: development_checklist_public + development_incidents_public · revisión ' +
+        'Fuente directa: development_checklist_public + development_incidents_public · señal ' + signalRevision + ' · revisión ' +
         (currentRevision ? currentRevision.slice(0,12) : 'no resuelta') + ' · ' + new Date(liveReadinessLoadedAt).toLocaleTimeString()
       document.getElementById('liveCriticalIncidents').innerHTML = currentIncidents.slice(0,5).map(item =>
         '<div class="command-critical-item"><div><b>' + esc(item.severity + ' · ' + item.event_type) + '</b><small>' +
