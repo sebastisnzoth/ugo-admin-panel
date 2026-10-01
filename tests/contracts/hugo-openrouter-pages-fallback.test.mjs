@@ -35,14 +35,15 @@ test('Hugo API keeps provider fallback conversational and non-mutating',async()=
  assert.match(src,/clientMode\|\|providerMode\?null:uiAction/)
 })
 
-test('GitHub Pages TEST preview uses an external API runtime without exposing OpenRouter',async()=>{
+test('GitHub Pages TEST preview uses Supabase Edge without exposing OpenRouter',async()=>{
  const[workflow,env,chat,testApi]=await Promise.all([
   read('.github/workflows/github-pages.yml'),
   read('.env.example'),
   read('api/hugo/chat.ts'),
   read('api/test.ts'),
  ])
- assert.match(workflow,/VITE_API_BASE_URL: https:\/\/ugo-admin-panel-netlify\.netlify\.app/)
+ assert.match(workflow,/VITE_HUGO_EDGE_URL: https:\/\/tmossnqfwfwjrtzwcbmm\.supabase\.co\/functions\/v1\/hugo-runtime/)
+ assert.doesNotMatch(workflow,/netlify/i)
  assert.match(workflow,/--base=\/ugo-admin-panel\/app\//)
  assert.match(workflow,/cp -a dist\/\. _site\/app\//)
  assert.match(env,/OPENROUTER_API_KEY=/)
@@ -51,4 +52,8 @@ test('GitHub Pages TEST preview uses an external API runtime without exposing Op
  assert.match(testApi,/https:\/\/sebastisnzoth\.github\.io/)
  assert.match(chat,/authorization, content-type/)
  assert.match(testApi,/authorization, content-type/)
+ const edge=await read('supabase/functions/hugo-runtime/index.ts')
+ assert.match(edge,/OPENROUTER_API_KEY/)
+ assert.match(edge,/gemini-3\.8-live/)
+ assert.match(edge,/El rol de la sesión no coincide/)
 })
