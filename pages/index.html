@@ -250,6 +250,8 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="row" style="margin-top:12px"><span><b>Restantes delegables por UGO/ChatGPT</b></span><span class="pill ugo" id="doneAutonomous">—</span></div>
     <div class="row"><span><b>Pruebas humanas/físicas restantes</b></span><span class="pill human" id="doneHuman">—</span></div>
     <div class="row"><span><b>Habilitados para trabajar ahora</b></span><span class="pill accent" id="doneRunnable">—</span></div>
+    <div class="row"><span><b>Próximo movimiento autónomo</b></span><span class="pill ugo" id="doneNextAutonomous">reconciliando…</span></div>
+    <div class="row"><span><b>Cuándo necesita intervenir Sergio</b></span><span class="pill human" id="doneSergioRule">reconciliando…</span></div>
     <h3 style="margin-top:16px">Qué impide DONE ahora</h3>
     <div class="done-blockers" id="doneBlockers"><div class="done-blocker">Calculando bloqueadores…</div></div>
   </section>
@@ -1125,6 +1127,19 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     document.getElementById('doneAutonomous').textContent = autonomous
     document.getElementById('doneHuman').textContent = human
     document.getElementById('doneRunnable').textContent = runnableIds.length ? runnableIds.join(', ') : 'ninguno'
+
+    const autonomousItems = items.filter(x => x.status !== 'VERIFIED' && !['HUMAN_REQUIRED','HUMAN_DEFERRED'].includes(x.gate_state) && x.status !== 'HUMAN_FINAL')
+    const nextAutonomous = autonomousItems.find(x => x.gate_state === 'IN_PROGRESS')
+      || autonomousItems.find(x => x.gate_state === 'AVAILABLE')
+      || autonomousItems[0]
+    document.getElementById('doneNextAutonomous').textContent = nextAutonomous
+      ? (nextAutonomous.id + ' · ' + readinessGateLabel(nextAutonomous.gate_state || nextAutonomous.status))
+      : 'ninguno: trabajo autónomo agotado'
+    document.getElementById('doneSergioRule').textContent = autonomous > 0
+      ? 'todavía no · primero cerrar ' + autonomous + ' control(es) autónomos'
+      : human > 0
+        ? 'ahora sí · sólo para las ' + human + ' pruebas humanas/físicas finales'
+        : 'no requiere intervención'
 
     const priority = {IN_PROGRESS:0,AVAILABLE:1,STALE_LOCK:2,FAILED_REQUIRES_REVIEW:2,WAITING_RUNTIME:3,JUDGE_PENDING:4,SENTINEL_PENDING:5,BLOCKED_DEPENDENCY:6,WAITING_RESOURCE_CAPACITY:7,QUEUED_CAPACITY:8,HUMAN_REQUIRED:9,HUMAN_DEFERRED:10}
     const blockers = items.filter(x => x.status !== 'VERIFIED').sort((a,b) => (priority[a.gate_state] ?? 20) - (priority[b.gate_state] ?? 20)).slice(0,8)
