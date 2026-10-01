@@ -16,10 +16,12 @@ test('realtime notification insert alerts immediately before reconciliation',asy
  assert.match(src,/resync\(\)/)
 })
 
-test('provider dispatch accepts payment method already persisted on the service',async()=>{
- const src=await read('src/mvp/provider/providerData.tsx')
- assert.match(src,/paymentPreferenceSelected=Boolean\(service&&\['efectivo','pix'\]\.includes\(effectivePaymentMethod\)\)/)
- assert.doesNotMatch(src,/paymentPreferenceSelected=Boolean\(service&&!amountReady/)
+test('client payment choice reacts immediately while backend persistence completes',async()=>{
+ const src=await read('src/features/client/payments/ClientPaymentChoice.tsx')
+ assert.match(src,/optimisticMethod/)
+ assert.match(src,/setOptimisticMethod\('efectivo'\)/)
+ assert.match(src,/setOptimisticMethod\('pix'\)/)
+ assert.match(src,/if\(persisted===false\)setOptimisticMethod\(''\)/)
 })
 
 test('provider Hugo fails fast instead of hanging forever',async()=>{
