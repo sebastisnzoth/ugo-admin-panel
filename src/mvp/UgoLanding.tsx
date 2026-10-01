@@ -1,7 +1,8 @@
 import React from'react'
 import'./ugo-landing.css'
 
-const go=(path:string)=>{window.location.href=path}
+type LandingRole='client'|'provider'|'admin'
+const goRole=(role:LandingRole)=>{window.location.assign(`${window.location.pathname}?app=${role}`)}
 const jump=(id:string)=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'})
 
 const services=[
@@ -23,8 +24,8 @@ export function UgoLanding(){
     <button onClick={()=>jump('proveedores')}>Profesionales</button>
    </nav>
    <div className="ugo-nav-actions">
-    <button className="ghost" onClick={()=>go('/ugo-cliente/?app=client')}>Ingresar</button>
-    <button className="solid" onClick={()=>go('/ugo-cliente/?app=client')}>Pedir ahora</button>
+    <button className="ghost" onClick={()=>goRole('client')}>Ingresar</button>
+    <button className="solid" onClick={()=>goRole('client')}>Pedir ahora</button>
    </div>
   </header>
 
@@ -36,8 +37,8 @@ export function UgoLanding(){
     <h1>Un pedido.<br/><span>Un profesional.</span><br/>Sin vueltas.</h1>
     <p>Pedí un servicio hablando o escribiendo. Hugo entiende lo que necesitás, encuentra profesionales disponibles y te acompaña hasta que el trabajo termine.</p>
     <div className="ugo-hero-actions">
-     <button className="ugo-cta primary" onClick={()=>go('/ugo-cliente/?app=client')}>Encontrar profesional <b>→</b></button>
-     <button className="ugo-cta secondary" onClick={()=>go('/ugo-proveedor/?app=provider')}>Soy profesional</button>
+     <button className="ugo-cta primary" onClick={()=>goRole('client')}>Encontrar profesional <b>→</b></button>
+     <button className="ugo-cta secondary" onClick={()=>goRole('provider')}>Soy profesional</button>
     </div>
     <div className="ugo-hero-trust">
      <span><b>✓</b> Profesionales verificados</span>
@@ -65,7 +66,7 @@ export function UgoLanding(){
        <div className="ugo-orb">H</div>
        <div><small>HUGO</small><strong>Encontré 3 profesionales cerca.</strong><span>João puede llegar en 8 minutos.</span></div>
       </div>
-      <button onClick={()=>go('/ugo-cliente/?app=client')}>Ver profesionales <b>→</b></button>
+      <button onClick={()=>goRole('client')}>Ver profesionales <b>→</b></button>
      </div>
     </div>
     <div className="ugo-float-card a"><small>PROFESIONAL</small><strong>João P.</strong><span>★ 4,9 · Verificado</span></div>
@@ -84,7 +85,7 @@ export function UgoLanding(){
     <p>UGO reúne los servicios cotidianos en una experiencia rápida, visual y simple.</p>
    </div>
    <div className="ugo-services-grid">
-    {services.map(([title,copy],i)=><button key={title} className={"ugo-service-card card-"+(i+1)} onClick={()=>go('/ugo-cliente/?app=client')}>
+    {services.map(([title,copy],i)=><button key={title} className={"ugo-service-card card-"+(i+1)} onClick={()=>goRole('client')}>
      <span className="ugo-service-index">0{i+1}</span>
      <div><h3>{title}</h3><p>{copy}</p></div>
      <b>↗</b>
@@ -97,7 +98,7 @@ export function UgoLanding(){
     <div className="ugo-section-kicker light">CÓMO FUNCIONA</div>
     <h2>Pedilo como<br/>lo dirías vos.</h2>
     <p>No tenés que llenar formularios eternos. Hugo interpreta el pedido y UGO arma el servicio.</p>
-    <button onClick={()=>go('/ugo-cliente/?app=client')}>Probar UGO <span>→</span></button>
+    <button onClick={()=>goRole('client')}>Probar UGO <span>→</span></button>
    </div>
    <div className="ugo-how-steps">
     <article><b>01</b><div><h3>Decilo</h3><p>“Necesito un plomero hoy a la tarde.”</p></div></article>
@@ -133,7 +134,7 @@ export function UgoLanding(){
     <div className="ugo-section-kicker">PARA PROFESIONALES</div>
     <h2>Más trabajo.<br/><span>Menos vueltas.</span></h2>
     <p>Recibí oportunidades, administrá tu agenda, seguí tus servicios y tus cobros desde una sola app.</p>
-    <button className="ugo-cta primary" onClick={()=>go('/ugo-proveedor/?app=provider')}>Entrar como proveedor <b>→</b></button>
+    <button className="ugo-cta primary" onClick={()=>goRole('provider')}>Entrar como proveedor <b>→</b></button>
    </div>
   </section>
 
@@ -141,12 +142,12 @@ export function UgoLanding(){
    <div className="ugo-final-orb">H</div>
    <span>HUGO ESTÁ LISTO</span>
    <h2>Decime qué necesitás.<br/>UGO se ocupa del resto.</h2>
-   <button onClick={()=>go('/ugo-cliente/?app=client')}>Empezar ahora <b>→</b></button>
+   <button onClick={()=>goRole('client')}>Empezar ahora <b>→</b></button>
   </section>
 
   <footer className="ugo-footer">
    <div><strong>U.GO</strong><span>Un pedido. Un profesional. Sin vueltas.</span></div>
-   <div className="ugo-footer-links"><button onClick={()=>go('/ugo-cliente/?app=client')}>Cliente</button><button onClick={()=>go('/ugo-proveedor/?app=provider')}>Proveedor</button><button onClick={()=>go('/ugo-admin/?app=admin')}>Admin</button></div>
+   <div className="ugo-footer-links"><button onClick={()=>goRole('client')}>Cliente</button><button onClick={()=>goRole('provider')}>Proveedor</button><button onClick={()=>goRole('admin')}>Admin</button></div>
    <small>© 2026 UGO · Florianópolis, Brasil</small>
   </footer>
  </main>
