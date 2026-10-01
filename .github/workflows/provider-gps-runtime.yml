@@ -1,4 +1,4 @@
-# retry: 2026-09-30 canonical provider-gps r7
+# retry: 2026-10-01 provider-gps r8 same-SHA runtime validation
 name: UGO Provider GPS Runtime TEST
 
 on:
