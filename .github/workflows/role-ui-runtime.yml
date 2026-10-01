@@ -26,8 +26,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-role-ui-runtime-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: ugo-test-arena-remote-runtime
+  cancel-in-progress: false
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co

@@ -12,9 +12,7 @@ permissions:
   contents: read
 
 concurrency:
-  # This proof toggles autonomous_company_state and executes the same UGO TEST worker surface
-  # as the autonomous worker / isolated RPC flows. Serialize all of them on one repository-wide group.
-  group: ugo-test-shared-provider-fixture
+  group: ugo-test-arena-remote-runtime
   cancel-in-progress: false
 
 jobs:

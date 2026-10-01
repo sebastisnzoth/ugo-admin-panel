@@ -18,8 +18,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-admin-auth-runtime
-  cancel-in-progress: true
+  group: ugo-test-arena-remote-runtime
+  cancel-in-progress: false
 
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co

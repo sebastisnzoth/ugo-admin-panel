@@ -10,6 +10,10 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+
+concurrency:
+  group: ugo-test-arena-remote-runtime
+  cancel-in-progress: false
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
