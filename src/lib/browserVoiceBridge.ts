@@ -80,10 +80,12 @@ function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||(!canStream()&&!speechCtor()))return
  let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null,fallbackRecognition:SpeechRecognitionLike|null=null,fallbackActive=false
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
- let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0
+ let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0,responseTimer=0,pendingTurnText=''
  const conversationSources=new Set<AudioBufferSourceNode>()
 
  const clearReconnect=()=>{if(reconnectTimer){window.clearTimeout(reconnectTimer);reconnectTimer=0}}
+ const clearResponseWatchdog=()=>{if(responseTimer){window.clearTimeout(responseTimer);responseTimer=0}}
+ const markModelResponse=()=>{clearResponseWatchdog();pendingTurnText=''}
  const resetAudioQueue=()=>{pendingSamples=[]}
  const stopFallback=()=>{fallbackActive=false;const current=fallbackRecognition;fallbackRecognition=null;if(current){current.onstart=null;current.onspeechstart=null;current.onend=null;current.onresult=null;current.onerror=null;try{current.abort()}catch{}}}
  const startFallback=()=>{const Ctor=speechCtor();if(!Ctor)return false;stopFallback();const recognition=new Ctor();fallbackRecognition=recognition;fallbackActive=true;active=true;paused=false;recognition.continuous=true;recognition.interimResults=true;recognition.lang=navigator.language?.toLowerCase().startsWith('pt')?'pt-BR':'es-AR';recognition.maxAlternatives=3;recognition.onstart=()=>emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'fallback'});recognition.onspeechstart=()=>emit('ugo:native-voice-state',{state:'hearing',engine:'browser-speech',reason:'fallback'});recognition.onresult=(event:any)=>{const from=Number(event?.resultIndex||0);for(let i=from;i<(event?.results?.length||0);i++){const result=event.results?.[i],text=String(result?.[0]?.transcript||'').trim();if(text)emit('ugo:native-voice-result',{text,final:Boolean(result?.isFinal),engine:'browser-speech'})}};recognition.onerror=(event:any)=>{const code=String(event?.error||'unavailable');if(fallbackActive&&(code==='no-speech'||code==='aborted'))return;if(fallbackActive&&code==='network'){emit('ugo:native-voice-state',{state:'connecting',engine:'browser-speech',reason:'fallback-network'});return}fallbackActive=false;active=false;emit('ugo:native-voice-error',{code:code==='not-allowed'||code==='service-not-allowed'?'not-allowed':code==='audio-capture'?'no-microphone':code,engine:'browser-speech'})};recognition.onend=()=>{if(fallbackActive&&!paused)window.setTimeout(()=>{if(fallbackActive&&!paused)startFallback()},180)};try{recognition.start();return true}catch{stopFallback();active=false;return false}}
@@ -92,9 +94,10 @@ function installBrowserBridge(){
  const sendJson=(payload:Record<string,unknown>)=>{if(socket?.readyState===WebSocket.OPEN&&setupReady){try{socket.send(JSON.stringify(payload));return true}catch{}}return false}
  const primeConversationAudio=()=>{const Ctor=audioCtor() as typeof AudioContext;if(!Ctor)return;if(!conversationContext)conversationContext=new Ctor({latencyHint:'interactive'});if(conversationContext.state==='suspended')void conversationContext.resume().catch(()=>{})}
  const stopConversationPlayback=()=>{for(const item of conversationSources){try{item.stop()}catch{}}conversationSources.clear();conversationNextPlaybackTime=0}
- const playConversationPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{primeConversationAudio();if(!conversationContext)return;const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=conversationContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=conversationContext.createBufferSource();item.buffer=buffer;item.connect(conversationContext.destination);const startAt=Math.max(conversationContext.currentTime+.02,conversationNextPlaybackTime);conversationNextPlaybackTime=startAt+buffer.duration;conversationSources.add(item);item.onended=()=>conversationSources.delete(item);item.start(startAt);emit('ugo:native-voice-state',{state:'speaking',engine:'gemini-live',reason:'live-audio'})}
+ const playConversationPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{markModelResponse();primeConversationAudio();if(!conversationContext)return;const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=conversationContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=conversationContext.createBufferSource();item.buffer=buffer;item.connect(conversationContext.destination);const startAt=Math.max(conversationContext.currentTime+.02,conversationNextPlaybackTime);conversationNextPlaybackTime=startAt+buffer.duration;conversationSources.add(item);item.onended=()=>conversationSources.delete(item);item.start(startAt);emit('ugo:native-voice-state',{state:'speaking',engine:'gemini-live',reason:'live-audio'})}
  const endAudioStream=()=>{resetAudioQueue();sendJson({realtimeInput:{audioStreamEnd:true}})}
- const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
+ const armResponseWatchdog=(text:string)=>{clearResponseWatchdog();pendingTurnText=text;responseTimer=window.setTimeout(()=>{responseTimer=0;if(!active||paused)return;const retry=pendingTurnText;if(retry&&sendJson({realtimeInput:{text:retry}})){emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'response-retry'});responseTimer=window.setTimeout(()=>{responseTimer=0;if(active&&!paused)failRuntime('response-timeout')},5000);return}failRuntime('response-timeout')},5500)}
+ const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
 
  const issueToken=async()=>{
   const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
@@ -112,15 +115,16 @@ function installBrowserBridge(){
   if(content?.interrupted)stopConversationPlayback()
   for(const part of content?.modelTurn?.parts||[]){if(part?.inlineData?.data)playConversationPcm(String(part.inlineData.data),String(part.inlineData.mimeType||'audio/pcm;rate=24000'))}
   const calls=data?.toolCall?.functionCalls||[]
+  if(calls.length)markModelResponse()
   for(const call of calls){emit('ugo:native-voice-tool-call',{id:String(call?.id||''),name:String(call?.name||''),args:call?.args||{},engine:'gemini-live'})}
   const outputText=String(content?.outputTranscription?.text||'').trim()
-  if(outputText)emit('ugo:native-voice-output',{text:outputText,engine:'gemini-live'})
+  if(outputText){markModelResponse();emit('ugo:native-voice-output',{text:outputText,engine:'gemini-live'})}
   const interim=String(content?.interimInputTranscription?.text||'').trim()
   if(interim&&active&&!paused){emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'interim'});emit('ugo:native-voice-result',{text:interim,final:false,engine:'gemini-live'})}
   const finalText=String(content?.inputTranscription?.text||'').trim()
   if(finalText&&active){
    const now=Date.now()
-   if(finalText!==lastFinalText||now-lastFinalAt>1600){lastFinalText=finalText;lastFinalAt=now;emit('ugo:native-voice-result',{text:finalText,final:true,engine:'gemini-live'});emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'final'})}
+   if(finalText!==lastFinalText||now-lastFinalAt>1600){lastFinalText=finalText;lastFinalAt=now;emit('ugo:native-voice-result',{text:finalText,final:true,engine:'gemini-live'});emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'thinking'});endAudioStream();armResponseWatchdog(finalText)}
   }
   return false
  }
@@ -179,7 +183,7 @@ function installBrowserBridge(){
  }
 
  const shutdown=(notify:boolean)=>{
-  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
+  active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
   if(notify)emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'stopped'})
  }
 
@@ -196,7 +200,7 @@ function installBrowserBridge(){
   resumeListening:async()=>{if(!active)return;paused=false;if(fallbackActive){startFallback();return}resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
   stopListening:()=>shutdown(true),
   stopSpeaking:()=>stopConversationPlayback(),
-  sendToolResponse:(id,name,response)=>sendJson({toolResponse:{functionResponses:[{id,name,response}]}}),
+  sendToolResponse:(id,name,response)=>{const sent=sendJson({toolResponse:{functionResponses:[{id,name,response}]}});if(sent&&active&&!paused){emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'tool-response'});armResponseWatchdog(lastFinalText)}return sent},
  }
 }
 
