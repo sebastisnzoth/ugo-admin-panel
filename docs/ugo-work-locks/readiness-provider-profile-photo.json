@@ -1,0 +1,37 @@
+{
+  "readiness_id": "provider-profile-photo",
+  "task_id": "readiness-provider-profile-photo",
+  "job_id": "UGO-READINESS-PROVIDER-PROFILE-PHOTO-20261001",
+  "title": "provider-profile-photo",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T00:08:57Z",
+  "lease_expires_at": "2026-10-01T00:53:57Z",
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Provider Media Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-media"
+  ],
+  "correlation_id": "provider-profile-photo-20261001T000857Z",
+  "current_step": "INSPECT_PROFILE_STORAGE_UI_AND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
