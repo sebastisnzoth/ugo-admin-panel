@@ -16,7 +16,7 @@ test('public landing exposes the requested Desarrollo entrypoint',()=>{
 
 test('development dashboard is public while Admin remains gated',()=>{
  assert.match(router,/if\(app==='development'\)return'development'/)
- assert.match(router,/if\(app==='admin'\)return'admin'/)
+ assert.match(router,/if\(app==='admin'\|\|app==='superadmin'\)return'admin'/)
  assert.match(app,/if\(route==='development'\)return <Deferred><DevelopmentDashboard\/><\/Deferred>/)
  assert.doesNotMatch(app,/if\(route==='development'\).*AdminGate/)
  assert.match(app,/if\(route==='admin'\)return <Deferred><AdminGate\/><\/Deferred>/)
