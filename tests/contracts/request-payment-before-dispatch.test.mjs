@@ -1,0 +1,3 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs'
+const sql=fs.readFileSync('supabase/migrations/20260930222500_payment_before_dispatch_guard.sql','utf8')
+test('matching requires persisted payment method before dispatch',()=>{assert.match(sql,/service_dispatch_payment_method/);assert.match(sql,/trg_offer_payment_before_dispatch/);assert.match(sql,/Forma de pago requerida antes de distribuir el pedido/);assert.match(sql,/Elegí una forma de pago antes de buscar profesionales/);assert.match(sql,/requested_payment_method/);assert.match(sql,/grant execute on function public\.iniciar_matching\(uuid\) to authenticated,service_role/)})
