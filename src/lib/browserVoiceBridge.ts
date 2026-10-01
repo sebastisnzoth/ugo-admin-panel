@@ -1,5 +1,6 @@
 import{getRoleSupabase}from'./roleSupabase'
 import{supabase as adminSupabase}from'./supabase'
+import{getHugoRuntimeUrl}from'./hugoEdgeRuntime'
 
 type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
 type LiveTokenResponse={token?:string;model?:string;expires_at?:string;error?:string}
@@ -105,7 +106,7 @@ function installBrowserBridge(){
  const issueToken=async()=>{
   const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
   if(!accessToken)throw Object.assign(new Error('Sesión no disponible para voz'),{status:401})
-  const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true,voice_live_mode:'conversation'}),signal:AbortSignal.timeout(5000)})
+  const response=await fetch(getHugoRuntimeUrl('/api/test'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,action:'live-token',voice_live_token:true,voice_live_mode:'conversation'}),signal:AbortSignal.timeout(5000)})
   const data=await response.json().catch(()=>({})) as LiveTokenResponse
   if(!response.ok||!data.token||!data.model)throw Object.assign(new Error(data.error||'No pude iniciar Gemini Live'),{status:response.status})
   return{token:data.token,model:String(data.model).replace(/^models\//,'')}
