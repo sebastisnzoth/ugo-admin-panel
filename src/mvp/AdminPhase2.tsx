@@ -36,7 +36,7 @@ const empty:Metrics={active:0,online:0,users:0,pendingProviders:0,pendingPix:0,p
 
 export function AdminPhase2(){
  const publicDevelopmentAccess=new URLSearchParams(window.location.search).get('app')==='admin'
- const[section,setSection]=useState<Section>('home')
+ const[section,setSection]=useState<Section>(()=>new URLSearchParams(window.location.search).get('app')==='superadmin'?'superadmin':'home')
  const[operationView,setOperationView]=useState<OperationView>('overview')
  const[peopleView,setPeopleView]=useState<PeopleView>('users')
  const[financeView,setFinanceView]=useState<FinanceView>('pix')
