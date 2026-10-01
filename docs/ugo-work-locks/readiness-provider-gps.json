@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-gps",
   "job_id": "UGO-READINESS-PROVIDER-GPS",
   "title": "Verify provider fresh GPS publication and rejection guards",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T17:00:00Z",
-  "heartbeat_at": "2026-10-01T17:00:00Z",
-  "lease_expires_at": "2026-10-01T18:00:00Z",
+  "heartbeat_at": "2026-10-01T17:05:00Z",
+  "lease_expires_at": "2026-10-01T17:05:00Z",
   "started_sha": "e7c3bee26027c1a590a14de2aea63329434e9836",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,7 +25,7 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-gps-20261001T170000Z-gptugo-r8",
-  "current_step": "REVALIDATE_IMPLEMENTATION_AND_RUN_TEST_RUNTIME",
+  "current_step": "PHYSICAL_PROVIDER_GPS_FINAL",
   "attempt": 8,
   "evidence_ids": [
     "github-actions-run-36669225058",
@@ -61,7 +61,14 @@
     "commit:ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
     "github-run:36787485080:CANCELLED_BEFORE_JOBS",
     "github-run:36787549792:CANCELLED_BEFORE_JOBS",
-    "retry:36787549792:FORBIDDEN"
+    "retry:36787549792:FORBIDDEN",
+    "github-run:36896334591:CANCELLED_BEFORE_JOBS",
+    "supabase-test:db-judge-job:3bfd220c-e7e7-4d69-96b2-7422571549e1",
+    "service:dfc6efe8-51d0-4fa8-a400-4655bd2107f0",
+    "qa-run:15944c1f-029c-4292-ad3f-1ed0cf99c9d2",
+    "judge:PASS:7baed355c91b41f76ea9fd86b7c3728469a12189",
+    "sentinel:PASS:7baed355c91b41f76ea9fd86b7c3728469a12189",
+    "docs/evidence/readiness-provider-gps-20261001.json"
   ],
   "production_touched": false,
   "last_failure": null,
@@ -80,10 +87,32 @@
     "evidence_required": "GPS físico final"
   },
   "automated_closure_latest": {
-    "candidate_sha": "ac2c16f5f27f1649cf7b453f835ad0cb9dc52013",
-    "runtime": "PENDING_RETRY",
-    "judge": "PENDING",
-    "sentinel": "PENDING",
-    "production_touched": false
+    "candidate_sha": "7baed355c91b41f76ea9fd86b7c3728469a12189",
+    "runtime": "PASS",
+    "runtime_source": "UGO_TEST_PERSISTED_STATE_DIRECT",
+    "github_actions_run_id": 36896334591,
+    "github_actions_run_status": "CANCELLED_BEFORE_JOBS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false,
+    "service_id": "dfc6efe8-51d0-4fa8-a400-4655bd2107f0",
+    "qa_run_id": "15944c1f-029c-4292-ad3f-1ed0cf99c9d2",
+    "db_judge_job": "3bfd220c-e7e7-4d69-96b2-7422571549e1"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-gps-20261001.json",
+  "evidence_commit_sha": "775cd263b6848dc4fab78f9bd4fc982ad5519da2",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "human_final_required": {
+    "required": true,
+    "status": "PENDING",
+    "action": "En un dispositivo físico del proveedor y en UGO TEST, abrir un servicio en_camino, permitir ubicación precisa, obtener un fix GPS real reciente no 0,0 y confirmar que UGO lo publica antes de validar llegada.",
+    "evidence_required": "GPS físico final"
+  },
+  "human_runtime_evidence": {
+    "result": "PENDING",
+    "symptom": ""
   }
 }
