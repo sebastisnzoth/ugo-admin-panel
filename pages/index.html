@@ -369,6 +369,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
       </div>
     </article>`
   let statusSnapshot = null
+  const statusCacheKey = 'ugo-command-center-last-valid-status'
   let pullRequestsSnapshot = []
   let mainHeadSha = null
   let mainHeadCheckedAt = null
@@ -1256,8 +1257,36 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     })
 
   const fail = message => {
-    document.getElementById('prodState').textContent = 'EVIDENCE UNAVAILABLE'
+    document.getElementById('prodState').textContent = 'PANEL DEGRADADO'
     document.getElementById('prodState').className = 'state bad'
+    const strip = document.getElementById('syncStrip')
+    strip.className = 'sync-strip bad'
+    document.getElementById('syncState').textContent = 'PANEL SIN DATOS ACTUALES'
+    document.getElementById('syncNote').textContent = 'No se pudo cargar el snapshot actual. Se muestra únicamente la última evidencia válida guardada en este navegador; no la tomes como estado en vivo.'
+    let cached = null
+    try {
+      cached = JSON.parse(localStorage.getItem(statusCacheKey) || 'null')
+    } catch (_) {
+      cached = null
+    }
+    if (cached?.source_sha) {
+      statusSnapshot = cached
+      document.getElementById('snapshotSha').textContent = 'último válido ' + cached.source_sha.slice(0,12)
+      renderOperationalNow(cached)
+      renderReadiness(cached)
+      renderAuditSnapshot(cached)
+      renderDoneControl(cached)
+      document.getElementById('liveState').textContent = 'VISIBILIDAD DEGRADADA'
+      document.getElementById('liveState').className = 'state-big bad'
+      document.getElementById('liveDetail').textContent = 'Mostrando último snapshot válido guardado. Revalidá antes de ejecutar trabajo nuevo.'
+      document.getElementById('queueNote').textContent = 'MODO DEGRADADO: esta cola proviene del último snapshot válido; revalidar antes de ejecutar.'
+    } else {
+      document.getElementById('liveState').textContent = 'SIN SNAPSHOT VERIFICABLE'
+      document.getElementById('liveState').className = 'state-big bad'
+      document.getElementById('liveDetail').textContent = 'No hay un snapshot actual ni uno previo guardado. No se infiere ningún estado.'
+      document.getElementById('doneSummary').textContent = 'Sin evidencia disponible: no se puede afirmar qué está DONE ni qué falta.'
+      document.getElementById('doneBlockers').innerHTML = '<div class="done-blocker"><b>VISIBILIDAD PERDIDA</b><br>No ejecutar por suposición. Recuperar status.json o revisar GitHub Actions / locks / evidencia.</div>'
+    }
     console.error(message)
   }
   const loadCi = () => fetch('ci-status.json?ts=' + Date.now(), {cache:'no-store'})
@@ -1279,6 +1308,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return r.json()
   }).then(s => {
     statusSnapshot = s
+    try { localStorage.setItem(statusCacheKey, JSON.stringify(s)) } catch (_) {}
     renderSyncState()
     renderOperationalNow(s)
     renderReadiness(s)
