@@ -1,0 +1,39 @@
+{
+  "readiness_id": "provider-active-jobs",
+  "task_id": "readiness-provider-active-jobs",
+  "job_id": "UGO-READINESS-PROVIDER-ACTIVE-JOBS-20261001",
+  "title": "Trabajos activos completos",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T03:08:00Z",
+  "heartbeat_at": "2026-10-01T03:08:00Z",
+  "lease_expires_at": "2026-10-01T03:53:00Z",
+  "started_sha": "d91023efd10f4283832bb0525126a49eace2c765",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Provider Jobs State Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-job-state",
+    "provider-history"
+  ],
+  "correlation_id": "provider-active-jobs-20261001T030800Z",
+  "current_step": "VERIFY_ACTIVE_JOB_COMPLETENESS_PAYMENT_EVIDENCE_TIMELINE",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:admin-assignment-payment-guard:VERIFIED",
+    "main-sha:d91023efd10f4283832bb0525126a49eace2c765"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": null
+}
