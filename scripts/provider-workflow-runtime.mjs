@@ -5,10 +5,9 @@ import{createClient}from'@supabase/supabase-js'
 const TEST_URL='https://tmossnqfwfwjrtzwcbmm.supabase.co'
 const url=process.env.UGO_TEST_SUPABASE_URL||''
 const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
-const anonKey=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const sha=process.env.UGO_RUNTIME_SHA||''
 assert.equal(url,TEST_URL,'UGO_TEST_ONLY')
-assert.ok(serviceKey&&anonKey&&sha,'UGO_TEST_CREDENTIALS_AND_SHA_REQUIRED')
+assert.ok(serviceKey&&sha,'UGO_TEST_CREDENTIALS_AND_SHA_REQUIRED')
 
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
 const token=sha.slice(0,8)+'-'+Date.now()
@@ -65,7 +64,7 @@ try{
   if(forceArrival.error)throw forceArrival.error
   assert.equal(forceArrival.data.estado,'llegado')
 
-  const provider=createClient(url,anonKey,{auth:{persistSession:false,autoRefreshToken:false}})
+  const provider=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
   const login=await provider.auth.signInWithPassword({email:providerEmail,password})
   if(login.error)throw login.error
 
