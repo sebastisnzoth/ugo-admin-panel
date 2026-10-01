@@ -18,7 +18,7 @@
           "id": "client-navigation",
           "title": "Navegación, menús y rutas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Recorrer todas las rutas y acciones; ningún botón muerto, loop o pantalla inaccesible.",
           "done_evidence": "Runtime UI del mismo SHA + rutas/acciones verificadas.",
           "improvement_focus": "Simplificar pasos y eliminar navegación duplicada.",
@@ -27,13 +27,15 @@
           "priority": "CRITICAL",
           "resources": [
             "client-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-navigation-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "client-request",
           "title": "Crear solicitud completa",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Categoría, descripción, ubicación, condiciones y envío deben persistir correctamente.",
           "done_evidence": "serviceId TEST creado desde UI + backend concordante.",
           "improvement_focus": "Reducir fricción y campos innecesarios.",
@@ -44,7 +46,9 @@
           "priority": "HIGH",
           "resources": [
             "client-request-flow"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-request-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "client-location",
@@ -135,7 +139,7 @@
           "id": "client-payment",
           "title": "Pago / YA PAGUÉ / efectivo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Pago digital/efectivo sin doble cobro; efectivo genera deuda UGO cuando corresponda.",
           "done_evidence": "Pruebas TEST + ledger/auditoría.",
           "improvement_focus": "Claridad de monto, estado y recibo.",
@@ -147,7 +151,9 @@
           "resources": [
             "payments",
             "client-payment"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-payment-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "client-rating",
@@ -204,7 +210,7 @@
           "id": "client-notifications",
           "title": "Notificaciones Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Asignado, en camino, llegó, cambios y cierre.",
           "done_evidence": "Push/web TEST o evidencia del canal soportado.",
           "improvement_focus": "Preferencias y fallback.",
@@ -215,7 +221,9 @@
           "priority": "NORMAL",
           "resources": [
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "client-responsive",
@@ -676,7 +684,7 @@
           "id": "admin-navigation",
           "title": "Todos los menús y botones",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada pestaña/acción carga y actúa.",
           "done_evidence": "Runtime crawl + click map.",
           "improvement_focus": "Eliminar acciones duplicadas.",
@@ -687,7 +695,9 @@
           "priority": "HIGH",
           "resources": [
             "admin-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-admin-navigation-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "admin-realtime",
