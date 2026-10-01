@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-evidence",
   "job_id": "UGO-READINESS-PROVIDER-EVIDENCE",
   "title": "Verify provider initial/final service evidence persistence and UI flow",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T18:56:00Z",
-  "heartbeat_at": "2026-10-01T18:56:00Z",
-  "lease_expires_at": "2026-10-01T19:11:00Z",
+  "heartbeat_at": "2026-10-01T19:02:00Z",
+  "lease_expires_at": "2026-10-01T19:02:00Z",
   "started_sha": "f860d721a0185aaea932608af979a3b570e1e5c3",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,9 +25,46 @@
     "provider-media"
   ],
   "correlation_id": "readiness-provider-evidence-20261001T185600Z-gptugo-r1",
-  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
+  "current_step": "PHYSICAL_PROVIDER_EVIDENCE_FINAL",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "github-run:36911092364",
+    "github-artifact:11186482526:runtime-pass",
+    "github-artifact:11186342633:judge-pass",
+    "github-artifact:11187580230:sentinel-pass",
+    "service:9839cc0c-7ba3-472e-a115-98ffdb96bbe3",
+    "qa-job:80b31dbe-d1bd-4b79-8446-7cfacf4af201",
+    "docs/evidence/readiness-provider-evidence-20261001.json"
+  ],
   "production_touched": false,
-  "last_failure": null
+  "last_failure": null,
+  "automated_closure": {
+    "candidate_sha": "63b95ce794d04e4987b78c97fdc2d5f87fc2585b",
+    "workflow_run_id": 36911092364,
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false,
+    "service_id": "9839cc0c-7ba3-472e-a115-98ffdb96bbe3",
+    "qa_job_id": "80b31dbe-d1bd-4b79-8446-7cfacf4af201",
+    "before_bytes": 67,
+    "after_bytes": 67,
+    "private_storage": true
+  },
+  "evidence_path": "docs/evidence/readiness-provider-evidence-20261001.json",
+  "evidence_commit_sha": "b744b646377e9ea0e3788ed5ca6367f8d61cd8be",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "human_final_required": {
+    "required": true,
+    "status": "PENDING",
+    "action": "En UGO TEST y en un teléfono real del proveedor: (1) con servicio en llegado, tocar EMPEZAR TRABAJO y sacar/subir foto inicial; confirmar que queda persistida y el servicio pasa a en_progreso; (2) en en_progreso, tocar TRABAJO LISTO y sacar/subir foto final; confirmar que queda persistida y el servicio pasa a esperando_aprobacion; (3) recargar la app y confirmar que ambas evidencias siguen visibles.",
+    "evidence_required": "Prueba física de cámara/subida en dispositivo real del proveedor"
+  },
+  "human_runtime_evidence": {
+    "result": "PENDING",
+    "symptom": ""
+  }
 }
