@@ -57,4 +57,6 @@ test('CI never reuses the human TEST client identity',async()=>{
  assert.deepEqual(offenders,[],'La identidad humana TEST no puede ser usada por CI: '+offenders.join(', '))
  assert.match(bootstrap,/cliente\.ugo\.test@example\.com/)
  assert.match(bootstrap,/refusing to mutate human TEST identity/)
+ const repair=await read('.github/workflows/repair-test-auth.yml')
+ assert.match(repair,/UGO_TEST_CLIENT_EMAIL: cliente\.ugo\.test@example\.com/)
 })
