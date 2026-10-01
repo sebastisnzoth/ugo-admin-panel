@@ -1,0 +1,120 @@
+name: UGO Provider Workflow Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-workflow-*.mjs'
+      - 'src/mvp/provider/providerService.ts'
+      - 'src/mvp/provider/providerData.tsx'
+      - 'src/mvp/provider/ProviderActiveJob.tsx'
+      - 'src/lib/marketplace/lifecycle.ts'
+      - 'supabase/migrations/20260911_cash_evidence_backend_hardening.sql'
+      - 'supabase/migrations/20260911215500_service_evidence_state_guard.sql'
+      - 'tests/contracts/canonical-marketplace-lifecycle.test.mjs'
+      - 'tests/contracts/client-provider-lifecycle.test.mjs'
+      - 'tests/contracts/core-lifecycle.test.mjs'
+      - '.github/workflows/provider-workflow-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST credentials
+        env:
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_TEST_SUPABASE_ANON_KEY: ${{ secrets.UGO_TEST_SUPABASE_ANON_KEY }}
+        run: |
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_SUPABASE_ANON_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Provider workflow contracts
+        run: node --test tests/contracts/canonical-marketplace-lifecycle.test.mjs tests/contracts/client-provider-lifecycle.test.mjs tests/contracts/core-lifecycle.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Runtime state machine
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_ANON_KEY: ${{ secrets.UGO_TEST_SUPABASE_ANON_KEY }}
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p artifacts
+          node scripts/provider-workflow-runtime.mjs | tee artifacts/provider-workflow-runtime.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-workflow-runtime-${{ github.sha }}
+          path: artifacts/provider-workflow-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-workflow-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge provider workflow
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-workflow-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-workflow-judge-${{ github.sha }}
+          path: artifacts/provider-workflow-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-workflow-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-workflow-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel provider workflow
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-workflow-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-workflow-sentinel-${{ github.sha }}
+          path: artifacts/provider-workflow-sentinel.json
+          if-no-files-found: error
+          retention-days: 90
