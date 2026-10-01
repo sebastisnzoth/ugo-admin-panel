@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-arrival",
   "job_id": "UGO-READINESS-PROVIDER-ARRIVAL",
   "title": "Verify YA LLEGUÉ 200m geofence and GPS fail-closed arrival",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T18:44:00Z",
-  "heartbeat_at": "2026-10-01T18:44:00Z",
-  "lease_expires_at": "2026-10-01T19:29:00Z",
+  "heartbeat_at": "2026-10-01T18:51:00Z",
+  "lease_expires_at": "2026-10-01T18:51:00Z",
   "started_sha": "623d070e04186d02c1d931680d6a7775c8c8502c",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,8 +25,45 @@
     "provider-location"
   ],
   "correlation_id": "readiness-provider-arrival-20261001T184400Z-gptugo-r1",
-  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
+  "current_step": "PHYSICAL_PROVIDER_ARRIVAL_FINAL",
   "attempt": 1,
-  "evidence_ids": [],
-  "production_touched": false
+  "evidence_ids": [
+    "github-run:36909642999",
+    "github-artifact:11186003433:runtime-pass",
+    "github-artifact:11186280670:judge-pass",
+    "github-artifact:11186310728:sentinel-pass",
+    "service:01f57051-7477-4bb1-ac99-e24a6f41facf",
+    "qa-run:2526b66a-ffe4-49af-9d0c-559870dce300",
+    "db-judge-job:2746d5b3-8dfb-450a-a346-d74d6f4fbc69",
+    "docs/evidence/readiness-provider-arrival-20261001.json"
+  ],
+  "production_touched": false,
+  "last_failure": null,
+  "automated_closure": {
+    "candidate_sha": "61fc108357110ee12548f67f8a02b1347889da8b",
+    "workflow_run_id": 36909642999,
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false,
+    "service_id": "01f57051-7477-4bb1-ac99-e24a6f41facf",
+    "qa_run_id": "2526b66a-ffe4-49af-9d0c-559870dce300",
+    "db_judge_job": "2746d5b3-8dfb-450a-a346-d74d6f4fbc69"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-arrival-20261001.json",
+  "evidence_commit_sha": "7c5ff85ab6d08966c0bec6ac599afeafa01b2baf",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "human_final_required": {
+    "required": true,
+    "status": "PENDING",
+    "action": "En UGO TEST y con un proveedor en dispositivo físico: (1) con servicio en_camino, probar YA LLEGUÉ estando a más de 200 m y confirmar que el estado no avanza; (2) acercarse a 200 m o menos con Ubicación precisa activa y GPS reciente y confirmar que pasa a llegado; (3) desactivar permiso/GPS y confirmar que YA LLEGUÉ no avanza.",
+    "evidence_required": "Prueba física final del proveedor"
+  },
+  "human_runtime_evidence": {
+    "result": "PENDING",
+    "symptom": ""
+  }
 }
