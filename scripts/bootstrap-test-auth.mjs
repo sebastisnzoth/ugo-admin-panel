@@ -6,10 +6,11 @@ const url=process.env.UGO_TEST_SUPABASE_URL||''
 const serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 
 const identities=[
- {role:'cliente',email:process.env.UGO_TEST_CLIENT_EMAIL,password:process.env.UGO_TEST_CLIENT_PASSWORD,fallbackEmail:'cliente.ugo.test@example.com'},
- {role:'proveedor',email:process.env.UGO_TEST_PROVIDER_EMAIL,password:process.env.UGO_TEST_PROVIDER_PASSWORD,fallbackEmail:'proveedor.ugo.test@example.com'},
- {role:'admin',email:process.env.UGO_TEST_ADMIN_EMAIL,password:process.env.UGO_TEST_ADMIN_PASSWORD,fallbackEmail:'admin.ugo.test@example.com'},
+ {role:'cliente',email:'cliente.ugo.test@example.com',password:process.env.UGO_TEST_CLIENT_PASSWORD},
+ {role:'proveedor',email:'proveedor.ugo.test@example.com',password:process.env.UGO_TEST_PROVIDER_PASSWORD},
+ {role:'admin',email:'admin.ugo.test@example.com',password:process.env.UGO_TEST_ADMIN_PASSWORD},
 ]
+const HUMAN_TEST_EMAILS=new Set(['cliente@ugo.com.ar'])
 
 function fail(message){
  console.error('UGO TEST auth bootstrap:',message)
@@ -19,7 +20,8 @@ function fail(message){
 if(!url.includes(TEST_REF)||url.includes(PROD_REF))fail('refusing any project other than designated UGO TEST')
 if(!serviceKey)fail('UGO_TEST_SUPABASE_SERVICE_ROLE_KEY is required')
 for(const identity of identities){
- if(!identity.email||!identity.password)fail('all six TEST human credential variables are required')
+ if(!identity.password)fail('all three robot TEST password variables are required')
+ if(HUMAN_TEST_EMAILS.has(identity.email.toLowerCase()))fail('refusing to mutate human TEST identity')
 }
 
 const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshToken:false}})
@@ -29,14 +31,8 @@ if(listError)throw listError
 const resolvedIds={}
 
 for(const identity of identities){
- let user=list.users.find(candidate=>candidate.email?.toLowerCase()===identity.email.toLowerCase())
- let repairingEmail=false
-
- if(!user){
-   user=list.users.find(candidate=>candidate.email?.toLowerCase()===identity.fallbackEmail)
-   if(!user)fail(identity.role+' TEST identity does not exist')
-   repairingEmail=true
- }
+ const user=list.users.find(candidate=>candidate.email?.toLowerCase()===identity.email.toLowerCase())
+ if(!user)fail(identity.role+' robot TEST identity does not exist')
 
  const {data:profile,error:profileError}=await admin.from('usuarios').select('tipo,activo').eq('id',user.id).single()
  if(profileError)throw profileError
@@ -44,16 +40,13 @@ for(const identity of identities){
  if(!allowed.includes(profile.tipo))fail(identity.role+' TEST identity has unexpected public.usuarios role')
  if(profile.activo!==true)fail(identity.role+' TEST identity is inactive')
 
- const updatePayload={
+ const {error:updateError}=await admin.auth.admin.updateUserById(user.id,{
    password:identity.password,
    email_confirm:true,
- }
- if(repairingEmail)updatePayload.email=identity.email
-
- const {error:updateError}=await admin.auth.admin.updateUserById(user.id,updatePayload)
+ })
  if(updateError)throw updateError
  resolvedIds[identity.role]=user.id
- console.log('UGO TEST auth bootstrap OK role='+identity.role+(repairingEmail?' email=REPAIRED':''))
+ console.log('UGO TEST auth bootstrap OK role='+identity.role+' identity=robot')
 }
 
 const {data:staleServices,error:staleServicesError}=await admin
