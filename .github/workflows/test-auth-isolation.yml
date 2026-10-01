@@ -39,11 +39,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          if grep -RIl --include='*.yml' --include='*.yaml' 'cliente@ugo.com.ar' .github/workflows; then
+          forbidden='cliente''@ugo.com.ar'
+          if grep -RIl --include='*.yml' --include='*.yaml' "$forbidden" .github/workflows; then
             echo "Human TEST client identity is still referenced by CI."
             exit 1
           fi
-          if grep -q 'cliente@ugo.com.ar' scripts/bootstrap-test-auth.mjs && ! grep -q 'HUMAN_TEST_EMAILS' scripts/bootstrap-test-auth.mjs; then
+          if grep -q "$forbidden" scripts/bootstrap-test-auth.mjs && ! grep -q 'HUMAN_TEST_EMAILS' scripts/bootstrap-test-auth.mjs; then
             echo "Bootstrap may mutate the human TEST identity."
             exit 1
           fi
