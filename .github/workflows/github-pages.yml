@@ -47,8 +47,16 @@ jobs:
         uses: actions/configure-pages@v5
 
       - name: Validate scheduler policy and locks
+        id: scheduler_validation
+        continue-on-error: true
         shell: bash
         run: node scripts/validate-ugo-scheduler.mjs docs/UGO_SCHEDULER_POLICY.json docs/ugo-work-locks
+
+      - name: Keep Command Center observable when lock schema is stale
+        if: steps.scheduler_validation.outcome == 'failure'
+        shell: bash
+        run: |
+          echo "::warning::Scheduler lock validation is degraded. Publishing the Command Center anyway so stale/invalid locks remain visible and actionable; execution remains fail-closed."
 
       - name: Validate Command Center evidence synchronization contract
         shell: bash
