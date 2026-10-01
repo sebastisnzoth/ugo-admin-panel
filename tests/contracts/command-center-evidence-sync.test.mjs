@@ -56,3 +56,17 @@ test('Command Center surfaces failed physical Hugo voice evidence instead of rep
   assert.match(engine,/prueba humana real FALLÓ/)
   assert.match(engine,/requiere corrección y nueva prueba física/)
 })
+
+
+test('Command Center exposes a reconciled whole-UGO audit instead of a historical fixed counter',()=>{
+  assert.match(generator,/audit_snapshot/)
+  assert.match(generator,/catalog_total/)
+  assert.match(generator,/critical_remaining/)
+  assert.match(generator,/open_non_backlog_prs/)
+  assert.match(generator,/VERIFIED sólo cuenta con lock DONE \+ evidencia persistida \+ Judge PASS \+ Sentinel PASS/)
+  assert.match(page,/id="wholeUgoAudit"/)
+  assert.match(page,/Auditoría real de TODO UGO/)
+  assert.match(page,/renderAuditSnapshot/)
+  assert.match(page,/auditCriticalList/)
+  assert.match(page,/auditPrList/)
+})

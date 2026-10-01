@@ -152,6 +152,22 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     <div class="metric"><strong class="warn" id="sergioValue">—</strong><span>ítems con intervención de Sergio</span></div>
   </section>
 
+  <section class="card" id="wholeUgoAudit" aria-label="Auditoría real de TODO UGO" style="margin-top:14px">
+    <div class="row"><span><b>Auditoría real de TODO UGO</b></span><span class="pill accent" id="auditSourceSha">reconciliando…</span></div>
+    <p class="sub" id="auditTruthRule">Fuente única: catálogo + locks + evidencia + PRs abiertos + scheduler. No usa un contador histórico fijo.</p>
+    <div class="metrics" style="margin-top:12px">
+      <div class="metric"><strong class="accent" id="auditTotal">—</strong><span>controles catalogados actuales</span></div>
+      <div class="metric"><strong class="ok" id="auditVerified">—</strong><span>VERIFIED autoritativos</span></div>
+      <div class="metric"><strong class="warn" id="auditRemaining">—</strong><span>restantes reales</span></div>
+      <div class="metric"><strong class="warn" id="auditAutonomous">—</strong><span>delegables por UGO</span></div>
+      <div class="metric"><strong class="warn" id="auditHuman">—</strong><span>humanos/físicos</span></div>
+      <div class="metric"><strong class="accent" id="auditOpenPrs">—</strong><span>PRs funcionales abiertos</span></div>
+    </div>
+    <div class="row"><span>Críticos todavía no VERIFIED</span><span class="pill blocked" id="auditCriticalCount">—</span></div>
+    <div class="done-blockers" id="auditCriticalList"><div class="done-blocker">Reconciliando controles críticos…</div></div>
+    <details style="margin-top:12px"><summary>Trabajo abierto en PRs que no debe desaparecer del panel</summary><div class="activity-list" id="auditPrList"><div class="activity-item">Reconciliando PRs…</div></div></details>
+  </section>
+
   <section class="done-board" id="doneControl" aria-label="Control de cierre DONE">
     <div class="done-head">
       <div>
@@ -963,6 +979,27 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return 'Falta completar la cadena autoritativa DONE.'
   }
 
+  const renderAuditSnapshot = s => {
+    const audit=s.audit_snapshot || {}
+    const critical=audit.critical_remaining || []
+    const prs=audit.open_non_backlog_prs || []
+    document.getElementById('auditSourceSha').textContent=(audit.source_sha || s.source_sha || 'UNVERIFIED').slice(0,12)
+    document.getElementById('auditTruthRule').textContent=audit.truth_rule || 'VERIFIED exige evidencia persistida + Judge PASS + Sentinel PASS.'
+    document.getElementById('auditTotal').textContent=audit.catalog_total ?? s.functional_readiness_summary?.total ?? '—'
+    document.getElementById('auditVerified').textContent=audit.verified ?? s.functional_readiness_summary?.verified ?? '—'
+    document.getElementById('auditRemaining').textContent=audit.remaining ?? s.functional_readiness_summary?.remaining_total ?? '—'
+    document.getElementById('auditAutonomous').textContent=audit.remaining_autonomous ?? s.functional_readiness_summary?.remaining_autonomous ?? '—'
+    document.getElementById('auditHuman').textContent=(Number(audit.human_required || 0)+Number(audit.human_deferred || 0))
+    document.getElementById('auditOpenPrs').textContent=prs.length
+    document.getElementById('auditCriticalCount').textContent=critical.length
+    document.getElementById('auditCriticalList').innerHTML=critical.length
+      ? critical.slice(0,12).map(item=>'<div class="done-blocker"><div><b>'+esc(item.id)+'</b><div class="tiny">'+esc(item.group || '')+' · '+esc(item.title || '')+'</div></div><div class="sub">'+esc((item.depends_on || []).length ? 'Depende de: '+item.depends_on.join(', ') : 'Sin dependencia previa declarada')+'</div><span class="pill '+(item.gate_state==='AVAILABLE'?'ugo':item.gate_state==='IN_PROGRESS'?'accent':'pending')+'">'+esc(item.gate_state || item.status || 'PENDIENTE')+'</span></div>').join('')
+      : '<div class="done-blocker"><b class="ok">No quedan controles CRITICAL pendientes.</b></div>'
+    document.getElementById('auditPrList').innerHTML=prs.length
+      ? prs.slice(0,20).map(pr=>'<div class="activity-item"><b>#'+esc(pr.number)+' · '+esc(pr.title || 'PR funcional')+'</b><div class="tiny">'+esc(pr.readiness_id ? 'READINESS '+pr.readiness_id+' · ' : '')+esc((pr.head_sha || '').slice(0,12))+(pr.draft?' · DRAFT':'')+'</div></div>').join('')
+      : '<div class="activity-item">Sin PRs funcionales abiertos fuera de backlog.</div>'
+  }
+
   const renderDoneControl = s => {
     const summary = s.functional_readiness_summary || {}
     const groups = s.functional_readiness?.groups || []
@@ -1245,6 +1282,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     renderSyncState()
     renderOperationalNow(s)
     renderReadiness(s)
+    renderAuditSnapshot(s)
     renderDoneControl(s)
     const readinessIds = (s.functional_readiness?.groups || []).flatMap(group => (group.items || []).map(item => item.id))
     const currentIds = new Set([
