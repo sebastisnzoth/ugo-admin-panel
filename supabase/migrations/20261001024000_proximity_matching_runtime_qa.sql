@@ -85,6 +85,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into baseline_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if baseline_count<>1 then raise exception 'PROXIMITY_BASELINE_PROVIDER_NOT_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   -- Offline providers cannot receive a new offer.
   perform set_config('request.jwt.claim.sub',pid::text,true);
@@ -98,6 +101,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into offline_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if offline_count<>0 then raise exception 'PROXIMITY_OFFLINE_PROVIDER_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   -- Fresh trusted location is mandatory.
   perform set_config('request.jwt.claim.sub',pid::text,true);
@@ -116,6 +122,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into stale_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if stale_count<>0 then raise exception 'PROXIMITY_STALE_GPS_PROVIDER_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   -- Provider-specific radius must affect automatic matching.
   perform set_config('request.jwt.claim.sub',pid::text,true);
@@ -130,6 +139,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into outside_radius_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if outside_radius_count<>0 then raise exception 'PROXIMITY_OUTSIDE_CONFIGURED_RADIUS_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   perform set_config('request.jwt.claim.sub',pid::text,true);
   update public.perfiles_proveedor set zona_radio_km=15 where usuario_id=pid;
@@ -143,6 +155,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into inside_radius_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if inside_radius_count<>1 then raise exception 'PROXIMITY_INSIDE_CONFIGURED_RADIUS_NOT_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   -- A category the provider does not work must never create an offer for that provider.
   perform set_config('request.jwt.claim.sub',pid::text,true);
@@ -156,6 +171,9 @@ begin
   perform * from public.iniciar_matching(sid);
   select count(*) into mismatch_count from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente';
   if mismatch_count<>0 then raise exception 'PROXIMITY_WRONG_CATEGORY_PROVIDER_MATCHED'; end if;
+  delete from public.notificaciones where datos->>'servicio_id'=sid::text;
+  delete from public.ofertas_servicio where servicio_id=sid;
+  delete from public.servicios where id=sid;
 
   delete from public.notificaciones n where n.datos->>'servicio_id'=any(select unnest(service_ids)::text);
   delete from public.ofertas_servicio where servicio_id=any(service_ids);
