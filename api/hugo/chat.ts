@@ -34,7 +34,9 @@ type JsonRecord=Record<string,unknown>
 const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
 const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((item,key)=>Array.isArray(item)?item[Number(key)]:asRecord(item)[key],value)
 const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
-function sameOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
+const HUGO_BROWSER_ORIGINS=new Set(['https://sebastisnzoth.github.io',...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS||'').split(',').map(value=>value.trim()).filter(Boolean)])
+function allowedOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'').trim();if(!origin)return'';if(new URL(origin).host===String(req.headers?.host||''))return origin;return HUGO_BROWSER_ORIGINS.has(origin)?origin:''}catch{return''}}
+function sameOrigin(req:RequestLike){const origin=String(req.headers?.origin||'').trim();return!origin||Boolean(allowedOrigin(req))}
 function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
 function sanitizeForModel(v:unknown,max=4000){
  let text=clean(v,max)
@@ -92,10 +94,12 @@ async function askGeminiTts(text:string,locale:string){
 
 export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Cache-Control','no-store')
- res.setHeader('Access-Control-Allow-Headers','content-type')
- const origin=String(req.headers?.origin||'')
- if(origin&&sameOrigin(req))res.setHeader('Access-Control-Allow-Origin',origin)
- if(req.method==='OPTIONS')return res.status(200).end()
+ res.setHeader('Vary','Origin')
+ res.setHeader('Access-Control-Allow-Headers','authorization, content-type')
+ res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS')
+ const origin=String(req.headers?.origin||'').trim(),corsOrigin=allowedOrigin(req)
+ if(corsOrigin)res.setHeader('Access-Control-Allow-Origin',corsOrigin)
+ if(req.method==='OPTIONS')return origin&&!corsOrigin?res.status(403).end():res.status(200).end()
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
