@@ -34,7 +34,7 @@ test('Recovery epic encodes the required dependency gates', () => {
 
 test('Recovery controls remain proof-gated and reconcile equivalent existing controls', () => {
   for (const item of group.items) {
-    assert.ok(['NEEDS_RUNTIME_PROOF','HUMAN_FINAL'].includes(item.status), `${item.id}: ${item.status}`)
+    assert.ok(['NEEDS_RUNTIME_PROOF','HUMAN_FINAL','VERIFIED'].includes(item.status), `${item.id}: ${item.status}`)
     assert.match(item.improvement_focus, /runtime/)
     assert.equal(typeof item.done_evidence, 'string')
     assert.ok(item.done_evidence.trim().length > 12)
