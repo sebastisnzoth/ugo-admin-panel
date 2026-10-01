@@ -113,3 +113,12 @@ test('provider tracker keeps a recent trusted fix through transient timeout call
  assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
  assert.match(tracker,/error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return/)
 })
+
+
+test('provider GPS accepts a usable recent fix quickly while still refining toward target accuracy',()=>{
+ assert.match(service,/GPS_ACCEPT_FALLBACK_MS=4_000/)
+ assert.match(service,/GPS_TIMEOUT_MS=15_000/)
+ assert.match(service,/timeout:5_000/)
+ assert.match(service,/if\(Number\(warm\.coords\.accuracy\)<=GPS_TARGET_ACCURACY_M\)return warm/)
+ assert.match(service,/fallbackTimer=window\.setTimeout\(\(\)=>\{if\(best&&acceptablePosition\(best\)\)finish\(best\)\},GPS_ACCEPT_FALLBACK_MS\)/)
+})
