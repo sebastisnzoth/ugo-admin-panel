@@ -1255,6 +1255,400 @@
           ]
         }
       ]
+    },
+    {
+      "id": "client-provider-flow-recovery",
+      "title": "Flujo Cliente ↔ Proveedor · Reparación integral",
+      "items": [
+        {
+          "id": "provider-realtime-location",
+          "title": "Ubicación realtime del proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Restaurar ubicación real y continua del proveedor.",
+          "done_evidence": "Proveedor TEST desplazándose/actualizándose y ubicación real reflejada correctamente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-gps"
+          ]
+        },
+        {
+          "id": "provider-profile-photo",
+          "title": "Foto real del proveedor",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Sacar/elegir, previsualizar, reemplazar, guardar y recuperar foto real del proveedor.",
+          "done_evidence": "Foto persistida y visible después de recargar sesión.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-media"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "provider-operating-zone",
+          "title": "Zona operativa configurable",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Base operativa, ubicación actual cuando corresponda y radio configurable persistido.",
+          "done_evidence": "Cambiar radio modifica realmente la elegibilidad del proveedor.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-realtime-location"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "proximity-matching",
+          "title": "Matching por proximidad y elegibilidad",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Combinar categoría, habilitación, online, ubicación reciente, radio, distancia, deuda, disponibilidad y reglas de servicios.",
+          "done_evidence": "Casos TEST dentro/fuera del radio producen resultados correctos.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-operating-zone"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-demand",
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-offers"
+          ]
+        },
+        {
+          "id": "provider-proximity-alert",
+          "title": "Alerta al proveedor elegible",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Pedido elegible dentro del radio genera oferta, realtime, push/web/sonido soportado y navegación correcta sin duplicados.",
+          "done_evidence": "Pedido TEST genera alerta verificable al proveedor correcto.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "proximity-matching"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "notifications",
+            "provider-demand"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-alerts",
+            "provider-notifications"
+          ]
+        },
+        {
+          "id": "request-payment-before-dispatch",
+          "title": "Pago definido antes de dispatch",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Ningún pedido entra a matching/asignación sin método de pago persistido.",
+          "done_evidence": "Todo pedido elegible para matching tiene payment method definido.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-payment",
+            "client-request-flow"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "client-payment"
+          ]
+        },
+        {
+          "id": "admin-assignment-payment-guard",
+          "title": "Guard de pago en asignación Admin",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Asignación manual debe exigir cliente, servicio, ubicación, categoría, proveedor y forma de pago; si falta algo debe explicar qué falta.",
+          "done_evidence": "Asignación manual produce un trabajo completo y coherente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "request-payment-before-dispatch"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "admin-shell",
+            "payments"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "provider-active-jobs",
+          "title": "Trabajos activos completos",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Eliminar estados incompletos por pago tardío y mostrar datos, estado, método, evidencias, acciones y timeline válidos.",
+          "done_evidence": "Proveedor nunca recibe trabajo activo incompleto por falta de método de pago.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "admin-assignment-payment-guard"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-job-state",
+            "provider-history"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-jobs"
+          ]
+        },
+        {
+          "id": "client-provider-lifecycle",
+          "title": "Lifecycle Cliente ↔ Proveedor completo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Solicitud completa → matching → oferta → aceptación → en camino → llegada → evidencias → trabajo → aprobación → pago → ratings → historial, con guards.",
+          "done_evidence": "E2E TEST completo con audit trail.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-proximity-alert",
+            "provider-active-jobs",
+            "hugo-real-runtime-proof"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-job-state",
+            "client-service-status",
+            "payments",
+            "ratings"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "client-status",
+            "provider-workflow"
+          ]
+        },
+        {
+          "id": "hugo-gemini-live-core",
+          "title": "Gemini Live como voz principal",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Audio entrada/salida natural, conversación continua, interrupciones, contexto, ES/PT, timeout, reconexión y fallback honesto.",
+          "done_evidence": "Conversación real verificable con Gemini Live.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-voice",
+            "model-router"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-voice"
+          ]
+        },
+        {
+          "id": "hugo-client-order-by-voice",
+          "title": "Pedido real por voz",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Conversación natural obtiene categoría, trabajo, ubicación/lugar guardado, cuándo, foto contextual, pago y faltantes; confirma y crea serviceId real.",
+          "done_evidence": "Pedido creado exclusivamente por voz y visible en Cliente/Admin/backend.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-conversation-continuity",
+            "request-payment-before-dispatch"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-actions",
+            "client-request-flow"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-intent",
+            "hugo-action"
+          ]
+        },
+        {
+          "id": "hugo-provider-actions",
+          "title": "Acciones reales Proveedor por voz",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Online/offline, oportunidades, trabajo activo, aceptar/rechazar, voy, llegada con GPS/geofence, comenzar y finalizar usando guards reales.",
+          "done_evidence": "Comando hablado → mutación backend → UI Cliente/Proveedor/Admin consistente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-client-order-by-voice",
+            "provider-realtime-location"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-actions",
+            "provider-job-state",
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-action"
+          ]
+        },
+        {
+          "id": "hugo-admin-actions",
+          "title": "Acciones Admin autorizadas por voz",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Consultar operación, buscar servicio/usuario, navegar, abrir servicio y refrescar; sin mutaciones peligrosas sin workflow específico.",
+          "done_evidence": "Comandos autorizados ejecutan acciones reales del panel.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-provider-actions"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-actions",
+            "admin-shell"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-action"
+          ]
+        },
+        {
+          "id": "hugo-conversation-continuity",
+          "title": "Continuidad conversacional",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Conservar categoría, descripción, dirección/lugar, horario y pago ya confirmados; preguntar sólo lo faltante.",
+          "done_evidence": "Conversaciones multi-turn conservan estado correctamente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-gemini-live-core"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-session"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-continuity"
+          ]
+        },
+        {
+          "id": "hugo-real-runtime-proof",
+          "title": "Prueba real Hugo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Separar CONTRACT/BROWSER/REAL AUDIO/REAL ACTION; requerir micrófono→Gemini→voz→tool→backend→UI y HUMAN_REQUIRED cuando corresponda.",
+          "done_evidence": "Cadena real audio+acción verificada; nunca mock-only.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-admin-actions"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-voice",
+            "qa-lab"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-voice"
+          ]
+        },
+        {
+          "id": "cross-realtime-consistency",
+          "title": "Consistencia realtime multirol",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Un mismo servicio mantiene estado coherente simultáneamente sin refresh manual, con notificación y audit event.",
+          "done_evidence": "Prueba multi-role realtime.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "client-provider-lifecycle"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "admin-realtime",
+            "notifications",
+            "client-service-status",
+            "provider-job-state"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "cross-errors-recovery",
+          "title": "Errores y recuperación del flujo",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Cubrir GPS/red/Supabase/Gemini/websocket/push/pago/radio/offline/sesión/cámara/datos; explicar, preservar, siguiente acción, retry, sin falso éxito.",
+          "done_evidence": "Fault injection UI/API + recuperación sin corrupción.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "client-provider-lifecycle"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "recovery",
+            "regression"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "cross-errors"
+          ]
+        },
+        {
+          "id": "end-to-end-command-center-gate",
+          "title": "Gate E2E Command Center",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Gate final que sólo VERIFIED cuando todos los controles requeridos están VERIFIED o HUMAN_REQUIRED correctamente.",
+          "done_evidence": "Cliente TEST → pedido/pago/matching/alerta/GPS/lifecycle/ratings/historial/Admin realtime con evidencia same-SHA.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "cross-realtime-consistency",
+            "cross-errors-recovery"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "launch-gate",
+            "audit-ledger",
+            "qa-lab"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        }
+      ]
     }
   ],
   "execution_policy": {
