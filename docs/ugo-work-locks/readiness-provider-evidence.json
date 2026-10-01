@@ -1,0 +1,33 @@
+{
+  "readiness_id": "provider-evidence",
+  "task_id": "readiness-provider-evidence",
+  "job_id": "UGO-READINESS-PROVIDER-EVIDENCE",
+  "title": "Verify provider initial/final service evidence persistence and UI flow",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-01T18:56:00Z",
+  "heartbeat_at": "2026-10-01T18:56:00Z",
+  "lease_expires_at": "2026-10-01T19:11:00Z",
+  "started_sha": "f860d721a0185aaea932608af979a3b570e1e5c3",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Evidence Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-media"
+  ],
+  "correlation_id": "readiness-provider-evidence-20261001T185600Z-gptugo-r1",
+  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [],
+  "production_touched": false,
+  "last_failure": null
+}
