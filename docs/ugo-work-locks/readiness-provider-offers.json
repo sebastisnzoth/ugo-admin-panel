@@ -2,39 +2,39 @@
   "readiness_id": "provider-offers",
   "task_id": "readiness-provider-offers",
   "job_id": "UGO-READINESS-PROVIDER-OFFERS",
-  "status": "DONE",
-  "started_at": "2026-09-29T20:45:00Z",
-  "heartbeat_at": "2026-09-29T20:56:30Z",
-  "lease_expires_at": "2026-09-29T21:41:30Z",
-  "started_sha": "6e934ab57cbe520d5bcb0e6b466b0a7a5fc446bb",
+  "status": "BLOCKED_HUMAN",
+  "started_at": "2026-10-02T10:40:49Z",
+  "heartbeat_at": "2026-10-02T11:10:00Z",
+  "lease_expires_at": null,
+  "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "assigned_agent": "Provider Matching Agent",
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "provider-demand"
-  ],
-  "correlation_id": "readiness-provider-offers-20260929T204500Z",
-  "current_step": "validated_and_closed",
-  "attempt": 1,
+  "validators": ["Judge","Sentinel"],
+  "resources": ["provider-demand","notifications"],
+  "correlation_id": "provider-offers-regression-20261002-1406",
+  "current_step": "physical_same_sha_offer_visibility_and_acceptance",
+  "attempt": 2,
   "evidence_ids": [
-    "provider-offers-runtime-20260929T205600Z"
+    "provider-offers-runtime-20260929T205600Z",
+    "repo-evidence:docs/evidence/readiness-provider-offers-20261002-regression.json",
+    "github-run:36999184742"
   ],
-  "title": "Verify eligible provider offers within 20 km reach the correct provider",
+  "title": "Verify eligible provider offers reach and alert the correct provider",
   "department": "App Proveedor",
   "skills": [
     "ugo-readiness-orchestrator",
     "ugo-provider",
-    "ugo-qa",
-    "ugo-runtime-validation"
+    "ugo-notifications",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
   ],
   "validators_result": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING_PHYSICAL_SAME_SHA",
+    "Sentinel": "PASS_TEST_ONLY"
   },
-  "evidence_path": "docs/evidence/readiness-provider-offers-20260929.json",
-  "completed_at": "2026-09-29T20:56:30Z",
-  "result_summary": "UGO TEST verified: eligible provider receives directed offer inside 20 km; >20 km is rejected; provider offer RPC isolates to auth.uid(); permanent regression passed."
+  "evidence_path": "docs/evidence/readiness-provider-offers-20261002-regression.json",
+  "production_touched": false,
+  "result_summary": "2026-10-02 regression isolated: matching selected an eligible real provider at 5.73 km and created the offer alert, but retire_superseded_service_notifications hit PostgreSQL statement timeout and rolled back offer + notification + offered state. UGO Arena now has indexed service-scoped retirement lookups; measured query uses Index Scan in ~2.7 ms. Core CI for source SHA cc52927e is green. Final physical provider visibility/acceptance proof remains.",
+  "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
+  "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae"
 }
