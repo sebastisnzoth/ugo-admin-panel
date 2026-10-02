@@ -11,6 +11,7 @@ test('Admin map controls expose accessible names',async()=>{
   'Ir a la ubicación buscada',
   'Actualizar mapa operativo',
   'Filtrar mapa por zona o barrio',
+  'Actualizar mapa automáticamente',
  ])assert.ok(map.includes('aria-label="'+label+'"'))
 })
 
