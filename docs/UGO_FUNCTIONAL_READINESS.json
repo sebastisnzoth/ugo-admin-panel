@@ -586,7 +586,7 @@
           "id": "hugo-timeout",
           "title": "Timeout/fallback/error",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Gemini/OpenRouter timeout/fallback sin congelar UI.",
           "done_evidence": "Fault injection + telemetría.",
           "improvement_focus": "Mensaje y retry claros.",
@@ -597,7 +597,9 @@
           "priority": "NORMAL",
           "resources": [
             "model-router"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-hugo-timeout-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "hugo-audit",
@@ -661,7 +663,7 @@
           "id": "admin-auth",
           "title": "Autenticación y roles",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Rutas y acciones restringidas por rol.",
           "done_evidence": "Pruebas positivas/negativas.",
           "improvement_focus": "Mensajes de acceso claros.",
@@ -670,7 +672,9 @@
           "priority": "CRITICAL",
           "resources": [
             "admin-auth"
-          ]
+          ],
+          "evidence_path": "docs/evidence/admin-auth-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "admin-navigation",
@@ -693,7 +697,7 @@
           "id": "admin-realtime",
           "title": "Estados en tiempo real",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cambios operativos aparecen sin refresh manual cuando aplica.",
           "done_evidence": "Realtime TEST + reconciliación.",
           "improvement_focus": "Indicador de sincronización.",
@@ -704,13 +708,15 @@
           "priority": "NORMAL",
           "resources": [
             "admin-realtime"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-admin-realtime-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "admin-users",
           "title": "Ficha e historial de usuarios",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Documentos, fechas, horarios, servicios y acciones auditadas.",
           "done_evidence": "Datos TEST + permisos.",
           "improvement_focus": "Filtros y búsqueda.",
@@ -721,7 +727,9 @@
           "priority": "NORMAL",
           "resources": [
             "admin-users"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-admin-users-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "admin-risk",
@@ -1156,7 +1164,7 @@
           "id": "cross-security",
           "title": "Secretos, logs y privacidad",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "No secretos en cliente/logs; datos mínimos.",
           "done_evidence": "Scan + pruebas de sanitización.",
           "improvement_focus": "Redacción automática.",
@@ -1168,7 +1176,9 @@
           "priority": "HIGH",
           "resources": [
             "security-rls"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-cross-security-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "cross-observability",
