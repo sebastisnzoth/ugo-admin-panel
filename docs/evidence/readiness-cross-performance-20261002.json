@@ -1,0 +1,82 @@
+{
+  "readiness_id": "cross-performance",
+  "task_id": "readiness-cross-performance",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20261002",
+  "correlation_id": "readiness-cross-performance-20261002T111200Z",
+  "control": "Rendimiento percibido",
+  "criterion": "Acciones críticas no quedan colgadas; loaders correctos.",
+  "tested_sha": "e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+  "workflow_run": 36998659670,
+  "runtime_job": 110811074003,
+  "judge_job": 110811491966,
+  "sentinel_job": 110811536000,
+  "results": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "exact_candidate_sha": "PASS",
+    "test_environment": "UGO TEST",
+    "production_touched": false
+  },
+  "authentication_latency_ms": {
+    "client": 838,
+    "provider": 287,
+    "admin": 663
+  },
+  "performance": {
+    "client_initial_load_ms": 355,
+    "client_request_navigation_ms": 532,
+    "provider_initial_load_ms": 289,
+    "provider_jobs_navigation_ms": 64,
+    "admin_initial_load_ms": 294,
+    "admin_operations_navigation_ms": 111,
+    "sample_count": 6,
+    "max_ms": 532,
+    "p95_ms": 532,
+    "status": "PASS"
+  },
+  "slo": {
+    "navigation_ms": 4000,
+    "initial_load_ms": 8000
+  },
+  "artifacts": [
+    {
+      "id": 11223035845,
+      "name": "cross-performance-runtime-e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+      "digest": "sha256:1a5c9d81158111f6e4c88e1dc6173c2ee65e2ea9885009e4809a8a526fac3f05"
+    },
+    {
+      "id": 11223040923,
+      "name": "cross-performance-judge-e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+      "digest": "sha256:c58252e2d5ba2fa17c74af982fd8885715cea13fc61d3f4568f396dc6c59a718"
+    },
+    {
+      "id": 11222059147,
+      "name": "cross-performance-sentinel-e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+      "digest": "sha256:d7acaa588d3d89691ca99cb1f1f0e92a9153cb20f275a43d91f6b19cfae45ed2"
+    }
+  ],
+  "main_revalidation": {
+    "compared_to_main_sha": "f0024cf3f661508262fd6261f27176b15b3a7c0a",
+    "ahead_commits": 6,
+    "functional_performance_paths_changed": false,
+    "changed_paths": [
+      "docs/evidence/readiness-provider-offers-20261002-regression.json",
+      "docs/ugo-work-locks/readiness-cross-performance.json",
+      "docs/ugo-work-locks/readiness-provider-notifications.json",
+      "docs/ugo-work-locks/readiness-provider-offers.json",
+      "supabase/migrations/20261002121500_notification_retirement_indexes.sql",
+      "tests/contracts/notification-retirement-indexes.test.mjs"
+    ],
+    "rationale": "No src/features/client, src/features/provider, src/features/admin, or cross-performance runtime/judge/sentinel files changed after the tested SHA. The added SQL index migration is notification-retirement specific and does not alter the validated UI performance paths."
+  },
+  "regression": {
+    "pointer_reachable_client_request": "PASS",
+    "provider_jobs_navigation": "PASS",
+    "admin_operations_navigation": "PASS",
+    "no_hung_critical_actions": "PASS",
+    "loaders_and_navigation_slos": "PASS"
+  },
+  "verified_at": "2026-10-02T11:02:42.599Z",
+  "production_touched": false
+}
