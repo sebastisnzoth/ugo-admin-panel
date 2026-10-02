@@ -28,7 +28,7 @@ test('Hugo Live token already enforces session role before exposing voice tools'
 test('Admin Hugo UI is only mounted after verified admin role and sensitive voice mutations stay unavailable',async()=>{
  const[admin,bridge,orb,superAdmin]=await Promise.all([read('src/mvp/AdminPhase2.tsx'),read('src/lib/browserVoiceBridge.ts'),read('src/components/ConversationalOrb.tsx'),read('src/mvp/SuperAdminCommandCenter.tsx')])
  assert.match(admin,/\['admin','superadmin'\]\.includes\(role\)/)
- assert.match(admin,/\{adminRole&&section!=='superadmin'&&<ConversationalOrb/)
+ assert.doesNotMatch(admin,/<ConversationalOrb/)
  assert.doesNotMatch(bridge,/admin_(set|delete|approve|pay|resolve)_/)
  assert.match(bridge,/No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz/)
  assert.match(orb,/INVALID_TARGET/)
