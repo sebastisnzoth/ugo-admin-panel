@@ -21,7 +21,8 @@ test('provider Google Calendar is a server-side mirror keyed by serviceId',async
  assert.match(server,/calendarDelete/)
  assert.match(server,/method:'PATCH'/)
  assert.match(server,/accounts\.google\.com\/o\/oauth2\/v2\/auth/)
- assert.match(vercel,/"source": "\/api\/calendar\/sync"[\s\S]*?"destination": "\/api\/test\?ugo_calendar=sync"/)
+ const rewrites=JSON.parse(vercel).rewrites||[]
+ assert.ok(rewrites.some(item=>item.source==='/api/calendar/sync'&&item.destination==='/api/test?ugo_calendar=sync'))
  assert.doesNotMatch(profile,/refresh_token|GOOGLE_CALENDAR_CLIENT_SECRET/)
 })
 
