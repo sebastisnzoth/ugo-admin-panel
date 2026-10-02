@@ -31,9 +31,9 @@ test('environment guard rejects production Supabase configuration across all run
  assert.match(guard,/source\.includes\(PROD_REF\)/)
 })
 
-test('Vercel Git deployments remain paused while notification recovery is validated without publishing',async()=>{
+test('Vercel Git deployments are enabled but remain pinned to UGO TEST',async()=>{
  const vercel=JSON.parse(await read('vercel.json'))
- assert.equal(vercel.git?.deploymentEnabled,false)
+ assert.equal(vercel.git?.deploymentEnabled,true)
  assert.equal(vercel.env?.SUPABASE_URL,`https://${TEST_REF}.supabase.co`)
  assert.doesNotMatch(JSON.stringify(vercel),new RegExp(PROD_REF))
 })
