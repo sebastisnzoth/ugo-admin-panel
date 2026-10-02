@@ -200,7 +200,7 @@ async function testProvider(viewport,name){
    let checkedItems=0
    if(viewport.width>=1000){
      const nav=page.getByRole('navigation',{name:'Navegación principal'}).first()
-     const items=[/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]
+     const items=[/Inicio/i,/Pedidos/i,/Trabajo activo|Mis trabajos/i,/Historial/i,/Ganancias/i,/Perfil/i]
      for(const item of items){
        await safeClick(page,nav.getByRole('button',{name:item}).first(),'provider '+String(item))
        await page.waitForFunction(()=>document.querySelector('.ugo-provider-root')||document.body.textContent?.includes('No pudimos cargar esta pantalla'),null,{timeout:30000})
