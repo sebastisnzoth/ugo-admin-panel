@@ -1,0 +1,20 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "sha": "working-tree",
+  "environment": "LOCAL_CONSUMER_REGRESSION",
+  "backend": "CONTROLLED_FAULTS",
+  "physical_audio_verified": false,
+  "physical_vibration_verified": false,
+  "production_touched": false,
+  "checks": {
+    "subscribed_while_push_pending": true,
+    "insert_alert_while_select_pending": true,
+    "duplicate_insert_does_not_repeat_attention": true,
+    "retired_subscription_read_cannot_alert_offline": true,
+    "focus_recovers_offer_behind_expired_and_seen_notices": true,
+    "periodic_resync_recovers_missed_insert": true,
+    "offline_blocks_attention_online_recovers": true,
+    "channels_cleaned_up": true
+  },
+  "result": "PASS"
+}

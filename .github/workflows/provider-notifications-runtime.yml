@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - "scripts/provider-notifications-*.mjs"
+      - "scripts/provider-notification-recovery-browser.mjs"
+      - "src/mvp/NotificationCenter.tsx"
       - ".github/workflows/provider-notifications-runtime.yml"
   workflow_dispatch:
 
@@ -64,6 +66,7 @@ jobs:
             curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null && break || sleep 1
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/provider-notification-recovery-browser.mjs
           node scripts/provider-notifications-runtime.mjs
       - name: Independent Judge
         run: node scripts/provider-notifications-judge.mjs
@@ -76,6 +79,7 @@ jobs:
           name: readiness-provider-notifications-${{ github.sha }}
           path: |
             artifacts/provider-notifications-*
+            artifacts/provider-notification-recovery-browser.json
             /tmp/provider-notifications-vite.log
           if-no-files-found: warn
           retention-days: 90

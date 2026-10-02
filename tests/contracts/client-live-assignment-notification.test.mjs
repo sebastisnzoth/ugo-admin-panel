@@ -46,7 +46,7 @@ test('assignment notification and active home card open the exact service id',as
 test('client recovers an unread service alert after reopening the app',async()=>{
  const center=await read('src/mvp/NotificationCenter.tsx')
  assert.match(center,/role==='client'[\s\S]*pending=next\.find\(notice=>!notice\.leida_at&&actionable\.has\(notice\.id\)&&CLIENT_ATTENTION_TYPES\.has\(notice\.tipo\)\)/)
- assert.match(center,/\[db,role,signalClientAlert,signalProviderAlert\]/)
+ assert.match(center,/\[attentionEnabled,db,role,signalClientAlert,signalProviderAlert\]/)
 })
 
 test('notification realtime recreates its channel after error, timeout or network recovery',async()=>{

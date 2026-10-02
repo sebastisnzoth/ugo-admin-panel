@@ -1,6 +1,9 @@
 import assert from'node:assert/strict'
 import{mkdir,writeFile}from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
+import{execFile}from'node:child_process'
+import{promisify}from'node:util'
+const execFileAsync=promisify(execFile)
 import{chromium}from'playwright'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||'unknown'
 assert.ok(url&&anon&&serviceKey);assert.match(url,/tmossnqfwfwjrtzwcbmm/)
@@ -8,7 +11,32 @@ const admin=createClient(url,serviceKey,{auth:{persistSession:false,autoRefreshT
 let providerId=null,clientId=null,serviceId=null,browser=null;const noticeIds=[]
 const evidence={schema_version:'UGO_READINESS_EVIDENCE_V1',readiness_id:'provider-notifications',sha,environment:'UGO TEST',channels:{offer:false,assignment:false,change:false,message:false},realtime_without_refresh:false,attention:{tone:false,vibrate:false},offer_origin:'CLIENT_AUTH_MATCHING_DIRECTED',fixture_service_created_by:'TEST_SERVICE_ROLE',production_touched:false,result:'FAIL'}
 async function mk(kind){const email=`ugo-${kind}-notice-${token}@example.test`;const c=await admin.auth.admin.createUser({email,password,email_confirm:true,user_metadata:{nombre:`UGO ${kind} Notice`,tipo:kind}});if(c.error)throw c.error;const id=c.data.user.id;let q=await admin.from('usuarios').upsert({id,nombre:`UGO ${kind} Notice`,tipo:kind,activo:true,es_demo:true,online:kind==='proveedor'},{onConflict:'id'});if(q.error)throw q.error;if(kind==='proveedor'){const cat=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(cat.error)throw cat.error;q=await admin.from('perfiles_proveedor').upsert({usuario_id:id,estado_verificacion:'verificado',online:true,disponible:true,onboarding_completo_at:new Date().toISOString(),termos_aceitos_at:new Date().toISOString(),termos_versao:'2026-09-04',categoria_principal_id:cat.data.id,tarifa_base:100},{onConflict:'usuario_id'});if(q.error)throw q.error}return{id,email}}
-async function cleanup(){for(const id of noticeIds)try{await admin.from('notificaciones').delete().eq('id',id)}catch{};if(serviceId)try{await admin.from('servicios').delete().eq('id',serviceId)}catch{};for(const id of [providerId,clientId]){if(!id)continue;try{await admin.from('notificaciones').delete().eq('usuario_id',id)}catch{};try{await admin.from('perfiles_proveedor').delete().eq('usuario_id',id)}catch{};try{await admin.from('usuarios').delete().eq('id',id)}catch{};try{await admin.auth.admin.deleteUser(id)}catch{}};if(browser)await browser.close()}
+async function checkedCleanup(query,label){const{error}=await query;if(error)throw new Error(label+': '+error.message)}
+async function cleanup(){
+ try{
+  if(serviceId){
+   const{data:owned,error}=await admin.from('servicios').select('cliente_id,proveedor_id,metadata').eq('id',serviceId).maybeSingle()
+   if(error)throw error
+   if(owned){
+    assert.equal(owned.metadata?.readiness_id,'provider-notifications','CLEANUP_OWNERSHIP')
+    assert.equal(owned.metadata?.sha,sha,'CLEANUP_SHA')
+    assert.equal(owned.metadata?.ephemeral,true,'CLEANUP_EPHEMERAL')
+    assert.equal(owned.cliente_id,clientId,'CLEANUP_CLIENT')
+    assert.ok(owned.proveedor_id===null||owned.proveedor_id===providerId,'CLEANUP_PROVIDER')
+    // Payment-ready matching creates a payment row with a restrictive service FK.
+    await checkedCleanup(admin.from('pagos').delete().eq('servicio_id',serviceId),'payments cleanup')
+    await checkedCleanup(admin.from('servicios').delete().eq('id',serviceId),'service cleanup')
+   }
+  }
+  for(const id of [providerId,clientId]){
+   if(!id)continue
+   await checkedCleanup(admin.from('notificaciones').delete().eq('usuario_id',id),'notices cleanup')
+   await checkedCleanup(admin.from('perfiles_proveedor').delete().eq('usuario_id',id),'profile cleanup')
+   await checkedCleanup(admin.from('usuarios').delete().eq('id',id),'user cleanup')
+   await checkedCleanup(admin.auth.admin.deleteUser(id),'auth cleanup')
+  }
+ }finally{if(browser)await browser.close()}
+}
 try{
  const provider=await mk('proveedor'),client=await mk('cliente');providerId=provider.id;clientId=client.id
  const cat=await admin.from('categorias').select('id').eq('activa',true).limit(1).single();if(cat.error)throw cat.error
@@ -26,7 +54,7 @@ try{
  const match=await clientAuth.rpc('iniciar_matching_dirigido',{p_servicio_id:serviceId,p_proveedor_id:providerId});if(match.error)throw match.error
  const offer=await admin.from('ofertas_servicio').select('id,estado,proveedor_id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).maybeSingle();if(offer.error)throw offer.error;if(!offer.data?.id)throw new Error('E2E matching did not persist provider offer')
  const offerNotice=await admin.from('notificaciones').select('id,titulo').eq('usuario_id',providerId).eq('tipo','nueva_oferta').eq('datos->>servicio_id',serviceId).maybeSingle();if(offerNotice.error)throw offerNotice.error;if(!offerNotice.data?.id)throw new Error('E2E matching did not create nueva_oferta notification')
- noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live').getByText(offerNotice.data.titulo).waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
+ evidence.persisted_entities={service_id:serviceId,provider_id:providerId,client_id:clientId,offer_id:offer.data.id,offer_notice_id:offerNotice.data.id};noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live').getByText(offerNotice.data.titulo).waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
  await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',offerNotice.data.id);await page.waitForTimeout(300)
  const accepted=await providerAuth.rpc('aceptar_oferta',{p_oferta_id:offer.data.id});if(accepted.error)throw accepted.error
  const persistedAssignment=await admin.from('servicios').select('estado,proveedor_id').eq('id',serviceId).single();if(persistedAssignment.error)throw persistedAssignment.error
@@ -43,5 +71,5 @@ try{
  const change=await admin.from('notificaciones').insert({usuario_id:providerId,tipo:'servicio_cancelado',titulo:'Cambio TEST UGO',cuerpo:'Servicio cancelado TEST',datos:{servicio_id:serviceId,estado:'cancelado',runtime_probe:true},dedupe_key:`provider-notifications:${token}:change`}).select('id').single();if(change.error)throw change.error;noticeIds.push(change.data.id);await page.locator('.ugo-notification-live').getByText('Cambio TEST UGO').waitFor({state:'visible',timeout:12000});evidence.channels.change=true
  const attention=await page.evaluate(()=>({tone:Number(window.__ugoToneCount||0),vibrate:Number(window.__ugoVibrateCount||0)}));evidence.attention.tone=attention.tone>0;evidence.attention.vibrate=attention.vibrate>0;evidence.realtime_without_refresh=Object.values(evidence.channels).every(Boolean)
  assert.ok(evidence.realtime_without_refresh&&evidence.attention.tone&&evidence.attention.vibrate);evidence.result='PASS'
- await mkdir('artifacts',{recursive:true});await writeFile('artifacts/provider-notifications-runtime.json',JSON.stringify(evidence,null,2)+'\n');await page.screenshot({path:'artifacts/provider-notifications-runtime.png',fullPage:true});console.log(JSON.stringify(evidence))
+ await mkdir('artifacts',{recursive:true});await writeFile('artifacts/provider-notifications-runtime.json',JSON.stringify(evidence,null,2)+'\n');await page.screenshot({path:'artifacts/provider-notifications-runtime.png',fullPage:true});const judge=await execFileAsync(process.execPath,['scripts/provider-notifications-persistence-judge.mjs'],{env:process.env,maxBuffer:1024*1024});console.log(judge.stdout);console.log(JSON.stringify(evidence))
 }finally{await cleanup()}

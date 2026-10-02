@@ -1,0 +1,61 @@
+{
+  "task_id": "provider-notification-recovery",
+  "job_id": "UGO-PROVIDER-NOTIFICATION-RECOVERY-20261002",
+  "objective": "Recover provider offers independently of Push readiness and stale notices",
+  "department": "App Proveedor",
+  "assigned_agent": "Codex",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "resources": [
+    "notifications",
+    "provider-demand"
+  ],
+  "source_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
+  "status": "IN_PROGRESS",
+  "owner": "Codex",
+  "started_at": "2026-10-02T15:38:57.079629+00:00",
+  "heartbeat_at": "2026-10-02T16:02:10.082769+00:00",
+  "lease_expires_at": "2026-10-02T16:23:57.079629+00:00",
+  "acceptance_criteria": [
+    "Realtime subscribes while Push is pending",
+    "Missed INSERT recovers from persisted unread notices",
+    "Seen/expired notices do not starve valid offers",
+    "Exact-SHA TEST evidence; no production deployment"
+  ],
+  "title": "Recover provider offers independently of Push readiness and stale notices",
+  "started_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "correlation_id": "provider-notification-recovery-20261002",
+  "current_step": "VERIFYING_RECOVERED_TEST_CLEANUP",
+  "attempt": 3,
+  "local_validation": {
+    "browser": "8_PASS",
+    "baseline": "FAIL_REPRODUCED",
+    "tests": "1201_PASS_8_SKIP",
+    "build": "PASS",
+    "lint": "0_ERRORS"
+  },
+  "validators_result": {
+    "Judge": "PENDING_INDEPENDENT_DB_READS",
+    "Sentinel": "PENDING_CLEANUP_VERIFICATION"
+  },
+  "evidence_ids": [
+    "github-run:37029628074",
+    "github-artifact:11237425414",
+    "tested-sha:e02d6a855f9215ee3872aa8c6e48726153c772b0"
+  ],
+  "historical_failure": {
+    "run_id": 37030359501,
+    "sha": "56e25bd7cddaf0c2b1f1713a8e2bd13c81be9318",
+    "cause": "Sentinel detected service fixture retained by pagos FK; old cleanup ignored returned errors",
+    "recovery": "Owned ephemeral fixture removed in TEST transaction; verify cleanup now deletes owned pending payment before service and checks all errors"
+  },
+  "reconciled_main_sha": "f1458595ed12f58bd2ee7dd28974bb9ba065989d"
+}
