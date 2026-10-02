@@ -1,4 +1,5 @@
 name: UGO Cross Realtime Consistency TEST
+# autonomous retry after shared fixture release
 
 on:
   workflow_dispatch:
