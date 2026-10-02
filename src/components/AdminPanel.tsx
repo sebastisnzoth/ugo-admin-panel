@@ -12,7 +12,6 @@ import { SecZonas, SecPromos, SecRatings, SecAvanzado, SecValidacionPaises, SecI
 import { SecMapaOperativo } from './MapaOperativo';
 import { SecScout } from './ScoutSection';
 import { ScoutCRM } from './ScoutCRM';
-import { ConversationalOrb } from './ConversationalOrb';
 
 type Section = 'dashboard'|'mapa'|'alertas'|'servicios'|'disputas'|'usuarios'|'documentos'|'finanzas'|'categorias'|'tarifas'|'notificaciones'|'reportes'|'analytics'|'config'|'zonas'|'promos'|'ratings'|'avanzado'|'conexiones'|'scout'|'crm'|'validacion_paises'|'import_provs'|'mapa_ops'|'tiendas';
 type ModalType = 'cat-form'|'user-form'|'servicio-form'|'tarifa-form'|'doc-preview'|'disputa'|'user-edit'|null;
@@ -1600,7 +1599,7 @@ export function AdminPanel() {
           </div>
         ))}
       </div>
-      <ConversationalOrb metrics={metrics} role="admin" section={section}/>
+      
 
       {/* MODAL: Contactar proveedor */}
       {contactModal && (

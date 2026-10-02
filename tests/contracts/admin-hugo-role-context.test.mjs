@@ -3,27 +3,24 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
-test('Hugo is mounted and named on the current Admin control center',async()=>{
+test('Hugo UI is detached from the current Admin control center',async()=>{
  const[src,orb]=await Promise.all([
   read('src/mvp/AdminPhase2.tsx'),
   read('src/components/ConversationalOrb.tsx'),
  ])
- assert.match(src,/import\{ConversationalOrb\}from'\.\.\/components\/ConversationalOrb'/)
- assert.match(src,/role=\{isSuperAdmin\?'superadmin':'admin'\}/)
- assert.match(src,/section=\{hugoSection\}/)
+ assert.doesNotMatch(src,/ConversationalOrb/)
  assert.match(orb,/>Hugo<\/b>/)
  assert.match(orb,/Hugo Admin/)
  assert.match(src,/operations:\$\{operationView\}/)
 })
 
-test('Hugo Super Admin receives governance context without mixing Admin permissions',async()=>{
+test('Hugo Super Admin UI is detached while dormant runtime remains isolated',async()=>{
  const[superadmin,orb,api]=await Promise.all([
   read('src/mvp/SuperAdminCommandCenter.tsx'),
   read('src/components/ConversationalOrb.tsx'),
   read('api/hugo/chat.ts'),
  ])
- assert.match(superadmin,/role="superadmin"/)
- assert.match(superadmin,/extraContext=\{\{flags,integrations,audit:auditRows\}\}/)
+ assert.doesNotMatch(superadmin,/ConversationalOrb/)
  assert.match(orb,/feature_flags/)
  assert.match(orb,/integraciones/)
  assert.match(orb,/auditoria/)
