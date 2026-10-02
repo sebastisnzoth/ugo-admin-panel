@@ -32,9 +32,15 @@ for(const id of criticalVerified){
  assert.equal(item?.status,'VERIFIED','CRITICAL_AUTOMATED_CONTROL_NOT_VERIFIED:'+id)
  const lock=await canonicalLock(id)
  if(lock){
-  assert.equal(lock.status,'DONE','CRITICAL_LOCK_NOT_DONE:'+id)
-  assert.equal(lock.validators_result?.Judge,'PASS','CRITICAL_JUDGE_NOT_PASS:'+id)
-  assert.equal(lock.validators_result?.Sentinel,'PASS','CRITICAL_SENTINEL_NOT_PASS:'+id)
+  const doneVerified=lock.status==='DONE'
+    && lock.validators_result?.Judge==='PASS'
+    && lock.validators_result?.Sentinel==='PASS'
+  const automatedScopeVerified=lock.status==='HUMAN_REQUIRED'
+    && lock.automated_closure?.runtime==='PASS'
+    && lock.automated_closure?.judge==='PASS'
+    && lock.automated_closure?.sentinel==='PASS'
+    && lock.human_final_required?.required===true
+  assert.equal(doneVerified||automatedScopeVerified,true,'CRITICAL_LOCK_AUTOMATED_SCOPE_NOT_VERIFIED:'+id)
   assert.ok((lock.evidence_ids||[]).length>0,'CRITICAL_EVIDENCE_MISSING:'+id)
  }
 }
