@@ -15,11 +15,11 @@ test('voice order cannot confirm a typed/manual address until coordinates resolv
 
 test('online idle provider refreshes trusted GPS on a heartbeat',async()=>{
  const source=await read('src/mvp/ProviderLocationTracker.tsx')
- assert.match(source,/if\(!available\|\|enRoute\|\|!navigator\.geolocation\)return/)
- assert.match(source,/const publishHeartbeat=async\(\)=>/)
+ assert.match(source,/if\(!navigator\.geolocation\|\|\(!available&&!enRoute\)\)return/)
+ assert.match(source,/const acquire=async\(force=false\)=>/)
  assert.match(source,/const pos=await getFreshBrowserPosition\(\)/)
  assert.match(source,/publicar_ubicacion_disponibilidad_proveedor/)
- assert.match(source,/window\.setInterval\(\(\)=>void publishHeartbeat\(\),AVAILABILITY_HEARTBEAT_MS\)/)
+ assert.match(source,/window\.setInterval\(refresh,10_000\)/)
  assert.match(source,/GEO_COMPATIBLE_OPTIONS:PositionOptions=\{enableHighAccuracy:false,maximumAge:15_000,timeout:12_000\}/)
  assert.match(source,/MAX_POSITION_AGE_MS=30_000/)
 })
@@ -28,7 +28,8 @@ test('online idle provider refreshes trusted GPS on a heartbeat',async()=>{
 test('online provider never hides a failed or stale GPS heartbeat',async()=>{
  const source=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(source,/if\(!available&&!enRoute\)return/)
- assert.match(source,/setLocationError\(geoError\.code===1\?'UGO perdió el permiso de ubicación precisa/)
+ assert.match(source,/const setGeoError=\(error:GeolocationPositionError\)=>/)
+ assert.match(source,/UGO necesita permiso de ubicación para mantenerte Online y enviarte pedidos/)
  assert.match(source,/const idleGpsStale=available&&\(!lastFix\|\|fixAgeMs==null\|\|fixAgeMs>MAX_POSITION_AGE_MS\)/)
  assert.match(source,/Online, pero fuera del matching/)
  assert.match(source,/UGO necesita renovar tu GPS para poder enviarte nuevos pedidos/)
