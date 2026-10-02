@@ -21,7 +21,7 @@ try{
  window.__render(true);
  </script>`}))
  await page.addInitScript(()=>{
-  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false
+  window.__noticeRows=[];window.__noticeReads=0;window.__channels=[];window.__removed=0;window.__toneCount=0;window.__vibrateCount=0;window.__holdReads=false;window.__heldReads=[]
   const params=()=>({setValueAtTime(){},exponentialRampToValueAtTime(){}})
   window.AudioContext=class{state='running';currentTime=0;destination={};createOscillator(){return{frequency:params(),connect(){},start(){window.__toneCount++},stop(){}}}createGain(){return{gain:params(),connect(){}}}resume(){return Promise.resolve()}}
   Object.defineProperty(navigator,'vibrate',{value:()=>{window.__vibrateCount++;return true},configurable:true})
@@ -33,7 +33,7 @@ try{
   window.setInterval=(fn,ms,...args)=>{if(ms===20000)window.__safetyResync=fn;return realInterval(fn,ms,...args)}
   const db={auth:{getSession:async()=>({data:{session:{user:{id:'provider-test'}}}})},from:table=>{
    const query={select(){return this},eq(){return this},order(){return this},limit(){return this},in(){return this},is(){return this},update(){return this},then(resolve){
-    if(window.__holdReads)return new Promise(()=>{})
+    if(window.__holdReads)return new Promise(done=>window.__heldReads.push(()=>done({data:window.__noticeRows,error:null}))).then(resolve)
     window.__noticeReads++;return Promise.resolve({data:table==='notificaciones'?window.__noticeRows:[],error:null}).then(resolve)
    }};return query
   },channel:()=>{const channel={callbacks:{},on(_type,filter,fn){this.callbacks[filter.event]=fn;return this},subscribe(fn){window.__channels.push(this);fn('SUBSCRIBED');return this}};return channel},removeChannel:async()=>{window.__removed++}}
@@ -56,9 +56,14 @@ try{
  // Mount again to release the intentionally hung SELECT. Keep the seen set.
  await page.evaluate(()=>{window.__holdReads=false;window.__render(false)})
  await page.waitForFunction(()=>window.__channels.length>=2)
- await page.evaluate(()=>window.__render(true))
- await page.waitForFunction(()=>window.__channels.length>=3)
  await page.getByRole('button',{name:'Cerrar notificación',exact:true}).click()
+ assert.ok(await page.evaluate(()=>window.__heldReads.length>0),'DELAYED_READ_REQUIRED')
+ await page.evaluate(()=>{window.__noticeRows=[window.__offer('late-offline')];window.__heldReads.splice(0).forEach(resolve=>resolve())})
+ await page.waitForTimeout(100)
+ assert.equal(await page.locator('.ugo-notification-live').count(),0)
+ evidence.checks.retired_subscription_read_cannot_alert_offline=true
+ await page.evaluate(()=>{window.__noticeRows=[window.__offer('first')];window.__render(true)})
+ await page.waitForFunction(()=>window.__channels.length>=3)
  await page.evaluate(()=>{window.__noticeRows=[window.__offer('expired',-1000),window.__noticeRows[0],window.__offer('missed')];window.dispatchEvent(new Event('focus'))})
  await page.getByText('Offer missed',{exact:true}).waitFor({timeout:3000})
  evidence.checks.focus_recovers_offer_behind_expired_and_seen_notices=true

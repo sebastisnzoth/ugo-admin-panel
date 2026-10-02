@@ -10,6 +10,7 @@
     "subscribed_while_push_pending": true,
     "insert_alert_while_select_pending": true,
     "duplicate_insert_does_not_repeat_attention": true,
+    "retired_subscription_read_cannot_alert_offline": true,
     "focus_recovers_offer_behind_expired_and_seen_notices": true,
     "periodic_resync_recovers_missed_insert": true,
     "offline_blocks_attention_online_recovers": true,

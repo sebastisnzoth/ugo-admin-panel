@@ -11,7 +11,7 @@ const ids=e.persisted_entities
 assert.ok(ids?.service_id&&ids?.provider_id&&ids?.client_id)
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
 for(const [table,column,values] of [
- ['servicios','id',[ids.service_id]],['ofertas_servicio','servicio_id',[ids.service_id]],
+ ['servicios','id',[ids.service_id]],['pagos','servicio_id',[ids.service_id]],['ofertas_servicio','servicio_id',[ids.service_id]],
  ['notificaciones','usuario_id',[ids.provider_id,ids.client_id]],['usuarios','id',[ids.provider_id,ids.client_id]],
  ['perfiles_proveedor','usuario_id',[ids.provider_id,ids.client_id]],
 ]){
