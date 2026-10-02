@@ -11,7 +11,7 @@ declare
  pid constant uuid:='163f8444-0098-4022-bb71-8418b24b16fb';
  cat uuid; cat_name text; sid uuid; oid uuid; s public.servicios%rowtype; loc extensions.geography;
  lat double precision; lng double precision; arrival jsonb; initial_role text; br_cash_old text; expansion public.ampliaciones_servicio%rowtype;
- old_primary uuid; old_categories uuid[]; old_category_name text; old_verification public.perfiles_proveedor.estado_verificacion%type; old_online boolean; old_disponible boolean; old_loc extensions.geography; old_loc_updated timestamptz; old_accuracy numeric; pilot_details jsonb;
+ old_primary uuid; old_categories uuid[]; old_category_name text; old_verification public.perfiles_proveedor.estado_verificacion%type; old_online boolean; old_disponible boolean; old_loc extensions.geography; old_loc_updated timestamptz; old_accuracy numeric; old_onboarding timestamptz; old_terms timestamptz; old_rate numeric; pilot_details jsonb;
 begin
  initial_role:=coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','');
  if initial_role<>'service_role' then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
@@ -21,8 +21,8 @@ begin
 
  select valor into br_cash_old from public.config_sistema where clave='pago_efectivo_br_activo' for update;
  if br_cash_old is null then raise exception 'TEST_CASH_CONFIG_MISSING'; end if;
- select p.categoria_principal_id,u.categorias_ids,u.categoria,p.estado_verificacion,p.online,p.disponible,p.ubicacion,p.ubicacion_updated_at,p.ubicacion_accuracy_m
- into old_primary,old_categories,old_category_name,old_verification,old_online,old_disponible,old_loc,old_loc_updated,old_accuracy
+ select p.categoria_principal_id,u.categorias_ids,u.categoria,p.estado_verificacion,p.online,p.disponible,p.ubicacion,p.ubicacion_updated_at,p.ubicacion_accuracy_m,p.onboarding_completo_at,p.termos_aceitos_at,p.tarifa_base
+ into old_primary,old_categories,old_category_name,old_verification,old_online,old_disponible,old_loc,old_loc_updated,old_accuracy,old_onboarding,old_terms,old_rate
  from public.perfiles_proveedor p join public.usuarios u on u.id=p.usuario_id where p.usuario_id=pid;
  if not found then raise exception 'PILOT_ISOLATED_PROVIDER_PROFILE_REQUIRED'; end if;
  loc:=extensions.st_setsrid(extensions.st_makepoint(-48.477,-27.438),4326)::extensions.geography;
@@ -30,7 +30,7 @@ begin
 
  update public.config_sistema set valor='true' where clave='pago_efectivo_br_activo';
  update public.perfiles_proveedor
- set categoria_principal_id=cat,estado_verificacion='verificado',online=true,disponible=true,
+ set categoria_principal_id=cat,estado_verificacion='verificado',onboarding_completo_at=coalesce(onboarding_completo_at,now()),termos_aceitos_at=coalesce(termos_aceitos_at,now()),tarifa_base=coalesce(nullif(tarifa_base,0),120),online=true,disponible=true,
      ubicacion=loc,ubicacion_updated_at=now(),ubicacion_accuracy_m=10,updated_at=now()
  where usuario_id=pid;
  update public.usuarios set categorias_ids=array[cat],categoria=cat_name,updated_at=now() where id=pid;
@@ -118,7 +118,7 @@ begin
  values(sid,cid,pid,5,'Pilot provider rating','proveedor');
 
  update public.perfiles_proveedor
- set categoria_principal_id=old_primary,estado_verificacion=old_verification,online=old_online,disponible=old_disponible,
+ set categoria_principal_id=old_primary,estado_verificacion=old_verification,onboarding_completo_at=old_onboarding,termos_aceitos_at=old_terms,tarifa_base=old_rate,online=old_online,disponible=old_disponible,
      ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
  where usuario_id=pid;
  update public.usuarios set categorias_ids=old_categories,categoria=old_category_name,updated_at=now() where id=pid;
@@ -128,7 +128,7 @@ begin
  return sid;
 exception when others then
  update public.perfiles_proveedor
- set categoria_principal_id=old_primary,estado_verificacion=old_verification,online=old_online,disponible=old_disponible,
+ set categoria_principal_id=old_primary,estado_verificacion=old_verification,onboarding_completo_at=old_onboarding,termos_aceitos_at=old_terms,tarifa_base=old_rate,online=old_online,disponible=old_disponible,
      ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
  where usuario_id=pid;
  update public.usuarios set categorias_ids=old_categories,categoria=old_category_name,updated_at=now() where id=pid;
