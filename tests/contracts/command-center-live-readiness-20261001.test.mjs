@@ -19,3 +19,12 @@ test('Realtime invalidation refreshes both static evidence and live operational 
  assert.match(page,/loadLiveReadiness\(\)\n    commandRealtimeChannel/)
  assert.match(page,/currentRevision = String\(mainHeadSha \|\| statusSnapshot\?\.source_sha/)
 })
+
+
+test('Command Center self-heals stale HTML/status revision mismatches',()=>{
+ assert.match(page,/const pageBuildSha = '__UGO_SHA__'/)
+ assert.match(page,/statusSha !== pageBuildSha/)
+ assert.match(page,/sessionStorage\.getItem\(reloadKey\)/)
+ assert.match(page,/url\.searchParams\.set\('build', statusSha\.slice\(0,12\)\)/)
+ assert.match(page,/Cache-Control/)
+})
