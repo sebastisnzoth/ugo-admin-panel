@@ -55,3 +55,19 @@ test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acqu
  assert.match(s,/age>MAX_POSITION_AGE_MS/)
  assert.match(s,/publicar_ubicacion_disponibilidad_proveedor/)
 })
+
+
+test('provider online requires browser geolocation permission and removes persisted online when permission is missing',async()=>{
+ const data=await read('src/mvp/provider/providerData.tsx')
+ const service=await read('src/mvp/provider/providerService.ts')
+ assert.match(data,/navigator\.permissions\.query\(\{name:'geolocation'\}/)
+ assert.match(data,/update\(\{disponible:false,online:false\}\)/)
+ assert.match(data,/tocá “Ponerme Online” y permití tu ubicación/)
+ assert.match(service,/if\(online\)\{/)
+ assert.match(service,/const position=await currentPosition\(\)/)
+ assert.match(service,/activar_disponibilidad_proveedor/)
+ const acquire=service.indexOf('const position=await currentPosition()')
+ const activate=service.indexOf("supabase.rpc('activar_disponibilidad_proveedor'")
+ assert.ok(acquire>=0&&activate>acquire,'browser GPS must be acquired before provider availability is activated')
+ assert.match(service,/UGO necesita tu ubicación para ponerte Online y enviarte pedidos/)
+})
