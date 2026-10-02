@@ -1,0 +1,99 @@
+name: UGO Cross P0 Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cross-p0-*.mjs'
+      - 'tests/contracts/first-client-readiness.test.mjs'
+      - 'tests/contracts/client-provider-lifecycle.test.mjs'
+      - '.github/workflows/cross-p0-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_RUNTIME_SHA: ${{ github.sha }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        run: npm run verify:test-env
+      - name: Critical P0 contracts
+        run: node --test tests/contracts/first-client-readiness.test.mjs tests/contracts/client-provider-lifecycle.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Persisted P0 runtime
+        run: node scripts/cross-p0-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-p0-runtime-${{ github.sha }}
+          path: artifacts/cross-p0-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-p0-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge
+        run: node scripts/cross-p0-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-p0-judge-${{ github.sha }}
+          path: artifacts/cross-p0-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-p0-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-p0-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        run: node scripts/cross-p0-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-p0-sentinel-${{ github.sha }}
+          path: artifacts/cross-p0-sentinel.json
+          retention-days: 90
