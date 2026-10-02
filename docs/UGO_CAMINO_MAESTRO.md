@@ -171,3 +171,13 @@ Next: integrate safely after confirming automatic Vercel/Netlify deployments can
 PR #307 supplied the active-job dispute entry and a TEST lifecycle probe. Its original Judge/Sentinel only checked caller booleans, so historical PASS is insufficient for authoritative DONE. The integration keeps this control IN_PROGRESS and preserves historical run references. The strengthened Judge independently queries persisted ownership, resolution, audit, notices and actual uploaded synthetic image bytes. Cleanup verifies fixture ownership and reports errors; Sentinel independently checks absence of database, Auth and Storage fixtures. The workflow runs on main in UGO TEST only. Anonymous opening and provider self-resolution are negative probes.
 
 Next: same-SHA runtime/Core CI/Pages, then persist the independent artifacts before closing the lock. Synthetic media is automation evidence; physical camera/GPS and human Customer #1 acceptance remain separate. No deployment to production.
+
+## Recuperación de alertas del proveedor · 02/10/2026
+
+Bloque `provider-notification-recovery`, base `2c7e23b434d68e5e5feb2e3bdb21e64059add633`. `NotificationCenter` suscribe Realtime antes de consultar avisos o inicializar Web Push. La espera de Service Worker tiene un límite de 5 s; su fallo no cancela el canal foreground. Un INSERT válido alerta directamente y la reconciliación posterior se serializa. Focus/online/visibility y un resync visible cada 20 s recuperan eventos perdidos. La selección salta ofertas vencidas o ya alertadas y respeta Offline/deuda. El banner conserva X y cierre a 5 s.
+
+La migración de convergencia de expiración versiona el arreglo de PR #322 que ya existe en Arena TEST: no reemplazar una expiración futura por un deadline de servicio vencido. No cambia GPS, radio, permisos ni estado lifecycle. No se aplicó DDL a producción.
+
+Regresión del consumidor: el código base falla antes de SUBSCRIBED con Push pendiente; el corregido pasa los siete casos del navegador (`scripts/provider-notification-recovery-browser.mjs`). Backend de esos casos controlado: no constituye prueba de matching real, sonido audible ni vibración física. Suite local: 1197 PASS, 0 FAIL, 8 SKIP; build y lint sin errores. CI y runtime deben comprobarse en el SHA integrado; ningún readiness se promueve por estos resultados locales.
+
+Vercel Git deployment queda pausado para respetar la orden de validar sin desplegar; restaurarlo requiere una publicación deliberada. Netlify no se invoca; los commits llevan `[skip netlify]`.

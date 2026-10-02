@@ -1,0 +1,49 @@
+{
+  "task_id": "provider-notification-recovery",
+  "job_id": "UGO-PROVIDER-NOTIFICATION-RECOVERY-20261002",
+  "objective": "Recover provider offers independently of Push readiness and stale notices",
+  "department": "App Proveedor",
+  "assigned_agent": "Codex",
+  "skills": [
+    "ugo-job-execution",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "resources": [
+    "notifications",
+    "provider-demand"
+  ],
+  "source_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
+  "status": "IN_PROGRESS",
+  "owner": "Codex",
+  "started_at": "2026-10-02T15:38:57.079629+00:00",
+  "heartbeat_at": "2026-10-02T15:47:01.187569+00:00",
+  "lease_expires_at": "2026-10-02T16:23:57.079629+00:00",
+  "acceptance_criteria": [
+    "Realtime subscribes while Push is pending",
+    "Missed INSERT recovers from persisted unread notices",
+    "Seen/expired notices do not starve valid offers",
+    "Exact-SHA TEST evidence; no production deployment"
+  ],
+  "title": "Recover provider offers independently of Push readiness and stale notices",
+  "started_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "correlation_id": "provider-notification-recovery-20261002",
+  "current_step": "VERIFYING_EXACT_SHA_CI_AND_TEST",
+  "attempt": 1,
+  "local_validation": {
+    "browser": "7_PASS",
+    "baseline": "FAIL_REPRODUCED",
+    "tests": "1197_PASS_8_SKIP",
+    "build": "PASS",
+    "lint": "0_ERRORS"
+  },
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  }
+}

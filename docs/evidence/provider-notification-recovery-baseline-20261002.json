@@ -1,0 +1,6 @@
+{
+  "source_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
+  "result": "FAIL_REPRODUCED",
+  "failure": "Realtime channel never subscribed while serviceWorker.ready remained pending",
+  "production_touched": false
+}
