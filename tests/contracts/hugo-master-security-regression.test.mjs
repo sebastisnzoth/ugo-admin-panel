@@ -36,3 +36,6 @@ test('22 client and provider have no admin UI actions',async()=>{const p=await s
 test('23 admin UI actions are explicitly allowlisted',async()=>assert.match(await src('server/hugo/permissions.ts'),/adminUi=new Set<HugoUiActionType>\(\['refresh','navigate','open_service','map_filter'\]\)/))
 test('24 superadmin navigation is checked independently',async()=>assert.match(await src('server/hugo/permissions.ts'),/target==='superadmin'\)return role==='superadmin'/))
 test('25 public JSON contract retains message action data and authority fields',async()=>{const chat=await src('api/hugo/chat.ts');assert.match(chat,/hugo_mensaje:/);assert.match(chat,/ui_action:action/);assert.match(chat,/datos:null/);assert.match(chat,/authority:\{role:authority\.requestedRole/)})
+
+
+test('26 chat never logs raw error objects or request context',async()=>{const chat=await src('api/hugo/chat.ts');assert.doesNotMatch(chat,/console\.error\('Hugo chat failed',error\)/);assert.match(chat,/console\.error\('Hugo chat failed',\{status,error_code:/)})
