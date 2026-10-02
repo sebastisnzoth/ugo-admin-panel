@@ -1039,7 +1039,7 @@
           "id": "cross-p0",
           "title": "Journey P0 completo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cliente→matching→proveedor→GPS→evidencias→pago→ratings.",
           "done_evidence": "Un serviceId TEST completo.",
           "improvement_focus": "Timeline única.",
@@ -1059,7 +1059,9 @@
           "resources": [
             "ugo-test-p0",
             "shared-provider-fixture"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-p0.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-rls",
