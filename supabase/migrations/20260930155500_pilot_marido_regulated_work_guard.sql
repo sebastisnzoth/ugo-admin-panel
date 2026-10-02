@@ -7,7 +7,7 @@ language plpgsql
 stable
 security definer
 set search_path to 'public','private','extensions','pg_temp'
-as $
+as $pilot$
 declare
   v_slug text;
   v_description text;
@@ -29,7 +29,7 @@ begin
   end if;
   return true;
 end;
-$$;
+$pilot$;
 
 revoke all on function private.pilot_servicio_generico_permitido(uuid) from public,anon,authenticated;
 
