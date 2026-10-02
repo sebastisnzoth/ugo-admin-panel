@@ -39,9 +39,9 @@ test('provider en-route UI exposes GPS freshness and precision without trusting 
 test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acquisitions and preserves freshness',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(s,/GEO_COMPATIBLE_OPTIONS/)
- assert.match(s,/enableHighAccuracy:false,maximumAge:0,timeout:5_000/)
+ assert.match(s,/enableHighAccuracy:false,maximumAge:15_000,timeout:12_000/)
  assert.match(s,/GEO_HIGH_ACCURACY_OPTIONS/)
- assert.match(s,/enableHighAccuracy:true,maximumAge:0,timeout:8_000/)
+ assert.match(s,/enableHighAccuracy:true,maximumAge:15_000,timeout:15_000/)
  assert.match(s,/getFreshBrowserPosition/)
  const compatible=s.indexOf('oneBrowserPosition(GEO_COMPATIBLE_OPTIONS)')
  const high=s.indexOf('oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)')
@@ -54,4 +54,20 @@ test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acqu
  assert.match(s,/document\.addEventListener\('visibilitychange',onForeground\)/)
  assert.match(s,/age>MAX_POSITION_AGE_MS/)
  assert.match(s,/publicar_ubicacion_disponibilidad_proveedor/)
+})
+
+
+test('provider online requires browser geolocation permission and removes persisted online when permission is missing',async()=>{
+ const data=await read('src/mvp/provider/providerData.tsx')
+ const service=await read('src/mvp/provider/providerService.ts')
+ assert.match(data,/navigator\.permissions\.query\(\{name:'geolocation'\}/)
+ assert.match(data,/update\(\{disponible:false,online:false\}\)/)
+ assert.match(data,/tocá “Ponerme Online” y permití tu ubicación/)
+ assert.match(service,/if\(online\)\{/)
+ assert.match(service,/const position=await currentPosition\(\)/)
+ assert.match(service,/activar_disponibilidad_proveedor/)
+ const acquire=service.indexOf('const position=await currentPosition()')
+ const activate=service.indexOf("supabase.rpc('activar_disponibilidad_proveedor'")
+ assert.ok(acquire>=0&&activate>acquire,'browser GPS must be acquired before provider availability is activated')
+ assert.match(service,/UGO necesita tu ubicación para ponerte Online y enviarte pedidos/)
 })
