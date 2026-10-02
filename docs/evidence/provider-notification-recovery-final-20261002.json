@@ -1,0 +1,32 @@
+{
+  "task_id": "provider-notification-recovery",
+  "tested_sha": "e701586183b76f12a0fe8ec87aa1efb7a9fab719",
+  "environment": "UGO TEST",
+  "run_id": 37031245964,
+  "run_attempt": 2,
+  "result": "PASS",
+  "artifact_id": 11237304347,
+  "artifact_digest": "sha256:ce8a0b13966658ca00fde1d382915d60ba39295f85cf9b20fc01fa09b6a41ad3",
+  "core_ci_run": 37031246194,
+  "provider_alerts_run": 37031246109,
+  "consumer_regressions": 8,
+  "persistence_judge": "INDEPENDENT_DB_READS_PASS",
+  "sentinel": "INDEPENDENT_DB_AND_AUTH_READS_PASS",
+  "fixtures": "REMOVAL_VERIFIED",
+  "open_incidents_for_tested_revision": 0,
+  "production_touched": false,
+  "physical_audio_verified": false,
+  "physical_vibration_verified": false,
+  "automatic_proximity_matching_verified": false,
+  "historical_failures": [
+    {
+      "run_id": 37030359501,
+      "cause": "Ignored cleanup errors with pagos FK; corrected and owned fixtures recovered"
+    },
+    {
+      "run_id": 37031245964,
+      "attempt": 1,
+      "cause": "Provider UI entry timeout before matching; cause not established; same-SHA retry passed with cleanup verified"
+    }
+  ]
+}

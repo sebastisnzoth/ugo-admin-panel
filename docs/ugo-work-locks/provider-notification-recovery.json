@@ -15,11 +15,11 @@
     "provider-demand"
   ],
   "source_sha": "2c7e23b434d68e5e5feb2e3bdb21e64059add633",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "owner": "Codex",
   "started_at": "2026-10-02T15:38:57.079629+00:00",
-  "heartbeat_at": "2026-10-02T16:02:10.082769+00:00",
-  "lease_expires_at": "2026-10-02T16:23:57.079629+00:00",
+  "heartbeat_at": "2026-10-02T16:11:10.541953+00:00",
+  "lease_expires_at": "2026-10-02T16:11:10.541962+00:00",
   "acceptance_criteria": [
     "Realtime subscribes while Push is pending",
     "Missed INSERT recovers from persisted unread notices",
@@ -33,7 +33,7 @@
     "Sentinel"
   ],
   "correlation_id": "provider-notification-recovery-20261002",
-  "current_step": "VERIFYING_RECOVERED_TEST_CLEANUP",
+  "current_step": "COMPLETE",
   "attempt": 3,
   "local_validation": {
     "browser": "8_PASS",
@@ -43,13 +43,13 @@
     "lint": "0_ERRORS"
   },
   "validators_result": {
-    "Judge": "PENDING_INDEPENDENT_DB_READS",
-    "Sentinel": "PENDING_CLEANUP_VERIFICATION"
+    "Judge": "PASS_INDEPENDENT_DB_READS",
+    "Sentinel": "PASS_INDEPENDENT_DB_AND_AUTH_READS"
   },
   "evidence_ids": [
-    "github-run:37029628074",
-    "github-artifact:11237425414",
-    "tested-sha:e02d6a855f9215ee3872aa8c6e48726153c772b0"
+    "github-run:37031245964:attempt2",
+    "github-artifact:11237304347",
+    "tested-sha:e701586183b76f12a0fe8ec87aa1efb7a9fab719"
   ],
   "historical_failure": {
     "run_id": 37030359501,
@@ -57,5 +57,6 @@
     "cause": "Sentinel detected service fixture retained by pagos FK; old cleanup ignored returned errors",
     "recovery": "Owned ephemeral fixture removed in TEST transaction; verify cleanup now deletes owned pending payment before service and checks all errors"
   },
-  "reconciled_main_sha": "f1458595ed12f58bd2ee7dd28974bb9ba065989d"
+  "reconciled_main_sha": "f1458595ed12f58bd2ee7dd28974bb9ba065989d",
+  "tested_sha": "e701586183b76f12a0fe8ec87aa1efb7a9fab719"
 }
