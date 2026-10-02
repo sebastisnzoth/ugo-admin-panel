@@ -33,6 +33,8 @@ A role supplied by the browser never upgrades the persisted role.
 
 ## LLM data boundary
 
+`server/hugo/contextPolicy.ts` enforces role-aware top-level allowlists for structured JSON context after session/role verification and before prompt construction. Unknown top-level fields are dropped. Secret/credential keys and sensitive contact/identity fields are removed recursively; Admin/Super Admin model context also drops exact latitude/longitude fields. Legacy text context is bounded and passed through secret + sensitive-contact redaction for compatibility.
+
 Allowed:
 - bounded operational context already authorized for the current user;
 - service/category/workflow state needed for the request;
