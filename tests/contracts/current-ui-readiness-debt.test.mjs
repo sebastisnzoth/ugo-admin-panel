@@ -22,10 +22,13 @@ test('Admin live status metadata keeps readable contrast',async()=>{
 })
 
 test('Provider role runtime follows canonical current sidebar labels',async()=>{
- const[runtime,sidebar]=await Promise.all([read('scripts/role-ui-runtime.mjs'),read('src/mvp/provider/ProviderStudioSidebar.tsx')])
+ const[runtime,providerRuntime,sidebar]=await Promise.all([read('scripts/role-ui-runtime.mjs'),read('scripts/provider-ui-runtime.mjs'),read('src/mvp/provider/ProviderStudioSidebar.tsx')])
  assert.match(runtime,/\/Pedidos\/i/)
  assert.match(runtime,/Trabajo activo\|Mis trabajos/)
  assert.doesNotMatch(runtime,/\/Trabajos\/i,\/Calendario\/i/)
+ assert.match(providerRuntime,/\['Inicio','Pedidos','Historial','Ganancias','Perfil'\]/)
+ assert.match(providerRuntime,/Mis trabajos\|Trabajo activo/)
+ assert.doesNotMatch(providerRuntime,/\['Inicio','Trabajos','Calendario'/)
  assert.match(sidebar,/>Pedidos /)
  assert.match(sidebar,/Trabajo activo':'Mis trabajos/)
 })
