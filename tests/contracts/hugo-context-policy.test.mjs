@@ -7,7 +7,7 @@ test('Hugo context is filtered after verified authority and before prompt constr
  const chat=await read('api/hugo/chat.ts')
  const auth=chat.indexOf('authorizeHugo(req,body)')
  const context=chat.indexOf('sanitizeHugoContextForRole(body.context,authority.requestedRole)')
- const prompt=chat.indexOf('buildHugoPrompt')
+ const prompt=chat.indexOf('=buildHugoPrompt({requestedRole,context,surface,message})')
  assert.ok(auth>=0&&context>auth&&prompt>context)
 })
 
@@ -68,7 +68,7 @@ test('Edge context is filtered after verified role authority',async()=>{
  const runtime=await read('supabase/functions/hugo-runtime/index.ts')
  const auth=runtime.indexOf('const auth=await authorize(req,role)')
  const context=runtime.indexOf('sanitizeHugoEdgeContext(body.context,auth.requestedRole)')
- const model=runtime.indexOf('askModel(message')
+ const model=runtime.indexOf('const result=await askModel(message')
  assert.ok(auth>=0&&context>auth&&model>context)
  const legacy=await read('supabase/functions/hugo-chat/index.ts')
  assert.match(legacy,/sanitizeHugoEdgeContext\(context, requestedRole\)/)
