@@ -27,7 +27,7 @@ test('client payment choice reacts immediately while backend persistence complet
 test('provider Hugo fails fast instead of hanging forever',async()=>{
  const src=await read('src/mvp/provider/ProviderHugoBridge.tsx')
  assert.match(src,/setTimeout\(\(\)=>/)
- assert.match(src,/,9000\)/)
+ assert.match(src,/PROVIDER_VOICE_CONNECT_TIMEOUT_MS=16_000/)
  assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
 })
 
