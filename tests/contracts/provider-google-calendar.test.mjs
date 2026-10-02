@@ -4,13 +4,14 @@ import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL('../../'+path,import.meta.url),'utf8')
 
 test('provider Google Calendar is a server-side mirror keyed by serviceId',async()=>{
- const[migration,profile,root,server,vercel]=await Promise.all([
+ const[migration,profile,root,server,vercelText]=await Promise.all([
   read('supabase/migrations/20260920150000_provider_google_calendar.sql'),
   read('src/mvp/provider/ProviderProfile.tsx'),
   read('src/mvp/provider/ProviderRoot.tsx'),
   read('api/test.ts'),
   read('vercel.json'),
  ])
+ const vercel=JSON.parse(vercelText)
  assert.match(migration,/proveedor_calendar_conexiones/)
  assert.match(migration,/refresh_token text not null/)
  assert.match(migration,/revoke all on public\.proveedor_calendar_conexiones from public,anon,authenticated/)
@@ -21,7 +22,7 @@ test('provider Google Calendar is a server-side mirror keyed by serviceId',async
  assert.match(server,/calendarDelete/)
  assert.match(server,/method:'PATCH'/)
  assert.match(server,/accounts\.google\.com\/o\/oauth2\/v2\/auth/)
- assert.match(vercel,/"source": "\/api\/calendar\/sync"[\s\S]*?"destination": "\/api\/test\?ugo_calendar=sync"/)
+ assert.ok(vercel.rewrites?.some(r=>r.source==='/api/calendar/sync'&&r.destination==='/api/test?ugo_calendar=sync'))
  assert.doesNotMatch(profile,/refresh_token|GOOGLE_CALENDAR_CLIENT_SECRET/)
 })
 
