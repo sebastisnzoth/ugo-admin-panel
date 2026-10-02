@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-performance",
   "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20261002",
   "title": "Verify perceived performance and critical action latency",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-02T11:12:00Z",
-  "heartbeat_at": "2026-10-02T11:12:00Z",
-  "lease_expires_at": "2026-10-02T12:12:00Z",
+  "heartbeat_at": "2026-10-02T11:16:00Z",
+  "lease_expires_at": "2026-10-02T11:16:00Z",
   "started_sha": "96fb2f55b8bc8e8db8ae00a152fa6f83e339b9b7",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -16,14 +16,14 @@
     "Sentinel"
   ],
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
+    "Judge": "PASS",
+    "Sentinel": "PASS"
   },
   "resources": [
     "preview-runtime"
   ],
   "correlation_id": "readiness-cross-performance-20261002T111200Z",
-  "current_step": "REVALIDATE_MAIN_AND_RUNTIME_GATES",
+  "current_step": "VERIFIED",
   "attempt": 4,
   "evidence_ids": [
     "github-pr:296",
@@ -53,7 +53,17 @@
     "cross-role:36787161141:FAIL_CLIENT_RENDER_TIMEOUT",
     "candidate-pre-final:20b17c12569dd592a34da2396fcde3cb065b919e",
     "reconcile:stale-lock:20261002T111200Z",
-    "base-main:96fb2f55b8bc8e8db8ae00a152fa6f83e339b9b7"
+    "base-main:96fb2f55b8bc8e8db8ae00a152fa6f83e339b9b7",
+    "github-run:36998659670",
+    "github-job-runtime:110811074003",
+    "github-job-judge:110811491966",
+    "github-job-sentinel:110811536000",
+    "github-artifact-runtime:11223035845",
+    "github-artifact-judge:11223040923",
+    "github-artifact-sentinel:11222059147",
+    "repo-evidence:docs/evidence/readiness-cross-performance-20261002.json",
+    "verified-sha:e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+    "main-equivalence:f0024cf3f661508262fd6261f27176b15b3a7c0a"
   ],
   "production_touched": false,
   "skills": [
@@ -62,20 +72,28 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "completed_at": null,
-  "finished_at": null,
-  "verified_sha": null,
-  "merged_main_sha": "737036ed7da79be981dd887dc07da8d92848ef8a",
+  "completed_at": "2026-10-02T11:16:00Z",
+  "finished_at": "2026-10-02T11:16:00Z",
+  "verified_sha": "e1d3a96e9c5a5994d719c0953b1373463e7b99ca",
+  "merged_main_sha": "505624738ce4ae7db99168becbf637108e1ed3ef",
   "validation": {
     "runtime": "PASS",
     "judge": "PASS",
     "sentinel": "PASS",
     "build": "PASS",
     "exact_candidate_sha": "PASS",
-    "p95_ms": 727,
-    "max_ms": 727,
-    "production_touched": false
+    "p95_ms": 532,
+    "max_ms": 532,
+    "sample_count": 6,
+    "client_initial_load_ms": 355,
+    "client_request_navigation_ms": 532,
+    "provider_initial_load_ms": 289,
+    "provider_jobs_navigation_ms": 64,
+    "admin_initial_load_ms": 294,
+    "admin_operations_navigation_ms": 111,
+    "production_touched": false,
+    "main_functional_equivalence": "PASS"
   },
-  "result": null,
+  "result": "VERIFIED",
   "failure": null
 }
