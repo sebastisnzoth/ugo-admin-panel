@@ -132,6 +132,8 @@ jobs:
 
       - name: GPS geofence independent QA evidence
         if: ${{ env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != '' }}
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: node scripts/autonomous-qa-gps-runtime.mjs
 
       - name: Verify autonomous department registry and persisted I/O
