@@ -18,6 +18,7 @@ test('legacy AI proxy is retired while authenticated Admin user creation remains
  assert.match(proxy,/\['admin','superadmin'\]\.includes\(String\(caller\.tipo\)\)/)
  assert.match(proxy,/status\(410\)/)
  assert.match(proxy,/UGO_LEGACY_AI_PROXY_RETIRED/)
- assert.match(vercel,/"source": "\/api\/admin\/create-user"[\s\S]*"destination": "\/api\/proxy\?admin_create_user=1"/)
- assert.match(vercel,/"source": "\/api\/hugo\/gemini"[\s\S]*"destination": "\/api\/test"/)
+ const rewrites=JSON.parse(vercel).rewrites||[]
+ assert.ok(rewrites.some(item=>item.source==='/api/admin/create-user'&&item.destination==='/api/proxy?admin_create_user=1'))
+ assert.ok(rewrites.some(item=>item.source==='/api/hugo/gemini'&&item.destination==='/api/test'))
 })
