@@ -14,8 +14,8 @@ test('Scout Gmail OAuth stays server-side and exposes send actions',()=>{
   assert.match(api,/invite_url/)
   assert.match(api,/36\*60\*60\*1000/)
   assert.match(api,/scout_contact_events/)
-  assert.ok(vercel.includes('"source": "/api/scout/gmail"'))
-  assert.ok(vercel.includes('"destination": "/api/scout/places?ugo_scout_gmail=1"'))
+  const rewrites=JSON.parse(vercel).rewrites||[]
+  assert.ok(rewrites.some(item=>item.source==='/api/scout/gmail'&&item.destination==='/api/scout/places?ugo_scout_gmail=1'))
   assert.match(migration,/revoke all on public\.scout_gmail_conexiones from public,anon,authenticated/)
   assert.match(migration,/grant all on public\.scout_gmail_conexiones to service_role/)
 })
