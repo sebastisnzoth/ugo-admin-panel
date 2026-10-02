@@ -1,0 +1,48 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_ids": [
+    "provider-offers",
+    "provider-notifications"
+  ],
+  "environment": "UGO TEST",
+  "tested_sha": "6b0bc9a58ea2a3184d00b0c300be496bcf66f047",
+  "reconciled_main_sha": "707f4563d3c83d572e57998ab89ed76802054da7",
+  "workflow_run_id": 37007657397,
+  "workflow_job_id": 110840146324,
+  "artifact_id": 11225989666,
+  "artifact_name": "readiness-provider-notifications-6b0bc9a58ea2a3184d00b0c300be496bcf66f047",
+  "artifact_digest": "sha256:ed314083dd7c7b65d44be9e15df791fa57981b967307f302f82f4d3ef9bd226c",
+  "runtime": {
+    "result": "PASS",
+    "offer_origin": "CLIENT_AUTH_MATCHING_DIRECTED",
+    "payment_method_persisted": "efectivo",
+    "matching_created_offer": true,
+    "trigger_created_nueva_oferta": true,
+    "provider_realtime_without_refresh": true,
+    "provider_tone": true,
+    "provider_vibrate": true,
+    "offer_acceptance": {
+      "result": "PASS",
+      "service_state": "asignado"
+    }
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "contracts": {
+    "count": 18,
+    "result": "PASS"
+  },
+  "core_ci_on_tested_functional_line": "PASS",
+  "main_equivalence": {
+    "functional_provider_alert_paths_changed": false,
+    "files_changed_after_tested_sha": [
+      "docs/UGO_FUNCTIONAL_READINESS.json",
+      "docs/ugo-work-locks/readiness-hugo-real-runtime-proof.json",
+      "scripts/ugo-readiness-engine.mjs"
+    ]
+  },
+  "production_touched": false,
+  "conclusion": "Same-run TEST evidence proves payment-ready client-auth matching -> provider offer -> nueva_oferta realtime alert -> tone/vibration -> authenticated provider acceptance -> persisted assigned service."
+}
