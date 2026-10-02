@@ -89,10 +89,12 @@ test('arrival rejects Null Island instead of persisting a fake provider position
 
 
 test('provider tracker surfaces precise GPS failures and never auto-arrives from an error callback',()=>{
- assert.match(tracker,/error=>\{if\(error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return;setLocationError\(error\.code===1\?'UGO necesita permiso de ubicación precisa/)
- assert.match(tracker,/No pudimos obtener tu GPS\. Revisá que la ubicación del dispositivo esté activada\./)
- assert.match(tracker,/El GPS tardó demasiado en responder\. Reintentando/)
- const errorHandler=tracker.slice(tracker.indexOf('error=>{if(error.code!==1'),tracker.indexOf('}, {enableHighAccuracy:true'))
+ assert.match(tracker,/const setGeoError=\(error:GeolocationPositionError\)=>/)
+ assert.match(tracker,/UGO necesita permiso de ubicación precisa para seguir el servicio/)
+ assert.match(tracker,/UGO necesita permiso de ubicación para mantenerte Online y enviarte pedidos/)
+ assert.match(tracker,/El navegador no pudo determinar tu ubicación\. UGO sigue intentando recuperar el GPS\./)
+ assert.match(tracker,/El GPS del navegador tardó demasiado en responder\. UGO lo está reiniciando automáticamente\./)
+ const errorHandler=tracker.slice(tracker.indexOf('const setGeoError='),tracker.indexOf('const publish='))
  assert.doesNotMatch(errorHandler,/autoArrivalRef/)
  assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })
@@ -113,7 +115,7 @@ test('manual arrival reuses trusted tracker GPS and only reacquires for explicit
 test('provider tracker keeps a recent trusted fix through transient timeout callbacks',()=>{
  assert.match(tracker,/lastValidFixAtRef=useRef\(0\)/)
  assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
- assert.match(tracker,/error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return/)
+ assert.match(tracker,/if\(lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return/)
 })
 
 
