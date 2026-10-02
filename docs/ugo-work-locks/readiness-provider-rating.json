@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-rating",
   "job_id": "UGO-READINESS-PROVIDER_RATING",
   "title": "Verify provider-to-client bilateral rating persistence and uniqueness",
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED_DEPENDENCY",
   "started_at": "2026-10-01T19:13:00Z",
-  "heartbeat_at": "2026-10-01T19:13:00Z",
-  "lease_expires_at": "2026-10-01T19:43:00Z",
+  "heartbeat_at": "2026-10-02T12:56:00Z",
+  "lease_expires_at": null,
   "started_sha": "f06f85c0f50679501d739ef7cc32fa1744dc9f2d",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -25,9 +25,22 @@
     "ratings"
   ],
   "correlation_id": "readiness-provider-rating-20261001T191300Z-gptugo-r1",
-  "current_step": "INSPECT_IMPLEMENTATION_AND_RUNTIME",
+  "current_step": "WAIT_PROVIDER_WORKFLOW_DEPENDENCY",
   "attempt": 1,
-  "evidence_ids": [],
+  "evidence_ids": [
+    "historical-runtime:36932219957:PASS",
+    "repo-evidence:docs/evidence/readiness-provider-rating-20261001.json",
+    "reconcile:stale-lock:20261002T125600Z"
+  ],
   "production_touched": false,
-  "last_failure": null
+  "last_failure": null,
+  "result": "BLOCKED_DEPENDENCY",
+  "blocker": "provider-workflow:BLOCKED_BY_PROVIDER_ARRIVAL_AND_EVIDENCE",
+  "dependency_status": {
+    "provider-workflow": "BLOCKED_DEPENDENCY",
+    "provider-arrival": "HUMAN_REQUIRED",
+    "provider-evidence": "HUMAN_REQUIRED"
+  },
+  "evidence_path": "docs/evidence/readiness-provider-rating-20261001.json",
+  "result_summary": "Provider rating runtime/Judge/Sentinel already passed in UGO TEST, but the readiness dependency provider-workflow cannot become VERIFIED until physical arrival/evidence gates complete. Lock reconciled from STALE_LOCK to BLOCKED_DEPENDENCY; no autonomous rating work remains."
 }
