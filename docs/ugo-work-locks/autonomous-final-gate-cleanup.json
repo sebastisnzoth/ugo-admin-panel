@@ -1,0 +1,37 @@
+{
+  "readiness_id": "autonomous-final-gate-cleanup",
+  "task_id": "autonomous-final-gate-cleanup",
+  "job_id": "UGO-AUTONOMOUS-FINAL-GATE-CLEANUP-20261002",
+  "title": "Close remaining autonomous validation debt before Sergio-only final tests",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T16:20:00Z",
+  "heartbeat_at": "2026-10-02T16:20:00Z",
+  "lease_expires_at": "2026-10-02T17:20:00Z",
+  "started_sha": "4e3a51e26271196542a1588f89c8faa9f569b26a",
+  "owner": "UGO",
+  "department": "QA / Readiness",
+  "assigned_agent": "UGO Maestro Autónomo",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-recovery",
+    "ugo-code-engineering",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "isolated-rpc-rls",
+    "super-admin-ui",
+    "integration-harness"
+  ],
+  "correlation_id": "autonomous-final-gate-cleanup-20261002T162000Z",
+  "current_step": "FIX_STALE_TEST_EXPECTATIONS_AND_RUNTIME_RACE",
+  "attempt": 1,
+  "evidence_ids": [
+    "github-run:37032511310"
+  ],
+  "production_touched": false
+}
