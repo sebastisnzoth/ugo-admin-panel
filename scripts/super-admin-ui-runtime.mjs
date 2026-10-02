@@ -129,25 +129,8 @@ try{
     assert.ok(Number.isFinite(totalCount)&&totalCount>=0,'DEPARTMENT_TOTAL_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
     assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
     const correlation=((await cells.nth(9).textContent())||'').trim();
-    if(correlation&&correlation!=='—'){
-      const departmentJobs=await reader.from('autonomous_jobs').select('id,status,correlation_id,department_id').eq('department_id',summary.department_id).order('created_at',{ascending:false}).limit(100);
-      assert.ifError(departmentJobs.error);
-      const jobIds=(departmentJobs.data||[]).map(job=>job.id);
-      let departmentEvidence={data:[],error:null};
-      if(jobIds.length){
-        departmentEvidence=await reader.from('autonomous_evidence_ledger').select('id,job_id,correlation_id').in('job_id',jobIds).order('created_at',{ascending:false}).limit(100);
-        assert.ifError(departmentEvidence.error);
-      }
-      const persistedCorrelations=[
-        ...(departmentJobs.data||[]).map(job=>job.correlation_id),
-        ...((departmentEvidence.data||[]).map(evidence=>evidence.correlation_id))
-      ].filter(Boolean).map(value=>String(value).trim());
-      assert.ok(persistedCorrelations.includes(correlation),'DEPARTMENT_CORRELATION_NOT_PERSISTED D'+summary.department_id);
-    }else{
-      const persistedCount=await reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',summary.department_id);
-      assert.ifError(persistedCount.error);
-      assert.equal(Number(persistedCount.count||0),0,'DEPARTMENT_MISSING_CORRELATION_WITH_PERSISTED_JOBS D'+summary.department_id);
-    }
+    const expectedCorrelation=String(summary.last_job?.correlation_id||summary.last_evidence?.correlation_id||'—').trim();
+    assert.equal(correlation,expectedCorrelation,'DEPARTMENT_CORRELATION_UI_BACKEND_MISMATCH D'+summary.department_id);
   }
   const departmentFilter=page.getByLabel('Filtrar departamento');
   const firstDepartment=before.departmentJobs[0];
