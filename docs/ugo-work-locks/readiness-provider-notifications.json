@@ -3,10 +3,10 @@
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
   "title": "Verify provider notifications in UGO TEST",
-  "status": "BLOCKED_HUMAN",
+  "status": "IN_PROGRESS",
   "started_at": "2026-10-02T10:40:49Z",
-  "heartbeat_at": "2026-10-02T11:10:00Z",
-  "lease_expires_at": null,
+  "heartbeat_at": "2026-10-02T11:51:00Z",
+  "lease_expires_at": "2026-10-02T12:51:00Z",
   "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -18,20 +18,32 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "validators": ["Judge","Sentinel"],
-  "resources": ["notifications","provider-demand"],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "notifications",
+    "provider-demand"
+  ],
   "correlation_id": "provider-notifications-regression-20261002-1406",
-  "current_step": "physical_same_sha_alert_visibility",
-  "attempt": 3,
+  "current_step": "REMEDIATE_REAL_PROVIDER_GPS_AND_CURRENT_BROWSER_PUSH_THEN_E2E_RETEST",
+  "attempt": 4,
   "evidence_ids": [
     "github-run:36725016445",
     "github-artifact:11101274032",
     "repo-evidence:docs/evidence/readiness-provider-offers-20261002-regression.json",
-    "github-run:36999184742"
+    "github-run:36999184742",
+    "repo-evidence:docs/evidence/readiness-provider-alert-e2e-audit-20261002.json",
+    "db-proof:service-1406:0-offers:0-notifications",
+    "db-proof:provider-gps-stale:20261002T111626Z",
+    "db-proof:current-chrome-push-inactive",
+    "commit:4b579be41386a91fbaf3f3a8d0f7f5bd553f8381",
+    "commit:8e541cc08107d9d9f408b499e98ea8e3637cd92a"
   ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "PENDING_PHYSICAL_SAME_SHA",
+    "Judge": "BLOCKED_E2E_FAIL",
     "Sentinel": "PASS_TEST_ONLY"
   },
   "evidence_path": "docs/evidence/readiness-provider-offers-20261002-regression.json",
@@ -41,9 +53,19 @@
     "current_transaction_timeout": "FIXED_IN_UGO_ARENA",
     "current_core_ci": "PASS",
     "physical_provider_alert": "PENDING",
-    "production_touched": false
+    "production_touched": false,
+    "real_provider_online": true,
+    "real_provider_category_match": true,
+    "real_provider_distance_km": 5.72,
+    "real_provider_gps_freshness": "FAIL_STALE",
+    "persisted_offer_for_failed_request": "FAIL_0_ROWS",
+    "persisted_notification_for_failed_request": "FAIL_0_ROWS",
+    "current_browser_push_subscription": "FAIL_INACTIVE",
+    "realtime_publication": "PASS",
+    "end_to_end": "FAIL"
   },
-  "result_summary": "Historical notification runtime remains valid as prior evidence, but the 2026-10-02 matching transaction regression could roll back a newly-created provider offer notification before the app saw it. The database timeout cause is fixed in UGO Arena with indexed lifecycle retirement lookups. Same-SHA physical alert proof is required before closing again.",
+  "result_summary": "Real E2E audit failed: provider remained visually Online with stale GPS, so matching created no offer and therefore no nueva_oferta alert. Current Chrome push subscriptions are inactive; only an older Firefox subscription remains active. Historical notification runtime directly inserted notification rows and is insufficient as E2E proof.",
   "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
-  "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae"
+  "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
+  "failure": "REAL_PROVIDER_ALERT_E2E_FAILED: stale provider GPS + no active current-browser push; 0 offer rows and 0 nueva_oferta rows for failed request."
 }
