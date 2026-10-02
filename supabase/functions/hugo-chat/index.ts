@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-
-const CORS = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import{hugoEdgeCorsHeaders,hugoEdgeOrigin,sanitizeHugoEdgeContext}from'../_shared/hugoPolicy.ts'
 
 function clean(value:unknown,max=4000){return String(value??'').trim().slice(0,max)}
 function sanitizeForModel(value:unknown,max=4000){
@@ -20,7 +16,10 @@ function sanitizeForModel(value:unknown,max=4000){
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
+  const origin=hugoEdgeOrigin(req)
+  const CORS=origin?hugoEdgeCorsHeaders(origin):{'Vary':'Origin'}
+  if (req.method === 'OPTIONS') return origin?new Response('ok', { headers: CORS }):new Response('Forbidden',{status:403,headers:{'Vary':'Origin'}});
+  if((req.headers.get('origin')||'')&&!origin)return new Response(JSON.stringify({hugo_mensaje:'Origen no autorizado.',accion:null}),{status:403,headers:{'Content-Type':'application/json','Vary':'Origin'}})
 
   try {
     const { message, role = 'admin', history = [], context = '' } = await req.json();
@@ -53,10 +52,10 @@ serve(async (req) => {
     const { data: row } = await sb
       .from('config_sistema')
       .select('valor')
-      .eq('clave', `hugo_prompt_${role}`)
+      .eq('clave', `hugo_prompt_${requestedRole}`)
       .single();
 
-    const safeContext = sanitizeForModel(context, 60000);
+    const safeContext = sanitizeHugoEdgeContext(context, requestedRole);
     const systemPrompt = sanitizeForModel(row?.valor ?? 'Eres Hugo, el núcleo de inteligencia de U.GO. Responde en español, máximo 3 frases.', 12000) +
       (safeContext ? `\n\nESTADO DEL SISTEMA:\n${safeContext}` : '');
 
