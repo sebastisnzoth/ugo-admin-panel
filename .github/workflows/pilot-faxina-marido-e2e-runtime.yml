@@ -1,0 +1,73 @@
+name: UGO Pilot Faxina + Marido E2E Runtime
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "supabase/migrations/20260930161000_pilot_category_e2e_harness.sql"
+      - "supabase/migrations/20260930155500_pilot_marido_regulated_work_guard.sql"
+      - "scripts/pilot-e2e-*.mjs"
+      - "scripts/pilot-category-contract.mjs"
+      - "tests/contracts/pilot-marido-safety.test.mjs"
+      - ".github/workflows/pilot-faxina-marido-e2e-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-pilot-faxina-marido-isolated-fixture
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  e2e:
+    name: Faxina + Marido full lifecycle UGO TEST same-SHA
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse non-TEST or missing service role
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Static pilot contracts
+        run: |
+          node scripts/pilot-category-contract.mjs
+          node --test tests/contracts/pilot-marido-safety.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run build
+      - name: Execute both complete pilot lifecycles
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/pilot-e2e-runtime.mjs
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/pilot-e2e-judge.mjs
+      - name: Sentinel
+        run: node scripts/pilot-e2e-sentinel.mjs
+      - name: Upload persisted evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pilot-e2e-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/pilot-e2e-*
+          if-no-files-found: warn
+          retention-days: 90

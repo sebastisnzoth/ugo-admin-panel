@@ -1,0 +1,88 @@
+name: UGO Pilot Faxina + Marido Client Runtime
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/features/client/request/**"
+      - "scripts/pilot-client-*.mjs"
+      - "scripts/pilot-category-contract.mjs"
+      - "supabase/migrations/20260930151500_pilot_faxina_marido_categories.sql"
+      - "docs/UGO_FUNCTIONAL_READINESS.json"
+      - ".github/workflows/pilot-faxina-marido-client-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-pilot-client-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+
+jobs:
+  runtime:
+    name: Faxina + Marido client UGO TEST same-SHA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse non-TEST or missing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Static pilot contract
+        run: node scripts/pilot-category-contract.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Run both pilot client journeys against UGO TEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          export VITE_APP_REVISION="$UGO_RUNTIME_SHA"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-pilot-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node scripts/pilot-client-runtime.mjs
+      - name: Independent Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/pilot-client-judge.mjs
+      - name: Sentinel
+        run: node scripts/pilot-client-sentinel.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pilot-client-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/pilot-client-*
+          if-no-files-found: warn
+          retention-days: 90

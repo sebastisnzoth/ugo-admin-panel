@@ -1,0 +1,89 @@
+name: UGO Pilot Faxina + Marido Provider Runtime
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/mvp/provider/**"
+      - "supabase/migrations/20260930153500_pilot_provider_capabilities_references.sql"
+      - "supabase/migrations/20260930155500_pilot_marido_regulated_work_guard.sql"
+      - "scripts/pilot-provider-*.mjs"
+      - ".github/workflows/pilot-faxina-marido-provider-runtime.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-pilot-provider-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+
+jobs:
+  runtime:
+    name: Faxina + Marido provider UGO TEST same-SHA
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse non-TEST or missing credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: npm run build
+      - name: Provider pilot contract
+        run: node scripts/pilot-category-contract.mjs
+      - name: Marido regulated-work contract
+        run: node --test tests/contracts/pilot-marido-safety.test.mjs
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Execute provider capability runtime in UGO TEST
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+          export VITE_APP_REVISION="$UGO_RUNTIME_SHA"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-pilot-provider-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
+          node scripts/pilot-provider-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/pilot-provider-judge.mjs
+      - name: Sentinel
+        run: node scripts/pilot-provider-sentinel.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pilot-provider-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/pilot-provider-*
+          if-no-files-found: warn
+          retention-days: 90
