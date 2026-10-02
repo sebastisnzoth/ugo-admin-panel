@@ -51,6 +51,24 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  },[supabase])
 
  useEffect(()=>{
+  if(!available||enRoute||!navigator.geolocation)return
+  let alive=true
+  const rpc=supabase as unknown as LocationRpcClient
+  const publishHeartbeat=()=>navigator.geolocation.getCurrentPosition(async pos=>{
+   if(!alive)return
+   const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
+   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M||age>MAX_POSITION_AGE_MS)return
+   const{error}=await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:new Date(capturedAtMs).toISOString(),p_accuracy_m:accuracy})
+   if(!alive)return
+   if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos mantener tu GPS reciente para recibir pedidos. UGO va a reintentar.');return}
+   setLocationError('');lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy})
+  },()=>{}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
+  publishHeartbeat()
+  const timer=window.setInterval(publishHeartbeat,AVAILABILITY_HEARTBEAT_MS)
+  return()=>{alive=false;window.clearInterval(timer)}
+ },[available,enRoute,supabase])
+
+ useEffect(()=>{
   if(!navigator.geolocation||(!available&&!enRoute))return
   let lastWrite=0,lastPoint:[number,number]|null=null,writing=false
   const rpc=supabase as unknown as LocationRpcClient
