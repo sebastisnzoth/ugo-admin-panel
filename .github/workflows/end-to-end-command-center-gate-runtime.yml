@@ -7,11 +7,10 @@ on:
     paths:
       - 'scripts/end-to-end-command-center-gate-*.mjs'
       - 'docs/UGO_FUNCTIONAL_READINESS.json'
-      - 'docs/ugo-work-locks/readiness-*.json'
       - '.github/workflows/end-to-end-command-center-gate-runtime.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
   group: ugo-end-to-end-command-center-gate-${{ github.sha }}
@@ -88,3 +87,44 @@ jobs:
           name: end-to-end-command-center-gate-sentinel-${{ github.sha }}
           path: artifacts/end-to-end-command-center-gate-sentinel.json
           retention-days: 90
+
+
+  finalize:
+    needs: sentinel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-judge-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-sentinel-${{ github.sha }}
+          path: artifacts
+      - name: Persist VERIFIED evidence and close lock
+        env:
+          GITHUB_RUN_ID: ${{ github.run_id }}
+          GITHUB_RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: node scripts/end-to-end-command-center-gate-finalize.mjs
+      - name: Commit authoritative closure
+        run: |
+          git config user.name "ugo-readiness-bot"
+          git config user.email "ugo-readiness-bot@users.noreply.github.com"
+          git add docs/evidence/readiness-end-to-end-command-center-gate-20261002.json docs/ugo-work-locks/readiness-end-to-end-command-center-gate.json
+          if git diff --cached --quiet; then
+            echo "No readiness closure changes to commit."
+            exit 0
+          fi
+          git commit -m "docs(readiness): close final autonomous command center gate"
+          git pull --rebase origin main
+          git push origin HEAD:main
