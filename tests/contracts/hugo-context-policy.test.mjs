@@ -34,15 +34,17 @@ test('context policy removes secrets contacts and exact admin map coordinates',a
 
 test('legacy text context remains bounded and secret-sanitized for compatibility',async()=>{
  const source=await read('server/hugo/contextPolicy.ts')
- assert.match(source,/const raw=clean\(value,max\)/)
- assert.match(source,/JSON\.parse\(raw\)/)
- assert.match(source,/sanitizeForModel\(raw,Math\.min\(max,12_000\)\)/)
+ assert.match(source,/const input=String\(value\?\?''\)\.trim\(\)/)
+ assert.match(source,/input\.length>120_000/)
+ assert.match(source,/JSON\.parse\(input\)/)
+ assert.match(source,/sanitizeForModel\(input,Math\.min\(max,12_000\)\)/)
+ assert.match(source,/if\(\/\^\[\{\[\]\//)
  assert.match(source,/Math\.min\(max,12_000\)/)
  assert.match(source,/redactLegacyPii/)
 })
 
 
-test('structured JSON is parsed before secret redaction so allowlisting cannot be bypassed',async()=>{const source=await read('server/hugo/contextPolicy.ts');const parse=source.indexOf('JSON.parse(raw)'),structuredRedaction=source.indexOf('JSON.stringify(filtered)');assert.ok(parse>=0&&structuredRedaction>parse)})
+test('structured JSON is parsed before secret redaction so allowlisting cannot be bypassed',async()=>{const source=await read('server/hugo/contextPolicy.ts');const parse=source.indexOf('JSON.parse(input)'),structuredRedaction=source.indexOf('JSON.stringify(filtered)');assert.ok(parse>=0&&structuredRedaction>parse)})
 
 
 test('Supabase Edge Hugo runtimes share the same CORS and context boundary',async()=>{
@@ -71,4 +73,14 @@ test('Edge context is filtered after verified role authority',async()=>{
  const legacy=await read('supabase/functions/hugo-chat/index.ts')
  assert.match(legacy,/sanitizeHugoEdgeContext\(context, requestedRole\)/)
  assert.match(legacy,/hugo_prompt_\$\{requestedRole\}/)
+})
+
+
+test('structured context overflow and malformed JSON fail closed in Node and Edge',async()=>{
+ const[node,edge]=await Promise.all([read('server/hugo/contextPolicy.ts'),read('supabase/functions/_shared/hugoPolicy.ts')])
+ for(const source of[node,edge]){
+  assert.match(source,/input\.length>120_000/)
+  assert.match(source,/JSON\.parse\(input\)/)
+  assert.match(source,/if\(\/\^\[\{\[\]\//)
+ }
 })
