@@ -1,0 +1,51 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "end-to-end-command-center-gate",
+  "task_id": "readiness-end-to-end-command-center-gate",
+  "environment": "REPOSITORY + UGO TEST EVIDENCE",
+  "production_touched": false,
+  "tested_sha": "1d8744c98bb20c4131321fca8dafd2ef263673ff",
+  "workflow_run_id": 37011607254,
+  "jobs": {
+    "runtime": {
+      "id": 110852421030,
+      "result": "PASS"
+    },
+    "judge": {
+      "id": 110852615836,
+      "result": "PASS"
+    },
+    "sentinel": {
+      "id": 110852697254,
+      "result": "PASS"
+    }
+  },
+  "artifacts": {
+    "runtime": {
+      "id": 11227776973,
+      "name": "end-to-end-command-center-gate-runtime-1d8744c98bb20c4131321fca8dafd2ef263673ff"
+    },
+    "judge": {
+      "id": 11227826915,
+      "name": "end-to-end-command-center-gate-judge-1d8744c98bb20c4131321fca8dafd2ef263673ff"
+    },
+    "sentinel": {
+      "id": 11228001820,
+      "name": "end-to-end-command-center-gate-sentinel-1d8744c98bb20c4131321fca8dafd2ef263673ff"
+    }
+  },
+  "assertions": {
+    "autonomous_scope_complete": true,
+    "command_center_truthful": true,
+    "human_work_preserved": true,
+    "human_required_count": 13,
+    "launch_authorized": false,
+    "safe_boundary": true
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "completed_at": "2026-10-02T13:14:45Z"
+}
