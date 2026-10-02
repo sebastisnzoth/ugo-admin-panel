@@ -35,7 +35,7 @@ test('authoritative DONE lock verifies control and unlocks dependent work', () =
   const {readiness}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
   const items=readiness.groups[0].items
   assert.equal(items.find(x=>x.id==='a').gate_state,'VERIFIED')
-  assert.equal(items.find(x=>x.id==='b').gate_state,'AVAILABLE')
+  assert.equal(items.find(x=>x.id==='b').gate_state,'BLOCKED_DEPENDENCY')
 })
 
 test('authoritative DONE lock also accepts persisted validation schema', () => {
@@ -135,7 +135,7 @@ test('HUMAN_REQUIRED lock is authoritative, releases capacity, and is not resche
 })
 
 
-test('HUMAN_REQUIRED dependencies unblock autonomous descendants without becoming VERIFIED', () => {
+test('HUMAN_REQUIRED dependencies block autonomous descendants until physical evidence is complete', () => {
   const base=fixture()
   const locks=[{
     task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
