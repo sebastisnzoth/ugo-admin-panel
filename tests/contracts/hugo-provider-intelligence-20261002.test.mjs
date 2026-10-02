@@ -33,9 +33,10 @@ test('provider AI action ids must be UUIDs and allowed status values are explici
 })
 
 test('Hugo Live token remains constrained to the configured audio model',async()=>{
- const edge=await read('supabase/functions/hugo-runtime/index.ts')
+ const[edge,policy]=await Promise.all([read('supabase/functions/hugo-runtime/index.ts'),read('supabase/functions/_shared/hugoPolicy.ts')])
  assert.match(edge,/liveConnectConstraints/)
  assert.match(edge,/responseModalities:\['AUDIO'\]/)
- assert.match(edge,/ugo-admin-panel\.vercel\.app/)
+ assert.match(edge,/hugoEdgeOrigin/)
+ assert.match(policy,/ugo-admin-panel\.vercel\.app/)
  assert.doesNotMatch(edge,/const anonKey=/)
 })
