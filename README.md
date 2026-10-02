@@ -61,7 +61,7 @@ La consola Admin está organizada en cinco áreas principales:
 - **Deploy:** Vercel
 - **Android:** WebView nativo con flavors separados para Cliente y Proveedor
 - **Realtime:** Supabase Realtime
-- **IA / voz:** Hugo integrado en Cliente y Proveedor
+- **IA / voz:** superficies visuales de Hugo actualmente deshabilitadas; el backend permanece aislado y protegido para integración futura
 
 La Fase 2 del Admin utiliza módulos nativos conectados directamente a hooks y datos de UGO. El bridge legacy fue eliminado para evitar dependencias de navegación oculta o clicks simulados.
 
@@ -103,16 +103,28 @@ supabase/          migraciones y configuración de datos
 
 ## Desarrollo local
 
+El repositorio está protegido para trabajar contra **UGO TEST**. Los comandos de build/tests ejecutan primero la validación del entorno configurado.
+
 ```bash
 npm install
 npm run dev
 ```
 
-Build de producción:
+Validaciones principales:
 
 ```bash
 npm run build
+npm test
+npm run test:p0
+npm run test:integration
 ```
+
+- `build`: valida entorno TEST, TypeScript y Vite.
+- `test`: suite de contratos/regresión.
+- `test:p0`: controles críticos del primer cliente.
+- `test:integration`: integración automatizada disponible.
+
+Seguridad de Hugo/backend: ver `docs/HUGO_BACKEND_SECURITY_ARCHITECTURE.md`.
 
 ## Producción
 
