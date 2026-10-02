@@ -21,7 +21,7 @@ async function countApiFunctions(dirUrl=new URL('../../api/',import.meta.url)){
 test('admin proxy is pinned to UGO TEST and has no production fallback',async()=>{
   const text=await source('api/proxy.js')
   assert.match(text,new RegExp(TEST_REF))
-  assert.doesNotMatch(text,new RegExp(`OFFICIAL_URL[^\n]*${PROD_REF}`))
+  assert.doesNotMatch(text,new RegExp(`OFFICIAL_URL[^\\n]*${PROD_REF}`))
 })
 
 test('cash and KYC operations are pinned to UGO TEST',async()=>{
@@ -31,11 +31,11 @@ test('cash and KYC operations are pinned to UGO TEST',async()=>{
 })
 
 test('Hugo and OAuth traffic is pinned to UGO TEST without an extra serverless wrapper',async()=>{
-  const vercel=await source('vercel.json')
-  assert.match(vercel,new RegExp(TEST_REF))
-  assert.doesNotMatch(vercel,new RegExp(PROD_REF))
-  assert.match(vercel,/"source": "\/api\/hugo\/gemini"[\s\S]*?"destination": "\/api\/test"/)
-  assert.doesNotMatch(vercel,/test-safe/)
+  const vercelText=await source('vercel.json'),vercel=JSON.parse(vercelText)
+  assert.match(vercelText,new RegExp(TEST_REF))
+  assert.doesNotMatch(vercelText,new RegExp(PROD_REF))
+  assert.ok(vercel.rewrites?.some(r=>r.source==='/api/hugo/gemini'&&r.destination==='/api/test'))
+  assert.doesNotMatch(vercelText,/test-safe/)
 })
 
 test('UGO stays within the Vercel Hobby 12-function deployment limit',async()=>{
