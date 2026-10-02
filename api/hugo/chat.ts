@@ -1,18 +1,10 @@
 import{authorizeHugo}from'../../server/hugo/auth'
 import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
-import{askHugoModel}from'../../server/hugo/modelRouter'
+import{askHugoText}from'../../server/hugo/modelAdapter'
 import{buildHugoPrompt}from'../../server/hugo/promptBuilder'
-import{clean,sanitizeForModel}from'../../server/hugo/security'
+import{clean}from'../../server/hugo/security'
 import{parseHugoUiAction}from'../../server/hugo/uiAction'
 import{askHugoTts}from'../../server/hugo/ttsAdapter'
-const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
-async function askGemini(message:string,history:unknown[],system:string,jsonMode=false){
- const safeSystem=sanitizeForModel(system,12000)
- const safeHistory=history.slice(-8).map((item)=>{const m=asRecord(item);return{role:m.role==='assistant'?'assistant':'user',content:sanitizeForModel(m.content,1200)}})
- const safeMessage=sanitizeForModel(message,1800)
- return askHugoModel(safeMessage,safeHistory,safeSystem,jsonMode,MODEL)
-}
-
 export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Cache-Control','no-store')
  res.setHeader('Vary','Origin')
@@ -38,7 +30,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
   const requestedRole=authority.requestedRole
   const surface=clean(body.surface,80)||'panel de control'
   const{clientMode,providerMode,adminRole,system,prompt,jsonMode}=buildHugoPrompt({requestedRole,context,surface,message})
-  const result=await askGemini(prompt,history,system,jsonMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:parseHugoUiAction(asRecord(parsed).ui_action,adminRole)
+  const result=await askHugoText(prompt,history,system,jsonMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:parseHugoUiAction(asRecord(parsed).ui_action,adminRole)
   return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':providerMode?'Decime en qué te ayudo con tu trabajo.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
   const info=asRecord(error),status=Number(info.status)||502
