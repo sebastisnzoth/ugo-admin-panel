@@ -3,6 +3,7 @@ import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
 import{askHugoText}from'../../server/hugo/modelAdapter'
 import{asRecord,extractJson}from'../../server/hugo/json'
 import{buildHugoPrompt}from'../../server/hugo/promptBuilder'
+import{parseHugoRequestBody}from'../../server/hugo/request'
 import{clean}from'../../server/hugo/security'
 import{parseHugoUiAction}from'../../server/hugo/uiAction'
 import{askHugoTts}from'../../server/hugo/ttsAdapter'
@@ -19,7 +20,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!isAllowedHugoRequestOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
-  const body=asRecord(typeof req.body==='string'?JSON.parse(req.body):req.body)
+  const body=parseHugoRequestBody(req.body)
   const authority=await authorizeHugo(req,body)
   if(body.tts===true){
    const text=clean(body.text||body.message,360)
