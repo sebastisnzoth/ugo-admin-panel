@@ -13,6 +13,7 @@ const TOP_LEVEL:Record<HugoRequestedRole,ReadonlySet<string>>={
 const NEVER_KEY=/(?:authorization|access[_-]?token|refresh[_-]?token|api[_-]?key|service[_-]?role|secret|password|passwd|client[_-]?secret|private[_-]?key|credential|cookie|session)/i
 const CONTACT_KEY=/(?:^|_)(email|e[_-]?mail|phone|telefono|telefone|whatsapp|cpf|cnpj|documento_numero|document_number)(?:$|_)/i
 const EXACT_LOCATION_KEY=/^(?:lat|lng|latitude|longitude|lat_cliente|lng_cliente|proveedor_lat|proveedor_lng)$/i
+const THIRD_PARTY_PII_KEY=/^(?:nombre|apellido|name|full_name|contenido|comentario)$/i
 
 function record(value:unknown):JsonRecord|null{
  return value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:null
@@ -27,7 +28,7 @@ function scrub(value:unknown,role:HugoRequestedRole,depth=0):unknown{
  const out:JsonRecord={}
  for(const[key,item]of Object.entries(source)){
   if(NEVER_KEY.test(key)||CONTACT_KEY.test(key))continue
-  if((role==='admin'||role==='superadmin')&&EXACT_LOCATION_KEY.test(key))continue
+  if((role==='admin'||role==='superadmin')&&(EXACT_LOCATION_KEY.test(key)||THIRD_PARTY_PII_KEY.test(key)))continue
   const next=scrub(item,role,depth+1)
   if(next!==undefined)out[key]=next
  }
