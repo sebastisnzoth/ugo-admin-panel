@@ -38,3 +38,11 @@ test('client voice guides optional repair photo and cannot hang on connect',asyn
  assert.match(src,/Hugo no pudo conectar con el servicio de voz/)
  assert.match(src,/,9000\)/)
 })
+
+test('provider offer insert is an independent realtime alert source with dedupe',async()=>{
+ const src=await read('src/mvp/NotificationCenter.tsx')
+ assert.match(src,/table:'ofertas_servicio',filter:`proveedor_id=eq\.\$\{id\}`/)
+ assert.match(src,/signalProviderAlert\(\{id:`offer:\$\{offerId\}`,tipo:'nueva_oferta'/)
+ assert.match(src,/function providerAlertKey\(notice:UgoNotification\)/)
+ assert.match(src,/providerAlertSeen\.current\.has\(providerAlertKey\(notice\)\)/)
+})
