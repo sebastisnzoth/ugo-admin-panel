@@ -12,7 +12,6 @@ import{AdminSystemSettings}from'./AdminSystemSettings'
 import{AdminReportsCenter}from'./AdminReportsCenter'
 import{AdminFinancePanel}from'./AdminFinancePanel'
 import{SuperAdminCommandCenter}from'./SuperAdminCommandCenter'
-import{ConversationalOrb}from'../components/ConversationalOrb'
 import{
  AdminOverviewNative,AdminMapNative,AdminScoutNative,
  AdminDocumentsNative,AdminKycNative,AdminImportNative,AdminTariffsNative,
@@ -175,6 +174,6 @@ export function AdminPhase2(){
    {section==='settings'&&<section className="ugo-admin2-section"><div className="ugo-admin2-section-head"><div><small>CONFIGURACIÓN</small><h2>Sistema UGO</h2></div></div><div className="ugo-admin2-submenu" role="group" aria-label="Configuración"><button aria-pressed={settingsView==='categories'} className={settingsView==='categories'?'active':''} onClick={()=>setSettingsView('categories')}>Categorías</button><button aria-pressed={settingsView==='analytics'} className={settingsView==='analytics'?'active':''} onClick={()=>setSettingsView('analytics')}>Analytics</button><button aria-pressed={settingsView==='notifications'} className={settingsView==='notifications'?'active':''} onClick={()=>setSettingsView('notifications')}>Notificaciones</button><button aria-pressed={settingsView==='reports'} className={settingsView==='reports'?'active':''} onClick={()=>setSettingsView('reports')}>Reportes</button><button aria-pressed={settingsView==='system'} className={settingsView==='system'?'active':''} onClick={()=>setSettingsView('system')}>Sistema</button></div>{settingsView==='categories'&&nativeWrap(<AdminCategoriesNative/>)}{settingsView==='analytics'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='notifications'&&nativeWrap(<AdminNotificationsNative/>)}{settingsView==='reports'&&nativeWrap(<AdminReportsCenter/>)}{settingsView==='system'&&nativeWrap(<AdminSystemSettings/>)}</section>}
    {section==='superadmin'&&isSuperAdmin&&<section className="ugo-admin2-section"><SuperAdminCommandCenter/></section>}
   </main>
-  {adminRole&&section!=='superadmin'&&<ConversationalOrb metrics={metrics} role={isSuperAdmin?'superadmin':'admin'} section={hugoSection} onVoiceActiveChange={setHugoVoiceActive}/>} 
+   
  </div>
 }
