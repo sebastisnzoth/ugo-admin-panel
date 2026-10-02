@@ -1631,7 +1631,7 @@
         {
           "id": "pilot-human-acceptance",
           "title": "PILOT-HUMAN-ACCEPTANCE · Piloto Faxina + Marido de Aluguel",
-          "owner": "SERGIO + UGO",
+          "owner": "SEBASTIÁN + UGO",
           "status": "HUMAN_ACCEPTANCE_REQUIRED",
           "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
           "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
