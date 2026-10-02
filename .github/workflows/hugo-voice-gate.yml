@@ -71,6 +71,7 @@ jobs:
             tests/contracts/client-voice-order-catalog.test.mjs \
             tests/contracts/global-voice-command-listener.test.mjs \
             tests/contracts/provider-hugo-command-extraction.test.mjs \
+            tests/contracts/hugo-provider-intelligence-20261002.test.mjs \
             tests/contracts/provider-runtime-resilience.test.mjs
       - name: Install Chromium
         run: |
