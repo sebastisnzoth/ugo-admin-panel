@@ -141,9 +141,23 @@ export function evaluateFunctionalReadiness({
     }
   }
 
-  const dependencySatisfied = id => {
-    const status=byId.get(id)?.status
-    return status === 'VERIFIED' || status === 'HUMAN_REQUIRED'
+  const dependencySatisfied = id => byId.get(id)?.status === 'VERIFIED'
+
+  const humanBlockedMemo = new Map()
+  const dependsOnHumanFinal = (id, visiting = new Set()) => {
+    if (humanBlockedMemo.has(id)) return humanBlockedMemo.get(id)
+    if (visiting.has(id)) return false
+    const item = byId.get(id)
+    if (!item) return false
+    if (item.status === 'HUMAN_REQUIRED' || item.declared_status === 'HUMAN_FINAL') {
+      humanBlockedMemo.set(id, true)
+      return true
+    }
+    const next = new Set(visiting)
+    next.add(id)
+    const blocked = (item.depends_on || []).some(dep => dependsOnHumanFinal(dep, next))
+    humanBlockedMemo.set(id, blocked)
+    return blocked
   }
   const active = items.filter(item => item.status === 'IN_PROGRESS')
   const globalActiveLocks = (locks || []).filter(lock => {
@@ -186,6 +200,7 @@ export function evaluateFunctionalReadiness({
     item => item.status !== 'VERIFIED'
       && item.status !== 'HUMAN_REQUIRED'
       && item.declared_status !== 'HUMAN_FINAL'
+      && !dependsOnHumanFinal(item.id)
   ).length
 
   for (const item of items) {
@@ -260,7 +275,7 @@ export function evaluateFunctionalReadiness({
     total:items.length,
     verified:items.filter(x => x.status === 'VERIFIED').length,
     remaining_total:items.filter(x => x.status !== 'VERIFIED').length,
-    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL').length,
+    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL' && !dependsOnHumanFinal(x.id)).length,
     human_final:items.filter(x => x.declared_status === 'HUMAN_FINAL' && x.status !== 'VERIFIED').length,
     available_now:items.filter(x => x.gate_state === 'AVAILABLE').length,
     in_progress:items.filter(x => x.gate_state === 'IN_PROGRESS').length,
