@@ -62,8 +62,8 @@ test('cross-role RLS/RPC denies reads and writes outside actor authority',{skip:
       estado:'buscando',
       descripcion:'UGO cross-role RLS fixture',
       urgencia:false,
-      ambiente:'demo',
-      metadata:{integration_test:true,source:'cross-role-rls-runtime',marker},
+      ambiente:'real',
+      metadata:{integration_test:true,source:'cross-role-rls-runtime',marker,test_environment:'UGO_TEST'},
     }).select('id,descripcion,estado').single()
     if(createError)throw createError
     serviceId=created.id
