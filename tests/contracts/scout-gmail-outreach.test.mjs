@@ -4,7 +4,7 @@ import fs from 'node:fs'
 
 test('Scout Gmail OAuth stays server-side and exposes send actions',()=>{
   const api=fs.readFileSync('src/server/scoutGmail.js','utf8')
-  const vercel=fs.readFileSync('vercel.json','utf8')
+  const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'))
   const migration=fs.readFileSync('supabase/migrations/20260922010000_scout_gmail_outreach.sql','utf8')
   assert.match(api,/gmail\.send/)
   assert.match(api,/messages\/send/)
