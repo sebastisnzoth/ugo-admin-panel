@@ -41,8 +41,8 @@ export default async function handler(req:RequestLike,res:ResponseLike){
   const result=await askGemini(prompt,history,system,jsonMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:parseHugoUiAction(asRecord(parsed).ui_action,adminRole)
   return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':providerMode?'Decime en qué te ayudo con tu trabajo.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
-  console.error('Hugo chat failed',error)
   const info=asRecord(error),status=Number(info.status)||502
+  console.error('Hugo chat failed',{status,error_code:clean(info.code,80)||undefined,correlation_id:clean(info.correlation_id,80)||undefined,message:error instanceof Error?clean(error.message,240):'Unknown Hugo error'})
   if(info.retryAfter)res.setHeader('Retry-After',String(info.retryAfter))
   const message=error instanceof Error?error.message:'Hugo no pudo responder ahora.'
   const nextStep=status===401?'Iniciá sesión nuevamente y reintentá.':status===403?'Revisá que tu cuenta tenga permiso para esta acción y reintentá.':status===429?'Esperá un momento y reintentá.':status===503||status===504?'Reintentá en unos instantes; el resto de UGO sigue disponible.':'Reintentá la acción. Si vuelve a fallar, seguí usando UGO sin voz y reportá el incidente.'
