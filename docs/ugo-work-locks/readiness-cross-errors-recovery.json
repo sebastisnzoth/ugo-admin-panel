@@ -1,0 +1,29 @@
+{
+  "readiness_id": "cross-errors-recovery",
+  "task_id": "readiness-cross-errors-recovery",
+  "job_id": "UGO-READINESS-CROSS-ERRORS-RECOVERY-20261002",
+  "title": "Verify cross-flow fault injection and safe recovery",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T12:51:00Z",
+  "heartbeat_at": "2026-10-02T12:51:00Z",
+  "lease_expires_at": "2026-10-02T13:36:00Z",
+  "started_sha": "852d9e4e3e743b8f6ec71bdd1f0f0eea93824d17",
+  "owner": "UGO",
+  "department": "Flujo Cliente ↔ Proveedor · Reparación integral",
+  "assigned_agent": "UGO Recovery Regression Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "recovery",
+    "regression"
+  ],
+  "correlation_id": "readiness-cross-errors-recovery-20261002T125100Z",
+  "current_step": "IMPLEMENT_SAME_SHA_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:client-provider-lifecycle:VERIFIED"
+  ],
+  "production_touched": false
+}
