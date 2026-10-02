@@ -65,6 +65,12 @@ Browser origins must be same-origin or explicitly allowlisted. Unknown browser o
 - Keep service-role usage server-side.
 - Protected mutations require positive and negative tests.
 
+## Rate limiting
+
+Hugo applies fixed-window defense-in-depth rate limits before expensive model work in both Vercel/API and Supabase Edge runtimes: an IP bucket before parsing/auth plus an authenticated-user bucket after authority checks. TTS/Live use stricter limits. Rejections use HTTP 429 + `Retry-After`.
+
+These guards are intentionally per serverless instance/isolate and are **not** a distributed global quota. A platform/WAF or durable shared limiter remains the correct layer for global abuse control.
+
 ## Logging
 
 Log correlation IDs, route/provider, status and bounded timing. Do not log authorization headers, session tokens, full model context, passwords or secrets.
