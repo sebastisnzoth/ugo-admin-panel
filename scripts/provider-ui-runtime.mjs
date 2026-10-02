@@ -50,7 +50,8 @@ async function runViewport(name,viewport){
   if(name==='desktop'){
    const primary=page.getByRole('navigation',{name:'Navegación principal'})
    await primary.waitFor({state:'visible',timeout:10000})
-   for(const item of ['Inicio','Trabajos','Calendario','Ganancias','Historial','Perfil'])await primary.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   for(const item of ['Inicio','Pedidos','Historial','Ganancias','Perfil'])await primary.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   await primary.getByRole('button',{name:/Mis trabajos|Trabajo activo/i}).first().waitFor({state:'visible',timeout:10000})
   }else{
    const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
    await bottom.waitFor({state:'visible',timeout:10000})
