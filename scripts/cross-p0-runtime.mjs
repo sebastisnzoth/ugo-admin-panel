@@ -26,7 +26,7 @@ const[
  db.from('servicio_estado_eventos').select('estado_anterior,estado_nuevo,actor_role,created_at').eq('servicio_id',serviceId).order('created_at'),
  db.from('evidencias_servicio').select('id,tipo,storage_path,created_at').eq('servicio_id',serviceId).order('created_at'),
  db.from('pagos').select('id,metodo,estado,fecha_confirmacion,monto_bruto,comision_ugo,ganancia_proveedor').eq('servicio_id',serviceId),
- db.from('resenas').select('id,rol_autor,puntuacion').eq('servicio_id',serviceId),
+ db.from('resenas').select('id,autor_tipo,puntuacion').eq('servicio_id',serviceId),
  db.from('ofertas_servicio').select('id,proveedor_id,estado,distancia_km').eq('servicio_id',serviceId)
 ])
 for(const e of[serviceError,eventsError,evidenceError,paymentsError,ratingsError,offersError])if(e)throw e
