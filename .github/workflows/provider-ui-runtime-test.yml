@@ -2,6 +2,20 @@
 name: UGO Provider UI Runtime TEST
 on:
   workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/mvp/provider/**"
+      - "src/features/provider/**"
+      - "scripts/provider-ui-runtime.mjs"
+      - ".github/workflows/provider-ui-runtime-test.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/mvp/provider/**"
+      - "src/features/provider/**"
+      - "scripts/provider-ui-runtime.mjs"
+      - ".github/workflows/provider-ui-runtime-test.yml"
 
 concurrency:
   group: ugo-test-shared-provider-fixture
@@ -12,6 +26,8 @@ jobs:
     environment: test
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
@@ -30,7 +46,7 @@ jobs:
         env:
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
-          VITE_APP_REVISION: ${{ github.sha }}
+          VITE_APP_REVISION: ${{ github.event.pull_request.head.sha || github.sha }}
         run: npm run build
       - name: Install Chromium
         run: |
@@ -43,7 +59,7 @@ jobs:
           UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
           UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
           UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
-          UGO_RUNTIME_SHA: ${{ github.sha }}
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
           UGO_UI_BASE_URL: http://127.0.0.1:4173
         run: |
           set -euo pipefail
@@ -60,7 +76,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: provider-ui-runtime-${{ github.sha }}
+          name: provider-ui-runtime-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/provider-ui-*
           if-no-files-found: warn
           retention-days: 90
