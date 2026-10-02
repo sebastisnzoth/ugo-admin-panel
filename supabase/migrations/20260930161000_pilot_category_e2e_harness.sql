@@ -11,7 +11,7 @@ declare
  pid constant uuid:='163f8444-0098-4022-bb71-8418b24b16fb';
  cat uuid; cat_name text; sid uuid; oid uuid; s public.servicios%rowtype; loc extensions.geography;
  lat double precision; lng double precision; arrival jsonb; initial_role text; br_cash_old text; expansion public.ampliaciones_servicio%rowtype;
- old_primary uuid; old_categories uuid[]; old_category_name text; old_verification text; old_online boolean; old_disponible boolean; old_loc extensions.geography; old_loc_updated timestamptz; old_accuracy numeric; pilot_details jsonb;
+ old_primary uuid; old_categories uuid[]; old_category_name text; old_verification public.perfiles_proveedor.estado_verificacion%type; old_online boolean; old_disponible boolean; old_loc extensions.geography; old_loc_updated timestamptz; old_accuracy numeric; pilot_details jsonb;
 begin
  initial_role:=coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','');
  if initial_role<>'service_role' then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
