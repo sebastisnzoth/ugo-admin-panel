@@ -12,24 +12,29 @@ test('provider browser voice keeps recent conversational memory and rich live co
  assert.match(src,/remember\('assistant',spoken\)/)
 })
 
-test('provider Hugo uses structured JSON actions and preserves app-side authority',async()=>{
+test('provider model output can navigate but cannot authorize mutations',async()=>{
  const edge=await read('supabase/functions/hugo-runtime/index.ts')
  const client=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
  assert.match(edge,/provider_action/)
- assert.match(edge,/safeProviderAction/)
- assert.match(edge,/providerMode=role==='provider'/)
- assert.match(edge,/structuredMode=adminMode\|\|providerMode/)
- assert.match(client,/executeAiAction/)
- assert.match(client,/data\.setOnline\(true\)/)
- assert.match(client,/flow\.actions\.acceptOpportunity/)
- assert.match(client,/data\.advance\(status\)/)
- assert.match(client,/La acción propuesta por Hugo no está permitida/)
+ assert.match(edge,/function safeProviderAction/)
+ assert.match(edge,/if\(type!=='navigate'\)return null/)
+ assert.match(edge,/El modelo no puede autorizar cambios de trabajo/)
+ const start=client.indexOf('const executeAiAction'),end=client.indexOf(' const speak=',start),ai=client.slice(start,end)
+ assert.match(ai,/type==='navigate'/)
+ assert.match(ai,/Por seguridad, Hugo no ejecuta cambios de trabajo desde una respuesta de IA/)
+ assert.doesNotMatch(ai,/data\.setOnline/)
+ assert.doesNotMatch(ai,/acceptOpportunity/)
+ assert.doesNotMatch(ai,/rejectOpportunity/)
+ assert.doesNotMatch(ai,/data\.advance/)
 })
 
-test('provider AI action ids must be UUIDs and allowed status values are explicit',async()=>{
- const edge=await read('supabase/functions/hugo-runtime/index.ts')
- assert.match(edge,/\^\[0-9a-f-\]\{36\}\$\/i\.test\(serviceId\)/)
- assert.match(edge,/\['en_camino','llegado','en_progreso','esperando_aprobacion'\]\.includes\(status\)/)
+test('deterministic provider commands still own explicit mutations and lifecycle guards',async()=>{
+ const direct=await read('src/features/provider/voice/providerVoiceCommands.ts')
+ assert.match(direct,/data\.toggleOnline\(\)/)
+ assert.match(direct,/flow\.acceptOpportunity/)
+ assert.match(direct,/flow\.rejectOpportunity/)
+ assert.match(direct,/data\.advance\('en_camino'\)/)
+ assert.match(direct,/data\.advance\('llegado'\)/)
 })
 
 test('Hugo Live token remains constrained to the configured audio model',async()=>{
