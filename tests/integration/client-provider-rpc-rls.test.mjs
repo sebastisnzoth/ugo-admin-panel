@@ -135,6 +135,23 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     }
   }
 
+  const { data: staleClientHarnessServices, error: staleClientHarnessError } = await a
+    .from('servicios')
+    .select('id,estado,metadata')
+    .eq('cliente_id', clientId)
+    .eq('ambiente', 'demo')
+    .in('estado', ['buscando','ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion'])
+  if (staleClientHarnessError) throw staleClientHarnessError
+  for (const stale of staleClientHarnessServices || []) {
+    if (stale.metadata?.integration_test === true && stale.metadata?.source === 'rpc-rls-harness') {
+      const { error: closeError } = await a.from('servicios').update({
+        estado: 'cancelado',
+        metadata: { ...stale.metadata, fixture_recovered_at: new Date().toISOString() },
+      }).eq('id', stale.id)
+      if (closeError) throw closeError
+    }
+  }
+
   const category = await firstCategory(c)
   const runId = crypto.randomUUID()
   let serviceId = null
@@ -162,14 +179,14 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     })
     if (clientLocation.error) throw clientLocation.error
 
-    const availabilityGps = await p.rpc('publicar_ubicacion_disponibilidad_proveedor', {
+    const availabilityGps = await p.rpc('activar_disponibilidad_proveedor', {
       p_lat: testLat,
       p_lng: testLng,
       p_captured_at: new Date().toISOString(),
       p_accuracy_m: 10,
     })
     if (availabilityGps.error) throw availabilityGps.error
-    assert.equal(availabilityGps.data?.status, 'published', 'Matching dirigido requiere GPS de disponibilidad fresco')
+    assert.equal(availabilityGps.data?.status, 'online', 'Matching dirigido requiere proveedor Online con GPS de disponibilidad fresco')
 
     const { error: directedError } = await c.rpc('iniciar_matching_dirigido', {
       p_servicio_id: serviceId,
@@ -440,8 +457,17 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
     console.log(`UGO E2E VALIDATED serviceId=${serviceId} runId=${runId}`)
   } finally {
     // Este E2E preserva deliberadamente el servicio completado y sus objetos reales de Storage.
-    // servicios no expone DELETE por RLS; borrar sólo Storage dejaría evidencia inconsistente.
-    // El fixture queda marcado con metadata.integration_test + e2e_run_id para auditoría en UGO TEST.
+    // Si falla antes del cierre, cancela sólo su propio fixture TEST para no bloquear la próxima corrida.
+    if (serviceId) {
+      const current = await a.from('servicios').select('estado,metadata').eq('id', serviceId).maybeSingle()
+      if (!current.error && current.data && current.data.estado !== 'completado' &&
+          current.data.metadata?.integration_test === true && current.data.metadata?.source === 'rpc-rls-harness') {
+        await a.from('servicios').update({
+          estado: 'cancelado',
+          metadata: { ...current.data.metadata, fixture_failed_cleanup_at: new Date().toISOString() },
+        }).eq('id', serviceId)
+      }
+    }
     await Promise.allSettled([c.auth.signOut(), p.auth.signOut(), a.auth.signOut()])
   }
 })
