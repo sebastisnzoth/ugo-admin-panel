@@ -43,6 +43,7 @@ jobs:
 
       - name: Prove scheduled worker autonomy ON
         env:
+          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
@@ -60,6 +61,7 @@ jobs:
         if: always()
         env:
           UGO_RUNTIME_WORKFLOW_NAME: UGO Scheduled Worker Proof TEST
+          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           UGO_RUNTIME_JOB_STATUS: ${{ job.status }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
