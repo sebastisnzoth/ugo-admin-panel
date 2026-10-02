@@ -120,6 +120,11 @@
     right:12px!important;
     bottom:calc(84px + env(safe-area-inset-bottom))!important;
   }
+  .ugo-provider-root .ugo-dispute-launch{
+    left:12px!important;
+    right:auto!important;
+    bottom:calc(84px + env(safe-area-inset-bottom))!important;
+  }
   .ugo-provider-root .ugo-location-control.role-provider{
     top:12px!important;
     right:72px!important;
