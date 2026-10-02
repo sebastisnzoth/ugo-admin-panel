@@ -63,6 +63,12 @@ Browser origins must be same-origin or explicitly allowlisted. Unknown browser o
 - Keep service-role usage server-side.
 - Protected mutations require positive and negative tests.
 
+## Rate limiting
+
+`/api/hugo/chat` applies a server-side fixed-window guard before model/TTS calls: an IP bucket plus an authenticated-user bucket, with a stricter TTS limit. Limits are configurable through server-only environment variables and rejection uses HTTP 429 + `Retry-After`.
+
+This guard is intentionally defense-in-depth at the serverless instance level. It is **not** a distributed/global quota across all Vercel instances; platform/WAF or a durable shared limiter remains the correct layer for global abuse control.
+
 ## Logging
 
 Log correlation IDs, route/provider, status and bounded timing. Do not log authorization headers, session tokens, full model context, passwords or secrets.
