@@ -1,379 +1,334 @@
-# Prompts para Auditoría Técnica del Repo
+# Prompts para Auditoría Técnica de UGO
 
-Use estos prompts con ChatGPT, Claude o similar para automatizar análisis de código y documentación.
+Estos prompts están alineados con el estado actual de UGO y con el objetivo de dejar operativo el flujo real Cliente ↔ Proveedor ↔ Admin.
+
+> **Decisión vigente:** Hugo/orbe/voz está retirado de las superficies activas y queda fuera del camino crítico de lanzamiento por ahora. No debe bloquear readiness ni distraer auditorías prioritarias. Si todavía existe código dormido de Hugo, se trata como deuda técnica diferida salvo que introduzca riesgo de seguridad, build o runtime.
 
 ---
 
-## 1. Auditoría de God Module: api/hugo/chat.ts
+## 1. Auditoría del flujo crítico Cliente ↔ Proveedor
 
-**Propósito:** Identificar responsabilidades múltiples y proponer descomposición.
+**Propósito:** comprobar el lifecycle real de punta a punta y localizar exactamente dónde se corta.
 
 ```
-Analiza este archivo TypeScript y crea un plan de refactor para dividirlo en módulos especializados.
+Audita el flujo crítico completo de UGO usando código, tests, Supabase, Realtime y evidencia disponible.
 
-Archivo: api/hugo/chat.ts (586 líneas)
-URL: https://github.com/sebastisnzoth/ugo-admin-panel/blob/main/api/hugo/chat.ts
+Repo: sebastisnzoth/ugo-admin-panel
+
+Flujo obligatorio:
+Cliente solicita
+→ matching
+→ oferta al proveedor elegible
+→ alerta visible/sonido/vibración
+→ proveedor acepta
+→ en camino
+→ GPS válido
+→ YA LLEGUÉ / geofence
+→ evidencia inicial
+→ comenzar trabajo
+→ evidencia final
+→ cliente aprueba
+→ forma de pago
+→ pago / efectivo y deuda UGO
+→ completado
+→ ratings mutuos
+→ Admin observa el estado real
 
 Tareas:
-1. Identifica todas las responsabilidades funcionales (auth, autorización, sanitización, prompting, TTS, CORS, UI actions).
-2. Para cada responsabilidad, enumera:
-   - Funciones y constantes implicadas
-   - Dependencias externas (Supabase, Gemini, etc.)
-   - Riesgo de regresión si se modifica
-3. Propón una estructura modular:
-   - Nuevo árbol de carpetas bajo api/hugo/
-   - Qué funciones/tipos van a cada módulo
-   - Qué queda en handler.ts (orquestación HTTP)
-4. Estima esfuerzo: categoriza como quick-win (<2h), medium (2-6h), large (6h+).
-5. Escribe pseudo-código o un archivo ejemplo para el primer módulo (auth).
-
-Formato de salida:
-- Tabla de responsabilidades
-- Diagrama ASCII o árbol de módulos propuesto
-- Checklist de migraciones
-- Código ejemplo para un módulo
-```
-
----
-
-## 2. Auditoría de Seguridad: Sanitización y Secretos
-
-**Propósito:** Verificar que no haya fuga de credenciales o datos sensibles.
-
-```
-Revisa las prácticas de seguridad en este repositorio.
-
-Repo: sebastisnzoth/ugo-admin-panel
-Archivo crítico: api/hugo/chat.ts
-
-Áreas a auditar:
-1. Sanitización de inputs
-   - ¿Qué patrones se redactan? (Bearer tokens, JWTs, API keys, etc.)
-   - ¿Hay un regex pattern que se pierda?
-   - ¿Se sanitizan todos los inputs antes de logs/LLM?
-2. Gestión de secretos
-   - ¿Hay hardcoded valores en el repo?
-   - ¿Se usan env vars correctamente?
-   - ¿Se loguean payloads completos en algún lugar?
-3. CORS y same-origin
-   - ¿La política de allowlist es exhaustiva?
-   - ¿Se valida correctamente el origen en cada request?
-4. Autorización por rol
-   - ¿Hay riesgos de escalation de privilegios?
-   - ¿Los roles superadmin/admin/provider/client están bien separados?
-   - ¿Hay edge cases donde un rol más bajo pueda acceder a datos de otro rol?
-5. Datos compartidos con LLM
-   - ¿Qué datos van al contexto del modelo?
-   - ¿Se define un allowlist o se envía todo?
-
-Salida esperada:
-- Lista de vulnerabilidades halladas (críticas, altas, medias, bajas)
-- Recomendaciones inmediatas (qué arreglar primero)
-- Código de ejemplo para mejorar sanitización
-- Checklist de validación post-fix
-```
-
----
-
-## 3. Análisis de Complejidad: Decoupling de Responsabilidades
-
-**Propósito:** Mapear dependencias entre módulos y encontrar acoplamiento innecesario.
-
-```
-Analiza la arquitectura de este repositorio e identifica acoplamiento.
-
-Repo: sebastisnzoth/ugo-admin-panel
-Stack: React + TypeScript + Supabase + Vercel
-
-Instrucciones:
-1. Examina la estructura de carpetas:
-   - src/mvp
-   - src/features
-   - src/lib
-   - api/
-   - server/
-2. Para cada carpeta, determina:
-   - Propósito principal
-   - Qué otras carpetas importa
-   - Qué la importa
-3. Dibuja un grafo de dependencias (ASCII o tabla):
-   - Nodo = carpeta/módulo
-   - Flecha = "importa de"
-4. Identifica ciclos (A → B → A): son acoplamiento crítico.
-5. Identifica "hubs" (módulos que muchos otros importan):
-   - Si es intencional (lib/util): OK
-   - Si es accidental (feature logic): riesgo
-6. Propón qué se debería desacoplar y cómo.
+1. Para cada transición identifica UI, estado, función, API/RPC, tabla y evento Realtime implicado.
+2. Clasifica cada paso como CONFIGURED, WIRED, EXECUTED, VERIFIED, BROKEN o UNKNOWN.
+3. Detecta transiciones sin persistencia, listeners que no reciben eventos, estados duplicados o rutas muertas.
+4. No declares VERIFIED por código existente: exige evidencia runtime del mismo SHA.
+5. Señala la causa raíz de cada fallo y el cambio mínimo reversible para corregirlo.
+6. Prioriza únicamente los bloqueos que impiden completar un servicio real.
 
 Salida:
-- Grafo de dependencias (ASCII o markdown table)
-- Ciclos detectados + cómo romperlos
-- Hubs innecesarios + estrategia de refactor
-- Métricas: # de imports por módulo, profundidad máxima
+- Tabla Paso | Implementación | Persistencia | Realtime | Evidencia | Estado
+- Punto exacto de ruptura
+- Fix propuesto
+- Tests requeridos
+- Riesgos de regresión
 ```
 
 ---
 
-## 4. Auditoría de Documentación vs Código
+## 2. Auditoría de GPS, ubicación y geofence del proveedor
 
-**Propósito:** Detectar inconsistencias entre docs y código actual.
+**Propósito:** asegurar que un proveedor Online tenga ubicación reciente y pueda recibir pedidos y confirmar llegada de forma fiable.
 
 ```
-Compara la documentación del repo con el código real.
+Audita todo el pipeline de ubicación del proveedor en UGO.
 
 Repo: sebastisnzoth/ugo-admin-panel
 
-Tarea:
-1. Revisa estos documentos (si existen):
-   - README.md
-   - CLAUDE.md
-   - /docs (cualquier carpeta de documentación)
-   - Comentarios en package.json
-   - .github/copilot-instructions.md
-
-2. Para cada documento, verifica:
-   - ¿Los scripts de npm que menciona existen en package.json?
-   - ¿Las rutas de carpetas que menciona coinciden con la estructura real?
-   - ¿Los workflows mencionados existen en .github/workflows/?
-   - ¿Las dependencias listadas están en package.json?
-   - ¿El estado del proyecto (etapa, completitud) coincide con la realidad?
-
-3. Lista todas las discrepancias encontradas:
-   - Documento X dice "no hay tests", pero existen scripts test
-   - Documento Y lista carpeta /components, pero es /components-v2
-   - Etc.
-
-4. Prioriza por impacto en onboarding:
-   - Alta: afecta setup inicial
-   - Media: afecta desarrollo diario
-   - Baja: efectos menores
-
-5. Propón versión corregida para el README principal.
+Tareas:
+1. Traza navigator.geolocation / permisos del navegador o dispositivo → estado frontend → persistencia → matching.
+2. Verifica:
+   - solicitud explícita de permiso
+   - timeout
+   - precisión
+   - rechazo de 0,0
+   - antigüedad máxima aceptada
+   - refresh periódico
+   - errores de permiso/GPS/timeout
+3. Determina por qué puede aparecer "Online sin GPS válido" o "El GPS tardó demasiado en responder".
+4. Verifica que el matching nunca use ubicación ficticia o vencida.
+5. Verifica geofence de 200 m y que YA LLEGUÉ no avance si GPS falla o está fuera de rango.
+6. Confirma que Cliente y Proveedor puedan estar físicamente en el mismo lugar sin que el flujo falle por stale location.
+7. Propón instrumentación mínima para distinguir permiso, timeout, precisión y persistencia.
 
 Salida:
-- Tabla de discrepancias (Documento | Afirmación | Realidad | Impacto)
-- README.md actualizado
-- Checklist para mantener docs sincronizadas
+- Diagrama del pipeline GPS
+- Fallos encontrados por severidad
+- Causa raíz
+- Fix mínimo
+- Casos de prueba navegador + móvil
+- Criterio exacto para VERIFIED
 ```
 
 ---
 
-## 5. Análisis de CI/CD: Workflows y Redundancias
+## 3. Auditoría de matching, ofertas y alertas al proveedor
 
-**Propósito:** Revisar GitHub Actions y detectar oportunidades de simplificación.
+**Propósito:** garantizar que una solicitud válida llegue inmediatamente al proveedor elegible.
 
 ```
-Analiza los workflows de GitHub Actions en este repo.
+Audita el camino solicitud → matching → ofertas_servicio → Realtime → NotificationCenter → alerta visible/sonido/vibración.
 
 Repo: sebastisnzoth/ugo-admin-panel
-Ruta: .github/workflows/
 
-Tarea:
-1. Lista todos los archivos .yml en .github/workflows/
-2. Para cada workflow, documenta:
-   - Nombre del job
-   - Cuándo se dispara (trigger: push, PR, schedule, etc.)
-   - Qué validaciones corre (lint, test, build, security, etc.)
-   - Cuáles son las dependencias entre jobs
-   - Cuántos secretos/env vars necesita
-3. Identifica patrones de redundancia:
-   - ¿Dos workflows hacen la misma validación?
-   - ¿Hay jobs que podrían ir en paralelo pero están en serie?
-   - ¿Hay secretos que se requieren en múltiples workflows sin motivo?
-4. Propón consolidaciones:
-   - Combinar jobs
-   - Paralelizar donde sea seguro
-   - Reducir número de workflows si es posible
-5. Detecta riesgos operacionales:
-   - ¿Qué pasa si se revoca un secret?
-   - ¿Hay workflows que compiten por recursos?
-6. Estima ahorros: tiempo de CI, costo, mantenimiento.
+Tareas:
+1. Traza el INSERT de la solicitud y de cada oferta.
+2. Verifica filtros de distancia, categoría, disponibilidad, deuda/bloqueos y estado del proveedor.
+3. Revisa la suscripción Realtime a ofertas_servicio y cualquier canal alternativo.
+4. Comprueba filtros por proveedor_id, lifecycle de la suscripción y reconexión.
+5. Revisa deduplicación por oferta_id para evitar dobles alertas sin perder la primera.
+6. Comprueba notificación visible, cierre manual con X, autocierre razonable, sonido y vibración donde estén soportados.
+7. Verifica comportamiento con pestaña visible, background/PWA y reconexión.
+8. Si existe polling/fallback, confirma que no genere duplicados.
+9. Usa evidencia exacta del mismo SHA para declarar VERIFIED.
 
 Salida:
-- Tabla de workflows actuales
-- Grafo de dependencias entre jobs
-- Propuesta de consolidación
-- Estimación de ahorro de tiempo
-- Documentación de qué workflow hace qué
+- Trazado evento por evento
+- Punto exacto de pérdida o demora
+- Fix reversible más seguro
+- Tests contract/integration/E2E
+- Evidencia requerida
 ```
 
 ---
 
-## 6. Diseño de Permissions Model (Authority System)
+## 4. Auditoría de pagos, efectivo, deuda y cierre
 
-**Propósito:** Validar y mejorar el modelo de permisos centralizado.
-
-```
-Diseña un modelo de permisos claro y centralizado para este sistema.
-
-Contexto:
-- Repo: sebastisnzoth/ugo-admin-panel
-- Roles actuales: client, provider, admin, superadmin
-- Archivo clave: api/hugo/chat.ts (líneas 122-172)
-- También gestiona UI actions en función del rol
-
-Tarea:
-1. Documenta el modelo de permisos actual:
-   - Qué puede hacer cada rol
-   - En qué módulos tienen permisos
-   - Qué datos pueden ver
-2. Identifica problemas:
-   - ¿Hay permisos definidos en múltiples lugares?
-   - ¿Hay edge cases o excepciones ad-hoc?
-   - ¿Se puede escalar de privilegios?
-3. Diseña un modelo centralizado:
-   - Schema JSON o TypeScript interface
-   - Qué módulo lo debe exportar (src/auth/permissions.ts?)
-   - Cómo se consulta en tiempo de request
-   - Cómo se revisa en frontend
-4. Define para cada rol:
-   - Módulos accesibles
-   - Acciones permitidas (read, create, update, delete, execute_action)
-   - Datos expuestos (campos, contexto)
-   - UI actions permitidas
-5. Escribe un check: cómo validar que todo request cumple con permisos.
-6. Ejemplos:
-   - Cliente pide navegar a admin → denied
-   - Admin pide abrir servicio 123 → allowed si existe
-   - Proveedor ejecuta map_filter → allowed solo si location tracking activo
-
-Salida:
-- Schema centralizado de permisos (TypeScript interface)
-- Matriz de roles vs acciones
-- Función de validación
-- Migración de código actual a este modelo
-- Tests de ejemplo
-```
-
----
-
-## 7. Plan de Tests: Coverage y Estrategia
-
-**Propósito:** Diseñar suite de tests coherente para el repo.
+**Propósito:** comprobar que pagar realmente cierre el servicio y mantenga un ledger coherente.
 
 ```
-Crea un plan de testing para este repositorio.
+Audita pagos y cierre de servicios en UGO.
 
 Repo: sebastisnzoth/ugo-admin-panel
-Estado actual: hay scripts (test, test:p0, test:integration), pero cobertura desconocida
 
-Tarea:
-1. Examina qué tests existen:
-   - ¿Dónde están? (tests/, __tests__/, .test.ts files?)
-   - ¿Qué framework? (Jest, Vitest, Node --test?)
-   - ¿Qué cubren actualmente?
-2. Define niveles de testing:
-   - Unit: funciones individuales
-   - Integration: módulos + API
-   - E2E: flujos completos
-   - Contract: verificar schemas
-3. Prioriza qué testear primero:
-   - P0: auth, authorize, permisos (críticos, high risk)
-   - P1: UI actions, sanitización, TTS (importante, medium risk)
-   - P2: prompt builders, response formatting (nice-to-have)
-4. Para cada área, escribe:
-   - Qué se debe testear
-   - Casos normales y edge cases
-   - Fixtures/mocks necesarios
-5. Estructura de directorios propuesta:
-   - tests/unit/api/
-   - tests/integration/
-   - tests/contracts/
-   - tests/e2e/
-6. Escribe 3 tests de ejemplo:
-   - One auth test (happy path + denied access)
-   - One sanitization test
-   - One permissions test
+Reglas vigentes:
+- efectivo debe quedar registrado
+- efectivo genera deuda/comisión a UGO cuando corresponda
+- un proveedor que deba 3 servicios no puede aceptar nuevos pedidos
+- el bloqueo no debe corromper trabajos ya aceptados
+- cliente y proveedor deben converger al mismo estado final
+
+Tareas:
+1. Traza "elegir forma de pago" desde UI hasta persistencia.
+2. Revisa por qué un proveedor puede quedar en "esperando pago".
+3. Audita YA PAGUÉ, confirmaciones, estados y ledger.
+4. Verifica idempotencia para doble click, refresh y eventos repetidos.
+5. Verifica deuda acumulada, umbral de 3 servicios y desbloqueo tras pago a UGO.
+6. Confirma que completion habilite ratings en ambos lados.
+7. Revisa consistencia Admin/Cliente/Proveedor.
 
 Salida:
-- Tabla de cobertura objetivo (% por módulo)
-- Ejemplos de tests (3 cases)
-- Estrategia de CI (cuándo correr qué)
-- Documentación de cómo escribir tests
+- Máquina de estados de pago
+- Reglas de negocio comprobadas
+- Inconsistencias
+- Fixes propuestos
+- Tests críticos
+- Criterio VERIFIED
 ```
 
 ---
 
-## 8. Roadmap de Refactor: Esfuerzo y Prioridad
+## 5. Auditoría de permisos, RLS y aislamiento por rol
 
-**Propósito:** Crear un plan ejecutable para mejorar el repo.
+**Propósito:** centralizar y verificar la autoridad real sin depender de Hugo.
 
 ```
-Crea un roadmap de refactor priorizado para este repositorio.
+Audita el modelo de permisos de UGO para client, provider, admin y superadmin.
 
 Repo: sebastisnzoth/ugo-admin-panel
-Restricción: debe ser ejecutable en sprints de 2 semanas
 
-Contexto de problemas identificados:
-- api/hugo/chat.ts es un god module (600 líneas)
-- Documentación desincronizada
-- Posibles vulnerabilidades de seguridad
-- Acoplamiento en dependencias
-- Tests incompletos
-
-Tarea:
-1. Agrupa el trabajo en "épicas" lógicas:
-   - Epic 1: Refactor de api/hugo/chat.ts
-   - Epic 2: Centralizar permisos
-   - Epic 3: Auditoría de seguridad
-   - Epic 4: Sincronizar docs
-   - Epic 5: Tests críticos
-   - Etc.
-2. Para cada épica:
-   - Objetivo claro
-   - Deliverables concretos
-   - Esfuerzo estimado (en horas o sprints)
-   - Dependencias de otras épicas
-   - Riesgo (bajo, medio, alto)
-   - Impacto (bajo, medio, alto)
-3. Ordena por:
-   - Riesgo (high risk first)
-   - Impacto (high impact first)
-   - Dependencias (must-do-first)
-4. Propón un timeline realista:
-   - Semana 1-2: qué hacer
-   - Semana 3-4: qué hacer
-   - Mes 2: qué hacer
-   - Etc.
-5. Define "done": cómo saber que terminó cada épica
-6. Escribe una checklist por épica
+Tareas:
+1. Mapea permisos frontend, API/RPC y Supabase RLS.
+2. Define qué tablas, campos y acciones puede leer/escribir cada rol.
+3. Busca permisos duplicados o contradictorios.
+4. Detecta escalación de privilegios, acceso cross-user y RPCs demasiado permisivas.
+5. Comprueba que ocultar un botón no sea el único control de seguridad.
+6. Revisa Storage y Realtime además de CRUD.
+7. Propón un authority model centralizado sólo si reduce riesgo sin reescribir el producto.
+8. Hugo/orbe no forma parte del modelo activo; cualquier referencia residual debe ser considerada deuda técnica o riesgo, no requisito funcional.
 
 Salida:
-- Tabla de épicas (Nombre | Esfuerzo | Riesgo | Impacto | Duración)
-- Diagrama de dependencias entre épicas
-- Timeline recomendado (Gantt-style text)
-- Checklist de "definición de listo" por épica
-- Métrica de éxito para el refactor completo
+- Matriz rol × recurso × acción
+- Vulnerabilidades por severidad
+- RLS/RPC faltantes o débiles
+- Cambios mínimos
+- Tests de autorización
+```
+
+---
+
+## 6. Auditoría de Command Center y readiness real
+
+**Propósito:** impedir que el panel muestre tareas obsoletas, locks falsos o estados que no reflejan la realidad.
+
+```
+Audita el UGO Command Center/readiness contra el estado real del repo, CI, runtime y evidencia persistida.
+
+Repo: sebastisnzoth/ugo-admin-panel
+
+Tareas:
+1. Lista todos los READINESS_ID vigentes.
+2. Para cada uno compara:
+   - estado mostrado
+   - main actual
+   - PR/commit relacionado
+   - CI same-SHA
+   - evidencia runtime
+   - lock/lease
+3. Detecta STALE_LOCK, tareas duplicadas, bloques ya resueltos y controles sin evidencia.
+4. Retira del camino crítico cualquier control de Hugo/orbe/voz que siga figurando como requisito de lanzamiento; debe quedar DEFERRED/OUT_OF_SCOPE mientras esa decisión siga vigente.
+5. Ordena pendientes por dependencias reales.
+6. Separa:
+   - delegable autónomamente
+   - requiere TEST runtime
+   - requiere dispositivo/persona
+   - requiere autorización de producción
+7. No permitas que un paso marcado DONE dependa de evidencia de otro SHA.
+
+Salida:
+- Lista autoritativa de pendientes
+- Tareas obsoletas a retirar/diferir
+- Orden ejecutable
+- Bloqueos humanos reales
+- Próximo camino crítico
+```
+
+---
+
+## 7. Auditoría de tests, CI y evidencia same-SHA
+
+**Propósito:** asegurar que los verdes sean útiles y que no oculten fallos de runtime.
+
+```
+Audita tests y GitHub Actions de UGO.
+
+Repo: sebastisnzoth/ugo-admin-panel
+
+Tareas:
+1. Inventaría scripts test, test:p0, integration, contract, e2e, build y typecheck.
+2. Mapea qué flujo real cubre cada suite.
+3. Detecta tests que sólo verifican strings/archivos pero no comportamiento.
+4. Detecta tests heredados de Hugo/orbe que ya no deberían bloquear el producto activo.
+5. Revisa workflows de .github/workflows:
+   - triggers
+   - jobs
+   - secretos
+   - redundancias
+   - concurrencia
+   - cancelaciones
+6. Verifica que toda evidencia usada para READY/VERIFIED corresponda al SHA exacto.
+7. Propón una pirámide mínima:
+   - contract rápido
+   - integration
+   - P0 lifecycle
+   - runtime TEST
+8. Señala qué fallos deben bloquear merge y cuáles sólo generar warning.
+
+Salida:
+- Matriz test → riesgo cubierto
+- Workflows redundantes
+- Huecos de cobertura
+- Política same-SHA
+- Consolidación propuesta
+```
+
+---
+
+## 8. Roadmap de cierre hasta primer cliente real
+
+**Propósito:** transformar la auditoría en una secuencia ejecutable y no en un refactor infinito.
+
+```
+Construye un roadmap de cierre de UGO hacia el primer cliente real.
+
+Repo: sebastisnzoth/ugo-admin-panel
+Piloto: Faxina + Marido de Aluguel
+Restricción: no abrir frentes nuevos que no bloqueen el lifecycle real.
+
+Prioridad funcional:
+1. matching correcto
+2. alerta inmediata al proveedor
+3. GPS válido
+4. aceptación y estados en tiempo real
+5. llegada/geofence
+6. evidencias
+7. trabajo
+8. pago y deuda UGO
+9. ratings
+10. Admin/Command Center coherente
+11. regresión end-to-end
+12. pruebas humanas finales
+
+Tareas:
+1. Reconstruye el estado desde main y evidencia actual.
+2. Clasifica cada trabajo como P0, P1 o DEFERRED.
+3. Hugo/orbe/voz debe quedar DEFERRED y fuera del launch gate mientras no se reactive explícitamente.
+4. Para cada P0 define:
+   - causa
+   - cambio
+   - dependencia
+   - prueba
+   - evidencia para DONE
+5. No uses estimaciones de calendario como sustituto de evidencia.
+6. Define el orden exacto de ejecución autónoma hasta que sólo resten pruebas humanas/físicas.
+7. Incluye rollback y riesgo para cada cambio de alto impacto.
+
+Salida:
+- Roadmap ordenado
+- Dependencias
+- Definición de DONE por control
+- Qué puede resolver ChatGPT autónomamente
+- Qué necesita Sergio
+- Gate final para primer cliente real
 ```
 
 ---
 
 ## Cómo usarlos
 
-1. **Copiar el prompt** que necesites (completo, con contexto)
-2. **Pegar en ChatGPT/Claude** (versión sin restricciones)
-3. **Dar acceso al repo si es necesario** (puede necesitar ver archivos específicos)
-4. **Iterar**: usa la salida como base y refina
+- **Incidente de proveedor sin alerta:** ejecutar #3 y luego #1.
+- **GPS inválido / llegada bloqueada:** ejecutar #2 y luego #1.
+- **Pago trabado:** ejecutar #4 y luego #1.
+- **Command Center desordenado:** ejecutar #6.
+- **Seguridad / permisos:** ejecutar #5.
+- **CI dice verde pero runtime falla:** ejecutar #7.
+- **Para cerrar UGO:** ejecutar #1 + #6 + #8.
 
-### Combinaciones útiles
+## Regla de salida para cualquier auditoría
 
-**Para una auditoría rápida (1 hora):**
-- #1 (God Module) + #2 (Seguridad) + #4 (Docs)
+No usar "listo", "resuelto", "READY" o "VERIFIED" sin evidencia suficiente.
 
-**Para un plan de refactor (2-3 horas):**
-- #1 (God Module) + #3 (Complejidad) + #8 (Roadmap)
+Usar siempre:
+- **DONE**: implementación + wiring + prueba + evidencia persistida
+- **UNVERIFIED**: existe implementación pero falta prueba válida
+- **FAILED**: prueba válida demuestra fallo
+- **BLOCKED_EXTERNAL**: dependencia externa inaccesible
+- **BLOCKED_HUMAN**: requiere acción física, consentimiento o autorización humana
 
-**Para un onboarding limpio:**
-- #4 (Docs) + #5 (CI/CD) + #6 (Permisos)
-
-**Para testing sólido:**
-- #7 (Tests) + #2 (Seguridad) + #8 (Roadmap)
-
----
-
-## Notas finales
-
-- Estos prompts asumen que tienes acceso a los archivos del repo o puedes compartir URLs directas a GitHub.
-- ChatGPT funciona bien para análisis estáticos (código, documentación).
-- Para análisis dinámicos (cobertura de tests, comportamiento en runtime), necesitarás correr herramientas locales.
-- Si el repo es privado, deberás copiar los archivos manualmente o usar Claude con acceso a tu máquina local.
+No mezclar evidencias de distintos SHAs.
