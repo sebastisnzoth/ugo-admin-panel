@@ -141,7 +141,10 @@ export function evaluateFunctionalReadiness({
     }
   }
 
-  const dependencySatisfied = id => byId.get(id)?.status === 'VERIFIED'
+  const dependencySatisfied = id => {
+    const status=byId.get(id)?.status
+    return status === 'VERIFIED' || status === 'HUMAN_REQUIRED'
+  }
 
   const humanBlockedMemo = new Map()
   const dependsOnHumanFinal = (id, visiting = new Set()) => {
