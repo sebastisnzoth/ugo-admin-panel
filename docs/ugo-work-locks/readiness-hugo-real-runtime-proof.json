@@ -3,10 +3,10 @@
   "task_id": "readiness-hugo-real-runtime-proof",
   "job_id": "UGO-READINESS-HUGO-REAL-RUNTIME-PROOF-20261001",
   "title": "Prueba real Hugo",
-  "status": "IN_PROGRESS",
+  "status": "HUMAN_REQUIRED",
   "started_at": "2026-10-01T12:41:00Z",
-  "heartbeat_at": "2026-10-01T12:41:00Z",
-  "lease_expires_at": "2026-10-01T13:26:00Z",
+  "heartbeat_at": "2026-10-02T11:50:00Z",
+  "lease_expires_at": null,
   "started_sha": "b52644b4856c9c5084f6f635bef57c918fe77d83",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -24,21 +24,46 @@
     "qa-lab"
   ],
   "correlation_id": "hugo-real-runtime-proof-20261001T124100Z",
-  "current_step": "AGGREGATE_REAL_TOOL_BACKEND_UI_PROOFS_AND_VERIFY_NO_MOCK_ONLY",
-  "attempt": 1,
+  "current_step": "HUMAN_MIC_GEMINI_AUDIO_TOOL_BACKEND_UI_CHAIN",
+  "attempt": 2,
   "evidence_ids": [
     "epic:ugo-client-provider-flow-recovery",
     "dependency:hugo-admin-actions:HUMAN_REQUIRED",
-    "main-sha:b52644b4856c9c5084f6f635bef57c918fe77d83"
+    "main-sha:b52644b4856c9c5084f6f635bef57c918fe77d83",
+    "dependency:hugo-client-order-by-voice:AUTOMATED_PASS",
+    "dependency:hugo-provider-actions:AUTOMATED_PASS",
+    "dependency:hugo-admin-actions:AUTOMATED_PASS",
+    "hugo-voice:AUTOMATED_SCOPE_PASS",
+    "stale-lock-reconciled:2026-10-02T11:50:00Z"
   ],
   "production_touched": false,
   "completed_at": null,
   "finished_at": null,
   "verified_sha": null,
-  "result": null,
+  "result": "HUMAN_REQUIRED",
   "human_final": {
     "required": true,
     "status": "PENDING",
     "kind": "MICROPHONE_GEMINI_AUDIO_TOOL_BACKEND_UI_CHAIN"
+  },
+  "automated_scope": {
+    "result": "PASS",
+    "basis": [
+      "hugo-client-order-by-voice automated scope: Judge PASS + Sentinel PASS",
+      "hugo-provider-actions automated scope: Judge PASS + Sentinel PASS",
+      "hugo-admin-actions automated scope: Judge PASS + Sentinel PASS",
+      "hugo voice browser/contracts/current source checks PASS"
+    ],
+    "remaining": "physical microphone/audio + real tool/backend/UI chain only"
+  },
+  "human_runtime_evidence": {
+    "result": "PENDING",
+    "symptom": ""
+  },
+  "human_final_required": {
+    "required": true,
+    "status": "PENDING",
+    "action": "En UGO TEST/Preview con micrófono/audio reales, ejecutar una conversación Hugo completa que dispare una acción real y verificar mutación backend + reflejo UI sin mocks.",
+    "evidence_required": "Micrófono/audio real + tool/backend/UI chain"
   }
 }
