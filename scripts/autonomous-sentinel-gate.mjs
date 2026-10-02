@@ -5,7 +5,8 @@ if(!key)throw new Error('SENTINEL_SERVICE_ROLE_REQUIRED')
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}})
 const one=async(q,label)=>{const{data,error}=await q;if(error)throw new Error(label+': '+error.message);return data}
 const state=await one(db.from('autonomous_company_state').select('mode').eq('singleton',true).single(),'state')
-if(state.mode!=='OFF')throw new Error('SENTINEL_UNSAFE_AUTONOMY mode='+state.mode)
+if(!['OFF','ON'].includes(state.mode))throw new Error('SENTINEL_UNSAFE_AUTONOMY mode='+state.mode)
+if(state.mode==='ON'){const gate=await one(db.from('autonomous_release_gate').select('status,blockers').eq('gate_key','AUTONOMY_ON').single(),'autonomy-on-gate');if(gate.status!=='READY'||(gate.blockers||[]).length)throw new Error('SENTINEL_AUTONOMY_ON_WITHOUT_READY_GATE')}
 const d14=await one(db.from('autonomous_agents').select('agent_key,status').eq('department_id',14),'d14')
 const canonical=['internal-auditor','enterprise-risk-officer','internal-control-inspector','cross-department-auditor','ai-governance-auditor','executive-assurance-challenge']
 const active=d14.filter(x=>x.status!=='DISABLED').map(x=>x.agent_key).sort()
