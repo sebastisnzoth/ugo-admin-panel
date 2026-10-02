@@ -52,7 +52,7 @@ All model-bound text uses the server sanitization boundary as defense in depth.
 
 ## UI actions
 
-The model may propose an action, but `server/hugo/uiAction.ts` and `server/hugo/permissions.ts` decide whether it is valid. Client/provider currently receive no server-returned admin UI actions. Admin cannot target Super Admin. Super Admin targeting requires verified Super Admin authority.
+The model may propose an action, but policy code decides whether it is valid. Admin actions pass through `server/hugo/uiAction.ts` and `server/hugo/permissions.ts`; Admin cannot target Super Admin and Super Admin targeting requires verified Super Admin authority. Provider model output is navigation-only: online/offline, accepting/rejecting work and lifecycle state changes are rejected when proposed by the LLM and remain owned by deterministic app commands/guards.
 
 ## CORS
 
