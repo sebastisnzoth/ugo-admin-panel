@@ -12,6 +12,18 @@ const AVAILABILITY_HEARTBEAT_MS=20_000
 const ARRIVAL_RADIUS_M=200
 const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
+const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:12_000}
+const GEO_FALLBACK_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:8_000}
+
+function getFreshBrowserPosition():Promise<GeolocationPosition>{
+ return new Promise((resolve,reject)=>{
+  navigator.geolocation.getCurrentPosition(resolve,highError=>{
+   if(highError.code===1){reject(highError);return}
+   navigator.geolocation.getCurrentPosition(resolve,reject,GEO_FALLBACK_OPTIONS)
+  },GEO_HIGH_ACCURACY_OPTIONS)
+ })
+}
+
 
 function distanceMeters(a:[number,number],b:[number,number]){
  const toRad=(v:number)=>v*Math.PI/180,R=6_371_000
@@ -54,15 +66,25 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   if(!available||enRoute||!navigator.geolocation)return
   let alive=true
   const rpc=supabase as unknown as LocationRpcClient
-  const publishHeartbeat=()=>navigator.geolocation.getCurrentPosition(async pos=>{
-   if(!alive)return
-   const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
-   if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M||age>MAX_POSITION_AGE_MS)return
-   const{error}=await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:new Date(capturedAtMs).toISOString(),p_accuracy_m:accuracy})
-   if(!alive)return
-   if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos mantener tu GPS reciente para recibir pedidos. UGO va a reintentar.');return}
-   setLocationError('');lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy})
-  },error=>{if(!alive)return;setLocationError(error.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':error.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder. Estás Online, pero UGO necesita una ubicación reciente para enviarte pedidos.')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
+  const publishHeartbeat=async()=>{
+   try{
+    const pos=await getFreshBrowserPosition()
+    if(!alive)return
+    const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
+    if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M||age>MAX_POSITION_AGE_MS){
+     setLocationError('UGO recibió una ubicación inválida o antigua. Está reintentando para mantenerte dentro del matching.')
+     return
+    }
+    const{error}=await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:new Date(capturedAtMs).toISOString(),p_accuracy_m:accuracy})
+    if(!alive)return
+    if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos mantener tu GPS reciente para recibir pedidos. UGO va a reintentar.');return}
+    setLocationError('');lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy})
+   }catch(error){
+    if(!alive)return
+    const geoError=error as GeolocationPositionError
+    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':geoError.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder incluso con el modo compatible. UGO sigue reintentando para devolverte al matching.')
+   }
+  }
   publishHeartbeat()
   const timer=window.setInterval(publishHeartbeat,AVAILABILITY_HEARTBEAT_MS)
   return()=>{alive=false;window.clearInterval(timer)}
