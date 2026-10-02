@@ -225,6 +225,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      - name: Verify Provider GPS permission and freshness contracts
+        shell: bash
+        run: node --test tests/contracts/provider-live-gps-quality.test.mjs
+
       - name: Build UGO TEST app for GitHub Pages
         env:
           VITE_HUGO_EDGE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co/functions/v1/hugo-runtime
