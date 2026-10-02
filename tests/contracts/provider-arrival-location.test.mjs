@@ -87,10 +87,15 @@ test('arrival rejects Null Island instead of persisting a fake provider position
 
 
 test('provider tracker surfaces precise GPS failures and never auto-arrives from an error callback',()=>{
- assert.match(tracker,/error=>\{if\(error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return;setLocationError\(error\.code===1\?'UGO necesita permiso de ubicación precisa/)
- assert.match(tracker,/No pudimos obtener tu GPS\. Revisá que la ubicación del dispositivo esté activada\./)
- assert.match(tracker,/El GPS tardó demasiado en responder\. Reintentando/)
- const errorHandler=tracker.slice(tracker.indexOf('error=>{if(error.code!==1'),tracker.indexOf('}, {enableHighAccuracy:true'))
+ assert.match(tracker,/const setGeoError=/)
+ assert.match(tracker,/error\.code!==1/)
+ assert.match(tracker,/lastValidFixAtRef\.current/)
+ assert.match(tracker,/Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS/)
+ assert.match(tracker,/UGO necesita permiso de ubicación precisa/)
+ assert.match(tracker,/El navegador no pudo determinar tu ubicación/)
+ assert.match(tracker,/El GPS del navegador tardó demasiado en responder/)
+ const errorHandler=tracker.slice(tracker.indexOf('watchPosition('),tracker.indexOf('const refresh=',tracker.indexOf('watchPosition(')))
+ assert.match(errorHandler,/setGeoError\(error\)/)
  assert.doesNotMatch(errorHandler,/autoArrivalRef/)
  assert.doesNotMatch(errorHandler,/actualizar_ubicacion_y_distancia/)
 })
@@ -111,7 +116,10 @@ test('manual arrival reuses trusted tracker GPS and only reacquires for explicit
 test('provider tracker keeps a recent trusted fix through transient timeout callbacks',()=>{
  assert.match(tracker,/lastValidFixAtRef=useRef\(0\)/)
  assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
- assert.match(tracker,/error\.code!==1&&lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS\)return/)
+ const helper=tracker.slice(tracker.indexOf('const setGeoError='),tracker.indexOf('const publish=',tracker.indexOf('const setGeoError=')))
+ assert.match(helper,/error\.code!==1/)
+ assert.match(helper,/Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS/)
+ assert.match(helper,/return/)
 })
 
 
