@@ -4,7 +4,6 @@ import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 test('provider live tracker rejects inaccurate and stale GPS before backend writes or auto-arrival',async()=>{const s=await read('src/mvp/ProviderLocationTracker.tsx');assert.match(s,/MAX_ACCEPTABLE_ACCURACY_M=250/);assert.match(s,/MAX_POSITION_AGE_MS=30_000/);assert.match(s,/accuracy>MAX_ACCEPTABLE_ACCURACY_M/);assert.match(s,/age>MAX_POSITION_AGE_MS/);const accuracy=s.indexOf('accuracy>MAX_ACCEPTABLE_ACCURACY_M'),arrivalRpc=s.indexOf("rpc.rpc('publicar_ubicacion_proveedor'"),availabilityRpc=s.indexOf("rpc.rpc('publicar_ubicacion_disponibilidad_proveedor'");assert.ok(accuracy>0&&arrivalRpc>accuracy&&availabilityRpc>accuracy,'GPS quality gate must run before trusted location RPCs')})
 
-
 test('provider availability GPS only publishes while both online and available, but en-route tracking remains active',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(s,/trackingProfile&&trackingProfile\.online&&trackingProfile\.disponible/)
@@ -16,13 +15,14 @@ test('provider availability GPS only publishes while both online and available, 
 
 test('en-route trusted GPS RPC failures are surfaced instead of silently swallowed',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
- const rpcError=s.indexOf('if(error){')
- assert.ok(rpcError>=0)
+ const arrivalRpc=s.indexOf("rpc.rpc('publicar_ubicacion_proveedor'")
+ assert.ok(arrivalRpc>=0)
+ const rpcError=s.indexOf('if(error){',arrivalRpc)
+ assert.ok(rpcError>arrivalRpc)
  const tail=s.slice(rpcError,rpcError+500)
  assert.match(tail,/if\(enRoute\)setLocationError/)
  assert.match(tail,/No pudimos publicar tu GPS reciente/)
 })
-
 
 test('provider en-route UI exposes GPS freshness and precision without trusting stale fixes',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
