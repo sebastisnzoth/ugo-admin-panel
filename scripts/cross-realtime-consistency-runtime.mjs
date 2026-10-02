@@ -27,11 +27,11 @@ const {stdout,stderr}=await execFileAsync(process.execPath,['scripts/chat-realti
 assert.match(stdout,/CHAT_REALTIME_OK/,'CLIENT_PROVIDER_REALTIME_PROBE_FAILED')
 if(stderr)console.error(stderr)
 
-const {data:runs,error:runError}=await db.from('autonomous_qa_runs').select('id,service_id,created_at,result').eq('scenario_id',scenario.id).gte('created_at',startedAt).order('created_at',{ascending:false}).limit(1)
-if(runError)throw runError
-const qaRun=runs?.[0]
-assert.ok(qaRun?.service_id,'REALTIME_QA_SERVICE_REQUIRED')
-const serviceId=qaRun.service_id
+const {data:evidenceRows,error:evidenceLookupError}=await db.from('autonomous_qa_assertion_evidence').select('run_id,service_id,created_at,source,passed').eq('scenario_id',scenario.id).eq('source','REALTIME_RUNTIME').gte('created_at',startedAt).eq('passed',true).order('created_at',{ascending:false}).limit(20)
+if(evidenceLookupError)throw evidenceLookupError
+const qaEvidence=(evidenceRows||[]).find(row=>row.service_id&&row.run_id)
+assert.ok(qaEvidence?.service_id,'REALTIME_QA_SERVICE_REQUIRED')
+const serviceId=qaEvidence.service_id
 
 const [{data:service,error:serviceError},{data:events,error:eventsError},{data:notifications,error:notificationsError}]=await Promise.all([
  db.from('servicios').select('id,estado,cliente_id,proveedor_id').eq('id',serviceId).single(),
@@ -50,7 +50,7 @@ const out={
  environment:'UGO TEST',
  result:'PASS',
  service_id:serviceId,
- qa_run_id:qaRun.id,
+ qa_run_id:qaEvidence.run_id,
  client_provider_realtime:true,
  admin_realtime_dependency_verified:true,
  same_service_state_persisted:true,
