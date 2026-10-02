@@ -35,11 +35,17 @@ assert.equal(service.ambiente,'demo')
 assert.equal(service.estado,'completado')
 assert.ok(service.cliente_id&&service.proveedor_id&&service.completado_at)
 const expected=['ofrecido','asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado']
-let cursor=-1
-for(const state of expected){
- const next=events.findIndex((x,i)=>i>cursor&&x.estado_nuevo===state)
- assert.ok(next>cursor,'missing lifecycle state '+state)
- cursor=next
+const expectedTransitions=[
+ ['borrador','ofrecido'],
+ ['ofrecido','asignado'],
+ ['asignado','en_camino'],
+ ['en_camino','llegado'],
+ ['llegado','en_progreso'],
+ ['en_progreso','esperando_aprobacion'],
+ ['esperando_aprobacion','completado']
+]
+for(const[from,to]of expectedTransitions){
+ assert.ok(events.some(x=>x.estado_anterior===from&&x.estado_nuevo===to),'missing lifecycle transition '+from+'->'+to)
 }
 assert.ok(offers.some(x=>x.estado==='aceptada'&&x.proveedor_id===service.proveedor_id&&Number(x.distancia_km||0)<=20))
 assert.equal(payment?.metodo,'efectivo')
