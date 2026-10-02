@@ -1,0 +1,34 @@
+{
+  "readiness_id": "end-to-end-command-center-gate",
+  "task_id": "readiness-end-to-end-command-center-gate",
+  "job_id": "UGO-READINESS-END-TO-END-COMMAND-CENTER-GATE-20261002",
+  "title": "Evaluate final autonomous Command Center gate",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T13:05:00Z",
+  "heartbeat_at": "2026-10-02T13:05:00Z",
+  "lease_expires_at": "2026-10-02T13:50:00Z",
+  "started_sha": "3adee6bedfdc7efa27b9064258ffc48e90b8b633",
+  "owner": "UGO",
+  "department": "Flujo Cliente ↔ Proveedor · Reparación integral",
+  "assigned_agent": "UGO Launch Readiness Gate Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "launch-gate",
+    "audit-ledger",
+    "qa-lab"
+  ],
+  "correlation_id": "readiness-end-to-end-command-center-gate-20261002T130500Z",
+  "current_step": "EVALUATE_AUTONOMOUS_COMPLETENESS",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:cross-realtime-consistency:VERIFIED",
+    "dependency:cross-errors-recovery:VERIFIED",
+    "dependency:cross-regression:VERIFIED",
+    "dependency:cross-p0:VERIFIED",
+    "dependency:client-provider-lifecycle:VERIFIED"
+  ],
+  "production_touched": false
+}
