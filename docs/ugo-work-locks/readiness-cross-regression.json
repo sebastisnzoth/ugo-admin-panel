@@ -1,0 +1,31 @@
+{
+  "readiness_id": "cross-regression",
+  "task_id": "readiness-cross-regression",
+  "job_id": "UGO-READINESS-CROSS-REGRESSION-20261002",
+  "title": "Verify permanent regression coverage for corrected critical incidents",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T12:49:00Z",
+  "heartbeat_at": "2026-10-02T12:49:00Z",
+  "lease_expires_at": "2026-10-02T13:34:00Z",
+  "started_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "UGO Regression Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "regression"
+  ],
+  "correlation_id": "readiness-cross-regression-20261002T124900Z",
+  "current_step": "BUILD_AND_RUN_PERMANENT_REGRESSION_SUITE",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:cross-p0:VERIFIED",
+    "dependency:cross-rls:VERIFIED",
+    "dependency:cross-idempotency:VERIFIED",
+    "dependency:cross-errors:VERIFIED"
+  ],
+  "production_touched": false
+}
