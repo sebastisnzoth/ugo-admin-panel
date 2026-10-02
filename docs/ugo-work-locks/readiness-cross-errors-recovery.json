@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-errors-recovery",
   "job_id": "UGO-READINESS-CROSS-ERRORS-RECOVERY-20261002",
   "title": "Verify cross-flow fault injection and safe recovery",
-  "status": "IN_PROGRESS",
+  "status": "BLOCKED_DEPENDENCY",
   "started_at": "2026-10-02T12:51:00Z",
-  "heartbeat_at": "2026-10-02T12:51:00Z",
-  "lease_expires_at": "2026-10-02T13:36:00Z",
+  "heartbeat_at": "2026-10-02T12:53:00Z",
+  "lease_expires_at": null,
   "started_sha": "852d9e4e3e743b8f6ec71bdd1f0f0eea93824d17",
   "owner": "UGO",
   "department": "Flujo Cliente ↔ Proveedor · Reparación integral",
@@ -20,10 +20,19 @@
     "regression"
   ],
   "correlation_id": "readiness-cross-errors-recovery-20261002T125100Z",
-  "current_step": "IMPLEMENT_SAME_SHA_RUNTIME",
+  "current_step": "WAIT_CLIENT_PROVIDER_LIFECYCLE_PHYSICAL_EVIDENCE",
   "attempt": 1,
   "evidence_ids": [
-    "dependency:client-provider-lifecycle:VERIFIED"
+    "dependency:client-provider-lifecycle:VERIFIED",
+    "reconcile:dependency-race:20261002T125300Z",
+    "dependency:client-provider-lifecycle:HUMAN_REQUIRED",
+    "repo-evidence:docs/evidence/readiness-client-provider-lifecycle-20261002.json"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "result": "BLOCKED_DEPENDENCY",
+  "blocker": "client-provider-lifecycle:HUMAN_REQUIRED",
+  "dependency_status": {
+    "client-provider-lifecycle": "HUMAN_REQUIRED"
+  },
+  "result_summary": "Not runnable yet. The authoritative client-provider-lifecycle lock is HUMAN_REQUIRED after automated runtime/Judge/Sentinel PASS; this downstream control must remain blocked until the required physical/human evidence closes that dependency."
 }
