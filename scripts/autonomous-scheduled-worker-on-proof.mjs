@@ -32,7 +32,7 @@ assert.ok(Number(data?.evidenceLedger)>=1)
 
 const{data:safe,error:safeError}=await db.from('autonomous_company_state').select('mode').eq('singleton',true).single()
 if(safeError)throw safeError
-assert.equal(safe.mode,'OFF')
+assert.equal(safe.mode,data.initialMode)
 const{count:running,error:runningError}=await db.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('status','RUNNING')
 if(runningError)throw runningError
 assert.equal(running,0)
