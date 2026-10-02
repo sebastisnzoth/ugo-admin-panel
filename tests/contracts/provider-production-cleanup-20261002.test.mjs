@@ -39,3 +39,17 @@ test('provider separates Hugo and dispute controls on mobile',async()=>{
  assert.match(css,/\.ugo-dispute-launch\{[\s\S]*left:12px!important;[\s\S]*right:auto!important;/)
  assert.match(css,/\.provider-global-hugo\{[\s\S]*right:12px!important;/)
 })
+
+
+test('dedicated browser proof follows the cleaned provider shell',async()=>{
+ const [runtime,workflow]=await Promise.all([
+  read('scripts/provider-ui-runtime.mjs'),
+  read('.github/workflows/provider-ui-runtime-test.yml'),
+ ])
+ assert.match(runtime,/duplicate operational dock must be hidden/)
+ assert.match(runtime,/GPS overlaps notifications/)
+ assert.match(runtime,/Hugo overlaps dispute launcher/)
+ assert.match(workflow,/pull_request:/)
+ assert.match(workflow,/scripts\/provider-ui-runtime\.mjs/)
+ assert.match(workflow,/github\.event\.pull_request\.head\.sha \|\| github\.sha/)
+})
