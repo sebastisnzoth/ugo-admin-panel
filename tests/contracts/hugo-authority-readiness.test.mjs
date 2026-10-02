@@ -4,16 +4,17 @@ import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('Hugo chat requires authenticated role authority and explains denials',async()=>{
- const[api,policy]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/authority.ts')])
+ const[api,auth,policy,permissions]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/auth.ts'),read('server/hugo/authority.ts'),read('server/hugo/permissions.ts')])
  assert.match(api,/authorizeHugo\(req,body\)/)
- assert.match(api,/auth\.getUser\(token\)/)
- assert.match(api,/from\('usuarios'\)\.select\('tipo,activo'\)/)
- assert.match(api,/decideHugoAuthority/)
+ assert.match(auth,/auth\.getUser\(token\)/)
+ assert.match(auth,/from\('usuarios'\)\.select\('tipo,activo'\)/)
+ assert.match(auth,/decideHugoAuthority/)
  assert.match(api,/error_code:/)
  assert.match(api,/authority:info\.authority/)
  assert.match(policy,/INACTIVE_PROFILE/)
  assert.match(policy,/ROLE_MISMATCH/)
  assert.match(policy,/requiere autoridad/)
+ assert.match(permissions,/superadmin:\{canReadOwnContext:true,canReadOperationalContext:true,canReadGlobalGovernance:true/)
 })
 
 test('Hugo Live token already enforces session role before exposing voice tools',async()=>{
@@ -25,13 +26,10 @@ test('Hugo Live token already enforces session role before exposing voice tools'
  assert.match(api,/rol de la sesión no coincide con esta aplicación/)
 })
 
-test('Admin Hugo UI is only mounted after verified admin role and sensitive voice mutations stay unavailable',async()=>{
- const[admin,bridge,orb,superAdmin]=await Promise.all([read('src/mvp/AdminPhase2.tsx'),read('src/lib/browserVoiceBridge.ts'),read('src/components/ConversationalOrb.tsx'),read('src/mvp/SuperAdminCommandCenter.tsx')])
+test('visible Admin and Super Admin surfaces keep the Hugo orb disabled',async()=>{
+ const[admin,superAdmin,bridge]=await Promise.all([read('src/mvp/AdminPhase2.tsx'),read('src/mvp/SuperAdminCommandCenter.tsx'),read('src/lib/browserVoiceBridge.ts')])
  assert.match(admin,/\['admin','superadmin'\]\.includes\(role\)/)
- assert.match(admin,/\{adminRole&&section!=='superadmin'&&<ConversationalOrb/)
+ assert.doesNotMatch(admin,/<ConversationalOrb/)
+ assert.doesNotMatch(superAdmin,/<ConversationalOrb/)
  assert.doesNotMatch(bridge,/admin_(set|delete|approve|pay|resolve)_/)
- assert.match(bridge,/No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz/)
- assert.match(orb,/INVALID_TARGET/)
- assert.match(orb,/Ese módulo no está habilitado para navegación por voz/) 
- assert.match(superAdmin,/ConversationalOrb/)
 })
