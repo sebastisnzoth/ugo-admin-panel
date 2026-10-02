@@ -18,8 +18,8 @@ on:
       - ".github/workflows/provider-ui-runtime-test.yml"
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
-  cancel-in-progress: false
+  group: provider-ui-runtime-${{ github.event.pull_request.head.sha || github.sha }}
+  cancel-in-progress: true
 jobs:
   provider-ui:
     runs-on: ubuntu-latest
