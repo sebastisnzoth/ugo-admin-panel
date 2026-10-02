@@ -18,7 +18,7 @@
           "id": "client-navigation",
           "title": "Navegación, menús y rutas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Recorrer todas las rutas y acciones; ningún botón muerto, loop o pantalla inaccesible.",
           "done_evidence": "Runtime UI del mismo SHA + rutas/acciones verificadas.",
           "improvement_focus": "Simplificar pasos y eliminar navegación duplicada.",
@@ -27,7 +27,9 @@
           "priority": "CRITICAL",
           "resources": [
             "client-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-navigation-20260929.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-request",
@@ -135,7 +137,7 @@
           "id": "client-payment",
           "title": "Pago / YA PAGUÉ / efectivo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Pago digital/efectivo sin doble cobro; efectivo genera deuda UGO cuando corresponda.",
           "done_evidence": "Pruebas TEST + ledger/auditoría.",
           "improvement_focus": "Claridad de monto, estado y recibo.",
@@ -147,7 +149,9 @@
           "resources": [
             "payments",
             "client-payment"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-payment-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-rating",
@@ -204,7 +208,7 @@
           "id": "client-notifications",
           "title": "Notificaciones Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Asignado, en camino, llegó, cambios y cierre.",
           "done_evidence": "Push/web TEST o evidencia del canal soportado.",
           "improvement_focus": "Preferencias y fallback.",
@@ -215,7 +219,9 @@
           "priority": "NORMAL",
           "resources": [
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-responsive",
@@ -586,7 +592,7 @@
           "id": "hugo-timeout",
           "title": "Timeout/fallback/error",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Gemini/OpenRouter timeout/fallback sin congelar UI.",
           "done_evidence": "Fault injection + telemetría.",
           "improvement_focus": "Mensaje y retry claros.",
@@ -597,7 +603,9 @@
           "priority": "NORMAL",
           "resources": [
             "model-router"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-hugo-timeout-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "hugo-audit",
@@ -661,7 +669,7 @@
           "id": "admin-auth",
           "title": "Autenticación y roles",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Rutas y acciones restringidas por rol.",
           "done_evidence": "Pruebas positivas/negativas.",
           "improvement_focus": "Mensajes de acceso claros.",
@@ -670,7 +678,9 @@
           "priority": "CRITICAL",
           "resources": [
             "admin-auth"
-          ]
+          ],
+          "evidence_path": "docs/evidence/admin-auth-20260929.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "admin-navigation",
@@ -1116,7 +1126,7 @@
           "id": "cross-accessibility",
           "title": "Accesibilidad básica",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Teclado, foco, contraste, labels y targets táctiles.",
           "done_evidence": "Audit automatizable + revisión.",
           "improvement_focus": "Corregir WCAG básicos.",
@@ -1130,7 +1140,9 @@
           "priority": "NORMAL",
           "resources": [
             "preview-runtime"
-          ]
+          ],
+          "evidence_path": "docs/ugo-readiness-evidence/readiness-cross-accessibility-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-visual",
@@ -1156,7 +1168,7 @@
           "id": "cross-security",
           "title": "Secretos, logs y privacidad",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "No secretos en cliente/logs; datos mínimos.",
           "done_evidence": "Scan + pruebas de sanitización.",
           "improvement_focus": "Redacción automática.",
@@ -1168,7 +1180,9 @@
           "priority": "HIGH",
           "resources": [
             "security-rls"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-cross-security-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-observability",
@@ -1380,7 +1394,7 @@
           "id": "request-payment-before-dispatch",
           "title": "Pago definido antes de dispatch",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Ningún pedido entra a matching/asignación sin método de pago persistido.",
           "done_evidence": "Todo pedido elegible para matching tiene payment method definido.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1394,7 +1408,9 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "client-payment"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-request-payment-before-dispatch-20261001.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "admin-assignment-payment-guard",
