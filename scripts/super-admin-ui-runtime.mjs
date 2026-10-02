@@ -102,7 +102,7 @@ try{
   let headerMatched=false;
   for(let attempt=0;attempt<30;attempt++){
     const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Launch: '+before.launch)){headerMatched=true;break}
+    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Customer #1: '+before.launch)){headerMatched=true;break}
     await page.waitForTimeout(250);
   }
   assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
