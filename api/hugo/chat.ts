@@ -3,6 +3,7 @@ import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
 import{askHugoText}from'../../server/hugo/modelAdapter'
 import{asRecord,extractJson}from'../../server/hugo/json'
 import{buildHugoPrompt}from'../../server/hugo/promptBuilder'
+import{enforceHugoIpRateLimit,enforceHugoUserRateLimit}from'../../server/hugo/rateLimit'
 import{parseHugoRequestBody}from'../../server/hugo/request'
 import{clean}from'../../server/hugo/security'
 import{parseHugoUiAction}from'../../server/hugo/uiAction'
@@ -20,8 +21,10 @@ export default async function handler(req:RequestLike,res:ResponseLike){
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!isAllowedHugoRequestOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
+  enforceHugoIpRateLimit(req)
   const body=parseHugoRequestBody(req.body)
   const authority=await authorizeHugo(req,body)
+  enforceHugoUserRateLimit(authority.user.id,body.tts===true?'tts':'chat')
   if(body.tts===true){
    const text=clean(body.text||body.message,360)
    if(!text)return res.status(400).json({error:'Texto requerido para voz.'})
