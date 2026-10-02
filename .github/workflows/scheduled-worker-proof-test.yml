@@ -12,7 +12,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  # This proof touches only autonomous-company/job ledgers; it does not mutate the shared provider fixture.
+  # Keep its own queue so provider/RLS workflow_run cascades cannot evict the autonomy proof.
+  group: ugo-test-scheduled-worker-proof-${{ github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: false
 
 jobs:
