@@ -31,7 +31,7 @@ test('hugo-runtime orders guards before expensive model or token work',async()=>
  const parse=source.indexOf("parseHugoEdgeBody(raw,'client')")
  const auth=source.indexOf('const auth=await authorize(req,role)')
  const user=source.indexOf('enforceHugoEdgeUserRateLimit(auth.user.id')
- const live=source.indexOf('createLiveToken()')
+ const live=source.indexOf('return json(await createLiveToken()')
  const model=source.indexOf('const result=await askModel(message')
  assert.ok(ip>=0&&parse>ip&&auth>parse&&user>auth&&live>user&&model>user)
  assert.match(source,/Retry-After/)
