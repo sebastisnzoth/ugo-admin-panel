@@ -143,7 +143,7 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
   const testLng = -48.4242297
 
   try {
-    const { data: created, error: createError } = await c.from('servicios').insert({
+    const { data: created, error: createError } = await a.from('servicios').insert({
       cliente_id: clientId,
       categoria_id: category.id,
       estado: 'buscando',
