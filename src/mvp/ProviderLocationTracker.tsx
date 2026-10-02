@@ -31,7 +31,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  const autoArrivalRef=useRef(onAutoArrival),attemptedServiceRef=useRef<string|null>(null),lastValidFixAtRef=useRef(0)
  useEffect(()=>{autoArrivalRef.current=onAutoArrival},[onAutoArrival])
  useEffect(()=>{if(service?.estado!=='en_camino'){attemptedServiceRef.current=null;setLastFix(null)}},[service?.estado,service?.id])
- useEffect(()=>{if(!enRoute)return;setNowMs(Date.now());const timer=window.setInterval(()=>setNowMs(Date.now()),1_000);return()=>window.clearInterval(timer)},[enRoute])
+ useEffect(()=>{if(!available&&!enRoute)return;setNowMs(Date.now());const timer=window.setInterval(()=>setNowMs(Date.now()),1_000);return()=>window.clearInterval(timer)},[available,enRoute])
 
  useEffect(()=>{
   let alive=true
@@ -62,7 +62,7 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    if(!alive)return
    if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos mantener tu GPS reciente para recibir pedidos. UGO va a reintentar.');return}
    setLocationError('');lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy})
-  },()=>{}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
+  },error=>{if(!alive)return;setLocationError(error.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':error.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder. Estás Online, pero UGO necesita una ubicación reciente para enviarte pedidos.')}, {enableHighAccuracy:true,maximumAge:0,timeout:12000})
   publishHeartbeat()
   const timer=window.setInterval(publishHeartbeat,AVAILABILITY_HEARTBEAT_MS)
   return()=>{alive=false;window.clearInterval(timer)}
@@ -110,7 +110,13 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
  const freshness=lastFix?`${fixAgeMs!=null&&fixAgeMs<=MAX_POSITION_AGE_MS?'GPS reciente':'GPS desactualizado'} · hace ${Math.floor((fixAgeMs||0)/1_000)} s · precisión ±${Math.round(lastFix.accuracy)} m`:'Esperando primera ubicación reciente…'
- if(service?.estado!=='en_camino')return null
+ const idleGpsStale=available&&(!lastFix||fixAgeMs==null||fixAgeMs>MAX_POSITION_AGE_MS)
+ if(service?.estado!=='en_camino'){
+  if(!available)return null
+  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>Online sin GPS válido</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
+  if(idleGpsStale)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>Online, pero fuera del matching</strong><span>📍 UGO necesita renovar tu GPS para poder enviarte nuevos pedidos.</span><span className="provider-location-freshness">{freshness}</span></div>
+  return null
+ }
  if(locationError)return <div className="provider-arrival-toast provider-location-error" role="alert"><strong>GPS necesita atención</strong><span>📍 {locationError}</span><span className="provider-location-freshness">{freshness}</span></div>
  if(distanceToClient==null)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>GPS activo</strong><span>Buscando tu distancia exacta al cliente…</span><span className="provider-location-freshness">{freshness}</span></div>
  if(distanceToClient>ARRIVAL_RADIUS_M)return <div className="provider-arrival-toast provider-location-info" role="status"><strong>{Math.round(distanceToClient)} m para llegar</strong><span>UGO sigue publicando tu ubicación. “YA LLEGUÉ” se valida contra el geofence de {ARRIVAL_RADIUS_M} m.</span><span className="provider-location-freshness">{freshness}</span></div>
