@@ -2,10 +2,10 @@
   "readiness_id": "provider-offers",
   "task_id": "readiness-provider-offers",
   "job_id": "UGO-READINESS-PROVIDER-OFFERS",
-  "status": "DONE",
+  "status": "IN_PROGRESS",
   "started_at": "2026-10-02T10:40:49Z",
-  "heartbeat_at": "2026-10-02T12:35:00Z",
-  "lease_expires_at": "2026-10-02T12:35:00Z",
+  "heartbeat_at": "2026-10-02T12:36:00Z",
+  "lease_expires_at": "2026-10-02T13:36:00Z",
   "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "assigned_agent": "Provider Matching Agent",
@@ -18,7 +18,7 @@
     "notifications"
   ],
   "correlation_id": "provider-offers-regression-20261002-1406",
-  "current_step": "VERIFIED",
+  "current_step": "VERIFY_MATCHING_BORN_OFFER_ACCEPTANCE_PERSISTS",
   "attempt": 3,
   "evidence_ids": [
     "provider-offers-runtime-20260929T205600Z",
@@ -35,7 +35,11 @@
     "github-artifact:11226435914",
     "repo-evidence:docs/evidence/readiness-provider-notifications-20261002-e2e.json",
     "verified-sha:19c2b829815052b654c5366c054d7bfb44a7cbf5",
-    "e2e-origin:CLIENT_AUTH_MATCHING_DIRECTED"
+    "e2e-origin:CLIENT_AUTH_MATCHING_DIRECTED",
+    "commit:62b7a56df8607815e22854bd4e35802ab99466d5",
+    "commit:8053ec21935ef87134630b8c894922e8af9f306f",
+    "commit:1c12a114c0c339f4b1442fde6b9167f1f4950344",
+    "github-run:37007548098"
   ],
   "title": "Verify eligible provider offers reach and alert the correct provider",
   "department": "App Proveedor",
@@ -47,12 +51,12 @@
     "ugo-evidence-judge"
   ],
   "validators_result": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING_ACCEPTANCE_E2E",
+    "Sentinel": "PENDING_ACCEPTANCE_E2E"
   },
   "evidence_path": "docs/evidence/readiness-provider-notifications-20261002-e2e.json",
   "production_touched": false,
-  "result_summary": "VERIFIED in UGO TEST with same-run E2E evidence: authenticated client matching created the provider offer, DB trigger created nueva_oferta, provider received the realtime alert without refresh, and attention tone/vibration fired. Judge PASS, Sentinel PASS.",
+  "result_summary": "Provider offer creation + provider alert E2E PASS. Control remains IN_PROGRESS until the matching-born offer is accepted by the authenticated provider and assigned state persists in the same runtime.",
   "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
   "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
   "validation": {
@@ -77,7 +81,7 @@
   "failure": null,
   "completed_at": "2026-10-02T12:35:00Z",
   "finished_at": "2026-10-02T12:35:00Z",
-  "result": "VERIFIED",
+  "result": "PENDING_ACCEPTANCE_EVIDENCE",
   "verified_sha": "19c2b829815052b654c5366c054d7bfb44a7cbf5",
   "blocker": null
 }
