@@ -3,11 +3,11 @@
   "task_id": "readiness-provider-notifications",
   "job_id": "UGO-READINESS-PROVIDER-NOTIFICATIONS",
   "title": "Verify provider notifications in UGO TEST",
-  "status": "DONE",
-  "started_at": "2026-09-30T13:53:00Z",
-  "heartbeat_at": "2026-09-30T13:56:00Z",
+  "status": "BLOCKED_HUMAN",
+  "started_at": "2026-10-02T10:40:49Z",
+  "heartbeat_at": "2026-10-02T11:10:00Z",
   "lease_expires_at": null,
-  "started_sha": "3a11d88e5120951f1e0265f3d8cea8b8be4fdb4c",
+  "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "department": "App Proveedor",
   "assigned_agent": "Provider Notifications Runtime Agent",
@@ -18,37 +18,32 @@
     "ugo-runtime-validation",
     "ugo-evidence-judge"
   ],
-  "validators": [
-    "Judge",
-    "Sentinel"
-  ],
-  "resources": [
-    "notifications"
-  ],
-  "correlation_id": "readiness-provider-notifications-20260930T135300Z-3a11d88e-r2",
-  "current_step": "VERIFIED",
-  "attempt": 2,
+  "validators": ["Judge","Sentinel"],
+  "resources": ["notifications","provider-demand"],
+  "correlation_id": "provider-notifications-regression-20261002-1406",
+  "current_step": "physical_same_sha_alert_visibility",
+  "attempt": 3,
   "evidence_ids": [
     "github-run:36725016445",
-    "github-job:109919549135",
     "github-artifact:11101274032",
-    "repo-evidence:docs/evidence/readiness-provider-notifications-20260930.json"
+    "repo-evidence:docs/evidence/readiness-provider-offers-20261002-regression.json",
+    "github-run:36999184742"
   ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "PASS",
-    "Sentinel": "PASS"
+    "Judge": "PENDING_PHYSICAL_SAME_SHA",
+    "Sentinel": "PASS_TEST_ONLY"
   },
-  "completed_at": "2026-09-30T13:56:00Z",
-  "finished_at": "2026-09-30T13:56:00Z",
-  "verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
-  "merged_main_sha": "06af274f9614f6eba4dd0c15554218430049dd71",
+  "evidence_path": "docs/evidence/readiness-provider-offers-20261002-regression.json",
   "validation": {
-    "runtime": "PASS",
-    "judge": "PASS",
-    "sentinel": "PASS",
-    "build": "PASS",
-    "notification_contracts": "PASS",
+    "historical_runtime": "PASS",
+    "current_backend_alert_trigger": "OBSERVED",
+    "current_transaction_timeout": "FIXED_IN_UGO_ARENA",
+    "current_core_ci": "PASS",
+    "physical_provider_alert": "PENDING",
     "production_touched": false
-  }
+  },
+  "result_summary": "Historical notification runtime remains valid as prior evidence, but the 2026-10-02 matching transaction regression could roll back a newly-created provider offer notification before the app saw it. The database timeout cause is fixed in UGO Arena with indexed lifecycle retirement lookups. Same-SHA physical alert proof is required before closing again.",
+  "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
+  "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae"
 }
