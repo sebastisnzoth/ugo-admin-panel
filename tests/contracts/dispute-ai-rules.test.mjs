@@ -27,7 +27,8 @@ test('AI dispute analysis is admin-only decision support and can inspect images'
  assert.match(api,/inlineData/)
  assert.match(api,/nunca atribuyas quién causó un daño/i)
  assert.match(api,/disputa_ai_analisis/)
- assert.match(vercel,/"source": "\/api\/disputes\/analyze"[\s\S]*?"destination": "\/api\/test\?ugo_dispute_ai=1"/)
+ const rewrites=JSON.parse(vercel).rewrites||[]
+ assert.ok(rewrites.some(item=>item.source==='/api/disputes/analyze'&&item.destination==='/api/test?ugo_dispute_ai=1'))
  assert.match(panel,/no ejecuta pagos ni resuelve el caso por sí sola/i)
  assert.match(panel,/from\('evidencias_servicio'\)/)
  assert.match(panel,/storage\.from\(item\.bucket\)/)
