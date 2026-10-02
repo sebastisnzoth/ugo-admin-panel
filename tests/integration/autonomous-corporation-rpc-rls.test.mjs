@@ -144,7 +144,7 @@ test('Autonomous Company isolated UGO TEST control plane', {skip:!enabled}, asyn
  if(kill.error)throw kill.error
  const blocked=await db.rpc('autonomous_enqueue_job',{p_department_id:8,p_agent_id:technologyAgent.id,p_objective:'Must be contained',p_trigger_type:'TEST',p_target_type:'governance',p_target_id:'runtime-test',p_service_id:null,p_authority_class:technologyAgent.authority_class,p_idempotency_key:'ugo-autonomy-kill-'+crypto.randomUUID(),p_input_evidence:[]})
  assert.ok(blocked.error)
- assert.match(blocked.error.message,/AUTONOMY_(?:NOT_EXECUTABLE|CONTAINED)/)
+ assert.match(blocked.error.message,/AUTONOMY_(?:NOT_EXECUTABLE|CONTAINED|KILL_SWITCH_ACTIVE)/)
  const recovered=await db.rpc('superadmin_recover_kill_switch',{p_scope_type:'DEPARTMENT',p_scope_key:'8',p_verification:{evidence_refs:['integration-runtime-containment']},p_reason:'isolated verified recovery'})
  if(recovered.error)throw recovered.error
  assert.equal(recovered.data.decision,'RECOVER')
