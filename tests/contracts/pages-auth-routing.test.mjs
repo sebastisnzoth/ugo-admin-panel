@@ -17,3 +17,5 @@ test('client and provider auth callbacks use the current deployment origin and p
   assert.match(shared, /authRedirectTo=\`\$\{window\.location\.origin\}\$\{window\.location\.pathname\}\?app=\$\{appParam\}\`/)
   assert.doesNotMatch(shared, /vercel\.app/)
 })
+
+test('role profile validation never signs out a valid browser session while entering a flow',async()=>{const shared=await read('src/mvp/shared.tsx');const start=shared.indexOf('const loadProfile=useCallback');const end=shared.indexOf('useEffect(()=>{let active=true',start);const profileLoader=shared.slice(start,end);assert.doesNotMatch(profileLoader,/auth\.signOut\(/);assert.match(profileLoader,/Esta cuenta está desactivada/);assert.match(profileLoader,/Abrí la aplicación correspondiente/)})
