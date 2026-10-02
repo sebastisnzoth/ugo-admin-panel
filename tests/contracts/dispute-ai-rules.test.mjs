@@ -22,12 +22,13 @@ test('disputes v2 freeze context, support structured reasons and amicable agreem
 })
 
 test('AI dispute analysis is admin-only decision support and can inspect images',async()=>{
- const[api,panel,policy,vercel]=await Promise.all([read('api/test.ts'),read('src/mvp/AdminDisputeAssistant.tsx'),read('docs/UGO_DISPUTE_RULES_MASTER.md'),read('vercel.json')])
+ const[api,panel,policy,vercelText]=await Promise.all([read('api/test.ts'),read('src/mvp/AdminDisputeAssistant.tsx'),read('docs/UGO_DISPUTE_RULES_MASTER.md'),read('vercel.json')])
+ const vercel=JSON.parse(vercelText)
  assert.match(api,/Solo Admin puede analizar disputas/)
  assert.match(api,/inlineData/)
  assert.match(api,/nunca atribuyas quién causó un daño/i)
  assert.match(api,/disputa_ai_analisis/)
- assert.match(vercel,/"source": "\/api\/disputes\/analyze"[\s\S]*?"destination": "\/api\/test\?ugo_dispute_ai=1"/)
+ assert.ok(vercel.rewrites?.some(r=>r.source==='/api/disputes/analyze'&&r.destination==='/api/test?ugo_dispute_ai=1'))
  assert.match(panel,/no ejecuta pagos ni resuelve el caso por sí sola/i)
  assert.match(panel,/from\('evidencias_servicio'\)/)
  assert.match(panel,/storage\.from\(item\.bucket\)/)

@@ -4,7 +4,7 @@ import fs from 'node:fs'
 
 const proxy=fs.readFileSync('api/proxy.js','utf8')
 const dispatch=fs.readFileSync('src/lib/dispatch/supabaseDispatch.ts','utf8')
-const vercel=fs.readFileSync('vercel.json','utf8')
+const vercel=JSON.parse(fs.readFileSync('vercel.json','utf8'))
 
 test('legacy cascade serverless endpoint is fully retired and matching stays canonical',()=>{
  assert.equal(fs.existsSync('api/cascade.js'),false,'retired cascade must not consume a Vercel Hobby function slot')
@@ -18,6 +18,6 @@ test('legacy AI proxy is retired while authenticated Admin user creation remains
  assert.match(proxy,/\['admin','superadmin'\]\.includes\(String\(caller\.tipo\)\)/)
  assert.match(proxy,/status\(410\)/)
  assert.match(proxy,/UGO_LEGACY_AI_PROXY_RETIRED/)
- assert.match(vercel,/"source": "\/api\/admin\/create-user"[\s\S]*"destination": "\/api\/proxy\?admin_create_user=1"/)
- assert.match(vercel,/"source": "\/api\/hugo\/gemini"[\s\S]*"destination": "\/api\/test"/)
+ assert.ok(vercel.rewrites?.some(r=>r.source==='/api/admin/create-user'&&r.destination==='/api/proxy?admin_create_user=1'))
+ assert.ok(vercel.rewrites?.some(r=>r.source==='/api/hugo/gemini'&&r.destination==='/api/test'))
 })

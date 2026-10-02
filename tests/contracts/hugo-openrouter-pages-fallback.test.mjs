@@ -28,18 +28,20 @@ test('provider browser speech can continue through the authenticated Hugo model 
 })
 
 test('Hugo API keeps provider fallback conversational and non-mutating',async()=>{
- const src=await read('api/hugo/chat.ts')
- assert.match(src,/providerMode=requestedRole==='provider'/)
- assert.match(src,/En este fallback conversacional no ejecutes cambios por tu cuenta/)
- assert.match(src,/providerMode\?providerSystem/)
- assert.match(src,/clientMode\|\|providerMode\?null:uiAction/)
+ const[api,prompts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/promptBuilder.ts')])
+ assert.match(api,/buildHugoPrompt/)
+ assert.match(prompts,/providerMode=requestedRole==='provider'/)
+ assert.match(prompts,/En este fallback conversacional no ejecutes cambios por tu cuenta/)
+ assert.match(prompts,/providerMode\?providerSystem/)
+ assert.match(api,/clientMode\|\|providerMode\?null:parseHugoUiAction/)
 })
 
 test('GitHub Pages TEST preview uses Supabase Edge without exposing OpenRouter',async()=>{
- const[workflow,env,chat,testApi]=await Promise.all([
+ const[workflow,env,chat,cors,testApi]=await Promise.all([
   read('.github/workflows/github-pages.yml'),
   read('.env.example'),
   read('api/hugo/chat.ts'),
+  read('server/hugo/cors.ts'),
   read('api/test.ts'),
  ])
  assert.match(workflow,/VITE_HUGO_EDGE_URL: https:\/\/tmossnqfwfwjrtzwcbmm\.supabase\.co\/functions\/v1\/hugo-runtime/)
@@ -48,7 +50,7 @@ test('GitHub Pages TEST preview uses Supabase Edge without exposing OpenRouter',
  assert.match(workflow,/cp -a dist\/\. _site\/app\//)
  assert.match(env,/OPENROUTER_API_KEY=/)
  assert.doesNotMatch(env,/VITE_OPENROUTER_API_KEY=/)
- assert.match(chat,/https:\/\/sebastisnzoth\.github\.io/)
+ assert.match(cors,/https:\/\/sebastisnzoth\.github\.io/)
  assert.match(testApi,/https:\/\/sebastisnzoth\.github\.io/)
  assert.match(chat,/authorization, content-type/)
  assert.match(testApi,/authorization, content-type/)

@@ -8,12 +8,15 @@ await fs.mkdir('artifacts',{recursive:true})
 
 const orb=await fs.readFile('src/components/ConversationalOrb.tsx','utf8')
 const api=await fs.readFile('api/hugo/chat.ts','utf8')
+const adapter=await fs.readFile('server/hugo/modelAdapter.ts','utf8')
 const router=await fs.readFile('server/hugo/modelRouter.ts','utf8')
 assert.match(orb,/msgsRef=useRef<Msg\[\]>\(msgs\)/)
 assert.match(orb,/msgsRef\.current=msgs/)
 assert.match(orb,/history:msgsRef\.current\.slice\(-8\)/)
 assert.doesNotMatch(orb,/history:msgs\.slice\(-6\)/)
-assert.match(api,/history\.slice\(-8\)/)
+assert.match(api,/askHugoText/)
+assert.match(adapter,/history\.slice\(-8\)/)
+assert.match(adapter,/sanitizeForModel\(m\.content,1200\)/)
 assert.match(router,/contents:\[\.\.\.safeHistory,\{role:'user',parts:\[\{text:message\}\]\}\]/)
 
 const turns=[
@@ -44,7 +47,7 @@ const out={
  production_touched:false,
  correlation_id:correlation,
  session:{turns:turns.length,history_limit:8,retained_first_fact:'servicio 50',ordered:true},
- checks:['live-ref-not-stale-closure','bounded-8-turn-history','stable-role-mapping','history-before-current-turn','multi-turn-fact-retained','server-router-owner'],
+ checks:['live-ref-not-stale-closure','bounded-8-turn-history','stable-role-mapping','history-before-current-turn','multi-turn-fact-retained','server-adapter-owner'],
  observed,
  completed_at:new Date().toISOString(),
 }

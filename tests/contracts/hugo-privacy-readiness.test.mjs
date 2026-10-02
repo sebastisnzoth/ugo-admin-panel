@@ -3,16 +3,17 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
-test('Hugo sanitizes secrets before model-bound client/admin payloads',async()=>{
- const api=await read('api/hugo/chat.ts')
- assert.match(api,/function sanitizeForModel/)
- assert.match(api,/Bearer \[REDACTED\]/)
- assert.match(api,/\[REDACTED_JWT\]/)
- assert.match(api,/\[REDACTED_SECRET\]/)
- assert.match(api,/safeHistory/)
- assert.match(api,/safeMessage/)
- assert.match(api,/safeSystem/)
- assert.match(api,/safeText/)
+test('Hugo sanitizes secrets through the dedicated model-boundary module',async()=>{
+ const[api,security,model,tts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/security.ts'),read('server/hugo/modelAdapter.ts'),read('server/hugo/ttsAdapter.ts')])
+ assert.match(api,/askHugoText/)
+ assert.match(model,/safeHistory/)
+ assert.match(model,/safeMessage/)
+ assert.match(model,/safeSystem/)
+ assert.match(tts,/safeText/)
+ assert.match(security,/Bearer \[REDACTED\]/)
+ assert.match(security,/\[REDACTED_JWT\]/)
+ assert.match(security,/\[REDACTED_SECRET\]/)
+ assert.match(security,/\[REDACTED_BLOB\]/)
 })
 
 test('Hugo edge function sanitizes context, history and user message before external model call',async()=>{
@@ -25,13 +26,16 @@ test('Hugo edge function sanitizes context, history and user message before exte
 })
 
 test('Hugo privacy stays behind authenticated role authority',async()=>{
- const[api,authority,live]=await Promise.all([
+ const[api,auth,authority,live]=await Promise.all([
   read('api/hugo/chat.ts'),
+  read('server/hugo/auth.ts'),
   read('server/hugo/authority.ts'),
   read('api/test.ts'),
  ])
  assert.match(api,/authorizeHugo\(req,body\)/)
- assert.match(api,/auth\.getUser\(token\)/)
+ assert.match(auth,/auth\.getUser\(token\)/)
+ assert.match(auth,/from\('usuarios'\)\.select\('tipo,activo'\)/)
+ assert.match(auth,/decideHugoAuthority/)
  assert.match(authority,/ROLE_MISMATCH/)
  assert.match(authority,/INACTIVE_PROFILE/)
  assert.match(live,/voiceRole==='provider'\?profileRole==='proveedor':profileRole==='cliente'/)

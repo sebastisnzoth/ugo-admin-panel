@@ -1,0 +1,83 @@
+# UGO Security Policy
+
+## Principles
+
+- Fail closed on authentication, authority and protected environment checks.
+- Use least privilege.
+- Treat LLM/model output as untrusted data.
+- Never use CORS, UI visibility or prompt wording as authorization.
+- Production changes require explicit human authorization.
+
+## Secrets
+
+Never commit, log or send to an LLM:
+- Bearer/JWT/access/refresh tokens;
+- Supabase service-role keys;
+- API keys and client secrets;
+- database passwords;
+- private webhook secrets;
+- raw credentials or recovery codes.
+
+Secrets belong in protected environment configuration or approved server-side secret storage.
+
+## Authentication and authority
+
+For Hugo/server actions:
+1. extract Bearer token;
+2. verify it with Supabase Auth;
+3. read persisted `usuarios.tipo,activo` through the authenticated session;
+4. compare requested surface role against the persisted role;
+5. deny inactive or mismatched profiles.
+
+A role supplied by the browser never upgrades the persisted role.
+
+## LLM data boundary
+
+Allowed:
+- bounded operational context already authorized for the current user;
+- service/category/workflow state needed for the request;
+- sanitized recent conversation history;
+- admin operational data only after verified admin authority.
+
+Blocked:
+- secrets/tokens/credentials;
+- private configuration;
+- unrelated third-party PII;
+- arbitrary database rows not required by the request;
+- large raw blobs unless an explicitly reviewed feature requires them.
+
+All model-bound text uses the server sanitization boundary as defense in depth.
+
+## UI actions
+
+The model may propose an action, but `server/hugo/uiAction.ts` and `server/hugo/permissions.ts` decide whether it is valid. Client/provider currently receive no server-returned admin UI actions. Admin cannot target Super Admin. Super Admin targeting requires verified Super Admin authority.
+
+## CORS
+
+Browser origins must be same-origin or explicitly allowlisted. Unknown browser origins receive 403. Requests without `Origin` are treated as non-browser/server requests and still require authentication where applicable.
+
+## Supabase
+
+- Never disable RLS to fix a failing flow.
+- Review SECURITY DEFINER functions and `search_path`.
+- Keep service-role usage server-side.
+- Protected mutations require positive and negative tests.
+
+## Logging
+
+Log correlation IDs, route/provider, status and bounded timing. Do not log authorization headers, session tokens, full model context, passwords or secrets.
+
+## Vulnerability reporting
+
+Do not open a public issue containing exploitable details or credentials. Report the finding privately to the repository owner/maintainer, include affected SHA/path, impact, reproduction steps without secrets, and a proposed mitigation.
+
+## Required security gates
+
+Critical changes must cover:
+- missing/invalid auth;
+- inactive/mismatched roles;
+- escalation attempts;
+- secret redaction;
+- invalid origins;
+- unauthorized UI actions;
+- stable external response contracts.

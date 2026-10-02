@@ -15,18 +15,18 @@ test('Hugo UI is detached from the current Admin control center',async()=>{
 })
 
 test('Hugo Super Admin UI is detached while dormant runtime remains isolated',async()=>{
- const[superadmin,orb,api]=await Promise.all([
+ const[superadmin,orb,prompts]=await Promise.all([
   read('src/mvp/SuperAdminCommandCenter.tsx'),
   read('src/components/ConversationalOrb.tsx'),
-  read('api/hugo/chat.ts'),
+  read('server/hugo/promptBuilder.ts'),
  ])
  assert.doesNotMatch(superadmin,/ConversationalOrb/)
  assert.match(orb,/feature_flags/)
  assert.match(orb,/integraciones/)
  assert.match(orb,/auditoria/)
- assert.match(api,/Sos Hugo Super Admin/)
- assert.match(api,/Sos Hugo Admin/)
- assert.match(api,/No asumas permisos de Super Admin/)
+ assert.match(prompts,/Sos Hugo Super Admin/)
+ assert.match(prompts,/Sos Hugo Admin/)
+ assert.match(prompts,/No asumas permisos de Super Admin/)
 })
 
 test('Hugo live context covers operational and financial control-center data',async()=>{
@@ -41,11 +41,11 @@ test('Hugo live context covers operational and financial control-center data',as
 })
 
 test('Hugo server endpoint accepts role and active surface context',async()=>{
- const api=await read('api/hugo/chat.ts')
+ const[api,prompts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/promptBuilder.ts')])
  assert.match(api,/requestedRole/)
- assert.match(api,/adminRole=requestedRole==='superadmin'\?'superadmin':'admin'/)
+ assert.match(prompts,/adminRole:HugoAdminRole=requestedRole==='superadmin'\?'superadmin':'admin'/)
  assert.match(api,/surface=clean\(body\.surface/)
- assert.match(api,/CONTEXTO OPERATIVO EN VIVO/)
+ assert.match(prompts,/CONTEXTO OPERATIVO EN VIVO/)
  assert.match(api,/clean\(body\.context,60000\)/)
 })
 
