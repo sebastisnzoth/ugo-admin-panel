@@ -1,0 +1,98 @@
+name: UGO Client Provider Lifecycle TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/client-provider-lifecycle-*.mjs'
+      - 'tests/contracts/client-provider-lifecycle.test.mjs'
+      - '.github/workflows/client-provider-lifecycle-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-shared-provider-fixture
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_RUNTIME_SHA: ${{ github.sha }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        run: npm run verify:test-env
+      - name: Lifecycle contracts
+        run: node --test tests/contracts/client-provider-lifecycle.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Persisted lifecycle runtime
+        run: node scripts/client-provider-lifecycle-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: client-provider-lifecycle-runtime-${{ github.sha }}
+          path: artifacts/client-provider-lifecycle-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-provider-lifecycle-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge
+        run: node scripts/client-provider-lifecycle-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-provider-lifecycle-judge-${{ github.sha }}
+          path: artifacts/client-provider-lifecycle-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-provider-lifecycle-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: client-provider-lifecycle-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        run: node scripts/client-provider-lifecycle-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: client-provider-lifecycle-sentinel-${{ github.sha }}
+          path: artifacts/client-provider-lifecycle-sentinel.json
+          retention-days: 90
