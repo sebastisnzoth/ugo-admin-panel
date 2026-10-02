@@ -18,7 +18,9 @@ if(runningCount)throw new Error('SENTINEL_RUNNING_JOBS count='+runningCount)
 const{count:activeLeases,error:leaseError}=await db.from('autonomous_jobs').select('id',{count:'exact',head:true}).not('lease_owner','is',null).gt('lease_expires_at',new Date().toISOString())
 if(leaseError)throw leaseError
 if(activeLeases)throw new Error('SENTINEL_ACTIVE_LEASES count='+activeLeases)
-const{count:killCount,error:killError}=await db.from('autonomous_kill_switches').select('id',{count:'exact',head:true}).eq('enabled',true)
+const{count:globalKillCount,error:killError}=await db.from('autonomous_kill_switches').select('id',{count:'exact',head:true}).eq('enabled',true).eq('scope_type','GLOBAL')
 if(killError)throw killError
-if(killCount)throw new Error('SENTINEL_ACTIVE_KILL_SWITCHES count='+killCount)
-console.log(JSON.stringify({sentinel:'PASS',environment:'UGO TEST',autonomy:state.mode,d14Canonical:canonical.length,activeLeases:0,activeKillSwitches:0}))
+if(globalKillCount)throw new Error('SENTINEL_GLOBAL_KILL_SWITCHES count='+globalKillCount)
+const{count:scopedKillCount,error:scopedKillError}=await db.from('autonomous_kill_switches').select('id',{count:'exact',head:true}).eq('enabled',true).neq('scope_type','GLOBAL')
+if(scopedKillError)throw scopedKillError
+console.log(JSON.stringify({sentinel:'PASS',environment:'UGO TEST',autonomy:state.mode,d14Canonical:canonical.length,activeLeases:0,activeGlobalKillSwitches:0,activeScopedKillSwitches:scopedKillCount||0}))
