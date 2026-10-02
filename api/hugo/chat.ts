@@ -1,6 +1,6 @@
-import{createClient}from'@supabase/supabase-js'
-import{decideHugoAuthority,normalizeHugoRequestedRole}from'../../server/hugo/authority'
+import{authorizeHugo}from'../../server/hugo/auth'
 import{askHugoModel}from'../../server/hugo/modelRouter'
+import{clean,sanitizeForModel}from'../../server/hugo/security'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
@@ -11,24 +11,6 @@ const TTS_MODELS=Array.from(new Set([
 const TTS_VOICE=process.env.GEMINI_TTS_VOICE||'Puck'
 
 type RequestLike={headers?:Record<string,string|undefined>;method?:string;body?:unknown}
-const SUPABASE_URL=process.env.SUPABASE_URL
-const SUPABASE_ANON_KEY=process.env.SUPABASE_ANON_KEY
-function bearer(req:RequestLike){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
-async function authorizeHugo(req:RequestLike,body:JsonRecord){
- const token=bearer(req)
- if(!token)throw Object.assign(new Error('Autenticación requerida para usar Hugo.'),{status:401,code:'AUTH_REQUIRED'})
- if(!SUPABASE_URL||!SUPABASE_ANON_KEY)throw Object.assign(new Error('Backend Supabase TEST no configurado.'),{status:503,code:'AUTH_BACKEND_UNAVAILABLE'})
- const authClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
- const{data,error}=await authClient.auth.getUser(token)
- if(error||!data.user)throw Object.assign(new Error('Sesión inválida o vencida.'),{status:401,code:'INVALID_SESSION'})
- const userClient=createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{global:{headers:{Authorization:`Bearer ${token}`}},auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}})
- const{data:profile,error:profileError}=await userClient.from('usuarios').select('tipo,activo').eq('id',data.user.id).maybeSingle()
- if(profileError)throw Object.assign(new Error('No se pudo verificar la autoridad de la sesión.'),{status:403,code:'PROFILE_LOOKUP_FAILED'})
- const requestedRole=normalizeHugoRequestedRole(body.role)
- const decision=decideHugoAuthority(requestedRole,String(profile?.tipo||''),Boolean(profile?.activo))
- if(!decision.allowed)throw Object.assign(new Error(decision.reason),{status:403,code:decision.code,authority:decision})
- return{user:data.user,profile,requestedRole,decision}
-}
 type ResponseLike={setHeader:(name:string,value:string)=>void;status:(code:number)=>ResponseLike;json:(body:unknown)=>unknown;end:()=>unknown}
 type JsonRecord=Record<string,unknown>
 const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
@@ -37,18 +19,6 @@ const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecor
 const HUGO_BROWSER_ORIGINS=new Set(['https://sebastisnzoth.github.io',...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS||'').split(',').map(value=>value.trim()).filter(Boolean)])
 function allowedOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'').trim();if(!origin)return'';if(new URL(origin).host===String(req.headers?.host||''))return origin;return HUGO_BROWSER_ORIGINS.has(origin)?origin:''}catch{return''}}
 function sameOrigin(req:RequestLike){const origin=String(req.headers?.origin||'').trim();return!origin||Boolean(allowedOrigin(req))}
-function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
-function sanitizeForModel(v:unknown,max=4000){
- let text=clean(v,max)
- text=text
-  .replace(/Bearer\s+[A-Za-z0-9._~+\/-]+=*/gi,'Bearer [REDACTED]')
-  .replace(/\beyJ[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\.[A-Za-z0-9_-]{8,}\b/g,'[REDACTED_JWT]')
-  .replace(/\b(?:sk|sb_secret|service_role|ghp|github_pat|AIza)[-_A-Za-z0-9]{12,}\b/g,'[REDACTED_SECRET]')
-  .replace(/\b(api[_-]?key|access[_-]?token|refresh[_-]?token|secret|password|passwd|authorization)\b\s*[:=]\s*["']?[^\s,"'}]{6,}["']?/gi,'$1=[REDACTED]')
-  .replace(/data:[^;\s]+;base64,[A-Za-z0-9+/=]{80,}/gi,'[REDACTED_BLOB]')
-  .replace(/[A-Za-z0-9+/]{800,}={0,2}/g,'[REDACTED_BLOB]')
- return text.slice(0,max)
-}
 function extractJson(text:string){try{return JSON.parse(text)}catch{/* Gemini may wrap JSON in prose. */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* Return null for an invalid embedded object. */}}return null}
 const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
 function uiAction(value:unknown,role:'admin'|'superadmin'){
