@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate">
   <meta name="description" content="UGO Implementation Command Center: estado, pasos restantes, bloqueos y cómo resolverlos.">
   <title>UGO · Implementation Command Center</title>\n  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -369,6 +370,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 </main>
 <script>
 (function(){
+  const pageBuildSha = '__UGO_SHA__'
   document.body.classList.add('compact-mode')
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
   const pillClass = owner => owner.includes('SERGIO') ? 'human' : 'ugo'
