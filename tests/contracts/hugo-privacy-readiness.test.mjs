@@ -4,11 +4,11 @@ import{readFile}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('Hugo sanitizes secrets through the dedicated model-boundary module',async()=>{
- const[api,security,tts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/security.ts'),read('server/hugo/ttsAdapter.ts')])
- assert.match(api,/sanitizeForModel/)
- assert.match(api,/safeHistory/)
- assert.match(api,/safeMessage/)
- assert.match(api,/safeSystem/)
+ const[api,security,model,tts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/security.ts'),read('server/hugo/modelAdapter.ts'),read('server/hugo/ttsAdapter.ts')])
+ assert.match(api,/askHugoText/)
+ assert.match(model,/safeHistory/)
+ assert.match(model,/safeMessage/)
+ assert.match(model,/safeSystem/)
  assert.match(tts,/safeText/)
  assert.match(security,/Bearer \[REDACTED\]/)
  assert.match(security,/\[REDACTED_JWT\]/)
