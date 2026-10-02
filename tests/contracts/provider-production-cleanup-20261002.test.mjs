@@ -25,3 +25,10 @@ test('provider production cleanup is usable on small phones and desktop',async()
  assert.match(css,/@media\(min-width:1000px\)[\s\S]*padding-left:228px!important/)
  assert.match(css,/\.provider-screen\{[\s\S]*width:min\(100%,960px\)!important/)
 })
+
+
+test('provider keeps GPS and notification controls from overlapping',async()=>{
+ const css=await read('src/mvp/provider/provider-production-cleanup.css')
+ assert.match(css,/right:72px!important/)
+ assert.match(css,/right:84px!important/)
+})
