@@ -3,10 +3,10 @@
   "task_id": "readiness-cross-p0",
   "job_id": "UGO-READINESS-CROSS-P0-20261002",
   "title": "Verify complete automated P0 journey in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-02T12:45:00Z",
-  "heartbeat_at": "2026-10-02T12:45:00Z",
-  "lease_expires_at": "2026-10-02T13:30:00Z",
+  "heartbeat_at": "2026-10-02T12:46:08Z",
+  "lease_expires_at": null,
   "started_sha": "31f3acfabbd15e9f3e2e9da6aadda541e8d87215",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
@@ -20,11 +20,27 @@
     "shared-provider-fixture"
   ],
   "correlation_id": "readiness-cross-p0-20261002T124500Z",
-  "current_step": "IMPLEMENT_SAME_SHA_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "dependency:provider-arrival:HUMAN_REQUIRED_AUTOMATED_PASS",
-    "dependency:provider-evidence:HUMAN_REQUIRED_AUTOMATED_PASS"
+    "dependency:provider-evidence:HUMAN_REQUIRED_AUTOMATED_PASS",
+    "github-run:37008581514:PASS",
+    "github-job-runtime:110842585586:PASS",
+    "github-job-judge:110842760272:PASS",
+    "github-job-sentinel:110842857211:PASS",
+    "github-artifact-runtime:11227042045",
+    "github-artifact-judge:11226602498",
+    "github-artifact-sentinel:11226362878",
+    "same-sha:7ee4fd1a01a26d2e3e2cc00b4ef1277e81a6fc90"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "completed_at": "2026-10-02T12:46:08Z",
+  "finished_at": "2026-10-02T12:46:08Z",
+  "verified_sha": "7ee4fd1a01a26d2e3e2cc00b4ef1277e81a6fc90",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
