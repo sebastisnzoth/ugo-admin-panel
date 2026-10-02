@@ -141,6 +141,21 @@ export function evaluateFunctionalReadiness({
     }
   }
 
+  let dependencyIntegrityChanged = true
+  while (dependencyIntegrityChanged) {
+    dependencyIntegrityChanged = false
+    for (const item of items) {
+      if (item.status !== 'VERIFIED' || item.evidence_source !== 'READINESS_LOCK') continue
+      const unresolved = (item.depends_on || []).filter(id => byId.get(id)?.status !== 'VERIFIED')
+      if (!unresolved.length) continue
+      item.status = item.declared_status === 'HUMAN_FINAL' ? 'HUMAN_REQUIRED' : 'NEEDS_RUNTIME_PROOF'
+      item.evidence_source = 'READINESS_LOCK_BLOCKED_BY_DEPENDENCY'
+      item.blocked_verified_lock = true
+      item.blocked_verified_dependencies = unresolved
+      dependencyIntegrityChanged = true
+    }
+  }
+
   const dependencySatisfied = id => byId.get(id)?.status === 'VERIFIED'
 
   const humanBlockedMemo = new Map()
