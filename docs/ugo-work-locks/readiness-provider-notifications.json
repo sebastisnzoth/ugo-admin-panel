@@ -5,8 +5,8 @@
   "title": "Verify provider notifications in UGO TEST",
   "status": "DONE",
   "started_at": "2026-10-02T10:40:49Z",
-  "heartbeat_at": "2026-10-02T12:35:00Z",
-  "lease_expires_at": "2026-10-02T12:35:00Z",
+  "heartbeat_at": "2026-10-02T12:41:00Z",
+  "lease_expires_at": "2026-10-02T12:41:00Z",
   "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -50,14 +50,20 @@
     "github-artifact:11226435914",
     "repo-evidence:docs/evidence/readiness-provider-notifications-20261002-e2e.json",
     "verified-sha:19c2b829815052b654c5366c054d7bfb44a7cbf5",
-    "e2e-origin:CLIENT_AUTH_MATCHING_DIRECTED"
+    "e2e-origin:CLIENT_AUTH_MATCHING_DIRECTED",
+    "github-run:37007657397",
+    "github-job:110840146324",
+    "github-artifact:11225989666",
+    "repo-evidence:docs/evidence/readiness-provider-offers-notifications-20261002-final.json",
+    "verified-sha:6b0bc9a58ea2a3184d00b0c300be496bcf66f047",
+    "reconciled-main:707f4563d3c83d572e57998ab89ed76802054da7"
   ],
   "production_touched": false,
   "validators_result": {
     "Judge": "PASS",
     "Sentinel": "PASS"
   },
-  "evidence_path": "docs/evidence/readiness-provider-notifications-20261002-e2e.json",
+  "evidence_path": "docs/evidence/readiness-provider-offers-notifications-20261002-final.json",
   "validation": {
     "historical_runtime": "PASS",
     "current_backend_alert_trigger": "OBSERVED",
@@ -80,15 +86,21 @@
     "provider_realtime_without_refresh": "PASS",
     "provider_tone": "PASS",
     "provider_vibrate": "PASS",
-    "contracts": "18_PASS"
+    "contracts": "18_PASS",
+    "payment_ready_client_auth_matching": "PASS",
+    "provider_attention": "PASS",
+    "provider_acceptance": "PASS",
+    "assigned_state_persisted": "PASS",
+    "main_functional_equivalence": "PASS"
   },
-  "result_summary": "VERIFIED in UGO TEST with same-run E2E evidence: authenticated client matching created the provider offer, DB trigger created nueva_oferta, provider received the realtime alert without refresh, and attention tone/vibration fired. Judge PASS, Sentinel PASS.",
+  "result_summary": "VERIFIED end-to-end in UGO TEST: payment-ready authenticated client matching created the provider offer, nueva_oferta reached the provider in realtime with tone/vibration, authenticated provider accepted it, and assigned state persisted. Judge PASS; Sentinel PASS; production untouched.",
   "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
   "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
   "failure": null,
-  "completed_at": "2026-10-02T12:35:00Z",
-  "finished_at": "2026-10-02T12:35:00Z",
+  "completed_at": "2026-10-02T12:41:00Z",
+  "finished_at": "2026-10-02T12:41:00Z",
   "result": "VERIFIED",
-  "verified_sha": "19c2b829815052b654c5366c054d7bfb44a7cbf5",
-  "blocker": null
+  "verified_sha": "6b0bc9a58ea2a3184d00b0c300be496bcf66f047",
+  "blocker": null,
+  "reconciled_main_sha": "707f4563d3c83d572e57998ab89ed76802054da7"
 }
