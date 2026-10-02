@@ -5,8 +5,8 @@
   "title": "Verify provider notifications in UGO TEST",
   "status": "IN_PROGRESS",
   "started_at": "2026-10-02T10:40:49Z",
-  "heartbeat_at": "2026-10-02T11:51:00Z",
-  "lease_expires_at": "2026-10-02T12:51:00Z",
+  "heartbeat_at": "2026-10-02T11:59:00Z",
+  "lease_expires_at": "2026-10-02T12:59:00Z",
   "started_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
   "owner": "UGO",
   "department": "App Proveedor",
@@ -27,7 +27,7 @@
     "provider-demand"
   ],
   "correlation_id": "provider-notifications-regression-20261002-1406",
-  "current_step": "REMEDIATE_REAL_PROVIDER_GPS_AND_CURRENT_BROWSER_PUSH_THEN_E2E_RETEST",
+  "current_step": "RUN_MATCHING_BORN_ALERT_E2E",
   "attempt": 4,
   "evidence_ids": [
     "github-run:36725016445",
@@ -39,12 +39,17 @@
     "db-proof:provider-gps-stale:20261002T111626Z",
     "db-proof:current-chrome-push-inactive",
     "commit:4b579be41386a91fbaf3f3a8d0f7f5bd553f8381",
-    "commit:8e541cc08107d9d9f408b499e98ea8e3637cd92a"
+    "commit:8e541cc08107d9d9f408b499e98ea8e3637cd92a",
+    "commit:2673db018919497e5570df039847195f54a2e440",
+    "commit:a96954f1098c39986cab1ddba5b3ecc3afa05590",
+    "commit:761b9397b862e19c829ac62e14e2b4d76e539ac5",
+    "commit:28fe6479d10bd878faaf96d2307cb11d45ba892b",
+    "github-run:37003865412"
   ],
   "production_touched": false,
   "validators_result": {
-    "Judge": "BLOCKED_E2E_FAIL",
-    "Sentinel": "PASS_TEST_ONLY"
+    "Judge": "PENDING_E2E_RUNTIME",
+    "Sentinel": "PENDING_E2E_RUNTIME"
   },
   "evidence_path": "docs/evidence/readiness-provider-offers-20261002-regression.json",
   "validation": {
@@ -64,7 +69,7 @@
     "realtime_publication": "PASS",
     "end_to_end": "FAIL"
   },
-  "result_summary": "Real E2E audit failed: provider remained visually Online with stale GPS, so matching created no offer and therefore no nueva_oferta alert. Current Chrome push subscriptions are inactive; only an older Firefox subscription remains active. Historical notification runtime directly inserted notification rows and is insufficient as E2E proof.",
+  "result_summary": "Autonomous remediation in progress: stale-GPS visibility fixed, granted push subscriptions auto-repair, provider notification runtime now requires client-auth matching-born offer evidence instead of direct notification injection. Waiting for same-SHA E2E runtime/Judge/Sentinel.",
   "human_action": "Open UGO Proveedor in UGO TEST with precise GPS enabled and stay Online; then create or retry one client request.",
   "historical_verified_sha": "45be66b581433b6bdc44533194987667559e2bae",
   "failure": "REAL_PROVIDER_ALERT_E2E_FAILED: stale provider GPS + no active current-browser push; 0 offer rows and 0 nueva_oferta rows for failed request."
