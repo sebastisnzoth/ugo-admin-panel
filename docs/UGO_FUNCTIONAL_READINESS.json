@@ -7,7 +7,8 @@
     "NEEDS_RUNTIME_PROOF",
     "IN_PROGRESS",
     "BLOCKED",
-    "HUMAN_FINAL"
+    "HUMAN_FINAL",
+    "HUMAN_ACCEPTANCE_REQUIRED"
   ],
   "groups": [
     {
@@ -1238,6 +1239,439 @@
           ],
           "evidence_path": "docs/ugo-work-locks/readiness-cross-regression.json",
           "reconciled_from_persisted_lock": true
+        }
+      ]
+    },
+    {
+      "id": "pilot-faxina-marido",
+      "title": "PILOTO · FAXINA + MARIDO DE ALUGUEL",
+      "items": [
+        {
+          "id": "pilot-category-contract",
+          "title": "PILOT-CATEGORY-CONTRACT · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-client-faxina",
+          "title": "PILOT-CLIENT-FAXINA · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-provider-faxina",
+          "title": "PILOT-PROVIDER-FAXINA · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-e2e-faxina",
+          "title": "PILOT-E2E-FAXINA · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-client-faxina",
+            "pilot-provider-faxina",
+            "pilot-faults-security"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-client-marido",
+          "title": "PILOT-CLIENT-MARIDO · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-provider-marido",
+          "title": "PILOT-PROVIDER-MARIDO · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-e2e-marido",
+          "title": "PILOT-E2E-MARIDO · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-client-marido",
+            "pilot-provider-marido",
+            "pilot-faults-security"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-documents-references",
+          "title": "PILOT-DOCUMENTS-REFERENCES · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-matching-schedule",
+          "title": "PILOT-MATCHING-SCHEDULE · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract",
+            "pilot-documents-references"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-payments",
+          "title": "PILOT-PAYMENTS · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-notifications",
+          "title": "PILOT-NOTIFICATIONS · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-disputes",
+          "title": "PILOT-DISPUTES · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-ratings-history",
+          "title": "PILOT-RATINGS-HISTORY · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-category-contract"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-faults-security",
+          "title": "PILOT-FAULTS-SECURITY · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-matching-schedule",
+            "pilot-payments",
+            "pilot-notifications",
+            "pilot-disputes",
+            "pilot-ratings-history"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-runtime-faxina",
+          "title": "PILOT-RUNTIME-FAXINA · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-e2e-faxina"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-runtime-marido",
+          "title": "PILOT-RUNTIME-MARIDO · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-e2e-marido"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-judge-sentinel",
+          "title": "PILOT-JUDGE-SENTINEL · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-runtime-faxina",
+            "pilot-runtime-marido"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-human-acceptance",
+          "title": "PILOT-HUMAN-ACCEPTANCE · Piloto Faxina + Marido de Aluguel",
+          "owner": "SERGIO + UGO",
+          "status": "HUMAN_ACCEPTANCE_REQUIRED",
+          "verify": "Implementación + wiring + TEST + runtime UGO TEST + evidencia + Judge + Sentinel same-SHA.",
+          "done_evidence": "Evidencia persistida y verificación determinista sobre el mismo SHA.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": true,
+          "depends_on": [
+            "pilot-judge-sentinel"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": "HUMAN_ACCEPTANCE_REQUIRED",
+          "pr_commit": "PR #313"
+        },
+        {
+          "id": "pilot-gate",
+          "title": "PILOT-GATE · Piloto Faxina + Marido de Aluguel",
+          "owner": "UGO",
+          "status": "NEEDS_RUNTIME_PROOF",
+          "verify": "Todos los automatizables VERIFIED; aceptación humana completada.",
+          "done_evidence": "UGO · FAXINA + MARIDO DE ALUGUEL · LISTO PARA PRUEBA PILOTO.",
+          "improvement_focus": "Fail-closed, reversible y auditable.",
+          "real_test_required": false,
+          "depends_on": [
+            "pilot-judge-sentinel",
+            "pilot-human-acceptance"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "pilot-faxina-marido"
+          ],
+          "last_execution": null,
+          "sha": null,
+          "evidence": null,
+          "blocker": null,
+          "pr_commit": "PR #313"
         }
       ]
     },
