@@ -1396,6 +1396,17 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
     return r.json()
   }).then(s => {
     statusSnapshot = s
+    const statusSha = String(s?.source_sha || '')
+    if (statusSha && pageBuildSha && pageBuildSha !== '__UGO_SHA__' && statusSha !== pageBuildSha) {
+      const reloadKey = 'ugo-command-center-reload-' + statusSha
+      if (!sessionStorage.getItem(reloadKey)) {
+        sessionStorage.setItem(reloadKey, '1')
+        const url = new URL(window.location.href)
+        url.searchParams.set('build', statusSha.slice(0,12))
+        window.location.replace(url.toString())
+        return s
+      }
+    }
     try { localStorage.setItem(statusCacheKey, JSON.stringify(s)) } catch (_) {}
     renderSyncState()
     renderOperationalNow(s)
