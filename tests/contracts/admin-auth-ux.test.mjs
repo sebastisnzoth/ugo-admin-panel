@@ -45,3 +45,10 @@ test('client/provider auth preserves a valid session during transient profile ou
   assert.match(shared, /Tu sesión sigue activa/)
   assert.equal(shared.includes("La sesión tardó demasiado en responder. Podés ingresar nuevamente.');setSession(null)"),false)
 })
+
+
+test('admin route never bypasses the secure gate', async () => {
+  const gate = await read('src/mvp/AdminGate.tsx')
+  assert.doesNotMatch(gate, /publicDevelopmentAccess/)
+  assert.match(gate, /return <SecureAdminGate gateParams=\{gateParams\}>/)
+})
