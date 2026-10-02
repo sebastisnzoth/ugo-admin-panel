@@ -60,9 +60,13 @@ export function hugoEdgeCorsHeaders(origin:string){
 }
 export function sanitizeHugoEdgeContext(value:unknown,role:string,max=60_000){
  const normalized=(['client','provider','admin','superadmin'].includes(role)?role:'client')as HugoEdgeRole
- const raw=clean(value,max);if(!raw)return''
+ const input=String(value??'').trim();if(!input)return''
+ if(input.length>120_000)return''
  let parsed:unknown
- try{parsed=JSON.parse(raw)}catch{return redactLegacyPii(sanitize(raw,Math.min(max,12_000))).slice(0,Math.min(max,12_000))}
+ try{parsed=JSON.parse(input)}catch{
+  if(/^[{[]/.test(input))return''
+  return redactLegacyPii(sanitize(input,Math.min(max,12_000))).slice(0,Math.min(max,12_000))
+ }
  const source=record(parsed);if(!source)return''
  const allowed=TOP_LEVEL[normalized],filtered:Record<string,unknown>={}
  for(const[key,item]of Object.entries(source)){if(!allowed.has(key))continue;const next=scrub(item,normalized);if(next!==undefined)filtered[key]=next}
