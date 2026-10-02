@@ -31,8 +31,8 @@ test('Hugo model sanitizer redacts bearer tokens, JWTs, API secrets and large bl
 
 test('Authority policy keeps superadmin isolated from lower roles',async()=>{
  const authority=await read('server/hugo/authority.ts')
- assert.match(authority,/requestedRole==='superadmin'.*actual==='superadmin'/s)
- assert.match(authority,/requestedRole==='admin'.*actual==='admin'\|\|actual==='superadmin'/s)
+ assert.match(authority,/requestedRole==='admin'\?actual==='admin'\|\|actual==='superadmin':actual==='superadmin'/)
+ assert.match(authority,/requestedRole==='admin'\?actual==='admin'\|\|actual==='superadmin'/)
  assert.match(authority,/if\(!active\).*INACTIVE_PROFILE/s)
 })
 
@@ -52,5 +52,5 @@ test('Hugo UI actions are centralized behind role permissions',async()=>{
  assert.match(permissions,/superadmin:\{[^}]*canReadGlobalGovernance:true/)
  assert.match(ui,/canExecuteHugoUiAction/)
  assert.match(ui,/canNavigateHugoTarget/)
- assert.match(ui,/target==='superadmin'/)
+ assert.match(permissions,/target==='superadmin'/)
 })
