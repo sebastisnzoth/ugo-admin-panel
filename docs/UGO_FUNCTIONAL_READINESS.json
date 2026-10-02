@@ -54,7 +54,7 @@
           "id": "client-location",
           "title": "Mi ubicación y mapa",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "VERIFIED",
           "verify": "Ubicación válida completa formulario/mapa; manejar permiso, timeout y coordenadas inválidas.",
           "done_evidence": "TEST automatizable + errores fail-closed; GPS físico queda al final.",
           "improvement_focus": "Mensajes claros y fallback de dirección.",
@@ -65,7 +65,10 @@
           "priority": "NORMAL",
           "resources": [
             "client-location"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-location-20260930.json",
+          "reconciled_from_persisted_lock": true,
+          "physical_gps_covered_by_final_gate": true
         },
         {
           "id": "client-saved-places",
