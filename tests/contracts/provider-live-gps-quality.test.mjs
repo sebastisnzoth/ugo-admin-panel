@@ -20,8 +20,8 @@ test('en-route trusted GPS RPC failures are surfaced instead of silently swallow
  const rpcError=s.indexOf('if(error){',arrivalRpc)
  assert.ok(rpcError>arrivalRpc)
  const tail=s.slice(rpcError,rpcError+500)
- assert.match(tail,/if\(enRoute\)setLocationError/)
- assert.match(tail,/No pudimos publicar tu GPS reciente/)
+ assert.match(tail,/setLocationError\(rpcMessage\|\|'No pudimos publicar tu ubicación en tiempo real\. UGO va a reintentar\.'/)
+ assert.match(tail,/return/)
 })
 
 test('provider en-route UI exposes GPS freshness and precision without trusting stale fixes',async()=>{
@@ -47,9 +47,9 @@ test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acqu
  const high=s.indexOf('oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)')
  assert.ok(compatible>=0&&high>compatible,'compatible acquisition must run before high accuracy fallback')
  assert.match(s,/usableBrowserPosition\(compatible\)/)
- assert.match(s,/if\(heartbeatBusy\)return/)
- assert.match(s,/heartbeatBusy=true/)
- assert.match(s,/finally\{heartbeatBusy=false\}/)
+ assert.match(s,/if\(writing\|\|now-lastWrite<MIN_WRITE_MS/)
+ assert.match(s,/writing=true/)
+ assert.match(s,/finally\{writing=false\}/)
  assert.match(s,/window\.addEventListener\('focus',onForeground\)/)
  assert.match(s,/document\.addEventListener\('visibilitychange',onForeground\)/)
  assert.match(s,/age>MAX_POSITION_AGE_MS/)
