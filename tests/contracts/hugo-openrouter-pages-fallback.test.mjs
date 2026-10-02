@@ -28,11 +28,12 @@ test('provider browser speech can continue through the authenticated Hugo model 
 })
 
 test('Hugo API keeps provider fallback conversational and non-mutating',async()=>{
- const src=await read('api/hugo/chat.ts')
- assert.match(src,/providerMode=requestedRole==='provider'/)
- assert.match(src,/En este fallback conversacional no ejecutes cambios por tu cuenta/)
- assert.match(src,/providerMode\?providerSystem/)
- assert.match(src,/clientMode\|\|providerMode\?null:parseHugoUiAction/)
+ const[api,prompts]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/promptBuilder.ts')])
+ assert.match(api,/buildHugoPrompt/)
+ assert.match(prompts,/providerMode=requestedRole==='provider'/)
+ assert.match(prompts,/En este fallback conversacional no ejecutes cambios por tu cuenta/)
+ assert.match(prompts,/providerMode\?providerSystem/)
+ assert.match(api,/clientMode\|\|providerMode\?null:parseHugoUiAction/)
 })
 
 test('GitHub Pages TEST preview uses Supabase Edge without exposing OpenRouter',async()=>{
