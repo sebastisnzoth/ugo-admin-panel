@@ -1,12 +1,10 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.108.1'
+import{hugoEdgeCorsHeaders,hugoEdgeOrigin,sanitizeHugoEdgeContext}from'../_shared/hugoPolicy.ts'
 
 type JsonRecord=Record<string,unknown>
 const rec=(v:unknown):JsonRecord=>v!==null&&typeof v==='object'&&!Array.isArray(v)?v as JsonRecord:{}
 const clean=(v:unknown,max=5000)=>String(v??'').trim().slice(0,max)
 const json=(body:unknown,status=200,origin='')=>new Response(JSON.stringify(body),{status,headers:{'Content-Type':'application/json','Cache-Control':'no-store','Vary':'Origin',...(origin?{'Access-Control-Allow-Origin':origin}:{})}})
-const allowedOrigins=new Set(['https://sebastisnzoth.github.io','https://ugo-admin-panel.vercel.app','https://ugo-admin-panel-netlify.netlify.app','https://zingy-youtiao-c00ece.netlify.app','http://localhost:5173','http://127.0.0.1:5173','http://localhost:4173','http://127.0.0.1:4173'])
-const corsOrigin=(req:Request)=>{const origin=req.headers.get('origin')||'';return allowedOrigins.has(origin)?origin:''}
-const corsHeaders=(origin:string)=>({'Access-Control-Allow-Origin':origin,'Access-Control-Allow-Headers':'authorization, apikey, content-type, x-client-info','Access-Control-Allow-Methods':'POST, OPTIONS','Vary':'Origin'})
 const supabaseUrl=Deno.env.get('SUPABASE_URL')||''
 const serviceKey=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')||''
 const geminiKey=()=>clean(Deno.env.get('GEMINI_API_KEY'),300)
@@ -91,8 +89,8 @@ function safeProviderAction(v:unknown){const x=rec(v),type=clean(x.type,40);if(t
 function safeAction(v:unknown,role:string){const x=rec(v),type=clean(x.type,30);if(type==='refresh')return{type:'refresh'};if(type==='navigate'){const target=clean(x.target,80);if(!navTargets.has(target)||target==='superadmin'&&role!=='superadmin')return null;return{type,target}};if(type==='open_service'){const serviceId=clean(x.service_id,80);if(!/^[0-9a-f-]{36}$/i.test(serviceId))return null;return{type,service_id:serviceId}};if(type==='map_filter')return{type,status:['todos','online','offline','inactivo'].includes(String(x.status))?String(x.status):'todos',category:clean(x.category,80)||null,zone:clean(x.zone,120)||null,place:clean(x.place,160)||null,radius_m:Number.isFinite(Number(x.radius_m))?Math.max(0,Math.min(50000,Number(x.radius_m))):null,show_providers:typeof x.show_providers==='boolean'?x.show_providers:true,show_clients:typeof x.show_clients==='boolean'?x.show_clients:false};return null}
 
 Deno.serve(async(req:Request)=>{
- const origin=corsOrigin(req)
- if(req.method==='OPTIONS')return origin?new Response('ok',{headers:corsHeaders(origin)}):new Response('Forbidden',{status:403})
+ const origin=hugoEdgeOrigin(req)
+ if(req.method==='OPTIONS')return origin?new Response('ok',{headers:hugoEdgeCorsHeaders(origin)}):new Response('Forbidden',{status:403})
  if(req.method!=='POST')return json({error:'Método no permitido.'},405,origin)
  if((req.headers.get('origin')||'')&&!origin)return json({error:'Origen no autorizado.'},403,'')
  try{
@@ -101,7 +99,7 @@ Deno.serve(async(req:Request)=>{
   if(body.voice_live_token===true||body.action==='live-token')return json(await createLiveToken(),200,origin)
   const message=clean(body.message,1800)
   if(!message)return json({hugo_mensaje:'Mensaje requerido.'},400,origin)
-  const context=sanitize(body.context,60000),history=Array.isArray(body.history)?body.history:[],adminMode=role==='admin'||role==='superadmin',providerMode=role==='provider',structuredMode=adminMode||providerMode,system=systemFor(role,context)
+  const context=sanitizeHugoEdgeContext(body.context,auth.requestedRole),history=Array.isArray(body.history)?body.history:[],adminMode=role==='admin'||role==='superadmin',providerMode=role==='provider',structuredMode=adminMode||providerMode,system=systemFor(role,context)
   const result=await askModel(message,history,system,structuredMode),parsed=structuredMode?parseJson(result.text):null,reply=structuredMode?clean(rec(parsed).reply,1800):result.text,uiAction=adminMode?safeAction(rec(parsed).ui_action,role):null,providerAction=providerMode?safeProviderAction(rec(parsed).provider_action):null
   return json({hugo_mensaje:reply||'Decime qué necesitás.',ui_action:uiAction,provider_action:providerAction,accion:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,authority:{role:auth.requestedRole,profile_role:auth.profileRole,decision:'ALLOW'}},200,origin)
  }catch(error){
