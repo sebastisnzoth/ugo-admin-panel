@@ -1,0 +1,43 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-offers",
+  "task_id": "readiness-provider-offers",
+  "environment": "UGO TEST",
+  "supabase_project_ref": "tmossnqfwfwjrtzwcbmm",
+  "source_sha": "cc52927e7c9c33c85b9dc887d16cebf675ef457c",
+  "production_touched": false,
+  "status": "BLOCKED_HUMAN",
+  "incident": {
+    "service_id": "f2cc57c1-aa54-4701-a58a-ca3f284f66d7",
+    "service_number": 1406,
+    "observed_state": "buscando",
+    "location_present": true,
+    "payment_method": "efectivo",
+    "provider_candidate": "eccc6d2e-c2cd-4079-bd98-f3782c0aa9c1",
+    "candidate_distance_km": 5.73,
+    "root_cause": "retire_superseded_service_notifications() timed out during the service state transition to ofrecido, rolling back the offer, notification and matching deadline transaction.",
+    "postgres_sqlstate": "57014"
+  },
+  "remediation": {
+    "migration": "supabase/migrations/20261002121500_notification_retirement_indexes.sql",
+    "indexes": [
+      "notificaciones_servicio_pending_lifecycle_idx",
+      "push_entregas_pending_notificacion_idx"
+    ],
+    "ugo_arena_applied": true,
+    "query_plan": "Index Scan using notificaciones_servicio_pending_lifecycle_idx",
+    "measured_execution_ms": 2.679
+  },
+  "regression": {
+    "core_ci_run_id": 36999184742,
+    "core_ci_result": "SUCCESS",
+    "typescript_build": "PASS",
+    "contract_suite": "PASS",
+    "critical_lint": "PASS",
+    "full_lint": "PASS"
+  },
+  "historical_evidence": "docs/evidence/readiness-provider-offers-20260929.json",
+  "remaining_proof": "With the real provider app open and a fresh trusted device GPS fix, create/retry one TEST request and verify: persisted pending offer -> provider in-app alert -> provider opportunity visible -> acceptance persists and synchronizes Client/Provider/Admin.",
+  "human_action": "Open UGO Proveedor in UGO TEST on the real provider device, keep precise location enabled and provider Online; then create or retry one client request.",
+  "verified": false
+}
