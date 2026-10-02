@@ -25,6 +25,8 @@ test('context policy removes secrets contacts and exact admin map coordinates',a
  assert.match(source,/NEVER_KEY/)
  assert.match(source,/CONTACT_KEY/)
  assert.match(source,/EXACT_LOCATION_KEY/)
+ assert.match(source,/THIRD_PARTY_PII_KEY/)
+ assert.match(source,/nombre\|apellido\|name\|full_name\|contenido\|comentario/)
  assert.match(source,/role==='admin'\|\|role==='superadmin'/)
  assert.match(source,/REDACTED_EMAIL/)
  assert.match(source,/REDACTED_PHONE/)
