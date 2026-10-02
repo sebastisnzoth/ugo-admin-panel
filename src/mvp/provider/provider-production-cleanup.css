@@ -90,13 +90,21 @@
 @media(max-width:999px){
   .ugo-provider-root .provider-studio-sidebar{display:none!important}
   .ugo-provider-root .provider-bottom-nav{
+    position:fixed!important;
     display:grid!important;
     left:10px!important;
     right:10px!important;
+    top:auto!important;
     bottom:max(10px,env(safe-area-inset-bottom))!important;
+    transform:none!important;
     width:auto!important;
+    max-width:none!important;
     height:64px!important;
     padding:6px!important;
+    grid-template-columns:repeat(4,minmax(0,1fr))!important;
+    grid-template-rows:1fr!important;
+    gap:4px!important;
+    overflow:visible!important;
     border-radius:18px!important;
     border:1px solid var(--provider-border)!important;
     background:rgba(255,255,255,.97)!important;
@@ -104,9 +112,12 @@
     backdrop-filter:blur(14px)!important;
   }
   .ugo-provider-root .provider-bottom-nav button{
+    min-width:0!important;
     min-height:50px!important;
+    width:100%!important;
     border-radius:12px!important;
     font-size:11px!important;
+    overflow:hidden!important;
   }
   .ugo-provider-root .provider-bottom-nav button.active,
   .ugo-provider-root .provider-bottom-nav button[aria-current="page"]{
