@@ -12,10 +12,10 @@ test('global voice listener consumes final native transcripts and exposes a cust
  assert.match(src,/1200/)
 })
 
-test('client root mounts global voice commands with navigation and Hugo request intents',async()=>{
+test('client root keeps dormant global voice commands unmounted while Hugo UI is disabled',async()=>{
  const root=await read('src/features/client/ClientRoot.tsx')
  const src=await read('src/features/client/hugo/ClientGlobalVoiceCommands.tsx')
- assert.match(root,/<ClientGlobalVoiceCommands\/>/)
+ assert.doesNotMatch(root,/<ClientGlobalVoiceCommands\/?>/)
  assert.match(src,/flow\.actions\.openProfile\(\)/)
  assert.match(src,/flow\.actions\.openHistory\(\)/)
  assert.match(src,/flow\.navigate\('request'\)/)
@@ -24,10 +24,10 @@ test('client root mounts global voice commands with navigation and Hugo request 
  assert.match(src,/UGO_UI_EVENTS\.clientProfileAddresses/)
 })
 
-test('provider root mounts global voice commands and keeps provider mutations behind guarded app actions',async()=>{
+test('provider root keeps dormant global voice commands unmounted and guarded',async()=>{
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  const src=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
- assert.match(root,/<ProviderGlobalVoiceCommands\/>/)
+ assert.doesNotMatch(root,/<ProviderGlobalVoiceCommands\/?>/)
  assert.match(src,/flow\.actions\.openOpportunities\(\)/)
  assert.match(src,/flow\.actions\.openEarnings\(\)/)
  assert.doesNotMatch(src,/data\.toggleOnline\(\)/)
