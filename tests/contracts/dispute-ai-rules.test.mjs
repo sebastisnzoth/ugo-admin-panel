@@ -22,7 +22,8 @@ test('disputes v2 freeze context, support structured reasons and amicable agreem
 })
 
 test('AI dispute analysis is admin-only decision support and can inspect images',async()=>{
- const[api,panel,policy,vercel]=await Promise.all([read('api/test.ts'),read('src/mvp/AdminDisputeAssistant.tsx'),read('docs/UGO_DISPUTE_RULES_MASTER.md'),read('vercel.json')])
+ const[api,panel,policy,vercelText]=await Promise.all([read('api/test.ts'),read('src/mvp/AdminDisputeAssistant.tsx'),read('docs/UGO_DISPUTE_RULES_MASTER.md'),read('vercel.json')])
+ const vercel=JSON.parse(vercelText)
  assert.match(api,/Solo Admin puede analizar disputas/)
  assert.match(api,/inlineData/)
  assert.match(api,/nunca atribuyas quién causó un daño/i)
