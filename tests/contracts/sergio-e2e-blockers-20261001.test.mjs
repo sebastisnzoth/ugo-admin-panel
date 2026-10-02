@@ -6,7 +6,7 @@ const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 test('provider realtime rebuilds after foreground recovery',async()=>{
  const src=await read('src/mvp/provider/useProviderRealtime.ts')
  assert.match(src,/visibilityState==='visible'\)\{resync\(\);reconnect\(\)\}/)
- assert.match(src,/CHANNEL_ERROR.*TIMED_OUT.*CLOSED/)
+ assert.match(src,/CHANNEL_ERROR.*TIMED_OUT.*CLOSED/)\n assert.match(src,/setInterval\(\(\)=>\{if\(document\.visibilityState==='visible'\)resync\(\)\},20_000\)/)\n assert.match(src,/addEventListener\('focus',onFocus\)/)
 })
 
 test('realtime notification insert alerts immediately before reconciliation',async()=>{
