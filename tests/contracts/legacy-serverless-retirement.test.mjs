@@ -4,7 +4,8 @@ import fs from 'node:fs'
 
 const proxy=fs.readFileSync('api/proxy.js','utf8')
 const dispatch=fs.readFileSync('src/lib/dispatch/supabaseDispatch.ts','utf8')
-const vercel=fs.readFileSync('vercel.json','utf8')
+const vercelText=fs.readFileSync('vercel.json','utf8')
+const vercel=JSON.parse(vercelText)
 
 test('legacy cascade serverless endpoint is fully retired and matching stays canonical',()=>{
  assert.equal(fs.existsSync('api/cascade.js'),false,'retired cascade must not consume a Vercel Hobby function slot')
