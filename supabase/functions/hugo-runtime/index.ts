@@ -1,5 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2.108.1'
 import{hugoEdgeCorsHeaders,hugoEdgeOrigin,sanitizeHugoEdgeContext}from'../_shared/hugoPolicy.ts'
+import{parseHugoEdgeBody}from'../_shared/hugoRequest.ts'
+import{enforceHugoEdgeIpRateLimit,enforceHugoEdgeUserRateLimit}from'../_shared/hugoRateLimit.ts'
 
 type JsonRecord=Record<string,unknown>
 const rec=(v:unknown):JsonRecord=>v!==null&&typeof v==='object'&&!Array.isArray(v)?v as JsonRecord:{}
@@ -95,17 +97,23 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=='POST')return json({error:'Método no permitido.'},405,origin)
  if((req.headers.get('origin')||'')&&!origin)return json({error:'Origen no autorizado.'},403,'')
  try{
-  const body=rec(await req.json().catch(()=>({}))),role=clean(body.role||'client',20).toLowerCase()
+  enforceHugoEdgeIpRateLimit(req)
+  const raw=await req.json().catch(()=>{throw Object.assign(new Error('El cuerpo de la solicitud no contiene JSON válido.'),{status:400,code:'INVALID_REQUEST'})})
+  const body=parseHugoEdgeBody(raw,'client'),role=body.role
   const auth=await authorize(req,role)
-  if(body.voice_live_token===true||body.action==='live-token')return json(await createLiveToken(),200,origin)
+  const liveRequest=body.voice_live_token===true||body.action==='live-token'
+  enforceHugoEdgeUserRateLimit(auth.user.id,liveRequest?'live':'chat')
+  if(liveRequest)return json(await createLiveToken(),200,origin)
   const message=clean(body.message,1800)
   if(!message)return json({hugo_mensaje:'Mensaje requerido.'},400,origin)
   const context=sanitizeHugoEdgeContext(body.context,auth.requestedRole),history=Array.isArray(body.history)?body.history:[],adminMode=role==='admin'||role==='superadmin',providerMode=role==='provider',structuredMode=adminMode||providerMode,system=systemFor(role,context)
   const result=await askModel(message,history,system,structuredMode),parsed=structuredMode?parseJson(result.text):null,reply=structuredMode?clean(rec(parsed).reply,1800):result.text,uiAction=adminMode?safeAction(rec(parsed).ui_action,role):null,providerAction=providerMode?safeProviderAction(rec(parsed).provider_action):null
   return json({hugo_mensaje:reply||'Decime qué necesitás.',ui_action:uiAction,provider_action:providerAction,accion:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,authority:{role:auth.requestedRole,profile_role:auth.profileRole,decision:'ALLOW'}},200,origin)
  }catch(error){
-  const e=error as Error&{status?:number;code?:string},status=Number(e.status)||502
+  const e=error as Error&{status?:number;code?:string;retryAfter?:number},status=Number(e.status)||502
   console.error('Hugo Edge failed',{status,code:e.code||'',message:e.message})
-  return json({error:e.message||'Hugo no pudo responder ahora.',error_code:e.code||undefined,hugo_mensaje:e.message||'Hugo no pudo responder ahora.'},status>=400&&status<600?status:502,origin)
+  const response=json({error:e.message||'Hugo no pudo responder ahora.',error_code:e.code||undefined,hugo_mensaje:e.message||'Hugo no pudo responder ahora.'},status>=400&&status<600?status:502,origin)
+  if(e.retryAfter)response.headers.set('Retry-After',String(e.retryAfter))
+  return response
  }
 })
