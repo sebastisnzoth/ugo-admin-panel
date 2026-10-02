@@ -3,10 +3,10 @@
   "task_id": "readiness-end-to-end-command-center-gate",
   "job_id": "UGO-READINESS-END-TO-END-COMMAND-CENTER-GATE-20261002",
   "title": "Evaluate final autonomous Command Center gate",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-02T13:05:00Z",
-  "heartbeat_at": "2026-10-02T13:05:00Z",
-  "lease_expires_at": "2026-10-02T13:50:00Z",
+  "heartbeat_at": "2026-10-02T13:14:45Z",
+  "lease_expires_at": null,
   "started_sha": "3adee6bedfdc7efa27b9064258ffc48e90b8b633",
   "owner": "UGO",
   "department": "Flujo Cliente ↔ Proveedor · Reparación integral",
@@ -21,14 +21,34 @@
     "qa-lab"
   ],
   "correlation_id": "readiness-end-to-end-command-center-gate-20261002T130500Z",
-  "current_step": "EVALUATE_AUTONOMOUS_COMPLETENESS",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "dependency:cross-realtime-consistency:VERIFIED",
     "dependency:cross-errors-recovery:VERIFIED",
     "dependency:cross-regression:VERIFIED",
     "dependency:cross-p0:VERIFIED",
-    "dependency:client-provider-lifecycle:VERIFIED"
+    "dependency:client-provider-lifecycle:VERIFIED",
+    "github-run:37011607254:PASS",
+    "github-job-runtime:110852421030:PASS",
+    "github-job-judge:110852615836:PASS",
+    "github-job-sentinel:110852697254:PASS",
+    "github-artifact-runtime:11227776973",
+    "github-artifact-judge:11227826915",
+    "github-artifact-sentinel:11228001820",
+    "same-sha:1d8744c98bb20c4131321fca8dafd2ef263673ff",
+    "repo-evidence:docs/evidence/readiness-end-to-end-command-center-gate-20261002.json"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "completed_at": "2026-10-02T13:14:45Z",
+  "finished_at": "2026-10-02T13:14:45Z",
+  "runtime_validated_sha": "1d8744c98bb20c4131321fca8dafd2ef263673ff",
+  "verified_sha": "1d8744c98bb20c4131321fca8dafd2ef263673ff",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "evidence_path": "docs/evidence/readiness-end-to-end-command-center-gate-20261002.json",
+  "result_summary": "Final autonomous Command Center gate PASS on one SHA: autonomous scope complete, Judge PASS, Sentinel PASS, human/physical work preserved, launch not authorized, production untouched."
 }
