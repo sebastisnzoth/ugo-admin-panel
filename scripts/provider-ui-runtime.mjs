@@ -25,6 +25,7 @@ for(let attempt=1;attempt<=3;attempt+=1){
  await sleep(attempt*1000)
 }
 if(!data?.session)throw lastError||new Error('PROVIDER_SESSION_REQUIRED')
+
 await fs.mkdir('artifacts',{recursive:true})
 const browser=await chromium.launch({headless:true})
 const results=[]
@@ -33,6 +34,14 @@ async function assertResponsive(page,label){
  const m=await page.evaluate(()=>({sw:document.documentElement.scrollWidth,cw:document.documentElement.clientWidth,bsw:document.body.scrollWidth,bcw:document.body.clientWidth}))
  assert.ok(m.sw<=m.cw+4,label+' document overflow '+JSON.stringify(m))
  assert.ok(m.bsw<=m.bcw+4,label+' body overflow '+JSON.stringify(m))
+}
+async function visibleBox(locator){
+ if(!(await locator.count())||!(await locator.first().isVisible().catch(()=>false)))return null
+ return locator.first().boundingBox()
+}
+function overlaps(a,b){
+ if(!a||!b)return false
+ return a.x < b.x+b.width && a.x+a.width > b.x && a.y < b.y+b.height && a.y+a.height > b.y
 }
 async function openProvider(viewport){
  const page=await browser.newPage({viewport})
@@ -47,23 +56,44 @@ async function runViewport(name,viewport){
  const{page,errors}=await openProvider(viewport)
  try{
   await assertResponsive(page,'provider '+name+' home')
-  if(name==='desktop'){
+  const sidebar=page.locator('.provider-studio-sidebar')
+  const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
+  const dock=page.locator('.provider-operational-dock')
+  if(viewport.width>=1000){
+   assert.equal(await sidebar.isVisible(),true,'desktop sidebar must be visible')
+   assert.equal(await bottom.isVisible().catch(()=>false),false,'desktop bottom nav must be hidden')
    const primary=page.getByRole('navigation',{name:'Navegación principal'})
    await primary.waitFor({state:'visible',timeout:10000})
-   for(const item of ['Inicio','Trabajos','Calendario','Ganancias','Historial','Perfil'])await primary.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   for(const item of [/Inicio/i,/Trabajos/i,/Calendario/i,/Ganancias/i,/Historial/i,/Perfil/i]){
+    const button=primary.getByRole('button',{name:item}).first()
+    await button.waitFor({state:'visible',timeout:10000})
+    await button.click()
+    await page.waitForTimeout(120)
+    await assertResponsive(page,'provider '+name+' '+String(item))
+   }
   }else{
-   const bottom=page.getByRole('navigation',{name:'Navegación proveedor'})
-   await bottom.waitFor({state:'visible',timeout:10000})
-   for(const item of ['Inicio','Pedidos','Trabajo','Perfil'])await bottom.getByRole('button',{name:new RegExp(item,'i')}).first().waitFor({state:'visible',timeout:10000})
+   assert.equal(await sidebar.isVisible().catch(()=>false),false,'mobile/tablet sidebar must be hidden')
+   assert.equal(await bottom.isVisible(),true,'mobile/tablet bottom nav must be visible')
+   for(const item of [/Inicio proveedor/i,/^Pedidos/i,/Trabajo|Agenda/i,/Perfil proveedor/i]){
+    const button=bottom.getByRole('button',{name:item}).first()
+    await button.waitFor({state:'visible',timeout:10000})
+    await button.click()
+    await page.waitForTimeout(120)
+    await assertResponsive(page,'provider '+name+' '+String(item))
+   }
   }
-  const dock=page.getByRole('region',{name:'Estado operativo del proveedor'}).or(page.locator('.provider-operational-dock')).first()
-  await dock.waitFor({state:'visible',timeout:10000})
-  assert.ok(await dock.getByRole('button',{name:/Online|Offline/i}).count(),'online toggle missing')
-  assert.ok(await dock.getByRole('button',{name:/Trabajo/i}).count(),'work status missing')
-  assert.ok(await dock.getByRole('button',{name:/Pedidos/i}).count(),'demand status missing')
+  assert.equal(await dock.isVisible().catch(()=>false),false,name+' duplicate operational dock must be hidden')
+
+  const notification=await visibleBox(page.locator('.ugo-notification-trigger'))
+  const location=await visibleBox(page.locator('.ugo-location-control.role-provider'))
+  assert.equal(overlaps(notification,location),false,name+' GPS overlaps notifications')
+  const hugo=await visibleBox(page.locator('.provider-global-hugo .ugo-real-orb'))
+  const dispute=await visibleBox(page.locator('.ugo-dispute-launch'))
+  assert.equal(overlaps(hugo,dispute),false,name+' Hugo overlaps dispute launcher')
+
   await page.screenshot({path:'artifacts/provider-ui-'+name+'.png',fullPage:true})
   assert.deepEqual(errors,[],'provider page errors: '+errors.join(' | '))
-  results.push({viewport:name,status:'PASS',navigation:name==='desktop'?'studio-sidebar':'bottom-nav',operational_dock:true})
+  results.push({viewport:name,status:'PASS',navigation:viewport.width>=1000?'studio-sidebar':'bottom-nav',operational_dock:false,no_control_overlap:true})
  }finally{await page.close()}
 }
 try{
