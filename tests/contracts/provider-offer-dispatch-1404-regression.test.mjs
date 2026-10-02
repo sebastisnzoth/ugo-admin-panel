@@ -19,7 +19,7 @@ test('online idle provider refreshes trusted GPS on a heartbeat',async()=>{
  assert.match(source,/const publishHeartbeat=async\(\)=>/)
  assert.match(source,/const pos=await getFreshBrowserPosition\(\)/)
  assert.match(source,/publicar_ubicacion_disponibilidad_proveedor/)
- assert.match(source,/window\.setInterval\(publishHeartbeat,AVAILABILITY_HEARTBEAT_MS\)/)
+ assert.match(source,/window\.setInterval\(\(\)=>void publishHeartbeat\(\),AVAILABILITY_HEARTBEAT_MS\)/)
  assert.match(source,/maximumAge:0/)
 })
 
