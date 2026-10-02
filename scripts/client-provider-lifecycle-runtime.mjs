@@ -47,7 +47,8 @@ assert.equal(payment?.estado,'liberado')
 assert.ok(payment?.fecha_confirmacion)
 assert.ok(evidence.some(x=>x.tipo==='antes'))
 assert.ok(evidence.some(x=>x.tipo==='despues'))
-assert.ok(ratings.length>=2)
+assert.ok(ratings.some(x=>x.autor_tipo==='cliente'),'missing client rating')
+assert.ok(ratings.some(x=>x.autor_tipo==='proveedor'),'missing provider rating')
 
 const{data:auditJob,error:auditError}=await db.rpc('autonomous_record_p0_journey_test',{p_service_id:serviceId})
 if(auditError)throw auditError
