@@ -18,7 +18,8 @@ export function ProviderActiveJob(){
  const[evidence,setEvidence]=useState({initial:false,final:false})
  if(!s)return <section className="provider-screen provider-empty-screen"><EmptyState title="No tenés un trabajo activo" description="Cuando aparezca un pedido, mirá el problema y aceptalo si lo podés resolver." action={<Button variant="primary" className="provider-primary provider-wide" onClick={flow.actions.openOpportunities}>Ver pedidos</Button>}/></section>
  const scheduledAt=(s as{programado_para?:string|null}).programado_para||null
- const paymentReady=d.funded||d.cashSelected
+ const paymentReady=d.funded||d.cashSelected||d.paymentPreferenceSelected
+ const amountReady=Number(s.tarifa||0)>0
  const address=s.direccion_cliente||'Dirección por confirmar'
  const mapHref=s.direccion_cliente?`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.direccion_cliente)}`:null
  const stateLabel=STATE_LABEL[s.estado]||s.estado.replaceAll('_',' ')
@@ -28,13 +29,13 @@ export function ProviderActiveJob(){
   :s.estado==='en_camino'
    ?'Llegá al lugar y confirmá tu llegada'
    :s.estado==='llegado'
-    ?(evidence.initial?'Empezá el trabajo':'Sacá la foto inicial')
+    ?(!amountReady?'Definí el importe antes de empezar':!paymentReady?'Esperá la confirmación del pago':evidence.initial?'Empezá el trabajo':'Sacá la foto inicial')
     :s.estado==='en_progreso'
      ?(evidence.final?'Marcá el trabajo listo':'Sacá la foto final')
      :s.estado==='esperando_aprobacion'
       ?'Esperá la aprobación del cliente'
       :s.estado==='disputado'?'Seguí la disputa':'Revisá el estado del servicio'
- const paymentLabel=d.funded?'Pago protegido':d.cashSelected?'Efectivo':'Pago pendiente'
+ const paymentLabel=d.funded?'Pago protegido':d.cashSelected?'Efectivo':d.paymentPreferenceSelected?'Forma elegida · importe pendiente':'Pago pendiente'
  const locationLabel=s.estado==='en_camino'?'GPS activo':s.estado==='llegado'||s.estado==='en_progreso'?'Ubicación confirmada':'Ubicación lista'
  const confirmArrival=async()=>{await d.advance('llegado')}
  const cancelJob=async()=>{if(d.busy||!CANCELLABLE.has(s.estado))return;if(!window.confirm('¿Realmente querés cancelar este pedido?'))return;const reason=window.prompt('Contanos brevemente por qué cancelás este pedido. El motivo queda registrado.');if(reason===null)return;if(reason.trim().length<5){window.alert('Indicá un motivo de al menos 5 caracteres para cancelar el pedido.');return}await d.cancelService(reason)}
@@ -58,10 +59,12 @@ export function ProviderActiveJob(){
 
   <Card id="provider-primary-control" className="provider-card provider-job-control-card provider-active-control" aria-label="Cambiar estado del pedido">
    <small>CONTROL DEL PEDIDO · #{s.numero??String(s.id).slice(0,8)}</small>
-   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>ESTOY YENDO</Button><div className="provider-simple-status" role="status"><strong>Falta confirmar la forma de pago</strong><span>El botón queda visible y se habilita automáticamente cuando UGO confirma PIX o efectivo.</span></div></>}
+   {s.estado==='asignado'&&!paymentReady&&<><Button variant="primary" className="provider-primary provider-main-action" disabled>ESTOY YENDO</Button><div className="provider-simple-status" role="status"><strong>El cliente tiene que elegir cómo pagar</strong><span>PIX o efectivo se elige desde la app Cliente. No tenés que elegirlo vos. Cuando el cliente confirme, UGO habilita “ESTOY YENDO” automáticamente.</span></div></>}
    {s.estado==='asignado'&&paymentReady&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_camino')}>{d.busy?'Procesando…':'ESTOY YENDO'}</Button>}
    {s.estado==='en_camino'&&<div className="provider-arrival-auto" role="status"><strong>Seguí hasta el lugar</strong><span>UGO intenta detectar tu llegada automáticamente. Si el GPS no la confirma, el botón siempre te permite confirmarla.</span><Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void confirmArrival()}>{d.busy?'Confirmando…':'YA LLEGUÉ'}</Button></div>}
-   {s.estado==='llegado'&&(evidence.initial?<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</Button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
+   {s.estado==='llegado'&&!amountReady&&<div className="provider-simple-status" role="status"><strong>Definí el importe antes de empezar</strong><span>Proponé el presupuesto al cliente. Cuando lo apruebe, UGO actualiza el total y conecta la forma de pago elegida.</span><ServiceExpansionPanel role="provider" serviceId={s.id} compact/></div>}
+   {s.estado==='llegado'&&amountReady&&!paymentReady&&<div className="provider-simple-status" role="status"><strong>Esperá la confirmación del pago</strong><span>El importe ya está aprobado. UGO habilita el inicio cuando efectivo quede registrado o Pix esté confirmado.</span></div>}
+   {s.estado==='llegado'&&amountReady&&paymentReady&&(evidence.initial?<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.advance('en_progreso')}>{d.busy?'Procesando…':'EMPEZAR TRABAJO'}</Button>:<ProviderEvidencePanel service={s} compact forceKind="antes" actionLabel="EMPEZAR TRABAJO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.advance('en_progreso')}/>)}
    {s.estado==='en_progreso'&&!evidence.final&&<ProviderEvidencePanel service={s} compact forceKind="despues" actionLabel="TRABAJO LISTO" actionBusyLabel="GUARDANDO…" disabled={d.busy} onReadinessChange={setEvidence} onUploaded={()=>d.completeService()}/>} 
    {s.estado==='en_progreso'&&evidence.final&&<Button variant="primary" className="provider-primary provider-main-action" disabled={d.busy} onClick={()=>void d.completeService()}>{d.busy?'Procesando…':'TRABAJO LISTO'}</Button>}
    {s.estado==='en_progreso'&&d.cashSelected&&!evidence.final&&<p className="provider-action-note">Documentá el resultado y marcá “TRABAJO LISTO”. Primero confirma el cliente; el pago en efectivo viene después.</p>}

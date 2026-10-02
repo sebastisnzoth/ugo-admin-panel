@@ -1,0 +1,49 @@
+{
+  "readiness_id": "hugo-gemini-live-core",
+  "task_id": "readiness-hugo-gemini-live-core",
+  "job_id": "UGO-READINESS-HUGO-GEMINI-LIVE-CORE-20261001",
+  "title": "hugo-gemini-live-core",
+  "status": "HUMAN_REQUIRED",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T02:01:00Z",
+  "lease_expires_at": null,
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo AI Engineering Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "hugo-voice",
+    "model-router"
+  ],
+  "correlation_id": "hugo-gemini-live-core-20261001T000857Z",
+  "current_step": "HUMAN_MIC_AUDIO_GEMINI_LIVE_EVIDENCE_REQUIRED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef",
+    "reconciles:hugo-voice",
+    "hugo-voice:automated-contracts-pass",
+    "hugo-voice:human-retest-pending",
+    "scheduler:human-required-lock-authoritative",
+    "main-engine:3738f332013e5a321ee85bea069e17959901c7bd"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": "HUMAN_REQUIRED",
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "action": "Conversación real por micrófono con Gemini Live, audio natural y tool/action real, incluyendo fallback al negar micrófono.",
+    "evidence_required": "Micrófono/audio real posterior a los fixes"
+  }
+}

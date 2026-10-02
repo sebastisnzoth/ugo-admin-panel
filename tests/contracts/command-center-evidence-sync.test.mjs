@@ -47,3 +47,26 @@ test('Command Center exposes authoritative DONE control without self-certifying'
   assert.match(page,/remaining_autonomous/)
   assert.match(page,/human_deferred/)
 })
+
+
+test('Command Center surfaces failed physical Hugo voice evidence instead of reporting generic progress',()=>{
+  const engine=fs.readFileSync('scripts/ugo-readiness-engine.mjs','utf8')
+  assert.match(engine,/WAITING_EVIDENCE.*human_final_required/s)
+  assert.match(engine,/human_runtime_evidence/)
+  assert.match(engine,/prueba humana real FALLÓ/)
+  assert.match(engine,/requiere corrección y nueva prueba física/)
+})
+
+
+test('Command Center exposes a reconciled whole-UGO audit instead of a historical fixed counter',()=>{
+  assert.match(generator,/audit_snapshot/)
+  assert.match(generator,/catalog_total/)
+  assert.match(generator,/critical_remaining/)
+  assert.match(generator,/open_non_backlog_prs/)
+  assert.match(generator,/VERIFIED sólo cuenta con lock DONE \+ evidencia persistida \+ Judge PASS \+ Sentinel PASS/)
+  assert.match(page,/id="wholeUgoAudit"/)
+  assert.match(page,/Auditoría real de TODO UGO/)
+  assert.match(page,/renderAuditSnapshot/)
+  assert.match(page,/auditCriticalList/)
+  assert.match(page,/auditPrList/)
+})

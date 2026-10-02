@@ -5,10 +5,10 @@ import{readFile}from'node:fs/promises'
 const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const api=await readFile(new URL('../../api/test.ts',import.meta.url),'utf8')
 
-test('production Live token path avoids the rejected auth-token field',()=>{
- assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:/)
- assert.match(api,/model:`models\/\$\{model\}`/)
- assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
+test('production Live token path uses one-use short-lived token without rejected live constraints',()=>{
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
+ assert.doesNotMatch(api,/liveConnectConstraints\s*:/)
+ assert.match(api,/const model=mode==='transcribe'\?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL/)
 })
 
 test('Hugo client isolates browser-speech recovery without reviving retired companion paths',()=>{

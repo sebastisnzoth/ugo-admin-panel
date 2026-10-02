@@ -1,0 +1,58 @@
+{
+  "readiness_id": "provider-arrival",
+  "correlation_id": "readiness-provider-arrival-20261001T184400Z-gptugo-r1",
+  "candidate_sha": "61fc108357110ee12548f67f8a02b1347889da8b",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "implementation": {
+    "publish_before_arrival": true,
+    "geofence_m": 200,
+    "zero_zero_guard": true,
+    "stale_gps_guard_ms": 30000,
+    "max_accuracy_m": 250,
+    "distance_feedback": true,
+    "rejection_reason_feedback": true,
+    "fail_closed_on_gps_error": true
+  },
+  "github_actions": {
+    "workflow": "UGO Provider Arrival Runtime TEST",
+    "run_id": 36909642999,
+    "status": "SUCCESS",
+    "artifacts": {
+      "runtime": 11186003433,
+      "judge": 11186280670,
+      "sentinel": 11186310728
+    }
+  },
+  "runtime": {
+    "status": "PASS",
+    "source": "PERSISTED_STATE",
+    "service_id": "01f57051-7477-4bb1-ac99-e24a6f41facf",
+    "qa_run_id": "2526b66a-ffe4-49af-9d0c-559870dce300",
+    "db_judge_job": "2746d5b3-8dfb-450a-a346-d74d6f4fbc69",
+    "observations": {
+      "zero_zero_rejected": true,
+      "stale_gps_rejected": true,
+      "inaccurate_gps_rejected": true,
+      "outside_geofence_rejected": true,
+      "rejected_arrival_did_not_change_state": true,
+      "valid_gps_arrival_accepted": true
+    },
+    "fixture_availability_restored": true
+  },
+  "judge": {
+    "status": "PASS",
+    "completed_at": "2026-10-01T18:49:42.462Z"
+  },
+  "sentinel": {
+    "status": "PASS",
+    "completed_at": "2026-10-01T18:49:57.366Z"
+  },
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "criterion": "En un dispositivo físico del proveedor, con un servicio UGO TEST en_camino, intentar YA LLEGUÉ fuera de 200 m y confirmar que no avanza; luego acercarse a <=200 m con Ubicación precisa activa, obtener GPS reciente y confirmar que pasa a llegado. Repetir con GPS/permiso desactivado para confirmar que no avanza.",
+    "evidence_required": "Prueba física final del proveedor"
+  },
+  "final_gate": "HUMAN_REQUIRED"
+}

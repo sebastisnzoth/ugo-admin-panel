@@ -12,9 +12,9 @@ permissions:
   contents: read
 
 concurrency:
-  # This proof toggles autonomous_company_state and executes the same UGO TEST worker surface
-  # as the autonomous worker / isolated RPC flows. Serialize all of them on one repository-wide group.
-  group: ugo-test-shared-provider-fixture
+  # This proof touches only autonomous-company/job ledgers; it does not mutate the shared provider fixture.
+  # Keep its own queue so provider/RLS workflow_run cascades cannot evict the autonomy proof.
+  group: ugo-test-scheduled-worker-proof-${{ github.event.workflow_run.head_sha || github.sha }}
   cancel-in-progress: false
 
 jobs:
@@ -43,6 +43,7 @@ jobs:
 
       - name: Prove scheduled worker autonomy ON
         env:
+          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
@@ -60,6 +61,8 @@ jobs:
         if: always()
         env:
           UGO_RUNTIME_WORKFLOW_NAME: UGO Scheduled Worker Proof TEST
+          UGO_RUNTIME_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+          UGO_RUNTIME_JOB_STATUS: ${{ job.status }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-runtime-revision.mjs

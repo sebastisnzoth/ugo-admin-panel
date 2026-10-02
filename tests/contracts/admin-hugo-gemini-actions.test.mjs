@@ -10,7 +10,7 @@ test('Admin Hugo keeps Gemini Live primary and isolates TTS to browser-speech fa
   read('api/test.ts'),
  ])
  assert.match(bridge,/app\.includes\('admin'\)/)
- assert.match(bridge,/role==='admin'\?adminSupabase:getRoleSupabase\(role\)/)
+ assert.match(bridge,/role==='admin'\|\|role==='superadmin'\?adminSupabase:getRoleSupabase\(role\)/)
  assert.match(api,/voiceRole=\['client','provider','admin','superadmin'\]/)
  assert.match(api,/voiceRole==='admin'\?\['admin','superadmin'\]\.includes\(profileRole\)/)
  assert.match(orb,/UGOVoiceBridge/)
@@ -91,7 +91,7 @@ test('Admin Hugo Gemini Live exposes only bounded safe UI actions',async()=>{
 test('admin Hugo browser-speech fallback still answers through the authorized Hugo API',async()=>{
  const src=await readFile(new URL('../../src/components/ConversationalOrb.tsx',import.meta.url),'utf8')
  assert.match(src,/detail\.engine==='browser-speech'/)
- assert.match(src,/fetch\('\/api\/hugo\/chat'/)
+ assert.match(src,/getHugoRuntimeUrl\('\/api\/hugo\/chat'\)/)
  assert.match(src,/Authorization:'Bearer '\+session\.access_token/)
  assert.match(src,/ugo:admin:hugo-action/)
  assert.match(src,/SpeechSynthesisUtterance/)

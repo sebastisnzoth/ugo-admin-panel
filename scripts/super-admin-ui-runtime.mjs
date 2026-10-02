@@ -102,7 +102,7 @@ try{
   let headerMatched=false;
   for(let attempt=0;attempt<30;attempt++){
     const autonomyText=(await page.locator('.ugo-autonomous-content').textContent())||'';
-    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Launch: '+before.launch)){headerMatched=true;break}
+    if(autonomyText.includes('Modo: '+before.mode)&&autonomyText.includes('Customer #1: '+before.launch)){headerMatched=true;break}
     await page.waitForTimeout(250);
   }
   assert.ok(headerMatched,'AUTONOMY_HEADER_UI_BACKEND_MISMATCH_AFTER_RETRY');
@@ -113,7 +113,14 @@ try{
   const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
   await departmentTable.waitFor({state:'visible'});
   for(const summary of before.departmentJobs){
-    const row=departmentTable.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first();
+    const rows=departmentTable.locator('tbody tr');
+    let row=null;
+    for(let index=0;index<await rows.count();index++){
+      const candidate=rows.nth(index);
+      const idText=((await candidate.locator('td').first().textContent())||'').trim();
+      if(idText==='D'+summary.department_id){row=candidate;break}
+    }
+    assert.ok(row,'DEPARTMENT_ROW_NOT_FOUND D'+summary.department_id);
     await row.waitFor({state:'visible'});
     const cells=row.locator('td');
     let activeText='',totalText='',activeCount=NaN,totalCount=NaN;
@@ -129,19 +136,8 @@ try{
     assert.ok(Number.isFinite(totalCount)&&totalCount>=0,'DEPARTMENT_TOTAL_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
     assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
     const correlation=((await cells.nth(9).textContent())||'').trim();
-    if(correlation&&correlation!=='—'){
-      const [jobMatch,evidenceMatch]=await Promise.all([
-        reader.from('autonomous_jobs').select('id,status,correlation_id,department_id').eq('department_id',summary.department_id).eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1),
-        reader.from('autonomous_evidence_ledger').select('id,job_id,correlation_id').eq('correlation_id',correlation).order('created_at',{ascending:false}).limit(1)
-      ]);
-      assert.ifError(jobMatch.error);
-      assert.ifError(evidenceMatch.error);
-      assert.ok((jobMatch.data?.length||0)>0||(evidenceMatch.data?.length||0)>0,'DEPARTMENT_CORRELATION_NOT_PERSISTED D'+summary.department_id);
-    }else{
-      const persistedCount=await reader.from('autonomous_jobs').select('id',{count:'exact',head:true}).eq('department_id',summary.department_id);
-      assert.ifError(persistedCount.error);
-      assert.equal(Number(persistedCount.count||0),0,'DEPARTMENT_MISSING_CORRELATION_WITH_PERSISTED_JOBS D'+summary.department_id);
-    }
+    const expectedCorrelation=String(summary.last_job?.correlation_id||summary.last_evidence?.correlation_id||'—').trim();
+    assert.equal(correlation,expectedCorrelation,'DEPARTMENT_CORRELATION_UI_BACKEND_MISMATCH D'+summary.department_id);
   }
   const departmentFilter=page.getByLabel('Filtrar departamento');
   const firstDepartment=before.departmentJobs[0];

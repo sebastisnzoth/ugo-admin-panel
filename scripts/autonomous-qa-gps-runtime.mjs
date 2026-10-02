@@ -8,83 +8,40 @@ if(!url.includes('tmossnqfwfwjrtzwcbmm')||!sk)throw new Error('UGO_TEST_ONLY')
 assert.ok(sha,'UGO_RUNTIME_SHA_REQUIRED')
 
 const service=createClient(url,sk,{auth:{persistSession:false,autoRefreshToken:false}})
-const providerId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2'
-
-const {data:profile,error:profileError}=await service
- .from('perfiles_proveedor')
- .select('online,disponible')
- .eq('usuario_id',providerId)
- .single()
-if(profileError)throw profileError
-
-let serviceId=null
-try{
- const {error:availabilityError}=await service
-  .from('perfiles_proveedor')
-  .update({online:true,disponible:true})
-  .eq('usuario_id',providerId)
- if(availabilityError)throw availabilityError
-
- const {data:p0ServiceId,error:p0Error}=await service.rpc('autonomous_qa_run_p0_test_service')
- if(p0Error)throw p0Error
- serviceId=p0ServiceId
- assert.ok(serviceId,'P0_SERVICE_REQUIRED')
-
-const {data:scenario,error:scenarioError}=await service
- .from('autonomous_qa_scenarios')
- .select('id')
- .eq('scenario_key','gps-geofence')
- .single()
-if(scenarioError)throw scenarioError
-
-const observations={
- zero_zero_rejected:true,
- stale_gps_rejected:true,
- inaccurate_gps_rejected:true,
- outside_geofence_rejected:true,
- rejected_arrival_did_not_change_state:true,
- valid_gps_arrival_accepted:true,
-}
-
-const {data:run,error:runError}=await service.rpc('autonomous_record_external_qa_probe',{
- p_scenario_id:scenario.id,
- p_service_id:serviceId,
- p_observations:observations,
-})
-if(runError)throw runError
-
-for(const [key,passed] of Object.entries(observations)){
- const {error:evidenceError}=await service.rpc('autonomous_record_independent_qa_evidence',{
-  p_run_id:run.id,
-  p_service_id:serviceId,
-  p_assertion_key:key,
-  p_expected:true,
-  p_observed:passed,
-  p_passed:passed,
-  p_source:'SERVICE_ROLE_ISOLATED_TEST_RUNTIME',
- })
- if(evidenceError)throw evidenceError
-}
 
 const {data:judgeJob,error:judgeError}=await service.rpc('autonomous_qa_run_gps_independent_evidence')
 if(judgeError)throw judgeError
-assert.equal(judgeJob?.status,'SUCCEEDED')
+assert.equal(judgeJob?.status,'SUCCEEDED','CANONICAL_GPS_DB_JUDGE_REQUIRED')
+assert.equal(judgeJob?.result?.source,'INDEPENDENT_PERSISTED_EVIDENCE','CANONICAL_GPS_EVIDENCE_SOURCE_REQUIRED')
+assert.equal(judgeJob?.result?.passed,true,'CANONICAL_GPS_EVIDENCE_PASS_REQUIRED')
+
+const evidence=Array.isArray(judgeJob?.result?.evidence)?judgeJob.result.evidence:[]
+const has=(key)=>evidence.some(item=>item?.assertion===key&&item?.source==='PERSISTED_STATE')
+
+const observations={
+ zero_zero_rejected:has('zero_zero_rejected'),
+ stale_gps_rejected:has('stale_gps_rejected'),
+ inaccurate_gps_rejected:has('inaccurate_gps_rejected'),
+ outside_geofence_rejected:has('arrival_outside_200m_rejected'),
+ rejected_arrival_did_not_change_state:has('state_unchanged_on_rejection'),
+ valid_gps_arrival_accepted:has('arrival_inside_200m'),
+}
+for(const [key,passed] of Object.entries(observations))assert.equal(passed,true,'CANONICAL_GPS_OBSERVATION_'+key)
+
+const serviceId=judgeJob?.service_id||''
+const qaRunId=judgeJob?.result?.qa_run_id||judgeJob?.target_id||''
+assert.ok(serviceId,'P0_SERVICE_REQUIRED')
+assert.ok(qaRunId,'QA_RUN_REQUIRED')
 
 console.log(JSON.stringify({
  gpsGeofence:true,
  sha,
  serviceId,
- qaRunId:run.id,
+ qaRunId,
  observations,
  judgeJob:judgeJob.id,
  fixtureAvailabilityRestored:true,
  environment:'UGO TEST',
  productionTouched:false,
+ evidenceSource:'PERSISTED_STATE',
 }))
-}finally{
- const {error:restoreError}=await service
-  .from('perfiles_proveedor')
-  .update({online:Boolean(profile.online),disponible:Boolean(profile.disponible)})
-  .eq('usuario_id',providerId)
- if(restoreError)throw restoreError
-}

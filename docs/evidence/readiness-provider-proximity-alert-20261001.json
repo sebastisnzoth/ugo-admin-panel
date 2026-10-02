@@ -1,0 +1,16 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-proximity-alert",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "ead16936741ed7c33645acfa799b4d2bd6d1aaa7",
+  "workflow_run_id": 36932557119,
+  "core_ci_run_id": 36932557247,
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false
+  }
+}

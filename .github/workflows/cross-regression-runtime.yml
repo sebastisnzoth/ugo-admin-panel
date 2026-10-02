@@ -1,0 +1,95 @@
+name: UGO Cross Regression TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cross-regression-*.mjs'
+      - 'tests/contracts/**'
+      - 'src/features/client/services/clientActionService.ts'
+      - 'src/features/client/request/ClientPostConfirmFlow.tsx'
+      - 'src/lib/dispatch/supabaseDispatch.ts'
+      - 'supabase/migrations/20261002115500_matching_requires_service_location.sql'
+      - 'supabase/migrations/20261002121500_notification_retirement_indexes.sql'
+      - 'supabase/migrations/20261002140000_scheduled_worker_proof_queue_isolation.sql'
+      - '.github/workflows/cross-regression-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-regression-${{ github.sha }}
+  cancel-in-progress: false
+
+env:
+  UGO_RUNTIME_SHA: ${{ github.sha }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Permanent regression runtime
+        run: node scripts/cross-regression-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cross-regression-runtime-${{ github.sha }}
+          path: artifacts/cross-regression-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-regression-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge
+        run: node scripts/cross-regression-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-regression-judge-${{ github.sha }}
+          path: artifacts/cross-regression-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-regression-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-regression-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        run: node scripts/cross-regression-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-regression-sentinel-${{ github.sha }}
+          path: artifacts/cross-regression-sentinel.json
+          retention-days: 90

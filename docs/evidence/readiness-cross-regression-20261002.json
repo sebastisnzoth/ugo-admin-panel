@@ -1,0 +1,50 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "cross-regression",
+  "task_id": "readiness-cross-regression",
+  "status": "VERIFIED",
+  "environment": "UGO TEST / repository same-SHA",
+  "tested_sha": "25721ee7cd0f89d6112ab52880c53d7c6c66b3de",
+  "workflow_run_id": 37009065030,
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false
+  },
+  "jobs": {
+    "runtime": 110844165195,
+    "judge": 110844315647,
+    "sentinel": 110844387369
+  },
+  "artifacts": {
+    "runtime": 11226343551,
+    "judge": 11226388568,
+    "sentinel": 11226503393
+  },
+  "regression": {
+    "files": 10,
+    "passing_tests": 41,
+    "failing_tests": 0,
+    "source_guards": 6
+  },
+  "critical_incidents": [
+    "provider-offer-dispatch-1404",
+    "legacy-null-location-retry",
+    "matching-null-deadline",
+    "notification-retirement-timeout",
+    "scheduled-worker-queue-isolation",
+    "client-provider-lifecycle",
+    "provider-history",
+    "payment-recovery",
+    "realtime-reconnect",
+    "provider-offer-alert-lifecycle"
+  ],
+  "reconciliation": {
+    "reconciled_to_sha": "852d9e4e3e743b8f6ec71bdd1f0f0eea93824d17",
+    "commits_ahead": 4,
+    "regression_scope_changed": false,
+    "intervening_changes": "client-provider lifecycle evidence/lock metadata only"
+  },
+  "verified_at": "2026-10-02T12:50:41Z"
+}

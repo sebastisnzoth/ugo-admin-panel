@@ -1,6 +1,6 @@
 import test from'node:test'
 import assert from'node:assert/strict'
-import{readFile}from'node:fs/promises'
+import{readFile,readdir}from'node:fs/promises'
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
 
 test('TEST auth bootstrap is hard-pinned to isolated project and never production',async()=>{
@@ -40,4 +40,23 @@ test('isolated RPC/RLS workflow self-repairs TEST identities when privileged TES
  assert.match(yml,/env\.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY != ''/)
  assert.match(yml,/env\.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY == ''/)
  assert.doesNotMatch(yml,/UGO_TEST_SUPABASE_SERVICE_ROLE_KEY:\s*sb_/)
+})
+
+
+test('CI never reuses the human TEST client identity',async()=>{
+ const forbidden='cliente@ugo.com.ar'
+ const workflowDir=new URL('../../.github/workflows/',import.meta.url)
+ const workflows=(await readdir(workflowDir)).filter(name=>/\.ya?ml$/i.test(name))
+ const offenders=[]
+ for(const name of workflows){
+  const source=await readFile(new URL(name,workflowDir),'utf8')
+  if(source.includes(forbidden))offenders.push('.github/workflows/'+name)
+ }
+ const bootstrap=await read('scripts/bootstrap-test-auth.mjs')
+ if(bootstrap.includes(forbidden)&&!/HUMAN_TEST_EMAILS/.test(bootstrap))offenders.push('scripts/bootstrap-test-auth.mjs')
+ assert.deepEqual(offenders,[],'La identidad humana TEST no puede ser usada por CI: '+offenders.join(', '))
+ assert.match(bootstrap,/cliente\.ugo\.test@example\.com/)
+ assert.match(bootstrap,/refusing to mutate human TEST identity/)
+ const repair=await read('.github/workflows/repair-test-auth.yml')
+ assert.match(repair,/UGO_TEST_CLIENT_EMAIL: cliente\.ugo\.test@example\.com/)
 })

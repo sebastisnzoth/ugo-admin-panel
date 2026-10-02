@@ -1,0 +1,54 @@
+name: UGO Provider Operating Zone Runtime TEST
+
+on:
+  pull_request:
+    paths:
+      - 'src/mvp/provider/ProviderProfile.tsx'
+      - 'src/mvp/provider/providerData.tsx'
+      - 'supabase/migrations/20261001022000_provider_configurable_operating_radius.sql'
+      - 'scripts/provider-operating-zone-*.mjs'
+      - 'tests/contracts/provider-operating-zone.test.mjs'
+      - '.github/workflows/provider-operating-zone-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/provider-operating-zone.test.mjs
+      - name: Runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-operating-zone-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-operating-zone-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-operating-zone-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-operating-zone-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/provider-operating-zone-*
+          if-no-files-found: warn
+          retention-days: 90

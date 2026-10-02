@@ -1,0 +1,41 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-notifications",
+  "related_readiness_ids": [
+    "provider-offers",
+    "provider-alerts"
+  ],
+  "environment": "UGO TEST",
+  "tested_sha": "19c2b829815052b654c5366c054d7bfb44a7cbf5",
+  "workflow_run_id": 37007207932,
+  "workflow_job_id": 110838192054,
+  "artifact_id": 11226435914,
+  "artifact_name": "readiness-provider-notifications-19c2b829815052b654c5366c054d7bfb44a7cbf5",
+  "artifact_digest": "sha256:466aed0d681a587db3a8e8c7aed8fa2e97c5509256275d9de629c582a3e41f63",
+  "runtime": {
+    "result": "PASS",
+    "offer_origin": "CLIENT_AUTH_MATCHING_DIRECTED",
+    "fixture_service_created_by": "TEST_SERVICE_ROLE",
+    "channels": {
+      "offer": true,
+      "assignment": true,
+      "change": true,
+      "message": true
+    },
+    "realtime_without_refresh": true,
+    "attention": {
+      "tone": true,
+      "vibrate": true
+    }
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "contracts": {
+    "count": 18,
+    "result": "PASS"
+  },
+  "production_touched": false,
+  "conclusion": "A client-authenticated matching call created the provider offer; the DB trigger created nueva_oferta; the provider browser received the realtime alert without refresh and emitted attention tone/vibration."
+}

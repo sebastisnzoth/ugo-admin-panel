@@ -1,0 +1,59 @@
+name: UGO Admin Assignment Payment Guard Runtime TEST
+
+on:
+  pull_request:
+    paths:
+      - 'src/mvp/AdminServicesPro.tsx'
+      - 'src/hooks/useAdminActiveServices.ts'
+      - 'supabase/migrations/20260930224000_admin_assignment_complete_guard.sql'
+      - 'scripts/admin-assignment-payment-guard-*.mjs'
+      - 'tests/contracts/admin-assignment-payment-guard.test.mjs'
+      - '.github/workflows/admin-assignment-payment-guard-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/admin-assignment-payment-guard.test.mjs
+      - name: Runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/admin-assignment-payment-guard-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/admin-assignment-payment-guard-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/admin-assignment-payment-guard-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: admin-assignment-payment-guard-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/admin-assignment-payment-guard-*
+          if-no-files-found: warn
+          retention-days: 90

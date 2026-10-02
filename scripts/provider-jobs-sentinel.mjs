@@ -1,0 +1,5 @@
+import assert from'node:assert/strict';import fs from'node:fs/promises'
+const sha=process.env.UGO_RUNTIME_SHA||'',r=JSON.parse(await fs.readFile('artifacts/provider-jobs-runtime.json','utf8')),j=JSON.parse(await fs.readFile('artifacts/provider-jobs-judge.json','utf8'))
+assert.equal(r.sha,sha);assert.equal(j.sha,sha);assert.equal(j.status,'PASS');assert.equal(j.readiness_id,'provider-jobs');assert.equal(r.productionTouched,false);assert.equal(r.observations.evidence_bytes_readable,true);assert.equal(r.observations.payment_amounts_concordant,true);assert.equal(r.observations.timeline_states_concordant,true)
+const out={validator:'Sentinel',readiness_id:'provider-jobs',status:'PASS',sha,checks:['same-sha','judge-pass','ugo-test-only','production-untouched','history-rows','storage-bytes','payment-concordance','timeline-concordance'],completed_at:new Date().toISOString()}
+await fs.writeFile('artifacts/provider-jobs-sentinel.json',JSON.stringify(out,null,2)+'\n');console.log(JSON.stringify(out))

@@ -25,19 +25,40 @@
     "client-media"
   ],
   "correlation_id": "readiness-client-camera-20260930T021300Z-1f6faad2",
-  "current_step": "HUMAN_FINAL",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "docs/evidence/readiness-client-camera-20260930.json",
     "github-actions-run-36660251797",
-    "artifact-11073858157"
+    "artifact-11073858157",
+    "human-runtime:2026-10-01:client-camera:PASS",
+    "commit:c6e33c403e21c81460d1082006b6490a9b285a2d"
   ],
   "finished_at": "2026-09-30T02:33:00Z",
   "verified_sha": "5a54f772ee7646ae14df36547fb5a6aee0fca175",
   "judge": "PASS",
   "sentinel": "PASS",
-  "result": "HUMAN_FINAL_PENDING",
-  "hardware_final_required": true,
+  "result": "VERIFIED",
+  "hardware_final_required": false,
   "workflow_run_id": 36660251797,
-  "artifact_id": 11073858157
+  "artifact_id": 11073858157,
+  "human_final_required": {
+    "required": false,
+    "status": "PASS",
+    "source": "USER_PHYSICAL_TEST"
+  },
+  "human_runtime_evidence": {
+    "result": "PASS",
+    "reported_at": "2026-10-01",
+    "verified": [
+      "camera_capture",
+      "photo_upload"
+    ],
+    "note": "Usuario confirmó cámara y subida de foto funcionando en dispositivo real."
+  },
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "completed_at": "2026-10-01T12:55:00Z"
 }

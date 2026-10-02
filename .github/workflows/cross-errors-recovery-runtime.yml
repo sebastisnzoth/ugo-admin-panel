@@ -1,0 +1,119 @@
+name: UGO Cross Errors Recovery TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/cross-errors-recovery-*.mjs'
+      - 'tests/contracts/realtime-resync-recovery.test.mjs'
+      - 'tests/contracts/client-provider-flow-recovery-command-center.test.mjs'
+      - 'tests/contracts/dispatch-recovery.test.mjs'
+      - 'tests/contracts/provider-action-recovery.test.mjs'
+      - 'tests/contracts/provider-evidence-recovery.test.mjs'
+      - 'tests/contracts/provider-availability-recovery.test.mjs'
+      - 'tests/contracts/client-completion-recovery.test.mjs'
+      - 'tests/contracts/client-payment-recovery.test.mjs'
+      - 'tests/contracts/service-chat-send-recovery.test.mjs'
+      - 'tests/contracts/client-provider-radar-recovery.test.mjs'
+      - 'tests/contracts/autonomous-exception-recovery.test.mjs'
+      - 'supabase/migrations/20261002141500_exception_recovery_queue_isolation.sql'
+      - '.github/workflows/cross-errors-recovery-runtime.yml'
+      - 'supabase/migrations/20261002150000_exception_recovery_queue_isolation.sql'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-errors-recovery-test
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_RUNTIME_SHA: ${{ github.sha }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        run: npm run verify:test-env
+      - name: Recovery regression contracts
+        run: >-
+          node --test --test-concurrency=1
+          tests/contracts/realtime-resync-recovery.test.mjs
+          tests/contracts/client-provider-flow-recovery-command-center.test.mjs
+          tests/contracts/dispatch-recovery.test.mjs
+          tests/contracts/provider-action-recovery.test.mjs
+          tests/contracts/provider-evidence-recovery.test.mjs
+          tests/contracts/provider-availability-recovery.test.mjs
+          tests/contracts/client-completion-recovery.test.mjs
+          tests/contracts/client-payment-recovery.test.mjs
+          tests/contracts/service-chat-send-recovery.test.mjs
+          tests/contracts/client-provider-radar-recovery.test.mjs
+          tests/contracts/autonomous-exception-recovery.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Fault injection recovery runtime
+        run: node scripts/cross-errors-recovery-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-recovery-runtime-${{ github.sha }}
+          path: artifacts/cross-errors-recovery-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-recovery-runtime-${{ github.sha }}
+          path: artifacts
+      - run: node scripts/cross-errors-recovery-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-recovery-judge-${{ github.sha }}
+          path: artifacts/cross-errors-recovery-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-recovery-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: cross-errors-recovery-judge-${{ github.sha }}
+          path: artifacts
+      - run: node scripts/cross-errors-recovery-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cross-errors-recovery-sentinel-${{ github.sha }}
+          path: artifacts/cross-errors-recovery-sentinel.json
+          retention-days: 90

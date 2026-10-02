@@ -1,0 +1,123 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "cross-visual",
+  "task_id": "readiness-cross-visual",
+  "correlation_id": "cross-visual-20260930T180200Z",
+  "started_sha": "1121182fd56ae27585d7b71cbaea340faab8e01e",
+  "implementation_sha": "52036da557d30a298bb7a949ddba29701ee2d53b",
+  "scope": "Consistencia visual transversal: design tokens, jerarquía, componentes y revisión multi-ruta.",
+  "implementation": {
+    "canonical_design_system": "src/mvp/ugo-design-system.css",
+    "client_style_boundary": "src/features/client/clientStyles.ts",
+    "provider_visual_surface": "src/mvp/provider/provider-simple-flow.css",
+    "autonomous_visual_surface": "src/mvp/autonomous-corporation.css",
+    "permanent_regression": "tests/contracts/cross-visual-readiness.test.mjs",
+    "checks": [
+      "canonical semantic color/spacing/radius/touch/motion tokens present",
+      "shared primitives present (buttons, fields, cards, status, nav, modal, drawer)",
+      "Client CSS composition stays centralized under features/client with no duplicate imports",
+      "Provider operational hierarchy keeps responsive main action/nav/dock",
+      "Autonomous control room keeps responsive stats/toolbar/grid hierarchy"
+    ]
+  },
+  "runtime_attempts": [
+    {
+      "deployment_id": "dpl_6z3rYQWcgquJ74PZwCGQqLnV57HM",
+      "sha": "94167eb0088e002e28ff99a682a65b904cba0ab6",
+      "result": "BLOCKED",
+      "blocker": "exceeded_serverless_functions_per_deployment",
+      "detail": "Vercel Hobby plan allows at most 12 Serverless Functions; deployment failed at patchBuild.",
+      "production_touched": false
+    },
+    {
+      "deployment_id": "dpl_ESFXfQ1vCdb3AQeSn15rKnNonCUa",
+      "sha": "4cb06264cacff71c2cf5af57d36a8a9e48286ea6",
+      "result": "PARTIAL",
+      "detail": "READY preview: /landing returned HTTP 200; /ugo-cliente, /ugo-proveedor, /admin and /superadmin returned Vercel Authentication redirects, so authenticated multi-route visual proof could not be completed.",
+      "production_touched": false
+    }
+  ],
+  "tests": {
+    "contract_test_added": true,
+    "contract": "PASS (3/3)",
+    "build_exact_sha": "PASS",
+    "runtime_multi_route": "PASS",
+    "runtime_sha": "52036da557d30a298bb7a949ddba29701ee2d53b",
+    "runtime_run_id": 36773597008,
+    "runtime_job_id": 110085844915,
+    "artifact_id": 11125210102,
+    "artifact_digest": "sha256:6c475e3965c51180c7b044c828a969dfab978f00d1e27bd21690d04cc3d1a8ab",
+    "routes_roles": [
+      "client desktop PASS",
+      "provider desktop PASS",
+      "admin desktop PASS",
+      "client mobile PASS",
+      "provider mobile PASS",
+      "admin mobile PASS"
+    ],
+    "auth_guards": [
+      "admin anonymous denied PASS",
+      "admin client denied PASS",
+      "admin provider denied PASS"
+    ],
+    "judge": "PASS",
+    "sentinel": "PASS"
+  },
+  "result": "VERIFIED",
+  "verified": true,
+  "production_touched": false,
+  "remaining_exact": [],
+  "recorded_at": "2026-09-30T20:57:00Z",
+  "latest_revalidation": {
+    "at": "2026-09-30T20:00:00Z",
+    "main_sha": "c4b345c73a8f3b5205523b1293df95d218143f8a",
+    "prior_failed_run": 36760273627,
+    "prior_failure": "role-ui-runtime provider root timeout",
+    "test_fixture_hardening": [
+      "f7d121e7e05c7db82759abc16aa6f18a976cf6f9",
+      "d52cd9cdd413e52861df4652105174a8346976c0"
+    ],
+    "trigger_pr": 326,
+    "trigger_merge_sha": "c4b345c73a8f3b5205523b1293df95d218143f8a",
+    "same_sha_run_observed": false,
+    "local_clone_attempt": "BLOCKED_NO_NETWORK",
+    "production_touched": false
+  },
+  "final_verification": {
+    "at": "2026-09-30T20:37:31Z",
+    "tested_sha": "52036da557d30a298bb7a949ddba29701ee2d53b",
+    "workflow": "UGO Cross Visual Runtime TEST",
+    "run_id": 36773597008,
+    "job_id": 110085844915,
+    "artifact_id": 11125210102,
+    "judge": {
+      "result": "PASS",
+      "checked_at": "2026-09-30T20:37:27.673Z"
+    },
+    "sentinel": {
+      "result": "PASS",
+      "secret_scan": "PASS",
+      "checked_at": "2026-09-30T20:37:27.727Z"
+    },
+    "visual_review": {
+      "desktop": [
+        "client",
+        "provider",
+        "admin"
+      ],
+      "mobile": [
+        "client",
+        "provider",
+        "admin"
+      ],
+      "screenshots": [
+        "role-ui-client-desktop.png",
+        "role-ui-client-mobile.png",
+        "role-ui-provider-desktop.png",
+        "role-ui-provider-mobile.png",
+        "role-ui-admin-desktop.png",
+        "role-ui-admin-mobile.png"
+      ]
+    }
+  }
+}

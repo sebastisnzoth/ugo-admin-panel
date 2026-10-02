@@ -1,0 +1,17 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "hugo-provider-actions",
+  "status": "HUMAN_FINAL",
+  "environment": "UGO TEST",
+  "tested_sha": "ead16936741ed7c33645acfa799b4d2bd6d1aaa7",
+  "workflow_run_id": 36932557242,
+  "core_ci_run_id": 36932557247,
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "core_ci": "PASS",
+    "production_touched": false
+  },
+  "remaining": "Physical spoken-command test on a real provider device remains required by the readiness definition."
+}

@@ -1,0 +1,4 @@
+import assert from'node:assert/strict';import fs from'node:fs/promises'
+const sha=process.env.UGO_RUNTIME_SHA||'',r=JSON.parse(await fs.readFile('artifacts/request-payment-before-dispatch-runtime.json','utf8'))
+assert.equal(r.sha,sha);assert.equal(r.result,'PASS');assert.equal(r.environment,'UGO TEST');assert.equal(r.production_touched,false);assert.equal(r.without_payment_rejected,true);assert.equal(r.without_payment_offer_count,0);assert.equal(r.with_payment_matching_allowed,true);assert.equal(r.cleanup_ok,true)
+await fs.writeFile('artifacts/request-payment-before-dispatch-judge.json',JSON.stringify({readiness_id:r.readiness_id,sha,result:'PASS',checks:['missing-payment-rejected','zero-offers-before-payment','matching-allowed-after-persisted-method','cleanup'],checked_at:new Date().toISOString()},null,2)+'\n')

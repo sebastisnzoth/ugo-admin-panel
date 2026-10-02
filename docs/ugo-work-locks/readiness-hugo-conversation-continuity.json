@@ -1,0 +1,52 @@
+{
+  "readiness_id": "hugo-conversation-continuity",
+  "task_id": "readiness-hugo-conversation-continuity",
+  "job_id": "UGO-READINESS-HUGO-CONVERSATION-CONTINUITY-20261001",
+  "title": "hugo-conversation-continuity",
+  "status": "DONE",
+  "started_at": "2026-10-01T02:15:00Z",
+  "heartbeat_at": "2026-10-01T03:31:00Z",
+  "lease_expires_at": null,
+  "started_sha": "08ae1eeef19f671d3b9cf1eff0af46ff564fd235",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo Continuity Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "hugo-session"
+  ],
+  "correlation_id": "hugo-conversation-continuity-20261001T021500Z",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency-human-required-unblocked",
+    "main-sha:08ae1eeef19f671d3b9cf1eff0af46ff564fd235",
+    "github-pr:342",
+    "github-head:203b37ff936ec87ff52b08e06b84a3ab0b278193",
+    "github-continuity-run:36810699991:PASS",
+    "github-artifact:11138733592",
+    "github-core-run:36810700029:PASS",
+    "github-voice-run:36810699970:PASS",
+    "github-performance-run:36810699967:PASS",
+    "github-cross-role-run:36810699949:PASS",
+    "github-security-run:36810699995:PASS",
+    "github-timeout-run:36810699939:PASS",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:0f76d30362eb57a9b4b2fb444f833f33e3347d13"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-10-01T03:31:00Z",
+  "finished_at": "2026-10-01T03:31:00Z",
+  "verified_sha": "203b37ff936ec87ff52b08e06b84a3ab0b278193",
+  "result": "VERIFIED",
+  "merged_main_sha": "0f76d30362eb57a9b4b2fb444f833f33e3347d13"
+}

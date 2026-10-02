@@ -17,11 +17,18 @@ test('provider TEST runtimes serialize on the canonical shared provider fixture'
  }
 })
 
-test('provider shared fixture group matches canonical autonomous integration gates',async()=>{
+test('provider-mutating autonomous integration stays serialized on the shared fixture',async()=>{
  const sources=await Promise.all([
   read('.github/workflows/autonomous-worker-test.yml'),
   read('.github/workflows/isolated-rpc-rls.yml'),
-  read('.github/workflows/scheduled-worker-proof-test.yml'),
  ])
  for(const source of sources)assert.match(source,/group:\s*ugo-test-shared-provider-fixture/)
+})
+
+test('scheduled autonomous proof has an independent same-SHA concurrency queue',async()=>{
+ const source=await read('.github/workflows/scheduled-worker-proof-test.yml')
+ assert.match(source,/group:\s*ugo-test-scheduled-worker-proof-/)
+ assert.match(source,/github\.event\.workflow_run\.head_sha \|\| github\.sha/)
+ assert.match(source,/cancel-in-progress:\s*false/)
+ assert.doesNotMatch(source,/group:\s*ugo-test-shared-provider-fixture/)
 })

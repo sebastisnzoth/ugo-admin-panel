@@ -1,0 +1,64 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "client-provider-lifecycle",
+  "environment": "UGO TEST",
+  "tested_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+  "workflow_run_id": 37008933184,
+  "runtime_job_id": 110843728040,
+  "judge_job_id": 110843894856,
+  "sentinel_job_id": 110843947751,
+  "artifacts": [
+    {
+      "id": 11227057150,
+      "name": "client-provider-lifecycle-runtime-5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+      "digest": "sha256:9acbf7c75b8d8a1082694e5b3e8fbc2c570bcbf4650267dbe3799347ae947f0d"
+    },
+    {
+      "id": 11227455171,
+      "name": "client-provider-lifecycle-judge-5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+      "digest": "sha256:b629f3dc4e0fbcab5c25632b27f72ef36315a05ffc95af3d2515b7c865b1b43c"
+    },
+    {
+      "id": 11227211698,
+      "name": "client-provider-lifecycle-sentinel-5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+      "digest": "sha256:31980b6083154bf740270b56a7a45904ac6e95b459b6b4c1a38a8281409c2f34"
+    }
+  ],
+  "runtime": {
+    "result": "PASS",
+    "service_id": "1895774a-6f53-414d-9008-ca22c7370f7e",
+    "service_number": 1445,
+    "lifecycle": [
+      "ofrecido",
+      "asignado",
+      "en_camino",
+      "llegado",
+      "en_progreso",
+      "esperando_aprobacion",
+      "completado"
+    ],
+    "checks": {
+      "matching_offer_acceptance": true,
+      "canonical_state_order": true,
+      "payment_release": true,
+      "before_after_evidence": true,
+      "bilateral_ratings": true,
+      "audit_decision_ledger": true,
+      "audit_evidence_ledger": true
+    },
+    "audit_job_id": "3da055ca-9370-40be-b396-34e86273fbdc"
+  },
+  "validators": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "limitations": {
+    "simulated_service": true,
+    "physical_gps_verified": false,
+    "physical_camera_verified": false,
+    "real_human_customer_acceptance": false,
+    "live_microphone_hugo_verified": false
+  },
+  "production_touched": false,
+  "conclusion": "Automated lifecycle scope is PASS same-SHA; control cannot become fully VERIFIED until its physical/human dependencies are completed."
+}

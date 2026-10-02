@@ -36,9 +36,92 @@ test('backend defaults to cash instead of rejecting service creation',async()=>{
  assert.match(sql,/default_cash/)
  assert.doesNotMatch(sql,/Elegí una forma de pago antes de crear el pedido/)
  assert.match(postConfirm,/payment_method:draft\.paymentMethod==='pix'\?'pix':'efectivo'/)
- assert.match(paymentChoice,/seleccionar_pago_efectivo/)
+ assert.match(paymentChoice,/seleccionar_metodo_pago_servicio/)
  assert.match(paymentChoice,/requested_payment_method/)
 })
 
 
 test('client payment screen implementation lives behind the payments feature boundary',async()=>{const[screen,css]=await Promise.all([read('src/features/client/payments/ClientPaymentScreen.tsx'),read('src/features/client/payments/clientPaymentScreen.css')]);assert.match(screen,/useState<Method>\('cash'\)/);assert.doesNotMatch(screen,/mvp\/client\/ClientPaymentScreen/);assert.match(screen,/clientPaymentScreen\.css/);assert.match(css,/\.ugo-payment-screen/);assert.ok(css.length>3000)})
+
+
+test('assigned client sees payment choice before secondary operational surfaces',async()=>{
+ const [detail,provider]=await Promise.all([
+  read('src/features/client/order/ClientServiceDetail.tsx'),
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
+ ])
+ const paymentIndex=detail.indexOf('action="client.order.payment"')
+ const trackingIndex=detail.indexOf('action="client.order.tracking"')
+ const chatIndex=detail.indexOf('action="client.order.chat"')
+ assert.ok(paymentIndex>=0,'payment choice must be mounted in the order detail')
+ assert.ok(trackingIndex<0||paymentIndex<trackingIndex,'payment choice must appear before tracking')
+ assert.ok(chatIndex<0||paymentIndex<chatIndex,'payment choice must appear before chat')
+ assert.match(provider,/El cliente tiene que elegir cómo pagar/)
+ assert.match(provider,/No tenés que elegirlo vos/)
+})
+
+
+test('variable-price assigned services persist payment preference before the final amount exists',async()=>{
+ const [choice,provider,active,migration]=await Promise.all([
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
+  read('src/mvp/provider/providerData.tsx'),
+  read('src/mvp/provider/ProviderActiveJob.tsx'),
+  read('supabase/migrations/20260930185000_variable_price_payment_preference.sql'),
+ ])
+ assert.match(choice,/seleccionar_metodo_pago_servicio/)
+ assert.match(choice,/importe.*confirm/i)
+ assert.match(provider,/paymentPreferenceSelected/)
+ assert.match(provider,/requested_payment_method/)
+ assert.match(provider,/Definí y conseguí la aprobación del importe/)
+ assert.match(active,/Definí el importe antes de empezar/)
+ assert.match(active,/ServiceExpansionPanel role="provider"/)
+ assert.match(migration,/seleccionar_metodo_pago_servicio/)
+ assert.match(migration,/v_amount_ready:=round\(coalesce\(v_servicio\.tarifa,0\)::numeric,2\)>0/)
+ assert.match(migration,/requested_payment_method/)
+ assert.match(migration,/payment_method/)
+ assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*security definer/i)
+})
+
+
+test('cash option fails closed and backend exposes the same market capability used by selection',async()=>{
+ const [choice,migration]=await Promise.all([
+  read('src/features/client/payments/ClientPaymentChoice.tsx'),
+  read('supabase/migrations/20260930185400_cash_payment_capability_rpc.sql'),
+ ])
+ assert.match(choice,/cashError\?false:cashAllowed!==false/)
+ assert.match(migration,/cash_payment_enabled/)
+ assert.match(migration,/pago_efectivo_activo/)
+ assert.match(migration,/pago_efectivo_br_activo/)
+ assert.match(migration,/pago_efectivo_ar_activo/)
+})
+
+
+test('post-quote Pix is an explicit next action instead of looking already paid',async()=>{
+ const choice=await read('src/features/client/payments/ClientPaymentChoice.tsx')
+ assert.match(choice,/pixNeedsGeneration/)
+ assert.match(choice,/Generar Pix/)
+ assert.match(choice,/Importe confirmado/)
+ assert.doesNotMatch(choice,/tariffPending\?'Elegís Pix ahora; el cobro se genera cuando el importe esté confirmado\.':'Pago electrónico confirmado dentro de UGO\.'/)
+})
+
+test('zero-price onsite flow is presented as an initial quote, not as extra work',async()=>{
+ const panel=await read('src/mvp/ServiceExpansionPanel.tsx')
+ assert.match(panel,/initialQuote/)
+ assert.match(panel,/PRESUPUESTO INICIAL/)
+ assert.match(panel,/Importe total/)
+ assert.match(panel,/Enviar presupuesto/)
+ assert.match(panel,/Aprobar presupuesto/)
+})
+
+
+test('payment choice stays visible through travel and arrival so an approved quote can be paid',async()=>{
+ const choice=await read('src/features/client/payments/ClientPaymentChoice.tsx')
+ assert.match(choice,/PAYMENT_STATES=\['asignado','en_camino','llegado'\]/)
+ assert.match(choice,/pixNeedsGeneration/)
+})
+
+
+test('payment method RPC is syntactically valid and cannot be changed after work starts',async()=>{
+ const migration=await read('supabase/migrations/20260930185000_variable_price_payment_preference.sql')
+ assert.match(migration,/create or replace function public\.seleccionar_metodo_pago_servicio[\s\S]*as \$\$[\s\S]*select private\.seleccionar_metodo_pago_servicio_impl/)
+ assert.match(migration,/estado not in \('asignado','en_camino','llegado'\)/)
+})

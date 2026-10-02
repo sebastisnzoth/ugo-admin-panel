@@ -13,10 +13,21 @@ test('Executive Inbox deduplicates work and orders escalations by SLA and author
  assert.match(inbox,/inbox_sla_breached/)
  assert.match(inbox,/authority==='RED'\?15:authority==='YELLOW'\?30:60/)
  assert.match(inbox,/status==='BLOCKED'\?0:status==='WAITING_APPROVAL'\?1:2/)
+ assert.match(inbox,/requiresHumanApproval/)
+ assert.match(inbox,/isGreenApprovalInconsistency/)
+ assert.match(inbox,/job\.status==='WAITING_APPROVAL'&&!requiresHumanApproval\(job\)/)
  assert.match(dashboard,/buildExecutiveInboxItems\(p\.jobs\)/)
  assert.match(dashboard,/Prioridad \{j\.inbox_priority\}/)
  assert.match(dashboard,/formatInboxSla\(j\)/)
  assert.match(dashboard,/data-correlation-id/)
+ assert.match(dashboard,/Intervención humana real/)
+ assert.match(dashboard,/Inconsistencias de autonomía detectadas/)
+ assert.match(dashboard,/GREEN nunca se presenta como aprobación humana/)
+})
+
+test('Executive Inbox dedupe is deterministic when duplicate timestamps collide',()=>{
+ assert.match(inbox,/incomingTimestamp===currentTimestamp&&incomingId\.localeCompare\(currentId\)>0/)
+ assert.match(inbox,/currentTimestamp=timestamp\(current\?\.created_at\)/)
 })
 
 test('Executive Inbox preserves audited decisions and actionable failure states',()=>{

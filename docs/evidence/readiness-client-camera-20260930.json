@@ -35,8 +35,18 @@
     }
   },
   "autonomous_result": "PASS",
-  "physical_hardware_result": "PENDING_HUMAN_FINAL",
-  "final_status": "HUMAN_FINAL",
+  "physical_hardware_result": "PASS_USER_CONFIRMED",
+  "final_status": "VERIFIED",
   "production_touched": false,
-  "completed_at": "2026-09-30T02:32:54Z"
+  "completed_at": "2026-10-01T12:55:00Z",
+  "human_runtime_evidence": {
+    "result": "PASS",
+    "reported_at": "2026-10-01",
+    "source": "USER_PHYSICAL_TEST",
+    "verified": [
+      "camera_capture",
+      "photo_upload"
+    ],
+    "note": "Usuario confirmó en dispositivo real que Cámara y subida de foto funcionan."
+  }
 }

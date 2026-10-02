@@ -1,4 +1,5 @@
 const ACTIVE_LOCK_STATUSES = new Set(['QUEUED','IN_PROGRESS','WAITING_EVIDENCE'])
+const HUMAN_LOCK_STATUSES = new Set(['HUMAN_REQUIRED'])
 const PRIORITY_SCORE = {CRITICAL:100,HIGH:80,NORMAL:50,LOW:20,FINAL:0}
 
 const parseTime = value => {
@@ -72,6 +73,20 @@ export function evaluateFunctionalReadiness({
       continue
     }
 
+    if (lock && HUMAN_LOCK_STATUSES.has(lock.status)) {
+      item.status = 'HUMAN_REQUIRED'
+      item.human_runtime_evidence = lock.human_runtime_evidence || null
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
+    if (lock?.status === 'WAITING_EVIDENCE' && lock?.human_final_required?.required === true) {
+      item.status = 'HUMAN_REQUIRED'
+      item.human_runtime_evidence = lock.human_runtime_evidence || null
+      item.evidence_source = 'READINESS_LOCK'
+      continue
+    }
+
     if (lock && ACTIVE_LOCK_STATUSES.has(lock.status)) {
       const leaseMs = parseTime(lock.lease_expires_at)
       if (leaseMs !== null && leaseMs <= nowMs) {
@@ -126,7 +141,24 @@ export function evaluateFunctionalReadiness({
     }
   }
 
-  const done = id => byId.get(id)?.status === 'VERIFIED'
+  const dependencySatisfied = id => byId.get(id)?.status === 'VERIFIED'
+
+  const humanBlockedMemo = new Map()
+  const dependsOnHumanFinal = (id, visiting = new Set()) => {
+    if (humanBlockedMemo.has(id)) return humanBlockedMemo.get(id)
+    if (visiting.has(id)) return false
+    const item = byId.get(id)
+    if (!item) return false
+    if (item.status === 'HUMAN_REQUIRED' || item.declared_status === 'HUMAN_FINAL') {
+      humanBlockedMemo.set(id, true)
+      return true
+    }
+    const next = new Set(visiting)
+    next.add(id)
+    const blocked = (item.depends_on || []).some(dep => dependsOnHumanFinal(dep, next))
+    humanBlockedMemo.set(id, blocked)
+    return blocked
+  }
   const active = items.filter(item => item.status === 'IN_PROGRESS')
   const globalActiveLocks = (locks || []).filter(lock => {
     if (!ACTIVE_LOCK_STATUSES.has(lock.status)) return false
@@ -143,7 +175,7 @@ export function evaluateFunctionalReadiness({
     .filter(item => item.status === 'NEEDS_RUNTIME_PROOF')
     .map(item => ({
       ...item,
-      unresolved_dependencies:(item.depends_on || []).filter(id => !done(id)),
+      unresolved_dependencies:(item.depends_on || []).filter(id => !dependencySatisfied(id)),
     }))
     .filter(item => item.unresolved_dependencies.length === 0)
     .sort((a,b) =>
@@ -165,11 +197,14 @@ export function evaluateFunctionalReadiness({
   }
 
   const remainingAutonomousBeforeHuman = items.filter(
-    item => item.status !== 'VERIFIED' && item.declared_status !== 'HUMAN_FINAL'
+    item => item.status !== 'VERIFIED'
+      && item.status !== 'HUMAN_REQUIRED'
+      && item.declared_status !== 'HUMAN_FINAL'
+      && !dependsOnHumanFinal(item.id)
   ).length
 
   for (const item of items) {
-    const unresolved = (item.depends_on || []).filter(id => !done(id))
+    const unresolved = (item.depends_on || []).filter(id => !dependencySatisfied(id))
     item.unresolved_dependencies = unresolved
 
     if (item.status === 'VERIFIED') {
@@ -199,6 +234,13 @@ export function evaluateFunctionalReadiness({
     } else if (item.status === 'IN_PROGRESS') {
       item.gate_state = 'IN_PROGRESS'
       item.gate_reason = 'Existe un lock persistido activo para este control.'
+    } else if (item.status === 'HUMAN_REQUIRED') {
+      item.gate_state = 'HUMAN_REQUIRED'
+      const humanResult = String(item.human_runtime_evidence?.result || '').toUpperCase()
+      const humanSymptom = String(item.human_runtime_evidence?.symptom || '').trim()
+      item.gate_reason = humanResult === 'FAIL'
+        ? 'La prueba humana real FALLÓ' + (humanSymptom ? ': ' + humanSymptom : '') + '. No está VERIFIED; requiere corrección y nueva prueba física.'
+        : 'La automatización verificable quedó agotada; falta evidencia humana/física real.'
     } else if (item.declared_status === 'HUMAN_FINAL') {
       if (remainingAutonomousBeforeHuman > 0) {
         item.gate_state = 'HUMAN_DEFERRED'
@@ -233,7 +275,7 @@ export function evaluateFunctionalReadiness({
     total:items.length,
     verified:items.filter(x => x.status === 'VERIFIED').length,
     remaining_total:items.filter(x => x.status !== 'VERIFIED').length,
-    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.declared_status !== 'HUMAN_FINAL').length,
+    remaining_autonomous:items.filter(x => x.status !== 'VERIFIED' && x.status !== 'HUMAN_REQUIRED' && x.declared_status !== 'HUMAN_FINAL' && !dependsOnHumanFinal(x.id)).length,
     human_final:items.filter(x => x.declared_status === 'HUMAN_FINAL' && x.status !== 'VERIFIED').length,
     available_now:items.filter(x => x.gate_state === 'AVAILABLE').length,
     in_progress:items.filter(x => x.gate_state === 'IN_PROGRESS').length,

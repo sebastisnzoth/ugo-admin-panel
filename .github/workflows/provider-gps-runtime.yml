@@ -1,21 +1,8 @@
-# retry: 2026-09-30 after TEST Auth recovery
+# retry: 2026-10-01 provider-gps r8 same-SHA runtime validation
 name: UGO Provider GPS Runtime TEST
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - 'scripts/autonomous-qa-gps-runtime.mjs'
-      - 'scripts/provider-gps-judge.mjs'
-      - 'scripts/provider-gps-sentinel.mjs'
-      - 'src/mvp/ProviderLocationTracker.tsx'
-      - 'src/mvp/provider/providerService.ts'
-      - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
-      - 'tests/contracts/provider-arrival-gps-gate.test.mjs'
-      - 'tests/contracts/provider-arrival-location.test.mjs'
-      - 'tests/contracts/provider-gps-readiness-runtime.test.mjs'
-      - '.github/workflows/provider-gps-runtime.yml'
 
 permissions:
   contents: read

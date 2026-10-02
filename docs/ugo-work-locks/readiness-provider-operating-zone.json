@@ -1,0 +1,50 @@
+{
+  "readiness_id": "provider-operating-zone",
+  "task_id": "readiness-provider-operating-zone",
+  "job_id": "UGO-READINESS-PROVIDER-OPERATING-ZONE-20261001",
+  "title": "provider-operating-zone",
+  "status": "DONE",
+  "started_at": "2026-10-01T02:15:00Z",
+  "heartbeat_at": "2026-10-01T02:32:00Z",
+  "lease_expires_at": null,
+  "started_sha": "08ae1eeef19f671d3b9cf1eff0af46ff564fd235",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Matching & Location Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "provider-location"
+  ],
+  "correlation_id": "provider-operating-zone-20261001T021500Z",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency-human-required-unblocked",
+    "main-sha:08ae1eeef19f671d3b9cf1eff0af46ff564fd235",
+    "github-pr:341",
+    "github-head:4a18404f670904ffeeece491c22fa8129f6ced9e",
+    "github-run:36805556954:PASS",
+    "github-artifact:11137581623",
+    "github-core-run:36805556770:PASS",
+    "github-hugo-timeout-run:36805556851:PASS",
+    "runtime:10km-with-5km-rejected",
+    "runtime:10km-with-15km-allowed",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:d281e19e4eede0b6723589a8993d90b7337b63ce"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-10-01T02:32:00Z",
+  "finished_at": "2026-10-01T02:32:00Z",
+  "verified_sha": "4a18404f670904ffeeece491c22fa8129f6ced9e",
+  "result": "VERIFIED",
+  "merged_main_sha": "d281e19e4eede0b6723589a8993d90b7337b63ce"
+}

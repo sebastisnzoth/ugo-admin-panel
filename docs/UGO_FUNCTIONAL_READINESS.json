@@ -18,7 +18,7 @@
           "id": "client-navigation",
           "title": "Navegación, menús y rutas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Recorrer todas las rutas y acciones; ningún botón muerto, loop o pantalla inaccesible.",
           "done_evidence": "Runtime UI del mismo SHA + rutas/acciones verificadas.",
           "improvement_focus": "Simplificar pasos y eliminar navegación duplicada.",
@@ -27,13 +27,15 @@
           "priority": "CRITICAL",
           "resources": [
             "client-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-navigation-20260929.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-request",
           "title": "Crear solicitud completa",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Categoría, descripción, ubicación, condiciones y envío deben persistir correctamente.",
           "done_evidence": "serviceId TEST creado desde UI + backend concordante.",
           "improvement_focus": "Reducir fricción y campos innecesarios.",
@@ -44,13 +46,15 @@
           "priority": "HIGH",
           "resources": [
             "client-request-flow"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-client-request.json"
         },
         {
           "id": "client-location",
           "title": "Mi ubicación y mapa",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Ubicación válida completa formulario/mapa; manejar permiso, timeout y coordenadas inválidas.",
           "done_evidence": "TEST automatizable + errores fail-closed; GPS físico queda al final.",
           "improvement_focus": "Mensajes claros y fallback de dirección.",
@@ -61,7 +65,10 @@
           "priority": "NORMAL",
           "resources": [
             "client-location"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-location-20260930.json",
+          "reconciled_from_persisted_lock": true,
+          "physical_gps_covered_by_final_gate": true
         },
         {
           "id": "client-saved-places",
@@ -84,7 +91,7 @@
           "id": "client-camera",
           "title": "Cámara y subida de foto",
           "owner": "UGO",
-          "status": "HUMAN_FINAL",
+          "status": "VERIFIED",
           "verify": "Sacar foto/subir archivo, cancelación y errores.",
           "done_evidence": "Runtime browser + persistencia de evidencia; hardware final si aplica.",
           "improvement_focus": "Preview, compresión y feedback de carga.",
@@ -118,7 +125,7 @@
           "id": "client-status",
           "title": "Seguimiento del profesional",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Asignado→aceptado→en camino→llegó→trabajando→finalizado.",
           "done_evidence": "Estados UI/backend concordantes por serviceId.",
           "improvement_focus": "Timeline más legible.",
@@ -135,7 +142,7 @@
           "id": "client-payment",
           "title": "Pago / YA PAGUÉ / efectivo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Pago digital/efectivo sin doble cobro; efectivo genera deuda UGO cuando corresponda.",
           "done_evidence": "Pruebas TEST + ledger/auditoría.",
           "improvement_focus": "Claridad de monto, estado y recibo.",
@@ -147,13 +154,15 @@
           "resources": [
             "payments",
             "client-payment"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-client-payment-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-rating",
           "title": "Calificación Cliente→Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Calificar una sola vez tras cierre.",
           "done_evidence": "Rating persistido + UI.",
           "improvement_focus": "Recordatorio post-servicio.",
@@ -170,7 +179,7 @@
           "id": "client-dispute",
           "title": "Disputas Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Abrir disputa, adjuntar evidencia, ver estado y cierre.",
           "done_evidence": "Disputa TEST completa + audit trail.",
           "improvement_focus": "Explicar SLA y próximos pasos.",
@@ -204,7 +213,7 @@
           "id": "client-notifications",
           "title": "Notificaciones Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Asignado, en camino, llegó, cambios y cierre.",
           "done_evidence": "Push/web TEST o evidencia del canal soportado.",
           "improvement_focus": "Preferencias y fallback.",
@@ -215,7 +224,9 @@
           "priority": "NORMAL",
           "resources": [
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/ugo-readiness-evidence/readiness-client-notifications-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "client-responsive",
@@ -244,7 +255,7 @@
           "id": "provider-offers",
           "title": "Recepción de ofertas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Ofertas elegibles ≤20 km al proveedor correcto.",
           "done_evidence": "Matching TEST + aislamiento.",
           "improvement_focus": "Priorizar distancia, valor y urgencia.",
@@ -253,13 +264,15 @@
           "priority": "CRITICAL",
           "resources": [
             "provider-demand"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-offers-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-alerts",
           "title": "Alerta/sonido de oferta",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Oferta nueva debe notificar según capacidades.",
           "done_evidence": "Runtime TEST del canal soportado.",
           "improvement_focus": "Fallback visible si sonido bloqueado.",
@@ -271,13 +284,15 @@
           "resources": [
             "provider-demand",
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-alerts-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-accept",
           "title": "Aceptar/rechazar oferta",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Aceptar/rechazar de forma idempotente y autorizada.",
           "done_evidence": "Estado persistido + concurrencia controlada.",
           "improvement_focus": "Feedback inmediato.",
@@ -288,13 +303,15 @@
           "priority": "HIGH",
           "resources": [
             "provider-demand"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-accept-20260929.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-gps",
           "title": "GPS reciente y publicación de ubicación",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "Rechazar 0,0/fake/stale; publicar antes de llegada.",
           "done_evidence": "Prueba TEST + GPS físico final.",
           "improvement_focus": "Indicador de frescura GPS.",
@@ -311,7 +328,7 @@
           "id": "provider-arrival",
           "title": "YA LLEGUÉ / geofence 200 m",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "No avanzar fuera del geofence ni ante fallo GPS.",
           "done_evidence": "Backend TEST + geofence PASS/FAIL; físico final.",
           "improvement_focus": "Mostrar distancia restante y motivo.",
@@ -328,7 +345,7 @@
           "id": "provider-evidence",
           "title": "Evidencia inicial/final",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "Capturar/subir evidencia en etapas correctas.",
           "done_evidence": "Rows/bytes persistidos + UI.",
           "improvement_focus": "Checklist visual.",
@@ -345,7 +362,7 @@
           "id": "provider-workflow",
           "title": "Comenzar/finalizar trabajo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Transiciones autorizadas y secuenciales.",
           "done_evidence": "Máquina de estados TEST.",
           "improvement_focus": "Botón principal contextual.",
@@ -363,7 +380,7 @@
           "id": "provider-debt",
           "title": "Regla deuda 3 servicios",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Bloquear nuevas aceptaciones al alcanzar deuda definida.",
           "done_evidence": "Escenarios TEST + deuda UGO.",
           "improvement_focus": "Mostrar deuda y botón Pagar UGO.",
@@ -380,7 +397,7 @@
           "id": "provider-jobs",
           "title": "Mis trabajos / historial",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Historial, fotos, pagos, fechas y estados.",
           "done_evidence": "Datos TEST concordantes.",
           "improvement_focus": "Filtros por estado/fecha.",
@@ -391,13 +408,15 @@
           "priority": "NORMAL",
           "resources": [
             "provider-history"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-jobs-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-rating",
           "title": "Calificación Proveedor→Cliente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Rating bilateral tras cierre.",
           "done_evidence": "Rating persistido + regla de unicidad.",
           "improvement_focus": "UX simétrica.",
@@ -408,13 +427,15 @@
           "priority": "NORMAL",
           "resources": [
             "ratings"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-rating-20261001.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-dispute",
           "title": "Disputas Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Apertura, evidencia, estado y cierre.",
           "done_evidence": "Disputa TEST completa.",
           "improvement_focus": "Acceso visible desde servicio.",
@@ -431,7 +452,7 @@
           "id": "provider-notifications",
           "title": "Notificaciones Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Oferta, asignación, cambios y mensajes.",
           "done_evidence": "Push/web TEST.",
           "improvement_focus": "Sonido configurable.",
@@ -442,13 +463,15 @@
           "priority": "NORMAL",
           "resources": [
             "notifications"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-notifications-20260930.json",
+          "reconciled_from_persisted_evidence": true
         },
         {
           "id": "provider-responsive",
           "title": "Responsive Proveedor",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Todas las acciones utilizables en móvil/tablet/desktop.",
           "done_evidence": "Matriz de viewports + revisión visual.",
           "improvement_focus": "Optimizar uso con una mano.",
@@ -459,7 +482,9 @@
           "priority": "NORMAL",
           "resources": [
             "provider-shell"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-responsive-20260930.json",
+          "reconciled_from_persisted_evidence": true
         }
       ]
     },
@@ -471,7 +496,7 @@
           "id": "hugo-presence",
           "title": "Hugo visible por rol",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cliente, Proveedor y Admin muestran Hugo donde corresponde.",
           "done_evidence": "Runtime por rol.",
           "improvement_focus": "Posición consistente y no invasiva.",
@@ -486,7 +511,7 @@
           "id": "hugo-intent",
           "title": "Reconocimiento de intención",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Entender pedidos como pintor/plomero y acciones del flujo.",
           "done_evidence": "Suite de intents TEST.",
           "improvement_focus": "Sinónimos y lenguaje natural.",
@@ -503,7 +528,7 @@
           "id": "hugo-authority",
           "title": "Permisos y autoridad",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada acción pasa por rol/authority/policy.",
           "done_evidence": "Pruebas positivas y negativas.",
           "improvement_focus": "Explicar por qué una acción fue negada.",
@@ -520,7 +545,7 @@
           "id": "hugo-action",
           "title": "Acciones reales sobre UI/backend",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "No chat decorativo: INTENT→ACTION→EFFECT.",
           "done_evidence": "Efecto persistido + audit trail.",
           "improvement_focus": "Confirmación breve del efecto.",
@@ -538,7 +563,7 @@
           "id": "hugo-continuity",
           "title": "Conversación continua",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Mantener contexto útil sin repetir ni perder estado.",
           "done_evidence": "Sesiones TEST multi-turn.",
           "improvement_focus": "Menos latencia y respuestas más cortas.",
@@ -555,7 +580,7 @@
           "id": "hugo-voice",
           "title": "Voz / orbe conversacional",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "Entrada/salida de voz y fallback textual.",
           "done_evidence": "Runtime browser; hardware/micrófono final si aplica.",
           "improvement_focus": "Estados escuchar/pensar/actuar claros.",
@@ -572,7 +597,7 @@
           "id": "hugo-timeout",
           "title": "Timeout/fallback/error",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Gemini/OpenRouter timeout/fallback sin congelar UI.",
           "done_evidence": "Fault injection + telemetría.",
           "improvement_focus": "Mensaje y retry claros.",
@@ -583,13 +608,15 @@
           "priority": "NORMAL",
           "resources": [
             "model-router"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-hugo-timeout-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "hugo-audit",
           "title": "Auditoría completa de Hugo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "INTENT→AUTHORITY→ACTION→EFFECT→AUDIT→RESPONSE trazable.",
           "done_evidence": "correlation_id + ledgers.",
           "improvement_focus": "Vista de auditoría legible.",
@@ -607,7 +634,7 @@
           "id": "hugo-privacy",
           "title": "Privacidad y sanitización",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "No enviar secretos ni evidencia cruda innecesaria al modelo.",
           "done_evidence": "Pruebas de sanitización + permisos.",
           "improvement_focus": "Minimizar datos enviados.",
@@ -624,7 +651,7 @@
           "id": "hugo-responsive",
           "title": "Responsive de Hugo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Orbe/panel no tapa controles ni rompe layout.",
           "done_evidence": "Viewports + teclado móvil.",
           "improvement_focus": "Tamaño y posición adaptativos.",
@@ -647,7 +674,7 @@
           "id": "admin-auth",
           "title": "Autenticación y roles",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Rutas y acciones restringidas por rol.",
           "done_evidence": "Pruebas positivas/negativas.",
           "improvement_focus": "Mensajes de acceso claros.",
@@ -656,13 +683,15 @@
           "priority": "CRITICAL",
           "resources": [
             "admin-auth"
-          ]
+          ],
+          "evidence_path": "docs/evidence/admin-auth-20260929.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "admin-navigation",
           "title": "Todos los menús y botones",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada pestaña/acción carga y actúa.",
           "done_evidence": "Runtime crawl + click map.",
           "improvement_focus": "Eliminar acciones duplicadas.",
@@ -673,13 +702,15 @@
           "priority": "HIGH",
           "resources": [
             "admin-shell"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-navigation.json"
         },
         {
           "id": "admin-realtime",
           "title": "Estados en tiempo real",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cambios operativos aparecen sin refresh manual cuando aplica.",
           "done_evidence": "Realtime TEST + reconciliación.",
           "improvement_focus": "Indicador de sincronización.",
@@ -690,13 +721,15 @@
           "priority": "NORMAL",
           "resources": [
             "admin-realtime"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-realtime.json"
         },
         {
           "id": "admin-users",
           "title": "Ficha e historial de usuarios",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Documentos, fechas, horarios, servicios y acciones auditadas.",
           "done_evidence": "Datos TEST + permisos.",
           "improvement_focus": "Filtros y búsqueda.",
@@ -707,13 +740,15 @@
           "priority": "NORMAL",
           "resources": [
             "admin-users"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-users.json"
         },
         {
           "id": "admin-risk",
           "title": "Riesgo & Auditoría",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Findings, ledgers, blockers y evidence links coherentes.",
           "done_evidence": "Runtime + same-SHA evidence.",
           "improvement_focus": "Resumen ejecutivo accionable.",
@@ -730,7 +765,7 @@
           "id": "admin-qa",
           "title": "QA Lab",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Simuladores, resultados, Meta-QA y regresiones sin autocertificación.",
           "done_evidence": "Persisted-state judge.",
           "improvement_focus": "Drill-down por escenario.",
@@ -747,7 +782,7 @@
           "id": "admin-model-router",
           "title": "Model Router",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Primary/fallback/telemetría/costo visibles y funcionales.",
           "done_evidence": "Runtime primary+fallback.",
           "improvement_focus": "Latencia y calidad comparables.",
@@ -783,7 +818,7 @@
           "id": "admin-responsive",
           "title": "Responsive Admin/Super Admin",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Panel completo utilizable móvil/tablet/desktop.",
           "done_evidence": "Viewports + revisión visual.",
           "improvement_focus": "Tablas adaptativas y navegación compacta.",
@@ -806,7 +841,7 @@
           "id": "auto-departments",
           "title": "Departamentos conectados",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada departamento visible, con agente responsable y entradas/salidas.",
           "done_evidence": "Registro + job/evidence por departamento.",
           "improvement_focus": "Mostrar madurez por departamento.",
@@ -821,7 +856,7 @@
           "id": "auto-department-job-visibility",
           "title": "Jobs visibles por departamento",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "En UGO Empresa Autónoma > Departamentos, cada departamento debe mostrar jobs activos, jobs totales, último job, estado del último job, última evidencia y correlation_id sin inventar actividad.",
           "done_evidence": "Runtime UI en UGO TEST/Preview del mismo SHA + datos concordantes con autonomous_jobs/autonomous_evidence_ledger para los 13 departamentos + Judge PASS + Sentinel PASS.",
           "improvement_focus": "Evitar que un departamento con jobs SUCCEEDED parezca vacío sólo porque no tiene un job activo; diferenciar activo, histórico y último resultado.",
@@ -841,7 +876,7 @@
           "id": "auto-agents",
           "title": "Agentes y especialistas conectados",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Distinguir catalogado, habilitado, ejecutado y verificado.",
           "done_evidence": "Trigger+executor+Judge+Sentinel por agente.",
           "improvement_focus": "Filtro por estado/madurez.",
@@ -858,7 +893,7 @@
           "id": "auto-scheduler",
           "title": "Scheduler y paralelismo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Hasta 5 trabajos compatibles, locks y recursos correctos.",
           "done_evidence": "Pruebas de concurrencia/conflicto.",
           "improvement_focus": "Vista de recursos y dependencia.",
@@ -893,7 +928,7 @@
           "id": "auto-recovery",
           "title": "Recuperación automática",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Excepciones normales sin SQL/GitHub manual.",
           "done_evidence": "Incidente→recovery→verify→audit.",
           "improvement_focus": "Playbooks visibles.",
@@ -910,7 +945,7 @@
           "id": "auto-inbox",
           "title": "Inbox ejecutivo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Aprobaciones/escalaciones ordenadas, deduplicadas y auditadas.",
           "done_evidence": "Escenarios TEST.",
           "improvement_focus": "Prioridad y SLA.",
@@ -944,7 +979,7 @@
           "id": "auto-killswitch",
           "title": "Kill switches y modo seguro",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cortar ejecución y fail-closed sin corrupción.",
           "done_evidence": "Prueba TEST de stop/recovery.",
           "improvement_focus": "Estado muy visible.",
@@ -961,7 +996,7 @@
           "id": "auto-enterprise",
           "title": "UGO Empresas",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Demanda, slots, navegación, acciones, permisos y evidencia funcionales en TEST.",
           "done_evidence": "Journey empresarial TEST.",
           "improvement_focus": "Dashboard operativo claro.",
@@ -1004,7 +1039,7 @@
           "id": "cross-p0",
           "title": "Journey P0 completo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cliente→matching→proveedor→GPS→evidencias→pago→ratings.",
           "done_evidence": "Un serviceId TEST completo.",
           "improvement_focus": "Timeline única.",
@@ -1024,13 +1059,15 @@
           "resources": [
             "ugo-test-p0",
             "shared-provider-fixture"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-p0.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-rls",
           "title": "RLS/RPC y aislamiento",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Roles no pueden leer/escribir fuera de autoridad.",
           "done_evidence": "Workflow aislado RLS/RPC same-SHA.",
           "improvement_focus": "Mantener tests negativos permanentes.",
@@ -1045,7 +1082,7 @@
           "id": "cross-idempotency",
           "title": "Idempotencia y concurrencia",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Sin doble aceptación/pago/cierre/rating.",
           "done_evidence": "Pruebas concurrentes.",
           "improvement_focus": "Feedback ante conflicto.",
@@ -1064,7 +1101,7 @@
           "id": "cross-errors",
           "title": "Errores y estados vacíos",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Toda falla comunica causa y próximo paso.",
           "done_evidence": "Fault injection UI/API.",
           "improvement_focus": "Mensajes consistentes.",
@@ -1083,7 +1120,7 @@
           "id": "cross-performance",
           "title": "Rendimiento percibido",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Acciones críticas no quedan colgadas; loaders correctos.",
           "done_evidence": "Métricas y pruebas de latencia.",
           "improvement_focus": "Optimizar cargas pesadas.",
@@ -1096,13 +1133,15 @@
           "priority": "NORMAL",
           "resources": [
             "preview-runtime"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-performance.json"
         },
         {
           "id": "cross-accessibility",
           "title": "Accesibilidad básica",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Teclado, foco, contraste, labels y targets táctiles.",
           "done_evidence": "Audit automatizable + revisión.",
           "improvement_focus": "Corregir WCAG básicos.",
@@ -1116,13 +1155,15 @@
           "priority": "NORMAL",
           "resources": [
             "preview-runtime"
-          ]
+          ],
+          "evidence_path": "docs/ugo-readiness-evidence/readiness-cross-accessibility-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-visual",
           "title": "Consistencia visual",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Design tokens, jerarquía y componentes coherentes.",
           "done_evidence": "Revisión visual multi-ruta.",
           "improvement_focus": "Consolidar estilos duplicados.",
@@ -1142,7 +1183,7 @@
           "id": "cross-security",
           "title": "Secretos, logs y privacidad",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "No secretos en cliente/logs; datos mínimos.",
           "done_evidence": "Scan + pruebas de sanitización.",
           "improvement_focus": "Redacción automática.",
@@ -1154,13 +1195,15 @@
           "priority": "HIGH",
           "resources": [
             "security-rls"
-          ]
+          ],
+          "evidence_path": "docs/evidence/readiness-cross-security-20260930.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-observability",
           "title": "Observabilidad y auditoría",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Eventos críticos con correlation_id y evidencia.",
           "done_evidence": "Logs/ledgers por serviceId/job.",
           "improvement_focus": "Dashboard de trazabilidad.",
@@ -1178,7 +1221,7 @@
           "id": "cross-regression",
           "title": "Regresión permanente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Todo bug corregido deja test que falla antes y pasa después.",
           "done_evidence": "Regression suite same-SHA.",
           "improvement_focus": "Cobertura por incidente.",
@@ -1192,371 +1235,9 @@
           "priority": "HIGH",
           "resources": [
             "regression"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "pilot-faxina-marido",
-      "title": "PILOTO · FAXINA + MARIDO DE ALUGUEL",
-      "items": [
-        {
-          "id": "pilot-category-contract",
-          "title": "PILOT-CATEGORY-CONTRACT · Contrato Faxina + Marido de Aluguel",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Modelo, catálogo, campos obligatorios y reglas de seguridad de ambas categorías.",
-          "done_evidence": "Contrato ejecutable + migración/catálogo + pruebas deterministas + same-SHA.",
-          "improvement_focus": "Mantener reglas explícitas y fail-closed.",
-          "real_test_required": false,
-          "depends_on": [],
-          "priority": "CRITICAL",
-          "resources": [
-            "client-request-flow",
-            "provider-demand"
-          ]
-        },
-        {
-          "id": "pilot-client-faxina",
-          "title": "PILOT-CLIENT-FAXINA · Solicitud Cliente",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Dirección, fecha, desde/hasta, tipo, inmueble, dormitorios, baños, m², mascotas, acceso, productos, equipamiento, tareas, observaciones y fotos.",
-          "done_evidence": "Pedido Faxina TEST persistido con validaciones y resumen.",
-          "improvement_focus": "Formulario claro y datos suficientes para ofertar.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
           ],
-          "priority": "CRITICAL",
-          "resources": [
-            "client-request-flow",
-            "client-media"
-          ]
-        },
-        {
-          "id": "pilot-provider-faxina",
-          "title": "PILOT-PROVIDER-FAXINA · Configuración y oferta",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Tipos, zona/radio, disponibilidad, productos, equipamiento, restricciones, cobro, documentos, verificación y referencias.",
-          "done_evidence": "Perfil proveedor Faxina TEST apto + oferta completa + aceptación.",
-          "improvement_focus": "Decisión informada antes de aceptar.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "provider-demand",
-            "provider-shell"
-          ]
-        },
-        {
-          "id": "pilot-e2e-faxina",
-          "title": "PILOT-E2E-FAXINA · Flujo completo",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Solicitud→matching→aceptación→GPS/llegada→evidencias→trabajo→aprobación→pago→ratings→historial.",
-          "done_evidence": "serviceId TEST Faxina completo y auditado.",
-          "improvement_focus": "Cero pasos manuales de DB.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-client-faxina",
-            "pilot-provider-faxina",
-            "pilot-matching-schedule",
-            "pilot-payments",
-            "pilot-notifications",
-            "pilot-disputes",
-            "pilot-ratings-history"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "ugo-test-p0",
-            "shared-provider-fixture"
-          ]
-        },
-        {
-          "id": "pilot-client-marido",
-          "title": "PILOT-CLIENT-MARIDO · Solicitud Cliente",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Dirección, fecha, desde/hasta, trabajo, ítems, ambiente, descripción, fotos, materiales, altura, acceso y observaciones.",
-          "done_evidence": "Pedido Marido TEST persistido con guardas de riesgo.",
-          "improvement_focus": "Desviar trabajos regulados/peligrosos.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "client-request-flow",
-            "client-media"
-          ]
-        },
-        {
-          "id": "pilot-provider-marido",
-          "title": "PILOT-PROVIDER-MARIDO · Configuración y oferta",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Trabajos, zona/radio, disponibilidad, herramientas, transporte, materiales, cotización, límites, habilitaciones, documentos y referencias.",
-          "done_evidence": "Perfil proveedor Marido TEST apto + oferta completa + aceptación.",
-          "improvement_focus": "No aceptar trabajo fuera de capacidad/habilitación.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "provider-demand",
-            "provider-shell"
-          ]
-        },
-        {
-          "id": "pilot-e2e-marido",
-          "title": "PILOT-E2E-MARIDO · Flujo completo",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Solicitud→matching→aceptación→GPS/llegada→evidencias→trabajo→aprobación→pago→ratings→historial.",
-          "done_evidence": "serviceId TEST Marido completo y auditado.",
-          "improvement_focus": "Fail-closed ante trabajo regulado.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-client-marido",
-            "pilot-provider-marido",
-            "pilot-matching-schedule",
-            "pilot-payments",
-            "pilot-notifications",
-            "pilot-disputes",
-            "pilot-ratings-history"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "ugo-test-p0",
-            "shared-provider-fixture"
-          ]
-        },
-        {
-          "id": "pilot-documents-references",
-          "title": "PILOT-DOCUMENTS-REFERENCES · Documentos y referencias",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Documentos requeridos, consentimiento, privacidad y referencias laborales sin requisitos legales inventados.",
-          "done_evidence": "Onboarding TEST + almacenamiento/lectura autorizada + RLS.",
-          "improvement_focus": "Minimización de datos.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "HIGH",
-          "resources": [
-            "provider-shell",
-            "security-rls"
-          ]
-        },
-        {
-          "id": "pilot-matching-schedule",
-          "title": "PILOT-MATCHING-SCHEDULE · Aptitud, zona y horario",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Proveedor apto, disponible, en zona y sin conflicto desde/hasta.",
-          "done_evidence": "Matching TEST positivo/negativo + conflicto horario.",
-          "improvement_focus": "Explicar por qué no hay match.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract",
-            "pilot-documents-references"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "provider-demand",
-            "shared-provider-fixture"
-          ]
-        },
-        {
-          "id": "pilot-payments",
-          "title": "PILOT-PAYMENTS · Digital, efectivo y deuda UGO",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Sin doble cobro/cierre; efectivo genera deuda/comisión UGO cuando corresponde.",
-          "done_evidence": "Pagos TEST idempotentes + ledger.",
-          "improvement_focus": "Estado de pago inequívoco.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "HIGH",
-          "resources": [
-            "payments",
-            "provider-finance"
-          ]
-        },
-        {
-          "id": "pilot-notifications",
-          "title": "PILOT-NOTIFICATIONS · Ciclo Cliente/Proveedor",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Oferta, asignado, en camino, llegó, cambios y cierre con recuperación.",
-          "done_evidence": "Notificaciones TEST + fallo inyectado.",
-          "improvement_focus": "No perder eventos por red intermitente.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "HIGH",
-          "resources": [
-            "notifications"
-          ]
-        },
-        {
-          "id": "pilot-disputes",
-          "title": "PILOT-DISPUTES · Apertura y cierre",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Abrir, adjuntar evidencia, ver estado/SLA y cerrar.",
-          "done_evidence": "Disputa TEST completa + audit trail.",
-          "improvement_focus": "Próximo paso visible.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "HIGH",
-          "resources": [
-            "disputes"
-          ]
-        },
-        {
-          "id": "pilot-ratings-history",
-          "title": "PILOT-RATINGS-HISTORY · Rating bilateral e historial",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Rating único bilateral tras cierre e historial concordante.",
-          "done_evidence": "Ratings TEST únicos + historial Cliente/Proveedor.",
-          "improvement_focus": "Evitar rating duplicado.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-category-contract"
-          ],
-          "priority": "HIGH",
-          "resources": [
-            "ratings",
-            "client-history",
-            "provider-history"
-          ]
-        },
-        {
-          "id": "pilot-faults-security",
-          "title": "PILOT-FAULTS-SECURITY · Fault injection, RLS y privacidad",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Campos faltantes, horarios inválidos/solapados, doble acción, GPS, red/API/notificación, proveedor no apto/deuda, RLS/RPC, secretos, logs, concurrencia y fail-closed.",
-          "done_evidence": "Suite negativa TEST + seguridad same-SHA.",
-          "improvement_focus": "Causa y recuperación explícitas.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-payments",
-            "pilot-matching-schedule",
-            "pilot-notifications",
-            "pilot-disputes",
-            "pilot-ratings-history"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "security-rls",
-            "regression"
-          ]
-        },
-        {
-          "id": "pilot-runtime-faxina",
-          "title": "PILOT-RUNTIME-FAXINA · Runtime UGO TEST",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Ejecución real de Faxina en UGO TEST sobre el mismo SHA.",
-          "done_evidence": "serviceId + persisted state + runtime artifact + correlation_id.",
-          "improvement_focus": "Prueba reproducible.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-e2e-faxina",
-            "pilot-faults-security"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "ugo-test-p0",
-            "shared-provider-fixture"
-          ]
-        },
-        {
-          "id": "pilot-runtime-marido",
-          "title": "PILOT-RUNTIME-MARIDO · Runtime UGO TEST",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Ejecución real de Marido de Aluguel en UGO TEST sobre el mismo SHA.",
-          "done_evidence": "serviceId + persisted state + runtime artifact + correlation_id.",
-          "improvement_focus": "Prueba reproducible.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-e2e-marido",
-            "pilot-faults-security"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "ugo-test-p0",
-            "shared-provider-fixture"
-          ]
-        },
-        {
-          "id": "pilot-judge-sentinel",
-          "title": "PILOT-JUDGE-SENTINEL · Verificación independiente",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Judge rederiva desde evidencia persistida y Sentinel valida invariantes/seguridad.",
-          "done_evidence": "Judge PASS + Sentinel PASS mismo SHA.",
-          "improvement_focus": "Sin autocertificación.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-runtime-faxina",
-            "pilot-runtime-marido"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "audit-ledger"
-          ]
-        },
-        {
-          "id": "pilot-human-acceptance",
-          "title": "PILOT-HUMAN-ACCEPTANCE · Pruebas físicas",
-          "owner": "SERGIO + UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "GPS/cámara/notificación/dispositivo y aceptación humana cuando no sea automatizable.",
-          "done_evidence": "Capturas/IDs/timestamps vinculados al SHA y serviceId.",
-          "improvement_focus": "Pasos exactos y evidencia mínima.",
-          "real_test_required": true,
-          "depends_on": [
-            "pilot-judge-sentinel"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "physical-gps",
-            "customer1-device-test"
-          ]
-        },
-        {
-          "id": "pilot-gate",
-          "title": "PILOT-GATE · Listo para prueba piloto",
-          "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
-          "verify": "Sólo READY con todos los automatizables VERIFIED y aceptación humana completada.",
-          "done_evidence": "UGO · FAXINA + MARIDO DE ALUGUEL · LISTO PARA PRUEBA PILOTO.",
-          "improvement_focus": "Bloqueos exactos, sin inferencias.",
-          "real_test_required": false,
-          "depends_on": [
-            "pilot-judge-sentinel",
-            "pilot-human-acceptance"
-          ],
-          "priority": "CRITICAL",
-          "resources": [
-            "launch-gate"
-          ]
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-regression.json",
+          "reconciled_from_persisted_lock": true
         }
       ]
     },
@@ -1617,6 +1298,421 @@
           "resources": [
             "customer1"
           ]
+        }
+      ]
+    },
+    {
+      "id": "client-provider-flow-recovery",
+      "title": "Flujo Cliente ↔ Proveedor · Reparación integral",
+      "items": [
+        {
+          "id": "provider-realtime-location",
+          "title": "Ubicación realtime del proveedor",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Restaurar ubicación real y continua del proveedor.",
+          "done_evidence": "Proveedor TEST desplazándose/actualizándose y ubicación real reflejada correctamente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-gps"
+          ]
+        },
+        {
+          "id": "provider-profile-photo",
+          "title": "Foto real del proveedor",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Sacar/elegir, previsualizar, reemplazar, guardar y recuperar foto real del proveedor.",
+          "done_evidence": "Foto persistida y visible después de recargar sesión.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "NORMAL",
+          "resources": [
+            "provider-media"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "provider-operating-zone",
+          "title": "Zona operativa configurable",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Base operativa, ubicación actual cuando corresponda y radio configurable persistido.",
+          "done_evidence": "Cambiar radio modifica realmente la elegibilidad del proveedor.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-realtime-location"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": []
+        },
+        {
+          "id": "proximity-matching",
+          "title": "Matching por proximidad y elegibilidad",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Combinar categoría, habilitación, online, ubicación reciente, radio, distancia, deuda, disponibilidad y reglas de servicios.",
+          "done_evidence": "Casos TEST dentro/fuera del radio producen resultados correctos.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-operating-zone"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-demand",
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-offers"
+          ]
+        },
+        {
+          "id": "provider-proximity-alert",
+          "title": "Alerta al proveedor elegible",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Pedido elegible dentro del radio genera oferta, realtime, push/web/sonido soportado y navegación correcta sin duplicados.",
+          "done_evidence": "Pedido TEST genera alerta verificable al proveedor correcto.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "proximity-matching"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "notifications",
+            "provider-demand"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-alerts",
+            "provider-notifications"
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-proximity-alert-20261001.json",
+          "reconciled_from_persisted_evidence": true
+        },
+        {
+          "id": "request-payment-before-dispatch",
+          "title": "Pago definido antes de dispatch",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Ningún pedido entra a matching/asignación sin método de pago persistido.",
+          "done_evidence": "Todo pedido elegible para matching tiene payment method definido.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "client-payment",
+            "client-request-flow"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "client-payment"
+          ],
+          "evidence_path": "docs/evidence/readiness-request-payment-before-dispatch-20261001.json",
+          "reconciled_from_persisted_lock": true
+        },
+        {
+          "id": "admin-assignment-payment-guard",
+          "title": "Guard de pago en asignación Admin",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Asignación manual debe exigir cliente, servicio, ubicación, categoría, proveedor y forma de pago; si falta algo debe explicar qué falta.",
+          "done_evidence": "Asignación manual produce un trabajo completo y coherente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "request-payment-before-dispatch"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "admin-shell",
+            "payments"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-assignment-payment-guard.json"
+        },
+        {
+          "id": "provider-active-jobs",
+          "title": "Trabajos activos completos",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Eliminar estados incompletos por pago tardío y mostrar datos, estado, método, evidencias, acciones y timeline válidos.",
+          "done_evidence": "Proveedor nunca recibe trabajo activo incompleto por falta de método de pago.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "admin-assignment-payment-guard"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "provider-job-state",
+            "provider-history"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "provider-jobs"
+          ],
+          "evidence_path": "docs/evidence/readiness-provider-active-jobs-20261001.json",
+          "reconciled_from_persisted_evidence": true
+        },
+        {
+          "id": "client-provider-lifecycle",
+          "title": "Lifecycle Cliente ↔ Proveedor completo",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Solicitud completa → matching → oferta → aceptación → en camino → llegada → evidencias → trabajo → aprobación → pago → ratings → historial, con guards.",
+          "done_evidence": "E2E TEST completo con audit trail.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "provider-proximity-alert",
+            "provider-active-jobs",
+            "hugo-real-runtime-proof"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "provider-job-state",
+            "client-service-status",
+            "payments",
+            "ratings"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "client-status",
+            "provider-workflow"
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-client-provider-lifecycle.json",
+          "reconciled_from_persisted_lock": true
+        },
+        {
+          "id": "hugo-gemini-live-core",
+          "title": "Gemini Live como voz principal",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Audio entrada/salida natural, conversación continua, interrupciones, contexto, ES/PT, timeout, reconexión y fallback honesto.",
+          "done_evidence": "Conversación real verificable con Gemini Live.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-voice",
+            "model-router"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-voice"
+          ]
+        },
+        {
+          "id": "hugo-client-order-by-voice",
+          "title": "Pedido real por voz",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Conversación natural obtiene categoría, trabajo, ubicación/lugar guardado, cuándo, foto contextual, pago y faltantes; confirma y crea serviceId real.",
+          "done_evidence": "Pedido creado exclusivamente por voz y visible en Cliente/Admin/backend.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-conversation-continuity",
+            "request-payment-before-dispatch"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-actions",
+            "client-request-flow"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-intent",
+            "hugo-action"
+          ]
+        },
+        {
+          "id": "hugo-provider-actions",
+          "title": "Acciones reales Proveedor por voz",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Online/offline, oportunidades, trabajo activo, aceptar/rechazar, voy, llegada con GPS/geofence, comenzar y finalizar usando guards reales.",
+          "done_evidence": "Comando hablado → mutación backend → UI Cliente/Proveedor/Admin consistente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-client-order-by-voice",
+            "provider-realtime-location"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-actions",
+            "provider-job-state",
+            "provider-location"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-action"
+          ],
+          "evidence_path": "docs/evidence/readiness-hugo-provider-actions-20261001.json",
+          "reconciled_from_persisted_evidence": true,
+          "automated_proof": "VERIFIED"
+        },
+        {
+          "id": "hugo-admin-actions",
+          "title": "Acciones Admin autorizadas por voz",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Consultar operación, buscar servicio/usuario, navegar, abrir servicio y refrescar; sin mutaciones peligrosas sin workflow específico.",
+          "done_evidence": "Comandos autorizados ejecutan acciones reales del panel.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-provider-actions"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "hugo-actions",
+            "admin-shell"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-action"
+          ]
+        },
+        {
+          "id": "hugo-conversation-continuity",
+          "title": "Continuidad conversacional",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Conservar categoría, descripción, dirección/lugar, horario y pago ya confirmados; preguntar sólo lo faltante.",
+          "done_evidence": "Conversaciones multi-turn conservan estado correctamente.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "hugo-gemini-live-core"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-session"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-continuity"
+          ]
+        },
+        {
+          "id": "hugo-real-runtime-proof",
+          "title": "Prueba real Hugo",
+          "owner": "UGO",
+          "status": "HUMAN_FINAL",
+          "verify": "Separar CONTRACT/BROWSER/REAL AUDIO/REAL ACTION; requerir micrófono→Gemini→voz→tool→backend→UI y HUMAN_REQUIRED cuando corresponda.",
+          "done_evidence": "Micrófono/audio real + tool/backend/UI chain; automatización previa ya PASS.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": true,
+          "depends_on": [
+            "hugo-admin-actions"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "hugo-voice",
+            "qa-lab"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "hugo-voice"
+          ],
+          "reconciled_from_persisted_evidence": true,
+          "automated_scope": "VERIFIED"
+        },
+        {
+          "id": "cross-realtime-consistency",
+          "title": "Consistencia realtime multirol",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Un mismo servicio mantiene estado coherente simultáneamente sin refresh manual, con notificación y audit event.",
+          "done_evidence": "Prueba multi-role realtime.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "client-provider-lifecycle"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "admin-realtime",
+            "notifications",
+            "client-service-status",
+            "provider-job-state"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-realtime-consistency.json",
+          "reconciled_from_persisted_lock": true
+        },
+        {
+          "id": "cross-errors-recovery",
+          "title": "Errores y recuperación del flujo",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Cubrir GPS/red/Supabase/Gemini/websocket/push/pago/radio/offline/sesión/cámara/datos; explicar, preservar, siguiente acción, retry, sin falso éxito.",
+          "done_evidence": "Fault injection UI/API + recuperación sin corrupción.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "client-provider-lifecycle"
+          ],
+          "priority": "HIGH",
+          "resources": [
+            "recovery",
+            "regression"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [
+            "cross-errors"
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-errors-recovery.json",
+          "reconciled_from_persisted_lock": true
+        },
+        {
+          "id": "end-to-end-command-center-gate",
+          "title": "Gate E2E Command Center",
+          "owner": "UGO",
+          "status": "VERIFIED",
+          "verify": "Gate final que sólo VERIFIED cuando todos los controles requeridos están VERIFIED o HUMAN_REQUIRED correctamente.",
+          "done_evidence": "Cliente TEST → pedido/pago/matching/alerta/GPS/lifecycle/ratings/historial/Admin realtime con evidencia same-SHA.",
+          "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
+          "real_test_required": false,
+          "depends_on": [
+            "cross-realtime-consistency",
+            "cross-errors-recovery"
+          ],
+          "priority": "CRITICAL",
+          "resources": [
+            "launch-gate",
+            "audit-ledger",
+            "qa-lab"
+          ],
+          "epic_id": "ugo-client-provider-flow-recovery",
+          "reconciles_with": [],
+          "evidence_path": "docs/evidence/readiness-end-to-end-command-center-gate-20261002.json",
+          "reconciled_from_persisted_evidence": true
         }
       ]
     }

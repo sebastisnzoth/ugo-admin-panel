@@ -1,0 +1,4 @@
+import assert from'node:assert/strict';import fs from'node:fs/promises'
+const sha=process.env.UGO_RUNTIME_SHA||'',r=JSON.parse(await fs.readFile('artifacts/hugo-admin-actions-runtime.json','utf8'))
+assert.equal(r.sha,sha);assert.equal(r.result,'PASS');assert.equal(r.environment,'UGO TEST');assert.equal(r.production_touched,false);for(const k of['summary_read','service_search','user_search','navigation','open_service','refresh','invalid_navigation_blocked','dangerous_unknown_tool_blocked','service_state_unchanged'])assert.equal(r[k],true,k);assert.equal(r.microphone_audio_pending,true)
+await fs.writeFile('artifacts/hugo-admin-actions-judge.json',JSON.stringify({readiness_id:r.readiness_id,sha,result:'PASS',automated_scope:'VERIFIED',human_final:'PENDING',checks:['read-summary','find-service','find-user','navigate','open-service','refresh','forbidden-mutation'],checked_at:new Date().toISOString()},null,2)+'\n')

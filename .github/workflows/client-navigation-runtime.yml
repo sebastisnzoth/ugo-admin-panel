@@ -21,7 +21,7 @@ concurrency:
 env:
   UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
   UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
-  UGO_TEST_CLIENT_EMAIL: cliente@ugo.com.ar
+  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
   UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
 
 jobs:
@@ -65,11 +65,21 @@ jobs:
           npm run dev -- --host 127.0.0.1 --port 4173 >/tmp/ugo-client-nav-vite.log 2>&1 &
           vite_pid=$!
           trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
-          for attempt in $(seq 1 30); do
-            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+          ready=0
+          for attempt in $(seq 1 60); do
+            if curl -fsS --max-time 2 "$UGO_UI_BASE_URL/?app=client" >/dev/null; then ready=1; break; fi
+            if ! kill -0 "$vite_pid" 2>/dev/null; then
+              echo "VITE_EXITED_BEFORE_RUNTIME"
+              cat /tmp/ugo-client-nav-vite.log || true
+              exit 1
+            fi
             sleep 1
           done
-          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          if [ "$ready" -ne 1 ]; then
+            echo "VITE_START_TIMEOUT"
+            cat /tmp/ugo-client-nav-vite.log || true
+            exit 1
+          fi
           node scripts/client-navigation-runtime.mjs
       - name: Judge
         env:

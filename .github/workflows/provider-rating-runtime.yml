@@ -1,0 +1,111 @@
+# readiness refresh 2026-10-01 final-same-sha-r2
+name: UGO Provider Rating Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-rating-*.mjs'
+      - 'src/mvp/ProviderRatingPrompt.tsx'
+      - 'src/features/ratings/serviceRatingService.ts'
+      - 'supabase/migrations/20260920030000_bilateral_service_ratings.sql'
+      - 'supabase/migrations/20260927161000_rating_karma_sync.sql'
+      - 'supabase/migrations/20260930141225_cross_idempotency_rating_uniqueness.sql'
+      - 'tests/contracts/provider-history-rating.test.mjs'
+      - 'tests/contracts/rating-karma-sync.test.mjs'
+      - '.github/workflows/provider-rating-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-provider-rating-isolated-fixture
+  cancel-in-progress: false
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        env:
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Provider rating contracts
+        run: node --test tests/contracts/provider-history-rating.test.mjs tests/contracts/rating-karma-sync.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Runtime provider-to-client rating
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: |
+          mkdir -p artifacts
+          node scripts/provider-rating-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-rating-runtime-${{ github.sha }}
+          path: artifacts/provider-rating-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-rating-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-rating-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-rating-judge-${{ github.sha }}
+          path: artifacts/provider-rating-judge.json
+          retention-days: 90
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-rating-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-rating-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-rating-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-rating-sentinel-${{ github.sha }}
+          path: artifacts/provider-rating-sentinel.json
+          retention-days: 90

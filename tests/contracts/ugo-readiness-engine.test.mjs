@@ -116,3 +116,63 @@ test('expired global resource leases release capacity', () => {
   const {summary}=evaluateFunctionalReadiness({functionalReadiness:fixture(),locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
   assert.deepEqual(summary.runnable_ids,['a','c'])
 })
+
+
+test('HUMAN_REQUIRED lock is authoritative, releases capacity, and is not rescheduled', () => {
+  const base=fixture()
+  const locks=[{
+    task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
+    started_at:'2026-09-29T19:00:00Z',lease_expires_at:null,resources:['r1'],
+    evidence_ids:['automated-runtime:a'],human_final:{required:true,status:'PENDING'}
+  }]
+  const {readiness,summary}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  assert.equal(items.find(x=>x.id==='a').gate_state,'HUMAN_REQUIRED')
+  assert.equal(items.find(x=>x.id==='c').gate_state,'AVAILABLE')
+  assert.equal(summary.human_required,1)
+  assert.equal(summary.in_progress,0)
+  assert.ok(!summary.runnable_ids.includes('a'))
+})
+
+
+test('HUMAN_REQUIRED dependencies block autonomous descendants until physical evidence is complete', () => {
+  const base=fixture()
+  const locks=[{
+    task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
+    started_at:'2026-09-29T19:00:00Z',lease_expires_at:null,resources:['r1'],
+    evidence_ids:['automated-runtime:a'],human_final:{required:true,status:'PENDING'}
+  }]
+  const {readiness}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  assert.equal(items.find(x=>x.id==='a').gate_state,'HUMAN_REQUIRED')
+  assert.equal(items.find(x=>x.id==='b').gate_state,'BLOCKED_DEPENDENCY')
+  assert.deepEqual(items.find(x=>x.id==='b').unresolved_dependencies,['a'])
+  assert.notEqual(items.find(x=>x.id==='a').status,'VERIFIED')
+})
+
+
+test('verified software evidence remains valid while human-final proof stays separate', () => {
+  const base=fixture()
+  const locks=[
+    {
+      task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
+      started_at:'2026-09-29T19:00:00Z',resources:['r1'],
+      evidence_ids:['automated-runtime:a'],human_final:{required:true,status:'PENDING'}
+    },
+    {
+      task_id:'readiness-b',readiness_id:'b',status:'DONE',
+      started_at:'2026-09-29T19:05:00Z',
+      validators_result:{Judge:'PASS',Sentinel:'PASS'},
+      evidence_ids:['evidence:b']
+    }
+  ]
+  const {readiness,summary}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  const a=items.find(x=>x.id==='a')
+  const b=items.find(x=>x.id==='b')
+  assert.equal(a.gate_state,'HUMAN_REQUIRED')
+  assert.notEqual(a.status,'VERIFIED')
+  assert.equal(b.status,'VERIFIED')
+  assert.equal(b.gate_state,'VERIFIED')
+  assert.ok(!summary.runnable_ids.includes('b'))
+})

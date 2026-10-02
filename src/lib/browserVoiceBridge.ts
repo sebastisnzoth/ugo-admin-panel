@@ -1,5 +1,6 @@
 import{getRoleSupabase}from'./roleSupabase'
 import{supabase as adminSupabase}from'./supabase'
+import{getHugoRuntimeUrl}from'./hugoEdgeRuntime'
 
 type BrowserVoiceBridge={startListening:()=>void|Promise<void>;pauseListening:()=>void;resumeListening:()=>void|Promise<void>;stopListening:()=>void;isAvailable:()=>boolean;stopSpeaking?:()=>void;sendToolResponse?:(id:string,name:string,response:Record<string,unknown>)=>boolean}
 type LiveTokenResponse={token?:string;model?:string;expires_at?:string;error?:string}
@@ -8,7 +9,9 @@ declare global{interface Window{UGOVoiceBridge?:BrowserVoiceBridge}}
 
 const LIVE_WS_URL='wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContentConstrained'
 const TARGET_RATE=16000
-const CHUNK_SAMPLES=1600
+const CHUNK_SAMPLES=800
+const LOCAL_END_SILENCE_MS=420
+const LOCAL_MIN_SPEECH_MS=180
 const emit=(name:string,detail:Record<string,unknown>)=>window.dispatchEvent(new CustomEvent(name,{detail}))
 function audioCtor(){return window.AudioContext||(window as any).webkitAudioContext}
 const canStream=()=>Boolean(navigator.mediaDevices?.getUserMedia&&window.WebSocket&&audioCtor())
@@ -39,7 +42,10 @@ function resample(input:Float32Array,fromRate:number){
 }
 type LiveFunctionDeclaration={name:string;description:string;parameters:{type:'OBJECT';properties:Record<string,{type:string;description?:string;enum?:string[]}>;required?:string[]}}
 const CLIENT_TOOLS:LiveFunctionDeclaration[]=[
+  {name:'get_request_draft',description:'Consulta el borrador real actual del pedido. Usala al iniciar o reanudar un pedido antes de volver a preguntar datos ya confirmados.',parameters:{type:'OBJECT',properties:{}}},
  {name:'get_current_location',description:'Obtiene la ubicación GPS real del cliente cuando el usuario pide usar donde está.',parameters:{type:'OBJECT',properties:{}}},
+ {name:'use_saved_place',description:'Resuelve un lugar guardado real del cliente por etiqueta hablada, por ejemplo Casa, Trabajo u Oficina. Usala en vez de pedir otra vez la dirección cuando la persona menciona un lugar guardado.',parameters:{type:'OBJECT',properties:{label:{type:'STRING',description:'Etiqueta hablada del lugar guardado, por ejemplo Casa'}},required:['label']}},
+ {name:'open_request_photo',description:'Abre la captura de foto del trabajo cuando el cliente acepta mostrar una foto. La foto es opcional y nunca bloquea el pedido.',parameters:{type:'OBJECT',properties:{}}},
  {name:'set_request_category',description:'Actualiza la categoría del borrador del pedido.',parameters:{type:'OBJECT',properties:{category:{type:'STRING',description:'Categoría de servicio expresada por el usuario'}},required:['category']}},
  {name:'set_request_description',description:'Actualiza qué trabajo necesita el cliente.',parameters:{type:'OBJECT',properties:{description:{type:'STRING'}},required:['description']}},
  {name:'set_schedule',description:'Actualiza cuándo necesita el servicio.',parameters:{type:'OBJECT',properties:{when:{type:'STRING',description:'Expresión temporal confirmada por el usuario'}},required:['when']}},
@@ -54,6 +60,7 @@ const CLIENT_TOOLS:LiveFunctionDeclaration[]=[
  {name:'rate_service',description:'Califica un service_id exacto ya completado. Requiere puntuación de 1 a 5 y confirmación explícita.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'},score:{type:'NUMBER'},comment:{type:'STRING'},confirmed:{type:'BOOLEAN'}},required:['service_id','score','confirmed']}}
 ]
 const PROVIDER_TOOLS:LiveFunctionDeclaration[]=[
+ {name:'provider_get_context',description:'Consulta el contexto operativo real actual del proveedor: online/offline, trabajo activo, oportunidades, ganancias, efectivo y deuda UGO. Usala antes de responder preguntas contextuales, comparar oportunidades o recomendar el próximo paso.',parameters:{type:'OBJECT',properties:{}}},
  {name:'provider_set_online',description:'Pone al proveedor online sólo después de una instrucción explícita del proveedor, usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
  {name:'provider_set_offline',description:'Pone al proveedor offline sólo después de una instrucción explícita del proveedor, usando la lógica real de UGO.',parameters:{type:'OBJECT',properties:{confirmed:{type:'BOOLEAN'}},required:['confirmed']}},
  {name:'provider_list_opportunities',description:'Lista oportunidades reales disponibles para el proveedor.',parameters:{type:'OBJECT',properties:{}}},
@@ -66,22 +73,24 @@ const ADMIN_TOOLS:LiveFunctionDeclaration[]=[
  {name:'admin_get_operational_summary',description:'Consulta el resumen operativo actual de UGO sin modificar datos.',parameters:{type:'OBJECT',properties:{}}},
  {name:'admin_find_service',description:'Busca un servicio real por id o número para inspeccionarlo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
  {name:'admin_find_user',description:'Busca un cliente o proveedor real por id, email o nombre.',parameters:{type:'OBJECT',properties:{query:{type:'STRING'}},required:['query']}},
- {name:'admin_navigate',description:'Abre un módulo autorizado del panel Admin sin modificar datos.',parameters:{type:'OBJECT',properties:{target:{type:'STRING',enum:['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system']}},required:['target']}},
+ {name:'admin_navigate',description:'Abre un módulo autorizado del panel Admin sin modificar datos.',parameters:{type:'OBJECT',properties:{target:{type:'STRING',enum:['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin']}},required:['target']}},
  {name:'admin_open_service',description:'Abre la ficha operativa de un servicio real por UUID o número, sin modificarlo.',parameters:{type:'OBJECT',properties:{service_id:{type:'STRING'}},required:['service_id']}},
  {name:'admin_refresh',description:'Actualiza los datos visibles del panel Admin.',parameters:{type:'OBJECT',properties:{}}}
 ]
-function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'?ADMIN_TOOLS:[]}
-function currentRole(){const app=(new URLSearchParams(window.location.search).get('app')||'').toLowerCase();if(app.includes('admin'))return'admin';return app.startsWith('provider')?'provider':'client'}
-function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:120,silenceDurationMs:500},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el asistente operativo de UGO. Conversá natural, breve y útil. En Admin podés consultar y ejecutar sólo acciones UI seguras mediante las herramientas declaradas: navegar, abrir un servicio o refrescar. No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz. En Cliente, si el usuario habla de un pedido pero no conoce el service_id o tiene varios pedidos activos, usá client_list_services antes de consultar, cancelar, aprobar, confirmar efectivo o calificar. En Proveedor, si el usuario quiere avanzar su trabajo pero no conoce el service_id, usá provider_get_active_service antes de provider_update_service_status. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito. Recordá los datos confirmados durante esta conversación y no los vuelvas a preguntar.'}]},tools:[{functionDeclarations:roleTools()}]}}}
+function roleTools(){const role=currentRole();return role==='client'?CLIENT_TOOLS:role==='provider'?PROVIDER_TOOLS:role==='admin'||role==='superadmin'?ADMIN_TOOLS:[]}
+function currentRole(){const params=new URLSearchParams(window.location.search),app=(params.get('app')||'').toLowerCase(),section=(params.get('section')||'').toLowerCase();if(app.includes('admin'))return section==='superadmin'?'superadmin':'admin';return app.startsWith('provider')?'provider':'client'}
+function setupMessage(model:string){return{setup:{model:'models/'+model,generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:'Puck'}}}},realtimeInputConfig:{automaticActivityDetection:{disabled:false,startOfSpeechSensitivity:'START_SENSITIVITY_HIGH',endOfSpeechSensitivity:'END_SENSITIVITY_HIGH',prefixPaddingMs:80,silenceDurationMs:350},turnCoverage:'TURN_INCLUDES_ONLY_ACTIVITY'},inputAudioTranscription:{},outputAudioTranscription:{},systemInstruction:{parts:[{text:'Sos Hugo, el compañero operativo de UGO. Hablá como una persona: cálido, fluido, breve y espontáneo. Evitá tono de menú, frases mecánicas, listas y repetir literalmente lo que acaba de decir el usuario. Hacé una sola pregunta por vez y usá transiciones naturales sólo cuando aporten. Permití pausas humanas y no apures el cierre del turno. No menciones nombres de herramientas ni detalles técnicos. En Cliente, conservá todo dato ya confirmado durante la conversación. Al iniciar o reanudar un pedido usá get_request_draft antes de preguntar; si el borrador ya tiene un dato, no lo vuelvas a pedir y preguntá sólo el campo faltante. Si dice “en casa”, “casa”, “trabajo” u otra etiqueta guardada, usá use_saved_place antes de volver a pedir una dirección. Después de entender qué trabajo necesita, ofrecé una sola vez y sin bloquear: “Si querés, podés mostrarme una foto y le da más contexto al profesional”; si acepta, usá open_request_photo, y si dice que no, seguí normalmente. Cuando el pedido tenga categoría, descripción, ubicación y momento, resumilo en una frase natural antes de pedir confirmación. si el usuario habla de un pedido pero no conoce el service_id o tiene varios pedidos activos, usá client_list_services antes de consultar, cancelar, aprobar, confirmar efectivo o calificar. En Admin podés consultar y ejecutar sólo acciones UI seguras mediante las herramientas declaradas: navegar, abrir un servicio o refrescar. No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz. En Proveedor, usá provider_get_context al iniciar una consulta contextual o cuando pregunte qué tiene, qué conviene, cuánto ganó, qué deuda tiene, qué pedido elegir o qué hacer ahora. No inventes contexto y no respondas que no sabés si una herramienta puede consultarlo. Si el usuario quiere avanzar su trabajo pero no conoce el service_id, usá provider_get_active_service antes de provider_update_service_status. Compará oportunidades sólo con los datos reales devueltos y explicá el criterio brevemente. Nunca inventes acciones ni resultados. Si necesitás operar UGO, usá las herramientas declaradas y esperá su resultado antes de confirmar éxito.'}]},tools:[{functionDeclarations:roleTools()}]}}}
 
 function installBrowserBridge(){
  if(typeof window==='undefined'||window.UGOVoiceBridge||(!canStream()&&!speechCtor()))return
  let active=false,paused=false,stream:MediaStream|null=null,audioContext:AudioContext|null=null,source:MediaStreamAudioSourceNode|null=null,processor:ScriptProcessorNode|null=null,gain:GainNode|null=null,fallbackRecognition:SpeechRecognitionLike|null=null,fallbackActive=false
  let socket:WebSocket|null=null,setupReady=false,connecting:Promise<void>|null=null,reconnectTimer=0,reconnectAttempt=0,connectionSerial=0,pendingSamples:number[]=[]
- let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0
+ let lastFinalText='',lastFinalAt=0,conversationContext:AudioContext|null=null,conversationNextPlaybackTime=0,responseTimer=0,pendingTurnText='',localSpeechActive=false,localSpeechStartedAt=0,lastVoiceAt=0,localTurnEnded=false,noiseFloor=.004
  const conversationSources=new Set<AudioBufferSourceNode>()
 
  const clearReconnect=()=>{if(reconnectTimer){window.clearTimeout(reconnectTimer);reconnectTimer=0}}
+ const clearResponseWatchdog=()=>{if(responseTimer){window.clearTimeout(responseTimer);responseTimer=0}}
+ const markModelResponse=()=>{clearResponseWatchdog();pendingTurnText=''}
  const resetAudioQueue=()=>{pendingSamples=[]}
  const stopFallback=()=>{fallbackActive=false;const current=fallbackRecognition;fallbackRecognition=null;if(current){current.onstart=null;current.onspeechstart=null;current.onend=null;current.onresult=null;current.onerror=null;try{current.abort()}catch{}}}
  const startFallback=()=>{const Ctor=speechCtor();if(!Ctor)return false;stopFallback();const recognition=new Ctor();fallbackRecognition=recognition;fallbackActive=true;active=true;paused=false;recognition.continuous=true;recognition.interimResults=true;recognition.lang=navigator.language?.toLowerCase().startsWith('pt')?'pt-BR':'es-AR';recognition.maxAlternatives=3;recognition.onstart=()=>emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'fallback'});recognition.onspeechstart=()=>emit('ugo:native-voice-state',{state:'hearing',engine:'browser-speech',reason:'fallback'});recognition.onresult=(event:any)=>{const from=Number(event?.resultIndex||0);for(let i=from;i<(event?.results?.length||0);i++){const result=event.results?.[i],text=String(result?.[0]?.transcript||'').trim();if(text)emit('ugo:native-voice-result',{text,final:Boolean(result?.isFinal),engine:'browser-speech'})}};recognition.onerror=(event:any)=>{const code=String(event?.error||'unavailable');if(fallbackActive&&(code==='no-speech'||code==='aborted'))return;if(fallbackActive&&code==='network'){emit('ugo:native-voice-state',{state:'connecting',engine:'browser-speech',reason:'fallback-network'});return}fallbackActive=false;active=false;emit('ugo:native-voice-error',{code:code==='not-allowed'||code==='service-not-allowed'?'not-allowed':code==='audio-capture'?'no-microphone':code,engine:'browser-speech'})};recognition.onend=()=>{if(fallbackActive&&!paused)window.setTimeout(()=>{if(fallbackActive&&!paused)startFallback()},180)};try{recognition.start();return true}catch{stopFallback();active=false;return false}}
@@ -90,14 +99,15 @@ function installBrowserBridge(){
  const sendJson=(payload:Record<string,unknown>)=>{if(socket?.readyState===WebSocket.OPEN&&setupReady){try{socket.send(JSON.stringify(payload));return true}catch{}}return false}
  const primeConversationAudio=()=>{const Ctor=audioCtor() as typeof AudioContext;if(!Ctor)return;if(!conversationContext)conversationContext=new Ctor({latencyHint:'interactive'});if(conversationContext.state==='suspended')void conversationContext.resume().catch(()=>{})}
  const stopConversationPlayback=()=>{for(const item of conversationSources){try{item.stop()}catch{}}conversationSources.clear();conversationNextPlaybackTime=0}
- const playConversationPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{primeConversationAudio();if(!conversationContext)return;const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=conversationContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=conversationContext.createBufferSource();item.buffer=buffer;item.connect(conversationContext.destination);const startAt=Math.max(conversationContext.currentTime+.02,conversationNextPlaybackTime);conversationNextPlaybackTime=startAt+buffer.duration;conversationSources.add(item);item.onended=()=>conversationSources.delete(item);item.start(startAt);emit('ugo:native-voice-state',{state:'speaking',engine:'gemini-live',reason:'live-audio'})}
+ const playConversationPcm=(base64:string,mimeType='audio/pcm;rate=24000')=>{markModelResponse();primeConversationAudio();if(!conversationContext)return;const match=/rate=(\\d+)/i.exec(String(mimeType)),sampleRate=Number(match?.[1])||24000,bytes=base64ToBytes(base64),even=bytes.byteLength-bytes.byteLength%2;if(even<2)return;const view=new DataView(bytes.buffer,bytes.byteOffset,even),buffer=conversationContext.createBuffer(1,even/2,sampleRate),channel=buffer.getChannelData(0);for(let i=0;i<channel.length;i++)channel[i]=view.getInt16(i*2,true)/32768;const item=conversationContext.createBufferSource();item.buffer=buffer;item.connect(conversationContext.destination);const startAt=Math.max(conversationContext.currentTime+.02,conversationNextPlaybackTime);conversationNextPlaybackTime=startAt+buffer.duration;conversationSources.add(item);item.onended=()=>conversationSources.delete(item);item.start(startAt);emit('ugo:native-voice-state',{state:'speaking',engine:'gemini-live',reason:'live-audio'})}
  const endAudioStream=()=>{resetAudioQueue();sendJson({realtimeInput:{audioStreamEnd:true}})}
- const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();closeSocket();cleanupAudio();emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
+ const armResponseWatchdog=(text:string)=>{clearResponseWatchdog();pendingTurnText=text;responseTimer=window.setTimeout(()=>{responseTimer=0;if(!active||paused)return;const retry=pendingTurnText;if(retry&&sendJson({realtimeInput:{text:retry}})){emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'response-retry'});responseTimer=window.setTimeout(()=>{responseTimer=0;if(active&&!paused)failRuntime('response-timeout')},5000);return}failRuntime('response-timeout')},5500)}
+ const failRuntime=(code:string)=>{active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';closeSocket();cleanupAudio();stopConversationPlayback();const fallbackEligible=!['not-allowed','no-microphone','microphone-busy','session','forbidden'].includes(code);if(fallbackEligible&&startFallback()){emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'gemini-live-fallback',previous_engine:'gemini-live',failure_code:code});return}emit('ugo:native-voice-error',{code,engine:'gemini-live'})}
 
  const issueToken=async()=>{
-  const role=currentRole(),sb=role==='admin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
+  const role=currentRole(),sb=role==='admin'||role==='superadmin'?adminSupabase:getRoleSupabase(role),{data:sessionData}=await sb.auth.getSession(),accessToken=sessionData.session?.access_token
   if(!accessToken)throw Object.assign(new Error('Sesión no disponible para voz'),{status:401})
-  const response=await fetch('/api/test',{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,voice_live_token:true,voice_live_mode:'conversation'})})
+  const response=await fetch(getHugoRuntimeUrl('/api/test'),{method:'POST',headers:{'Content-Type':'application/json',Authorization:'Bearer '+accessToken},body:JSON.stringify({role,action:'live-token',voice_live_token:true,voice_live_mode:'conversation'}),signal:AbortSignal.timeout(5000)})
   const data=await response.json().catch(()=>({})) as LiveTokenResponse
   if(!response.ok||!data.token||!data.model)throw Object.assign(new Error(data.error||'No pude iniciar Gemini Live'),{status:response.status})
   return{token:data.token,model:String(data.model).replace(/^models\//,'')}
@@ -110,15 +120,16 @@ function installBrowserBridge(){
   if(content?.interrupted)stopConversationPlayback()
   for(const part of content?.modelTurn?.parts||[]){if(part?.inlineData?.data)playConversationPcm(String(part.inlineData.data),String(part.inlineData.mimeType||'audio/pcm;rate=24000'))}
   const calls=data?.toolCall?.functionCalls||[]
+  if(calls.length)markModelResponse()
   for(const call of calls){emit('ugo:native-voice-tool-call',{id:String(call?.id||''),name:String(call?.name||''),args:call?.args||{},engine:'gemini-live'})}
   const outputText=String(content?.outputTranscription?.text||'').trim()
-  if(outputText)emit('ugo:native-voice-output',{text:outputText,engine:'gemini-live'})
+  if(outputText){markModelResponse();emit('ugo:native-voice-output',{text:outputText,engine:'gemini-live'})}
   const interim=String(content?.interimInputTranscription?.text||'').trim()
   if(interim&&active&&!paused){emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'interim'});emit('ugo:native-voice-result',{text:interim,final:false,engine:'gemini-live'})}
   const finalText=String(content?.inputTranscription?.text||'').trim()
   if(finalText&&active){
    const now=Date.now()
-   if(finalText!==lastFinalText||now-lastFinalAt>1600){lastFinalText=finalText;lastFinalAt=now;emit('ugo:native-voice-result',{text:finalText,final:true,engine:'gemini-live'});emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'final'})}
+   if(finalText!==lastFinalText||now-lastFinalAt>1600){lastFinalText=finalText;lastFinalAt=now;emit('ugo:native-voice-result',{text:finalText,final:true,engine:'gemini-live'});emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'thinking'});endAudioStream();armResponseWatchdog(finalText)}
   }
   return false
  }
@@ -143,7 +154,7 @@ function installBrowserBridge(){
    socket=ws;setupReady=false;resetAudioQueue()
    await new Promise<void>((resolve,reject)=>{
     let settled=false
-    const timer=window.setTimeout(()=>{if(settled)return;settled=true;try{ws.close()}catch{}reject(Object.assign(new Error('Gemini Live setup timeout'),{status:504}))},8000)
+    const timer=window.setTimeout(()=>{if(settled)return;settled=true;try{ws.close()}catch{}reject(Object.assign(new Error('Gemini Live setup timeout'),{status:504}))},6000)
     const finish=(fn:()=>void)=>{if(settled)return;settled=true;window.clearTimeout(timer);fn()}
     ws.onopen=()=>{if(!active||serial!==connectionSerial){try{ws.close()}catch{};return}try{ws.send(JSON.stringify(setupMessage(model)))}catch(error){finish(()=>reject(error as Error))}}
     ws.onmessage=event=>{if(!active||serial!==connectionSerial||typeof event.data!=='string')return;let data:any;try{data=JSON.parse(event.data)}catch{return}const ready=handleMessage(data);if(ready)finish(resolve);if(data?.goAway&&active){try{ws.close(1000,'gemini-go-away')}catch{}}}
@@ -167,6 +178,17 @@ function installBrowserBridge(){
   processor.onaudioprocess=event=>{
    if(!active||paused||!setupReady||socket?.readyState!==WebSocket.OPEN)return
    const converted=resample(event.inputBuffer.getChannelData(0),audioContext?.sampleRate||TARGET_RATE)
+   let power=0
+   for(let i=0;i<converted.length;i++)power+=converted[i]*converted[i]
+   const rms=Math.sqrt(power/Math.max(1,converted.length)),now=performance.now(),threshold=Math.max(.012,noiseFloor*3)
+   if(!localSpeechActive)noiseFloor=noiseFloor*.96+Math.min(rms,.02)*.04
+   if(rms>=threshold){
+    if(!localSpeechActive){localSpeechActive=true;localSpeechStartedAt=now;emit('ugo:native-voice-state',{state:'hearing',engine:'gemini-live',reason:'local-speech'})}
+    lastVoiceAt=now;localTurnEnded=false
+   }else if(localSpeechActive&&now-lastVoiceAt>=LOCAL_END_SILENCE_MS&&now-localSpeechStartedAt>=LOCAL_MIN_SPEECH_MS){
+    localSpeechActive=false;localTurnEnded=true;endAudioStream();emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'local-end-of-speech'});return
+   }
+   if(localTurnEnded)return
    for(let i=0;i<converted.length;i++)pendingSamples.push(converted[i])
    while(pendingSamples.length>=CHUNK_SAMPLES){
     const chunk=new Float32Array(pendingSamples.splice(0,CHUNK_SAMPLES))
@@ -177,7 +199,7 @@ function installBrowserBridge(){
  }
 
  const shutdown=(notify:boolean)=>{
-  active=false;paused=false;clearReconnect();connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
+  active=false;paused=false;clearReconnect();clearResponseWatchdog();pendingTurnText='';localSpeechActive=false;localTurnEnded=false;localSpeechStartedAt=0;lastVoiceAt=0;noiseFloor=.004;connecting=null;closeSocket();cleanupAudio();stopFallback();stopConversationPlayback();if(conversationContext){void conversationContext.close().catch(()=>{});conversationContext=null}
   if(notify)emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'stopped'})
  }
 
@@ -188,13 +210,13 @@ function installBrowserBridge(){
    if(active){paused=false;await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'});return}
    active=true;paused=false;emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'starting'})
    try{await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'listening'})}
-   catch(error){console.warn('UGO Gemini Live start failed; activating browser speech fallback',error);const name=String((error as any)?.name||''),status=Number((error as any)?.status||0),code=name==='NotAllowedError'||name==='SecurityError'?'not-allowed':name==='NotFoundError'?'no-microphone':name==='NotReadableError'?'microphone-busy':status===401?'session':status===403?'forbidden':status===429?'rate-limited':'unavailable';shutdown(false);if(startFallback()){emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'gemini-fallback',live_error:code});return}emit('ugo:native-voice-error',{code,engine:'gemini-live',message:error instanceof Error?error.message:String(error||'')});throw error}
+   catch(error){console.warn('UGO Gemini Live start failed',error);const name=String((error as any)?.name||''),status=Number((error as any)?.status||0),code=name==='NotAllowedError'||name==='SecurityError'?'not-allowed':name==='NotFoundError'?'no-microphone':name==='NotReadableError'?'microphone-busy':status===401?'session':status===403?'forbidden':status===429?'rate-limited':'unavailable';shutdown(false);const fallbackEligible=!['not-allowed','no-microphone','microphone-busy','session','forbidden'].includes(code);if(fallbackEligible&&startFallback()){emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'gemini-live-start-fallback',previous_engine:'gemini-live',failure_code:code});return}emit('ugo:native-voice-error',{code,engine:'gemini-live',message:error instanceof Error?error.message:String(error||'')});throw error}
   },
   pauseListening:()=>{if(!active)return;paused=true;if(fallbackRecognition){try{fallbackRecognition.stop()}catch{};emit('ugo:native-voice-state',{state:'ready',engine:'browser-speech',reason:'paused'});return}endAudioStream();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'paused'})},
   resumeListening:async()=>{if(!active)return;paused=false;if(fallbackActive){startFallback();return}resetAudioQueue();await ensureAudio();await connectLive();emit('ugo:native-voice-state',{state:'ready',engine:'gemini-live',reason:'resumed'})},
   stopListening:()=>shutdown(true),
   stopSpeaking:()=>stopConversationPlayback(),
-  sendToolResponse:(id,name,response)=>sendJson({toolResponse:{functionResponses:[{id,name,response}]}}),
+  sendToolResponse:(id,name,response)=>{const sent=sendJson({toolResponse:{functionResponses:[{id,name,response}]}});if(sent&&active&&!paused){emit('ugo:native-voice-state',{state:'connecting',engine:'gemini-live',reason:'tool-response'});armResponseWatchdog(lastFinalText)}return sent},
  }
 }
 

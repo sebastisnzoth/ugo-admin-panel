@@ -1,0 +1,51 @@
+name: UGO TEST Auth Isolation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "scripts/bootstrap-test-auth.mjs"
+      - "tests/contracts/test-auth-bootstrap.test.mjs"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+      - "scripts/bootstrap-test-auth.mjs"
+      - "tests/contracts/test-auth-bootstrap.test.mjs"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-auth-isolation
+  cancel-in-progress: true
+
+jobs:
+  guard:
+    name: Human identity isolation guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: node --test tests/contracts/test-auth-bootstrap.test.mjs
+      - name: Refuse human client identity in CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          forbidden='cliente''@ugo.com.ar'
+          if grep -RIl --include='*.yml' --include='*.yaml' "$forbidden" .github/workflows; then
+            echo "Human TEST client identity is still referenced by CI."
+            exit 1
+          fi
+          if grep -q "$forbidden" scripts/bootstrap-test-auth.mjs && ! grep -q 'HUMAN_TEST_EMAILS' scripts/bootstrap-test-auth.mjs; then
+            echo "Bootstrap may mutate the human TEST identity."
+            exit 1
+          fi
+          echo "UGO TEST auth isolation OK"

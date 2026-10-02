@@ -1,0 +1,62 @@
+{
+  "readiness_id": "provider-evidence",
+  "correlation_id": "readiness-provider-evidence-20261001T185600Z-gptugo-r1",
+  "candidate_sha": "63b95ce794d04e4987b78c97fdc2d5f87fc2585b",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "implementation": {
+    "provider_upload_service": true,
+    "private_bucket": "service-evidence",
+    "max_file_size_mb": 10,
+    "initial_state": "llegado -> antes",
+    "during_state": "en_progreso -> durante",
+    "final_state": "en_progreso/esperando_aprobacion -> despues",
+    "storage_object_binding": true,
+    "realtime_rehydrate": true,
+    "camera_capture": true,
+    "existing_image_upload": true,
+    "initial_required_before_start": true,
+    "final_required_before_completion": true
+  },
+  "github_actions": {
+    "workflow": "UGO Provider Evidence Runtime TEST",
+    "run_id": 36911092364,
+    "status": "SUCCESS",
+    "artifacts": {
+      "runtime": 11186482526,
+      "judge": 11186342633,
+      "sentinel": 11187580230
+    }
+  },
+  "runtime": {
+    "status": "PASS",
+    "source": "PROTECTED_STORAGE_RUNTIME",
+    "service_id": "9839cc0c-7ba3-472e-a115-98ffdb96bbe3",
+    "qa_job_id": "80b31dbe-d1bd-4b79-8446-7cfacf4af201",
+    "persisted_rows_and_bytes": true,
+    "initial_evidence": true,
+    "final_evidence": true,
+    "before_bytes": 67,
+    "after_bytes": 67,
+    "private_bucket": true,
+    "public_access_denied": true,
+    "state_guard_contract": true,
+    "ui_flow_contract": true,
+    "coverage": "COVERED"
+  },
+  "judge": {
+    "status": "PASS",
+    "completed_at": "2026-10-01T19:01:17.012Z"
+  },
+  "sentinel": {
+    "status": "PASS",
+    "completed_at": "2026-10-01T19:01:31.845Z"
+  },
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "criterion": "En un teléfono real con UGO TEST y sesión de proveedor: con el servicio en estado llegado, usar EMPEZAR TRABAJO para sacar/subir una foto inicial y confirmar que se persiste y pasa a en_progreso; luego usar TRABAJO LISTO para sacar/subir una foto final y confirmar que se persiste y pasa a esperando_aprobacion; recargar la app y confirmar que ambas evidencias siguen visibles.",
+    "evidence_required": "Prueba física de cámara/subida en dispositivo real del proveedor"
+  },
+  "final_gate": "HUMAN_REQUIRED"
+}

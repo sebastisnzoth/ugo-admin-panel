@@ -107,6 +107,59 @@ const {
   now: new Date(publishedAt),
 })
 
+
+const evaluatedReadinessItems = functionalReadiness.groups.flatMap(group =>
+  (group.items || []).map(item => ({...item, group_id:group.id, group_title:group.title}))
+)
+const declaredReadinessItems = functionalReadinessSource.groups.flatMap(group =>
+  (group.items || []).map(item => ({...item, group_id:group.id, group_title:group.title}))
+)
+const countBy = (items, key) => items.reduce((acc,item) => {
+  const value=String(item?.[key] || 'UNSPECIFIED')
+  acc[value]=(acc[value]||0)+1
+  return acc
+},{})
+const nonBacklogPullRequests = pullRequests
+  .filter(pr => !/^\[BACKLOG\]/i.test(String(pr.title || '')))
+  .map(pr => ({
+    number:pr.number,
+    title:pr.title || '',
+    url:pr.url || pr.html_url || pr.display_url || null,
+    readiness_id:pr.readiness_id || null,
+    head_sha:pr.head_sha || pr.head?.sha || null,
+    updated_at:pr.updated_at || null,
+    draft:Boolean(pr.draft),
+    runtime_status:pr.runtime_status || null,
+    evidence_status:pr.evidence_status || null,
+    judge:pr.judge || null,
+    sentinel:pr.sentinel || null,
+  }))
+const auditSnapshot = {
+  schema_version:'UGO_COMMAND_CENTER_AUDIT_V1',
+  generated_from:'DECLARED_CATALOG + LOCKS + EVIDENCE + OPEN_PRS + SCHEDULER',
+  source_sha:sourceSha,
+  catalog_total:evaluatedReadinessItems.length,
+  declared_status_counts:countBy(declaredReadinessItems,'status'),
+  authoritative_status_counts:countBy(evaluatedReadinessItems,'status'),
+  gate_state_counts:countBy(evaluatedReadinessItems,'gate_state'),
+  verified:evaluatedReadinessItems.filter(item=>item.status==='VERIFIED').length,
+  remaining:evaluatedReadinessItems.filter(item=>item.status!=='VERIFIED').length,
+  remaining_autonomous:readinessSummary.remaining_autonomous,
+  human_required:evaluatedReadinessItems.filter(item=>item.gate_state==='HUMAN_REQUIRED').length,
+  human_deferred:evaluatedReadinessItems.filter(item=>item.gate_state==='HUMAN_DEFERRED').length,
+  in_progress:evaluatedReadinessItems.filter(item=>item.gate_state==='IN_PROGRESS').length,
+  runnable_now:evaluatedReadinessItems.filter(item=>item.gate_state==='AVAILABLE').map(item=>item.id),
+  critical_remaining:evaluatedReadinessItems
+    .filter(item=>item.priority==='CRITICAL' && item.status!=='VERIFIED')
+    .map(item=>({id:item.id,title:item.title,group:item.group_title,status:item.status,gate_state:item.gate_state,depends_on:item.unresolved_dependencies || item.depends_on || []})),
+  pr_backed:evaluatedReadinessItems
+    .filter(item=>item.pull_request)
+    .map(item=>({id:item.id,title:item.title,gate_state:item.gate_state,pr_number:item.pull_request.number,pr_title:item.pull_request.title || '',head_sha:item.pull_request.head_sha || null})),
+  open_non_backlog_prs:nonBacklogPullRequests,
+  groups:readinessSummary.groups,
+  truth_rule:'VERIFIED sólo cuenta con lock DONE + evidencia persistida + Judge PASS + Sentinel PASS. Código, PR o test aislado no equivalen a DONE.',
+}
+
 const readinessDirectActionMap = {
   'client-request': 'client-request-runtime.yml',
   'client-navigation': 'client-navigation-runtime.yml',
@@ -130,7 +183,13 @@ const readinessDirectActionMap = {
 for (const group of functionalReadiness.groups || []) {
   for (const item of group.items || []) {
     const workflow = readinessDirectActionMap[item.id]
-    item.execution_mode = item.real_test_required ? 'HUMAN_REQUIRED' : 'AUTO_SELECT'
+    item.execution_mode = item.gate_state === 'AVAILABLE'
+      ? 'AUTO_SELECT'
+      : (item.gate_state === 'HUMAN_REQUIRED' || item.gate_state === 'HUMAN_DEFERRED')
+        ? 'HUMAN_REQUIRED'
+        : item.status === 'VERIFIED'
+          ? 'VERIFIED'
+          : 'BLOCKED'
     if (workflow) {
       item.execution_route = 'AUTO_SELECT · GPT/UGO para análisis, código, diseño y decisiones; GitHub Direct para runtime/CI determinista.'
       item.direct_action = {
@@ -565,6 +624,7 @@ const status = {
   state_drift: stateDrift,
   functional_readiness: functionalReadiness,
   functional_readiness_summary: readinessSummary,
+  audit_snapshot: auditSnapshot,
   implementation_steps: pendingImplementation,
   completed_implementation_steps: completedImplementation.map(step => ({...step, status:'DONE', gate_state:'DONE', gate_reason:'Judge + Sentinel PASS con evidencia persistida.'})),
   final_gate_steps: finalGateSteps,

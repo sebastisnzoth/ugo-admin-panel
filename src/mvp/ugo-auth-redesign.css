@@ -23,7 +23,7 @@
   z-index:20;
   top:max(18px,env(safe-area-inset-top));
   left:max(18px,env(safe-area-inset-left));
-  min-height:42px;
+  min-height:44px;
   padding:0 14px;
   border:1px solid rgba(17,17,17,.08);
   border-radius:999px;
@@ -156,7 +156,10 @@
   border:0;
   background:transparent;
   color:#d6dcdf;
-  padding:0;
+  min-height:44px;
+  padding:10px 0;
+  display:inline-flex;
+  align-items:center;
   font-size:12px;
   font-weight:800;
   cursor:pointer;
@@ -228,7 +231,7 @@
 }
 .mvp-auth-page.role-client .mvp-auth-tabs button,
 .mvp-auth-page.role-provider .mvp-auth-tabs button{
-  min-height:42px;
+  min-height:44px;
   border-radius:10px!important;
   color:#6f6f6f!important;
   font-size:12px;
@@ -272,7 +275,7 @@
   align-items:center;
   gap:12px;
   margin:17px 0;
-  color:#98a2b3;
+  color:#667085;
   font-size:10px;
   font-weight:700;
 }
@@ -316,7 +319,8 @@
   position:absolute;
   right:8px;top:50%;
   transform:translateY(-50%);
-  min-height:34px;
+  min-width:44px;
+  min-height:44px;
   padding:0 10px;
   border:0;
   border-radius:9px;
@@ -381,6 +385,9 @@
 .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card{
   width:min(440px,calc(100% - 28px));
 }
+.mvp-auth-page:not(.role-client):not(.role-provider) .mvp-kicker{
+  color:#7eeef5!important;
+}
 .mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card form label{
   display:grid;
   gap:6px;
@@ -403,7 +410,7 @@
   .mvp-auth-page.role-provider .mvp-back{
     top:max(10px,env(safe-area-inset-top));
     left:10px;
-    min-height:38px;
+    min-height:44px;
     background:rgba(255,255,255,.94);
   }
   .mvp-auth-page.role-client .mvp-auth-shell,
@@ -635,8 +642,8 @@
   .mvp-auth-role-switch{
     margin-top:15px!important;
     max-width:100%;
-    min-height:32px;
-    color:#c8d0d3;
+    min-height:44px;
+    color:#e5eaec;
     font-size:10px!important;
   }
   .mvp-auth-page.role-client .mvp-auth-card,
@@ -689,7 +696,7 @@
   }
   .mvp-password-field button{
     min-width:46px;
-    min-height:38px;
+    min-height:44px;
   }
   .mvp-auth-divider{margin:14px 0!important}
   .mvp-auth-footnote{margin-top:13px}
@@ -697,7 +704,7 @@
   .mvp-auth-page.role-provider .mvp-back{
     top:max(10px,env(safe-area-inset-top))!important;
     left:max(10px,env(safe-area-inset-left))!important;
-    min-height:38px!important;
+    min-height:44px!important;
     padding:0 12px!important;
     border-color:rgba(255,255,255,.13)!important;
     background:rgba(12,15,16,.64)!important;
@@ -748,3 +755,7 @@
   .ugo-splash-mark i,.ugo-splash-progress span{animation:none!important}
   .ugo-splash-progress span{width:70%}
 }
+
+/* Basic accessibility hardening: minimum mobile target and admin login contrast. */
+.mvp-auth-page.role-client .mvp-back,.mvp-auth-page.role-provider .mvp-back{min-height:44px!important}
+.mvp-auth-page:not(.role-client):not(.role-provider) .mvp-auth-card .ugo-admin-login-kicker{color:#111827!important}

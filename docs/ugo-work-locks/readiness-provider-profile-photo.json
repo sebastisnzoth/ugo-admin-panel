@@ -1,0 +1,49 @@
+{
+  "readiness_id": "provider-profile-photo",
+  "task_id": "readiness-provider-profile-photo",
+  "job_id": "UGO-READINESS-PROVIDER-PROFILE-PHOTO-20261001",
+  "title": "provider-profile-photo",
+  "status": "DONE",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T01:54:00Z",
+  "lease_expires_at": null,
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Provider Media Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "provider-media"
+  ],
+  "correlation_id": "provider-profile-photo-20261001T000857Z",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef",
+    "github-pr:334",
+    "github-head:acb3441120e8a3e0d085d33ca52c995f7262e233",
+    "github-run:36800437882:PASS",
+    "github-artifact:11135263683",
+    "judge:PASS",
+    "sentinel:PASS",
+    "ugo-arena:migration:provider_profile_photo",
+    "github-pr:337",
+    "github-head:f59b61359f1e24a414cd23a5e28eb4b3598ebfb1",
+    "github-run:36801342982:PASS",
+    "merge-main:e08db5869d062038d294dd387c8591e2418faa8f"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-10-01T01:54:00Z",
+  "finished_at": "2026-10-01T01:54:00Z",
+  "verified_sha": "f59b61359f1e24a414cd23a5e28eb4b3598ebfb1",
+  "result": "VERIFIED",
+  "merged_main_sha": "e08db5869d062038d294dd387c8591e2418faa8f"
+}

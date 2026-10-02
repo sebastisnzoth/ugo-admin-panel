@@ -1,8 +1,9 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{reportSentinelIncident}from'../../lib/sentinel'
+import{isAtOrBeyondProviderState,type ProviderLifecycleState}from'../../lib/marketplace/lifecycle'
 import{PROVIDER_ACTIVE_STATES,type Offer,type Payment,type ProviderProfile,type Service}from'../shared'
 
-export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null;pilot_capabilities?:Record<string,string>|null}
+export type ProviderProfileFull=ProviderProfile&{estado_verificacion?:string;zona_radio_km?:number|null;ciudad_base?:string|null;foto_perfil_path?:string|null;ubicacion_updated_at?:string|null;ubicacion_accuracy_m?:number|null}
 export type ProviderPayment=Payment&{mp_payment_id?:string|null;mp_status?:string|null;metodo?:string|null;procesador?:string|null;pago_externo_id?:string|null;pix_e2e_id?:string|null;fecha_confirmacion?:string|null}
 export type ProviderDebt={id:string;pago_id:string;servicio_id:string;proveedor_id:string;monto_servicio:number;comision_ugo:number;monto_pagado_ugo:number;saldo_pendiente:number;moneda:string;ambiente:'real'|'demo';estado:'pendiente'|'informado'|'parcial'|'pagado'|'anulado';referencia_pago?:string|null;pago_informado_at?:string|null;pagado_at?:string|null;created_at:string;servicio?:{numero?:number|string|null}|null}
 export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];service:Service|null;payments:ProviderPayment[];debts:ProviderDebt[]}
@@ -10,14 +11,13 @@ export type ProviderSnapshot={provider:ProviderProfileFull|null;offers:Offer[];s
 type PersistedOffer={id:string;servicio_id:string;proveedor_id:string;estado:string}
 type PersistedService={id:string;estado:string;proveedor_id:string|null}
 type ProviderService=Service&{programado_para?:string|null}
-type ProviderTransitionState='en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
+type ProviderTransitionState=Extract<ProviderLifecycleState,'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'>
 export type ProviderAdvanceOptions={locationAlreadyPublished?:boolean}
 type SnapshotPart='profile'|'offers'|'services'|'payments'|'debts'
 
 const ACTIONABLE_SCHEDULE_LEAD_MS=60*60*1000
 const MISSION_SERVICE_STATES=new Set(['en_camino','llegado','en_progreso'])
 const PASSIVE_SERVICE_STATES=new Set(['esperando_aprobacion','disputado'])
-const LIFECYCLE_ORDER=['asignado','en_camino','llegado','en_progreso','esperando_aprobacion','completado'] as const
 const errorRecord=(error:unknown)=>error&&typeof error==='object'?error as Record<string,unknown>:null
 const messageOf=(error:unknown,fallback:string)=>{if(error instanceof Error&&error.message)return error.message;const record=errorRecord(error),message=record?.message;return typeof message==='string'&&message.trim()?message:fallback}
 const errorCode=(error:unknown)=>{const code=errorRecord(error)?.code;return typeof code==='string'&&code.trim()?code:null}
@@ -59,13 +59,22 @@ async function persistedProviderAvailability(supabase:SupabaseClient,userId:stri
 export async function setProviderAvailability(supabase:SupabaseClient,userId:string,online:boolean){
  let mutationError:unknown
  try{
-  const{error}=await supabase.from('perfiles_proveedor').update({disponible:online,online}).eq('usuario_id',userId)
-  if(!error)return
-  mutationError=error
+  if(online){
+   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
+   if(!acceptablePosition(position))throw new Error('UGO necesita una ubicación GPS reciente y precisa antes de ponerte Online.')
+   const capturedAt=new Date(Number(position.timestamp)).toISOString(),accuracy=Number(position.coords.accuracy)
+   const{error}=await supabase.rpc('activar_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
+   if(!error)return
+   mutationError=error
+  }else{
+   const{error}=await supabase.from('perfiles_proveedor').update({disponible:false,online:false}).eq('usuario_id',userId)
+   if(!error)return
+   mutationError=error
+  }
  }catch(error){mutationError=error}
  const persisted=await persistedProviderAvailability(supabase,userId,online)
  if(persisted===true)return
- if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
+ if(persisted===false){void reportSentinelIncident({eventType:'provider_availability_error',message:messageOf(mutationError,online?'No pudimos activar tu disponibilidad con una ubicación válida.':'No se pudo actualizar la disponibilidad.'),error:mutationError,role:'provider',severity:'P1',action:'provider.availability',checklistCode:'MATCH-ONLINE'})}
  else{void reportSentinelIncident({eventType:'provider_availability_recovery_unverified',message:'No pudimos confirmar el estado online/offline persistido. El radar volverá a leer la disponibilidad real.',error:mutationError,role:'provider',severity:'P2',action:'provider.availability.recovery'})}
  throw mutationError||new Error('No se pudo actualizar la disponibilidad.')
 }
@@ -92,7 +101,7 @@ async function persistedAcceptedOpportunity(supabase:SupabaseClient,opportunityI
   const persistedService=service as PersistedService
   if(persistedService.id!==serviceId)return false
   if(persistedService.proveedor_id!==userId)return false
-  return PROVIDER_ACTIVE_STATES.includes(persistedService.estado)
+  return (PROVIDER_ACTIVE_STATES as readonly string[]).includes(persistedService.estado)
  }catch{return null}
 }
 
@@ -139,7 +148,8 @@ export async function rejectProviderOpportunity(supabase:SupabaseClient,id:strin
 const GPS_TARGET_ACCURACY_M=80
 const GPS_ACCEPTABLE_ACCURACY_M=250
 const GPS_FRESH_MS=30_000
-const GPS_TIMEOUT_MS=20_000
+const GPS_ACCEPT_FALLBACK_MS=4_000
+const GPS_TIMEOUT_MS=15_000
 function usablePosition(position:GeolocationPosition){const lat=Number(position.coords.latitude),lng=Number(position.coords.longitude),accuracy=Number(position.coords.accuracy);return Number.isFinite(lat)&&Number.isFinite(lng)&&Number.isFinite(accuracy)&&accuracy>0&&!(Math.abs(lat)<0.0001&&Math.abs(lng)<0.0001)}
 function positionAge(position:GeolocationPosition){return Math.max(0,Date.now()-Number(position.timestamp||0))}
 function acceptablePosition(position:GeolocationPosition){return usablePosition(position)&&positionAge(position)<=GPS_FRESH_MS&&Number(position.coords.accuracy)<=GPS_ACCEPTABLE_ACCURACY_M}
@@ -154,12 +164,13 @@ async function currentPosition(){
  let best:GeolocationPosition|null=null,lastError:GeolocationPositionError|null=null
  // First wake the location provider. A strict maximumAge=0 call can fail on mobile WebViews
  // before the GPS has a fix, so use a recent device fix only as a candidate while acquiring a fresh one.
- try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:7_000});if(acceptablePosition(warm))best=warm}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
+ try{const warm=await onePosition({enableHighAccuracy:true,maximumAge:GPS_FRESH_MS,timeout:5_000});if(acceptablePosition(warm)){best=warm;if(Number(warm.coords.accuracy)<=GPS_TARGET_ACCURACY_M)return warm}}catch(error){lastError=error as GeolocationPositionError;if(lastError.code===1)throw geolocationError(lastError)}
  return await new Promise<GeolocationPosition>((resolve,reject)=>{
-  let settled=false,watchId:number|null=null,timer:number|null=null
-  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer)}
+  let settled=false,watchId:number|null=null,timer:number|null=null,fallbackTimer:number|null=null
+  const cleanup=()=>{if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(timer!=null)window.clearTimeout(timer);if(fallbackTimer!=null)window.clearTimeout(fallbackTimer)}
   const finish=(position:GeolocationPosition)=>{if(settled)return;settled=true;cleanup();resolve(position)}
   const fail=(error:Error)=>{if(settled)return;settled=true;cleanup();reject(error)}
+  fallbackTimer=window.setTimeout(()=>{if(best&&acceptablePosition(best))finish(best)},GPS_ACCEPT_FALLBACK_MS)
   timer=window.setTimeout(()=>{if(best&&acceptablePosition(best))finish(best);else if(lastError)fail(geolocationError(lastError));else fail(new Error('No pudimos fijar tu ubicación con precisión suficiente. Mantené la ubicación precisa activa, dejá UGO abierto unos segundos y reintentá.'))},GPS_TIMEOUT_MS)
   watchId=navigator.geolocation.watchPosition(position=>{
    if(!usablePosition(position)||positionAge(position)>GPS_FRESH_MS)return
@@ -168,6 +179,14 @@ async function currentPosition(){
   },error=>{lastError=error;if(error.code===1)fail(geolocationError(error))},{enableHighAccuracy:true,timeout:GPS_TIMEOUT_MS,maximumAge:0})
  })
 }
+export async function saveProviderBaseLocation(supabase:SupabaseClient){
+ const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
+ if(!acceptablePosition(position))throw new Error('UGO necesita una ubicación GPS reciente y precisa para guardar tu zona de trabajo.')
+ const capturedAt=new Date(Number(position.timestamp)).toISOString(),accuracy=Number(position.coords.accuracy)
+ const{error}=await supabase.rpc('guardar_ubicacion_base_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:capturedAt,p_accuracy_m:accuracy})
+ if(error)throw error
+}
+
 async function publishProviderLocation(supabase:SupabaseClient,serviceId:string){
  try{
   const position=await currentPosition(),latitude=Number(position.coords.latitude),longitude=Number(position.coords.longitude)
@@ -182,8 +201,7 @@ async function persistedProviderTransition(supabase:SupabaseClient,serviceId:str
  try{
   const{data:auth,error:authError}=await supabase.auth.getUser();const userId=auth.user?.id;if(authError||!userId)return null
   const{data,error}=await supabase.from('servicios').select('estado').eq('id',serviceId).eq('proveedor_id',userId).maybeSingle();if(error||!data)return null
-  const current=LIFECYCLE_ORDER.indexOf(String(data.estado||'') as typeof LIFECYCLE_ORDER[number]),wanted=LIFECYCLE_ORDER.indexOf(target as typeof LIFECYCLE_ORDER[number])
-  return wanted>=0&&current>=wanted
+  return isAtOrBeyondProviderState(String(data.estado||''),target)
  }catch{return null}
 }
 
@@ -203,6 +221,15 @@ function providerArrivalError(result:ProviderArrivalResult){
  return arrivalFailure(code,'UGO no pudo validar la llegada con el backend.')
 }
 async function markProviderArrived(supabase:SupabaseClient,serviceId:string){
+ // Reuse the location already published by the live tracker whenever it is still valid.
+ // This avoids forcing a second cold GPS acquisition when the provider taps “YA LLEGUÉ”.
+ try{
+  return await confirmProviderArrival(supabase,serviceId)
+ }catch(error){
+  const code=providerArrivalCode(error)
+  if(code==='outside_geofence'||code==='client_location_unavailable'||code==='invalid_state')throw error
+  if(!code||!['gps_unavailable','gps_stale','gps_inaccurate'].includes(code))throw error
+ }
  await publishProviderLocation(supabase,serviceId)
  return confirmProviderArrival(supabase,serviceId)
 }

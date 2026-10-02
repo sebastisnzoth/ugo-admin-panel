@@ -1,0 +1,57 @@
+name: UGO Provider Proximity Alert Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/provider-proximity-alert-runtime.yml'
+  pull_request:
+    paths:
+      - 'supabase/migrations/20261001022000_provider_configurable_operating_radius.sql'
+      - 'supabase/migrations/20261001025500_provider_proximity_alert_runtime_qa.sql'
+      - 'scripts/provider-proximity-alert-*.mjs'
+      - 'tests/contracts/provider-proximity-alert-runtime.test.mjs'
+      - '.github/workflows/provider-proximity-alert-runtime.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - run: npm run verify:test-env
+      - run: node --test tests/contracts/provider-proximity-alert-runtime.test.mjs
+      - name: Runtime
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-proximity-alert-runtime.mjs
+      - name: Judge
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-proximity-alert-judge.mjs
+      - name: Sentinel
+        env:
+          UGO_RUNTIME_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/provider-proximity-alert-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-proximity-alert-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/provider-proximity-alert-*
+          if-no-files-found: warn
+          retention-days: 90

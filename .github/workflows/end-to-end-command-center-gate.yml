@@ -1,0 +1,94 @@
+name: UGO Final Command Center Gate TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/end-to-end-command-center-gate-*.mjs'
+      - 'docs/UGO_FUNCTIONAL_READINESS.json'
+      - 'docs/ugo-work-locks/readiness-*.json'
+      - 'tests/contracts/ugo-readiness-engine.test.mjs'
+      - 'tests/contracts/command-center-workflow-optimization.test.mjs'
+      - '.github/workflows/end-to-end-command-center-gate.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-final-command-center-gate
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_RUNTIME_SHA: ${{ github.sha }}
+
+jobs:
+  runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Enforce UGO TEST repository guard
+        run: npm run verify:test-env
+      - name: Readiness engine contracts
+        run: node --test tests/contracts/ugo-readiness-engine.test.mjs tests/contracts/command-center-workflow-optimization.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Evaluate final autonomous scope
+        run: node scripts/end-to-end-command-center-gate-runtime.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-runtime-${{ github.sha }}
+          path: artifacts/end-to-end-command-center-gate-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-runtime-${{ github.sha }}
+          path: artifacts
+      - run: node scripts/end-to-end-command-center-gate-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-judge-${{ github.sha }}
+          path: artifacts/end-to-end-command-center-gate-judge.json
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-judge-${{ github.sha }}
+          path: artifacts
+      - run: node scripts/end-to-end-command-center-gate-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: end-to-end-command-center-gate-sentinel-${{ github.sha }}
+          path: artifacts/end-to-end-command-center-gate-sentinel.json
+          retention-days: 90

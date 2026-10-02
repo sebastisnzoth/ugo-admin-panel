@@ -1,0 +1,48 @@
+{
+  "readiness_id": "provider-workflow",
+  "correlation_id": "readiness-provider-workflow-20261001T190400Z-gptugo-r1",
+  "candidate_sha": "2775a5ebdbda927c8a94ac23a1c910d12c202737",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "workflow": {
+    "name": "UGO Provider Workflow Runtime TEST",
+    "run_id": 36912080802,
+    "conclusion": "SUCCESS",
+    "artifacts": {
+      "runtime": 11186443874,
+      "judge": 11187197075,
+      "sentinel": 11186852301
+    }
+  },
+  "runtime": {
+    "status": "PASS",
+    "service_id": "df9b2cfc-c469-4490-811d-dc8e54ad29a7",
+    "states": [
+      "llegado",
+      "en_progreso",
+      "esperando_aprobacion"
+    ],
+    "observations": {
+      "initial_evidence_required": true,
+      "initial_rejection_no_advance": true,
+      "start_persisted": true,
+      "final_evidence_required": true,
+      "final_rejection_no_advance": true,
+      "finish_persisted": true,
+      "backward_transition_rejected": true,
+      "invalid_transition_no_mutation": true
+    },
+    "fixture_isolated": true,
+    "cleanup": true
+  },
+  "judge": {
+    "status": "PASS"
+  },
+  "sentinel": {
+    "status": "PASS"
+  },
+  "human_final": {
+    "required": false
+  },
+  "final_gate": "DONE"
+}

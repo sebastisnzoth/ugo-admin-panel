@@ -1,0 +1,51 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "end-to-end-command-center-gate",
+  "status": "VERIFIED",
+  "environment": "REPOSITORY + UGO TEST EVIDENCE",
+  "tested_sha": "2bc2fd27f5130ffba5bbcca65d9a7c0267987bf8",
+  "workflow_run_id": "37018788153",
+  "workflow_run_attempt": "1",
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "autonomous_scope_complete": true,
+    "launch_authorized": false,
+    "production_touched": false
+  },
+  "totals": {
+    "total": 87,
+    "verified": 73,
+    "human_required": 13,
+    "autonomous_remaining": 0,
+    "invalid_remaining": 0
+  },
+  "human_required_ids": [
+    "provider-gps",
+    "provider-arrival",
+    "provider-evidence",
+    "hugo-voice",
+    "final-gps",
+    "final-two-devices",
+    "final-customer",
+    "provider-realtime-location",
+    "hugo-gemini-live-core",
+    "hugo-client-order-by-voice",
+    "hugo-provider-actions",
+    "hugo-admin-actions",
+    "hugo-real-runtime-proof"
+  ],
+  "critical_verified_ids": [
+    "client-request",
+    "client-payment",
+    "provider-offers",
+    "cross-p0",
+    "cross-regression",
+    "client-provider-lifecycle",
+    "cross-realtime-consistency",
+    "cross-errors-recovery"
+  ],
+  "command_center_truthful": true,
+  "verified_at": "2026-10-02T14:18:12.469Z"
+}

@@ -1,9 +1,11 @@
 import type{SupabaseClient}from'@supabase/supabase-js'
 import{getDispatchProvider}from'../../../lib/dispatch/provider'
+import{MATCHING_SERVICE_STATES}from'../../../lib/marketplace/lifecycle'
 
 export const CLIENT_CANCELLABLE_SERVICE_STATES=['buscando','ofrecido','asignado','en_camino','llegado']
-export const CLIENT_MATCHING_RETRY_STATES=['buscando','ofrecido']
+export const CLIENT_MATCHING_RETRY_STATES=[...MATCHING_SERVICE_STATES]
 type OwnedServiceRow={id:string;estado:string;metadata?:Record<string,unknown>|null}
+type RetryOwnedServiceRow=OwnedServiceRow&{proveedor_id?:string|null;ubicacion_cliente?:unknown;categoria?:{slug?:string|null}|null}
 
 function hasWorkApproval(row:OwnedServiceRow|null){
  const value=row?.metadata?.trabajo_aprobado_at
@@ -28,10 +30,16 @@ export async function cancelOwnedClientService(supabase:SupabaseClient,userId:st
 
 export async function retryOwnedClientMatching(supabase:SupabaseClient,userId:string,serviceId:string){
  if(!serviceId)return false
- const{data,error}=await supabase.from('servicios').select('id,estado,proveedor_id').eq('id',serviceId).eq('cliente_id',userId).in('estado',CLIENT_MATCHING_RETRY_STATES).maybeSingle()
+ const{data,error}=await supabase.from('servicios').select('id,estado,proveedor_id,ubicacion_cliente,categoria:categorias(slug)').eq('id',serviceId).eq('cliente_id',userId).in('estado',CLIENT_MATCHING_RETRY_STATES).maybeSingle()
  if(error)throw error
- const owned=(data||null)as(OwnedServiceRow&{proveedor_id?:string|null})|null
+ const owned=(data||null)as RetryOwnedServiceRow|null
  if(!owned?.id)return false
+
+ if(!owned.ubicacion_cliente){
+  const result=await getDispatchProvider().start({serviceId:owned.id,category:String(owned.categoria?.slug||''),pickup:null,pickupFallback:'stored'})
+  if(result.state==='offering'||result.state==='matched'||result.state==='pending')return true
+ }
+
  const result=await supabase.rpc('iniciar_matching',{p_servicio_id:owned.id})
  if(!result.error)return true
  try{

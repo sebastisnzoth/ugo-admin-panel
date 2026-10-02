@@ -1,0 +1,55 @@
+{
+  "readiness_id": "cross-realtime-consistency",
+  "task_id": "readiness-cross-realtime-consistency",
+  "job_id": "UGO-READINESS-CROSS-REALTIME-CONSISTENCY-20261002",
+  "title": "Verify same-service realtime convergence across Client Provider Admin",
+  "status": "DONE",
+  "started_at": "2026-10-02T12:51:00Z",
+  "heartbeat_at": "2026-10-02T12:53:00Z",
+  "lease_expires_at": null,
+  "started_sha": "852d9e4e3e743b8f6ec71bdd1f0f0eea93824d17",
+  "owner": "UGO",
+  "department": "Flujo Cliente ↔ Proveedor · Reparación integral",
+  "assigned_agent": "UGO Realtime Convergence Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "admin-realtime",
+    "notifications",
+    "client-service-status",
+    "provider-job-state"
+  ],
+  "correlation_id": "readiness-cross-realtime-consistency-20261002T125100Z",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:client-provider-lifecycle:VERIFIED",
+    "reconcile:dependency-race:20261002T125300Z",
+    "dependency:client-provider-lifecycle:HUMAN_REQUIRED",
+    "repo-evidence:docs/evidence/readiness-client-provider-lifecycle-20261002.json",
+    "github-run:37010278853:PASS",
+    "github-job-runtime:110848208749:PASS",
+    "github-job-judge:110848764384:PASS",
+    "github-job-sentinel:110848847889:PASS",
+    "github-artifact-runtime:11227318357",
+    "github-artifact-judge:11227840889",
+    "github-artifact-sentinel:11227640857",
+    "same-sha:52b863dfae11413b5f0d24fb5453a64d2d4dd78e"
+  ],
+  "production_touched": false,
+  "result": "VERIFIED",
+  "blocker": "client-provider-lifecycle:HUMAN_REQUIRED",
+  "dependency_status": {
+    "client-provider-lifecycle": "HUMAN_REQUIRED"
+  },
+  "result_summary": "Not runnable yet. The authoritative client-provider-lifecycle lock is HUMAN_REQUIRED after automated runtime/Judge/Sentinel PASS; this downstream control must remain blocked until the required physical/human evidence closes that dependency.",
+  "completed_at": "2026-10-02T13:04:00Z",
+  "finished_at": "2026-10-02T13:04:00Z",
+  "verified_sha": "52b863dfae11413b5f0d24fb5453a64d2d4dd78e",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
+}

@@ -1,0 +1,108 @@
+# retry: 2026-09-30 cross-visual r3 merge-trigger canonical
+name: UGO Cross Visual Runtime TEST
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cross-visual-runtime.yml"
+      - "scripts/cross-visual-judge.mjs"
+      - "scripts/cross-visual-sentinel.mjs"
+      - "scripts/role-ui-runtime.mjs"
+      - "tests/contracts/cross-visual-readiness.test.mjs"
+      - "src/features/client/**"
+      - "src/mvp/**"
+      - "src/components/**"
+      - "src/hooks/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-cross-visual-${{ github.sha }}
+  cancel-in-progress: false
+
+env:
+  UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+  UGO_TEST_SUPABASE_ANON_KEY: sb_publishable_meCpkMt79S25M0nHgVv1aQ_V9AMPZEl
+  UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+  UGO_TEST_CLIENT_EMAIL: cliente.ugo.test@example.com
+  UGO_TEST_CLIENT_PASSWORD: ${{ secrets.UGO_TEST_CLIENT_PASSWORD }}
+  UGO_TEST_PROVIDER_EMAIL: proveedor.ugo.test@example.com
+  UGO_TEST_PROVIDER_PASSWORD: ${{ secrets.UGO_TEST_PROVIDER_PASSWORD }}
+  UGO_TEST_ADMIN_EMAIL: admin.ugo.test@example.com
+  UGO_TEST_ADMIN_PASSWORD: ${{ secrets.UGO_TEST_ADMIN_PASSWORD }}
+
+jobs:
+  cross-visual:
+    name: Cross visual same-SHA proof + Judge + Sentinel
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout exact triggering SHA
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse missing TEST credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$UGO_TEST_SUPABASE_URL" = "https://tmossnqfwfwjrtzwcbmm.supabase.co"
+          test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+          test -n "$UGO_TEST_CLIENT_PASSWORD"
+          test -n "$UGO_TEST_PROVIDER_PASSWORD"
+          test -n "$UGO_TEST_ADMIN_PASSWORD"
+      - name: Install repository dependencies
+        run: npm ci --include=dev
+      - name: Verify TEST-only environment
+        run: npm run verify:test-env
+      - name: Visual contract regression
+        run: node --test tests/contracts/cross-visual-readiness.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Execute local authenticated cross-role visual proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          export UGO_RUNTIME_SHA="${{ github.sha }}"
+          export VITE_APP_REVISION="${{ github.sha }}"
+          export UGO_UI_BASE_URL="http://127.0.0.1:4173"
+          npm run dev -- --host 127.0.0.1 --port 4173 > /tmp/ugo-cross-visual-vite.log 2>&1 &
+          vite_pid=$!
+          trap 'kill "$vite_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsS "$UGO_UI_BASE_URL/?app=client" >/dev/null
+          node scripts/role-ui-runtime.mjs
+      - name: Judge visual evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-visual-judge.mjs
+      - name: Sentinel visual evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/cross-visual-sentinel.mjs
+      - name: Upload immutable visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cross-visual-runtime-${{ github.sha }}
+          path: |
+            artifacts/role-ui-*
+            artifacts/cross-visual-*
+          if-no-files-found: warn
+          retention-days: 90

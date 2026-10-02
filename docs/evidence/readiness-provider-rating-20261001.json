@@ -1,0 +1,15 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-rating",
+  "status": "VERIFIED",
+  "environment": "UGO TEST",
+  "tested_sha": "1217e174eeeba8d3b4d2cc8efa73ee633e3d20ee",
+  "workflow_run_id": 36932219957,
+  "result": {
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "production_touched": false
+  },
+  "verified_at": "2026-10-01T22:01:12.360Z"
+}

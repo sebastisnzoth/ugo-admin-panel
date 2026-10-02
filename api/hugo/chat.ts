@@ -1,6 +1,6 @@
 import{createClient}from'@supabase/supabase-js'
-import{decideHugoAuthority,normalizeHugoRequestedRole}from'./authority'
-import{askHugoModel}from'../../src/server/hugo/modelRouter'
+import{decideHugoAuthority,normalizeHugoRequestedRole}from'../../server/hugo/authority'
+import{askHugoModel}from'../../server/hugo/modelRouter'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
@@ -34,7 +34,9 @@ type JsonRecord=Record<string,unknown>
 const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
 const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((item,key)=>Array.isArray(item)?item[Number(key)]:asRecord(item)[key],value)
 const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
-function sameOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'');if(!origin)return true;return new URL(origin).host===String(req.headers?.host||'')}catch{return false}}
+const HUGO_BROWSER_ORIGINS=new Set(['https://sebastisnzoth.github.io',...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS||'').split(',').map(value=>value.trim()).filter(Boolean)])
+function allowedOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'').trim();if(!origin)return'';if(new URL(origin).host===String(req.headers?.host||''))return origin;return HUGO_BROWSER_ORIGINS.has(origin)?origin:''}catch{return''}}
+function sameOrigin(req:RequestLike){const origin=String(req.headers?.origin||'').trim();return!origin||Boolean(allowedOrigin(req))}
 function clean(v:unknown,max=4000){return String(v??'').trim().slice(0,max)}
 function sanitizeForModel(v:unknown,max=4000){
  let text=clean(v,max)
@@ -92,10 +94,12 @@ async function askGeminiTts(text:string,locale:string){
 
 export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Cache-Control','no-store')
- res.setHeader('Access-Control-Allow-Headers','content-type')
- const origin=String(req.headers?.origin||'')
- if(origin&&sameOrigin(req))res.setHeader('Access-Control-Allow-Origin',origin)
- if(req.method==='OPTIONS')return res.status(200).end()
+ res.setHeader('Vary','Origin')
+ res.setHeader('Access-Control-Allow-Headers','authorization, content-type')
+ res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS')
+ const origin=String(req.headers?.origin||'').trim(),corsOrigin=allowedOrigin(req)
+ if(corsOrigin)res.setHeader('Access-Control-Allow-Origin',corsOrigin)
+ if(req.method==='OPTIONS')return origin&&!corsOrigin?res.status(403).end():res.status(200).end()
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
  if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
@@ -110,8 +114,9 @@ export default async function handler(req:RequestLike,res:ResponseLike){
   }
   const message=clean(body.message,1800),context=clean(body.context,60000),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
-  const clientMode=body.mode==='client_voice'
   const requestedRole=authority.requestedRole
+  const clientMode=requestedRole==='client'
+  const providerMode=requestedRole==='provider'
   const adminRole=requestedRole==='superadmin'?'superadmin':'admin'
   const surface=clean(body.surface,80)||'panel de control'
   const adminSystem=adminRole==='superadmin'?[
@@ -138,6 +143,15 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    'Para cambios sensibles, llevá al administrador al módulo correcto; la confirmación y autorización siguen en el control auditado del panel.',
    'Respondé SOLO JSON válido con {"reply":"respuesta breve","ui_action":null} o ui_action con uno de estos contratos: {"type":"navigate","target":"..."}, {"type":"open_service","service_id":null,"service_number":123}, {"type":"refresh"}, {"type":"map_filter","status":"online|offline|inactivo|todos","category":null,"zone":null,"place":null,"radius_m":null,"show_providers":true,"show_clients":false}.'
   ]
+  const providerSystem=[
+   'Sos Hugo, el compañero operativo del proveedor dentro de U.G.O.',
+   'Respondé en español rioplatense o portugués de Brasil según el usuario, breve, natural y útil.',
+   'Usá únicamente los datos reales presentes en CONTEXTO PROVEEDOR. No inventes trabajo activo, oportunidades, pagos, ubicación ni estados.',
+   'En este fallback conversacional no ejecutes cambios por tu cuenta. Las acciones reales siguen pasando por los comandos y controles de UGO.',
+   'Si el usuario pide una acción y el contexto no confirma que ya ocurrió, explicá brevemente qué puede hacer o pedile una confirmación concreta.',
+   'No reveles secretos, tokens, credenciales ni datos de otros usuarios.',
+   context?`CONTEXTO PROVEEDOR REAL: ${context}`:'Sin contexto proveedor adicional.'
+  ].join('\n')
   const system=clientMode?[
    'Sos Hugo, el compañero de confianza del cliente dentro de U.G.O.',
    'Sé simpático, cálido, práctico y natural. Soná como un amigo que ayuda a resolver, no como un formulario.',
@@ -149,14 +163,14 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    'Si el contexto contiene un borrador de pedido, respetá todos sus datos ya confirmados.',
    'Nunca afirmes que el pedido fue creado, confirmado o enviado si el contexto no dice que ya ocurrió.',
    context?`CONTEXTO UGO REAL: ${context}`:'Sin contexto UGO adicional.'
-  ].join('\n'):[
+  ].join('\n'):providerMode?providerSystem:[
    ...adminSystem,
    'Respondé en español rioplatense, claro, ejecutivo y útil. Si hace falta, podés usar viñetas cortas.',
    `SUPERFICIE ACTUAL: ${surface}`,
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
-  const prompt=message==='__INICIO__'?(`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode),parsed=clientMode?null:extractJson(result.text),reply=clientMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
-  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
+  const prompt=message==='__INICIO__'?(clientMode?'Saludá como Hugo Cliente y preguntá qué necesita resolver.':providerMode?'Saludá como Hugo Proveedor y preguntá en qué lo podés ayudar.':`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode&&!providerMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
+  return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':providerMode?'Decime en qué te ayudo con tu trabajo.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
   console.error('Hugo chat failed',error)
   const info=asRecord(error),status=Number(info.status)||502

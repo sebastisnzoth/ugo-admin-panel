@@ -1,0 +1,63 @@
+{
+  "readiness_id": "provider-workflow",
+  "task_id": "readiness-provider-workflow",
+  "job_id": "UGO-READINESS-PROVIDER-WORKFLOW",
+  "title": "Verify provider sequential start/finish state machine",
+  "status": "DONE",
+  "started_at": "2026-10-01T19:04:00Z",
+  "heartbeat_at": "2026-10-01T19:10:00Z",
+  "lease_expires_at": "2026-10-01T19:10:00Z",
+  "started_sha": "62838e238e717ccec3c6a41653da0f56b075fbe6",
+  "owner": "UGO",
+  "department": "App Proveedor",
+  "assigned_agent": "Provider Workflow Runtime Agent",
+  "skills": [
+    "ugo-readiness-orchestrator",
+    "ugo-provider",
+    "ugo-runtime-validation",
+    "ugo-evidence-judge"
+  ],
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-job-state"
+  ],
+  "correlation_id": "readiness-provider-workflow-20261001T190400Z-gptugo-r1",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "github-run:36912080802",
+    "github-artifact:11186443874:runtime-pass",
+    "github-artifact:11187197075:judge-pass",
+    "github-artifact:11186852301:sentinel-pass",
+    "service:df9b2cfc-c469-4490-811d-dc8e54ad29a7",
+    "docs/evidence/readiness-provider-workflow-20261001.json"
+  ],
+  "production_touched": false,
+  "last_failure": null,
+  "automated_closure": {
+    "candidate_sha": "2775a5ebdbda927c8a94ac23a1c910d12c202737",
+    "workflow_run_id": 36912080802,
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "service_id": "df9b2cfc-c469-4490-811d-dc8e54ad29a7",
+    "production_touched": false
+  },
+  "evidence_path": "docs/evidence/readiness-provider-workflow-20261001.json",
+  "evidence_commit_sha": "0486b25b04b1801585538098006da11710c34c22",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "human_final_required": {
+    "required": false,
+    "status": "NOT_REQUIRED"
+  },
+  "human_runtime_evidence": {
+    "result": "NOT_REQUIRED",
+    "symptom": ""
+  }
+}

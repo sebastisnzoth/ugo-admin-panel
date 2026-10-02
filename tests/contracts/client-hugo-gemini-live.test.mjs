@@ -13,7 +13,7 @@ test('Hugo browser voice streams PCM to Gemini Live with an ephemeral token',()=
  assert.match(bridge,/access_token=/)
  assert.match(bridge,/voice_live_token:true/)
  assert.match(bridge,/audio\/pcm;rate=16000/)
- assert.match(bridge,/CHUNK_SAMPLES=1600/)
+ assert.match(bridge,/CHUNK_SAMPLES=800/)
  assert.doesNotMatch(bridge,/MediaRecorder/)
  assert.doesNotMatch(bridge,/audio_base64/)
 })
@@ -22,7 +22,7 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/generationConfig:\{responseModalities:\['AUDIO'\]/)
  assert.match(bridge,/outputAudioTranscription:\{\}/)
  assert.match(bridge,/inputAudioTranscription:\{\}/)
- assert.match(bridge,/silenceDurationMs:500/)
+ assert.match(bridge,/silenceDurationMs:350/)
  assert.match(bridge,/END_SENSITIVITY_HIGH/)
  assert.match(bridge,/interimInputTranscription/)
  assert.match(bridge,/inputTranscription/)
@@ -30,12 +30,12 @@ test('Gemini Live websocket setup uses transcription, VAD and incremental result
  assert.match(bridge,/final:true/)
 })
 
-test('ephemeral token request is one-use and constrained to the selected Live model and modality',()=>{
+test('ephemeral token request is one-use and omits rejected live constraints',()=>{
  assert.match(api,/voice_live_token===true/)
  assert.match(api,/generativelanguage\.googleapis\.com\/v1beta\/auth_tokens/)
- assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:/)
- assert.match(api,/model:`models\/\$\{model\}`/)
- assert.match(api,/responseModalities:\[mode==='transcribe'\?'TEXT':'AUDIO'\]/)
+ assert.match(api,/const request=\{uses:1,expireTime,newSessionExpireTime\}/)
+ assert.doesNotMatch(api,/liveConnectConstraints\s*:/)
+ assert.match(api,/return\{token,model,expires_at:expireTime,mode\}/)
  assert.doesNotMatch(api,/auth_token\s*:/)
 })
 
@@ -78,6 +78,8 @@ test('Client and Provider require the persistent Gemini Live audio speaker and n
 test('Gemini Live declares bounded role tools in the same persistent session',()=>{
  assert.match(bridge,/functionDeclarations:roleTools\(\)/)
  assert.match(bridge,/get_current_location/)
+ assert.match(bridge,/use_saved_place/)
+ assert.match(bridge,/open_request_photo/)
  assert.match(bridge,/create_service_request/)
  assert.match(bridge,/approve_work/)
  assert.match(bridge,/confirm_cash_payment/)
@@ -131,4 +133,34 @@ test('Client Hugo confirms a successful persisted cancellation briefly',()=>{
  assert.match(dock,/if\(name==='cancel_service'\)/)
  assert.match(dock,/message:'Pedido cancelado'/)
  assert.match(dock,/code:'CONFIRMATION_REQUIRED'/)
+})
+
+
+test('Client Hugo keeps a natural voice contract and reuses saved places',()=>{assert.match(bridge,/Hablá como una persona/);assert.match(bridge,/use_saved_place antes de volver a pedir una dirección/);assert.match(dock,/if\(name==='use_saved_place'\)/);assert.match(dock,/direcciones_cliente/);assert.match(dock,/UGO_UI_EVENTS\.clientRequestPhoto/)})
+
+
+test('Gemini Live final turn flushes audio and bounds response latency',()=>{
+ assert.ok(bridge.includes("reason:'thinking'"))
+ assert.ok(bridge.includes('endAudioStream();armResponseWatchdog(finalText)'))
+ assert.ok(bridge.includes('response-timeout'))
+ assert.ok(bridge.includes("reason:'response-retry'"))
+ assert.ok(bridge.includes('clearResponseWatchdog'))
+})
+
+
+test('Gemini Live uses hybrid local VAD for faster turn completion',()=>{
+ assert.match(bridge,/LOCAL_END_SILENCE_MS=420/)
+ assert.match(bridge,/LOCAL_MIN_SPEECH_MS=180/)
+ assert.match(bridge,/reason:'local-end-of-speech'/)
+ assert.match(bridge,/audioStreamEnd:true/)
+ assert.match(bridge,/AbortSignal\.timeout\(5000\)/)
+})
+
+
+test('Gemini Live startup errors degrade explicitly to browser speech when available',()=>{
+ assert.match(bridge,/UGO Gemini Live start failed'/)
+ assert.match(bridge,/fallbackEligible&&startFallback\(\)/)
+ assert.match(bridge,/reason:'gemini-live-start-fallback'/)
+ assert.match(bridge,/previous_engine:'gemini-live'/)
+ assert.doesNotMatch(bridge,/reason:'gemini-fallback'/)
 })

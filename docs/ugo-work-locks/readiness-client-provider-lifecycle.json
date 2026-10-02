@@ -1,0 +1,79 @@
+{
+  "readiness_id": "client-provider-lifecycle",
+  "task_id": "readiness-client-provider-lifecycle",
+  "job_id": "UGO-READINESS-CLIENT-PROVIDER-LIFECYCLE-20261002",
+  "title": "Verify canonical Client ↔ Provider lifecycle end-to-end in UGO TEST",
+  "status": "HUMAN_REQUIRED",
+  "started_at": "2026-10-02T12:46:00Z",
+  "heartbeat_at": "2026-10-02T12:51:00Z",
+  "lease_expires_at": null,
+  "started_sha": "d9fdd31f8d6cb594b759328913e2b164c4327c79",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO Lifecycle Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-job-state",
+    "client-service-status",
+    "payments",
+    "ratings"
+  ],
+  "correlation_id": "readiness-client-provider-lifecycle-20261002T124600Z",
+  "current_step": "AUTOMATED_SCOPE_PASS_HUMAN_DEPENDENCIES_PENDING",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:provider-proximity-alert:VERIFIED",
+    "dependency:provider-active-jobs:VERIFIED",
+    "dependency:hugo-real-runtime-proof:HUMAN_REQUIRED_AUTOMATED_SCOPE_PASS",
+    "github-run:37008933184:PASS",
+    "github-job-runtime:110843728040:PASS",
+    "github-job-judge:110843894856:PASS",
+    "github-job-sentinel:110843947751:PASS",
+    "github-artifact-runtime:11227057150",
+    "github-artifact-judge:11227455171",
+    "github-artifact-sentinel:11227211698",
+    "same-sha:5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+    "github-run:37008933184",
+    "github-job-runtime:110843728040",
+    "github-job-judge:110843894856",
+    "github-job-sentinel:110843947751",
+    "github-artifact-runtime:11227057150",
+    "github-artifact-judge:11227455171",
+    "github-artifact-sentinel:11227211698",
+    "repo-evidence:docs/evidence/readiness-client-provider-lifecycle-20261002.json",
+    "service:1895774a-6f53-414d-9008-ca22c7370f7e",
+    "audit-job:3da055ca-9370-40be-b396-34e86273fbdc"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-10-02T12:51:00Z",
+  "finished_at": "2026-10-02T12:51:00Z",
+  "verified_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+  "result": "HUMAN_REQUIRED",
+  "validators_result": {
+    "Judge": "PASS_AUTOMATED_SCOPE",
+    "Sentinel": "PASS_AUTOMATED_SCOPE"
+  },
+  "automated_closure": {
+    "tested_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+    "workflow_run_id": 37008933184,
+    "runtime": "PASS",
+    "judge": "PASS",
+    "sentinel": "PASS",
+    "service_id": "1895774a-6f53-414d-9008-ca22c7370f7e",
+    "service_number": 1445,
+    "audit_job_id": "3da055ca-9370-40be-b396-34e86273fbdc",
+    "production_touched": false
+  },
+  "evidence_path": "docs/evidence/readiness-client-provider-lifecycle-20261002.json",
+  "blocker": "PHYSICAL_HUMAN_DEPENDENCIES_ONLY",
+  "human_final_required": {
+    "required": true,
+    "status": "PENDING",
+    "action": "Complete the already-defined physical GPS/camera and real Hugo microphone/audio/customer acceptance evidence; no further autonomous lifecycle code/runtime work is pending.",
+    "evidence_required": "Physical provider/client device evidence and real microphone/audio chain from dependency controls."
+  },
+  "result_summary": "Automated Client↔Provider lifecycle scope PASS same-SHA: offer acceptance, canonical state transitions, payment release, before/after evidence, bilateral ratings and audit ledgers all persisted in UGO TEST. Final control remains HUMAN_REQUIRED because physical GPS/camera and real Hugo microphone/customer evidence are intentionally not simulated."
+}

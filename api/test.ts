@@ -15,6 +15,8 @@ const GEMINI_MODELS = Array.from(new Set([
 type Coordinates={latitude:number;longitude:number}
 type RoutingCandidate={providerId:string;location:Coordinates}
 function bearer(req:any){const raw=String(req.headers?.authorization||'');return raw.startsWith('Bearer ')?raw.slice(7).trim():''}
+const UGO_BROWSER_ORIGINS=new Set(['https://sebastisnzoth.github.io',...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS||'').split(',').map(value=>value.trim()).filter(Boolean)])
+function allowedBrowserOrigin(req:any){try{const origin=String(req.headers?.origin||'').trim();if(!origin)return'';if(new URL(origin).host===String(req.headers?.host||''))return origin;return UGO_BROWSER_ORIGINS.has(origin)?origin:''}catch{return''}}
 function extractJson(text:string){const cleaned=String(text||'').replace(/```json/gi,'').replace(/```/g,'').trim();try{return JSON.parse(cleaned)}catch{}const start=cleaned.indexOf('{'),end=cleaned.lastIndexOf('}');if(start>=0&&end>start){try{return JSON.parse(cleaned.slice(start,end+1))}catch{}}return null}
 function validCoord(value:unknown):value is Coordinates{if(!value||typeof value!=='object')return false;const v=value as Record<string,unknown>,lat=Number(v.latitude),lng=Number(v.longitude);return Number.isFinite(lat)&&lat>=-90&&lat<=90&&Number.isFinite(lng)&&lng>=-180&&lng<=180}
 function osrmCoord(c:Coordinates){return`${Number(c.longitude)},${Number(c.latitude)}`}
@@ -102,11 +104,11 @@ const GEMINI_LIVE_TRANSCRIBE_MODEL=String(process.env.GEMINI_LIVE_TRANSCRIBE_MOD
 const GEMINI_LIVE_VOICE_MODEL=String(process.env.GEMINI_LIVE_VOICE_MODEL||process.env.GEMINI_LIVE_MODEL||'gemini-3.8-live').replace(/^models\//,'')
 async function createGeminiLiveToken(geminiKey:string,mode:'transcribe'|'speaker'|'conversation'='conversation'){
  const now=Date.now(),expireTime=new Date(now+8*60*1000).toISOString(),newSessionExpireTime=new Date(now+45*1000).toISOString()
- // Production compatibility: AuthToken currently rejects liveConnectConstraints.
+ // Production compatibility: AuthToken currently rejects Live connection constraints.
  // Keep the API key server-side with a one-use short-lived token; the model
  // and transcription configuration are sent in the first WebSocket setup.
  const model=mode==='transcribe'?GEMINI_LIVE_TRANSCRIBE_MODEL:GEMINI_LIVE_VOICE_MODEL
- const request={uses:1,expireTime,newSessionExpireTime,liveConnectConstraints:{model:`models/${model}`,config:{responseModalities:[mode==='transcribe'?'TEXT':'AUDIO']}}}
+ const request={uses:1,expireTime,newSessionExpireTime}
  const response=await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':geminiKey},body:JSON.stringify(request),signal:AbortSignal.timeout(8000)})
  const payload:any=await response.json().catch(()=>({}))
  if(!response.ok)throw Object.assign(new Error(payload?.error?.message||'Gemini Live no pudo emitir un token temporal'),{status:response.status>=400&&response.status<600?response.status:502})
@@ -347,7 +349,7 @@ async function disputeAi(req:any,res:any){try{
  }catch(error:any){console.error('UGO dispute analysis failed',error);const status=Number(error?.status)||500;return res.status(status>=400&&status<600?status:500).json({error:error instanceof Error?error.message:'No se pudo analizar la disputa.'})}}
 
 export default async function handler(req:any,res:any){
- res.setHeader('Cache-Control','no-store');if(req.method==='OPTIONS')return res.status(200).end();if(String(req.query?.ugo_autonomy_model||'')==='1')return autonomyOpenRouter(req,res);const calendarAction=String(req.query?.ugo_calendar||'');if(calendarAction)return googleCalendar(req,res,calendarAction);if(req.method==='POST'&&String(req.query?.ugo_dispute_ai||'')==='1')return disputeAi(req,res);if(req.method==='GET'&&req.query?.code&&req.query?.state)return mercadoPagoOAuth(req,res);if(String(req.query?.mp_oauth||'')==='1')return mercadoPagoOAuth(req,res);if(req.method==='GET'&&String(req.query?.health||'')==='1')return geminiHealth(res);if(req.method==='POST'&&String(req.query?.routing||'')==='1')return routing(req,res);if(req.method==='POST'&&String(req.query?.ugo_debt||'')==='1')return providerUgoDebtPayment(req,res);if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
+ res.setHeader('Cache-Control','no-store');res.setHeader('Vary','Origin');res.setHeader('Access-Control-Allow-Headers','authorization, content-type');res.setHeader('Access-Control-Allow-Methods','GET, POST, OPTIONS');const requestOrigin=String(req.headers?.origin||'').trim(),corsOrigin=allowedBrowserOrigin(req);if(corsOrigin)res.setHeader('Access-Control-Allow-Origin',corsOrigin);if(req.method==='OPTIONS')return requestOrigin&&!corsOrigin?res.status(403).end():res.status(200).end();if(String(req.query?.ugo_autonomy_model||'')==='1')return autonomyOpenRouter(req,res);const calendarAction=String(req.query?.ugo_calendar||'');if(calendarAction)return googleCalendar(req,res,calendarAction);if(req.method==='POST'&&String(req.query?.ugo_dispute_ai||'')==='1')return disputeAi(req,res);if(req.method==='GET'&&req.query?.code&&req.query?.state)return mercadoPagoOAuth(req,res);if(String(req.query?.mp_oauth||'')==='1')return mercadoPagoOAuth(req,res);if(req.method==='GET'&&String(req.query?.health||'')==='1')return geminiHealth(res);if(req.method==='POST'&&String(req.query?.routing||'')==='1')return routing(req,res);if(req.method==='POST'&&String(req.query?.ugo_debt||'')==='1')return providerUgoDebtPayment(req,res);if(req.method!=='POST')return res.status(405).json({error:'Método no permitido'})
  try{
   const token=bearer(req);if(!token)return res.status(401).json({error:'Sesión requerida'});const geminiKey=process.env.GEMINI_API_KEY?.trim();if(!geminiKey)return res.status(503).json({error:'GEMINI_API_KEY no está configurada en Vercel'})
   if(!SUPABASE_URL||!SUPABASE_ANON_KEY)return res.status(503).json({error:'Supabase TEST no está configurado en Vercel'})

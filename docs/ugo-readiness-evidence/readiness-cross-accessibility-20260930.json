@@ -1,0 +1,52 @@
+{
+  "readiness_id": "cross-accessibility",
+  "task_id": "readiness-cross-accessibility",
+  "job_id": "job-cross-accessibility-20260930T1545Z",
+  "correlation_id": "corr-cross-accessibility-20260930T1545Z",
+  "tested_sha": "38cece12bbffe6b3068923ce6bdead88aec097b5",
+  "main_sha_observed_after_test": "d7570046c2b8829fe7d65ca6344a32f6aec7c7e8",
+  "environment": "UGO_TEST_BROWSER_RUNTIME",
+  "production_touched": false,
+  "automated_scope": {
+    "contract_regression": "PASS",
+    "build": "PASS",
+    "chromium_runtime": "PASS",
+    "routes": [
+      "landing",
+      "client",
+      "provider",
+      "admin"
+    ],
+    "keyboard_focus": "PASS",
+    "labels": "PASS",
+    "touch_targets_44px": "PASS",
+    "contrast_wcag_aa": "PASS",
+    "reduced_motion_hardening": "PASS",
+    "dialog_focus_trap_escape": "PASS",
+    "workflow_run_id": 36748760217,
+    "workflow_job_id": 110001632382,
+    "artifact_id": 11112919192,
+    "artifact_digest": "sha256:d0539f8b7c04065ede2f0b4074c9e00d89151e4df475ea0cc1b2cbbf42c44a8a"
+  },
+  "fixes": [
+    "WCAG AA primary brand contrast corrected",
+    "Visible focus hardened across keyboard controls",
+    "Minimum 44x44 touch targets enforced for buttons/tabs and form controls",
+    "Admin auth fields received accessible names",
+    "Client/provider auth contrast and target issues corrected",
+    "Admin auth kicker contrast corrected",
+    "Dialog initial focus, Tab containment and Escape close support added",
+    "Reduced-motion fallback added",
+    "Permanent Chromium + axe-core accessibility gate with Judge and Sentinel added"
+  ],
+  "independent_validation": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "human_final_required": {
+    "required": false,
+    "reason": "Basic keyboard/focus/contrast/labels/touch-target criteria are automatable and were verified in Chromium UGO TEST."
+  },
+  "result": "PASS",
+  "completed_at": "2026-09-30T17:05:41Z"
+}

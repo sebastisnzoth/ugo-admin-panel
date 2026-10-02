@@ -1,0 +1,192 @@
+# readiness gate: provider-evidence v1
+name: UGO Provider Evidence Runtime TEST
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/provider-evidence-runtime.mjs'
+      - 'scripts/provider-evidence-judge.mjs'
+      - 'scripts/provider-evidence-sentinel.mjs'
+      - 'scripts/autonomous-uploaded-media-runtime.mjs'
+      - 'src/features/provider/services/providerEvidenceService.ts'
+      - 'src/mvp/provider/ProviderEvidencePanel.tsx'
+      - 'src/mvp/provider/ProviderActiveJob.tsx'
+      - 'src/lib/cameraCapture.ts'
+      - 'supabase/migrations/20260911_service_evidence.sql'
+      - 'supabase/migrations/20260911215500_service_evidence_state_guard.sql'
+      - 'supabase/migrations/20260914232954_service_evidence_storage_integrity_guard.sql'
+      - 'tests/contracts/provider-evidence-panel-service.test.mjs'
+      - 'tests/contracts/provider-evidence-recovery.test.mjs'
+      - 'tests/contracts/provider-evidence-service-extraction.test.mjs'
+      - 'tests/contracts/provider-evidence-runtime.test.mjs'
+      - 'tests/contracts/provider-evidence-state-guard.test.mjs'
+      - 'tests/contracts/android-evidence-camera.test.mjs'
+      - '.github/workflows/provider-evidence-runtime.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ugo-test-provider-evidence
+  cancel-in-progress: false
+
+jobs:
+  provider-evidence-runtime:
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --include=dev
+      - name: Require UGO TEST service role
+        env:
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+        run: test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+      - name: Enforce UGO TEST
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+        run: npm run verify:test-env
+      - name: Provider evidence contract gates
+        run: node --test tests/contracts/provider-evidence-panel-service.test.mjs tests/contracts/provider-evidence-recovery.test.mjs tests/contracts/provider-evidence-service-extraction.test.mjs tests/contracts/provider-evidence-state-guard.test.mjs tests/contracts/android-evidence-camera.test.mjs tests/contracts/provider-evidence-runtime.test.mjs
+      - name: Build exact SHA
+        env:
+          VITE_APP_REVISION: ${{ github.sha }}
+        run: npm run build
+      - name: Execute protected Storage evidence runtime
+        env:
+          UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
+          UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node scripts/provider-evidence-runtime.mjs | tee artifacts/provider-evidence-runtime.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts/provider-evidence-runtime.json
+          if-no-files-found: error
+          retention-days: 90
+
+  judge:
+    needs: provider-evidence-runtime
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts
+      - name: Judge provider evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-evidence-judge.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-evidence-judge-${{ github.sha }}
+          path: artifacts/provider-evidence-judge.json
+          if-no-files-found: error
+          retention-days: 90
+
+  sentinel:
+    needs: judge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-judge-${{ github.sha }}
+          path: artifacts
+      - name: Sentinel provider evidence
+        env:
+          UGO_RUNTIME_SHA: ${{ github.sha }}
+        run: node scripts/provider-evidence-sentinel.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: provider-evidence-sentinel-${{ github.sha }}
+          path: artifacts/provider-evidence-sentinel.json
+          if-no-files-found: error
+          retention-days: 90
+
+
+  persist-evidence:
+    needs: sentinel
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-runtime-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-judge-${{ github.sha }}
+          path: artifacts
+      - uses: actions/download-artifact@v4
+        with:
+          name: provider-evidence-sentinel-${{ github.sha }}
+          path: artifacts
+      - name: Persist VERIFIED evidence and close readiness lock
+        env:
+          TESTED_SHA: ${{ github.sha }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_NAME: ${{ github.workflow }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "ugo-readiness-bot"
+          git config user.email "ugo-readiness-bot@users.noreply.github.com"
+          git fetch origin main
+          git checkout -B readiness-provider-evidence-persist origin/main
+          node --input-type=module <<'NODE'
+          import fs from 'node:fs'
+          const testedSha=process.env.TESTED_SHA
+          const runId=Number(process.env.WORKFLOW_RUN_ID)
+          const workflowName=process.env.WORKFLOW_NAME
+          const runtime=JSON.parse(fs.readFileSync('artifacts/provider-evidence-runtime.json','utf8'))
+          const judge=JSON.parse(fs.readFileSync('artifacts/provider-evidence-judge.json','utf8'))
+          const sentinel=JSON.parse(fs.readFileSync('artifacts/provider-evidence-sentinel.json','utf8'))
+          if(runtime.sha!==testedSha||judge.sha!==testedSha||sentinel.sha!==testedSha)throw new Error('PROVIDER_EVIDENCE_EVIDENCE_SHA_MISMATCH')
+          if(runtime.result!=='PASS'||judge.status!=='PASS'||sentinel.status!=='PASS')throw new Error('PROVIDER_EVIDENCE_VALIDATORS_NOT_PASS')
+          const now=new Date().toISOString()
+          const evidence={schema_version:'UGO_READINESS_PROVIDER_EVIDENCE_V2',readiness_id:'provider-evidence',task_id:'readiness-provider-evidence',job_id:'UGO-READINESS-PROVIDER-EVIDENCE',environment:'UGO TEST',tested_sha:testedSha,workflow_run_id:runId,workflow_name:workflowName,workflow_result:'PASS',runtime,validators:{Judge:judge,Sentinel:sentinel},control_result:'VERIFIED_AUTOMATED',production_touched:false,human_final:{required:true,status:'PENDING',criterion:'En un teléfono real con UGO TEST y sesión de proveedor: con el servicio en estado llegado, usar EMPEZAR TRABAJO para sacar/subir una foto inicial y confirmar que se persiste y pasa a en_progreso; luego usar TRABAJO LISTO para sacar/subir una foto final y confirmar que se persiste y pasa a esperando_aprobacion; recargar la app y confirmar que ambas evidencias siguen visibles.',evidence_required:'Prueba física de cámara/subida en dispositivo real del proveedor'},final_gate:'HUMAN_REQUIRED',persisted_at:now}
+          fs.mkdirSync('docs/evidence',{recursive:true})
+          fs.writeFileSync('docs/evidence/readiness-provider-evidence-latest.json',JSON.stringify(evidence,null,2)+'\n')
+          const lockPath='docs/ugo-work-locks/readiness-provider-evidence.json'
+          const lock=JSON.parse(fs.readFileSync(lockPath,'utf8'))
+          lock.status='HUMAN_REQUIRED';lock.heartbeat_at=now;lock.lease_expires_at=now;lock.current_step='PHYSICAL_PROVIDER_EVIDENCE_FINAL'
+          lock.evidence_ids=[...(Array.isArray(lock.evidence_ids)?lock.evidence_ids:[]),`github-actions:run:${runId}`,'repo:docs/evidence/readiness-provider-evidence-latest.json',`judge-pass:${testedSha.slice(0,12)}`,`sentinel-pass:${testedSha.slice(0,12)}`]
+          lock.evidence_ids=[...new Set(lock.evidence_ids)]
+          lock.automated_closure={candidate_sha:testedSha,workflow_run_id:runId,runtime:'PASS',judge:'PASS',sentinel:'PASS',production_touched:false,service_id:runtime.serviceId,qa_job_id:runtime.qaJobId,before_bytes:runtime.beforeBytes,after_bytes:runtime.afterBytes,private_storage:true};lock.verified_sha=testedSha;lock.runtime_validated_sha=testedSha;lock.result='VERIFIED_AUTOMATED';lock.validators_result={Judge:'PASS',Sentinel:'PASS'}
+          lock.validator_results={Judge:{validator:'Judge',verdict:'PASS',checked_at:judge.completed_at||now,runtime_sha:testedSha,readiness_id:'provider-evidence'},Sentinel:{validator:'Sentinel',verdict:'PASS',checked_at:sentinel.completed_at||now,runtime_sha:testedSha,readiness_id:'provider-evidence'}}
+          lock.evidence_path='docs/evidence/readiness-provider-evidence-latest.json'
+          lock.human_final_required={required:true,status:'PENDING',action:'En UGO TEST y en un teléfono real del proveedor: (1) con servicio en llegado, tocar EMPEZAR TRABAJO y sacar/subir foto inicial; confirmar que queda persistida y el servicio pasa a en_progreso; (2) en en_progreso, tocar TRABAJO LISTO y sacar/subir foto final; confirmar que queda persistida y el servicio pasa a esperando_aprobacion; (3) recargar la app y confirmar que ambas evidencias siguen visibles.',evidence_required:'Prueba física de cámara/subida en dispositivo real del proveedor'}
+          lock.human_runtime_evidence={result:'PENDING',symptom:''}
+          lock.result_summary='UGO TEST verified automated Provider initial/final evidence, protected Storage bytes, lifecycle guards, private-bucket access, Judge PASS and Sentinel PASS on the same SHA. The remaining gate is physical camera/upload verification on a real provider device.'
+          fs.writeFileSync(lockPath,JSON.stringify(lock,null,2)+'\n')
+          NODE
+          git add docs/evidence/readiness-provider-evidence-latest.json docs/ugo-work-locks/readiness-provider-evidence.json
+          git commit -m "docs(readiness): persist provider evidence VERIFIED proof"
+          git push origin HEAD:main

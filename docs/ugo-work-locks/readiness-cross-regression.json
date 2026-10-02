@@ -1,0 +1,54 @@
+{
+  "readiness_id": "cross-regression",
+  "task_id": "readiness-cross-regression",
+  "job_id": "UGO-READINESS-CROSS-REGRESSION-20261002",
+  "title": "Verify permanent regression coverage for corrected critical incidents",
+  "status": "DONE",
+  "started_at": "2026-10-02T12:49:00Z",
+  "heartbeat_at": "2026-10-02T12:52:00Z",
+  "lease_expires_at": null,
+  "started_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "UGO Regression Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "regression"
+  ],
+  "correlation_id": "readiness-cross-regression-20261002T124900Z",
+  "current_step": "VERIFIED",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:cross-p0:VERIFIED",
+    "dependency:cross-rls:VERIFIED",
+    "dependency:cross-idempotency:VERIFIED",
+    "dependency:cross-errors:VERIFIED",
+    "github-run:37009065030:PASS",
+    "github-job-runtime:110844165195:PASS",
+    "github-job-judge:110844315647:PASS",
+    "github-job-sentinel:110844387369:PASS",
+    "github-artifact-runtime:11226343551",
+    "github-artifact-judge:11226388568",
+    "github-artifact-sentinel:11226503393",
+    "same-sha:25721ee7cd0f89d6112ab52880c53d7c6c66b3de",
+    "repo-evidence:docs/evidence/readiness-cross-regression-20261002.json"
+  ],
+  "production_touched": false,
+  "completed_at": "2026-10-02T12:52:00Z",
+  "finished_at": "2026-10-02T12:52:00Z",
+  "verified_sha": "25721ee7cd0f89d6112ab52880c53d7c6c66b3de",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "evidence_path": "docs/evidence/readiness-cross-regression-20261002.json",
+  "reconciliation": {
+    "tested_sha": "25721ee7cd0f89d6112ab52880c53d7c6c66b3de",
+    "reconciled_main_sha": "ffdb52ef355f71afa7ab79e3d840e7b629f595ac",
+    "functional_regression_scope_changed": false
+  }
+}

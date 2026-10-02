@@ -1,0 +1,48 @@
+{
+  "readiness_id": "provider-realtime-location",
+  "task_id": "readiness-provider-realtime-location",
+  "job_id": "UGO-READINESS-PROVIDER-REALTIME-LOCATION-20261001",
+  "title": "provider-realtime-location",
+  "status": "HUMAN_REQUIRED",
+  "started_at": "2026-10-01T00:08:57Z",
+  "heartbeat_at": "2026-10-01T02:01:00Z",
+  "lease_expires_at": null,
+  "started_sha": "80b825726cbb3ab970387dac3b6e83f93927cdef",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Mobile Device Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PENDING",
+    "Sentinel": "PENDING"
+  },
+  "resources": [
+    "provider-location"
+  ],
+  "correlation_id": "provider-realtime-location-20261001T000857Z",
+  "current_step": "HUMAN_PHYSICAL_GPS_EVIDENCE_REQUIRED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "main-sha:80b825726cbb3ab970387dac3b6e83f93927cdef",
+    "reconciles:provider-gps",
+    "provider-gps:automated-runtime-pass",
+    "provider-gps:human-final-pending",
+    "scheduler:human-required-lock-authoritative",
+    "main-engine:3738f332013e5a321ee85bea069e17959901c7bd"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": null,
+  "result": "HUMAN_REQUIRED",
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "action": "Proveedor TEST en dispositivo físico con ubicación precisa: publicar fixes GPS reales recientes durante movimiento y validar rechazo de stale/0,0/fake antes de llegada.",
+    "evidence_required": "GPS físico real, no simulado"
+  }
+}

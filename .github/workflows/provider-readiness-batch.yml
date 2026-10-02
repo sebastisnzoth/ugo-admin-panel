@@ -6,10 +6,20 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/provider-readiness-batch.yml'
+      - 'src/mvp/provider/**'
+      - 'src/mvp/ProviderLocationTracker.tsx'
+      - 'src/features/provider/**'
       - 'scripts/provider-ui-runtime.mjs'
       - 'scripts/autonomous-qa-gps-runtime.mjs'
+      - 'scripts/provider-gps-judge.mjs'
+      - 'scripts/provider-gps-sentinel.mjs'
+      - 'scripts/provider-arrival-judge.mjs'
+      - 'scripts/provider-arrival-sentinel.mjs'
       - 'scripts/provider-debt-runtime.mjs'
-      - 'tests/contracts/provider-test-runtime-concurrency.test.mjs'
+      - 'scripts/provider-debt-judge.mjs'
+      - 'scripts/provider-debt-sentinel.mjs'
+      - 'tests/contracts/provider-*.test.mjs'
+      - 'supabase/migrations/20260924162000_provider_arrival_gps_gate.sql'
       - 'supabase/migrations/20260930105814_reconcile_qa_p0_secret_key_compat.sql'
       - 'supabase/migrations/20260930110213_provider_debt_readiness_probe.sql'
       - 'supabase/migrations/20260930110510_provider_debt_readiness_probe_restore_profile.sql'
@@ -18,8 +28,11 @@ on:
 permissions:
   contents: read
 
+# One canonical workflow owns the shared provider TEST fixture on push.
+# canonical provider gate refresh: 2026-10-01 final-same-sha-r3
+# Targeted provider workflows remain available through workflow_dispatch only.
 concurrency:
-  group: ugo-provider-readiness-batch
+  group: ugo-test-shared-provider-fixture
   cancel-in-progress: false
 
 env:
@@ -34,36 +47,44 @@ jobs:
   provider-readiness:
     runs-on: ubuntu-latest
     environment: test
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci --include=dev
+
       - name: Require UGO TEST credentials
         shell: bash
         run: |
           set -euo pipefail
           test -n "$UGO_TEST_PROVIDER_PASSWORD"
           test -n "$UGO_TEST_SUPABASE_SERVICE_ROLE_KEY"
+
       - name: Enforce UGO TEST
         run: npm run verify:test-env
+
       - name: Build exact SHA
         env:
           VITE_APP_REVISION: ${{ github.sha }}
         run: npm run build
-      - name: Contract gates
+
+      - name: Provider contract gates
         run: |
-          node --test tests/contracts/provider-arrival-gps-gate.test.mjs tests/contracts/provider-arrival-location.test.mjs
+          node --test tests/contracts/provider-arrival-gps-gate.test.mjs tests/contracts/provider-arrival-location.test.mjs tests/contracts/provider-live-gps-quality.test.mjs tests/contracts/provider-gps-readiness-runtime.test.mjs
           node --test tests/contracts/provider-debt-acceptance-gate.test.mjs tests/contracts/provider-ugo-debt-limit.test.mjs tests/contracts/cash-provider-ugo-debt.test.mjs
           node --test tests/contracts/provider-test-runtime-concurrency.test.mjs
+
       - name: Install browser harness
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Provider responsive runtime
+
+      - name: Provider UI runtime
         id: responsive
         continue-on-error: true
         shell: bash
@@ -79,14 +100,52 @@ jobs:
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
           node scripts/provider-ui-runtime.mjs
-      - name: Provider GPS runtime
+
+      - name: Provider GPS and arrival runtime
         id: gps
         continue-on-error: true
-        run: node scripts/autonomous-qa-gps-runtime.mjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+          node scripts/autonomous-qa-gps-runtime.mjs | tee artifacts/provider-gps-runtime.json
+          cp artifacts/provider-gps-runtime.json artifacts/provider-arrival-runtime.json
+
+      - name: Judge provider GPS
+        id: gps_judge
+        continue-on-error: true
+        run: node scripts/provider-gps-judge.mjs
+
+      - name: Sentinel provider GPS
+        id: gps_sentinel
+        continue-on-error: true
+        run: node scripts/provider-gps-sentinel.mjs
+
+      - name: Judge provider arrival
+        id: arrival_judge
+        continue-on-error: true
+        run: node scripts/provider-arrival-judge.mjs
+
+      - name: Sentinel provider arrival
+        id: arrival_sentinel
+        continue-on-error: true
+        run: node scripts/provider-arrival-sentinel.mjs
+
       - name: Provider debt runtime
         id: debt
         continue-on-error: true
         run: node scripts/provider-debt-runtime.mjs
+
+      - name: Judge provider debt
+        id: debt_judge
+        continue-on-error: true
+        run: node scripts/provider-debt-judge.mjs
+
+      - name: Sentinel provider debt
+        id: debt_sentinel
+        continue-on-error: true
+        run: node scripts/provider-debt-sentinel.mjs
+
       - name: Enforce provider readiness outcomes
         if: always()
         shell: bash
@@ -94,12 +153,20 @@ jobs:
           set -euo pipefail
           test "${{ steps.responsive.outcome }}" = success
           test "${{ steps.gps.outcome }}" = success
+          test "${{ steps.gps_judge.outcome }}" = success
+          test "${{ steps.gps_sentinel.outcome }}" = success
+          test "${{ steps.arrival_judge.outcome }}" = success
+          test "${{ steps.arrival_sentinel.outcome }}" = success
           test "${{ steps.debt.outcome }}" = success
+          test "${{ steps.debt_judge.outcome }}" = success
+          test "${{ steps.debt_sentinel.outcome }}" = success
+
       - name: Upload provider readiness evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: provider-readiness-batch-${{ github.sha }}
-          path: artifacts/provider-*
-          if-no-files-found: warn
+          path: |
+            artifacts/provider-*
+          if-no-files-found: error
           retention-days: 90

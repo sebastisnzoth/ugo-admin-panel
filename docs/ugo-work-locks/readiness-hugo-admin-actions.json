@@ -1,0 +1,58 @@
+{
+  "readiness_id": "hugo-admin-actions",
+  "task_id": "readiness-hugo-admin-actions",
+  "job_id": "UGO-READINESS-HUGO-ADMIN-ACTIONS-20261001",
+  "title": "Acciones Admin autorizadas por voz",
+  "status": "HUMAN_REQUIRED",
+  "started_at": "2026-10-01T04:56:00Z",
+  "heartbeat_at": "2026-10-01T12:40:00Z",
+  "lease_expires_at": null,
+  "started_sha": "40e2ff388c92e05f3e751c03302d24d6a77fd36b",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO · Hugo Admin Actions Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  },
+  "resources": [
+    "hugo-actions",
+    "admin-shell"
+  ],
+  "correlation_id": "hugo-admin-actions-20261001T045600Z",
+  "current_step": "HUMAN_MIC_AUDIO_ADMIN_ACTIONS_REQUIRED",
+  "attempt": 1,
+  "evidence_ids": [
+    "epic:ugo-client-provider-flow-recovery",
+    "dependency:hugo-provider-actions:HUMAN_REQUIRED",
+    "main-sha:40e2ff388c92e05f3e751c03302d24d6a77fd36b",
+    "github-pr:351",
+    "github-head:06d64b9fbe0932c8f2113a5dc73ff223e0090b17",
+    "github-runtime-run:36862491717:PASS",
+    "github-artifact:11163145483",
+    "github-core-run:36862491746:PASS",
+    "github-voice-run:36862491702:PASS",
+    "github-timeout-run:36862491710:PASS",
+    "github-continuity-run:36862491796:PASS",
+    "github-security-run:36862491747:PASS",
+    "github-cross-role-run:36862491795:PASS",
+    "automated-scope:VERIFIED",
+    "judge:PASS",
+    "sentinel:PASS",
+    "merge-main:71f91be66cf61e99e9eeea36781eb8c48139591f"
+  ],
+  "production_touched": false,
+  "completed_at": null,
+  "finished_at": null,
+  "verified_sha": "06d64b9fbe0932c8f2113a5dc73ff223e0090b17",
+  "result": "HUMAN_REQUIRED",
+  "human_final": {
+    "required": true,
+    "status": "PENDING",
+    "kind": "MICROPHONE_AUDIO_ADMIN_ACTIONS"
+  }
+}

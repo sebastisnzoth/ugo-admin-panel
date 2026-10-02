@@ -1,0 +1,93 @@
+{
+  "schema_version": "UGO_READINESS_EVIDENCE_V1",
+  "readiness_id": "provider-notifications",
+  "related_readiness_ids": [
+    "provider-offers",
+    "provider-notifications",
+    "provider-alerts",
+    "provider-gps"
+  ],
+  "task_id": "provider-alert-e2e-audit",
+  "environment": "UGO TEST",
+  "production_touched": false,
+  "audited_at": "2026-10-02T11:50:00Z",
+  "observed_failure": "Client request does not reach the real provider as an offer/alert.",
+  "evidence_matrix": [
+    {
+      "step": "client service #1406 persisted with location",
+      "status": "PASS",
+      "proof": "service f2cc57c1-aa54-4701-a58a-ca3f284f66d7 had location and category 2222..."
+    },
+    {
+      "step": "eligible provider category",
+      "status": "PASS",
+      "proof": "sebastianzothoficial category matches service #1406"
+    },
+    {
+      "step": "provider distance",
+      "status": "PASS",
+      "proof": "~5.72 km, inside 20 km radius"
+    },
+    {
+      "step": "provider online flags",
+      "status": "PASS_WITH_CAVEAT",
+      "proof": "online=true, disponible=true"
+    },
+    {
+      "step": "provider fresh GPS at audit time",
+      "status": "FAIL",
+      "proof": "ubicacion_updated_at 2026-10-02T11:16:26.218Z; ~29 minutes stale while matching requires <=30 seconds"
+    },
+    {
+      "step": "offer row for service #1406",
+      "status": "FAIL",
+      "proof": "0 provider offer rows persisted"
+    },
+    {
+      "step": "nueva_oferta notification for #1406",
+      "status": "FAIL",
+      "proof": "0 notifications persisted"
+    },
+    {
+      "step": "current-browser push subscription",
+      "status": "FAIL",
+      "proof": "active subscription belongs to Firefox created 2026-09-21; Chrome subscriptions are inactive"
+    },
+    {
+      "step": "Realtime publication tables",
+      "status": "PASS",
+      "proof": "notificaciones, ofertas_servicio, perfiles_proveedor and servicios are in supabase_realtime publication"
+    },
+    {
+      "step": "historical provider notification runtime scope",
+      "status": "INSUFFICIENT_FOR_E2E",
+      "proof": "scripts/provider-notifications-runtime.mjs directly inserts rows into notificaciones, proving UI/realtime delivery but bypassing client request -> matching -> offer trigger"
+    },
+    {
+      "step": "historical real push delivery",
+      "status": "PASS_HISTORICAL_ONLY",
+      "proof": "real provider received/sent nueva_oferta pushes on 2026-10-01; does not prove current request path"
+    }
+  ],
+  "root_causes": [
+    "Provider can remain visually Online after idle GPS heartbeat failures; backend then excludes it from matching because GPS freshness is <=30 seconds.",
+    "Current browser has no active push subscription; only an older Firefox subscription remains active.",
+    "Existing provider-notifications runtime evidence bypasses matching by inserting notifications directly, so it cannot validate the failing end-to-end path."
+  ],
+  "remediation": [
+    {
+      "commit": "4b579be41386a91fbaf3f3a8d0f7f5bd553f8381",
+      "change": "Surface idle-online GPS heartbeat failure/staleness in ProviderLocationTracker."
+    },
+    {
+      "commit": "8e541cc08107d9d9f408b499e98ea8e3637cd92a",
+      "change": "Permanent contract regression for online stale GPS visibility."
+    }
+  ],
+  "final_status": "NOT_VERIFIED",
+  "human_followup": [
+    "Open current provider browser and allow precise location so backend GPS refreshes continuously.",
+    "Enable notifications in the current browser to create a fresh active push subscription.",
+    "Create one new client request and require persisted offer + nueva_oferta notification + provider UI alert before closing."
+  ]
+}
