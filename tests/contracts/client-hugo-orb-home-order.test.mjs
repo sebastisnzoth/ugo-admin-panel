@@ -7,10 +7,10 @@ const globals=await readFile(new URL('../../src/features/client/ui/ClientGlobalS
 const dock=await readFile(new URL('../../src/features/client/hugo/ClientVoiceHugoDock.tsx',import.meta.url),'utf8')
 const bridge=await readFile(new URL('../../src/lib/browserVoiceBridge.ts',import.meta.url),'utf8')
 
-test('Hugo orb is available from Cliente home/request and does not require a secondary screen',()=>{
+test('Hugo orb is intentionally detached from Cliente while request flow remains available',()=>{
  assert.match(root,/ClientGlobalSurfaces onOpenNotice=\{openNotice\}/)
- assert.match(globals,/<ClientHugoBridge\/>/)
- assert.doesNotMatch(globals,/!canonical&&!detailOpen&&<ClientHugoBridge\/>/)
+ assert.doesNotMatch(globals,/ClientHugoBridge/)
+ assert.doesNotMatch(root,/ClientGlobalVoiceCommands/)
 })
 
 test('Hugo stays voice-only: the orb opens the controller without restoring a text conversation',()=>{
