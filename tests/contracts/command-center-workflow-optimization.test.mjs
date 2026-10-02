@@ -28,3 +28,10 @@ test('Command Center exposes the safe TEST workflow for auto-killswitch', () => 
   assert.match(generator, /'auto-killswitch': 'auto-killswitch-runtime\.yml'/)
   assert.match(generator, /production: 'PROTECTED'/)
 })
+
+
+test('Command Center does not offer AUTO_SELECT for blocked readiness gates', () => {
+  const generator = fs.readFileSync(new URL('../../scripts/generate-pages-status.mjs', import.meta.url), 'utf8')
+  assert.match(generator, /item\.gate_state === 'AVAILABLE'[\s\S]*\? 'AUTO_SELECT'/)
+  assert.match(generator, /item\.status === 'VERIFIED'[\s\S]*\? 'VERIFIED'[\s\S]*: 'BLOCKED'/)
+})
