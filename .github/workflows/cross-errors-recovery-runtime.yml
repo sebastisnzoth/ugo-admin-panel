@@ -9,6 +9,7 @@ on:
       - 'tests/contracts/realtime-resync-recovery.test.mjs'
       - 'tests/contracts/client-provider-flow-recovery-command-center.test.mjs'
       - '.github/workflows/cross-errors-recovery-runtime.yml'
+      - 'supabase/migrations/20261002150000_exception_recovery_queue_isolation.sql'
 
 permissions:
   contents: read
