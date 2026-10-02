@@ -35,7 +35,7 @@
           "id": "client-request",
           "title": "Crear solicitud completa",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Categoría, descripción, ubicación, condiciones y envío deben persistir correctamente.",
           "done_evidence": "serviceId TEST creado desde UI + backend concordante.",
           "improvement_focus": "Reducir fricción y campos innecesarios.",
@@ -46,7 +46,9 @@
           "priority": "HIGH",
           "resources": [
             "client-request-flow"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-client-request.json"
         },
         {
           "id": "client-location",
@@ -686,7 +688,7 @@
           "id": "admin-navigation",
           "title": "Todos los menús y botones",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cada pestaña/acción carga y actúa.",
           "done_evidence": "Runtime crawl + click map.",
           "improvement_focus": "Eliminar acciones duplicadas.",
@@ -697,13 +699,15 @@
           "priority": "HIGH",
           "resources": [
             "admin-shell"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-navigation.json"
         },
         {
           "id": "admin-realtime",
           "title": "Estados en tiempo real",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cambios operativos aparecen sin refresh manual cuando aplica.",
           "done_evidence": "Realtime TEST + reconciliación.",
           "improvement_focus": "Indicador de sincronización.",
@@ -714,13 +718,15 @@
           "priority": "NORMAL",
           "resources": [
             "admin-realtime"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-realtime.json"
         },
         {
           "id": "admin-users",
           "title": "Ficha e historial de usuarios",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Documentos, fechas, horarios, servicios y acciones auditadas.",
           "done_evidence": "Datos TEST + permisos.",
           "improvement_focus": "Filtros y búsqueda.",
@@ -731,7 +737,9 @@
           "priority": "NORMAL",
           "resources": [
             "admin-users"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-users.json"
         },
         {
           "id": "admin-risk",
@@ -1107,7 +1115,7 @@
           "id": "cross-performance",
           "title": "Rendimiento percibido",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Acciones críticas no quedan colgadas; loaders correctos.",
           "done_evidence": "Métricas y pruebas de latencia.",
           "improvement_focus": "Optimizar cargas pesadas.",
@@ -1120,7 +1128,9 @@
           "priority": "NORMAL",
           "resources": [
             "preview-runtime"
-          ]
+          ],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-performance.json"
         },
         {
           "id": "cross-accessibility",
@@ -1416,7 +1426,7 @@
           "id": "admin-assignment-payment-guard",
           "title": "Guard de pago en asignación Admin",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Asignación manual debe exigir cliente, servicio, ubicación, categoría, proveedor y forma de pago; si falta algo debe explicar qué falta.",
           "done_evidence": "Asignación manual produce un trabajo completo y coherente.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1430,7 +1440,9 @@
             "payments"
           ],
           "epic_id": "ugo-client-provider-flow-recovery",
-          "reconciles_with": []
+          "reconciles_with": [],
+          "reconciled_from_persisted_lock": true,
+          "evidence_path": "docs/ugo-work-locks/readiness-admin-assignment-payment-guard.json"
         },
         {
           "id": "provider-active-jobs",
