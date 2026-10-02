@@ -24,7 +24,7 @@ begin
   if v_slug <> 'marido-de-aluguel' then return true; end if;
 
   if v_height like '%más de 2%' or v_height like '%mais de 2%' then return false; end if;
-  if unaccent(v_description) ~ '(gas|quadro eletrico|tablero electrico|instalacion eletrica|instalacion electrica|instalacao eletrica|estructura(l)?|estrutura(l)?|cableado principal|disyuntor|disjuntor)' then
+  if extensions.unaccent(v_description) ~ '(gas|quadro eletrico|tablero electrico|instalacion eletrica|instalacion electrica|instalacao eletrica|estructura(l)?|estrutura(l)?|cableado principal|disyuntor|disjuntor)' then
     return false;
   end if;
   return true;
