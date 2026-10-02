@@ -117,8 +117,8 @@ test('provider tracker keeps a recent trusted fix through transient timeout call
  assert.match(tracker,/lastValidFixAtRef=useRef\(0\)/)
  assert.match(tracker,/lastValidFixAtRef\.current=Date\.now\(\)/)
  const helper=tracker.slice(tracker.indexOf('const setGeoError='),tracker.indexOf('const publish=',tracker.indexOf('const setGeoError=')))
- assert.match(helper,/error\.code!==1/)
- assert.match(helper,/Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS/)
+ assert.match(helper,/if\(error\.code===1\)/)
+ assert.match(helper,/lastValidFixAtRef\.current&&Date\.now\(\)-lastValidFixAtRef\.current<=MAX_POSITION_AGE_MS/)
  assert.match(helper,/return/)
 })
 
