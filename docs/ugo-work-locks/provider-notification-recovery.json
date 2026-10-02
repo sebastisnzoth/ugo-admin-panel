@@ -18,7 +18,7 @@
   "status": "IN_PROGRESS",
   "owner": "Codex",
   "started_at": "2026-10-02T15:38:57.079629+00:00",
-  "heartbeat_at": "2026-10-02T15:47:01.187569+00:00",
+  "heartbeat_at": "2026-10-02T15:54:04.052389+00:00",
   "lease_expires_at": "2026-10-02T16:23:57.079629+00:00",
   "acceptance_criteria": [
     "Realtime subscribes while Push is pending",
@@ -33,7 +33,7 @@
     "Sentinel"
   ],
   "correlation_id": "provider-notification-recovery-20261002",
-  "current_step": "VERIFYING_EXACT_SHA_CI_AND_TEST",
+  "current_step": "VERIFYING_INDEPENDENT_DB_JUDGE",
   "attempt": 1,
   "local_validation": {
     "browser": "7_PASS",
@@ -43,7 +43,12 @@
     "lint": "0_ERRORS"
   },
   "validators_result": {
-    "Judge": "PENDING",
-    "Sentinel": "PENDING"
-  }
+    "Judge": "PENDING_INDEPENDENT_DB_READS",
+    "Sentinel": "PENDING_CLEANUP_VERIFICATION"
+  },
+  "evidence_ids": [
+    "github-run:37029628074",
+    "github-artifact:11237425414",
+    "tested-sha:e02d6a855f9215ee3872aa8c6e48726153c772b0"
+  ]
 }

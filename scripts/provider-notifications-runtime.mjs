@@ -1,6 +1,9 @@
 import assert from'node:assert/strict'
 import{mkdir,writeFile}from'node:fs/promises'
 import{createClient}from'@supabase/supabase-js'
+import{execFile}from'node:child_process'
+import{promisify}from'node:util'
+const execFileAsync=promisify(execFile)
 import{chromium}from'playwright'
 const url=process.env.UGO_TEST_SUPABASE_URL||'',anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||'',serviceKey=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||'',base=process.env.UGO_UI_BASE_URL||'http://127.0.0.1:4173',sha=process.env.UGO_RUNTIME_SHA||'unknown'
 assert.ok(url&&anon&&serviceKey);assert.match(url,/tmossnqfwfwjrtzwcbmm/)
@@ -26,7 +29,7 @@ try{
  const match=await clientAuth.rpc('iniciar_matching_dirigido',{p_servicio_id:serviceId,p_proveedor_id:providerId});if(match.error)throw match.error
  const offer=await admin.from('ofertas_servicio').select('id,estado,proveedor_id').eq('servicio_id',serviceId).eq('proveedor_id',providerId).maybeSingle();if(offer.error)throw offer.error;if(!offer.data?.id)throw new Error('E2E matching did not persist provider offer')
  const offerNotice=await admin.from('notificaciones').select('id,titulo').eq('usuario_id',providerId).eq('tipo','nueva_oferta').eq('datos->>servicio_id',serviceId).maybeSingle();if(offerNotice.error)throw offerNotice.error;if(!offerNotice.data?.id)throw new Error('E2E matching did not create nueva_oferta notification')
- noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live').getByText(offerNotice.data.titulo).waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
+ evidence.persisted_entities={service_id:serviceId,provider_id:providerId,client_id:clientId,offer_id:offer.data.id,offer_notice_id:offerNotice.data.id};noticeIds.push(offerNotice.data.id);await page.locator('.ugo-notification-live').getByText(offerNotice.data.titulo).waitFor({state:'visible',timeout:12000});evidence.channels.offer=true
  await admin.from('notificaciones').update({leida_at:new Date().toISOString()}).eq('id',offerNotice.data.id);await page.waitForTimeout(300)
  const accepted=await providerAuth.rpc('aceptar_oferta',{p_oferta_id:offer.data.id});if(accepted.error)throw accepted.error
  const persistedAssignment=await admin.from('servicios').select('estado,proveedor_id').eq('id',serviceId).single();if(persistedAssignment.error)throw persistedAssignment.error
@@ -43,5 +46,5 @@ try{
  const change=await admin.from('notificaciones').insert({usuario_id:providerId,tipo:'servicio_cancelado',titulo:'Cambio TEST UGO',cuerpo:'Servicio cancelado TEST',datos:{servicio_id:serviceId,estado:'cancelado',runtime_probe:true},dedupe_key:`provider-notifications:${token}:change`}).select('id').single();if(change.error)throw change.error;noticeIds.push(change.data.id);await page.locator('.ugo-notification-live').getByText('Cambio TEST UGO').waitFor({state:'visible',timeout:12000});evidence.channels.change=true
  const attention=await page.evaluate(()=>({tone:Number(window.__ugoToneCount||0),vibrate:Number(window.__ugoVibrateCount||0)}));evidence.attention.tone=attention.tone>0;evidence.attention.vibrate=attention.vibrate>0;evidence.realtime_without_refresh=Object.values(evidence.channels).every(Boolean)
  assert.ok(evidence.realtime_without_refresh&&evidence.attention.tone&&evidence.attention.vibrate);evidence.result='PASS'
- await mkdir('artifacts',{recursive:true});await writeFile('artifacts/provider-notifications-runtime.json',JSON.stringify(evidence,null,2)+'\n');await page.screenshot({path:'artifacts/provider-notifications-runtime.png',fullPage:true});console.log(JSON.stringify(evidence))
+ await mkdir('artifacts',{recursive:true});await writeFile('artifacts/provider-notifications-runtime.json',JSON.stringify(evidence,null,2)+'\n');await page.screenshot({path:'artifacts/provider-notifications-runtime.png',fullPage:true});const judge=await execFileAsync(process.execPath,['scripts/provider-notifications-persistence-judge.mjs'],{env:process.env,maxBuffer:1024*1024});console.log(judge.stdout);console.log(JSON.stringify(evidence))
 }finally{await cleanup()}
