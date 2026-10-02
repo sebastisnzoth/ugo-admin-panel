@@ -1479,11 +1479,11 @@
           "id": "client-provider-lifecycle",
           "title": "Lifecycle Cliente ↔ Proveedor completo",
           "owner": "UGO",
-          "status": "VERIFIED",
+          "status": "HUMAN_FINAL",
           "verify": "Solicitud completa → matching → oferta → aceptación → en camino → llegada → evidencias → trabajo → aprobación → pago → ratings → historial, con guards.",
-          "done_evidence": "E2E TEST completo con audit trail.",
+          "done_evidence": "Automated lifecycle scope PASS + physical/human dependency evidence required before final VERIFIED.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
-          "real_test_required": false,
+          "real_test_required": true,
           "depends_on": [
             "provider-proximity-alert",
             "provider-active-jobs",
@@ -1622,7 +1622,7 @@
           "id": "hugo-real-runtime-proof",
           "title": "Prueba real Hugo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "HUMAN_FINAL",
           "verify": "Separar CONTRACT/BROWSER/REAL AUDIO/REAL ACTION; requerir micrófono→Gemini→voz→tool→backend→UI y HUMAN_REQUIRED cuando corresponda.",
           "done_evidence": "Cadena real audio+acción verificada; nunca mock-only.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1638,7 +1638,9 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "hugo-voice"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-hugo-real-runtime-proof.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-realtime-consistency",
