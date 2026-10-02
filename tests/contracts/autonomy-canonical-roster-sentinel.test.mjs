@@ -19,3 +19,12 @@ test('Sentinel permits scoped containment but blocks GLOBAL kill switches',async
  assert.match(src,/activeScopedKillSwitches/)
  assert.doesNotMatch(src,/SENTINEL_ACTIVE_KILL_SWITCHES/)
 })
+
+
+test('Sentinel allows ON only behind a READY AUTONOMY_ON gate',async()=>{
+ const src=await read('scripts/autonomous-sentinel-gate.mjs')
+ assert.match(src,/\['OFF','ON'\]\.includes\(state\.mode\)/)
+ assert.match(src,/gate_key','AUTONOMY_ON/)
+ assert.match(src,/gate\.status!=='READY'/)
+ assert.match(src,/SENTINEL_AUTONOMY_ON_WITHOUT_READY_GATE/)
+})
