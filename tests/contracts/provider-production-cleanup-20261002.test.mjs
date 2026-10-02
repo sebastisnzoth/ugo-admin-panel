@@ -32,3 +32,10 @@ test('provider keeps GPS and notification controls from overlapping',async()=>{
  assert.match(css,/right:72px!important/)
  assert.match(css,/right:84px!important/)
 })
+
+
+test('provider separates Hugo and dispute controls on mobile',async()=>{
+ const css=await read('src/mvp/provider/provider-production-cleanup.css')
+ assert.match(css,/\.ugo-dispute-launch\{[\s\S]*left:12px!important;[\s\S]*right:auto!important;/)
+ assert.match(css,/\.provider-global-hugo\{[\s\S]*right:12px!important;/)
+})
