@@ -43,5 +43,6 @@ test('provider offer insert is an independent realtime alert source with dedupe'
  const src=await read('src/mvp/NotificationCenter.tsx')
  assert.match(src,/table:'ofertas_servicio',filter:`proveedor_id=eq\.\$\{id\}`/)
  assert.match(src,/signalProviderAlert\(\{id:`offer:\$\{offerId\}`,tipo:'nueva_oferta'/)
- assert.match(src,/alertKey=offerId\?`offer:\$\{offerId\}`:notice\.id/)
+ assert.match(src,/function providerAlertKey\(notice:UgoNotification\)/)
+ assert.match(src,/providerAlertSeen\.current\.has\(providerAlertKey\(notice\)\)/)
 })
