@@ -6,7 +6,7 @@ const key=process.env.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY||''
 const anon=process.env.UGO_TEST_SUPABASE_ANON_KEY||''
 const email=process.env.UGO_TEST_ADMIN_EMAIL||''
 const password=process.env.UGO_TEST_ADMIN_PASSWORD||''
-const sha=String(process.env.GITHUB_SHA||'').trim()
+const sha=String(process.env.UGO_RUNTIME_SHA||process.env.GITHUB_SHA||'').trim()
 const runId=String(process.env.GITHUB_RUN_ID||'local').trim()
 if(url!=='https://tmossnqfwfwjrtzwcbmm.supabase.co'||!key||!anon||!email||!password)throw new Error('UGO_TEST_WORKER_AUTH_REQUIRED')
 if(!/^[0-9a-f]{40}$/.test(sha))throw new Error('VALID_GITHUB_SHA_REQUIRED')
