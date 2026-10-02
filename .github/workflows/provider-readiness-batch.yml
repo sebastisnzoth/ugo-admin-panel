@@ -100,6 +100,7 @@ jobs:
           done
           curl -fsS "$UGO_UI_BASE_URL/?app=provider" >/dev/null
           node scripts/provider-ui-runtime.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Provider GPS and arrival runtime
         id: gps
@@ -110,56 +111,71 @@ jobs:
           mkdir -p artifacts
           node scripts/autonomous-qa-gps-runtime.mjs | tee artifacts/provider-gps-runtime.json
           cp artifacts/provider-gps-runtime.json artifacts/provider-arrival-runtime.json
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Judge provider GPS
         id: gps_judge
         continue-on-error: true
-        run: node scripts/provider-gps-judge.mjs
+        run: |
+          node scripts/provider-gps-judge.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Sentinel provider GPS
         id: gps_sentinel
         continue-on-error: true
-        run: node scripts/provider-gps-sentinel.mjs
+        run: |
+          node scripts/provider-gps-sentinel.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Judge provider arrival
         id: arrival_judge
         continue-on-error: true
-        run: node scripts/provider-arrival-judge.mjs
+        run: |
+          node scripts/provider-arrival-judge.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Sentinel provider arrival
         id: arrival_sentinel
         continue-on-error: true
-        run: node scripts/provider-arrival-sentinel.mjs
+        run: |
+          node scripts/provider-arrival-sentinel.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Provider debt runtime
         id: debt
         continue-on-error: true
-        run: node scripts/provider-debt-runtime.mjs
+        run: |
+          node scripts/provider-debt-runtime.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Judge provider debt
         id: debt_judge
         continue-on-error: true
-        run: node scripts/provider-debt-judge.mjs
+        run: |
+          node scripts/provider-debt-judge.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Sentinel provider debt
         id: debt_sentinel
         continue-on-error: true
-        run: node scripts/provider-debt-sentinel.mjs
+        run: |
+          node scripts/provider-debt-sentinel.mjs
+          echo "passed=true" >> "$GITHUB_OUTPUT"
 
       - name: Enforce provider readiness outcomes
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          test "${{ steps.responsive.outcome }}" = success
-          test "${{ steps.gps.outcome }}" = success
-          test "${{ steps.gps_judge.outcome }}" = success
-          test "${{ steps.gps_sentinel.outcome }}" = success
-          test "${{ steps.arrival_judge.outcome }}" = success
-          test "${{ steps.arrival_sentinel.outcome }}" = success
-          test "${{ steps.debt.outcome }}" = success
-          test "${{ steps.debt_judge.outcome }}" = success
-          test "${{ steps.debt_sentinel.outcome }}" = success
+          test "${{ steps.responsive.outputs.passed }}" = true
+          test "${{ steps.gps.outputs.passed }}" = true
+          test "${{ steps.gps_judge.outputs.passed }}" = true
+          test "${{ steps.gps_sentinel.outputs.passed }}" = true
+          test "${{ steps.arrival_judge.outputs.passed }}" = true
+          test "${{ steps.arrival_sentinel.outputs.passed }}" = true
+          test "${{ steps.debt.outputs.passed }}" = true
+          test "${{ steps.debt_judge.outputs.passed }}" = true
+          test "${{ steps.debt_sentinel.outputs.passed }}" = true
 
       - name: Upload provider readiness evidence
         if: always()
