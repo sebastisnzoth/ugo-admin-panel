@@ -26,7 +26,8 @@ declare
   v_msg text;
   v_initial_kills text[] := array[]::text[];
   v_final_kills text[] := array[]::text[];
-  v_mode_changed boolean := false;\n  v_target_created_at timestamptz;
+  v_mode_changed boolean := false;
+  v_target_created_at timestamptz;
 begin
   perform pg_advisory_xact_lock(hashtextextended('ugo-test-exception-recovery',0));
   if p_correlation_id is null then raise exception 'CORRELATION_ID_REQUIRED'; end if;
@@ -148,7 +149,9 @@ begin
     'AUTHORIZED_POLICY',p_correlation_id
   );
 
-  v_target_created_at:=v_job.created_at;\n\n  if v_previous_mode<>'ON' then
+  v_target_created_at:=v_job.created_at;
+
+  if v_previous_mode<>'ON' then
     update public.autonomous_company_state
     set mode='ON',
         reason='Exception recovery runtime '||p_correlation_id::text,
