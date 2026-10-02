@@ -1221,7 +1221,7 @@
           "id": "cross-regression",
           "title": "Regresión permanente",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Todo bug corregido deja test que falla antes y pasa después.",
           "done_evidence": "Regression suite same-SHA.",
           "improvement_focus": "Cobertura por incidente.",
@@ -1235,7 +1235,9 @@
           "priority": "HIGH",
           "resources": [
             "regression"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-regression.json",
+          "reconciled_from_persisted_lock": true
         }
       ]
     },
