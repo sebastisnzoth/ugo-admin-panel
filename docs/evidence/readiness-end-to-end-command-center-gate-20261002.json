@@ -3,8 +3,8 @@
   "readiness_id": "end-to-end-command-center-gate",
   "status": "VERIFIED",
   "environment": "REPOSITORY + UGO TEST EVIDENCE",
-  "tested_sha": "6bd64d6ecca85f39cf192565fd3065a533abd17f",
-  "workflow_run_id": "37016632672",
+  "tested_sha": "2bc2fd27f5130ffba5bbcca65d9a7c0267987bf8",
+  "workflow_run_id": "37018788153",
   "workflow_run_attempt": "1",
   "result": {
     "runtime": "PASS",
@@ -47,5 +47,5 @@
     "cross-errors-recovery"
   ],
   "command_center_truthful": true,
-  "verified_at": "2026-10-02T13:59:42.485Z"
+  "verified_at": "2026-10-02T14:18:12.469Z"
 }
