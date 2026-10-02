@@ -1692,7 +1692,7 @@
           "id": "end-to-end-command-center-gate",
           "title": "Gate E2E Command Center",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Gate final que sólo VERIFIED cuando todos los controles requeridos están VERIFIED o HUMAN_REQUIRED correctamente.",
           "done_evidence": "Cliente TEST → pedido/pago/matching/alerta/GPS/lifecycle/ratings/historial/Admin realtime con evidencia same-SHA.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1708,7 +1708,9 @@
             "qa-lab"
           ],
           "epic_id": "ugo-client-provider-flow-recovery",
-          "reconciles_with": []
+          "reconciles_with": [],
+          "evidence_path": "docs/evidence/readiness-end-to-end-command-center-gate-20261002.json",
+          "reconciled_from_persisted_evidence": true
         }
       ]
     }
