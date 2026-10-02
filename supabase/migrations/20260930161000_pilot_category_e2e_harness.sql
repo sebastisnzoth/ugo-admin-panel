@@ -56,7 +56,6 @@ begin
  returning id into sid;
 
  perform set_config('request.jwt.claim.sub',cid::text,true);
- perform public.seleccionar_pago_efectivo(sid);
  perform * from private.iniciar_matching_impl(sid);
  select id into oid from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente' order by ranking limit 1;
  if oid is null then raise exception 'PILOT_MATCHING_FAILED:%',p_slug; end if;
@@ -66,6 +65,7 @@ begin
  if s.estado<>'asignado' then raise exception 'PILOT_ACCEPT_FAILED:%',p_slug; end if;
 
  perform set_config('request.jwt.claim.sub',cid::text,true);
+ perform public.seleccionar_pago_efectivo(sid);
 
  perform set_config('request.jwt.claim.sub',pid::text,true);
  select * into s from private.avanzar_servicio_impl(sid,'en_camino');
