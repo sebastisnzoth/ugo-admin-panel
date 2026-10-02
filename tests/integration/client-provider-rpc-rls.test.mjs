@@ -143,14 +143,14 @@ test('isolated Cliente ↔ Proveedor ↔ Admin RPC/RLS lifecycle', { skip: !enab
   const testLng = -48.4242297
 
   try {
-    const { data: created, error: createError } = await c.from('servicios').insert({
+    const { data: created, error: createError } = await a.from('servicios').insert({
       cliente_id: clientId,
       categoria_id: category.id,
       estado: 'buscando',
       descripcion: `UGO integration ${Date.now()}`,
       urgencia: false,
-      ambiente: 'real',
-      metadata: { integration_test: true, source: 'rpc-rls-harness', e2e_run_id: runId, preserve_e2e_evidence: true, test_environment: 'UGO_TEST' },
+      ambiente: 'demo',
+      metadata: { integration_test: true, source: 'rpc-rls-harness', e2e_run_id: runId, preserve_e2e_evidence: true },
     }).select('id').single()
     if (createError) throw createError
     serviceId = created.id
