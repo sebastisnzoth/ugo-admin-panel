@@ -1,5 +1,6 @@
 import{authorizeHugo}from'../../server/hugo/auth'
 import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
+import{sanitizeHugoContextForRole}from'../../server/hugo/contextPolicy'
 import{askHugoText}from'../../server/hugo/modelAdapter'
 import{asRecord,extractJson}from'../../server/hugo/json'
 import{buildHugoPrompt}from'../../server/hugo/promptBuilder'
@@ -29,7 +30,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    res.setHeader('Server-Timing',`gemini-tts;dur=${elapsed}`)
    return res.status(200).json({...audio,timing_ms:elapsed})
   }
-  const message=clean(body.message,1800),context=clean(body.context,60000),history=Array.isArray(body.history)?body.history:[]
+  const message=clean(body.message,1800),context=sanitizeHugoContextForRole(body.context,authority.requestedRole),history=Array.isArray(body.history)?body.history:[]
   if(!message)return res.status(400).json({hugo_mensaje:'Mensaje requerido.'})
   const requestedRole=authority.requestedRole
   const surface=clean(body.surface,80)||'panel de control'
