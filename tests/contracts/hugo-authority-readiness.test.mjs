@@ -33,5 +33,5 @@ test('Admin Hugo UI is only mounted after verified admin role and sensitive voic
  assert.match(bridge,/No modifiques estados, dinero, usuarios, KYC, disputas ni configuración por voz/)
  assert.match(orb,/INVALID_TARGET/)
  assert.match(orb,/Ese módulo no está habilitado para navegación por voz/) 
- assert.match(superAdmin,/ConversationalOrb/)
+ assert.doesNotMatch(superAdmin,/ConversationalOrb/)
 })
