@@ -35,3 +35,22 @@ test('Authority policy keeps superadmin isolated from lower roles',async()=>{
  assert.match(authority,/requestedRole==='admin'.*actual==='admin'\|\|actual==='superadmin'/s)
  assert.match(authority,/if\(!active\).*INACTIVE_PROFILE/s)
 })
+
+test('Hugo CORS policy is allowlist-based and fails closed for unknown browser origins',async()=>{
+ const cors=await read('server/hugo/cors.ts')
+ assert.match(cors,/sebastisnzoth\.github\.io/)
+ assert.match(cors,/UGO_ALLOWED_BROWSER_ORIGINS/)
+ assert.match(cors,/HUGO_BROWSER_ORIGINS\.has\(origin\)/)
+ assert.match(cors,/return!origin\|\|Boolean\(allowedHugoOrigin\(req\)\)/)
+})
+
+test('Hugo UI actions are centralized behind role permissions',async()=>{
+ const[permissions,ui]=await Promise.all([read('server/hugo/permissions.ts'),read('server/hugo/uiAction.ts')])
+ assert.match(permissions,/client:\{[^}]*uiActions:none/)
+ assert.match(permissions,/provider:\{[^}]*uiActions:none/)
+ assert.match(permissions,/admin:\{[^}]*uiActions:adminUi/)
+ assert.match(permissions,/superadmin:\{[^}]*canReadGlobalGovernance:true/)
+ assert.match(ui,/canExecuteHugoUiAction/)
+ assert.match(ui,/canNavigateHugoTarget/)
+ assert.match(ui,/target==='superadmin'/)
+})
