@@ -1,10 +1,13 @@
 import{authorizeHugo}from'../../server/hugo/auth'
 import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
 import{askHugoText}from'../../server/hugo/modelAdapter'
+import{asRecord,extractJson}from'../../server/hugo/json'
 import{buildHugoPrompt}from'../../server/hugo/promptBuilder'
 import{clean}from'../../server/hugo/security'
 import{parseHugoUiAction}from'../../server/hugo/uiAction'
 import{askHugoTts}from'../../server/hugo/ttsAdapter'
+type RequestLike={headers?:Record<string,string|undefined>;method?:string;body?:unknown}
+type ResponseLike={setHeader:(name:string,value:string)=>void;status:(code:number)=>ResponseLike;json:(body:unknown)=>unknown;end:()=>unknown}
 export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Cache-Control','no-store')
  res.setHeader('Vary','Origin')
