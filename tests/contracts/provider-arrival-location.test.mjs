@@ -66,7 +66,9 @@ test('manual arrival cannot bypass the fresh GPS publication path',()=>{
 test('provider background tracking and profile location both request fresh trusted GPS',()=>{
  assert.match(tracker,/MIN_WRITE_MS=5_000/)
  assert.match(tracker,/MIN_MOVE_M=5/)
- assert.match(tracker,/maximumAge:0/)
+ assert.match(tracker,/GEO_COMPATIBLE_OPTIONS:PositionOptions=\{enableHighAccuracy:false,maximumAge:15_000,timeout:12_000\}/)
+ assert.match(tracker,/GEO_HIGH_ACCURACY_OPTIONS:PositionOptions=\{enableHighAccuracy:true,maximumAge:15_000,timeout:15_000\}/)
+ assert.match(tracker,/MAX_POSITION_AGE_MS=30_000/)
  assert.match(locationButton,/rpc\('publicar_ubicacion_disponibilidad_proveedor'/)
  assert.match(locationButton,/p_captured_at:capturedAt/)
  assert.match(locationButton,/p_accuracy_m:accuracy/)
