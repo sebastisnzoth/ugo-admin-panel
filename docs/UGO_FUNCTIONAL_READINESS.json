@@ -1666,7 +1666,7 @@
           "id": "cross-errors-recovery",
           "title": "Errores y recuperación del flujo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Cubrir GPS/red/Supabase/Gemini/websocket/push/pago/radio/offline/sesión/cámara/datos; explicar, preservar, siguiente acción, retry, sin falso éxito.",
           "done_evidence": "Fault injection UI/API + recuperación sin corrupción.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1682,7 +1682,9 @@
           "epic_id": "ugo-client-provider-flow-recovery",
           "reconciles_with": [
             "cross-errors"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-errors-recovery.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "end-to-end-command-center-gate",
