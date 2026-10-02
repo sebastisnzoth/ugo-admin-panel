@@ -145,6 +145,7 @@ test('HUMAN_REQUIRED dependencies block autonomous descendants until physical ev
   const {readiness}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
   const items=readiness.groups[0].items
   assert.equal(items.find(x=>x.id==='a').gate_state,'HUMAN_REQUIRED')
-  assert.equal(items.find(x=>x.id==='b').gate_state,'AVAILABLE')
+  assert.equal(items.find(x=>x.id==='b').gate_state,'BLOCKED_DEPENDENCY')
+  assert.deepEqual(items.find(x=>x.id==='b').unresolved_dependencies,['a'])
   assert.notEqual(items.find(x=>x.id==='a').status,'VERIFIED')
 })
