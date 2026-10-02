@@ -12,7 +12,7 @@ test('canonical Hugo mirrors written request fields through declared Live tools 
   assert.match(hugo, /function nextMissing\(current:Draft\)/)
   assert.match(hugo, /if\(!current\.category\)return'category'/)
   assert.match(hugo, /if\(!current\.description\)return'description'/)
-  assert.match(hugo, /if\(!current\.address\)return'address'/)
+  assert.match(hugo, /if\(!current\.address\|\|!hasResolvedPickup\(current\)\)return'address'/)
   assert.match(hugo, /if\(!current\.when\)return'when'/)
   assert.match(hugo, /if\(!current\.paymentMethod\)return'payment'/)
   assert.match(hugo, /name==='create_service_request'/)
@@ -49,4 +49,3 @@ test('cancellation contract requires one resolved service id', () => {
 test('Hugo orb uses authenticated Gemini Live while UGO keeps action authority',()=>{assert.match(hugo,/UGOVoiceBridge/);assert.match(hugo,/ugo:native-voice-tool-call/);assert.match(hugo,/sendToolResponse/);assert.doesNotMatch(hugo,/companion_mode:true|askGeminiCompanion/)})
 
 test('active assigned service does not hijack a new Hugo request',()=>{assert.match(hugo,/name==='set_request_category'/);assert.match(hugo,/emptyVoiceDraft\(null\)/);assert.match(hugo,/name==='create_service_request'/);assert.doesNotMatch(hugo,/statusIntent\(clean\)\|\|services\.length/)})
-
