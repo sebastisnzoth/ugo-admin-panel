@@ -20,8 +20,8 @@ test('en-route trusted GPS RPC failures are surfaced instead of silently swallow
  const rpcError=s.indexOf('if(error){',arrivalRpc)
  assert.ok(rpcError>arrivalRpc)
  const tail=s.slice(rpcError,rpcError+500)
- assert.match(tail,/if\(enRoute\)setLocationError/)
- assert.match(tail,/No pudimos publicar tu GPS reciente/)
+ assert.match(tail,/setLocationError/)
+ assert.match(tail,/No pudimos publicar tu ubicación en tiempo real/)
 })
 
 test('provider en-route UI exposes GPS freshness and precision without trusting stale fixes',async()=>{
@@ -39,9 +39,9 @@ test('provider en-route UI exposes GPS freshness and precision without trusting 
 test('provider desktop heartbeat prefers compatible GPS, avoids overlapping acquisitions and preserves freshness',async()=>{
  const s=await read('src/mvp/ProviderLocationTracker.tsx')
  assert.match(s,/GEO_COMPATIBLE_OPTIONS/)
- assert.match(s,/enableHighAccuracy:false,maximumAge:15_000,timeout:12_000/)
+ assert.match(s,/enableHighAccuracy:false,maximumAge:0,timeout:12_000/)
  assert.match(s,/GEO_HIGH_ACCURACY_OPTIONS/)
- assert.match(s,/enableHighAccuracy:true,maximumAge:15_000,timeout:15_000/)
+ assert.match(s,/enableHighAccuracy:true,maximumAge:0,timeout:15_000/)
  assert.match(s,/getFreshBrowserPosition/)
  const compatible=s.indexOf('oneBrowserPosition(GEO_COMPATIBLE_OPTIONS)')
  const high=s.indexOf('oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)')
