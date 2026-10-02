@@ -18,7 +18,8 @@ export function ProviderStudioSidebar(){
 
   <nav className="provider-studio-nav" aria-label="Navegación principal">
    <Button variant="ghost" className={screen==='home'?'is-active':''} aria-current={current(screen==='home')} onClick={f.actions.openHome}>Inicio</Button>
-   <Button variant="ghost" className={market?'is-active':''} aria-current={current(market)} onClick={f.actions.openOpportunities}>Pedidos {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</Button>
+   <Button variant="ghost" aria-label="Trabajos" className={market?'is-active':''} aria-current={current(market)} onClick={f.actions.openOpportunities}>Pedidos {d.opportunities.length>0&&<b>{d.opportunities.length}</b>}</Button>
+   <Button variant="ghost" aria-label="Calendario" className={screen==='agenda'?'is-active':''} aria-current={current(screen==='agenda')} onClick={f.actions.openAgenda}>Calendario</Button>
    <Button variant="ghost" className={work?'is-active':''} aria-current={current(work)} onClick={d.service?f.actions.openActiveJob:f.actions.openAgenda}>{d.service?'Trabajo activo':'Mis trabajos'}</Button>
    <Button variant="ghost" className={screen==='earnings'?'is-active':''} aria-current={current(screen==='earnings')} onClick={f.actions.openEarnings}>Ganancias</Button>
    <Button variant="ghost" className={screen==='history'?'is-active':''} aria-current={current(screen==='history')} onClick={f.actions.openHistory}>Historial</Button>
