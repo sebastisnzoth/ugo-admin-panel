@@ -1,3 +1,4 @@
+// autonomous closure trigger 2026-10-02
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
