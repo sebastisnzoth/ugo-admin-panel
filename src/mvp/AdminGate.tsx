@@ -27,9 +27,6 @@ function adminAuthErrorMessage(error:unknown){
 
 export function AdminGate({children}:AdminGateProps={}){
   const gateParams=new URLSearchParams(window.location.search)
-  const requestedSection=gateParams.get('section')
-  const publicDevelopmentAccess=gateParams.get('app')==='admin'&&gateParams.get('auth')!=='1'&&requestedSection!=='superadmin'
-  if(publicDevelopmentAccess)return children?<>{children}</>:<Suspense fallback={<div style={{padding:24}}>Cargando panel admin…</div>}><AdminFeatureShell /></Suspense>
   return <SecureAdminGate gateParams={gateParams}>{children}</SecureAdminGate>
 }
 
