@@ -24,14 +24,17 @@ test('client root mounts global voice commands with navigation and Hugo request 
  assert.match(src,/UGO_UI_EVENTS\.clientProfileAddresses/)
 })
 
-test('provider root mounts global voice commands and only routes operational fallback through the guarded provider command runner',async()=>{
+test('provider root mounts global voice commands and keeps provider mutations behind guarded app actions',async()=>{
  const root=await read('src/mvp/provider/ProviderRoot.tsx')
  const src=await read('src/features/provider/voice/ProviderGlobalVoiceCommands.tsx')
  assert.match(root,/<ProviderGlobalVoiceCommands\/>/)
  assert.match(src,/flow\.actions\.openOpportunities\(\)/)
  assert.match(src,/flow\.actions\.openEarnings\(\)/)
  assert.doesNotMatch(src,/data\.toggleOnline\(\)/)
- assert.doesNotMatch(src,/data\.advance\(/)
+ assert.match(src,/executeAiAction/)
+ assert.match(src,/data\.setOnline\(true\)/)
+ assert.match(src,/data\.advance\(status\)/)
+ assert.doesNotMatch(src,/from\('servicios'\)\.update/)
  assert.match(src,/engine==='browser-speech'/)
  assert.match(src,/runProviderVoiceCommand/)
 })
