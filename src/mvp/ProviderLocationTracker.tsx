@@ -12,16 +12,18 @@ const AVAILABILITY_HEARTBEAT_MS=20_000
 const ARRIVAL_RADIUS_M=200
 const MAX_ACCEPTABLE_ACCURACY_M=250
 const MAX_POSITION_AGE_MS=30_000
-const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:12_000}
-const GEO_FALLBACK_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:8_000}
+const GEO_COMPATIBLE_OPTIONS:PositionOptions={enableHighAccuracy:false,maximumAge:0,timeout:5_000}
+const GEO_HIGH_ACCURACY_OPTIONS:PositionOptions={enableHighAccuracy:true,maximumAge:0,timeout:8_000}
 
-function getFreshBrowserPosition():Promise<GeolocationPosition>{
- return new Promise((resolve,reject)=>{
-  navigator.geolocation.getCurrentPosition(resolve,highError=>{
-   if(highError.code===1){reject(highError);return}
-   navigator.geolocation.getCurrentPosition(resolve,reject,GEO_FALLBACK_OPTIONS)
-  },GEO_HIGH_ACCURACY_OPTIONS)
- })
+function usableBrowserPosition(pos:GeolocationPosition){
+ const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
+ return Number.isFinite(latitude)&&Number.isFinite(longitude)&&!(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)&&Number.isFinite(accuracy)&&accuracy>0&&accuracy<=MAX_ACCEPTABLE_ACCURACY_M&&age<=MAX_POSITION_AGE_MS
+}
+function oneBrowserPosition(options:PositionOptions):Promise<GeolocationPosition>{return new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(resolve,reject,options))}
+async function getFreshBrowserPosition(){
+ let compatibleError:GeolocationPositionError|null=null
+ try{const compatible=await oneBrowserPosition(GEO_COMPATIBLE_OPTIONS);if(usableBrowserPosition(compatible))return compatible}catch(error){compatibleError=error as GeolocationPositionError;if(compatibleError.code===1)throw compatibleError}
+ try{return await oneBrowserPosition(GEO_HIGH_ACCURACY_OPTIONS)}catch(error){const highError=error as GeolocationPositionError;if(highError.code===1)throw highError;throw compatibleError||highError}
 }
 
 
@@ -66,7 +68,10 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
   if(!available||enRoute||!navigator.geolocation)return
   let alive=true
   const rpc=supabase as unknown as LocationRpcClient
+  let heartbeatBusy=false
   const publishHeartbeat=async()=>{
+   if(heartbeatBusy)return
+   heartbeatBusy=true
    try{
     const pos=await getFreshBrowserPosition()
     if(!alive)return
@@ -82,12 +87,15 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
    }catch(error){
     if(!alive)return
     const geoError=error as GeolocationPositionError
-    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':geoError.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder incluso con el modo compatible. UGO sigue reintentando para devolverte al matching.')
-   }
+    if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':geoError.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder. UGO sigue reintentando para devolverte al matching.')
+   }finally{heartbeatBusy=false}
   }
-  publishHeartbeat()
-  const timer=window.setInterval(publishHeartbeat,AVAILABILITY_HEARTBEAT_MS)
-  return()=>{alive=false;window.clearInterval(timer)}
+  const onForeground=()=>{if(document.visibilityState==='visible')void publishHeartbeat()}
+  void publishHeartbeat()
+  const timer=window.setInterval(()=>void publishHeartbeat(),AVAILABILITY_HEARTBEAT_MS)
+  window.addEventListener('focus',onForeground);document.addEventListener('visibilitychange',onForeground)
+  return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
  },[available,enRoute,supabase])
 
  useEffect(()=>{
