@@ -117,6 +117,8 @@ begin
  insert into public.resenas(servicio_id,cliente_id,proveedor_id,puntuacion,comentario,autor_tipo)
  values(sid,cid,pid,5,'Pilot provider rating','proveedor');
 
+ perform set_config('request.jwt.claim.sub','',true);
+ perform set_config('request.jwt.claim.role',initial_role,true);
  update public.perfiles_proveedor
  set categoria_principal_id=old_primary,estado_verificacion=old_verification,onboarding_completo_at=old_onboarding,termos_aceitos_at=old_terms,tarifa_base=old_rate,online=old_online,disponible=old_disponible,
      ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
@@ -127,6 +129,8 @@ begin
  perform set_config('request.jwt.claim.role',initial_role,true);
  return sid;
 exception when others then
+ perform set_config('request.jwt.claim.sub','',true);
+ perform set_config('request.jwt.claim.role',initial_role,true);
  update public.perfiles_proveedor
  set categoria_principal_id=old_primary,estado_verificacion=old_verification,onboarding_completo_at=old_onboarding,termos_aceitos_at=old_terms,tarifa_base=old_rate,online=old_online,disponible=old_disponible,
      ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
