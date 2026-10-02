@@ -1,13 +1,13 @@
 {
   "readiness_id": "cross-performance",
   "task_id": "readiness-cross-performance",
-  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-PR330-20260930",
+  "job_id": "UGO-READINESS-CROSS-PERFORMANCE-20261002",
   "title": "Verify perceived performance and critical action latency",
   "status": "IN_PROGRESS",
-  "started_at": "2026-09-30T22:20:00Z",
-  "heartbeat_at": "2026-09-30T22:49:00Z",
-  "lease_expires_at": "2026-09-30T23:30:00Z",
-  "started_sha": "bd1dfe59294ab29a7dbd777ffacb62328cc979f5",
+  "started_at": "2026-10-02T11:12:00Z",
+  "heartbeat_at": "2026-10-02T11:12:00Z",
+  "lease_expires_at": "2026-10-02T12:12:00Z",
+  "started_sha": "96fb2f55b8bc8e8db8ae00a152fa6f83e339b9b7",
   "owner": "UGO",
   "department": "Flujo transversal / Seguridad / Calidad",
   "assigned_agent": "GPT_UGO · Cross Performance Runtime Agent",
@@ -22,9 +22,9 @@
   "resources": [
     "preview-runtime"
   ],
-  "correlation_id": "readiness-cross-performance-pr330-20260930T222000Z",
-  "current_step": "RERUN_ALL_GATES_WITH_HARDENED_CROSS_ROLE_DIAGNOSTICS",
-  "attempt": 3,
+  "correlation_id": "readiness-cross-performance-20261002T111200Z",
+  "current_step": "REVALIDATE_MAIN_AND_RUNTIME_GATES",
+  "attempt": 4,
   "evidence_ids": [
     "github-pr:296",
     "github-run:36667189938",
@@ -51,7 +51,9 @@
     "runtime:cross-performance:36787161251:PASS",
     "core:36787161097:PASS",
     "cross-role:36787161141:FAIL_CLIENT_RENDER_TIMEOUT",
-    "candidate-pre-final:20b17c12569dd592a34da2396fcde3cb065b919e"
+    "candidate-pre-final:20b17c12569dd592a34da2396fcde3cb065b919e",
+    "reconcile:stale-lock:20261002T111200Z",
+    "base-main:96fb2f55b8bc8e8db8ae00a152fa6f83e339b9b7"
   ],
   "production_touched": false,
   "skills": [
@@ -75,5 +77,5 @@
     "production_touched": false
   },
   "result": null,
-  "failure": "Regression on PR #330 run 36773312837: CLIENT_REQUEST_BUTTON_NO_POINTER_REACHABLE_TARGET"
+  "failure": null
 }
