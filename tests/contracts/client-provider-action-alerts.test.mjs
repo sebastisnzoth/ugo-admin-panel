@@ -67,9 +67,9 @@ test('push opt-in is visible in both role notification centers',async()=>{
   read('src/mvp/NotificationCenter.tsx'),
   read('src/mvp/notification-center.css'),
  ])
- assert.match(center,/pushState==='off'/)
- assert.match(center,/ugo-notification-enable-chip/)
- assert.match(center,/Activar notificaciones/)
+ assert.match(center,/pushState!=='off'/)
+ assert.match(center,/ugo-notification-push/)
+ assert.match(center,/Activar avisos/)
  assert.match(center,/enablePush\(\)/)
- assert.match(css,/\.ugo-notification-enable-chip/)
+ assert.match(css,/\.ugo-notification-push/)
 })
