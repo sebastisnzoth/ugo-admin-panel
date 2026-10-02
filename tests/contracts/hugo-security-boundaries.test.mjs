@@ -5,12 +5,14 @@ import{readFile}from'node:fs/promises'
 const read=path=>readFile(new URL(`../../${path}`,import.meta.url),'utf8')
 
 test('Hugo chat delegates authentication and sanitization to dedicated boundaries',async()=>{
- const chat=await read('api/hugo/chat.ts')
+ const[chat,model]=await Promise.all([read('api/hugo/chat.ts'),read('server/hugo/modelAdapter.ts')])
  assert.match(chat,/authorizeHugo/)
- assert.match(chat,/sanitizeForModel/)
+ assert.match(chat,/askHugoText/)
+ assert.match(model,/sanitizeForModel/)
  assert.doesNotMatch(chat,/createClient\(/)
  assert.doesNotMatch(chat,/function bearer\(/)
  assert.doesNotMatch(chat,/function sanitizeForModel\(/)
+ assert.doesNotMatch(chat,/askHugoModel\(/)
 })
 
 test('Hugo auth verifies Supabase user before reading profile authority',async()=>{
