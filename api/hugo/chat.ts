@@ -1,6 +1,8 @@
 import{authorizeHugo}from'../../server/hugo/auth'
+import{allowedHugoOrigin,isAllowedHugoRequestOrigin}from'../../server/hugo/cors'
 import{askHugoModel}from'../../server/hugo/modelRouter'
 import{clean,sanitizeForModel}from'../../server/hugo/security'
+import{parseHugoUiAction}from'../../server/hugo/uiAction'
 const MODEL=process.env.GEMINI_MODEL||'gemini-3.5-flash-lite'
 const TTS_MODELS=Array.from(new Set([
  process.env.GEMINI_TTS_FAST_MODEL,
@@ -16,21 +18,6 @@ type JsonRecord=Record<string,unknown>
 const asRecord=(value:unknown):JsonRecord=>value!==null&&typeof value==='object'&&!Array.isArray(value)?value as JsonRecord:{}
 const nested=(value:unknown,...keys:string[]):unknown=>keys.reduce<unknown>((item,key)=>Array.isArray(item)?item[Number(key)]:asRecord(item)[key],value)
 const parts=(value:unknown):JsonRecord[]=>Array.isArray(value)?value.map(asRecord):[]
-const HUGO_BROWSER_ORIGINS=new Set(['https://sebastisnzoth.github.io',...String(process.env.UGO_ALLOWED_BROWSER_ORIGINS||'').split(',').map(value=>value.trim()).filter(Boolean)])
-function allowedOrigin(req:RequestLike){try{const origin=String(req.headers?.origin||'').trim();if(!origin)return'';if(new URL(origin).host===String(req.headers?.host||''))return origin;return HUGO_BROWSER_ORIGINS.has(origin)?origin:''}catch{return''}}
-function sameOrigin(req:RequestLike){const origin=String(req.headers?.origin||'').trim();return!origin||Boolean(allowedOrigin(req))}
-function extractJson(text:string){try{return JSON.parse(text)}catch{/* Gemini may wrap JSON in prose. */}const a=text.indexOf('{'),b=text.lastIndexOf('}');if(a>=0&&b>a){try{return JSON.parse(text.slice(a,b+1))}catch{/* Return null for an invalid embedded object. */}}return null}
-const NAV_TARGETS=new Set(['home','operations:overview','operations:map','operations:services','operations:alerts','operations:disputes','operations:scout','operations:history','operations:messages','people:users','people:verification','people:documents','people:kyc','people:import','finance:pix','finance:vault','finance:tariffs','settings:categories','settings:analytics','settings:notifications','settings:reports','settings:system','superadmin'])
-function uiAction(value:unknown,role:'admin'|'superadmin'){
- if(!value||typeof value!=='object')return null
- const raw=asRecord(value)
- const type=clean(raw.type,30)
- if(type==='refresh')return{type:'refresh'}
- if(type==='navigate'){const target=clean(raw.target,80);if(!NAV_TARGETS.has(target)||target==='superadmin'&&role!=='superadmin')return null;return{type:'navigate',target}}
- if(type==='open_service'){const serviceId=clean(raw.service_id,80),number=Number(raw.service_number);if(serviceId&&!/^[0-9a-f-]{36}$/i.test(serviceId))return null;if(!serviceId&&!Number.isFinite(number))return null;return{type:'open_service',service_id:serviceId||undefined,service_number:Number.isFinite(number)?number:undefined}}
- if(type==='map_filter'){const status=['todos','online','offline','inactivo'].includes(String(raw.status))?String(raw.status):undefined,category=clean(raw.category,80)||null,zone=clean(raw.zone,120)||null,place=clean(raw.place,160)||null,radius=Number(raw.radius_m),showProviders=typeof raw.show_providers==='boolean'?raw.show_providers:null,showClients=typeof raw.show_clients==='boolean'?raw.show_clients:null;return{type:'map_filter',status,category,zone,place,radius_m:Number.isFinite(radius)?Math.max(0,Math.min(50000,radius)):null,show_providers:showProviders,show_clients:showClients}}
- return null
-}
 function geminiKey(){const key=process.env.GEMINI_API_KEY?.trim();if(!key)throw Object.assign(new Error('GEMINI_API_KEY no configurada'),{status:503});return key}
 
 
@@ -67,11 +54,11 @@ export default async function handler(req:RequestLike,res:ResponseLike){
  res.setHeader('Vary','Origin')
  res.setHeader('Access-Control-Allow-Headers','authorization, content-type')
  res.setHeader('Access-Control-Allow-Methods','POST, OPTIONS')
- const origin=String(req.headers?.origin||'').trim(),corsOrigin=allowedOrigin(req)
+ const origin=String(req.headers?.origin||'').trim(),corsOrigin=allowedHugoOrigin(req)
  if(corsOrigin)res.setHeader('Access-Control-Allow-Origin',corsOrigin)
  if(req.method==='OPTIONS')return origin&&!corsOrigin?res.status(403).end():res.status(200).end()
  if(req.method!=='POST')return res.status(405).json({hugo_mensaje:'Método no permitido.'})
- if(!sameOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
+ if(!isAllowedHugoRequestOrigin(req))return res.status(403).json({hugo_mensaje:'Origen no autorizado.'})
  try{
   const body=asRecord(typeof req.body==='string'?JSON.parse(req.body):req.body)
   const authority=await authorizeHugo(req,body)
@@ -139,7 +126,7 @@ export default async function handler(req:RequestLike,res:ResponseLike){
    `SUPERFICIE ACTUAL: ${surface}`,
    context?`CONTEXTO OPERATIVO EN VIVO: ${context}`:'Sin contexto operativo adicional.'
   ].join('\n')
-  const prompt=message==='__INICIO__'?(clientMode?'Saludá como Hugo Cliente y preguntá qué necesita resolver.':providerMode?'Saludá como Hugo Proveedor y preguntá en qué lo podés ayudar.':`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode&&!providerMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:uiAction(asRecord(parsed).ui_action,adminRole)
+  const prompt=message==='__INICIO__'?(clientMode?'Saludá como Hugo Cliente y preguntá qué necesita resolver.':providerMode?'Saludá como Hugo Proveedor y preguntá en qué lo podés ayudar.':`Saludá como Hugo ${adminRole==='superadmin'?'Super Admin':'Admin'} y preguntá qué necesita revisar.`):message,result=await askGemini(prompt,history,system,!clientMode&&!providerMode),parsed=clientMode||providerMode?null:extractJson(result.text),reply=clientMode||providerMode?result.text:clean(asRecord(parsed).reply,1800),action=clientMode||providerMode?null:parseHugoUiAction(asRecord(parsed).ui_action,adminRole)
   return res.status(200).json({hugo_mensaje:reply||(clientMode?'Decime qué necesitás.':providerMode?'Decime en qué te ayudo con tu trabajo.':'Hola, ¿qué querés revisar?'),accion:null,ui_action:action,datos:null,model:result.model,model_provider:result.provider,fallback_used:result.fallback_used,correlation_id:result.correlation_id,model_timing_ms:result.timing_ms,authority:{role:authority.requestedRole,profile_role:String(authority.profile?.tipo||''),decision:'ALLOW'}})
  }catch(error:unknown){
   console.error('Hugo chat failed',error)
