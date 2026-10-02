@@ -46,7 +46,7 @@ test('Hugo server endpoint accepts role and active surface context',async()=>{
  assert.match(prompts,/adminRole:HugoAdminRole=requestedRole==='superadmin'\?'superadmin':'admin'/)
  assert.match(api,/surface=clean\(body\.surface/)
  assert.match(prompts,/CONTEXTO OPERATIVO EN VIVO/)
- assert.match(api,/clean\(body\.context,60000\)/)
+ assert.match(api,/sanitizeHugoContextForRole\(body\.context,authority\.requestedRole\)/)
 })
 
 

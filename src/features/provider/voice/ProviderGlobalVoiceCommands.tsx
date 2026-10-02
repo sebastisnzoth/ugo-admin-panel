@@ -26,30 +26,9 @@ export function ProviderGlobalVoiceCommands(){
    fn()
    return{ok:true,message:'Listo.'}
   }
-  if(type==='set_online'){
-   const ok=data.online?true:await data.setOnline(true)
-   return{ok,message:ok?'Quedaste online.':'No pude ponerte online.'}
-  }
-  if(type==='set_offline'){
-   const ok=!data.online?true:await data.setOnline(false)
-   return{ok,message:ok?'Quedaste offline.':'No pude ponerte offline.'}
-  }
-  if(type==='accept_job'||type==='reject_job'){
-   const serviceId=String(value.service_id||''),item=data.opportunities.find(item=>String(item.serviceId)===serviceId)
-   if(!item)return{ok:false,message:'No encontré ese pedido entre tus oportunidades actuales.'}
-   const ok=type==='accept_job'?await flow.actions.acceptOpportunity(item.id):await flow.actions.rejectOpportunity(item.id)
-   return{ok,message:ok?(type==='accept_job'?'Trabajo aceptado.':'Oportunidad rechazada.'):'La acción no pudo completarse.'}
-  }
-  if(type==='update_service_status'){
-   const serviceId=String(value.service_id||''),status=String(value.status||'') as 'en_camino'|'llegado'|'en_progreso'|'esperando_aprobacion'
-   if(!data.service||String(data.service.id)!==serviceId)return{ok:false,message:'Ese no es tu trabajo activo.'}
-   if(!['en_camino','llegado','en_progreso','esperando_aprobacion'].includes(status))return{ok:false,message:'Ese estado no está permitido.'}
-   const ok=await data.advance(status)
-   if(ok)flow.actions.openActiveJob()
-   return{ok,message:ok?'Estado del trabajo actualizado.':'No pude avanzar el trabajo.'}
-  }
+  if(['set_online','set_offline','accept_job','reject_job','update_service_status'].includes(type))return{ok:false,message:'Por seguridad, Hugo no ejecuta cambios de trabajo desde una respuesta de IA. Repetí el comando directo para confirmarlo en UGO.'}
   return{ok:false,message:'La acción propuesta por Hugo no está permitida.'}
- },[data,flow.actions])
+ },[flow.actions])
  const speak=useCallback(async(text:string)=>{try{window.speechSynthesis?.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang=detectProviderVoiceLocale(text);window.speechSynthesis?.speak(utterance)}catch{}},[])
  const handle=useCallback(async(source:string,_source?:'native'|'custom',engine?:string)=>{
   const value=normalizeProviderVoice(source)
