@@ -7,11 +7,11 @@ security definer
 set search_path=public,private,auth,extensions,pg_temp
 as $$
 declare
- cid constant uuid:='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1';
- pid constant uuid:='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2';
+ cid constant uuid:='4e3d7be7-f7d4-4cba-9afe-2e69d75617b7';
+ pid constant uuid:='163f8444-0098-4022-bb71-8418b24b16fb';
  cat uuid; cat_name text; sid uuid; oid uuid; s public.servicios%rowtype; loc extensions.geography;
  lat double precision; lng double precision; arrival jsonb; initial_role text; br_cash_old text; expansion public.ampliaciones_servicio%rowtype;
- old_primary uuid; old_categories uuid[]; old_category_name text; pilot_details jsonb;
+ old_primary uuid; old_categories uuid[]; old_category_name text; old_verification text; old_online boolean; old_disponible boolean; old_loc extensions.geography; old_loc_updated timestamptz; old_accuracy numeric; pilot_details jsonb;
 begin
  initial_role:=coalesce(current_setting('request.jwt.claim.role',true),auth.jwt()->>'role','');
  if initial_role<>'service_role' then raise exception 'SERVICE_ROLE_REQUIRED' using errcode='42501'; end if;
@@ -21,14 +21,18 @@ begin
 
  select valor into br_cash_old from public.config_sistema where clave='pago_efectivo_br_activo' for update;
  if br_cash_old is null then raise exception 'TEST_CASH_CONFIG_MISSING'; end if;
- select p.categoria_principal_id,u.categorias_ids,u.categoria,p.ubicacion,
-        extensions.st_y(p.ubicacion::extensions.geometry),extensions.st_x(p.ubicacion::extensions.geometry)
- into old_primary,old_categories,old_category_name,loc,lat,lng
+ select p.categoria_principal_id,u.categorias_ids,u.categoria,p.estado_verificacion,p.online,p.disponible,p.ubicacion,p.ubicacion_updated_at,p.ubicacion_accuracy_m
+ into old_primary,old_categories,old_category_name,old_verification,old_online,old_disponible,old_loc,old_loc_updated,old_accuracy
  from public.perfiles_proveedor p join public.usuarios u on u.id=p.usuario_id where p.usuario_id=pid;
- if loc is null or lat is null or lng is null then raise exception 'TEST_PROVIDER_NOT_READY'; end if;
+ if not found then raise exception 'PILOT_ISOLATED_PROVIDER_PROFILE_REQUIRED'; end if;
+ loc:=extensions.st_setsrid(extensions.st_makepoint(-48.477,-27.438),4326)::extensions.geography;
+ lat:=-27.438;lng:=-48.477;
 
  update public.config_sistema set valor='true' where clave='pago_efectivo_br_activo';
- update public.perfiles_proveedor set categoria_principal_id=cat,online=true,disponible=true,updated_at=now() where usuario_id=pid;
+ update public.perfiles_proveedor
+ set categoria_principal_id=cat,estado_verificacion='verificado',online=true,disponible=true,
+     ubicacion=loc,ubicacion_updated_at=now(),ubicacion_accuracy_m=10,updated_at=now()
+ where usuario_id=pid;
  update public.usuarios set categorias_ids=array[cat],categoria=cat_name,updated_at=now() where id=pid;
 
  pilot_details:=case when p_slug='faxina' then jsonb_build_object(
@@ -52,6 +56,7 @@ begin
  returning id into sid;
 
  perform set_config('request.jwt.claim.sub',cid::text,true);
+ perform public.seleccionar_pago_efectivo(sid);
  perform * from private.iniciar_matching_impl(sid);
  select id into oid from public.ofertas_servicio where servicio_id=sid and proveedor_id=pid and estado='pendiente' order by ranking limit 1;
  if oid is null then raise exception 'PILOT_MATCHING_FAILED:%',p_slug; end if;
@@ -61,7 +66,6 @@ begin
  if s.estado<>'asignado' then raise exception 'PILOT_ACCEPT_FAILED:%',p_slug; end if;
 
  perform set_config('request.jwt.claim.sub',cid::text,true);
- perform public.seleccionar_pago_efectivo(sid);
 
  perform set_config('request.jwt.claim.sub',pid::text,true);
  select * into s from private.avanzar_servicio_impl(sid,'en_camino');
@@ -113,14 +117,20 @@ begin
  insert into public.resenas(servicio_id,cliente_id,proveedor_id,puntuacion,comentario,autor_tipo)
  values(sid,cid,pid,5,'Pilot provider rating','proveedor');
 
- update public.perfiles_proveedor set categoria_principal_id=old_primary,updated_at=now() where usuario_id=pid;
+ update public.perfiles_proveedor
+ set categoria_principal_id=old_primary,estado_verificacion=old_verification,online=old_online,disponible=old_disponible,
+     ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
+ where usuario_id=pid;
  update public.usuarios set categorias_ids=old_categories,categoria=old_category_name,updated_at=now() where id=pid;
  update public.config_sistema set valor=br_cash_old where clave='pago_efectivo_br_activo';
  perform set_config('request.jwt.claim.sub','',true);
  perform set_config('request.jwt.claim.role',initial_role,true);
  return sid;
 exception when others then
- update public.perfiles_proveedor set categoria_principal_id=old_primary,updated_at=now() where usuario_id=pid;
+ update public.perfiles_proveedor
+ set categoria_principal_id=old_primary,estado_verificacion=old_verification,online=old_online,disponible=old_disponible,
+     ubicacion=old_loc,ubicacion_updated_at=old_loc_updated,ubicacion_accuracy_m=old_accuracy,updated_at=now()
+ where usuario_id=pid;
  update public.usuarios set categorias_ids=old_categories,categoria=old_category_name,updated_at=now() where id=pid;
  if br_cash_old is not null then update public.config_sistema set valor=br_cash_old where clave='pago_efectivo_br_activo'; end if;
  perform set_config('request.jwt.claim.sub','',true);
