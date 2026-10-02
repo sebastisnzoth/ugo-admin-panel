@@ -33,7 +33,7 @@ A role supplied by the browser never upgrades the persisted role.
 
 ## LLM data boundary
 
-`server/hugo/contextPolicy.ts` enforces role-aware top-level allowlists for structured JSON context after session/role verification and before prompt construction. Unknown top-level fields are dropped. Secret/credential keys and sensitive contact/identity fields are removed recursively; Admin/Super Admin model context also drops exact latitude/longitude fields. Legacy text context is bounded and passed through secret + sensitive-contact redaction for compatibility.
+`server/hugo/contextPolicy.ts` enforces role-aware top-level allowlists for the Vercel/API runtime. Supabase Edge runtimes use the matching shared boundary in `supabase/functions/_shared/hugoPolicy.ts`; both `hugo-runtime` and legacy `hugo-chat` import it. Structured JSON context is filtered after session/role verification and before prompt construction. Unknown top-level fields are dropped. Secret/credential keys and sensitive contact/identity fields are removed recursively; Admin/Super Admin model context also drops exact latitude/longitude fields. Legacy text context is bounded and passed through secret + sensitive-contact redaction for compatibility. Edge CORS also uses the shared explicit origin allowlist; wildcard browser CORS is forbidden.
 
 Allowed:
 - bounded operational context already authorized for the current user;
