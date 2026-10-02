@@ -53,3 +53,12 @@ test('dedicated browser proof follows the cleaned provider shell',async()=>{
  assert.match(workflow,/scripts\/provider-ui-runtime\.mjs/)
  assert.match(workflow,/github\.event\.pull_request\.head\.sha \|\| github\.sha/)
 })
+
+
+test('provider pins the mobile nav inside the viewport',async()=>{
+ const css=await read('src/mvp/provider/provider-production-cleanup.css')
+ assert.match(css,/position:fixed!important/)
+ assert.match(css,/transform:none!important/)
+ assert.match(css,/grid-template-columns:repeat\(4,minmax\(0,1fr\)\)!important/)
+ assert.match(css,/grid-template-rows:1fr!important/)
+})
