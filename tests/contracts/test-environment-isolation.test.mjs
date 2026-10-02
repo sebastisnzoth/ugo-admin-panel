@@ -34,7 +34,8 @@ test('Hugo and OAuth traffic is pinned to UGO TEST without an extra serverless w
   const vercel=await source('vercel.json')
   assert.match(vercel,new RegExp(TEST_REF))
   assert.doesNotMatch(vercel,new RegExp(PROD_REF))
-  assert.match(vercel,/"source": "\/api\/hugo\/gemini"[\s\S]*?"destination": "\/api\/test"/)
+  const rewrites=JSON.parse(vercel).rewrites||[]
+  assert.ok(rewrites.some(item=>item.source==='/api/hugo/gemini'&&item.destination==='/api/test'))
   assert.doesNotMatch(vercel,/test-safe/)
 })
 
