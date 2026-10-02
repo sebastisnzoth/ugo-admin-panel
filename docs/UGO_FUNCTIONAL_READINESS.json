@@ -1477,7 +1477,7 @@
           "id": "client-provider-lifecycle",
           "title": "Lifecycle Cliente ↔ Proveedor completo",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Solicitud completa → matching → oferta → aceptación → en camino → llegada → evidencias → trabajo → aprobación → pago → ratings → historial, con guards.",
           "done_evidence": "E2E TEST completo con audit trail.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1498,7 +1498,9 @@
           "reconciles_with": [
             "client-status",
             "provider-workflow"
-          ]
+          ],
+          "evidence_path": "docs/ugo-work-locks/readiness-client-provider-lifecycle.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "hugo-gemini-live-core",
