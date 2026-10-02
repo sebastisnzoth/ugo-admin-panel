@@ -34,3 +34,19 @@ test('provider en-route UI exposes GPS freshness and precision without trusting 
  assert.match(s,/fixAgeMs<=MAX_POSITION_AGE_MS/)
  assert.match(s,/setInterval\(\(\)=>setNowMs\(Date\.now\(\)\),1_000\)/)
 })
+
+
+test('provider desktop heartbeat falls back from high accuracy GPS without weakening freshness',async()=>{
+ const s=await read('src/mvp/ProviderLocationTracker.tsx')
+ assert.match(s,/GEO_HIGH_ACCURACY_OPTIONS/)
+ assert.match(s,/enableHighAccuracy:true/)
+ assert.match(s,/GEO_FALLBACK_OPTIONS/)
+ assert.match(s,/enableHighAccuracy:false/)
+ assert.match(s,/maximumAge:0/)
+ assert.match(s,/getFreshBrowserPosition/)
+ assert.match(s,/navigator\.geolocation\.getCurrentPosition\(resolve,highError/)
+ assert.match(s,/if\(highError\.code===1\)\{reject\(highError\);return\}/)
+ assert.match(s,/navigator\.geolocation\.getCurrentPosition\(resolve,reject,GEO_FALLBACK_OPTIONS\)/)
+ assert.match(s,/age>MAX_POSITION_AGE_MS/)
+ assert.match(s,/publicar_ubicacion_disponibilidad_proveedor/)
+})
