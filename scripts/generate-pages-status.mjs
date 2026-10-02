@@ -183,7 +183,13 @@ const readinessDirectActionMap = {
 for (const group of functionalReadiness.groups || []) {
   for (const item of group.items || []) {
     const workflow = readinessDirectActionMap[item.id]
-    item.execution_mode = item.real_test_required ? 'HUMAN_REQUIRED' : 'AUTO_SELECT'
+    item.execution_mode = item.gate_state === 'AVAILABLE'
+      ? 'AUTO_SELECT'
+      : (item.gate_state === 'HUMAN_REQUIRED' || item.gate_state === 'HUMAN_DEFERRED')
+        ? 'HUMAN_REQUIRED'
+        : item.status === 'VERIFIED'
+          ? 'VERIFIED'
+          : 'BLOCKED'
     if (workflow) {
       item.execution_route = 'AUTO_SELECT · GPT/UGO para análisis, código, diseño y decisiones; GitHub Direct para runtime/CI determinista.'
       item.direct_action = {
