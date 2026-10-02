@@ -56,14 +56,14 @@ test('cross-role RLS/RPC denies reads and writes outside actor authority',{skip:
   let serviceId=null
 
   try{
-    const {data:created,error:createError}=await c.from('servicios').insert({
+    const {data:created,error:createError}=await a.from('servicios').insert({
       cliente_id:clientId,
       categoria_id:category.id,
       estado:'buscando',
       descripcion:'UGO cross-role RLS fixture',
       urgencia:false,
-      ambiente:'real',
-      metadata:{integration_test:true,source:'cross-role-rls-runtime',marker,test_environment:'UGO_TEST'},
+      ambiente:'demo',
+      metadata:{integration_test:true,source:'cross-role-rls-runtime',marker},
     }).select('id,descripcion,estado').single()
     if(createError)throw createError
     serviceId=created.id
