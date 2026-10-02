@@ -1,5 +1,5 @@
 import type{HugoRequestedRole}from'./authority'
-import{clean,sanitizeForModel}from'./security'
+import{sanitizeForModel}from'./security'
 
 type JsonRecord=Record<string,unknown>
 
