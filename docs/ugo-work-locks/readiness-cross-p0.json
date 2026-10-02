@@ -1,0 +1,30 @@
+{
+  "readiness_id": "cross-p0",
+  "task_id": "readiness-cross-p0",
+  "job_id": "UGO-READINESS-CROSS-P0-20261002",
+  "title": "Verify complete automated P0 journey in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T12:45:00Z",
+  "heartbeat_at": "2026-10-02T12:45:00Z",
+  "lease_expires_at": "2026-10-02T13:30:00Z",
+  "started_sha": "31f3acfabbd15e9f3e2e9da6aadda541e8d87215",
+  "owner": "UGO",
+  "department": "Flujo transversal / Seguridad / Calidad",
+  "assigned_agent": "UGO P0 Journey Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "ugo-test-p0",
+    "shared-provider-fixture"
+  ],
+  "correlation_id": "readiness-cross-p0-20261002T124500Z",
+  "current_step": "IMPLEMENT_SAME_SHA_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:provider-arrival:HUMAN_REQUIRED_AUTOMATED_PASS",
+    "dependency:provider-evidence:HUMAN_REQUIRED_AUTOMATED_PASS"
+  ],
+  "production_touched": false
+}
