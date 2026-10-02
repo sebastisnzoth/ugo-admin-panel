@@ -1,0 +1,33 @@
+{
+  "readiness_id": "client-provider-lifecycle",
+  "task_id": "readiness-client-provider-lifecycle",
+  "job_id": "UGO-READINESS-CLIENT-PROVIDER-LIFECYCLE-20261002",
+  "title": "Verify canonical Client ↔ Provider lifecycle end-to-end in UGO TEST",
+  "status": "IN_PROGRESS",
+  "started_at": "2026-10-02T12:46:00Z",
+  "heartbeat_at": "2026-10-02T12:46:00Z",
+  "lease_expires_at": "2026-10-02T13:31:00Z",
+  "started_sha": "d9fdd31f8d6cb594b759328913e2b164c4327c79",
+  "owner": "UGO",
+  "department": "ugo-client-provider-flow-recovery",
+  "assigned_agent": "UGO Lifecycle Runtime Agent",
+  "validators": [
+    "Judge",
+    "Sentinel"
+  ],
+  "resources": [
+    "provider-job-state",
+    "client-service-status",
+    "payments",
+    "ratings"
+  ],
+  "correlation_id": "readiness-client-provider-lifecycle-20261002T124600Z",
+  "current_step": "IMPLEMENT_SAME_SHA_E2E_RUNTIME",
+  "attempt": 1,
+  "evidence_ids": [
+    "dependency:provider-proximity-alert:VERIFIED",
+    "dependency:provider-active-jobs:VERIFIED",
+    "dependency:hugo-real-runtime-proof:HUMAN_REQUIRED_AUTOMATED_SCOPE_PASS"
+  ],
+  "production_touched": false
+}
