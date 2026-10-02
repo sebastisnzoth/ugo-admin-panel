@@ -369,6 +369,7 @@ footer{margin-top:36px;border-top:1px solid var(--line);padding-top:16px;color:#
 </main>
 <script>
 (function(){
+  const pageBuildSha = '__UGO_SHA__'
   document.body.classList.add('compact-mode')
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
   const pillClass = owner => owner.includes('SERGIO') ? 'human' : 'ugo'
