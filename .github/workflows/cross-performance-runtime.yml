@@ -91,7 +91,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts/readiness-cross-performance-runtime.json
           if-no-files-found: error
           retention-days: 90
@@ -106,7 +106,7 @@ jobs:
           ref: ${{ env.UGO_RUNTIME_SHA }}
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts
       - name: Judge
         env:
@@ -114,7 +114,7 @@ jobs:
         run: node scripts/cross-performance-judge.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts/readiness-cross-performance-judge.json
           if-no-files-found: error
           retention-days: 90
@@ -129,11 +129,11 @@ jobs:
           ref: ${{ env.UGO_RUNTIME_SHA }}
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-runtime-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts
       - uses: actions/download-artifact@v4
         with:
-          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-judge-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts
       - name: Sentinel
         env:
@@ -141,7 +141,7 @@ jobs:
         run: node scripts/cross-performance-sentinel.mjs
       - uses: actions/upload-artifact@v4
         with:
-          name: cross-performance-sentinel-${{ env.UGO_RUNTIME_SHA }}
+          name: cross-performance-sentinel-${{ env.UGO_RUNTIME_SHA }}-${{ github.run_attempt }}
           path: artifacts/readiness-cross-performance-sentinel.json
           if-no-files-found: error
           retention-days: 90
