@@ -71,3 +71,16 @@ test('provider online requires browser geolocation permission and removes persis
  assert.ok(acquire>=0&&activate>acquire,'browser GPS must be acquired before provider availability is activated')
  assert.match(service,/UGO necesita tu ubicación para ponerte Online y enviarte pedidos/)
 })
+
+
+test('provider browser realtime tracker is continuous, periodic and self-healing',async()=>{
+ const s=await read('src/mvp/ProviderLocationTracker.tsx')
+ assert.match(s,/navigator\.geolocation\.watchPosition/)
+ assert.match(s,/window\.setInterval\(refresh,10_000\)/)
+ assert.match(s,/restartTimer=window\.setTimeout\(startWatch,3_000\)/)
+ assert.match(s,/window\.addEventListener\('focus',onForeground\)/)
+ assert.match(s,/document\.addEventListener\('visibilitychange',onForeground\)/)
+ assert.match(s,/finally\{writing=false\}/)
+ assert.match(s,/void acquire\(true\)/)
+ assert.match(s,/publicar_ubicacion_disponibilidad_proveedor/)
+})
