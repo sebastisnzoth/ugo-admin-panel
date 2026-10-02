@@ -1644,7 +1644,7 @@
           "id": "cross-realtime-consistency",
           "title": "Consistencia realtime multirol",
           "owner": "UGO",
-          "status": "NEEDS_RUNTIME_PROOF",
+          "status": "VERIFIED",
           "verify": "Un mismo servicio mantiene estado coherente simultáneamente sin refresh manual, con notificación y audit event.",
           "done_evidence": "Prueba multi-role realtime.",
           "improvement_focus": "Resolver implementación, wiring, backend/RPC/RLS, runtime, evidencia, regresión y verificación determinista del mismo SHA.",
@@ -1660,7 +1660,9 @@
             "provider-job-state"
           ],
           "epic_id": "ugo-client-provider-flow-recovery",
-          "reconciles_with": []
+          "reconciles_with": [],
+          "evidence_path": "docs/ugo-work-locks/readiness-cross-realtime-consistency.json",
+          "reconciled_from_persisted_lock": true
         },
         {
           "id": "cross-errors-recovery",
