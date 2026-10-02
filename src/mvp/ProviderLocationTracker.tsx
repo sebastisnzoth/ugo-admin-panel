@@ -65,67 +65,37 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
  },[supabase])
 
  useEffect(()=>{
-  if(!available||enRoute||!navigator.geolocation)return
-  let alive=true
-  const rpc=supabase as unknown as LocationRpcClient
-  let heartbeatBusy=false
-  const publishHeartbeat=async()=>{
-   if(heartbeatBusy)return
-   heartbeatBusy=true
-   try{
-    const pos=await getFreshBrowserPosition()
-    if(!alive)return
-    const latitude=Number(pos.coords.latitude),longitude=Number(pos.coords.longitude),accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
-    if(!Number.isFinite(latitude)||!Number.isFinite(longitude)||(Math.abs(latitude)<0.0001&&Math.abs(longitude)<0.0001)||!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M||age>MAX_POSITION_AGE_MS){
-     setLocationError('UGO recibió una ubicación inválida o antigua. Está reintentando para mantenerte dentro del matching.')
-     return
-    }
-    const{error}=await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:latitude,p_lng:longitude,p_captured_at:new Date(capturedAtMs).toISOString(),p_accuracy_m:accuracy})
-    if(!alive)return
-    if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos mantener tu GPS reciente para recibir pedidos. UGO va a reintentar.');return}
-    setLocationError('');lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy})
-   }catch(error){
-    if(!alive)return
-    const geoError=error as GeolocationPositionError
-    if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
-    setLocationError(geoError.code===1?'UGO perdió el permiso de ubicación precisa. Estás Online, pero no podés recibir pedidos hasta reactivarlo.':geoError.code===2?'UGO no puede obtener tu GPS ahora. Estás Online, pero el matching te excluirá hasta recuperar una ubicación reciente.':'El GPS tardó demasiado en responder. UGO sigue reintentando para devolverte al matching.')
-   }finally{heartbeatBusy=false}
-  }
-  const onForeground=()=>{if(document.visibilityState==='visible')void publishHeartbeat()}
-  void publishHeartbeat()
-  const timer=window.setInterval(()=>void publishHeartbeat(),AVAILABILITY_HEARTBEAT_MS)
-  window.addEventListener('focus',onForeground);document.addEventListener('visibilitychange',onForeground)
-  return()=>{alive=false;window.clearInterval(timer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
- },[available,enRoute,supabase])
-
- useEffect(()=>{
   if(!navigator.geolocation||(!available&&!enRoute))return
-  let lastWrite=0,lastPoint:[number,number]|null=null,writing=false
+  let alive=true,watchId:number|null=null,restartTimer:number|undefined
+  let lastWrite=0,lastPoint:[number,number]|null=null,writing=false,latestPosition:GeolocationPosition|null=null
   const rpc=supabase as unknown as LocationRpcClient
-  const watchId=navigator.geolocation.watchPosition(async pos=>{
-   setLocationError('')
-   const point:[number,number]=[pos.coords.latitude,pos.coords.longitude]
-   const accuracy=Number(pos.coords.accuracy),age=Date.now()-Number(pos.timestamp||Date.now())
-   if(!Number.isFinite(accuracy)||accuracy>MAX_ACCEPTABLE_ACCURACY_M){setLocationError('La señal GPS todavía no es suficientemente precisa. UGO sigue buscando una ubicación mejor.');return}
-   if(age>MAX_POSITION_AGE_MS){setLocationError('La ubicación recibida es antigua. UGO está esperando una posición GPS nueva.');return}
-   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001))return
-   const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M
-   const heartbeatDue=lastWrite===0||now-lastWrite>=AVAILABILITY_HEARTBEAT_MS
-   if(writing||now-lastWrite<MIN_WRITE_MS||(!moved&&!heartbeatDue))return
+  const serviceId=service?.estado==='en_camino'?service.id:null
+
+  const setGeoError=(error:GeolocationPositionError)=>{
+   if(!alive)return
+   if(error.code===1){setLocationError(serviceId?'UGO necesita permiso de ubicación precisa para seguir el servicio.':'UGO necesita permiso de ubicación para mantenerte Online y enviarte pedidos.');return}
+   if(lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return
+   setLocationError(error.code===2?'El navegador no pudo determinar tu ubicación. UGO sigue intentando recuperar el GPS.':'El GPS del navegador tardó demasiado en responder. UGO lo está reiniciando automáticamente.')
+  }
+
+  const publish=async(pos:GeolocationPosition,force=false)=>{
+   if(!alive)return
+   const point:[number,number]=[Number(pos.coords.latitude),Number(pos.coords.longitude)]
+   const accuracy=Number(pos.coords.accuracy),capturedAtMs=Number(pos.timestamp||Date.now()),age=Date.now()-capturedAtMs
+   if(!Number.isFinite(point[0])||!Number.isFinite(point[1])||(Math.abs(point[0])<0.0001&&Math.abs(point[1])<0.0001)){setLocationError('El navegador devolvió una ubicación inválida. UGO sigue buscando una posición real.');return}
+   if(!Number.isFinite(accuracy)||accuracy<=0||accuracy>MAX_ACCEPTABLE_ACCURACY_M){setLocationError('La señal de ubicación todavía no es suficientemente precisa. UGO sigue buscando una posición mejor.');return}
+   if(age>MAX_POSITION_AGE_MS){setLocationError('La ubicación del navegador quedó antigua. UGO está solicitando una posición nueva.');return}
+   const now=Date.now(),moved=!lastPoint||distanceMeters(lastPoint,point)>=MIN_MOVE_M,heartbeatDue=lastWrite===0||now-lastWrite>=10_000
+   if(writing||now-lastWrite<MIN_WRITE_MS||(!force&&!moved&&!heartbeatDue))return
    writing=true
-   const serviceId=service?.estado==='en_camino'?service.id:null
-   const capturedAt=new Date(Number(pos.timestamp||Date.now())).toISOString()
-   const{data,error}=serviceId
-    ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
-    :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
-   writing=false
-   if(error){
-    const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):''
-    if(enRoute)setLocationError(rpcMessage||'No pudimos publicar tu GPS reciente. UGO sigue reintentando.')
-    return
-   }
-   {
-    lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:Number(pos.timestamp||Date.now()),accuracy})
+   try{
+    const capturedAt=new Date(capturedAtMs).toISOString()
+    const{data,error}=serviceId
+     ?await rpc.rpc('publicar_ubicacion_proveedor',{p_servicio_id:serviceId,p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
+     :await rpc.rpc('publicar_ubicacion_disponibilidad_proveedor',{p_lat:point[0],p_lng:point[1],p_captured_at:capturedAt,p_accuracy_m:accuracy})
+    if(!alive)return
+    if(error){const rpcMessage=typeof error==='object'&&error&&'message'in error?String((error as{message?:unknown}).message||''):'';setLocationError(rpcMessage||'No pudimos publicar tu ubicación en tiempo real. UGO va a reintentar.');return}
+    lastWrite=Date.now();lastPoint=point;lastValidFixAtRef.current=Date.now();setLastFix({capturedAt:capturedAtMs,accuracy});setLocationError('')
     const distanceValue=serviceId&&data&&typeof data==='object'?(data as{distance_m?:unknown}).distance_m:data
     const meters=distanceValue==null?null:Number(distanceValue),validMeters=Number.isFinite(meters)?meters:null
     setDistanceToClient(validMeters)
@@ -133,9 +103,33 @@ export function ProviderLocationTracker({service,onAutoArrival}:Props){
      attemptedServiceRef.current=serviceId
      try{const ok=await autoArrivalRef.current();if(ok===false)attemptedServiceRef.current=null}catch{attemptedServiceRef.current=null}
     }
-   }
-  },error=>{if(error.code!==1&&lastValidFixAtRef.current&&Date.now()-lastValidFixAtRef.current<=MAX_POSITION_AGE_MS)return;setLocationError(error.code===1?'UGO necesita permiso de ubicación precisa para seguir el servicio.':error.code===2?'No pudimos obtener tu GPS. Revisá que la ubicación del dispositivo esté activada.':'El GPS tardó demasiado en responder. Reintentando…')}, {enableHighAccuracy:true,maximumAge:10_000,timeout:20_000})
-  return()=>navigator.geolocation.clearWatch(watchId)
+   }finally{writing=false}
+  }
+
+  const acquire=async(force=false)=>{
+   try{
+    const pos=await getFreshBrowserPosition()
+    if(!alive)return
+    latestPosition=pos
+    await publish(pos,force)
+   }catch(error){setGeoError(error as GeolocationPositionError)}
+  }
+
+  const startWatch=()=>{
+   if(!alive)return
+   if(watchId!=null)navigator.geolocation.clearWatch(watchId)
+   watchId=navigator.geolocation.watchPosition(pos=>{latestPosition=pos;void publish(pos)},error=>{setGeoError(error);if(error.code!==1){if(restartTimer)window.clearTimeout(restartTimer);restartTimer=window.setTimeout(startWatch,3_000)}},{enableHighAccuracy:true,maximumAge:5_000,timeout:15_000})
+  }
+
+  const refresh=()=>{if(document.visibilityState==='hidden')return;const age=latestPosition?Date.now()-Number(latestPosition.timestamp||0):Infinity;if(latestPosition&&age<=MAX_POSITION_AGE_MS)void publish(latestPosition,true);void acquire(true)}
+  const onForeground=()=>{if(document.visibilityState!=='visible')return;startWatch();refresh()}
+
+  startWatch()
+  void acquire(true)
+  const refreshTimer=window.setInterval(refresh,10_000)
+  window.addEventListener('focus',onForeground)
+  document.addEventListener('visibilitychange',onForeground)
+  return()=>{alive=false;if(watchId!=null)navigator.geolocation.clearWatch(watchId);if(restartTimer)window.clearTimeout(restartTimer);window.clearInterval(refreshTimer);window.removeEventListener('focus',onForeground);document.removeEventListener('visibilitychange',onForeground)}
  },[available,enRoute,service?.id,service?.estado,supabase])
 
  const fixAgeMs=lastFix?Math.max(0,nowMs-lastFix.capturedAt):null
