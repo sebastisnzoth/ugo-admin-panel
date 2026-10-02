@@ -149,3 +149,29 @@ test('HUMAN_REQUIRED dependencies block autonomous descendants until physical ev
   assert.deepEqual(items.find(x=>x.id==='b').unresolved_dependencies,['a'])
   assert.notEqual(items.find(x=>x.id==='a').status,'VERIFIED')
 })
+
+
+test('DONE lock cannot bypass an unresolved human dependency', () => {
+  const base=fixture()
+  const locks=[
+    {
+      task_id:'readiness-a',readiness_id:'a',status:'HUMAN_REQUIRED',
+      started_at:'2026-09-29T19:00:00Z',resources:['r1'],
+      evidence_ids:['automated-runtime:a'],human_final:{required:true,status:'PENDING'}
+    },
+    {
+      task_id:'readiness-b',readiness_id:'b',status:'DONE',
+      started_at:'2026-09-29T19:05:00Z',
+      validators_result:{Judge:'PASS',Sentinel:'PASS'},
+      evidence_ids:['evidence:b']
+    }
+  ]
+  const {readiness,summary}=evaluateFunctionalReadiness({functionalReadiness:base,locks,maxParallel:2,now:new Date('2026-09-29T20:00:00Z')})
+  const items=readiness.groups[0].items
+  const b=items.find(x=>x.id==='b')
+  assert.equal(b.status,'NEEDS_RUNTIME_PROOF')
+  assert.equal(b.gate_state,'BLOCKED_DEPENDENCY')
+  assert.equal(b.blocked_verified_lock,true)
+  assert.deepEqual(b.blocked_verified_dependencies,['a'])
+  assert.ok(!summary.runnable_ids.includes('b'))
+})
