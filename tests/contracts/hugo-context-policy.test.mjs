@@ -32,7 +32,12 @@ test('context policy removes secrets contacts and exact admin map coordinates',a
 
 test('legacy text context remains bounded and secret-sanitized for compatibility',async()=>{
  const source=await read('server/hugo/contextPolicy.ts')
- assert.match(source,/sanitizeForModel\(value,max\)/)
+ assert.match(source,/const raw=clean\(value,max\)/)
+ assert.match(source,/JSON\.parse\(raw\)/)
+ assert.match(source,/sanitizeForModel\(raw,Math\.min\(max,12_000\)\)/)
  assert.match(source,/Math\.min\(max,12_000\)/)
  assert.match(source,/redactLegacyPii/)
 })
+
+
+test('structured JSON is parsed before secret redaction so allowlisting cannot be bypassed',async()=>{const source=await read('server/hugo/contextPolicy.ts');const parse=source.indexOf('JSON.parse(raw)'),structuredRedaction=source.indexOf('JSON.stringify(filtered)');assert.ok(parse>=0&&structuredRedaction>parse)})
