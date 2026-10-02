@@ -3,10 +3,10 @@
   "task_id": "readiness-client-provider-lifecycle",
   "job_id": "UGO-READINESS-CLIENT-PROVIDER-LIFECYCLE-20261002",
   "title": "Verify canonical Client ↔ Provider lifecycle end-to-end in UGO TEST",
-  "status": "IN_PROGRESS",
+  "status": "DONE",
   "started_at": "2026-10-02T12:46:00Z",
   "heartbeat_at": "2026-10-02T12:46:00Z",
-  "lease_expires_at": "2026-10-02T13:31:00Z",
+  "lease_expires_at": null,
   "started_sha": "d9fdd31f8d6cb594b759328913e2b164c4327c79",
   "owner": "UGO",
   "department": "ugo-client-provider-flow-recovery",
@@ -22,12 +22,28 @@
     "ratings"
   ],
   "correlation_id": "readiness-client-provider-lifecycle-20261002T124600Z",
-  "current_step": "IMPLEMENT_SAME_SHA_E2E_RUNTIME",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "dependency:provider-proximity-alert:VERIFIED",
     "dependency:provider-active-jobs:VERIFIED",
-    "dependency:hugo-real-runtime-proof:HUMAN_REQUIRED_AUTOMATED_SCOPE_PASS"
+    "dependency:hugo-real-runtime-proof:HUMAN_REQUIRED_AUTOMATED_SCOPE_PASS",
+    "github-run:37008933184:PASS",
+    "github-job-runtime:110843728040:PASS",
+    "github-job-judge:110843894856:PASS",
+    "github-job-sentinel:110843947751:PASS",
+    "github-artifact-runtime:11227057150",
+    "github-artifact-judge:11227455171",
+    "github-artifact-sentinel:11227211698",
+    "same-sha:5603f21cb7527ddb208eb27e36e2c1d0292e2614"
   ],
-  "production_touched": false
+  "production_touched": false,
+  "completed_at": "2026-10-02T12:49:00Z",
+  "finished_at": "2026-10-02T12:49:00Z",
+  "verified_sha": "5603f21cb7527ddb208eb27e36e2c1d0292e2614",
+  "result": "VERIFIED",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
