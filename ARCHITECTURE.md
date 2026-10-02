@@ -56,7 +56,10 @@ Current backend boundaries:
 - `server/hugo/authority.ts`: requested role vs persisted role.
 - `server/hugo/permissions.ts`: centralized role capability matrix.
 - `server/hugo/uiAction.ts`: allowlisted UI-action parsing.
-- `server/hugo/modelRouter.ts`: Gemini/OpenRouter routing.
+- `server/hugo/promptBuilder.ts`: role-specific prompt construction.
+- `server/hugo/modelAdapter.ts`: sanitized/bounded model input adapter.
+- `server/hugo/modelRouter.ts`: Gemini/OpenRouter routing and fallback telemetry.
+- `server/hugo/ttsAdapter.ts`: bounded Gemini TTS integration and audio parsing.
 
 The visible Hugo/orb surfaces are currently disabled. Dormant voice code must not be treated as proof that the UI feature is active.
 
