@@ -3,18 +3,28 @@ import assert from'node:assert/strict'
 import{readFile}from'node:fs/promises'
 
 const read=p=>readFile(new URL('../../'+p,import.meta.url),'utf8')
-const workflows=[
+const mutatingProviderWorkflows=[
  '.github/workflows/provider-gps-runtime.yml',
  '.github/workflows/provider-debt-runtime.yml',
- '.github/workflows/provider-ui-runtime-test.yml',
 ]
 
-test('provider TEST runtimes serialize on the canonical shared provider fixture',async()=>{
- for(const path of workflows){
+test('provider TEST runtimes that mutate the shared provider fixture stay serialized',async()=>{
+ for(const path of mutatingProviderWorkflows){
   const source=await read(path)
   assert.match(source,/group:\s*ugo-test-shared-provider-fixture/)
   assert.match(source,/cancel-in-progress:\s*false/)
  }
+})
+
+test('provider UI browser proof is read-only and may use its own same-SHA queue',async()=>{
+ const [workflow,runtime]=await Promise.all([
+  read('.github/workflows/provider-ui-runtime-test.yml'),
+  read('scripts/provider-ui-runtime.mjs'),
+ ])
+ assert.match(workflow,/group:\s*provider-ui-runtime-\$\{\{ github\.event\.pull_request\.head\.sha \|\| github\.sha \}\}/)
+ assert.match(workflow,/cancel-in-progress:\s*true/)
+ assert.doesNotMatch(runtime,/\.from\([^\n]+\)\.(?:insert|update|delete|upsert)\(/)
+ assert.doesNotMatch(runtime,/\.rpc\(/)
 })
 
 test('provider-mutating autonomous integration stays serialized on the shared fixture',async()=>{
