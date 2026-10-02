@@ -16,7 +16,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ugo-test-shared-provider-fixture
+  group: ugo-pilot-faxina-marido-isolated-fixture
   cancel-in-progress: false
 
 env:
