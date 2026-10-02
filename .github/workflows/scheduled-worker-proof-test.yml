@@ -60,6 +60,7 @@ jobs:
         if: always()
         env:
           UGO_RUNTIME_WORKFLOW_NAME: UGO Scheduled Worker Proof TEST
+          UGO_RUNTIME_JOB_STATUS: ${{ job.status }}
           UGO_TEST_SUPABASE_URL: https://tmossnqfwfwjrtzwcbmm.supabase.co
           UGO_TEST_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.UGO_TEST_SUPABASE_SERVICE_ROLE_KEY }}
         run: node scripts/autonomous-runtime-revision.mjs
