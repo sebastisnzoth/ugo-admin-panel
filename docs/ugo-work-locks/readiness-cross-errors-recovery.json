@@ -3,7 +3,7 @@
   "task_id": "readiness-cross-errors-recovery",
   "job_id": "UGO-READINESS-CROSS-ERRORS-RECOVERY-20261002",
   "title": "Verify cross-flow fault injection and safe recovery",
-  "status": "BLOCKED_DEPENDENCY",
+  "status": "DONE",
   "started_at": "2026-10-02T12:51:00Z",
   "heartbeat_at": "2026-10-02T12:53:00Z",
   "lease_expires_at": null,
@@ -20,19 +20,35 @@
     "regression"
   ],
   "correlation_id": "readiness-cross-errors-recovery-20261002T125100Z",
-  "current_step": "WAIT_CLIENT_PROVIDER_LIFECYCLE_PHYSICAL_EVIDENCE",
+  "current_step": "VERIFIED",
   "attempt": 1,
   "evidence_ids": [
     "dependency:client-provider-lifecycle:VERIFIED",
     "reconcile:dependency-race:20261002T125300Z",
     "dependency:client-provider-lifecycle:HUMAN_REQUIRED",
-    "repo-evidence:docs/evidence/readiness-client-provider-lifecycle-20261002.json"
+    "repo-evidence:docs/evidence/readiness-client-provider-lifecycle-20261002.json",
+    "github-run:37009873678:PASS",
+    "github-job-runtime:110846778152:PASS",
+    "github-job-judge:110846979094:PASS",
+    "github-job-sentinel:110847037646:PASS",
+    "github-artifact-runtime:11226749092",
+    "github-artifact-judge:11227600842",
+    "github-artifact-sentinel:11227278193",
+    "same-sha:e66f4769dfb7e7afbf4e57c4ef488c95a82d902a",
+    "ugo-arena:exception-recovery-queue-isolation:PASS"
   ],
   "production_touched": false,
-  "result": "BLOCKED_DEPENDENCY",
+  "result": "VERIFIED",
   "blocker": "client-provider-lifecycle:HUMAN_REQUIRED",
   "dependency_status": {
     "client-provider-lifecycle": "HUMAN_REQUIRED"
   },
-  "result_summary": "Not runnable yet. The authoritative client-provider-lifecycle lock is HUMAN_REQUIRED after automated runtime/Judge/Sentinel PASS; this downstream control must remain blocked until the required physical/human evidence closes that dependency."
+  "result_summary": "Not runnable yet. The authoritative client-provider-lifecycle lock is HUMAN_REQUIRED after automated runtime/Judge/Sentinel PASS; this downstream control must remain blocked until the required physical/human evidence closes that dependency.",
+  "completed_at": "2026-10-02T12:59:00Z",
+  "finished_at": "2026-10-02T12:59:00Z",
+  "verified_sha": "e66f4769dfb7e7afbf4e57c4ef488c95a82d902a",
+  "validators_result": {
+    "Judge": "PASS",
+    "Sentinel": "PASS"
+  }
 }
