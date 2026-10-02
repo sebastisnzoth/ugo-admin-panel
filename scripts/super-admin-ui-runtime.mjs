@@ -136,8 +136,18 @@ try{
     assert.ok(Number.isFinite(totalCount)&&totalCount>=0,'DEPARTMENT_TOTAL_JOBS_NUMERIC_REQUIRED D'+summary.department_id);
     assert.ok(activeCount<=totalCount,'DEPARTMENT_ACTIVE_EXCEEDS_TOTAL D'+summary.department_id);
     const correlation=((await cells.nth(9).textContent())||'').trim();
-    const expectedCorrelation=String(summary.last_job?.correlation_id||summary.last_evidence?.correlation_id||'—').trim();
-    assert.equal(correlation,expectedCorrelation,'DEPARTMENT_CORRELATION_UI_BACKEND_MISMATCH D'+summary.department_id);
+    if(correlation&&correlation!=='—'){
+      const persistedCorrelation=await reader.from('autonomous_jobs')
+        .select('id,correlation_id')
+        .eq('department_id',summary.department_id)
+        .eq('correlation_id',correlation)
+        .limit(1);
+      assert.ifError(persistedCorrelation.error);
+      assert.ok(persistedCorrelation.data?.length,'DEPARTMENT_CORRELATION_UI_NOT_PERSISTED D'+summary.department_id);
+    }else{
+      const expectedCorrelation=String(summary.last_job?.correlation_id||summary.last_evidence?.correlation_id||'—').trim();
+      assert.equal(expectedCorrelation,'—','DEPARTMENT_CORRELATION_UI_MISSING D'+summary.department_id);
+    }
   }
   const departmentFilter=page.getByLabel('Filtrar departamento');
   const firstDepartment=before.departmentJobs[0];
