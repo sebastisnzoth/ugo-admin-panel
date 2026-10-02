@@ -113,7 +113,14 @@ try{
   const departmentTable=page.locator('table').filter({hasText:'Jobs totales'}).first();
   await departmentTable.waitFor({state:'visible'});
   for(const summary of before.departmentJobs){
-    const row=departmentTable.locator('tbody tr').filter({hasText:'D'+summary.department_id}).first();
+    const rows=departmentTable.locator('tbody tr');
+    let row=null;
+    for(let index=0;index<await rows.count();index++){
+      const candidate=rows.nth(index);
+      const idText=((await candidate.locator('td').first().textContent())||'').trim();
+      if(idText==='D'+summary.department_id){row=candidate;break}
+    }
+    assert.ok(row,'DEPARTMENT_ROW_NOT_FOUND D'+summary.department_id);
     await row.waitFor({state:'visible'});
     const cells=row.locator('td');
     let activeText='',totalText='',activeCount=NaN,totalCount=NaN;
