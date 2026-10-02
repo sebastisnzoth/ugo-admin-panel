@@ -8,6 +8,16 @@ on:
       - 'scripts/cross-errors-recovery-*.mjs'
       - 'tests/contracts/realtime-resync-recovery.test.mjs'
       - 'tests/contracts/client-provider-flow-recovery-command-center.test.mjs'
+      - 'tests/contracts/dispatch-recovery.test.mjs'
+      - 'tests/contracts/provider-action-recovery.test.mjs'
+      - 'tests/contracts/provider-evidence-recovery.test.mjs'
+      - 'tests/contracts/provider-availability-recovery.test.mjs'
+      - 'tests/contracts/client-completion-recovery.test.mjs'
+      - 'tests/contracts/client-payment-recovery.test.mjs'
+      - 'tests/contracts/service-chat-send-recovery.test.mjs'
+      - 'tests/contracts/client-provider-radar-recovery.test.mjs'
+      - 'tests/contracts/autonomous-exception-recovery.test.mjs'
+      - 'supabase/migrations/20261002141500_exception_recovery_queue_isolation.sql'
       - '.github/workflows/cross-errors-recovery-runtime.yml'
       - 'supabase/migrations/20261002150000_exception_recovery_queue_isolation.sql'
 
@@ -42,7 +52,19 @@ jobs:
       - name: Enforce UGO TEST
         run: npm run verify:test-env
       - name: Recovery regression contracts
-        run: node --test tests/contracts/realtime-resync-recovery.test.mjs tests/contracts/client-provider-flow-recovery-command-center.test.mjs
+        run: >-
+          node --test --test-concurrency=1
+          tests/contracts/realtime-resync-recovery.test.mjs
+          tests/contracts/client-provider-flow-recovery-command-center.test.mjs
+          tests/contracts/dispatch-recovery.test.mjs
+          tests/contracts/provider-action-recovery.test.mjs
+          tests/contracts/provider-evidence-recovery.test.mjs
+          tests/contracts/provider-availability-recovery.test.mjs
+          tests/contracts/client-completion-recovery.test.mjs
+          tests/contracts/client-payment-recovery.test.mjs
+          tests/contracts/service-chat-send-recovery.test.mjs
+          tests/contracts/client-provider-radar-recovery.test.mjs
+          tests/contracts/autonomous-exception-recovery.test.mjs
       - name: Build exact SHA
         env:
           VITE_APP_REVISION: ${{ github.sha }}
